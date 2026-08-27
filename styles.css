@@ -4161,3 +4161,249 @@ body.dark .draw-tool.is-active{
 .analog-stopwatch-hand{
   height:40%!important;
 }
+
+/* Writing Lines */
+@font-face{
+  font-family:"TeacherTiles Print";
+  src:local("PrintBold-J5o"),local("Print Bold"),url("assets/PrintBold-J5o.ttf") format("truetype");
+  font-display:swap;
+}
+
+.writinglines-module{
+  width:560px;
+  height:350px;
+  min-width:330px;
+  min-height:240px;
+  padding:30px 16px 48px;
+  background:var(--module-bg,#fff);
+  color:var(--module-text,#17191d);
+  overflow:hidden;
+}
+
+.writinglines-stage{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+}
+
+.writinglines-paper{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  padding:10px 12px;
+  border-radius:14px;
+  background:color-mix(in srgb,var(--module-bg,#fff) 95%,#fff 5%);
+  border:1px solid color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:repeat(4,1fr);
+}
+
+.writinglines-row{
+  position:relative;
+  min-height:0;
+}
+
+.writinglines-guide{
+  position:absolute;
+  left:0;
+  right:0;
+  pointer-events:none;
+}
+
+.writinglines-guide--top{
+  top:9%;
+  border-top:2px solid color-mix(in srgb,var(--module-text,#17191d) 27%,transparent);
+}
+
+.writinglines-guide--mid{
+  top:50%;
+  border-top:2px dashed color-mix(in srgb,var(--module-text,#17191d) 20%,transparent);
+}
+
+.writinglines-guide--base{
+  bottom:8%;
+  border-top:2px solid color-mix(in srgb,var(--module-text,#17191d) 42%,transparent);
+}
+
+.writinglines-input{
+  position:absolute;
+  inset:10px 12px;
+  width:calc(100% - 24px);
+  height:calc(100% - 20px);
+  padding:0 5px;
+  margin:0;
+  border:0;
+  outline:0;
+  resize:none;
+  overflow:auto;
+  background:transparent;
+  color:var(--module-text,#17191d);
+  font-family:"TeacherTiles Print","Comic Sans MS",cursive;
+  font-size:clamp(26px,7cqw,44px);
+  line-height:1.72;
+  letter-spacing:.01em;
+  scrollbar-width:thin;
+  caret-color:currentColor;
+}
+
+.writinglines-input::placeholder{
+  color:color-mix(in srgb,var(--module-text,#17191d) 30%,transparent);
+}
+
+.writinglines-input[hidden]{
+  display:none!important;
+}
+
+.writinglines-customization{
+  position:absolute;
+  left:50%;
+  bottom:9px;
+  transform:translateX(-50%);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .14s ease,visibility .14s ease;
+}
+
+.writinglines-module:hover .writinglines-customization,
+.writinglines-customization:focus-within{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+.writinglines-customization .custom-icon{
+  width:34px;
+  height:34px;
+  min-height:34px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+}
+
+.writinglines-module[data-writing-mode="type"] .writinglines-paper{
+  box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--module-text,#17191d) 5%,transparent);
+}
+
+body.dark .writinglines-module[data-bg="white"] .writinglines-paper{
+  background:rgba(255,255,255,.035);
+}
+
+
+
+/* Writing Lines: row-locked font alignment */
+.writinglines-paper{
+  container-type:size;
+}
+
+.writinglines-row{
+  position:relative;
+  min-height:0;
+  container-type:size;
+}
+
+/*
+  Text now lives inside the exact row whose guides it belongs to.
+  PrintBold-J5o ascent is approximately .755em. The solid writing baseline
+  is at 92% of the row, so top = baseline - ascent.
+  Font size is chosen so uppercase height fits from the top guide to baseline.
+*/
+.writinglines-entry{
+  position:absolute;
+  left:5px;
+  right:5px;
+  top:calc(92% - .755em);
+  height:1em;
+  padding:0;
+  margin:0;
+  border:0;
+  outline:0;
+  overflow:hidden;
+  white-space:nowrap;
+
+  color:var(--module-text,#17191d);
+  background:transparent;
+  font-family:"TeacherTiles Print","Comic Sans MS",cursive;
+  font-size:clamp(28px,34cqh,58px);
+  line-height:1;
+  letter-spacing:.01em;
+  caret-color:currentColor;
+
+  pointer-events:none;
+  user-select:none;
+}
+
+.writinglines-module[data-writing-mode="type"] .writinglines-entry{
+  pointer-events:auto;
+  user-select:text;
+}
+
+.writinglines-entry:focus{
+  background:color-mix(in srgb,var(--module-text,#17191d) 2%,transparent);
+  border-radius:4px;
+}
+
+.writinglines-entry:empty::before{
+  content:"";
+}
+
+/* The wax body itself owns the timer height; wick/flame merely follow it. */
+.candle-body{
+  height:var(--candle-height,78%)!important;
+  max-height:none!important;
+}
+.candle-wick{
+  bottom:calc(12px + var(--candle-height,78%))!important;
+}
+.candle-flame{
+  bottom:calc(23px + var(--candle-height,78%))!important;
+}
+.candle-glow{
+  bottom:calc(20px + var(--candle-height,78%))!important;
+}
+
+/* Global drag indicator: centered on the module itself, independent of delete button */
+.module{
+  position:absolute;
+}
+
+.module::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:10px;
+  width:30px;
+  height:4px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--module-text,var(--text,#17191d)) 22%,transparent);
+  opacity:0;
+  pointer-events:none;
+  z-index:29;
+  transition:opacity .14s ease,transform .12s ease;
+}
+
+.module:hover::after{
+  opacity:.8;
+}
+
+.module.is-dragging::after{
+  opacity:1;
+  transform:translateX(-50%) scaleX(.9);
+}
+
+/* The old visible handle indicator is disabled entirely. */
+.module .module-drag-handle::after{
+  display:none!important;
+}
+
+/* Image modules use the entire image as the drag surface, but still get no overlay bar
+   across the image itself once loaded. */
+.image-module.has-image::after{
+  display:none!important;
+}

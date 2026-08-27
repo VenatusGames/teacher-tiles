@@ -90,6 +90,15 @@
       <button class="context-menu__item" data-module="clock" data-category="time"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
+      <button class="context-menu__item" data-module="writinglines" data-category="tools">
+        <span class="context-menu__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M4 9h16M4 15h16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2 2" opacity=".65"/>
+          </svg>
+        </span>
+        <span><strong>Writing Lines</strong><small>Handwriting practice template</small></span>
+      </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
       <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
       <button class="context-menu__item" data-module="stoplight" data-category="tools"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
@@ -261,6 +270,54 @@
         <button class="custom-icon clock-toggle-period is-active" title="Show or hide AM/PM" aria-label="Show or hide AM/PM"><span aria-hidden="true">AM</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="writinglines-template">
+    <section class="module writinglines-module" data-type="writinglines" data-bg="white" data-text="dark" data-writing-mode="practice">
+      <button class="module-delete" aria-label="Delete writing lines">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="writinglines-stage">
+        <div class="writinglines-paper" aria-label="Handwriting practice lines">
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 1" data-line="0"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 2" data-line="1"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 3" data-line="2"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 4" data-line="3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="customization-bar writinglines-customization" aria-label="Writing lines options">
+        <button class="custom-icon writinglines-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon writinglines-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon writinglines-toggle-type" type="button" title="Turn typing mode on or off" aria-label="Turn typing mode on or off"><span aria-hidden="true">⌨</span></button>
+        <button class="custom-icon writinglines-clear" type="button" title="Clear typed text" aria-label="Clear typed text"><span aria-hidden="true">×</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
 

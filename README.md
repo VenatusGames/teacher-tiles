@@ -52,3 +52,9 @@ python changelog/update_changelog.py
 On Windows you can also double-click `changelog/update_changelog.bat`.
 
 This rebuilds `changelog/index.json`, which is what the website uses to discover entries. Files are sorted by their modification/addition time so the newest release appears first.
+
+## Writing Lines font
+
+The Writing Lines typing mode is configured to use `assets/PrintBold-J5o.ttf`.
+Place your copy of `PrintBold-J5o.ttf` in the `assets` folder to enable that font.
+The app falls back to a handwriting-style system font if the asset is not present.
