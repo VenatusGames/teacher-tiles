@@ -212,6 +212,10 @@ function setupStopwatch(m){
   const lap=m.querySelector('.stopwatch-lap');
   const clear=m.querySelector('.stopwatch-clear');
   const laps=m.querySelector('.stopwatch-laps');
+  const bgBtn=m.querySelector('.stopwatch-bg');
+  const fontBtn=m.querySelector('.stopwatch-font');
+  const textBtn=m.querySelector('.stopwatch-text');
+
   let running=false,startedAt=0,elapsed=0,raf=0,lapCount=0;
 
   const format=ms=>{
@@ -221,12 +225,28 @@ function setupStopwatch(m){
     const hundredths=Math.floor(total/10)%100;
     return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
   };
+
   const current=()=>elapsed+(running?performance.now()-startedAt:0);
-  const render=()=>{display.textContent=format(current());if(running)raf=requestAnimationFrame(render)};
+
+  const render=()=>{
+    display.textContent=format(current());
+    if(running)raf=requestAnimationFrame(render);
+  };
+
   start.addEventListener('click',()=>{
-    if(running){elapsed=current();running=false;cancelAnimationFrame(raf);start.textContent='Start'}
-    else{startedAt=performance.now();running=true;start.textContent='Pause';render()}
+    if(running){
+      elapsed=current();
+      running=false;
+      cancelAnimationFrame(raf);
+      start.textContent='Start';
+    }else{
+      startedAt=performance.now();
+      running=true;
+      start.textContent='Pause';
+      render();
+    }
   });
+
   lap.addEventListener('click',()=>{
     if(!running&&elapsed<=0)return;
     lapCount++;
@@ -235,12 +255,30 @@ function setupStopwatch(m){
     row.innerHTML=`<span>Lap ${lapCount}</span><strong>${format(current())}</strong>`;
     laps.prepend(row);
   });
+
   clear.addEventListener('click',()=>{
-    running=false;cancelAnimationFrame(raf);startedAt=0;elapsed=0;lapCount=0;display.textContent='00:00.00';laps.replaceChildren();start.textContent='Start';
+    running=false;
+    cancelAnimationFrame(raf);
+    startedAt=0;
+    elapsed=0;
+    lapCount=0;
+    display.textContent='00:00.00';
+    laps.replaceChildren();
+    start.textContent='Start';
   });
-  m.querySelector('.stopwatch-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.stopwatch-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.stopwatch-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  bgBtn?.addEventListener('click',()=>{
+    cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']);
+  });
+
+  fontBtn?.addEventListener('click',()=>{
+    cycleData(m,'font',FONT_OPTIONS);
+  });
+
+  textBtn?.addEventListener('click',()=>{
+    cycleData(m,'text',['dark','soft','blue','rose','white']);
+  });
+
   m._cleanup=()=>cancelAnimationFrame(raf);
 }
 

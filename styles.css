@@ -3729,3 +3729,69 @@ body.dark .draw-tool.is-active{
   background:var(--module-text,#17191d);
   box-shadow:0 0 0 3px color-mix(in srgb,var(--module-bg,#fff) 88%,transparent);
 }
+
+/* Stopwatch customization */
+.stopwatch-module{
+  background:var(--module-bg,#fff)!important;
+  color:var(--module-text,#17191d)!important;
+  font-family:var(--module-font,Inter,system-ui,sans-serif)!important;
+}
+
+.stopwatch-display,
+.stopwatch-actions,
+.stopwatch-laps,
+.stopwatch-lap-row,
+.stopwatch-lap-row strong,
+.stopwatch-lap-row span{
+  font-family:inherit!important;
+  color:inherit;
+}
+
+.stopwatch-customization{
+  position:absolute;
+  left:50%;
+  bottom:9px;
+  transform:translateX(-50%);
+  display:flex!important;
+  gap:6px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .14s ease,visibility .14s ease;
+  z-index:12;
+}
+
+.stopwatch-module:hover .stopwatch-customization,
+.stopwatch-customization:focus-within{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+.stopwatch-customization .custom-icon{
+  width:34px;
+  height:34px;
+  min-height:34px;
+  padding:0;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:color-mix(in srgb,var(--module-bg,#fff) 78%,#888 22%);
+  color:var(--module-text,#17191d);
+  border:1px solid color-mix(in srgb,var(--module-text,#17191d) 16%,transparent);
+}
+
+.stopwatch-actions button{
+  color:inherit!important;
+  border-color:color-mix(in srgb,var(--module-text,#17191d) 14%,transparent)!important;
+  background:color-mix(in srgb,var(--module-bg,#fff) 84%,var(--module-text,#17191d) 6%)!important;
+}
+
+.stopwatch-actions .primary{
+  background:var(--module-text,#17191d)!important;
+  color:var(--module-bg,#fff)!important;
+}
+
+.stopwatch-laps{
+  background:color-mix(in srgb,var(--module-text,#17191d) 4%,transparent)!important;
+}
