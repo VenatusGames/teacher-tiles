@@ -31,6 +31,13 @@
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
+    <button id="changelog-toggle" class="workspace-control" type="button" title="What’s new" aria-label="Open changelog">
+      <svg class="news-megaphone-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 13.5h3l8 4V6.5l-8 4h-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M7.5 13.5l1.4 5h2.7l-1.3-4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
     <button id="ui-sfx-toggle" class="workspace-control" type="button" title="Mute UI sounds" aria-label="Mute UI sounds">♪</button>
     <button id="theme-toggle" class="workspace-control" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
     <button id="fullscreen-toggle" class="workspace-control" type="button" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button>
@@ -407,6 +414,7 @@
     </section>
   </template>
 
+  <script src="changelog/data.js"></script>
   <script src="app.js"></script>
 
   <template id="spinner-template">
@@ -443,6 +451,7 @@
       </div>
 
       <div class="spinner-confetti-layer" aria-hidden="true"></div>
+      <audio class="spinner-spin-audio" src="assets/ui/spin.mp3" preload="metadata"></audio>
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
       <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
@@ -450,5 +459,21 @@
       <div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
+
+  <div id="changelog-backdrop" class="changelog-backdrop" hidden>
+    <section id="changelog-panel" class="changelog-panel" role="dialog" aria-modal="true" aria-labelledby="changelog-title">
+      <header class="changelog-header">
+        <div>
+          <span class="changelog-eyebrow">TEACHERTILES</span>
+          <h2 id="changelog-title">What’s new</h2>
+        </div>
+        <button id="changelog-close" class="changelog-close" type="button" aria-label="Close changelog">×</button>
+      </header>
+      <div id="changelog-content" class="changelog-content">
+        <div class="changelog-loading">Loading changelog…</div>
+      </div>
+    </section>
+  </div>
+
 </body>
 </html>

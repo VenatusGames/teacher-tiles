@@ -37,3 +37,18 @@ Boom Box defaults to a minimal Apple Music-inspired player. Use the appearance b
 
 ## Module categories
 The right-click Add Module menu defaults to ALL and can be filtered with TEXT, MEDIA, and TOOLS tabs.
+
+
+## Changelog
+
+TeacherTiles now includes a Markdown-powered changelog.
+
+Release-note files live in `changelog/`. Add one `.md` file per release, then run:
+
+```bash
+python changelog/update_changelog.py
+```
+
+On Windows you can also double-click `changelog/update_changelog.bat`.
+
+This rebuilds `changelog/index.json`, which is what the website uses to discover entries. Files are sorted by their modification/addition time so the newest release appears first.

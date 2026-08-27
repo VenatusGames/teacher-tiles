@@ -426,6 +426,7 @@ function setupSpinner(m){
   const resultOverlay=m.querySelector('.spinner-result-overlay');
   const resultName=m.querySelector('.spinner-result-name');
   const confettiLayer=m.querySelector('.spinner-confetti-layer');
+  const spinAudio=m.querySelector('.spinner-spin-audio');
   const input=m.querySelector('.spinner-name-input');
   const addButton=m.querySelector('.spinner-add-name');
   const list=m.querySelector('.spinner-name-list');
@@ -436,7 +437,7 @@ function setupSpinner(m){
   let rotation=0;
   let spinning=false;
   let raf=0;
-  let resultTimer=0;
+  let winnerVisible=false;
 
   const palette=[
     '#f2b5a7','#f5d38b','#bedca8','#9fd8cf',
@@ -514,8 +515,8 @@ function setupSpinner(m){
       ctx.closePath();
       ctx.fillStyle=palette[i%palette.length];
       ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.78)';
-      ctx.lineWidth=3;
+      ctx.strokeStyle='rgba(255,255,255,.68)';
+      ctx.lineWidth=2;
       ctx.stroke();
 
       ctx.save();
@@ -576,10 +577,18 @@ function setupSpinner(m){
     setTimeout(()=>confettiLayer.replaceChildren(),1550);
   }
 
+  function dismissWinner(){
+    if(!winnerVisible)return;
+    winnerVisible=false;
+    resultOverlay.classList.remove('is-visible');
+    resultOverlay.hidden=true;
+    winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';
+  }
+
   function showWinner(name){
+    winnerVisible=true;
     winner.textContent=name;
     resultName.textContent=name;
-    clearTimeout(resultTimer);
     resultOverlay.hidden=false;
     resultOverlay.classList.remove('is-visible');
     void resultOverlay.offsetWidth;
@@ -591,15 +600,11 @@ function setupSpinner(m){
 
     fireSpinnerConfetti();
     playUiSfx('collection');
-
-    resultTimer=setTimeout(()=>{
-      resultOverlay.classList.remove('is-visible');
-      resultOverlay.hidden=true;
-    },2100);
   }
 
-  function spin(){
-    if(spinning||names.length<1)return;
+  async function spin(){
+    if(spinning||winnerVisible||names.length<1)return;
+
     spinning=true;
     m.classList.add('is-spinning');
     spinButton.disabled=true;
@@ -608,20 +613,47 @@ function setupSpinner(m){
     resultOverlay.classList.remove('is-visible');
     resultOverlay.hidden=true;
 
-    const chosen=Math.floor(Math.random()*names.length);
     const arc=Math.PI*2/names.length;
-    const targetCenter=-Math.PI/2+(chosen+.5)*arc;
-    const currentNorm=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-    const targetNorm=((-(targetCenter)+Math.PI*2)%(Math.PI*2));
-    let delta=targetNorm-currentNorm;
-    if(delta<0)delta+=Math.PI*2;
+
+    // Choose a target segment, but stop inside its safe center zone rather than on an edge.
+    const targetIndex=Math.floor(Math.random()*names.length);
+    const safety=arc*.18;
+    const jitterRange=Math.max(0,arc/2-safety);
+    const centerJitter=(Math.random()*2-1)*jitterRange*.55;
+
+    // Segments are drawn starting at -PI/2 before wheel rotation.
+    // The fixed pointer is at -PI/2, so solve the final rotation that places
+    // the selected segment's interior point directly beneath the pointer.
+    const targetLocalAngle=-Math.PI/2+(targetIndex+.5)*arc+centerJitter;
+    const desiredRotation=-Math.PI/2-targetLocalAngle;
+
+    const tau=Math.PI*2;
+    const currentNorm=((rotation%tau)+tau)%tau;
+    const desiredNorm=((desiredRotation%tau)+tau)%tau;
+
+    let delta=desiredNorm-currentNorm;
+    if(delta<0)delta+=tau;
 
     const turns=5+Math.floor(Math.random()*3);
-    const total=turns*Math.PI*2+delta;
+    const total=turns*tau+delta;
     const startRotation=rotation;
-    const duration=3600+Math.random()*900;
+
+    spinAudio.pause();
+    spinAudio.currentTime=0;
+
+    if(!Number.isFinite(spinAudio.duration)||spinAudio.duration<=0){
+      await new Promise(resolve=>{
+        const done=()=>resolve();
+        spinAudio.addEventListener('loadedmetadata',done,{once:true});
+        spinAudio.load();
+      });
+    }
+
+    const duration=Math.max(600,(Number.isFinite(spinAudio.duration)?spinAudio.duration:3.683)*1000);
     const start=performance.now();
     const ease=t=>1-Math.pow(1-t,4);
+
+    spinAudio.play().catch(()=>{});
 
     cancelAnimationFrame(raf);
     const tick=now=>{
@@ -634,12 +666,26 @@ function setupSpinner(m){
       }else{
         rotation=startRotation+total;
         drawWheel();
+
         spinning=false;
         m.classList.remove('is-spinning');
         spinButton.disabled=false;
-        showWinner(names[chosen]);
+
+        if(!spinAudio.paused){
+          spinAudio.pause();
+          spinAudio.currentTime=spinAudio.duration||0;
+        }
+
+        // Determine the actual winning segment from the wheel's final physical
+        // position under the fixed pointer. This guarantees popup = landed tile.
+        const finalNorm=((rotation%tau)+tau)%tau;
+        const pointerLocal=(((-Math.PI/2-finalNorm)+tau)%tau);
+        const segmentIndex=Math.floor(((pointerLocal+Math.PI/2+tau)%tau)/arc)%names.length;
+
+        showWinner(names[segmentIndex]);
       }
     };
+
     raf=requestAnimationFrame(tick);
   }
 
@@ -659,8 +705,22 @@ function setupSpinner(m){
       addName();
     }
   });
-  spinButton.addEventListener('click',spin);
-  canvas.addEventListener('click',spin);
+
+  spinButton.addEventListener('click',e=>{
+    e.stopPropagation();
+    spin();
+  });
+
+  canvas.addEventListener('click',e=>{
+    e.stopPropagation();
+    spin();
+  });
+
+  m.addEventListener('click',e=>{
+    if(!winnerVisible)return;
+    if(e.target.closest('.module-delete,.spinner-customization,.spinner-settings,.resize-handle'))return;
+    dismissWinner();
+  });
 
   const ro=new ResizeObserver(()=>drawWheel());
   ro.observe(m);
@@ -672,9 +732,169 @@ function setupSpinner(m){
   m._cleanup=()=>{
     prior?.();
     cancelAnimationFrame(raf);
-    clearTimeout(resultTimer);
     ro.disconnect();
+    spinAudio.pause();
+    spinAudio.currentTime=0;
   };
+}
+
+
+function setupChangelog(){
+  const button=document.getElementById('changelog-toggle');
+  const backdrop=document.getElementById('changelog-backdrop');
+  const panel=document.getElementById('changelog-panel');
+  const closeButton=document.getElementById('changelog-close');
+  const content=document.getElementById('changelog-content');
+  if(!button||!backdrop||!panel||!closeButton||!content)return;
+
+  let loaded=false;
+
+  const escapeHtml=value=>String(value)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+
+  const inlineMarkdown=text=>{
+    let safe=escapeHtml(text);
+    safe=safe.replace(/`([^`]+)`/g,'<code>$1</code>');
+    safe=safe.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    safe=safe.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+    safe=safe.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return safe;
+  };
+
+  const renderMarkdown=markdown=>{
+    const lines=markdown.replace(/\r\n?/g,'\n').split('\n');
+    const out=[];
+    let listOpen=false;
+
+    const closeList=()=>{
+      if(listOpen){
+        out.push('</ul>');
+        listOpen=false;
+      }
+    };
+
+    for(const raw of lines){
+      const line=raw.trimEnd();
+      if(!line.trim()){
+        closeList();
+        continue;
+      }
+
+      const heading=line.match(/^(#{1,3})\s+(.+)$/);
+      if(heading){
+        closeList();
+        const level=heading[1].length;
+        out.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+        continue;
+      }
+
+      const bullet=line.match(/^\s*[-*]\s+(.+)$/);
+      if(bullet){
+        if(!listOpen){
+          out.push('<ul>');
+          listOpen=true;
+        }
+        out.push(`<li>${inlineMarkdown(bullet[1])}</li>`);
+        continue;
+      }
+
+      closeList();
+      out.push(`<p>${inlineMarkdown(line)}</p>`);
+    }
+
+    closeList();
+    return out.join('');
+  };
+
+  async function loadChangelog(){
+    content.innerHTML='<div class="changelog-loading">Loading changelog…</div>';
+
+    try{
+      let valid=[];
+
+      if(Array.isArray(window.TeacherTilesChangelogData)&&window.TeacherTilesChangelogData.length){
+        valid=window.TeacherTilesChangelogData
+          .filter(entry=>entry&&entry.file&&typeof entry.text==='string')
+          .slice()
+          .sort((a,b)=>{
+            const at=Date.parse(a.addedAt||0)||0;
+            const bt=Date.parse(b.addedAt||0)||0;
+            return bt-at;
+          });
+      }else{
+        const response=await fetch(`changelog/index.json?ts=${Date.now()}`,{cache:'no-store'});
+        if(!response.ok)throw new Error('Could not load changelog index.');
+
+        const data=await response.json();
+        const files=Array.isArray(data.files)?data.files:[];
+
+        const entries=await Promise.all(files.map(async entry=>{
+          const file=typeof entry==='string'?entry:entry.file;
+          const addedAt=typeof entry==='object'&&entry?entry.addedAt:null;
+          if(!file)return null;
+
+          const res=await fetch(`changelog/${encodeURIComponent(file)}?ts=${Date.now()}`,{cache:'no-store'});
+          if(!res.ok)return null;
+          return {file,addedAt,text:await res.text()};
+        }));
+
+        valid=entries.filter(Boolean).sort((a,b)=>{
+          const at=Date.parse(a.addedAt||0)||0;
+          const bt=Date.parse(b.addedAt||0)||0;
+          return bt-at;
+        });
+      }
+
+      if(!valid.length){
+        content.innerHTML='<div class="changelog-empty">No changelog entries yet.</div>';
+        return;
+      }
+
+      content.replaceChildren();
+      for(const entry of valid){
+        const article=document.createElement('article');
+        article.className='changelog-entry';
+        article.innerHTML=renderMarkdown(entry.text);
+        content.append(article);
+      }
+
+      loaded=true;
+    }catch(err){
+      content.innerHTML='<div class="changelog-error">The changelog could not be loaded.</div>';
+      console.error(err);
+    }
+  }
+
+  async function openChangelog(){
+    backdrop.hidden=false;
+    requestAnimationFrame(()=>backdrop.classList.add('is-open'));
+    if(!loaded)await loadChangelog();
+    closeButton.focus({preventScroll:true});
+  }
+
+  function closeChangelog(){
+    backdrop.classList.remove('is-open');
+    window.setTimeout(()=>{backdrop.hidden=true},190);
+    button.focus({preventScroll:true});
+  }
+
+  button.addEventListener('click',openChangelog);
+  closeButton.addEventListener('click',closeChangelog);
+  backdrop.addEventListener('click',e=>{
+    if(e.target===backdrop)closeChangelog();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!backdrop.hidden)closeChangelog();
+  });
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',setupChangelog,{once:true});
+}else{
+  setupChangelog();
 }
 
 (function setupTeacherTilesIntro() {
