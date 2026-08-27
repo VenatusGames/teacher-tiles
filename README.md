@@ -55,6 +55,6 @@ This rebuilds `changelog/index.json`, which is what the website uses to discover
 
 ## Writing Lines font
 
-The Writing Lines typing mode is configured to use `assets/PrintBold-J5o.ttf`.
+The Writing Lines typing mode uses the supplied `PrintBold-J5o.ttf` font from `assets/PrintBold-J5o.ttf`.
 Place your copy of `PrintBold-J5o.ttf` in the `assets` folder to enable that font.
 The app falls back to a handwriting-style system font if the asset is not present.

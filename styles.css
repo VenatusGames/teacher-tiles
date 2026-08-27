@@ -4165,7 +4165,7 @@ body.dark .draw-tool.is-active{
 /* Writing Lines */
 @font-face{
   font-family:"TeacherTiles Print";
-  src:local("PrintBold-J5o"),local("Print Bold"),url("assets/PrintBold-J5o.ttf") format("truetype");
+  src:url("assets/PrintBold-J5o.ttf") format("truetype");
   font-display:swap;
 }
 
@@ -4242,7 +4242,7 @@ body.dark .draw-tool.is-active{
   overflow:auto;
   background:transparent;
   color:var(--module-text,#17191d);
-  font-family:"TeacherTiles Print","Comic Sans MS",cursive;
+  font-family:"TeacherTiles Print";
   font-size:clamp(26px,7cqw,44px);
   line-height:1.72;
   letter-spacing:.01em;
@@ -4309,7 +4309,7 @@ body.dark .writinglines-module[data-bg="white"] .writinglines-paper{
 
 /*
   Text now lives inside the exact row whose guides it belongs to.
-  PrintBold-J5o ascent is approximately .755em. The solid writing baseline
+  Print Bold is the supplied handwriting font used by the Writing Lines module. The solid writing baseline
   is at 92% of the row, so top = baseline - ascent.
   Font size is chosen so uppercase height fits from the top guide to baseline.
 */
@@ -4328,7 +4328,7 @@ body.dark .writinglines-module[data-bg="white"] .writinglines-paper{
 
   color:var(--module-text,#17191d);
   background:transparent;
-  font-family:"TeacherTiles Print","Comic Sans MS",cursive;
+  font-family:"TeacherTiles Print";
   font-size:clamp(28px,34cqh,58px);
   line-height:1;
   letter-spacing:.01em;
