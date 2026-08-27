@@ -63,6 +63,16 @@
       <button class="context-menu__item" data-module="todo" data-category="text"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
+      <button class="context-menu__item" data-module="windowshare" data-category="media">
+        <span class="context-menu__icon context-menu__icon--windowshare" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="5" width="17" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M8 20h8M12 17.5V20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M9 11.2l2 2 4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span><strong>Window Share</strong><small>Share a tab, window, or screen</small></span>
+      </button>
       <button class="context-menu__item" data-module="timer" data-category="tools"><span class="context-menu__icon">◷</span><span><strong>Visual timer</strong><small>Shape-based progress timer</small></span></button>
       <button class="context-menu__item" data-module="interactive" data-category="tools"><span class="context-menu__icon">⌛</span><span><strong>Interactive timers</strong><small>Hourglass and melting candle</small></span></button>
       <button class="context-menu__item" data-module="clock" data-category="tools"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
@@ -337,6 +347,47 @@
         </div>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="windowshare-template">
+    <section class="module windowshare-module" data-type="windowshare" data-bg="white">
+      <button class="module-delete" aria-label="Delete Window Share">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="windowshare-stage">
+        <video class="windowshare-video" autoplay playsinline></video>
+
+        <div class="windowshare-empty">
+          <span class="windowshare-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <rect x="3.5" y="5" width="17" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8 20h8M12 17.5V20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <strong>WINDOW SHARE</strong>
+          <span>Share a Chrome tab, window, or screen</span>
+          <button class="windowshare-start primary" type="button">Share a Window</button>
+          <small class="windowshare-secure-note">Requires HTTPS or localhost</small>
+        </div>
+
+        <div class="windowshare-live-badge" hidden><span></span> LIVE</div>
+
+        <div class="windowshare-controls">
+          <button class="windowshare-change" type="button" title="Change source">Change Source</button>
+          <button class="windowshare-audio" type="button" title="Mute shared audio" aria-label="Mute shared audio">🔊</button>
+          <button class="custom-icon windowshare-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+          <button class="windowshare-stop" type="button">Stop</button>
+        </div>
+
+        <div class="windowshare-message" aria-live="polite"></div>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
 

@@ -81,7 +81,7 @@ setMenuCategory('all');
 function closeMenu(){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true')}
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
-function createModule(type,x,y){const t=document.getElementById(`${type}-template`);if(!t)return null;const m=t.content.firstElementChild.cloneNode(true);workspace.appendChild(m);const w=m.offsetWidth,h=m.offsetHeight;m.style.left=`${clamp(x-w/2,0,innerWidth-w)}px`;m.style.top=`${clamp(y-18,0,innerHeight-h)}px`;bringToFront(m);setupCommon(m);if(type==='sticky')setupSticky(m);if(type==='timer')setupTimer(m);if(type==='interactive')setupHourglass(m);if(type==='clock')setupClock(m);if(type==='noise')setupNoise(m);if(type==='collections')setupCollections(m);if(type==='stoplight')setupStoplight(m);if(type==='image')setupImage(m);if(type==='youtube')setupYoutube(m);if(type==='boombox')setupBoombox(m);
+function createModule(type,x,y){const t=document.getElementById(`${type}-template`);if(!t)return null;const m=t.content.firstElementChild.cloneNode(true);workspace.appendChild(m);const w=m.offsetWidth,h=m.offsetHeight;m.style.left=`${clamp(x-w/2,0,innerWidth-w)}px`;m.style.top=`${clamp(y-18,0,innerHeight-h)}px`;bringToFront(m);setupCommon(m);if(type==='sticky')setupSticky(m);if(type==='timer')setupTimer(m);if(type==='interactive')setupHourglass(m);if(type==='clock')setupClock(m);if(type==='noise')setupNoise(m);if(type==='collections')setupCollections(m);if(type==='stoplight')setupStoplight(m);if(type==='image')setupImage(m);if(type==='youtube')setupYoutube(m);if(type==='windowshare')setupWindowShare(m);if(type==='boombox')setupBoombox(m);
   if(type==='spinner')setupSpinner(m);if(type==='hangman')setupHangman(m);if(type==='textbubble')setupTextBubble(m);if(type==='todo')setupTodo(m);return m}
 function bringToFront(m){m.style.zIndex=++z}
 function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);setupResize(m)}
@@ -314,6 +314,161 @@ function fitEditableText(el,m,cssVar){
   const fit=()=>{const aw=Math.max(30,el.clientWidth-12),ah=Math.max(26,el.clientHeight-12);measure.style.width=`${aw}px`;measure.style.fontFamily=getComputedStyle(el).fontFamily;measure.style.fontWeight=getComputedStyle(el).fontWeight;measure.style.lineHeight=getComputedStyle(el).lineHeight;measure.textContent=el.innerText||' ';let lo=10,hi=800,best=10;for(let i=0;i<18;i++){const mid=(lo+hi)/2;measure.style.fontSize=`${mid}px`;if(measure.scrollHeight<=ah&&measure.scrollWidth<=aw){best=mid;lo=mid}else hi=mid}m.style.setProperty(cssVar,`${Math.max(10,best*.97)}px`)};
   const ro=new ResizeObserver(()=>requestAnimationFrame(fit));ro.observe(m);ro.observe(el);el.addEventListener('input',fit);requestAnimationFrame(fit);return()=>{ro.disconnect();measure.remove()}
 }
+
+function setupWindowShare(m){
+  const video=m.querySelector('.windowshare-video');
+  const empty=m.querySelector('.windowshare-empty');
+  const startButton=m.querySelector('.windowshare-start');
+  const changeButton=m.querySelector('.windowshare-change');
+  const stopButton=m.querySelector('.windowshare-stop');
+  const audioButton=m.querySelector('.windowshare-audio');
+  const bgButton=m.querySelector('.windowshare-bg');
+  const liveBadge=m.querySelector('.windowshare-live-badge');
+  const message=m.querySelector('.windowshare-message');
+
+  let stream=null;
+  let messageTimer=0;
+
+  function showMessage(text,hold=2600){
+    clearTimeout(messageTimer);
+    message.textContent=text;
+    message.classList.add('is-visible');
+    if(hold){
+      messageTimer=setTimeout(()=>message.classList.remove('is-visible'),hold);
+    }
+  }
+
+  function setAudioButton(){
+    if(!stream){
+      audioButton.textContent='🔊';
+      audioButton.disabled=true;
+      audioButton.title='No shared audio';
+      return;
+    }
+    const tracks=stream.getAudioTracks();
+    audioButton.disabled=!tracks.length;
+    if(!tracks.length){
+      audioButton.textContent='🔇';
+      audioButton.title='This source is not sharing audio';
+      return;
+    }
+    const enabled=tracks.some(t=>t.enabled);
+    audioButton.textContent=enabled?'🔊':'🔇';
+    audioButton.title=enabled?'Mute shared audio':'Unmute shared audio';
+    audioButton.setAttribute('aria-label',audioButton.title);
+  }
+
+  function clearStreamTracks(){
+    if(!stream)return;
+    stream.getTracks().forEach(track=>{
+      track.onended=null;
+      try{track.stop()}catch{}
+    });
+    stream=null;
+  }
+
+  function resetShare({ended=false}={}){
+    clearStreamTracks();
+    video.pause();
+    video.srcObject=null;
+    m.classList.remove('is-sharing');
+    liveBadge.hidden=true;
+    setAudioButton();
+    if(ended)showMessage('Sharing ended.',1800);
+  }
+
+  async function beginShare(){
+    if(!navigator.mediaDevices?.getDisplayMedia){
+      showMessage('Window sharing is not supported here. Open TeacherTiles through HTTPS or localhost.',4200);
+      return;
+    }
+
+    if(!window.isSecureContext){
+      showMessage('Window Share requires HTTPS or localhost.',4200);
+      return;
+    }
+
+    try{
+      const nextStream=await navigator.mediaDevices.getDisplayMedia({
+        video:{
+          frameRate:{ideal:30,max:60},
+          cursor:'always'
+        },
+        audio:true,
+        preferCurrentTab:false,
+        selfBrowserSurface:'exclude',
+        surfaceSwitching:'include',
+        systemAudio:'include'
+      });
+
+      clearStreamTracks();
+      stream=nextStream;
+
+      const videoTrack=stream.getVideoTracks()[0];
+      if(!videoTrack){
+        resetShare();
+        showMessage('No video source was selected.',2600);
+        return;
+      }
+
+      videoTrack.onended=()=>resetShare({ended:true});
+      stream.getAudioTracks().forEach(track=>{
+        track.onended=()=>setAudioButton();
+      });
+
+      video.srcObject=stream;
+      video.muted=false;
+      try{await video.play()}catch{}
+
+      m.classList.add('is-sharing');
+      liveBadge.hidden=false;
+      setAudioButton();
+
+      const settings=videoTrack.getSettings?.()||{};
+      const surface=settings.displaySurface;
+      if(surface){
+        const label=surface==='browser'?'Chrome tab':surface==='window'?'window':surface==='monitor'?'screen':surface;
+        showMessage(`Sharing ${label}.`,1400);
+      }
+    }catch(err){
+      if(err?.name==='NotAllowedError'||err?.name==='AbortError'){
+        showMessage('Share cancelled.',1600);
+      }else{
+        console.error('Window Share error:',err);
+        showMessage('Could not start sharing. Try selecting the source again.',3200);
+      }
+    }
+  }
+
+  startButton.addEventListener('click',beginShare);
+  changeButton.addEventListener('click',beginShare);
+  stopButton.addEventListener('click',()=>resetShare());
+
+  audioButton.addEventListener('click',()=>{
+    if(!stream)return;
+    const tracks=stream.getAudioTracks();
+    if(!tracks.length)return;
+    const shouldEnable=!tracks.some(t=>t.enabled);
+    tracks.forEach(t=>t.enabled=shouldEnable);
+    setAudioButton();
+  });
+
+  bgButton.addEventListener('click',()=>{
+    cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']);
+  });
+
+  setAudioButton();
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    clearTimeout(messageTimer);
+    clearStreamTracks();
+    video.pause();
+    video.srcObject=null;
+  };
+}
+
 function setupBoombox(m){
   const tracks=[
     {title:'Relaxing Rain',src:'assets/soundscapes/relaxing-rain.mp3',vinyl:'#6d7f91',deep:'#354553',label:'#dce6ee',text:'#273641'},
