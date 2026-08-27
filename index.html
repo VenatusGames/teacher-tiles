@@ -560,6 +560,7 @@
   </template>
 
   <script src="changelog/data.js"></script>
+  <script src="news/data.js"></script>
   <script src="app.js"></script>
 
 
@@ -679,12 +680,66 @@
       <header class="changelog-header">
         <div>
           <span class="changelog-eyebrow">TEACHERTILES</span>
-          <h2 id="changelog-title">What’s new</h2>
+          <h2 id="changelog-title">Updates & Support</h2>
         </div>
-        <button id="changelog-close" class="changelog-close" type="button" aria-label="Close changelog">×</button>
+        <button id="changelog-close" class="changelog-close" type="button" aria-label="Close updates panel">×</button>
       </header>
-      <div id="changelog-content" class="changelog-content">
-        <div class="changelog-loading">Loading changelog…</div>
+
+      <nav class="updates-tabs" aria-label="Updates and support">
+        <button class="updates-tab is-active" type="button" data-updates-tab="changelog" aria-selected="true">Changelog</button>
+        <button class="updates-tab" type="button" data-updates-tab="news" aria-selected="false">News</button>
+        <button class="updates-tab" type="button" data-updates-tab="contact" aria-selected="false">Contact</button>
+      </nav>
+
+      <div class="updates-body">
+        <section class="updates-pane is-active" data-updates-pane="changelog">
+          <div id="changelog-content" class="changelog-content">
+            <div class="changelog-loading">Loading changelog…</div>
+          </div>
+        </section>
+
+        <section class="updates-pane" data-updates-pane="news" hidden>
+          <div id="news-content" class="changelog-content">
+            <div class="changelog-loading">Loading news…</div>
+          </div>
+        </section>
+
+        <section class="updates-pane updates-pane--contact" data-updates-pane="contact" hidden>
+          <form id="contact-form" class="contact-form">
+            <div class="contact-intro">
+              <span class="contact-kicker">GET IN TOUCH</span>
+              <h3>Contact WeikertsWonders</h3>
+              <p>Questions, feedback, bugs, or ideas for TeacherTiles? Send a message here.</p>
+            </div>
+
+            <div class="contact-grid">
+              <label class="contact-field">
+                <span>Name</span>
+                <input name="name" type="text" autocomplete="name" required maxlength="100" placeholder="Your name">
+              </label>
+
+              <label class="contact-field">
+                <span>Email</span>
+                <input name="email" type="email" autocomplete="email" required maxlength="160" placeholder="you@example.com">
+              </label>
+            </div>
+
+            <label class="contact-field">
+              <span>Subject</span>
+              <input name="subject" type="text" required maxlength="160" placeholder="What can we help with?">
+            </label>
+
+            <label class="contact-field contact-field--message">
+              <span>Message</span>
+              <textarea name="message" required maxlength="5000" rows="7" placeholder="Write your message…"></textarea>
+            </label>
+
+            <div class="contact-actions">
+              <div id="contact-status" class="contact-status" aria-live="polite"></div>
+              <button id="contact-submit" class="contact-submit" type="submit">Send Message</button>
+            </div>
+          </form>
+        </section>
       </div>
     </section>
   </div>

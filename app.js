@@ -1275,10 +1275,18 @@ function setupChangelog(){
   const backdrop=document.getElementById('changelog-backdrop');
   const panel=document.getElementById('changelog-panel');
   const closeButton=document.getElementById('changelog-close');
-  const content=document.getElementById('changelog-content');
-  if(!button||!backdrop||!panel||!closeButton||!content)return;
+  const changelogContent=document.getElementById('changelog-content');
+  const newsContent=document.getElementById('news-content');
+  const tabs=[...document.querySelectorAll('[data-updates-tab]')];
+  const panes=[...document.querySelectorAll('[data-updates-pane]')];
+  const contactForm=document.getElementById('contact-form');
+  const contactStatus=document.getElementById('contact-status');
+  const contactSubmit=document.getElementById('contact-submit');
 
-  let loaded=false;
+  if(!button||!backdrop||!panel||!closeButton||!changelogContent||!newsContent)return;
+
+  const loaded={changelog:false,news:false};
+  let activeTab='changelog';
 
   const escapeHtml=value=>String(value)
     .replaceAll('&','&amp;')
@@ -1341,19 +1349,25 @@ function setupChangelog(){
     return out.join('');
   };
 
-  async function loadChangelog(){
-    content.innerHTML='<div class="changelog-loading">Loading changelog…</div>';
+  async function loadFeed(kind){
+    const isNews=kind==='news';
+    const content=isNews?newsContent:changelogContent;
+    const folder=isNews?'news':'changelog';
+    const globalData=isNews?window.TeacherTilesNewsData:window.TeacherTilesChangelogData;
+    const label=isNews?'news':'changelog';
+
+    content.innerHTML=`<div class="changelog-loading">Loading ${label}…</div>`;
 
     try{
       let valid=[];
 
-      if(Array.isArray(window.TeacherTilesChangelogData)&&window.TeacherTilesChangelogData.length){
-        valid=window.TeacherTilesChangelogData
+      if(Array.isArray(globalData)&&globalData.length){
+        valid=globalData
           .filter(entry=>entry&&entry.file&&typeof entry.text==='string')
           .slice();
       }else{
-        const response=await fetch(`changelog/index.json?ts=${Date.now()}`,{cache:'no-store'});
-        if(!response.ok)throw new Error('Could not load changelog index.');
+        const response=await fetch(`${folder}/index.json?ts=${Date.now()}`,{cache:'no-store'});
+        if(!response.ok)throw new Error(`Could not load ${label} index.`);
 
         const data=await response.json();
         const files=Array.isArray(data.files)?data.files:[];
@@ -1363,7 +1377,7 @@ function setupChangelog(){
           const addedAt=typeof entry==='object'&&entry?entry.addedAt:null;
           if(!file)return null;
 
-          const res=await fetch(`changelog/${encodeURIComponent(file)}?ts=${Date.now()}`,{cache:'no-store'});
+          const res=await fetch(`${folder}/${encodeURIComponent(file)}?ts=${Date.now()}`,{cache:'no-store'});
           if(!res.ok)return null;
           return {file,addedAt,text:await res.text()};
         }));
@@ -1372,7 +1386,8 @@ function setupChangelog(){
       }
 
       if(!valid.length){
-        content.innerHTML='<div class="changelog-empty">No changelog entries yet.</div>';
+        content.innerHTML=`<div class="changelog-empty">No ${label} entries yet.</div>`;
+        loaded[kind]=true;
         return;
       }
 
@@ -1384,17 +1399,37 @@ function setupChangelog(){
         content.append(article);
       }
 
-      loaded=true;
+      loaded[kind]=true;
     }catch(err){
-      content.innerHTML='<div class="changelog-error">The changelog could not be loaded.</div>';
+      content.innerHTML=`<div class="changelog-error">The ${label} feed could not be loaded.</div>`;
       console.error(err);
+    }
+  }
+
+  async function selectTab(name){
+    activeTab=name;
+
+    for(const tab of tabs){
+      const active=tab.dataset.updatesTab===name;
+      tab.classList.toggle('is-active',active);
+      tab.setAttribute('aria-selected',String(active));
+    }
+
+    for(const pane of panes){
+      const active=pane.dataset.updatesPane===name;
+      pane.hidden=!active;
+      pane.classList.toggle('is-active',active);
+    }
+
+    if((name==='changelog'||name==='news')&&!loaded[name]){
+      await loadFeed(name);
     }
   }
 
   async function openChangelog(){
     backdrop.hidden=false;
     requestAnimationFrame(()=>backdrop.classList.add('is-open'));
-    if(!loaded)await loadChangelog();
+    await selectTab(activeTab);
     closeButton.focus({preventScroll:true});
   }
 
@@ -1402,6 +1437,62 @@ function setupChangelog(){
     backdrop.classList.remove('is-open');
     window.setTimeout(()=>{backdrop.hidden=true},190);
     button.focus({preventScroll:true});
+  }
+
+  tabs.forEach(tab=>{
+    tab.addEventListener('click',()=>selectTab(tab.dataset.updatesTab));
+  });
+
+  if(contactForm&&contactSubmit&&contactStatus){
+    contactForm.addEventListener('submit',async e=>{
+      e.preventDefault();
+
+      if(!contactForm.reportValidity())return;
+
+      const formData=new FormData(contactForm);
+      const name=String(formData.get('name')||'').trim();
+      const email=String(formData.get('email')||'').trim();
+      const subject=String(formData.get('subject')||'').trim();
+      const message=String(formData.get('message')||'').trim();
+
+      contactSubmit.disabled=true;
+      contactSubmit.textContent='Sending…';
+      contactStatus.className='contact-status';
+      contactStatus.textContent='Sending your message…';
+
+      try{
+        const payload=new FormData();
+        payload.append('name',name);
+        payload.append('email',email);
+        payload.append('subject',subject);
+        payload.append('message',message);
+        payload.append('_subject',`TeacherTiles Contact: ${subject}`);
+        payload.append('_template','table');
+        payload.append('_captcha','false');
+
+        const response=await fetch('https://formsubmit.co/ajax/jacksweikert@gmail.com',{
+          method:'POST',
+          headers:{Accept:'application/json'},
+          body:payload
+        });
+
+        const result=await response.json().catch(()=>null);
+        if(!response.ok||result?.success===false){
+          throw new Error(result?.message||'Message could not be sent.');
+        }
+
+        contactForm.reset();
+        contactStatus.className='contact-status is-success';
+        contactStatus.textContent='Message sent. Thank you!';
+      }catch(err){
+        console.error(err);
+        contactStatus.className='contact-status is-error';
+        contactStatus.textContent='Could not send automatically. Please try again in a moment.';
+      }finally{
+        contactSubmit.disabled=false;
+        contactSubmit.textContent='Send Message';
+      }
+    });
   }
 
   button.addEventListener('click',openChangelog);
