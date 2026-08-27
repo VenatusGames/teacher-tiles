@@ -3795,3 +3795,369 @@ body.dark .draw-tool.is-active{
 .stopwatch-laps{
   background:color-mix(in srgb,var(--module-text,#17191d) 4%,transparent)!important;
 }
+
+/* Stopwatch digital / analog views */
+.stopwatch-main{
+  flex:0 0 auto;
+  min-height:108px;
+  display:grid;
+  place-items:center;
+}
+
+.stopwatch-digital-view,
+.stopwatch-analog-view{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+}
+
+.stopwatch-module[data-stopwatch-mode="analog"] .stopwatch-digital-view{
+  display:none;
+}
+
+.stopwatch-module[data-stopwatch-mode="digital"] .stopwatch-analog-view{
+  display:none;
+}
+
+/* Prevent stopwatch digits from jittering as values change. */
+.stopwatch-display{
+  width:8.25ch;
+  min-width:8.25ch;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:-.055em;
+  white-space:nowrap;
+}
+
+/* Physical analog stopwatch */
+.analog-stopwatch-shell{
+  position:relative;
+  width:min(55cqw,170px);
+  aspect-ratio:1 / 1.17;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.analog-stopwatch-face{
+  position:relative;
+  width:88%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 45%,#fff 0 63%,#ecebe8 64% 67%,#c8c7c3 68% 72%,#8e8d89 73% 74%,#d4d3cf 75% 77%,transparent 78%);
+  border:1px solid rgba(0,0,0,.16);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.7),
+    inset 0 -8px 18px rgba(0,0,0,.08),
+    0 8px 18px rgba(0,0,0,.13);
+  color:#1b1b1b;
+  font-family:var(--module-font,Inter,system-ui,sans-serif);
+}
+
+.analog-stopwatch-crown{
+  position:absolute;
+  top:0;
+  left:50%;
+  width:34px;
+  height:20px;
+  transform:translateX(-50%);
+  border-radius:8px 8px 5px 5px;
+  background:linear-gradient(#dad9d5,#999894);
+  border:1px solid rgba(0,0,0,.15);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+.analog-stopwatch-crown::before{
+  content:"";
+  position:absolute;
+  left:6px;
+  right:6px;
+  top:4px;
+  height:2px;
+  background:rgba(0,0,0,.16);
+  box-shadow:0 4px 0 rgba(0,0,0,.16),0 8px 0 rgba(0,0,0,.16);
+}
+
+.analog-stopwatch-button{
+  position:absolute;
+  top:18px;
+  width:28px;
+  height:12px;
+  border-radius:6px 6px 4px 4px;
+  background:linear-gradient(#d9d8d4,#959490);
+  border:1px solid rgba(0,0,0,.14);
+}
+
+.analog-stopwatch-button--left{
+  left:25%;
+  transform:rotate(-24deg);
+}
+
+.analog-stopwatch-button--right{
+  right:25%;
+  transform:rotate(24deg);
+}
+
+.analog-stopwatch-number{
+  position:absolute;
+  font-size:clamp(8px,4cqw,13px);
+  font-weight:800;
+  line-height:1;
+}
+
+.analog-stopwatch-number--60{
+  top:8%;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.analog-stopwatch-number--15{
+  right:8%;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.analog-stopwatch-number--30{
+  left:50%;
+  bottom:8%;
+  transform:translateX(-50%);
+}
+
+.analog-stopwatch-number--45{
+  left:8%;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.analog-stopwatch-ticks{
+  position:absolute;
+  inset:6%;
+  border-radius:50%;
+  background:
+    repeating-conic-gradient(
+      from -1deg,
+      rgba(0,0,0,.72) 0deg 1deg,
+      transparent 1deg 6deg
+    );
+  -webkit-mask:radial-gradient(circle,transparent 0 78%,#000 79% 100%);
+  mask:radial-gradient(circle,transparent 0 78%,#000 79% 100%);
+  opacity:.75;
+}
+
+.analog-stopwatch-hand{
+  position:absolute;
+  left:50%;
+  bottom:50%;
+  width:2px;
+  height:38%;
+  transform-origin:50% 100%;
+  transform:translateX(-50%) rotate(0deg);
+  background:#d64f55;
+  border-radius:999px;
+  z-index:5;
+}
+
+.analog-stopwatch-hand::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-8px;
+  width:6px;
+  height:10px;
+  transform:translateX(-50%);
+  border-radius:50% 50% 45% 45%;
+  background:#d64f55;
+}
+
+.analog-stopwatch-pin{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:10px;
+  height:10px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#2b2b2b;
+  box-shadow:0 0 0 2px #f8f8f6;
+  z-index:7;
+}
+
+.analog-stopwatch-subdial{
+  position:absolute;
+  left:50%;
+  top:62%;
+  width:34%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:1px solid rgba(0,0,0,.28);
+  background:rgba(255,255,255,.55);
+  z-index:3;
+}
+
+.analog-stopwatch-subdial-label{
+  position:absolute;
+  left:50%;
+  top:58%;
+  transform:translateX(-50%);
+  font-size:clamp(5px,2cqw,7px);
+  font-weight:800;
+  opacity:.48;
+}
+
+.analog-stopwatch-subdial-hand{
+  position:absolute;
+  left:50%;
+  bottom:50%;
+  width:1.5px;
+  height:31%;
+  transform-origin:50% 100%;
+  transform:translateX(-50%) rotate(0deg);
+  border-radius:999px;
+  background:#333;
+}
+
+.analog-stopwatch-subdial-pin{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:5px;
+  height:5px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#333;
+}
+
+/* Stabilize digital clock/timer-like readouts so digit changes don't shift width. */
+.clock-main,
+.clock-seconds,
+.clock-period,
+.timer-remaining,
+.hourglass-countdown,
+.candle-countdown{
+  font-variant-numeric:tabular-nums!important;
+  font-feature-settings:"tnum" 1!important;
+}
+
+.timer-remaining,
+.hourglass-countdown,
+.candle-countdown{
+  display:inline-block;
+  min-width:5.5ch;
+  text-align:center;
+}
+
+/* Analog stopwatch physical assembly fix */
+.analog-stopwatch-shell{
+  width:min(58cqw,180px)!important;
+  aspect-ratio:1 / 1.12!important;
+  align-items:flex-end!important;
+  padding-top:26px;
+  box-sizing:border-box;
+}
+
+.analog-stopwatch-face{
+  width:92%!important;
+  z-index:3;
+}
+
+/* Connect the crown directly to the case with a neck/stem. */
+.analog-stopwatch-crown{
+  top:4px!important;
+  left:50%!important;
+  width:38px!important;
+  height:23px!important;
+  transform:translateX(-50%)!important;
+  z-index:5;
+}
+
+.analog-stopwatch-crown::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-13px;
+  width:14px;
+  height:14px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,#a7a6a2,#d7d6d2 48%,#999894);
+  border-left:1px solid rgba(0,0,0,.13);
+  border-right:1px solid rgba(0,0,0,.13);
+  z-index:-1;
+}
+
+/* Mount the pushers into the shoulders of the case. */
+.analog-stopwatch-button{
+  top:25px!important;
+  width:31px!important;
+  height:13px!important;
+  z-index:4;
+}
+
+.analog-stopwatch-button--left{
+  left:16%!important;
+  transform:rotate(-31deg)!important;
+  transform-origin:right center;
+}
+
+.analog-stopwatch-button--right{
+  right:16%!important;
+  transform:rotate(31deg)!important;
+  transform-origin:left center;
+}
+
+.analog-stopwatch-button--left::after,
+.analog-stopwatch-button--right::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:20px;
+  height:9px;
+  transform:translateY(-50%);
+  background:linear-gradient(#c8c7c3,#92918d);
+  border:1px solid rgba(0,0,0,.12);
+  z-index:-1;
+}
+
+.analog-stopwatch-button--left::after{
+  right:-15px;
+  border-radius:0 5px 5px 0;
+}
+
+.analog-stopwatch-button--right::after{
+  left:-15px;
+  border-radius:5px 0 0 5px;
+}
+
+/* Give the case a visible top shoulder so all controls visibly connect. */
+.analog-stopwatch-face::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-13px;
+  width:58%;
+  height:25px;
+  transform:translateX(-50%);
+  border-radius:50% 50% 16px 16px / 70% 70% 30% 30%;
+  background:linear-gradient(#d3d2ce,#a8a7a3);
+  border:1px solid rgba(0,0,0,.13);
+  border-bottom:0;
+  z-index:-2;
+}
+
+/* Tighten the visual proportions of the dial. */
+.analog-stopwatch-number--60{top:7%!important}
+.analog-stopwatch-number--15{right:7%!important}
+.analog-stopwatch-number--30{bottom:7%!important}
+.analog-stopwatch-number--45{left:7%!important}
+
+.analog-stopwatch-subdial{
+  top:63%!important;
+  width:32%!important;
+}
+
+.analog-stopwatch-hand{
+  height:40%!important;
+}

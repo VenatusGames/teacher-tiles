@@ -215,6 +215,9 @@ function setupStopwatch(m){
   const bgBtn=m.querySelector('.stopwatch-bg');
   const fontBtn=m.querySelector('.stopwatch-font');
   const textBtn=m.querySelector('.stopwatch-text');
+  const modeBtn=m.querySelector('.stopwatch-toggle-mode');
+  const analogHand=m.querySelector('.analog-stopwatch-hand');
+  const subdialHand=m.querySelector('.analog-stopwatch-subdial-hand');
 
   let running=false,startedAt=0,elapsed=0,raf=0,lapCount=0;
 
@@ -229,7 +232,16 @@ function setupStopwatch(m){
   const current=()=>elapsed+(running?performance.now()-startedAt:0);
 
   const render=()=>{
-    display.textContent=format(current());
+    const now=current();
+    display.textContent=format(now);
+
+    const totalSeconds=now/1000;
+    const seconds=totalSeconds%60;
+    const minutes=(totalSeconds/60)%30;
+
+    analogHand.style.transform=`translateX(-50%) rotate(${seconds*6}deg)`;
+    subdialHand.style.transform=`translateX(-50%) rotate(${minutes*12}deg)`;
+
     if(running)raf=requestAnimationFrame(render);
   };
 
@@ -239,6 +251,7 @@ function setupStopwatch(m){
       running=false;
       cancelAnimationFrame(raf);
       start.textContent='Start';
+      render();
     }else{
       startedAt=performance.now();
       running=true;
@@ -265,6 +278,8 @@ function setupStopwatch(m){
     display.textContent='00:00.00';
     laps.replaceChildren();
     start.textContent='Start';
+    analogHand.style.transform='translateX(-50%) rotate(0deg)';
+    subdialHand.style.transform='translateX(-50%) rotate(0deg)';
   });
 
   bgBtn?.addEventListener('click',()=>{
@@ -279,6 +294,15 @@ function setupStopwatch(m){
     cycleData(m,'text',['dark','soft','blue','rose','white']);
   });
 
+  modeBtn?.addEventListener('click',()=>{
+    const analog=m.dataset.stopwatchMode!=='analog';
+    m.dataset.stopwatchMode=analog?'analog':'digital';
+    modeBtn.classList.toggle('is-active',analog);
+    modeBtn.querySelector('span').textContent=analog?'◴':'◷';
+    render();
+  });
+
+  render();
   m._cleanup=()=>cancelAnimationFrame(raf);
 }
 

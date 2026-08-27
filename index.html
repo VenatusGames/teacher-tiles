@@ -265,20 +265,56 @@
   </template>
 
   <template id="stopwatch-template">
-    <section class="module stopwatch-module" data-type="stopwatch" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module stopwatch-module" data-type="stopwatch" data-bg="white" data-font="inter" data-text="dark" data-stopwatch-mode="digital">
       <button class="module-delete" aria-label="Delete stopwatch">×</button><div class="module-drag-handle"></div>
-      <div class="stopwatch-display">00:00.00</div>
+
+      <div class="stopwatch-main">
+        <div class="stopwatch-digital-view">
+          <div class="stopwatch-display">00:00.00</div>
+        </div>
+
+        <div class="stopwatch-analog-view" aria-label="Analog stopwatch">
+          <div class="analog-stopwatch-shell">
+            <div class="analog-stopwatch-crown"></div>
+            <div class="analog-stopwatch-button analog-stopwatch-button--left"></div>
+            <div class="analog-stopwatch-button analog-stopwatch-button--right"></div>
+
+            <div class="analog-stopwatch-face">
+              <div class="analog-stopwatch-number analog-stopwatch-number--60">60</div>
+              <div class="analog-stopwatch-number analog-stopwatch-number--15">15</div>
+              <div class="analog-stopwatch-number analog-stopwatch-number--30">30</div>
+              <div class="analog-stopwatch-number analog-stopwatch-number--45">45</div>
+
+              <div class="analog-stopwatch-ticks" aria-hidden="true"></div>
+
+              <div class="analog-stopwatch-subdial">
+                <span class="analog-stopwatch-subdial-label">MIN</span>
+                <span class="analog-stopwatch-subdial-hand"></span>
+                <span class="analog-stopwatch-subdial-pin"></span>
+              </div>
+
+              <span class="analog-stopwatch-hand"></span>
+              <span class="analog-stopwatch-pin"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="stopwatch-actions">
         <button class="stopwatch-start primary" type="button">Start</button>
         <button class="stopwatch-lap" type="button">Lap</button>
         <button class="stopwatch-clear" type="button">Clear</button>
       </div>
+
       <div class="stopwatch-laps" aria-label="Lap times"></div>
-      <div class="customization-bar stopwatch-customization">
+
+      <div class="customization-bar stopwatch-customization" aria-label="Stopwatch customization">
         <button class="custom-icon stopwatch-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon stopwatch-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon stopwatch-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon stopwatch-toggle-mode" title="Switch digital or analog stopwatch" aria-label="Switch digital or analog stopwatch"><span aria-hidden="true">◷</span></button>
       </div>
+
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
