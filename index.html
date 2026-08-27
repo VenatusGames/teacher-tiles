@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="T.png" type="image/x-icon">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TeacherTiles</title>
@@ -18,7 +17,7 @@
         <img class="teachertiles-intro__tile teachertiles-intro__tile--right" src="assets/title-tile-dark.png" alt="">
       </div>
       <div class="teachertiles-intro__title"><span class="teachertiles-intro__teacher">Teacher</span><span class="teachertiles-intro__tiles-word">Tiles</span></div>
-      <div class="teachertiles-intro__subtitle">an app by Mr. Weikert</div>
+      <div class="teachertiles-intro__subtitle">an app by WeikertsWonders</div>
     </div>
   </div>
 
@@ -39,12 +38,21 @@
         <path d="M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
     </button>
-    <button id="ui-sfx-toggle" class="workspace-control" type="button" title="Mute UI sounds" aria-label="Mute UI sounds">♪</button>
+    <button id="ui-sfx-toggle" class="workspace-control" type="button" title="Mute UI sounds" aria-label="Mute UI sounds">
+      <svg class="ui-sfx-icon ui-sfx-icon--on" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
+        <path d="M16 9.2a4 4 0 0 1 0 5.6M18.4 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <svg class="ui-sfx-icon ui-sfx-icon--off" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
+        <path d="M16.5 9.5l4 5M20.5 9.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
     <button id="theme-toggle" class="workspace-control" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
     <button id="fullscreen-toggle" class="workspace-control" type="button" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button>
   </div>
 
-  <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by Mr. Weikert</div>
+  <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by WeikertsWonders</div>
 
   <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
     <div class="context-menu__header">
@@ -226,20 +234,93 @@
   </template>
 
   <template id="noise-template">
-    <section class="module noise-module" data-type="noise" data-bg="white" data-font="inter" data-text="dark" data-meter="blue">
-      <button class="module-delete" aria-label="Delete noise detector">×</button><div class="module-drag-handle"></div>
-      <div class="noise-content">
-        <div class="noise-title-row"><strong>Noise Level</strong><span class="noise-db">—</span></div>
-        <div class="noise-meter"><div class="noise-fill"></div><div class="noise-threshold"></div></div>
-        <div class="noise-status">Microphone is off</div>
-        <div class="noise-main-controls"><button class="noise-start primary">Enable microphone</button><label>Alert <input class="noise-range" type="range" min="10" max="100" value="70"></label></div>
+    <section class="module noise-module" data-type="noise" data-bg="white" data-font="inter" data-text="dark" data-meter="blue" data-noise-view="horizontal">
+      <button class="module-delete" aria-label="Delete noise detector">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="noise-alert" aria-live="assertive" hidden>
+        <span>TOO LOUD!</span>
       </div>
+
+      <div class="noise-content">
+        <div class="noise-header">
+          <div class="noise-heading">
+            <span class="noise-kicker">NOISE MONITOR</span>
+            <strong>Noise Level</strong>
+          </div>
+          <div class="noise-level-pill"><span class="noise-db">—</span></div>
+        </div>
+
+        <div class="noise-visual-shell">
+          <div class="noise-view noise-view--horizontal">
+            <div class="noise-bar-card noise-bar-card--horizontal">
+              <div class="noise-bar-labels"><span>QUIET</span><span>LOUD</span></div>
+              <div class="noise-led-track noise-led-track--horizontal">
+                <div class="noise-led-fill noise-led-fill--horizontal"></div>
+                <div class="noise-threshold noise-threshold--horizontal"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="noise-view noise-view--vertical">
+            <div class="noise-bar-card noise-bar-card--vertical">
+              <span class="noise-vertical-label noise-vertical-label--top">LOUD</span>
+              <div class="noise-vertical-meter-wrap">
+                <div class="noise-led-track noise-led-track--vertical">
+                  <div class="noise-led-fill noise-led-fill--vertical"></div>
+                </div>
+                <div class="noise-vertical-alert-marker" aria-hidden="true">
+                  <span class="noise-vertical-alert-line"></span>
+                  <span class="noise-vertical-alert-tag">ALERT</span>
+                </div>
+              </div>
+              <span class="noise-vertical-label noise-vertical-label--bottom">QUIET</span>
+            </div>
+          </div>
+
+          <div class="noise-view noise-view--waveform">
+            <div class="noise-waveform-frame">
+              <canvas class="noise-waveform" aria-label="Live audio amplitude visualizer"></canvas>
+              <div class="noise-waveform-threshold"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="noise-footer">
+          <div class="noise-status-dot"></div>
+          <div class="noise-status">Microphone is off</div>
+          <button class="noise-start primary">Enable microphone</button>
+        </div>
+
+        <div class="noise-settings-panel">
+          <label class="noise-setting">
+            <span>Display</span>
+            <select class="noise-view-select" aria-label="Noise meter display">
+              <option value="horizontal">Horizontal Bar</option>
+              <option value="vertical">Vertical Bar</option>
+              <option value="waveform">Amplitude Visualizer</option>
+            </select>
+          </label>
+
+          <label class="noise-setting">
+            <span>Alert <strong class="noise-threshold-value">70%</strong></span>
+            <input class="noise-range" type="range" min="10" max="100" value="70">
+          </label>
+
+          <label class="noise-setting">
+            <span>Sensitivity <strong class="noise-sensitivity-value">100%</strong></span>
+            <input class="noise-sensitivity" type="range" min="50" max="200" value="100" step="5">
+          </label>
+        </div>
+      </div>
+
       <div class="customization-bar noise-customization" aria-label="Noise meter customization">
         <button class="custom-icon noise-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon noise-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon noise-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
         <button class="custom-icon noise-meter-color" title="Change meter color" aria-label="Change meter color"><span class="icon-meter" aria-hidden="true"><i></i><i></i><i></i></span></button>
       </div>
+
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
