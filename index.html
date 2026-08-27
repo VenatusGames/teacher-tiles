@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeacherTiles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
+    <div class="teachertiles-intro__content">
+      <div class="teachertiles-intro__tiles" aria-hidden="true">
+        <span class="teachertiles-intro__tile teachertiles-intro__tile--left"></span>
+        <span class="teachertiles-intro__tile teachertiles-intro__tile--right"></span>
+      </div>
+      <div class="teachertiles-intro__title"><span class="teachertiles-intro__teacher">Teacher</span><span class="teachertiles-intro__tiles-word">Tiles</span></div>
+      <div class="teachertiles-intro__subtitle">an app by Mr. Weikert</div>
+    </div>
+  </div>
+
+  <main id="workspace" class="workspace" aria-label="Module workspace"><div class="snap-guide snap-guide-x" aria-hidden="true"></div><div class="snap-guide snap-guide-y" aria-hidden="true"></div></main>
+
+  <div id="trash-zone" class="trash-zone" aria-hidden="true">
+    <div class="trash-can" aria-hidden="true">
+      <span class="trash-lid"></span><span class="trash-body"><i></i><i></i><i></i></span>
+    </div>
+    <span class="trash-label">DELETE</span>
+  </div>
+
+  <div class="workspace-controls" aria-label="Workspace controls">
+    <button id="ui-sfx-toggle" class="workspace-control" type="button" title="Mute UI sounds" aria-label="Mute UI sounds">♪</button>
+    <button id="theme-toggle" class="workspace-control" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
+    <button id="fullscreen-toggle" class="workspace-control" type="button" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button>
+  </div>
+
+  <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by Mr. Weikert</div>
+
+  <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
+    <div class="context-menu__header">
+      <div class="context-menu__title">Add module</div>
+      <div class="context-menu__filters" role="tablist" aria-label="Module categories">
+        <button type="button" class="context-menu__filter is-active" data-category-filter="all">ALL</button>
+        <button type="button" class="context-menu__filter" data-category-filter="text">TEXT</button>
+        <button type="button" class="context-menu__filter" data-category-filter="media">MEDIA</button>
+        <button type="button" class="context-menu__filter" data-category-filter="tools">TOOLS</button>
+      </div>
+    </div>
+    <div class="context-menu__list">
+      <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
+      <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
+      <button class="context-menu__item" data-module="todo" data-category="text"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
+      <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
+      <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
+      <button class="context-menu__item" data-module="timer" data-category="tools"><span class="context-menu__icon">◷</span><span><strong>Visual timer</strong><small>Shape-based progress timer</small></span></button>
+      <button class="context-menu__item" data-module="interactive" data-category="tools"><span class="context-menu__icon">⌛</span><span><strong>Interactive timers</strong><small>Hourglass and melting candle</small></span></button>
+      <button class="context-menu__item" data-module="clock" data-category="tools"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
+      <button class="context-menu__item" data-module="noise" data-category="tools"><span class="context-menu__icon">⌁</span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
+      <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
+      <button class="context-menu__item" data-module="stoplight" data-category="tools"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
+      <button class="context-menu__item" data-module="boombox" data-category="tools"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
+    </div>
+  </div>
+
+  <template id="sticky-template">
+    <section class="module sticky-module" data-type="sticky" data-color="yellow" data-font="inter">
+      <button class="module-delete" aria-label="Delete sticky note">×</button>
+      <div class="module-drag-handle"></div>
+      <div class="sticky-toolbar">
+        <button type="button" data-command="bold" title="Bold"><strong>B</strong></button>
+        <button type="button" data-command="italic" title="Italic"><em>I</em></button>
+        <button type="button" data-command="underline" title="Underline"><u>U</u></button>
+        <select class="sticky-font-size" aria-label="Font size"><option>14</option><option selected>16</option><option>18</option><option>22</option><option>28</option><option>36</option></select>
+        <button type="button" class="sticky-font-cycle" title="Change note font" aria-label="Change note font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button type="button" class="sticky-color-cycle" title="Cycle note color" aria-label="Cycle note color"><span></span></button>
+      </div>
+      <div class="sticky-editor" contenteditable="true" spellcheck="true" data-placeholder="Start typing..."></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="timer-template">
+    <section class="module timer-module" data-type="timer" data-bg="white" data-shape-color="blue">
+      <button class="module-delete" aria-label="Delete timer">×</button><div class="module-drag-handle"></div><div class="confetti-layer" aria-hidden="true"></div>
+      <div class="timer-stage">
+        <div class="timer-visual">
+          <svg class="timer-shape-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <defs><clipPath class="shape-clip"><path></path></clipPath></defs>
+            <foreignObject x="0" y="0" width="100" height="100" class="shape-foreign"><div xmlns="http://www.w3.org/1999/xhtml" class="shape-fill"></div></foreignObject>
+            <path class="shape-outline" vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <div class="timer-remaining">05:00</div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <div class="timer-shapes"><button data-shape="circle" class="is-active">●</button><button data-shape="triangle">▲</button><button data-shape="square">■</button><button data-shape="star">★</button><button data-shape="heart">♥</button></div>
+        <div class="timer-customization" aria-label="Visual timer customization">
+          <button class="custom-icon timer-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+          <button class="custom-icon timer-shape-color" type="button" title="Change shape color" aria-label="Change shape color"><span class="timer-color-swatch" aria-hidden="true"></span></button>
+        </div>
+        <div class="timer-presets"><button data-minutes="1">1m</button><button data-minutes="5" class="is-active">5m</button><button data-minutes="10">10m</button><button data-minutes="15">15m</button><button data-minutes="25">25m</button><button data-minutes="30">30m</button></div>
+        <div class="timer-custom-row"><input class="timer-custom" type="number" min="1" max="999" placeholder="Minutes"><button class="timer-set">Set</button></div>
+        <div class="timer-actions"><button class="timer-start primary">Start</button><button class="timer-reset">Reset</button></div>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="interactive-template">
+    <section class="module interactive-module" data-type="interactive" data-bg="white" data-interactive-mode="hourglass" data-candle-color="cream">
+      <button class="module-delete" aria-label="Delete interactive timer">×</button><div class="module-drag-handle"></div>
+      <div class="hourglass-stage">
+        <div class="hourglass-countdown">05:00</div>
+        <svg class="hourglass-svg" viewBox="0 0 260 340" aria-label="Animated hourglass">
+          <defs>
+            <linearGradient id="woodTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#aa7847"/><stop offset="0.45" stop-color="#7b4f2c"/><stop offset="1" stop-color="#50301c"/></linearGradient>
+            <linearGradient id="woodPost" x1="0" x2="1"><stop offset="0" stop-color="#55311c"/><stop offset="0.45" stop-color="#98653a"/><stop offset="1" stop-color="#4c2a18"/></linearGradient>
+            <linearGradient id="glassGlow" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,.10)"/><stop offset=".35" stop-color="rgba(255,255,255,.72)"/><stop offset=".58" stop-color="rgba(218,239,255,.16)"/><stop offset="1" stop-color="rgba(255,255,255,.08)"/></linearGradient>
+            <linearGradient id="sandGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe8a6"/><stop offset=".48" stop-color="#edbd58"/><stop offset="1" stop-color="#c98328"/></linearGradient>
+            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-opacity=".2"/></filter>
+            <clipPath class="hg-top-clip"><path d="M58 62 H202 C193 104 170 132 140 158 H120 C90 132 67 104 58 62Z"/></clipPath>
+            <clipPath class="hg-bottom-clip"><path d="M120 182 H140 C170 208 193 236 202 278 H58 C67 236 90 208 120 182Z"/></clipPath>
+          </defs>
+          <g filter="url(#softShadow)">
+            <rect x="30" y="28" width="200" height="28" rx="14" fill="url(#woodTop)"/>
+            <rect x="30" y="284" width="200" height="28" rx="14" fill="url(#woodTop)"/>
+            <rect x="38" y="50" width="17" height="240" rx="8.5" fill="url(#woodPost)"/>
+            <rect x="205" y="50" width="17" height="240" rx="8.5" fill="url(#woodPost)"/>
+            <path d="M58 62 H202 C193 104 170 132 140 158 H120 C90 132 67 104 58 62Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="4"/>
+            <path d="M120 182 H140 C170 208 193 236 202 278 H58 C67 236 90 208 120 182Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="4"/>
+            <path d="M120 158 C124 166 124 176 120 182 H140 C136 176 136 166 140 158Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="3"/>
+            <rect x="58" y="62" width="144" height="96" class="hg-sand-top" clip-path="url(#hg-top-placeholder)" fill="url(#sandGold)"/>
+            <rect x="58" y="278" width="144" height="0" class="hg-sand-bottom" fill="url(#sandGold)"/>
+            <path class="hg-bottom-pile" d="M75 278 Q130 244 185 278 Z" fill="url(#sandGold)" opacity="0"/>
+            <rect x="127" y="158" width="6" height="26" rx="3" class="hg-stream" fill="url(#sandGold)" opacity="0"/>
+            <path d="M72 70 C78 96 96 121 121 147" fill="none" stroke="url(#glassGlow)" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+            <path d="M72 270 C78 244 96 219 121 193" fill="none" stroke="url(#glassGlow)" stroke-width="7" stroke-linecap="round" opacity=".56"/>
+          </g>
+        </svg>
+      </div>
+      <div class="candle-stage" hidden>
+        <div class="candle-countdown">05:00</div>
+        <div class="candle-scene" aria-label="Melting candle timer">
+          <div class="candle-body">
+            <div class="candle-glow"></div>
+            <div class="candle-flame"><span></span></div>
+            <div class="candle-wick"></div>
+            <div class="candle-wax-top"></div>
+            <div class="candle-drip candle-drip-a"></div>
+            <div class="candle-drip candle-drip-b"></div>
+            <div class="candle-highlight"></div>
+          </div>
+          <div class="candle-base-shadow"></div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <div class="interactive-picker"><button type="button" data-interactive="hourglass" class="is-active" title="Hourglass">⌛</button><button type="button" data-interactive="candle" title="Candle">🕯</button></div>
+        <div class="timer-customization interactive-customization" aria-label="Interactive timer customization">
+          <button class="custom-icon interactive-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+          <button class="custom-icon candle-color-control" type="button" title="Change candle color" aria-label="Change candle color"><span class="candle-color-swatch" aria-hidden="true"></span></button>
+        </div>
+        <div class="timer-presets"><button data-minutes="1">1m</button><button data-minutes="5" class="is-active">5m</button><button data-minutes="10">10m</button><button data-minutes="15">15m</button><button data-minutes="25">25m</button><button data-minutes="30">30m</button></div>
+        <div class="timer-custom-row"><input class="timer-custom" type="number" min="1" max="999" placeholder="Minutes"><button class="timer-set">Set</button></div>
+        <div class="timer-actions"><button class="timer-start primary">Start</button><button class="timer-reset">Reset</button></div>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="clock-template">
+    <section class="module clock-module" data-type="clock" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete clock">×</button><div class="module-drag-handle"></div>
+      <div class="clock-display"><div class="clock-content"><span class="clock-main">12:00</span><span class="clock-seconds">:00</span><span class="clock-period">PM</span></div></div>
+      <div class="customization-bar clock-customization" aria-label="Clock customization">
+        <button class="custom-icon clock-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon clock-font" title="Change clock font" aria-label="Change clock font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon clock-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon clock-toggle-seconds" title="Show or hide seconds" aria-label="Show or hide seconds"><span aria-hidden="true">:SS</span></button>
+        <button class="custom-icon clock-toggle-period is-active" title="Show or hide AM/PM" aria-label="Show or hide AM/PM"><span aria-hidden="true">AM</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="noise-template">
+    <section class="module noise-module" data-type="noise" data-bg="white" data-font="inter" data-text="dark" data-meter="blue">
+      <button class="module-delete" aria-label="Delete noise detector">×</button><div class="module-drag-handle"></div>
+      <div class="noise-content">
+        <div class="noise-title-row"><strong>Noise Level</strong><span class="noise-db">—</span></div>
+        <div class="noise-meter"><div class="noise-fill"></div><div class="noise-threshold"></div></div>
+        <div class="noise-status">Microphone is off</div>
+        <div class="noise-main-controls"><button class="noise-start primary">Enable microphone</button><label>Alert <input class="noise-range" type="range" min="10" max="100" value="70"></label></div>
+      </div>
+      <div class="customization-bar noise-customization" aria-label="Noise meter customization">
+        <button class="custom-icon noise-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon noise-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon noise-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon noise-meter-color" title="Change meter color" aria-label="Change meter color"><span class="icon-meter" aria-hidden="true"><i></i><i></i><i></i></span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="collections-template">
+    <section class="module collections-module" data-type="collections" data-item="pompom" data-bg="white">
+      <button class="module-delete" aria-label="Delete collection jar">×</button><div class="module-drag-handle"></div>
+      <div class="collection-stage">
+        <div class="collection-title">Collection Jar</div>
+        <canvas class="collection-canvas" aria-label="Interactive collection jar. Click the jar to add an item."></canvas>
+        <div class="collection-count">0 items</div>
+      </div>
+      <div class="collection-controls">
+        <button class="collection-add primary" type="button">+ Add</button>
+        <div class="collection-picker-wrap">
+          <button class="collection-type" type="button" title="Choose collectible" aria-expanded="false">
+            <span class="collectible-preview collection-current-preview preview-pompom" aria-hidden="true"></span><span class="collection-type-label">Pom poms</span><span class="collection-chevron">⌃</span>
+          </button>
+          <div class="collection-picker" hidden>
+            <button type="button" data-collection-type="pompom"><span class="collectible-preview preview-pompom"></span><span>Pom poms</span></button>
+            <button type="button" data-collection-type="candy"><span class="collectible-preview preview-candy"></span><span>Candies</span></button>
+            <button type="button" data-collection-type="star"><span class="collectible-preview preview-star"></span><span>Stars</span></button>
+            <button type="button" data-collection-type="jellybean"><span class="collectible-preview preview-jellybean"></span><span>Jellybeans</span></button>
+            <button type="button" data-collection-type="fruit"><span class="collectible-preview preview-fruit"></span><span>Fruits</span></button>
+            <button type="button" data-collection-type="coin"><span class="collectible-preview preview-coin"></span><span>Coins</span></button>
+          </div>
+        </div>
+        <button class="custom-icon collection-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette"></span></button>
+        <button class="collection-clear" type="button">Clear</button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="stoplight-template">
+    <section class="module stoplight-module" data-type="stoplight" data-bg="white" data-stoplight="green">
+      <button class="module-delete" aria-label="Delete stoplight">×</button><div class="module-drag-handle"></div>
+      <button class="stoplight-stage" type="button" aria-label="Change stoplight state">
+        <strong class="stoplight-label">GO</strong>
+        <img class="stoplight-image" src="assets/stoplight-green.png" alt="Green stoplight" draggable="false">
+      </button>
+      <div class="stoplight-controls customization-bar">
+        <button class="custom-icon stoplight-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="image-template">
+    <section class="module image-module" data-type="image">
+      <button class="module-delete" aria-label="Delete image">×</button><div class="module-drag-handle"></div>
+      <div class="image-stage">
+        <img class="image-display" alt="" draggable="false" hidden>
+        <div class="image-empty"><strong>DROP IMAGE HERE</strong><span>or click to choose</span></div>
+        <input class="image-input" type="file" accept="image/*" hidden>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="youtube-template">
+    <section class="module youtube-module" data-type="youtube" data-bg="white">
+      <button class="module-delete" aria-label="Delete YouTube module">×</button><div class="module-drag-handle"></div>
+      <div class="youtube-stage">
+        <iframe class="youtube-frame" title="YouTube video" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+        <div class="youtube-empty"><span class="youtube-play-icon">▶</span><strong>YOUTUBE</strong><span>Paste a video link below</span></div>
+      </div>
+      <div class="youtube-controls">
+        <input class="youtube-url" type="url" inputmode="url" placeholder="Paste YouTube link…" aria-label="YouTube video link">
+        <button class="youtube-load primary" type="button">Load</button>
+        <button class="custom-icon youtube-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+      </div>
+      <div class="youtube-error" aria-live="polite"></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="textbubble-template">
+    <section class="module textbubble-module" data-type="textbubble" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete text bubble">×</button><div class="module-drag-handle"></div>
+      <div class="textbubble-text" contenteditable="true" spellcheck="true">TYPE HERE</div>
+      <div class="customization-bar textbubble-customization" aria-label="Text bubble customization">
+        <button class="custom-icon textbubble-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon textbubble-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon textbubble-text-color" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="todo-template">
+    <section class="module todo-module" data-type="todo" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete checklist">×</button><div class="module-drag-handle"></div>
+      <input class="todo-title" type="text" value="TO-DO" aria-label="Checklist title">
+      <div class="todo-list" aria-label="Checklist items"></div>
+      <div class="todo-footer">
+        <button class="todo-add primary" type="button">+ Add step</button>
+        <div class="customization-bar todo-customization" aria-label="Checklist customization">
+          <button class="custom-icon todo-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+          <button class="custom-icon todo-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+          <button class="custom-icon todo-text-color" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        </div>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="boombox-template">
+    <section class="module boombox-module" data-type="boombox" data-player-style="compact">
+      <button class="module-delete" aria-label="Delete Boom Box">×</button><div class="module-drag-handle"></div>
+      <button class="boombox-style-button" type="button" aria-label="Change player appearance" title="Change player appearance">◫</button>
+      <div class="boombox-style-menu" hidden>
+        <button type="button" data-player-style-option="compact"><span class="style-dot style-dot--compact"></span>Compact</button>
+        <button type="button" data-player-style-option="music"><span class="style-dot style-dot--music"></span>Apple Music</button>
+        <button type="button" data-player-style-option="ipod"><span class="style-dot style-dot--ipod"></span>iPod</button>
+        <button type="button" data-player-style-option="vinyl"><span class="style-dot style-dot--vinyl"></span>Vinyl</button>
+      </div>
+
+      <div class="boombox-view boombox-view--compact">
+        <div class="compact-boombox-meta">
+          <span class="compact-kicker">SOUNDSCAPE</span>
+          <strong class="boombox-title">Relaxing Rain</strong>
+        </div>
+        <div class="compact-boombox-controls">
+          <button class="boombox-prev" type="button" aria-label="Previous soundscape">◀◀</button>
+          <button class="boombox-play" type="button" aria-label="Play or pause">▶</button>
+          <button class="boombox-next" type="button" aria-label="Next soundscape">▶▶</button>
+          <button class="boombox-skip" type="button" aria-label="Skip forward 15 seconds">+15</button>
+        </div>
+        <div class="boombox-progress"><span></span></div>
+        <div class="boombox-time"><span class="boombox-current">0:00</span><span class="boombox-duration">0:00</span></div>
+        <label class="boombox-volume-row"><span>VOL</span><input class="boombox-volume" type="range" min="0" max="100" value="55" aria-label="Volume"><span class="boombox-volume-value">55%</span></label>
+      </div>
+
+      <div class="boombox-view boombox-view--music" hidden>
+        <div class="music-art"><div class="music-art-wave">♫</div></div>
+        <div class="music-meta"><span class="music-kicker">SOUNDSCAPE</span><strong class="boombox-title">Relaxing Rain</strong></div>
+        <div class="boombox-progress"><span></span></div>
+        <div class="boombox-time"><span class="boombox-current">0:00</span><span class="boombox-duration">0:00</span></div>
+        <div class="music-controls">
+          <button class="boombox-prev" type="button" aria-label="Previous soundscape">◀◀</button>
+          <button class="boombox-play" type="button" aria-label="Play or pause">▶</button>
+          <button class="boombox-next" type="button" aria-label="Next soundscape">▶▶</button>
+          <button class="boombox-skip" type="button" aria-label="Skip forward 15 seconds">+15</button>
+        </div>
+        <label class="boombox-volume-row"><span>VOL</span><input class="boombox-volume" type="range" min="0" max="100" value="55" aria-label="Volume"><span class="boombox-volume-value">55%</span></label>
+      </div>
+
+      <div class="boombox-view boombox-view--ipod" hidden>
+        <div class="boombox-shell">
+          <div class="boombox-screen">
+            <div class="boombox-screen-top"><span>NOW PLAYING</span><span class="boombox-loop">LOOP</span></div>
+            <div class="boombox-title">Relaxing Rain</div>
+            <div class="boombox-progress"><span></span></div>
+            <div class="boombox-time"><span class="boombox-current">0:00</span><span class="boombox-duration">0:00</span></div>
+            <label class="boombox-volume-row"><span>VOL</span><input class="boombox-volume" type="range" min="0" max="100" value="55" aria-label="Volume"><span class="boombox-volume-value">55%</span></label>
+          </div>
+          <div class="boombox-wheel" aria-label="Boom Box controls">
+            <button class="boombox-wheel-label boombox-prev" type="button" aria-label="Previous soundscape">◀◀</button>
+            <button class="boombox-wheel-label boombox-next" type="button" aria-label="Next soundscape">▶▶</button>
+            <button class="boombox-wheel-label boombox-play" type="button" aria-label="Play or pause">▶❚❚</button>
+            <button class="boombox-wheel-label boombox-skip" type="button" aria-label="Skip forward 15 seconds">+15</button>
+            <div class="boombox-wheel-center" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="boombox-view boombox-view--vinyl" hidden>
+        <div class="vinyl-stage">
+          <div class="vinyl-record">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-label">
+              <strong class="boombox-title">Relaxing Rain</strong>
+            </div>
+          </div>
+        </div>
+        <div class="vinyl-footer">
+          <div class="vinyl-transport">
+            <button class="boombox-prev" type="button" aria-label="Previous soundscape">◀◀</button>
+            <button class="boombox-play" type="button" aria-label="Play or pause">▶</button>
+            <button class="boombox-next" type="button" aria-label="Next soundscape">▶▶</button>
+            <button class="boombox-skip" type="button" aria-label="Skip forward 15 seconds">+15</button>
+          </div>
+          <div class="boombox-progress"><span></span></div>
+          <div class="boombox-time"><span class="boombox-current">0:00</span><span class="boombox-duration">0:00</span></div>
+          <label class="boombox-volume-row"><span>VOL</span><input class="boombox-volume" type="range" min="0" max="100" value="55" aria-label="Volume"><span class="boombox-volume-value">55%</span></label>
+        </div>
+      </div>
+      <audio class="boombox-audio" preload="metadata" loop></audio>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
