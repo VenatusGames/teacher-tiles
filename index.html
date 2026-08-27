@@ -46,6 +46,7 @@
         <button type="button" class="context-menu__filter" data-category-filter="text">TEXT</button>
         <button type="button" class="context-menu__filter" data-category-filter="media">MEDIA</button>
         <button type="button" class="context-menu__filter" data-category-filter="tools">TOOLS</button>
+        <button type="button" class="context-menu__filter" data-category-filter="audio">AUDIO</button>
       </div>
     </div>
     <div class="context-menu__list">
@@ -60,7 +61,17 @@
       <button class="context-menu__item" data-module="noise" data-category="tools"><span class="context-menu__icon">⌁</span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
       <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
       <button class="context-menu__item" data-module="stoplight" data-category="tools"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
-      <button class="context-menu__item" data-module="boombox" data-category="tools"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
+      <button class="context-menu__item" data-module="spinner" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M12 3.5v8.5l6.3 3.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 1.6l-1.6 2.5h3.2z" fill="currentColor"/>
+          </svg>
+        </span>
+        <span><strong>Spinner</strong><small>Spin a wheel to pick a name</small></span>
+      </button>
+      <button class="context-menu__item" data-module="boombox" data-category="audio"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
     </div>
   </div>
 
@@ -397,5 +408,47 @@
   </template>
 
   <script src="app.js"></script>
+
+  <template id="spinner-template">
+    <section class="module spinner-module" data-type="spinner" data-bg="white" data-font="inter">
+      <button class="module-delete" aria-label="Delete Spinner">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="spinner-shell">
+        <div class="spinner-winner" aria-live="polite">CLICK TO SPIN</div>
+
+        <div class="spinner-wheel-wrap">
+          <div class="spinner-pointer" aria-hidden="true"></div>
+          <canvas class="spinner-canvas" width="560" height="560" aria-label="Spinner wheel"></canvas>
+          <button class="spinner-spin-button" type="button" aria-label="Spin the wheel">SPIN</button>
+
+          <div class="spinner-result-overlay" hidden aria-live="assertive">
+            <span class="spinner-result-label">WINNER</span>
+            <strong class="spinner-result-name"></strong>
+          </div>
+        </div>
+
+        <div class="spinner-settings">
+          <div class="spinner-name-entry">
+            <input class="spinner-name-input" type="text" maxlength="40" placeholder="Add a name">
+            <button class="spinner-add-name" type="button">Add</button>
+          </div>
+          <div class="spinner-name-list" aria-label="Spinner names"></div>
+        </div>
+      </div>
+
+      <div class="customization-bar spinner-customization" aria-label="Spinner customization">
+        <button class="custom-icon spinner-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon spinner-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="spinner-confetti-layer" aria-hidden="true"></div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
 </body>
 </html>
