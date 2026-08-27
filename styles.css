@@ -2644,3 +2644,1088 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
     grid-template-columns:1fr;
   }
 }
+
+/* Add-module category layout */
+.context-menu__title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.context-menu__filter--all{
+  flex:0 0 auto;
+  min-width:42px;
+}
+.context-menu__filters{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px!important;
+}
+.context-menu__filters .context-menu__filter{
+  min-width:0;
+}
+
+/* Draw module */
+.draw-module{
+  width:430px;
+  height:78px;
+  min-width:430px;
+  min-height:78px;
+  max-width:430px;
+  max-height:78px;
+  padding:25px 12px 10px;
+  overflow:visible;
+}
+.draw-tools{
+  height:100%;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.draw-tools button,
+.draw-color-wrap{
+  height:30px;
+  min-width:30px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--surface-soft);
+  color:var(--text);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  box-sizing:border-box;
+}
+.draw-toggle{
+  grid-template-columns:auto auto!important;
+  gap:5px;
+  padding:0 8px;
+  font-size:8px;
+  font-weight:900;
+}
+.draw-power-dot{width:7px;height:7px;border-radius:50%;background:#aeb2b8}
+.draw-toggle.is-on .draw-power-dot{background:#55b86a;box-shadow:0 0 0 3px rgba(85,184,106,.12)}
+.draw-color-wrap{position:relative;width:30px;overflow:hidden}
+.draw-color{position:absolute;inset:0;opacity:0;cursor:pointer}
+.draw-color-swatch{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.14)}
+.draw-tool{font-size:13px!important;font-weight:900}
+.draw-tool.is-active{background:var(--text)!important;color:var(--surface)!important}
+.draw-size-wrap{
+  height:30px;
+  min-width:110px;
+  padding:3px 7px;
+  box-sizing:border-box;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--surface-soft);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:1px;
+}
+.draw-size-wrap span{font-size:6px;font-weight:900;letter-spacing:.1em;opacity:.48}
+.draw-size{width:96px;margin:0}
+.draw-clear{padding:0 9px!important;font-size:8px!important;font-weight:900}
+.board-drawing-canvas{
+  position:fixed;
+  inset:0;
+  z-index:9000;
+  pointer-events:none;
+  touch-action:none;
+  cursor:crosshair;
+}
+.board-drawing-canvas.is-active{pointer-events:auto}
+.draw-module{z-index:auto}
+.draw-module .module-delete,.draw-module .module-drag-handle{z-index:2}
+
+/* Keep the drawing toolbar usable above its active drawing surface. */
+body:has(.board-drawing-canvas.is-active) .draw-module{
+  z-index:9002!important;
+}
+body:has(.board-drawing-canvas.is-active) .workspace-controls{
+  z-index:9003;
+}
+
+/* Stopwatch */
+.stopwatch-module{
+  width:390px;
+  height:300px;
+  min-width:270px;
+  min-height:220px;
+  padding:31px 15px 48px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.stopwatch-display{
+  flex:0 0 auto;
+  min-height:72px;
+  display:grid;
+  place-items:center;
+  font-size:clamp(32px,12cqw,58px);
+  line-height:1;
+  font-weight:800;
+  letter-spacing:-.055em;
+  white-space:nowrap;
+}
+.stopwatch-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+.stopwatch-actions button{
+  height:34px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:var(--surface-soft);
+  color:inherit;
+  font:inherit;
+  font-size:9px;
+  font-weight:850;
+}
+.stopwatch-actions .primary{background:var(--text);color:var(--surface)}
+.stopwatch-laps{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  border-radius:11px;
+  background:color-mix(in srgb,var(--module-text,#17191d) 3.5%,transparent);
+  padding:5px 8px;
+  scrollbar-width:thin;
+}
+.stopwatch-lap-row{
+  min-height:27px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);
+  font-size:9px;
+}
+.stopwatch-lap-row:last-child{border-bottom:0}
+.stopwatch-lap-row span{opacity:.55;font-weight:700}
+.stopwatch-lap-row strong{font-size:10px}
+.stopwatch-customization{bottom:9px}
+
+/* Smaller ALL category button */
+.context-menu__filter--all{
+  min-width:34px!important;
+  width:34px;
+  height:24px!important;
+  padding:0!important;
+  font-size:8px!important;
+  border-radius:7px!important;
+}
+
+/* Artist palette Draw module */
+.draw-module{
+  width:455px;
+  height:132px;
+  min-width:455px;
+  min-height:132px;
+  max-width:455px;
+  max-height:132px;
+  padding:27px 18px 15px;
+  border-radius:62% 38% 52% 48% / 48% 56% 44% 52%;
+  overflow:visible;
+  background:
+    radial-gradient(circle at 13% 24%, rgba(255,255,255,.7) 0 8px, transparent 9px),
+    linear-gradient(145deg,#f0d8ae,#d8b57c);
+  border:1px solid rgba(111,76,38,.18);
+  box-shadow:
+    0 12px 28px rgba(65,45,24,.13),
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -5px 12px rgba(121,83,43,.08);
+}
+
+.draw-module::before{
+  content:"";
+  position:absolute;
+  width:34px;
+  height:34px;
+  right:28px;
+  top:18px;
+  border-radius:50%;
+  background:var(--workspace-bg,#f6f5f1);
+  box-shadow:
+    inset 0 0 0 1px rgba(90,66,39,.14),
+    0 2px 5px rgba(0,0,0,.06);
+  pointer-events:none;
+}
+
+.draw-module::after{
+  content:"";
+  position:absolute;
+  left:22px;
+  right:66px;
+  bottom:16px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(91,62,32,.14),transparent);
+  pointer-events:none;
+}
+
+.draw-tools{
+  height:100%;
+  display:grid;
+  grid-template-columns:auto auto auto auto auto minmax(130px,1fr) auto;
+  align-items:center;
+  gap:7px;
+  padding-right:38px;
+}
+
+.draw-tools button,
+.draw-color-wrap{
+  height:36px;
+  min-width:36px;
+  border:1px solid rgba(86,61,34,.16);
+  border-radius:12px;
+  background:rgba(255,250,242,.72);
+  color:#3d2d1f;
+  box-shadow:0 2px 5px rgba(80,54,29,.06);
+  backdrop-filter:blur(5px);
+}
+
+.draw-toggle{
+  padding:0 10px!important;
+  border-radius:999px!important;
+  min-width:64px!important;
+  background:rgba(255,250,242,.82)!important;
+}
+
+.draw-toggle.is-on{
+  background:#edf7ed!important;
+  border-color:rgba(68,139,77,.2)!important;
+}
+
+.draw-power-dot{
+  width:8px;
+  height:8px;
+}
+
+.draw-color-wrap{
+  width:36px;
+  border-radius:50%;
+}
+
+.draw-color-swatch{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.82);
+  box-shadow:0 0 0 1px rgba(60,42,24,.14);
+}
+
+.draw-tool{
+  font-size:15px!important;
+  border-radius:50%!important;
+}
+
+.draw-tool.is-active{
+  background:#473526!important;
+  color:#fffaf2!important;
+  box-shadow:0 4px 9px rgba(66,47,30,.16)!important;
+}
+
+.draw-size-wrap{
+  height:42px;
+  min-width:140px;
+  border-radius:13px;
+  background:rgba(255,250,242,.68);
+  border:1px solid rgba(86,61,34,.14);
+  padding:5px 10px;
+}
+
+.draw-size-wrap span{
+  color:#5c4633;
+  opacity:.65;
+}
+
+.draw-size{
+  width:118px;
+  accent-color:#654b35;
+}
+
+.draw-clear{
+  height:36px!important;
+  min-width:52px!important;
+  padding:0 10px!important;
+  border-radius:11px!important;
+  background:rgba(255,250,242,.76)!important;
+}
+
+.draw-module .module-delete{
+  top:7px;
+  right:8px;
+}
+
+.draw-module .module-drag-handle{
+  left:50%;
+  top:5px;
+  transform:translateX(-50%);
+  width:74px;
+  height:13px;
+  border-radius:999px;
+}
+
+body.dark .draw-module{
+  background:
+    radial-gradient(circle at 13% 24%, rgba(255,255,255,.08) 0 8px, transparent 9px),
+    linear-gradient(145deg,#6a553e,#493b2d);
+  color:#f7f3ec;
+}
+
+body.dark .draw-tools button,
+body.dark .draw-color-wrap,
+body.dark .draw-size-wrap{
+  background:rgba(33,29,25,.7);
+  color:#f7f3ec;
+  border-color:rgba(255,255,255,.1);
+}
+
+body.dark .draw-module::before{
+  background:var(--workspace-bg,#181a1d);
+}
+
+/* Visual timer gets the same font/text customization model as other modules */
+.timer-module{
+  font-family:var(--module-font,Inter,system-ui,sans-serif);
+  color:var(--module-text,#17191d);
+}
+
+.timer-remaining{
+  color:var(--module-text,#17191d);
+  font-family:inherit;
+}
+
+/* Larger Contact tab UI */
+.contact-kicker{
+  font-size:10px!important;
+}
+
+.contact-intro h3{
+  font-size:22px!important;
+}
+
+.contact-intro p{
+  font-size:12px!important;
+  line-height:1.5!important;
+}
+
+.contact-field>span{
+  font-size:11px!important;
+}
+
+.contact-field input,
+.contact-field textarea{
+  font-size:13px!important;
+}
+
+.contact-field input{
+  height:42px!important;
+}
+
+.contact-field textarea{
+  min-height:145px!important;
+  padding:12px 13px!important;
+}
+
+.contact-status{
+  font-size:11px!important;
+}
+
+.contact-submit{
+  height:42px!important;
+  font-size:11px!important;
+  padding:0 18px!important;
+}
+
+.updates-tab{
+  font-size:11px!important;
+}
+
+/* Round artist-palette Draw module */
+.draw-module{
+  width:330px!important;
+  height:270px!important;
+  min-width:330px!important;
+  min-height:270px!important;
+  max-width:330px!important;
+  max-height:270px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+.draw-module::before,
+.draw-module::after{
+  display:none!important;
+}
+
+.draw-palette-face{
+  position:absolute;
+  inset:9px 12px 12px 10px;
+  border-radius:54% 46% 52% 48% / 50% 48% 52% 50%;
+  background:
+    radial-gradient(circle at 31% 23%,rgba(255,255,255,.55) 0 2px,transparent 3px),
+    radial-gradient(circle at 70% 72%,rgba(101,69,37,.06) 0 2px,transparent 3px),
+    linear-gradient(145deg,#f2d8aa 0%,#ddb980 48%,#c99c63 100%);
+  border:1px solid rgba(99,68,35,.22);
+  box-shadow:
+    0 15px 30px rgba(71,48,27,.15),
+    inset 0 1px 0 rgba(255,255,255,.75),
+    inset 0 -8px 18px rgba(110,75,41,.09);
+}
+
+.draw-thumb-hole{
+  position:absolute;
+  right:38px;
+  top:27px;
+  width:55px;
+  height:68px;
+  border-radius:48% 52% 54% 46% / 44% 48% 52% 56%;
+  background:var(--workspace-bg,#f6f5f1);
+  box-shadow:
+    inset 0 0 0 1px rgba(83,58,34,.18),
+    inset 0 2px 5px rgba(0,0,0,.05),
+    0 1px 2px rgba(255,255,255,.55);
+}
+
+.draw-toggle,
+.draw-color-wrap,
+.draw-tool,
+.draw-clear{
+  position:absolute!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid rgba(82,57,33,.16)!important;
+  background:rgba(255,249,239,.78)!important;
+  color:#3f2e20!important;
+  box-shadow:0 3px 7px rgba(78,52,28,.07)!important;
+  backdrop-filter:blur(5px);
+}
+
+.draw-toggle{
+  left:101px;
+  top:28px;
+  width:70px;
+  height:34px;
+  border-radius:999px!important;
+  grid-template-columns:auto auto!important;
+  gap:6px!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+.draw-toggle.is-on{
+  background:#eef8ee!important;
+  border-color:rgba(61,139,72,.2)!important;
+}
+
+.draw-power-dot{
+  width:8px!important;
+  height:8px!important;
+}
+
+.draw-color-wrap{
+  left:43px;
+  top:56px;
+  width:46px!important;
+  height:46px!important;
+  border-radius:50%!important;
+}
+
+.draw-color-swatch{
+  width:27px!important;
+  height:27px!important;
+  border-radius:50%!important;
+  border:3px solid rgba(255,255,255,.78)!important;
+  box-shadow:0 0 0 1px rgba(68,46,27,.13)!important;
+}
+
+.draw-tool{
+  width:43px!important;
+  height:43px!important;
+  min-width:43px!important;
+  border-radius:50%!important;
+  font-size:16px!important;
+  font-weight:900!important;
+}
+
+.draw-tool--brush{
+  left:38px;
+  top:116px;
+}
+
+.draw-tool--pencil{
+  left:64px;
+  top:170px;
+}
+
+.draw-tool--eraser{
+  left:121px;
+  top:199px;
+}
+
+.draw-tool.is-active{
+  background:#483426!important;
+  color:#fffaf1!important;
+  box-shadow:0 5px 11px rgba(61,42,25,.18)!important;
+  transform:scale(1.05);
+}
+
+.draw-size-wrap{
+  position:absolute!important;
+  left:118px;
+  top:92px;
+  width:130px!important;
+  height:64px!important;
+  min-width:0!important;
+  padding:8px 11px!important;
+  border-radius:18px!important;
+  background:rgba(255,249,239,.7)!important;
+  border:1px solid rgba(82,57,33,.14)!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:6px!important;
+  box-shadow:0 3px 7px rgba(78,52,28,.05);
+}
+
+.draw-size-wrap span{
+  font-size:7px!important;
+  font-weight:900!important;
+  letter-spacing:.12em!important;
+  color:#5e4936!important;
+  opacity:.65!important;
+}
+
+.draw-size{
+  width:108px!important;
+  accent-color:#5e4632!important;
+}
+
+.draw-clear{
+  left:188px;
+  top:177px;
+  width:58px!important;
+  height:34px!important;
+  min-width:58px!important;
+  border-radius:11px!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+.draw-paint-spot{
+  position:absolute;
+  width:21px;
+  height:21px;
+  border-radius:50%;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.32),
+    0 1px 2px rgba(61,40,22,.08);
+  pointer-events:none;
+}
+
+.draw-paint-spot--1{
+  left:24px;
+  top:28px;
+  background:#e9a3a9;
+}
+
+.draw-paint-spot--2{
+  left:48px;
+  top:19px;
+  background:#f3c969;
+}
+
+.draw-paint-spot--3{
+  left:72px;
+  top:25px;
+  background:#91b9df;
+}
+
+.draw-paint-spot--4{
+  left:92px;
+  top:42px;
+  background:#9ecf9f;
+}
+
+.draw-module .module-delete{
+  top:13px!important;
+  right:16px!important;
+  z-index:7!important;
+  background:rgba(255,250,242,.78)!important;
+  color:#4b3828!important;
+  border-radius:50%!important;
+}
+
+.draw-module .module-drag-handle{
+  top:8px!important;
+  left:50%!important;
+  width:74px!important;
+  height:14px!important;
+  transform:translateX(-50%)!important;
+  z-index:6!important;
+  border-radius:999px!important;
+}
+
+body.dark .draw-palette-face{
+  background:
+    radial-gradient(circle at 31% 23%,rgba(255,255,255,.07) 0 2px,transparent 3px),
+    linear-gradient(145deg,#67513d 0%,#56422f 55%,#443426 100%);
+  border-color:rgba(255,255,255,.09);
+}
+
+body.dark .draw-thumb-hole{
+  background:var(--workspace-bg,#181a1d);
+}
+
+body.dark .draw-toggle,
+body.dark .draw-color-wrap,
+body.dark .draw-tool,
+body.dark .draw-clear,
+body.dark .draw-size-wrap{
+  background:rgba(32,28,24,.74)!important;
+  color:#f6efe6!important;
+  border-color:rgba(255,255,255,.09)!important;
+}
+
+body.dark .draw-size-wrap span{
+  color:#efe3d7!important;
+}
+
+body.dark .draw-tool.is-active{
+  background:#f0e3d3!important;
+  color:#3b2b20!important;
+}
+
+/* Minimal Draw toolbar */
+.draw-module{
+  width:430px!important;
+  height:82px!important;
+  min-width:430px!important;
+  min-height:82px!important;
+  max-width:430px!important;
+  max-height:82px!important;
+  padding:27px 12px 10px!important;
+  border-radius:16px!important;
+  overflow:visible!important;
+  background:var(--surface)!important;
+  border:1px solid var(--border)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.08)!important;
+}
+
+.draw-module::before,
+.draw-module::after,
+.draw-palette-face,
+.draw-thumb-hole,
+.draw-paint-spot{
+  display:none!important;
+}
+
+.draw-tools{
+  height:100%;
+  display:flex!important;
+  align-items:center;
+  gap:6px!important;
+  padding:0!important;
+}
+
+.draw-tools button,
+.draw-color-wrap{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:auto;
+  height:32px!important;
+  min-width:32px!important;
+  margin:0!important;
+  border:1px solid var(--border)!important;
+  border-radius:9px!important;
+  background:var(--surface-soft)!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+  display:grid!important;
+  place-items:center!important;
+}
+
+.draw-toggle{
+  width:64px!important;
+  min-width:64px!important;
+  grid-template-columns:auto auto!important;
+  gap:5px!important;
+  padding:0 8px!important;
+  border-radius:999px!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+.draw-toggle.is-on{
+  background:color-mix(in srgb,#55b86a 12%,var(--surface-soft))!important;
+}
+
+.draw-power-dot{
+  width:7px!important;
+  height:7px!important;
+}
+
+.draw-color-wrap{
+  width:32px!important;
+  border-radius:50%!important;
+}
+
+.draw-color-swatch{
+  width:18px!important;
+  height:18px!important;
+  border-radius:50%!important;
+  border:2px solid var(--surface)!important;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--text) 15%,transparent)!important;
+}
+
+.draw-tool{
+  width:32px!important;
+  min-width:32px!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+  font-weight:900!important;
+}
+
+.draw-tool.is-active{
+  background:var(--text)!important;
+  color:var(--surface)!important;
+}
+
+.draw-brush-icon{
+  width:14px;
+  height:14px;
+  position:relative;
+  display:block;
+}
+
+.draw-brush-icon::before{
+  content:"";
+  position:absolute;
+  width:5px;
+  height:11px;
+  left:5px;
+  top:0;
+  border-radius:4px 4px 2px 2px;
+  background:currentColor;
+  transform:rotate(38deg);
+  transform-origin:50% 80%;
+}
+
+.draw-brush-icon::after{
+  content:"";
+  position:absolute;
+  width:7px;
+  height:5px;
+  left:1px;
+  bottom:0;
+  border-radius:70% 30% 60% 40%;
+  background:currentColor;
+  transform:rotate(-18deg);
+}
+
+.draw-size-wrap{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:130px!important;
+  height:36px!important;
+  min-width:130px!important;
+  padding:4px 8px!important;
+  border:1px solid var(--border)!important;
+  border-radius:9px!important;
+  background:var(--surface-soft)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:2px!important;
+  box-shadow:none!important;
+}
+
+.draw-size-wrap span{
+  font-size:6px!important;
+  font-weight:900!important;
+  letter-spacing:.1em!important;
+  color:var(--text)!important;
+  opacity:.45!important;
+}
+
+.draw-size{
+  width:112px!important;
+}
+
+.draw-clear{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:48px!important;
+  min-width:48px!important;
+  height:32px!important;
+  border-radius:9px!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+.draw-module .module-delete{
+  top:6px!important;
+  right:7px!important;
+  background:transparent!important;
+  color:var(--text)!important;
+}
+
+.draw-module .module-drag-handle{
+  top:5px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:64px!important;
+  height:12px!important;
+  border-radius:999px!important;
+}
+
+/* Draw module drag affordance + clearer brush icon */
+.draw-module{
+  padding-top:29px!important;
+}
+
+/* Make the entire top strip an obvious, easy drag target. */
+.draw-module .module-drag-handle{
+  top:1px!important;
+  left:8px!important;
+  right:36px!important;
+  width:auto!important;
+  height:23px!important;
+  transform:none!important;
+  border-radius:12px 12px 5px 5px!important;
+  cursor:grab!important;
+  pointer-events:auto!important;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb,var(--text) 5%,transparent),
+      transparent
+    )!important;
+}
+
+.draw-module .module-drag-handle::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:8px;
+  width:32px;
+  height:4px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--text) 22%,transparent);
+}
+
+.draw-module .module-drag-handle:active{
+  cursor:grabbing!important;
+}
+
+.draw-brush-icon{
+  width:18px!important;
+  height:18px!important;
+  display:block!important;
+}
+
+.draw-brush-icon::before,
+.draw-brush-icon::after{
+  display:none!important;
+}
+
+/* Give the brush button just a touch more room so the icon reads clearly. */
+.draw-tool[data-draw-tool="brush"]{
+  width:34px!important;
+  min-width:34px!important;
+}
+
+/* Universal module drag indicator */
+.module .module-drag-handle{
+  overflow:visible;
+}
+
+.module .module-drag-handle::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:30px;
+  height:4px;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--module-text,var(--text,#17191d)) 22%,transparent);
+  opacity:.7;
+  pointer-events:none;
+  transition:opacity .12s ease,transform .12s ease,background .12s ease;
+}
+
+.module:hover .module-drag-handle::after{
+  opacity:.9;
+}
+
+.module .module-drag-handle:active::after{
+  transform:translate(-50%,-50%) scaleX(.9);
+}
+
+/* Draw already uses a wider top drag strip; keep its indicator aligned there. */
+.draw-module .module-drag-handle::after{
+  width:32px;
+  top:50%;
+}
+
+/* Show module drag indicator only while hovering the module */
+.module .module-drag-handle::after{
+  opacity:0!important;
+  transition:opacity .14s ease,transform .12s ease,background .12s ease;
+}
+
+.module:hover .module-drag-handle::after{
+  opacity:.8!important;
+}
+
+.module .module-drag-handle:active::after{
+  opacity:1!important;
+}
+
+/* Hide the empty-board hint whenever at least one module exists. */
+.workspace.has-modules::before{
+  opacity:0!important;
+}
+
+/* Once an image is loaded, the image itself becomes the drag surface. */
+.image-module.has-image .module-drag-handle{
+  position:absolute!important;
+  inset:0!important;
+  width:auto!important;
+  height:auto!important;
+  transform:none!important;
+  border-radius:inherit!important;
+  background:transparent!important;
+  z-index:7!important;
+  cursor:grab!important;
+}
+.image-module.has-image .module-drag-handle::after{
+  display:none!important;
+}
+.image-module.has-image .module-drag-handle:active{
+  cursor:grabbing!important;
+}
+.image-module.has-image .module-delete{
+  z-index:12!important;
+}
+.image-module.has-image .resize-handle{
+  z-index:11!important;
+}
+.image-module.has-image .image-stage{
+  pointer-events:none!important;
+}
+
+/* Clock digital / analog modes */
+.clock-digital-view,
+.clock-analog-view{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.clock-module[data-clock-mode="analog"] .clock-digital-view{
+  display:none;
+}
+.clock-module[data-clock-mode="digital"] .clock-analog-view{
+  display:none;
+}
+
+.analog-clock-face{
+  position:relative;
+  width:min(88cqw,88cqh,290px);
+  aspect-ratio:1;
+  border-radius:50%;
+  border:clamp(2px,1cqw,4px) solid color-mix(in srgb,var(--module-text,#17191d) 70%,transparent);
+  background:color-mix(in srgb,var(--module-bg,#fff) 92%,var(--module-text,#17191d) 3%);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);
+  font-family:var(--module-font,Inter);
+  color:var(--module-text,#17191d);
+}
+
+.analog-mark{
+  position:absolute;
+  font-size:clamp(10px,6cqw,20px);
+  font-weight:800;
+  line-height:1;
+}
+.analog-mark--12{left:50%;top:7%;transform:translateX(-50%)}
+.analog-mark--3{right:8%;top:50%;transform:translateY(-50%)}
+.analog-mark--6{left:50%;bottom:7%;transform:translateX(-50%)}
+.analog-mark--9{left:8%;top:50%;transform:translateY(-50%)}
+
+.analog-tick{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:2px;
+  height:42%;
+  transform-origin:50% 100%;
+  pointer-events:none;
+}
+.analog-tick::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:50%;
+  width:2px;
+  height:7px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--module-text,#17191d) 45%,transparent);
+}
+.analog-tick--1{transform:translate(-50%,-100%) rotate(30deg)}
+.analog-tick--2{transform:translate(-50%,-100%) rotate(60deg)}
+.analog-tick--4{transform:translate(-50%,-100%) rotate(120deg)}
+.analog-tick--5{transform:translate(-50%,-100%) rotate(150deg)}
+.analog-tick--7{transform:translate(-50%,-100%) rotate(210deg)}
+.analog-tick--8{transform:translate(-50%,-100%) rotate(240deg)}
+.analog-tick--10{transform:translate(-50%,-100%) rotate(300deg)}
+.analog-tick--11{transform:translate(-50%,-100%) rotate(330deg)}
+
+.analog-hand{
+  position:absolute;
+  left:50%;
+  bottom:50%;
+  transform-origin:50% 100%;
+  border-radius:999px;
+  background:var(--module-text,#17191d);
+}
+.analog-hour{
+  width:5px;
+  height:27%;
+}
+.analog-minute{
+  width:3px;
+  height:37%;
+}
+.analog-second{
+  width:2px;
+  height:40%;
+  background:#d25a62;
+}
+.analog-pin{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:11px;
+  height:11px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:var(--module-text,#17191d);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--module-bg,#fff) 88%,transparent);
+}

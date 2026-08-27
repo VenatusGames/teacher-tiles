@@ -80,10 +80,18 @@ setMenuCategory('all');
 function closeMenu(){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true')}
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
-function createModule(type,x,y){const t=document.getElementById(`${type}-template`);if(!t)return null;const m=t.content.firstElementChild.cloneNode(true);workspace.appendChild(m);const w=m.offsetWidth,h=m.offsetHeight;m.style.left=`${clamp(x-w/2,0,innerWidth-w)}px`;m.style.top=`${clamp(y-18,0,innerHeight-h)}px`;bringToFront(m);setupCommon(m);if(type==='sticky')setupSticky(m);if(type==='timer')setupTimer(m);if(type==='interactive')setupHourglass(m);if(type==='clock')setupClock(m);if(type==='noise')setupNoise(m);if(type==='collections')setupCollections(m);if(type==='stoplight')setupStoplight(m);if(type==='image')setupImage(m);if(type==='youtube')setupYoutube(m);if(type==='windowshare')setupWindowShare(m);if(type==='boombox')setupBoombox(m);
+function createModule(type,x,y){const t=document.getElementById(`${type}-template`);if(!t)return null;const m=t.content.firstElementChild.cloneNode(true);workspace.appendChild(m);const w=m.offsetWidth,h=m.offsetHeight;m.style.left=`${clamp(x-w/2,0,innerWidth-w)}px`;m.style.top=`${clamp(y-18,0,innerHeight-h)}px`;bringToFront(m);setupCommon(m);if(type==='sticky')setupSticky(m);if(type==='timer')setupTimer(m);if(type==='interactive')setupHourglass(m);if(type==='clock')setupClock(m);if(type==='stopwatch')setupStopwatch(m);if(type==='draw')setupDraw(m);if(type==='noise')setupNoise(m);if(type==='collections')setupCollections(m);if(type==='stoplight')setupStoplight(m);if(type==='image')setupImage(m);if(type==='youtube')setupYoutube(m);if(type==='windowshare')setupWindowShare(m);if(type==='boombox')setupBoombox(m);
   if(type==='spinner')setupSpinner(m);if(type==='hangman')setupHangman(m);if(type==='textbubble')setupTextBubble(m);if(type==='todo')setupTodo(m);return m}
+
+function updateWorkspaceEmptyState(){
+  workspace.classList.toggle('has-modules',Boolean(workspace.querySelector('.module')));
+}
+const workspaceModuleObserver=new MutationObserver(updateWorkspaceEmptyState);
+workspaceModuleObserver.observe(workspace,{childList:true});
+updateWorkspaceEmptyState();
+
 function bringToFront(m){m.style.zIndex=++z}
-function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);setupResize(m)}
+function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);if(m.dataset.type!=='draw')setupResize(m)}
 function setupDrag(m){
   const h=m.querySelector('.module-drag-handle'),guideX=workspace.querySelector('.snap-guide-x'),guideY=workspace.querySelector('.snap-guide-y');
   const SNAP=15;
@@ -119,22 +127,293 @@ function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!la
 
 function bindTimerControls(m,onRender,{onFinish}={}){const remain=m.querySelector('.timer-remaining, .hourglass-countdown, .candle-countdown'),presets=[...m.querySelectorAll('[data-minutes]')],input=m.querySelector('.timer-custom'),set=m.querySelector('.timer-set'),start=m.querySelector('.timer-start'),reset=m.querySelector('.timer-reset');let total=300,left=300,running=false,end=0,interval=null,finished=false;const render=()=>{remain.textContent=formatCountdown(left);onRender({progress:1-clamp(left/total,0,1),running,left,total})};const stop=()=>{if(interval){clearInterval(interval);interval=null}};const setDuration=min=>{const n=Number(min);if(!Number.isFinite(n)||n<=0)return;running=false;finished=false;stop();m.classList.remove('is-running','candle-finished');total=Math.round(n*60);left=total;end=0;start.textContent='Start';render()};presets.forEach(b=>b.addEventListener('click',()=>{presets.forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');input.value='';setDuration(b.dataset.minutes)}));set.addEventListener('click',()=>{if(input.value){presets.forEach(x=>x.classList.remove('is-active'));setDuration(input.value)}});input.addEventListener('keydown',e=>{if(e.key==='Enter')set.click()});const tick=()=>{if(!running)return;left=Math.max(0,(end-Date.now())/1000);render();if(left<=0){running=false;stop();m.classList.remove('is-running');start.textContent='Start';if(!finished){finished=true;onFinish?.();m.animate([{transform:'scale(1)'},{transform:'scale(1.025)'},{transform:'scale(1)'}],{duration:500})}}};start.addEventListener('click',()=>{if(running){left=Math.max(0,(end-Date.now())/1000);running=false;stop();m.classList.remove('is-running');start.textContent='Resume';render();return}if(left<=0){left=total;finished=false;m.classList.remove('candle-finished')}running=true;end=Date.now()+left*1000;m.classList.add('is-running');start.textContent='Pause';interval=setInterval(tick,80);tick()});reset.addEventListener('click',()=>{running=false;finished=false;stop();left=total;m.classList.remove('is-running','candle-finished');start.textContent='Start';render()});render();return()=>stop()}
 
-function setupTimer(m){const clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),shapeButtons=[...m.querySelectorAll('.timer-shapes [data-shape]')];const clipId=`shape-clip-${++uid}`;clip.id=clipId;foreign.setAttribute('clip-path',`url(#${clipId})`);const setShape=shape=>{const d=shapePaths[shape]||shapePaths.circle;clipPath.setAttribute('d',d);outline.setAttribute('d',d)};shapeButtons.forEach(b=>b.addEventListener('click',()=>{shapeButtons.forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');setShape(b.dataset.shape)}));m.querySelector('.timer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.timer-shape-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));setShape('circle');m._cleanup=bindTimerControls(m,({progress})=>fill.style.setProperty('--progress',`${progress*360}deg`),{onFinish:()=>launchConfetti(m)})}
+function setupTimer(m){const clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),shapeButtons=[...m.querySelectorAll('.timer-shapes [data-shape]')];const clipId=`shape-clip-${++uid}`;clip.id=clipId;foreign.setAttribute('clip-path',`url(#${clipId})`);const setShape=shape=>{const d=shapePaths[shape]||shapePaths.circle;clipPath.setAttribute('d',d);outline.setAttribute('d',d)};shapeButtons.forEach(b=>b.addEventListener('click',()=>{shapeButtons.forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');setShape(b.dataset.shape)}));m.querySelector('.timer-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.timer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.timer-shape-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));setShape('circle');m._cleanup=bindTimerControls(m,({progress})=>fill.style.setProperty('--progress',`${progress*360}deg`),{onFinish:()=>launchConfetti(m)})}
 
 function setupHourglass(m){const hourStage=m.querySelector('.hourglass-stage'),candleStage=m.querySelector('.candle-stage'),countdownHour=m.querySelector('.hourglass-countdown'),countdownCandle=m.querySelector('.candle-countdown'),topClip=m.querySelector('.hg-top-clip'),bottomClip=m.querySelector('.hg-bottom-clip'),top=m.querySelector('.hg-sand-top'),bottom=m.querySelector('.hg-sand-bottom'),pile=m.querySelector('.hg-bottom-pile'),stream=m.querySelector('.hg-stream'),candleBody=m.querySelector('.candle-body'),candleScene=m.querySelector('.candle-scene'),modeButtons=[...m.querySelectorAll('[data-interactive]')],bgBtn=m.querySelector('.interactive-bg'),candleColorBtn=m.querySelector('.candle-color-control');const topId=`hg-top-${++uid}`,bottomId=`hg-bottom-${++uid}`;topClip.id=topId;bottomClip.id=bottomId;top.setAttribute('clip-path',`url(#${topId})`);bottom.setAttribute('clip-path',`url(#${bottomId})`);pile.setAttribute('clip-path',`url(#${bottomId})`);let mode='hourglass';const setMode=next=>{mode=next;m.dataset.interactiveMode=mode;hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';modeButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.interactive===mode))};modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));candleColorBtn.addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));const cleanup=bindTimerControls(m,({progress,running,left})=>{const text=formatCountdown(left);countdownHour.textContent=text;countdownCandle.textContent=text;const topY=62+96*progress,topH=96*(1-progress);top.setAttribute('y',topY.toFixed(2));top.setAttribute('height',Math.max(0,topH).toFixed(2));const bottomH=96*progress,bottomY=278-bottomH;bottom.setAttribute('y',bottomY.toFixed(2));bottom.setAttribute('height',bottomH.toFixed(2));pile.setAttribute('opacity',progress>0.03?'1':'0');pile.setAttribute('transform',`translate(0 ${Math.max(0,30-progress*30).toFixed(2)}) scale(1 ${Math.max(.18,progress).toFixed(3)})`);stream.setAttribute('opacity',running&&left>0?'1':'0');const h=Math.max(8,100*(1-progress));candleScene.style.setProperty('--candle-height',`${h}%`);m.classList.toggle('candle-finished',mode==='candle'&&left<=0)}, {onFinish:()=>{if(mode==='candle')m.classList.add('candle-finished')}});setMode('hourglass');m._cleanup=cleanup}
 
 function cycleData(m,key,values){const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
-  const display=m.querySelector('.clock-display'),content=m.querySelector('.clock-content'),main=m.querySelector('.clock-main'),sec=m.querySelector('.clock-seconds'),period=m.querySelector('.clock-period'),secondsBtn=m.querySelector('.clock-toggle-seconds'),periodBtn=m.querySelector('.clock-toggle-period');
-  const fit=()=>{const aw=Math.max(30,display.clientWidth-12),ah=Math.max(30,display.clientHeight-12);let lo=12,hi=1200,best=12;for(let n=0;n<18;n++){const mid=(lo+hi)/2;m.style.setProperty('--clock-size',`${mid}px`);const r=content.getBoundingClientRect();if(r.width<=aw&&r.height<=ah){best=mid;lo=mid}else hi=mid}m.style.setProperty('--clock-size',`${Math.max(12,best*.975)}px`)};
+  const display=m.querySelector('.clock-display');
+  const content=m.querySelector('.clock-content');
+  const main=m.querySelector('.clock-main');
+  const sec=m.querySelector('.clock-seconds');
+  const period=m.querySelector('.clock-period');
+  const secondsBtn=m.querySelector('.clock-toggle-seconds');
+  const periodBtn=m.querySelector('.clock-toggle-period');
+  const modeBtn=m.querySelector('.clock-toggle-mode');
+  const hourHand=m.querySelector('.analog-hour');
+  const minuteHand=m.querySelector('.analog-minute');
+  const secondHand=m.querySelector('.analog-second');
+
+  const fit=()=>{
+    if(m.dataset.clockMode==='analog')return;
+    const aw=Math.max(30,display.clientWidth-12),ah=Math.max(30,display.clientHeight-12);
+    let lo=12,hi=1200,best=12;
+    for(let n=0;n<18;n++){
+      const mid=(lo+hi)/2;
+      m.style.setProperty('--clock-size',`${mid}px`);
+      const r=content.getBoundingClientRect();
+      if(r.width<=aw&&r.height<=ah){best=mid;lo=mid}else hi=mid;
+    }
+    m.style.setProperty('--clock-size',`${Math.max(12,best*.975)}px`);
+  };
   const refit=()=>requestAnimationFrame(fit);
+
   m.querySelector('.clock-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
   m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  modeBtn.addEventListener('click',()=>{
+    const analog=m.dataset.clockMode!=='analog';
+    m.dataset.clockMode=analog?'analog':'digital';
+    modeBtn.classList.toggle('is-active',analog);
+    modeBtn.querySelector('span').textContent=analog?'◴':'◷';
+    secondsBtn.hidden=analog;
+    periodBtn.hidden=analog;
+    refit();
+  });
+
   secondsBtn.addEventListener('click',()=>{m.classList.toggle('show-seconds');secondsBtn.classList.toggle('is-active');refit()});
   periodBtn.addEventListener('click',()=>{m.classList.toggle('hide-period');periodBtn.classList.toggle('is-active',!m.classList.contains('hide-period'));refit()});
-  const update=()=>{const d=new Date(),parts=new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit',hour12:true}).formatToParts(d);const hour=parts.find(p=>p.type==='hour')?.value||'',minute=parts.find(p=>p.type==='minute')?.value||'',dayPeriod=parts.find(p=>p.type==='dayPeriod')?.value||'';main.textContent=`${hour}:${minute}`;sec.textContent=`:${String(d.getSeconds()).padStart(2,'0')}`;period.textContent=dayPeriod;refit()};
-  const ro=new ResizeObserver(refit);ro.observe(m);ro.observe(display);const id=setInterval(update,250);update();m._cleanup=()=>{clearInterval(id);ro.disconnect()}
+
+  const update=()=>{
+    const d=new Date();
+    const parts=new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit',hour12:true}).formatToParts(d);
+    const hour=parts.find(p=>p.type==='hour')?.value||'';
+    const minute=parts.find(p=>p.type==='minute')?.value||'';
+    const dayPeriod=parts.find(p=>p.type==='dayPeriod')?.value||'';
+    main.textContent=`${hour}:${minute}`;
+    sec.textContent=`:${String(d.getSeconds()).padStart(2,'0')}`;
+    period.textContent=dayPeriod;
+
+    const seconds=d.getSeconds()+d.getMilliseconds()/1000;
+    const minutes=d.getMinutes()+seconds/60;
+    const hours=(d.getHours()%12)+minutes/60;
+    hourHand.style.transform=`translateX(-50%) rotate(${hours*30}deg)`;
+    minuteHand.style.transform=`translateX(-50%) rotate(${minutes*6}deg)`;
+    secondHand.style.transform=`translateX(-50%) rotate(${seconds*6}deg)`;
+    refit();
+  };
+
+  const ro=new ResizeObserver(refit);
+  ro.observe(m);
+  ro.observe(display);
+  const id=setInterval(update,100);
+  update();
+  m._cleanup=()=>{clearInterval(id);ro.disconnect()};
+}
+
+
+function setupStopwatch(m){
+  const display=m.querySelector('.stopwatch-display');
+  const start=m.querySelector('.stopwatch-start');
+  const lap=m.querySelector('.stopwatch-lap');
+  const clear=m.querySelector('.stopwatch-clear');
+  const laps=m.querySelector('.stopwatch-laps');
+  let running=false,startedAt=0,elapsed=0,raf=0,lapCount=0;
+
+  const format=ms=>{
+    const total=Math.max(0,ms);
+    const minutes=Math.floor(total/60000);
+    const seconds=Math.floor(total/1000)%60;
+    const hundredths=Math.floor(total/10)%100;
+    return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
+  };
+  const current=()=>elapsed+(running?performance.now()-startedAt:0);
+  const render=()=>{display.textContent=format(current());if(running)raf=requestAnimationFrame(render)};
+  start.addEventListener('click',()=>{
+    if(running){elapsed=current();running=false;cancelAnimationFrame(raf);start.textContent='Start'}
+    else{startedAt=performance.now();running=true;start.textContent='Pause';render()}
+  });
+  lap.addEventListener('click',()=>{
+    if(!running&&elapsed<=0)return;
+    lapCount++;
+    const row=document.createElement('div');
+    row.className='stopwatch-lap-row';
+    row.innerHTML=`<span>Lap ${lapCount}</span><strong>${format(current())}</strong>`;
+    laps.prepend(row);
+  });
+  clear.addEventListener('click',()=>{
+    running=false;cancelAnimationFrame(raf);startedAt=0;elapsed=0;lapCount=0;display.textContent='00:00.00';laps.replaceChildren();start.textContent='Start';
+  });
+  m.querySelector('.stopwatch-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.stopwatch-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.stopwatch-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m._cleanup=()=>cancelAnimationFrame(raf);
+}
+
+function setupDraw(m){
+  const toggle=m.querySelector('.draw-toggle');
+  const toggleLabel=m.querySelector('.draw-toggle-label');
+  const color=m.querySelector('.draw-color');
+  const swatch=m.querySelector('.draw-color-swatch');
+  const size=m.querySelector('.draw-size');
+  const clear=m.querySelector('.draw-clear');
+  const toolButtons=[...m.querySelectorAll('.draw-tool')];
+
+  const canvas=document.createElement('canvas');
+  canvas.className='board-drawing-canvas';
+  canvas.width=Math.max(1,Math.round(innerWidth*(devicePixelRatio||1)));
+  canvas.height=Math.max(1,Math.round(innerHeight*(devicePixelRatio||1)));
+  canvas.style.width=`${innerWidth}px`;
+  canvas.style.height=`${innerHeight}px`;
+  workspace.appendChild(canvas);
+
+  const ctx=canvas.getContext('2d');
+  const dpr=devicePixelRatio||1;
+  ctx.scale(dpr,dpr);
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+
+  let enabled=false;
+  let tool='brush';
+  let drawing=false;
+  let lastX=0,lastY=0,lastTime=0;
+
+  const updatePointerMode=()=>{
+    canvas.classList.toggle('is-active',enabled);
+    canvas.style.pointerEvents=enabled?'auto':'none';
+    toggle.classList.toggle('is-on',enabled);
+    toggle.setAttribute('aria-pressed',String(enabled));
+    toggleLabel.textContent=enabled?'ON':'OFF';
+  };
+
+  const updateSwatch=()=>{swatch.style.background=color.value};
+  updateSwatch();
+
+  toggle.addEventListener('click',()=>{enabled=!enabled;updatePointerMode()});
+  color.addEventListener('input',updateSwatch);
+
+  toolButtons.forEach(b=>b.addEventListener('click',()=>{
+    tool=b.dataset.drawTool;
+    toolButtons.forEach(x=>x.classList.toggle('is-active',x===b));
+  }));
+
+  clear.addEventListener('click',()=>{
+    ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
+  });
+
+  const point=e=>({x:e.clientX,y:e.clientY});
+
+  const down=e=>{
+    if(!enabled||e.button!==0)return;
+    drawing=true;
+    const p=point(e);
+    lastX=p.x;
+    lastY=p.y;
+    lastTime=performance.now();
+    canvas.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+  };
+
+  const move=e=>{
+    if(!drawing||!enabled)return;
+
+    const p=point(e);
+    const now=performance.now();
+    const dx=p.x-lastX;
+    const dy=p.y-lastY;
+    const distance=Math.hypot(dx,dy);
+    const dt=Math.max(1,now-lastTime);
+    const speed=distance/dt;
+    const baseSize=Number(size.value);
+
+    ctx.save();
+
+    if(tool==='eraser'){
+      ctx.globalCompositeOperation='destination-out';
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='#000';
+      ctx.lineWidth=Math.max(4,baseSize*1.6);
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.beginPath();
+      ctx.moveTo(lastX,lastY);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }else if(tool==='pencil'){
+      ctx.globalCompositeOperation='source-over';
+      ctx.globalAlpha=.88;
+      ctx.strokeStyle=color.value;
+      ctx.lineWidth=Math.max(1,baseSize*.28);
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.beginPath();
+      ctx.moveTo(lastX,lastY);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }else{
+      // Brush is softer and responds to movement speed:
+      // slower strokes are fuller, faster strokes taper slightly.
+      const speedFactor=clamp(1.15-speed*.18,.58,1.15);
+      const brushWidth=Math.max(2,baseSize*speedFactor);
+
+      ctx.globalCompositeOperation='source-over';
+      ctx.globalAlpha=.72;
+      ctx.strokeStyle=color.value;
+      ctx.lineWidth=brushWidth;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.shadowColor=color.value;
+      ctx.shadowBlur=Math.max(0.5,brushWidth*.16);
+
+      ctx.beginPath();
+      ctx.moveTo(lastX,lastY);
+      ctx.quadraticCurveTo(lastX,lastY,p.x,p.y);
+      ctx.stroke();
+
+      // A lighter secondary pass gives the brush a softer painted edge.
+      ctx.globalAlpha=.18;
+      ctx.lineWidth=brushWidth*1.35;
+      ctx.shadowBlur=0;
+      ctx.beginPath();
+      ctx.moveTo(lastX,lastY);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    lastX=p.x;
+    lastY=p.y;
+    lastTime=now;
+    e.preventDefault();
+  };
+
+  const up=()=>{drawing=false};
+
+  canvas.addEventListener('pointerdown',down);
+  canvas.addEventListener('pointermove',move);
+  canvas.addEventListener('pointerup',up);
+  canvas.addEventListener('pointercancel',up);
+
+  const resize=()=>{
+    const old=document.createElement('canvas');
+    old.width=canvas.width;
+    old.height=canvas.height;
+    old.getContext('2d').drawImage(canvas,0,0);
+
+    const ndpr=devicePixelRatio||1;
+    canvas.width=Math.max(1,Math.round(innerWidth*ndpr));
+    canvas.height=Math.max(1,Math.round(innerHeight*ndpr));
+    canvas.style.width=`${innerWidth}px`;
+    canvas.style.height=`${innerHeight}px`;
+
+    ctx.setTransform(ndpr,0,0,ndpr,0,0);
+    ctx.drawImage(old,0,0,old.width,old.height,0,0,innerWidth,innerHeight);
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+  };
+
+  window.addEventListener('resize',resize);
+  updatePointerMode();
+
+  m._cleanup=()=>{
+    window.removeEventListener('resize',resize);
+    canvas.remove();
+  };
 }
 
 function setupNoise(m){
