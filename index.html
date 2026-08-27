@@ -54,6 +54,7 @@
         <button type="button" class="context-menu__filter" data-category-filter="media">MEDIA</button>
         <button type="button" class="context-menu__filter" data-category-filter="tools">TOOLS</button>
         <button type="button" class="context-menu__filter" data-category-filter="audio">AUDIO</button>
+        <button type="button" class="context-menu__filter" data-category-filter="games">GAMES</button>
       </div>
     </div>
     <div class="context-menu__list">
@@ -77,6 +78,17 @@
           </svg>
         </span>
         <span><strong>Spinner</strong><small>Spin a wheel to pick a name</small></span>
+      </button>
+      
+      <button class="context-menu__item" data-module="hangman" data-category="games">
+        <span class="context-menu__icon context-menu__icon--hangman" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 21h12M8 21V3h8v3M16 6v2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="10.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M16 13v4M12.8 15l3.2-2 3.2 2M13.5 20l2.5-3 2.5 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Hangman</strong><small>Guess the hidden word</small></span>
       </button>
       <button class="context-menu__item" data-module="boombox" data-category="audio"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
     </div>
@@ -416,6 +428,75 @@
 
   <script src="changelog/data.js"></script>
   <script src="app.js"></script>
+
+
+  <template id="hangman-template">
+    <section class="module hangman-module" data-type="hangman" data-bg="white" data-font="inter">
+      <button class="module-delete" aria-label="Delete Hangman">×</button>
+      <div class="module-drag-handle"></div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+
+      <div class="hangman-header">
+        <div>
+          <span class="hangman-kicker">HANGMAN</span>
+          <strong class="hangman-status">READY</strong>
+        </div>
+      </div>
+
+      <div class="hangman-game">
+        <div class="hangman-figure" aria-hidden="true">
+          <svg viewBox="0 0 180 190">
+            <path class="hangman-gallows" d="M24 174h128M48 174V22h83M131 22v27" />
+            <circle class="hangman-part hangman-part-1" cx="131" cy="64" r="15"/>
+            <path class="hangman-part hangman-part-2" d="M131 79v48"/>
+            <path class="hangman-part hangman-part-3" d="M131 91l-25 20"/>
+            <path class="hangman-part hangman-part-4" d="M131 91l25 20"/>
+            <path class="hangman-part hangman-part-5" d="M131 127l-22 31"/>
+            <path class="hangman-part hangman-part-6" d="M131 127l22 31"/>
+          </svg>
+        </div>
+
+        <div class="hangman-play-area">
+          <div class="hangman-word" aria-label="Hidden word"></div>
+          <div class="hangman-wrong-row">
+            <span>INCORRECT</span>
+            <strong class="hangman-wrong-letters">—</strong>
+          </div>
+          <div class="hangman-keyboard" aria-label="Letter choices"></div>
+        </div>
+      </div>
+
+      <div class="hangman-setup">
+        <div class="hangman-setup-card">
+          <span class="hangman-setup-label">TEACHER SETUP</span>
+          <strong>Set the secret word</strong>
+          <p>Letters and spaces are supported. Spaces will be shown automatically.</p>
+          <input class="hangman-word-input" type="password" maxlength="40" autocomplete="off" placeholder="Enter a word or phrase">
+          <div class="hangman-setup-actions">
+            <button class="hangman-save-word" type="button">Start game</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hangman-result" hidden>
+        <div class="hangman-result-card">
+          <span class="hangman-result-label"></span>
+          <strong class="hangman-result-message"></strong>
+          <span class="hangman-result-hint">Click anywhere to play again</span>
+        </div>
+      </div>
+
+      <div class="customization-bar hangman-customization" aria-label="Hangman customization">
+        <button class="custom-icon hangman-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon hangman-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
 
   <template id="spinner-template">
     <section class="module spinner-module" data-type="spinner" data-bg="white" data-font="inter">

@@ -82,7 +82,7 @@ function closeMenu(){menu.classList.remove('is-open');menu.setAttribute('aria-hi
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 function createModule(type,x,y){const t=document.getElementById(`${type}-template`);if(!t)return null;const m=t.content.firstElementChild.cloneNode(true);workspace.appendChild(m);const w=m.offsetWidth,h=m.offsetHeight;m.style.left=`${clamp(x-w/2,0,innerWidth-w)}px`;m.style.top=`${clamp(y-18,0,innerHeight-h)}px`;bringToFront(m);setupCommon(m);if(type==='sticky')setupSticky(m);if(type==='timer')setupTimer(m);if(type==='interactive')setupHourglass(m);if(type==='clock')setupClock(m);if(type==='noise')setupNoise(m);if(type==='collections')setupCollections(m);if(type==='stoplight')setupStoplight(m);if(type==='image')setupImage(m);if(type==='youtube')setupYoutube(m);if(type==='boombox')setupBoombox(m);
-  if(type==='spinner')setupSpinner(m);if(type==='textbubble')setupTextBubble(m);if(type==='todo')setupTodo(m);return m}
+  if(type==='spinner')setupSpinner(m);if(type==='hangman')setupHangman(m);if(type==='textbubble')setupTextBubble(m);if(type==='todo')setupTodo(m);return m}
 function bringToFront(m){m.style.zIndex=++z}
 function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);setupResize(m)}
 function setupDrag(m){
@@ -417,6 +417,223 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 const saved=localStorage.getItem('modular-space-theme');if(saved==='dark')document.body.classList.add('dark');const updateTheme=()=>{const d=document.body.classList.contains('dark');themeToggle.textContent=d?'☀':'☾';themeToggle.title=d?'Switch to light mode':'Switch to dark mode'};themeToggle.addEventListener('click',()=>{document.body.classList.toggle('dark');localStorage.setItem('modular-space-theme',document.body.classList.contains('dark')?'dark':'light');updateTheme()});updateTheme();fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});document.addEventListener('fullscreenchange',()=>{fullscreenToggle.textContent=document.fullscreenElement?'↙':'⛶'});window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,innerWidth-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,innerHeight-m.offsetHeight))}px`}));
 
 
+
+
+function setupHangman(m){
+  const status=m.querySelector('.hangman-status');
+  const wordEl=m.querySelector('.hangman-word');
+  const wrongEl=m.querySelector('.hangman-wrong-letters');
+  const keyboard=m.querySelector('.hangman-keyboard');
+  const setup=m.querySelector('.hangman-setup');
+  const input=m.querySelector('.hangman-word-input');
+  const saveButton=m.querySelector('.hangman-save-word');
+  const result=m.querySelector('.hangman-result');
+  const resultLabel=m.querySelector('.hangman-result-label');
+  const resultMessage=m.querySelector('.hangman-result-message');
+  const bgButton=m.querySelector('.hangman-bg');
+  const fontButton=m.querySelector('.hangman-font');
+  const parts=[...m.querySelectorAll('.hangman-part')];
+
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  let secret='';
+  let guessed=new Set();
+  let wrong=[];
+  let finished=false;
+  const maxWrong=6;
+
+  function normalizeWord(value){
+    return value.toUpperCase().replace(/[^A-Z ]+/g,'').replace(/\s+/g,' ').trim();
+  }
+
+  function clearRound(){
+    secret='';
+    guessed=new Set();
+    wrong=[];
+    finished=false;
+    m.classList.remove('is-finished');
+    result.hidden=true;
+    resultLabel.textContent='';
+    resultMessage.textContent='';
+    status.textContent='READY';
+    wrongEl.textContent='—';
+
+    parts.forEach(part=>part.classList.remove('is-visible'));
+
+    wordEl.replaceChildren();
+    const placeholder=document.createElement('div');
+    placeholder.style.opacity='.35';
+    placeholder.style.fontWeight='800';
+    placeholder.style.fontSize='13px';
+    placeholder.textContent='New round';
+    wordEl.append(placeholder);
+
+    keyboard.querySelectorAll('.hangman-key').forEach(b=>{
+      b.disabled=true;
+      b.classList.remove('is-correct','is-wrong');
+    });
+  }
+
+  function openSetup(){
+    clearRound();
+    input.value='';
+    setup.hidden=false;
+    requestAnimationFrame(()=>input.focus());
+  }
+
+  function closeSetup(){
+    setup.hidden=true;
+  }
+
+  function buildKeyboard(){
+    keyboard.replaceChildren();
+    alphabet.forEach(letter=>{
+      const b=document.createElement('button');
+      b.className='hangman-key';
+      b.type='button';
+      b.textContent=letter;
+      b.dataset.letter=letter;
+      b.disabled=true;
+      b.addEventListener('click',()=>guess(letter));
+      keyboard.append(b);
+    });
+  }
+
+  function renderFigure(){
+    parts.forEach((part,i)=>part.classList.toggle('is-visible',i<wrong.length));
+  }
+
+  function renderWord(){
+    wordEl.replaceChildren();
+
+    if(!secret)return;
+
+    [...secret].forEach(char=>{
+      const slot=document.createElement('span');
+      slot.className='hangman-letter-slot';
+
+      if(char===' '){
+        slot.classList.add('is-space');
+      }else{
+        slot.textContent=guessed.has(char)||finished?char:'';
+      }
+
+      wordEl.append(slot);
+    });
+  }
+
+  function renderKeyboard(){
+    keyboard.querySelectorAll('.hangman-key').forEach(b=>{
+      const letter=b.dataset.letter;
+      const used=guessed.has(letter);
+
+      b.disabled=!secret||finished||used;
+      b.classList.toggle('is-correct',used&&secret.includes(letter));
+      b.classList.toggle('is-wrong',used&&!secret.includes(letter));
+    });
+  }
+
+  function render(){
+    renderWord();
+    renderFigure();
+    renderKeyboard();
+    wrongEl.textContent=wrong.length?wrong.join(' '):'—';
+
+    if(secret&&!finished){
+      const tries=maxWrong-wrong.length;
+      status.textContent=`${tries} ${tries===1?'TRY':'TRIES'} LEFT`;
+    }
+  }
+
+  function checkWin(){
+    const letters=[...new Set(secret.replace(/ /g,''))];
+    return letters.every(letter=>guessed.has(letter));
+  }
+
+  function finish(won){
+    finished=true;
+    m.classList.add('is-finished');
+    renderWord();
+    renderKeyboard();
+
+    if(won){
+      status.textContent='YOU WON!';
+      resultLabel.textContent='YOU WON!';
+      resultMessage.textContent=`The word was ${secret}!`;
+      launchConfetti(m);
+    }else{
+      status.textContent='TRY AGAIN!';
+      resultLabel.textContent='TRY AGAIN!';
+      resultMessage.textContent=`The word was ${secret}!`;
+    }
+
+    result.hidden=false;
+  }
+
+  function guess(letter){
+    if(!secret||finished||guessed.has(letter))return;
+
+    guessed.add(letter);
+
+    if(!secret.includes(letter)){
+      wrong.push(letter);
+    }
+
+    if(checkWin()){
+      finish(true);
+      return;
+    }
+
+    if(wrong.length>=maxWrong){
+      finish(false);
+      return;
+    }
+
+    render();
+  }
+
+  function startGame(){
+    const next=normalizeWord(input.value);
+
+    if(!next){
+      input.focus();
+      return;
+    }
+
+    secret=next;
+    guessed=new Set();
+    wrong=[];
+    finished=false;
+    m.classList.remove('is-finished');
+    closeSetup();
+    render();
+  }
+
+  saveButton.addEventListener('click',startGame);
+
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      startGame();
+    }
+  });
+
+  result.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(result.hidden)return;
+    openSetup();
+  });
+
+  bgButton.addEventListener('click',()=>{
+    cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']);
+  });
+
+  fontButton.addEventListener('click',()=>{
+    cycleData(m,'font',FONT_OPTIONS);
+  });
+
+  buildKeyboard();
+  openSetup();
+}
 
 function setupSpinner(m){
   const canvas=m.querySelector('.spinner-canvas');
@@ -819,12 +1036,7 @@ function setupChangelog(){
       if(Array.isArray(window.TeacherTilesChangelogData)&&window.TeacherTilesChangelogData.length){
         valid=window.TeacherTilesChangelogData
           .filter(entry=>entry&&entry.file&&typeof entry.text==='string')
-          .slice()
-          .sort((a,b)=>{
-            const at=Date.parse(a.addedAt||0)||0;
-            const bt=Date.parse(b.addedAt||0)||0;
-            return bt-at;
-          });
+          .slice();
       }else{
         const response=await fetch(`changelog/index.json?ts=${Date.now()}`,{cache:'no-store'});
         if(!response.ok)throw new Error('Could not load changelog index.');
@@ -842,11 +1054,7 @@ function setupChangelog(){
           return {file,addedAt,text:await res.text()};
         }));
 
-        valid=entries.filter(Boolean).sort((a,b)=>{
-          const at=Date.parse(a.addedAt||0)||0;
-          const bt=Date.parse(b.addedAt||0)||0;
-          return bt-at;
-        });
+        valid=entries.filter(Boolean);
       }
 
       if(!valid.length){

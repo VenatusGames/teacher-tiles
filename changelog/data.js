@@ -1,12 +1,1 @@
-window.TeacherTilesChangelogData = [
-  {
-    "file": "v1.1.md",
-    "addedAt": "2026-08-27T00:02:00Z",
-    "text": "# TeacherTiles v1.0\n\n## Added\n- TEST\n"
-  },
-  {
-    "file": "v1.0.md",
-    "addedAt": "2026-08-27T00:01:00Z",
-    "text": "# TeacherTiles v1.0\n\n## Added\n- Launch Version\n- Enjoy 😀\n"
-  }
-];
+window.TeacherTilesChangelogData = [{"file":"v1.0.2.md","addedAt":"2026-08-27T02:28:32.2174114Z","text":"# TeacherTiles v1.0.2\n\n## Added\n- Games category for modules\n- One new game module\n    - Hangman\n\n- Spinner tool "},{"file":"v1.0.1.md","addedAt":"2026-08-27T02:27:56.7713874Z","text":"# TeacherTiles v1.0.1\n\n## Added\n- Custom changelog for updates and news!"},{"file":"v1.0.0.md","addedAt":"2026-08-27T06:13:14.0000000Z","text":"# TeacherTiles v1.0\n\n## Added\n- Launch Version\n- Enjoy 😀\n"}];
