@@ -27,9 +27,13 @@ jobs:
           mkdir _site
           rsync -a --exclude='.git' --exclude='_site' ./ _site/
 
+      - name: Generate asset timestamp
+        run: |
+          asset_version=$(date -u +%s%3N)
+          echo "ASSET_VERSION=${asset_version}" >> "$GITHUB_ENV"
+          echo "Generated asset timestamp: ${asset_version}"
+
       - name: Cache-bust local assets
-        env:
-          ASSET_VERSION: ${{ github.sha }}
         run: |
           python - <<'PY'
           from pathlib import Path
