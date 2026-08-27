@@ -27,9 +27,13 @@ jobs:
           mkdir _site
           rsync -a --exclude='.git' --exclude='_site' ./ _site/
 
+      - name: Generate asset timestamp
+        run: |
+          asset_version=$(date -u +%s%3N)
+          echo "ASSET_VERSION=${asset_version}" >> "$GITHUB_ENV"
+          echo "Generated asset timestamp: ${asset_version}"
+
       - name: Cache-bust local assets
-        env:
-          ASSET_VERSION: ${{ github.sha }}
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -39,22 +43,33 @@ jobs:
           index = Path('_site/index.html')
           html = index.read_text(encoding='utf-8')
           version = os.environ['ASSET_VERSION']
+          asset_pattern = r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!//)[^"\']+\.(?:js|css))(?P<suffix>["\'])'
 
-          html = re.sub(
-              r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?:styles\.css|app\.js|changelog/data\.js))(?P<suffix>["\'])',
+          local_assets = list(re.finditer(asset_pattern, html))
+          if not local_assets:
+              raise SystemExit('No local JavaScript or CSS assets found')
+
+          html, replacements = re.subn(
+              asset_pattern,
               lambda match: f"{match.group('prefix')}{match.group('asset')}?v={version}{match.group('suffix')}",
               html,
           )
+          if replacements != len(local_assets):
+              raise SystemExit(f'Expected {len(local_assets)} local asset replacements, found {replacements}')
           index.write_text(html, encoding='utf-8')
+          print(f'Cache-busting completed successfully for {replacements} local assets.')
           PY
 
-          grep -q "styles.css?v=${ASSET_VERSION}" _site/index.html
-          grep -q "app.js?v=${ASSET_VERSION}" _site/index.html
-          grep -q "changelog/data.js?v=${ASSET_VERSION}" _site/index.html
+          asset_count=$(grep -oE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html | wc -l)
+          test "${asset_count}" -gt 0
 
           echo "Cache-busting completed successfully."
           echo "Asset version: ${ASSET_VERSION}"
-          grep -oE '(styles\.css|app\.js|changelog/data\.js)\?v=[^" ]+' _site/index.html
+          asset_urls=$(grep -oE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html)
+          printf '%s\n' "### Cache-busting" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "Replaced ${asset_count} local asset references with version \\`${ASSET_VERSION}\\`:" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$asset_urls" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$asset_urls"
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
