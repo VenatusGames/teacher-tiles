@@ -24,7 +24,10 @@
 
   <main id="workspace" class="workspace" aria-label="Module workspace"><div class="snap-guide snap-guide-x" aria-hidden="true"></div><div class="snap-guide snap-guide-y" aria-hidden="true"></div></main>
 
-  <div id="workspace-empty-hint" class="workspace-empty-hint" aria-hidden="true">Right-click anywhere to add a tile</div>
+  <div class="workspace-empty-messages" aria-live="polite">
+    <div id="signed-out-save-warning" class="signed-out-save-warning" hidden>Sign-in to save your TileSet layout.</div>
+    <div id="workspace-empty-hint" class="workspace-empty-hint" aria-hidden="true">Right-click anywhere to add a tile</div>
+  </div>
 
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
     <div class="trash-can" aria-hidden="true">
@@ -34,7 +37,6 @@
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
-    <div id="signed-out-save-warning" class="signed-out-save-warning" hidden>Sign-in to save your TileSet layout.</div>
     <button id="changelog-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open news">
       <svg class="news-megaphone-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.5 13.5h3l8 4V6.5l-8 4h-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -110,7 +112,7 @@
           </div>
           <span class="profile-state__kicker">WELCOME</span>
           <h2>Sign in to TeacherTiles</h2>
-          <p>Sign in via Google to save your TileSets, purchase optional cosmetics, and explore all that TeacherTiles has to offer.</p>
+          <p>Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.</p>
           <button id="profile-google-signin" class="profile-google-button" type="button">
             <span class="profile-google-mark" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.8 3-4.3 3-7.3Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4L15.4 17c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9A6 6 0 0 1 6.1 12c0-.7.1-1.3.3-1.9V7.5H3.1A10 10 0 0 0 2 12c0 1.6.4 3.1 1.1 4.5l3.3-2.6Z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6Z"/></svg>
@@ -128,6 +130,14 @@
               <p id="profile-email"></p>
             </div>
             <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
+          </div>
+          <div class="profile-coin-card" aria-label="TeacherTiles coin balance">
+            <div class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></div>
+            <div class="profile-coin-card__copy">
+              <span>COINS</span>
+              <strong id="profile-coin-balance">0</strong>
+            </div>
+            <small>Account balance</small>
           </div>
           <div class="profile-account-note">
             <strong>Your profile is connected.</strong>
