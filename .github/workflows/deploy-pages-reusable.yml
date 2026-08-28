@@ -1,15 +1,7 @@
-name: Deploy to GitHub Pages
+name: Build and deploy Pages artifact
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+  workflow_call:
 
 concurrency:
   group: pages
@@ -21,11 +13,15 @@ jobs:
     steps:
       - name: Check out site
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Prepare site
         run: |
           mkdir _site
-          rsync -a --exclude='.git' --exclude='_site' ./ _site/
+          git archive origin/main | tar -x -C _site
+          mkdir _site/sandbox
+          git archive origin/sandbox | tar -x -C _site/sandbox
 
       - name: Generate asset timestamp
         run: |
@@ -40,32 +36,33 @@ jobs:
           import os
           import re
 
-          index = Path('_site/index.html')
-          html = index.read_text(encoding='utf-8')
           version = os.environ['ASSET_VERSION']
           asset_pattern = r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!//)[^"\']+\.(?:js|css))(?P<suffix>["\'])'
 
-          local_assets = list(re.finditer(asset_pattern, html))
-          if not local_assets:
-              raise SystemExit('No local JavaScript or CSS assets found')
+          indexes = [Path('_site/index.html'), Path('_site/sandbox/index.html')]
+          for index in indexes:
+              html = index.read_text(encoding='utf-8')
+              local_assets = list(re.finditer(asset_pattern, html))
+              if not local_assets:
+                  raise SystemExit(f'No local JavaScript or CSS assets found in {index}')
 
-          html, replacements = re.subn(
-              asset_pattern,
-              lambda match: f"{match.group('prefix')}{match.group('asset')}?v={version}{match.group('suffix')}",
-              html,
-          )
-          if replacements != len(local_assets):
-              raise SystemExit(f'Expected {len(local_assets)} local asset replacements, found {replacements}')
-          index.write_text(html, encoding='utf-8')
-          print(f'Cache-busting completed successfully for {replacements} local assets.')
+              html, replacements = re.subn(
+                  asset_pattern,
+                  lambda match: f"{match.group('prefix')}{match.group('asset')}?v={version}{match.group('suffix')}",
+                  html,
+              )
+              if replacements != len(local_assets):
+                  raise SystemExit(f'Expected {len(local_assets)} local asset replacements in {index}, found {replacements}')
+              index.write_text(html, encoding='utf-8')
+              print(f'Cache-busting completed successfully for {replacements} local assets in {index}.')
           PY
 
-          asset_count=$(grep -oE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html | wc -l)
+          asset_count=$(grep -rhoE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html _site/sandbox/index.html | wc -l)
           test "${asset_count}" -gt 0
 
           echo "Cache-busting completed successfully."
           echo "Asset version: ${ASSET_VERSION}"
-          asset_urls=$(grep -oE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html)
+          asset_urls=$(grep -rhoE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html _site/sandbox/index.html)
           printf '%s\n' "### Cache-busting" >> "$GITHUB_STEP_SUMMARY"
           printf '%s\n' "Replaced ${asset_count} local asset references with version \\`${ASSET_VERSION}\\`:" >> "$GITHUB_STEP_SUMMARY"
           printf '%s\n' "$asset_urls" >> "$GITHUB_STEP_SUMMARY"
