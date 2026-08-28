@@ -24,6 +24,15 @@
 
   <main id="workspace" class="workspace" aria-label="Module workspace"><div class="snap-guide snap-guide-x" aria-hidden="true"></div><div class="snap-guide snap-guide-y" aria-hidden="true"></div></main>
 
+
+  <button id="boards-toggle" class="boards-launch-button" type="button" aria-label="Open boards">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.25" y="5" width="15.5" height="12.5" rx="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M8 9h8M8 12h5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <strong>Boards</strong>
+  </button>
+
   <div class="workspace-empty-messages" aria-live="polite">
     <div id="signed-out-save-warning" class="signed-out-save-warning" hidden>Sign-in to save your TileSet layout.</div>
     <div id="workspace-empty-hint" class="workspace-empty-hint" aria-hidden="true">Right-click anywhere to add a tile</div>
@@ -88,6 +97,27 @@
     </button>
   </div>
 
+
+
+  <section id="boards-view" class="boards-view" hidden aria-hidden="true">
+    <div class="boards-view__topbar">
+      <div class="boards-view__heading">
+        <span>TEACHERTILES</span>
+        <h1>Boards</h1>
+      </div>
+      <div class="boards-view__actions">
+        <span id="boards-save-status" class="boards-save-status" aria-live="polite"></span>
+        <button id="boards-back" class="boards-back-button" type="button">Back to Board</button>
+      </div>
+    </div>
+    <div class="boards-view__body">
+      <div id="boards-loading" class="boards-loading">
+        <span class="profile-auth-spinner" aria-hidden="true"></span>
+        <span>Loading boards…</span>
+      </div>
+      <div id="boards-grid" class="boards-grid" aria-live="polite"></div>
+    </div>
+  </section>
 
   <section id="profile-modal" class="profile-modal" hidden aria-hidden="true">
     <button class="profile-modal__backdrop" type="button" data-profile-close tabindex="-1" aria-label="Close profile"></button>
