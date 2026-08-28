@@ -1,4 +1,6 @@
-name: Deploy site to respective branch
+name: Deploy combined site to GitHub Pages
+
+run-name: Deploy main + sandbox (triggered by ${{ github.ref_name }})
 
 on:
   push:
@@ -28,9 +30,21 @@ jobs:
       - name: Prepare site
         run: |
           mkdir _site
+          main_commit=$(git rev-parse origin/main)
+          sandbox_commit=$(git rev-parse origin/sandbox)
+          echo "Publishing main commit: ${main_commit} -> https://teachertiles.com/"
+          echo "Publishing sandbox commit: ${sandbox_commit} -> https://teachertiles.com/sandbox/"
+          echo "Triggered by branch: ${GITHUB_REF_NAME} (${GITHUB_SHA})"
           git archive origin/main | tar -x -C _site
           mkdir _site/sandbox
           git archive origin/sandbox | tar -x -C _site/sandbox
+          {
+            echo '### Deployment sources'
+            echo "- Triggered by: \\`${GITHUB_REF_NAME}\\` at \\`${GITHUB_SHA}\\`"
+            echo "- Main: \\`${main_commit:0:12}\\` -> [teachertiles.com](https://teachertiles.com/)"
+            echo "- Sandbox: \\`${sandbox_commit:0:12}\\` -> [teachertiles.com/sandbox](https://teachertiles.com/sandbox/)"
+            echo '- Artifact layout: `main` at `/`; `sandbox` at `/sandbox/`'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate asset timestamp
         run: |
@@ -71,6 +85,8 @@ jobs:
 
           echo "Cache-busting completed successfully."
           echo "Asset version: ${ASSET_VERSION}"
+          echo "Main assets: _site/index.html"
+          echo "Sandbox assets: _site/sandbox/index.html"
           asset_urls=$(grep -rhoE '(src|href)="[^" ]+\.(js|css)\?v=[^" ]+"' _site/index.html _site/sandbox/index.html)
           printf '%s\n' "### Cache-busting" >> "$GITHUB_STEP_SUMMARY"
           printf '%s\n' "Replaced ${asset_count} local asset references with version \\`${ASSET_VERSION}\\`:" >> "$GITHUB_STEP_SUMMARY"
@@ -95,3 +111,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Report deployment result
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          echo "GitHub Pages deployment completed successfully."
+          echo "Published main: https://teachertiles.com/"
+          echo "Published sandbox: https://teachertiles.com/sandbox/"
+          echo "Pages deployment URL: ${PAGE_URL}"
+          {
+            echo '### Deployment result'
+            echo 'Deployment completed successfully.'
+            echo '- Main: [https://teachertiles.com/](https://teachertiles.com/)'
+            echo '- Sandbox: [https://teachertiles.com/sandbox/](https://teachertiles.com/sandbox/)'
+            echo "- Pages deployment URL: ${PAGE_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"
