@@ -310,7 +310,7 @@ body.dark .module[data-bg="white"].todo-module .customization-bar button{backgro
 .context-menu{max-height:min(342px,calc(100vh - 20px))!important;overflow-y:auto!important}
 .context-menu.is-open{animation:contextMenuFade .14s ease-out!important}
 
-.workspace-credit{position:fixed;right:18px;bottom:15px;z-index:4;font-size:12px;color:var(--muted);opacity:.48;pointer-events:none;user-select:none}
+.workspace-credit{position:fixed;right:18px;bottom:15px;z-index:0;font-size:12px;color:var(--muted);opacity:.48;pointer-events:none;user-select:none}
 
 /* Clock and Text Bubble use virtually the entire module; their toolbars float above content only on hover. */
 .clock-module{padding:18px 8px 8px!important;gap:0!important}
@@ -4725,7 +4725,7 @@ body.dark .writinglines-module[data-bg="white"] .writinglines-paper{
   flex:0 0 40px;
   padding:0;
   color:var(--text);
-  cursor:default;
+  cursor:pointer;
   overflow:visible;
 }
 .upcoming-control__icon{
@@ -4820,11 +4820,15 @@ body.dark .upcoming-control__tooltip{
   will-change:transform;
   transform-origin:0 0;
   background-size:24px 24px;
+  z-index:1;
 }
 .workspace.is-panning{cursor:grabbing}
-.workspace .module{cursor:default}
+.workspace .module{cursor:grab}
 .workspace .module-drag-handle{cursor:grab}
+.workspace .module.is-dragging{cursor:grabbing}
 .workspace .module.is-dragging .module-drag-handle{cursor:grabbing}
+.module-grab-cursor{cursor:grab!important}
+.module.is-dragging .module-grab-cursor{cursor:grabbing!important}
 .snap-guide{pointer-events:none}
 
 
