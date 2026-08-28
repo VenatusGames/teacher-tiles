@@ -1,4 +1,4 @@
-name: Deploy combined site to GitHub Pages
+name: Deploy site to respective branch
 
 on:
   push:
