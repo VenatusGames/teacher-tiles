@@ -1,7 +1,16 @@
-name: Build and deploy Pages artifact
+name: Deploy combined site to GitHub Pages
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
+      - sandbox
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
