@@ -12591,3 +12591,21 @@ body.dark .shop-coins-button{background:linear-gradient(135deg,#493c19,var(--sur
 .shop-product__preview--emoji-faces{background:linear-gradient(145deg,#fff4c9,#ffeef4)}
 .shop-product__preview--emoji-symbols{background:linear-gradient(145deg,#f1f3f7,#f9f5ff)}
 .shop-product__preview--emoji-food{background:linear-gradient(145deg,#fff3e5,#fff8d8)}
+
+
+/* Board marquee selection */
+.board-selection-marquee{
+  position:fixed;
+  z-index:15000;
+  pointer-events:none;
+  border:1.5px solid color-mix(in srgb,var(--accent,#4f6f96) 82%,white 18%);
+  border-radius:8px;
+  background:color-mix(in srgb,var(--accent,#4f6f96) 13%,transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--surface-solid,#fff) 62%,transparent) inset,0 6px 20px rgba(15,23,42,.08);
+  backdrop-filter:blur(.6px);
+}
+.board-selection-marquee[hidden]{display:none!important}
+body.is-board-selecting{cursor:crosshair!important}
+body.is-board-selecting .workspace{cursor:crosshair!important}
+.workspace{cursor:default}
+.workspace.is-panning{cursor:grabbing!important}
