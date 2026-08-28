@@ -303,10 +303,10 @@ let boardKeyboardPanFrame=0;
 let boardKeyboardPanTime=0;
 const BOARD_KEYBOARD_PAN_SPEED=720;
 const boardPanKeyDirection={
-  w:[0,1],arrowup:[0,1],
-  s:[0,-1],arrowdown:[0,-1],
-  a:[1,0],arrowleft:[1,0],
-  d:[-1,0],arrowright:[-1,0]
+  arrowup:[0,1],
+  arrowdown:[0,-1],
+  arrowleft:[1,0],
+  arrowright:[-1,0]
 };
 
 function boardKeyboardPanBlocked(){
@@ -431,6 +431,18 @@ document.addEventListener('keydown',e=>{
   if(isTypingTarget(e.target)||isTypingTarget(document.activeElement))return;
   const command=e.ctrlKey||e.metaKey;
   const key=e.key.toLowerCase();
+  if(command&&!e.altKey&&key==='a'&&!boardKeyboardPanBlocked()){
+    e.preventDefault();
+    const modules=[...workspace.querySelectorAll('.module')];
+    const allSelected=modules.length>0&&modules.every(module=>selectedModules.has(module));
+    if(allSelected){
+      clearSelection();
+    }else{
+      clearSelection();
+      for(const module of modules)selectModule(module);
+    }
+    return;
+  }
   if(command&&!e.altKey&&(key==='z'||key==='y')){
     e.preventDefault();
     if(key==='y'||(key==='z'&&e.shiftKey))redoBoardAction();
@@ -453,6 +465,14 @@ window.addEventListener('resize',applyBoardCamera);
 
 workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r=menu.getBoundingClientRect();menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false')});
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
+
+document.addEventListener('pointerdown',e=>{
+  if(e.button!==0||!selectedModules.size)return;
+  const target=e.target instanceof Element?e.target:null;
+  const module=target?.closest('.module');
+  if(module&&selectedModules.has(module))return;
+  clearSelection();
+},true);
 
 const menuFilters=[...menu.querySelectorAll('[data-category-filter]')];
 const menuSearch=menu.querySelector('#context-menu-search');
