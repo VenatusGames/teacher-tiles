@@ -427,10 +427,128 @@ workspace.addEventListener('auxclick',e=>{
   if(e.button===1)e.preventDefault();
 });
 
+let boardClipboard=null;
+let boardClipboardPasteCount=0;
+
+function cloneBoardClipboardValue(value){
+  if(typeof structuredClone==='function'){
+    try{return structuredClone(value)}catch{}
+  }
+  return JSON.parse(JSON.stringify(value));
+}
+
+function selectedBoardModules(){
+  return [...workspace.querySelectorAll('.module')]
+    .filter(module=>selectedModules.has(module))
+    .sort((a,b)=>(Number(a.style.zIndex)||0)-(Number(b.style.zIndex)||0));
+}
+
+function copyBoardSelection(){
+  const modules=selectedBoardModules();
+  if(!modules.length)return false;
+  const objects=modules.map(serializeBoardModule).filter(Boolean);
+  if(!objects.length)return false;
+  boardClipboard={
+    schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
+    objects:cloneBoardClipboardValue(objects)
+  };
+  boardClipboardPasteCount=0;
+  return true;
+}
+
+function boardDuplicateOffset(objects,distance=34){
+  if(!objects.length)return{x:distance,y:distance};
+  let left=Infinity,top=Infinity,right=-Infinity,bottom=-Infinity;
+  for(const object of objects){
+    const t=object?.transform||{};
+    const l=Number(t.left)||0;
+    const tt=Number(t.top)||0;
+    const w=Math.max(1,Number(t.width)||160);
+    const h=Math.max(1,Number(t.height)||120);
+    left=Math.min(left,l);top=Math.min(top,tt);right=Math.max(right,l+w);bottom=Math.max(bottom,tt+h);
+  }
+  let x=distance,y=distance;
+  if(right+x>BOARD_WIDTH&&left-distance>=0)x=-distance;
+  if(bottom+y>BOARD_HEIGHT&&top-distance>=0)y=-distance;
+  return{x,y};
+}
+
+function duplicateBoardObjects(objects,{distance=34,record=true}={}){
+  if(!Array.isArray(objects)||!objects.length)return[];
+  const source=cloneBoardClipboardValue(objects);
+  const offset=boardDuplicateOffset(source,distance);
+  const states=source.map(state=>{
+    const next=cloneBoardClipboardValue(state);
+    next.id=makeBoardObjectId();
+    delete next.zIndex;
+    const t=next.transform||{};
+    const width=Math.max(1,Number(t.width)||160);
+    const height=Math.max(1,Number(t.height)||120);
+    next.transform={
+      ...t,
+      left:clamp((Number(t.left)||0)+offset.x,0,BOARD_WIDTH-width),
+      top:clamp((Number(t.top)||0)+offset.y,0,BOARD_HEIGHT-height),
+      width,
+      height
+    };
+    return next;
+  });
+
+  const created=[];
+  withBoardChangesSuspended(()=>{
+    for(const state of states){
+      try{
+        const module=restoreTeacherTilesBoardObject(state);
+        if(module){bringToFront(module);created.push(module)}
+      }catch(error){
+        console.warn('TeacherTiles could not duplicate board object',state?.type,error);
+      }
+    }
+  });
+
+  if(!created.length)return[];
+  selectModules(created);
+  if(record)recordHistory({type:'add',elements:created});
+  updateWorkspaceEmptyState();
+  return created;
+}
+
+function pasteBoardClipboard(){
+  if(!boardClipboard?.objects?.length)return[];
+  boardClipboardPasteCount+=1;
+  return duplicateBoardObjects(boardClipboard.objects,{distance:34*Math.min(boardClipboardPasteCount,8)});
+}
+
+function duplicateBoardSelection(){
+  const modules=selectedBoardModules();
+  if(!modules.length)return[];
+  const objects=modules.map(serializeBoardModule).filter(Boolean);
+  return duplicateBoardObjects(objects,{distance:34});
+}
+
 document.addEventListener('keydown',e=>{
   if(isTypingTarget(e.target)||isTypingTarget(document.activeElement))return;
   const command=e.ctrlKey||e.metaKey;
   const key=e.key.toLowerCase();
+  if(command&&!e.altKey&&!e.shiftKey&&key==='c'){
+    if(selectedModules.size){
+      e.preventDefault();
+      copyBoardSelection();
+    }
+    return;
+  }
+  if(command&&!e.altKey&&!e.shiftKey&&key==='v'){
+    if(boardClipboard?.objects?.length){
+      e.preventDefault();
+      pasteBoardClipboard();
+    }
+    return;
+  }
+  if(command&&!e.altKey&&!e.shiftKey&&key==='d'){
+    e.preventDefault();
+    if(selectedModules.size)duplicateBoardSelection();
+    return;
+  }
   if(command&&!e.altKey&&key==='a'&&!boardKeyboardPanBlocked()){
     e.preventDefault();
     const modules=[...workspace.querySelectorAll('.module')];
