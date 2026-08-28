@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="authentication/google-auth.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -34,6 +36,7 @@
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
+    <div id="google-sign-in" class="google-sign-in" aria-label="Google sign-in"></div>
     <button id="changelog-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open news">
       <svg class="news-megaphone-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.5 13.5h3l8 4V6.5l-8 4h-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -1891,6 +1894,8 @@
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
   <script src="app.js"></script>
+  <script src="authentication/config.js"></script>
+  <script src="authentication/google-auth.js"></script>
 
 
   <template id="ruler-template">

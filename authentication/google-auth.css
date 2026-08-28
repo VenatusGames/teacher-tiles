@@ -1,0 +1,25 @@
+.google-sign-in{
+  width:190px;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.google-sign-in iframe{
+  max-width:100%;
+}
+.google-sign-in__status{
+  max-width:190px;
+  padding:6px 9px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:var(--surface);
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.25;
+  text-align:center;
+}
+.google-sign-in__status.is-error{
+  color:#b54752;
+}
