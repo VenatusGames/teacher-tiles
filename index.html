@@ -24,6 +24,8 @@
 
   <main id="workspace" class="workspace" aria-label="Module workspace"><div class="snap-guide snap-guide-x" aria-hidden="true"></div><div class="snap-guide snap-guide-y" aria-hidden="true"></div></main>
 
+  <div id="workspace-empty-hint" class="workspace-empty-hint" aria-hidden="true">Right-click anywhere to add a tile</div>
+
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
     <div class="trash-can" aria-hidden="true">
       <span class="trash-lid"></span><span class="trash-body"><i></i><i></i><i></i></span>
@@ -53,6 +55,27 @@
     <button id="fullscreen-toggle" class="workspace-control" type="button" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button>
   </div>
 
+  <div class="workspace-upcoming-controls" aria-label="Upcoming features">
+    <button class="workspace-control upcoming-control" type="button" aria-label="Themes — Coming Soon" data-feature-label="Themes" aria-disabled="true">
+      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/>
+        <circle cx="10.4" cy="7.6" r=".9" fill="currentColor"/>
+        <circle cx="14" cy="7.8" r=".9" fill="currentColor"/>
+        <circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/>
+      </svg>
+      <span class="upcoming-control__tooltip"><strong>Themes</strong><small>Coming Soon</small></span>
+    </button>
+    <button class="workspace-control upcoming-control" type="button" aria-label="Stickers — Coming Soon" data-feature-label="Stickers" aria-disabled="true">
+      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
+      <span class="upcoming-control__tooltip"><strong>Stickers</strong><small>Coming Soon</small></span>
+    </button>
+    <button class="workspace-control upcoming-control" type="button" aria-label="Shop — Coming Soon" data-feature-label="Shop" aria-disabled="true">
+      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="upcoming-control__tooltip"><strong>Shop</strong><small>Coming Soon</small></span>
+    </button>
+  </div>
+
   <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by WeikertsWonders</div>
 
   <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
@@ -61,6 +84,14 @@
         <div class="context-menu__title">Add tile</div>
         <button type="button" class="context-menu__filter context-menu__filter--all is-active" data-category-filter="all">ALL</button>
       </div>
+      <div class="context-menu__search-wrap">
+        <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="10.8" cy="10.8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m15.2 15.2 4.1 4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input id="context-menu-search" class="context-menu__search" type="search" placeholder="Search tiles..." autocomplete="off" spellcheck="false" aria-label="Search tiles">
+        <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
+      </div>
       <div class="context-menu__filters" role="tablist" aria-label="Module categories">
         <button type="button" class="context-menu__filter" data-category-filter="text">TEXT</button>
         <button type="button" class="context-menu__filter" data-category-filter="media">MEDIA</button>
@@ -68,12 +99,20 @@
         <button type="button" class="context-menu__filter" data-category-filter="time">TIME</button>
         <button type="button" class="context-menu__filter" data-category-filter="audio">AUDIO</button>
         <button type="button" class="context-menu__filter" data-category-filter="games">GAMES</button>
+        <button type="button" class="context-menu__filter" data-category-filter="literacy">LITERACY</button>
+        <button type="button" class="context-menu__filter" data-category-filter="math">MATH</button>
+        <button type="button" class="context-menu__filter" data-category-filter="sel">SEL</button>
       </div>
     </div>
     <div class="context-menu__list">
+      <div class="context-menu__no-results" hidden>
+        <strong>No tiles found</strong>
+        <small>Try another search.</small>
+      </div>
       <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
       <button class="context-menu__item" data-module="todo" data-category="text"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
+      <button class="context-menu__item" data-module="visualschedule" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
       <button class="context-menu__item" data-module="windowshare" data-category="media">
@@ -89,9 +128,12 @@
       <button class="context-menu__item" data-module="timer" data-category="time"><span class="context-menu__icon">◷</span><span><strong>Visual timer</strong><small>Shape-based progress timer</small></span></button>
       <button class="context-menu__item" data-module="interactive" data-category="time"><span class="context-menu__icon">⌛</span><span><strong>Interactive timers</strong><small>Hourglass and melting candle</small></span></button>
       <button class="context-menu__item" data-module="clock" data-category="time"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
+      <button class="context-menu__item" data-module="date" data-category="time"><span class="context-menu__icon" aria-hidden="true">31</span><span><strong>Date</strong><small>Today’s date in your chosen style</small></span></button>
+      <button class="context-menu__item" data-module="calendar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
+      <button class="context-menu__item" data-module="progressbar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▰</span><span><strong>Progress Bar</strong><small>Fill toward a set end time</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
-      <button class="context-menu__item" data-module="writinglines" data-category="tools">
+      <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -99,6 +141,112 @@
           </svg>
         </span>
         <span><strong>Writing Lines</strong><small>Handwriting practice template</small></span>
+      </button>
+      <button class="context-menu__item" data-module="abc" data-category="literacy">
+        <span class="context-menu__icon context-menu__icon--abc" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4.5 18 9 6l4.5 12M6.4 13h5.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 7h2.7a2.2 2.2 0 0 1 0 4.4H15zm0 4.4h3a2.3 2.3 0 0 1 0 4.6h-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span><strong>ABC</strong><small>Animated alphabet flashcards</small></span>
+      </button>
+      <button class="context-menu__item" data-module="cvcword" data-category="literacy">
+        <span class="context-menu__icon context-menu__icon--cvcword" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7.5 10h2.2M11 10h2.2M14.5 10h2.2M8.6 14.2h6.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>CVC Word</strong><small>Random animated CVC flashcards</small></span>
+      </button>
+      <button class="context-menu__item" data-module="highfrequency" data-category="literacy">
+        <span class="context-menu__icon context-menu__icon--highfrequency" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7 9h10M7 12h7M7 15h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>High Frequency Words</strong><small>Grade-level animated word flashcards</small></span>
+      </button>
+      
+      <button class="context-menu__item" data-module="numberline" data-category="math">
+        <span class="context-menu__icon context-menu__icon--numberline" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 12h18M5 9v6M9 10v4M13 9v6M17 10v4M21 9v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="m4 12 2-2m-2 2 2 2m14-2-2-2m2 2-2 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span><strong>Number Line</strong><small>Interactive expandable number line</small></span>
+      </button>
+      <button class="context-menu__item" data-module="hundredschart" data-category="math">
+        <span class="context-menu__icon context-menu__icon--hundreds" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 4h16v16H4zM9.3 4v16M14.7 4v16M4 9.3h16M4 14.7h16" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </span>
+        <span><strong>Hundreds Chart</strong><small>Hide, reveal, and highlight 1–100</small></span>
+      </button>
+      <button class="context-menu__item" data-module="tenframes" data-category="math">
+        <span class="context-menu__icon context-menu__icon--tenframes" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 6h18v12H3zM6.6 6v12M10.2 6v12M13.8 6v12M17.4 6v12M3 12h18" fill="none" stroke="currentColor" stroke-width="1.35"/>
+            <circle cx="5" cy="9" r="1.25" fill="currentColor"/>
+            <circle cx="8.4" cy="15" r="1.25" fill="currentColor"/>
+          </svg>
+        </span>
+        <span><strong>Ten Frames</strong><small>Build quantities with draggable counters</small></span>
+      </button>
+      <button class="context-menu__item" data-module="ruler" data-category="math">
+        <span class="context-menu__icon context-menu__icon--ruler" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="2.5" y="7" width="19" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 7v4M9 7v2.7M12 7v4M15 7v2.7M18 7v4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </span>
+        <span><strong>Ruler</strong><small>Measure with draggable ruler points</small></span>
+      </button>
+      <button class="context-menu__item" data-module="calculator" data-category="math">
+        <span class="context-menu__icon context-menu__icon--calculator" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="5" y="2.8" width="14" height="18.4" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="7.5" y="5.2" width="9" height="3.4" rx=".7" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 12h1M12 12h1M16 12h1M8 16h1M12 16h1M16 16h1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Calculator</strong><small>Basic classroom calculator</small></span>
+      </button>
+      <button class="context-menu__item" data-module="grapher" data-category="math">
+        <span class="context-menu__icon context-menu__icon--grapher" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 20V4M4 12h16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M6 17c2-1 3-7 5-8s3 4 7-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="14" cy="13" r="1.4" fill="currentColor"/>
+          </svg>
+        </span>
+        <span><strong>Graphing Tool</strong><small>Plot points and graph equations</small></span>
+      </button>
+      <button class="context-menu__item" data-module="periodictable" data-category="math">
+        <span class="context-menu__icon context-menu__icon--periodic" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="16" y="3" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="3" y="16" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9.5" y="9.5" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="16" y="16" width="5" height="5" rx=".8" fill="currentColor" opacity=".2"/>
+          </svg>
+        </span>
+        <span><strong>Periodic Table</strong><small>Explore all 118 elements</small></span>
+      </button>
+      <button class="context-menu__item" data-module="money" data-category="math">
+        <span class="context-menu__icon context-menu__icon--money" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="6" width="17" height="12" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="12" cy="12" r="2.7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6.5 9.2h.1M17.4 14.8h.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
       <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
@@ -113,6 +261,43 @@
         </span>
         <span><strong>Spinner</strong><small>Spin a wheel to pick a name</small></span>
       </button>
+      <button class="context-menu__item" data-module="groupmaker" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--groupmaker" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="8" cy="8" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="16" cy="8" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="12" cy="15.5" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M3.8 13c.7-1.8 2.1-2.8 4.2-2.8s3.5 1 4.2 2.8M11.8 13c.7-1.8 2.1-2.8 4.2-2.8s3.5 1 4.2 2.8M7.8 20.5c.7-1.8 2.1-2.8 4.2-2.8s3.5 1 4.2 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Group Maker</strong><small>Shuffle students into balanced groups</small></span>
+      </button>
+      <button class="context-menu__item" data-module="lunchcount" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--lunchcount" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 8.5h14v10H5zM8 8.5V6.8A2.8 2.8 0 0 1 10.8 4h2.4A2.8 2.8 0 0 1 16 6.8v1.7M5 12h14M9 15.2h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span><strong>Lunch Count</strong><small>Tally lunches or sort student names</small></span>
+      </button>
+      <button class="context-menu__item" data-module="voting" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--voting" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 4.5h14v15H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M8 8.2h8M8 12h5.5M8 15.8h3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="m15.2 14.7 1.4 1.4 2.4-2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span><strong>Voting</strong><small>Tally votes or sort student names</small></span>
+      </button>
+      <button class="context-menu__item" data-module="ambiencevideo" data-category="sel">
+        <span class="context-menu__icon context-menu__icon--ambiencevideo" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="5" width="17" height="13.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="m9.5 9 5.5 3.2-5.5 3.2z" fill="currentColor"/>
+            <path d="M8 21h8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Ambience Video</strong><small>Campfire, fireplace, and aquarium scenes</small></span>
+      </button>
       
       <button class="context-menu__item" data-module="hangman" data-category="games">
         <span class="context-menu__icon context-menu__icon--hangman" aria-hidden="true">
@@ -123,6 +308,18 @@
           </svg>
         </span>
         <span><strong>Hangman</strong><small>Guess the hidden word</small></span>
+      </button>
+      <button class="context-menu__item" data-module="wordypuzzle" data-category="games">
+        <span class="context-menu__icon context-menu__icon--wordypuzzle" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="3.5" width="7" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="13.5" y="3.5" width="7" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="3.5" y="13.5" width="7" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="13.5" y="13.5" width="7" height="7" rx="1.2" fill="currentColor" opacity=".18"/>
+            <path d="M16 17h2M17 16v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Wordy Puzzle</strong><small>Guess the teacher’s secret word</small></span>
       </button>
       <button class="context-menu__item" data-module="boombox" data-category="audio"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
     </div>
@@ -153,13 +350,17 @@
           <svg class="timer-shape-svg" viewBox="0 0 100 100" aria-hidden="true">
             <defs><clipPath class="shape-clip"><path></path></clipPath></defs>
             <foreignObject x="0" y="0" width="100" height="100" class="shape-foreign"><div xmlns="http://www.w3.org/1999/xhtml" class="shape-fill"></div></foreignObject>
+            <path class="shape-highlight" vector-effect="non-scaling-stroke"></path>
             <path class="shape-outline" vector-effect="non-scaling-stroke"></path>
           </svg>
-          <div class="timer-remaining">05:00</div>
+          <div class="timer-readout">
+            <div class="timer-remaining">05:00</div>
+            <div class="timer-status" aria-hidden="true">READY</div>
+          </div>
         </div>
       </div>
       <div class="timer-controls">
-        <div class="timer-shapes"><button data-shape="circle" class="is-active">●</button><button data-shape="triangle">▲</button><button data-shape="square">■</button><button data-shape="star">★</button><button data-shape="heart">♥</button></div>
+        <div class="timer-shapes"><button data-shape="circle" class="is-active" title="Circle" aria-label="Circle">●</button><button data-shape="triangle" title="Triangle" aria-label="Triangle">▲</button><button data-shape="square" title="Square" aria-label="Square">■</button><button data-shape="diamond" title="Diamond" aria-label="Diamond">◆</button><button data-shape="hexagon" title="Hexagon" aria-label="Hexagon">⬢</button><button data-shape="star" title="Star" aria-label="Star">★</button><button data-shape="heart" title="Heart" aria-label="Heart">♥</button></div>
         <div class="timer-customization" aria-label="Visual timer customization">
           <button class="custom-icon timer-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
           <button class="custom-icon timer-font" type="button" title="Change timer font" aria-label="Change timer font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -275,7 +476,7 @@
   </template>
 
   <template id="writinglines-template">
-    <section class="module writinglines-module" data-type="writinglines" data-bg="white" data-text="dark" data-writing-mode="practice">
+    <section class="module writinglines-module" data-type="writinglines" data-bg="white" data-text="dark" data-writing-mode="practice" data-line-count="3">
       <button class="module-delete" aria-label="Delete writing lines">×</button>
       <div class="module-drag-handle"></div>
 
@@ -312,6 +513,7 @@
         <button class="custom-icon writinglines-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon writinglines-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
         <button class="custom-icon writinglines-toggle-type" type="button" title="Turn typing mode on or off" aria-label="Turn typing mode on or off"><span aria-hidden="true">⌨</span></button>
+        <button class="custom-icon writinglines-count" type="button" title="Change number of writing lines" aria-label="Change number of writing lines"><span aria-hidden="true">3</span></button>
         <button class="custom-icon writinglines-clear" type="button" title="Clear typed text" aria-label="Clear typed text"><span aria-hidden="true">×</span></button>
       </div>
 
@@ -540,15 +742,196 @@
 
 
   <template id="stoplight-template">
-    <section class="module stoplight-module" data-type="stoplight" data-bg="white" data-stoplight="green">
+    <section class="module stoplight-module" data-type="stoplight" data-bg="white" data-stoplight="green" data-stoplight-mode="voice">
       <button class="module-delete" aria-label="Delete stoplight">×</button><div class="module-drag-handle"></div>
       <button class="stoplight-stage" type="button" aria-label="Change stoplight state">
-        <strong class="stoplight-label">GO</strong>
+        <strong class="stoplight-label">NORMAL</strong>
         <img class="stoplight-image" src="assets/stoplight-green.png" alt="Green stoplight" draggable="false">
       </button>
       <div class="stoplight-controls customization-bar">
+        <div class="stoplight-mode-wrap">
+          <button class="stoplight-mode-button" type="button" aria-haspopup="true" aria-expanded="false" title="Change stoplight mode">
+            <span class="stoplight-mode-button__title">Mode</span>
+            <span class="stoplight-mode-button__current">Normal · Whisper · Zero</span>
+          </button>
+          <div class="stoplight-mode-menu" role="menu" aria-label="Stoplight modes" hidden>
+            <button type="button" class="stoplight-mode-option is-active" data-stoplight-mode-option="voice" role="menuitem">
+              <strong>Voice Level</strong>
+              <span>Normal · Whisper · Zero</span>
+            </button>
+            <button type="button" class="stoplight-mode-option" data-stoplight-mode-option="choice" role="menuitem">
+              <strong>Yes / Maybe / No</strong>
+              <span>Yes · Maybe · No</span>
+            </button>
+            <button type="button" class="stoplight-mode-option" data-stoplight-mode-option="classic" role="menuitem">
+              <strong>Classic</strong>
+              <span>Go · Listen · Stop</span>
+            </button>
+          </div>
+        </div>
         <button class="custom-icon stoplight-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
       </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="groupmaker-template">
+    <section class="module groupmaker-module" data-type="groupmaker" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete group maker">×</button><div class="module-drag-handle"></div>
+
+      <div class="groupmaker-header">
+        <div class="groupmaker-heading">
+          <strong>Group Maker</strong>
+          <span class="groupmaker-summary">Add names to get started</span>
+        </div>
+        <div class="groupmaker-actions">
+          <label class="groupmaker-size-control">
+            <span>Students per group</span>
+            <input class="groupmaker-size" type="number" min="2" max="12" step="1" value="4" inputmode="numeric" aria-label="Students per group">
+          </label>
+          <button class="groupmaker-shuffle primary" type="button" title="Shuffle groups">
+            <span class="groupmaker-shuffle-icon" aria-hidden="true">↝</span>
+            <span>Shuffle</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="groupmaker-body">
+        <div class="groupmaker-setup">
+          <div class="groupmaker-name-entry">
+            <input class="groupmaker-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
+            <button class="groupmaker-add-name" type="button">Add</button>
+          </div>
+          <div class="groupmaker-name-list" aria-label="Group Maker names"></div>
+          <div class="groupmaker-setup-footer">
+            <span class="groupmaker-name-count">0 names</span>
+            <button class="groupmaker-make primary" type="button">Make Groups</button>
+          </div>
+        </div>
+
+        <div class="groupmaker-results" aria-live="polite">
+          <div class="groupmaker-empty">
+            <div class="groupmaker-empty-icon" aria-hidden="true">✦</div>
+            <strong>Your groups will appear here</strong>
+            <span>Add your class list, choose the group size, and shuffle.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="groupmaker-footer">
+        <button class="groupmaker-edit-names" type="button">Edit Names</button>
+        <span class="groupmaker-balance-note">Groups are balanced automatically</span>
+      </div>
+
+      <div class="customization-bar groupmaker-customization" aria-label="Group Maker customization">
+        <button class="custom-icon groupmaker-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon groupmaker-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon groupmaker-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="lunchcount-template">
+    <section class="module lunchcount-module" data-type="lunchcount" data-bg="white" data-font="inter" data-text="dark" data-lunch-mode="tally">
+      <button class="module-delete" aria-label="Delete lunch count">×</button><div class="module-drag-handle"></div>
+
+      <header class="lunchcount-header">
+        <div class="lunchcount-heading">
+          <strong>Lunch Count</strong>
+          <span class="lunchcount-summary">Tap a category to add a tally</span>
+        </div>
+        <div class="lunchcount-mode-switch" aria-label="Lunch Count mode">
+          <button class="lunchcount-mode is-active" type="button" data-lunch-mode-button="tally">Tally</button>
+          <button class="lunchcount-mode" type="button" data-lunch-mode-button="names">Names</button>
+        </div>
+      </header>
+
+      <div class="lunchcount-grid" aria-label="Lunch categories"></div>
+
+      <section class="lunchcount-name-pool" aria-label="Student names">
+        <div class="lunchcount-pool-heading">
+          <strong>Students</strong>
+          <span>Add names, then drag them to a lunch choice</span>
+        </div>
+        <div class="lunchcount-name-entry">
+          <input class="lunchcount-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
+          <button class="lunchcount-add-name" type="button">Add</button>
+        </div>
+        <div class="lunchcount-pool-list"></div>
+      </section>
+
+      <div class="lunchcount-inline-actions">
+        <button class="lunchcount-reset-counts" type="button">Reset Tallies</button>
+        <button class="lunchcount-reset-names" type="button">Unassign Names</button>
+      </div>
+
+      <div class="lunchcount-icon-picker" hidden role="dialog" aria-modal="true" aria-label="Choose lunch category icon">
+        <div class="lunchcount-icon-picker__panel">
+          <div class="lunchcount-icon-picker__head">
+            <strong>Choose an icon</strong>
+            <button class="lunchcount-icon-picker__close" type="button" aria-label="Close icon picker">×</button>
+          </div>
+          <div class="lunchcount-icon-picker__grid"></div>
+        </div>
+      </div>
+
+      <div class="customization-bar lunchcount-customization" aria-label="Lunch Count customization">
+        <button class="custom-icon lunchcount-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon lunchcount-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon lunchcount-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="voting-template">
+    <section class="module voting-module" data-type="voting" data-bg="white" data-font="inter" data-text="dark" data-voting-mode="tally">
+      <button class="module-delete" aria-label="Delete voting tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="voting-header">
+        <div class="voting-heading">
+          <strong>Voting</strong>
+          <span class="voting-summary">Tap a choice to add a vote</span>
+        </div>
+        <div class="voting-mode-switch" aria-label="Voting mode">
+          <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
+          <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
+        </div>
+      </header>
+
+      <div class="voting-grid" aria-label="Voting choices"></div>
+
+      <section class="voting-name-pool" aria-label="Student names">
+        <div class="voting-pool-heading">
+          <strong>Students</strong>
+          <span>Add names, then drag them to a choice</span>
+        </div>
+        <div class="voting-name-entry">
+          <input class="voting-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
+          <button class="voting-add-name" type="button">Add</button>
+        </div>
+        <div class="voting-pool-list"></div>
+      </section>
+
+      <div class="voting-inline-actions">
+        <button class="voting-reset-counts" type="button">Reset Votes</button>
+        <button class="voting-reset-names" type="button">Unassign Names</button>
+      </div>
+
+      <input class="voting-image-input" type="file" accept="image/*" hidden>
+
+      <div class="customization-bar voting-customization" aria-label="Voting customization">
+        <button class="custom-icon voting-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon voting-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon voting-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -584,6 +967,52 @@
     </section>
   </template>
 
+  <template id="ambiencevideo-template">
+    <section class="module ambience-video-module" data-type="ambiencevideo" data-bg="charcoal" data-font="inter" data-text="white" data-ambience-channel="campfire">
+      <button class="module-delete" aria-label="Delete ambience video">×</button><div class="module-drag-handle"></div>
+
+      <header class="ambience-video-header">
+        <div class="ambience-video-heading">
+          <span>AMBIENCE VIDEO</span>
+          <strong class="ambience-video-title">Campfire</strong>
+        </div>
+      </header>
+
+      <div class="ambience-video-stage">
+        <iframe
+          class="ambience-video-frame"
+          title="Campfire ambience video"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+        <div class="ambience-video-message" aria-live="polite"></div>
+      </div>
+
+      <div class="ambience-video-channels" aria-label="Ambience channels">
+        <button class="ambience-video-channel is-active" type="button" data-ambience-channel-button="campfire">
+          <span class="ambience-video-channel-dot ambience-video-channel-dot--fire" aria-hidden="true"></span>
+          <span>Campfire</span>
+        </button>
+        <button class="ambience-video-channel" type="button" data-ambience-channel-button="fireplace">
+          <span class="ambience-video-channel-dot ambience-video-channel-dot--hearth" aria-hidden="true"></span>
+          <span>Fireplace</span>
+        </button>
+        <button class="ambience-video-channel" type="button" data-ambience-channel-button="aquarium">
+          <span class="ambience-video-channel-dot ambience-video-channel-dot--water" aria-hidden="true"></span>
+          <span>Aquarium</span>
+        </button>
+      </div>
+
+      <div class="customization-bar ambience-video-customization" aria-label="Ambience Video customization">
+        <button class="custom-icon ambience-video-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
   <template id="textbubble-template">
     <section class="module textbubble-module" data-type="textbubble" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete text bubble">×</button><div class="module-drag-handle"></div>
@@ -610,6 +1039,200 @@
           <button class="custom-icon todo-text-color" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
         </div>
       </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="date-template">
+    <section class="module date-module" data-type="date" data-bg="white" data-font="inter" data-text="dark" data-date-style="text" data-date-layout="stacked" data-show-weekday="true" data-show-year="true">
+      <button class="module-delete" aria-label="Delete date">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="date-display">
+        <div class="date-weekday">THURSDAY</div>
+        <div class="date-main">August 27</div>
+        <div class="date-year">2026</div>
+      </div>
+
+      <div class="date-options" aria-label="Date display options">
+        <button class="date-style" type="button" title="Switch date style">Text</button>
+        <button class="date-layout" type="button" title="Switch date layout">Stacked</button>
+        <button class="date-weekday-toggle is-active" type="button" title="Show or hide day of the week">Day</button>
+        <button class="date-year-toggle is-active" type="button" title="Show or hide year">Year</button>
+      </div>
+
+      <div class="customization-bar date-customization" aria-label="Date customization">
+        <button class="custom-icon date-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon date-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon date-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="calendar-template">
+    <section class="module calendar-module" data-type="calendar" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete calendar">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="calendar-header">
+        <button class="calendar-nav calendar-prev" type="button" aria-label="Previous month">‹</button>
+        <button class="calendar-month-label" type="button" title="Return to current month">
+          <strong class="calendar-month">August</strong>
+          <span class="calendar-year">2026</span>
+        </button>
+        <button class="calendar-nav calendar-next" type="button" aria-label="Next month">›</button>
+      </div>
+
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="calendar-grid" role="grid" aria-label="Calendar month"></div>
+
+      <div class="calendar-footer">
+        <button class="calendar-add-event" type="button">+ Add Event</button>
+        <button class="calendar-today" type="button">Today</button>
+      </div>
+
+      <div class="customization-bar calendar-customization" aria-label="Calendar customization">
+        <button class="custom-icon calendar-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon calendar-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon calendar-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="calendar-event-popover" hidden>
+        <form class="calendar-event-form">
+          <div class="calendar-event-form__head">
+            <strong>Add calendar item</strong>
+            <button class="calendar-event-close" type="button" aria-label="Close event editor">×</button>
+          </div>
+          <label><span>Date</span><input class="calendar-event-date" type="date" required></label>
+          <label><span>Title</span><input class="calendar-event-title" type="text" maxlength="60" placeholder="Birthday, field trip, reminder..." required></label>
+          <label><span>Type</span>
+            <select class="calendar-event-type">
+              <option value="event">Event</option>
+              <option value="birthday">Birthday</option>
+              <option value="reminder">Reminder</option>
+            </select>
+          </label>
+          <label class="calendar-recurring-row"><input class="calendar-event-recurring" type="checkbox"><span>Repeat every year</span></label>
+          <button class="calendar-event-save" type="submit">Save</button>
+        </form>
+      </div>
+
+      <div class="calendar-day-popover" hidden>
+        <div class="calendar-day-popover__head">
+          <div><strong class="calendar-day-popover-title"></strong><small class="calendar-day-popover-subtitle"></small></div>
+          <button class="calendar-day-popover-close" type="button" aria-label="Close day details">×</button>
+        </div>
+        <div class="calendar-day-events"></div>
+        <button class="calendar-day-add" type="button">+ Add to this day</button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="progressbar-template">
+    <section class="module progress-bar-module" data-type="progressbar" data-bg="white" data-font="inter" data-text="dark" data-bar-color="blue" data-bar-style="glass" data-orientation="horizontal" data-icon-position="end">
+      <button class="module-delete" aria-label="Delete progress bar">×</button>
+      <div class="module-drag-handle"></div>
+
+      <div class="progress-bar-heading">
+        <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title">
+        <div class="progress-bar-time-readout">
+          <strong class="progress-bar-remaining">60:00</strong>
+          <span class="progress-bar-end-label">until 10:00 AM</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-stage">
+        <button class="progress-bar-icon-slot progress-bar-icon-start" type="button" aria-label="Choose start icon" title="Choose start icon">
+          <img alt="" draggable="false">
+          <span class="progress-bar-icon-plus" aria-hidden="true">+</span>
+        </button>
+
+        <div class="progress-bar-track" aria-label="Timed progress">
+          <div class="progress-bar-fill">
+            <div class="progress-bar-shine"></div>
+          </div>
+          <div class="progress-bar-segments" aria-hidden="true"></div>
+        </div>
+
+        <button class="progress-bar-icon-slot progress-bar-icon-end" type="button" aria-label="Choose end icon" title="Choose end icon">
+          <img alt="" draggable="false">
+          <span class="progress-bar-icon-plus" aria-hidden="true">+</span>
+        </button>
+      </div>
+
+      <div class="progress-bar-controls">
+        <label class="progress-bar-end-control">
+          <span>End</span>
+          <input class="progress-bar-end-time" type="time" aria-label="End time">
+        </label>
+        <button class="progress-bar-set-end" type="button">Set End</button>
+        <button class="progress-bar-orientation" type="button" title="Switch orientation" aria-label="Switch orientation">↔</button>
+        <button class="progress-bar-style" type="button" title="Change bar style" aria-label="Change bar style">Glass</button>
+      </div>
+
+      <div class="customization-bar progress-bar-customization" aria-label="Progress bar customization">
+        <button class="custom-icon progress-bar-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon progress-bar-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon progress-bar-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon progress-bar-color" type="button" title="Change bar color" aria-label="Change bar color"><span class="progress-bar-color-dot" aria-hidden="true"></span></button>
+      </div>
+
+      <div class="progress-bar-picker" hidden>
+        <div class="progress-bar-picker__panel" role="dialog" aria-modal="true" aria-label="Choose progress bar icon">
+          <div class="progress-bar-picker__header">
+            <div>
+              <strong>Choose an activity</strong>
+              <small>Use any Visual Schedule icon</small>
+            </div>
+            <button class="progress-bar-picker__close" type="button" aria-label="Close icon chooser">×</button>
+          </div>
+          <div class="progress-bar-picker__grid"></div>
+        </div>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="visualschedule-template">
+    <section class="module visual-schedule-module" data-type="visualschedule" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete visual schedule">×</button>
+      <div class="module-drag-handle"></div>
+
+      <input class="visual-schedule-title" type="text" value="VISUAL SCHEDULE" aria-label="Schedule title">
+
+      <div class="visual-schedule-list" aria-label="Schedule segments"></div>
+
+      <button class="visual-schedule-add" type="button" aria-label="Add schedule segment" title="Add segment">+</button>
+
+      <div class="customization-bar visual-schedule-customization" aria-label="Visual schedule customization">
+        <button class="custom-icon visual-schedule-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon visual-schedule-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon visual-schedule-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="visual-schedule-picker" hidden>
+        <div class="visual-schedule-picker__panel" role="dialog" aria-modal="true" aria-label="Choose schedule image">
+          <div class="visual-schedule-picker__header">
+            <div>
+              <strong>Choose an activity</strong>
+              <small>Select an image for this time slot</small>
+            </div>
+            <button class="visual-schedule-picker__close" type="button" aria-label="Close image chooser">×</button>
+          </div>
+          <div class="visual-schedule-picker__grid"></div>
+        </div>
+      </div>
+
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -746,6 +1369,468 @@
   <script src="app.js"></script>
 
 
+  <template id="ruler-template">
+    <section class="module ruler-module" data-type="ruler" data-bg="white" data-font="inter" data-text="dark" data-ruler-unit="in">
+      <button class="module-delete" aria-label="Delete ruler">×</button><div class="module-drag-handle"></div>
+      <header class="ruler-header">
+        <div><span>RULER</span><strong class="ruler-measurement">12 in</strong></div>
+        <span class="ruler-hint">Drag A and B to measure</span>
+      </header>
+      <div class="ruler-stage" aria-label="Interactive ruler">
+        <div class="ruler-face"><svg class="ruler-svg" viewBox="0 0 800 110" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+        <button class="ruler-handle ruler-handle--a is-active" type="button" data-ruler-handle="a" aria-label="Point A"><span>A</span><i></i></button>
+        <button class="ruler-handle ruler-handle--b" type="button" data-ruler-handle="b" aria-label="Point B"><span>B</span><i></i></button>
+      </div>
+      <div class="ruler-point-readouts">
+        <button class="ruler-point-readout is-active" type="button" data-ruler-select="a"><span>A</span><strong class="ruler-a-value">0 in</strong></button>
+        <button class="ruler-point-readout" type="button" data-ruler-select="b"><span>B</span><strong class="ruler-b-value">12 in</strong></button>
+      </div>
+      <div class="ruler-controls">
+        <div class="ruler-unit-toggle" aria-label="Ruler units">
+          <button type="button" class="is-active" data-ruler-unit-option="in">Inches</button>
+          <button type="button" data-ruler-unit-option="cm">Centimeters</button>
+        </div>
+        <button class="ruler-reset" type="button">Reset</button>
+      </div>
+      <div class="customization-bar ruler-customization" aria-label="Ruler customization">
+        <button class="custom-icon ruler-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon ruler-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon ruler-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="calculator-template">
+    <section class="module calculator-module" data-type="calculator" data-bg="white" data-font="inter" data-text="dark" tabindex="-1">
+      <button class="module-delete" aria-label="Delete calculator">×</button><div class="module-drag-handle"></div>
+
+      <header class="calculator-header">
+        <span>CALCULATOR</span>
+      </header>
+
+      <div class="calculator-display" aria-live="polite">
+        <span class="calculator-expression"></span>
+        <strong class="calculator-value">0</strong>
+      </div>
+
+      <div class="calculator-keys" aria-label="Calculator keypad">
+        <button type="button" data-calc-action="clear" class="calculator-key calculator-key--utility">C</button>
+        <button type="button" data-calc-action="backspace" class="calculator-key calculator-key--utility">⌫</button>
+        <button type="button" data-calc-action="percent" class="calculator-key calculator-key--utility">%</button>
+        <button type="button" data-calc-value="/" class="calculator-key calculator-key--operator">÷</button>
+
+        <button type="button" data-calc-value="7" class="calculator-key">7</button>
+        <button type="button" data-calc-value="8" class="calculator-key">8</button>
+        <button type="button" data-calc-value="9" class="calculator-key">9</button>
+        <button type="button" data-calc-value="*" class="calculator-key calculator-key--operator">×</button>
+
+        <button type="button" data-calc-value="4" class="calculator-key">4</button>
+        <button type="button" data-calc-value="5" class="calculator-key">5</button>
+        <button type="button" data-calc-value="6" class="calculator-key">6</button>
+        <button type="button" data-calc-value="-" class="calculator-key calculator-key--operator">−</button>
+
+        <button type="button" data-calc-value="1" class="calculator-key">1</button>
+        <button type="button" data-calc-value="2" class="calculator-key">2</button>
+        <button type="button" data-calc-value="3" class="calculator-key">3</button>
+        <button type="button" data-calc-value="+" class="calculator-key calculator-key--operator">+</button>
+
+        <button type="button" data-calc-action="sign" class="calculator-key">±</button>
+        <button type="button" data-calc-value="0" class="calculator-key">0</button>
+        <button type="button" data-calc-value="." class="calculator-key">.</button>
+        <button type="button" data-calc-action="equals" class="calculator-key calculator-key--equals">=</button>
+      </div>
+
+      <div class="customization-bar calculator-customization" aria-label="Calculator customization">
+        <button class="custom-icon calculator-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon calculator-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon calculator-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="grapher-template">
+    <section class="module grapher-module" data-type="grapher" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete graphing tool">×</button><div class="module-drag-handle"></div>
+
+      <header class="grapher-header">
+        <div>
+          <span>GRAPHING TOOL</span>
+          <strong>Coordinate Plane</strong>
+        </div>
+        <button class="grapher-clear-points" type="button">Clear Points</button>
+      </header>
+
+      <div class="grapher-stage">
+        <svg class="grapher-svg" viewBox="0 0 700 480" role="img" aria-label="Coordinate plane"></svg>
+      </div>
+
+      <div class="grapher-equation-row">
+        <span class="grapher-y-label">y =</span>
+        <input class="grapher-equation" type="text" value="x" spellcheck="false" aria-label="Equation for y" placeholder="x^2">
+        <button class="grapher-graph-equation primary" type="button">Graph</button>
+      </div>
+
+      <div class="grapher-point-row">
+        <span>Point</span>
+        <label>x <input class="grapher-point-x" type="number" step="any" value="0" aria-label="Point x coordinate"></label>
+        <label>y <input class="grapher-point-y" type="number" step="any" value="0" aria-label="Point y coordinate"></label>
+        <button class="grapher-add-point" type="button">Plot Point</button>
+        <span class="grapher-coordinate-readout">Click the plane to place points</span>
+      </div>
+
+      <div class="grapher-range-row">
+        <label>x min <input class="grapher-xmin" type="number" value="-10" step="1"></label>
+        <label>x max <input class="grapher-xmax" type="number" value="10" step="1"></label>
+        <label>y min <input class="grapher-ymin" type="number" value="-10" step="1"></label>
+        <label>y max <input class="grapher-ymax" type="number" value="10" step="1"></label>
+        <button class="grapher-apply-range" type="button">Apply</button>
+      </div>
+
+      <div class="grapher-error" aria-live="polite"></div>
+
+      <div class="customization-bar grapher-customization" aria-label="Graphing Tool customization">
+        <button class="custom-icon grapher-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon grapher-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon grapher-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="periodictable-template">
+    <section class="module periodic-module" data-type="periodictable" data-bg="white" data-font="inter">
+      <button class="module-delete" aria-label="Delete periodic table">×</button><div class="module-drag-handle"></div>
+
+      <header class="periodic-header">
+        <div>
+          <span>INTERACTIVE PERIODIC TABLE</span>
+          <strong>Explore the Elements</strong>
+        </div>
+        <span class="periodic-hint">Click any element for details</span>
+      </header>
+
+      <div class="periodic-grid" aria-label="Periodic table of elements"></div>
+      <div class="periodic-legend" aria-label="Element categories"></div>
+
+      <aside class="periodic-detail" hidden>
+        <button class="periodic-detail-close" type="button" aria-label="Close element details">×</button>
+        <div class="periodic-detail-symbol"></div>
+        <span class="periodic-detail-number"></span>
+        <strong class="periodic-detail-name"></strong>
+        <span class="periodic-detail-category"></span>
+        <div class="periodic-detail-facts"></div>
+      </aside>
+
+      <div class="customization-bar periodic-customization" aria-label="Periodic Table customization">
+        <button class="custom-icon periodic-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon periodic-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="money-template">
+    <section class="module money-module" data-type="money" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete money tool">×</button><div class="module-drag-handle"></div>
+
+      <header class="money-header">
+        <div>
+          <span>MONEY</span>
+          <strong>Money Manipulatives</strong>
+        </div>
+        <div class="money-total-wrap">
+          <button class="money-toggle-total" type="button">Hide Total</button>
+          <strong class="money-total">$0.00</strong>
+        </div>
+      </header>
+
+      <div class="money-workspace" aria-label="Money workspace">
+        <div class="money-workspace-empty">Drag money here or click a piece below</div>
+      </div>
+
+      <div class="money-palette" aria-label="Money pieces"></div>
+
+      <div class="money-footer">
+        <span class="money-count">0 pieces</span>
+        <button class="money-clear" type="button">Clear All</button>
+      </div>
+
+      <div class="customization-bar money-customization" aria-label="Money customization">
+        <button class="custom-icon money-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon money-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon money-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="cvcword-template">
+    <section class="module cvcword-module" data-type="cvcword" data-bg="white" data-font="inter" data-text="dark" data-cvc-category="all">
+      <button class="module-delete" aria-label="Delete CVC word tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="cvcword-header">
+        <div>
+          <span>CVC WORD</span>
+          <strong class="cvcword-category-label">All Short Vowels</strong>
+        </div>
+        <span class="cvcword-hint">Click the card for a new word</span>
+      </header>
+
+      <button class="cvcword-card" type="button" aria-label="Show another CVC word">
+        <span class="cvcword-card-accent" aria-hidden="true"></span>
+        <span class="cvcword-word is-fitting"></span>
+        <span class="cvcword-vowel-label">short a</span>
+      </button>
+
+      <div class="cvcword-controls">
+        <label class="cvcword-category-control">
+          <span>Word Set</span>
+          <select class="cvcword-category" aria-label="Choose CVC word category">
+            <option value="all">All Categories</option>
+            <option value="a">Short A</option>
+            <option value="e">Short E</option>
+            <option value="i">Short I</option>
+            <option value="o">Short O</option>
+            <option value="u">Short U</option>
+          </select>
+        </label>
+        <button class="cvcword-next" type="button">New Word</button>
+      </div>
+
+      <div class="customization-bar cvcword-customization" aria-label="CVC Word customization">
+        <button class="custom-icon cvcword-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon cvcword-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon cvcword-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="highfrequency-template">
+    <section class="module highfrequency-module" data-type="highfrequency" data-bg="white" data-font="inter" data-text="dark" data-hfw-grade="k">
+      <button class="module-delete" aria-label="Delete High Frequency Words tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="highfrequency-header">
+        <div>
+          <span>HIGH FREQUENCY WORDS</span>
+          <strong class="highfrequency-grade-label">Kindergarten</strong>
+        </div>
+        <span class="highfrequency-hint">Click the card for a new word</span>
+      </header>
+
+      <button class="highfrequency-card" type="button" aria-label="Show another high frequency word">
+        <span class="highfrequency-card-accent" aria-hidden="true"></span>
+        <span class="highfrequency-word is-fitting"></span>
+      </button>
+
+      <div class="highfrequency-controls">
+        <label class="highfrequency-grade-control">
+          <span>Grade Level</span>
+          <select class="highfrequency-grade" aria-label="Choose high frequency word grade level">
+            <option value="k">Kindergarten</option>
+            <option value="1">Grade 1</option>
+            <option value="2">Grade 2</option>
+            <option value="3plus">Grade 3+</option>
+          </select>
+        </label>
+        <button class="highfrequency-settings-button" type="button">Settings</button>
+        <button class="highfrequency-next" type="button">New Word</button>
+      </div>
+
+      <aside class="highfrequency-settings" hidden>
+        <div class="highfrequency-settings-panel">
+          <div class="highfrequency-settings-header">
+            <div>
+              <span>WORD SETTINGS</span>
+              <strong class="highfrequency-settings-title">Kindergarten</strong>
+            </div>
+            <button class="highfrequency-settings-close" type="button" aria-label="Close word settings">×</button>
+          </div>
+
+          <p>Click words to turn them on or off. Only enabled words appear on flashcards.</p>
+
+          <div class="highfrequency-settings-actions">
+            <button class="highfrequency-enable-all" type="button">Enable All</button>
+            <button class="highfrequency-disable-all" type="button">Disable All</button>
+            <span class="highfrequency-enabled-count"></span>
+          </div>
+
+          <div class="highfrequency-word-options" aria-label="High frequency word choices"></div>
+        </div>
+      </aside>
+
+      <div class="customization-bar highfrequency-customization" aria-label="High Frequency Words customization">
+        <button class="custom-icon highfrequency-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon highfrequency-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon highfrequency-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="abc-template">
+    <section class="module abc-module" data-type="abc" data-bg="white" data-text="dark" data-abc-mode="uppercase">
+      <button class="module-delete" aria-label="Delete ABC tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="abc-header">
+        <div>
+          <span>ABC</span>
+          <strong class="abc-mode-label">Uppercase Letters</strong>
+        </div>
+        <span class="abc-hint">Click the card for a new letter</span>
+      </header>
+
+      <button class="abc-card" type="button" aria-label="Show another letter">
+        <span class="abc-card-accent" aria-hidden="true"></span>
+        <span class="abc-letter is-fitting"></span>
+      </button>
+
+      <div class="abc-controls">
+        <label class="abc-mode-control">
+          <span>Letter Set</span>
+          <select class="abc-mode" aria-label="Choose uppercase, lowercase, or both">
+            <option value="uppercase">Uppercase</option>
+            <option value="lowercase">Lowercase</option>
+            <option value="both">Both</option>
+          </select>
+        </label>
+        <button class="abc-next" type="button">New Letter</button>
+      </div>
+
+      <div class="customization-bar abc-customization" aria-label="ABC customization">
+        <button class="custom-icon abc-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon abc-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="numberline-template">
+    <section class="module numberline-module" data-type="numberline" data-bg="white" data-font="inter" data-text="dark" tabindex="-1">
+      <button class="module-delete" aria-label="Delete number line">×</button><div class="module-drag-handle"></div>
+
+      <header class="numberline-header">
+        <div class="numberline-heading">
+          <span>NUMBER LINE</span>
+          <div class="numberline-point-readouts">
+            <button class="numberline-point-readout is-active" type="button" data-numberline-point-select="a">
+              <i class="numberline-point-dot numberline-point-dot--a" aria-hidden="true"></i>
+              <span>A</span>
+              <strong class="numberline-value-a">0</strong>
+            </button>
+            <button class="numberline-point-readout" type="button" data-numberline-point-select="b" hidden>
+              <i class="numberline-point-dot numberline-point-dot--b" aria-hidden="true"></i>
+              <span>B</span>
+              <strong class="numberline-value-b"></strong>
+            </button>
+          </div>
+        </div>
+        <div class="numberline-header-meta">
+          <strong class="numberline-hop-count" hidden></strong>
+          <span class="numberline-hint">Click a number or use ← →</span>
+        </div>
+      </header>
+
+      <div class="numberline-stage">
+        <svg class="numberline-svg" viewBox="0 0 1000 200" role="img" aria-label="Interactive number line"></svg>
+      </div>
+
+      <div class="numberline-controls" aria-label="Number line controls">
+        <button class="numberline-step" type="button" data-numberline-step="-1">−1</button>
+        <button class="numberline-extend" type="button" data-numberline-extend="left">Extend −5</button>
+        <button class="numberline-second-point" type="button">+ Point</button>
+        <button class="numberline-reset" type="button">Reset 0–20</button>
+        <button class="numberline-extend" type="button" data-numberline-extend="right">Extend +5</button>
+        <button class="numberline-step" type="button" data-numberline-step="1">+1</button>
+      </div>
+
+      <div class="customization-bar numberline-customization" aria-label="Number Line customization">
+        <button class="custom-icon numberline-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon numberline-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon numberline-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="hundredschart-template">
+    <section class="module hundreds-module" data-type="hundredschart" data-bg="white" data-font="inter" data-text="dark" data-highlight="off">
+      <button class="module-delete" aria-label="Delete hundreds chart">×</button><div class="module-drag-handle"></div>
+
+      <header class="hundreds-header">
+        <div>
+          <span>HUNDREDS CHART</span>
+          <strong>1–100</strong>
+        </div>
+        <div class="hundreds-controls">
+          <button class="hundreds-toggle-all" type="button">Hide All</button>
+          <button class="hundreds-highlight" type="button">Highlight: Off</button>
+        </div>
+      </header>
+
+      <div class="hundreds-grid" aria-label="Hundreds chart from 1 to 100"></div>
+
+      <div class="customization-bar hundreds-customization" aria-label="Hundreds Chart customization">
+        <button class="custom-icon hundreds-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon hundreds-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon hundreds-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="tenframes-template">
+    <section class="module tenframes-module" data-type="tenframes" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete ten frames">×</button><div class="module-drag-handle"></div>
+
+      <header class="tenframes-header">
+        <div class="tenframes-heading">
+          <span>TEN FRAMES</span>
+          <strong><span class="tenframes-count">0</span> counters</strong>
+        </div>
+        <div class="tenframes-frame-controls">
+          <button class="tenframes-remove-frame" type="button" aria-label="Remove one ten frame">− Frame</button>
+          <span class="tenframes-frame-count">1 frame</span>
+          <button class="tenframes-add-frame" type="button" aria-label="Add one ten frame">+ Frame</button>
+        </div>
+      </header>
+
+      <div class="tenframes-board" aria-label="Ten frame board"></div>
+
+      <div class="tenframes-controls">
+        <button class="tenframes-add-counter primary" type="button" data-tenframes-add="1">+1</button>
+        <button class="tenframes-add-counter" type="button" data-tenframes-add="5">+5</button>
+        <button class="tenframes-add-counter" type="button" data-tenframes-add="10">+10</button>
+        <button class="tenframes-clear" type="button">Clear</button>
+      </div>
+
+      <div class="customization-bar tenframes-customization" aria-label="Ten Frames customization">
+        <button class="custom-icon tenframes-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon tenframes-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon tenframes-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
   <template id="hangman-template">
     <section class="module hangman-module" data-type="hangman" data-bg="white" data-font="inter">
       <button class="module-delete" aria-label="Delete Hangman">×</button>
@@ -813,6 +1898,58 @@
       <div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
+
+  <template id="wordypuzzle-template">
+    <section class="module wordy-module" data-type="wordypuzzle" data-bg="white" data-font="inter" tabindex="-1">
+      <button class="module-delete" aria-label="Delete Wordy Puzzle">×</button>
+      <div class="module-drag-handle"></div>
+      <div class="confetti-layer wordy-confetti" aria-hidden="true"></div>
+
+      <header class="wordy-header">
+        <div class="wordy-heading">
+          <span class="wordy-kicker">WORDY PUZZLE</span>
+          <strong class="wordy-status">TEACHER SETUP</strong>
+        </div>
+        <span class="wordy-guess-count"></span>
+      </header>
+
+      <div class="wordy-game" aria-label="Word guessing game">
+        <div class="wordy-board" aria-label="Guess board"></div>
+        <div class="wordy-message" aria-live="polite"></div>
+        <div class="wordy-keyboard" aria-label="Wordy Puzzle keyboard"></div>
+      </div>
+
+      <div class="wordy-setup">
+        <div class="wordy-setup-card">
+          <span class="wordy-setup-label">TEACHER SETUP</span>
+          <strong>Set the secret word</strong>
+          <p>Choose a word from 3–8 letters. Students will get six guesses.</p>
+          <input class="wordy-secret-input" type="password" maxlength="8" autocomplete="off" spellcheck="false" placeholder="Enter secret word" aria-label="Secret word">
+          <div class="wordy-setup-error" aria-live="polite"></div>
+          <button class="wordy-start primary" type="button">Start Game</button>
+        </div>
+      </div>
+
+      <div class="wordy-result" hidden>
+        <div class="wordy-result-card">
+          <span class="wordy-result-label"></span>
+          <strong class="wordy-result-word"></strong>
+          <button class="wordy-play-again primary" type="button">Play Again</button>
+        </div>
+      </div>
+
+      <div class="customization-bar wordy-customization" aria-label="Wordy Puzzle customization">
+        <button class="custom-icon wordy-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon wordy-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
 
   <template id="spinner-template">
     <section class="module spinner-module" data-type="spinner" data-bg="white" data-font="inter">
