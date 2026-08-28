@@ -303,10 +303,10 @@ let boardKeyboardPanFrame=0;
 let boardKeyboardPanTime=0;
 const BOARD_KEYBOARD_PAN_SPEED=720;
 const boardPanKeyDirection={
-  w:[0,1],arrowup:[0,1],
-  s:[0,-1],arrowdown:[0,-1],
-  a:[1,0],arrowleft:[1,0],
-  d:[-1,0],arrowright:[-1,0]
+  arrowup:[0,1],
+  arrowdown:[0,-1],
+  arrowleft:[1,0],
+  arrowright:[-1,0]
 };
 
 function boardKeyboardPanBlocked(){
