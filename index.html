@@ -71,9 +71,9 @@
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
       <span class="upcoming-control__tooltip"><strong>Stickers</strong></span>
     </button>
-    <button class="workspace-control upcoming-control" type="button" aria-label="Shop — Coming Soon" data-feature-label="Shop" aria-disabled="true">
+    <button id="shop-toggle" class="workspace-control upcoming-control" type="button" aria-label="Open shop" data-feature-label="Shop" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <span class="upcoming-control__tooltip"><strong>Shop</strong><small>Coming Soon</small></span>
+      <span class="upcoming-control__tooltip"><strong>Shop</strong></span>
     </button>
   </div>
 
@@ -232,6 +232,132 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="shop-modal" class="shop-modal" hidden aria-hidden="true" aria-label="TeacherTiles shop">
+    <div class="shop-modal__backdrop" data-shop-close aria-hidden="true"></div>
+    <div class="shop-panel" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+      <header class="shop-header">
+        <div class="shop-brand">
+          <span class="shop-brand__mark" aria-hidden="true"><img src="assets/shop/shop-logo.png" alt=""></span>
+          <div>
+            <span class="shop-brand__eyebrow">TEACHERTILES</span>
+            <strong id="shop-title">Shop</strong>
+          </div>
+        </div>
+        <div class="shop-header__actions">
+          <button id="shop-coins-button" class="shop-coins-button" type="button" aria-label="Open coin purchasing menu" aria-expanded="false">
+            <span class="shop-coin-icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span>
+            <span class="shop-coins-button__copy"><small>Coins</small><strong id="shop-coin-balance">0</strong></span>
+            <span class="shop-coins-button__plus" aria-hidden="true">+</span>
+          </button>
+          <button id="shop-close" class="shop-close" type="button" aria-label="Close shop">×</button>
+        </div>
+      </header>
+
+      <div class="shop-content">
+        <section class="shop-page is-active" data-shop-page="home">
+          <div class="shop-banner" aria-label="Shop featured banners">
+            <div id="shop-banner-track" class="shop-banner__track">
+              <article class="shop-banner__slide is-active" data-shop-banner>
+                <img src="assets/shop/theme-collection.svg" alt="Theme collection featured banner">
+              </article>
+              <article class="shop-banner__slide" data-shop-banner>
+                <img src="assets/shop/sticker-drop.svg" alt="Sticker packs featured banner">
+              </article>
+              <article class="shop-banner__slide" data-shop-banner>
+                <img src="assets/shop/board-style.svg" alt="Customize your TeacherTiles board banner">
+              </article>
+            </div>
+            <button class="shop-banner__arrow shop-banner__arrow--prev" type="button" data-shop-banner-prev aria-label="Previous banner">‹</button>
+            <button class="shop-banner__arrow shop-banner__arrow--next" type="button" data-shop-banner-next aria-label="Next banner">›</button>
+            <div class="shop-banner__dots" role="tablist" aria-label="Choose featured banner">
+              <button class="is-active" type="button" data-shop-banner-dot="0" aria-label="Banner 1" aria-selected="true"></button>
+              <button type="button" data-shop-banner-dot="1" aria-label="Banner 2" aria-selected="false"></button>
+              <button type="button" data-shop-banner-dot="2" aria-label="Banner 3" aria-selected="false"></button>
+            </div>
+          </div>
+
+          <div class="shop-home-heading">
+            <div><span>MAKE IT YOURS</span><h2>Customize your board</h2></div>
+            <p>Browse visual packs made for TeacherTiles.</p>
+          </div>
+
+          <div class="shop-category-grid">
+            <button class="shop-category shop-category--themes" type="button" data-shop-open-page="themes">
+              <span class="shop-category__art" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="shop-category__copy"><small>COLLECTION</small><strong>Themes</strong><em>Color & board styles</em></span>
+              <span class="shop-category__arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="shop-category shop-category--stickers" type="button" data-shop-open-page="stickers">
+              <span class="shop-category__art shop-category__art--stickers" aria-hidden="true"><b>😀</b><b>⭐</b><b>🎉</b></span>
+              <span class="shop-category__copy"><small>COLLECTION</small><strong>Sticker Packs</strong><em>Decorate your workspace</em></span>
+              <span class="shop-category__arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
+              <span class="shop-category__art shop-category__art--tiles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <span class="shop-category__copy"><small>COMING SOON</small><strong>Tile Packs</strong><em>Cosmetic Tile Packs</em></span>
+              <span class="shop-coming-badge">Coming Soon</span>
+            </button>
+            <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
+              <span class="shop-category__art shop-category__art--extras" aria-hidden="true">✦</span>
+              <span class="shop-category__copy"><small>COMING SOON</small><strong>Extras</strong><em>More ways to customize</em></span>
+              <span class="shop-coming-badge">Coming Soon</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="shop-page" data-shop-page="themes" hidden>
+          <div class="shop-page-heading">
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <div><span>THEME COLLECTIONS</span><h2>Themes</h2><p>Transform the entire look of your TeacherTiles board.</p></div>
+          </div>
+          <div class="shop-product-grid">
+            <article class="shop-product" data-shop-product="theme-pastel" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--pastel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Pastel</h3><p>Five soft classroom-ready colors.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+            </article>
+            <article class="shop-product" data-shop-product="theme-programmer" data-shop-price="300">
+              <div class="shop-product__preview shop-product__preview--programmer" aria-hidden="true"><code>&gt;_</code><span>const board = "awesome";<br>function teach() { return true; }<br>01010110 00110001</span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Programmer</h3><p>Four terminal-inspired hacker palettes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div>
+            </article>
+            <article class="shop-product" data-shop-product="theme-wood" data-shop-price="350">
+              <div class="shop-product__preview shop-product__preview--wood" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Wood</h3><p>Oak, spruce, redwood, and cherry planks.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>350</strong></button></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="shop-page" data-shop-page="stickers" hidden>
+          <div class="shop-page-heading">
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <div><span>STICKER COLLECTIONS</span><h2>Sticker Packs</h2><p>Drag them out of your shelf and stick them anywhere.</p></div>
+          </div>
+          <div class="shop-product-grid shop-product-grid--stickers">
+            <article class="shop-product" data-shop-product="sticker-emoji" data-shop-price="180">
+              <div class="shop-product__preview shop-product__preview--emoji" aria-hidden="true"><span>😀</span><span>❤️</span><span>🎉</span><span>⭐</span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Emoji</h3><p>Eight classic emoji stickers with die-cut borders.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <aside id="shop-coin-menu" class="shop-coin-menu" hidden aria-hidden="true" aria-label="Purchase coins">
+        <div class="shop-coin-menu__head">
+          <button id="shop-coin-menu-close" class="shop-back" type="button" aria-label="Close coin purchasing menu">←</button>
+          <div><span>COIN STORE</span><h2>Get TeacherTiles Coins</h2><p>Example bundles for the future coin store.</p></div>
+        </div>
+        <div class="shop-coin-packs">
+          <article class="shop-coin-pack"><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>500</strong><small>Coins</small><button type="button" disabled>$4.99</button></article>
+          <article class="shop-coin-pack shop-coin-pack--popular"><span class="shop-coin-pack__badge">POPULAR</span><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>1,200</strong><small>Coins</small><button type="button" disabled>$9.99</button></article>
+          <article class="shop-coin-pack"><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>2,600</strong><small>Coins</small><button type="button" disabled>$19.99</button></article>
+          <article class="shop-coin-pack"><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>7,000</strong><small>Coins</small><button type="button" disabled>$49.99</button></article>
+        </div>
+        <p class="shop-coin-menu__note">Coin purchases are not active yet.</p>
+      </aside>
+
+      <div id="shop-toast" class="shop-toast" role="status" aria-live="polite"></div>
     </div>
   </section>
 
