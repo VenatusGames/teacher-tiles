@@ -8997,3 +8997,24 @@ function setupTeacherTilesShop(){
   syncProducts();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
+
+async function initializeSandboxWatermark(){
+  try{
+    const url=new URL('sandbox.md',window.location.href);
+    url.searchParams.set('ttSandboxCheck',Date.now().toString(36));
+    const response=await fetch(url,{cache:'no-store'});
+    if(!response.ok)return;
+    const contentType=(response.headers.get('content-type')||'').toLowerCase();
+    if(contentType.includes('text/html'))return;
+    if(workspace.querySelector('.sandbox-watermark'))return;
+    const watermark=document.createElement('div');
+    watermark.className='sandbox-watermark';
+    watermark.setAttribute('aria-hidden','true');
+    watermark.textContent='SANDBOX';
+    workspace.prepend(watermark);
+    document.body.classList.add('sandbox-mode');
+  }catch{
+    // Absence of sandbox.md is the normal production state.
+  }
+}
+initializeSandboxWatermark();

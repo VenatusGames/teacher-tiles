@@ -13031,3 +13031,22 @@ body.boards-screen-open .trash-zone{visibility:hidden!important}
 .module.is-text-editing .module-text-edit-target.module-text-edit-active{
   pointer-events:auto;
 }
+
+/* Optional sandbox marker. Enabled only when sandbox.md is present beside index.html. */
+.sandbox-watermark{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:0;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  user-select:none;
+  white-space:nowrap;
+  color:#6b7280;
+  opacity:.085;
+  font-family:Inter,system-ui,sans-serif;
+  font-size:clamp(620px,12vw,1450px);
+  font-weight:900;
+  letter-spacing:.12em;
+  line-height:1;
+}
