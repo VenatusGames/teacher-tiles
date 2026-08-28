@@ -20,6 +20,8 @@ const profileAvatar = document.getElementById("profile-avatar");
 const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
 const status = document.getElementById("profile-auth-status");
+const saveWarning = document.getElementById("signed-out-save-warning");
+const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "shop-toggle"]);
 
 let auth = null;
 let authSdk = null;
@@ -49,6 +51,8 @@ function renderUser(user) {
   signInButton.disabled = false;
   setStatus();
 
+  if (saveWarning) saveWarning.hidden = Boolean(user);
+
   if (user) {
     const name = user.displayName?.trim() || "Teacher";
     const photo = user.photoURL || fallbackAvatarData(name);
@@ -66,7 +70,12 @@ function renderUser(user) {
     toggle.classList.remove("is-signed-in");
     toggle.setAttribute("aria-label", "Open profile");
     profileAvatar.removeAttribute("src");
+    closeOtherSurfaces();
   }
+
+  document.getElementById("theme-shelf-toggle")?.setAttribute("aria-label", user ? "Open theme shelf" : "Sign in to open themes");
+  document.getElementById("sticker-shelf-toggle")?.setAttribute("aria-label", user ? "Open sticker shelf" : "Sign in to open stickers");
+  document.getElementById("shop-toggle")?.setAttribute("aria-label", user ? "Open shop" : "Sign in to open shop");
 }
 
 function closeOtherSurfaces() {
@@ -171,6 +180,7 @@ async function initializeFirebaseAuth() {
       signedOutState.hidden = false;
       signedInState.hidden = true;
       signInButton.disabled = false;
+      if (saveWarning) saveWarning.hidden = false;
       setStatus("We couldn't check your sign-in status. Refresh and try again.", true);
     });
   } catch (error) {
@@ -180,9 +190,21 @@ async function initializeFirebaseAuth() {
     signedOutState.hidden = false;
     signedInState.hidden = true;
     signInButton.disabled = true;
+    if (saveWarning) saveWarning.hidden = false;
     setStatus("Google sign-in couldn't load. Check your internet connection and refresh the page.", true);
   }
 }
+
+
+document.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #shop-toggle") : null;
+  if (!target || !gatedFeatureIds.has(target.id) || currentUser) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  openProfile();
+}, true);
 
 toggle.addEventListener("click", () => modal.hidden ? openProfile() : closeProfile());
 modal.querySelectorAll("[data-profile-close]").forEach((button) => button.addEventListener("click", closeProfile));
