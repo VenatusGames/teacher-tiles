@@ -124,16 +124,111 @@
                   <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
                 </button>
               </div>
+              <div class="theme-pack-wrap">
+                <button id="programmer-theme-pack" class="theme-pack theme-pack--programmer" type="button" data-theme-pack aria-expanded="false" aria-controls="programmer-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--programmer" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--programmer-green"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--programmer-red"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--programmer-yellow"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--programmer-blue"></i>
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Programmer</strong>
+                    <small>4 themes</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="wood-theme-pack" class="theme-pack theme-pack--wood" type="button" data-theme-pack aria-expanded="false" aria-controls="wood-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--wood" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--wood-oak"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--wood-spruce"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--wood-redwood"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--wood-cherry"></i>
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Wood</strong>
+                    <small>4 themes</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <div id="sticker-shelf-content" class="asset-shelf__content" data-shelf-panel="stickers" hidden>
-          <div class="asset-shelf__empty">
-            <div class="asset-shelf__empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <div class="asset-shelf__scroll sticker-shelf__scroll" aria-label="Sticker packs">
+            <div class="asset-shelf__row sticker-shelf__row">
+              <div class="sticker-pack-wrap">
+                <button id="default-sticker-pack" class="theme-pack sticker-pack" type="button" data-sticker-pack aria-expanded="false" aria-controls="default-sticker-drawer">
+                  <span class="sticker-pack__stack" aria-hidden="true">
+                    <img class="sticker-pack__sample sticker-pack__sample--tiles" src="assets/stickers/default/tiles.png" alt="" draggable="false">
+                    <img class="sticker-pack__sample sticker-pack__sample--welcome" src="assets/stickers/default/welcome.png" alt="" draggable="false">
+                    <img class="sticker-pack__sample sticker-pack__sample--thumb" src="assets/stickers/default/thumbs-up.png" alt="" draggable="false">
+                    <img class="sticker-pack__sample sticker-pack__sample--apple" src="assets/stickers/default/apple.png" alt="" draggable="false">
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Default</strong>
+                    <small>5 stickers</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+
+              <div id="default-sticker-drawer" class="sticker-pack-drawer" aria-hidden="true" role="group" aria-label="Default sticker pack">
+                <div class="sticker-pack-drawer__track">
+                  <button class="sticker-shelf-item" type="button" data-sticker-src="assets/stickers/default/tiles.png" data-sticker-name="TeacherTiles blocks" aria-label="Drag TeacherTiles blocks sticker onto the board">
+                    <img src="assets/stickers/default/tiles.png" alt="" draggable="false">
+                  </button>
+                  <button class="sticker-shelf-item" type="button" data-sticker-src="assets/stickers/default/welcome.png" data-sticker-name="Welcome" aria-label="Drag Welcome sticker onto the board">
+                    <img src="assets/stickers/default/welcome.png" alt="" draggable="false">
+                  </button>
+                  <button class="sticker-shelf-item" type="button" data-sticker-src="assets/stickers/default/thumbs-up.png" data-sticker-name="Thumbs up" aria-label="Drag thumbs up sticker onto the board">
+                    <img src="assets/stickers/default/thumbs-up.png" alt="" draggable="false">
+                  </button>
+                  <button class="sticker-shelf-item" type="button" data-sticker-src="assets/stickers/default/thumbs-down.png" data-sticker-name="Thumbs down" aria-label="Drag thumbs down sticker onto the board">
+                    <img src="assets/stickers/default/thumbs-down.png" alt="" draggable="false">
+                  </button>
+                  <button class="sticker-shelf-item" type="button" data-sticker-src="assets/stickers/default/apple.png" data-sticker-name="Apple" aria-label="Drag apple sticker onto the board">
+                    <img src="assets/stickers/default/apple.png" alt="" draggable="false">
+                  </button>
+                </div>
+                <span class="sticker-pack-drawer__hint">Drag a sticker onto the board</span>
+              </div>
+
+
+              <div class="sticker-pack-wrap">
+                <button id="emoji-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji" type="button" data-sticker-pack aria-expanded="false" aria-controls="emoji-sticker-drawer">
+                  <span class="sticker-pack__stack sticker-pack__stack--emoji" aria-hidden="true">
+                    <span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--one">😀</span>
+                    <span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--two">❤️</span>
+                    <span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--three">🎉</span>
+                    <span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--four">⭐</span>
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Emoji</strong>
+                    <small>8 stickers</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+
+              <div id="emoji-sticker-drawer" class="sticker-pack-drawer" aria-hidden="true" role="group" aria-label="Emoji sticker pack">
+                <div class="sticker-pack-drawer__track">
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="😀" data-sticker-name="Grinning face" aria-label="Drag grinning face emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">😀</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="😂" data-sticker-name="Face with tears of joy" aria-label="Drag tears of joy emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">😂</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="😍" data-sticker-name="Heart eyes" aria-label="Drag heart eyes emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">😍</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="😎" data-sticker-name="Sunglasses face" aria-label="Drag sunglasses emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">😎</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="👍" data-sticker-name="Thumbs up emoji" aria-label="Drag thumbs up emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">👍</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="❤️" data-sticker-name="Red heart" aria-label="Drag red heart emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">❤️</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="🎉" data-sticker-name="Party popper" aria-label="Drag party popper emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">🎉</span></button>
+                  <button class="sticker-shelf-item sticker-shelf-item--emoji" type="button" data-sticker-emoji="⭐" data-sticker-name="Star" aria-label="Drag star emoji sticker onto the board"><span class="sticker-shelf-emoji" aria-hidden="true">⭐</span></button>
+                </div>
+                <span class="sticker-pack-drawer__hint">Drag an emoji onto the board</span>
+              </div>
             </div>
-            <div><strong>Your sticker shelf is empty</strong><small>Sticker packs will live here.</small></div>
           </div>
         </div>
       </div>
@@ -186,7 +281,55 @@
     </button>
   </div>
 
+  <div id="programmer-theme-fan" class="theme-fan theme-fan--programmer" aria-hidden="true" role="group" aria-label="Programmer theme pack">
+    <button class="theme-card theme-card--programmer-green" type="button" data-theme-choice="programmer-green" aria-label="Use Programmer Green theme">
+      <span class="theme-card__preview theme-card__preview--code" aria-hidden="true"><code>&gt;_</code><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Default</strong><small>Green terminal</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--programmer-red" type="button" data-theme-choice="programmer-red" aria-label="Use Programmer Red theme">
+      <span class="theme-card__preview theme-card__preview--code" aria-hidden="true"><code>&gt;_</code><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Red</strong><small>Crimson console</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--programmer-yellow" type="button" data-theme-choice="programmer-yellow" aria-label="Use Programmer Yellow theme">
+      <span class="theme-card__preview theme-card__preview--code" aria-hidden="true"><code>&gt;_</code><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Yellow</strong><small>Amber console</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--programmer-blue" type="button" data-theme-choice="programmer-blue" aria-label="Use Programmer Blue theme">
+      <span class="theme-card__preview theme-card__preview--code" aria-hidden="true"><code>&gt;_</code><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Blue</strong><small>Cyber console</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+  </div>
+
+  <div id="wood-theme-fan" class="theme-fan theme-fan--wood" aria-hidden="true" role="group" aria-label="Wood theme pack">
+    <button class="theme-card theme-card--wood-oak" type="button" data-theme-choice="wood-oak" aria-label="Use Oak wood theme">
+      <span class="theme-card__preview theme-card__preview--wood" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Oak</strong><small>Light brown</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--wood-spruce" type="button" data-theme-choice="wood-spruce" aria-label="Use Spruce wood theme">
+      <span class="theme-card__preview theme-card__preview--wood" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Spruce</strong><small>Dark brown</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--wood-redwood" type="button" data-theme-choice="wood-redwood" aria-label="Use Redwood wood theme">
+      <span class="theme-card__preview theme-card__preview--wood" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Redwood</strong><small>Warm red</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--wood-cherry" type="button" data-theme-choice="wood-cherry" aria-label="Use Cherry wood theme">
+      <span class="theme-card__preview theme-card__preview--wood" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Cherry</strong><small>Pink wood</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+  </div>
+
   <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by WeikertsWonders</div>
+
+
 
   <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
     <div class="context-menu__header">

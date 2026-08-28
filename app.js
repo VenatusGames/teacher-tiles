@@ -259,7 +259,7 @@ workspaceModuleObserver.observe(workspace,{childList:true,subtree:false});
 updateWorkspaceEmptyState();
 
 function bringToFront(m){m.style.zIndex=++z}
-function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);if(m.dataset.type!=='draw')setupResize(m)}
+function setupCommon(m){m.addEventListener('pointerdown',e=>{if(e.shiftKey){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=e.target.closest('button,input,select,textarea,[contenteditable],iframe');if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});m.querySelector('.module-delete').addEventListener('click',()=>{selectedModules.delete(m);m._cleanup?.();m.remove()});setupDrag(m);if(!['draw','sticker'].includes(m.dataset.type))setupResize(m)}
 function setupDrag(m){
   const h=m.querySelector('.module-drag-handle'),guideX=workspace.querySelector('.snap-guide-x'),guideY=workspace.querySelector('.snap-guide-y');
   const pulse=mods=>{const unique=[...new Set(mods.filter(Boolean))];for(const el of unique){el.classList.remove('snap-pop');void el.offsetWidth;el.classList.add('snap-pop');setTimeout(()=>el.classList.remove('snap-pop'),240)}};
@@ -390,6 +390,96 @@ function setupResize(m){
     const end=()=>{updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end)};
     h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
   }));
+}
+
+function updateStickerVisualSize(m){
+  const emoji=m.querySelector('.sticker-emoji');
+  if(!emoji)return;
+  const size=Math.max(38,Math.min(m.offsetWidth,m.offsetHeight)*.72);
+  emoji.style.fontSize=`${size}px`;
+  emoji.style.setProperty('--sticker-outline',`${Math.max(2.5,size*.052)}px`);
+}
+
+function setupStickerTransformControls(m){
+  if(!m||m.dataset.stickerTransformReady)return;
+  m.dataset.stickerTransformReady='true';
+  const ratio=m._stickerRatio||Math.max(.12,m.offsetWidth/Math.max(1,m.offsetHeight));
+  m._stickerRatio=ratio;
+
+  const rotate=document.createElement('button');
+  rotate.type='button';
+  rotate.className='sticker-rotate-handle';
+  rotate.setAttribute('aria-label','Rotate sticker');
+  rotate.innerHTML='<span aria-hidden="true">↻</span><b class="sticker-rotation-readout" aria-hidden="true">0°</b>';
+  m.appendChild(rotate);
+
+  for(const d of ['tl','tr','bl','br']){
+    const h=document.createElement('button');
+    h.type='button';
+    h.className=`sticker-resize-handle sticker-resize-handle--${d}`;
+    h.dataset.stickerResize=d;
+    h.setAttribute('aria-label','Resize sticker');
+    m.appendChild(h);
+  }
+
+  m.querySelectorAll('[data-sticker-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    e.preventDefault();e.stopPropagation();bringToFront(m);h.setPointerCapture(e.pointerId);
+    const d=h.dataset.stickerResize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight;
+    const right=sl+sw,bottom=st+sh;
+    const minW=Math.max(52,52*ratio);
+    const maxW=Math.max(minW,Math.min(d.includes('r')?BOARD_WIDTH-sl:right,(d.includes('b')?BOARD_HEIGHT-st:bottom)*ratio));
+    m.classList.add('is-sticker-resizing');
+    const move=ev=>{
+      const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
+      const fromX=d.includes('r')?sw+dx:sw-dx;
+      const fromY=(d.includes('b')?sh+dy:sh-dy)*ratio;
+      let w=Math.abs(fromX-sw)>=Math.abs(fromY-sw)?fromX:fromY;
+      w=clamp(w,minW,maxW);
+      const hh=w/ratio;
+      const l=d.includes('l')?right-w:sl;
+      const t=d.includes('t')?bottom-hh:st;
+      Object.assign(m.style,{left:`${l}px`,top:`${t}px`,width:`${w}px`,height:`${hh}px`});
+      updateStickerVisualSize(m);
+    };
+    const end=()=>{
+      m.classList.remove('is-sticker-resizing');
+      updateWorkspaceEmptyState();
+      h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end);
+    };
+    h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+  }));
+
+  rotate.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    e.preventDefault();e.stopPropagation();bringToFront(m);rotate.setPointerCapture(e.pointerId);
+    const rect=m.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+    const angleOf=ev=>Math.atan2(ev.clientY-cy,ev.clientX-cx)*180/Math.PI;
+    let lastAngle=angleOf(e),accumulated=0;
+    const startRotation=parseFloat(m.dataset.stickerRotation)||0;
+    const readout=rotate.querySelector('.sticker-rotation-readout');
+    m.classList.add('is-sticker-rotating');
+    const move=ev=>{
+      const angle=angleOf(ev);
+      let delta=angle-lastAngle;
+      if(delta>180)delta-=360;
+      if(delta<-180)delta+=360;
+      accumulated+=delta;
+      lastAngle=angle;
+      let next=startRotation+accumulated;
+      if(ev.shiftKey)next=Math.round(next/15)*15;
+      m.dataset.stickerRotation=String(next);
+      m.style.setProperty('--sticker-rotation',`${next}deg`);
+      if(readout)readout.textContent=`${Math.round(((next%360)+360)%360)}°`;
+    };
+    const end=()=>{
+      m.classList.remove('is-sticker-rotating');
+      rotate.removeEventListener('pointermove',move);rotate.removeEventListener('pointerup',end);rotate.removeEventListener('pointercancel',end);
+    };
+    rotate.addEventListener('pointermove',move);rotate.addEventListener('pointerup',end);rotate.addEventListener('pointercancel',end);
+  });
+
+  updateStickerVisualSize(m);
 }
 
 function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=0;bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
@@ -3692,11 +3782,15 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
   'light','dark','gray',
-  'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac'
+  'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
+  'programmer-green','programmer-red','programmer-yellow','programmer-blue',
+  'wood-oak','wood-spruce','wood-redwood','wood-cherry'
 ]);
 const THEME_BODY_CLASSES=[
   'dark','theme-gray',
-  'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac'
+  'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
+  'theme-programmer-green','theme-programmer-red','theme-programmer-yellow','theme-programmer-blue',
+  'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry'
 ];
 
 function updateThemeControls(theme){
@@ -3713,9 +3807,9 @@ function applyTeacherTheme(theme,{persist=true}={}){
   document.body.classList.remove(...THEME_BODY_CLASSES);
   if(next==='dark')document.body.classList.add('dark');
   else if(next==='gray')document.body.classList.add('theme-gray');
-  else if(next.startsWith('pastel-'))document.body.classList.add(`theme-${next}`);
+  else if(next.startsWith('pastel-')||next.startsWith('programmer-')||next.startsWith('wood-'))document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  document.documentElement.style.colorScheme=next==='dark'?'dark':'light';
+  document.documentElement.style.colorScheme=(next==='dark'||next.startsWith('programmer-'))?'dark':'light';
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
   updateThemeControls(next);
 }
@@ -3727,6 +3821,119 @@ fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenE
 document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶'});
 window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
 
+function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY){
+  if(!src&&!emoji)return null;
+  const p=screenToBoard(clientX,clientY);
+  const ratio=emoji?1:(Number.isFinite(aspect)&&aspect>0?aspect:1);
+  let width=180,height=180;
+  if(ratio>=1){width=ratio>2?230:180;height=width/ratio}else{height=180;width=height*ratio}
+  width=Math.max(64,width);
+  height=Math.max(64,height);
+  const m=document.createElement('section');
+  m.className='module sticker-module sticker-placed';
+  m.dataset.type='sticker';
+  m.dataset.stickerRotation='0';
+  m._stickerRatio=ratio;
+  m.setAttribute('aria-label',`${name||'Sticker'} sticker`);
+  m.style.width=`${width}px`;
+  m.style.height=`${height}px`;
+  m.style.left=`${clamp(p.x-width/2,0,BOARD_WIDTH-width)}px`;
+  m.style.top=`${clamp(p.y-height/2,0,BOARD_HEIGHT-height)}px`;
+
+  const drag=document.createElement('div');
+  drag.className='module-drag-handle';
+  drag.setAttribute('aria-hidden','true');
+  const del=document.createElement('button');
+  del.className='module-delete';del.type='button';del.setAttribute('aria-label','Delete sticker');del.textContent='×';
+  const art=document.createElement('div');art.className='sticker-art';
+  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}`;
+  if(emoji){
+    const glyph=document.createElement('span');
+    glyph.className='sticker-emoji';glyph.setAttribute('aria-hidden','true');glyph.textContent=emoji;
+    visual.appendChild(glyph);
+  }else{
+    const img=document.createElement('img');img.src=src;img.alt=name||'Sticker';img.draggable=false;
+    visual.appendChild(img);
+  }
+  art.appendChild(visual);
+  const pop=document.createElement('span');pop.className='sticker-stick-pop';pop.setAttribute('aria-hidden','true');
+  m.append(drag,del,art,pop);
+  workspace.appendChild(m);
+  bringToFront(m);
+  setupCommon(m);
+  setupStickerTransformControls(m);
+  setTimeout(()=>m.classList.remove('sticker-placed'),620);
+  return m;
+}
+
+function setupShelfStickerDrag(item,shelfShell){
+  if(!item||item.dataset.stickerDragReady)return;
+  item.dataset.stickerDragReady='true';
+  item.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    const src=item.dataset.stickerSrc||'';
+    const emoji=item.dataset.stickerEmoji||'';
+    const name=item.dataset.stickerName||'Sticker';
+    const preview=item.querySelector('img');
+    const aspect=emoji?1:(preview?.naturalWidth&&preview?.naturalHeight?preview.naturalWidth/preview.naturalHeight:1);
+    if(!src&&!emoji)return;
+    e.preventDefault();
+    e.stopPropagation();
+    item.setPointerCapture(e.pointerId);
+    const startX=e.clientX,startY=e.clientY;
+    let dragging=false;
+    let ghost=null;
+    let canDrop=false;
+
+    const ensureGhost=()=>{
+      if(ghost)return;
+      ghost=document.createElement('div');
+      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}`;
+      if(emoji){
+        const glyph=document.createElement('span');glyph.className='sticker-emoji sticker-emoji--ghost';glyph.textContent=emoji;ghost.appendChild(glyph);
+      }else{
+        const img=document.createElement('img');img.src=src;img.alt='';img.draggable=false;ghost.appendChild(img);
+      }
+      document.body.appendChild(ghost);
+    };
+    const updateGhost=ev=>{
+      ensureGhost();
+      ghost.style.left=`${ev.clientX}px`;
+      ghost.style.top=`${ev.clientY}px`;
+      const shellRect=shelfShell.getBoundingClientRect();
+      const insideShelf=ev.clientX>=shellRect.left&&ev.clientX<=shellRect.right&&ev.clientY>=shellRect.top&&ev.clientY<=shellRect.bottom;
+      const blocked=document.elementsFromPoint(ev.clientX,ev.clientY).some(el=>el.closest?.('.workspace-controls,.workspace-upcoming-controls,.context-menu'));
+      canDrop=!insideShelf&&!blocked&&ev.clientX>=0&&ev.clientX<=innerWidth&&ev.clientY>=0&&ev.clientY<=innerHeight;
+      ghost.classList.toggle('can-drop',canDrop);
+    };
+    const move=ev=>{
+      if(!dragging&&Math.hypot(ev.clientX-startX,ev.clientY-startY)<5)return;
+      if(!dragging){
+        dragging=true;
+        item.classList.add('is-dragging');
+        document.body.classList.add('is-dragging-shelf-sticker');
+      }
+      updateGhost(ev);
+    };
+    const cleanup=()=>{
+      item.classList.remove('is-dragging');
+      document.body.classList.remove('is-dragging-shelf-sticker');
+      ghost?.remove();
+      item.removeEventListener('pointermove',move);
+      item.removeEventListener('pointerup',end);
+      item.removeEventListener('pointercancel',cancel);
+    };
+    const end=ev=>{
+      if(dragging&&canDrop)createStickerModule({src,emoji,name,aspect},ev.clientX,ev.clientY);
+      cleanup();
+    };
+    const cancel=()=>cleanup();
+    item.addEventListener('pointermove',move);
+    item.addEventListener('pointerup',end);
+    item.addEventListener('pointercancel',cancel);
+  });
+}
+
 function setupCollectionShelf(){
   const shelf=document.getElementById('asset-shelf');
   const title=document.getElementById('asset-shelf-title');
@@ -3736,13 +3943,20 @@ function setupCollectionShelf(){
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
   const packs=[...document.querySelectorAll('[data-theme-pack]')];
+  const stickerPacks=[...document.querySelectorAll('[data-sticker-pack]')];
+  const stickerItems=[...document.querySelectorAll('[data-sticker-src],[data-sticker-emoji]')];
   const bottomTray=document.querySelector('.workspace-upcoming-controls');
   const shelfScroll=themePanel?.querySelector('.asset-shelf__scroll');
-  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!themePanel||!stickerPanel||!packs.length)return;
+  const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
+  stickerPanel?.querySelectorAll('.sticker-pack-drawer').forEach(drawer=>drawer.style.setProperty('--sticker-count',String(drawer.querySelectorAll('.sticker-shelf-item').length)));
+  const shelfShell=shelf.querySelector('.asset-shelf__shell');
+  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!themePanel||!stickerPanel||!shelfShell||!packs.length)return;
 
   let activeShelf=null;
   let activePack=null;
   let activeFan=null;
+  let activeStickerPack=null;
+  let activeStickerDrawer=null;
 
   const positionThemeFan=()=>{
     if(!activePack||!activeFan||!activeFan.classList.contains('is-open'))return;
@@ -3788,6 +4002,40 @@ function setupCollectionShelf(){
     requestAnimationFrame(positionThemeFan);
   };
 
+  const closeStickerPack=()=>{
+    if(activeStickerPack){
+      activeStickerPack.classList.remove('is-open');
+      activeStickerPack.setAttribute('aria-expanded','false');
+    }
+    if(activeStickerDrawer){
+      activeStickerDrawer.classList.remove('is-open');
+      activeStickerDrawer.setAttribute('aria-hidden','true');
+    }
+    activeStickerPack=null;
+    activeStickerDrawer=null;
+  };
+
+  const toggleStickerPack=pack=>{
+    const drawerId=pack.getAttribute('aria-controls');
+    const drawer=drawerId?document.getElementById(drawerId):null;
+    if(!drawer)return;
+    if(activeStickerPack===pack&&drawer.classList.contains('is-open')){
+      closeStickerPack();
+      return;
+    }
+    closeStickerPack();
+    activeStickerPack=pack;
+    activeStickerDrawer=drawer;
+    pack.classList.add('is-open');
+    pack.setAttribute('aria-expanded','true');
+    drawer.classList.add('is-open');
+    drawer.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=>{
+      const left=Math.max(0,pack.parentElement.offsetLeft-12);
+      stickerScroll?.scrollTo({left,behavior:'smooth'});
+    });
+  };
+
   const syncShelfButtons=()=>{
     themeButton.classList.toggle('is-active',activeShelf==='themes');
     stickerButton.classList.toggle('is-active',activeShelf==='stickers');
@@ -3800,6 +4048,7 @@ function setupCollectionShelf(){
     if(!activeShelf)return;
     activeShelf=null;
     closeThemeFan();
+    closeStickerPack();
     shelf.classList.remove('is-open');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
@@ -3809,6 +4058,7 @@ function setupCollectionShelf(){
     if(activeShelf===type){closeShelf();return}
     activeShelf=type;
     closeThemeFan();
+    if(type!=='stickers')closeStickerPack();
     const themes=type==='themes';
     themePanel.hidden=!themes;
     stickerPanel.hidden=themes;
@@ -3824,6 +4074,8 @@ function setupCollectionShelf(){
   stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
+  stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
+  stickerItems.forEach(item=>setupShelfStickerDrag(item,shelfShell));
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
@@ -3834,6 +4086,13 @@ function setupCollectionShelf(){
     if(shelfScroll.scrollWidth<=shelfScroll.clientWidth)return;
     if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
     shelfScroll.scrollLeft+=e.deltaY;
+    e.preventDefault();
+  },{passive:false});
+
+  stickerScroll?.addEventListener('wheel',e=>{
+    if(stickerScroll.scrollWidth<=stickerScroll.clientWidth)return;
+    if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+    stickerScroll.scrollLeft+=e.deltaY;
     e.preventDefault();
   },{passive:false});
 
