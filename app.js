@@ -431,6 +431,12 @@ document.addEventListener('keydown',e=>{
   if(isTypingTarget(e.target)||isTypingTarget(document.activeElement))return;
   const command=e.ctrlKey||e.metaKey;
   const key=e.key.toLowerCase();
+  if(command&&!e.altKey&&key==='a'&&!boardKeyboardPanBlocked()){
+    e.preventDefault();
+    clearSelection();
+    for(const module of workspace.querySelectorAll('.module'))selectModule(module);
+    return;
+  }
   if(command&&!e.altKey&&(key==='z'||key==='y')){
     e.preventDefault();
     if(key==='y'||(key==='z'&&e.shiftKey))redoBoardAction();
