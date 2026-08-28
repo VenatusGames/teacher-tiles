@@ -34,14 +34,15 @@
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
-    <button id="changelog-toggle" class="workspace-control" type="button" title="What’s new" aria-label="Open changelog">
+    <button id="changelog-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open news">
       <svg class="news-megaphone-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.5 13.5h3l8 4V6.5l-8 4h-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
         <path d="M7.5 13.5l1.4 5h2.7l-1.3-4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
+      <span class="upcoming-control__tooltip"><strong>News</strong></span>
     </button>
-    <button id="ui-sfx-toggle" class="workspace-control" type="button" title="Mute UI sounds" aria-label="Mute UI sounds">
+    <button id="ui-sfx-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Mute UI sounds">
       <svg class="ui-sfx-icon ui-sfx-icon--on" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
         <path d="M16 9.2a4 4 0 0 1 0 5.6M18.4 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -50,13 +51,13 @@
         <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
         <path d="M16.5 9.5l4 5M20.5 9.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
+      <span class="upcoming-control__tooltip"><strong>Mute</strong></span>
     </button>
-    <button id="theme-toggle" class="workspace-control" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
-    <button id="fullscreen-toggle" class="workspace-control" type="button" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button>
+    <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Toggle fullscreen">⛶<span class="upcoming-control__tooltip"><strong>Fullscreen</strong></span></button>
   </div>
 
-  <div class="workspace-upcoming-controls" aria-label="Upcoming features">
-    <button class="workspace-control upcoming-control" type="button" aria-label="Themes — Coming Soon" data-feature-label="Themes" aria-disabled="true">
+  <div class="workspace-upcoming-controls" aria-label="Theme, sticker, and shop controls">
+    <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
         <circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/>
@@ -64,15 +65,124 @@
         <circle cx="14" cy="7.8" r=".9" fill="currentColor"/>
         <circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/>
       </svg>
-      <span class="upcoming-control__tooltip"><strong>Themes</strong><small>Coming Soon</small></span>
+      <span class="upcoming-control__tooltip"><strong>Themes</strong></span>
     </button>
-    <button class="workspace-control upcoming-control" type="button" aria-label="Stickers — Coming Soon" data-feature-label="Stickers" aria-disabled="true">
+    <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
-      <span class="upcoming-control__tooltip"><strong>Stickers</strong><small>Coming Soon</small></span>
+      <span class="upcoming-control__tooltip"><strong>Stickers</strong></span>
     </button>
     <button class="workspace-control upcoming-control" type="button" aria-label="Shop — Coming Soon" data-feature-label="Shop" aria-disabled="true">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="upcoming-control__tooltip"><strong>Shop</strong><small>Coming Soon</small></span>
+    </button>
+  </div>
+
+
+
+  <section id="asset-shelf" class="asset-shelf" aria-hidden="true" aria-label="TeacherTiles collection shelf">
+    <div class="asset-shelf__backdrop" aria-hidden="true"></div>
+    <div class="asset-shelf__shell">
+      <div class="asset-shelf__header">
+        <div class="asset-shelf__heading">
+          <span class="asset-shelf__eyebrow">COLLECTION SHELF</span>
+          <strong id="asset-shelf-title">Themes</strong>
+        </div>
+        <button id="asset-shelf-close" class="asset-shelf__close" type="button" aria-label="Close shelf">×</button>
+      </div>
+
+      <div class="asset-shelf__body">
+        <div id="theme-shelf-content" class="asset-shelf__content is-active" data-shelf-panel="themes">
+          <div class="asset-shelf__scroll" aria-label="Theme packs">
+            <div class="asset-shelf__row">
+              <div class="theme-pack-wrap">
+                <button id="default-theme-pack" class="theme-pack" type="button" data-theme-pack aria-expanded="false" aria-controls="default-theme-fan">
+                  <span class="theme-pack__stack" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--light"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--gray"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--dark"></i>
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Default</strong>
+                    <small>3 themes</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="pastel-theme-pack" class="theme-pack" type="button" data-theme-pack aria-expanded="false" aria-controls="pastel-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--pastel" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--pastel-red"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--pastel-yellow"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--pastel-green"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--pastel-blue"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--pastel-lilac"></i>
+                  </span>
+                  <span class="theme-pack__meta">
+                    <strong>Pastel</strong>
+                    <small>5 themes</small>
+                  </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="sticker-shelf-content" class="asset-shelf__content" data-shelf-panel="stickers" hidden>
+          <div class="asset-shelf__empty">
+            <div class="asset-shelf__empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </div>
+            <div><strong>Your sticker shelf is empty</strong><small>Sticker packs will live here.</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="default-theme-fan" class="theme-fan" aria-hidden="true" role="group" aria-label="Default theme pack">
+    <button class="theme-card theme-card--light" type="button" data-theme-choice="light" aria-label="Use Light theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Light</strong><small>Classic bright</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--gray" type="button" data-theme-choice="gray" aria-label="Use Gray theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Gray</strong><small>Soft neutral</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--dark" type="button" data-theme-choice="dark" aria-label="Use Dark theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Dark</strong><small>Low light</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+  </div>
+
+  <div id="pastel-theme-fan" class="theme-fan theme-fan--pastel" aria-hidden="true" role="group" aria-label="Pastel theme pack">
+    <button class="theme-card theme-card--pastel-red" type="button" data-theme-choice="pastel-red" aria-label="Use Pastel Red theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Pastel Red</strong><small>Warm blush</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--pastel-yellow" type="button" data-theme-choice="pastel-yellow" aria-label="Use Pastel Yellow theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Pastel Yellow</strong><small>Soft sunshine</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--pastel-green" type="button" data-theme-choice="pastel-green" aria-label="Use Pastel Green theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Pastel Green</strong><small>Fresh mint</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--pastel-blue" type="button" data-theme-choice="pastel-blue" aria-label="Use Pastel Blue theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Pastel Blue</strong><small>Powder blue</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--pastel-lilac" type="button" data-theme-choice="pastel-lilac" aria-label="Use Pastel Lilac theme">
+      <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Pastel Lilac</strong><small>Soft lavender</small></span>
+      <span class="theme-card__check" aria-hidden="true">✓</span>
     </button>
   </div>
 

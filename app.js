@@ -1,7 +1,6 @@
 const workspace=document.getElementById('workspace');
 const menu=document.getElementById('context-menu');
 const uiSfxToggle=document.getElementById('ui-sfx-toggle');
-const themeToggle=document.getElementById('theme-toggle');
 const fullscreenToggle=document.getElementById('fullscreen-toggle');
 const trashZone=document.getElementById('trash-zone');
 let z=10,spawn={x:innerWidth/2,y:innerHeight/2},uid=0;
@@ -28,8 +27,7 @@ function playUiSfx(kind='click'){
 
 function updateUiSfxToggle(){
   if(!uiSfxToggle)return;
-  uiSfxToggle.title=uiSfxMuted?'Turn UI sounds on':'Mute UI sounds';
-  uiSfxToggle.setAttribute('aria-label',uiSfxToggle.title);
+  uiSfxToggle.setAttribute('aria-label',uiSfxMuted?'Turn UI sounds on':'Mute UI sounds');
   uiSfxToggle.classList.toggle('is-muted',uiSfxMuted);
 }
 
@@ -3691,8 +3689,167 @@ function setupTodo(m){
 workspace.addEventListener('dragover',e=>{const types=[...e.dataTransfer.types];if(types.includes('Files')||types.includes('text/uri-list')||types.includes('text/html')||types.includes('text/plain'))e.preventDefault()});
 workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))return;const src=getDraggedImageSource(e.dataTransfer);if(!src)return;e.preventDefault();const p=screenToBoard(e.clientX,e.clientY);const m=createModule('image',p.x,p.y);if(src.file)m?._setImage?.(src.file);else if(src.url)m?._setImageUrl?.(src.url)});
 
-const saved=localStorage.getItem('modular-space-theme');if(saved==='dark')document.body.classList.add('dark');const updateTheme=()=>{const d=document.body.classList.contains('dark');themeToggle.textContent=d?'☀':'☾';themeToggle.title=d?'Switch to light mode':'Switch to dark mode'};themeToggle.addEventListener('click',()=>{document.body.classList.toggle('dark');localStorage.setItem('modular-space-theme',document.body.classList.contains('dark')?'dark':'light');updateTheme()});updateTheme();fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});document.addEventListener('fullscreenchange',()=>{fullscreenToggle.textContent=document.fullscreenElement?'↙':'⛶'});window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
+const THEME_STORAGE_KEY='modular-space-theme';
+const TEACHERTILES_THEMES=new Set([
+  'light','dark','gray',
+  'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac'
+]);
+const THEME_BODY_CLASSES=[
+  'dark','theme-gray',
+  'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac'
+];
 
+function updateThemeControls(theme){
+  const current=TEACHERTILES_THEMES.has(theme)?theme:'light';
+  document.querySelectorAll('[data-theme-choice]').forEach(card=>{
+    const selected=card.dataset.themeChoice===current;
+    card.classList.toggle('is-selected',selected);
+    card.setAttribute('aria-pressed',String(selected));
+  });
+}
+
+function applyTeacherTheme(theme,{persist=true}={}){
+  const next=TEACHERTILES_THEMES.has(theme)?theme:'light';
+  document.body.classList.remove(...THEME_BODY_CLASSES);
+  if(next==='dark')document.body.classList.add('dark');
+  else if(next==='gray')document.body.classList.add('theme-gray');
+  else if(next.startsWith('pastel-'))document.body.classList.add(`theme-${next}`);
+  document.body.dataset.theme=next;
+  document.documentElement.style.colorScheme=next==='dark'?'dark':'light';
+  if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
+  updateThemeControls(next);
+}
+
+const savedTheme=localStorage.getItem(THEME_STORAGE_KEY);
+applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persist:false});
+
+fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
+document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶'});
+window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
+
+function setupCollectionShelf(){
+  const shelf=document.getElementById('asset-shelf');
+  const title=document.getElementById('asset-shelf-title');
+  const closeButton=document.getElementById('asset-shelf-close');
+  const themeButton=document.getElementById('theme-shelf-toggle');
+  const stickerButton=document.getElementById('sticker-shelf-toggle');
+  const themePanel=document.getElementById('theme-shelf-content');
+  const stickerPanel=document.getElementById('sticker-shelf-content');
+  const packs=[...document.querySelectorAll('[data-theme-pack]')];
+  const bottomTray=document.querySelector('.workspace-upcoming-controls');
+  const shelfScroll=themePanel?.querySelector('.asset-shelf__scroll');
+  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!themePanel||!stickerPanel||!packs.length)return;
+
+  let activeShelf=null;
+  let activePack=null;
+  let activeFan=null;
+
+  const positionThemeFan=()=>{
+    if(!activePack||!activeFan||!activeFan.classList.contains('is-open'))return;
+    const packRect=activePack.getBoundingClientRect();
+    const fanRect=activeFan.getBoundingClientRect();
+    const width=fanRect.width||98;
+    const height=fanRect.height||318;
+    const left=clamp(packRect.left+(packRect.width-width)/2,10,Math.max(10,innerWidth-width-10));
+    const top=Math.max(10,packRect.top-height-11);
+    activeFan.style.left=`${left}px`;
+    activeFan.style.top=`${top}px`;
+  };
+
+  const closeThemeFan=()=>{
+    if(activePack){
+      activePack.classList.remove('is-open');
+      activePack.setAttribute('aria-expanded','false');
+    }
+    if(activeFan){
+      activeFan.classList.remove('is-open');
+      activeFan.setAttribute('aria-hidden','true');
+    }
+    activePack=null;
+    activeFan=null;
+  };
+
+  const toggleThemeFan=pack=>{
+    const fanId=pack.getAttribute('aria-controls');
+    const fan=fanId?document.getElementById(fanId):null;
+    if(!fan)return;
+    if(activePack===pack&&fan.classList.contains('is-open')){
+      closeThemeFan();
+      return;
+    }
+    closeThemeFan();
+    activePack=pack;
+    activeFan=fan;
+    pack.classList.add('is-open');
+    pack.setAttribute('aria-expanded','true');
+    fan.classList.add('is-open');
+    fan.setAttribute('aria-hidden','false');
+    positionThemeFan();
+    requestAnimationFrame(positionThemeFan);
+  };
+
+  const syncShelfButtons=()=>{
+    themeButton.classList.toggle('is-active',activeShelf==='themes');
+    stickerButton.classList.toggle('is-active',activeShelf==='stickers');
+    themeButton.setAttribute('aria-expanded',String(activeShelf==='themes'));
+    stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
+    bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
+  };
+
+  const closeShelf=()=>{
+    if(!activeShelf)return;
+    activeShelf=null;
+    closeThemeFan();
+    shelf.classList.remove('is-open');
+    shelf.setAttribute('aria-hidden','true');
+    syncShelfButtons();
+  };
+
+  const openShelf=type=>{
+    if(activeShelf===type){closeShelf();return}
+    activeShelf=type;
+    closeThemeFan();
+    const themes=type==='themes';
+    themePanel.hidden=!themes;
+    stickerPanel.hidden=themes;
+    themePanel.classList.toggle('is-active',themes);
+    stickerPanel.classList.toggle('is-active',!themes);
+    title.textContent=themes?'Themes':'Stickers';
+    shelf.classList.add('is-open');
+    shelf.setAttribute('aria-hidden','false');
+    syncShelfButtons();
+  };
+
+  themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
+  stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
+  closeButton.addEventListener('click',closeShelf);
+  packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
+
+  document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
+    card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
+  });
+
+  shelfScroll?.addEventListener('scroll',positionThemeFan,{passive:true});
+  shelfScroll?.addEventListener('wheel',e=>{
+    if(shelfScroll.scrollWidth<=shelfScroll.clientWidth)return;
+    if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+    shelfScroll.scrollLeft+=e.deltaY;
+    e.preventDefault();
+  },{passive:false});
+
+  window.addEventListener('resize',positionThemeFan,{passive:true});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf)closeShelf()});
+  document.addEventListener('pointerdown',e=>{
+    if(!activeShelf)return;
+    const target=e.target;
+    if(!(target instanceof Element))return;
+    if(target.closest('#asset-shelf,.theme-fan,.workspace-upcoming-controls'))return;
+    closeShelf();
+  });
+
+  updateThemeControls(document.body.dataset.theme||'light');
+}
+setupCollectionShelf();
 
 
 
