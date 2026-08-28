@@ -433,8 +433,14 @@ document.addEventListener('keydown',e=>{
   const key=e.key.toLowerCase();
   if(command&&!e.altKey&&key==='a'&&!boardKeyboardPanBlocked()){
     e.preventDefault();
-    clearSelection();
-    for(const module of workspace.querySelectorAll('.module'))selectModule(module);
+    const modules=[...workspace.querySelectorAll('.module')];
+    const allSelected=modules.length>0&&modules.every(module=>selectedModules.has(module));
+    if(allSelected){
+      clearSelection();
+    }else{
+      clearSelection();
+      for(const module of modules)selectModule(module);
+    }
     return;
   }
   if(command&&!e.altKey&&(key==='z'||key==='y')){
@@ -459,6 +465,14 @@ window.addEventListener('resize',applyBoardCamera);
 
 workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r=menu.getBoundingClientRect();menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false')});
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
+
+document.addEventListener('pointerdown',e=>{
+  if(e.button!==0||!selectedModules.size)return;
+  const target=e.target instanceof Element?e.target:null;
+  const module=target?.closest('.module');
+  if(module&&selectedModules.has(module))return;
+  clearSelection();
+},true);
 
 const menuFilters=[...menu.querySelectorAll('[data-category-filter]')];
 const menuSearch=menu.querySelector('#context-menu-search');
