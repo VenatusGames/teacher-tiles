@@ -13019,3 +13019,15 @@ body.boards-screen-open .trash-zone{visibility:hidden!important}
   }
   .trash-zone.is-visible{transform:translateY(0) scale(1)!important}
 }
+
+/* Text fields double-click into edit mode; otherwise they remain tile drag surfaces. */
+.module .module-text-edit-target{
+  cursor:pointer!important;
+}
+.module .module-text-edit-target.module-text-edit-active{
+  cursor:text!important;
+  user-select:text;
+}
+.module.is-text-editing .module-text-edit-target.module-text-edit-active{
+  pointer-events:auto;
+}
