@@ -8650,49 +8650,37 @@ if(document.readyState==='loading'){
 (() => {
   const topRightTray = document.querySelector('.workspace-controls');
   const bottomLeftTray = document.querySelector('.workspace-upcoming-controls');
-  if (!topRightTray || !bottomLeftTray) return;
+  const topLeftButton = document.getElementById('boards-toggle');
+  if (!topRightTray || !bottomLeftTray || !topLeftButton) return;
 
   const FULL_X = 250;
   const FULL_Y = 175;
   const NEAR_X = 330;
   const NEAR_Y = 235;
 
-  const setState = (tray, full, near) => {
-    tray.classList.toggle('is-revealed', full);
-    tray.classList.toggle('is-near', !full && near);
+  const setState = (target, full, near) => {
+    target.classList.toggle('is-revealed', full);
+    target.classList.toggle('is-near', !full && near);
   };
 
   document.addEventListener('pointermove', event => {
     if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
 
-    const topRightFull =
-      event.clientX >= window.innerWidth - FULL_X &&
-      event.clientY <= FULL_Y;
-    const topRightNear =
-      event.clientX >= window.innerWidth - NEAR_X &&
-      event.clientY <= NEAR_Y;
+    const topRightFull = event.clientX >= window.innerWidth - FULL_X && event.clientY <= FULL_Y;
+    const topRightNear = event.clientX >= window.innerWidth - NEAR_X && event.clientY <= NEAR_Y;
+    const bottomLeftFull = event.clientX <= FULL_X && event.clientY >= window.innerHeight - FULL_Y;
+    const bottomLeftNear = event.clientX <= NEAR_X && event.clientY >= window.innerHeight - NEAR_Y;
+    const topLeftFull = event.clientX <= FULL_X && event.clientY <= FULL_Y;
+    const topLeftNear = event.clientX <= NEAR_X && event.clientY <= NEAR_Y;
 
-    const bottomLeftFull =
-      event.clientX <= FULL_X &&
-      event.clientY >= window.innerHeight - FULL_Y;
-    const bottomLeftNear =
-      event.clientX <= NEAR_X &&
-      event.clientY >= window.innerHeight - NEAR_Y;
-
-    setState(
-      topRightTray,
-      topRightFull || topRightTray.matches(':hover') || topRightTray.matches(':focus-within'),
-      topRightNear
-    );
-    setState(
-      bottomLeftTray,
-      bottomLeftFull || bottomLeftTray.matches(':hover') || bottomLeftTray.matches(':focus-within'),
-      bottomLeftNear
-    );
+    setState(topRightTray, topRightFull || topRightTray.matches(':hover') || topRightTray.matches(':focus-within'), topRightNear);
+    setState(bottomLeftTray, bottomLeftFull || bottomLeftTray.matches(':hover') || bottomLeftTray.matches(':focus-within'), bottomLeftNear);
+    setState(topLeftButton, topLeftFull || topLeftButton.matches(':hover') || topLeftButton.matches(':focus-visible'), topLeftNear);
   }, { passive:true });
 
   topRightTray.addEventListener('pointerenter', () => setState(topRightTray, true, true));
   bottomLeftTray.addEventListener('pointerenter', () => setState(bottomLeftTray, true, true));
+  topLeftButton.addEventListener('pointerenter', () => setState(topLeftButton, true, true));
 })();
 
 

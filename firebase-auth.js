@@ -43,6 +43,7 @@ let lastFocused = null;
 let boardList = [];
 let activeBoardId = "";
 let boardLoading = false;
+let boardDeleting = false;
 let boardSaving = false;
 let boardSaveTimer = 0;
 let queuedSave = false;
@@ -258,6 +259,7 @@ async function saveCurrentBoard({ immediate = false } = {}) {
       existing.camera = snapshot.camera;
       existing.calendarEvents = snapshot.calendarEvents;
       existing.preview = snapshot.preview;
+      existing.previewObjects = snapshot.objects.slice(0, 48);
       existing.objectCount = snapshot.objects.length;
       existing.updatedAt = { seconds: Date.now() / 1000 };
     }
@@ -289,10 +291,36 @@ function scheduleBoardSave() {
 
 async function fetchBoards() {
   if (!currentUser || !db || !firestoreSdk) return [];
+  const previous = new Map(boardList.map(board => [board.id, board]));
   const snapshot = await firestoreSdk.getDocs(boardCollection(currentUser.uid));
-  const boards = snapshot.docs.map(normalizeBoardMetadata);
+  const boards = snapshot.docs.map(normalizeBoardMetadata).map(board => {
+    const prior = previous.get(board.id);
+    if (prior?.previewObjects) board.previewObjects = prior.previewObjects;
+    return board;
+  });
   boardList = sortBoards(boards);
   return boardList;
+}
+
+async function fetchBoardPreviewObjects(boardId) {
+  if (!currentUser || !db || !firestoreSdk || !boardId) return [];
+  const snapshot = await firestoreSdk.getDocs(boardObjectsCollection(currentUser.uid, boardId));
+  return snapshot.docs.slice(0, 48).map(docSnapshot => {
+    const data = cleanFirestoreValue(docSnapshot.data() || {});
+    return { ...data, id: docSnapshot.id };
+  });
+}
+
+async function hydrateBoardPreviews() {
+  if (!boardList.length) return;
+  await Promise.all(boardList.map(async board => {
+    if (Array.isArray(board.previewObjects) && (board.previewObjects.length || board.objectCount === 0)) return;
+    try {
+      board.previewObjects = await fetchBoardPreviewObjects(board.id);
+    } catch (error) {
+      console.warn(`TeacherTiles could not build preview for ${board.name}`, error);
+    }
+  }));
 }
 
 async function fetchBoardObjects(boardId) {
@@ -321,6 +349,7 @@ async function loadBoard(boardId, { closeView = true } = {}) {
 
     const meta = normalizeBoardMetadata(metaSnapshot);
     const objects = await fetchBoardObjects(boardId);
+    meta.previewObjects = objects.slice(0, 48);
 
     activeBoardId = boardId;
     localStorage.setItem(activeBoardStorageKey(currentUser.uid), activeBoardId);
@@ -372,6 +401,7 @@ async function createInitialBoardFromWorkspace() {
     camera: snapshot.camera,
     calendarEvents: snapshot.calendarEvents,
     preview: snapshot.preview,
+    previewObjects: snapshot.objects.slice(0, 48),
     objectCount: snapshot.objects.length,
     schemaVersion: snapshot.schemaVersion,
     createdAt: { seconds: Date.now() / 1000 },
@@ -392,12 +422,12 @@ function nextBoardName() {
   return `Board ${n}`;
 }
 
-async function createBlankBoard() {
+async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
   const api = boardApi();
   if (!api) return;
 
-  await saveCurrentBoard({ immediate: true });
+  if (!skipSave) await saveCurrentBoard({ immediate: true });
 
   const ref = createBoardReference();
   const snapshot = api.blank();
@@ -414,6 +444,7 @@ async function createBlankBoard() {
       camera: snapshot.camera,
       calendarEvents: [],
       preview: [],
+      previewObjects: [],
       objectCount: 0,
       schemaVersion: snapshot.schemaVersion,
       createdAt: { seconds: Date.now() / 1000 },
@@ -426,7 +457,8 @@ async function createBlankBoard() {
     api.load(snapshot);
     boardList = sortBoards(boardList);
     setBoardStatus("");
-    closeBoardsView();
+    if (closeView) closeBoardsView();
+    else renderBoards();
   } catch (error) {
     console.error("TeacherTiles board creation failed", error);
     setBoardStatus("Could not create board", true);
@@ -438,9 +470,95 @@ function previewThemeClass(theme) {
   return `board-preview-theme-${safe || "light"}`;
 }
 
+function layoutBoardPreviewObjects(objects) {
+  const list = (Array.isArray(objects) ? objects : []).filter(Boolean).slice(0, 48);
+  if (!list.length) return [];
+
+  const boxes = list.map(state => {
+    const transform = state.transform || {};
+    return {
+      state,
+      left: Number(transform.left) || 0,
+      top: Number(transform.top) || 0,
+      width: Math.max(24, Number(transform.width) || 160),
+      height: Math.max(24, Number(transform.height) || 120)
+    };
+  });
+
+  let minX = Math.min(...boxes.map(box => box.left));
+  let minY = Math.min(...boxes.map(box => box.top));
+  let maxX = Math.max(...boxes.map(box => box.left + box.width));
+  let maxY = Math.max(...boxes.map(box => box.top + box.height));
+  const pad = Math.max(120, Math.max(maxX - minX, maxY - minY) * .08);
+  minX -= pad;
+  minY -= pad;
+  maxX += pad;
+  maxY += pad;
+  const spanX = Math.max(1, maxX - minX);
+  const spanY = Math.max(1, maxY - minY);
+
+  return boxes.map(({ state, left, top, width, height }) => ({
+    type: state.type,
+    x: Math.max(0, Math.min(1, (left - minX) / spanX)),
+    y: Math.max(0, Math.min(1, (top - minY) / spanY)),
+    w: Math.max(.025, Math.min(.72, width / spanX)),
+    h: Math.max(.025, Math.min(.72, height / spanY)),
+    emoji: state.sticker?.emoji || "",
+    src: state.sticker?.src || "",
+    state
+  }));
+}
+
+function plainTextFromSavedHtml(html = "") {
+  const template = document.createElement("template");
+  template.innerHTML = String(html);
+  return template.content.textContent || "";
+}
+
+function applyPreviewState(module, state) {
+  if (!module || !state) return;
+
+  for (const element of module.querySelectorAll("[id]")) element.removeAttribute("id");
+  module.removeAttribute("id");
+  module.setAttribute("aria-hidden", "true");
+
+  if (state.dataset && typeof state.dataset === "object") {
+    for (const [key, value] of Object.entries(state.dataset)) {
+      if (key === "type" || key === "boardObjectId") continue;
+      module.dataset[key] = String(value);
+    }
+  }
+
+  for (const cls of Array.isArray(state.classes) ? state.classes : []) module.classList.add(cls);
+
+  const controls = [...module.querySelectorAll("input,textarea,select")];
+  for (const saved of Array.isArray(state.fields) ? state.fields : []) {
+    const field = controls[saved.index];
+    if (!field) continue;
+    if (typeof saved.value === "string") field.value = saved.value;
+    if (saved.checked !== undefined && "checked" in field) field.checked = Boolean(saved.checked);
+    field.tabIndex = -1;
+  }
+
+  const editables = [...module.querySelectorAll('[contenteditable]:not([contenteditable="false"])')];
+  for (const saved of Array.isArray(state.editables) ? state.editables : []) {
+    const editable = editables[saved.index];
+    if (!editable) continue;
+    editable.textContent = plainTextFromSavedHtml(saved.html);
+    editable.removeAttribute("contenteditable");
+  }
+
+  module.querySelectorAll("button,input,textarea,select,a").forEach(control => {
+    control.tabIndex = -1;
+    control.setAttribute("aria-hidden", "true");
+  });
+}
+
 function createMiniObject(item) {
+  const state = item?.state || null;
+  const type = state?.type || item?.type || "";
   const el = document.createElement("span");
-  el.className = `board-mini-object${item.type === "sticker" ? " is-sticker" : ""}`;
+  el.className = `board-mini-object${type === "sticker" ? " is-sticker" : ""}`;
 
   const x = Math.max(0, Math.min(1, Number(item.x) || 0));
   const y = Math.max(0, Math.min(1, Number(item.y) || 0));
@@ -452,35 +570,125 @@ function createMiniObject(item) {
   el.style.width = `${w * 100}%`;
   el.style.height = `${h * 100}%`;
 
-  if (item.type === "sticker") {
-    if (item.emoji) {
-      el.textContent = item.emoji;
-    } else if (item.src) {
+  if (type === "sticker") {
+    const emoji = state?.sticker?.emoji || item.emoji || "";
+    const src = state?.sticker?.src || item.src || "";
+    if (emoji) {
+      el.textContent = emoji;
+      if (state?.transform?.rotation) el.style.transform = `rotate(${Number(state.transform.rotation) || 0}deg)`;
+    } else if (src && !String(src).startsWith("data:")) {
       const image = document.createElement("img");
-      image.src = item.src;
+      image.src = src;
       image.alt = "";
       el.appendChild(image);
+      if (state?.transform?.rotation) image.style.transform = `rotate(${Number(state.transform.rotation) || 0}deg)`;
+    }
+    return el;
+  }
+
+  if (state) {
+    const template = document.getElementById(`${type}-template`);
+    const sourceModule = template?.content?.querySelector?.(".module");
+    if (sourceModule) {
+      const module = sourceModule.cloneNode(true);
+      applyPreviewState(module, state);
+      el.classList.add("is-real-tile");
+
+      const originalWidth = Math.max(24, Number(state.transform?.width) || 320);
+      const originalHeight = Math.max(24, Number(state.transform?.height) || 220);
+      module.style.width = `${originalWidth}px`;
+      module.style.height = `${originalHeight}px`;
+      module.style.minWidth = "0";
+      module.style.minHeight = "0";
+      module.style.maxWidth = "none";
+      module.style.maxHeight = "none";
+      module.style.left = "0";
+      module.style.top = "0";
+      module.style.transform = "none";
+      module.style.transformOrigin = "0 0";
+      el.appendChild(module);
+
+      requestAnimationFrame(() => {
+        if (!el.isConnected || !module.isConnected) return;
+        const scaleX = el.clientWidth / originalWidth;
+        const scaleY = el.clientHeight / originalHeight;
+        if (!Number.isFinite(scaleX) || !Number.isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
+        module.style.transform = `scale(${scaleX}, ${scaleY})`;
+      });
+      return el;
     }
   }
 
+  el.dataset.previewType = type;
   return el;
 }
 
+async function deleteBoard(boardId) {
+  if (!currentUser || !db || !firestoreSdk || !boardId || boardDeleting) return;
+  const board = boardList.find(item => item.id === boardId);
+  if (!board) return;
+  if (!window.confirm(`Delete ${board.name}? This cannot be undone.`)) return;
+
+  boardDeleting = true;
+  setBoardStatus("Deleting…");
+  const wasActive = boardId === activeBoardId;
+
+  try {
+    const objectSnapshot = await firestoreSdk.getDocs(boardObjectsCollection(currentUser.uid, boardId));
+    const refs = objectSnapshot.docs.map(docSnapshot => docSnapshot.ref);
+    for (let index = 0; index < refs.length; index += 430) {
+      const batch = firestoreSdk.writeBatch(db);
+      for (const ref of refs.slice(index, index + 430)) batch.delete(ref);
+      await batch.commit();
+    }
+
+    await firestoreSdk.deleteDoc(boardDocument(currentUser.uid, boardId));
+    knownBoardObjectIds.delete(boardId);
+    knownBoardObjectHashes.delete(boardId);
+    boardList = boardList.filter(item => item.id !== boardId);
+
+    if (wasActive) {
+      activeBoardId = "";
+      boardApi()?.setActiveBoardId("");
+      localStorage.removeItem(activeBoardStorageKey(currentUser.uid));
+
+      const next = sortBoards(boardList)[0];
+      if (next) {
+        await loadBoard(next.id, { closeView: false });
+      } else {
+        await createBlankBoard({ skipSave: true, closeView: false });
+      }
+    }
+
+    setBoardStatus("");
+    renderBoards();
+  } catch (error) {
+    console.error("TeacherTiles board deletion failed", error);
+    setBoardStatus("Could not delete board", true);
+  } finally {
+    boardDeleting = false;
+  }
+}
+
 function createBoardCard(board) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
-  button.dataset.boardId = board.id;
-  button.setAttribute("aria-label", `Open ${board.name}`);
+  const card = document.createElement("article");
+  card.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
+  card.dataset.boardId = board.id;
+
+  const openButton = document.createElement("button");
+  openButton.type = "button";
+  openButton.className = "board-card__open";
+  openButton.setAttribute("aria-label", `Open ${board.name}`);
 
   const preview = document.createElement("div");
   preview.className = `board-card__preview ${previewThemeClass(board.theme)}`;
 
   const objects = document.createElement("div");
   objects.className = "board-card__objects";
-  for (const item of Array.isArray(board.preview) ? board.preview : []) {
-    objects.appendChild(createMiniObject(item));
-  }
+  const previewItems = Array.isArray(board.previewObjects)
+    ? layoutBoardPreviewObjects(board.previewObjects)
+    : (Array.isArray(board.preview) ? board.preview : []);
+  for (const item of previewItems) objects.appendChild(createMiniObject(item));
   preview.appendChild(objects);
 
   const meta = document.createElement("div");
@@ -494,25 +702,39 @@ function createBoardCard(board) {
   count.textContent = `${total} ${total === 1 ? "item" : "items"}`;
 
   meta.append(title, count);
-  button.append(preview, meta);
+  openButton.append(preview, meta);
 
-  button.addEventListener("click", async () => {
-    if (boardLoading) return;
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "board-card__delete";
+  deleteButton.setAttribute("aria-label", `Delete ${board.name}`);
+  deleteButton.title = "Delete board";
+  deleteButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8.5h10M9 8.5V6.7h6v1.8m-7 0 .7 9.1h6.6l.7-9.1M10.5 11v4.4M13.5 11v4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  openButton.addEventListener("click", async () => {
+    if (boardLoading || boardDeleting) return;
     if (board.id === activeBoardId) {
       closeBoardsView();
       return;
     }
 
-    button.disabled = true;
+    openButton.disabled = true;
     try {
       await saveCurrentBoard({ immediate: true });
       await loadBoard(board.id);
     } finally {
-      button.disabled = false;
+      openButton.disabled = false;
     }
   });
 
-  return button;
+  deleteButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    deleteBoard(board.id);
+  });
+
+  card.append(openButton, deleteButton);
+  return card;
 }
 
 function createNewBoardCard() {
@@ -561,12 +783,19 @@ async function openBoardsView() {
   boardsView.setAttribute("aria-hidden", "false");
   document.body.classList.add("boards-screen-open");
   boardsToggle?.setAttribute("aria-expanded", "true");
-  boardsLoading.hidden = false;
-  boardsGrid.replaceChildren();
+
+  if (boardList.length) {
+    renderBoards();
+  } else {
+    boardsLoading.hidden = false;
+    boardsGrid.replaceChildren();
+  }
 
   try {
     await saveCurrentBoard({ immediate: true });
     await fetchBoards();
+    renderBoards();
+    await hydrateBoardPreviews();
     renderBoards();
   } catch (error) {
     console.error("TeacherTiles could not open Boards", error);
