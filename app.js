@@ -2922,6 +2922,7 @@ function setupLunchCount(m){
         category.iconSrc=icon.src;
         closePicker();
         renderCategories();
+        notifyBoardChanged('lunch-count-image');
       }
     });
     pickerGrid.appendChild(button);
@@ -3355,6 +3356,7 @@ function setupVoting(m){
       if(typeof reader.result==='string'){
         choice.imageSrc=reader.result;
         renderChoices();
+        notifyBoardChanged('voting-image');
       }
     },{once:true});
     reader.readAsDataURL(file);
@@ -3819,17 +3821,18 @@ function setupImage(m){
     }).catch(()=>{});
   };
 
-  const setUrl=url=>{
+  const setUrl=(url,{notify=true}={})=>{
     if(!url)return;
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=''}
     boardImageSrc=url;
     setSrc(url,'Board image');
+    if(notify)notifyBoardChanged('image');
   };
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
   m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:'')});
-  m._boardSetState=state=>{if(state?.src)setUrl(state.src)};
+  m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false})};
 
   stage.addEventListener('click',()=>input.click());
   input.addEventListener('change',()=>setFile(input.files?.[0]));
@@ -4221,6 +4224,17 @@ const VISUAL_SCHEDULE_ICONS=[
   {src:'assets/schedule-icons/28.png',label:'Computer'},
   {src:'assets/schedule-icons/29.png',label:'Music'}
 ];
+
+function resolveVisualScheduleIcon(src){
+  const value=String(src||'').trim();
+  if(!value)return null;
+  const direct=VISUAL_SCHEDULE_ICONS.find(icon=>icon.src===value);
+  if(direct)return direct;
+  try{
+    const wanted=new URL(value,document.baseURI).href;
+    return VISUAL_SCHEDULE_ICONS.find(icon=>new URL(icon.src,document.baseURI).href===wanted)||null;
+  }catch{return null}
+}
 
 
 
@@ -4719,6 +4733,20 @@ function setupProgressBar(m){
     slot.classList.add('has-icon');
   };
 
+  const clearSlotIcon=slot=>{
+    const image=slot.querySelector('img');
+    image.removeAttribute('src');
+    image.alt='';
+    delete slot.dataset.iconSrc;
+    slot.classList.remove('has-icon');
+  };
+
+  const restoreSlotIcon=(slot,src)=>{
+    const icon=resolveVisualScheduleIcon(src);
+    if(icon)setSlotIcon(slot,icon);
+    else clearSlotIcon(slot);
+  };
+
   const refreshPickerSelection=()=>{
     const current=activeIconSlot?.dataset.iconSrc||'';
     pickerGrid.querySelectorAll('.progress-bar-icon-option').forEach(button=>{
@@ -4755,7 +4783,10 @@ function setupProgressBar(m){
 
     button.append(image,caption);
     button.addEventListener('click',()=>{
-      if(activeIconSlot)setSlotIcon(activeIconSlot,icon);
+      if(activeIconSlot){
+        setSlotIcon(activeIconSlot,icon);
+        notifyBoardChanged('progress-bar-image');
+      }
       closePicker();
     });
     pickerGrid.appendChild(button);
@@ -4881,12 +4912,20 @@ function setupProgressBar(m){
   interval=window.setInterval(render,200);
   render();
 
-  m._boardGetState=()=>({initializedAt,targetAt,completed});
+  m._boardGetState=()=>({
+    initializedAt,
+    targetAt,
+    completed,
+    startIconSrc:iconStart.dataset.iconSrc||'',
+    endIconSrc:iconEnd.dataset.iconSrc||''
+  });
   m._boardSetState=state=>{
     if(!state)return;
     initializedAt=Number(state.initializedAt)||Date.now();
     targetAt=Number(state.targetAt)||Date.now()+30*60*1000;
     completed=Boolean(state.completed);
+    restoreSlotIcon(iconStart,state.startIconSrc||state.startIcon||'');
+    restoreSlotIcon(iconEnd,state.endIconSrc||state.endIcon||'');
     endInput.value=formatInputTime(new Date(targetAt));
     render();
   };
@@ -4954,6 +4993,7 @@ function setupVisualSchedule(m){
       targetImage.src=icon.src;
       targetImage.alt=icon.label;
       activeSegment.dataset.iconSrc=icon.src;
+      notifyBoardChanged('visual-schedule-image');
       closePicker();
     });
     pickerGrid.appendChild(button);
@@ -4975,8 +5015,8 @@ function setupVisualSchedule(m){
   },{passive:true});
 
   const addSegment=(data={},focus=false)=>{
-    const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)];
-    const icon=(data.iconSrc&&VISUAL_SCHEDULE_ICONS.find(item=>item.src===data.iconSrc))||fallbackIcon;
+    const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
+    const icon=resolveVisualScheduleIcon(data.iconSrc)||fallbackIcon;
     const row=document.createElement('div');
     row.className='visual-schedule-segment';
     row.dataset.iconSrc=icon.src;
@@ -5030,7 +5070,7 @@ function setupVisualSchedule(m){
   m._boardGetState=()=>({segments:[...list.querySelectorAll('.visual-schedule-segment')].map(row=>({
     title:row.querySelector('.visual-schedule-segment-title')?.value||'',
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
-    iconSrc:row.dataset.iconSrc||'',
+    iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
     complete:row.classList.contains('is-complete')
   }))});
   m._boardSetState=state=>{

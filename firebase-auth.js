@@ -1070,6 +1070,57 @@ function applyPreviewState(module, state) {
     editable.removeAttribute("contenteditable");
   }
 
+  const special = state.special && typeof state.special === "object" ? state.special : null;
+  if (state.type === "progressbar" && special) {
+    const applyIcon = (selector, src) => {
+      const slot = module.querySelector(selector);
+      const image = slot?.querySelector("img");
+      if (!slot || !image || !src) return;
+      image.src = String(src);
+      image.alt = "";
+      slot.dataset.iconSrc = String(src);
+      slot.classList.add("has-icon");
+    };
+    applyIcon(".progress-bar-icon-start", special.startIconSrc || special.startIcon || "");
+    applyIcon(".progress-bar-icon-end", special.endIconSrc || special.endIcon || "");
+  }
+
+  if (state.type === "visualschedule" && special && Array.isArray(special.segments)) {
+    const list = module.querySelector(".visual-schedule-list");
+    if (list) {
+      list.replaceChildren();
+      for (const segment of special.segments.slice(0, 12)) {
+        const row = document.createElement("div");
+        row.className = `visual-schedule-segment${segment?.complete ? " is-complete" : ""}`;
+        if (segment?.iconSrc) row.dataset.iconSrc = String(segment.iconSrc);
+
+        const imageButton = document.createElement("button");
+        imageButton.type = "button";
+        imageButton.className = "visual-schedule-image";
+        const image = document.createElement("img");
+        image.alt = "";
+        image.draggable = false;
+        if (segment?.iconSrc) image.src = String(segment.iconSrc);
+        imageButton.appendChild(image);
+
+        const title = document.createElement("input");
+        title.className = "visual-schedule-segment-title";
+        title.type = "text";
+        title.value = String(segment?.title || "");
+
+        const time = document.createElement("input");
+        time.className = "visual-schedule-segment-time";
+        time.type = "text";
+        time.value = String(segment?.time || "");
+
+        const actions = document.createElement("div");
+        actions.className = "visual-schedule-segment-actions";
+        row.append(imageButton, title, time, actions);
+        list.appendChild(row);
+      }
+    }
+  }
+
   module.querySelectorAll("button,input,textarea,select,a").forEach(control => {
     control.tabIndex = -1;
     control.setAttribute("aria-hidden", "true");

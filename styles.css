@@ -13080,6 +13080,7 @@ body.boards-screen-open .trash-zone{visibility:hidden!important}
 .settings-pane[hidden]{display:none!important}
 .settings-page-heading{margin-bottom:21px}
 .settings-page-heading>span{display:block;margin-bottom:7px;font-size:9px;font-weight:950;letter-spacing:.16em;color:var(--muted)}
+.settings-page-heading--preferences>span{margin-bottom:0;font-size:28px;line-height:1.05;letter-spacing:-.035em;color:var(--text)}
 .settings-page-heading h2{margin:0;font-size:27px;line-height:1.06;letter-spacing:-.045em}
 .settings-page-heading p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.55;max-width:620px}
 .settings-card{border:1px solid var(--border);border-radius:18px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 10px 30px rgba(15,23,42,.045);overflow:hidden;margin-top:13px}
