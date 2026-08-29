@@ -1,6 +1,6 @@
 const workspace=document.getElementById('workspace');
 const menu=document.getElementById('context-menu');
-const uiSfxToggle=document.getElementById('ui-sfx-toggle');
+const settingsToggle=document.getElementById('settings-toggle');
 const fullscreenToggle=document.getElementById('fullscreen-toggle');
 const trashZone=document.getElementById('trash-zone');
 const STICKER_Z_BASE=100000;
@@ -168,40 +168,73 @@ function deleteModules(modules,{record=true}={}){
 const FONT_OPTIONS=['inter','poppins','nunito','quicksand','oswald','lora','merriweather','playfair','caveat','phantom'];
 
 const UI_SFX_KEY='teachertiles-ui-sfx-muted';
-let uiSfxMuted=localStorage.getItem(UI_SFX_KEY)==='true';
+const APP_PREFERENCES_KEY='teachertiles-app-preferences-v1';
+const DEFAULT_APP_PREFERENCES=Object.freeze({
+  uiMuted:false,
+  uiVolume:100,
+  scrollSpeed:100,
+  defaultViewSize:100,
+  language:'en'
+});
+
+function normalizeAppPreferences(value={}){
+  const source=value&&typeof value==='object'?value:{};
+  const prefClamp=(number,min,max)=>Math.max(min,Math.min(max,number));
+  const rawVolume=Number(source.uiVolume);
+  const rawScroll=Number(source.scrollSpeed);
+  return{
+    uiMuted:Boolean(source.uiMuted),
+    uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
+    scrollSpeed:prefClamp(Number.isFinite(rawScroll)?rawScroll:100,50,175),
+    defaultViewSize:[75,100,125,150].includes(Number(source.defaultViewSize))?Number(source.defaultViewSize):100,
+    language:source.language==='es'?'es':'en'
+  };
+}
+
+function readStoredAppPreferences(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(APP_PREFERENCES_KEY)||'null');
+    if(saved&&typeof saved==='object')return normalizeAppPreferences({...DEFAULT_APP_PREFERENCES,...saved});
+  }catch{}
+  return normalizeAppPreferences({...DEFAULT_APP_PREFERENCES,uiMuted:localStorage.getItem(UI_SFX_KEY)==='true'});
+}
+
+let appPreferences=readStoredAppPreferences();
+let uiSfxMuted=appPreferences.uiMuted;
 const uiSfxPrototype=new Audio('assets/ui/pop.mp3');
 uiSfxPrototype.preload='auto';
 
+function persistAppPreferences(){
+  try{localStorage.setItem(APP_PREFERENCES_KEY,JSON.stringify(appPreferences))}catch{}
+  try{localStorage.setItem(UI_SFX_KEY,String(appPreferences.uiMuted))}catch{}
+}
+
+function boardPreferenceSnapshot(){
+  return{
+    uiMuted:Boolean(appPreferences.uiMuted),
+    uiVolume:Number.isFinite(Number(appPreferences.uiVolume))?Number(appPreferences.uiVolume):100,
+    scrollSpeed:Number(appPreferences.scrollSpeed)||100,
+    defaultViewSize:Number(appPreferences.defaultViewSize)||100,
+    language:appPreferences.language==='es'?'es':'en'
+  };
+}
+
 function playUiSfx(kind='click'){
-  if(uiSfxMuted)return;
+  if(appPreferences.uiMuted)return;
   try{
     const sound=uiSfxPrototype.cloneNode();
-    sound.volume=kind==='intro'?.62:kind==='collection'?.18:.11;
+    const base=kind==='intro'?.62:kind==='collection'?.18:.11;
+    sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
     sound.playbackRate=kind==='intro'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
   }catch{}
 }
 
-function updateUiSfxToggle(){
-  if(!uiSfxToggle)return;
-  uiSfxToggle.setAttribute('aria-label',uiSfxMuted?'Turn UI sounds on':'Mute UI sounds');
-  uiSfxToggle.classList.toggle('is-muted',uiSfxMuted);
-}
-
-uiSfxToggle?.addEventListener('click',()=>{
-  const wasMuted=uiSfxMuted;
-  uiSfxMuted=!uiSfxMuted;
-  localStorage.setItem(UI_SFX_KEY,String(uiSfxMuted));
-  updateUiSfxToggle();
-  if(wasMuted&&!uiSfxMuted)playUiSfx('click');
-});
-updateUiSfxToggle();
-
 document.addEventListener('click',e=>{
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#ui-sfx-toggle'))return;
+  if(target.closest('#settings-ui-sfx-toggle'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click');
 },true);
@@ -220,6 +253,274 @@ document.addEventListener('change',e=>{
 
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`};
+
+const APP_TRANSLATIONS={
+  en:{
+    'top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
+    'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
+    'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
+    'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help',
+    'settings.preferences.kicker':'PREFERENCES','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
+    'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
+    'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
+    'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
+    'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
+    'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
+    'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
+    'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance.','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
+    'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
+    'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
+    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete the selected tile, sticker, or group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
+    'help.mouse.title':'Mouse & trackpad','help.mouse.copy':'The board is designed to stay fast without switching tools.',
+    'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
+    'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
+    'help.mouse.menu.title':'Add tiles','help.mouse.menu.copy':'Right-click empty board space to open the Add Tile menu.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Use the mouse wheel or trackpad scroll over the board.',
+    'help.mouse.move.title':'Move tiles','help.mouse.move.copy':'Drag anywhere on a tile that is not an active button, slider, canvas, or other control.',
+    'help.mouse.text.title':'Edit text','help.mouse.text.copy':'Double-click a text field to type. Click away from it to leave text-edit mode.',
+    'help.mouse.sticker.title':'Transform stickers','help.mouse.sticker.copy':'Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.',
+    'help.mouse.trash.title':'Delete by dragging','help.mouse.trash.copy':'Drag selected objects into the trash can in the bottom-right.',
+    'help.mouse.clear.title':'Clear selection','help.mouse.clear.copy':'Click outside the current selection to deselect it.',
+    'help.tutorial.kicker':'GUIDES','help.tutorial.title':'More tutorials are coming soon.','help.tutorial.copy':'Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.',
+    'profile.eyebrow':'TEACHERTILES ACCOUNT','profile.title':'Profile','profile.checking':'Checking your account…','profile.welcome':'WELCOME','profile.signinTitle':'Sign in to TeacherTiles','profile.signinCopy':'Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.','profile.google':'Continue with Google','profile.signedIn':'SIGNED IN','profile.coins':'COINS','profile.balance':'Account balance','profile.connectedTitle':'Your profile is connected.','profile.connectedCopy':'This account will be used for your saved TeacherTiles boards and account data.','profile.signout':'Sign out',
+    'shop.title':'Shop','shop.coins':'Coins','shop.kicker':'MAKE IT YOURS','shop.customize':'Customize your board','shop.browse':'Browse visual packs made for TeacherTiles.','shop.collection':'COLLECTION','shop.themeCopy':'Color & board styles','shop.stickerPacks':'Sticker Packs','shop.stickerCopy':'Decorate your workspace','shop.coming':'COMING SOON','shop.tilePacks':'Tile Packs','shop.tileCopy':'Cosmetic Tile Packs','shop.comingTitle':'Coming Soon','shop.extras':'Extras','shop.extrasCopy':'More ways to customize',
+    'boards.new':'New Board','boards.delete':'Delete board','boards.create':'Create new blank board'
+  },
+  es:{
+    'top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
+    'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
+    'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
+    'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda',
+    'settings.preferences.kicker':'PREFERENCIAS','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
+    'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
+    'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
+    'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
+    'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
+    'settings.language.title':'Idioma','settings.language.copy':'Elige el idioma de los menús y controles de TeacherTiles.','settings.language.interface':'Idioma de la interfaz','settings.language.note':'El contenido de tus tiles nunca se traduce ni se modifica.',
+    'settings.save.note':'Los cambios de preferencias se incluyen en el autoguardado normal del tablero; no usan un sistema adicional de Firestore.',
+    'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
+    'help.search':'Búsqueda de ayuda — próximamente','help.comingSoon':'PRÓXIMAMENTE','help.keyboard.title':'Atajos de teclado','help.keyboard.copy':'Los atajos se ignoran cuando estás escribiendo, cuando corresponde.',
+    'help.key.selectAll':'Selecciona todos los tiles y pegatinas; vuelve a pulsar para limpiar la selección.','help.key.copy':'Copia la selección actual del tablero.','help.key.paste':'Pega tiles o pegatinas copiados.','help.key.duplicate':'Duplica la selección actual.',
+    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina el tile, pegatina o grupo seleccionado.','help.key.arrows':'Navega por el tablero.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
+    'help.mouse.title':'Ratón y trackpad','help.mouse.copy':'El tablero está diseñado para trabajar rápido sin cambiar de herramienta.',
+    'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
+    'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
+    'help.mouse.menu.title':'Añadir tiles','help.mouse.menu.copy':'Haz clic derecho en un espacio vacío para abrir el menú Añadir tile.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Usa la rueda del ratón o el desplazamiento del trackpad sobre el tablero.',
+    'help.mouse.move.title':'Mover tiles','help.mouse.move.copy':'Arrastra cualquier parte de un tile que no sea un botón, deslizador, lienzo u otro control activo.',
+    'help.mouse.text.title':'Editar texto','help.mouse.text.copy':'Haz doble clic en un campo de texto para escribir. Haz clic fuera para salir del modo de edición.',
+    'help.mouse.sticker.title':'Transformar pegatinas','help.mouse.sticker.copy':'Usa las esquinas para cambiar el tamaño y el control circular para rotar. Mantén Shift para ajustar la rotación en pasos de 15°.',
+    'help.mouse.trash.title':'Eliminar arrastrando','help.mouse.trash.copy':'Arrastra los objetos seleccionados a la papelera en la esquina inferior derecha.',
+    'help.mouse.clear.title':'Limpiar selección','help.mouse.clear.copy':'Haz clic fuera de la selección actual para deseleccionarla.',
+    'help.tutorial.kicker':'GUÍAS','help.tutorial.title':'Próximamente habrá más tutoriales.','help.tutorial.copy':'Esta página tendrá guías paso a paso, recorridos de funciones y ayuda con búsqueda.',
+    'profile.eyebrow':'CUENTA DE TEACHERTILES','profile.title':'Perfil','profile.checking':'Comprobando tu cuenta…','profile.welcome':'BIENVENIDO','profile.signinTitle':'Inicia sesión en TeacherTiles','profile.signinCopy':'Inicia sesión en una cuenta para guardar tus TileSets, comprar cosméticos opcionales, acceder a toda la aplicación y descubrir todo lo que TeacherTiles ofrece.','profile.google':'Continuar con Google','profile.signedIn':'SESIÓN INICIADA','profile.coins':'MONEDAS','profile.balance':'Saldo de la cuenta','profile.connectedTitle':'Tu perfil está conectado.','profile.connectedCopy':'Esta cuenta se usará para tus tableros guardados de TeacherTiles y los datos de tu cuenta.','profile.signout':'Cerrar sesión',
+    'shop.title':'Tienda','shop.coins':'Monedas','shop.kicker':'HAZLO TUYO','shop.customize':'Personaliza tu tablero','shop.browse':'Explora paquetes visuales creados para TeacherTiles.','shop.collection':'COLECCIÓN','shop.themeCopy':'Colores y estilos de tablero','shop.stickerPacks':'Paquetes de pegatinas','shop.stickerCopy':'Decora tu espacio de trabajo','shop.coming':'PRÓXIMAMENTE','shop.tilePacks':'Paquetes de tiles','shop.tileCopy':'Paquetes cosméticos de tiles','shop.comingTitle':'Próximamente','shop.extras':'Extras','shop.extrasCopy':'Más formas de personalizar',
+    'boards.new':'Nuevo tablero','boards.delete':'Eliminar tablero','boards.create':'Crear un tablero nuevo en blanco'
+  }
+};
+
+const CONTEXT_MODULE_TRANSLATIONS={
+  en:{
+    sticky:['Sticky note','Write and format notes'],textbubble:['Text bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],
+    image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
+    interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],writinglines:['Writing Lines','Handwriting practice template'],
+    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],numberline:['Number Line','Interactive expandable number line'],
+    hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
+    grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
+    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
+    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes']
+  },
+  es:{
+    sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
+    image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
+    interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
+    grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
+    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
+    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula']
+  }
+};
+
+function translateAppText(key){
+  const lang=appPreferences.language==='es'?'es':'en';
+  return APP_TRANSLATIONS[lang]?.[key]||APP_TRANSLATIONS.en[key]||key;
+}
+
+function applyAppLanguage(){
+  const lang=appPreferences.language==='es'?'es':'en';
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(node=>{
+    const key=node.getAttribute('data-i18n');
+    const value=translateAppText(key);
+    if(value)node.textContent=value;
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(node=>{
+    const key=node.getAttribute('data-i18n-placeholder');
+    const value=translateAppText(key);
+    if(value)node.setAttribute('placeholder',value);
+  });
+  document.querySelectorAll('.context-menu__item[data-module]').forEach(item=>{
+    const copy=CONTEXT_MODULE_TRANSLATIONS[lang]?.[item.dataset.module]||CONTEXT_MODULE_TRANSLATIONS.en[item.dataset.module];
+    if(!copy)return;
+    const strong=item.querySelector('strong');
+    const small=item.querySelector('small');
+    if(strong)strong.textContent=copy[0];
+    if(small)small.textContent=copy[1];
+  });
+  settingsToggle?.setAttribute('aria-label',translateAppText('top.settings'));
+  const shelfTitle=document.getElementById('asset-shelf-title');
+  if(shelfTitle){
+    const stickerPanel=document.getElementById('sticker-shelf-content');
+    shelfTitle.textContent=stickerPanel&&!stickerPanel.hidden?translateAppText('top.stickers'):translateAppText('top.themes');
+  }
+  window.dispatchEvent(new CustomEvent('teachertiles:languagechange',{detail:{language:lang}}));
+}
+
+function updateSettingsControls(){
+  const mute=document.getElementById('settings-ui-sfx-toggle');
+  const volume=document.getElementById('settings-ui-volume');
+  const volumeOut=document.getElementById('settings-ui-volume-value');
+  const scroll=document.getElementById('settings-scroll-speed');
+  const scrollOut=document.getElementById('settings-scroll-speed-value');
+  const view=document.getElementById('settings-default-view');
+  const language=document.getElementById('settings-language');
+  if(mute){
+    mute.setAttribute('aria-checked',String(Boolean(appPreferences.uiMuted)));
+    mute.setAttribute('aria-label',appPreferences.uiMuted?'Turn UI sounds on':'Mute UI sounds');
+  }
+  if(volume)volume.value=String(appPreferences.uiVolume);
+  if(volumeOut)volumeOut.textContent=`${Math.round(appPreferences.uiVolume)}%`;
+  if(scroll)scroll.value=String(appPreferences.scrollSpeed);
+  if(scrollOut)scrollOut.textContent=`${Math.round(appPreferences.scrollSpeed)}%`;
+  if(view)view.value=String(appPreferences.defaultViewSize);
+  if(language)language.value=appPreferences.language;
+  const volumeRow=volume?.closest('.settings-row');
+  if(volumeRow)volumeRow.classList.toggle('is-disabled',Boolean(appPreferences.uiMuted));
+}
+
+function setCurrentBoardViewSize(percent){
+  if(typeof boardCamera==='undefined')return;
+  const next=clamp(Number(percent)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  const cx=innerWidth/2,cy=innerHeight/2;
+  const anchor=screenToBoard(cx,cy);
+  boardCamera.scale=next;
+  boardCamera.x=cx-anchor.x*next;
+  boardCamera.y=cy-anchor.y*next;
+  applyBoardCamera();
+}
+
+function applyAppPreferences(value,{persist=true,notify=false,applyView=false}={}){
+  appPreferences=normalizeAppPreferences({...appPreferences,...value});
+  uiSfxMuted=appPreferences.uiMuted;
+  if(persist)persistAppPreferences();
+  updateSettingsControls();
+  applyAppLanguage();
+  if(applyView)setCurrentBoardViewSize(appPreferences.defaultViewSize);
+  if(notify)notifyBoardChanged('preferences');
+  return boardPreferenceSnapshot();
+}
+
+window.TeacherTilesPreferences={
+  get(){return boardPreferenceSnapshot()},
+  apply(value,options){return applyAppPreferences(value,options)},
+  t:translateAppText
+};
+window.TeacherTilesI18n={t:translateAppText,get language(){return appPreferences.language},apply:applyAppLanguage};
+
+function setupSettingsHub(){
+  const modal=document.getElementById('settings-modal');
+  const closeButtons=[...document.querySelectorAll('[data-settings-close]')];
+  const tabs=[...document.querySelectorAll('[data-settings-tab]')];
+  const panes=[...document.querySelectorAll('[data-settings-pane]')];
+  const mute=document.getElementById('settings-ui-sfx-toggle');
+  const volume=document.getElementById('settings-ui-volume');
+  const scroll=document.getElementById('settings-scroll-speed');
+  const view=document.getElementById('settings-default-view');
+  const language=document.getElementById('settings-language');
+  if(!modal||!settingsToggle)return;
+  let lastFocus=null;
+
+  const showTab=name=>{
+    tabs.forEach(tab=>{
+      const active=tab.dataset.settingsTab===name;
+      tab.classList.toggle('is-active',active);
+      tab.setAttribute('aria-selected',String(active));
+    });
+    panes.forEach(pane=>{
+      const active=pane.dataset.settingsPane===name;
+      pane.hidden=!active;
+      pane.classList.toggle('is-active',active);
+    });
+  };
+  const close=()=>{
+    if(modal.hidden)return;
+    modal.hidden=true;
+    modal.setAttribute('aria-hidden','true');
+    settingsToggle.setAttribute('aria-expanded','false');
+    if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
+    lastFocus=null;
+  };
+  const open=()=>{
+    if(!modal.hidden){close();return}
+    document.getElementById('asset-shelf-close')?.click();
+    document.getElementById('shop-close')?.click();
+    document.querySelector('[data-profile-close]')?.click();
+    lastFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    modal.hidden=false;
+    modal.setAttribute('aria-hidden','false');
+    settingsToggle.setAttribute('aria-expanded','true');
+    updateSettingsControls();
+    applyAppLanguage();
+    requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
+  };
+
+  settingsToggle.addEventListener('click',open);
+  closeButtons.forEach(button=>button.addEventListener('click',close));
+  tabs.forEach(tab=>tab.addEventListener('click',()=>showTab(tab.dataset.settingsTab)));
+  mute?.addEventListener('click',()=>{
+    const wasMuted=appPreferences.uiMuted;
+    applyAppPreferences({uiMuted:!wasMuted},{notify:true});
+    if(wasMuted)playUiSfx('click');
+  });
+  volume?.addEventListener('input',()=>{
+    appPreferences=normalizeAppPreferences({...appPreferences,uiVolume:Number(volume.value)});
+    persistAppPreferences();
+    updateSettingsControls();
+  });
+  volume?.addEventListener('change',()=>notifyBoardChanged('preferences'));
+  scroll?.addEventListener('input',()=>{
+    appPreferences=normalizeAppPreferences({...appPreferences,scrollSpeed:Number(scroll.value)});
+    persistAppPreferences();
+    updateSettingsControls();
+  });
+  scroll?.addEventListener('change',()=>notifyBoardChanged('preferences'));
+  view?.addEventListener('change',()=>applyAppPreferences({defaultViewSize:Number(view.value)},{notify:true,applyView:true}));
+  language?.addEventListener('change',()=>applyAppPreferences({language:language.value},{notify:true}));
+
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!modal.hidden){event.preventDefault();close()}
+  });
+  document.addEventListener('click',event=>{
+    if(modal.hidden)return;
+    const target=event.target instanceof Element?event.target.closest('#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#shop-toggle,#changelog-toggle,#boards-toggle'):null;
+    if(target)close();
+  },true);
+
+  showTab('settings');
+  updateSettingsControls();
+  applyAppLanguage();
+}
+
+setupSettingsHub();
 
 const BOARD_WIDTH=12000;
 const BOARD_HEIGHT=8000;
@@ -266,7 +567,7 @@ centerBoardCamera();
 workspace.addEventListener('wheel',e=>{
   if(e.ctrlKey)return;
   e.preventDefault();
-  const factor=Math.exp(-e.deltaY*.0012);
+  const factor=Math.exp(-e.deltaY*.0012*(appPreferences.scrollSpeed/100));
   const next=clamp(boardCamera.scale*factor,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
   if(Math.abs(next-boardCamera.scale)<.0001)return;
   const anchor=screenToBoard(e.clientX,e.clientY);
@@ -315,6 +616,8 @@ function boardKeyboardPanBlocked(){
   if(shop&&!shop.hidden)return true;
   const profile=document.getElementById('profile-modal');
   if(profile&&!profile.hidden)return true;
+  const settings=document.getElementById('settings-modal');
+  if(settings&&!settings.hidden)return true;
   const boards=document.getElementById('boards-view');
   if(boards&&!boards.hidden)return true;
   return false;
@@ -5062,7 +5365,7 @@ function setupCollectionShelf(){
     stickerPanel.hidden=themes;
     themePanel.classList.toggle('is-active',themes);
     stickerPanel.classList.toggle('is-active',!themes);
-    title.textContent=themes?'Themes':'Stickers';
+    title.textContent=window.TeacherTilesI18n?.t(themes?'top.themes':'top.stickers')||(themes?'Themes':'Stickers');
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
     syncShelfButtons();
@@ -5083,14 +5386,14 @@ function setupCollectionShelf(){
   shelfScroll?.addEventListener('wheel',e=>{
     if(shelfScroll.scrollWidth<=shelfScroll.clientWidth)return;
     if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
-    shelfScroll.scrollLeft+=e.deltaY;
+    shelfScroll.scrollLeft+=e.deltaY*(appPreferences.scrollSpeed/100);
     e.preventDefault();
   },{passive:false});
 
   stickerScroll?.addEventListener('wheel',e=>{
     if(stickerScroll.scrollWidth<=stickerScroll.clientWidth)return;
     if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
-    stickerScroll.scrollLeft+=e.deltaY;
+    stickerScroll.scrollLeft+=e.deltaY*(appPreferences.scrollSpeed/100);
     e.preventDefault();
   },{passive:false});
 
@@ -8531,6 +8834,7 @@ function captureTeacherTilesBoard(){
     schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
     theme:document.body.dataset.theme||'light',
     camera:{x:boardCamera.x,y:boardCamera.y,scale:boardCamera.scale},
+    preferences:boardPreferenceSnapshot(),
     calendarEvents:getStoredCalendarEvents(),
     objects,
     preview:buildBoardPreview(objects)
@@ -8583,6 +8887,7 @@ function loadTeacherTilesBoard(snapshot){
   const removedObjectIds=[];
   withBoardChangesSuspended(()=>{
     clearTeacherTilesBoard();
+    if(data.preferences&&typeof data.preferences==='object')applyAppPreferences(data.preferences,{persist:true,notify:false,applyView:false});
     applyTeacherTheme(TEACHERTILES_THEMES.has(data.theme)?data.theme:'light',{persist:false});
     if(Array.isArray(data.calendarEvents)){
       try{localStorage.setItem(CALENDAR_STORAGE_KEY,JSON.stringify(data.calendarEvents))}catch{}
@@ -8617,14 +8922,16 @@ function loadTeacherTilesBoard(snapshot){
 }
 
 function blankTeacherTilesBoard(){
+  const scale=clamp((Number(appPreferences.defaultViewSize)||100)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
   return{
     schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
     theme:'light',
     camera:{
-      x:(innerWidth-BOARD_WIDTH)/2,
-      y:(innerHeight-BOARD_HEIGHT)/2,
-      scale:1
+      x:(innerWidth-BOARD_WIDTH*scale)/2,
+      y:(innerHeight-BOARD_HEIGHT*scale)/2,
+      scale
     },
+    preferences:boardPreferenceSnapshot(),
     calendarEvents:[],
     objects:[],
     preview:[]

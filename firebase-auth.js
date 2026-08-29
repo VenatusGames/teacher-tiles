@@ -161,6 +161,7 @@ function normalizeBoardMetadata(docSnapshot) {
     name: typeof data.name === "string" && data.name.trim() ? data.name.trim() : "Board",
     theme: typeof data.theme === "string" ? data.theme : "light",
     camera: data.camera || null,
+    preferences: data.preferences && typeof data.preferences === "object" ? data.preferences : {},
     calendarEvents: Array.isArray(data.calendarEvents) ? data.calendarEvents : [],
     preview: Array.isArray(data.preview) ? data.preview : [],
     previewObjects: inlineObjects ? inlineObjects.slice(0, 48) : (Array.isArray(data.previewObjects) ? data.previewObjects : []),
@@ -230,6 +231,7 @@ function cleanBoardSnapshot(snapshot) {
     schemaVersion: Number(data.schemaVersion) || 1,
     theme: data.theme || "light",
     camera: data.camera || null,
+    preferences: data.preferences && typeof data.preferences === "object" ? data.preferences : {},
     calendarEvents: Array.isArray(data.calendarEvents) ? data.calendarEvents : [],
     objects: Array.isArray(data.objects) ? data.objects.filter(object => object?.id) : [],
     preview: Array.isArray(data.preview) ? data.preview.slice(0, 48) : []
@@ -241,6 +243,7 @@ function contentHashForSnapshot(snapshot) {
   return hashText(JSON.stringify({
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
+    preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     objects: clean.objects
   }));
@@ -252,6 +255,7 @@ function localHashForSnapshot(snapshot) {
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     camera: clean.camera,
+    preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     objects: clean.objects
   }));
@@ -345,6 +349,10 @@ function planBoardObjectStorage(objects) {
   };
 }
 
+function boardUiText(key, fallback) {
+  try { return window.TeacherTilesI18n?.t(key) || fallback; } catch { return fallback; }
+}
+
 const boardListCacheKey = uid => `teachertiles-board-list-v2-${uid}`;
 const localBoardKey = (uid, boardId) => `${uid}:${boardId}`;
 
@@ -354,6 +362,7 @@ function serializableBoardMetadata(board) {
     name: board.name,
     theme: board.theme || "light",
     camera: board.camera || null,
+    preferences: board.preferences && typeof board.preferences === "object" ? board.preferences : {},
     calendarEvents: Array.isArray(board.calendarEvents) ? board.calendarEvents : [],
     preview: Array.isArray(board.preview) ? board.preview : [],
     previewObjects: Array.isArray(board.previewObjects) ? board.previewObjects : [],
@@ -481,6 +490,7 @@ function snapshotFromBoard(board, objects) {
     schemaVersion: board.schemaVersion,
     theme: board.theme,
     camera: board.camera,
+    preferences: board.preferences || {},
     calendarEvents: board.calendarEvents,
     objects,
     preview: board.preview
@@ -491,6 +501,7 @@ function updateBoardMemoryFromSnapshot(board, snapshot, { previewObjects = null 
   if (!board || !snapshot) return;
   board.theme = snapshot.theme;
   board.camera = snapshot.camera;
+  board.preferences = snapshot.preferences || {};
   board.calendarEvents = snapshot.calendarEvents;
   board.preview = snapshot.preview;
   board.previewObjects = previewObjects || buildCompactPreviewObjects(snapshot.objects);
@@ -563,6 +574,7 @@ async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = fals
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     camera: clean.camera,
+    preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     preview: clean.preview,
     objectCount: clean.objects.length,
@@ -934,6 +946,7 @@ async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
     name,
     theme: snapshot.theme,
     camera: snapshot.camera,
+    preferences: snapshot.preferences || {},
     calendarEvents: [],
     preview: [],
     previewObjects: [],
@@ -1231,7 +1244,7 @@ function createBoardCard(board) {
   deleteButton.type = "button";
   deleteButton.className = "board-card__delete";
   deleteButton.setAttribute("aria-label", `Delete ${board.name}`);
-  deleteButton.title = "Delete board";
+  deleteButton.title = boardUiText("boards.delete", "Delete board");
   deleteButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8.5h10M9 8.5V6.7h6v1.8m-7 0 .7 9.1h6.6l.7-9.1M10.5 11v4.4M13.5 11v4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   openButton.addEventListener("click", async () => {
@@ -1264,7 +1277,7 @@ function createNewBoardCard() {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "board-new-card";
-  button.setAttribute("aria-label", "Create new blank board");
+  button.setAttribute("aria-label", boardUiText("boards.create", "Create new blank board"));
 
   const preview = document.createElement("div");
   preview.className = "board-new-card__preview";
@@ -1277,7 +1290,7 @@ function createNewBoardCard() {
 
   const label = document.createElement("strong");
   label.className = "board-new-card__label";
-  label.textContent = "New Board";
+  label.textContent = boardUiText("boards.new", "New Board");
 
   button.append(preview, label);
   button.addEventListener("click", createBlankBoard);

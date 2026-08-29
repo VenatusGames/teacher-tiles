@@ -30,12 +30,12 @@
       <rect x="4.25" y="5" width="15.5" height="12.5" rx="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/>
       <path d="M8 9h8M8 12h5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
     </svg>
-    <span class="upcoming-control__tooltip"><strong>Boards</strong></span>
+    <span class="upcoming-control__tooltip"><strong data-i18n="top.boards">Boards</strong></span>
   </button>
 
   <div class="workspace-empty-messages" aria-live="polite">
-    <div id="signed-out-save-warning" class="signed-out-save-warning" hidden>Sign-in to save your TileSet layout.</div>
-    <div id="workspace-empty-hint" class="workspace-empty-hint" aria-hidden="true">Right-click anywhere to add a tile</div>
+    <div id="signed-out-save-warning" class="signed-out-save-warning" data-i18n="warning.signin" hidden>Sign-in to save your TileSet layout.</div>
+    <div id="workspace-empty-hint" class="workspace-empty-hint" data-i18n="hint.addTile" aria-hidden="true">Right-click anywhere to add a tile</div>
   </div>
 
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
@@ -52,20 +52,16 @@
         <path d="M7.5 13.5l1.4 5h2.7l-1.3-4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
-      <span class="upcoming-control__tooltip"><strong>News</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.news">News</strong></span>
     </button>
-    <button id="ui-sfx-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Mute UI sounds">
-      <svg class="ui-sfx-icon ui-sfx-icon--on" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
-        <path d="M16 9.2a4 4 0 0 1 0 5.6M18.4 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <button id="settings-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open settings" aria-expanded="false">
+      <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+        <circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/>
       </svg>
-      <svg class="ui-sfx-icon ui-sfx-icon--off" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 10v4h4l5 4V6L8 10H4z" fill="currentColor"/>
-        <path d="M16.5 9.5l4 5M20.5 9.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span class="upcoming-control__tooltip"><strong>Mute</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.settings">Settings</strong></span>
     </button>
-    <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Toggle fullscreen">⛶<span class="upcoming-control__tooltip"><strong>Fullscreen</strong></span></button>
+    <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Toggle fullscreen">⛶<span class="upcoming-control__tooltip"><strong data-i18n="top.fullscreen">Fullscreen</strong></span></button>
   </div>
 
   <div class="workspace-upcoming-controls" aria-label="Profile, theme, sticker, and shop controls">
@@ -75,7 +71,7 @@
         <path d="M5.75 18.6c.75-3.25 3.1-5.1 6.25-5.1s5.5 1.85 6.25 5.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
       <img id="profile-launch-avatar" class="profile-launch-avatar" alt="" hidden>
-      <span class="upcoming-control__tooltip"><strong>Profile</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.profile">Profile</strong></span>
     </button>
     <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -85,15 +81,15 @@
         <circle cx="14" cy="7.8" r=".9" fill="currentColor"/>
         <circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/>
       </svg>
-      <span class="upcoming-control__tooltip"><strong>Themes</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.themes">Themes</strong></span>
     </button>
     <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
-      <span class="upcoming-control__tooltip"><strong>Stickers</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
     </button>
     <button id="shop-toggle" class="workspace-control upcoming-control" type="button" aria-label="Open shop" data-feature-label="Shop" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <span class="upcoming-control__tooltip"><strong>Shop</strong></span>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.shop">Shop</strong></span>
     </button>
   </div>
 
@@ -103,17 +99,17 @@
     <div class="boards-view__topbar">
       <div class="boards-view__heading">
         <span>TEACHERTILES</span>
-        <h1>Boards</h1>
+        <h1 data-i18n="boards.title">Boards</h1>
       </div>
       <div class="boards-view__actions">
         <span id="boards-save-status" class="boards-save-status" aria-live="polite"></span>
-        <button id="boards-back" class="boards-back-button" type="button">Back to Board</button>
+        <button id="boards-back" class="boards-back-button" type="button" data-i18n="boards.back">Back to Board</button>
       </div>
     </div>
     <div class="boards-view__body">
       <div id="boards-loading" class="boards-loading">
         <span class="profile-auth-spinner" aria-hidden="true"></span>
-        <span>Loading boards…</span>
+        <span data-i18n="boards.loading">Loading boards…</span>
       </div>
       <div id="boards-grid" class="boards-grid" aria-live="polite"></div>
     </div>
@@ -124,8 +120,8 @@
     <div class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="profile-title">
       <header class="profile-panel__header">
         <div>
-          <span class="profile-panel__eyebrow">TEACHERTILES ACCOUNT</span>
-          <strong id="profile-title">Profile</strong>
+          <span class="profile-panel__eyebrow" data-i18n="profile.eyebrow">TEACHERTILES ACCOUNT</span>
+          <strong id="profile-title" data-i18n="profile.title">Profile</strong>
         </div>
         <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile">×</button>
       </header>
@@ -133,21 +129,21 @@
       <div class="profile-panel__body">
         <div id="profile-auth-loading" class="profile-auth-loading">
           <span class="profile-auth-spinner" aria-hidden="true"></span>
-          <span>Checking your account…</span>
+          <span data-i18n="profile.checking">Checking your account…</span>
         </div>
 
         <div id="profile-signed-out" class="profile-state" hidden>
           <div class="profile-hero-avatar profile-hero-avatar--guest" aria-hidden="true">
             <img src="assets/profile/teachertiles-profile-logo.png" alt="">
           </div>
-          <span class="profile-state__kicker">WELCOME</span>
-          <h2>Sign in to TeacherTiles</h2>
-          <p>Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.</p>
+          <span class="profile-state__kicker" data-i18n="profile.welcome">WELCOME</span>
+          <h2 data-i18n="profile.signinTitle">Sign in to TeacherTiles</h2>
+          <p data-i18n="profile.signinCopy">Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.</p>
           <button id="profile-google-signin" class="profile-google-button" type="button">
             <span class="profile-google-mark" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.8 3-4.3 3-7.3Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4L15.4 17c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9A6 6 0 0 1 6.1 12c0-.7.1-1.3.3-1.9V7.5H3.1A10 10 0 0 0 2 12c0 1.6.4 3.1 1.1 4.5l3.3-2.6Z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6 12 6Z"/></svg>
             </span>
-            <strong>Continue with Google</strong>
+            <strong data-i18n="profile.google">Continue with Google</strong>
           </button>
         </div>
 
@@ -155,7 +151,7 @@
           <div class="profile-account-card">
             <img id="profile-avatar" class="profile-avatar" alt="Google profile picture">
             <div class="profile-account-copy">
-              <span class="profile-state__kicker">SIGNED IN</span>
+              <span class="profile-state__kicker" data-i18n="profile.signedIn">SIGNED IN</span>
               <h2 id="profile-display-name">Teacher</h2>
               <p id="profile-email"></p>
             </div>
@@ -164,19 +160,175 @@
           <div class="profile-coin-card" aria-label="TeacherTiles coin balance">
             <div class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></div>
             <div class="profile-coin-card__copy">
-              <span>COINS</span>
+              <span data-i18n="profile.coins">COINS</span>
               <strong id="profile-coin-balance">0</strong>
             </div>
-            <small>Account balance</small>
+            <small data-i18n="profile.balance">Account balance</small>
           </div>
           <div class="profile-account-note">
-            <strong>Your profile is connected.</strong>
-            <span>This account will be used for your saved TeacherTiles boards and account data.</span>
+            <strong data-i18n="profile.connectedTitle">Your profile is connected.</strong>
+            <span data-i18n="profile.connectedCopy">This account will be used for your saved TeacherTiles boards and account data.</span>
           </div>
-          <button id="profile-signout" class="profile-signout-button" type="button">Sign out</button>
+          <button id="profile-signout" class="profile-signout-button" type="button" data-i18n="profile.signout">Sign out</button>
         </div>
 
         <div id="profile-auth-status" class="profile-auth-status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="settings-modal" class="settings-modal" hidden aria-hidden="true">
+    <button class="settings-modal__backdrop" type="button" data-settings-close tabindex="-1" aria-label="Close settings"></button>
+    <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <header class="settings-panel__header">
+        <div class="settings-panel__brand">
+          <span class="settings-panel__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88l.55-2.05Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+              <circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/>
+            </svg>
+          </span>
+          <div>
+            <span class="settings-panel__eyebrow" data-i18n="settings.eyebrow">TEACHERTILES</span>
+            <strong id="settings-title" data-i18n="settings.title">Settings & Help</strong>
+          </div>
+        </div>
+        <button class="settings-panel__close" type="button" data-settings-close aria-label="Close settings">×</button>
+      </header>
+
+      <div class="settings-panel__layout">
+        <nav class="settings-nav" aria-label="Settings categories">
+          <button class="settings-nav__item is-active" type="button" data-settings-tab="settings" aria-selected="true">
+            <span class="settings-nav__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88l.55-2.05Z" fill="none" stroke="currentColor" stroke-width="1.55"/><circle cx="12" cy="12.72" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span data-i18n="settings.tab.settings">Settings</span>
+          </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="help" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--help" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8.1" fill="none" stroke="currentColor" stroke-width="3.1"/>
+                <circle cx="12" cy="12" r="3.65" fill="none" stroke="currentColor" stroke-width="1.45"/>
+                <path d="M6.2 6.2 9.4 9.4M14.6 14.6l3.2 3.2M17.8 6.2l-3.2 3.2M9.4 14.6l-3.2 3.2" fill="none" stroke="currentColor" stroke-width="3.25" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span data-i18n="settings.tab.help">Help</span>
+          </button>
+        </nav>
+
+        <div class="settings-panel__content">
+          <section class="settings-pane is-active" data-settings-pane="settings">
+            <div class="settings-page-heading">
+              <span data-i18n="settings.preferences.kicker">PREFERENCES</span>
+              <h2 data-i18n="settings.preferences.title">Make TeacherTiles yours.</h2>
+              <p data-i18n="settings.preferences.copy">These preferences are stored with the current board and sync in the same autosave.</p>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card__title">
+                <span class="settings-card__glyph" aria-hidden="true">♪</span>
+                <div><strong data-i18n="settings.sound.title">Sound</strong><small data-i18n="settings.sound.copy">Control TeacherTiles interface sounds.</small></div>
+              </div>
+              <div class="settings-row settings-row--switch">
+                <div><strong data-i18n="settings.mute.title">Mute UI sounds</strong><small data-i18n="settings.mute.copy">Silence button clicks and interface effects.</small></div>
+                <button id="settings-ui-sfx-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Mute UI sounds"><span></span></button>
+              </div>
+              <label class="settings-row settings-row--range" for="settings-ui-volume">
+                <div><strong data-i18n="settings.volume.title">UI volume</strong><small data-i18n="settings.volume.copy">Adjust the volume of interface sound effects.</small></div>
+                <div class="settings-range-control"><input id="settings-ui-volume" type="range" min="0" max="100" step="5" value="100"><output id="settings-ui-volume-value">100%</output></div>
+              </label>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card__title">
+                <span class="settings-card__glyph" aria-hidden="true">⌁</span>
+                <div><strong data-i18n="settings.board.title">Board</strong><small data-i18n="settings.board.copy">Tune how the canvas feels while you work.</small></div>
+              </div>
+              <label class="settings-row settings-row--range" for="settings-scroll-speed">
+                <div><strong data-i18n="settings.scroll.title">Scroll speed</strong><small data-i18n="settings.scroll.copy">Changes mouse-wheel zoom and shelf scrolling sensitivity.</small></div>
+                <div class="settings-range-control"><input id="settings-scroll-speed" type="range" min="50" max="175" step="5" value="100"><output id="settings-scroll-speed-value">100%</output></div>
+              </label>
+              <label class="settings-row" for="settings-default-view">
+                <div><strong data-i18n="settings.view.title">Default view size</strong><small data-i18n="settings.view.copy">Sets your working zoom and the starting size for new boards.</small></div>
+                <select id="settings-default-view" class="settings-select">
+                  <option value="75">75%</option>
+                  <option value="100">100%</option>
+                  <option value="125">125%</option>
+                  <option value="150">150%</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card__title">
+                <span class="settings-card__glyph" aria-hidden="true">文</span>
+                <div><strong data-i18n="settings.language.title">Language</strong><small data-i18n="settings.language.copy">Choose the language used by TeacherTiles menus and controls.</small></div>
+              </div>
+              <label class="settings-row" for="settings-language">
+                <div><strong data-i18n="settings.language.interface">Interface language</strong><small data-i18n="settings.language.note">Your tile content is never translated or changed.</small></div>
+                <select id="settings-language" class="settings-select">
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="settings-save-note">
+              <span aria-hidden="true">✓</span>
+              <span data-i18n="settings.save.note">Preference changes join the current board’s normal autosave—no extra Firestore save system.</span>
+            </div>
+          </section>
+
+          <section class="settings-pane" data-settings-pane="help" hidden>
+            <div class="settings-page-heading settings-page-heading--help">
+              <span data-i18n="help.kicker">HELP CENTER</span>
+              <h2 data-i18n="help.title">TeacherTiles controls at a glance.</h2>
+              <p data-i18n="help.copy">Keyboard shortcuts and mouse controls for moving quickly around your board.</p>
+            </div>
+
+            <div class="help-search-coming">
+              <span aria-hidden="true">⌕</span>
+              <input type="text" disabled data-i18n-placeholder="help.search" placeholder="Help search — coming soon">
+              <em data-i18n="help.comingSoon">COMING SOON</em>
+            </div>
+
+            <div class="help-section">
+              <div class="help-section__heading"><span aria-hidden="true">⌨</span><div><strong data-i18n="help.keyboard.title">Keyboard shortcuts</strong><small data-i18n="help.keyboard.copy">Shortcuts are ignored while you are actively typing when appropriate.</small></div></div>
+              <div class="help-shortcut-grid">
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>A</kbd></div><span data-i18n="help.key.selectAll">Select all tiles and stickers; press again to clear.</span></div>
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>C</kbd></div><span data-i18n="help.key.copy">Copy the current board selection.</span></div>
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>V</kbd></div><span data-i18n="help.key.paste">Paste copied tiles or stickers.</span></div>
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>D</kbd></div><span data-i18n="help.key.duplicate">Duplicate the current selection.</span></div>
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Z</kbd></div><span data-i18n="help.key.undo">Undo the latest board action.</span></div>
+                <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Y</kbd></div><span data-i18n="help.key.redo">Redo an undone action. Ctrl/⌘ + Shift + Z also works.</span></div>
+                <div class="help-shortcut"><div><kbd>Delete</kbd></div><span data-i18n="help.key.delete">Delete the selected tile, sticker, or group.</span></div>
+                <div class="help-shortcut"><div><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div><span data-i18n="help.key.arrows">Navigate around the board.</span></div>
+                <div class="help-shortcut"><div><kbd>Esc</kbd></div><span data-i18n="help.key.escape">Exit text editing or close the active overlay/menu.</span></div>
+              </div>
+            </div>
+
+            <div class="help-section">
+              <div class="help-section__heading"><span aria-hidden="true">↖</span><div><strong data-i18n="help.mouse.title">Mouse & trackpad</strong><small data-i18n="help.mouse.copy">The board is designed to stay fast without switching tools.</small></div></div>
+              <div class="help-mouse-list">
+                <div><span class="help-mouse-icon">↔</span><p><strong data-i18n="help.mouse.pan.title">Pan the board</strong><small data-i18n="help.mouse.pan.copy">Left-drag empty board space or middle-mouse drag anywhere on the board.</small></p></div>
+                <div><span class="help-mouse-icon">⇧</span><p><strong data-i18n="help.mouse.select.title">Group select</strong><small data-i18n="help.mouse.select.copy">Hold Shift and left-drag empty space to draw a selection box.</small></p></div>
+                <div><span class="help-mouse-icon">☰</span><p><strong data-i18n="help.mouse.menu.title">Add tiles</strong><small data-i18n="help.mouse.menu.copy">Right-click empty board space to open the Add Tile menu.</small></p></div>
+                <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Use the mouse wheel or trackpad scroll over the board.</small></p></div>
+                <div><span class="help-mouse-icon">✥</span><p><strong data-i18n="help.mouse.move.title">Move tiles</strong><small data-i18n="help.mouse.move.copy">Drag anywhere on a tile that is not an active button, slider, canvas, or other control.</small></p></div>
+                <div><span class="help-mouse-icon">I</span><p><strong data-i18n="help.mouse.text.title">Edit text</strong><small data-i18n="help.mouse.text.copy">Double-click a text field to type. Click away from it to leave text-edit mode.</small></p></div>
+                <div><span class="help-mouse-icon">◌</span><p><strong data-i18n="help.mouse.sticker.title">Transform stickers</strong><small data-i18n="help.mouse.sticker.copy">Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.</small></p></div>
+                <div><span class="help-mouse-icon">⌫</span><p><strong data-i18n="help.mouse.trash.title">Delete by dragging</strong><small data-i18n="help.mouse.trash.copy">Drag selected objects into the trash can in the bottom-right.</small></p></div>
+                <div><span class="help-mouse-icon">○</span><p><strong data-i18n="help.mouse.clear.title">Clear selection</strong><small data-i18n="help.mouse.clear.copy">Click outside the current selection to deselect it.</small></p></div>
+              </div>
+            </div>
+
+            <div class="help-tutorial-card">
+              <div class="help-tutorial-card__art" aria-hidden="true"><span>▶</span></div>
+              <div><span data-i18n="help.tutorial.kicker">GUIDES</span><strong data-i18n="help.tutorial.title">More tutorials are coming soon.</strong><p data-i18n="help.tutorial.copy">Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.</p></div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   </section>
@@ -471,13 +623,13 @@
           <span class="shop-brand__mark" aria-hidden="true"><img src="assets/shop/shop-logo.png" alt=""></span>
           <div>
             <span class="shop-brand__eyebrow">TEACHERTILES</span>
-            <strong id="shop-title">Shop</strong>
+            <strong id="shop-title" data-i18n="shop.title">Shop</strong>
           </div>
         </div>
         <div class="shop-header__actions">
           <button id="shop-coins-button" class="shop-coins-button" type="button" aria-label="Open coin purchasing menu" aria-expanded="false">
             <span class="shop-coin-icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span>
-            <span class="shop-coins-button__copy"><small>Coins</small><strong id="shop-coin-balance">0</strong></span>
+            <span class="shop-coins-button__copy"><small data-i18n="shop.coins">Coins</small><strong id="shop-coin-balance">0</strong></span>
             <span class="shop-coins-button__plus" aria-hidden="true">+</span>
           </button>
           <button id="shop-close" class="shop-close" type="button" aria-label="Close shop">×</button>
@@ -508,30 +660,30 @@
           </div>
 
           <div class="shop-home-heading">
-            <div><span>MAKE IT YOURS</span><h2>Customize your board</h2></div>
-            <p>Browse visual packs made for TeacherTiles.</p>
+            <div><span data-i18n="shop.kicker">MAKE IT YOURS</span><h2 data-i18n="shop.customize">Customize your board</h2></div>
+            <p data-i18n="shop.browse">Browse visual packs made for TeacherTiles.</p>
           </div>
 
           <div class="shop-category-grid">
             <button class="shop-category shop-category--themes" type="button" data-shop-open-page="themes">
               <span class="shop-category__art" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="shop-category__copy"><small>COLLECTION</small><strong>Themes</strong><em>Color & board styles</em></span>
+              <span class="shop-category__copy"><small data-i18n="shop.collection">COLLECTION</small><strong data-i18n="top.themes">Themes</strong><em data-i18n="shop.themeCopy">Color & board styles</em></span>
               <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
             <button class="shop-category shop-category--stickers" type="button" data-shop-open-page="stickers">
               <span class="shop-category__art shop-category__art--stickers" aria-hidden="true"><b>😀</b><b>⭐</b><b>🎉</b></span>
-              <span class="shop-category__copy"><small>COLLECTION</small><strong>Sticker Packs</strong><em>Decorate your workspace</em></span>
+              <span class="shop-category__copy"><small data-i18n="shop.collection">COLLECTION</small><strong data-i18n="shop.stickerPacks">Sticker Packs</strong><em data-i18n="shop.stickerCopy">Decorate your workspace</em></span>
               <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
               <span class="shop-category__art shop-category__art--tiles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span class="shop-category__copy"><small>COMING SOON</small><strong>Tile Packs</strong><em>Cosmetic Tile Packs</em></span>
-              <span class="shop-coming-badge">Coming Soon</span>
+              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Packs</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Packs</em></span>
+              <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
               <span class="shop-category__art shop-category__art--extras" aria-hidden="true">✦</span>
-              <span class="shop-category__copy"><small>COMING SOON</small><strong>Extras</strong><em>More ways to customize</em></span>
-              <span class="shop-coming-badge">Coming Soon</span>
+              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.extras">Extras</strong><em data-i18n="shop.extrasCopy">More ways to customize</em></span>
+              <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
             </button>
           </div>
         </section>
@@ -708,33 +860,33 @@
   <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
     <div class="context-menu__header">
       <div class="context-menu__title-row">
-        <div class="context-menu__title">Add tile</div>
-        <button type="button" class="context-menu__filter context-menu__filter--all is-active" data-category-filter="all">ALL</button>
+        <div class="context-menu__title" data-i18n="context.addTile">Add tile</div>
+        <button type="button" class="context-menu__filter context-menu__filter--all is-active" data-category-filter="all" data-i18n="context.all">ALL</button>
       </div>
       <div class="context-menu__search-wrap">
         <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="10.8" cy="10.8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.8"/>
           <path d="m15.2 15.2 4.1 4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
-        <input id="context-menu-search" class="context-menu__search" type="search" placeholder="Search tiles..." autocomplete="off" spellcheck="false" aria-label="Search tiles">
+        <input id="context-menu-search" class="context-menu__search" type="search" placeholder="Search tiles..." data-i18n-placeholder="context.search" autocomplete="off" spellcheck="false" aria-label="Search tiles">
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
       <div class="context-menu__filters" role="tablist" aria-label="Module categories">
-        <button type="button" class="context-menu__filter" data-category-filter="text">TEXT</button>
-        <button type="button" class="context-menu__filter" data-category-filter="media">MEDIA</button>
-        <button type="button" class="context-menu__filter" data-category-filter="tools">TOOLS</button>
-        <button type="button" class="context-menu__filter" data-category-filter="time">TIME</button>
-        <button type="button" class="context-menu__filter" data-category-filter="audio">AUDIO</button>
-        <button type="button" class="context-menu__filter" data-category-filter="games">GAMES</button>
-        <button type="button" class="context-menu__filter" data-category-filter="literacy">LITERACY</button>
-        <button type="button" class="context-menu__filter" data-category-filter="math">MATH</button>
-        <button type="button" class="context-menu__filter" data-category-filter="sel">SEL</button>
+        <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
+        <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
+        <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
+        <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
+        <button type="button" class="context-menu__filter" data-category-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
+        <button type="button" class="context-menu__filter" data-category-filter="games" data-i18n="context.cat.games">GAMES</button>
+        <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
+        <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
+        <button type="button" class="context-menu__filter" data-category-filter="sel" data-i18n="context.cat.sel">SEL</button>
       </div>
     </div>
     <div class="context-menu__list">
       <div class="context-menu__no-results" hidden>
-        <strong>No tiles found</strong>
-        <small>Try another search.</small>
+        <strong data-i18n="context.none">No tiles found</strong>
+        <small data-i18n="context.try">Try another search.</small>
       </div>
       <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
