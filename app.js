@@ -329,7 +329,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],numberline:['Number Line','Interactive expandable number line'],
+    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -341,7 +341,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -1001,6 +1001,7 @@ function setupModuleByType(m,type){
   if(type==='wordypuzzle')setupWordyPuzzle(m);
   if(type==='cvcword')setupCVCWord(m);
   if(type==='highfrequency')setupHighFrequencyWords(m);
+  if(type==='customflashcards')setupCustomFlashcards(m);
   if(type==='abc')setupABC(m);
   if(type==='ruler')setupRuler(m);
   if(type==='calculator')setupCalculator(m);
@@ -2583,6 +2584,8 @@ function setupLunchCount(m){
   const picker=m.querySelector('.lunchcount-icon-picker');
   const pickerGrid=m.querySelector('.lunchcount-icon-picker__grid');
   const pickerClose=m.querySelector('.lunchcount-icon-picker__close');
+  const pickerTitle=m.querySelector('.lunchcount-icon-picker__head strong');
+  const iconUpload=m.querySelector('.lunchcount-icon-upload');
 
   let students=[];
   let draggedStudent='';
@@ -2900,6 +2903,32 @@ function setupLunchCount(m){
       poolList.appendChild(studentChip(name,{removable:true}));
     });
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='lunchcount-icon-option lunchcount-icon-option--upload';
+  uploadOption.innerHTML='<span class="lunchcount-upload-art" aria-hidden="true">↑</span><span>Upload image</span>';
+  uploadOption.addEventListener('click',()=>iconUpload?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  iconUpload?.addEventListener('change',async()=>{
+    const file=iconUpload.files?.[0];
+    const categoryId=activeCategoryId;
+    iconUpload.value='';
+    if(!file||!categoryId)return;
+    pickerTitle.textContent='Preparing image…';
+    const data=await fileToBoardImageData(file,{maxSide:480,maxLength:70000,quality:.72,minSide:180});
+    const category=findCategory(categoryId);
+    if(data&&category?.kind==='normal'){
+      category.iconSrc=data;
+      closePicker();
+      renderCategories();
+      notifyBoardChanged('lunch-count-image');
+    }else{
+      pickerTitle.textContent='Choose a smaller image';
+      window.setTimeout(()=>{pickerTitle.textContent='Choose an icon';},1800);
+    }
+  });
 
   LUNCH_COUNT_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -3749,7 +3778,7 @@ function getDraggedImageSource(dt){
   const url=match?.[1]||uri||(/^https?:\/\//i.test(plain)||/^data:image\//i.test(plain)?plain:'');
   return url?{url}:null
 }
-async function fileToBoardImageData(file){
+async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=.78,minSide=240}={}){
   if(!file||!file.type?.startsWith('image/'))return'';
   const raw=await new Promise((resolve,reject)=>{
     const reader=new FileReader();
@@ -3762,25 +3791,25 @@ async function fileToBoardImageData(file){
     const source=new Image();
     source.src=raw;
     await source.decode();
-    const maxSide=1200;
-    const scale=Math.min(1,maxSide/Math.max(source.naturalWidth||1,source.naturalHeight||1));
+    let scale=Math.min(1,maxSide/Math.max(source.naturalWidth||1,source.naturalHeight||1));
     const canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round((source.naturalWidth||1)*scale));
-    canvas.height=Math.max(1,Math.round((source.naturalHeight||1)*scale));
-    const ctx=canvas.getContext('2d');
-    ctx.drawImage(source,0,0,canvas.width,canvas.height);
-    let data=canvas.toDataURL('image/webp',.78);
-    if(data.length>760000){
-      const smaller=document.createElement('canvas');
-      const shrink=Math.min(1,850/Math.max(canvas.width,canvas.height));
-      smaller.width=Math.max(1,Math.round(canvas.width*shrink));
-      smaller.height=Math.max(1,Math.round(canvas.height*shrink));
-      smaller.getContext('2d').drawImage(canvas,0,0,smaller.width,smaller.height);
-      data=smaller.toDataURL('image/webp',.7);
+    let data='';
+    let nextQuality=quality;
+    for(let attempt=0;attempt<7;attempt++){
+      canvas.width=Math.max(1,Math.round((source.naturalWidth||1)*scale));
+      canvas.height=Math.max(1,Math.round((source.naturalHeight||1)*scale));
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(source,0,0,canvas.width,canvas.height);
+      data=canvas.toDataURL('image/webp',nextQuality);
+      if(data.length<=maxLength)break;
+      const longest=Math.max(canvas.width,canvas.height);
+      if(longest<=minSide)break;
+      scale*=.78;
+      nextQuality=Math.max(.46,nextQuality-.07);
     }
-    return data;
+    return data.length<=maxLength?data:'';
   }catch{
-    return raw.length<760000?raw:'';
+    return raw.length<maxLength?raw:'';
   }
 }
 
@@ -6054,6 +6083,464 @@ function setupABC(m){
     prior?.();
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
+    measurer.remove();
+  };
+}
+
+function setupCustomFlashcards(m){
+  const card=m.querySelector('.customflashcards-card');
+  const image=m.querySelector('.customflashcards-image');
+  const textEl=m.querySelector('.customflashcards-text');
+  const setLabel=m.querySelector('.customflashcards-set-label');
+  const setSelect=m.querySelector('.customflashcards-set-select');
+  const nextButton=m.querySelector('.customflashcards-next');
+  const manageButton=m.querySelector('.customflashcards-manage');
+  const editor=m.querySelector('.customflashcards-editor');
+  const editorClose=m.querySelector('.customflashcards-editor-close');
+  const setList=m.querySelector('.customflashcards-set-list');
+  const addSetButton=m.querySelector('.customflashcards-add-set');
+  const setNameInput=m.querySelector('.customflashcards-set-name');
+  const deleteSetButton=m.querySelector('.customflashcards-delete-set');
+  const cardList=m.querySelector('.customflashcards-card-list');
+  const addCardButton=m.querySelector('.customflashcards-add-card');
+  const imageInput=m.querySelector('.customflashcards-image-input');
+  const status=m.querySelector('.customflashcards-editor-status');
+
+  let serial=0;
+  const makeId=prefix=>`${prefix}-${Date.now().toString(36)}-${(++serial).toString(36)}`;
+  const makeSet=(name='My Cards')=>({id:makeId('set'),name,cards:[]});
+  const makeCard=()=>({id:makeId('card'),text:'',imageSrc:'',imageName:''});
+
+  let sets=[makeSet()];
+  let activeSetId=sets[0].id;
+  let currentCardId='';
+  let uploadTargetId='';
+  let animating=false;
+  let resizeFrame=0;
+  let flipTimer=0;
+  let finishTimer=0;
+  let statusTimer=0;
+
+  const measurer=document.createElement('span');
+  measurer.className='customflashcards-text customflashcards-measurer';
+  measurer.setAttribute('aria-hidden','true');
+  card.appendChild(measurer);
+
+  const activeSet=()=>sets.find(set=>set.id===activeSetId)||sets[0];
+  const currentCard=()=>activeSet()?.cards.find(item=>item.id===currentCardId)||null;
+
+  const setStatus=(message='',isError=false)=>{
+    clearTimeout(statusTimer);
+    status.textContent=message;
+    status.classList.toggle('is-error',isError);
+    if(message)statusTimer=window.setTimeout(()=>{
+      status.textContent='';
+      status.classList.remove('is-error');
+    },2600);
+  };
+
+  const measureTextSize=(value,hasImage)=>{
+    const rect=card.getBoundingClientRect();
+    const maxWidth=Math.max(100,rect.width-48);
+    const maxHeight=Math.max(44,hasImage?rect.height*.28:rect.height-48);
+    const computed=getComputedStyle(textEl);
+    measurer.textContent=value||' ';
+    measurer.style.width=`${maxWidth}px`;
+    measurer.style.fontFamily=computed.fontFamily;
+    measurer.style.fontWeight=computed.fontWeight;
+    measurer.style.letterSpacing=computed.letterSpacing;
+
+    let low=16;
+    let high=Math.max(24,Math.min(150,Math.floor(maxHeight*.92)));
+    let best=low;
+    while(low<=high){
+      const mid=Math.floor((low+high)/2);
+      measurer.style.fontSize=`${mid}px`;
+      const measured=measurer.getBoundingClientRect();
+      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
+        best=mid;
+        low=mid+1;
+      }else high=mid-1;
+    }
+    return best;
+  };
+
+  const applyCardContent=item=>{
+    currentCardId=item?.id||'';
+    const hasCard=Boolean(item);
+    const hasImage=Boolean(item?.imageSrc);
+    const value=String(item?.text||'').trim();
+    card.classList.toggle('is-empty',!hasCard);
+    card.classList.toggle('has-image',hasImage);
+    card.classList.toggle('has-text',Boolean(value));
+
+    if(hasImage){
+      image.src=item.imageSrc;
+      image.alt=value?`${value} flashcard image`:'Flashcard image';
+      image.hidden=false;
+    }else{
+      image.removeAttribute('src');
+      image.alt='';
+      image.hidden=true;
+    }
+
+    textEl.textContent=hasCard?(value||'Untitled card'):'Add your first card';
+    textEl.style.fontSize=hasCard?`${measureTextSize(textEl.textContent,hasImage)}px`:'';
+    card.setAttribute('aria-label',hasCard
+      ?`${value||'Image flashcard'}. Click for another card.`
+      :'Open the set editor to add a flashcard.');
+  };
+
+  const displayCard=(item,{animate=true}={})=>{
+    clearTimeout(flipTimer);
+    clearTimeout(finishTimer);
+    if(!animate){
+      animating=false;
+      card.classList.remove('is-flipping');
+      applyCardContent(item);
+      return;
+    }
+    if(animating)return;
+    animating=true;
+    card.classList.remove('is-flipping');
+    void card.offsetWidth;
+    card.classList.add('is-flipping');
+    flipTimer=window.setTimeout(()=>applyCardContent(item),180);
+    finishTimer=window.setTimeout(()=>{
+      card.classList.remove('is-flipping');
+      animating=false;
+    },430);
+  };
+
+  const showNext=({animate=true}={})=>{
+    const pool=activeSet()?.cards||[];
+    if(!pool.length){
+      displayCard(null,{animate:false});
+      return;
+    }
+    let candidates=pool.filter(item=>item.id!==currentCardId);
+    if(!candidates.length)candidates=pool;
+    displayCard(candidates[Math.floor(Math.random()*candidates.length)],{animate});
+  };
+
+  const updateSetControls=()=>{
+    const selected=activeSet();
+    setSelect.replaceChildren();
+    sets.forEach(set=>{
+      const option=document.createElement('option');
+      option.value=set.id;
+      option.textContent=set.name;
+      setSelect.appendChild(option);
+    });
+    if(selected){
+      setSelect.value=selected.id;
+      setLabel.textContent=selected.name;
+      m.dataset.customFlashcardSet=selected.id;
+    }
+  };
+
+  const renderSetList=()=>{
+    setList.replaceChildren();
+    sets.forEach(set=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='customflashcards-set-item';
+      button.classList.toggle('is-active',set.id===activeSetId);
+      button.innerHTML='<span></span><small></small>';
+      button.querySelector('span').textContent=set.name;
+      button.querySelector('small').textContent=`${set.cards.length} ${set.cards.length===1?'card':'cards'}`;
+      button.addEventListener('click',()=>{
+        if(set.id===activeSetId)return;
+        activeSetId=set.id;
+        currentCardId='';
+        updateSetControls();
+        renderEditor();
+        showNext({animate:false});
+      });
+      setList.appendChild(button);
+    });
+  };
+
+  const totalImageLength=(exceptId='')=>sets.reduce((total,set)=>total+set.cards.reduce((sum,item)=>
+    sum+(item.id===exceptId?0:String(item.imageSrc||'').length),0),0);
+
+  const renderCardList=()=>{
+    cardList.replaceChildren();
+    const selected=activeSet();
+    if(!selected?.cards.length){
+      const empty=document.createElement('div');
+      empty.className='customflashcards-editor-empty';
+      empty.innerHTML='<strong>No cards yet</strong><span>Add a flashcard, then type text or upload an image.</span>';
+      cardList.appendChild(empty);
+      return;
+    }
+
+    selected.cards.forEach((item,index)=>{
+      const row=document.createElement('article');
+      row.className='customflashcards-card-row';
+      row.dataset.cardId=item.id;
+
+      const number=document.createElement('span');
+      number.className='customflashcards-card-number';
+      number.textContent=String(index+1);
+
+      const media=document.createElement('button');
+      media.type='button';
+      media.className='customflashcards-card-media';
+      media.title=item.imageSrc?'Replace image':'Upload image';
+      media.setAttribute('aria-label',item.imageSrc?'Replace card image':'Upload a card image');
+      if(item.imageSrc){
+        const preview=document.createElement('img');
+        preview.src=item.imageSrc;
+        preview.alt='';
+        media.appendChild(preview);
+      }else media.innerHTML='<span aria-hidden="true">＋</span><small>Image</small>';
+      media.addEventListener('click',()=>{
+        uploadTargetId=item.id;
+        imageInput.click();
+      });
+
+      const field=document.createElement('textarea');
+      field.className='customflashcards-card-text-input';
+      field.maxLength=180;
+      field.rows=2;
+      field.placeholder='Type the word, question, or answer shown on this card';
+      field.value=item.text;
+      field.setAttribute('aria-label',`Flashcard ${index+1} text`);
+      field.addEventListener('input',()=>{
+        item.text=field.value;
+        if(item.id===currentCardId)applyCardContent(item);
+      });
+
+      const actions=document.createElement('div');
+      actions.className='customflashcards-card-row-actions';
+      if(item.imageSrc){
+        const removeImage=document.createElement('button');
+        removeImage.type='button';
+        removeImage.textContent='Remove image';
+        removeImage.addEventListener('click',()=>{
+          item.imageSrc='';
+          item.imageName='';
+          if(item.id===currentCardId)applyCardContent(item);
+          renderCardList();
+          notifyBoardChanged('custom-flashcard-image');
+        });
+        actions.appendChild(removeImage);
+      }
+
+      const remove=document.createElement('button');
+      remove.type='button';
+      remove.className='customflashcards-remove-card';
+      remove.textContent='Delete';
+      remove.addEventListener('click',()=>{
+        selected.cards=selected.cards.filter(cardItem=>cardItem.id!==item.id);
+        if(currentCardId===item.id)currentCardId='';
+        updateSetControls();
+        renderEditor();
+        showNext({animate:false});
+      });
+      actions.appendChild(remove);
+
+      row.append(number,media,field,actions);
+      cardList.appendChild(row);
+    });
+  };
+
+  function renderEditor(){
+    const selected=activeSet();
+    updateSetControls();
+    renderSetList();
+    setNameInput.value=selected?.name||'';
+    deleteSetButton.disabled=sets.length<=1;
+    renderCardList();
+  }
+
+  const openEditor=()=>{
+    renderEditor();
+    editor.hidden=false;
+  };
+
+  const closeEditor=()=>{
+    editor.hidden=true;
+    setStatus('');
+  };
+
+  card.addEventListener('click',()=>{
+    if(activeSet()?.cards.length)showNext();
+    else openEditor();
+  });
+  nextButton.addEventListener('click',()=>{
+    if(activeSet()?.cards.length)showNext();
+    else openEditor();
+  });
+  manageButton.addEventListener('click',openEditor);
+  editorClose.addEventListener('click',closeEditor);
+  editor.addEventListener('pointerdown',event=>{if(event.target===editor)closeEditor();});
+  editor.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+
+  setSelect.addEventListener('change',()=>{
+    if(!sets.some(set=>set.id===setSelect.value))return;
+    activeSetId=setSelect.value;
+    currentCardId='';
+    updateSetControls();
+    showNext({animate:true});
+  });
+
+  addSetButton.addEventListener('click',()=>{
+    const set=makeSet(`Card Set ${sets.length+1}`);
+    sets.push(set);
+    activeSetId=set.id;
+    currentCardId='';
+    renderEditor();
+    showNext({animate:false});
+    requestAnimationFrame(()=>{
+      setNameInput.focus({preventScroll:true});
+      setNameInput.select();
+    });
+  });
+
+  setNameInput.addEventListener('input',()=>{
+    const selected=activeSet();
+    if(!selected)return;
+    selected.name=setNameInput.value.replace(/\s+/g,' ').slice(0,40)||'Untitled Set';
+    updateSetControls();
+    renderSetList();
+  });
+  setNameInput.addEventListener('blur',()=>{
+    const selected=activeSet();
+    if(!selected)return;
+    selected.name=setNameInput.value.trim().replace(/\s+/g,' ')||'Untitled Set';
+    setNameInput.value=selected.name;
+    updateSetControls();
+    renderSetList();
+  });
+
+  deleteSetButton.addEventListener('click',()=>{
+    if(sets.length<=1)return;
+    const index=Math.max(0,sets.findIndex(set=>set.id===activeSetId));
+    sets=sets.filter(set=>set.id!==activeSetId);
+    activeSetId=sets[Math.min(index,sets.length-1)].id;
+    currentCardId='';
+    renderEditor();
+    showNext({animate:false});
+  });
+
+  addCardButton.addEventListener('click',()=>{
+    const selected=activeSet();
+    if(!selected||selected.cards.length>=60){
+      setStatus('Each set can hold up to 60 cards.',true);
+      return;
+    }
+    const item=makeCard();
+    selected.cards.push(item);
+    currentCardId=item.id;
+    renderEditor();
+    applyCardContent(item);
+    requestAnimationFrame(()=>cardList.querySelector(`[data-card-id="${item.id}"] textarea`)?.focus({preventScroll:true}));
+  });
+
+  imageInput.addEventListener('change',async()=>{
+    const file=imageInput.files?.[0];
+    const targetId=uploadTargetId;
+    imageInput.value='';
+    uploadTargetId='';
+    if(!file||!targetId)return;
+    setStatus('Preparing image…');
+    const data=await fileToBoardImageData(file,{maxSide:720,maxLength:85000,quality:.72,minSide:200});
+    const item=sets.flatMap(set=>set.cards).find(cardItem=>cardItem.id===targetId);
+    if(!item)return;
+    if(!data){
+      setStatus('That image could not be prepared. Try a smaller file.',true);
+      return;
+    }
+    if(totalImageLength(targetId)+data.length>620000){
+      setStatus('This tile has reached its image storage limit. Remove an image first.',true);
+      return;
+    }
+    item.imageSrc=data;
+    item.imageName=file.name||'Flashcard image';
+    if(item.id===currentCardId)applyCardContent(item);
+    renderCardList();
+    setStatus('Image added.');
+    notifyBoardChanged('custom-flashcard-image');
+  });
+
+  m.querySelector('.customflashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.customflashcards-font').addEventListener('click',()=>{
+    cycleData(m,'font',FONT_OPTIONS);
+    if(currentCard())applyCardContent(currentCard());
+  });
+  m.querySelector('.customflashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const ro=new ResizeObserver(()=>{
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame=requestAnimationFrame(()=>{
+      const item=currentCard();
+      if(item)applyCardContent(item);
+    });
+  });
+  ro.observe(card);
+
+  updateSetControls();
+  showNext({animate:false});
+
+  m._boardGetState=()=>(
+    {
+      activeSetId,
+      currentCardId,
+      sets:sets.map(set=>({
+        id:set.id,
+        name:set.name,
+        cards:set.cards.map(item=>({id:item.id,text:item.text,imageSrc:item.imageSrc,imageName:item.imageName}))
+      }))
+    }
+  );
+  m._boardSetState=state=>{
+    if(!state)return;
+    const usedIds=new Set();
+    const restored=[];
+    for(const savedSet of Array.isArray(state.sets)?state.sets.slice(0,20):[]){
+      const setId=String(savedSet?.id||makeId('set'));
+      const uniqueSetId=usedIds.has(setId)?makeId('set'):setId;
+      usedIds.add(uniqueSetId);
+      const restoredSet={
+        id:uniqueSetId,
+        name:String(savedSet?.name||'Untitled Set').trim().slice(0,40)||'Untitled Set',
+        cards:[]
+      };
+      for(const savedCard of Array.isArray(savedSet?.cards)?savedSet.cards.slice(0,60):[]){
+        const cardId=String(savedCard?.id||makeId('card'));
+        const uniqueCardId=usedIds.has(cardId)?makeId('card'):cardId;
+        usedIds.add(uniqueCardId);
+        const imageSrc=String(savedCard?.imageSrc||'');
+        restoredSet.cards.push({
+          id:uniqueCardId,
+          text:String(savedCard?.text||'').slice(0,180),
+          imageSrc:/^data:image\//i.test(imageSrc)?imageSrc:'',
+          imageName:String(savedCard?.imageName||'').slice(0,120)
+        });
+      }
+      restored.push(restoredSet);
+    }
+    sets=restored.length?restored:[makeSet()];
+    activeSetId=sets.some(set=>set.id===state.activeSetId)?state.activeSetId:sets[0].id;
+    const selected=activeSet();
+    const savedCurrent=String(state.currentCardId||'');
+    currentCardId=selected.cards.some(item=>item.id===savedCurrent)?savedCurrent:'';
+    renderEditor();
+    const item=currentCard();
+    if(item)displayCard(item,{animate:false});
+    else showNext({animate:false});
+  };
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    ro.disconnect();
+    cancelAnimationFrame(resizeFrame);
+    clearTimeout(flipTimer);
+    clearTimeout(finishTimer);
+    clearTimeout(statusTimer);
     measurer.remove();
   };
 }
