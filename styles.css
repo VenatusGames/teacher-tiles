@@ -13445,3 +13445,18 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 @media(max-width:760px){.shop-membership-grid{grid-template-columns:1fr}.shop-membership-perks{grid-template-columns:1fr}.profile-badge-grid{grid-template-columns:1fr}.terms-notice{display:block}.terms-notice strong{display:block;margin-bottom:4px}}
 @media(prefers-reduced-motion:reduce){.profile-badge__shine{animation:none}.image-replace{transition:none}}
 .profile-badge[hidden]{display:none!important}
+
+/* Collectible profile patches use an embroidered Scout-style shield. */
+.profile-badge-showcase{background:linear-gradient(145deg,color-mix(in srgb,#567451 8%,var(--surface-soft)),var(--surface-soft));border-color:color-mix(in srgb,#567451 23%,var(--border))}
+.profile-badge-showcase__head span{color:#587050}
+.profile-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:12px}
+.profile-badge{isolation:isolate;min-height:174px;padding:25px 22px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:0;border-radius:0;background:#d6ad58;color:#fff;text-align:center;clip-path:polygon(10% 2%,90% 2%,100% 19%,94% 66%,80% 85%,50% 100%,20% 85%,6% 66%,0 19%);filter:drop-shadow(0 8px 8px rgba(45,36,20,.22));overflow:hidden}
+.profile-badge::before,.profile-badge::after{content:'';position:absolute;pointer-events:none;clip-path:inherit}
+.profile-badge::before{z-index:-2;inset:5px;background:repeating-conic-gradient(from 8deg,#f4dda3 0 5deg,#a9792d 5deg 9deg)}
+.profile-badge::after{z-index:-1;inset:10px;background:linear-gradient(155deg,#536f58,#29483b 72%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.11),inset 0 0 22px rgba(0,0,0,.18)}
+.profile-badge__medallion{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#829d78,#3c5e4a 68%);border:3px dashed #f0d89b;box-shadow:0 0 0 3px #9b712f,0 7px 14px rgba(13,29,20,.28),inset 0 1px 0 rgba(255,255,255,.26)}
+.profile-badge__medallion::before{inset:7px;border:1px dashed rgba(255,255,255,.42);border-radius:50%}.profile-badge__medallion i{font-size:34px;color:#fff5d5;text-shadow:0 2px 0 rgba(31,45,31,.28)}
+.profile-badge__copy{position:relative;z-index:1}.profile-badge__copy strong{font-size:12px;color:#fff6d7;text-transform:uppercase;letter-spacing:.045em;text-shadow:0 1px 1px rgba(0,0,0,.28)}.profile-badge__copy small{margin-top:4px;color:rgba(255,255,255,.74);font-size:8.5px}.profile-badge__check{z-index:2;right:23px;top:21px;background:#e7c467;color:#2b493c;border:2px solid #fff0c3;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.profile-badge--locked{opacity:.58;filter:grayscale(.45) drop-shadow(0 7px 7px rgba(45,36,20,.16))}.profile-badge--locked::after{background:linear-gradient(155deg,#6e756f,#464e49)}.profile-badge--locked .profile-badge__medallion{background:radial-gradient(circle at 40% 30%,#8b918c,#565d58 68%)}
+.profile-badge__shine{z-index:4;inset:-60% auto -60% -45%;width:24%;background:linear-gradient(90deg,transparent,rgba(255,247,208,.55),transparent)}
+@media(max-width:430px){.profile-badge-grid{grid-template-columns:1fr}.profile-badge{min-height:164px}}
