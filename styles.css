@@ -13159,6 +13159,22 @@ body.dark .settings-modal__backdrop{background:rgba(0,0,0,.56)}
 .settings-row.is-disabled .settings-range-control{opacity:.42}.settings-row.is-disabled input{pointer-events:none}
 
 .settings-nav__icon--help{color:#d85c5c;background:color-mix(in srgb,#ef6b6b 12%,var(--surface-soft));border:1px solid color-mix(in srgb,#ef6b6b 18%,var(--border))}
+.settings-nav__icon--news{color:#4c83c8;background:color-mix(in srgb,#69aaf4 13%,var(--surface-soft));border:1px solid color-mix(in srgb,#69aaf4 19%,var(--border))}
+.settings-nav__icon--announcements{color:#a87922;background:color-mix(in srgb,#e9b84d 15%,var(--surface-soft));border:1px solid color-mix(in srgb,#e9b84d 21%,var(--border))}
+.settings-nav__icon--contact{color:#438b66;background:color-mix(in srgb,#5dbb83 13%,var(--surface-soft));border:1px solid color-mix(in srgb,#5dbb83 20%,var(--border))}
+
+/* News, announcements, and contact inside Settings */
+.settings-pane--updates,.settings-pane--contact{max-width:720px}
+.settings-updates-heading{margin-bottom:16px}
+.settings-feed-shell,.settings-contact-card{border:1px solid var(--border);border-radius:19px;background:color-mix(in srgb,var(--surface) 84%,transparent);box-shadow:0 10px 30px rgba(15,23,42,.045);overflow:hidden}
+.settings-feed-content{padding:4px 14px 14px;overflow:visible;color:var(--text)}
+.settings-feed-content .changelog-entry{margin:12px 0 0;padding:17px 18px 18px;border:1px solid color-mix(in srgb,var(--border) 82%,transparent);border-radius:15px;background:var(--surface-soft)}
+.settings-feed-content .changelog-entry:last-child{border-bottom:1px solid color-mix(in srgb,var(--border) 82%,transparent)}
+.settings-feed-content .changelog-entry h1{font-size:20px}.settings-feed-content .changelog-entry h2{font-size:14px}.settings-feed-content .changelog-entry h3{font-size:12px}
+.settings-feed-content .changelog-entry p,.settings-feed-content .changelog-entry li{color:var(--muted)}
+.settings-contact-card{padding:18px}.settings-contact-card .contact-form{padding:0}.settings-contact-card .contact-field input,.settings-contact-card .contact-field textarea{background:var(--surface-soft);color:var(--text)}
+@media(max-width:760px){.settings-nav{overflow-x:auto;scrollbar-width:none}.settings-nav::-webkit-scrollbar{display:none}.settings-nav__item{flex:0 0 auto;width:auto;min-width:max-content;padding:0 11px}.settings-nav__icon{display:none}.settings-contact-card{padding:14px}}
+@media(max-width:500px){.settings-nav__item{font-size:10px;padding:0 9px}.settings-feed-content{padding:3px 8px 9px}.settings-feed-content .changelog-entry{padding:15px 14px}}
 
 /* Lunch Count custom icon upload */
 .lunchcount-icon-option--upload{justify-content:center;border-style:dashed;background:color-mix(in srgb,var(--module-bg,#fff) 91%,var(--module-text,#17191d) 9%)}

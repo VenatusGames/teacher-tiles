@@ -232,6 +232,7 @@ function playUiSfx(kind='click'){
 }
 
 document.addEventListener('click',e=>{
+  if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
   if(target.closest('#settings-ui-sfx-toggle'))return;
@@ -261,7 +262,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Announcements','settings.tab.contact':'Contact Us',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -294,7 +295,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Anuncios','settings.tab.contact':'Contáctanos',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -460,6 +461,7 @@ function setupSettingsHub(){
       pane.hidden=!active;
       pane.classList.toggle('is-active',active);
     });
+    window.dispatchEvent(new CustomEvent('teachertiles:settings-tab',{detail:{name}}));
   };
   const close=()=>{
     if(modal.hidden)return;
@@ -511,7 +513,7 @@ function setupSettingsHub(){
   });
   document.addEventListener('click',event=>{
     if(modal.hidden)return;
-    const target=event.target instanceof Element?event.target.closest('#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#shop-toggle,#changelog-toggle,#boards-toggle'):null;
+    const target=event.target instanceof Element?event.target.closest('#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#shop-toggle,#boards-toggle'):null;
     if(target)close();
   },true);
 
@@ -9493,22 +9495,15 @@ window.TeacherTilesBoard={
 };
 
 function setupChangelog(){
-  const button=document.getElementById('changelog-toggle');
-  const backdrop=document.getElementById('changelog-backdrop');
-  const panel=document.getElementById('changelog-panel');
-  const closeButton=document.getElementById('changelog-close');
   const changelogContent=document.getElementById('changelog-content');
   const newsContent=document.getElementById('news-content');
-  const tabs=[...document.querySelectorAll('[data-updates-tab]')];
-  const panes=[...document.querySelectorAll('[data-updates-pane]')];
   const contactForm=document.getElementById('contact-form');
   const contactStatus=document.getElementById('contact-status');
   const contactSubmit=document.getElementById('contact-submit');
 
-  if(!button||!backdrop||!panel||!closeButton||!changelogContent||!newsContent)return;
+  if(!changelogContent||!newsContent)return;
 
-  const loaded={changelog:false,news:false};
-  let activeTab='changelog';
+  const loaded={announcements:false,news:false};
 
   const escapeHtml=value=>String(value)
     .replaceAll('&','&amp;')
@@ -9576,7 +9571,7 @@ function setupChangelog(){
     const content=isNews?newsContent:changelogContent;
     const folder=isNews?'news':'changelog';
     const globalData=isNews?window.TeacherTilesNewsData:window.TeacherTilesChangelogData;
-    const label=isNews?'news':'changelog';
+    const label=isNews?'news':'announcements';
 
     content.innerHTML=`<div class="changelog-loading">Loading ${label}…</div>`;
 
@@ -9628,41 +9623,9 @@ function setupChangelog(){
     }
   }
 
-  async function selectTab(name){
-    activeTab=name;
-
-    for(const tab of tabs){
-      const active=tab.dataset.updatesTab===name;
-      tab.classList.toggle('is-active',active);
-      tab.setAttribute('aria-selected',String(active));
-    }
-
-    for(const pane of panes){
-      const active=pane.dataset.updatesPane===name;
-      pane.hidden=!active;
-      pane.classList.toggle('is-active',active);
-    }
-
-    if((name==='changelog'||name==='news')&&!loaded[name]){
-      await loadFeed(name);
-    }
-  }
-
-  async function openChangelog(){
-    backdrop.hidden=false;
-    requestAnimationFrame(()=>backdrop.classList.add('is-open'));
-    await selectTab(activeTab);
-    closeButton.focus({preventScroll:true});
-  }
-
-  function closeChangelog(){
-    backdrop.classList.remove('is-open');
-    window.setTimeout(()=>{backdrop.hidden=true},190);
-    button.focus({preventScroll:true});
-  }
-
-  tabs.forEach(tab=>{
-    tab.addEventListener('click',()=>selectTab(tab.dataset.updatesTab));
+  window.addEventListener('teachertiles:settings-tab',event=>{
+    const name=event.detail?.name;
+    if((name==='announcements'||name==='news')&&!loaded[name])loadFeed(name);
   });
 
   if(contactForm&&contactSubmit&&contactStatus){
@@ -9717,14 +9680,6 @@ function setupChangelog(){
     });
   }
 
-  button.addEventListener('click',openChangelog);
-  closeButton.addEventListener('click',closeChangelog);
-  backdrop.addEventListener('click',e=>{
-    if(e.target===backdrop)closeChangelog();
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&!backdrop.hidden)closeChangelog();
-  });
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',setupChangelog,{once:true});
