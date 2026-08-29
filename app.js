@@ -5185,7 +5185,8 @@ const TEACHERTILES_THEMES=new Set([
   'notebook-red','notebook-blue','notebook-black',
   'cardboard-kraft','cardboard-white','cardboard-blue','cardboard-rose',
   'metal-copper','metal-iron','metal-dark-steel','metal-cobalt',
-  'cosmos-nebula','cosmos-pulsar','cosmos-milky-way','cosmos-red-dwarf'
+  'cosmos-nebula','cosmos-pulsar','cosmos-milky-way','cosmos-red-dwarf',
+  'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
   'dark','theme-gray',
@@ -5195,7 +5196,8 @@ const THEME_BODY_CLASSES=[
   'theme-notebook-red','theme-notebook-blue','theme-notebook-black',
   'theme-cardboard-kraft','theme-cardboard-white','theme-cardboard-blue','theme-cardboard-rose',
   'theme-metal-copper','theme-metal-iron','theme-metal-dark-steel','theme-metal-cobalt',
-  'theme-cosmos-nebula','theme-cosmos-pulsar','theme-cosmos-milky-way','theme-cosmos-red-dwarf'
+  'theme-cosmos-nebula','theme-cosmos-pulsar','theme-cosmos-milky-way','theme-cosmos-red-dwarf',
+  'theme-corkboard-red','theme-corkboard-blue','theme-corkboard-green','theme-corkboard-gold'
 ];
 
 function updateThemeControls(theme){
@@ -5214,7 +5216,7 @@ function applyTeacherTheme(theme,{persist=true}={}){
   else if(next==='gray')document.body.classList.add('theme-gray');
   else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-')||next==='notebook-black';
+  const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
@@ -5524,18 +5526,27 @@ function setupCollectionShelf(){
 }
 
 function populateGeneratedStickerPacks(){
-  const makeStickerButton=({emoji,name})=>{
+  const makeStickerButton=({emoji='',src='',name})=>{
     const button=document.createElement('button');
-    button.className='sticker-shelf-item sticker-shelf-item--emoji';
+    button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}`;
     button.type='button';
-    button.dataset.stickerEmoji=emoji;
+    if(src)button.dataset.stickerSrc=src;
+    else button.dataset.stickerEmoji=emoji;
     button.dataset.stickerName=name;
-    button.setAttribute('aria-label',`Drag ${name} emoji sticker onto the board`);
-    const glyph=document.createElement('span');
-    glyph.className='sticker-shelf-emoji';
-    glyph.setAttribute('aria-hidden','true');
-    glyph.textContent=emoji;
-    button.appendChild(glyph);
+    button.setAttribute('aria-label',`Drag ${name} sticker onto the board`);
+    if(src){
+      const image=document.createElement('img');
+      image.src=src;
+      image.alt='';
+      image.draggable=false;
+      button.appendChild(image);
+    }else{
+      const glyph=document.createElement('span');
+      glyph.className='sticker-shelf-emoji';
+      glyph.setAttribute('aria-hidden','true');
+      glyph.textContent=emoji;
+      button.appendChild(glyph);
+    }
     return button;
   };
   const fill=(key,items)=>{
@@ -5546,26 +5557,25 @@ function populateGeneratedStickerPacks(){
     if(count)count.textContent=`${items.length} stickers`;
   };
 
-  const hearts=[
+  const coloredHearts=[
     ['❤️','Red heart'],['🧡','Orange heart'],['💛','Yellow heart'],['💚','Green heart'],['💙','Blue heart'],['💜','Purple heart'],
-    ['🤎','Brown heart'],['🖤','Black heart'],['🤍','White heart'],['🩷','Pink heart'],['🩵','Light blue heart'],['🩶','Gray heart'],
+    ['🤎','Brown heart'],['🖤','Black heart'],['🤍','White heart'],['🩷','Pink heart'],['🩵','Light blue heart'],['🩶','Gray heart']
+  ].map(([emoji,name])=>({emoji,name}));
+  const decorativeHearts=[
     ['💖','Sparkling heart'],['💗','Growing heart'],['💓','Beating heart'],['💕','Two hearts'],['💞','Revolving hearts'],['💝','Heart with ribbon'],
     ['💘','Heart with arrow'],['💟','Heart decoration'],['❤️‍🔥','Heart on fire'],['❤️‍🩹','Mending heart']
   ].map(([emoji,name])=>({emoji,name}));
-  fill('heart-emojis',hearts);
+  fill('colored-hearts',coloredHearts);
+  fill('decorative-hearts',decorativeHearts);
 
-  const regionCodes=`AC AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CP CR CU CV CW CX CY CZ DE DG DJ DK DM DO DZ EA EC EE EG EH ER ES ET EU FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU IC ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TA TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM UN US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW`.split(/\s+/);
-  const specialNames={AC:'Ascension Island',CP:'Clipperton Island',DG:'Diego Garcia',EA:'Ceuta and Melilla',EU:'European Union',IC:'Canary Islands',TA:'Tristan da Cunha',UN:'United Nations',XK:'Kosovo'};
+  const regionCodes=`AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET EU FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM UN US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW`.split(/\s+/);
+  const specialNames={EU:'European Union',UN:'United Nations',XK:'Kosovo'};
   let displayNames=null;
   try{displayNames=new Intl.DisplayNames(['en'],{type:'region'})}catch{}
-  const flagFromCode=code=>[...code].map(letter=>String.fromCodePoint(127397+letter.charCodeAt(0))).join('');
-  const subdivisionFlag=letters=>String.fromCodePoint(0x1f3f4)+[...letters].map(letter=>String.fromCodePoint(0xe0061+letter.charCodeAt(0)-97)).join('')+String.fromCodePoint(0xe007f);
-  const flags=regionCodes.map(code=>({emoji:flagFromCode(code),name:`${specialNames[code]||displayNames?.of(code)||code} flag`}));
-  flags.push(
-    {emoji:subdivisionFlag('gbeng'),name:'England flag'},
-    {emoji:subdivisionFlag('gbsct'),name:'Scotland flag'},
-    {emoji:subdivisionFlag('gbwls'),name:'Wales flag'}
-  );
+  const flags=regionCodes.map(code=>({
+    src:`https://flagcdn.io/flags/4x3/${code.toLowerCase()}.svg`,
+    name:`${specialNames[code]||displayNames?.of(code)||code} flag`
+  }));
   fill('country-flags',flags);
 }
 
@@ -7509,7 +7519,9 @@ function setupMoney(m){
 
     button.addEventListener('click',()=>addPiece(d.id));
     img.addEventListener('dragstart',event=>{
+      event.stopPropagation();
       paletteDragId=d.id;
+      event.dataTransfer?.clearData();
       event.dataTransfer?.setData('text/plain',d.id);
       if(event.dataTransfer)event.dataTransfer.effectAllowed='copy';
     });
@@ -7530,6 +7542,7 @@ function setupMoney(m){
 
   workspaceEl.addEventListener('drop',event=>{
     event.preventDefault();
+    event.stopPropagation();
     workspaceEl.classList.remove('is-drop-target');
 
     const id=paletteDragId||event.dataTransfer?.getData('text/plain');
