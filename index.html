@@ -534,6 +534,12 @@
         </div>
 
         <div id="sticker-shelf-content" class="asset-shelf__content" data-shelf-panel="stickers" hidden>
+          <div class="sticker-shelf-search" role="search">
+            <span class="sticker-shelf-search__icon" aria-hidden="true">⌕</span>
+            <input id="sticker-shelf-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search stickers, countries, animals…" aria-label="Search stickers">
+            <button id="sticker-shelf-search-clear" type="button" aria-label="Clear sticker search" hidden>×</button>
+            <span id="sticker-shelf-search-status" class="sticker-shelf-search__status" role="status" aria-live="polite">Search every sticker pack</span>
+          </div>
           <div class="asset-shelf__scroll sticker-shelf__scroll" aria-label="Sticker packs">
             <div class="asset-shelf__row sticker-shelf__row">
               <div class="sticker-pack-wrap">

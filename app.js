@@ -5209,6 +5209,80 @@ function updateThemeControls(theme){
   });
 }
 
+function materialRandomBetween(min,max){return min+Math.random()*(max-min)}
+function materialSvgUrl(svg){return`url("data:image/svg+xml,${encodeURIComponent(svg)}")`}
+
+function buildCosmosThemeArtwork(theme){
+  const palettes={
+    'cosmos-nebula':['#120b24','#7040b1','#dc72ff','#f7efff'],
+    'cosmos-pulsar':['#1d0e08','#a84a1b','#ff9a38','#fff1d7'],
+    'cosmos-milky-way':['#09101c','#66748f','#eef4ff','#ffffff'],
+    'cosmos-red-dwarf':['#1d080b','#962936','#ff596a','#ffe8eb']
+  };
+  const [base,cloud,glow,star]=palettes[theme]||palettes['cosmos-nebula'];
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const stars=Array.from({length:150},()=>{
+    const x=materialRandomBetween(8,1192).toFixed(1),y=materialRandomBetween(8,792).toFixed(1);
+    const radius=materialRandomBetween(.45,1.65).toFixed(2),opacity=materialRandomBetween(.35,.96).toFixed(2);
+    return`<circle cx="${x}" cy="${y}" r="${radius}" fill="${Math.random()>.72?glow:star}" opacity="${opacity}"/>`;
+  }).join('');
+  const spiralPath='M-175 7C-128-104 66-126 160-42C243 33 115 150-44 116C-157 91-205 7-135-61C-73-121 61-83 109-18C145 31 60 79-18 62C-76 50-89 2-49-27C-17-51 37-31 48 1';
+  const swirls=Array.from({length:8},(_,index)=>{
+    const x=materialRandomBetween(90,1110).toFixed(1),y=materialRandomBetween(70,730).toFixed(1);
+    const rotate=materialRandomBetween(-175,175).toFixed(1),scale=materialRandomBetween(.38,.92).toFixed(2);
+    const width=materialRandomBetween(24,58).toFixed(1),opacity=materialRandomBetween(.24,.58).toFixed(2);
+    const color=index%3===0?glow:cloud;
+    return`<g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#warp)"><path d="${spiralPath}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soft)"/><path d="${spiralPath}" fill="none" stroke="${glow}" stroke-width="${Math.max(5,Number(width)*.14).toFixed(1)}" stroke-linecap="round" opacity=".42"/></g>`;
+  }).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="warp" x="-45%" y="-45%" width="190%" height="190%"><feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="2" seed="${seed}" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="38"/></filter><filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter><radialGradient id="shade"><stop stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${base}" stop-opacity=".5"/></radialGradient></defs>${stars}${swirls}<rect width="1200" height="800" fill="url(#shade)" pointer-events="none"/></svg>`;
+}
+
+function buildCardboardThemeArtwork(theme){
+  const labelColors={'cardboard-kraft':'#fffdf7','cardboard-white':'#fffdf7','cardboard-blue':'#b9dbea','cardboard-rose':'#e8bdc2'};
+  const label=labelColors[theme]||labelColors['cardboard-kraft'];
+  const ink=theme==='cardboard-blue'?'#274655':theme==='cardboard-rose'?'#5b343a':'#423a32';
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const cells=Array.from({length:12},(_,index)=>index).sort(()=>Math.random()-.5).slice(0,9);
+  const labels=cells.map(index=>{
+    const col=index%4,row=Math.floor(index/4);
+    const x=col*300+materialRandomBetween(32,92),y=row*266+materialRandomBetween(28,105);
+    const width=materialRandomBetween(155,220),height=materialRandomBetween(88,124),angle=materialRandomBetween(-12,12);
+    const scaleX=width/210,scaleY=height/120;
+    return`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${scaleX.toFixed(2)} ${scaleY.toFixed(2)})"><rect width="210" height="120" rx="9" fill="${label}" fill-opacity=".9" filter="url(#labelShadow)"/><path d="M21 27h90M21 44h145M21 62h112" stroke="${ink}" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/><path d="M23 82v23m8-23v23m7-23v23m11-23v23m6-23v23m13-23v23m7-23v23m11-23v23m6-23v23m13-23v23m8-23v23" stroke="${ink}" stroke-opacity=".52" stroke-width="3"/></g>`;
+  }).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="fiber"><feTurbulence type="fractalNoise" baseFrequency=".018 .11" numOctaves="3" seed="${seed}"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer></filter><filter id="labelShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#4d2f19" flood-opacity=".22"/></filter></defs><rect width="1200" height="800" filter="url(#fiber)" opacity=".42"/>${labels}</svg>`;
+}
+
+function buildCorkboardThemeArtwork(theme){
+  const pinColors={'corkboard-red':'#d84b4b','corkboard-blue':'#3f79c8','corkboard-green':'#43a266','corkboard-gold':'#e0ad37'};
+  const pin=pinColors[theme]||pinColors['corkboard-red'];
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const points=[];
+  for(let attempts=0;attempts<500&&points.length<19;attempts++){
+    const point={x:materialRandomBetween(32,1168),y:materialRandomBetween(30,770)};
+    if(points.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>105))points.push(point);
+  }
+  const flecks=Array.from({length:130},()=>`<circle cx="${materialRandomBetween(0,1200).toFixed(1)}" cy="${materialRandomBetween(0,800).toFixed(1)}" r="${materialRandomBetween(.7,2.2).toFixed(1)}" fill="${Math.random()>.5?'#6f4322':'#edc58f'}" opacity="${materialRandomBetween(.1,.28).toFixed(2)}"/>`).join('');
+  const pins=points.map(point=>`<g transform="translate(${point.x.toFixed(1)} ${point.y.toFixed(1)}) rotate(${materialRandomBetween(-16,16).toFixed(1)})"><ellipse cy="7" rx="11" ry="7" fill="#4b2a16" opacity=".25"/><circle r="10" fill="${pin}"/><circle cx="-3" cy="-3" r="3.2" fill="#fff" opacity=".48"/><path d="M0 9v12" stroke="#6b523f" stroke-width="2" opacity=".55"/></g>`).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="cork"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="${seed}"/><feColorMatrix type="saturate" values=".25"/><feComponentTransfer><feFuncA type="linear" slope=".18"/></feComponentTransfer></filter></defs><rect width="1200" height="800" filter="url(#cork)" opacity=".55"/>${flecks}${pins}</svg>`;
+}
+
+function applyMaterialThemeArtwork(theme){
+  workspace.style.removeProperty('background-image');
+  workspace.style.removeProperty('background-size');
+  workspace.style.removeProperty('background-repeat');
+  workspace.style.removeProperty('background-position');
+  let svg='';
+  if(theme.startsWith('cosmos-'))svg=buildCosmosThemeArtwork(theme);
+  else if(theme.startsWith('cardboard-'))svg=buildCardboardThemeArtwork(theme);
+  else if(theme.startsWith('corkboard-'))svg=buildCorkboardThemeArtwork(theme);
+  if(!svg)return;
+  workspace.style.backgroundImage=materialSvgUrl(svg);
+  workspace.style.backgroundSize='100% 100%';
+  workspace.style.backgroundRepeat='no-repeat';
+  workspace.style.backgroundPosition='center';
+}
+
 function applyTeacherTheme(theme,{persist=true}={}){
   const next=TEACHERTILES_THEMES.has(theme)?theme:'light';
   document.body.classList.remove(...THEME_BODY_CLASSES);
@@ -5219,6 +5293,7 @@ function applyTeacherTheme(theme,{persist=true}={}){
   const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
+  applyMaterialThemeArtwork(next);
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
   updateThemeControls(next);
   if(persist)notifyBoardChanged('theme');
@@ -5233,6 +5308,7 @@ window.addEventListener('resize',()=>document.querySelectorAll('.module').forEac
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
   if(!src&&!emoji)return null;
+  const isFlag=/flagcdn\.io\/flags\//i.test(src);
   const p=screenToBoard(clientX,clientY);
   const ratio=emoji?1:(Number.isFinite(aspect)&&aspect>0?aspect:1);
   let width=180,height=180;
@@ -5240,7 +5316,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   width=Math.max(64,width);
   height=Math.max(64,height);
   const m=document.createElement('section');
-  m.className=`module sticker-module${animate?' sticker-placed':''}`;
+  m.className=`module sticker-module${isFlag?' sticker-module--flag':''}${animate?' sticker-placed':''}`;
   m.dataset.type='sticker';
   m.dataset.stickerSrc=src;
   m.dataset.stickerEmoji=emoji;
@@ -5261,7 +5337,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   const del=document.createElement('button');
   del.className='module-delete';del.type='button';del.setAttribute('aria-label','Delete sticker');del.textContent='×';
   const art=document.createElement('div');art.className='sticker-art';
-  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}`;
+  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}${isFlag?' sticker-visual--flag':''}`;
   if(emoji){
     const glyph=document.createElement('span');
     glyph.className='sticker-emoji';glyph.setAttribute('aria-hidden','true');glyph.textContent=emoji;
@@ -5289,6 +5365,7 @@ function setupShelfStickerDrag(item,shelfShell){
     if(e.button!==0)return;
     const src=item.dataset.stickerSrc||'';
     const emoji=item.dataset.stickerEmoji||'';
+    const isFlag=/flagcdn\.io\/flags\//i.test(src);
     const name=item.dataset.stickerName||'Sticker';
     const preview=item.querySelector('img');
     const aspect=emoji?1:(preview?.naturalWidth&&preview?.naturalHeight?preview.naturalWidth/preview.naturalHeight:1);
@@ -5304,7 +5381,7 @@ function setupShelfStickerDrag(item,shelfShell){
     const ensureGhost=()=>{
       if(ghost)return;
       ghost=document.createElement('div');
-      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}`;
+      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}${isFlag?' sticker-drag-ghost--flag':''}`;
       if(emoji){
         const glyph=document.createElement('span');glyph.className='sticker-emoji sticker-emoji--ghost';glyph.textContent=emoji;ghost.appendChild(glyph);
       }else{
@@ -5358,9 +5435,28 @@ function setupCollectionShelf(){
   const stickerButton=document.getElementById('sticker-shelf-toggle');
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
+  const stickerSearch=document.getElementById('sticker-shelf-search');
+  const stickerSearchClear=document.getElementById('sticker-shelf-search-clear');
+  const stickerSearchStatus=document.getElementById('sticker-shelf-search-status');
   const packs=[...document.querySelectorAll('[data-theme-pack]')];
   const stickerPacks=[...document.querySelectorAll('[data-sticker-pack]')];
   const stickerItems=[...document.querySelectorAll('[data-sticker-src],[data-sticker-emoji]')];
+  const stickerPackTags={
+    'default-sticker-drawer':'classroom teacher school sticker stickers',
+    'emoji-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions celebration',
+    'nature-emojis-sticker-drawer':'nature outdoors plant plants botanical botanicals weather sky',
+    'animal-emojis-sticker-drawer':'animal animals pet pets wildlife insect insects critter critters',
+    'more-faces-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions emotion emotions',
+    'symbols-sticker-drawer':'symbol symbols classroom math mark marks sign signs',
+    'food-sticker-drawer':'food foods snack snacks meal meals lunch dessert desserts treat treats',
+    'colored-hearts-sticker-drawer':'heart hearts love color colors colored',
+    'decorative-hearts-sticker-drawer':'heart hearts love decorative decoration decorations',
+    'country-flags-sticker-drawer':'country countries nation nations flag flags geography world international'
+  };
+  stickerItems.forEach(item=>{
+    const drawerId=item.closest('.sticker-pack-drawer')?.id||'';
+    item.dataset.stickerTags=[item.dataset.stickerTags||'',stickerPackTags[drawerId]||''].join(' ').trim();
+  });
   const bottomTray=document.querySelector('.workspace-upcoming-controls');
   const shelfScroll=themePanel?.querySelector('.asset-shelf__scroll');
   const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
@@ -5431,7 +5527,45 @@ function setupCollectionShelf(){
     activeStickerDrawer=null;
   };
 
+  const normalizeStickerSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
+  const updateStickerSearch=()=>{
+    const query=normalizeStickerSearch(stickerSearch?.value);
+    const terms=query.split(/\s+/).filter(Boolean);
+    const searching=terms.length>0;
+    if(searching)closeStickerPack();
+    stickerPanel.classList.toggle('is-searching',searching);
+    let resultCount=0;
+    stickerPacks.forEach(pack=>{
+      const drawerId=pack.getAttribute('aria-controls');
+      const drawer=drawerId?document.getElementById(drawerId):null;
+      const wrapper=pack.closest('.sticker-pack-wrap');
+      const items=drawer?[...drawer.querySelectorAll('.sticker-shelf-item')]:[];
+      let packMatches=0;
+      items.forEach(item=>{
+        const haystack=normalizeStickerSearch(`${item.dataset.stickerName||''} ${item.dataset.stickerTags||''}`);
+        const matches=!searching||terms.every(term=>haystack.includes(term));
+        item.classList.toggle('is-search-hidden',!matches);
+        if(searching&&matches){packMatches++;resultCount++}
+      });
+      const show=!searching||packMatches>0;
+      wrapper?.classList.toggle('is-search-hidden',!show);
+      drawer?.classList.toggle('is-search-hidden',!show);
+      drawer?.classList.toggle('is-search-open',searching&&show);
+      if(drawer)drawer.setAttribute('aria-hidden',searching?String(!show):String(!(drawer===activeStickerDrawer&&drawer.classList.contains('is-open'))));
+    });
+    if(stickerSearchClear)stickerSearchClear.hidden=!searching;
+    if(stickerSearchStatus)stickerSearchStatus.textContent=searching?(resultCount?`${resultCount} ${resultCount===1?'sticker':'stickers'} found`:'No stickers found'):'Search every sticker pack';
+    if(searching)requestAnimationFrame(()=>{if(stickerScroll)stickerScroll.scrollLeft=0});
+  };
+
+  const clearStickerSearch=({focus=false}={})=>{
+    if(stickerSearch)stickerSearch.value='';
+    updateStickerSearch();
+    if(focus)stickerSearch?.focus();
+  };
+
   const toggleStickerPack=pack=>{
+    if(stickerPanel.classList.contains('is-searching'))return;
     const drawerId=pack.getAttribute('aria-controls');
     const drawer=drawerId?document.getElementById(drawerId):null;
     if(!drawer)return;
@@ -5465,7 +5599,8 @@ function setupCollectionShelf(){
     activeShelf=null;
     closeThemeFan();
     closeStickerPack();
-    shelf.classList.remove('is-open');
+    clearStickerSearch();
+    shelf.classList.remove('is-open','is-sticker-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -5480,6 +5615,7 @@ function setupCollectionShelf(){
     stickerPanel.hidden=themes;
     themePanel.classList.toggle('is-active',themes);
     stickerPanel.classList.toggle('is-active',!themes);
+    shelf.classList.toggle('is-sticker-mode',!themes);
     title.textContent=window.TeacherTilesI18n?.t(themes?'top.themes':'top.stickers')||(themes?'Themes':'Stickers');
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
@@ -5492,6 +5628,9 @@ function setupCollectionShelf(){
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
   stickerItems.forEach(item=>setupShelfStickerDrag(item,shelfShell));
+  stickerSearch?.addEventListener('input',updateStickerSearch);
+  stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
+  stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
@@ -5526,13 +5665,14 @@ function setupCollectionShelf(){
 }
 
 function populateGeneratedStickerPacks(){
-  const makeStickerButton=({emoji='',src='',name})=>{
+  const makeStickerButton=({emoji='',src='',name,tags=''})=>{
     const button=document.createElement('button');
     button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}`;
     button.type='button';
     if(src)button.dataset.stickerSrc=src;
     else button.dataset.stickerEmoji=emoji;
     button.dataset.stickerName=name;
+    if(tags)button.dataset.stickerTags=tags;
     button.setAttribute('aria-label',`Drag ${name} sticker onto the board`);
     if(src){
       const image=document.createElement('img');
@@ -5574,7 +5714,8 @@ function populateGeneratedStickerPacks(){
   try{displayNames=new Intl.DisplayNames(['en'],{type:'region'})}catch{}
   const flags=regionCodes.map(code=>({
     src:`https://flagcdn.io/flags/4x3/${code.toLowerCase()}.svg`,
-    name:`${specialNames[code]||displayNames?.of(code)||code} flag`
+    name:`${specialNames[code]||displayNames?.of(code)||code} flag`,
+    tags:`country countries flag flags nation geography world international ${code.toLowerCase()}`
   }));
   fill('country-flags',flags);
 }
