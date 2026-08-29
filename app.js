@@ -361,8 +361,8 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],numberline:['Number Line','Interactive expandable number line'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],writinglines:['Writing Lines','Handwriting practice template'],
+    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -373,8 +373,8 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -1018,6 +1018,7 @@ function setupModuleByType(m,type){
   if(type==='clock')setupClock(m);
   if(type==='stopwatch')setupStopwatch(m);
   if(type==='draw')setupDraw(m);
+  if(type==='dictionary')setupDictionary(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -1042,6 +1043,7 @@ function setupModuleByType(m,type){
   if(type==='grapher')setupGrapher(m);
   if(type==='periodictable')setupPeriodicTable(m);
   if(type==='money')setupMoney(m);
+  if(type==='shapes')setupShapes(m);
   if(type==='numberline')setupNumberLine(m);
   if(type==='hundredschart')setupHundredsChart(m);
   if(type==='tenframes')setupTenFrames(m);
@@ -4284,6 +4286,401 @@ function setupBoombox(m){
 
 function setupTextBubble(m){
   const text=m.querySelector('.textbubble-text');m.querySelector('.textbubble-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.textbubble-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);requestAnimationFrame(()=>text.dispatchEvent(new Event('input')))});m.querySelector('.textbubble-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));const cleanup=fitEditableText(text,m,'--bubble-size');m._cleanup=cleanup
+}
+
+function setupDictionary(m){
+  const form=m.querySelector('.dictionary-search');
+  const input=m.querySelector('.dictionary-input');
+  const submit=m.querySelector('.dictionary-submit');
+  const status=m.querySelector('.dictionary-status');
+  const content=m.querySelector('.dictionary-content');
+  const welcome=m.querySelector('.dictionary-welcome');
+  const results=m.querySelector('.dictionary-results');
+  let entries=[];
+  let requestController=null;
+  let activeAudio=null;
+
+  const cleanText=(value,max=5000)=>String(value||'').trim().slice(0,max);
+  const uniqueWords=(values,max=28)=>[...new Set((Array.isArray(values)?values:[]).map(value=>cleanText(value,80)).filter(Boolean))].slice(0,max);
+  const normalizeEntries=data=>(Array.isArray(data)?data:[]).slice(0,4).map(entry=>({
+    word:cleanText(entry?.word,120),
+    phonetic:cleanText(entry?.phonetic,180),
+    phonetics:(Array.isArray(entry?.phonetics)?entry.phonetics:[]).map(item=>({
+      text:cleanText(item?.text,180),
+      audio:cleanText(item?.audio,1000)
+    })).filter(item=>item.text||item.audio).slice(0,10),
+    origin:cleanText(entry?.origin,3000),
+    sourceUrls:(Array.isArray(entry?.sourceUrls)?entry.sourceUrls:[]).map(url=>cleanText(url,1000)).filter(url=>/^https?:\/\//i.test(url)).slice(0,5),
+    meanings:(Array.isArray(entry?.meanings)?entry.meanings:[]).map(meaning=>({
+      partOfSpeech:cleanText(meaning?.partOfSpeech,80),
+      synonyms:uniqueWords(meaning?.synonyms),
+      antonyms:uniqueWords(meaning?.antonyms),
+      definitions:(Array.isArray(meaning?.definitions)?meaning.definitions:[]).map(definition=>({
+        definition:cleanText(definition?.definition),
+        example:cleanText(definition?.example,2000),
+        synonyms:uniqueWords(definition?.synonyms),
+        antonyms:uniqueWords(definition?.antonyms)
+      })).filter(definition=>definition.definition)
+    })).filter(meaning=>meaning.partOfSpeech||meaning.definitions.length)
+  })).filter(entry=>entry.word||entry.meanings.length);
+
+  const createChipGroup=(label,words)=>{
+    if(!words.length)return null;
+    const row=document.createElement('div');
+    row.className='dictionary-word-row';
+    const heading=document.createElement('span');
+    heading.textContent=label;
+    const chips=document.createElement('div');
+    chips.className='dictionary-chips';
+    words.forEach(word=>{
+      const chip=document.createElement('button');
+      chip.type='button';
+      chip.textContent=word;
+      chip.title=`Look up ${word}`;
+      chip.addEventListener('click',()=>{
+        input.value=word;
+        lookup(word);
+      });
+      chips.appendChild(chip);
+    });
+    row.append(heading,chips);
+    return row;
+  };
+
+  const playPronunciation=(url,button,word)=>{
+    if(activeAudio){activeAudio.pause();activeAudio=null}
+    button.classList.add('is-playing');
+    const finish=()=>button.classList.remove('is-playing');
+    if(url){
+      const resolved=url.startsWith('//')?`https:${url}`:url;
+      const audio=new Audio(resolved);
+      activeAudio=audio;
+      const finishAudio=()=>{finish();if(activeAudio===audio)activeAudio=null};
+      audio.addEventListener('ended',finishAudio,{once:true});
+      audio.addEventListener('error',finishAudio,{once:true});
+      audio.play().catch(finishAudio);
+      return;
+    }
+    if('speechSynthesis'in window&&word){
+      speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(word);
+      utterance.rate=.82;
+      utterance.addEventListener('end',finish,{once:true});
+      utterance.addEventListener('error',finish,{once:true});
+      speechSynthesis.speak(utterance);
+    }else finish();
+  };
+
+  const renderEntries=(animate=true)=>{
+    results.replaceChildren();
+    welcome.hidden=Boolean(entries.length);
+    results.hidden=!entries.length;
+    if(!entries.length)return;
+
+    entries.forEach((entry,entryIndex)=>{
+      const article=document.createElement('article');
+      article.className='dictionary-entry';
+
+      const head=document.createElement('header');
+      head.className='dictionary-entry-head';
+      const identity=document.createElement('div');
+      const word=document.createElement('strong');
+      word.textContent=entry.word||input.value;
+      const phoneticText=entry.phonetic||entry.phonetics.find(item=>item.text)?.text||'';
+      if(phoneticText){
+        const phonetic=document.createElement('span');
+        phonetic.textContent=phoneticText;
+        identity.append(word,phonetic);
+      }else identity.append(word);
+      head.appendChild(identity);
+
+      const audioUrl=entry.phonetics.find(item=>item.audio)?.audio||'';
+      if(entry.word){
+        const audioButton=document.createElement('button');
+        audioButton.type='button';
+        audioButton.className='dictionary-audio';
+        audioButton.setAttribute('aria-label',`Hear ${entry.word} pronounced`);
+        audioButton.title='Hear pronunciation';
+        audioButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h3l4 3V7L8 10H5Z" fill="currentColor"/><path d="M15 9.2a4 4 0 0 1 0 5.6M17.5 6.8a7.3 7.3 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+        audioButton.addEventListener('click',()=>playPronunciation(audioUrl,audioButton,entry.word));
+        head.appendChild(audioButton);
+      }
+      article.appendChild(head);
+
+      if(entry.origin){
+        const origin=document.createElement('p');
+        origin.className='dictionary-origin';
+        const originLabel=document.createElement('strong');
+        originLabel.textContent='Origin';
+        origin.append(originLabel,document.createTextNode(` ${entry.origin}`));
+        article.appendChild(origin);
+      }
+
+      entry.meanings.forEach(meaning=>{
+        const section=document.createElement('section');
+        section.className='dictionary-meaning';
+        const part=document.createElement('div');
+        part.className='dictionary-part';
+        const partName=document.createElement('strong');
+        partName.textContent=meaning.partOfSpeech||'meaning';
+        const line=document.createElement('i');
+        part.append(partName,line);
+        section.appendChild(part);
+
+        const list=document.createElement('ol');
+        meaning.definitions.forEach(definition=>{
+          const item=document.createElement('li');
+          const copy=document.createElement('p');
+          copy.textContent=definition.definition;
+          item.appendChild(copy);
+          if(definition.example){
+            const example=document.createElement('blockquote');
+            example.textContent=`“${definition.example}”`;
+            item.appendChild(example);
+          }
+          const synonymRow=createChipGroup('Similar',uniqueWords(definition.synonyms));
+          const antonymRow=createChipGroup('Opposite',uniqueWords(definition.antonyms));
+          if(synonymRow)item.appendChild(synonymRow);
+          if(antonymRow)item.appendChild(antonymRow);
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+        const meaningSynonyms=createChipGroup('Synonyms',uniqueWords(meaning.synonyms));
+        const meaningAntonyms=createChipGroup('Antonyms',uniqueWords(meaning.antonyms));
+        if(meaningSynonyms)section.appendChild(meaningSynonyms);
+        if(meaningAntonyms)section.appendChild(meaningAntonyms);
+        article.appendChild(section);
+      });
+
+      if(entry.sourceUrls.length){
+        const source=document.createElement('a');
+        source.className='dictionary-source';
+        source.href=entry.sourceUrls[0];
+        source.target='_blank';
+        source.rel='noopener noreferrer';
+        source.textContent='View source entry ↗';
+        article.appendChild(source);
+      }
+      results.appendChild(article);
+      if(entryIndex<entries.length-1){
+        const divider=document.createElement('div');
+        divider.className='dictionary-entry-divider';
+        results.appendChild(divider);
+      }
+    });
+
+    if(animate&&results.animate)results.animate([
+      {opacity:0,transform:'translateY(8px)'},
+      {opacity:1,transform:'translateY(0)'}
+    ],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});
+  };
+
+  const showMessage=(title,message)=>{
+    entries=[];
+    results.replaceChildren();
+    results.hidden=true;
+    welcome.hidden=false;
+    welcome.querySelector('.dictionary-welcome-icon').textContent='?';
+    welcome.querySelector('strong').textContent=title;
+    welcome.querySelector('p').textContent=message;
+  };
+
+  const setLoading=loading=>{
+    m.classList.toggle('is-loading',loading);
+    submit.disabled=loading;
+    input.disabled=loading;
+  };
+
+  const datamusePartNames={n:'noun',v:'verb',adj:'adjective',adv:'adverb',u:'word'};
+  const datamuseEntry=(result,synonyms=[],antonyms=[])=>{
+    if(!result||typeof result!=='object')return[];
+    const meaningMap=new Map();
+    for(const raw of Array.isArray(result.defs)?result.defs:[]){
+      const [code,...definitionParts]=String(raw).split('\t');
+      const definition=cleanText(definitionParts.join(' ').trim());
+      if(!definition)continue;
+      const partOfSpeech=datamusePartNames[code]||code||'word';
+      if(!meaningMap.has(partOfSpeech))meaningMap.set(partOfSpeech,[]);
+      meaningMap.get(partOfSpeech).push({definition,example:'',synonyms:[],antonyms:[]});
+    }
+    const tags=Array.isArray(result.tags)?result.tags.map(String):[];
+    const ipa=tags.find(tag=>tag.startsWith('ipa_pron:'))?.slice(9).trim()||'';
+    const pronunciation=ipa||tags.find(tag=>tag.startsWith('pron:'))?.slice(5).trim()||'';
+    const syllables=Math.max(0,Number(result.numSyllables)||0);
+    const word=cleanText(result.word,120);
+    const meanings=[...meaningMap.entries()].map(([partOfSpeech,definitions],meaningIndex)=>({
+      partOfSpeech,
+      definitions,
+      synonyms:meaningIndex===0?uniqueWords(synonyms.map(item=>item?.word)):[],
+      antonyms:meaningIndex===0?uniqueWords(antonyms.map(item=>item?.word)):[]
+    }));
+    if(!meanings.length)return[];
+    return normalizeEntries([{
+      word,
+      phonetic:pronunciation?`/${pronunciation}/`:syllables?`${syllables} ${syllables===1?'syllable':'syllables'}`:'',
+      phonetics:pronunciation?[{text:`/${pronunciation}/`,audio:''}]:[],
+      origin:'',
+      sourceUrls:[],
+      meanings
+    }]);
+  };
+
+  async function lookup(value){
+    const query=String(value||input.value).trim().replace(/\s+/g,' ');
+    if(!query){input.focus();return}
+    input.value=query;
+    requestController?.abort();
+    const controller=new AbortController();
+    requestController=controller;
+    let timedOut=false;
+    const requestTimeout=window.setTimeout(()=>{
+      timedOut=true;
+      controller.abort();
+    },12000);
+    setLoading(true);
+    status.textContent=`Looking up “${query}”…`;
+    try{
+      const exactUrl=`https://api.datamuse.com/words?sp=${encodeURIComponent(query)}&md=dpsr&ipa=1&max=10`;
+      const synonymUrl=`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(query)}&max=28`;
+      const antonymUrl=`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(query)}&max=28`;
+      const [exactResponse,synonymResponse,antonymResponse]=await Promise.all([
+        fetch(exactUrl,{signal:controller.signal}),
+        fetch(synonymUrl,{signal:controller.signal}),
+        fetch(antonymUrl,{signal:controller.signal})
+      ]);
+      if(!exactResponse.ok)throw new Error(`request-${exactResponse.status}`);
+      const [matches,synonyms,antonyms]=await Promise.all([
+        exactResponse.json(),
+        synonymResponse.ok?synonymResponse.json():[],
+        antonymResponse.ok?antonymResponse.json():[]
+      ]);
+      const exact=(Array.isArray(matches)?matches:[]).find(item=>String(item?.word||'').toLocaleLowerCase()===query.toLocaleLowerCase())||matches?.[0];
+      entries=datamuseEntry(exact,synonyms,antonyms);
+      if(!entries.length)throw new Error('not-found');
+      status.textContent='';
+      welcome.querySelector('.dictionary-welcome-icon').textContent='A';
+      welcome.querySelector('strong').textContent='Discover a word';
+      welcome.querySelector('p').textContent='Search to see pronunciation, meanings, examples, synonyms, antonyms, and more.';
+      renderEntries(true);
+      notifyBoardChanged('dictionary-result');
+    }catch(error){
+      if(error?.name==='AbortError'&&!timedOut)return;
+      status.textContent='';
+      if(error?.message==='not-found')showMessage('Word not found','Check the spelling or try a different form of the word.');
+      else showMessage('Lookup unavailable','The dictionary could not be reached. Check your connection and try again.');
+      notifyBoardChanged('dictionary-result');
+    }finally{
+      window.clearTimeout(requestTimeout);
+      if(requestController===controller){
+        requestController=null;
+        setLoading(false);
+      }
+    }
+  }
+
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    lookup(input.value);
+  });
+  m.querySelector('.dictionary-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.dictionary-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.dictionary-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  m._boardGetState=()=>({query:input.value,entries});
+  m._boardSetState=state=>{
+    if(!state)return;
+    input.value=cleanText(state.query,80);
+    entries=normalizeEntries(state.entries);
+    renderEntries(false);
+  };
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    requestController?.abort();
+    activeAudio?.pause();
+    if('speechSynthesis'in window)speechSynthesis.cancel();
+  };
+}
+
+const SHAPES_TILE_DATA=[
+  {id:'circle',name:'Circle',path:'M120 24 A76 76 0 1 1 119.9 24 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'A circle is perfectly round. Every point on its edge is the same distance from its center.'},
+  {id:'square',name:'Square',path:'M48 28 H192 V172 H48 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A square has four equal sides and four right angles. Opposite sides are parallel.'},
+  {id:'star',name:'Star',path:'M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z',sides:'10',vertices:'10',family:'Concave polygon',fact:'This five-point star has ten straight sides and ten vertices: five outer points and five inner corners.'},
+  {id:'triangle',name:'Triangle',path:'M120 22 L218 174 H22 Z',sides:'3',vertices:'3',family:'Triangle',fact:'Every triangle has three straight sides, three vertices, and interior angles that add to 180°.'},
+  {id:'oval',name:'Oval',path:'M20 100 A100 58 0 1 1 19.9 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'An oval is a closed curved shape that is longer in one direction. It has no straight sides or vertices.'},
+  {id:'diamond',name:'Diamond',path:'M120 16 L222 100 L120 184 L18 100 Z',sides:'4',vertices:'4',family:'Rhombus',fact:'A diamond, or rhombus, has four equal sides. Its opposite sides are parallel and opposite angles are equal.'},
+  {id:'hexagon',name:'Hexagon',path:'M62 22 H178 L226 100 L178 178 H62 L14 100 Z',sides:'6',vertices:'6',family:'Polygon',fact:'A hexagon has six straight sides and six vertices. A regular hexagon has six equal sides and angles.'},
+  {id:'rectangle',name:'Rectangle',path:'M24 52 H216 V148 H24 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A rectangle has four right angles. Its opposite sides are equal in length and parallel.'},
+  {id:'pentagon',name:'Pentagon',path:'M120 18 L218 88 L181 180 H59 L22 88 Z',sides:'5',vertices:'5',family:'Polygon',fact:'A pentagon has five straight sides and five vertices. A regular pentagon has five equal sides.'},
+  {id:'octagon',name:'Octagon',path:'M70 18 H170 L222 70 V130 L170 182 H70 L18 130 V70 Z',sides:'8',vertices:'8',family:'Polygon',fact:'An octagon has eight straight sides and eight vertices. Stop signs are shaped like regular octagons.'}
+];
+
+function setupShapes(m){
+  const picker=m.querySelector('.shapes-picker');
+  const stage=m.querySelector('.shapes-stage');
+  const path=m.querySelector('.shapes-path');
+  const visual=m.querySelector('.shapes-visual');
+  const title=m.querySelector('.shapes-title');
+  const index=m.querySelector('.shapes-index');
+  const name=m.querySelector('.shapes-name');
+  const sides=m.querySelector('.shapes-sides');
+  const vertices=m.querySelector('.shapes-vertices');
+  const family=m.querySelector('.shapes-family');
+  const fact=m.querySelector('.shapes-fact');
+  const svgNs='http://www.w3.org/2000/svg';
+
+  const setShape=(shapeId,{animate=true}={})=>{
+    const shape=SHAPES_TILE_DATA.find(item=>item.id===shapeId)||SHAPES_TILE_DATA[0];
+    m.dataset.shape=shape.id;
+    path.setAttribute('d',shape.path);
+    visual.setAttribute('aria-label',shape.name);
+    title.textContent=shape.name;
+    name.textContent=shape.name;
+    index.textContent=`${SHAPES_TILE_DATA.indexOf(shape)+1} / ${SHAPES_TILE_DATA.length}`;
+    sides.textContent=shape.sides;
+    vertices.textContent=shape.vertices;
+    family.textContent=shape.family;
+    fact.textContent=shape.fact;
+    picker.querySelectorAll('[data-shape-choice]').forEach(button=>{
+      const active=button.dataset.shapeChoice===shape.id;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+    if(animate&&stage.animate)stage.animate([
+      {opacity:.55,transform:'scale(.94) translateY(4px)'},
+      {opacity:1,transform:'scale(1.015) translateY(0)',offset:.72},
+      {opacity:1,transform:'scale(1) translateY(0)'}
+    ],{duration:330,easing:'cubic-bezier(.2,.85,.25,1)'});
+  };
+
+  SHAPES_TILE_DATA.forEach(shape=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='shapes-choice';
+    button.dataset.shapeChoice=shape.id;
+    button.setAttribute('aria-label',`Show ${shape.name}`);
+    const icon=document.createElementNS(svgNs,'svg');
+    icon.setAttribute('viewBox','0 0 240 200');
+    icon.setAttribute('aria-hidden','true');
+    const iconPath=document.createElementNS(svgNs,'path');
+    iconPath.setAttribute('d',shape.path);
+    icon.appendChild(iconPath);
+    const label=document.createElement('span');
+    label.textContent=shape.name;
+    button.append(icon,label);
+    button.addEventListener('click',()=>setShape(shape.id));
+    picker.appendChild(button);
+  });
+
+  m.querySelector('.shapes-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.shapes-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.shapes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.shapes-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));
+
+  setShape(m.dataset.shape,{animate:false});
+  m._boardGetState=()=>({shape:m.dataset.shape||'circle'});
+  m._boardSetState=state=>setShape(state?.shape||m.dataset.shape,{animate:false});
 }
 
 

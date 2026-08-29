@@ -1139,6 +1139,12 @@
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
       <button class="context-menu__item" data-module="progressbar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▰</span><span><strong>Progress Bar</strong><small>Fill toward a set end time</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
+      <button class="context-menu__item" data-module="dictionary" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--dictionary" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12H7.5A2.5 2.5 0 0 1 5 16.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 19A2.5 2.5 0 0 1 5 16.5 2.5 2.5 0 0 1 7.5 14H18M9 8h5M9 11h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <span><strong>Dictionary</strong><small>Look up complete word entries</small></span>
+      </button>
       <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -1184,6 +1190,12 @@
           </svg>
         </span>
         <span><strong>Custom Flashcards</strong><small>Create reusable text and image card sets</small></span>
+      </button>
+      <button class="context-menu__item" data-module="shapes" data-category="math">
+        <span class="context-menu__icon context-menu__icon--shapes" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="7.2" cy="7.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m16.8 3.8 4 7h-8zM4 14h7v7H4zM17 14l4 3.5-4 3.5-4-3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <span><strong>Shapes</strong><small>Explore sides, vertices, and shape facts</small></span>
       </button>
       
       <button class="context-menu__item" data-module="numberline" data-category="math">
@@ -2915,6 +2927,79 @@
         <button class="custom-icon tenframes-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon tenframes-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon tenframes-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="dictionary-template">
+    <section class="module dictionary-module" data-type="dictionary" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete dictionary">×</button><div class="module-drag-handle"></div>
+
+      <header class="dictionary-header">
+        <div><span>DICTIONARY</span><strong>Word lookup</strong></div>
+        <span class="dictionary-mark" aria-hidden="true">Aa</span>
+      </header>
+
+      <form class="dictionary-search" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.7" cy="10.7" r="5.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input class="dictionary-input" type="search" maxlength="80" placeholder="Search for a word…" autocomplete="off" spellcheck="true" aria-label="Dictionary word">
+        <button class="dictionary-submit primary" type="submit">Define</button>
+      </form>
+
+      <div class="dictionary-status" aria-live="polite"></div>
+      <div class="dictionary-content">
+        <div class="dictionary-welcome">
+          <span class="dictionary-welcome-icon" aria-hidden="true">A</span>
+          <strong>Discover a word</strong>
+          <p>Search to see pronunciation, meanings, examples, synonyms, antonyms, and more.</p>
+        </div>
+        <div class="dictionary-results" hidden></div>
+      </div>
+
+      <div class="dictionary-credit">Definitions and word data via Datamuse</div>
+      <div class="customization-bar dictionary-customization" aria-label="Dictionary customization">
+        <button class="custom-icon dictionary-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon dictionary-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon dictionary-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="shapes-template">
+    <section class="module shapes-module" data-type="shapes" data-bg="white" data-font="inter" data-text="dark" data-shape="circle" data-shape-color="blue">
+      <button class="module-delete" aria-label="Delete shapes tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="shapes-header">
+        <div><span>SHAPE LAB</span><strong class="shapes-title">Circle</strong></div>
+        <span class="shapes-index">1 / 10</span>
+      </header>
+
+      <div class="shapes-picker" role="list" aria-label="Choose a shape"></div>
+
+      <div class="shapes-main">
+        <div class="shapes-stage" aria-live="polite">
+          <svg class="shapes-visual" viewBox="0 0 240 200" role="img" aria-label="Circle"><path class="shapes-path" d="M120 24 A76 76 0 1 1 119.9 24 Z"></path></svg>
+          <div class="shapes-name-card"><span>THIS IS A</span><strong class="shapes-name">Circle</strong></div>
+        </div>
+
+        <div class="shapes-details">
+          <div class="shapes-stat"><span>STRAIGHT SIDES</span><strong class="shapes-sides">0</strong></div>
+          <div class="shapes-stat"><span>VERTICES</span><strong class="shapes-vertices">0</strong></div>
+          <div class="shapes-classification"><span>SHAPE FAMILY</span><strong class="shapes-family">Curved shape</strong></div>
+          <p class="shapes-fact">A circle is perfectly round. Every point on its edge is the same distance from its center.</p>
+        </div>
+      </div>
+
+      <div class="customization-bar shapes-customization" aria-label="Shapes customization">
+        <button class="custom-icon shapes-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon shapes-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon shapes-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon shapes-color" type="button" title="Change shape color" aria-label="Change shape color"><span class="shapes-color-swatch" aria-hidden="true"></span></button>
       </div>
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>

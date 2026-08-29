@@ -1065,6 +1065,65 @@ function applyPreviewState(module, state) {
     });
   }
 
+  if (state.type === "shapes") {
+    const shapePaths = {
+      circle: "M120 24 A76 76 0 1 1 119.9 24 Z",
+      square: "M48 28 H192 V172 H48 Z",
+      star: "M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z",
+      triangle: "M120 22 L218 174 H22 Z",
+      oval: "M20 100 A100 58 0 1 1 19.9 100 Z",
+      diamond: "M120 16 L222 100 L120 184 L18 100 Z",
+      hexagon: "M62 22 H178 L226 100 L178 178 H62 L14 100 Z",
+      rectangle: "M24 52 H216 V148 H24 Z",
+      pentagon: "M120 18 L218 88 L181 180 H59 L22 88 Z",
+      octagon: "M70 18 H170 L222 70 V130 L170 182 H70 L18 130 V70 Z"
+    };
+    const savedShape = state.special?.shape || state.dataset?.shape || "circle";
+    const selected = shapePaths[savedShape] ? savedShape : "circle";
+    const names = { circle: "Circle", square: "Square", star: "Star", triangle: "Triangle", oval: "Oval", diamond: "Diamond", hexagon: "Hexagon", rectangle: "Rectangle", pentagon: "Pentagon", octagon: "Octagon" };
+    const counts = { circle: ["0", "0"], square: ["4", "4"], star: ["10", "10"], triangle: ["3", "3"], oval: ["0", "0"], diamond: ["4", "4"], hexagon: ["6", "6"], rectangle: ["4", "4"], pentagon: ["5", "5"], octagon: ["8", "8"] };
+    module.querySelector(".shapes-path")?.setAttribute("d", shapePaths[selected]);
+    module.querySelectorAll(".shapes-title,.shapes-name").forEach(element => { element.textContent = names[selected]; });
+    const sides = module.querySelector(".shapes-sides");
+    const vertices = module.querySelector(".shapes-vertices");
+    if (sides) sides.textContent = counts[selected][0];
+    if (vertices) vertices.textContent = counts[selected][1];
+    module.querySelectorAll("[data-shape-choice]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.shapeChoice === selected);
+    });
+  }
+
+  if (state.type === "dictionary" && Array.isArray(state.special?.entries) && state.special.entries.length) {
+    const entry = state.special.entries[0] || {};
+    const firstMeaning = Array.isArray(entry.meanings) ? entry.meanings[0] : null;
+    const firstDefinition = Array.isArray(firstMeaning?.definitions) ? firstMeaning.definitions[0] : null;
+    const welcome = module.querySelector(".dictionary-welcome");
+    const results = module.querySelector(".dictionary-results");
+    if (welcome) welcome.hidden = true;
+    if (results) {
+      results.hidden = false;
+      const article = document.createElement("article");
+      article.className = "dictionary-entry";
+      const heading = document.createElement("header");
+      heading.className = "dictionary-entry-head";
+      const identity = document.createElement("div");
+      const word = document.createElement("strong");
+      word.textContent = String(entry.word || state.special.query || "Word");
+      identity.appendChild(word);
+      heading.appendChild(identity);
+      article.appendChild(heading);
+      if (firstDefinition?.definition) {
+        const meaning = document.createElement("section");
+        meaning.className = "dictionary-meaning";
+        const copy = document.createElement("p");
+        copy.textContent = String(firstDefinition.definition);
+        meaning.appendChild(copy);
+        article.appendChild(meaning);
+      }
+      results.replaceChildren(article);
+    }
+  }
+
   const controls = [...module.querySelectorAll("input,textarea,select")];
   for (const saved of Array.isArray(state.fields) ? state.fields : []) {
     const field = controls[saved.index];
@@ -1440,6 +1499,12 @@ function createBoardCard(board) {
   });
 
   renameButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    beginBoardRename(card, board, title);
+  });
+
+  title.addEventListener("dblclick", event => {
     event.preventDefault();
     event.stopPropagation();
     beginBoardRename(card, board, title);
