@@ -252,6 +252,38 @@ document.addEventListener('change',e=>{
   if(target instanceof HTMLInputElement&&target.type==='range')playUiSfx('click');
 },true);
 
+// Pointer-clicked module controls should disappear again when the pointer leaves.
+// Keyboard focus is preserved so the same controls remain accessible to tab users.
+let lastUiInteractionWasKeyboard=false;
+document.addEventListener('keydown',event=>{
+  if(event.key==='Tab'||event.key==='Enter'||event.key===' ')lastUiInteractionWasKeyboard=true;
+},true);
+document.addEventListener('pointerdown',()=>{lastUiInteractionWasKeyboard=false},true);
+document.addEventListener('pointerup',event=>{
+  if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
+  const control=event.target.closest('.customization-bar button,.lunchcount-inline-actions button');
+  if(control instanceof HTMLElement)requestAnimationFrame(()=>control.blur());
+},true);
+document.addEventListener('change',event=>{
+  if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
+  const control=event.target.closest('.customization-bar input,.customization-bar select');
+  if(control instanceof HTMLElement)requestAnimationFrame(()=>control.blur());
+},true);
+
+// Menu launchers use aria-expanded for their real open state. After a pointer
+// closes a surface, release restored focus so the corner trays do not look active.
+new MutationObserver(records=>{
+  if(lastUiInteractionWasKeyboard)return;
+  for(const record of records){
+    const control=record.target;
+    if(control instanceof HTMLElement&&control.matches('.workspace-control[aria-expanded="false"]')){
+      requestAnimationFrame(()=>{
+        if(!lastUiInteractionWasKeyboard&&control.matches(':focus'))control.blur();
+      });
+    }
+  }
+}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-expanded']});
+
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`};
 
@@ -262,7 +294,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Announcements','settings.tab.contact':'Contact Us',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -270,7 +302,7 @@ const APP_TRANSLATIONS={
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
-    'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance.','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
+    'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
     'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
     'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
     'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete the selected tile, sticker, or group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
@@ -295,7 +327,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Anuncios','settings.tab.contact':'Contáctanos',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -5149,13 +5181,21 @@ const TEACHERTILES_THEMES=new Set([
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
   'programmer-green','programmer-red','programmer-yellow','programmer-blue',
-  'wood-oak','wood-spruce','wood-redwood','wood-cherry'
+  'wood-oak','wood-spruce','wood-redwood','wood-cherry',
+  'notebook-red','notebook-blue','notebook-black',
+  'cardboard-kraft','cardboard-white','cardboard-blue','cardboard-rose',
+  'metal-copper','metal-iron','metal-dark-steel','metal-cobalt',
+  'cosmos-nebula','cosmos-pulsar','cosmos-milky-way','cosmos-red-dwarf'
 ]);
 const THEME_BODY_CLASSES=[
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
   'theme-programmer-green','theme-programmer-red','theme-programmer-yellow','theme-programmer-blue',
-  'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry'
+  'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry',
+  'theme-notebook-red','theme-notebook-blue','theme-notebook-black',
+  'theme-cardboard-kraft','theme-cardboard-white','theme-cardboard-blue','theme-cardboard-rose',
+  'theme-metal-copper','theme-metal-iron','theme-metal-dark-steel','theme-metal-cobalt',
+  'theme-cosmos-nebula','theme-cosmos-pulsar','theme-cosmos-milky-way','theme-cosmos-red-dwarf'
 ];
 
 function updateThemeControls(theme){
@@ -5172,9 +5212,11 @@ function applyTeacherTheme(theme,{persist=true}={}){
   document.body.classList.remove(...THEME_BODY_CLASSES);
   if(next==='dark')document.body.classList.add('dark');
   else if(next==='gray')document.body.classList.add('theme-gray');
-  else if(next.startsWith('pastel-')||next.startsWith('programmer-')||next.startsWith('wood-'))document.body.classList.add(`theme-${next}`);
+  else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  document.documentElement.style.colorScheme=(next==='dark'||next.startsWith('programmer-'))?'dark':'light';
+  const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-')||next==='notebook-black';
+  if(darkTheme&&next!=='dark')document.body.classList.add('dark');
+  document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
   updateThemeControls(next);
   if(persist)notifyBoardChanged('theme');
@@ -5480,6 +5522,54 @@ function setupCollectionShelf(){
 
   updateThemeControls(document.body.dataset.theme||'light');
 }
+
+function populateGeneratedStickerPacks(){
+  const makeStickerButton=({emoji,name})=>{
+    const button=document.createElement('button');
+    button.className='sticker-shelf-item sticker-shelf-item--emoji';
+    button.type='button';
+    button.dataset.stickerEmoji=emoji;
+    button.dataset.stickerName=name;
+    button.setAttribute('aria-label',`Drag ${name} emoji sticker onto the board`);
+    const glyph=document.createElement('span');
+    glyph.className='sticker-shelf-emoji';
+    glyph.setAttribute('aria-hidden','true');
+    glyph.textContent=emoji;
+    button.appendChild(glyph);
+    return button;
+  };
+  const fill=(key,items)=>{
+    const track=document.querySelector(`[data-generated-stickers="${key}"]`);
+    if(!track||track.childElementCount)return;
+    track.append(...items.map(makeStickerButton));
+    const count=document.querySelector(`[data-generated-sticker-count="${key}"]`);
+    if(count)count.textContent=`${items.length} stickers`;
+  };
+
+  const hearts=[
+    ['❤️','Red heart'],['🧡','Orange heart'],['💛','Yellow heart'],['💚','Green heart'],['💙','Blue heart'],['💜','Purple heart'],
+    ['🤎','Brown heart'],['🖤','Black heart'],['🤍','White heart'],['🩷','Pink heart'],['🩵','Light blue heart'],['🩶','Gray heart'],
+    ['💖','Sparkling heart'],['💗','Growing heart'],['💓','Beating heart'],['💕','Two hearts'],['💞','Revolving hearts'],['💝','Heart with ribbon'],
+    ['💘','Heart with arrow'],['💟','Heart decoration'],['❤️‍🔥','Heart on fire'],['❤️‍🩹','Mending heart']
+  ].map(([emoji,name])=>({emoji,name}));
+  fill('heart-emojis',hearts);
+
+  const regionCodes=`AC AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CP CR CU CV CW CX CY CZ DE DG DJ DK DM DO DZ EA EC EE EG EH ER ES ET EU FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU IC ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TA TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM UN US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW`.split(/\s+/);
+  const specialNames={AC:'Ascension Island',CP:'Clipperton Island',DG:'Diego Garcia',EA:'Ceuta and Melilla',EU:'European Union',IC:'Canary Islands',TA:'Tristan da Cunha',UN:'United Nations',XK:'Kosovo'};
+  let displayNames=null;
+  try{displayNames=new Intl.DisplayNames(['en'],{type:'region'})}catch{}
+  const flagFromCode=code=>[...code].map(letter=>String.fromCodePoint(127397+letter.charCodeAt(0))).join('');
+  const subdivisionFlag=letters=>String.fromCodePoint(0x1f3f4)+[...letters].map(letter=>String.fromCodePoint(0xe0061+letter.charCodeAt(0)-97)).join('')+String.fromCodePoint(0xe007f);
+  const flags=regionCodes.map(code=>({emoji:flagFromCode(code),name:`${specialNames[code]||displayNames?.of(code)||code} flag`}));
+  flags.push(
+    {emoji:subdivisionFlag('gbeng'),name:'England flag'},
+    {emoji:subdivisionFlag('gbsct'),name:'Scotland flag'},
+    {emoji:subdivisionFlag('gbwls'),name:'Wales flag'}
+  );
+  fill('country-flags',flags);
+}
+
+populateGeneratedStickerPacks();
 setupCollectionShelf();
 
 
@@ -7399,14 +7489,14 @@ function setupMoney(m){
     const button=document.createElement('button');
     button.type='button';
     button.className='money-palette-item';
-    button.draggable=true;
     button.dataset.denom=d.id;
     button.setAttribute('aria-label',`Add a ${d.label}`);
 
     const img=document.createElement('img');
     img.src=d.src;
     img.alt='';
-    img.draggable=false;
+    img.className='money-palette-piece';
+    img.draggable=true;
 
     const text=document.createElement('span');
     const label=document.createElement('strong');
@@ -7418,12 +7508,12 @@ function setupMoney(m){
     button.append(img,text);
 
     button.addEventListener('click',()=>addPiece(d.id));
-    button.addEventListener('dragstart',event=>{
+    img.addEventListener('dragstart',event=>{
       paletteDragId=d.id;
       event.dataTransfer?.setData('text/plain',d.id);
       if(event.dataTransfer)event.dataTransfer.effectAllowed='copy';
     });
-    button.addEventListener('dragend',()=>{paletteDragId='';});
+    img.addEventListener('dragend',()=>{paletteDragId='';});
 
     palette.appendChild(button);
   });
@@ -9571,7 +9661,7 @@ function setupChangelog(){
     const content=isNews?newsContent:changelogContent;
     const folder=isNews?'news':'changelog';
     const globalData=isNews?window.TeacherTilesNewsData:window.TeacherTilesChangelogData;
-    const label=isNews?'news':'announcements';
+    const label=isNews?'news':'updates';
 
     content.innerHTML=`<div class="changelog-loading">Loading ${label}…</div>`;
 
