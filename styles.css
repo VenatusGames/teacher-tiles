@@ -13444,3 +13444,4 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 
 @media(max-width:760px){.shop-membership-grid{grid-template-columns:1fr}.shop-membership-perks{grid-template-columns:1fr}.profile-badge-grid{grid-template-columns:1fr}.terms-notice{display:block}.terms-notice strong{display:block;margin-bottom:4px}}
 @media(prefers-reduced-motion:reduce){.profile-badge__shine{animation:none}.image-replace{transition:none}}
+.profile-badge[hidden]{display:none!important}

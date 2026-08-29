@@ -19,6 +19,8 @@ const signOutButton = document.getElementById("profile-signout");
 const profileAvatar = document.getElementById("profile-avatar");
 const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
+const profileBetaBadge = document.getElementById("profile-beta-badge");
+const profileBadgeCount = document.getElementById("profile-badge-count");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
@@ -1635,6 +1637,11 @@ async function renderUser(user) {
   if (user) {
     const name = user.displayName?.trim() || "Teacher";
     const photo = user.photoURL || fallbackAvatarData(name);
+    const betaCutoff = Date.parse("2026-08-29T04:00:00Z");
+    const createdAt = Date.parse(user.metadata?.creationTime || "");
+    const isBetaTester = !Number.isFinite(createdAt) || createdAt <= betaCutoff;
+    if (profileBetaBadge) profileBetaBadge.hidden = !isBetaTester;
+    if (profileBadgeCount) profileBadgeCount.textContent = isBetaTester ? "1 earned" : "0 earned";
     profileDisplayName.textContent = name;
     profileEmail.textContent = user.email || "Google account";
     profileAvatar.src = photo;
