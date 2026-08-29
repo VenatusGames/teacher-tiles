@@ -169,13 +169,20 @@
                 <span class="profile-badge__date" role="tooltip">Awarded Aug 28, 2026</span>
                 <span class="profile-badge__check" aria-hidden="true">✓</span>
               </article>
-              <button class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" disabled aria-label="TeacherTiles patch. Locked.">
+              <button class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-disabled="true" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. Work for TeacherTiles to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><img src="assets/profile/teachertiles-profile-logo.png" alt=""></span>
                 <span class="profile-badge__copy"><strong>TeacherTiles</strong></span>
+                <span id="teachertiles-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Work for TeacherTiles</span>
               </button>
-              <button class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" disabled aria-label="Subscriber patch. Locked.">
+              <button class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" aria-disabled="true" aria-describedby="subscriber-patch-requirement" aria-label="Subscriber patch. Locked. Pay for a monthly subscription to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><i>★</i></span>
                 <span class="profile-badge__copy"><strong>Subscriber</strong></span>
+                <span id="subscriber-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Pay for a monthly subscription</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--contributor" type="button" aria-disabled="true" aria-describedby="contributor-patch-requirement" aria-label="Contributor patch. Locked. Get your idea added to TeacherTiles to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><i>✦</i></span>
+                <span class="profile-badge__copy"><strong>Contributor</strong></span>
+                <span id="contributor-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Get your idea added to TeacherTiles</span>
               </button>
             </div>
           </section>
