@@ -232,6 +232,7 @@ function playUiSfx(kind='click'){
 }
 
 document.addEventListener('click',e=>{
+  if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
   if(target.closest('#settings-ui-sfx-toggle'))return;
@@ -251,6 +252,38 @@ document.addEventListener('change',e=>{
   if(target instanceof HTMLInputElement&&target.type==='range')playUiSfx('click');
 },true);
 
+// Pointer-clicked module controls should disappear again when the pointer leaves.
+// Keyboard focus is preserved so the same controls remain accessible to tab users.
+let lastUiInteractionWasKeyboard=false;
+document.addEventListener('keydown',event=>{
+  if(event.key==='Tab'||event.key==='Enter'||event.key===' ')lastUiInteractionWasKeyboard=true;
+},true);
+document.addEventListener('pointerdown',()=>{lastUiInteractionWasKeyboard=false},true);
+document.addEventListener('pointerup',event=>{
+  if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
+  const control=event.target.closest('.customization-bar button,.lunchcount-inline-actions button');
+  if(control instanceof HTMLElement)requestAnimationFrame(()=>control.blur());
+},true);
+document.addEventListener('change',event=>{
+  if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
+  const control=event.target.closest('.customization-bar input,.customization-bar select');
+  if(control instanceof HTMLElement)requestAnimationFrame(()=>control.blur());
+},true);
+
+// Menu launchers use aria-expanded for their real open state. After a pointer
+// closes a surface, release restored focus so the corner trays do not look active.
+new MutationObserver(records=>{
+  if(lastUiInteractionWasKeyboard)return;
+  for(const record of records){
+    const control=record.target;
+    if(control instanceof HTMLElement&&control.matches('.workspace-control[aria-expanded="false"]')){
+      requestAnimationFrame(()=>{
+        if(!lastUiInteractionWasKeyboard&&control.matches(':focus'))control.blur();
+      });
+    }
+  }
+}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-expanded']});
+
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`};
 
@@ -261,7 +294,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -269,7 +302,7 @@ const APP_TRANSLATIONS={
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
-    'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance.','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
+    'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
     'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
     'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
     'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete the selected tile, sticker, or group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
@@ -294,7 +327,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -329,7 +362,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],numberline:['Number Line','Interactive expandable number line'],
+    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -341,7 +374,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -460,6 +493,7 @@ function setupSettingsHub(){
       pane.hidden=!active;
       pane.classList.toggle('is-active',active);
     });
+    window.dispatchEvent(new CustomEvent('teachertiles:settings-tab',{detail:{name}}));
   };
   const close=()=>{
     if(modal.hidden)return;
@@ -511,7 +545,7 @@ function setupSettingsHub(){
   });
   document.addEventListener('click',event=>{
     if(modal.hidden)return;
-    const target=event.target instanceof Element?event.target.closest('#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#shop-toggle,#changelog-toggle,#boards-toggle'):null;
+    const target=event.target instanceof Element?event.target.closest('#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#shop-toggle,#boards-toggle'):null;
     if(target)close();
   },true);
 
@@ -1001,6 +1035,7 @@ function setupModuleByType(m,type){
   if(type==='wordypuzzle')setupWordyPuzzle(m);
   if(type==='cvcword')setupCVCWord(m);
   if(type==='highfrequency')setupHighFrequencyWords(m);
+  if(type==='customflashcards')setupCustomFlashcards(m);
   if(type==='abc')setupABC(m);
   if(type==='ruler')setupRuler(m);
   if(type==='calculator')setupCalculator(m);
@@ -2583,6 +2618,8 @@ function setupLunchCount(m){
   const picker=m.querySelector('.lunchcount-icon-picker');
   const pickerGrid=m.querySelector('.lunchcount-icon-picker__grid');
   const pickerClose=m.querySelector('.lunchcount-icon-picker__close');
+  const pickerTitle=m.querySelector('.lunchcount-icon-picker__head strong');
+  const iconUpload=m.querySelector('.lunchcount-icon-upload');
 
   let students=[];
   let draggedStudent='';
@@ -2900,6 +2937,32 @@ function setupLunchCount(m){
       poolList.appendChild(studentChip(name,{removable:true}));
     });
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='lunchcount-icon-option lunchcount-icon-option--upload';
+  uploadOption.innerHTML='<span class="lunchcount-upload-art" aria-hidden="true">↑</span><span>Upload image</span>';
+  uploadOption.addEventListener('click',()=>iconUpload?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  iconUpload?.addEventListener('change',async()=>{
+    const file=iconUpload.files?.[0];
+    const categoryId=activeCategoryId;
+    iconUpload.value='';
+    if(!file||!categoryId)return;
+    pickerTitle.textContent='Preparing image…';
+    const data=await fileToBoardImageData(file,{maxSide:480,maxLength:70000,quality:.72,minSide:180});
+    const category=findCategory(categoryId);
+    if(data&&category?.kind==='normal'){
+      category.iconSrc=data;
+      closePicker();
+      renderCategories();
+      notifyBoardChanged('lunch-count-image');
+    }else{
+      pickerTitle.textContent='Choose a smaller image';
+      window.setTimeout(()=>{pickerTitle.textContent='Choose an icon';},1800);
+    }
+  });
 
   LUNCH_COUNT_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -3749,7 +3812,7 @@ function getDraggedImageSource(dt){
   const url=match?.[1]||uri||(/^https?:\/\//i.test(plain)||/^data:image\//i.test(plain)?plain:'');
   return url?{url}:null
 }
-async function fileToBoardImageData(file){
+async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=.78,minSide=240}={}){
   if(!file||!file.type?.startsWith('image/'))return'';
   const raw=await new Promise((resolve,reject)=>{
     const reader=new FileReader();
@@ -3762,25 +3825,25 @@ async function fileToBoardImageData(file){
     const source=new Image();
     source.src=raw;
     await source.decode();
-    const maxSide=1200;
-    const scale=Math.min(1,maxSide/Math.max(source.naturalWidth||1,source.naturalHeight||1));
+    let scale=Math.min(1,maxSide/Math.max(source.naturalWidth||1,source.naturalHeight||1));
     const canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round((source.naturalWidth||1)*scale));
-    canvas.height=Math.max(1,Math.round((source.naturalHeight||1)*scale));
-    const ctx=canvas.getContext('2d');
-    ctx.drawImage(source,0,0,canvas.width,canvas.height);
-    let data=canvas.toDataURL('image/webp',.78);
-    if(data.length>760000){
-      const smaller=document.createElement('canvas');
-      const shrink=Math.min(1,850/Math.max(canvas.width,canvas.height));
-      smaller.width=Math.max(1,Math.round(canvas.width*shrink));
-      smaller.height=Math.max(1,Math.round(canvas.height*shrink));
-      smaller.getContext('2d').drawImage(canvas,0,0,smaller.width,smaller.height);
-      data=smaller.toDataURL('image/webp',.7);
+    let data='';
+    let nextQuality=quality;
+    for(let attempt=0;attempt<7;attempt++){
+      canvas.width=Math.max(1,Math.round((source.naturalWidth||1)*scale));
+      canvas.height=Math.max(1,Math.round((source.naturalHeight||1)*scale));
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(source,0,0,canvas.width,canvas.height);
+      data=canvas.toDataURL('image/webp',nextQuality);
+      if(data.length<=maxLength)break;
+      const longest=Math.max(canvas.width,canvas.height);
+      if(longest<=minSide)break;
+      scale*=.78;
+      nextQuality=Math.max(.46,nextQuality-.07);
     }
-    return data;
+    return data.length<=maxLength?data:'';
   }catch{
-    return raw.length<760000?raw:'';
+    return raw.length<maxLength?raw:'';
   }
 }
 
@@ -5117,14 +5180,26 @@ const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
+  'polka-berry','polka-sunshine','polka-mint','polka-sky','polka-lavender',
   'programmer-green','programmer-red','programmer-yellow','programmer-blue',
-  'wood-oak','wood-spruce','wood-redwood','wood-cherry'
+  'wood-oak','wood-spruce','wood-redwood','wood-cherry',
+  'notebook-red','notebook-blue','notebook-black',
+  'cardboard-kraft','cardboard-white','cardboard-blue','cardboard-rose',
+  'metal-copper','metal-iron','metal-dark-steel','metal-cobalt',
+  'cosmos-nebula','cosmos-pulsar','cosmos-milky-way','cosmos-red-dwarf',
+  'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
+  'theme-polka-berry','theme-polka-sunshine','theme-polka-mint','theme-polka-sky','theme-polka-lavender',
   'theme-programmer-green','theme-programmer-red','theme-programmer-yellow','theme-programmer-blue',
-  'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry'
+  'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry',
+  'theme-notebook-red','theme-notebook-blue','theme-notebook-black',
+  'theme-cardboard-kraft','theme-cardboard-white','theme-cardboard-blue','theme-cardboard-rose',
+  'theme-metal-copper','theme-metal-iron','theme-metal-dark-steel','theme-metal-cobalt',
+  'theme-cosmos-nebula','theme-cosmos-pulsar','theme-cosmos-milky-way','theme-cosmos-red-dwarf',
+  'theme-corkboard-red','theme-corkboard-blue','theme-corkboard-green','theme-corkboard-gold'
 ];
 
 function updateThemeControls(theme){
@@ -5136,14 +5211,91 @@ function updateThemeControls(theme){
   });
 }
 
+function materialRandomBetween(min,max){return min+Math.random()*(max-min)}
+function materialSvgUrl(svg){return`url("data:image/svg+xml,${encodeURIComponent(svg)}")`}
+
+function buildCosmosThemeArtwork(theme){
+  const palettes={
+    'cosmos-nebula':['#120b24','#7040b1','#dc72ff','#f7efff'],
+    'cosmos-pulsar':['#1d0e08','#a84a1b','#ff9a38','#fff1d7'],
+    'cosmos-milky-way':['#09101c','#66748f','#eef4ff','#ffffff'],
+    'cosmos-red-dwarf':['#1d080b','#962936','#ff596a','#ffe8eb']
+  };
+  const [base,cloud,glow,star]=palettes[theme]||palettes['cosmos-nebula'];
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const stars=Array.from({length:260},()=>{
+    const x=materialRandomBetween(8,1192).toFixed(1),y=materialRandomBetween(8,792).toFixed(1);
+    const radius=materialRandomBetween(.45,1.65).toFixed(2),opacity=materialRandomBetween(.35,.96).toFixed(2);
+    return`<circle cx="${x}" cy="${y}" r="${radius}" fill="${Math.random()>.72?glow:star}" opacity="${opacity}"/>`;
+  }).join('');
+  const spiralPath='M-175 7C-128-104 66-126 160-42C243 33 115 150-44 116C-157 91-205 7-135-61C-73-121 61-83 109-18C145 31 60 79-18 62C-76 50-89 2-49-27C-17-51 37-31 48 1';
+  const swirls=Array.from({length:24},(_,index)=>{
+    const x=materialRandomBetween(35,1165).toFixed(1),y=materialRandomBetween(30,770).toFixed(1);
+    const rotate=materialRandomBetween(-175,175).toFixed(1),scale=materialRandomBetween(.12,.34).toFixed(2);
+    const width=materialRandomBetween(7,16).toFixed(1),opacity=materialRandomBetween(.08,.2).toFixed(2);
+    const color=index%3===0?glow:cloud;
+    return`<g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#warp)"><path d="${spiralPath}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soft)"/><path d="${spiralPath}" fill="none" stroke="${glow}" stroke-width="${materialRandomBetween(1,3).toFixed(1)}" stroke-linecap="round" opacity="${materialRandomBetween(.1,.22).toFixed(2)}"/></g>`;
+  }).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="warp" x="-45%" y="-45%" width="190%" height="190%"><feTurbulence type="fractalNoise" baseFrequency=".012 .025" numOctaves="2" seed="${seed}" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="22"/></filter><filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter><radialGradient id="shade"><stop stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${base}" stop-opacity=".25"/></radialGradient></defs>${stars}${swirls}<rect width="1200" height="800" fill="url(#shade)" pointer-events="none"/></svg>`;
+}
+
+function buildCardboardThemeArtwork(theme){
+  const labelColors={'cardboard-kraft':'#fffdf7','cardboard-white':'#fffdf7','cardboard-blue':'#b9dbea','cardboard-rose':'#e8bdc2'};
+  const label=labelColors[theme]||labelColors['cardboard-kraft'];
+  const ink=theme==='cardboard-blue'?'#274655':theme==='cardboard-rose'?'#5b343a':'#423a32';
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const cells=Array.from({length:96},(_,index)=>index).sort(()=>Math.random()-.5).slice(0,64);
+  const labels=cells.map(index=>{
+    const col=index%12,row=Math.floor(index/12);
+    const x=col*100+materialRandomBetween(8,42),y=row*100+materialRandomBetween(9,55);
+    const width=materialRandomBetween(28,52),height=materialRandomBetween(17,31),angle=materialRandomBetween(-14,14);
+    const scaleX=width/210,scaleY=height/120;
+    return`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${scaleX.toFixed(2)} ${scaleY.toFixed(2)})"><rect width="210" height="120" rx="9" fill="${label}" fill-opacity=".9" filter="url(#labelShadow)"/><path d="M21 27h90M21 44h145M21 62h112" stroke="${ink}" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/><path d="M23 82v23m8-23v23m7-23v23m11-23v23m6-23v23m13-23v23m7-23v23m11-23v23m6-23v23m13-23v23m8-23v23" stroke="${ink}" stroke-opacity=".52" stroke-width="3"/></g>`;
+  }).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="fiber"><feTurbulence type="fractalNoise" baseFrequency=".018 .11" numOctaves="3" seed="${seed}"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer></filter><filter id="labelShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#4d2f19" flood-opacity=".2"/></filter></defs><rect width="1200" height="800" filter="url(#fiber)" opacity=".42"/>${labels}</svg>`;
+}
+
+function buildCorkboardThemeArtwork(theme){
+  const pinColors={'corkboard-red':'#d84b4b','corkboard-blue':'#3f79c8','corkboard-green':'#43a266','corkboard-gold':'#e0ad37'};
+  const pin=pinColors[theme]||pinColors['corkboard-red'];
+  const seed=Math.floor(materialRandomBetween(1,9999));
+  const points=[];
+  for(let attempts=0;attempts<2500&&points.length<68;attempts++){
+    const point={x:materialRandomBetween(18,1182),y:materialRandomBetween(18,782)};
+    if(points.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>72))points.push(point);
+  }
+  const flecks=Array.from({length:260},()=>`<circle cx="${materialRandomBetween(0,1200).toFixed(1)}" cy="${materialRandomBetween(0,800).toFixed(1)}" r="${materialRandomBetween(.45,1.5).toFixed(1)}" fill="${Math.random()>.5?'#6f4322':'#edc58f'}" opacity="${materialRandomBetween(.1,.28).toFixed(2)}"/>`).join('');
+  const pins=points.map(point=>`<g transform="translate(${point.x.toFixed(1)} ${point.y.toFixed(1)}) rotate(${materialRandomBetween(-16,16).toFixed(1)})"><ellipse cy="2.2" rx="4" ry="2.5" fill="#4b2a16" opacity=".25"/><circle r="3.6" fill="${pin}"/><circle cx="-1.1" cy="-1.1" r="1.1" fill="#fff" opacity=".48"/><path d="M0 3.2v4.5" stroke="#6b523f" stroke-width=".8" opacity=".55"/></g>`).join('');
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="cork"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="${seed}"/><feColorMatrix type="saturate" values=".25"/><feComponentTransfer><feFuncA type="linear" slope=".18"/></feComponentTransfer></filter></defs><rect width="1200" height="800" filter="url(#cork)" opacity=".55"/>${flecks}${pins}</svg>`;
+}
+
+function applyMaterialThemeArtwork(theme){
+  workspace.style.removeProperty('background-image');
+  workspace.style.removeProperty('background-size');
+  workspace.style.removeProperty('background-repeat');
+  workspace.style.removeProperty('background-position');
+  let svg='';
+  if(theme.startsWith('cosmos-'))svg=buildCosmosThemeArtwork(theme);
+  else if(theme.startsWith('cardboard-'))svg=buildCardboardThemeArtwork(theme);
+  else if(theme.startsWith('corkboard-'))svg=buildCorkboardThemeArtwork(theme);
+  if(!svg)return;
+  workspace.style.backgroundImage=materialSvgUrl(svg);
+  workspace.style.backgroundSize='100% 100%';
+  workspace.style.backgroundRepeat='no-repeat';
+  workspace.style.backgroundPosition='center';
+}
+
 function applyTeacherTheme(theme,{persist=true}={}){
   const next=TEACHERTILES_THEMES.has(theme)?theme:'light';
   document.body.classList.remove(...THEME_BODY_CLASSES);
   if(next==='dark')document.body.classList.add('dark');
   else if(next==='gray')document.body.classList.add('theme-gray');
-  else if(next.startsWith('pastel-')||next.startsWith('programmer-')||next.startsWith('wood-'))document.body.classList.add(`theme-${next}`);
+  else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  document.documentElement.style.colorScheme=(next==='dark'||next.startsWith('programmer-'))?'dark':'light';
+  const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
+  if(darkTheme&&next!=='dark')document.body.classList.add('dark');
+  document.documentElement.style.colorScheme=darkTheme?'dark':'light';
+  applyMaterialThemeArtwork(next);
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
   updateThemeControls(next);
   if(persist)notifyBoardChanged('theme');
@@ -5158,6 +5310,7 @@ window.addEventListener('resize',()=>document.querySelectorAll('.module').forEac
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
   if(!src&&!emoji)return null;
+  const isFlag=/flagcdn\.io\/flags\//i.test(src);
   const p=screenToBoard(clientX,clientY);
   const ratio=emoji?1:(Number.isFinite(aspect)&&aspect>0?aspect:1);
   let width=180,height=180;
@@ -5165,7 +5318,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   width=Math.max(64,width);
   height=Math.max(64,height);
   const m=document.createElement('section');
-  m.className=`module sticker-module${animate?' sticker-placed':''}`;
+  m.className=`module sticker-module${isFlag?' sticker-module--flag':''}${animate?' sticker-placed':''}`;
   m.dataset.type='sticker';
   m.dataset.stickerSrc=src;
   m.dataset.stickerEmoji=emoji;
@@ -5186,7 +5339,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   const del=document.createElement('button');
   del.className='module-delete';del.type='button';del.setAttribute('aria-label','Delete sticker');del.textContent='×';
   const art=document.createElement('div');art.className='sticker-art';
-  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}`;
+  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}${isFlag?' sticker-visual--flag':''}`;
   if(emoji){
     const glyph=document.createElement('span');
     glyph.className='sticker-emoji';glyph.setAttribute('aria-hidden','true');glyph.textContent=emoji;
@@ -5214,6 +5367,7 @@ function setupShelfStickerDrag(item,shelfShell){
     if(e.button!==0)return;
     const src=item.dataset.stickerSrc||'';
     const emoji=item.dataset.stickerEmoji||'';
+    const isFlag=/flagcdn\.io\/flags\//i.test(src);
     const name=item.dataset.stickerName||'Sticker';
     const preview=item.querySelector('img');
     const aspect=emoji?1:(preview?.naturalWidth&&preview?.naturalHeight?preview.naturalWidth/preview.naturalHeight:1);
@@ -5229,7 +5383,7 @@ function setupShelfStickerDrag(item,shelfShell){
     const ensureGhost=()=>{
       if(ghost)return;
       ghost=document.createElement('div');
-      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}`;
+      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}${isFlag?' sticker-drag-ghost--flag':''}`;
       if(emoji){
         const glyph=document.createElement('span');glyph.className='sticker-emoji sticker-emoji--ghost';glyph.textContent=emoji;ghost.appendChild(glyph);
       }else{
@@ -5283,9 +5437,28 @@ function setupCollectionShelf(){
   const stickerButton=document.getElementById('sticker-shelf-toggle');
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
+  const stickerSearch=document.getElementById('sticker-shelf-search');
+  const stickerSearchClear=document.getElementById('sticker-shelf-search-clear');
+  const stickerSearchStatus=document.getElementById('sticker-shelf-search-status');
   const packs=[...document.querySelectorAll('[data-theme-pack]')];
   const stickerPacks=[...document.querySelectorAll('[data-sticker-pack]')];
   const stickerItems=[...document.querySelectorAll('[data-sticker-src],[data-sticker-emoji]')];
+  const stickerPackTags={
+    'default-sticker-drawer':'classroom teacher school sticker stickers',
+    'emoji-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions celebration',
+    'nature-emojis-sticker-drawer':'nature outdoors plant plants botanical botanicals weather sky',
+    'animal-emojis-sticker-drawer':'animal animals pet pets wildlife insect insects critter critters',
+    'more-faces-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions emotion emotions',
+    'symbols-sticker-drawer':'symbol symbols classroom math mark marks sign signs',
+    'food-sticker-drawer':'food foods snack snacks meal meals lunch dessert desserts treat treats',
+    'colored-hearts-sticker-drawer':'heart hearts love color colors colored',
+    'decorative-hearts-sticker-drawer':'heart hearts love decorative decoration decorations',
+    'country-flags-sticker-drawer':'country countries nation nations flag flags geography world international'
+  };
+  stickerItems.forEach(item=>{
+    const drawerId=item.closest('.sticker-pack-drawer')?.id||'';
+    item.dataset.stickerTags=[item.dataset.stickerTags||'',stickerPackTags[drawerId]||''].join(' ').trim();
+  });
   const bottomTray=document.querySelector('.workspace-upcoming-controls');
   const shelfScroll=themePanel?.querySelector('.asset-shelf__scroll');
   const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
@@ -5356,7 +5529,45 @@ function setupCollectionShelf(){
     activeStickerDrawer=null;
   };
 
+  const normalizeStickerSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
+  const updateStickerSearch=()=>{
+    const query=normalizeStickerSearch(stickerSearch?.value);
+    const terms=query.split(/\s+/).filter(Boolean);
+    const searching=terms.length>0;
+    if(searching)closeStickerPack();
+    stickerPanel.classList.toggle('is-searching',searching);
+    let resultCount=0;
+    stickerPacks.forEach(pack=>{
+      const drawerId=pack.getAttribute('aria-controls');
+      const drawer=drawerId?document.getElementById(drawerId):null;
+      const wrapper=pack.closest('.sticker-pack-wrap');
+      const items=drawer?[...drawer.querySelectorAll('.sticker-shelf-item')]:[];
+      let packMatches=0;
+      items.forEach(item=>{
+        const haystack=normalizeStickerSearch(`${item.dataset.stickerName||''} ${item.dataset.stickerTags||''}`);
+        const matches=!searching||terms.every(term=>haystack.includes(term));
+        item.classList.toggle('is-search-hidden',!matches);
+        if(searching&&matches){packMatches++;resultCount++}
+      });
+      const show=!searching||packMatches>0;
+      wrapper?.classList.toggle('is-search-hidden',!show);
+      drawer?.classList.toggle('is-search-hidden',!show);
+      drawer?.classList.toggle('is-search-open',searching&&show);
+      if(drawer)drawer.setAttribute('aria-hidden',searching?String(!show):String(!(drawer===activeStickerDrawer&&drawer.classList.contains('is-open'))));
+    });
+    if(stickerSearchClear)stickerSearchClear.hidden=!searching;
+    if(stickerSearchStatus)stickerSearchStatus.textContent=searching?(resultCount?`${resultCount} ${resultCount===1?'sticker':'stickers'} found`:'No stickers found'):'Search every sticker pack';
+    if(searching)requestAnimationFrame(()=>{if(stickerScroll)stickerScroll.scrollLeft=0});
+  };
+
+  const clearStickerSearch=({focus=false}={})=>{
+    if(stickerSearch)stickerSearch.value='';
+    updateStickerSearch();
+    if(focus)stickerSearch?.focus();
+  };
+
   const toggleStickerPack=pack=>{
+    if(stickerPanel.classList.contains('is-searching'))return;
     const drawerId=pack.getAttribute('aria-controls');
     const drawer=drawerId?document.getElementById(drawerId):null;
     if(!drawer)return;
@@ -5390,7 +5601,8 @@ function setupCollectionShelf(){
     activeShelf=null;
     closeThemeFan();
     closeStickerPack();
-    shelf.classList.remove('is-open');
+    clearStickerSearch();
+    shelf.classList.remove('is-open','is-sticker-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -5405,6 +5617,7 @@ function setupCollectionShelf(){
     stickerPanel.hidden=themes;
     themePanel.classList.toggle('is-active',themes);
     stickerPanel.classList.toggle('is-active',!themes);
+    shelf.classList.toggle('is-sticker-mode',!themes);
     title.textContent=window.TeacherTilesI18n?.t(themes?'top.themes':'top.stickers')||(themes?'Themes':'Stickers');
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
@@ -5417,6 +5630,9 @@ function setupCollectionShelf(){
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
   stickerItems.forEach(item=>setupShelfStickerDrag(item,shelfShell));
+  stickerSearch?.addEventListener('input',updateStickerSearch);
+  stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
+  stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
@@ -5449,6 +5665,64 @@ function setupCollectionShelf(){
 
   updateThemeControls(document.body.dataset.theme||'light');
 }
+
+function populateGeneratedStickerPacks(){
+  const makeStickerButton=({emoji='',src='',name,tags=''})=>{
+    const button=document.createElement('button');
+    button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}`;
+    button.type='button';
+    if(src)button.dataset.stickerSrc=src;
+    else button.dataset.stickerEmoji=emoji;
+    button.dataset.stickerName=name;
+    if(tags)button.dataset.stickerTags=tags;
+    button.setAttribute('aria-label',`Drag ${name} sticker onto the board`);
+    if(src){
+      const image=document.createElement('img');
+      image.src=src;
+      image.alt='';
+      image.draggable=false;
+      button.appendChild(image);
+    }else{
+      const glyph=document.createElement('span');
+      glyph.className='sticker-shelf-emoji';
+      glyph.setAttribute('aria-hidden','true');
+      glyph.textContent=emoji;
+      button.appendChild(glyph);
+    }
+    return button;
+  };
+  const fill=(key,items)=>{
+    const track=document.querySelector(`[data-generated-stickers="${key}"]`);
+    if(!track||track.childElementCount)return;
+    track.append(...items.map(makeStickerButton));
+    const count=document.querySelector(`[data-generated-sticker-count="${key}"]`);
+    if(count)count.textContent=`${items.length} stickers`;
+  };
+
+  const coloredHearts=[
+    ['❤️','Red heart'],['🧡','Orange heart'],['💛','Yellow heart'],['💚','Green heart'],['💙','Blue heart'],['💜','Purple heart'],
+    ['🤎','Brown heart'],['🖤','Black heart'],['🤍','White heart'],['🩷','Pink heart'],['🩵','Light blue heart'],['🩶','Gray heart']
+  ].map(([emoji,name])=>({emoji,name}));
+  const decorativeHearts=[
+    ['💖','Sparkling heart'],['💗','Growing heart'],['💓','Beating heart'],['💕','Two hearts'],['💞','Revolving hearts'],['💝','Heart with ribbon'],
+    ['💘','Heart with arrow'],['💟','Heart decoration'],['❤️‍🔥','Heart on fire'],['❤️‍🩹','Mending heart']
+  ].map(([emoji,name])=>({emoji,name}));
+  fill('colored-hearts',coloredHearts);
+  fill('decorative-hearts',decorativeHearts);
+
+  const regionCodes=`AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET EU FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM UN US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW`.split(/\s+/);
+  const specialNames={EU:'European Union',UN:'United Nations',XK:'Kosovo'};
+  let displayNames=null;
+  try{displayNames=new Intl.DisplayNames(['en'],{type:'region'})}catch{}
+  const flags=regionCodes.map(code=>({
+    src:`https://flagcdn.io/flags/4x3/${code.toLowerCase()}.svg`,
+    name:`${specialNames[code]||displayNames?.of(code)||code} flag`,
+    tags:`country countries flag flags nation geography world international ${code.toLowerCase()}`
+  }));
+  fill('country-flags',flags);
+}
+
+populateGeneratedStickerPacks();
 setupCollectionShelf();
 
 
@@ -6054,6 +6328,464 @@ function setupABC(m){
     prior?.();
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
+    measurer.remove();
+  };
+}
+
+function setupCustomFlashcards(m){
+  const card=m.querySelector('.customflashcards-card');
+  const image=m.querySelector('.customflashcards-image');
+  const textEl=m.querySelector('.customflashcards-text');
+  const setLabel=m.querySelector('.customflashcards-set-label');
+  const setSelect=m.querySelector('.customflashcards-set-select');
+  const nextButton=m.querySelector('.customflashcards-next');
+  const manageButton=m.querySelector('.customflashcards-manage');
+  const editor=m.querySelector('.customflashcards-editor');
+  const editorClose=m.querySelector('.customflashcards-editor-close');
+  const setList=m.querySelector('.customflashcards-set-list');
+  const addSetButton=m.querySelector('.customflashcards-add-set');
+  const setNameInput=m.querySelector('.customflashcards-set-name');
+  const deleteSetButton=m.querySelector('.customflashcards-delete-set');
+  const cardList=m.querySelector('.customflashcards-card-list');
+  const addCardButton=m.querySelector('.customflashcards-add-card');
+  const imageInput=m.querySelector('.customflashcards-image-input');
+  const status=m.querySelector('.customflashcards-editor-status');
+
+  let serial=0;
+  const makeId=prefix=>`${prefix}-${Date.now().toString(36)}-${(++serial).toString(36)}`;
+  const makeSet=(name='My Cards')=>({id:makeId('set'),name,cards:[]});
+  const makeCard=()=>({id:makeId('card'),text:'',imageSrc:'',imageName:''});
+
+  let sets=[makeSet()];
+  let activeSetId=sets[0].id;
+  let currentCardId='';
+  let uploadTargetId='';
+  let animating=false;
+  let resizeFrame=0;
+  let flipTimer=0;
+  let finishTimer=0;
+  let statusTimer=0;
+
+  const measurer=document.createElement('span');
+  measurer.className='customflashcards-text customflashcards-measurer';
+  measurer.setAttribute('aria-hidden','true');
+  card.appendChild(measurer);
+
+  const activeSet=()=>sets.find(set=>set.id===activeSetId)||sets[0];
+  const currentCard=()=>activeSet()?.cards.find(item=>item.id===currentCardId)||null;
+
+  const setStatus=(message='',isError=false)=>{
+    clearTimeout(statusTimer);
+    status.textContent=message;
+    status.classList.toggle('is-error',isError);
+    if(message)statusTimer=window.setTimeout(()=>{
+      status.textContent='';
+      status.classList.remove('is-error');
+    },2600);
+  };
+
+  const measureTextSize=(value,hasImage)=>{
+    const rect=card.getBoundingClientRect();
+    const maxWidth=Math.max(100,rect.width-48);
+    const maxHeight=Math.max(44,hasImage?rect.height*.28:rect.height-48);
+    const computed=getComputedStyle(textEl);
+    measurer.textContent=value||' ';
+    measurer.style.width=`${maxWidth}px`;
+    measurer.style.fontFamily=computed.fontFamily;
+    measurer.style.fontWeight=computed.fontWeight;
+    measurer.style.letterSpacing=computed.letterSpacing;
+
+    let low=16;
+    let high=Math.max(24,Math.min(150,Math.floor(maxHeight*.92)));
+    let best=low;
+    while(low<=high){
+      const mid=Math.floor((low+high)/2);
+      measurer.style.fontSize=`${mid}px`;
+      const measured=measurer.getBoundingClientRect();
+      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
+        best=mid;
+        low=mid+1;
+      }else high=mid-1;
+    }
+    return best;
+  };
+
+  const applyCardContent=item=>{
+    currentCardId=item?.id||'';
+    const hasCard=Boolean(item);
+    const hasImage=Boolean(item?.imageSrc);
+    const value=String(item?.text||'').trim();
+    card.classList.toggle('is-empty',!hasCard);
+    card.classList.toggle('has-image',hasImage);
+    card.classList.toggle('has-text',Boolean(value));
+
+    if(hasImage){
+      image.src=item.imageSrc;
+      image.alt=value?`${value} flashcard image`:'Flashcard image';
+      image.hidden=false;
+    }else{
+      image.removeAttribute('src');
+      image.alt='';
+      image.hidden=true;
+    }
+
+    textEl.textContent=hasCard?(value||'Untitled card'):'Add your first card';
+    textEl.style.fontSize=hasCard?`${measureTextSize(textEl.textContent,hasImage)}px`:'';
+    card.setAttribute('aria-label',hasCard
+      ?`${value||'Image flashcard'}. Click for another card.`
+      :'Open the set editor to add a flashcard.');
+  };
+
+  const displayCard=(item,{animate=true}={})=>{
+    clearTimeout(flipTimer);
+    clearTimeout(finishTimer);
+    if(!animate){
+      animating=false;
+      card.classList.remove('is-flipping');
+      applyCardContent(item);
+      return;
+    }
+    if(animating)return;
+    animating=true;
+    card.classList.remove('is-flipping');
+    void card.offsetWidth;
+    card.classList.add('is-flipping');
+    flipTimer=window.setTimeout(()=>applyCardContent(item),180);
+    finishTimer=window.setTimeout(()=>{
+      card.classList.remove('is-flipping');
+      animating=false;
+    },430);
+  };
+
+  const showNext=({animate=true}={})=>{
+    const pool=activeSet()?.cards||[];
+    if(!pool.length){
+      displayCard(null,{animate:false});
+      return;
+    }
+    let candidates=pool.filter(item=>item.id!==currentCardId);
+    if(!candidates.length)candidates=pool;
+    displayCard(candidates[Math.floor(Math.random()*candidates.length)],{animate});
+  };
+
+  const updateSetControls=()=>{
+    const selected=activeSet();
+    setSelect.replaceChildren();
+    sets.forEach(set=>{
+      const option=document.createElement('option');
+      option.value=set.id;
+      option.textContent=set.name;
+      setSelect.appendChild(option);
+    });
+    if(selected){
+      setSelect.value=selected.id;
+      setLabel.textContent=selected.name;
+      m.dataset.customFlashcardSet=selected.id;
+    }
+  };
+
+  const renderSetList=()=>{
+    setList.replaceChildren();
+    sets.forEach(set=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='customflashcards-set-item';
+      button.classList.toggle('is-active',set.id===activeSetId);
+      button.innerHTML='<span></span><small></small>';
+      button.querySelector('span').textContent=set.name;
+      button.querySelector('small').textContent=`${set.cards.length} ${set.cards.length===1?'card':'cards'}`;
+      button.addEventListener('click',()=>{
+        if(set.id===activeSetId)return;
+        activeSetId=set.id;
+        currentCardId='';
+        updateSetControls();
+        renderEditor();
+        showNext({animate:false});
+      });
+      setList.appendChild(button);
+    });
+  };
+
+  const totalImageLength=(exceptId='')=>sets.reduce((total,set)=>total+set.cards.reduce((sum,item)=>
+    sum+(item.id===exceptId?0:String(item.imageSrc||'').length),0),0);
+
+  const renderCardList=()=>{
+    cardList.replaceChildren();
+    const selected=activeSet();
+    if(!selected?.cards.length){
+      const empty=document.createElement('div');
+      empty.className='customflashcards-editor-empty';
+      empty.innerHTML='<strong>No cards yet</strong><span>Add a flashcard, then type text or upload an image.</span>';
+      cardList.appendChild(empty);
+      return;
+    }
+
+    selected.cards.forEach((item,index)=>{
+      const row=document.createElement('article');
+      row.className='customflashcards-card-row';
+      row.dataset.cardId=item.id;
+
+      const number=document.createElement('span');
+      number.className='customflashcards-card-number';
+      number.textContent=String(index+1);
+
+      const media=document.createElement('button');
+      media.type='button';
+      media.className='customflashcards-card-media';
+      media.title=item.imageSrc?'Replace image':'Upload image';
+      media.setAttribute('aria-label',item.imageSrc?'Replace card image':'Upload a card image');
+      if(item.imageSrc){
+        const preview=document.createElement('img');
+        preview.src=item.imageSrc;
+        preview.alt='';
+        media.appendChild(preview);
+      }else media.innerHTML='<span aria-hidden="true">＋</span><small>Image</small>';
+      media.addEventListener('click',()=>{
+        uploadTargetId=item.id;
+        imageInput.click();
+      });
+
+      const field=document.createElement('textarea');
+      field.className='customflashcards-card-text-input';
+      field.maxLength=180;
+      field.rows=2;
+      field.placeholder='Type the word, question, or answer shown on this card';
+      field.value=item.text;
+      field.setAttribute('aria-label',`Flashcard ${index+1} text`);
+      field.addEventListener('input',()=>{
+        item.text=field.value;
+        if(item.id===currentCardId)applyCardContent(item);
+      });
+
+      const actions=document.createElement('div');
+      actions.className='customflashcards-card-row-actions';
+      if(item.imageSrc){
+        const removeImage=document.createElement('button');
+        removeImage.type='button';
+        removeImage.textContent='Remove image';
+        removeImage.addEventListener('click',()=>{
+          item.imageSrc='';
+          item.imageName='';
+          if(item.id===currentCardId)applyCardContent(item);
+          renderCardList();
+          notifyBoardChanged('custom-flashcard-image');
+        });
+        actions.appendChild(removeImage);
+      }
+
+      const remove=document.createElement('button');
+      remove.type='button';
+      remove.className='customflashcards-remove-card';
+      remove.textContent='Delete';
+      remove.addEventListener('click',()=>{
+        selected.cards=selected.cards.filter(cardItem=>cardItem.id!==item.id);
+        if(currentCardId===item.id)currentCardId='';
+        updateSetControls();
+        renderEditor();
+        showNext({animate:false});
+      });
+      actions.appendChild(remove);
+
+      row.append(number,media,field,actions);
+      cardList.appendChild(row);
+    });
+  };
+
+  function renderEditor(){
+    const selected=activeSet();
+    updateSetControls();
+    renderSetList();
+    setNameInput.value=selected?.name||'';
+    deleteSetButton.disabled=sets.length<=1;
+    renderCardList();
+  }
+
+  const openEditor=()=>{
+    renderEditor();
+    editor.hidden=false;
+  };
+
+  const closeEditor=()=>{
+    editor.hidden=true;
+    setStatus('');
+  };
+
+  card.addEventListener('click',()=>{
+    if(activeSet()?.cards.length)showNext();
+    else openEditor();
+  });
+  nextButton.addEventListener('click',()=>{
+    if(activeSet()?.cards.length)showNext();
+    else openEditor();
+  });
+  manageButton.addEventListener('click',openEditor);
+  editorClose.addEventListener('click',closeEditor);
+  editor.addEventListener('pointerdown',event=>{if(event.target===editor)closeEditor();});
+  editor.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+
+  setSelect.addEventListener('change',()=>{
+    if(!sets.some(set=>set.id===setSelect.value))return;
+    activeSetId=setSelect.value;
+    currentCardId='';
+    updateSetControls();
+    showNext({animate:true});
+  });
+
+  addSetButton.addEventListener('click',()=>{
+    const set=makeSet(`Card Set ${sets.length+1}`);
+    sets.push(set);
+    activeSetId=set.id;
+    currentCardId='';
+    renderEditor();
+    showNext({animate:false});
+    requestAnimationFrame(()=>{
+      setNameInput.focus({preventScroll:true});
+      setNameInput.select();
+    });
+  });
+
+  setNameInput.addEventListener('input',()=>{
+    const selected=activeSet();
+    if(!selected)return;
+    selected.name=setNameInput.value.replace(/\s+/g,' ').slice(0,40)||'Untitled Set';
+    updateSetControls();
+    renderSetList();
+  });
+  setNameInput.addEventListener('blur',()=>{
+    const selected=activeSet();
+    if(!selected)return;
+    selected.name=setNameInput.value.trim().replace(/\s+/g,' ')||'Untitled Set';
+    setNameInput.value=selected.name;
+    updateSetControls();
+    renderSetList();
+  });
+
+  deleteSetButton.addEventListener('click',()=>{
+    if(sets.length<=1)return;
+    const index=Math.max(0,sets.findIndex(set=>set.id===activeSetId));
+    sets=sets.filter(set=>set.id!==activeSetId);
+    activeSetId=sets[Math.min(index,sets.length-1)].id;
+    currentCardId='';
+    renderEditor();
+    showNext({animate:false});
+  });
+
+  addCardButton.addEventListener('click',()=>{
+    const selected=activeSet();
+    if(!selected||selected.cards.length>=60){
+      setStatus('Each set can hold up to 60 cards.',true);
+      return;
+    }
+    const item=makeCard();
+    selected.cards.push(item);
+    currentCardId=item.id;
+    renderEditor();
+    applyCardContent(item);
+    requestAnimationFrame(()=>cardList.querySelector(`[data-card-id="${item.id}"] textarea`)?.focus({preventScroll:true}));
+  });
+
+  imageInput.addEventListener('change',async()=>{
+    const file=imageInput.files?.[0];
+    const targetId=uploadTargetId;
+    imageInput.value='';
+    uploadTargetId='';
+    if(!file||!targetId)return;
+    setStatus('Preparing image…');
+    const data=await fileToBoardImageData(file,{maxSide:720,maxLength:85000,quality:.72,minSide:200});
+    const item=sets.flatMap(set=>set.cards).find(cardItem=>cardItem.id===targetId);
+    if(!item)return;
+    if(!data){
+      setStatus('That image could not be prepared. Try a smaller file.',true);
+      return;
+    }
+    if(totalImageLength(targetId)+data.length>620000){
+      setStatus('This tile has reached its image storage limit. Remove an image first.',true);
+      return;
+    }
+    item.imageSrc=data;
+    item.imageName=file.name||'Flashcard image';
+    if(item.id===currentCardId)applyCardContent(item);
+    renderCardList();
+    setStatus('Image added.');
+    notifyBoardChanged('custom-flashcard-image');
+  });
+
+  m.querySelector('.customflashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.customflashcards-font').addEventListener('click',()=>{
+    cycleData(m,'font',FONT_OPTIONS);
+    if(currentCard())applyCardContent(currentCard());
+  });
+  m.querySelector('.customflashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const ro=new ResizeObserver(()=>{
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame=requestAnimationFrame(()=>{
+      const item=currentCard();
+      if(item)applyCardContent(item);
+    });
+  });
+  ro.observe(card);
+
+  updateSetControls();
+  showNext({animate:false});
+
+  m._boardGetState=()=>(
+    {
+      activeSetId,
+      currentCardId,
+      sets:sets.map(set=>({
+        id:set.id,
+        name:set.name,
+        cards:set.cards.map(item=>({id:item.id,text:item.text,imageSrc:item.imageSrc,imageName:item.imageName}))
+      }))
+    }
+  );
+  m._boardSetState=state=>{
+    if(!state)return;
+    const usedIds=new Set();
+    const restored=[];
+    for(const savedSet of Array.isArray(state.sets)?state.sets.slice(0,20):[]){
+      const setId=String(savedSet?.id||makeId('set'));
+      const uniqueSetId=usedIds.has(setId)?makeId('set'):setId;
+      usedIds.add(uniqueSetId);
+      const restoredSet={
+        id:uniqueSetId,
+        name:String(savedSet?.name||'Untitled Set').trim().slice(0,40)||'Untitled Set',
+        cards:[]
+      };
+      for(const savedCard of Array.isArray(savedSet?.cards)?savedSet.cards.slice(0,60):[]){
+        const cardId=String(savedCard?.id||makeId('card'));
+        const uniqueCardId=usedIds.has(cardId)?makeId('card'):cardId;
+        usedIds.add(uniqueCardId);
+        const imageSrc=String(savedCard?.imageSrc||'');
+        restoredSet.cards.push({
+          id:uniqueCardId,
+          text:String(savedCard?.text||'').slice(0,180),
+          imageSrc:/^data:image\//i.test(imageSrc)?imageSrc:'',
+          imageName:String(savedCard?.imageName||'').slice(0,120)
+        });
+      }
+      restored.push(restoredSet);
+    }
+    sets=restored.length?restored:[makeSet()];
+    activeSetId=sets.some(set=>set.id===state.activeSetId)?state.activeSetId:sets[0].id;
+    const selected=activeSet();
+    const savedCurrent=String(state.currentCardId||'');
+    currentCardId=selected.cards.some(item=>item.id===savedCurrent)?savedCurrent:'';
+    renderEditor();
+    const item=currentCard();
+    if(item)displayCard(item,{animate:false});
+    else showNext({animate:false});
+  };
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    ro.disconnect();
+    cancelAnimationFrame(resizeFrame);
+    clearTimeout(flipTimer);
+    clearTimeout(finishTimer);
+    clearTimeout(statusTimer);
     measurer.remove();
   };
 }
@@ -6910,14 +7642,14 @@ function setupMoney(m){
     const button=document.createElement('button');
     button.type='button';
     button.className='money-palette-item';
-    button.draggable=true;
     button.dataset.denom=d.id;
     button.setAttribute('aria-label',`Add a ${d.label}`);
 
     const img=document.createElement('img');
     img.src=d.src;
     img.alt='';
-    img.draggable=false;
+    img.className='money-palette-piece';
+    img.draggable=true;
 
     const text=document.createElement('span');
     const label=document.createElement('strong');
@@ -6929,12 +7661,14 @@ function setupMoney(m){
     button.append(img,text);
 
     button.addEventListener('click',()=>addPiece(d.id));
-    button.addEventListener('dragstart',event=>{
+    img.addEventListener('dragstart',event=>{
+      event.stopPropagation();
       paletteDragId=d.id;
+      event.dataTransfer?.clearData();
       event.dataTransfer?.setData('text/plain',d.id);
       if(event.dataTransfer)event.dataTransfer.effectAllowed='copy';
     });
-    button.addEventListener('dragend',()=>{paletteDragId='';});
+    img.addEventListener('dragend',()=>{paletteDragId='';});
 
     palette.appendChild(button);
   });
@@ -6951,6 +7685,7 @@ function setupMoney(m){
 
   workspaceEl.addEventListener('drop',event=>{
     event.preventDefault();
+    event.stopPropagation();
     workspaceEl.classList.remove('is-drop-target');
 
     const id=paletteDragId||event.dataTransfer?.getData('text/plain');
@@ -9006,22 +9741,15 @@ window.TeacherTilesBoard={
 };
 
 function setupChangelog(){
-  const button=document.getElementById('changelog-toggle');
-  const backdrop=document.getElementById('changelog-backdrop');
-  const panel=document.getElementById('changelog-panel');
-  const closeButton=document.getElementById('changelog-close');
   const changelogContent=document.getElementById('changelog-content');
   const newsContent=document.getElementById('news-content');
-  const tabs=[...document.querySelectorAll('[data-updates-tab]')];
-  const panes=[...document.querySelectorAll('[data-updates-pane]')];
   const contactForm=document.getElementById('contact-form');
   const contactStatus=document.getElementById('contact-status');
   const contactSubmit=document.getElementById('contact-submit');
 
-  if(!button||!backdrop||!panel||!closeButton||!changelogContent||!newsContent)return;
+  if(!changelogContent||!newsContent)return;
 
-  const loaded={changelog:false,news:false};
-  let activeTab='changelog';
+  const loaded={announcements:false,news:false};
 
   const escapeHtml=value=>String(value)
     .replaceAll('&','&amp;')
@@ -9089,7 +9817,7 @@ function setupChangelog(){
     const content=isNews?newsContent:changelogContent;
     const folder=isNews?'news':'changelog';
     const globalData=isNews?window.TeacherTilesNewsData:window.TeacherTilesChangelogData;
-    const label=isNews?'news':'changelog';
+    const label=isNews?'news':'updates';
 
     content.innerHTML=`<div class="changelog-loading">Loading ${label}…</div>`;
 
@@ -9141,41 +9869,9 @@ function setupChangelog(){
     }
   }
 
-  async function selectTab(name){
-    activeTab=name;
-
-    for(const tab of tabs){
-      const active=tab.dataset.updatesTab===name;
-      tab.classList.toggle('is-active',active);
-      tab.setAttribute('aria-selected',String(active));
-    }
-
-    for(const pane of panes){
-      const active=pane.dataset.updatesPane===name;
-      pane.hidden=!active;
-      pane.classList.toggle('is-active',active);
-    }
-
-    if((name==='changelog'||name==='news')&&!loaded[name]){
-      await loadFeed(name);
-    }
-  }
-
-  async function openChangelog(){
-    backdrop.hidden=false;
-    requestAnimationFrame(()=>backdrop.classList.add('is-open'));
-    await selectTab(activeTab);
-    closeButton.focus({preventScroll:true});
-  }
-
-  function closeChangelog(){
-    backdrop.classList.remove('is-open');
-    window.setTimeout(()=>{backdrop.hidden=true},190);
-    button.focus({preventScroll:true});
-  }
-
-  tabs.forEach(tab=>{
-    tab.addEventListener('click',()=>selectTab(tab.dataset.updatesTab));
+  window.addEventListener('teachertiles:settings-tab',event=>{
+    const name=event.detail?.name;
+    if((name==='announcements'||name==='news')&&!loaded[name])loadFeed(name);
   });
 
   if(contactForm&&contactSubmit&&contactStatus){
@@ -9230,14 +9926,6 @@ function setupChangelog(){
     });
   }
 
-  button.addEventListener('click',openChangelog);
-  closeButton.addEventListener('click',closeChangelog);
-  backdrop.addEventListener('click',e=>{
-    if(e.target===backdrop)closeChangelog();
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&!backdrop.hidden)closeChangelog();
-  });
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',setupChangelog,{once:true});

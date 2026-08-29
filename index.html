@@ -46,14 +46,6 @@
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
-    <button id="changelog-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open news">
-      <svg class="news-megaphone-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4.5 13.5h3l8 4V6.5l-8 4h-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M7.5 13.5l1.4 5h2.7l-1.3-4.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.news">News</strong></span>
-    </button>
     <button id="settings-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open settings" aria-expanded="false">
       <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
@@ -215,6 +207,24 @@
             </span>
             <span data-i18n="settings.tab.help">Help</span>
           </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="news" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--news" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4.5 13.5h3l8 4V6.5l-8 4h-3zM7.5 13.5l1.4 5h2.7l-1.3-4.1M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span data-i18n="settings.tab.news">News</span>
+          </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="announcements" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--announcements" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 4.5h9.5L19 8v11.5H6zM15.5 4.5V8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span data-i18n="settings.tab.announcements">Updates</span>
+          </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="contact" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--contact" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v11h-15zM5 7l7 5 7-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span data-i18n="settings.tab.contact">Contact Us</span>
+          </button>
         </nav>
 
         <div class="settings-panel__content">
@@ -277,7 +287,7 @@
           <section class="settings-pane" data-settings-pane="help" hidden>
             <div class="settings-page-heading settings-page-heading--help">
               <span data-i18n="help.kicker">HELP CENTER</span>
-              <h2 data-i18n="help.title">TeacherTiles controls at a glance.</h2>
+              <h2 data-i18n="help.title">TeacherTiles controls at a glance</h2>
               <p data-i18n="help.copy">Keyboard shortcuts and mouse controls for moving quickly around your board.</p>
             </div>
 
@@ -322,6 +332,66 @@
               <div><span data-i18n="help.tutorial.kicker">GUIDES</span><strong data-i18n="help.tutorial.title">More tutorials are coming soon.</strong><p data-i18n="help.tutorial.copy">Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.</p></div>
             </div>
           </section>
+
+          <section class="settings-pane settings-pane--updates" data-settings-pane="news" hidden>
+            <div class="settings-page-heading settings-updates-heading">
+              <span>WHAT'S NEW</span>
+              <h2>News from TeacherTiles</h2>
+              <p>Product stories, classroom ideas, and what’s coming next.</p>
+            </div>
+            <div class="settings-feed-shell">
+              <div id="news-content" class="changelog-content settings-feed-content">
+                <div class="changelog-loading">Loading news…</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-pane settings-pane--updates" data-settings-pane="announcements" hidden>
+            <div class="settings-page-heading settings-updates-heading">
+              <span>RELEASE NOTES</span>
+              <h2>Updates</h2>
+              <p>The latest TeacherTiles improvements, fixes, and feature releases.</p>
+            </div>
+            <div class="settings-feed-shell">
+              <div id="changelog-content" class="changelog-content settings-feed-content">
+                <div class="changelog-loading">Loading updates…</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-pane settings-pane--contact" data-settings-pane="contact" hidden>
+            <div class="settings-page-heading settings-updates-heading">
+              <span>GET IN TOUCH</span>
+              <h2>Contact Us</h2>
+              <p>Questions, feedback, bugs, or ideas? Send a message to WeikertsWonders.</p>
+            </div>
+            <div class="settings-contact-card">
+              <form id="contact-form" class="contact-form">
+                <div class="contact-grid">
+                  <label class="contact-field">
+                    <span>Name</span>
+                    <input name="name" type="text" autocomplete="name" required maxlength="100" placeholder="Your name">
+                  </label>
+                  <label class="contact-field">
+                    <span>Email</span>
+                    <input name="email" type="email" autocomplete="email" required maxlength="160" placeholder="you@example.com">
+                  </label>
+                </div>
+                <label class="contact-field">
+                  <span>Subject</span>
+                  <input name="subject" type="text" required maxlength="160" placeholder="What can we help with?">
+                </label>
+                <label class="contact-field contact-field--message">
+                  <span>Message</span>
+                  <textarea name="message" required maxlength="5000" rows="7" placeholder="Write your message…"></textarea>
+                </label>
+                <div class="contact-actions">
+                  <div id="contact-status" class="contact-status" aria-live="polite"></div>
+                  <button id="contact-submit" class="contact-submit" type="submit">Send Message</button>
+                </div>
+              </form>
+            </div>
+          </section>
         </div>
       </div>
     </div>
@@ -335,6 +405,12 @@
         <div class="asset-shelf__heading">
           <span class="asset-shelf__eyebrow">COLLECTION SHELF</span>
           <strong id="asset-shelf-title">Themes</strong>
+          <div class="sticker-shelf-search" role="search">
+            <span class="sticker-shelf-search__icon" aria-hidden="true">⌕</span>
+            <input id="sticker-shelf-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search stickers…" aria-label="Search stickers">
+            <button id="sticker-shelf-search-clear" type="button" aria-label="Clear sticker search" hidden>×</button>
+            <span id="sticker-shelf-search-status" class="sticker-shelf-search__status" role="status" aria-live="polite">Search every sticker pack</span>
+          </div>
         </div>
         <button id="asset-shelf-close" class="asset-shelf__close" type="button" aria-label="Close shelf">×</button>
       </div>
@@ -374,6 +450,14 @@
                 </button>
               </div>
               <div class="theme-pack-wrap">
+                <button id="polka-dot-theme-pack" class="theme-pack theme-pack--polka" type="button" data-theme-pack aria-expanded="false" aria-controls="polka-dot-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--polka" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--polka-berry"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sunshine"></i><i class="theme-pack__sheet theme-pack__sheet--polka-mint"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sky"></i><i class="theme-pack__sheet theme-pack__sheet--polka-lavender"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Polka Dot</strong><small>5 themes</small></span><span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
                 <button id="programmer-theme-pack" class="theme-pack theme-pack--programmer" type="button" data-theme-pack aria-expanded="false" aria-controls="programmer-theme-fan">
                   <span class="theme-pack__stack theme-pack__stack--programmer" aria-hidden="true">
                     <i class="theme-pack__sheet theme-pack__sheet--programmer-green"></i>
@@ -400,6 +484,62 @@
                     <strong>Wood</strong>
                     <small>4 themes</small>
                   </span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="notebook-theme-pack" class="theme-pack theme-pack--notebook" type="button" data-theme-pack aria-expanded="false" aria-controls="notebook-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--notebook" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--notebook-red"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--notebook-blue"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--notebook-black"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Notebook</strong><small>3 themes</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="cardboard-theme-pack" class="theme-pack theme-pack--cardboard" type="button" data-theme-pack aria-expanded="false" aria-controls="cardboard-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--cardboard" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--cardboard-kraft"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cardboard-white"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cardboard-blue"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cardboard-rose"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Cardboard</strong><small>4 themes</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="metal-theme-pack" class="theme-pack theme-pack--metal" type="button" data-theme-pack aria-expanded="false" aria-controls="metal-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--metal" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--metal-copper"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--metal-iron"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--metal-dark-steel"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--metal-cobalt"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Metal</strong><small>4 themes</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="cosmos-theme-pack" class="theme-pack theme-pack--cosmos" type="button" data-theme-pack aria-expanded="false" aria-controls="cosmos-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--cosmos" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--cosmos-nebula"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cosmos-pulsar"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cosmos-milky-way"></i>
+                    <i class="theme-pack__sheet theme-pack__sheet--cosmos-red-dwarf"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Cosmos</strong><small>4 themes</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="corkboard-theme-pack" class="theme-pack theme-pack--corkboard" type="button" data-theme-pack aria-expanded="false" aria-controls="corkboard-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--corkboard" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--cork-red"></i><i class="theme-pack__sheet theme-pack__sheet--cork-blue"></i><i class="theme-pack__sheet theme-pack__sheet--cork-green"></i><i class="theme-pack__sheet theme-pack__sheet--cork-gold"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Corkboard</strong><small>4 themes</small></span>
                   <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
                 </button>
               </div>
@@ -602,6 +742,39 @@
                 </div>
                 <span class="sticker-pack-drawer__hint">Drag an emoji onto the board</span>
               </div>
+
+              <div class="sticker-pack-wrap">
+                <button id="colored-hearts-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection" type="button" data-sticker-pack aria-expanded="false" aria-controls="colored-hearts-sticker-drawer">
+                  <span class="sticker-pack__stack sticker-pack__stack--emoji" aria-hidden="true"><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--one">❤️</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--two">🧡</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--three">💙</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--four">💜</span></span>
+                  <span class="theme-pack__meta"><strong>Colored Hearts</strong><small data-generated-sticker-count="colored-hearts">12 stickers</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div id="colored-hearts-sticker-drawer" class="sticker-pack-drawer sticker-pack-drawer--scrollable" aria-hidden="true" role="group" aria-label="Colored heart sticker pack">
+                <div class="sticker-pack-drawer__track" data-generated-stickers="colored-hearts"></div><span class="sticker-pack-drawer__hint">Drag a colored heart onto the board</span>
+              </div>
+
+              <div class="sticker-pack-wrap">
+                <button id="decorative-hearts-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection" type="button" data-sticker-pack aria-expanded="false" aria-controls="decorative-hearts-sticker-drawer">
+                  <span class="sticker-pack__stack sticker-pack__stack--emoji" aria-hidden="true"><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--one">💖</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--two">💕</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--three">💘</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--four">❤️‍🔥</span></span>
+                  <span class="theme-pack__meta"><strong>Decorative Hearts</strong><small data-generated-sticker-count="decorative-hearts">10 stickers</small></span><span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div id="decorative-hearts-sticker-drawer" class="sticker-pack-drawer sticker-pack-drawer--scrollable" aria-hidden="true" role="group" aria-label="Decorative heart sticker pack">
+                <div class="sticker-pack-drawer__track" data-generated-stickers="decorative-hearts"></div><span class="sticker-pack-drawer__hint">Drag a decorative heart onto the board</span>
+              </div>
+
+              <div class="sticker-pack-wrap">
+                <button id="country-flags-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection" type="button" data-sticker-pack aria-expanded="false" aria-controls="country-flags-sticker-drawer">
+                  <span class="sticker-pack__stack sticker-pack__stack--flags" aria-hidden="true"><img class="sticker-pack__flag-sample sticker-pack__flag-sample--one" src="https://flagcdn.io/flags/4x3/us.svg" alt="" draggable="false"><img class="sticker-pack__flag-sample sticker-pack__flag-sample--two" src="https://flagcdn.io/flags/4x3/ca.svg" alt="" draggable="false"><img class="sticker-pack__flag-sample sticker-pack__flag-sample--three" src="https://flagcdn.io/flags/4x3/jp.svg" alt="" draggable="false"><img class="sticker-pack__flag-sample sticker-pack__flag-sample--four" src="https://flagcdn.io/flags/4x3/br.svg" alt="" draggable="false"></span>
+                  <span class="theme-pack__meta"><strong>Country Flags</strong><small data-generated-sticker-count="country-flags">All flags</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div id="country-flags-sticker-drawer" class="sticker-pack-drawer sticker-pack-drawer--scrollable sticker-pack-drawer--flags" aria-hidden="true" role="group" aria-label="Country flag sticker pack">
+                <div class="sticker-pack-drawer__track" data-generated-stickers="country-flags"></div>
+                <span class="sticker-pack-drawer__hint">Drag a flag onto the board</span>
+              </div>
             </div>
           </div>
         </div>
@@ -692,6 +865,7 @@
               <div class="shop-product__preview shop-product__preview--pastel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Pastel</h3><p>Five soft classroom-ready colors.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
+            <article class="shop-product" data-shop-product="theme-polka-dot" data-shop-price="250"><div class="shop-product__preview shop-product__preview--polka" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Polka Dot</h3><p>Five playful background-and-dot color combinations.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
             <article class="shop-product" data-shop-product="theme-programmer" data-shop-price="300">
               <div class="shop-product__preview shop-product__preview--programmer" aria-hidden="true"><code>&gt;_</code><span>const board = "awesome";<br>function teach() { return true; }<br>01010110 00110001</span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Programmer</h3><p>Four terminal-inspired hacker palettes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div>
@@ -700,6 +874,11 @@
               <div class="shop-product__preview shop-product__preview--wood" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Wood</h3><p>Oak, spruce, redwood, and cherry planks.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>350</strong></button></div>
             </article>
+            <article class="shop-product" data-shop-product="theme-notebook" data-shop-price="250"><div class="shop-product__preview shop-product__preview--notebook" aria-hidden="true"><i></i><i></i><i></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Notebook</h3><p>Red, blue, and black-lined notebook paper.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+            <article class="shop-product" data-shop-product="theme-cardboard" data-shop-price="300"><div class="shop-product__preview shop-product__preview--cardboard" aria-hidden="true"><i></i><b></b></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Cardboard</h3><p>Parcel textures with colorful shipping labels.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div></article>
+            <article class="shop-product" data-shop-product="theme-metal" data-shop-price="350"><div class="shop-product__preview shop-product__preview--metal" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Metal</h3><p>Four seamless brushed metal finishes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>350</strong></button></div></article>
+            <article class="shop-product" data-shop-product="theme-cosmos" data-shop-price="400"><div class="shop-product__preview shop-product__preview--cosmos" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Cosmos</h3><p>Nebula, pulsar, Milky Way, and red dwarf skies.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>400</strong></button></div></article>
+            <article class="shop-product" data-shop-product="theme-corkboard" data-shop-price="300"><div class="shop-product__preview shop-product__preview--corkboard" aria-hidden="true"><i></i><b></b><em></em></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Corkboard</h3><p>Seamless cork texture with four pin colors.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div></article>
           </div>
         </section>
 
@@ -733,6 +912,9 @@
               <div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-food" aria-hidden="true"><span>🍎</span><span>🍕</span><span>🍩</span><span>🧁</span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Food</h3><p>Snacks, treats, fruit, and lunch favorites.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div>
             </article>
+            <article class="shop-product" data-shop-product="sticker-colored-hearts" data-shop-price="180"><div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-colored-hearts" aria-hidden="true"><span>❤️</span><span>💛</span><span>💙</span><span>💜</span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Colored Hearts</h3><p>Twelve simple hearts in every available color.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div></article>
+            <article class="shop-product" data-shop-product="sticker-decorative-hearts" data-shop-price="180"><div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-decorative-hearts" aria-hidden="true"><span>💖</span><span>💕</span><span>💘</span><span>❤️‍🔥</span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Decorative Hearts</h3><p>Sparkles, ribbons, arrows, flames, and more.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div></article>
+            <article class="shop-product" data-shop-product="sticker-country-flags" data-shop-price="250"><div class="shop-product__preview shop-product__preview--flags" aria-hidden="true"><img src="https://flagcdn.io/flags/4x3/us.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/ca.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/jp.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/br.svg" alt="" draggable="false"></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Country Flags</h3><p>Real SVG artwork for the complete country collection.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
           </div>
         </section>
       </div>
@@ -801,6 +983,14 @@
     </button>
   </div>
 
+  <div id="polka-dot-theme-fan" class="theme-fan theme-fan--pastel theme-fan--polka" aria-hidden="true" role="group" aria-label="Polka Dot theme pack">
+    <button class="theme-card theme-card--polka-berry" type="button" data-theme-choice="polka-berry" aria-label="Use Berry Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Berry</strong><small>Pink and cherry</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-sunshine" type="button" data-theme-choice="polka-sunshine" aria-label="Use Sunshine Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Sunshine</strong><small>Cream and orange</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-mint" type="button" data-theme-choice="polka-mint" aria-label="Use Mint Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Mint</strong><small>Mint and green</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-sky" type="button" data-theme-choice="polka-sky" aria-label="Use Sky Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Sky</strong><small>Blue on blue</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-lavender" type="button" data-theme-choice="polka-lavender" aria-label="Use Lavender Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Lavender</strong><small>Lilac and violet</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+  </div>
+
   <div id="programmer-theme-fan" class="theme-fan theme-fan--programmer" aria-hidden="true" role="group" aria-label="Programmer theme pack">
     <button class="theme-card theme-card--programmer-green" type="button" data-theme-choice="programmer-green" aria-label="Use Programmer Green theme">
       <span class="theme-card__preview theme-card__preview--code" aria-hidden="true"><code>&gt;_</code><i></i><b></b><em></em></span>
@@ -845,6 +1035,49 @@
       <span class="theme-card__copy"><strong>Cherry</strong><small>Pink wood</small></span>
       <span class="theme-card__check" aria-hidden="true">✓</span>
     </button>
+  </div>
+
+  <div id="notebook-theme-fan" class="theme-fan theme-fan--notebook" aria-hidden="true" role="group" aria-label="Notebook theme pack">
+    <button class="theme-card theme-card--notebook-red" type="button" data-theme-choice="notebook-red" aria-label="Use Red Notebook theme">
+      <span class="theme-card__preview theme-card__preview--notebook" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Red</strong><small>Classic ruled paper</small></span><span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--notebook-blue" type="button" data-theme-choice="notebook-blue" aria-label="Use Blue Notebook theme">
+      <span class="theme-card__preview theme-card__preview--notebook" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Blue</strong><small>Blue ruled paper</small></span><span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+    <button class="theme-card theme-card--notebook-black" type="button" data-theme-choice="notebook-black" aria-label="Use Black Line Notebook theme">
+      <span class="theme-card__preview theme-card__preview--notebook" aria-hidden="true"><i></i><b></b><em></em></span>
+      <span class="theme-card__copy"><strong>Black Lines</strong><small>Yellow ruled paper</small></span><span class="theme-card__check" aria-hidden="true">✓</span>
+    </button>
+  </div>
+
+  <div id="cardboard-theme-fan" class="theme-fan theme-fan--four theme-fan--cardboard" aria-hidden="true" role="group" aria-label="Cardboard theme pack">
+    <button class="theme-card theme-card--cardboard-kraft" type="button" data-theme-choice="cardboard-kraft" aria-label="Use Kraft Cardboard theme"><span class="theme-card__preview theme-card__preview--cardboard" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Kraft</strong><small>Classic parcel</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cardboard-white" type="button" data-theme-choice="cardboard-white" aria-label="Use White Cardboard theme"><span class="theme-card__preview theme-card__preview--cardboard" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>White</strong><small>Bright mailer</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cardboard-blue" type="button" data-theme-choice="cardboard-blue" aria-label="Use Blue Cardboard theme"><span class="theme-card__preview theme-card__preview--cardboard" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Blue</strong><small>Cool mailer</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cardboard-rose" type="button" data-theme-choice="cardboard-rose" aria-label="Use Rose Cardboard theme"><span class="theme-card__preview theme-card__preview--cardboard" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Rose</strong><small>Warm parcel</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+  </div>
+
+  <div id="metal-theme-fan" class="theme-fan theme-fan--four theme-fan--metal" aria-hidden="true" role="group" aria-label="Metal theme pack">
+    <button class="theme-card theme-card--metal-copper" type="button" data-theme-choice="metal-copper" aria-label="Use Copper Metal theme"><span class="theme-card__preview theme-card__preview--metal" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Copper</strong><small>Burnished warmth</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--metal-iron" type="button" data-theme-choice="metal-iron" aria-label="Use Iron Metal theme"><span class="theme-card__preview theme-card__preview--metal" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Iron</strong><small>Brushed silver</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--metal-dark-steel" type="button" data-theme-choice="metal-dark-steel" aria-label="Use Dark Steel Metal theme"><span class="theme-card__preview theme-card__preview--metal" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Dark Steel</strong><small>Graphite finish</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--metal-cobalt" type="button" data-theme-choice="metal-cobalt" aria-label="Use Cobalt Metal theme"><span class="theme-card__preview theme-card__preview--metal" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Cobalt</strong><small>Deep blue metal</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+  </div>
+
+  <div id="cosmos-theme-fan" class="theme-fan theme-fan--four theme-fan--cosmos" aria-hidden="true" role="group" aria-label="Cosmos theme pack">
+    <button class="theme-card theme-card--cosmos-nebula" type="button" data-theme-choice="cosmos-nebula" aria-label="Use Nebula Cosmos theme"><span class="theme-card__preview theme-card__preview--cosmos" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Nebula</strong><small>Purple clouds</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cosmos-pulsar" type="button" data-theme-choice="cosmos-pulsar" aria-label="Use Pulsar Cosmos theme"><span class="theme-card__preview theme-card__preview--cosmos" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Pulsar</strong><small>Orange flare</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cosmos-milky-way" type="button" data-theme-choice="cosmos-milky-way" aria-label="Use Milky Way Cosmos theme"><span class="theme-card__preview theme-card__preview--cosmos" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Milky Way</strong><small>Silver starlight</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cosmos-red-dwarf" type="button" data-theme-choice="cosmos-red-dwarf" aria-label="Use Red Dwarf Cosmos theme"><span class="theme-card__preview theme-card__preview--cosmos" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Red Dwarf</strong><small>Crimson starfield</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+  </div>
+
+  <div id="corkboard-theme-fan" class="theme-fan theme-fan--four theme-fan--corkboard" aria-hidden="true" role="group" aria-label="Corkboard theme pack">
+    <button class="theme-card theme-card--cork-red" type="button" data-theme-choice="corkboard-red" aria-label="Use Red Pin Corkboard theme"><span class="theme-card__preview theme-card__preview--cork" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Red Pins</strong><small>Classic cork</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cork-blue" type="button" data-theme-choice="corkboard-blue" aria-label="Use Blue Pin Corkboard theme"><span class="theme-card__preview theme-card__preview--cork" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Blue Pins</strong><small>Classic cork</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cork-green" type="button" data-theme-choice="corkboard-green" aria-label="Use Green Pin Corkboard theme"><span class="theme-card__preview theme-card__preview--cork" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Green Pins</strong><small>Classic cork</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--cork-gold" type="button" data-theme-choice="corkboard-gold" aria-label="Use Gold Pin Corkboard theme"><span class="theme-card__preview theme-card__preview--cork" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Gold Pins</strong><small>Classic cork</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
   </div>
 
   <div class="workspace-credit" aria-hidden="true">TeacherTiles - an app by WeikertsWonders</div>
@@ -941,6 +1174,16 @@
           </svg>
         </span>
         <span><strong>High Frequency Words</strong><small>Grade-level animated word flashcards</small></span>
+      </button>
+      <button class="context-menu__item" data-module="customflashcards" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--customflashcards" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="6" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7 10h7M7 13h4M18 9h2v10a2 2 0 0 1-2 2H7v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.5 4v4M12.5 6h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Custom Flashcards</strong><small>Create reusable text and image card sets</small></span>
       </button>
       
       <button class="context-menu__item" data-module="numberline" data-category="math">
@@ -1649,6 +1892,7 @@
             <button class="lunchcount-icon-picker__close" type="button" aria-label="Close icon picker">×</button>
           </div>
           <div class="lunchcount-icon-picker__grid"></div>
+          <input class="lunchcount-icon-upload" type="file" accept="image/*" hidden>
         </div>
       </div>
 
@@ -2454,6 +2698,79 @@
   </template>
 
 
+  <template id="customflashcards-template">
+    <section class="module customflashcards-module" data-type="customflashcards" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Custom Flashcards tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="customflashcards-header">
+        <div>
+          <span>CUSTOM FLASHCARDS</span>
+          <strong class="customflashcards-set-label">My Cards</strong>
+        </div>
+        <span class="customflashcards-hint">Click the card for another</span>
+      </header>
+
+      <button class="customflashcards-card is-empty" type="button" aria-label="Open the set editor to add a flashcard">
+        <span class="customflashcards-card-accent" aria-hidden="true"></span>
+        <img class="customflashcards-image" alt="" draggable="false" hidden>
+        <span class="customflashcards-text">Add your first card</span>
+        <span class="customflashcards-empty-copy">Open Manage Sets to begin</span>
+      </button>
+
+      <div class="customflashcards-controls">
+        <label class="customflashcards-set-control">
+          <span>Card Set</span>
+          <select class="customflashcards-set-select" aria-label="Choose a custom flashcard set"></select>
+        </label>
+        <button class="customflashcards-manage" type="button">Manage Sets</button>
+        <button class="customflashcards-next" type="button">New Card</button>
+      </div>
+
+      <aside class="customflashcards-editor" hidden>
+        <div class="customflashcards-editor-panel">
+          <header class="customflashcards-editor-header">
+            <div>
+              <span>YOUR LIBRARY</span>
+              <strong>Custom Flashcards</strong>
+            </div>
+            <button class="customflashcards-editor-close" type="button" aria-label="Close flashcard editor">×</button>
+          </header>
+
+          <div class="customflashcards-editor-layout">
+            <nav class="customflashcards-set-sidebar" aria-label="Flashcard sets">
+              <div class="customflashcards-set-list"></div>
+              <button class="customflashcards-add-set" type="button"><span aria-hidden="true">+</span> New Set</button>
+            </nav>
+
+            <section class="customflashcards-set-editor">
+              <div class="customflashcards-set-editor-head">
+                <label>
+                  <span>Set name</span>
+                  <input class="customflashcards-set-name" type="text" maxlength="40" aria-label="Flashcard set name">
+                </label>
+                <button class="customflashcards-delete-set" type="button">Delete Set</button>
+              </div>
+              <div class="customflashcards-card-list"></div>
+              <button class="customflashcards-add-card" type="button"><span aria-hidden="true">+</span> Add Flashcard</button>
+              <span class="customflashcards-editor-status" role="status" aria-live="polite"></span>
+            </section>
+          </div>
+
+          <input class="customflashcards-image-input" type="file" accept="image/*" hidden>
+        </div>
+      </aside>
+
+      <div class="customization-bar customflashcards-customization" aria-label="Custom Flashcards customization">
+        <button class="custom-icon customflashcards-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon customflashcards-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon customflashcards-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
   <template id="abc-template">
     <section class="module abc-module" data-type="abc" data-bg="white" data-text="dark" data-abc-mode="uppercase">
       <button class="module-delete" aria-label="Delete ABC tile">×</button><div class="module-drag-handle"></div>
@@ -2767,75 +3084,6 @@
       <div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
-
-  <div id="changelog-backdrop" class="changelog-backdrop" hidden>
-    <section id="changelog-panel" class="changelog-panel" role="dialog" aria-modal="true" aria-labelledby="changelog-title">
-      <header class="changelog-header">
-        <div>
-          <span class="changelog-eyebrow">TEACHERTILES</span>
-          <h2 id="changelog-title">Updates & Support</h2>
-        </div>
-        <button id="changelog-close" class="changelog-close" type="button" aria-label="Close updates panel">×</button>
-      </header>
-
-      <nav class="updates-tabs" aria-label="Updates and support">
-        <button class="updates-tab is-active" type="button" data-updates-tab="changelog" aria-selected="true">Changelog</button>
-        <button class="updates-tab" type="button" data-updates-tab="news" aria-selected="false">News</button>
-        <button class="updates-tab" type="button" data-updates-tab="contact" aria-selected="false">Contact</button>
-      </nav>
-
-      <div class="updates-body">
-        <section class="updates-pane is-active" data-updates-pane="changelog">
-          <div id="changelog-content" class="changelog-content">
-            <div class="changelog-loading">Loading changelog…</div>
-          </div>
-        </section>
-
-        <section class="updates-pane" data-updates-pane="news" hidden>
-          <div id="news-content" class="changelog-content">
-            <div class="changelog-loading">Loading news…</div>
-          </div>
-        </section>
-
-        <section class="updates-pane updates-pane--contact" data-updates-pane="contact" hidden>
-          <form id="contact-form" class="contact-form">
-            <div class="contact-intro">
-              <span class="contact-kicker">GET IN TOUCH</span>
-              <h3>Contact WeikertsWonders</h3>
-              <p>Questions, feedback, bugs, or ideas for TeacherTiles? Send a message here.</p>
-            </div>
-
-            <div class="contact-grid">
-              <label class="contact-field">
-                <span>Name</span>
-                <input name="name" type="text" autocomplete="name" required maxlength="100" placeholder="Your name">
-              </label>
-
-              <label class="contact-field">
-                <span>Email</span>
-                <input name="email" type="email" autocomplete="email" required maxlength="160" placeholder="you@example.com">
-              </label>
-            </div>
-
-            <label class="contact-field">
-              <span>Subject</span>
-              <input name="subject" type="text" required maxlength="160" placeholder="What can we help with?">
-            </label>
-
-            <label class="contact-field contact-field--message">
-              <span>Message</span>
-              <textarea name="message" required maxlength="5000" rows="7" placeholder="Write your message…"></textarea>
-            </label>
-
-            <div class="contact-actions">
-              <div id="contact-status" class="contact-status" aria-live="polite"></div>
-              <button id="contact-submit" class="contact-submit" type="submit">Send Message</button>
-            </div>
-          </form>
-        </section>
-      </div>
-    </section>
-  </div>
 
 </body>
 </html>
