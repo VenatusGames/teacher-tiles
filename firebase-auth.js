@@ -1067,16 +1067,16 @@ function applyPreviewState(module, state) {
 
   if (state.type === "shapes") {
     const shapePaths = {
-      circle: "M120 24 A76 76 0 1 1 119.9 24 Z",
+      circle: "M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z",
       square: "M48 28 H192 V172 H48 Z",
       star: "M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z",
       triangle: "M120 22 L218 174 H22 Z",
-      oval: "M20 100 A100 58 0 1 1 19.9 100 Z",
+      oval: "M20 100 A100 58 0 0 1 220 100 A100 58 0 0 1 20 100 Z",
       diamond: "M120 16 L222 100 L120 184 L18 100 Z",
-      hexagon: "M62 22 H178 L226 100 L178 178 H62 L14 100 Z",
+      hexagon: "M72 18 H168 L216 100 L168 182 H72 L24 100 Z",
       rectangle: "M24 52 H216 V148 H24 Z",
-      pentagon: "M120 18 L218 88 L181 180 H59 L22 88 Z",
-      octagon: "M70 18 H170 L222 70 V130 L170 182 H70 L18 130 V70 Z"
+      pentagon: "M120 14 L210 80 L176 186 H64 L30 80 Z",
+      octagon: "M70 14 H170 L226 70 V130 L170 186 H70 L14 130 V70 Z"
     };
     const savedShape = state.special?.shape || state.dataset?.shape || "circle";
     const selected = shapePaths[savedShape] ? savedShape : "circle";

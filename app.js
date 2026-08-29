@@ -1112,6 +1112,10 @@ function findModuleTextEditTarget(target,m){
   return field&&m.contains(field)?field:null;
 }
 
+function isImmediateModuleInput(field){
+  return field instanceof HTMLInputElement&&field.type==='search';
+}
+
 function exitModuleTextEdit(field=activeModuleTextEditor){
   if(!field)return;
   field.classList.remove('module-text-edit-active');
@@ -1186,6 +1190,11 @@ function setupCommon(m){
     if(e.button!==0)return;
     const field=findModuleTextEditTarget(e.target,m);
     if(!field)return;
+    if(isImmediateModuleInput(field)){
+      e.stopPropagation();
+      enterModuleTextEdit(field);
+      return;
+    }
     if(field.classList.contains('module-text-edit-active'))return;
     const previous=moduleTextClickState.get(field);
     const now=performance.now();
@@ -3867,7 +3876,7 @@ async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=
 }
 
 function setupImage(m){
-  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input');
+  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace');
   let objectUrl='';
   let boardImageSrc='';
 
@@ -3917,7 +3926,8 @@ function setupImage(m){
   m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false})};
 
   stage.addEventListener('click',()=>input.click());
-  input.addEventListener('change',()=>setFile(input.files?.[0]));
+  replace?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();input.click()});
+  input.addEventListener('change',()=>{setFile(input.files?.[0]);input.value=''});
   stage.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();stage.classList.add('is-dragover')});
   stage.addEventListener('dragleave',()=>stage.classList.remove('is-dragover'));
   stage.addEventListener('drop',e=>{
@@ -4604,16 +4614,16 @@ function setupDictionary(m){
 }
 
 const SHAPES_TILE_DATA=[
-  {id:'circle',name:'Circle',path:'M120 24 A76 76 0 1 1 119.9 24 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'A circle is perfectly round. Every point on its edge is the same distance from its center.'},
+  {id:'circle',name:'Circle',path:'M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'A circle is perfectly round. Every point on its edge is the same distance from its center.'},
   {id:'square',name:'Square',path:'M48 28 H192 V172 H48 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A square has four equal sides and four right angles. Opposite sides are parallel.'},
   {id:'star',name:'Star',path:'M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z',sides:'10',vertices:'10',family:'Concave polygon',fact:'This five-point star has ten straight sides and ten vertices: five outer points and five inner corners.'},
   {id:'triangle',name:'Triangle',path:'M120 22 L218 174 H22 Z',sides:'3',vertices:'3',family:'Triangle',fact:'Every triangle has three straight sides, three vertices, and interior angles that add to 180°.'},
-  {id:'oval',name:'Oval',path:'M20 100 A100 58 0 1 1 19.9 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'An oval is a closed curved shape that is longer in one direction. It has no straight sides or vertices.'},
+  {id:'oval',name:'Oval',path:'M20 100 A100 58 0 0 1 220 100 A100 58 0 0 1 20 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'An oval is a closed curved shape that is longer in one direction. It has no straight sides or vertices.'},
   {id:'diamond',name:'Diamond',path:'M120 16 L222 100 L120 184 L18 100 Z',sides:'4',vertices:'4',family:'Rhombus',fact:'A diamond, or rhombus, has four equal sides. Its opposite sides are parallel and opposite angles are equal.'},
-  {id:'hexagon',name:'Hexagon',path:'M62 22 H178 L226 100 L178 178 H62 L14 100 Z',sides:'6',vertices:'6',family:'Polygon',fact:'A hexagon has six straight sides and six vertices. A regular hexagon has six equal sides and angles.'},
+  {id:'hexagon',name:'Hexagon',path:'M72 18 H168 L216 100 L168 182 H72 L24 100 Z',sides:'6',vertices:'6',family:'Polygon',fact:'A hexagon has six straight sides and six vertices. A regular hexagon has six equal sides and angles.'},
   {id:'rectangle',name:'Rectangle',path:'M24 52 H216 V148 H24 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A rectangle has four right angles. Its opposite sides are equal in length and parallel.'},
-  {id:'pentagon',name:'Pentagon',path:'M120 18 L218 88 L181 180 H59 L22 88 Z',sides:'5',vertices:'5',family:'Polygon',fact:'A pentagon has five straight sides and five vertices. A regular pentagon has five equal sides.'},
-  {id:'octagon',name:'Octagon',path:'M70 18 H170 L222 70 V130 L170 182 H70 L18 130 V70 Z',sides:'8',vertices:'8',family:'Polygon',fact:'An octagon has eight straight sides and eight vertices. Stop signs are shaped like regular octagons.'}
+  {id:'pentagon',name:'Pentagon',path:'M120 14 L210 80 L176 186 H64 L30 80 Z',sides:'5',vertices:'5',family:'Polygon',fact:'A pentagon has five straight sides and five vertices. A regular pentagon has five equal sides.'},
+  {id:'octagon',name:'Octagon',path:'M70 14 H170 L226 70 V130 L170 186 H70 L14 130 V70 Z',sides:'8',vertices:'8',family:'Polygon',fact:'An octagon has eight straight sides and eight vertices. Stop signs are shaped like regular octagons.'}
 ];
 
 function setupShapes(m){
@@ -5175,6 +5185,7 @@ function setupProgressBar(m){
   const picker=m.querySelector('.progress-bar-picker');
   const pickerGrid=m.querySelector('.progress-bar-picker__grid');
   const pickerClose=m.querySelector('.progress-bar-picker__close');
+  const customImageInput=m.querySelector('.progress-bar-custom-image-input');
 
   const colors=['blue','green','amber','rose','purple','aqua'];
   const styles=[
@@ -5221,6 +5232,7 @@ function setupProgressBar(m){
   const restoreSlotIcon=(slot,src)=>{
     const icon=resolveVisualScheduleIcon(src);
     if(icon)setSlotIcon(slot,icon);
+    else if(typeof src==='string'&&src.startsWith('data:image/'))setSlotIcon(slot,{src,label:'Custom image'});
     else clearSlotIcon(slot);
   };
 
@@ -5242,6 +5254,23 @@ function setupProgressBar(m){
     picker.hidden=true;
     activeIconSlot=null;
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='progress-bar-icon-option progress-bar-icon-option--upload';
+  uploadOption.innerHTML='<span class="custom-image-upload-mark" aria-hidden="true">+</span><span>Upload yours</span>';
+  uploadOption.setAttribute('aria-label','Upload a custom progress bar image');
+  uploadOption.addEventListener('click',()=>customImageInput?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  customImageInput?.addEventListener('change',async()=>{
+    const file=customImageInput.files?.[0];
+    if(!file||!activeIconSlot)return;
+    const data=await fileToBoardImageData(file,{maxSide:420,maxLength:70000,quality:.72,minSide:160});
+    if(data){setSlotIcon(activeIconSlot,{src:data,label:file.name||'Custom image'});notifyBoardChanged('progress-bar-image')}
+    customImageInput.value='';
+    closePicker();
+  });
 
   VISUAL_SCHEDULE_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -5435,6 +5464,7 @@ function setupVisualSchedule(m){
   const picker=m.querySelector('.visual-schedule-picker');
   const pickerGrid=m.querySelector('.visual-schedule-picker__grid');
   const pickerClose=m.querySelector('.visual-schedule-picker__close');
+  const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
   let lastObservedWidth=0;
@@ -5465,6 +5495,29 @@ function setupVisualSchedule(m){
       button.classList.toggle('is-selected',button.dataset.iconSrc===current);
     });
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='visual-schedule-icon-option visual-schedule-icon-option--upload';
+  uploadOption.innerHTML='<span class="custom-image-upload-mark" aria-hidden="true">+</span><span>Upload yours</span>';
+  uploadOption.setAttribute('aria-label','Upload a custom visual schedule image');
+  uploadOption.addEventListener('click',()=>customImageInput?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  customImageInput?.addEventListener('change',async()=>{
+    const file=customImageInput.files?.[0];
+    if(!file||!activeSegment)return;
+    const data=await fileToBoardImageData(file,{maxSide:420,maxLength:70000,quality:.72,minSide:160});
+    if(data){
+      const targetImage=activeSegment.querySelector('.visual-schedule-image img');
+      targetImage.src=data;
+      targetImage.alt=file.name||'Custom image';
+      activeSegment.dataset.iconSrc=data;
+      notifyBoardChanged('visual-schedule-image');
+    }
+    customImageInput.value='';
+    closePicker();
+  });
 
   VISUAL_SCHEDULE_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -5508,7 +5561,7 @@ function setupVisualSchedule(m){
 
   const addSegment=(data={},focus=false)=>{
     const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
-    const icon=resolveVisualScheduleIcon(data.iconSrc)||fallbackIcon;
+    const icon=resolveVisualScheduleIcon(data.iconSrc)||(typeof data.iconSrc==='string'&&data.iconSrc.startsWith('data:image/')?{src:data.iconSrc,label:'Custom image'}:fallbackIcon);
     const row=document.createElement('div');
     row.className='visual-schedule-segment';
     row.dataset.iconSrc=icon.src;
@@ -10441,6 +10494,10 @@ function setupTeacherTilesShop(){
   const prev=modal.querySelector('[data-shop-banner-prev]');
   const next=modal.querySelector('[data-shop-banner-next]');
   const products=[...modal.querySelectorAll('[data-shop-product]')];
+  const redeemForm=document.getElementById('shop-redeem-form');
+  const redeemInput=document.getElementById('shop-redeem-code');
+  const redeemStatus=document.getElementById('shop-redeem-status');
+  const subscribePreview=document.getElementById('shop-subscribe-preview');
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const COINS_KEY='teacherTilesCoins';
   const OWNED_KEY='teacherTilesOwnedShopPacks';
@@ -10575,6 +10632,22 @@ function setupTeacherTilesShop(){
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
   products.forEach(card=>card.querySelector('[data-shop-buy]')?.addEventListener('click',()=>tryBuy(card)));
+  redeemInput?.addEventListener('input',()=>{
+    const start=redeemInput.selectionStart;
+    redeemInput.value=redeemInput.value.toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,32);
+    try{redeemInput.setSelectionRange(start,start)}catch{}
+    if(redeemStatus)redeemStatus.textContent='';
+  });
+  redeemForm?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const code=redeemInput?.value.trim()||'';
+    if(!redeemStatus)return;
+    if(!code){redeemStatus.textContent='Enter a code to continue.';redeemStatus.classList.add('is-error');redeemInput?.focus();return}
+    redeemStatus.classList.remove('is-error');
+    redeemStatus.textContent='Code redemption is ready for a future rewards backend.';
+    showToast('Redemption UI ready — no code was applied.');
+  });
+  subscribePreview?.addEventListener('click',()=>showToast('Membership checkout is not active yet.'));
   modal.querySelector('.shop-banner')?.addEventListener('pointerenter',stopBannerTimer);
   modal.querySelector('.shop-banner')?.addEventListener('pointerleave',startBannerTimer);
   document.addEventListener('keydown',event=>{
