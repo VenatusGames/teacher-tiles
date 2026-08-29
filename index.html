@@ -405,6 +405,12 @@
         <div class="asset-shelf__heading">
           <span class="asset-shelf__eyebrow">COLLECTION SHELF</span>
           <strong id="asset-shelf-title">Themes</strong>
+          <div class="sticker-shelf-search" role="search">
+            <span class="sticker-shelf-search__icon" aria-hidden="true">⌕</span>
+            <input id="sticker-shelf-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search stickers…" aria-label="Search stickers">
+            <button id="sticker-shelf-search-clear" type="button" aria-label="Clear sticker search" hidden>×</button>
+            <span id="sticker-shelf-search-status" class="sticker-shelf-search__status" role="status" aria-live="polite">Search every sticker pack</span>
+          </div>
         </div>
         <button id="asset-shelf-close" class="asset-shelf__close" type="button" aria-label="Close shelf">×</button>
       </div>
@@ -441,6 +447,14 @@
                     <small>5 themes</small>
                   </span>
                   <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div class="theme-pack-wrap">
+                <button id="polka-dot-theme-pack" class="theme-pack theme-pack--polka" type="button" data-theme-pack aria-expanded="false" aria-controls="polka-dot-theme-fan">
+                  <span class="theme-pack__stack theme-pack__stack--polka" aria-hidden="true">
+                    <i class="theme-pack__sheet theme-pack__sheet--polka-berry"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sunshine"></i><i class="theme-pack__sheet theme-pack__sheet--polka-mint"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sky"></i><i class="theme-pack__sheet theme-pack__sheet--polka-lavender"></i>
+                  </span>
+                  <span class="theme-pack__meta"><strong>Polka Dot</strong><small>5 themes</small></span><span class="theme-pack__chevron" aria-hidden="true">⌃</span>
                 </button>
               </div>
               <div class="theme-pack-wrap">
@@ -534,12 +548,6 @@
         </div>
 
         <div id="sticker-shelf-content" class="asset-shelf__content" data-shelf-panel="stickers" hidden>
-          <div class="sticker-shelf-search" role="search">
-            <span class="sticker-shelf-search__icon" aria-hidden="true">⌕</span>
-            <input id="sticker-shelf-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search stickers, countries, animals…" aria-label="Search stickers">
-            <button id="sticker-shelf-search-clear" type="button" aria-label="Clear sticker search" hidden>×</button>
-            <span id="sticker-shelf-search-status" class="sticker-shelf-search__status" role="status" aria-live="polite">Search every sticker pack</span>
-          </div>
           <div class="asset-shelf__scroll sticker-shelf__scroll" aria-label="Sticker packs">
             <div class="asset-shelf__row sticker-shelf__row">
               <div class="sticker-pack-wrap">
@@ -857,6 +865,7 @@
               <div class="shop-product__preview shop-product__preview--pastel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Pastel</h3><p>Five soft classroom-ready colors.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
+            <article class="shop-product" data-shop-product="theme-polka-dot" data-shop-price="250"><div class="shop-product__preview shop-product__preview--polka" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Polka Dot</h3><p>Five playful background-and-dot color combinations.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
             <article class="shop-product" data-shop-product="theme-programmer" data-shop-price="300">
               <div class="shop-product__preview shop-product__preview--programmer" aria-hidden="true"><code>&gt;_</code><span>const board = "awesome";<br>function teach() { return true; }<br>01010110 00110001</span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Programmer</h3><p>Four terminal-inspired hacker palettes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div>
@@ -972,6 +981,14 @@
       <span class="theme-card__copy"><strong>Pastel Lilac</strong><small>Soft lavender</small></span>
       <span class="theme-card__check" aria-hidden="true">✓</span>
     </button>
+  </div>
+
+  <div id="polka-dot-theme-fan" class="theme-fan theme-fan--pastel theme-fan--polka" aria-hidden="true" role="group" aria-label="Polka Dot theme pack">
+    <button class="theme-card theme-card--polka-berry" type="button" data-theme-choice="polka-berry" aria-label="Use Berry Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Berry</strong><small>Pink and cherry</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-sunshine" type="button" data-theme-choice="polka-sunshine" aria-label="Use Sunshine Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Sunshine</strong><small>Cream and orange</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-mint" type="button" data-theme-choice="polka-mint" aria-label="Use Mint Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Mint</strong><small>Mint and green</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-sky" type="button" data-theme-choice="polka-sky" aria-label="Use Sky Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Sky</strong><small>Blue on blue</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
+    <button class="theme-card theme-card--polka-lavender" type="button" data-theme-choice="polka-lavender" aria-label="Use Lavender Polka Dot theme"><span class="theme-card__preview theme-card__preview--polka" aria-hidden="true"></span><span class="theme-card__copy"><strong>Lavender</strong><small>Lilac and violet</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button>
   </div>
 
   <div id="programmer-theme-fan" class="theme-fan theme-fan--programmer" aria-hidden="true" role="group" aria-label="Programmer theme pack">

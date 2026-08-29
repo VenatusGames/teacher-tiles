@@ -5180,6 +5180,7 @@ const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
+  'polka-berry','polka-sunshine','polka-mint','polka-sky','polka-lavender',
   'programmer-green','programmer-red','programmer-yellow','programmer-blue',
   'wood-oak','wood-spruce','wood-redwood','wood-cherry',
   'notebook-red','notebook-blue','notebook-black',
@@ -5191,6 +5192,7 @@ const TEACHERTILES_THEMES=new Set([
 const THEME_BODY_CLASSES=[
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
+  'theme-polka-berry','theme-polka-sunshine','theme-polka-mint','theme-polka-sky','theme-polka-lavender',
   'theme-programmer-green','theme-programmer-red','theme-programmer-yellow','theme-programmer-blue',
   'theme-wood-oak','theme-wood-spruce','theme-wood-redwood','theme-wood-cherry',
   'theme-notebook-red','theme-notebook-blue','theme-notebook-black',
@@ -5221,20 +5223,20 @@ function buildCosmosThemeArtwork(theme){
   };
   const [base,cloud,glow,star]=palettes[theme]||palettes['cosmos-nebula'];
   const seed=Math.floor(materialRandomBetween(1,9999));
-  const stars=Array.from({length:150},()=>{
+  const stars=Array.from({length:260},()=>{
     const x=materialRandomBetween(8,1192).toFixed(1),y=materialRandomBetween(8,792).toFixed(1);
     const radius=materialRandomBetween(.45,1.65).toFixed(2),opacity=materialRandomBetween(.35,.96).toFixed(2);
     return`<circle cx="${x}" cy="${y}" r="${radius}" fill="${Math.random()>.72?glow:star}" opacity="${opacity}"/>`;
   }).join('');
   const spiralPath='M-175 7C-128-104 66-126 160-42C243 33 115 150-44 116C-157 91-205 7-135-61C-73-121 61-83 109-18C145 31 60 79-18 62C-76 50-89 2-49-27C-17-51 37-31 48 1';
-  const swirls=Array.from({length:8},(_,index)=>{
-    const x=materialRandomBetween(90,1110).toFixed(1),y=materialRandomBetween(70,730).toFixed(1);
-    const rotate=materialRandomBetween(-175,175).toFixed(1),scale=materialRandomBetween(.38,.92).toFixed(2);
-    const width=materialRandomBetween(24,58).toFixed(1),opacity=materialRandomBetween(.24,.58).toFixed(2);
+  const swirls=Array.from({length:24},(_,index)=>{
+    const x=materialRandomBetween(35,1165).toFixed(1),y=materialRandomBetween(30,770).toFixed(1);
+    const rotate=materialRandomBetween(-175,175).toFixed(1),scale=materialRandomBetween(.12,.34).toFixed(2);
+    const width=materialRandomBetween(7,16).toFixed(1),opacity=materialRandomBetween(.08,.2).toFixed(2);
     const color=index%3===0?glow:cloud;
-    return`<g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#warp)"><path d="${spiralPath}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soft)"/><path d="${spiralPath}" fill="none" stroke="${glow}" stroke-width="${Math.max(5,Number(width)*.14).toFixed(1)}" stroke-linecap="round" opacity=".42"/></g>`;
+    return`<g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#warp)"><path d="${spiralPath}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soft)"/><path d="${spiralPath}" fill="none" stroke="${glow}" stroke-width="${materialRandomBetween(1,3).toFixed(1)}" stroke-linecap="round" opacity="${materialRandomBetween(.1,.22).toFixed(2)}"/></g>`;
   }).join('');
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="warp" x="-45%" y="-45%" width="190%" height="190%"><feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="2" seed="${seed}" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="38"/></filter><filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter><radialGradient id="shade"><stop stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${base}" stop-opacity=".5"/></radialGradient></defs>${stars}${swirls}<rect width="1200" height="800" fill="url(#shade)" pointer-events="none"/></svg>`;
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="warp" x="-45%" y="-45%" width="190%" height="190%"><feTurbulence type="fractalNoise" baseFrequency=".012 .025" numOctaves="2" seed="${seed}" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="22"/></filter><filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter><radialGradient id="shade"><stop stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${base}" stop-opacity=".25"/></radialGradient></defs>${stars}${swirls}<rect width="1200" height="800" fill="url(#shade)" pointer-events="none"/></svg>`;
 }
 
 function buildCardboardThemeArtwork(theme){
@@ -5242,15 +5244,15 @@ function buildCardboardThemeArtwork(theme){
   const label=labelColors[theme]||labelColors['cardboard-kraft'];
   const ink=theme==='cardboard-blue'?'#274655':theme==='cardboard-rose'?'#5b343a':'#423a32';
   const seed=Math.floor(materialRandomBetween(1,9999));
-  const cells=Array.from({length:12},(_,index)=>index).sort(()=>Math.random()-.5).slice(0,9);
+  const cells=Array.from({length:96},(_,index)=>index).sort(()=>Math.random()-.5).slice(0,64);
   const labels=cells.map(index=>{
-    const col=index%4,row=Math.floor(index/4);
-    const x=col*300+materialRandomBetween(32,92),y=row*266+materialRandomBetween(28,105);
-    const width=materialRandomBetween(155,220),height=materialRandomBetween(88,124),angle=materialRandomBetween(-12,12);
+    const col=index%12,row=Math.floor(index/12);
+    const x=col*100+materialRandomBetween(8,42),y=row*100+materialRandomBetween(9,55);
+    const width=materialRandomBetween(28,52),height=materialRandomBetween(17,31),angle=materialRandomBetween(-14,14);
     const scaleX=width/210,scaleY=height/120;
     return`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${scaleX.toFixed(2)} ${scaleY.toFixed(2)})"><rect width="210" height="120" rx="9" fill="${label}" fill-opacity=".9" filter="url(#labelShadow)"/><path d="M21 27h90M21 44h145M21 62h112" stroke="${ink}" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/><path d="M23 82v23m8-23v23m7-23v23m11-23v23m6-23v23m13-23v23m7-23v23m11-23v23m6-23v23m13-23v23m8-23v23" stroke="${ink}" stroke-opacity=".52" stroke-width="3"/></g>`;
   }).join('');
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="fiber"><feTurbulence type="fractalNoise" baseFrequency=".018 .11" numOctaves="3" seed="${seed}"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer></filter><filter id="labelShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#4d2f19" flood-opacity=".22"/></filter></defs><rect width="1200" height="800" filter="url(#fiber)" opacity=".42"/>${labels}</svg>`;
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="fiber"><feTurbulence type="fractalNoise" baseFrequency=".018 .11" numOctaves="3" seed="${seed}"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer></filter><filter id="labelShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#4d2f19" flood-opacity=".2"/></filter></defs><rect width="1200" height="800" filter="url(#fiber)" opacity=".42"/>${labels}</svg>`;
 }
 
 function buildCorkboardThemeArtwork(theme){
@@ -5258,12 +5260,12 @@ function buildCorkboardThemeArtwork(theme){
   const pin=pinColors[theme]||pinColors['corkboard-red'];
   const seed=Math.floor(materialRandomBetween(1,9999));
   const points=[];
-  for(let attempts=0;attempts<500&&points.length<19;attempts++){
-    const point={x:materialRandomBetween(32,1168),y:materialRandomBetween(30,770)};
-    if(points.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>105))points.push(point);
+  for(let attempts=0;attempts<2500&&points.length<68;attempts++){
+    const point={x:materialRandomBetween(18,1182),y:materialRandomBetween(18,782)};
+    if(points.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>72))points.push(point);
   }
-  const flecks=Array.from({length:130},()=>`<circle cx="${materialRandomBetween(0,1200).toFixed(1)}" cy="${materialRandomBetween(0,800).toFixed(1)}" r="${materialRandomBetween(.7,2.2).toFixed(1)}" fill="${Math.random()>.5?'#6f4322':'#edc58f'}" opacity="${materialRandomBetween(.1,.28).toFixed(2)}"/>`).join('');
-  const pins=points.map(point=>`<g transform="translate(${point.x.toFixed(1)} ${point.y.toFixed(1)}) rotate(${materialRandomBetween(-16,16).toFixed(1)})"><ellipse cy="7" rx="11" ry="7" fill="#4b2a16" opacity=".25"/><circle r="10" fill="${pin}"/><circle cx="-3" cy="-3" r="3.2" fill="#fff" opacity=".48"/><path d="M0 9v12" stroke="#6b523f" stroke-width="2" opacity=".55"/></g>`).join('');
+  const flecks=Array.from({length:260},()=>`<circle cx="${materialRandomBetween(0,1200).toFixed(1)}" cy="${materialRandomBetween(0,800).toFixed(1)}" r="${materialRandomBetween(.45,1.5).toFixed(1)}" fill="${Math.random()>.5?'#6f4322':'#edc58f'}" opacity="${materialRandomBetween(.1,.28).toFixed(2)}"/>`).join('');
+  const pins=points.map(point=>`<g transform="translate(${point.x.toFixed(1)} ${point.y.toFixed(1)}) rotate(${materialRandomBetween(-16,16).toFixed(1)})"><ellipse cy="2.2" rx="4" ry="2.5" fill="#4b2a16" opacity=".25"/><circle r="3.6" fill="${pin}"/><circle cx="-1.1" cy="-1.1" r="1.1" fill="#fff" opacity=".48"/><path d="M0 3.2v4.5" stroke="#6b523f" stroke-width=".8" opacity=".55"/></g>`).join('');
   return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="cork"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="${seed}"/><feColorMatrix type="saturate" values=".25"/><feComponentTransfer><feFuncA type="linear" slope=".18"/></feComponentTransfer></filter></defs><rect width="1200" height="800" filter="url(#cork)" opacity=".55"/>${flecks}${pins}</svg>`;
 }
 
