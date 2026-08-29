@@ -44,6 +44,7 @@ let boardList = [];
 let activeBoardId = "";
 let boardLoading = false;
 let boardDeleting = false;
+let boardRenaming = false;
 let boardSaving = false;
 let localBoardSaveTimer = 0;
 let cloudBoardSaveTimer = 0;
@@ -1053,6 +1054,17 @@ function applyPreviewState(module, state) {
 
   for (const cls of Array.isArray(state.classes) ? state.classes : []) module.classList.add(cls);
 
+  if (state.type === "interactive") {
+    const candle = module.dataset.interactiveMode === "candle";
+    const hourglassStage = module.querySelector(".hourglass-stage");
+    const candleStage = module.querySelector(".candle-stage");
+    if (hourglassStage) hourglassStage.hidden = candle;
+    if (candleStage) candleStage.hidden = !candle;
+    module.querySelectorAll("[data-interactive]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.interactive === (candle ? "candle" : "hourglass"));
+    });
+  }
+
   const controls = [...module.querySelectorAll("input,textarea,select")];
   for (const saved of Array.isArray(state.fields) ? state.fields : []) {
     const field = controls[saved.index];
@@ -1197,7 +1209,7 @@ function createMiniObject(item) {
 }
 
 async function deleteBoard(boardId) {
-  if (!currentUser || !db || !firestoreSdk || !boardId || boardDeleting) return;
+  if (!currentUser || !db || !firestoreSdk || !boardId || boardDeleting || boardRenaming) return;
   const board = boardList.find(item => item.id === boardId);
   if (!board) return;
   if (!window.confirm(`Delete ${board.name}? This cannot be undone.`)) return;
@@ -1254,6 +1266,105 @@ async function deleteBoard(boardId) {
   }
 }
 
+async function renameBoard(boardId, nextName) {
+  if (!currentUser || !db || !firestoreSdk || !boardId || boardRenaming) return false;
+  const board = boardList.find(item => item.id === boardId);
+  const name = String(nextName || "").trim().replace(/\s+/g, " ").slice(0, 80);
+  if (!board || !name) return false;
+  if (name === board.name) return true;
+
+  boardRenaming = true;
+  setBoardStatus("Renaming…");
+  try {
+    await firestoreSdk.setDoc(boardDocument(currentUser.uid, boardId), {
+      name,
+      updatedAt: firestoreSdk.serverTimestamp()
+    }, { merge: true });
+    board.name = name;
+    board.updatedAt = { seconds: Date.now() / 1000 };
+    cacheBoardListMetadata();
+    setBoardStatus("Saved");
+    renderBoards();
+    window.setTimeout(() => {
+      if (boardsSaveStatus?.textContent === "Saved") setBoardStatus("");
+    }, 1400);
+    return true;
+  } catch (error) {
+    console.error("TeacherTiles board rename failed", error);
+    setBoardStatus("Could not rename board", true);
+    return false;
+  } finally {
+    boardRenaming = false;
+  }
+}
+
+function beginBoardRename(card, board, title) {
+  if (!card || !board || !title || boardLoading || boardDeleting || boardRenaming || card.classList.contains("is-renaming")) return;
+  card.classList.add("is-renaming");
+
+  const form = document.createElement("form");
+  form.className = "board-card__rename-form";
+
+  const input = document.createElement("input");
+  input.className = "board-card__rename-input";
+  input.type = "text";
+  input.value = board.name;
+  input.maxLength = 80;
+  input.setAttribute("aria-label", "Board name");
+
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.className = "board-card__rename-save";
+  save.textContent = "Save";
+
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "board-card__rename-cancel";
+  cancel.textContent = "Cancel";
+
+  form.append(input, save, cancel);
+  title.replaceWith(form);
+
+  const stopEditing = () => {
+    if (!form.isConnected) return;
+    form.replaceWith(title);
+    card.classList.remove("is-renaming");
+  };
+
+  cancel.addEventListener("click", stopEditing);
+  input.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      stopEditing();
+    }
+  });
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const name = input.value.trim().replace(/\s+/g, " ");
+    if (!name) {
+      input.setCustomValidity("Enter a board name.");
+      input.reportValidity();
+      return;
+    }
+    input.setCustomValidity("");
+    input.disabled = true;
+    save.disabled = true;
+    cancel.disabled = true;
+    const renamed = await renameBoard(board.id, name);
+    if (!renamed && form.isConnected) {
+      input.disabled = false;
+      save.disabled = false;
+      cancel.disabled = false;
+      input.focus();
+    }
+  });
+
+  requestAnimationFrame(() => {
+    input.focus({ preventScroll: true });
+    input.select();
+  });
+}
+
 function createBoardCard(board) {
   const card = document.createElement("article");
   card.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
@@ -1282,6 +1393,7 @@ function createBoardCard(board) {
   meta.className = "board-card__meta";
 
   const title = document.createElement("strong");
+  title.className = "board-card__title";
   title.textContent = board.name;
 
   const count = document.createElement("span");
@@ -1289,7 +1401,14 @@ function createBoardCard(board) {
   count.textContent = `${total} ${total === 1 ? "item" : "items"}`;
 
   meta.append(title, count);
-  openButton.append(preview, meta);
+  openButton.append(preview);
+
+  const renameButton = document.createElement("button");
+  renameButton.type = "button";
+  renameButton.className = "board-card__rename";
+  renameButton.setAttribute("aria-label", `Rename ${board.name}`);
+  renameButton.title = "Rename board";
+  renameButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16.8-.7 3 3-.7L18.2 8.2l-2.3-2.3L5 16.8ZM14.8 7l2.3 2.3M4.3 19.8h15.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -1299,7 +1418,7 @@ function createBoardCard(board) {
   deleteButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8.5h10M9 8.5V6.7h6v1.8m-7 0 .7 9.1h6.6l.7-9.1M10.5 11v4.4M13.5 11v4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   openButton.addEventListener("click", async () => {
-    if (boardLoading || boardDeleting) return;
+    if (boardLoading || boardDeleting || boardRenaming) return;
     if (board.id === activeBoardId) {
       closeBoardsView();
       return;
@@ -1320,7 +1439,13 @@ function createBoardCard(board) {
     deleteBoard(board.id);
   });
 
-  card.append(openButton, deleteButton);
+  renameButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    beginBoardRename(card, board, title);
+  });
+
+  card.append(openButton, meta, renameButton, deleteButton);
   return card;
 }
 

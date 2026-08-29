@@ -1440,7 +1440,7 @@ function setupStickerTransformControls(m){
   updateStickerVisualSize(m);
 }
 
-function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=0;bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
+function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
 
 const shapePaths={
   circle:'M50 4 A46 46 0 1 1 49.999 4 Z',
@@ -1591,7 +1591,9 @@ function setupTimer(m){
   if(stage)sizeObserver.observe(stage);
   requestAnimationFrame(sizeVisual);
 
-  setShape('circle');
+  const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
+  shapeButtons.forEach(button=>button.classList.toggle('is-active',button.dataset.shape===initialShape));
+  setShape(initialShape);
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
     m.style.setProperty('--timer-progress-ratio',progress.toFixed(4));
@@ -1608,7 +1610,7 @@ function setupTimer(m){
   };
 }
 
-function setupHourglass(m){const hourStage=m.querySelector('.hourglass-stage'),candleStage=m.querySelector('.candle-stage'),countdownHour=m.querySelector('.hourglass-countdown'),countdownCandle=m.querySelector('.candle-countdown'),topClip=m.querySelector('.hg-top-clip'),bottomClip=m.querySelector('.hg-bottom-clip'),top=m.querySelector('.hg-sand-top'),bottom=m.querySelector('.hg-sand-bottom'),pile=m.querySelector('.hg-bottom-pile'),stream=m.querySelector('.hg-stream'),candleBody=m.querySelector('.candle-body'),candleScene=m.querySelector('.candle-scene'),modeButtons=[...m.querySelectorAll('[data-interactive]')],bgBtn=m.querySelector('.interactive-bg'),candleColorBtn=m.querySelector('.candle-color-control');const topId=`hg-top-${++uid}`,bottomId=`hg-bottom-${++uid}`;topClip.id=topId;bottomClip.id=bottomId;top.setAttribute('clip-path',`url(#${topId})`);bottom.setAttribute('clip-path',`url(#${bottomId})`);pile.setAttribute('clip-path',`url(#${bottomId})`);let mode='hourglass';const setMode=next=>{mode=next;m.dataset.interactiveMode=mode;hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';modeButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.interactive===mode))};modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));candleColorBtn.addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));const cleanup=bindTimerControls(m,({progress,running,left})=>{const text=formatCountdown(left);countdownHour.textContent=text;countdownCandle.textContent=text;const topY=62+96*progress,topH=96*(1-progress);top.setAttribute('y',topY.toFixed(2));top.setAttribute('height',Math.max(0,topH).toFixed(2));const bottomH=96*progress,bottomY=278-bottomH;bottom.setAttribute('y',bottomY.toFixed(2));bottom.setAttribute('height',bottomH.toFixed(2));pile.setAttribute('opacity',progress>0.03?'1':'0');pile.setAttribute('transform',`translate(0 ${Math.max(0,30-progress*30).toFixed(2)}) scale(1 ${Math.max(.18,progress).toFixed(3)})`);stream.setAttribute('opacity',running&&left>0?'1':'0');const h=78-(70*progress);candleScene.style.setProperty('--candle-height',`${Math.max(8,h)}%`);m.classList.toggle('candle-finished',mode==='candle'&&left<=0)}, {onFinish:()=>{if(mode==='candle')m.classList.add('candle-finished')}});setMode('hourglass');m._cleanup=cleanup}
+function setupHourglass(m){const hourStage=m.querySelector('.hourglass-stage'),candleStage=m.querySelector('.candle-stage'),countdownHour=m.querySelector('.hourglass-countdown'),countdownCandle=m.querySelector('.candle-countdown'),topClip=m.querySelector('.hg-top-clip'),bottomClip=m.querySelector('.hg-bottom-clip'),top=m.querySelector('.hg-sand-top'),bottom=m.querySelector('.hg-sand-bottom'),pile=m.querySelector('.hg-bottom-pile'),stream=m.querySelector('.hg-stream'),candleBody=m.querySelector('.candle-body'),candleScene=m.querySelector('.candle-scene'),modeButtons=[...m.querySelectorAll('[data-interactive]')],bgBtn=m.querySelector('.interactive-bg'),candleColorBtn=m.querySelector('.candle-color-control');const topId=`hg-top-${++uid}`,bottomId=`hg-bottom-${++uid}`;topClip.id=topId;bottomClip.id=bottomId;top.setAttribute('clip-path',`url(#${topId})`);bottom.setAttribute('clip-path',`url(#${bottomId})`);pile.setAttribute('clip-path',`url(#${bottomId})`);let mode='hourglass';const setMode=next=>{mode=next==='candle'?'candle':'hourglass';m.dataset.interactiveMode=mode;hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';modeButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.interactive===mode))};modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));candleColorBtn.addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));const cleanup=bindTimerControls(m,({progress,running,left})=>{const text=formatCountdown(left);countdownHour.textContent=text;countdownCandle.textContent=text;const topY=62+96*progress,topH=96*(1-progress);top.setAttribute('y',topY.toFixed(2));top.setAttribute('height',Math.max(0,topH).toFixed(2));const bottomH=96*progress,bottomY=278-bottomH;bottom.setAttribute('y',bottomY.toFixed(2));bottom.setAttribute('height',bottomH.toFixed(2));pile.setAttribute('opacity',progress>0.03?'1':'0');pile.setAttribute('transform',`translate(0 ${Math.max(0,30-progress*30).toFixed(2)}) scale(1 ${Math.max(.18,progress).toFixed(3)})`);stream.setAttribute('opacity',running&&left>0?'1':'0');const h=78-(70*progress);candleScene.style.setProperty('--candle-height',`${Math.max(8,h)}%`);m.classList.toggle('candle-finished',mode==='candle'&&left<=0)}, {onFinish:()=>{if(mode==='candle')m.classList.add('candle-finished')}});setMode(m.dataset.interactiveMode);m._boardGetState=()=>({mode});m._boardSetState=state=>setMode(state?.mode||m.dataset.interactiveMode);m._cleanup=cleanup}
 
 function cycleData(m,key,values){const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
@@ -1642,13 +1644,18 @@ function setupClock(m){
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
   m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
-  modeBtn.addEventListener('click',()=>{
-    const analog=m.dataset.clockMode!=='analog';
-    m.dataset.clockMode=analog?'analog':'digital';
+  const syncModeControls=()=>{
+    const analog=m.dataset.clockMode==='analog';
     modeBtn.classList.toggle('is-active',analog);
     modeBtn.querySelector('span').textContent=analog?'◴':'◷';
     secondsBtn.hidden=analog;
     periodBtn.hidden=analog;
+  };
+
+  modeBtn.addEventListener('click',()=>{
+    const analog=m.dataset.clockMode!=='analog';
+    m.dataset.clockMode=analog?'analog':'digital';
+    syncModeControls();
     refit();
   });
 
@@ -1677,6 +1684,9 @@ function setupClock(m){
   const ro=new ResizeObserver(refit);
   ro.observe(m);
   ro.observe(display);
+  syncModeControls();
+  secondsBtn.classList.toggle('is-active',m.classList.contains('show-seconds'));
+  periodBtn.classList.toggle('is-active',!m.classList.contains('hide-period'));
   const id=setInterval(update,100);
   update();
   m._cleanup=()=>{clearInterval(id);ro.disconnect()};
@@ -1849,7 +1859,7 @@ function setupWritingLines(m){
   }
 
   setLineCount(Number(m.dataset.lineCount)||3);
-  setMode(false);
+  setMode(m.dataset.writingMode==='type');
   fitAll();
 
   const prior=m._cleanup;
@@ -1948,11 +1958,17 @@ function setupStopwatch(m){
     cycleData(m,'text',['dark','soft','blue','rose','white']);
   });
 
+  const syncModeControl=()=>{
+    const analog=m.dataset.stopwatchMode==='analog';
+    modeBtn?.classList.toggle('is-active',analog);
+    const icon=modeBtn?.querySelector('span');
+    if(icon)icon.textContent=analog?'◴':'◷';
+  };
+
   modeBtn?.addEventListener('click',()=>{
     const analog=m.dataset.stopwatchMode!=='analog';
     m.dataset.stopwatchMode=analog?'analog':'digital';
-    modeBtn.classList.toggle('is-active',analog);
-    modeBtn.querySelector('span').textContent=analog?'◴':'◷';
+    syncModeControl();
     render();
   });
 
@@ -1987,6 +2003,7 @@ function setupStopwatch(m){
     render();
   };
 
+  syncModeControl();
   render();
   m._cleanup=()=>cancelAnimationFrame(raf);
 }
@@ -4937,6 +4954,15 @@ function setupProgressBar(m){
     styleButton.textContent=next.label;
   };
 
+  const syncVisualControls=()=>{
+    const vertical=m.dataset.orientation==='vertical';
+    orientationButton.textContent=vertical?'↕':'↔';
+    orientationButton.title=vertical?'Switch to horizontal':'Switch to vertical';
+    const style=styles.find(option=>option.key===m.dataset.barStyle)||styles[0];
+    m.dataset.barStyle=style.key;
+    styleButton.textContent=style.label;
+  };
+
   m.querySelector('.progress-bar-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.progress-bar-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -4971,6 +4997,7 @@ function setupProgressBar(m){
   const defaultEnd=new Date(Date.now()+30*60*1000);
   endInput.value=formatInputTime(defaultEnd);
   initializeFromInput();
+  syncVisualControls();
 
   interval=window.setInterval(render,200);
   render();
@@ -4979,6 +5006,8 @@ function setupProgressBar(m){
     initializedAt,
     targetAt,
     completed,
+    orientation:m.dataset.orientation||'horizontal',
+    barStyle:m.dataset.barStyle||'glass',
     startIconSrc:iconStart.dataset.iconSrc||'',
     endIconSrc:iconEnd.dataset.iconSrc||''
   });
@@ -4987,6 +5016,9 @@ function setupProgressBar(m){
     initializedAt=Number(state.initializedAt)||Date.now();
     targetAt=Number(state.targetAt)||Date.now()+30*60*1000;
     completed=Boolean(state.completed);
+    if(state.orientation==='vertical'||state.orientation==='horizontal')m.dataset.orientation=state.orientation;
+    if(styles.some(option=>option.key===state.barStyle))m.dataset.barStyle=state.barStyle;
+    syncVisualControls();
     restoreSlotIcon(iconStart,state.startIconSrc||state.startIcon||'');
     restoreSlotIcon(iconEnd,state.endIconSrc||state.endIcon||'');
     endInput.value=formatInputTime(new Date(targetAt));
@@ -9441,6 +9473,14 @@ function captureBoardDataset(m){
   return data;
 }
 
+function restoreBoardDataset(m,dataset){
+  if(!dataset||typeof dataset!=='object')return;
+  for(const [key,value] of Object.entries(dataset)){
+    if(key==='type'||key==='boardObjectId')continue;
+    m.dataset[key]=String(value);
+  }
+}
+
 function captureBoardFields(m){
   return[...m.querySelectorAll('input,textarea,select')].map((field,index)=>{
     if(field instanceof HTMLInputElement&&field.type==='file')return null;
@@ -9491,12 +9531,7 @@ function captureBoardClasses(m){
 function applyBoardPreSetupState(m,state){
   if(!state)return;
   if(state.id)m.dataset.boardObjectId=state.id;
-  if(state.dataset&&typeof state.dataset==='object'){
-    for(const [key,value] of Object.entries(state.dataset)){
-      if(key==='type'||key==='boardObjectId')continue;
-      m.dataset[key]=String(value);
-    }
-  }
+  restoreBoardDataset(m,state.dataset);
   for(const cls of Array.isArray(state.classes)?state.classes:[]){
     if(!BOARD_TRANSIENT_CLASSES.has(cls))m.classList.add(cls);
   }
@@ -9506,6 +9541,10 @@ function applyBoardPreSetupState(m,state){
 
 function applyBoardPostSetupState(m,state){
   if(!m||!state)return;
+  // Setup routines may establish their own default data attributes while they
+  // wire controls. Reapply the saved customization after setup so colors,
+  // fonts, layouts, styles, and other dataset-backed choices always survive.
+  restoreBoardDataset(m,state.dataset);
   restoreBoardFields(m,state.fields,{dispatch:true});
   restoreBoardEditables(m,state.editables,{dispatch:true});
 
