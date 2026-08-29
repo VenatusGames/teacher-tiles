@@ -157,6 +157,39 @@
             </div>
             <small data-i18n="profile.balance">Account balance</small>
           </div>
+          <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
+            <div class="profile-badge-showcase__head">
+              <div><span>YOUR PROFILE</span><h3 id="profile-badges-title">Patch Collection</h3></div>
+              <small id="profile-badge-count">1 earned</small>
+            </div>
+            <div class="profile-badge-grid">
+              <article id="profile-beta-badge" class="profile-badge profile-badge--beta" tabindex="0" aria-label="Beta Tester patch. Awarded August 28, 2026.">
+                <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><i>β</i></span>
+                <span class="profile-badge__copy"><strong>Beta Tester</strong></span>
+                <span class="profile-badge__date" role="tooltip">Awarded Aug 28, 2026</span>
+                <span class="profile-badge__check" aria-hidden="true">✓</span>
+              </article>
+              <button class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-disabled="true" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. Work for TeacherTiles to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><img src="assets/profile/teachertiles-profile-logo.png" alt=""></span>
+                <span class="profile-badge__copy"><strong>TeacherTiles</strong></span>
+                <span id="teachertiles-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Work for TeacherTiles</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" aria-disabled="true" aria-describedby="subscriber-patch-requirement" aria-label="Subscriber patch. Locked. Pay for a monthly subscription to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true">
+                  <svg viewBox="0 0 48 48"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg>
+                </span>
+                <span class="profile-badge__copy"><strong>Subscriber</strong></span>
+                <span id="subscriber-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Pay for a monthly subscription</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--contributor" type="button" aria-disabled="true" aria-describedby="contributor-patch-requirement" aria-label="Contributor patch. Locked. Get your idea added to TeacherTiles to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true">
+                  <svg viewBox="0 0 48 48"><path d="M24 7.5a12.8 12.8 0 0 0-8.4 22.5c2 1.7 2.9 3.3 3.1 5h10.6c.2-1.7 1.1-3.3 3.1-5A12.8 12.8 0 0 0 24 7.5Z"/><path d="M19 39h10M20.8 43h6.4M24 3V.8M9.8 9.8 7.5 7.5M38.2 9.8l2.3-2.3M7 23H3.8M44.2 23H41"/></svg>
+                </span>
+                <span class="profile-badge__copy"><strong>Contributor</strong></span>
+                <span id="contributor-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Get your idea added to TeacherTiles</span>
+              </button>
+            </div>
+          </section>
           <div class="profile-account-note">
             <strong data-i18n="profile.connectedTitle">Your profile is connected.</strong>
             <span data-i18n="profile.connectedCopy">This account will be used for your saved TeacherTiles boards and account data.</span>
@@ -224,6 +257,12 @@
               <svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v11h-15zM5 7l7 5 7-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <span data-i18n="settings.tab.contact">Contact Us</span>
+          </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="terms" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--terms" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 3.8h9.2L19 7.6v12.6H6zM15.2 3.8v3.8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m8.7 7.4 1.1 1.1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>Terms &amp; Conditions</span>
           </button>
         </nav>
 
@@ -390,6 +429,30 @@
                   <button id="contact-submit" class="contact-submit" type="submit">Send Message</button>
                 </div>
               </form>
+            </div>
+          </section>
+
+          <section class="settings-pane settings-pane--terms" data-settings-pane="terms" hidden>
+            <div class="settings-page-heading settings-updates-heading">
+              <span>LEGAL</span>
+              <h2>Terms &amp; Conditions</h2>
+              <p>Effective August 28, 2026. Please read these terms before using TeacherTiles.</p>
+            </div>
+            <div class="terms-document">
+              <div class="terms-notice"><strong>Plain-language note</strong><span>These terms are a general starter document and do not replace advice from a qualified attorney.</span></div>
+              <article><h3>1. Acceptance and eligibility</h3><p>By accessing or using TeacherTiles, you agree to these Terms. If you use TeacherTiles for a school, district, or other organization, you confirm that you are authorized to accept these Terms for that organization. Do not use the service if you do not agree.</p></article>
+              <article><h3>2. Classroom use and accounts</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p></article>
+              <article><h3>3. Your content</h3><p>You keep ownership of text, images, flashcards, boards, and other content you create or upload. You grant TeacherTiles a limited license to host, process, display, and store that content only as needed to operate and improve the service. You confirm that you have the rights and permissions needed for anything you upload.</p></article>
+              <article><h3>4. TeacherTiles intellectual property and license</h3><p>The TeacherTiles software, interface, visual design, branding, original artwork, documentation, and other original materials are owned by TeacherTiles or its licensors and may be protected by copyright, trademark, and other laws. We grant you a limited, personal, non-exclusive, non-transferable, revocable license to use the service for its intended purpose. Except where applicable law or an identified open-source license permits it, you may not reproduce, redistribute, sell, sublicense, scrape, reverse engineer, remove ownership notices from, or create a competing product from TeacherTiles code or assets without prior written permission. These Terms do not restrict lawful fair use or other rights that cannot legally be waived.</p></article>
+              <article><h3>5. Acceptable use</h3><p>You may not interfere with the service, bypass access controls, introduce malware, impersonate another person, abuse redemption or virtual-currency systems, infringe others’ rights, or use TeacherTiles for unlawful, harmful, deceptive, or harassing activity. We may suspend access needed to protect users, the service, or legal rights.</p></article>
+              <article><h3>6. Purchases, subscriptions, and Coins</h3><p>Paid features are not active unless a checkout clearly says otherwise. Before any recurring subscription begins, the price, billing frequency, material terms, and cancellation method will be shown and your express consent will be required. TeacherTiles Coins and cosmetic items are limited licenses for use inside TeacherTiles, have no cash value, and may not be transferred or redeemed for money except where required by law. Refunds and cancellation rights will follow the terms shown at purchase and applicable law.</p></article>
+              <article><h3>7. Third-party services</h3><p>TeacherTiles may use or link to third-party services, media, websites, authentication, or data providers. Their availability, content, and practices are controlled by those providers and may be governed by separate terms. We are not responsible for third-party services to the fullest extent permitted by law.</p></article>
+              <article><h3>8. No warranties</h3><p>To the fullest extent permitted by law, TeacherTiles is provided “as is” and “as available,” without express or implied warranties, including warranties of merchantability, fitness for a particular purpose, non-infringement, uninterrupted availability, security, accuracy, or freedom from errors. You are responsible for reviewing classroom materials and maintaining appropriate backups.</p></article>
+              <article><h3>9. Limitation of liability</h3><p>To the fullest extent permitted by law, TeacherTiles and its owners, developers, contributors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages; loss of data, profits, goodwill, or business; classroom disruption; or claims arising from user content or third-party services. This section does not exclude or limit any liability that cannot legally be excluded or limited, and applicable law may give you additional rights.</p></article>
+              <article><h3>10. Indemnity</h3><p>To the extent permitted by law, you agree to defend and indemnify TeacherTiles and its owners and developers from third-party claims arising from your unlawful use of the service, your content, or your violation of these Terms or another person’s rights.</p></article>
+              <article><h3>11. Changes and termination</h3><p>Features may change, be interrupted, or be discontinued. We may update these Terms and will post the effective date with the revised version. Material changes will be communicated through a reasonable notice when required. You may stop using TeacherTiles at any time. Provisions that by their nature should survive termination will remain in effect.</p></article>
+              <article><h3>12. General terms</h3><p>Applicable law governs these Terms without overriding consumer protections that apply where you live. If one provision is unenforceable, the remaining provisions stay in effect. Failure to enforce a provision is not a waiver. These Terms are the agreement about your use of TeacherTiles unless another written agreement expressly applies.</p></article>
+              <article><h3>13. Contact</h3><p>Questions about these Terms can be sent through the Contact Us tab in this menu.</p></article>
             </div>
           </section>
         </div>
@@ -831,6 +894,41 @@
             <p data-i18n="shop.browse">Browse visual packs made for TeacherTiles.</p>
           </div>
 
+          <div class="shop-membership-grid">
+            <article class="shop-membership-card">
+              <div class="shop-membership-card__glow" aria-hidden="true"></div>
+              <div class="shop-membership-card__head">
+                <span class="shop-membership-crown" aria-hidden="true">✦</span>
+                <div><small>TEACHERTILES SUPPORTER</small><h3>Monthly Membership</h3></div>
+                <div class="shop-membership-price"><strong>$5.99</strong><span>/ month</span></div>
+              </div>
+              <ul class="shop-membership-perks">
+                <li>Early access to new updates and testing when available</li>
+                <li>Custom profile patch and golden name</li>
+                <li>Direct input on new features</li>
+                <li>Support the developers</li>
+                <li><strong>600 Coins</strong> each month</li>
+                <li>Custom subscriber themes, stickers, and cosmetic TileSets</li>
+              </ul>
+              <div class="shop-membership-card__foot">
+                <span>UI preview · billing is not active</span>
+                <button id="shop-subscribe-preview" type="button">Subscribe · $5.99/mo</button>
+              </div>
+            </article>
+
+            <article class="shop-redeem-card">
+              <span class="shop-redeem-card__icon" aria-hidden="true">⌁</span>
+              <small>HAVE A CODE?</small>
+              <h3>Redeem Code</h3>
+              <p>Enter a TeacherTiles code to unlock eligible rewards.</p>
+              <form id="shop-redeem-form" class="shop-redeem-form">
+                <label for="shop-redeem-code">Redemption code</label>
+                <div><input id="shop-redeem-code" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="TT-XXXX-XXXX"><button type="submit">Redeem</button></div>
+              </form>
+              <div id="shop-redeem-status" class="shop-redeem-status" role="status" aria-live="polite"></div>
+            </article>
+          </div>
+
           <div class="shop-category-grid">
             <button class="shop-category shop-category--themes" type="button" data-shop-open-page="themes">
               <span class="shop-category__art" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -1139,6 +1237,12 @@
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
       <button class="context-menu__item" data-module="progressbar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▰</span><span><strong>Progress Bar</strong><small>Fill toward a set end time</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
+      <button class="context-menu__item" data-module="dictionary" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--dictionary" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12H7.5A2.5 2.5 0 0 1 5 16.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 19A2.5 2.5 0 0 1 5 16.5 2.5 2.5 0 0 1 7.5 14H18M9 8h5M9 11h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <span><strong>Dictionary</strong><small>Look up complete word entries</small></span>
+      </button>
       <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -1184,6 +1288,12 @@
           </svg>
         </span>
         <span><strong>Custom Flashcards</strong><small>Create reusable text and image card sets</small></span>
+      </button>
+      <button class="context-menu__item" data-module="shapes" data-category="math">
+        <span class="context-menu__icon context-menu__icon--shapes" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="7.2" cy="7.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m16.8 3.8 4 7h-8zM4 14h7v7H4zM17 14l4 3.5-4 3.5-4-3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <span><strong>Shapes</strong><small>Explore sides, vertices, and shape facts</small></span>
       </button>
       
       <button class="context-menu__item" data-module="numberline" data-category="math">
@@ -1962,6 +2072,10 @@
         <div class="image-empty"><strong>DROP IMAGE HERE</strong><span>or click to choose</span></div>
         <input class="image-input" type="file" accept="image/*" hidden>
       </div>
+      <button class="image-replace" type="button" aria-label="Replace image" title="Upload a different image">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5v3h15v-3M12 16V4.5m0 0L8.2 8.3M12 4.5l3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Replace</span>
+      </button>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -2212,6 +2326,7 @@
             <button class="progress-bar-picker__close" type="button" aria-label="Close icon chooser">×</button>
           </div>
           <div class="progress-bar-picker__grid"></div>
+          <input class="progress-bar-custom-image-input" type="file" accept="image/*" hidden>
         </div>
       </div>
 
@@ -2247,6 +2362,7 @@
             <button class="visual-schedule-picker__close" type="button" aria-label="Close image chooser">×</button>
           </div>
           <div class="visual-schedule-picker__grid"></div>
+          <input class="visual-schedule-custom-image-input" type="file" accept="image/*" hidden>
         </div>
       </div>
 
@@ -2915,6 +3031,79 @@
         <button class="custom-icon tenframes-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon tenframes-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon tenframes-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="dictionary-template">
+    <section class="module dictionary-module" data-type="dictionary" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete dictionary">×</button><div class="module-drag-handle"></div>
+
+      <header class="dictionary-header">
+        <div><span>DICTIONARY</span><strong>Word lookup</strong></div>
+        <span class="dictionary-mark" aria-hidden="true">Aa</span>
+      </header>
+
+      <form class="dictionary-search" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.7" cy="10.7" r="5.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input class="dictionary-input" type="search" maxlength="80" placeholder="Search for a word…" autocomplete="off" spellcheck="true" aria-label="Dictionary word">
+        <button class="dictionary-submit primary" type="submit">Define</button>
+      </form>
+
+      <div class="dictionary-status" aria-live="polite"></div>
+      <div class="dictionary-content">
+        <div class="dictionary-welcome">
+          <span class="dictionary-welcome-icon" aria-hidden="true">A</span>
+          <strong>Discover a word</strong>
+          <p>Search to see pronunciation, meanings, examples, synonyms, antonyms, and more.</p>
+        </div>
+        <div class="dictionary-results" hidden></div>
+      </div>
+
+      <div class="dictionary-credit">Definitions and word data via Datamuse</div>
+      <div class="customization-bar dictionary-customization" aria-label="Dictionary customization">
+        <button class="custom-icon dictionary-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon dictionary-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon dictionary-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="shapes-template">
+    <section class="module shapes-module" data-type="shapes" data-bg="white" data-font="inter" data-text="dark" data-shape="circle" data-shape-color="blue">
+      <button class="module-delete" aria-label="Delete shapes tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="shapes-header">
+        <div><span>SHAPE LAB</span><strong class="shapes-title">Circle</strong></div>
+        <span class="shapes-index">1 / 10</span>
+      </header>
+
+      <div class="shapes-picker" role="list" aria-label="Choose a shape"></div>
+
+      <div class="shapes-main">
+        <div class="shapes-stage" aria-live="polite">
+          <svg class="shapes-visual" viewBox="0 0 240 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Circle"><path class="shapes-path" d="M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z"></path></svg>
+          <div class="shapes-name-card"><span>THIS IS A</span><strong class="shapes-name">Circle</strong></div>
+        </div>
+
+        <div class="shapes-details">
+          <div class="shapes-stat"><span>STRAIGHT SIDES</span><strong class="shapes-sides">0</strong></div>
+          <div class="shapes-stat"><span>VERTICES</span><strong class="shapes-vertices">0</strong></div>
+          <div class="shapes-classification"><span>SHAPE FAMILY</span><strong class="shapes-family">Curved shape</strong></div>
+          <p class="shapes-fact">A circle is perfectly round. Every point on its edge is the same distance from its center.</p>
+        </div>
+      </div>
+
+      <div class="customization-bar shapes-customization" aria-label="Shapes customization">
+        <button class="custom-icon shapes-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon shapes-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon shapes-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon shapes-color" type="button" title="Change shape color" aria-label="Change shape color"><span class="shapes-color-swatch" aria-hidden="true"></span></button>
       </div>
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>

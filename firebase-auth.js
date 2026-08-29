@@ -19,6 +19,8 @@ const signOutButton = document.getElementById("profile-signout");
 const profileAvatar = document.getElementById("profile-avatar");
 const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
+const profileBetaBadge = document.getElementById("profile-beta-badge");
+const profileBadgeCount = document.getElementById("profile-badge-count");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
@@ -44,6 +46,7 @@ let boardList = [];
 let activeBoardId = "";
 let boardLoading = false;
 let boardDeleting = false;
+let boardRenaming = false;
 let boardSaving = false;
 let localBoardSaveTimer = 0;
 let cloudBoardSaveTimer = 0;
@@ -1053,6 +1056,76 @@ function applyPreviewState(module, state) {
 
   for (const cls of Array.isArray(state.classes) ? state.classes : []) module.classList.add(cls);
 
+  if (state.type === "interactive") {
+    const candle = module.dataset.interactiveMode === "candle";
+    const hourglassStage = module.querySelector(".hourglass-stage");
+    const candleStage = module.querySelector(".candle-stage");
+    if (hourglassStage) hourglassStage.hidden = candle;
+    if (candleStage) candleStage.hidden = !candle;
+    module.querySelectorAll("[data-interactive]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.interactive === (candle ? "candle" : "hourglass"));
+    });
+  }
+
+  if (state.type === "shapes") {
+    const shapePaths = {
+      circle: "M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z",
+      square: "M48 28 H192 V172 H48 Z",
+      star: "M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z",
+      triangle: "M120 22 L218 174 H22 Z",
+      oval: "M20 100 A100 58 0 0 1 220 100 A100 58 0 0 1 20 100 Z",
+      diamond: "M120 16 L222 100 L120 184 L18 100 Z",
+      hexagon: "M72 18 H168 L216 100 L168 182 H72 L24 100 Z",
+      rectangle: "M24 52 H216 V148 H24 Z",
+      pentagon: "M120 14 L210 80 L176 186 H64 L30 80 Z",
+      octagon: "M70 14 H170 L226 70 V130 L170 186 H70 L14 130 V70 Z"
+    };
+    const savedShape = state.special?.shape || state.dataset?.shape || "circle";
+    const selected = shapePaths[savedShape] ? savedShape : "circle";
+    const names = { circle: "Circle", square: "Square", star: "Star", triangle: "Triangle", oval: "Oval", diamond: "Diamond", hexagon: "Hexagon", rectangle: "Rectangle", pentagon: "Pentagon", octagon: "Octagon" };
+    const counts = { circle: ["0", "0"], square: ["4", "4"], star: ["10", "10"], triangle: ["3", "3"], oval: ["0", "0"], diamond: ["4", "4"], hexagon: ["6", "6"], rectangle: ["4", "4"], pentagon: ["5", "5"], octagon: ["8", "8"] };
+    module.querySelector(".shapes-path")?.setAttribute("d", shapePaths[selected]);
+    module.querySelectorAll(".shapes-title,.shapes-name").forEach(element => { element.textContent = names[selected]; });
+    const sides = module.querySelector(".shapes-sides");
+    const vertices = module.querySelector(".shapes-vertices");
+    if (sides) sides.textContent = counts[selected][0];
+    if (vertices) vertices.textContent = counts[selected][1];
+    module.querySelectorAll("[data-shape-choice]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.shapeChoice === selected);
+    });
+  }
+
+  if (state.type === "dictionary" && Array.isArray(state.special?.entries) && state.special.entries.length) {
+    const entry = state.special.entries[0] || {};
+    const firstMeaning = Array.isArray(entry.meanings) ? entry.meanings[0] : null;
+    const firstDefinition = Array.isArray(firstMeaning?.definitions) ? firstMeaning.definitions[0] : null;
+    const welcome = module.querySelector(".dictionary-welcome");
+    const results = module.querySelector(".dictionary-results");
+    if (welcome) welcome.hidden = true;
+    if (results) {
+      results.hidden = false;
+      const article = document.createElement("article");
+      article.className = "dictionary-entry";
+      const heading = document.createElement("header");
+      heading.className = "dictionary-entry-head";
+      const identity = document.createElement("div");
+      const word = document.createElement("strong");
+      word.textContent = String(entry.word || state.special.query || "Word");
+      identity.appendChild(word);
+      heading.appendChild(identity);
+      article.appendChild(heading);
+      if (firstDefinition?.definition) {
+        const meaning = document.createElement("section");
+        meaning.className = "dictionary-meaning";
+        const copy = document.createElement("p");
+        copy.textContent = String(firstDefinition.definition);
+        meaning.appendChild(copy);
+        article.appendChild(meaning);
+      }
+      results.replaceChildren(article);
+    }
+  }
+
   const controls = [...module.querySelectorAll("input,textarea,select")];
   for (const saved of Array.isArray(state.fields) ? state.fields : []) {
     const field = controls[saved.index];
@@ -1197,7 +1270,7 @@ function createMiniObject(item) {
 }
 
 async function deleteBoard(boardId) {
-  if (!currentUser || !db || !firestoreSdk || !boardId || boardDeleting) return;
+  if (!currentUser || !db || !firestoreSdk || !boardId || boardDeleting || boardRenaming) return;
   const board = boardList.find(item => item.id === boardId);
   if (!board) return;
   if (!window.confirm(`Delete ${board.name}? This cannot be undone.`)) return;
@@ -1254,6 +1327,105 @@ async function deleteBoard(boardId) {
   }
 }
 
+async function renameBoard(boardId, nextName) {
+  if (!currentUser || !db || !firestoreSdk || !boardId || boardRenaming) return false;
+  const board = boardList.find(item => item.id === boardId);
+  const name = String(nextName || "").trim().replace(/\s+/g, " ").slice(0, 80);
+  if (!board || !name) return false;
+  if (name === board.name) return true;
+
+  boardRenaming = true;
+  setBoardStatus("Renaming…");
+  try {
+    await firestoreSdk.setDoc(boardDocument(currentUser.uid, boardId), {
+      name,
+      updatedAt: firestoreSdk.serverTimestamp()
+    }, { merge: true });
+    board.name = name;
+    board.updatedAt = { seconds: Date.now() / 1000 };
+    cacheBoardListMetadata();
+    setBoardStatus("Saved");
+    renderBoards();
+    window.setTimeout(() => {
+      if (boardsSaveStatus?.textContent === "Saved") setBoardStatus("");
+    }, 1400);
+    return true;
+  } catch (error) {
+    console.error("TeacherTiles board rename failed", error);
+    setBoardStatus("Could not rename board", true);
+    return false;
+  } finally {
+    boardRenaming = false;
+  }
+}
+
+function beginBoardRename(card, board, title) {
+  if (!card || !board || !title || boardLoading || boardDeleting || boardRenaming || card.classList.contains("is-renaming")) return;
+  card.classList.add("is-renaming");
+
+  const form = document.createElement("form");
+  form.className = "board-card__rename-form";
+
+  const input = document.createElement("input");
+  input.className = "board-card__rename-input";
+  input.type = "text";
+  input.value = board.name;
+  input.maxLength = 80;
+  input.setAttribute("aria-label", "Board name");
+
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.className = "board-card__rename-save";
+  save.textContent = "Save";
+
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "board-card__rename-cancel";
+  cancel.textContent = "Cancel";
+
+  form.append(input, save, cancel);
+  title.replaceWith(form);
+
+  const stopEditing = () => {
+    if (!form.isConnected) return;
+    form.replaceWith(title);
+    card.classList.remove("is-renaming");
+  };
+
+  cancel.addEventListener("click", stopEditing);
+  input.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      stopEditing();
+    }
+  });
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const name = input.value.trim().replace(/\s+/g, " ");
+    if (!name) {
+      input.setCustomValidity("Enter a board name.");
+      input.reportValidity();
+      return;
+    }
+    input.setCustomValidity("");
+    input.disabled = true;
+    save.disabled = true;
+    cancel.disabled = true;
+    const renamed = await renameBoard(board.id, name);
+    if (!renamed && form.isConnected) {
+      input.disabled = false;
+      save.disabled = false;
+      cancel.disabled = false;
+      input.focus();
+    }
+  });
+
+  requestAnimationFrame(() => {
+    input.focus({ preventScroll: true });
+    input.select();
+  });
+}
+
 function createBoardCard(board) {
   const card = document.createElement("article");
   card.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
@@ -1282,6 +1454,7 @@ function createBoardCard(board) {
   meta.className = "board-card__meta";
 
   const title = document.createElement("strong");
+  title.className = "board-card__title";
   title.textContent = board.name;
 
   const count = document.createElement("span");
@@ -1289,7 +1462,14 @@ function createBoardCard(board) {
   count.textContent = `${total} ${total === 1 ? "item" : "items"}`;
 
   meta.append(title, count);
-  openButton.append(preview, meta);
+  openButton.append(preview);
+
+  const renameButton = document.createElement("button");
+  renameButton.type = "button";
+  renameButton.className = "board-card__rename";
+  renameButton.setAttribute("aria-label", `Rename ${board.name}`);
+  renameButton.title = "Rename board";
+  renameButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16.8-.7 3 3-.7L18.2 8.2l-2.3-2.3L5 16.8ZM14.8 7l2.3 2.3M4.3 19.8h15.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -1299,7 +1479,7 @@ function createBoardCard(board) {
   deleteButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8.5h10M9 8.5V6.7h6v1.8m-7 0 .7 9.1h6.6l.7-9.1M10.5 11v4.4M13.5 11v4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   openButton.addEventListener("click", async () => {
-    if (boardLoading || boardDeleting) return;
+    if (boardLoading || boardDeleting || boardRenaming) return;
     if (board.id === activeBoardId) {
       closeBoardsView();
       return;
@@ -1320,7 +1500,19 @@ function createBoardCard(board) {
     deleteBoard(board.id);
   });
 
-  card.append(openButton, deleteButton);
+  renameButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    beginBoardRename(card, board, title);
+  });
+
+  title.addEventListener("dblclick", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    beginBoardRename(card, board, title);
+  });
+
+  card.append(openButton, meta, renameButton, deleteButton);
   return card;
 }
 
@@ -1445,6 +1637,11 @@ async function renderUser(user) {
   if (user) {
     const name = user.displayName?.trim() || "Teacher";
     const photo = user.photoURL || fallbackAvatarData(name);
+    const betaCutoff = Date.parse("2026-08-29T04:00:00Z");
+    const createdAt = Date.parse(user.metadata?.creationTime || "");
+    const isBetaTester = !Number.isFinite(createdAt) || createdAt <= betaCutoff;
+    if (profileBetaBadge) profileBetaBadge.hidden = !isBetaTester;
+    if (profileBadgeCount) profileBadgeCount.textContent = isBetaTester ? "1 earned" : "0 earned";
     profileDisplayName.textContent = name;
     profileEmail.textContent = user.email || "Google account";
     profileAvatar.src = photo;

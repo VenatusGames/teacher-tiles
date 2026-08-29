@@ -361,8 +361,8 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],numberline:['Number Line','Interactive expandable number line'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],writinglines:['Writing Lines','Handwriting practice template'],
+    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -373,8 +373,8 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -1018,6 +1018,7 @@ function setupModuleByType(m,type){
   if(type==='clock')setupClock(m);
   if(type==='stopwatch')setupStopwatch(m);
   if(type==='draw')setupDraw(m);
+  if(type==='dictionary')setupDictionary(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -1042,6 +1043,7 @@ function setupModuleByType(m,type){
   if(type==='grapher')setupGrapher(m);
   if(type==='periodictable')setupPeriodicTable(m);
   if(type==='money')setupMoney(m);
+  if(type==='shapes')setupShapes(m);
   if(type==='numberline')setupNumberLine(m);
   if(type==='hundredschart')setupHundredsChart(m);
   if(type==='tenframes')setupTenFrames(m);
@@ -1108,6 +1110,10 @@ function findModuleTextEditTarget(target,m){
   if(!(target instanceof Element)||!m)return null;
   const field=target.closest('textarea,[contenteditable]:not([contenteditable="false"]),input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="url"],input[type="tel"],input[type="password"]');
   return field&&m.contains(field)?field:null;
+}
+
+function isImmediateModuleInput(field){
+  return field instanceof HTMLInputElement&&field.type==='search';
 }
 
 function exitModuleTextEdit(field=activeModuleTextEditor){
@@ -1184,6 +1190,11 @@ function setupCommon(m){
     if(e.button!==0)return;
     const field=findModuleTextEditTarget(e.target,m);
     if(!field)return;
+    if(isImmediateModuleInput(field)){
+      e.stopPropagation();
+      enterModuleTextEdit(field);
+      return;
+    }
     if(field.classList.contains('module-text-edit-active'))return;
     const previous=moduleTextClickState.get(field);
     const now=performance.now();
@@ -1440,7 +1451,7 @@ function setupStickerTransformControls(m){
   updateStickerVisualSize(m);
 }
 
-function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=0;bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
+function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
 
 const shapePaths={
   circle:'M50 4 A46 46 0 1 1 49.999 4 Z',
@@ -1591,7 +1602,9 @@ function setupTimer(m){
   if(stage)sizeObserver.observe(stage);
   requestAnimationFrame(sizeVisual);
 
-  setShape('circle');
+  const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
+  shapeButtons.forEach(button=>button.classList.toggle('is-active',button.dataset.shape===initialShape));
+  setShape(initialShape);
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
     m.style.setProperty('--timer-progress-ratio',progress.toFixed(4));
@@ -1608,7 +1621,7 @@ function setupTimer(m){
   };
 }
 
-function setupHourglass(m){const hourStage=m.querySelector('.hourglass-stage'),candleStage=m.querySelector('.candle-stage'),countdownHour=m.querySelector('.hourglass-countdown'),countdownCandle=m.querySelector('.candle-countdown'),topClip=m.querySelector('.hg-top-clip'),bottomClip=m.querySelector('.hg-bottom-clip'),top=m.querySelector('.hg-sand-top'),bottom=m.querySelector('.hg-sand-bottom'),pile=m.querySelector('.hg-bottom-pile'),stream=m.querySelector('.hg-stream'),candleBody=m.querySelector('.candle-body'),candleScene=m.querySelector('.candle-scene'),modeButtons=[...m.querySelectorAll('[data-interactive]')],bgBtn=m.querySelector('.interactive-bg'),candleColorBtn=m.querySelector('.candle-color-control');const topId=`hg-top-${++uid}`,bottomId=`hg-bottom-${++uid}`;topClip.id=topId;bottomClip.id=bottomId;top.setAttribute('clip-path',`url(#${topId})`);bottom.setAttribute('clip-path',`url(#${bottomId})`);pile.setAttribute('clip-path',`url(#${bottomId})`);let mode='hourglass';const setMode=next=>{mode=next;m.dataset.interactiveMode=mode;hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';modeButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.interactive===mode))};modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));candleColorBtn.addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));const cleanup=bindTimerControls(m,({progress,running,left})=>{const text=formatCountdown(left);countdownHour.textContent=text;countdownCandle.textContent=text;const topY=62+96*progress,topH=96*(1-progress);top.setAttribute('y',topY.toFixed(2));top.setAttribute('height',Math.max(0,topH).toFixed(2));const bottomH=96*progress,bottomY=278-bottomH;bottom.setAttribute('y',bottomY.toFixed(2));bottom.setAttribute('height',bottomH.toFixed(2));pile.setAttribute('opacity',progress>0.03?'1':'0');pile.setAttribute('transform',`translate(0 ${Math.max(0,30-progress*30).toFixed(2)}) scale(1 ${Math.max(.18,progress).toFixed(3)})`);stream.setAttribute('opacity',running&&left>0?'1':'0');const h=78-(70*progress);candleScene.style.setProperty('--candle-height',`${Math.max(8,h)}%`);m.classList.toggle('candle-finished',mode==='candle'&&left<=0)}, {onFinish:()=>{if(mode==='candle')m.classList.add('candle-finished')}});setMode('hourglass');m._cleanup=cleanup}
+function setupHourglass(m){const hourStage=m.querySelector('.hourglass-stage'),candleStage=m.querySelector('.candle-stage'),countdownHour=m.querySelector('.hourglass-countdown'),countdownCandle=m.querySelector('.candle-countdown'),topClip=m.querySelector('.hg-top-clip'),bottomClip=m.querySelector('.hg-bottom-clip'),top=m.querySelector('.hg-sand-top'),bottom=m.querySelector('.hg-sand-bottom'),pile=m.querySelector('.hg-bottom-pile'),stream=m.querySelector('.hg-stream'),candleBody=m.querySelector('.candle-body'),candleScene=m.querySelector('.candle-scene'),modeButtons=[...m.querySelectorAll('[data-interactive]')],bgBtn=m.querySelector('.interactive-bg'),candleColorBtn=m.querySelector('.candle-color-control');const topId=`hg-top-${++uid}`,bottomId=`hg-bottom-${++uid}`;topClip.id=topId;bottomClip.id=bottomId;top.setAttribute('clip-path',`url(#${topId})`);bottom.setAttribute('clip-path',`url(#${bottomId})`);pile.setAttribute('clip-path',`url(#${bottomId})`);let mode='hourglass';const setMode=next=>{mode=next==='candle'?'candle':'hourglass';m.dataset.interactiveMode=mode;hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';modeButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.interactive===mode))};modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));candleColorBtn.addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));const cleanup=bindTimerControls(m,({progress,running,left})=>{const text=formatCountdown(left);countdownHour.textContent=text;countdownCandle.textContent=text;const topY=62+96*progress,topH=96*(1-progress);top.setAttribute('y',topY.toFixed(2));top.setAttribute('height',Math.max(0,topH).toFixed(2));const bottomH=96*progress,bottomY=278-bottomH;bottom.setAttribute('y',bottomY.toFixed(2));bottom.setAttribute('height',bottomH.toFixed(2));pile.setAttribute('opacity',progress>0.03?'1':'0');pile.setAttribute('transform',`translate(0 ${Math.max(0,30-progress*30).toFixed(2)}) scale(1 ${Math.max(.18,progress).toFixed(3)})`);stream.setAttribute('opacity',running&&left>0?'1':'0');const h=78-(70*progress);candleScene.style.setProperty('--candle-height',`${Math.max(8,h)}%`);m.classList.toggle('candle-finished',mode==='candle'&&left<=0)}, {onFinish:()=>{if(mode==='candle')m.classList.add('candle-finished')}});setMode(m.dataset.interactiveMode);m._boardGetState=()=>({mode});m._boardSetState=state=>setMode(state?.mode||m.dataset.interactiveMode);m._cleanup=cleanup}
 
 function cycleData(m,key,values){const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
@@ -1642,13 +1655,18 @@ function setupClock(m){
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
   m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
-  modeBtn.addEventListener('click',()=>{
-    const analog=m.dataset.clockMode!=='analog';
-    m.dataset.clockMode=analog?'analog':'digital';
+  const syncModeControls=()=>{
+    const analog=m.dataset.clockMode==='analog';
     modeBtn.classList.toggle('is-active',analog);
     modeBtn.querySelector('span').textContent=analog?'◴':'◷';
     secondsBtn.hidden=analog;
     periodBtn.hidden=analog;
+  };
+
+  modeBtn.addEventListener('click',()=>{
+    const analog=m.dataset.clockMode!=='analog';
+    m.dataset.clockMode=analog?'analog':'digital';
+    syncModeControls();
     refit();
   });
 
@@ -1677,6 +1695,9 @@ function setupClock(m){
   const ro=new ResizeObserver(refit);
   ro.observe(m);
   ro.observe(display);
+  syncModeControls();
+  secondsBtn.classList.toggle('is-active',m.classList.contains('show-seconds'));
+  periodBtn.classList.toggle('is-active',!m.classList.contains('hide-period'));
   const id=setInterval(update,100);
   update();
   m._cleanup=()=>{clearInterval(id);ro.disconnect()};
@@ -1849,7 +1870,7 @@ function setupWritingLines(m){
   }
 
   setLineCount(Number(m.dataset.lineCount)||3);
-  setMode(false);
+  setMode(m.dataset.writingMode==='type');
   fitAll();
 
   const prior=m._cleanup;
@@ -1948,11 +1969,17 @@ function setupStopwatch(m){
     cycleData(m,'text',['dark','soft','blue','rose','white']);
   });
 
+  const syncModeControl=()=>{
+    const analog=m.dataset.stopwatchMode==='analog';
+    modeBtn?.classList.toggle('is-active',analog);
+    const icon=modeBtn?.querySelector('span');
+    if(icon)icon.textContent=analog?'◴':'◷';
+  };
+
   modeBtn?.addEventListener('click',()=>{
     const analog=m.dataset.stopwatchMode!=='analog';
     m.dataset.stopwatchMode=analog?'analog':'digital';
-    modeBtn.classList.toggle('is-active',analog);
-    modeBtn.querySelector('span').textContent=analog?'◴':'◷';
+    syncModeControl();
     render();
   });
 
@@ -1987,6 +2014,7 @@ function setupStopwatch(m){
     render();
   };
 
+  syncModeControl();
   render();
   m._cleanup=()=>cancelAnimationFrame(raf);
 }
@@ -3848,7 +3876,7 @@ async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=
 }
 
 function setupImage(m){
-  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input');
+  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace');
   let objectUrl='';
   let boardImageSrc='';
 
@@ -3898,7 +3926,8 @@ function setupImage(m){
   m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false})};
 
   stage.addEventListener('click',()=>input.click());
-  input.addEventListener('change',()=>setFile(input.files?.[0]));
+  replace?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();input.click()});
+  input.addEventListener('change',()=>{setFile(input.files?.[0]);input.value=''});
   stage.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();stage.classList.add('is-dragover')});
   stage.addEventListener('dragleave',()=>stage.classList.remove('is-dragover'));
   stage.addEventListener('drop',e=>{
@@ -4267,6 +4296,401 @@ function setupBoombox(m){
 
 function setupTextBubble(m){
   const text=m.querySelector('.textbubble-text');m.querySelector('.textbubble-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.textbubble-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);requestAnimationFrame(()=>text.dispatchEvent(new Event('input')))});m.querySelector('.textbubble-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));const cleanup=fitEditableText(text,m,'--bubble-size');m._cleanup=cleanup
+}
+
+function setupDictionary(m){
+  const form=m.querySelector('.dictionary-search');
+  const input=m.querySelector('.dictionary-input');
+  const submit=m.querySelector('.dictionary-submit');
+  const status=m.querySelector('.dictionary-status');
+  const content=m.querySelector('.dictionary-content');
+  const welcome=m.querySelector('.dictionary-welcome');
+  const results=m.querySelector('.dictionary-results');
+  let entries=[];
+  let requestController=null;
+  let activeAudio=null;
+
+  const cleanText=(value,max=5000)=>String(value||'').trim().slice(0,max);
+  const uniqueWords=(values,max=28)=>[...new Set((Array.isArray(values)?values:[]).map(value=>cleanText(value,80)).filter(Boolean))].slice(0,max);
+  const normalizeEntries=data=>(Array.isArray(data)?data:[]).slice(0,4).map(entry=>({
+    word:cleanText(entry?.word,120),
+    phonetic:cleanText(entry?.phonetic,180),
+    phonetics:(Array.isArray(entry?.phonetics)?entry.phonetics:[]).map(item=>({
+      text:cleanText(item?.text,180),
+      audio:cleanText(item?.audio,1000)
+    })).filter(item=>item.text||item.audio).slice(0,10),
+    origin:cleanText(entry?.origin,3000),
+    sourceUrls:(Array.isArray(entry?.sourceUrls)?entry.sourceUrls:[]).map(url=>cleanText(url,1000)).filter(url=>/^https?:\/\//i.test(url)).slice(0,5),
+    meanings:(Array.isArray(entry?.meanings)?entry.meanings:[]).map(meaning=>({
+      partOfSpeech:cleanText(meaning?.partOfSpeech,80),
+      synonyms:uniqueWords(meaning?.synonyms),
+      antonyms:uniqueWords(meaning?.antonyms),
+      definitions:(Array.isArray(meaning?.definitions)?meaning.definitions:[]).map(definition=>({
+        definition:cleanText(definition?.definition),
+        example:cleanText(definition?.example,2000),
+        synonyms:uniqueWords(definition?.synonyms),
+        antonyms:uniqueWords(definition?.antonyms)
+      })).filter(definition=>definition.definition)
+    })).filter(meaning=>meaning.partOfSpeech||meaning.definitions.length)
+  })).filter(entry=>entry.word||entry.meanings.length);
+
+  const createChipGroup=(label,words)=>{
+    if(!words.length)return null;
+    const row=document.createElement('div');
+    row.className='dictionary-word-row';
+    const heading=document.createElement('span');
+    heading.textContent=label;
+    const chips=document.createElement('div');
+    chips.className='dictionary-chips';
+    words.forEach(word=>{
+      const chip=document.createElement('button');
+      chip.type='button';
+      chip.textContent=word;
+      chip.title=`Look up ${word}`;
+      chip.addEventListener('click',()=>{
+        input.value=word;
+        lookup(word);
+      });
+      chips.appendChild(chip);
+    });
+    row.append(heading,chips);
+    return row;
+  };
+
+  const playPronunciation=(url,button,word)=>{
+    if(activeAudio){activeAudio.pause();activeAudio=null}
+    button.classList.add('is-playing');
+    const finish=()=>button.classList.remove('is-playing');
+    if(url){
+      const resolved=url.startsWith('//')?`https:${url}`:url;
+      const audio=new Audio(resolved);
+      activeAudio=audio;
+      const finishAudio=()=>{finish();if(activeAudio===audio)activeAudio=null};
+      audio.addEventListener('ended',finishAudio,{once:true});
+      audio.addEventListener('error',finishAudio,{once:true});
+      audio.play().catch(finishAudio);
+      return;
+    }
+    if('speechSynthesis'in window&&word){
+      speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(word);
+      utterance.rate=.82;
+      utterance.addEventListener('end',finish,{once:true});
+      utterance.addEventListener('error',finish,{once:true});
+      speechSynthesis.speak(utterance);
+    }else finish();
+  };
+
+  const renderEntries=(animate=true)=>{
+    results.replaceChildren();
+    welcome.hidden=Boolean(entries.length);
+    results.hidden=!entries.length;
+    if(!entries.length)return;
+
+    entries.forEach((entry,entryIndex)=>{
+      const article=document.createElement('article');
+      article.className='dictionary-entry';
+
+      const head=document.createElement('header');
+      head.className='dictionary-entry-head';
+      const identity=document.createElement('div');
+      const word=document.createElement('strong');
+      word.textContent=entry.word||input.value;
+      const phoneticText=entry.phonetic||entry.phonetics.find(item=>item.text)?.text||'';
+      if(phoneticText){
+        const phonetic=document.createElement('span');
+        phonetic.textContent=phoneticText;
+        identity.append(word,phonetic);
+      }else identity.append(word);
+      head.appendChild(identity);
+
+      const audioUrl=entry.phonetics.find(item=>item.audio)?.audio||'';
+      if(entry.word){
+        const audioButton=document.createElement('button');
+        audioButton.type='button';
+        audioButton.className='dictionary-audio';
+        audioButton.setAttribute('aria-label',`Hear ${entry.word} pronounced`);
+        audioButton.title='Hear pronunciation';
+        audioButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h3l4 3V7L8 10H5Z" fill="currentColor"/><path d="M15 9.2a4 4 0 0 1 0 5.6M17.5 6.8a7.3 7.3 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+        audioButton.addEventListener('click',()=>playPronunciation(audioUrl,audioButton,entry.word));
+        head.appendChild(audioButton);
+      }
+      article.appendChild(head);
+
+      if(entry.origin){
+        const origin=document.createElement('p');
+        origin.className='dictionary-origin';
+        const originLabel=document.createElement('strong');
+        originLabel.textContent='Origin';
+        origin.append(originLabel,document.createTextNode(` ${entry.origin}`));
+        article.appendChild(origin);
+      }
+
+      entry.meanings.forEach(meaning=>{
+        const section=document.createElement('section');
+        section.className='dictionary-meaning';
+        const part=document.createElement('div');
+        part.className='dictionary-part';
+        const partName=document.createElement('strong');
+        partName.textContent=meaning.partOfSpeech||'meaning';
+        const line=document.createElement('i');
+        part.append(partName,line);
+        section.appendChild(part);
+
+        const list=document.createElement('ol');
+        meaning.definitions.forEach(definition=>{
+          const item=document.createElement('li');
+          const copy=document.createElement('p');
+          copy.textContent=definition.definition;
+          item.appendChild(copy);
+          if(definition.example){
+            const example=document.createElement('blockquote');
+            example.textContent=`“${definition.example}”`;
+            item.appendChild(example);
+          }
+          const synonymRow=createChipGroup('Similar',uniqueWords(definition.synonyms));
+          const antonymRow=createChipGroup('Opposite',uniqueWords(definition.antonyms));
+          if(synonymRow)item.appendChild(synonymRow);
+          if(antonymRow)item.appendChild(antonymRow);
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+        const meaningSynonyms=createChipGroup('Synonyms',uniqueWords(meaning.synonyms));
+        const meaningAntonyms=createChipGroup('Antonyms',uniqueWords(meaning.antonyms));
+        if(meaningSynonyms)section.appendChild(meaningSynonyms);
+        if(meaningAntonyms)section.appendChild(meaningAntonyms);
+        article.appendChild(section);
+      });
+
+      if(entry.sourceUrls.length){
+        const source=document.createElement('a');
+        source.className='dictionary-source';
+        source.href=entry.sourceUrls[0];
+        source.target='_blank';
+        source.rel='noopener noreferrer';
+        source.textContent='View source entry ↗';
+        article.appendChild(source);
+      }
+      results.appendChild(article);
+      if(entryIndex<entries.length-1){
+        const divider=document.createElement('div');
+        divider.className='dictionary-entry-divider';
+        results.appendChild(divider);
+      }
+    });
+
+    if(animate&&results.animate)results.animate([
+      {opacity:0,transform:'translateY(8px)'},
+      {opacity:1,transform:'translateY(0)'}
+    ],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});
+  };
+
+  const showMessage=(title,message)=>{
+    entries=[];
+    results.replaceChildren();
+    results.hidden=true;
+    welcome.hidden=false;
+    welcome.querySelector('.dictionary-welcome-icon').textContent='?';
+    welcome.querySelector('strong').textContent=title;
+    welcome.querySelector('p').textContent=message;
+  };
+
+  const setLoading=loading=>{
+    m.classList.toggle('is-loading',loading);
+    submit.disabled=loading;
+    input.disabled=loading;
+  };
+
+  const datamusePartNames={n:'noun',v:'verb',adj:'adjective',adv:'adverb',u:'word'};
+  const datamuseEntry=(result,synonyms=[],antonyms=[])=>{
+    if(!result||typeof result!=='object')return[];
+    const meaningMap=new Map();
+    for(const raw of Array.isArray(result.defs)?result.defs:[]){
+      const [code,...definitionParts]=String(raw).split('\t');
+      const definition=cleanText(definitionParts.join(' ').trim());
+      if(!definition)continue;
+      const partOfSpeech=datamusePartNames[code]||code||'word';
+      if(!meaningMap.has(partOfSpeech))meaningMap.set(partOfSpeech,[]);
+      meaningMap.get(partOfSpeech).push({definition,example:'',synonyms:[],antonyms:[]});
+    }
+    const tags=Array.isArray(result.tags)?result.tags.map(String):[];
+    const ipa=tags.find(tag=>tag.startsWith('ipa_pron:'))?.slice(9).trim()||'';
+    const pronunciation=ipa||tags.find(tag=>tag.startsWith('pron:'))?.slice(5).trim()||'';
+    const syllables=Math.max(0,Number(result.numSyllables)||0);
+    const word=cleanText(result.word,120);
+    const meanings=[...meaningMap.entries()].map(([partOfSpeech,definitions],meaningIndex)=>({
+      partOfSpeech,
+      definitions,
+      synonyms:meaningIndex===0?uniqueWords(synonyms.map(item=>item?.word)):[],
+      antonyms:meaningIndex===0?uniqueWords(antonyms.map(item=>item?.word)):[]
+    }));
+    if(!meanings.length)return[];
+    return normalizeEntries([{
+      word,
+      phonetic:pronunciation?`/${pronunciation}/`:syllables?`${syllables} ${syllables===1?'syllable':'syllables'}`:'',
+      phonetics:pronunciation?[{text:`/${pronunciation}/`,audio:''}]:[],
+      origin:'',
+      sourceUrls:[],
+      meanings
+    }]);
+  };
+
+  async function lookup(value){
+    const query=String(value||input.value).trim().replace(/\s+/g,' ');
+    if(!query){input.focus();return}
+    input.value=query;
+    requestController?.abort();
+    const controller=new AbortController();
+    requestController=controller;
+    let timedOut=false;
+    const requestTimeout=window.setTimeout(()=>{
+      timedOut=true;
+      controller.abort();
+    },12000);
+    setLoading(true);
+    status.textContent=`Looking up “${query}”…`;
+    try{
+      const exactUrl=`https://api.datamuse.com/words?sp=${encodeURIComponent(query)}&md=dpsr&ipa=1&max=10`;
+      const synonymUrl=`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(query)}&max=28`;
+      const antonymUrl=`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(query)}&max=28`;
+      const [exactResponse,synonymResponse,antonymResponse]=await Promise.all([
+        fetch(exactUrl,{signal:controller.signal}),
+        fetch(synonymUrl,{signal:controller.signal}),
+        fetch(antonymUrl,{signal:controller.signal})
+      ]);
+      if(!exactResponse.ok)throw new Error(`request-${exactResponse.status}`);
+      const [matches,synonyms,antonyms]=await Promise.all([
+        exactResponse.json(),
+        synonymResponse.ok?synonymResponse.json():[],
+        antonymResponse.ok?antonymResponse.json():[]
+      ]);
+      const exact=(Array.isArray(matches)?matches:[]).find(item=>String(item?.word||'').toLocaleLowerCase()===query.toLocaleLowerCase())||matches?.[0];
+      entries=datamuseEntry(exact,synonyms,antonyms);
+      if(!entries.length)throw new Error('not-found');
+      status.textContent='';
+      welcome.querySelector('.dictionary-welcome-icon').textContent='A';
+      welcome.querySelector('strong').textContent='Discover a word';
+      welcome.querySelector('p').textContent='Search to see pronunciation, meanings, examples, synonyms, antonyms, and more.';
+      renderEntries(true);
+      notifyBoardChanged('dictionary-result');
+    }catch(error){
+      if(error?.name==='AbortError'&&!timedOut)return;
+      status.textContent='';
+      if(error?.message==='not-found')showMessage('Word not found','Check the spelling or try a different form of the word.');
+      else showMessage('Lookup unavailable','The dictionary could not be reached. Check your connection and try again.');
+      notifyBoardChanged('dictionary-result');
+    }finally{
+      window.clearTimeout(requestTimeout);
+      if(requestController===controller){
+        requestController=null;
+        setLoading(false);
+      }
+    }
+  }
+
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    lookup(input.value);
+  });
+  m.querySelector('.dictionary-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.dictionary-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.dictionary-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  m._boardGetState=()=>({query:input.value,entries});
+  m._boardSetState=state=>{
+    if(!state)return;
+    input.value=cleanText(state.query,80);
+    entries=normalizeEntries(state.entries);
+    renderEntries(false);
+  };
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    requestController?.abort();
+    activeAudio?.pause();
+    if('speechSynthesis'in window)speechSynthesis.cancel();
+  };
+}
+
+const SHAPES_TILE_DATA=[
+  {id:'circle',name:'Circle',path:'M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'A circle is perfectly round. Every point on its edge is the same distance from its center.'},
+  {id:'square',name:'Square',path:'M48 28 H192 V172 H48 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A square has four equal sides and four right angles. Opposite sides are parallel.'},
+  {id:'star',name:'Star',path:'M120 14 L145 70 L206 75 L159 115 L176 177 L120 143 L64 177 L81 115 L34 75 L95 70 Z',sides:'10',vertices:'10',family:'Concave polygon',fact:'This five-point star has ten straight sides and ten vertices: five outer points and five inner corners.'},
+  {id:'triangle',name:'Triangle',path:'M120 22 L218 174 H22 Z',sides:'3',vertices:'3',family:'Triangle',fact:'Every triangle has three straight sides, three vertices, and interior angles that add to 180°.'},
+  {id:'oval',name:'Oval',path:'M20 100 A100 58 0 0 1 220 100 A100 58 0 0 1 20 100 Z',sides:'0',vertices:'0',family:'Curved shape',fact:'An oval is a closed curved shape that is longer in one direction. It has no straight sides or vertices.'},
+  {id:'diamond',name:'Diamond',path:'M120 16 L222 100 L120 184 L18 100 Z',sides:'4',vertices:'4',family:'Rhombus',fact:'A diamond, or rhombus, has four equal sides. Its opposite sides are parallel and opposite angles are equal.'},
+  {id:'hexagon',name:'Hexagon',path:'M72 18 H168 L216 100 L168 182 H72 L24 100 Z',sides:'6',vertices:'6',family:'Polygon',fact:'A hexagon has six straight sides and six vertices. A regular hexagon has six equal sides and angles.'},
+  {id:'rectangle',name:'Rectangle',path:'M24 52 H216 V148 H24 Z',sides:'4',vertices:'4',family:'Quadrilateral',fact:'A rectangle has four right angles. Its opposite sides are equal in length and parallel.'},
+  {id:'pentagon',name:'Pentagon',path:'M120 14 L210 80 L176 186 H64 L30 80 Z',sides:'5',vertices:'5',family:'Polygon',fact:'A pentagon has five straight sides and five vertices. A regular pentagon has five equal sides.'},
+  {id:'octagon',name:'Octagon',path:'M70 14 H170 L226 70 V130 L170 186 H70 L14 130 V70 Z',sides:'8',vertices:'8',family:'Polygon',fact:'An octagon has eight straight sides and eight vertices. Stop signs are shaped like regular octagons.'}
+];
+
+function setupShapes(m){
+  const picker=m.querySelector('.shapes-picker');
+  const stage=m.querySelector('.shapes-stage');
+  const path=m.querySelector('.shapes-path');
+  const visual=m.querySelector('.shapes-visual');
+  const title=m.querySelector('.shapes-title');
+  const index=m.querySelector('.shapes-index');
+  const name=m.querySelector('.shapes-name');
+  const sides=m.querySelector('.shapes-sides');
+  const vertices=m.querySelector('.shapes-vertices');
+  const family=m.querySelector('.shapes-family');
+  const fact=m.querySelector('.shapes-fact');
+  const svgNs='http://www.w3.org/2000/svg';
+
+  const setShape=(shapeId,{animate=true}={})=>{
+    const shape=SHAPES_TILE_DATA.find(item=>item.id===shapeId)||SHAPES_TILE_DATA[0];
+    m.dataset.shape=shape.id;
+    path.setAttribute('d',shape.path);
+    visual.setAttribute('aria-label',shape.name);
+    title.textContent=shape.name;
+    name.textContent=shape.name;
+    index.textContent=`${SHAPES_TILE_DATA.indexOf(shape)+1} / ${SHAPES_TILE_DATA.length}`;
+    sides.textContent=shape.sides;
+    vertices.textContent=shape.vertices;
+    family.textContent=shape.family;
+    fact.textContent=shape.fact;
+    picker.querySelectorAll('[data-shape-choice]').forEach(button=>{
+      const active=button.dataset.shapeChoice===shape.id;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+    if(animate&&stage.animate)stage.animate([
+      {opacity:.55,transform:'scale(.94) translateY(4px)'},
+      {opacity:1,transform:'scale(1.015) translateY(0)',offset:.72},
+      {opacity:1,transform:'scale(1) translateY(0)'}
+    ],{duration:330,easing:'cubic-bezier(.2,.85,.25,1)'});
+  };
+
+  SHAPES_TILE_DATA.forEach(shape=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='shapes-choice';
+    button.dataset.shapeChoice=shape.id;
+    button.setAttribute('aria-label',`Show ${shape.name}`);
+    const icon=document.createElementNS(svgNs,'svg');
+    icon.setAttribute('viewBox','0 0 240 200');
+    icon.setAttribute('aria-hidden','true');
+    const iconPath=document.createElementNS(svgNs,'path');
+    iconPath.setAttribute('d',shape.path);
+    icon.appendChild(iconPath);
+    const label=document.createElement('span');
+    label.textContent=shape.name;
+    button.append(icon,label);
+    button.addEventListener('click',()=>setShape(shape.id));
+    picker.appendChild(button);
+  });
+
+  m.querySelector('.shapes-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.shapes-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.shapes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.shapes-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));
+
+  setShape(m.dataset.shape,{animate:false});
+  m._boardGetState=()=>({shape:m.dataset.shape||'circle'});
+  m._boardSetState=state=>setShape(state?.shape||m.dataset.shape,{animate:false});
 }
 
 
@@ -4761,6 +5185,7 @@ function setupProgressBar(m){
   const picker=m.querySelector('.progress-bar-picker');
   const pickerGrid=m.querySelector('.progress-bar-picker__grid');
   const pickerClose=m.querySelector('.progress-bar-picker__close');
+  const customImageInput=m.querySelector('.progress-bar-custom-image-input');
 
   const colors=['blue','green','amber','rose','purple','aqua'];
   const styles=[
@@ -4807,6 +5232,7 @@ function setupProgressBar(m){
   const restoreSlotIcon=(slot,src)=>{
     const icon=resolveVisualScheduleIcon(src);
     if(icon)setSlotIcon(slot,icon);
+    else if(typeof src==='string'&&src.startsWith('data:image/'))setSlotIcon(slot,{src,label:'Custom image'});
     else clearSlotIcon(slot);
   };
 
@@ -4828,6 +5254,23 @@ function setupProgressBar(m){
     picker.hidden=true;
     activeIconSlot=null;
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='progress-bar-icon-option progress-bar-icon-option--upload';
+  uploadOption.innerHTML='<span class="custom-image-upload-mark" aria-hidden="true">+</span><span>Upload yours</span>';
+  uploadOption.setAttribute('aria-label','Upload a custom progress bar image');
+  uploadOption.addEventListener('click',()=>customImageInput?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  customImageInput?.addEventListener('change',async()=>{
+    const file=customImageInput.files?.[0];
+    if(!file||!activeIconSlot)return;
+    const data=await fileToBoardImageData(file,{maxSide:420,maxLength:70000,quality:.72,minSide:160});
+    if(data){setSlotIcon(activeIconSlot,{src:data,label:file.name||'Custom image'});notifyBoardChanged('progress-bar-image')}
+    customImageInput.value='';
+    closePicker();
+  });
 
   VISUAL_SCHEDULE_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -4937,6 +5380,15 @@ function setupProgressBar(m){
     styleButton.textContent=next.label;
   };
 
+  const syncVisualControls=()=>{
+    const vertical=m.dataset.orientation==='vertical';
+    orientationButton.textContent=vertical?'↕':'↔';
+    orientationButton.title=vertical?'Switch to horizontal':'Switch to vertical';
+    const style=styles.find(option=>option.key===m.dataset.barStyle)||styles[0];
+    m.dataset.barStyle=style.key;
+    styleButton.textContent=style.label;
+  };
+
   m.querySelector('.progress-bar-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.progress-bar-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -4971,6 +5423,7 @@ function setupProgressBar(m){
   const defaultEnd=new Date(Date.now()+30*60*1000);
   endInput.value=formatInputTime(defaultEnd);
   initializeFromInput();
+  syncVisualControls();
 
   interval=window.setInterval(render,200);
   render();
@@ -4979,6 +5432,8 @@ function setupProgressBar(m){
     initializedAt,
     targetAt,
     completed,
+    orientation:m.dataset.orientation||'horizontal',
+    barStyle:m.dataset.barStyle||'glass',
     startIconSrc:iconStart.dataset.iconSrc||'',
     endIconSrc:iconEnd.dataset.iconSrc||''
   });
@@ -4987,6 +5442,9 @@ function setupProgressBar(m){
     initializedAt=Number(state.initializedAt)||Date.now();
     targetAt=Number(state.targetAt)||Date.now()+30*60*1000;
     completed=Boolean(state.completed);
+    if(state.orientation==='vertical'||state.orientation==='horizontal')m.dataset.orientation=state.orientation;
+    if(styles.some(option=>option.key===state.barStyle))m.dataset.barStyle=state.barStyle;
+    syncVisualControls();
     restoreSlotIcon(iconStart,state.startIconSrc||state.startIcon||'');
     restoreSlotIcon(iconEnd,state.endIconSrc||state.endIcon||'');
     endInput.value=formatInputTime(new Date(targetAt));
@@ -5006,6 +5464,7 @@ function setupVisualSchedule(m){
   const picker=m.querySelector('.visual-schedule-picker');
   const pickerGrid=m.querySelector('.visual-schedule-picker__grid');
   const pickerClose=m.querySelector('.visual-schedule-picker__close');
+  const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
   let lastObservedWidth=0;
@@ -5036,6 +5495,29 @@ function setupVisualSchedule(m){
       button.classList.toggle('is-selected',button.dataset.iconSrc===current);
     });
   };
+
+  const uploadOption=document.createElement('button');
+  uploadOption.type='button';
+  uploadOption.className='visual-schedule-icon-option visual-schedule-icon-option--upload';
+  uploadOption.innerHTML='<span class="custom-image-upload-mark" aria-hidden="true">+</span><span>Upload yours</span>';
+  uploadOption.setAttribute('aria-label','Upload a custom visual schedule image');
+  uploadOption.addEventListener('click',()=>customImageInput?.click());
+  pickerGrid.appendChild(uploadOption);
+
+  customImageInput?.addEventListener('change',async()=>{
+    const file=customImageInput.files?.[0];
+    if(!file||!activeSegment)return;
+    const data=await fileToBoardImageData(file,{maxSide:420,maxLength:70000,quality:.72,minSide:160});
+    if(data){
+      const targetImage=activeSegment.querySelector('.visual-schedule-image img');
+      targetImage.src=data;
+      targetImage.alt=file.name||'Custom image';
+      activeSegment.dataset.iconSrc=data;
+      notifyBoardChanged('visual-schedule-image');
+    }
+    customImageInput.value='';
+    closePicker();
+  });
 
   VISUAL_SCHEDULE_ICONS.forEach(icon=>{
     const button=document.createElement('button');
@@ -5079,7 +5561,7 @@ function setupVisualSchedule(m){
 
   const addSegment=(data={},focus=false)=>{
     const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
-    const icon=resolveVisualScheduleIcon(data.iconSrc)||fallbackIcon;
+    const icon=resolveVisualScheduleIcon(data.iconSrc)||(typeof data.iconSrc==='string'&&data.iconSrc.startsWith('data:image/')?{src:data.iconSrc,label:'Custom image'}:fallbackIcon);
     const row=document.createElement('div');
     row.className='visual-schedule-segment';
     row.dataset.iconSrc=icon.src;
@@ -9441,6 +9923,14 @@ function captureBoardDataset(m){
   return data;
 }
 
+function restoreBoardDataset(m,dataset){
+  if(!dataset||typeof dataset!=='object')return;
+  for(const [key,value] of Object.entries(dataset)){
+    if(key==='type'||key==='boardObjectId')continue;
+    m.dataset[key]=String(value);
+  }
+}
+
 function captureBoardFields(m){
   return[...m.querySelectorAll('input,textarea,select')].map((field,index)=>{
     if(field instanceof HTMLInputElement&&field.type==='file')return null;
@@ -9491,12 +9981,7 @@ function captureBoardClasses(m){
 function applyBoardPreSetupState(m,state){
   if(!state)return;
   if(state.id)m.dataset.boardObjectId=state.id;
-  if(state.dataset&&typeof state.dataset==='object'){
-    for(const [key,value] of Object.entries(state.dataset)){
-      if(key==='type'||key==='boardObjectId')continue;
-      m.dataset[key]=String(value);
-    }
-  }
+  restoreBoardDataset(m,state.dataset);
   for(const cls of Array.isArray(state.classes)?state.classes:[]){
     if(!BOARD_TRANSIENT_CLASSES.has(cls))m.classList.add(cls);
   }
@@ -9506,6 +9991,10 @@ function applyBoardPreSetupState(m,state){
 
 function applyBoardPostSetupState(m,state){
   if(!m||!state)return;
+  // Setup routines may establish their own default data attributes while they
+  // wire controls. Reapply the saved customization after setup so colors,
+  // fonts, layouts, styles, and other dataset-backed choices always survive.
+  restoreBoardDataset(m,state.dataset);
   restoreBoardFields(m,state.fields,{dispatch:true});
   restoreBoardEditables(m,state.editables,{dispatch:true});
 
@@ -10005,6 +10494,10 @@ function setupTeacherTilesShop(){
   const prev=modal.querySelector('[data-shop-banner-prev]');
   const next=modal.querySelector('[data-shop-banner-next]');
   const products=[...modal.querySelectorAll('[data-shop-product]')];
+  const redeemForm=document.getElementById('shop-redeem-form');
+  const redeemInput=document.getElementById('shop-redeem-code');
+  const redeemStatus=document.getElementById('shop-redeem-status');
+  const subscribePreview=document.getElementById('shop-subscribe-preview');
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const COINS_KEY='teacherTilesCoins';
   const OWNED_KEY='teacherTilesOwnedShopPacks';
@@ -10139,6 +10632,22 @@ function setupTeacherTilesShop(){
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
   products.forEach(card=>card.querySelector('[data-shop-buy]')?.addEventListener('click',()=>tryBuy(card)));
+  redeemInput?.addEventListener('input',()=>{
+    const start=redeemInput.selectionStart;
+    redeemInput.value=redeemInput.value.toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,32);
+    try{redeemInput.setSelectionRange(start,start)}catch{}
+    if(redeemStatus)redeemStatus.textContent='';
+  });
+  redeemForm?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const code=redeemInput?.value.trim()||'';
+    if(!redeemStatus)return;
+    if(!code){redeemStatus.textContent='Enter a code to continue.';redeemStatus.classList.add('is-error');redeemInput?.focus();return}
+    redeemStatus.classList.remove('is-error');
+    redeemStatus.textContent='Code redemption is ready for a future rewards backend.';
+    showToast('Redemption UI ready — no code was applied.');
+  });
+  subscribePreview?.addEventListener('click',()=>showToast('Membership checkout is not active yet.'));
   modal.querySelector('.shop-banner')?.addEventListener('pointerenter',stopBannerTimer);
   modal.querySelector('.shop-banner')?.addEventListener('pointerleave',startBannerTimer);
   document.addEventListener('keydown',event=>{
