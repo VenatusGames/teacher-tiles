@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function ownsUserData(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Account balances and shop records are controlled only by Cloud Functions.
+    match /users/{uid} {
+      allow read, write: if false;
+
+      // Keep the app's existing per-user board access intact.
+      match /boards/{boardId} {
+        allow read, write: if ownsUserData(uid);
+        match /{document=**} {
+          allow read, write: if ownsUserData(uid);
+        }
+      }
+
+      match /{shopDocument=**} {
+        allow read, write: if false;
+      }
+    }
+
+    match /stripeCoinGrants/{grantId} {
+      allow read, write: if false;
+    }
+
+    match /redemptionCodes/{codeHash} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

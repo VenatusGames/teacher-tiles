@@ -21,6 +21,7 @@ const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
 const profileBetaBadge = document.getElementById("profile-beta-badge");
 const profileBadgeCount = document.getElementById("profile-badge-count");
+const profileCoinBalance = document.getElementById("profile-coin-balance");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
@@ -36,7 +37,10 @@ const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "
 let auth = null;
 let authSdk = null;
 let firestoreSdk = null;
+let functionsSdk = null;
 let db = null;
+let cloudFunctions = null;
+let shopBackendSafetyBlocked = false;
 let currentUser = null;
 let authReady = false;
 let busy = false;
@@ -64,6 +68,14 @@ const INLINE_OBJECT_BUDGET = 560000;
 const CHUNK_OBJECT_BUDGET = 520000;
 const MAX_SINGLE_OBJECT_BYTES = 900000;
 const PREVIEW_OBJECT_BUDGET = 90000;
+const SHOP_FUNCTION_REGION = "us-central1";
+const shopAccountState = {
+  ready: false,
+  loading: false,
+  signedIn: false,
+  coinBalance: 0,
+  ownedProductIds: []
+};
 
 const boardApi = () => window.TeacherTilesBoard || null;
 const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
@@ -71,6 +83,74 @@ const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
 function setStatus(message = "", isError = false) {
   status.textContent = message;
   status.classList.toggle("is-error", isError);
+}
+
+function publishShopAccount(patch = {}) {
+  Object.assign(shopAccountState, patch);
+  shopAccountState.coinBalance = Number.isSafeInteger(Number(shopAccountState.coinBalance))
+    ? Number(shopAccountState.coinBalance)
+    : 0;
+  shopAccountState.ownedProductIds = [...new Set(
+    (Array.isArray(shopAccountState.ownedProductIds) ? shopAccountState.ownedProductIds : [])
+      .filter(value => typeof value === "string")
+  )];
+  if (profileCoinBalance) profileCoinBalance.textContent = shopAccountState.coinBalance.toLocaleString();
+  window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
+    detail: {
+      ready: shopAccountState.ready,
+      loading: shopAccountState.loading,
+      signedIn: shopAccountState.signedIn,
+      coinBalance: shopAccountState.coinBalance,
+      ownedProductIds: [...shopAccountState.ownedProductIds]
+    }
+  }));
+}
+
+async function callShopFunction(name, data = {}) {
+  if (!currentUser) throw new Error("Sign in to use the TeacherTiles shop.");
+  if (shopBackendSafetyBlocked) throw new Error("Sandbox payments need a separate Firebase sandbox project before they can be tested.");
+  if (!cloudFunctions || !functionsSdk) throw new Error("The TeacherTiles shop is still loading. Try again in a moment.");
+  const callable = functionsSdk.httpsCallable(cloudFunctions, name);
+  return (await callable(data)).data || {};
+}
+
+async function refreshShopAccount() {
+  if (!currentUser) {
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [] });
+    return { ...shopAccountState };
+  }
+
+  const uid = currentUser.uid;
+  publishShopAccount({ loading: true, signedIn: true });
+  try {
+    const account = await callShopFunction("getShopAccount");
+    if (currentUser?.uid === uid) {
+      publishShopAccount({
+        ready: true,
+        loading: false,
+        signedIn: true,
+        coinBalance: account.coinBalance,
+        ownedProductIds: account.ownedProductIds
+      });
+    }
+    return account;
+  } catch (error) {
+    if (currentUser?.uid === uid) publishShopAccount({ ready: true, loading: false, signedIn: true });
+    throw error;
+  }
+}
+
+function applyReturnedShopAccount(result) {
+  if (result && ("coinBalance" in result || "ownedProductIds" in result)) {
+    publishShopAccount({
+      ready: true,
+      loading: false,
+      signedIn: Boolean(currentUser),
+      coinBalance: result.coinBalance,
+      ownedProductIds: result.ownedProductIds
+    });
+  }
+  return result;
 }
 
 function setBoardStatus(message = "", isError = false) {
@@ -1652,6 +1732,11 @@ async function renderUser(user) {
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
 
+    refreshShopAccount().catch(error => {
+      console.error("TeacherTiles could not load the shop account", error);
+      setStatus("Your profile loaded, but the shop balance is temporarily unavailable.", true);
+    });
+
     if (!previousUser || previousUser.uid !== user.uid) {
       activeBoardId = "";
       boardList = [];
@@ -1661,6 +1746,7 @@ async function renderUser(user) {
       await initializeBoardsForUser(user);
     }
   } else {
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [] });
     clearTimeout(localBoardSaveTimer);
     clearTimeout(cloudBoardSaveTimer);
     activeBoardId = "";
@@ -1741,18 +1827,25 @@ async function initializeFirebaseAuth() {
   signInButton.disabled = true;
 
   try {
-    const [appModule, authModule, firestoreModule] = await Promise.all([
+    const sandboxBuild = await fetch(new URL("sandbox.md", window.location.href), { cache: "no-store" })
+      .then(response => response.ok)
+      .catch(() => false);
+    const [appModule, authModule, firestoreModule, functionsModule] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"),
-      import("https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js")
+      import("https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"),
+      import("https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js")
     ]);
 
     authSdk = authModule;
     firestoreSdk = firestoreModule;
+    functionsSdk = functionsModule;
 
     const firebaseApp = appModule.initializeApp(firebaseConfig);
     auth = authModule.getAuth(firebaseApp);
     db = firestoreModule.getFirestore(firebaseApp);
+    shopBackendSafetyBlocked = sandboxBuild && firebaseConfig.projectId === "teachertiles-6739b";
+    cloudFunctions = shopBackendSafetyBlocked ? null : functionsModule.getFunctions(firebaseApp, SHOP_FUNCTION_REGION);
 
     try {
       await authModule.setPersistence(auth, authModule.browserLocalPersistence);
@@ -1856,6 +1949,39 @@ window.TeacherTilesAuth = {
   get user() { return currentUser; },
   get ready() { return authReady; },
   openProfile
+};
+
+window.TeacherTilesAccount = {
+  get state() {
+    return {
+      ready: shopAccountState.ready,
+      loading: shopAccountState.loading,
+      signedIn: shopAccountState.signedIn,
+      coinBalance: shopAccountState.coinBalance,
+      ownedProductIds: [...shopAccountState.ownedProductIds]
+    };
+  },
+  owns(productId) {
+    return shopAccountState.ownedProductIds.includes(String(productId || ""));
+  },
+  refresh: refreshShopAccount,
+  async createCoinCheckout(packId) {
+    const returnUrl = new URL(window.location.href);
+    returnUrl.hash = "";
+    returnUrl.searchParams.delete("tt_checkout");
+    const result = await callShopFunction("createCoinCheckoutSession", { packId, returnUrl: returnUrl.href });
+    if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
+    return result;
+  },
+  async purchase(productId) {
+    return applyReturnedShopAccount(await callShopFunction("purchaseCosmetic", { productId }));
+  },
+  async redeem(code) {
+    return applyReturnedShopAccount(await callShopFunction("redeemCoinCode", { code }));
+  },
+  async generateCode(packId) {
+    return callShopFunction("generateCoinCode", { packId });
+  }
 };
 
 window.TeacherTilesCloudBoards = {

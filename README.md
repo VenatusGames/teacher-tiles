@@ -4,6 +4,10 @@ A browser-based modular classroom workspace. Right-click the board to add tools,
 
 Current modules include Sticky Note, Visual Timer, Interactive Timers, Clock, Noise Detector, Collections, Stoplight, Image, Text Bubble, and To-Do.
 
+## Stripe coin store
+
+The secure Firebase/Stripe setup and deployment checklist is in [STRIPE_SETUP.md](STRIPE_SETUP.md). Coin balances, cosmetic ownership, Stripe fulfillment, and one-time redemption codes are server-authoritative; Stripe secrets do not belong in browser code.
+
 Custom Flashcards lets teachers create multiple reusable card sets, switch between them, and mix text with uploaded images. Lunch Count categories can also use a teacher-uploaded image instead of the preset lunch icons.
 
 ## Run locally

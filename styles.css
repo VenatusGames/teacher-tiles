@@ -13461,3 +13461,17 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 .profile-badge--locked{--patch-high:#d6dade;--patch-low:#858d95;--braid-light:#f0f2f3;--braid-mid:#aeb5bb;--braid-dark:#687179;opacity:1;filter:none;cursor:help}.profile-badge--locked:hover{transform:translateY(-2px)}.profile-badge--locked .profile-badge__medallion{border-radius:50%;background:radial-gradient(circle at 38% 30%,var(--patch-high),var(--patch-low) 76%) padding-box,repeating-conic-gradient(from 2deg,var(--braid-light) 0 2.5deg,var(--braid-mid) 2.5deg 5deg,var(--braid-dark) 5deg 7.5deg,var(--braid-mid) 7.5deg 10deg) border-box}.profile-badge--locked .profile-badge__medallion i{color:#737b82;text-shadow:1px 1px 0 #f0f2f3,-1px -1px 0 #f0f2f3}.profile-badge--locked .profile-badge__copy strong{color:var(--muted)}.profile-badge__medallion svg{position:relative;z-index:3;width:42px;height:42px;display:block;overflow:visible;fill:none;stroke:#68727b;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 rgba(255,255,255,.72))}.profile-badge--subscriber .profile-badge__medallion svg{width:41px;height:41px}.profile-badge--contributor .profile-badge__medallion svg{width:39px;height:39px;stroke-width:2.4}
 .profile-badge__shine{position:absolute;z-index:4;top:-15px;bottom:-15px;left:-42%;width:18px;transform:rotate(18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:profileBadgeShine 3.8s ease-in-out infinite;pointer-events:none}
 @media(max-width:430px){.profile-badge-grid{grid-template-columns:repeat(auto-fill,88px)}.profile-badge{width:88px}.profile-badge__medallion{width:72px;height:72px;flex-basis:72px}}
+
+/* Cloud shop ownership and Stripe checkout states */
+.theme-pack.is-cosmetic-locked{position:relative;cursor:pointer;filter:saturate(.55);opacity:.78}
+.theme-pack.is-cosmetic-locked::after{content:'🔒';position:absolute;z-index:8;right:8px;top:8px;width:24px;height:24px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.7);border-radius:9px;background:rgba(31,37,45,.86);color:#fff;font-size:12px;line-height:1;box-shadow:0 5px 12px rgba(15,23,42,.2)}
+.theme-pack.is-cosmetic-locked:hover{opacity:.94;filter:saturate(.8);transform:translateY(-2px)}
+.sticker-shelf-item.is-cosmetic-locked{position:relative;filter:grayscale(.7);opacity:.48;cursor:pointer}
+.sticker-shelf-item.is-cosmetic-locked::after{content:'🔒';position:absolute;right:3px;top:3px;width:18px;height:18px;display:grid;place-items:center;border-radius:7px;background:rgba(31,37,45,.84);color:#fff;font-size:9px}
+.shop-coin-pack>button{opacity:1;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease}
+.shop-coin-pack>button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 15px rgba(137,95,5,.15)}
+.shop-coin-pack>button:disabled,.shop-buy:disabled{opacity:.58;cursor:wait}
+.shop-product.is-purchasing{opacity:.72;pointer-events:none}
+.shop-product.is-shop-highlighted{animation:shopProductHighlight 1.2s ease}
+.shop-coins-button.is-loading #shop-coin-balance{opacity:.5}
+@keyframes shopProductHighlight{0%,100%{box-shadow:0 0 0 0 rgba(220,165,36,0)}35%{box-shadow:0 0 0 4px rgba(220,165,36,.4),0 16px 36px rgba(15,23,42,.12)}}
