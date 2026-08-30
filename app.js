@@ -3477,41 +3477,155 @@ function setupStarChart(m){
   const studentGrid=m.querySelector('.starchart-student-grid');
   const noStudents=m.querySelector('.starchart-no-students');
   const wholeCount=m.querySelector('.starchart-whole-count b');
+  const wholeBundles=m.querySelector('.starchart-whole-bundles');
   const wholeAdd=m.querySelector('.starchart-whole-add');
   const wholeRemove=m.querySelector('.starchart-whole-remove');
   let activeClassId='';
   let pendingClassId='';
   let roster=null;
   let progress=normalizeStarChartProgress(null,[]);
+  const animationTimers=new Set();
+  const flyingStars=new Set();
+  const bundleLevels=[
+    {weight:1000,level:3,label:'1K'},
+    {weight:100,level:2,label:'100'},
+    {weight:10,level:1,label:'10'},
+    {weight:1,level:0,label:'1'}
+  ];
 
   const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+
+  const scheduleAnimation=(callback,delay)=>{
+    const timer=setTimeout(()=>{animationTimers.delete(timer);callback()},delay);
+    animationTimers.add(timer);
+    return timer;
+  };
+
+  const renderStarBundles=(container,total,ownerLabel)=>{
+    const count=normalizeStarChartCount(total);
+    container.replaceChildren();
+    container.dataset.total=String(count);
+    if(!count){
+      const empty=document.createElement('span');
+      empty.className='starchart-star-empty';
+      empty.textContent='No stars yet';
+      container.append(empty);
+      return;
+    }
+
+    let remaining=count;
+    bundleLevels.forEach(level=>{
+      const quantity=Math.floor(remaining/level.weight);
+      remaining%=level.weight;
+      for(let index=0;index<quantity;index++){
+        const token=document.createElement('button');
+        token.type='button';
+        token.className=`starchart-star-token starchart-star-token--level-${level.level}`;
+        token.dataset.starAction='remove';
+        token.dataset.bundleValue=String(level.weight);
+        const represented=level.weight===1?'1 star':`${level.weight.toLocaleString()} stars`;
+        token.setAttribute('aria-label',`${represented} for ${ownerLabel}. Remove one star.`);
+        token.title=`${represented} combined · click to remove 1`;
+        const icon=document.createElement('span');icon.textContent='★';icon.setAttribute('aria-hidden','true');
+        const value=document.createElement('small');value.textContent=level.label;value.setAttribute('aria-hidden','true');
+        token.append(icon,value);container.append(token);
+      }
+    });
+  };
+
+  const landingTargetFor=studentKey=>{
+    const container=studentKey==='__whole__'?wholeBundles:[...studentGrid.querySelectorAll('[data-student-key]')].find(row=>row.dataset.studentKey===studentKey)?.querySelector('.starchart-star-stage');
+    if(!container)return null;
+    const tokens=container.querySelectorAll('.starchart-star-token');
+    return tokens[tokens.length-1]||container;
+  };
+
+  const animateStarAward=(sourceRect,targetRect,studentKey)=>{
+    const popLanding=()=>{
+      const landing=landingTargetFor(studentKey);
+      if(!landing)return;
+      landing.classList.remove('is-landing');
+      void landing.offsetWidth;
+      landing.classList.add('is-landing');
+      scheduleAnimation(()=>landing.classList.remove('is-landing'),520);
+    };
+    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches){popLanding();return}
+
+    const star=document.createElement('span');
+    star.className='starchart-flying-star';
+    star.textContent='★';
+    star.setAttribute('aria-hidden','true');
+    const startX=sourceRect.left+Math.min(sourceRect.width*.78,sourceRect.width-10);
+    const startY=sourceRect.top+sourceRect.height*.5;
+    const endX=targetRect.left+Math.min(Math.max(26,targetRect.width*.42),Math.max(26,targetRect.width-20));
+    const endY=targetRect.top+targetRect.height*.5;
+    const dx=endX-startX;
+    const dy=endY-startY;
+    star.style.left=`${startX}px`;
+    star.style.top=`${startY}px`;
+    document.body.append(star);
+    flyingStars.add(star);
+    const animation=star.animate([
+      {opacity:0,transform:'translate(-50%,-50%) scale(.15) rotate(-35deg)'},
+      {offset:.18,opacity:1,transform:'translate(-50%,-50%) scale(1.45) rotate(35deg)'},
+      {offset:.7,opacity:1,transform:`translate(calc(-50% + ${dx*.8}px),calc(-50% + ${dy-34}px)) scale(1.05) rotate(285deg)`},
+      {opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.62) rotate(390deg)`}
+    ],{duration:620,easing:'cubic-bezier(.2,.78,.24,1)',fill:'forwards'});
+    scheduleAnimation(popLanding,455);
+    const removeFlyingStar=()=>{flyingStars.delete(star);star.remove()};
+    animation.finished.then(removeFlyingStar,removeFlyingStar);
+  };
+
+  const setSubtractPanelOpen=(card,open)=>{
+    studentGrid.querySelectorAll('.starchart-subtract-panel').forEach(panel=>panel.hidden=true);
+    studentGrid.querySelectorAll('.starchart-subtract-toggle').forEach(button=>button.setAttribute('aria-expanded','false'));
+    const panel=card?.querySelector('.starchart-subtract-panel');
+    const toggle=card?.querySelector('.starchart-subtract-toggle');
+    if(!panel||!toggle||!open)return;
+    panel.hidden=false;
+    toggle.setAttribute('aria-expanded','true');
+    requestAnimationFrame(()=>{const input=panel.querySelector('input');input?.focus({preventScroll:true});input?.select()});
+  };
 
   const renderStudentGrid=()=>{
     studentGrid.replaceChildren();
     const students=roster?.students||[];
-    const columns=Math.max(1,Math.ceil(Math.sqrt(students.length*1.55)));
-    studentGrid.style.setProperty('--starchart-columns',String(columns));
+    studentGrid.style.setProperty('--starchart-student-count',String(students.length));
     noStudents.hidden=students.length>0;
     studentGrid.hidden=!students.length;
 
     students.forEach(name=>{
       const key=starChartStudentKey(name);
       const count=normalizeStarChartCount(progress.studentStars[key]);
-      const card=document.createElement('article');
-      card.className='starchart-student-card';
-      card.dataset.studentKey=key;
-      const label=document.createElement('strong');
-      label.textContent=name;
-      label.title=name;
-      const score=document.createElement('div');
-      score.className='starchart-student-score';
-      const star=document.createElement('span');star.textContent='★';star.setAttribute('aria-hidden','true');
-      const value=document.createElement('b');value.textContent=String(count);
-      score.append(star,value);
-      const actions=document.createElement('div');actions.className='starchart-student-actions';
-      const remove=document.createElement('button');remove.type='button';remove.dataset.starAction='remove';remove.textContent='−';remove.setAttribute('aria-label',`Remove a star from ${name}`);remove.disabled=count===0;
-      const add=document.createElement('button');add.type='button';add.dataset.starAction='add';add.innerHTML='<span aria-hidden="true">★</span> Add';add.setAttribute('aria-label',`Award a star to ${name}`);
-      actions.append(remove,add);card.append(label,score,actions);studentGrid.append(card);
+      const row=document.createElement('article');
+      row.className='starchart-student-row';
+      row.dataset.studentKey=key;
+
+      const main=document.createElement('div');main.className='starchart-student-row__main';
+      const nameButton=document.createElement('button');
+      nameButton.type='button';nameButton.className='starchart-student-name';nameButton.dataset.starAction='add';nameButton.setAttribute('aria-label',`Award a star to ${name}`);nameButton.title=`Click to award a star to ${name}`;
+      const label=document.createElement('strong');label.textContent=name;label.title=name;
+      const exact=document.createElement('span');
+      const exactNumber=document.createElement('b');exactNumber.textContent=count.toLocaleString();
+      exact.append(exactNumber,document.createTextNode(` ${count===1?'star':'stars'} total`));
+      nameButton.append(label,exact);
+
+      const starStage=document.createElement('div');starStage.className='starchart-star-stage';starStage.setAttribute('aria-label',`${count} stars earned by ${name}`);
+      renderStarBundles(starStage,count,name);
+
+      const subtractToggle=document.createElement('button');
+      subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
+      subtractToggle.innerHTML='<span aria-hidden="true">−#</span><small>Subtract</small>';
+      main.append(nameButton,starStage,subtractToggle);
+
+      const panel=document.createElement('div');panel.className='starchart-subtract-panel';panel.hidden=true;
+      const prompt=document.createElement('span');prompt.textContent=`Take stars away from ${name}`;
+      const form=document.createElement('form');form.className='starchart-subtract-form';
+      const input=document.createElement('input');input.type='number';input.min='1';input.max=String(count);input.step='1';input.value='1';input.inputMode='numeric';input.setAttribute('aria-label',`Number of stars to subtract from ${name}`);
+      const takeAway=document.createElement('button');takeAway.type='submit';takeAway.textContent='Take away';
+      const cancel=document.createElement('button');cancel.type='button';cancel.className='starchart-subtract-cancel';cancel.dataset.subtractCancel='';cancel.textContent='Cancel';
+      form.append(input,takeAway,cancel);panel.append(prompt,form);
+      row.append(main,panel);studentGrid.append(row);
     });
   };
 
@@ -3524,6 +3638,7 @@ function setupStarChart(m){
     wholeClassName.textContent=roster.name;
     wholeCount.textContent=String(progress.wholeClassStars);
     wholeRemove.disabled=progress.wholeClassStars===0;
+    renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
     const mode=progress.mode==='whole'?'whole':'student';
     modeButtons.forEach(button=>{
       const active=button.dataset.starchartMode===mode;
@@ -3564,20 +3679,53 @@ function setupStarChart(m){
   }));
 
   studentGrid.addEventListener('click',event=>{
-    const action=event.target.closest('[data-star-action]');
-    const card=action?.closest('[data-student-key]');
-    if(!action||!card||!activeClassId)return;
-    const key=card.dataset.studentKey;
+    const target=event.target instanceof Element?event.target:null;
+    const row=target?.closest('[data-student-key]');
+    if(!row||!activeClassId)return;
+    const subtractToggle=target.closest('[data-subtract-toggle]');
+    if(subtractToggle){setSubtractPanelOpen(row,subtractToggle.getAttribute('aria-expanded')!=='true');return}
+    if(target.closest('[data-subtract-cancel]')){setSubtractPanelOpen(row,false);return}
+    const action=target.closest('[data-star-action]');
+    if(!action)return;
+    const key=row.dataset.studentKey;
     const current=normalizeStarChartCount(progress.studentStars[key]);
-    progress.studentStars[key]=normalizeStarChartCount(current+(action.dataset.starAction==='add'?1:-1));
+    const adding=action.dataset.starAction==='add';
+    if(!adding&&!current)return;
+    const flight=adding?{source:action.getBoundingClientRect(),target:row.querySelector('.starchart-star-stage')?.getBoundingClientRect()}:null;
+    progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
+    persistProgress();
+    if(flight)animateStarAward(flight.source,flight.target,key);
+  });
+
+  studentGrid.addEventListener('submit',event=>{
+    const form=event.target.closest('.starchart-subtract-form');
+    if(!form)return;
+    event.preventDefault();
+    const row=form.closest('[data-student-key]');
+    const input=form.querySelector('input');
+    if(!row||!input||!activeClassId)return;
+    const key=row.dataset.studentKey;
+    const current=normalizeStarChartCount(progress.studentStars[key]);
+    const requested=Math.round(Number(input.value));
+    if(!current||!Number.isFinite(requested)||requested<1)return;
+    const amount=Math.min(current,requested);
+    progress.studentStars[key]=normalizeStarChartCount(current-amount);
     persistProgress();
   });
 
   wholeAdd.addEventListener('click',()=>{
+    const source=wholeAdd.getBoundingClientRect();
+    const target=wholeBundles.getBoundingClientRect();
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
     persistProgress();
+    animateStarAward(source,target,'__whole__');
   });
   wholeRemove.addEventListener('click',()=>{
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
+    persistProgress();
+  });
+  wholeBundles.addEventListener('click',event=>{
+    if(!event.target.closest('.starchart-star-token')||!progress.wholeClassStars)return;
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
     persistProgress();
   });
@@ -3617,6 +3765,8 @@ function setupStarChart(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();detachRosterLoader();
+    animationTimers.forEach(clearTimeout);animationTimers.clear();
+    flyingStars.forEach(star=>star.remove());flyingStars.clear();
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);
     window.removeEventListener('teachertiles:starchartchange',handleStarChartChange);
   };
