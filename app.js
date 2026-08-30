@@ -397,6 +397,7 @@ function writeClassCollection(classId,value){
 }
 
 window.addEventListener('pagehide',flushPbisCloudSave);
+window.addEventListener('teachertiles:classsyncenabled',()=>queueEncryptedClassSave(readClassRosters(),'Class Sync'));
 
 window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
   const classes=Array.isArray(event.detail?.classes)?event.detail.classes:[];

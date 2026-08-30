@@ -24,6 +24,24 @@ const profileBadgeCount = document.getElementById("profile-badge-count");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
+const classSyncButton = document.getElementById("profile-class-sync-button");
+const classSyncSummary = document.getElementById("profile-class-sync-summary");
+const classSyncPanel = document.getElementById("profile-class-sync-panel");
+const classSyncBack = document.getElementById("profile-class-sync-back");
+const classSyncBackdrop = document.querySelector("#profile-class-sync-panel .class-sync-window__backdrop");
+const classSyncStateBadge = document.getElementById("class-sync-state-badge");
+const classSyncStateTitle = document.getElementById("class-sync-state-title");
+const classSyncStateCopy = document.getElementById("class-sync-state-copy");
+const classSyncForm = document.getElementById("class-sync-form");
+const classSyncPassphrase = document.getElementById("class-sync-passphrase");
+const classSyncConfirmWrap = document.getElementById("class-sync-confirm-wrap");
+const classSyncConfirm = document.getElementById("class-sync-confirm");
+const classSyncSubmit = document.getElementById("class-sync-submit");
+const classSyncChange = document.getElementById("class-sync-change");
+const classSyncRetry = document.getElementById("class-sync-retry");
+const classSyncFeedback = document.getElementById("class-sync-feedback");
+if (classSyncPanel && classSyncPanel.parentElement !== document.body) document.body.appendChild(classSyncPanel);
+
 const boardsToggle = document.getElementById("boards-toggle");
 const boardsView = document.getElementById("boards-view");
 const boardsBack = document.getElementById("boards-back");
@@ -42,6 +60,12 @@ let currentUser = null;
 let authReady = false;
 let busy = false;
 let lastFocused = null;
+
+let classKeyEnvelope = null;
+let classSyncDocumentExists = false;
+let classSyncHasCiphertext = false;
+let classSyncMode = "setup";
+let classSyncBusy = false;
 
 let boardList = [];
 let activeBoardId = "";
@@ -69,6 +93,9 @@ const PREVIEW_OBJECT_BUDGET = 90000;
 const boardApi = () => window.TeacherTilesBoard || null;
 const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
 const classEncryptionKeyStorageKey = uid => `teachertiles-class-key-${uid}`;
+const classSyncOfferStorageKey = uid => `teachertiles-class-sync-offered-${uid}`;
+const CLASS_SYNC_KDF_ITERATIONS = 310000;
+const CLASS_SYNC_MIN_PASSPHRASE_LENGTH = 10;
 
 function classesDocument(uid) {
   return firestoreSdk.doc(db, "users", uid, "private", "classes");
@@ -85,17 +112,127 @@ function base64ToBytes(value) {
   return Uint8Array.from(binary, character => character.charCodeAt(0));
 }
 
-async function getClassEncryptionKey(uid, { create = false } = {}) {
+function normalizeClassSyncPassphrase(value) {
+  return String(value || "").normalize("NFKC");
+}
+
+function hasCachedClassEncryptionKey(uid = currentUser?.uid) {
+  if (!uid) return false;
+  try {
+    return base64ToBytes(localStorage.getItem(classEncryptionKeyStorageKey(uid)) || "").length === 32;
+  } catch {
+    return false;
+  }
+}
+
+async function getClassEncryptionKeyBytes(uid, { create = false } = {}) {
   const storageKey = classEncryptionKeyStorageKey(uid);
   let encoded = localStorage.getItem(storageKey) || "";
   if (!encoded && create) {
-    const generated = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-    encoded = bytesToBase64(new Uint8Array(await crypto.subtle.exportKey("raw", generated)));
+    const raw = crypto.getRandomValues(new Uint8Array(32));
+    encoded = bytesToBase64(raw);
     localStorage.setItem(storageKey, encoded);
-    return generated;
+    return raw;
   }
   if (!encoded) return null;
-  return crypto.subtle.importKey("raw", base64ToBytes(encoded), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+  const raw = base64ToBytes(encoded);
+  if (raw.length !== 32) throw new Error("The cached class encryption key is invalid");
+  return raw;
+}
+
+async function getClassEncryptionKey(uid, { create = false } = {}) {
+  const raw = await getClassEncryptionKeyBytes(uid, { create });
+  if (!raw) return null;
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+function normalizeClassKeyEnvelope(value) {
+  if (!value || typeof value !== "object") return null;
+  const iterations = Math.max(100000, Number(value.iterations) || CLASS_SYNC_KDF_ITERATIONS);
+  if (Number(value.version) !== 1 || value.kdf !== "PBKDF2-SHA-256" || value.algorithm !== "AES-GCM-256") return null;
+  if (![value.salt, value.iv, value.ciphertext].every(item => typeof item === "string" && item)) return null;
+  return {
+    version: 1,
+    kdf: "PBKDF2-SHA-256",
+    iterations,
+    algorithm: "AES-GCM-256",
+    salt: value.salt,
+    iv: value.iv,
+    ciphertext: value.ciphertext
+  };
+}
+
+function classSyncAdditionalData(uid) {
+  return new TextEncoder().encode(`TeacherTiles:classes:${uid}:key-envelope-v1`);
+}
+
+async function deriveClassSyncWrappingKey(passphrase, salt, iterations = CLASS_SYNC_KDF_ITERATIONS) {
+  const normalized = normalizeClassSyncPassphrase(passphrase);
+  const material = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(normalized),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function createClassKeyEnvelope(uid, rawClassKey, passphrase) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const wrappingKey = await deriveClassSyncWrappingKey(passphrase, salt);
+  const wrapped = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv, additionalData: classSyncAdditionalData(uid) },
+    wrappingKey,
+    rawClassKey
+  );
+  return {
+    version: 1,
+    kdf: "PBKDF2-SHA-256",
+    iterations: CLASS_SYNC_KDF_ITERATIONS,
+    algorithm: "AES-GCM-256",
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(new Uint8Array(wrapped))
+  };
+}
+
+async function unwrapClassKeyEnvelope(uid, envelope, passphrase) {
+  const normalized = normalizeClassKeyEnvelope(envelope);
+  if (!normalized) throw new Error("The saved Class Sync key is invalid");
+  const wrappingKey = await deriveClassSyncWrappingKey(passphrase, base64ToBytes(normalized.salt), normalized.iterations);
+  const raw = new Uint8Array(await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: base64ToBytes(normalized.iv),
+      additionalData: classSyncAdditionalData(uid)
+    },
+    wrappingKey,
+    base64ToBytes(normalized.ciphertext)
+  ));
+  if (raw.length !== 32) throw new Error("The saved Class Sync key is invalid");
+  return raw;
+}
+
+async function decryptClassesValue(value, key) {
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBytes(value.iv) },
+    key,
+    base64ToBytes(value.ciphertext)
+  );
+  const classes = JSON.parse(new TextDecoder().decode(plaintext));
+  return Array.isArray(classes) ? classes : [];
+}
+
+function dispatchEncryptedClassesLoaded(classes) {
+  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
 }
 
 async function saveEncryptedClasses(classes) {
@@ -104,32 +241,231 @@ async function saveEncryptedClasses(classes) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = new TextEncoder().encode(JSON.stringify(Array.isArray(classes) ? classes : []));
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
-  await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
-    version: 1,
+  const payload = {
+    version: classKeyEnvelope ? 2 : 1,
     algorithm: "AES-GCM-256",
     iv: bytesToBase64(iv),
     ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
     updatedAt: firestoreSdk.serverTimestamp()
-  });
+  };
+  if (classKeyEnvelope) payload.keyEnvelope = classKeyEnvelope;
+  await firestoreSdk.setDoc(classesDocument(currentUser.uid), payload, { merge: true });
+  classSyncDocumentExists = true;
+  classSyncHasCiphertext = true;
+  refreshClassSyncUi();
 }
 
-async function loadEncryptedClasses() {
+function maybeOfferClassSyncSetup() {
+  if (!currentUser || !classSyncHasCiphertext || classKeyEnvelope || !hasCachedClassEncryptionKey(currentUser.uid)) return;
+  const offerKey = classSyncOfferStorageKey(currentUser.uid);
+  if (localStorage.getItem(offerKey) === "1") return;
+  localStorage.setItem(offerKey, "1");
+  setTimeout(() => openClassSyncPanel("setup"), 0);
+}
+
+async function loadEncryptedClasses({ promptForUnlock = true } = {}) {
   if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) return [];
   const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
-  if (!snapshot.exists()) return [];
+  classSyncDocumentExists = snapshot.exists();
+  if (!snapshot.exists()) {
+    classSyncHasCiphertext = false;
+    classKeyEnvelope = null;
+    classSyncMode = "setup";
+    refreshClassSyncUi();
+    return [];
+  }
+
   const value = snapshot.data() || {};
-  if (!value.ciphertext || !value.iv) return [];
-  const key = await getClassEncryptionKey(currentUser.uid);
-  if (!key) throw new Error("This device does not have the encryption key for these rosters");
-  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(value.iv) }, key, base64ToBytes(value.ciphertext));
-  const classes = JSON.parse(new TextDecoder().decode(plaintext));
-  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
-  return classes;
+  classSyncHasCiphertext = Boolean(value.ciphertext && value.iv);
+  classKeyEnvelope = normalizeClassKeyEnvelope(value.keyEnvelope);
+
+  if (!classSyncHasCiphertext) {
+    classSyncMode = classKeyEnvelope && !hasCachedClassEncryptionKey(currentUser.uid) ? "unlock" : (classKeyEnvelope ? "ready" : "setup");
+    refreshClassSyncUi();
+    if (classSyncMode === "unlock" && promptForUnlock) openClassSyncPanel("unlock");
+    return [];
+  }
+
+  let key = await getClassEncryptionKey(currentUser.uid);
+  if (key) {
+    try {
+      const classes = await decryptClassesValue(value, key);
+      classSyncMode = classKeyEnvelope ? "ready" : "setup";
+      refreshClassSyncUi();
+      dispatchEncryptedClassesLoaded(classes);
+      maybeOfferClassSyncSetup();
+      return classes;
+    } catch (error) {
+      if (!classKeyEnvelope) throw error;
+      localStorage.removeItem(classEncryptionKeyStorageKey(currentUser.uid));
+      key = null;
+    }
+  }
+
+  if (classKeyEnvelope) {
+    classSyncMode = "unlock";
+    refreshClassSyncUi();
+    if (promptForUnlock) openClassSyncPanel("unlock");
+    return [];
+  }
+
+  classSyncMode = "legacy-missing";
+  refreshClassSyncUi();
+  if (promptForUnlock) openClassSyncPanel("legacy-missing");
+  return [];
+}
+
+async function enableOrChangeClassSync(passphrase) {
+  if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) throw new Error("Class Sync is unavailable");
+  const normalized = normalizeClassSyncPassphrase(passphrase);
+  if (normalized.length < CLASS_SYNC_MIN_PASSPHRASE_LENGTH) throw new Error(`Use at least ${CLASS_SYNC_MIN_PASSPHRASE_LENGTH} characters for the sync passphrase`);
+
+  const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
+  const cloudValue = snapshot.exists() ? (snapshot.data() || {}) : {};
+  classSyncDocumentExists = snapshot.exists();
+  classSyncHasCiphertext = Boolean(cloudValue.ciphertext && cloudValue.iv);
+  const cloudEnvelope = normalizeClassKeyEnvelope(cloudValue.keyEnvelope);
+  if (cloudEnvelope) classKeyEnvelope = cloudEnvelope;
+
+  let raw = await getClassEncryptionKeyBytes(currentUser.uid);
+  if (classSyncHasCiphertext) {
+    if (!raw) throw new Error("Unlock these classes on a device that already has the encryption key before setting a new sync passphrase");
+    const candidateKey = await crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["decrypt"]);
+    try {
+      await decryptClassesValue(cloudValue, candidateKey);
+    } catch {
+      throw new Error("This browser's cached class key does not match the encrypted cloud roster. Unlock Class Sync before changing its passphrase.");
+    }
+  }
+  if (!raw) raw = await getClassEncryptionKeyBytes(currentUser.uid, { create: true });
+
+  const envelope = await createClassKeyEnvelope(currentUser.uid, raw, normalized);
+  await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
+    version: 2,
+    keyEnvelope: envelope,
+    updatedAt: firestoreSdk.serverTimestamp()
+  }, { merge: true });
+  classKeyEnvelope = envelope;
+  classSyncDocumentExists = true;
+  classSyncMode = "ready";
+  refreshClassSyncUi();
+  window.dispatchEvent(new CustomEvent("teachertiles:classsyncenabled"));
+}
+
+async function unlockClassSync(passphrase) {
+  if (!currentUser || !classKeyEnvelope) throw new Error("No Class Sync key is available for this account");
+  const normalized = normalizeClassSyncPassphrase(passphrase);
+  if (!normalized) throw new Error("Enter your Class Sync passphrase");
+  let raw;
+  try {
+    raw = await unwrapClassKeyEnvelope(currentUser.uid, classKeyEnvelope, normalized);
+  } catch {
+    throw new Error("That Class Sync passphrase is incorrect");
+  }
+  localStorage.setItem(classEncryptionKeyStorageKey(currentUser.uid), bytesToBase64(raw));
+  await loadEncryptedClasses({ promptForUnlock: false });
+  classSyncMode = "ready";
+  refreshClassSyncUi();
 }
 
 function setStatus(message = "", isError = false) {
   status.textContent = message;
   status.classList.toggle("is-error", isError);
+}
+
+function inferredClassSyncMode() {
+  if (!currentUser) return "setup";
+  const hasKey = hasCachedClassEncryptionKey(currentUser.uid);
+  if (classKeyEnvelope) return hasKey ? "ready" : "unlock";
+  if (classSyncHasCiphertext && !hasKey) return "legacy-missing";
+  return "setup";
+}
+
+function setClassSyncFeedback(message = "", isError = false) {
+  if (!classSyncFeedback) return;
+  classSyncFeedback.textContent = message;
+  classSyncFeedback.classList.toggle("is-error", isError);
+}
+
+function refreshClassSyncUi() {
+  if (!classSyncButton) return;
+  const mode = classSyncMode || inferredClassSyncMode();
+  const hasKey = Boolean(currentUser && hasCachedClassEncryptionKey(currentUser.uid));
+  if (classSyncSummary) {
+    if (classKeyEnvelope && hasKey) classSyncSummary.textContent = "Encrypted classes sync across browsers and devices";
+    else if (classKeyEnvelope) classSyncSummary.textContent = "Unlock your encrypted classes on this device";
+    else if (classSyncHasCiphertext && hasKey) classSyncSummary.textContent = "Enable cross-device access for your encrypted classes";
+    else if (classSyncHasCiphertext) classSyncSummary.textContent = "This device needs the original class encryption key";
+    else classSyncSummary.textContent = "Set up encrypted class sync across devices";
+  }
+  classSyncButton.dataset.syncState = classKeyEnvelope ? (hasKey ? "ready" : "locked") : "setup";
+
+  if (!classSyncPanel || classSyncPanel.hidden) return;
+  classSyncMode = mode;
+  const setupLike = mode === "setup" || mode === "change";
+  const unlock = mode === "unlock";
+  const legacyMissing = mode === "legacy-missing";
+  const ready = mode === "ready";
+
+  if (classSyncStateBadge) {
+    classSyncStateBadge.textContent = ready ? "SYNC ENABLED" : unlock ? "LOCKED" : legacyMissing ? "ORIGINAL KEY NEEDED" : mode === "change" ? "CHANGE PASSPHRASE" : "SETUP";
+    classSyncStateBadge.dataset.state = ready ? "ready" : unlock || legacyMissing ? "locked" : "setup";
+  }
+  if (classSyncStateTitle) classSyncStateTitle.textContent = ready
+    ? "Your encrypted classes can travel with you"
+    : unlock
+      ? "Unlock your classes on this device"
+      : legacyMissing
+        ? "This roster was encrypted before Class Sync"
+        : mode === "change"
+          ? "Choose a new Class Sync passphrase"
+          : "Enable encrypted Class Sync";
+  if (classSyncStateCopy) classSyncStateCopy.textContent = ready
+    ? "The AES key for your class rosters is wrapped with your Class Sync passphrase. Another browser or device can recover it after you sign in and enter that passphrase."
+    : unlock
+      ? "Sign-in found your encrypted class data and its wrapped encryption key. Enter the Class Sync passphrase you created on another device to decrypt the roster here."
+      : legacyMissing
+        ? "The cloud has encrypted class data, but it was created before a cross-device key was saved. Open TeacherTiles in a browser where these classes still load, enable Class Sync there, then come back and retry."
+        : mode === "change"
+          ? "This re-wraps the same class encryption key with a new passphrase. Your class and PBIS data do not need to be re-created."
+          : "Create a separate passphrase that protects the existing AES-256 class key. Only the encrypted key wrapper is saved to Firebase; the passphrase never leaves your browser.";
+
+  if (classSyncForm) classSyncForm.hidden = ready || legacyMissing;
+  if (classSyncConfirmWrap) classSyncConfirmWrap.hidden = !setupLike;
+  if (classSyncPassphrase) {
+    classSyncPassphrase.autocomplete = unlock ? "current-password" : "new-password";
+    classSyncPassphrase.placeholder = unlock ? "Enter Class Sync passphrase" : "At least 10 characters";
+  }
+  if (classSyncSubmit) classSyncSubmit.textContent = unlock ? "Unlock Classes" : mode === "change" ? "Save New Passphrase" : "Enable Class Sync";
+  if (classSyncChange) classSyncChange.hidden = !ready;
+  if (classSyncRetry) classSyncRetry.hidden = !legacyMissing;
+}
+
+function openClassSyncPanel(mode = inferredClassSyncMode()) {
+  if (!classSyncPanel || !currentUser) return;
+  if (modal.hidden) openProfile();
+  classSyncMode = mode;
+  classSyncPanel.hidden = false;
+  classSyncPanel.setAttribute("aria-hidden", "false");
+  classSyncButton?.setAttribute("aria-expanded", "true");
+  setClassSyncFeedback();
+  if (classSyncPassphrase) classSyncPassphrase.value = "";
+  if (classSyncConfirm) classSyncConfirm.value = "";
+  refreshClassSyncUi();
+  requestAnimationFrame(() => {
+    if (mode === "ready") classSyncChange?.focus({ preventScroll: true });
+    else if (mode === "legacy-missing") classSyncRetry?.focus({ preventScroll: true });
+    else classSyncPassphrase?.focus({ preventScroll: true });
+  });
+}
+
+function closeClassSyncPanel() {
+  if (!classSyncPanel || classSyncPanel.hidden) return;
+  classSyncPanel.hidden = true;
+  classSyncPanel.setAttribute("aria-hidden", "true");
+  classSyncButton?.setAttribute("aria-expanded", "false");
+  classSyncMode = inferredClassSyncMode();
+  setClassSyncFeedback();
 }
 
 function setBoardStatus(message = "", isError = false) {
@@ -175,6 +511,7 @@ function openProfile() {
 
 function closeProfile() {
   if (modal.hidden) return;
+  closeClassSyncPanel();
   modal.hidden = true;
   modal.setAttribute("aria-hidden", "true");
   toggle.setAttribute("aria-expanded", "false");
@@ -1723,6 +2060,13 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const previousUser = currentUser;
   currentUser = user || null;
+  if (!user || previousUser?.uid !== user?.uid) {
+    classKeyEnvelope = null;
+    classSyncDocumentExists = false;
+    classSyncHasCiphertext = false;
+    classSyncMode = "setup";
+    closeClassSyncPanel();
+  }
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   authReady = true;
@@ -1754,7 +2098,9 @@ async function renderUser(user) {
 
     loadEncryptedClasses().catch(error => {
       console.error("TeacherTiles could not decrypt class rosters", error);
-      setStatus("Saved class rosters could not be opened on this device.", true);
+      setStatus("Saved class rosters could not be opened. Open Class Sync for recovery options.", true);
+      classSyncMode = inferredClassSyncMode();
+      refreshClassSyncUi();
     });
 
     if (!previousUser || previousUser.uid !== user.uid) {
@@ -1907,6 +2253,67 @@ document.addEventListener("click", event => {
 }, true);
 
 toggle.addEventListener("click", () => modal.hidden ? openProfile() : closeProfile());
+classSyncButton?.addEventListener("click", () => openClassSyncPanel(inferredClassSyncMode()));
+classSyncBack?.addEventListener("click", closeClassSyncPanel);
+classSyncBackdrop?.addEventListener("click", closeClassSyncPanel);
+classSyncChange?.addEventListener("click", () => {
+  classSyncMode = "change";
+  setClassSyncFeedback();
+  refreshClassSyncUi();
+  requestAnimationFrame(() => classSyncPassphrase?.focus({ preventScroll: true }));
+});
+classSyncRetry?.addEventListener("click", async () => {
+  if (classSyncBusy) return;
+  classSyncBusy = true;
+  classSyncRetry.disabled = true;
+  setClassSyncFeedback("Checking encrypted class data…");
+  try {
+    await loadEncryptedClasses({ promptForUnlock: false });
+    const mode = inferredClassSyncMode();
+    classSyncMode = mode;
+    setClassSyncFeedback(mode === "legacy-missing" ? "The cloud key is not available yet. Enable Class Sync on an original device first." : "Class Sync information refreshed.", mode === "legacy-missing");
+    refreshClassSyncUi();
+  } catch (error) {
+    setClassSyncFeedback(error?.message || "Could not refresh Class Sync.", true);
+  } finally {
+    classSyncBusy = false;
+    classSyncRetry.disabled = false;
+  }
+});
+classSyncForm?.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (classSyncBusy || !currentUser) return;
+  const passphrase = normalizeClassSyncPassphrase(classSyncPassphrase?.value || "");
+  const confirmPassphrase = normalizeClassSyncPassphrase(classSyncConfirm?.value || "");
+  if ((classSyncMode === "setup" || classSyncMode === "change") && passphrase !== confirmPassphrase) {
+    setClassSyncFeedback("The two Class Sync passphrases do not match.", true);
+    classSyncConfirm?.focus();
+    return;
+  }
+  const actionMode = classSyncMode;
+  classSyncBusy = true;
+  if (classSyncSubmit) classSyncSubmit.disabled = true;
+  setClassSyncFeedback(actionMode === "unlock" ? "Unlocking encrypted classes…" : "Securing your cross-device class key…");
+  try {
+    if (actionMode === "unlock") {
+      await unlockClassSync(passphrase);
+      setClassSyncFeedback("Classes unlocked. This browser can now read and save your encrypted rosters.");
+    } else {
+      await enableOrChangeClassSync(passphrase);
+      setClassSyncFeedback(actionMode === "change" ? "Class Sync passphrase updated." : "Class Sync enabled. Your encrypted classes can now be unlocked on other devices.");
+      classSyncMode = "ready";
+    }
+    if (classSyncPassphrase) classSyncPassphrase.value = "";
+    if (classSyncConfirm) classSyncConfirm.value = "";
+    refreshClassSyncUi();
+  } catch (error) {
+    setClassSyncFeedback(error?.message || "Class Sync could not be updated.", true);
+  } finally {
+    classSyncBusy = false;
+    if (classSyncSubmit) classSyncSubmit.disabled = false;
+  }
+});
+
 modal.querySelectorAll("[data-profile-close]").forEach(button => button.addEventListener("click", closeProfile));
 signInButton.addEventListener("click", handleSignIn);
 signOutButton.addEventListener("click", handleSignOut);
@@ -1966,7 +2373,11 @@ window.TeacherTilesAuth = {
 
 window.TeacherTilesEncryptedClasses = {
   save: saveEncryptedClasses,
-  load: loadEncryptedClasses
+  load: loadEncryptedClasses,
+  enableSync: enableOrChangeClassSync,
+  unlockSync: unlockClassSync,
+  get syncEnabled() { return Boolean(classKeyEnvelope); },
+  get unlocked() { return Boolean(currentUser && hasCachedClassEncryptionKey(currentUser.uid)); }
 };
 
 window.TeacherTilesCloudBoards = {
