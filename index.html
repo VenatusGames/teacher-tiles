@@ -172,6 +172,11 @@
               <span><strong>Classes</strong><small>Create and manage reusable student rosters</small></span>
               <i aria-hidden="true">›</i>
             </button>
+            <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
+              <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true">★</span>
+              <span><strong>Student View</strong><small>View each student and their PBIS stats</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
           </section>
           <section id="profile-classes-panel" class="profile-classes-panel" hidden aria-labelledby="profile-classes-title">
             <div class="classes-window__backdrop" aria-hidden="true"></div>
@@ -207,6 +212,31 @@
                   <div id="profile-roster-students" class="roster-student-chips"></div>
                 </div>
               </section>
+            </div>
+          </section>
+          <section id="profile-student-view-panel" class="student-view-panel" hidden aria-labelledby="student-view-title">
+            <div class="student-view-window__backdrop" aria-hidden="true"></div>
+            <div class="student-view-window" role="dialog" aria-modal="true" aria-labelledby="student-view-title">
+              <header class="student-view-header">
+                <div><span>STUDENT PROFILES</span><h3 id="student-view-title">Student View</h3><p>See PBIS progress across all of your saved classes.</p></div>
+                <button id="profile-student-view-close" type="button" aria-label="Close Student View">×</button>
+              </header>
+              <section class="student-view-stat-settings" aria-labelledby="student-view-settings-title">
+                <div><strong id="student-view-settings-title">Profile stats</strong><small>Choose which PBIS stats appear on every student profile.</small></div>
+                <div id="student-view-stat-toggles" class="student-view-stat-toggles"></div>
+              </section>
+              <div id="student-view-rosters" class="student-view-rosters"></div>
+
+              <div id="student-view-detail" class="student-view-detail" hidden>
+                <button class="student-view-detail__backdrop" type="button" aria-label="Close student profile"></button>
+                <article class="student-profile-card" role="dialog" aria-modal="true" aria-labelledby="student-profile-name">
+                  <button id="student-view-detail-close" class="student-profile-close" type="button" aria-label="Close student profile">×</button>
+                  <div id="student-profile-avatar" class="student-profile-avatar" aria-hidden="true">S</div>
+                  <span id="student-profile-class" class="student-profile-class">Class</span>
+                  <h4 id="student-profile-name">Student</h4>
+                  <div id="student-profile-stats" class="student-profile-stats"></div>
+                </article>
+              </div>
             </div>
           </section>
           <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
@@ -1541,10 +1571,10 @@
         <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
-      <button class="context-menu__item" data-module="starchart" data-category="pbis"><span class="context-menu__icon context-menu__icon--starchart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Star Chart</strong><small>Award stars to a class or individual students</small></span></button>
-      <button class="context-menu__item" data-module="classvsclass" data-category="pbis"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span></button>
+      <button class="context-menu__item" data-module="starchart" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--starchart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Star Chart</strong><small>Award stars to a class or individual students</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="collections" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
-      <button class="context-menu__item" data-module="stoplight" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
+      <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
           <svg viewBox="0 0 24 24">
