@@ -1154,7 +1154,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a class reward jar together'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1168,7 +1168,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -2060,6 +2060,8 @@ function setupModuleByType(m,type){
   if(type==='starchart')setupStarChart(m);
   if(type==='classmeter')setupClassMeter(m);
   if(type==='collections')setupCollections(m);
+  if(type==='prizeboard')setupPrizeBoard(m);
+  if(type==='pbisconsole')setupPbisConsole(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
   if(type==='lunchcount')setupLunchCount(m);
@@ -4235,6 +4237,168 @@ function setupClassMeter(m){
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);
     window.removeEventListener('teachertiles:classmeterchange',handleMeterChange);
   };
+}
+
+
+const PRIZE_STAT_OPTIONS=Object.freeze([
+  Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
+  Object.freeze({id:'classStars',label:'Whole-class Stars',icon:'★',scope:'class'}),
+  Object.freeze({id:'meterWins',label:'Class Meter Wins',icon:'🏆',scope:'class'}),
+  Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'})
+]);
+
+function prizePresetImage(kind='gift'){
+  const presets={
+    gift:['#6c7be8','#8f6ad8','🎁'],game:['#3ea886','#74c86b','🎮'],snack:['#ee835e','#f0ba4a','🍿'],choice:['#4d91df','#7dc5f2','⭐'],break:['#6c8db7','#9bb9d5','🛋️'],music:['#b66bc6','#e58db5','🎵'],helper:['#e0a13e','#f5cf67','👑'],mystery:['#4d566e','#828ba2','❓']
+  };
+  const [a,b,emoji]=presets[kind]||presets.gift;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="600" height="360" rx="46" fill="url(#g)"/><circle cx="520" cy="55" r="110" fill="white" opacity=".11"/><circle cx="60" cy="330" r="130" fill="white" opacity=".08"/><text x="300" y="215" text-anchor="middle" font-size="150" font-family="Arial, sans-serif">${emoji}</text></svg>`;
+  return`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`prize-${Date.now()}-${Math.random().toString(36).slice(2,8)}`}
+function normalizePrize(value){
+  const source=value&&typeof value==='object'?value:{};
+  const scope=source.scope==='class'?'class':'student';
+  const allowed=scope==='student'?['studentStars','classStars','meterWins','jarsFilled']:['classStars','meterWins','jarsFilled'];
+  return{
+    id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
+    description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
+    cost:Math.max(0,Math.min(9999,Math.round(Number(source.cost)||1))),image:String(source.image||prizePresetImage('gift'))
+  };
+}
+
+function pbisBalance(roster,statId,studentName=''){
+  if(!roster)return 0;
+  if(statId==='studentStars')return normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(studentName)]);
+  if(statId==='classStars')return normalizeStarChartCount(roster.starChart?.wholeClassStars);
+  if(statId==='meterWins')return normalizeClassMeterProgress(roster.classMeter).wins;
+  if(statId==='jarsFilled')return normalizeCollectionProgress(roster.collectionJar).jarsFilled;
+  if(statId==='meterFill')return Math.round(normalizeClassMeterProgress(roster.classMeter).fill);
+  if(statId==='jarItems')return normalizeCollectionProgress(roster.collectionJar).count;
+  return 0;
+}
+
+function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={}){
+  const roster=readClassRosters().find(item=>item.id===classId);if(!roster)return null;
+  const current=pbisBalance(roster,statId,studentName);
+  let next=mode==='set'?Number(amount):current+Number(amount);
+  if(statId==='meterFill')next=Math.max(0,Math.min(100,next));else if(statId==='jarItems')next=Math.max(0,Math.min(80,Math.round(next)));else next=normalizeStarChartCount(next);
+  if(statId==='studentStars'||statId==='classStars'){
+    const progress=normalizeStarChartProgress(roster.starChart,roster.students);
+    if(statId==='studentStars')progress.studentStars[starChartStudentKey(studentName)]=next;else progress.wholeClassStars=next;
+    writeClassStarChart(classId,progress);
+  }else if(statId==='meterWins'||statId==='meterFill'){
+    const progress=normalizeClassMeterProgress(roster.classMeter);
+    if(statId==='meterWins')progress.wins=next;else progress.fill=next;
+    writeClassMeter(classId,progress);
+  }else if(statId==='jarsFilled'||statId==='jarItems'){
+    const progress=normalizeCollectionProgress(roster.collectionJar);
+    if(statId==='jarsFilled')progress.jarsFilled=next;else{progress.count=next;progress.filled=false}
+    writeClassCollection(classId,progress);
+  }
+  flushPbisCloudSave();
+  return next;
+}
+
+function makePrizeModal(){
+  const overlay=document.createElement('div');overlay.className='prize-modal-overlay';overlay.hidden=true;
+  const panel=document.createElement('section');panel.className='prize-modal';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
+  overlay.append(panel);document.body.append(overlay);
+  overlay.addEventListener('pointerdown',event=>{if(event.target===overlay)overlay.hidden=true});
+  return{overlay,panel,close:()=>{overlay.hidden=true;panel.replaceChildren()}};
+}
+
+async function downloadPrizeCoupon(prize,roster,recipient,statLabel){
+  const canvas=document.createElement('canvas');canvas.width=1500;canvas.height=760;const ctx=canvas.getContext('2d');
+  const draw=async()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const grad=ctx.createLinearGradient(0,0,1500,760);grad.addColorStop(0,'#edf6ff');grad.addColorStop(1,'#f4edff');ctx.fillStyle=grad;ctx.fillRect(0,0,1500,760);
+    ctx.save();ctx.strokeStyle='#4d91df';ctx.lineWidth=8;ctx.setLineDash([24,18]);ctx.strokeRect(36,36,1428,688);ctx.restore();
+    ctx.fillStyle='#1e4168';ctx.font='900 34px Arial';ctx.fillText('TEACHERTILES PRIZE COUPON',82,105);
+    ctx.fillStyle='#132238';ctx.font='900 70px Arial';ctx.fillText(prize.title,82,205);
+    ctx.fillStyle='#526174';ctx.font='600 29px Arial';
+    const words=(prize.description||'Classroom reward').split(/\s+/);let line='',y=270;
+    for(const word of words){const test=`${line}${word} `;if(ctx.measureText(test).width>790){ctx.fillText(line.trim(),82,y);line=`${word} `;y+=42}else line=test}if(line)ctx.fillText(line.trim(),82,y);
+    ctx.fillStyle='#fff';ctx.strokeStyle='#d4dfed';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(82,470,850,190,28);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('REDEEMED BY',120,525);ctx.fillStyle='#14243a';ctx.font='900 38px Arial';ctx.fillText(recipient,120,570);
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('CLASS',510,525);ctx.fillStyle='#14243a';ctx.font='900 34px Arial';ctx.fillText(roster.name,510,570);
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('COST',120,625);ctx.fillStyle='#286fb8';ctx.font='900 30px Arial';ctx.fillText(`${prize.cost} ${statLabel}`,220,625);
+    try{const img=new Image();img.src=prize.image;await img.decode();ctx.save();ctx.beginPath();ctx.roundRect(1000,130,390,390,44);ctx.clip();ctx.drawImage(img,1000,130,390,390);ctx.restore()}catch{}
+    ctx.fillStyle='#53647a';ctx.font='700 21px Arial';ctx.fillText('Redeemed with TeacherTiles PBIS',1005,575);ctx.font='600 18px Arial';ctx.fillText(new Date().toLocaleDateString(),1005,612);
+  };
+  await draw();
+  const link=document.createElement('a');link.download=`${prize.title.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').toLowerCase()||'prize'}-coupon.png`;link.href=canvas.toDataURL('image/png');link.click();
+}
+
+function setupPrizeBoard(m){
+  const importView=m.querySelector('.prizeboard-import'),dashboard=m.querySelector('.prizeboard-dashboard'),loaderAnchor=m.querySelector('.prizeboard-loader-anchor');
+  const className=m.querySelector('.prizeboard-class-name'),classLogo=m.querySelector('.prizeboard-class-logo'),changeClass=m.querySelector('.prizeboard-change-class');
+  const tabs=[...m.querySelectorAll('[data-prize-scope]')],grid=m.querySelector('.prizeboard-grid'),add=m.querySelector('.prizeboard-add');
+  let activeClassId='',scope='student',prizes=[];const modal=makePrizeModal();
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const statDefinition=id=>PRIZE_STAT_OPTIONS.find(item=>item.id===id)||PRIZE_STAT_OPTIONS[0];
+  const notify=reason=>notifyBoardChanged(`prizeboard-${reason}`);
+  const syncModuleSize=()=>requestAnimationFrame(()=>{
+    if(!dashboard||dashboard.hidden)return;const count=Math.max(1,prizes.filter(p=>p.scope===scope).length);const width=Math.max(340,m.clientWidth-28);const cols=Math.max(1,Math.floor(width/190));const rows=Math.ceil(count/cols);const needed=245+rows*165;
+    if(m.offsetHeight<needed)m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,needed)}px`;
+  });
+  const setClass=id=>{
+    const roster=readClassRosters().find(item=>item.id===id);activeClassId=roster?.id||'';importView.hidden=Boolean(roster);dashboard.hidden=!roster;
+    if(roster){className.textContent=roster.name;classLogo.textContent=normalizeClassLogo(roster.logo)}render();
+  };
+  const closeEditor=()=>modal.close();
+  const openEditor=(existing=null)=>{
+    const editing=existing?normalizePrize(existing):null;const working=editing||normalizePrize({scope,title:'',description:'',cost:1,image:prizePresetImage('gift')});
+    modal.overlay.hidden=false;modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-editor"><div><small>${editing?'EDIT PRIZE':'NEW PRIZE'}</small><h2>${editing?'Update prize':'Create a prize'}</h2></div><label>Category<select class="prize-editor-scope"><option value="student">Prizes</option><option value="class">Whole Class Prizes</option></select></label><label>Title<input class="prize-editor-title" maxlength="80" placeholder="Prize title"></label><label>Description<textarea class="prize-editor-description" maxlength="400" rows="3" placeholder="What does the student earn?"></textarea></label><div class="prize-editor-row"><label>Cost<input class="prize-editor-cost" type="number" min="0" max="9999" step="1"></label><label>PBIS stat<select class="prize-editor-stat"></select></label></div><div><span class="prize-editor-label">Prize image</span><div class="prize-preset-grid"></div><label class="prize-upload">Upload your own<input type="file" accept="image/*"></label><div class="prize-editor-preview"><img alt="Prize preview"></div></div><div class="prize-editor-actions">${editing?'<button class="prize-editor-delete" type="button">Delete prize</button>':''}<button class="prize-editor-cancel" type="button">Cancel</button><button class="prize-editor-save" type="button">Save prize</button></div></div>`;
+    const q=s=>modal.panel.querySelector(s),scopeSelect=q('.prize-editor-scope'),title=q('.prize-editor-title'),desc=q('.prize-editor-description'),cost=q('.prize-editor-cost'),stat=q('.prize-editor-stat'),preview=q('.prize-editor-preview img');
+    scopeSelect.value=working.scope;title.value=working.title==='New Prize'?'':working.title;desc.value=working.description;cost.value=working.cost;preview.src=working.image;
+    let selectedImage=working.image;
+    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS:PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
+    const presets=q('.prize-preset-grid');['gift','game','snack','choice','break','music','helper','mystery'].forEach(kind=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<img src="${prizePresetImage(kind)}" alt="${kind} preset">`;b.addEventListener('click',()=>{selectedImage=prizePresetImage(kind);preview.src=selectedImage});presets.append(b)});
+    q('.prize-upload input').addEventListener('change',event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedImage=String(reader.result||selectedImage);preview.src=selectedImage};reader.readAsDataURL(file)});
+    q('.prize-modal-close').addEventListener('click',closeEditor);q('.prize-editor-cancel').addEventListener('click',closeEditor);
+    q('.prize-editor-delete')?.addEventListener('click',()=>{if(!confirm(`Delete ${working.title}?`))return;prizes=prizes.filter(item=>item.id!==working.id);closeEditor();render();notify('delete')});
+    q('.prize-editor-save').addEventListener('click',()=>{const titleValue=title.value.trim();if(!titleValue){title.focus();return}const next=normalizePrize({id:editing?.id||prizeId(),scope:scopeSelect.value,title:titleValue,description:desc.value,cost:Number(cost.value),costStat:stat.value,image:selectedImage});if(editing)prizes=prizes.map(item=>item.id===editing.id?next:item);else prizes.push(next);scope=next.scope;closeEditor();render();notify('save')});
+  };
+  const openPrize=(prize)=>{
+    const roster=currentRoster();if(!roster)return;const stat=statDefinition(prize.costStat);modal.overlay.hidden=false;
+    const students=roster.students;modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-detail"><img class="prize-detail-image" src="${prize.image}" alt=""><div class="prize-detail-copy"><small>${prize.scope==='class'?'WHOLE CLASS PRIZE':'STUDENT PRIZE'}</small><h2></h2><p></p><div class="prize-detail-cost"><span>${stat.icon}</span><strong>${prize.cost}</strong><small>${stat.label}</small></div><div class="prize-redeem-target"></div><div class="prize-detail-balance"></div><div class="prize-detail-actions"><button class="prize-edit" type="button">Edit</button><button class="prize-redeem" type="button">Redeem prize</button></div></div></div>`;
+    modal.panel.querySelector('h2').textContent=prize.title;modal.panel.querySelector('.prize-detail-copy>p').textContent=prize.description||'No description added.';
+    const targetWrap=modal.panel.querySelector('.prize-redeem-target'),balance=modal.panel.querySelector('.prize-detail-balance'),redeem=modal.panel.querySelector('.prize-redeem');let student='';
+    if(prize.scope==='student'){
+      const label=document.createElement('label');label.innerHTML='<span>Redeem for</span>';const select=document.createElement('select');select.append(new Option(students.length?'Choose a student…':'No students in this class',''));students.forEach(name=>select.add(new Option(name,name)));label.append(select);targetWrap.append(label);select.addEventListener('change',()=>{student=select.value;refreshBalance()});
+    }else{targetWrap.innerHTML=`<div class="prize-class-target"><span aria-hidden="true">${normalizeClassLogo(roster.logo)}</span><strong>${roster.name}</strong><small>Whole class redemption</small></div>`}
+    const refreshBalance=()=>{const targetStudent=prize.costStat==='studentStars'?student:'';const amount=pbisBalance(currentRoster(),prize.costStat,targetStudent);const missing=amount<prize.cost;balance.innerHTML=`<span>Available balance</span><strong>${amount} ${stat.label}</strong>${missing?'<small>Not enough credit for this reward.</small>':''}`;redeem.disabled=missing||(prize.scope==='student'&&!student)};refreshBalance();
+    modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-edit').addEventListener('click',()=>openEditor(prize));
+    redeem.addEventListener('click',async()=>{const recipient=prize.scope==='class'?roster.name:student;if(!recipient)return;const spendStudent=prize.costStat==='studentStars'?student:'';if(pbisBalance(currentRoster(),prize.costStat,spendStudent)<prize.cost){refreshBalance();return}adjustPbisBalance(activeClassId,prize.costStat,-prize.cost,{studentName:spendStudent});modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-redeemed"><span aria-hidden="true">🎉</span><small>PRIZE REDEEMED</small><h2>${prize.title}</h2><p><strong>${recipient}</strong> redeemed this prize for ${prize.cost} ${stat.label}.</p><div class="prize-redeemed-actions"><button class="prize-coupon" type="button">Download coupon PNG</button><button class="prize-done" type="button">Done</button></div></div>`;modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-done').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-coupon').addEventListener('click',()=>downloadPrizeCoupon(prize,roster,recipient,stat.label));});
+  };
+  const render=()=>{
+    tabs.forEach(tab=>{const on=tab.dataset.prizeScope===scope;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on))});grid.replaceChildren();
+    const visible=prizes.filter(item=>item.scope===scope);if(!visible.length){const empty=document.createElement('button');empty.type='button';empty.className='prizeboard-empty';empty.innerHTML=`<span aria-hidden="true">${scope==='class'?'🎉':'🎁'}</span><strong>No ${scope==='class'?'whole-class prizes':'prizes'} yet</strong><small>Add your first reward to this board.</small>`;empty.addEventListener('click',()=>openEditor());grid.append(empty)}
+    visible.forEach(prize=>{const stat=statDefinition(prize.costStat);const card=document.createElement('button');card.type='button';card.className='prize-card';card.innerHTML=`<img alt=""><span class="prize-card-copy"><strong></strong><small></small></span><span class="prize-card-cost"><i>${stat.icon}</i><b>${prize.cost}</b></span>`;card.querySelector('img').src=prize.image;card.querySelector('.prize-card-copy strong').textContent=prize.title;card.querySelector('.prize-card-copy small').textContent=prize.description||stat.label;card.addEventListener('click',()=>openPrize(prize));grid.append(card)});syncModuleSize();
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.prizeScope;render();notify('tab')}));add.addEventListener('click',()=>openEditor());changeClass.addEventListener('click',()=>{activeClassId='';importView.hidden=false;dashboard.hidden=true;render();notify('class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
+  m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const ro=new ResizeObserver(syncModuleSize);ro.observe(m);
+  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);
+  m._boardGetState=()=>({activeClassId,scope,prizes:prizes.map(normalizePrize)});m._boardSetState=state=>{if(!state)return;scope=state.scope==='class'?'class':'student';prizes=Array.isArray(state.prizes)?state.prizes.map(normalizePrize):[];setClass(String(state.activeClassId||''));render()};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh)};
+  render();
+}
+
+function setupPbisConsole(m){
+  const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),clearStudent=m.querySelector('.pbisconsole-clear-student'),stats=m.querySelector('.pbisconsole-stats');
+  let activeClassId='',student='';const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const definitions=[{id:'studentStars',label:'Student Stars',icon:'★',student:true},{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'●'}];
+  const setClass=id=>{const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);const prior=student;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));r.students.forEach(name=>studentSelect.add(new Option(name,name)));student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student}render()};
+  const render=()=>{const r=roster();if(!r)return;stats.replaceChildren();definitions.forEach(def=>{const value=pbisBalance(r,def.id,student);const row=document.createElement('section');row.className='pbisconsole-stat';row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>${def.student?(student||'Choose a student'):'Whole class'}</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-adjust"><input type="number" min="1" max="9999" step="1" value="1" aria-label="Adjustment amount"><button type="button" data-op="remove">Remove</button><button type="button" data-op="add">Add</button><button type="button" data-op="clear">Clear</button></div>`;const input=row.querySelector('input');row.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{if(def.student&&!student)return;const amount=Math.max(1,Math.round(Number(input.value)||1));if(button.dataset.op==='clear')adjustPbisBalance(activeClassId,def.id,0,{studentName:student,mode:'set'});else adjustPbisBalance(activeClassId,def.id,button.dataset.op==='add'?amount:-amount,{studentName:student});render();notifyBoardChanged('pbis-console-adjust')}));stats.append(row)});clearStudent.disabled=!student||pbisBalance(r,'studentStars',student)<=0};
+  clearStudent.addEventListener('click',()=>{if(!student)return;if(!confirm(`Clear all earned Stars for ${student}?`))return;adjustPbisBalance(activeClassId,'studentStars',0,{studentName:student,mode:'set'});render();notifyBoardChanged('pbis-console-clear-student')});studentSelect.addEventListener('change',()=>{student=studentSelect.value;render();notifyBoardChanged('pbis-console-student')});changeClass.addEventListener('click',()=>{activeClassId='';student='';importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('pbis-console-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('pbis-console-class')});
+  m.querySelector('.pbisconsole-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.addEventListener(name,refresh));
+  m._boardGetState=()=>({activeClassId,student});m._boardSetState=state=>{student=String(state?.student||'');setClass(String(state?.activeClassId||''))};const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.removeEventListener(name,refresh))};
 }
 
 function setupCollections(m){
