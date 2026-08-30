@@ -664,7 +664,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
@@ -676,7 +676,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
@@ -1385,6 +1385,7 @@ function setupModuleByType(m,type){
   if(type==='stopwatch')setupStopwatch(m);
   if(type==='draw')setupDraw(m);
   if(type==='dictionary')setupDictionary(m);
+  if(type==='translation')setupTranslation(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -5148,6 +5149,178 @@ function setupDictionary(m){
     activeAudio?.pause();
     if('speechSynthesis'in window)speechSynthesis.cancel();
   };
+}
+
+const TRANSLATION_LANGUAGES=[
+  {code:'en',name:'English',speech:'en-US'},
+  {code:'es',name:'Spanish',speech:'es-ES'},
+  {code:'fr',name:'French',speech:'fr-FR'},
+  {code:'de',name:'German',speech:'de-DE'},
+  {code:'it',name:'Italian',speech:'it-IT'},
+  {code:'pt',name:'Portuguese',speech:'pt-BR'},
+  {code:'zh-CN',name:'Chinese (Simplified)',speech:'zh-CN'},
+  {code:'ja',name:'Japanese',speech:'ja-JP'},
+  {code:'ko',name:'Korean',speech:'ko-KR'},
+  {code:'ar',name:'Arabic',speech:'ar-SA'},
+  {code:'hi',name:'Hindi',speech:'hi-IN'},
+  {code:'ru',name:'Russian',speech:'ru-RU'},
+  {code:'uk',name:'Ukrainian',speech:'uk-UA'},
+  {code:'pl',name:'Polish',speech:'pl-PL'},
+  {code:'nl',name:'Dutch',speech:'nl-NL'},
+  {code:'tr',name:'Turkish',speech:'tr-TR'},
+  {code:'vi',name:'Vietnamese',speech:'vi-VN'},
+  {code:'tl',name:'Filipino',speech:'fil-PH'},
+  {code:'ht',name:'Haitian Creole',speech:'ht-HT'},
+  {code:'el',name:'Greek',speech:'el-GR'},
+  {code:'he',name:'Hebrew',speech:'he-IL'},
+  {code:'sv',name:'Swedish',speech:'sv-SE'}
+];
+
+function setupTranslation(m){
+  const source=m.querySelector('.translation-source');
+  const target=m.querySelector('.translation-target');
+  const input=m.querySelector('.translation-input');
+  const output=m.querySelector('.translation-output');
+  const count=m.querySelector('.translation-count');
+  const status=m.querySelector('.translation-status');
+  const submit=m.querySelector('.translation-submit');
+  const swap=m.querySelector('.translation-swap');
+  const mic=m.querySelector('.translation-mic');
+  const speak=m.querySelector('.translation-speak');
+  const copy=m.querySelector('.translation-copy');
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let translatedText='';
+  let requestController=null;
+  let recognition=null;
+  let listening=false;
+
+  const languageOptions=TRANSLATION_LANGUAGES.map(language=>{
+    const option=document.createElement('option');
+    option.value=language.code;
+    option.textContent=language.name;
+    return option;
+  });
+  source.replaceChildren(...languageOptions.map(option=>option.cloneNode(true)));
+  target.replaceChildren(...languageOptions.map(option=>option.cloneNode(true)));
+  source.value='en';
+  target.value='es';
+
+  const languageFor=code=>TRANSLATION_LANGUAGES.find(language=>language.code===code)||TRANSLATION_LANGUAGES[0];
+  const decodeEntities=value=>{
+    const textarea=document.createElement('textarea');
+    textarea.innerHTML=String(value||'');
+    return textarea.value;
+  };
+  const renderOutput=(value,placeholder='Your translation will appear here.')=>{
+    translatedText=String(value||'');
+    output.replaceChildren();
+    if(translatedText)output.textContent=translatedText;
+    else{const span=document.createElement('span');span.textContent=placeholder;output.appendChild(span)}
+    speak.disabled=!translatedText;
+    copy.disabled=!translatedText;
+  };
+  const updateCount=()=>{count.textContent=`${input.value.length} / 450`};
+  const setLoading=loading=>{
+    m.classList.toggle('is-translating',loading);
+    submit.disabled=loading;
+    source.disabled=loading;
+    target.disabled=loading;
+  };
+
+  async function translate(){
+    const text=input.value.trim();
+    if(!text){status.textContent='Enter something to translate.';input.focus();return}
+    if(new TextEncoder().encode(text).length>480){status.textContent='Please shorten the text slightly.';return}
+    requestController?.abort();
+    const controller=new AbortController();
+    requestController=controller;
+    status.textContent='Translating…';
+    setLoading(true);
+    try{
+      if(source.value===target.value){renderOutput(text);status.textContent='Languages match — no translation needed.';return}
+      const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(source.value)}%7C${encodeURIComponent(target.value)}&mt=1`;
+      const response=await fetch(url,{signal:controller.signal});
+      if(!response.ok)throw new Error(`translation-${response.status}`);
+      const data=await response.json();
+      if(Number(data?.responseStatus||200)>=400||!data?.responseData?.translatedText)throw new Error('translation-unavailable');
+      renderOutput(decodeEntities(data.responseData.translatedText));
+      status.textContent='Translated';
+      notifyBoardChanged('translation-result');
+    }catch(error){
+      if(error?.name==='AbortError')return;
+      status.textContent='Translation is unavailable right now. Try again.';
+      renderOutput('', 'Could not translate this text.');
+    }finally{
+      if(requestController===controller){requestController=null;setLoading(false)}
+    }
+  }
+
+  input.addEventListener('input',()=>{updateCount();status.textContent=''});
+  input.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();translate()}});
+  submit.addEventListener('click',translate);
+  swap.addEventListener('click',()=>{
+    const priorSource=source.value;
+    source.value=target.value;
+    target.value=priorSource;
+    if(translatedText){const priorInput=input.value;input.value=translatedText;renderOutput(priorInput);updateCount()}
+    status.textContent='Languages swapped';
+    notifyBoardChanged('translation-swap');
+  });
+
+  if(!SpeechRecognition){
+    mic.disabled=true;
+    mic.title='Speech input is not supported in this browser';
+  }else{
+    mic.addEventListener('click',()=>{
+      if(listening){recognition?.stop();return}
+      recognition=new SpeechRecognition();
+      recognition.lang=languageFor(source.value).speech;
+      recognition.interimResults=true;
+      recognition.continuous=false;
+      recognition.maxAlternatives=1;
+      recognition.onstart=()=>{listening=true;m.classList.add('is-listening');status.textContent='Listening…'};
+      recognition.onresult=event=>{
+        let transcript='';
+        for(let i=event.resultIndex;i<event.results.length;i++)transcript+=event.results[i][0]?.transcript||'';
+        if(transcript){input.value=transcript.trim();updateCount()}
+      };
+      recognition.onerror=event=>{status.textContent=event.error==='not-allowed'?'Microphone permission was not granted.':'Speech input could not start.'};
+      recognition.onend=()=>{listening=false;m.classList.remove('is-listening');if(input.value.trim()){status.textContent='Speech captured';notifyBoardChanged('translation-speech')}};
+      try{recognition.start()}catch{status.textContent='Speech input could not start.'}
+    });
+  }
+
+  speak.addEventListener('click',()=>{
+    if(!translatedText||!('speechSynthesis'in window))return;
+    speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(translatedText);
+    utterance.lang=languageFor(target.value).speech;
+    speechSynthesis.speak(utterance);
+  });
+  copy.addEventListener('click',async()=>{
+    if(!translatedText)return;
+    try{await navigator.clipboard.writeText(translatedText);status.textContent='Copied translation'}
+    catch{status.textContent='Could not copy automatically.'}
+  });
+  source.addEventListener('change',()=>{status.textContent='';notifyBoardChanged('translation-language')});
+  target.addEventListener('change',()=>{status.textContent='';notifyBoardChanged('translation-language')});
+  m.querySelector('.translation-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.translation-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.translation-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  renderOutput('');
+  updateCount();
+  m._boardGetState=()=>({source:source.value,target:target.value,input:input.value,output:translatedText});
+  m._boardSetState=state=>{
+    if(!state)return;
+    source.value=TRANSLATION_LANGUAGES.some(language=>language.code===state.source)?state.source:'en';
+    target.value=TRANSLATION_LANGUAGES.some(language=>language.code===state.target)?state.target:'es';
+    input.value=String(state.input||'').slice(0,450);
+    renderOutput(String(state.output||''));
+    updateCount();
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();requestController?.abort();recognition?.abort();if('speechSynthesis'in window)speechSynthesis.cancel()};
 }
 
 const SHAPES_TILE_DATA=[

@@ -1326,6 +1326,10 @@
         </span>
         <span><strong>Dictionary</strong><small>Look up complete word entries</small></span>
       </button>
+      <button class="context-menu__item" data-module="translation" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--translation" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/></svg></span>
+        <span><strong>Translation</strong><small>Translate typed or spoken language</small></span>
+      </button>
       <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -3172,6 +3176,45 @@
         <button class="custom-icon dictionary-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon dictionary-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon dictionary-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="translation-template">
+    <section class="module translation-module" data-type="translation" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete translation tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="translation-header">
+        <div><span>TRANSLATION</span><strong>Language bridge</strong></div>
+        <span class="translation-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>
+      </header>
+
+      <div class="translation-language-row">
+        <label><span>From</span><select class="translation-source" aria-label="Translate from language"></select></label>
+        <button class="translation-swap" type="button" aria-label="Swap languages" title="Swap languages">⇄</button>
+        <label><span>To</span><select class="translation-target" aria-label="Translate to language"></select></label>
+      </div>
+
+      <div class="translation-panels">
+        <section class="translation-panel translation-panel--source">
+          <header><span>Original</span><button class="translation-mic" type="button" aria-label="Speak original text" title="Speak original text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></header>
+          <textarea class="translation-input" maxlength="450" placeholder="Type or use the microphone…" aria-label="Text to translate"></textarea>
+          <span class="translation-count">0 / 450</span>
+        </section>
+        <section class="translation-panel translation-panel--result">
+          <header><span>Translation</span><div><button class="translation-speak" type="button" aria-label="Read translation aloud" title="Read translation aloud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h3l4-3.5v11L8 14H5zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.2 7.2 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="translation-copy" type="button" aria-label="Copy translation" title="Copy translation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button></div></header>
+          <div class="translation-output" role="status" aria-live="polite"><span>Your translation will appear here.</span></div>
+        </section>
+      </div>
+
+      <footer class="translation-footer"><div><span class="translation-status" aria-live="polite"></span><small>Translations via the MyMemory online service.</small></div><button class="translation-submit primary" type="button">Translate</button></footer>
+
+      <div class="customization-bar translation-customization" aria-label="Translation tile customization">
+        <button class="custom-icon translation-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon translation-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon translation-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
