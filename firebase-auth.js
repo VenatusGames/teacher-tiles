@@ -31,7 +31,8 @@ const boardsGrid = document.getElementById("boards-grid");
 const boardsLoading = document.getElementById("boards-loading");
 const boardsSaveStatus = document.getElementById("boards-save-status");
 
-const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "shop-toggle", "boards-toggle"]);
+const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle", "boards-toggle"]);
+const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg>`;
 
 let auth = null;
 let authSdk = null;
@@ -67,6 +68,64 @@ const PREVIEW_OBJECT_BUDGET = 90000;
 
 const boardApi = () => window.TeacherTilesBoard || null;
 const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
+const classEncryptionKeyStorageKey = uid => `teachertiles-class-key-${uid}`;
+
+function classesDocument(uid) {
+  return firestoreSdk.doc(db, "users", uid, "private", "classes");
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  const binary = atob(value);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+async function getClassEncryptionKey(uid, { create = false } = {}) {
+  const storageKey = classEncryptionKeyStorageKey(uid);
+  let encoded = localStorage.getItem(storageKey) || "";
+  if (!encoded && create) {
+    const generated = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+    encoded = bytesToBase64(new Uint8Array(await crypto.subtle.exportKey("raw", generated)));
+    localStorage.setItem(storageKey, encoded);
+    return generated;
+  }
+  if (!encoded) return null;
+  return crypto.subtle.importKey("raw", base64ToBytes(encoded), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+async function saveEncryptedClasses(classes) {
+  if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
+  const key = await getClassEncryptionKey(currentUser.uid, { create: true });
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(JSON.stringify(Array.isArray(classes) ? classes : []));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
+    version: 1,
+    algorithm: "AES-GCM-256",
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
+    updatedAt: firestoreSdk.serverTimestamp()
+  });
+}
+
+async function loadEncryptedClasses() {
+  if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) return [];
+  const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
+  if (!snapshot.exists()) return [];
+  const value = snapshot.data() || {};
+  if (!value.ciphertext || !value.iv) return [];
+  const key = await getClassEncryptionKey(currentUser.uid);
+  if (!key) throw new Error("This device does not have the encryption key for these rosters");
+  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(value.iv) }, key, base64ToBytes(value.ciphertext));
+  const classes = JSON.parse(new TextDecoder().decode(plaintext));
+  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
+  return classes;
+}
 
 function setStatus(message = "", isError = false) {
   status.textContent = message;
@@ -934,8 +993,39 @@ function nextBoardName() {
   return `Board ${n}`;
 }
 
+function showBoardLimitPopup() {
+  let popup = document.getElementById("board-limit-popup");
+  if (!popup) {
+    popup = document.createElement("div");
+    popup.id = "board-limit-popup";
+    popup.className = "board-limit-popup";
+    popup.hidden = true;
+    popup.innerHTML = `
+      <button class="board-limit-popup__backdrop" type="button" aria-label="Close subscription message"></button>
+      <div class="board-limit-popup__card" role="dialog" aria-modal="true" aria-labelledby="board-limit-popup-title">
+        <span class="board-limit-popup__crown" aria-hidden="true">${subscriberMarkSvg}</span>
+        <strong id="board-limit-popup-title">Subscribe to save more than two boards.</strong>
+        <button class="board-limit-popup__close" type="button">Got it</button>
+      </div>`;
+    document.body.appendChild(popup);
+    popup.querySelectorAll(".board-limit-popup__backdrop,.board-limit-popup__close").forEach(button => {
+      button.addEventListener("click", () => {
+        popup.classList.remove("is-open");
+        window.setTimeout(() => popup.hidden = true, 160);
+      });
+    });
+  }
+  popup.hidden = false;
+  requestAnimationFrame(() => popup.classList.add("is-open"));
+  popup.querySelector(".board-limit-popup__close")?.focus({ preventScroll: true });
+}
+
 async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
+  if (boardList.length >= 2) {
+    showBoardLimitPopup();
+    return;
+  }
   const api = boardApi();
   if (!api) return;
 
@@ -1517,10 +1607,11 @@ function createBoardCard(board) {
 }
 
 function createNewBoardCard() {
+  const isAtFreeLimit = boardList.length >= 2;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "board-new-card";
-  button.setAttribute("aria-label", boardUiText("boards.create", "Create new blank board"));
+  button.className = `board-new-card${isAtFreeLimit ? " is-subscriber-gated" : ""}`;
+  button.setAttribute("aria-label", isAtFreeLimit ? "Subscribe to save more than two boards" : boardUiText("boards.create", "Create new blank board"));
 
   const preview = document.createElement("div");
   preview.className = "board-new-card__preview";
@@ -1530,13 +1621,20 @@ function createNewBoardCard() {
   plus.textContent = "+";
 
   preview.appendChild(plus);
+  if (isAtFreeLimit) {
+    const crown = document.createElement("span");
+    crown.className = "board-new-card__crown";
+    crown.innerHTML = subscriberMarkSvg;
+    crown.setAttribute("aria-hidden", "true");
+    preview.appendChild(crown);
+  }
 
   const label = document.createElement("strong");
   label.className = "board-new-card__label";
   label.textContent = boardUiText("boards.new", "New Board");
 
   button.append(preview, label);
-  button.addEventListener("click", createBlankBoard);
+  button.addEventListener("click", () => isAtFreeLimit ? showBoardLimitPopup() : createBlankBoard());
   return button;
 }
 
@@ -1625,6 +1723,8 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const previousUser = currentUser;
   currentUser = user || null;
+  window.TeacherTilesClassScope = user?.uid || "local";
+  window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   authReady = true;
   loadingState.hidden = true;
   signedInState.hidden = !user;
@@ -1651,6 +1751,11 @@ async function renderUser(user) {
     toggle.classList.add("is-signed-in");
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
+
+    loadEncryptedClasses().catch(error => {
+      console.error("TeacherTiles could not decrypt class rosters", error);
+      setStatus("Saved class rosters could not be opened on this device.", true);
+    });
 
     if (!previousUser || previousUser.uid !== user.uid) {
       activeBoardId = "";
@@ -1680,6 +1785,7 @@ async function renderUser(user) {
 
   document.getElementById("theme-shelf-toggle")?.setAttribute("aria-label", user ? "Open theme shelf" : "Sign in to open themes");
   document.getElementById("sticker-shelf-toggle")?.setAttribute("aria-label", user ? "Open sticker shelf" : "Sign in to open stickers");
+  document.getElementById("tile-skins-shelf-toggle")?.setAttribute("aria-label", user ? "Open Tile Skins shelf" : "Sign in to open Tile Skins");
   document.getElementById("shop-toggle")?.setAttribute("aria-label", user ? "Open shop" : "Sign in to open shop");
   boardsToggle?.setAttribute("aria-label", user ? "Open boards" : "Sign in to open boards");
 }
@@ -1789,7 +1895,7 @@ async function initializeFirebaseAuth() {
 
 document.addEventListener("click", event => {
   const target = event.target instanceof Element
-    ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #shop-toggle, #boards-toggle")
+    ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #tile-skins-shelf-toggle, #shop-toggle, #boards-toggle")
     : null;
 
   if (!target || !gatedFeatureIds.has(target.id) || currentUser) return;
@@ -1827,7 +1933,7 @@ document.addEventListener("keydown", event => {
   }
 });
 
-["theme-shelf-toggle", "sticker-shelf-toggle", "shop-toggle"].forEach(id => {
+["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle"].forEach(id => {
   document.getElementById(id)?.addEventListener("click", () => {
     if (!modal.hidden) closeProfile();
   });
@@ -1856,6 +1962,11 @@ window.TeacherTilesAuth = {
   get user() { return currentUser; },
   get ready() { return authReady; },
   openProfile
+};
+
+window.TeacherTilesEncryptedClasses = {
+  save: saveEncryptedClasses,
+  load: loadEncryptedClasses
 };
 
 window.TeacherTilesCloudBoards = {

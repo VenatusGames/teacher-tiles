@@ -65,20 +65,26 @@
       <img id="profile-launch-avatar" class="profile-launch-avatar" alt="" hidden>
       <span class="upcoming-control__tooltip"><strong data-i18n="top.profile">Profile</strong></span>
     </button>
-    <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
-      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        <circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/>
-        <circle cx="10.4" cy="7.6" r=".9" fill="currentColor"/>
-        <circle cx="14" cy="7.8" r=".9" fill="currentColor"/>
-        <circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/>
-      </svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.themes">Themes</strong></span>
-    </button>
-    <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
-      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
-    </button>
+    <div id="customize-launcher" class="customize-launcher">
+      <div id="customize-launch-menu" class="customize-launch-menu" aria-hidden="true">
+        <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/><circle cx="10.4" cy="7.6" r=".9" fill="currentColor"/><circle cx="14" cy="7.8" r=".9" fill="currentColor"/><circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/></svg>
+          <span class="upcoming-control__tooltip"><strong data-i18n="top.themes">Themes</strong></span>
+        </button>
+        <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
+          <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
+        </button>
+        <button id="tile-skins-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Tile Skins shelf" data-feature-label="Tile Skins" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19h8a2 2 0 0 0 2-2V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="upcoming-control__tooltip"><strong>Tile Skins</strong></span>
+        </button>
+      </div>
+      <button id="customize-toggle" class="workspace-control upcoming-control customize-toggle" type="button" aria-label="Open customization options" data-feature-label="Customize" aria-expanded="false" aria-controls="customize-launch-menu">
+        <svg class="upcoming-control__icon customize-paintbrush-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.7 3.9a1.5 1.5 0 0 1 2.1 2.1l-8.2 8.2-2.8-2.8 8.9-7.5Z"/><path d="M8.8 12.4c-1.9 0-3.4 1.5-3.4 3.4 0 1.4-.7 2.6-2.1 3.5 1.2.7 2.7 1.1 4.2 1.1 3.2 0 5.4-1.8 5.4-4.4 0-1.9-1.8-3.6-4.1-3.6Z"/><path d="m9.8 11.4 2.8 2.8" fill="none" stroke="var(--surface-solid)" stroke-width="1.2"/></svg>
+        <span class="upcoming-control__tooltip"><strong>Customize</strong></span>
+      </button>
+    </div>
     <button id="shop-toggle" class="workspace-control upcoming-control" type="button" aria-label="Open shop" data-feature-label="Shop" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="upcoming-control__tooltip"><strong data-i18n="top.shop">Shop</strong></span>
@@ -157,6 +163,50 @@
             </div>
             <small data-i18n="profile.balance">Account balance</small>
           </div>
+          <section class="profile-tools" aria-labelledby="profile-tools-title">
+            <div class="profile-tools__head"><span>ACCOUNT TOOLS</span><h3 id="profile-tools-title">Your tools</h3></div>
+            <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
+              <span class="profile-tool-button__icon" aria-hidden="true">👥</span>
+              <span><strong>Classes</strong><small>Create and manage reusable student rosters</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+          </section>
+          <section id="profile-classes-panel" class="profile-classes-panel" hidden aria-labelledby="profile-classes-title">
+            <div class="classes-window__backdrop" aria-hidden="true"></div>
+            <div class="classes-window" role="dialog" aria-modal="true" aria-labelledby="profile-classes-title">
+              <section id="profile-classes-list-view" class="classes-view classes-list-view">
+                <div class="profile-classes-panel__head">
+                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Classes</h3><p>Reusable class lists for every name-based tile.</p></div>
+                  <button id="profile-classes-close" type="button" aria-label="Close Classes">×</button>
+                </div>
+                <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
+                <form id="profile-class-create" class="profile-class-create">
+                  <input id="profile-class-name" type="text" maxlength="50" placeholder="Class name, e.g. Homeroom" aria-label="New class name" required>
+                  <button type="submit">Create Class</button>
+                </form>
+                <div id="profile-class-list" class="profile-class-list"></div>
+              </section>
+              <section id="profile-roster-view" class="classes-view roster-editor-view" hidden>
+                <div class="roster-editor__head">
+                  <button id="profile-roster-back" class="roster-back" type="button">← Classes</button>
+                  <div><span>EDIT ROSTER</span><input id="profile-roster-name" type="text" maxlength="50" aria-label="Class name"></div>
+                  <button id="profile-roster-done" class="roster-done" type="button">Done</button>
+                </div>
+                <div class="roster-editor__body">
+                  <div class="roster-entry-card">
+                    <label for="profile-student-name">Add students</label>
+                    <p>Use first names or nicknames only.</p>
+                    <form id="profile-student-add" class="roster-student-entry">
+                      <input id="profile-student-name" type="text" maxlength="60" placeholder="Student first name or nickname" autocomplete="off" required>
+                      <button type="submit">Add Student</button>
+                    </form>
+                  </div>
+                  <div class="roster-students-heading"><strong>Students</strong><span id="profile-roster-count">0 students</span></div>
+                  <div id="profile-roster-students" class="roster-student-chips"></div>
+                </div>
+              </section>
+            </div>
+          </section>
           <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
             <div class="profile-badge-showcase__head">
               <div><span>YOUR PROFILE</span><h3 id="profile-badges-title">Patch Collection</h3></div>
@@ -187,6 +237,16 @@
                 </span>
                 <span class="profile-badge__copy"><strong>Contributor</strong></span>
                 <span id="contributor-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Get your idea added to TeacherTiles</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--stickerer" type="button" aria-disabled="true" aria-describedby="stickerer-patch-requirement" aria-label="Stickerer patch. Locked. Place 1000 stickers to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 8h21l7 7v25H10V8Z"/><path d="M31 8v8h7M17 27c3.8 4.2 10.2 4.2 14 0M18 21h.1M30 21h.1"/></svg></span>
+                <span class="profile-badge__copy"><strong>Stickerer</strong></span>
+                <span id="stickerer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 1000 stickers</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--tile-layer" type="button" aria-disabled="true" aria-describedby="tile-layer-patch-requirement" aria-label="Tile Layer patch. Locked. Place 100 tiles to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="9" y="9" width="24" height="24" rx="4"/><path d="M15 39h21a3 3 0 0 0 3-3V15"/></svg></span>
+                <span class="profile-badge__copy"><strong>Tile Layer</strong></span>
+                <span id="tile-layer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 100 tiles</span>
               </button>
             </div>
           </section>
@@ -345,7 +405,7 @@
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>D</kbd></div><span data-i18n="help.key.duplicate">Duplicate the current selection.</span></div>
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Z</kbd></div><span data-i18n="help.key.undo">Undo the latest board action.</span></div>
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Y</kbd></div><span data-i18n="help.key.redo">Redo an undone action. Ctrl/⌘ + Shift + Z also works.</span></div>
-                <div class="help-shortcut"><div><kbd>Delete</kbd></div><span data-i18n="help.key.delete">Delete the selected tile, sticker, or group.</span></div>
+                <div class="help-shortcut"><div><kbd>Delete</kbd><b>/</b><kbd>Backspace</kbd></div><span data-i18n="help.key.delete">Delete only the selected tile or sticker—even when it belongs to a snapped group.</span></div>
                 <div class="help-shortcut"><div><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div><span data-i18n="help.key.arrows">Navigate around the board.</span></div>
                 <div class="help-shortcut"><div><kbd>Esc</kbd></div><span data-i18n="help.key.escape">Exit text editing or close the active overlay/menu.</span></div>
               </div>
@@ -359,9 +419,11 @@
                 <div><span class="help-mouse-icon">☰</span><p><strong data-i18n="help.mouse.menu.title">Add tiles</strong><small data-i18n="help.mouse.menu.copy">Right-click empty board space to open the Add Tile menu.</small></p></div>
                 <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Use the mouse wheel or trackpad scroll over the board.</small></p></div>
                 <div><span class="help-mouse-icon">✥</span><p><strong data-i18n="help.mouse.move.title">Move tiles</strong><small data-i18n="help.mouse.move.copy">Drag anywhere on a tile that is not an active button, slider, canvas, or other control.</small></p></div>
+                <div><span class="help-mouse-icon">⧉</span><p><strong data-i18n="help.mouse.snap.title">Snap &amp; group</strong><small data-i18n="help.mouse.snap.copy">Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.</small></p></div>
+                <div><span class="help-mouse-icon">↝</span><p><strong data-i18n="help.mouse.tug.title">Hold, then tug</strong><small data-i18n="help.mouse.tug.copy">Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.</small></p></div>
                 <div><span class="help-mouse-icon">I</span><p><strong data-i18n="help.mouse.text.title">Edit text</strong><small data-i18n="help.mouse.text.copy">Double-click a text field to type. Click away from it to leave text-edit mode.</small></p></div>
                 <div><span class="help-mouse-icon">◌</span><p><strong data-i18n="help.mouse.sticker.title">Transform stickers</strong><small data-i18n="help.mouse.sticker.copy">Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.</small></p></div>
-                <div><span class="help-mouse-icon">⌫</span><p><strong data-i18n="help.mouse.trash.title">Delete by dragging</strong><small data-i18n="help.mouse.trash.copy">Drag selected objects into the trash can in the bottom-right.</small></p></div>
+                <div><span class="help-mouse-icon">⌫</span><p><strong data-i18n="help.mouse.trash.title">Delete by dragging</strong><small data-i18n="help.mouse.trash.copy">Drag any snapped tile into the corner trash to delete its entire group.</small></p></div>
                 <div><span class="help-mouse-icon">○</span><p><strong data-i18n="help.mouse.clear.title">Clear selection</strong><small data-i18n="help.mouse.clear.copy">Click outside the current selection to deselect it.</small></p></div>
               </div>
             </div>
@@ -441,7 +503,7 @@
             <div class="terms-document">
               <div class="terms-notice"><strong>Plain-language note</strong><span>These terms are a general starter document and do not replace advice from a qualified attorney.</span></div>
               <article><h3>1. Acceptance and eligibility</h3><p>By accessing or using TeacherTiles, you agree to these Terms. If you use TeacherTiles for a school, district, or other organization, you confirm that you are authorized to accept these Terms for that organization. Do not use the service if you do not agree.</p></article>
-              <article><h3>2. Classroom use and accounts</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p></article>
+              <article><h3>2. Classroom use, accounts, and data protection</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p><p>TeacherTiles encrypts saved student-roster data in your browser before it is transmitted to our cloud database, so student names are stored on the server as encrypted data rather than readable text. Personal and account data transmitted through TeacherTiles is protected with encrypted network connections, and our cloud providers apply encryption at rest to stored service data. No security system is infallible, so users should still enter only the minimum information necessary and use first names or nicknames for student rosters.</p></article>
               <article><h3>3. Your content</h3><p>You keep ownership of text, images, flashcards, boards, and other content you create or upload. You grant TeacherTiles a limited license to host, process, display, and store that content only as needed to operate and improve the service. You confirm that you have the rights and permissions needed for anything you upload.</p></article>
               <article><h3>4. TeacherTiles intellectual property and license</h3><p>The TeacherTiles software, interface, visual design, branding, original artwork, documentation, and other original materials are owned by TeacherTiles or its licensors and may be protected by copyright, trademark, and other laws. We grant you a limited, personal, non-exclusive, non-transferable, revocable license to use the service for its intended purpose. Except where applicable law or an identified open-source license permits it, you may not reproduce, redistribute, sell, sublicense, scrape, reverse engineer, remove ownership notices from, or create a competing product from TeacherTiles code or assets without prior written permission. These Terms do not restrict lawful fair use or other rights that cannot legally be waived.</p></article>
               <article><h3>5. Acceptable use</h3><p>You may not interfere with the service, bypass access controls, introduce malware, impersonate another person, abuse redemption or virtual-currency systems, infringe others’ rights, or use TeacherTiles for unlawful, harmful, deceptive, or harassing activity. We may suspend access needed to protect users, the service, or legal rights.</p></article>
@@ -841,6 +903,12 @@
             </div>
           </div>
         </div>
+        <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
+          <div class="tile-skins-shelf-empty">
+            <span aria-hidden="true"><i></i><i></i><i></i></span>
+            <div><small>COMING SOON</small><strong>Tile Skins</strong><p>Give individual tiles new frames, textures, and visual styles.</p></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -898,7 +966,7 @@
             <article class="shop-membership-card">
               <div class="shop-membership-card__glow" aria-hidden="true"></div>
               <div class="shop-membership-card__head">
-                <span class="shop-membership-crown" aria-hidden="true">✦</span>
+                <span class="shop-membership-crown" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg></span>
                 <div><small>TEACHERTILES SUPPORTER</small><h3>Monthly Membership</h3></div>
                 <div class="shop-membership-price"><strong>$5.99</strong><span>/ month</span></div>
               </div>
@@ -907,6 +975,7 @@
                 <li>Custom profile patch and golden name</li>
                 <li>Direct input on new features</li>
                 <li>Support the developers</li>
+                <li>Save more than 2 boards at a time</li>
                 <li><strong>600 Coins</strong> each month</li>
                 <li>Custom subscriber themes, stickers, and cosmetic TileSets</li>
               </ul>
@@ -942,7 +1011,7 @@
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
               <span class="shop-category__art shop-category__art--tiles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Packs</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Packs</em></span>
+              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Skins</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Skins</em></span>
               <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
@@ -1503,7 +1572,7 @@
 
   <template id="interactive-template">
     <section class="module interactive-module" data-type="interactive" data-bg="white" data-interactive-mode="hourglass" data-candle-color="cream">
-      <button class="module-delete" aria-label="Delete interactive timer">×</button><div class="module-drag-handle"></div>
+      <button class="module-delete" aria-label="Delete interactive timer">×</button><div class="module-drag-handle"></div><div class="confetti-layer" aria-hidden="true"></div>
       <div class="hourglass-stage">
         <div class="hourglass-countdown">05:00</div>
         <svg class="hourglass-svg" viewBox="0 0 260 340" aria-label="Animated hourglass">
@@ -2271,6 +2340,7 @@
     <section class="module progress-bar-module" data-type="progressbar" data-bg="white" data-font="inter" data-text="dark" data-bar-color="blue" data-bar-style="glass" data-orientation="horizontal" data-icon-position="end">
       <button class="module-delete" aria-label="Delete progress bar">×</button>
       <div class="module-drag-handle"></div>
+      <div class="confetti-layer" aria-hidden="true"></div>
 
       <div class="progress-bar-heading">
         <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title">
@@ -2686,6 +2756,10 @@
 
       <div class="money-workspace" aria-label="Money workspace">
         <div class="money-workspace-empty">Drag money here or click a piece below</div>
+        <div class="money-piece-delete-zone" aria-hidden="true">
+          <span aria-hidden="true">×</span>
+          <strong>Drop to delete</strong>
+        </div>
       </div>
 
       <div class="money-palette" aria-label="Money pieces"></div>
