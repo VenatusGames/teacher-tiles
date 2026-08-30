@@ -67,6 +67,64 @@ const PREVIEW_OBJECT_BUDGET = 90000;
 
 const boardApi = () => window.TeacherTilesBoard || null;
 const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
+const classEncryptionKeyStorageKey = uid => `teachertiles-class-key-${uid}`;
+
+function classesDocument(uid) {
+  return firestoreSdk.doc(db, "users", uid, "private", "classes");
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  const binary = atob(value);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+async function getClassEncryptionKey(uid, { create = false } = {}) {
+  const storageKey = classEncryptionKeyStorageKey(uid);
+  let encoded = localStorage.getItem(storageKey) || "";
+  if (!encoded && create) {
+    const generated = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+    encoded = bytesToBase64(new Uint8Array(await crypto.subtle.exportKey("raw", generated)));
+    localStorage.setItem(storageKey, encoded);
+    return generated;
+  }
+  if (!encoded) return null;
+  return crypto.subtle.importKey("raw", base64ToBytes(encoded), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+async function saveEncryptedClasses(classes) {
+  if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
+  const key = await getClassEncryptionKey(currentUser.uid, { create: true });
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(JSON.stringify(Array.isArray(classes) ? classes : []));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
+    version: 1,
+    algorithm: "AES-GCM-256",
+    iv: bytesToBase64(iv),
+    ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
+    updatedAt: firestoreSdk.serverTimestamp()
+  });
+}
+
+async function loadEncryptedClasses() {
+  if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) return [];
+  const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
+  if (!snapshot.exists()) return [];
+  const value = snapshot.data() || {};
+  if (!value.ciphertext || !value.iv) return [];
+  const key = await getClassEncryptionKey(currentUser.uid);
+  if (!key) throw new Error("This device does not have the encryption key for these rosters");
+  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(value.iv) }, key, base64ToBytes(value.ciphertext));
+  const classes = JSON.parse(new TextDecoder().decode(plaintext));
+  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
+  return classes;
+}
 
 function setStatus(message = "", isError = false) {
   status.textContent = message;
@@ -1654,6 +1712,11 @@ async function renderUser(user) {
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
 
+    loadEncryptedClasses().catch(error => {
+      console.error("TeacherTiles could not decrypt class rosters", error);
+      setStatus("Saved class rosters could not be opened on this device.", true);
+    });
+
     if (!previousUser || previousUser.uid !== user.uid) {
       activeBoardId = "";
       boardList = [];
@@ -1858,6 +1921,11 @@ window.TeacherTilesAuth = {
   get user() { return currentUser; },
   get ready() { return authReady; },
   openProfile
+};
+
+window.TeacherTilesEncryptedClasses = {
+  save: saveEncryptedClasses,
+  load: loadEncryptedClasses
 };
 
 window.TeacherTilesCloudBoards = {

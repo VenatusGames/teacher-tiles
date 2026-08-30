@@ -166,16 +166,40 @@
             </button>
           </section>
           <section id="profile-classes-panel" class="profile-classes-panel" hidden aria-labelledby="profile-classes-title">
-            <div class="profile-classes-panel__head">
-              <div><span>ROSTERS</span><h3 id="profile-classes-title">Classes</h3></div>
-              <button id="profile-classes-close" type="button" aria-label="Close Classes">×</button>
+            <div class="classes-window__backdrop" aria-hidden="true"></div>
+            <div class="classes-window" role="dialog" aria-modal="true" aria-labelledby="profile-classes-title">
+              <section id="profile-classes-list-view" class="classes-view classes-list-view">
+                <div class="profile-classes-panel__head">
+                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Classes</h3><p>Reusable class lists for every name-based tile.</p></div>
+                  <button id="profile-classes-close" type="button" aria-label="Close Classes">×</button>
+                </div>
+                <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
+                <form id="profile-class-create" class="profile-class-create">
+                  <input id="profile-class-name" type="text" maxlength="50" placeholder="Class name, e.g. Homeroom" aria-label="New class name" required>
+                  <button type="submit">Create Class</button>
+                </form>
+                <div id="profile-class-list" class="profile-class-list"></div>
+              </section>
+              <section id="profile-roster-view" class="classes-view roster-editor-view" hidden>
+                <div class="roster-editor__head">
+                  <button id="profile-roster-back" class="roster-back" type="button">← Classes</button>
+                  <div><span>EDIT ROSTER</span><input id="profile-roster-name" type="text" maxlength="50" aria-label="Class name"></div>
+                  <button id="profile-roster-done" class="roster-done" type="button">Done</button>
+                </div>
+                <div class="roster-editor__body">
+                  <div class="roster-entry-card">
+                    <label for="profile-student-name">Add students</label>
+                    <p>Use first names or nicknames only.</p>
+                    <form id="profile-student-add" class="roster-student-entry">
+                      <input id="profile-student-name" type="text" maxlength="60" placeholder="Student first name or nickname" autocomplete="off" required>
+                      <button type="submit">Add Student</button>
+                    </form>
+                  </div>
+                  <div class="roster-students-heading"><strong>Students</strong><span id="profile-roster-count">0 students</span></div>
+                  <div id="profile-roster-students" class="roster-student-chips"></div>
+                </div>
+              </section>
             </div>
-            <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
-            <form id="profile-class-create" class="profile-class-create">
-              <input id="profile-class-name" type="text" maxlength="50" placeholder="Class name, e.g. Homeroom" aria-label="New class name" required>
-              <button type="submit">Create Class</button>
-            </form>
-            <div id="profile-class-list" class="profile-class-list"></div>
           </section>
           <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
             <div class="profile-badge-showcase__head">

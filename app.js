@@ -208,7 +208,14 @@ function readClassRosters(){
 function writeClassRosters(classes){
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));
+  window.TeacherTilesEncryptedClasses?.save?.(classes).catch(error=>console.error('TeacherTiles could not save encrypted classes',error));
 }
+
+window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
+  const classes=Array.isArray(event.detail?.classes)?event.detail.classes:[];
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes,source:'encrypted-cloud'}}));
+});
 
 function classRosterId(){
   return typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():`class-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
@@ -243,6 +250,15 @@ function attachClassRosterLoader(anchor,onLoad){
   return()=>window.removeEventListener('teachertiles:classeschange',refresh);
 }
 
+function fitNameModuleToRoster(module,count,{namesPerRow=5,rowHeight=31,threshold=10}={}){
+  if(!module)return;
+  if(!module.dataset.rosterBaseHeight)module.dataset.rosterBaseHeight=String(Math.max(module.offsetHeight,Number.parseFloat(getComputedStyle(module).height)||0));
+  const base=Number(module.dataset.rosterBaseHeight)||module.offsetHeight;
+  const extraRows=Math.max(0,Math.ceil((Math.max(0,count)-threshold)/namesPerRow));
+  const desired=Math.min(Math.max(base,base+extraRows*rowHeight),Math.max(base,BOARD_HEIGHT-module.offsetTop));
+  module.style.height=`${desired}px`;
+}
+
 function setupProfileClasses(){
   const openButton=document.getElementById('profile-classes-button');
   const panel=document.getElementById('profile-classes-panel');
@@ -250,7 +266,65 @@ function setupProfileClasses(){
   const form=document.getElementById('profile-class-create');
   const nameInput=document.getElementById('profile-class-name');
   const list=document.getElementById('profile-class-list');
-  if(!openButton||!panel||!form||!nameInput||!list)return;
+  const listView=document.getElementById('profile-classes-list-view');
+  const rosterView=document.getElementById('profile-roster-view');
+  const rosterBack=document.getElementById('profile-roster-back');
+  const rosterDone=document.getElementById('profile-roster-done');
+  const rosterName=document.getElementById('profile-roster-name');
+  const studentForm=document.getElementById('profile-student-add');
+  const studentInput=document.getElementById('profile-student-name');
+  const studentChips=document.getElementById('profile-roster-students');
+  const rosterCount=document.getElementById('profile-roster-count');
+  if(!openButton||!panel||!form||!nameInput||!list||!listView||!rosterView)return;
+  document.body.appendChild(panel);
+  let editingId='';
+  let draftName='';
+  let draftStudents=[];
+  let originalSignature='';
+
+  const draftSignature=()=>JSON.stringify({name:draftName.trim(),students:normalizeRosterNames(draftStudents)});
+
+  const renderDraft=()=>{
+    studentChips.replaceChildren();
+    const names=normalizeRosterNames(draftStudents);
+    draftStudents=names;
+    rosterCount.textContent=`${names.length} ${names.length===1?'student':'students'}`;
+    if(!names.length){
+      const empty=document.createElement('p');empty.className='roster-students-empty';empty.textContent='No students yet. Add a first name or nickname above.';studentChips.append(empty);return;
+    }
+    names.forEach((name,index)=>{
+      const chip=document.createElement('div');chip.className='roster-student-chip';
+      const label=document.createElement('span');label.textContent=name;
+      const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${name}`);
+      remove.addEventListener('click',()=>{draftStudents.splice(index,1);renderDraft()});
+      chip.append(label,remove);studentChips.append(chip);
+    });
+  };
+
+  const saveDraftIfChanged=()=>{
+    if(!editingId)return false;
+    draftName=rosterName.value.trim().slice(0,50)||'Untitled Class';
+    draftStudents=normalizeRosterNames(draftStudents);
+    if(draftSignature()===originalSignature)return false;
+    const classes=readClassRosters();
+    const target=classes.find(item=>item.id===editingId);
+    if(!target)return false;
+    target.name=draftName;target.students=[...draftStudents];
+    writeClassRosters(classes);
+    originalSignature=draftSignature();
+    return true;
+  };
+
+  const showList=()=>{
+    saveDraftIfChanged();editingId='';listView.hidden=false;rosterView.hidden=true;render();
+  };
+
+  const openRoster=item=>{
+    editingId=item.id;draftName=item.name;draftStudents=[...item.students];
+    rosterName.value=draftName;originalSignature=draftSignature();
+    listView.hidden=true;rosterView.hidden=false;renderDraft();
+    requestAnimationFrame(()=>studentInput.focus({preventScroll:true}));
+  };
 
   const render=()=>{
     const classes=readClassRosters();
@@ -263,45 +337,48 @@ function setupProfileClasses(){
       return;
     }
     classes.forEach(item=>{
-      const card=document.createElement('article');
+      const card=document.createElement('button');
+      card.type='button';
       card.className='profile-class-card';
-      const head=document.createElement('div');
-      head.className='profile-class-card__head';
-      const title=document.createElement('input');
-      title.type='text';title.maxLength=50;title.value=item.name;title.setAttribute('aria-label','Class name');
-      const count=document.createElement('span');
-      count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
-      head.append(title,count);
-      const textarea=document.createElement('textarea');
-      textarea.rows=6;textarea.value=item.students.join('\n');textarea.placeholder='One first name or nickname per line';
-      textarea.setAttribute('aria-label',`Student names for ${item.name}`);
-      const actions=document.createElement('div');
-      actions.className='profile-class-card__actions';
+      const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent='👥';
+      const copy=document.createElement('span');copy.className='profile-class-card__copy';
+      const title=document.createElement('strong');title.textContent=item.name;
+      const count=document.createElement('small');count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
+      copy.append(title,count);
       const remove=document.createElement('button');
-      remove.type='button';remove.className='is-delete';remove.textContent='Delete Class';
-      const save=document.createElement('button');
-      save.type='button';save.textContent='Save Roster';
-      save.addEventListener('click',()=>{
-        const next=readClassRosters();
-        const target=next.find(entry=>entry.id===item.id);
-        if(!target)return;
-        target.name=title.value.trim().slice(0,50)||'Untitled Class';
-        target.students=normalizeRosterNames(textarea.value.split(/\r?\n|,/));
-        writeClassRosters(next);render();
-      });
-      remove.addEventListener('click',()=>{
+      remove.type='button';remove.className='profile-class-card__delete';remove.textContent='×';remove.setAttribute('aria-label',`Delete ${item.name}`);
+      remove.addEventListener('click',event=>{
+        event.stopPropagation();
         writeClassRosters(readClassRosters().filter(entry=>entry.id!==item.id));render();
       });
-      actions.append(remove,save);card.append(head,textarea,actions);list.append(card);
+      const arrow=document.createElement('i');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
+      card.addEventListener('click',()=>openRoster(item));
+      card.append(icon,copy,remove,arrow);list.append(card);
     });
   };
 
   const setOpen=open=>{
+    if(!open&&editingId)saveDraftIfChanged();
     panel.hidden=!open;openButton.setAttribute('aria-expanded',String(open));
-    if(open){render();requestAnimationFrame(()=>nameInput.focus({preventScroll:true}))}
+    if(open){listView.hidden=false;rosterView.hidden=true;editingId='';render();requestAnimationFrame(()=>nameInput.focus({preventScroll:true}))}
+    else document.getElementById('profile-toggle')?.focus({preventScroll:true});
   };
-  openButton.addEventListener('click',()=>setOpen(panel.hidden));
+  openButton.addEventListener('click',()=>{
+    document.querySelector('[data-profile-close]')?.click();
+    setOpen(true);
+  });
   closeButton?.addEventListener('click',()=>setOpen(false));
+  panel.querySelector('.classes-window__backdrop')?.addEventListener('click',()=>setOpen(false));
+  rosterBack?.addEventListener('click',showList);
+  rosterDone?.addEventListener('click',showList);
+  rosterName?.addEventListener('input',()=>draftName=rosterName.value);
+  studentForm?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=String(studentInput.value||'').trim().replace(/\s+/g,' ');
+    if(!name)return;
+    if(!draftStudents.some(item=>item.toLocaleLowerCase()===name.toLocaleLowerCase()))draftStudents.push(name.slice(0,60));
+    studentInput.value='';renderDraft();studentInput.focus({preventScroll:true});
+  });
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
@@ -309,6 +386,11 @@ function setupProfileClasses(){
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Escape'||panel.hidden)return;
+    event.preventDefault();
+    if(!rosterView.hidden)showList();else setOpen(false);
+  });
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
@@ -3089,6 +3171,7 @@ function setupLunchCount(m){
   };
 
   const renderPool=()=>{
+    requestAnimationFrame(()=>fitNameModuleToRoster(m,students.length,{namesPerRow:6,rowHeight:30,threshold:12}));
     poolList.replaceChildren();
     if(m.dataset.lunchMode!=='names')return;
 
@@ -3545,6 +3628,7 @@ function setupVoting(m){
   };
 
   const renderPool=()=>{
+    requestAnimationFrame(()=>fitNameModuleToRoster(m,students.length,{namesPerRow:6,rowHeight:30,threshold:12}));
     poolList.replaceChildren();
     if(m.dataset.votingMode!=='names')return;
 
@@ -3688,6 +3772,7 @@ function setupGroupMaker(m){
   };
 
   const renderNameList=()=>{
+    requestAnimationFrame(()=>fitNameModuleToRoster(m,names.length,{namesPerRow:5,rowHeight:32,threshold:10}));
     nameList.replaceChildren();
 
     names.forEach((name,index)=>{
@@ -9783,6 +9868,7 @@ function setupSpinner(m){
   };
 
   function renderNameList(){
+    requestAnimationFrame(()=>fitNameModuleToRoster(m,names.length,{namesPerRow:4,rowHeight:32,threshold:8}));
     list.replaceChildren();
     names.forEach((name,i)=>{
       const chip=document.createElement('div');
