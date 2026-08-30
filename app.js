@@ -1479,7 +1479,10 @@ function setMenuCategory(category='all'){
   activeMenuCategory=menuCategoryOrder.includes(category)?category:'all';
   const label=menuCategoryLabel(activeMenuCategory);
   if(menuCategoryCycleLabel)menuCategoryCycleLabel.textContent=label;
-  if(menuCategoryCycle)menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
+  if(menuCategoryCycle){
+    menuCategoryCycle.dataset.activeCategory=activeMenuCategory;
+    menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
+  }
   menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===activeMenuCategory));
   applyMenuView();
 }
@@ -6006,11 +6009,78 @@ async function requestFrontCamera(owner){
   return stream;
 }
 
+function cameraPreviewError(){
+  const error=new Error('camera-preview');
+  error.name='CameraPreviewError';
+  return error;
+}
+
+function cameraAbortError(){
+  try{return new DOMException('Camera startup was cancelled.','AbortError')}
+  catch{const error=new Error('Camera startup was cancelled.');error.name='AbortError';return error}
+}
+
+async function attachCameraPreview(video,stream,signal){
+  video.pause();
+  video.srcObject=null;
+  video.autoplay=true;
+  video.muted=true;
+  video.playsInline=true;
+  video.setAttribute('autoplay','');
+  video.setAttribute('muted','');
+  video.setAttribute('playsinline','');
+  video.srcObject=stream;
+
+  const track=stream.getVideoTracks()[0];
+  if(!track||track.readyState!=='live')throw cameraPreviewError();
+
+  const frameReady=new Promise((resolve,reject)=>{
+    let settled=false;
+    let frameCallback=null;
+    const timeout=window.setTimeout(()=>finish(reject,cameraPreviewError()),8000);
+    const events=['loadeddata','canplay','playing','resize'];
+    const finish=(callback,value)=>{
+      if(settled)return;
+      settled=true;
+      window.clearTimeout(timeout);
+      events.forEach(name=>video.removeEventListener(name,onReady));
+      track.removeEventListener('ended',onEnded);
+      signal?.removeEventListener('abort',onAbort);
+      if(frameCallback!==null&&typeof video.cancelVideoFrameCallback==='function')video.cancelVideoFrameCallback(frameCallback);
+      callback(value);
+    };
+    const onFrame=()=>{frameCallback=null;finish(resolve)};
+    const onReady=()=>{
+      if(video.readyState<2||video.videoWidth<1||video.videoHeight<1)return;
+      if(typeof video.requestVideoFrameCallback==='function'){
+        if(frameCallback===null)frameCallback=video.requestVideoFrameCallback(onFrame);
+      }else finish(resolve);
+    };
+    const onEnded=()=>finish(reject,cameraPreviewError());
+    const onAbort=()=>finish(reject,cameraAbortError());
+    events.forEach(name=>video.addEventListener(name,onReady));
+    track.addEventListener('ended',onEnded,{once:true});
+    signal?.addEventListener('abort',onAbort,{once:true});
+    if(signal?.aborted){onAbort();return}
+    onReady();
+  });
+
+  let playback;
+  try{playback=video.play()}
+  catch{throw cameraPreviewError()}
+  try{await Promise.all([Promise.resolve(playback),frameReady])}
+  catch(error){
+    if(error?.name==='AbortError')throw error;
+    throw cameraPreviewError();
+  }
+}
+
 function cameraStartMessage(error){
   if(error?.name==='NotAllowedError'||error?.name==='SecurityError')return'Camera permission was not granted. Allow camera access, then try again.';
   if(error?.name==='NotFoundError'||error?.name==='DevicesNotFoundError')return'No camera was found on this device.';
   if(error?.name==='NotReadableError'||error?.name==='TrackStartError')return'The browser found your camera but could not open it. Reload this page to release a stuck camera session, then try again.';
   if(error?.name==='OverconstrainedError'||error?.name==='ConstraintNotSatisfiedError')return'This camera could not use the requested video settings. Reload the page, then try again.';
+  if(error?.name==='CameraPreviewError')return'Chrome opened the camera, but no video reached this tile. Reload this tab and try again.';
   if(error?.name==='AbortError')return'The camera stopped while starting. Wait a moment, then try again.';
   if(error?.message==='unsupported')return'Camera access is not supported in this browser.';
   return'The camera could not be started. Reload this page, then try again.';
@@ -6034,14 +6104,19 @@ function setupPhotobooth(m){
   let photos=[];
   let disposed=false;
   let cameraAttempt=0;
+  let cameraAbort=null;
 
   const stopCamera=()=>{
     cameraAttempt++;
+    cameraAbort?.abort();
+    cameraAbort=null;
     releaseCameraStream(stream);
     stream=null;
+    video.pause();
     video.srcObject=null;
     m.classList.remove('has-camera');
     toggle.textContent='Start camera';
+    toggle.disabled=false;
     shutter.disabled=true;
     state.textContent='OFF';
   };
@@ -6049,15 +6124,17 @@ function setupPhotobooth(m){
     if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stopCamera();message.textContent='Camera is off.';return}
     if(stream)stopCamera();
     const attempt=++cameraAttempt;
+    const controller=new AbortController();
+    cameraAbort=controller;
     toggle.disabled=true;
     message.textContent='Starting the camera…';
+    let next=null;
     try{
-      const next=await requestFrontCamera(m);
-      if(disposed||!m.isConnected||attempt!==cameraAttempt){releaseCameraStream(next);return}
+      next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
       stream=next;
-      video.muted=true;
-      video.srcObject=stream;
-      await video.play().catch(()=>{});
+      await attachCameraPreview(video,stream,controller.signal);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
       m.classList.add('has-camera');
       toggle.textContent='Stop camera';
       shutter.disabled=false;
@@ -6065,8 +6142,11 @@ function setupPhotobooth(m){
       message.textContent='Choose a filter, then take a photo.';
       stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stopCamera()},{once:true}));
     }catch(error){
-      if(attempt===cameraAttempt&&!disposed)message.textContent=cameraStartMessage(error);
-    }finally{if(attempt===cameraAttempt)toggle.disabled=false}
+      if(stream===next){releaseCameraStream(next);stream=null;video.pause();video.srcObject=null}
+      if(attempt===cameraAttempt&&!disposed){
+        m.classList.remove('has-camera');toggle.textContent='Start camera';shutter.disabled=true;state.textContent='OFF';message.textContent=cameraStartMessage(error);
+      }
+    }finally{if(attempt===cameraAttempt){cameraAbort=null;toggle.disabled=false}}
   };
   const setFilter=value=>{
     filter=PHOTOBOOTH_FILTERS[value]?value:'normal';
@@ -6161,23 +6241,31 @@ function setupMirror(m){
   let stream=null;
   let disposed=false;
   let cameraAttempt=0;
+  let cameraAbort=null;
   const stop=()=>{
-    cameraAttempt++;releaseCameraStream(stream);stream=null;video.srcObject=null;
-    m.classList.remove('has-camera');toggle.textContent='Start mirror';state.textContent='OFF';message.textContent='Camera is off.';
+    cameraAttempt++;cameraAbort?.abort();cameraAbort=null;releaseCameraStream(stream);stream=null;video.pause();video.srcObject=null;
+    m.classList.remove('has-camera');toggle.textContent='Start mirror';toggle.disabled=false;state.textContent='OFF';message.textContent='Camera is off.';
   };
   const start=async()=>{
     if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stop();return}
     if(stream)stop();
     const attempt=++cameraAttempt;
+    const controller=new AbortController();
+    cameraAbort=controller;
     toggle.disabled=true;message.textContent='Starting your mirror…';
+    let next=null;
     try{
-      const next=await requestFrontCamera(m);
-      if(disposed||!m.isConnected||attempt!==cameraAttempt){releaseCameraStream(next);return}
-      stream=next;video.muted=true;video.srcObject=stream;await video.play().catch(()=>{});
+      next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
+      stream=next;await attachCameraPreview(video,stream,controller.signal);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
       m.classList.add('has-camera');toggle.textContent='Stop mirror';state.textContent='ON';message.textContent='Mirror is on. Video stays on this device.';
       stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stop()},{once:true}));
-    }catch(error){if(attempt===cameraAttempt&&!disposed)message.textContent=cameraStartMessage(error)}
-    finally{if(attempt===cameraAttempt)toggle.disabled=false}
+    }catch(error){
+      if(stream===next){releaseCameraStream(next);stream=null;video.pause();video.srcObject=null}
+      if(attempt===cameraAttempt&&!disposed){m.classList.remove('has-camera');toggle.textContent='Start mirror';state.textContent='OFF';message.textContent=cameraStartMessage(error)}
+    }
+    finally{if(attempt===cameraAttempt){cameraAbort=null;toggle.disabled=false}}
   };
   toggle.addEventListener('click',start);
   placeholder?.addEventListener('click',start);
@@ -6462,10 +6550,31 @@ function setupChoiceWheel(m,{items}){
   const face=m.querySelector('.choicewheel-face');
   const options=m.querySelector('.choicewheel-options');
   const pointer=m.querySelector('.choicewheel-pointer');
+  const selectionDisplay=m.querySelector('.choicewheel-selection-display');
   const selectionIcon=m.querySelector('.choicewheel-selection-icon');
   const selectionName=m.querySelector('.choicewheel-selection-name');
+  const hint=m.querySelector('.choicewheel-hint');
   const sector=360/items.length;
   let selected=0;
+  let resizeFrame=0;
+
+  const syncWheelSize=()=>{
+    resizeFrame=0;
+    const style=getComputedStyle(m);
+    const number=value=>Number.parseFloat(value)||0;
+    const width=m.clientWidth-number(style.paddingLeft)-number(style.paddingRight);
+    const reservedHeight=selectionDisplay.offsetHeight+hint.offsetHeight+(number(style.rowGap)||number(style.gap)||5)*2;
+    const height=m.clientHeight-number(style.paddingTop)-number(style.paddingBottom)-reservedHeight;
+    const size=Math.max(160,Math.min(560,width,height));
+    m.style.setProperty('--choicewheel-size',`${Math.floor(size)}px`);
+  };
+  const scheduleWheelSize=()=>{
+    if(resizeFrame)return;
+    resizeFrame=requestAnimationFrame(syncWheelSize);
+  };
+  const wheelResizeObserver=typeof ResizeObserver==='function'?new ResizeObserver(scheduleWheelSize):null;
+  wheelResizeObserver?.observe(m);
+  queueMicrotask(scheduleWheelSize);
 
   m.style.setProperty('--choicewheel-count',String(items.length));
   m.style.setProperty('--choicewheel-offset',`${-sector/2}deg`);
@@ -6545,6 +6654,8 @@ function setupChoiceWheel(m,{items}){
   m.querySelector('.choicewheel-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   renderSelection(0);
+  const prior=m._cleanup;
+  m._cleanup=()=>{wheelResizeObserver?.disconnect();if(resizeFrame)cancelAnimationFrame(resizeFrame);prior?.()};
   return{
     getState:()=>({selected}),
     setState(saved){selected=clamp(Math.round(Number(saved?.selected)||0),0,items.length-1);renderSelection(selected)}
