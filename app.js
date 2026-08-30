@@ -530,6 +530,7 @@ function setupProfileClasses(){
   const rosterView=document.getElementById('profile-roster-view');
   const rosterBack=document.getElementById('profile-roster-back');
   const rosterDone=document.getElementById('profile-roster-done');
+  const rosterDelete=document.getElementById('profile-roster-delete');
   const rosterName=document.getElementById('profile-roster-name');
   const studentForm=document.getElementById('profile-student-add');
   const studentInput=document.getElementById('profile-student-name');
@@ -628,15 +629,9 @@ function setupProfileClasses(){
       const title=document.createElement('strong');title.textContent=item.name;
       const count=document.createElement('small');count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
       copy.append(title,count);
-      const remove=document.createElement('button');
-      remove.type='button';remove.className='profile-class-card__delete';remove.textContent='×';remove.setAttribute('aria-label',`Delete ${item.name}`);
-      remove.addEventListener('click',event=>{
-        event.stopPropagation();
-        writeClassRosters(readClassRosters().filter(entry=>entry.id!==item.id));render();
-      });
       const arrow=document.createElement('i');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
       card.addEventListener('click',()=>openRoster(item));
-      card.append(icon,copy,remove,arrow);list.append(card);
+      card.append(icon,copy,arrow);list.append(card);
     });
   };
 
@@ -656,6 +651,17 @@ function setupProfileClasses(){
   panel.querySelector('.classes-window__backdrop')?.addEventListener('click',()=>setOpen(false));
   rosterBack?.addEventListener('click',showList);
   rosterDone?.addEventListener('click',showList);
+  rosterDelete?.addEventListener('click',()=>{
+    if(!editingId)return;
+    const classes=readClassRosters();
+    const target=classes.find(item=>item.id===editingId);
+    if(!target)return;
+    if(!confirm(`Delete ${target.name}? This removes the class roster and its saved PBIS stats.`))return;
+    const deletedId=editingId;
+    editingId='';draftName='';draftLogo='👥';draftStudents=[];originalSignature='';
+    writeClassRosters(classes.filter(item=>item.id!==deletedId));
+    listView.hidden=false;rosterView.hidden=true;render();
+  });
   rosterName?.addEventListener('input',()=>draftName=rosterName.value);
   customLogoInput?.addEventListener('input',()=>{
     const next=String(customLogoInput.value||'').trim();
@@ -3867,6 +3873,21 @@ function setupStarChart(m){
       const input=document.createElement('input');input.type='number';input.min='1';input.max=String(count);input.step='1';input.value='1';input.inputMode='numeric';input.setAttribute('aria-label',`Number of stars to subtract from ${name}`);
       const takeAway=document.createElement('button');takeAway.type='submit';takeAway.textContent='Take away';
       const cancel=document.createElement('button');cancel.type='button';cancel.className='starchart-subtract-cancel';cancel.dataset.subtractCancel='';cancel.textContent='Cancel';
+      subtractToggle.addEventListener('click',event=>{
+        event.stopPropagation();
+        setSubtractPanelOpen(row,subtractToggle.getAttribute('aria-expanded')!=='true');
+      });
+      cancel.addEventListener('click',event=>{event.stopPropagation();setSubtractPanelOpen(row,false)});
+      form.addEventListener('submit',event=>{
+        event.preventDefault();event.stopPropagation();
+        if(!activeClassId)return;
+        const currentValue=normalizeStarChartCount(progress.studentStars[key]);
+        const requestedValue=Math.round(Number(input.value));
+        if(!currentValue||!Number.isFinite(requestedValue)||requestedValue<1)return;
+        progress.studentStars[key]=normalizeStarChartCount(currentValue-Math.min(currentValue,requestedValue));
+        persistProgress();
+        if(showAllStudents)scheduleShowAllSize();
+      });
       form.append(input,takeAway,cancel);panel.append(prompt,form);
       row.append(main,panel);studentGrid.append(row);
     });
@@ -3927,9 +3948,7 @@ function setupStarChart(m){
     const target=event.target instanceof Element?event.target:null;
     const row=target?.closest('[data-student-key]');
     if(!row||!activeClassId)return;
-    const subtractToggle=target.closest('[data-subtract-toggle]');
-    if(subtractToggle){setSubtractPanelOpen(row,subtractToggle.getAttribute('aria-expanded')!=='true');return}
-    if(target.closest('[data-subtract-cancel]')){setSubtractPanelOpen(row,false);return}
+    if(target.closest('[data-subtract-toggle],[data-subtract-cancel]'))return;
     const action=target.closest('[data-star-action]');
     if(!action)return;
     const key=row.dataset.studentKey;
@@ -3942,21 +3961,6 @@ function setupStarChart(m){
     if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());
   });
 
-  studentGrid.addEventListener('submit',event=>{
-    const form=event.target.closest('.starchart-subtract-form');
-    if(!form)return;
-    event.preventDefault();
-    const row=form.closest('[data-student-key]');
-    const input=form.querySelector('input');
-    if(!row||!input||!activeClassId)return;
-    const key=row.dataset.studentKey;
-    const current=normalizeStarChartCount(progress.studentStars[key]);
-    const requested=Math.round(Number(input.value));
-    if(!current||!Number.isFinite(requested)||requested<1)return;
-    const amount=Math.min(current,requested);
-    progress.studentStars[key]=normalizeStarChartCount(current-amount);
-    persistProgress();
-  });
   studentGrid.addEventListener('wheel',event=>{
     if(studentGrid.scrollHeight>studentGrid.clientHeight+1)event.stopPropagation();
   },{passive:true});
@@ -4326,7 +4330,14 @@ async function downloadPrizeCoupon(prize,roster,recipient,statLabel){
     ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('REDEEMED BY',120,525);ctx.fillStyle='#14243a';ctx.font='900 38px Arial';ctx.fillText(recipient,120,570);
     ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('CLASS',510,525);ctx.fillStyle='#14243a';ctx.font='900 34px Arial';ctx.fillText(roster.name,510,570);
     ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('COST',120,625);ctx.fillStyle='#286fb8';ctx.font='900 30px Arial';ctx.fillText(`${prize.cost} ${statLabel}`,220,625);
-    try{const img=new Image();img.src=prize.image;await img.decode();ctx.save();ctx.beginPath();ctx.roundRect(1000,130,390,390,44);ctx.clip();ctx.drawImage(img,1000,130,390,390);ctx.restore()}catch{}
+    try{
+      const img=new Image();img.src=prize.image;await img.decode();
+      const boxX=1000,boxY=130,boxW=390,boxH=390;
+      const imageW=img.naturalWidth||img.width||boxW,imageH=img.naturalHeight||img.height||boxH;
+      const scale=Math.min(boxW/imageW,boxH/imageH);
+      const drawW=imageW*scale,drawH=imageH*scale,drawX=boxX+(boxW-drawW)/2,drawY=boxY+(boxH-drawH)/2;
+      ctx.save();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.roundRect(boxX,boxY,boxW,boxH,44);ctx.fill();ctx.clip();ctx.drawImage(img,drawX,drawY,drawW,drawH);ctx.restore();
+    }catch{}
     ctx.fillStyle='#53647a';ctx.font='700 21px Arial';ctx.fillText('Redeemed with TeacherTiles PBIS',1005,575);ctx.font='600 18px Arial';ctx.fillText(new Date().toLocaleDateString(),1005,612);
   };
   await draw();
@@ -4794,6 +4805,7 @@ function setupLunchCount(m){
     students=students.filter(student=>student!==name);
     renderCategories();
     renderPool();
+    notifyBoardChanged('lunch-count-remove-student');
   };
 
   const assign=(name,targetId='')=>{
@@ -4955,7 +4967,7 @@ function setupLunchCount(m){
 
       if(namesMode){
         if(category.students.length){
-          category.students.forEach(name=>content.appendChild(studentChip(name)));
+          category.students.forEach(name=>content.appendChild(studentChip(name,{removable:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='lunchcount-category-empty';
@@ -5261,6 +5273,7 @@ function setupVoting(m){
     students=students.filter(student=>student!==name);
     renderChoices();
     renderPool();
+    notifyBoardChanged('voting-remove-student');
   };
 
   const assign=(name,targetId='')=>{
@@ -5411,7 +5424,7 @@ function setupVoting(m){
 
       if(namesMode){
         if(choice.students.length){
-          choice.students.forEach(name=>content.appendChild(studentChip(name)));
+          choice.students.forEach(name=>content.appendChild(studentChip(name,{removable:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='voting-choice-empty';
@@ -7597,11 +7610,23 @@ function setupPhotobooth(m){
       img.src=photo;
       img.alt='';
       img.draggable=false;
+      const actions=document.createElement('div');
+      actions.className='photobooth-photo-actions';
+      const download=document.createElement('button');
+      download.type='button';download.className='photobooth-photo-download';download.textContent='↓';download.title='Download photo';download.setAttribute('aria-label',`Download photo ${index+1}`);
+      download.addEventListener('pointerdown',event=>event.stopPropagation());
+      download.addEventListener('click',event=>{
+        event.stopPropagation();
+        const link=document.createElement('a');
+        link.href=photo;link.download=`teachertiles-photo-${index+1}.jpg`;link.click();
+      });
       const remove=document.createElement('button');
-      remove.type='button';
+      remove.type='button';remove.className='photobooth-photo-delete';
       remove.textContent='×';
       remove.setAttribute('aria-label',`Delete photo ${index+1}`);
+      remove.addEventListener('pointerdown',event=>event.stopPropagation());
       remove.addEventListener('click',event=>{event.stopPropagation();photos.splice(index,1);renderPhotos();notifyBoardChanged('photobooth-delete')});
+      actions.append(download,remove);
       card.addEventListener('dragstart',event=>{
         event.stopPropagation();
         event.dataTransfer?.setData('application/x-teachertiles-photo',photo);
@@ -7609,7 +7634,7 @@ function setupPhotobooth(m){
         card.classList.add('is-dragging');
       });
       card.addEventListener('dragend',()=>card.classList.remove('is-dragging'));
-      card.append(img,remove);
+      card.append(img,actions);
       list.appendChild(card);
     });
   };

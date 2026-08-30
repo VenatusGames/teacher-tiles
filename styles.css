@@ -13986,3 +13986,21 @@ body>.student-view-panel{position:fixed;inset:0;z-index:57600;padding:24px;displ
 @container(max-width:470px){.pbisconsole-reset{grid-column:auto}.pbisconsole-reset button{min-width:64px}.pbisconsole-tabs{margin-top:8px}}
 .collection-fill-line-handle span{transform:none}
 @container(max-width:470px){.pbisconsole-reset{grid-column:1/-1}}
+
+
+/* Class deletion now lives inside the roster editor. */
+.profile-class-card{grid-template-columns:52px minmax(0,1fr) 16px}
+.profile-class-card__delete{display:none!important}
+.roster-danger-zone{margin-top:28px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid color-mix(in srgb,#d63f4f 35%,var(--border));border-radius:18px;background:color-mix(in srgb,#d63f4f 7%,var(--surface-soft))}.roster-danger-zone>div{min-width:0}.roster-danger-zone strong{display:block;color:#b72d3c;font-size:15px;font-weight:950}.roster-danger-zone p{margin:4px 0 0;color:var(--muted);font-size:9px;line-height:1.4}.roster-danger-zone button{flex:0 0 auto;min-width:170px;height:46px;padding:0 18px;border:0;border-radius:12px;background:#c93445;color:#fff;font-size:11px;font-weight:950;box-shadow:0 7px 18px rgba(169,35,52,.2);transition:transform .13s ease,background .13s ease,box-shadow .13s ease}.roster-danger-zone button:hover{background:#b72838;transform:translateY(-1px);box-shadow:0 10px 22px rgba(169,35,52,.25)}.roster-danger-zone button:active{transform:translateY(0)}
+@media(max-width:600px){.roster-danger-zone{align-items:stretch;flex-direction:column}.roster-danger-zone button{width:100%}}
+
+/* Assigned name chips use the same removable treatment as unassigned names. */
+.lunchcount-category-content .lunchcount-student-chip,.voting-choice-content .voting-student-chip{padding-right:5px!important}
+
+/* Keep Star Chart subtract controls clickable and visible in Show All Students. */
+.starchart-module.is-showing-all-students .starchart-subtract-toggle{position:relative;z-index:2;pointer-events:auto}
+.starchart-module.is-showing-all-students .starchart-subtract-panel{position:relative;z-index:3}
+.starchart-module.is-showing-all-students .starchart-subtract-form button,.starchart-module.is-showing-all-students .starchart-subtract-form input{pointer-events:auto}
+
+/* Photobooth photo actions stay out of the way until the photo is hovered/focused. */
+.photobooth-photo-actions{position:absolute;z-index:3;right:4px;top:4px;display:flex;gap:4px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease,visibility .12s ease}.photobooth-photo-card:hover .photobooth-photo-actions,.photobooth-photo-card:focus-within .photobooth-photo-actions{opacity:1;visibility:visible;pointer-events:auto}.photobooth-photo-card .photobooth-photo-actions button{position:static;width:22px;height:22px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(10,12,16,.76);color:#fff;font-size:14px;line-height:1;box-shadow:0 2px 7px rgba(0,0,0,.22)}.photobooth-photo-card .photobooth-photo-download{font-size:15px;font-weight:900}.photobooth-photo-card .photobooth-photo-actions button:hover{background:rgba(10,12,16,.92);transform:scale(1.05)}
