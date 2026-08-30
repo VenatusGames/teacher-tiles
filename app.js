@@ -590,6 +590,9 @@ function setupStudentView(){
   const panel=document.getElementById('profile-student-view-panel');
   const closeButton=document.getElementById('profile-student-view-close');
   const rosterContainer=document.getElementById('student-view-rosters');
+  const studentSearch=document.getElementById('student-view-search');
+  const statMenuToggle=document.getElementById('student-view-stat-menu-toggle');
+  const statMenu=document.getElementById('student-view-stat-menu');
   const toggleContainer=document.getElementById('student-view-stat-toggles');
   const detail=document.getElementById('student-view-detail');
   const detailClose=document.getElementById('student-view-detail-close');
@@ -597,9 +600,15 @@ function setupStudentView(){
   const detailClass=document.getElementById('student-profile-class');
   const detailName=document.getElementById('student-profile-name');
   const detailStats=document.getElementById('student-profile-stats');
-  if(!openButton||!panel||!closeButton||!rosterContainer||!toggleContainer||!detail)return;
+  if(!openButton||!panel||!closeButton||!rosterContainer||!studentSearch||!statMenuToggle||!statMenu||!toggleContainer||!detail)return;
   document.body.appendChild(panel);
   let activeStudent=null;
+
+  const setStatMenuOpen=open=>{
+    statMenu.hidden=!open;
+    statMenuToggle.setAttribute('aria-expanded',String(open));
+    if(open)requestAnimationFrame(()=>statMenu.querySelector('input')?.focus({preventScroll:true}));
+  };
 
   const enabledStats=()=>{
     const preferences=readStudentViewStatPreferences();
@@ -671,9 +680,14 @@ function setupStudentView(){
   const renderRosters=()=>{
     const classes=readClassRosters();
     rosterContainer.replaceChildren();
-    const populated=classes.filter(roster=>roster.students.length);
+    const query=studentSearch.value.trim().toLocaleLowerCase();
+    const populated=classes.map(roster=>({
+      ...roster,
+      students:query?roster.students.filter(name=>name.toLocaleLowerCase().includes(query)):roster.students
+    })).filter(roster=>roster.students.length);
     if(!populated.length){
-      const empty=document.createElement('div');empty.className='student-view-empty';empty.innerHTML='<span aria-hidden="true">👥</span><strong>No students yet</strong><p>Create a class and add student first names or nicknames to see profiles here.</p>';
+      const empty=document.createElement('div');empty.className='student-view-empty';
+      empty.innerHTML=query?'<span aria-hidden="true">⌕</span><strong>No students found</strong><p>Try a different student name.</p>':'<span aria-hidden="true">👥</span><strong>No students yet</strong><p>Create a class and add student first names or nicknames to see profiles here.</p>';
       rosterContainer.append(empty);return;
     }
     populated.forEach(roster=>{
@@ -700,12 +714,17 @@ function setupStudentView(){
   const render=()=>{renderToggles();renderRosters();if(!detail.hidden)renderDetail()};
   const setOpen=open=>{
     panel.hidden=!open;openButton.setAttribute('aria-expanded',String(open));
-    if(open){render();requestAnimationFrame(()=>closeButton.focus({preventScroll:true}))}else{closeDetail();document.getElementById('profile-toggle')?.focus({preventScroll:true})}
+    if(open){setStatMenuOpen(false);render();requestAnimationFrame(()=>closeButton.focus({preventScroll:true}))}else{setStatMenuOpen(false);closeDetail();document.getElementById('profile-toggle')?.focus({preventScroll:true})}
   };
   openButton.addEventListener('click',()=>{
     document.getElementById('profile-classes-close')?.click();
     document.querySelector('[data-profile-close]')?.click();
     setOpen(true);
+  });
+  studentSearch.addEventListener('input',renderRosters);
+  statMenuToggle.addEventListener('click',()=>setStatMenuOpen(statMenu.hidden));
+  panel.addEventListener('pointerdown',event=>{
+    if(!statMenu.hidden&&!event.target.closest('.student-view-stat-menu'))setStatMenuOpen(false);
   });
   closeButton.addEventListener('click',()=>setOpen(false));
   panel.querySelector('.student-view-window__backdrop')?.addEventListener('click',()=>setOpen(false));
@@ -716,7 +735,8 @@ function setupStudentView(){
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||panel.hidden)return;
     event.preventDefault();
-    if(!detail.hidden)closeDetail();else setOpen(false);
+    if(!statMenu.hidden){setStatMenuOpen(false);statMenuToggle.focus({preventScroll:true})}
+    else if(!detail.hidden)closeDetail();else setOpen(false);
   });
 }
 

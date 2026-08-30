@@ -173,7 +173,7 @@
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
-              <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true">★</span>
+              <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 20c.5-4.2 2.7-6.4 6.5-6.4s6 2.2 6.5 6.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
               <span><strong>Student View</strong><small>View each student and their PBIS stats</small></span>
               <i aria-hidden="true">›</i>
             </button>
@@ -221,9 +221,22 @@
                 <div><span>STUDENT PROFILES</span><h3 id="student-view-title">Student View</h3><p>See PBIS progress across all of your saved classes.</p></div>
                 <button id="profile-student-view-close" type="button" aria-label="Close Student View">×</button>
               </header>
-              <section class="student-view-stat-settings" aria-labelledby="student-view-settings-title">
-                <div><strong id="student-view-settings-title">Profile stats</strong><small>Choose which PBIS stats appear on every student profile.</small></div>
-                <div id="student-view-stat-toggles" class="student-view-stat-toggles"></div>
+              <section class="student-view-stat-settings" aria-label="PBIS profile settings">
+                <label class="student-view-search">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  <input id="student-view-search" type="search" placeholder="Search students…" autocomplete="off" aria-label="Search students">
+                </label>
+                <div class="student-view-stat-menu">
+                  <button id="student-view-stat-menu-toggle" class="student-view-stat-menu__toggle" type="button" aria-expanded="false" aria-controls="student-view-stat-menu">
+                    <span aria-hidden="true">★</span>
+                    <strong>Enable/Disable PBIS Types</strong>
+                    <i aria-hidden="true">⌄</i>
+                  </button>
+                  <div id="student-view-stat-menu" class="student-view-stat-menu__popover" hidden>
+                    <div class="student-view-stat-menu__header"><strong>PBIS types</strong><small>Choose which stats appear on every student profile.</small></div>
+                    <div id="student-view-stat-toggles" class="student-view-stat-toggles"></div>
+                  </div>
+                </div>
               </section>
               <div id="student-view-rosters" class="student-view-rosters"></div>
 
