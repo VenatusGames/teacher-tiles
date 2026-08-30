@@ -2136,12 +2136,15 @@
         </div>
 
         <section class="starchart-student-view" aria-label="Student stars">
-          <p class="starchart-student-hint"><span aria-hidden="true">★</span> Click a student to award a star. Click a displayed star to remove one.</p>
-          <div class="starchart-student-grid"></div>
+          <div class="starchart-student-toolbar">
+            <p class="starchart-student-hint"><span aria-hidden="true">★</span> Click a student to award a star. Click a displayed star to remove one.</p>
+            <button class="starchart-show-all" type="button" aria-pressed="false"><span aria-hidden="true"><i></i></span><strong>Show all students</strong></button>
+          </div>
+          <div class="starchart-student-grid" data-skip-board-save></div>
           <p class="starchart-no-students" hidden>This class does not have any students yet. Add first names or nicknames in Classes, then return here.</p>
         </section>
 
-        <section class="starchart-whole-view" hidden aria-label="Whole class stars">
+        <section class="starchart-whole-view" hidden aria-label="Whole class stars" data-skip-board-save>
           <div class="starchart-whole-badge" aria-hidden="true">★</div>
           <strong class="starchart-whole-class-name">Class</strong>
           <div class="starchart-whole-count"><span>★</span><b>0</b></div>

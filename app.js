@@ -249,17 +249,27 @@ function readClassRosters(){
   }catch{return []}
 }
 
-const PBIS_CLOUD_SAVE_INTERVAL=60000;
+const PBIS_CLOUD_SAVE_INTERVAL=10*60*1000;
 let pbisCloudSaveTimer=0;
 let pbisCloudSaveScope='';
 let encryptedClassSaveQueue=Promise.resolve();
+const lastEncryptedClassSaveSignatureByScope=new Map();
+const pendingEncryptedClassSaveSignatureByScope=new Map();
 
 function queueEncryptedClassSave(classes,description='classes'){
   const snapshot=structuredClone(Array.isArray(classes)?classes:[]);
+  const scope=window.TeacherTilesClassScope||'local';
+  const signature=JSON.stringify(snapshot);
+  if(lastEncryptedClassSaveSignatureByScope.get(scope)===signature||pendingEncryptedClassSaveSignatureByScope.get(scope)===signature)return encryptedClassSaveQueue;
+  pendingEncryptedClassSaveSignatureByScope.set(scope,signature);
   encryptedClassSaveQueue=encryptedClassSaveQueue.catch(()=>{}).then(()=>{
+    if((window.TeacherTilesClassScope||'local')!==scope)return;
     const save=window.TeacherTilesEncryptedClasses?.save;
-    return typeof save==='function'?save(snapshot):undefined;
-  }).catch(error=>console.error(`TeacherTiles could not save encrypted ${description}`,error));
+    if(typeof save!=='function')return;
+    return save(snapshot).then(()=>lastEncryptedClassSaveSignatureByScope.set(scope,signature));
+  }).catch(error=>console.error(`TeacherTiles could not save encrypted ${description}`,error)).finally(()=>{
+    if(pendingEncryptedClassSaveSignatureByScope.get(scope)===signature)pendingEncryptedClassSaveSignatureByScope.delete(scope);
+  });
   return encryptedClassSaveQueue;
 }
 
@@ -306,10 +316,10 @@ function writeClassStarChart(classId,value){
 }
 
 window.addEventListener('pagehide',flushPbisCloudSave);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPbisCloudSave()});
 
 window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
   const classes=Array.isArray(event.detail?.classes)?event.detail.classes:[];
+  lastEncryptedClassSaveSignatureByScope.set(window.TeacherTilesClassScope||'local',JSON.stringify(classes));
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes,source:'encrypted-cloud'}}));
 });
@@ -560,8 +570,10 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
     id:'stars',
     label:'Stars',
     description:'Stars earned in Star Chart',
+    wholeClassDescription:'Whole-class stars earned in Star Chart',
     icon:'★',
-    value:(roster,name)=>normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(name)])
+    value:(roster,name)=>normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(name)]),
+    wholeClassValue:roster=>normalizeStarChartCount(roster.starChart?.wholeClassStars)
   })
 ]);
 
@@ -615,7 +627,7 @@ function setupStudentView(){
     return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]);
   };
 
-  const appendStats=(container,roster,name,{compact=false}={})=>{
+  const appendStats=(container,roster,name,{compact=false,wholeClass=false}={})=>{
     container.replaceChildren();
     const stats=enabledStats();
     if(!stats.length){
@@ -625,14 +637,14 @@ function setupStudentView(){
       container.append(empty);return;
     }
     stats.forEach(stat=>{
-      const value=stat.value(roster,name);
+      const value=wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
       const item=document.createElement(compact?'span':'div');
       item.className=compact?'student-view-stat-summary':'student-profile-stat';
       const icon=document.createElement('i');icon.textContent=stat.icon;icon.setAttribute('aria-hidden','true');
       const count=document.createElement('strong');count.textContent=String(value);
       if(compact){item.append(icon,count)}else{
         const copy=document.createElement('span');
-        const label=document.createElement('small');label.textContent=stat.description;
+        const label=document.createElement('small');label.textContent=wholeClass?(stat.wholeClassDescription||stat.description):stat.description;
         copy.append(count,label);item.append(icon,copy);
       }
       container.append(item);
@@ -642,17 +654,17 @@ function setupStudentView(){
   const renderDetail=()=>{
     if(!activeStudent)return;
     const roster=readClassRosters().find(item=>item.id===activeStudent.classId);
-    if(!roster||!roster.students.includes(activeStudent.name)){detail.hidden=true;activeStudent=null;return}
-    const visual=studentProfileVisual(activeStudent.name,roster.id);
-    detailAvatar.textContent=visual.initials;
+    if(!roster||(!activeStudent.wholeClass&&!roster.students.includes(activeStudent.name))){detail.hidden=true;activeStudent=null;return}
+    const visual=studentProfileVisual(activeStudent.wholeClass?roster.name:activeStudent.name,`${roster.id}:${activeStudent.wholeClass?'whole':'student'}`);
+    detailAvatar.textContent=activeStudent.wholeClass?'👥':visual.initials;
     detailAvatar.style.setProperty('--student-avatar-hue',String(visual.hue));
-    detailClass.textContent=roster.name;
-    detailName.textContent=activeStudent.name;
-    appendStats(detailStats,roster,activeStudent.name);
+    detailClass.textContent=activeStudent.wholeClass?'Whole Class Profile':roster.name;
+    detailName.textContent=activeStudent.wholeClass?roster.name:activeStudent.name;
+    appendStats(detailStats,roster,activeStudent.name,{wholeClass:activeStudent.wholeClass});
   };
 
-  const openDetail=(roster,name)=>{
-    activeStudent={classId:roster.id,name};
+  const openDetail=(roster,name,{wholeClass=false}={})=>{
+    activeStudent={classId:roster.id,name,wholeClass};
     detail.hidden=false;
     renderDetail();
     if(activeStudent)requestAnimationFrame(()=>detailClose?.focus({preventScroll:true}));
@@ -684,18 +696,26 @@ function setupStudentView(){
     const populated=classes.map(roster=>({
       ...roster,
       students:query?roster.students.filter(name=>name.toLocaleLowerCase().includes(query)):roster.students
-    })).filter(roster=>roster.students.length);
+    })).filter(roster=>!query||roster.students.length||roster.name.toLocaleLowerCase().includes(query));
     if(!populated.length){
       const empty=document.createElement('div');empty.className='student-view-empty';
-      empty.innerHTML=query?'<span aria-hidden="true">⌕</span><strong>No students found</strong><p>Try a different student name.</p>':'<span aria-hidden="true">👥</span><strong>No students yet</strong><p>Create a class and add student first names or nicknames to see profiles here.</p>';
+      empty.innerHTML=query?'<span aria-hidden="true">⌕</span><strong>No students found</strong><p>Try a different student or class name.</p>':'<span aria-hidden="true">👥</span><strong>No classes yet</strong><p>Create a class to see its whole-class profile and student profiles here.</p>';
       rosterContainer.append(empty);return;
     }
     populated.forEach(roster=>{
       const section=document.createElement('section');section.className='student-view-class';
       const header=document.createElement('header');
-      const title=document.createElement('h4');title.textContent=roster.name;
+      const classProfile=document.createElement('button');classProfile.type='button';classProfile.className='student-view-class-profile';classProfile.setAttribute('aria-label',`Open ${roster.name} whole-class profile`);
+      const classAvatar=document.createElement('span');classAvatar.className='student-view-class-profile__avatar';classAvatar.textContent='👥';classAvatar.setAttribute('aria-hidden','true');
+      const classCopy=document.createElement('span');classCopy.className='student-view-class-profile__copy';
+      const classEyebrow=document.createElement('small');classEyebrow.textContent='WHOLE CLASS PROFILE';
+      const title=document.createElement('h4');title.textContent=roster.name;title.title=roster.name;
+      const classStats=document.createElement('span');classStats.className='student-view-class-profile__stats';appendStats(classStats,roster,'',{compact:true,wholeClass:true});
+      classCopy.append(classEyebrow,title,classStats);
+      const classArrow=document.createElement('i');classArrow.textContent='›';classArrow.setAttribute('aria-hidden','true');
+      classProfile.append(classAvatar,classCopy,classArrow);classProfile.addEventListener('click',()=>openDetail(roster,'',{wholeClass:true}));
       const count=document.createElement('span');count.textContent=`${roster.students.length} ${roster.students.length===1?'student':'students'}`;
-      header.append(title,count);
+      header.append(classProfile,count);
       const grid=document.createElement('div');grid.className='student-view-grid';
       roster.students.forEach(name=>{
         const visual=studentProfileVisual(name,roster.id);
@@ -3480,10 +3500,14 @@ function setupStarChart(m){
   const wholeBundles=m.querySelector('.starchart-whole-bundles');
   const wholeAdd=m.querySelector('.starchart-whole-add');
   const wholeRemove=m.querySelector('.starchart-whole-remove');
+  const showAllButton=m.querySelector('.starchart-show-all');
   let activeClassId='';
   let pendingClassId='';
   let roster=null;
   let progress=normalizeStarChartProgress(null,[]);
+  let showAllStudents=false;
+  let collapsedHeight=Math.max(380,m.offsetHeight||560);
+  let showAllFrame=0;
   const animationTimers=new Set();
   const flyingStars=new Set();
   const bundleLevels=[
@@ -3494,6 +3518,39 @@ function setupStarChart(m){
   ];
 
   const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+
+  const syncShowAllSize=()=>{
+    showAllFrame=0;
+    if(!showAllStudents||progress.mode!=='student'||studentView.hidden||studentGrid.hidden){
+      if(showAllStudents)m.style.height=`${collapsedHeight}px`;
+      return;
+    }
+    m.style.height=`${collapsedHeight}px`;
+    const availableGridHeight=studentGrid.clientHeight;
+    const fullGridHeight=studentGrid.scrollHeight;
+    const desired=fullGridHeight<=availableGridHeight+1?collapsedHeight:Math.ceil(collapsedHeight-availableGridHeight+fullGridHeight+4);
+    m.style.height=`${clamp(desired,collapsedHeight,Math.max(collapsedHeight,BOARD_HEIGHT-m.offsetTop))}px`;
+  };
+
+  const scheduleShowAllSize=()=>{
+    if(showAllFrame)cancelAnimationFrame(showAllFrame);
+    showAllFrame=requestAnimationFrame(syncShowAllSize);
+  };
+
+  const setShowAllStudents=(show,{notify=false,captureHeight=true}={})=>{
+    const next=Boolean(show);
+    if(next&&!showAllStudents&&captureHeight)collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);
+    showAllStudents=next;
+    m.classList.toggle('is-showing-all-students',showAllStudents);
+    showAllButton.setAttribute('aria-pressed',String(showAllStudents));
+    if(showAllStudents)scheduleShowAllSize();
+    else{
+      if(showAllFrame)cancelAnimationFrame(showAllFrame);
+      showAllFrame=0;
+      m.style.height=`${collapsedHeight}px`;
+    }
+    if(notify)notifyBoardChanged('star-chart-show-all');
+  };
 
   const scheduleAnimation=(callback,delay)=>{
     const timer=setTimeout(()=>{animationTimers.delete(timer);callback()},delay);
@@ -3581,10 +3638,11 @@ function setupStarChart(m){
     studentGrid.querySelectorAll('.starchart-subtract-toggle').forEach(button=>button.setAttribute('aria-expanded','false'));
     const panel=card?.querySelector('.starchart-subtract-panel');
     const toggle=card?.querySelector('.starchart-subtract-toggle');
-    if(!panel||!toggle||!open)return;
+    if(!panel||!toggle||!open){if(showAllStudents)scheduleShowAllSize();return}
     panel.hidden=false;
     toggle.setAttribute('aria-expanded','true');
     requestAnimationFrame(()=>{const input=panel.querySelector('input');input?.focus({preventScroll:true});input?.select()});
+    if(showAllStudents)scheduleShowAllSize();
   };
 
   const renderStudentGrid=()=>{
@@ -3648,6 +3706,7 @@ function setupStarChart(m){
     studentView.hidden=mode!=='student';
     wholeView.hidden=mode!=='whole';
     renderStudentGrid();
+    if(showAllStudents)scheduleShowAllSize();
   };
 
   const loadClass=(classId,{notify=false}={})=>{
@@ -3712,6 +3771,10 @@ function setupStarChart(m){
     progress.studentStars[key]=normalizeStarChartCount(current-amount);
     persistProgress();
   });
+  studentGrid.addEventListener('wheel',event=>{
+    if(studentGrid.scrollHeight>studentGrid.clientHeight+1)event.stopPropagation();
+  },{passive:true});
+  showAllButton.addEventListener('click',()=>setShowAllStudents(!showAllStudents,{notify:true}));
 
   wholeAdd.addEventListener('click',()=>{
     const source=wholeAdd.getBoundingClientRect();
@@ -3753,8 +3816,10 @@ function setupStarChart(m){
   window.addEventListener('teachertiles:classeschange',handleClassesChange);
   window.addEventListener('teachertiles:starchartchange',handleStarChartChange);
 
-  m._boardGetState=()=>({classId:activeClassId});
+  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight});
   m._boardSetState=state=>{
+    if(Number.isFinite(Number(state?.collapsedHeight)))collapsedHeight=clamp(Number(state.collapsedHeight),380,BOARD_HEIGHT);
+    setShowAllStudents(Boolean(state?.showAllStudents),{captureHeight:false});
     const classId=String(state?.classId||'');
     if(!classId)return;
     if(!loadClass(classId))pendingClassId=classId;
@@ -3767,6 +3832,7 @@ function setupStarChart(m){
     prior?.();detachRosterLoader();
     animationTimers.forEach(clearTimeout);animationTimers.clear();
     flyingStars.forEach(star=>star.remove());flyingStars.clear();
+    if(showAllFrame)cancelAnimationFrame(showAllFrame);
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);
     window.removeEventListener('teachertiles:starchartchange',handleStarChartChange);
   };
@@ -13365,17 +13431,17 @@ function blankTeacherTilesBoard(){
 }
 
 workspace.addEventListener('input',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))notifyBoardChanged('input');
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))notifyBoardChanged('input');
 },true);
 workspace.addEventListener('change',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))notifyBoardChanged('change');
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))notifyBoardChanged('change');
 },true);
 workspace.addEventListener('click',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))setTimeout(()=>notifyBoardChanged('module-action'),0);
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))setTimeout(()=>notifyBoardChanged('module-action'),0);
 },true);
 document.addEventListener('pointerup',event=>{
   const target=event.target;
-  if(target instanceof Element&&(target.closest('.module')||target.classList.contains('board-drawing-canvas')))notifyBoardChanged('pointer-action');
+  if(target instanceof Element&&!target.closest('[data-skip-board-save]')&&(target.closest('.module')||target.classList.contains('board-drawing-canvas')))notifyBoardChanged('pointer-action');
 },true);
 
 window.TeacherTilesBoard={
