@@ -1337,9 +1337,25 @@
         <span class="context-menu__icon context-menu__icon--livecaption" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h4M7 14h6M15 10h2M15 14h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
         <span><strong>Live Captions</strong><small>Display speech as clear, readable text</small></span>
       </button>
-      <button class="context-menu__item" data-module="voicememo" data-category="audio">
+      <button class="context-menu__item" data-module="voicememo" data-category="audio planning">
         <span class="context-menu__icon context-menu__icon--voicememo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.7 11.5a5.3 5.3 0 0 0 10.6 0M12 16.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         <span><strong>Voice Memos</strong><small>Record and replay short audio notes</small></span>
+      </button>
+      <button class="context-menu__item" data-module="photobooth" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--photobooth" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.5 9 5h6l1.5 2.5H19A2 2 0 0 1 21 9.5v8A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-7.5a2 2 0 0 1 2-2h2.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span><strong>Photobooth</strong><small>Take filtered photos with your webcam</small></span>
+      </button>
+      <button class="context-menu__item" data-module="mirror" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--mirror" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 4v16M9 7.5c-1.1 1.1-1.7 2.6-1.7 4.5s.6 3.4 1.7 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span><strong>Mirror</strong><small>Use the webcam as a classroom mirror</small></span>
+      </button>
+      <button class="context-menu__item" data-module="weather" data-category="tools planning">
+        <span class="context-menu__icon context-menu__icon--weather" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 16.5H18a3 3 0 0 0 .2-6 5.3 5.3 0 0 0-10-1.5A3.8 3.8 0 0 0 8.2 16.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5.5v-2M2.8 7.7H1M6.7 3.8 5.4 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span><strong>Weather</strong><small>Compare current weather in several places</small></span>
+      </button>
+      <button class="context-menu__item" data-module="temperature" data-category="tools science planning">
+        <span class="context-menu__icon context-menu__icon--temperature" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5a3 3 0 0 1 6 0v8.1a5 5 0 1 1-6 0V5Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="2.1" fill="currentColor"/></svg></span>
+        <span><strong>Temperature</strong><small>Show outdoor temperature your way</small></span>
       </button>
       <button class="context-menu__item" data-module="worldmap" data-category="geography">
         <span class="context-menu__icon context-menu__icon--worldmap" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.35"/></svg></span>
@@ -3289,6 +3305,69 @@
         <button class="custom-icon voicememo-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon voicememo-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="photobooth-template">
+    <section class="module photobooth-module" data-type="photobooth" data-bg="white" data-font="inter" data-text="dark" data-photo-filter="normal">
+      <button class="module-delete" aria-label="Delete photobooth tile">×</button><div class="module-drag-handle"></div>
+      <header class="photobooth-header"><div><span>CAMERA</span><strong class="photobooth-title" contenteditable="true" data-text-edit-mode="double">Photobooth</strong></div><span class="photobooth-camera-state"><i></i><b>OFF</b></span></header>
+      <div class="photobooth-stage">
+        <video class="photobooth-video" autoplay muted playsinline aria-label="Live photobooth preview"></video>
+        <div class="photobooth-placeholder"><span aria-hidden="true">◎</span><strong>Camera is off</strong><small>Start the camera to take a photo.</small></div>
+        <div class="photobooth-flash" aria-hidden="true"></div>
+      </div>
+      <div class="photobooth-actions"><button class="photobooth-camera-toggle" type="button">Start camera</button><button class="photobooth-shutter primary" type="button" disabled><span aria-hidden="true"></span>Take photo</button></div>
+      <div class="photobooth-filters" role="group" aria-label="Photo filter">
+        <button type="button" class="is-active" data-photo-filter-choice="normal">Normal</button><button type="button" data-photo-filter-choice="mono">Mono</button><button type="button" data-photo-filter-choice="sepia">Sepia</button><button type="button" data-photo-filter-choice="pop">Pop</button><button type="button" data-photo-filter-choice="cool">Cool</button><button type="button" data-photo-filter-choice="warm">Warm</button>
+      </div>
+      <section class="photobooth-drawer" aria-label="Taken photos">
+        <button class="photobooth-drawer-toggle" type="button" aria-expanded="false"><span>Photos <b class="photobooth-photo-count">0</b></span><small>Drag a photo onto the board</small><i aria-hidden="true">⌃</i></button>
+        <div class="photobooth-photo-list"></div>
+      </section>
+      <p class="photobooth-message" aria-live="polite">Photos stay in this board.</p>
+      <div class="customization-bar photobooth-customization" aria-label="Photobooth customization"><button class="custom-icon photobooth-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon photobooth-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon photobooth-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="mirror-template">
+    <section class="module mirror-module" data-type="mirror" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete mirror tile">×</button><div class="module-drag-handle"></div>
+      <header class="mirror-header"><div><span>CAMERA</span><strong class="mirror-title" contenteditable="true" data-text-edit-mode="double">Mirror</strong></div><span class="mirror-camera-state"><i></i><b>OFF</b></span></header>
+      <div class="mirror-stage"><video class="mirror-video" autoplay muted playsinline aria-label="Mirrored live camera view"></video><div class="mirror-placeholder"><span aria-hidden="true">◐</span><strong>Your mirror is ready</strong><small>Camera video stays on this device.</small></div></div>
+      <button class="mirror-toggle primary" type="button">Start mirror</button>
+      <p class="mirror-message" aria-live="polite">Camera is off.</p>
+      <div class="customization-bar mirror-customization" aria-label="Mirror customization"><button class="custom-icon mirror-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon mirror-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon mirror-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="weather-template">
+    <section class="module weather-module" data-type="weather" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete weather tile">×</button><div class="module-drag-handle"></div>
+      <header class="weather-header"><div><span>PLANNING</span><strong class="weather-title" contenteditable="true" data-text-edit-mode="double">Weather</strong></div><div class="weather-unit-toggle" role="group" aria-label="Temperature unit"><button type="button" class="is-active" data-weather-unit="f">°F</button><button type="button" data-weather-unit="c">°C</button></div></header>
+      <div class="weather-segments" aria-live="polite"></div>
+      <div class="weather-add-panel"><form class="weather-place-form"><input class="weather-place-input" type="search" maxlength="80" placeholder="Add a city or postal code…" aria-label="Weather place"><button type="submit">Add place</button></form><button class="weather-use-location" type="button">Use my location</button></div>
+      <div class="weather-status-row"><p class="weather-message" aria-live="polite">Finding your local weather…</p><small class="weather-credit">Weather: Open-Meteo · Air quality: CAMS ENSEMBLE</small></div>
+      <div class="customization-bar weather-customization" aria-label="Weather customization"><button class="custom-icon weather-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon weather-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon weather-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="temperature-template">
+    <section class="module temperature-module" data-type="temperature" data-bg="white" data-font="inter" data-text="dark" data-temperature-mode="number">
+      <button class="module-delete" aria-label="Delete temperature tile">×</button><div class="module-drag-handle"></div>
+      <header class="temperature-header"><div><span>OUTDOOR CONDITIONS</span><strong class="temperature-title" contenteditable="true" data-text-edit-mode="double">Temperature</strong></div><div class="temperature-unit-toggle" role="group" aria-label="Temperature unit"><button type="button" class="is-active" data-temperature-unit="f">°F</button><button type="button" data-temperature-unit="c">°C</button></div></header>
+      <div class="temperature-stage">
+        <div class="temperature-number-view"><span class="temperature-weather-icon" aria-hidden="true">○</span><strong class="temperature-value">—</strong><small class="temperature-condition">Finding local temperature…</small></div>
+        <div class="temperature-vertical-view"><div class="temperature-vertical-thermometer"><div class="temperature-vertical-fill"></div><i></i></div><div><strong class="temperature-vertical-value">—</strong><small class="temperature-vertical-condition">Outside now</small></div></div>
+        <div class="temperature-horizontal-view"><div class="temperature-horizontal-heading"><strong class="temperature-horizontal-value">—</strong><small class="temperature-horizontal-condition">Outside now</small></div><div class="temperature-horizontal-track"><div class="temperature-horizontal-fill"></div><i></i></div><div class="temperature-horizontal-labels"><small>Cold</small><small>Warm</small></div></div>
+      </div>
+      <div class="temperature-controls"><div class="temperature-mode-toggle" role="group" aria-label="Temperature display"><button type="button" class="is-active" data-temperature-mode-choice="number">Number</button><button type="button" data-temperature-mode-choice="vertical">Vertical</button><button type="button" data-temperature-mode-choice="horizontal">Horizontal</button></div><form class="temperature-place-form"><input class="temperature-place-input" type="search" maxlength="80" placeholder="City or postal code…" aria-label="Temperature place"><button type="submit">Set</button></form><button class="temperature-use-location" type="button">My location</button></div>
+      <p class="temperature-message" aria-live="polite">Finding your local temperature…</p>
+      <div class="customization-bar temperature-customization" aria-label="Temperature customization"><button class="custom-icon temperature-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon temperature-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon temperature-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
