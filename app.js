@@ -9985,8 +9985,8 @@ function setupSpinner(m){
 
     const arc=Math.PI*2/names.length;
     const wheelFont=getWheelFont();
-    const labelStart=72;
-    const labelEnd=r-24;
+    const labelStart=68;
+    const labelEnd=r-16;
     const labelWidth=labelEnd-labelStart;
 
     const fitLabel=(name,maxFont)=>{
@@ -10042,17 +10042,21 @@ function setupSpinner(m){
       const upsideDown=Math.cos(middle)<0;
       if(upsideDown)ctx.rotate(Math.PI);
       ctx.translate(upsideDown?-labelStart:labelStart,0);
-      ctx.fillStyle='#17202b';
+      ctx.fillStyle='#111820';
       ctx.textAlign=upsideDown?'right':'left';
       ctx.textBaseline='middle';
-      const maxFont=Math.max(8,Math.min(19,arc*105*.52));
+      const maxFont=Math.max(10,Math.min(24,arc*112*.72));
       const fitted=fitLabel(name,maxFont);
-      ctx.font=`850 ${fitted.fontSize}px ${wheelFont}`;
-      ctx.shadowColor='rgba(255,255,255,.72)';
-      ctx.shadowBlur=2;
-      const lineHeight=fitted.fontSize*1.04;
+      ctx.font=`950 ${fitted.fontSize}px ${wheelFont}`;
+      ctx.lineJoin='round';
+      ctx.strokeStyle='rgba(255,255,255,.78)';
+      ctx.lineWidth=Math.max(2.4,fitted.fontSize*.18);
+      ctx.shadowColor='rgba(255,255,255,.64)';
+      ctx.shadowBlur=1.5;
+      const lineHeight=fitted.fontSize*1.08;
       fitted.lines.forEach((line,lineIndex)=>{
         const y=(lineIndex-(fitted.lines.length-1)/2)*lineHeight;
+        ctx.strokeText(line,0,y);
         ctx.fillText(line,0,y);
       });
       ctx.restore();
