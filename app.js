@@ -8017,6 +8017,7 @@ function setupMoney(m){
   const countEl=m.querySelector('.money-count');
   const clearButton=m.querySelector('.money-clear');
   const empty=m.querySelector('.money-workspace-empty');
+  const pieceDeleteZone=m.querySelector('.money-piece-delete-zone');
 
   const denominations=[
     {id:'penny',label:'Penny',cents:1,src:'assets/money/penny.png'},
@@ -8110,6 +8111,7 @@ function setupMoney(m){
         offsetY=point.y-piece.y;
         el.setPointerCapture(event.pointerId);
         el.classList.add('is-dragging');
+        m.classList.add('is-dragging-money-piece');
       });
 
       el.addEventListener('pointermove',event=>{
@@ -8120,17 +8122,27 @@ function setupMoney(m){
         clampPiece(piece,el);
         el.style.left=`${piece.x}px`;
         el.style.top=`${piece.y}px`;
+        const deleteRect=pieceDeleteZone.getBoundingClientRect();
+        const overDelete=event.clientX>=deleteRect.left&&event.clientX<=deleteRect.right&&event.clientY>=deleteRect.top&&event.clientY<=deleteRect.bottom;
+        pieceDeleteZone.classList.toggle('is-armed',overDelete);
       });
 
-      const stopDrag=event=>{
+      const stopDrag=(event,{cancelled=false}={})=>{
         if(!dragging)return;
         dragging=false;
         el.classList.remove('is-dragging');
         try{el.releasePointerCapture(event.pointerId)}catch{}
+        const shouldDelete=!cancelled&&pieceDeleteZone.classList.contains('is-armed');
+        pieceDeleteZone.classList.remove('is-armed');
+        m.classList.remove('is-dragging-money-piece');
+        if(shouldDelete){
+          pieces=pieces.filter(item=>item.id!==piece.id);
+          renderPieces();
+        }
       };
 
       el.addEventListener('pointerup',stopDrag);
-      el.addEventListener('pointercancel',stopDrag);
+      el.addEventListener('pointercancel',event=>stopDrag(event,{cancelled:true}));
 
       el.addEventListener('dblclick',event=>{
         event.stopPropagation();

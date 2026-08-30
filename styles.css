@@ -10455,6 +10455,16 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
   font-size:11px;font-weight:800;opacity:.32;pointer-events:none
 }
 .money-workspace-empty[hidden]{display:none!important}
+.money-piece-delete-zone{
+  position:absolute;right:12px;bottom:12px;z-index:30;min-width:126px;height:48px;padding:0 14px;
+  border:2px dashed rgba(190,45,56,.38);border-radius:13px;background:rgba(255,236,238,.94);color:#a72431;
+  display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none;
+  opacity:0;transform:translateY(8px) scale(.94);transition:opacity .14s ease,transform .16s ease,background .14s ease,border-color .14s ease
+}
+.money-piece-delete-zone span{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:#bd2f3d;color:#fff;font-size:17px;line-height:1}
+.money-piece-delete-zone strong{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.035em}
+.money-module.is-dragging-money-piece .money-piece-delete-zone{opacity:1;transform:none}
+.money-piece-delete-zone.is-armed{border-color:#b71f2e;background:#ffdadd;transform:scale(1.06)!important}
 .money-piece{
   position:absolute;width:78px;height:78px;padding:0;border:0;background:transparent;cursor:grab;
   touch-action:none;filter:drop-shadow(0 5px 6px rgba(0,0,0,.14));
