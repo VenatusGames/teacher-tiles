@@ -635,7 +635,7 @@ const APP_TRANSLATIONS={
     'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
     'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
     'help.mouse.menu.title':'Add tiles','help.mouse.menu.copy':'Right-click empty board space to open the Add Tile menu.',
-    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Use the mouse wheel or trackpad scroll over the board.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Scroll over the board for fast zoom. Hold Shift while scrolling for precise 1% steps.',
     'help.mouse.move.title':'Move tiles','help.mouse.move.copy':'Drag anywhere on a tile that is not an active button, slider, canvas, or other control.',
     'help.mouse.snap.title':'Snap & group','help.mouse.snap.copy':'Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.',
     'help.mouse.tug.title':'Hold, then tug','help.mouse.tug.copy':'Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.',
@@ -670,7 +670,7 @@ const APP_TRANSLATIONS={
     'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
     'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
     'help.mouse.menu.title':'Añadir tiles','help.mouse.menu.copy':'Haz clic derecho en un espacio vacío para abrir el menú Añadir tile.',
-    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Usa la rueda del ratón o el desplazamiento del trackpad sobre el tablero.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Desplázate sobre el tablero para usar el zoom rápido. Mantén Shift mientras te desplazas para ajustar en pasos precisos del 1 %.',
     'help.mouse.move.title':'Mover tiles','help.mouse.move.copy':'Arrastra cualquier parte de un tile que no sea un botón, deslizador, lienzo u otro control activo.',
     'help.mouse.snap.title':'Acoplar y agrupar','help.mouse.snap.copy':'Coloca un tile junto a otro para acoplarlos en un grupo. Los tiles agrupados se mueven juntos y comparten una capa.',
     'help.mouse.tug.title':'Mantener y tirar','help.mouse.tug.copy':'Mantén pulsado un tile agrupado hasta que tiemble y luego tira venciendo la resistencia para separarlo y moverlo de forma independiente.',
@@ -698,7 +698,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
-    weather:['Weather','Compare current weather for several places'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
+    weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
@@ -712,13 +712,13 @@ const CONTEXT_MODULE_TRANSLATIONS={
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
-    weather:['Clima','Compara el clima actual de varios lugares'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
+    weather:['Clima','Compara el clima actual de varios lugares'],weatherwheel:['Rueda del clima','Señala el clima de hoy'],seasonwheel:['Rueda de estaciones','Explora primavera, verano, otoño e invierno'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
 };
 
 const runtimeInterfaceTranslations={};
 const interfaceTranslationRequests=new Map();
-const INTERFACE_TRANSLATION_CACHE_VERSION='v2';
+const INTERFACE_TRANSLATION_CACHE_VERSION='v4';
 
 function readCachedInterfaceTranslations(language){
   try{
@@ -989,13 +989,25 @@ const BOARD_MAX_ZOOM=1.8;
 const BOARD_OVERSCROLL=120;
 const zoomIndicator=document.getElementById('zoom-indicator');
 let zoomIndicatorTimer=0;
+let boardZoomIntentPercent=100;
+let boardZoomWheelAt=0;
+let boardZoomPrecision=false;
 
-function showZoomIndicator(scale=boardCamera.scale){
+function showZoomIndicator(scale=boardCamera.scale,{precise=boardZoomPrecision}={}){
   if(!zoomIndicator)return;
-  zoomIndicator.textContent=`${Math.round(scale*100)}%`;
+  zoomIndicator.replaceChildren();
+  const value=document.createElement('strong');
+  value.textContent=`${Math.round(scale*100)}%`;
+  zoomIndicator.appendChild(value);
+  if(precise){
+    const hint=document.createElement('small');
+    hint.textContent='SHIFT · 1% STEPS';
+    zoomIndicator.appendChild(hint);
+  }
+  zoomIndicator.classList.toggle('is-precise',precise);
   zoomIndicator.classList.add('is-visible');
   clearTimeout(zoomIndicatorTimer);
-  zoomIndicatorTimer=setTimeout(()=>zoomIndicator.classList.remove('is-visible'),720);
+  if(!precise)zoomIndicatorTimer=setTimeout(()=>zoomIndicator.classList.remove('is-visible'),720);
 }
 
 workspace.style.width=`${BOARD_WIDTH}px`;
@@ -1036,10 +1048,26 @@ centerBoardCamera();
 workspace.addEventListener('wheel',e=>{
   if(e.ctrlKey)return;
   e.preventDefault();
-  if(!e.deltaY)return;
-  const nextPercent=clamp(Math.round(boardCamera.scale*100)+(e.deltaY<0?1:-1),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
-  const next=nextPercent/100;
-  showZoomIndicator(next);
+  const wheelDelta=e.deltaY||e.deltaX;
+  if(!wheelDelta)return;
+  const now=performance.now();
+  let next;
+  if(e.shiftKey){
+    boardZoomPrecision=true;
+    boardZoomIntentPercent=Math.round(boardCamera.scale*100);
+    boardZoomWheelAt=now;
+    const nextPercent=clamp(boardZoomIntentPercent+(wheelDelta<0?1:-1),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
+    boardZoomIntentPercent=nextPercent;
+    next=nextPercent/100;
+  }else{
+    boardZoomPrecision=false;
+    if(now-boardZoomWheelAt>220)boardZoomIntentPercent=Math.round(boardCamera.scale*100);
+    boardZoomWheelAt=now;
+    const delta=e.deltaMode===1?wheelDelta*16:e.deltaMode===2?wheelDelta*innerHeight:wheelDelta;
+    boardZoomIntentPercent=clamp(boardZoomIntentPercent-delta*.12*(appPreferences.scrollSpeed/100),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
+    next=clamp(Math.round(boardZoomIntentPercent)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  }
+  showZoomIndicator(next,{precise:e.shiftKey});
   if(Math.abs(next-boardCamera.scale)<.0001)return;
   const anchor=screenToBoard(e.clientX,e.clientY);
   boardCamera.scale=next;
@@ -1047,6 +1075,21 @@ workspace.addEventListener('wheel',e=>{
   boardCamera.y=e.clientY-anchor.y*next;
   applyBoardCamera();
 },{passive:false});
+
+window.addEventListener('keydown',event=>{
+  if(event.key!=='Shift'||event.repeat)return;
+  boardZoomPrecision=true;
+  showZoomIndicator(boardCamera.scale,{precise:true});
+});
+window.addEventListener('keyup',event=>{
+  if(event.key!=='Shift')return;
+  boardZoomPrecision=false;
+  showZoomIndicator(boardCamera.scale,{precise:false});
+});
+window.addEventListener('blur',()=>{
+  boardZoomPrecision=false;
+  zoomIndicator?.classList.remove('is-precise','is-visible');
+});
 
 function beginBoardPan(e){
   closeMenu();
@@ -1509,6 +1552,8 @@ function setupModuleByType(m,type){
   if(type==='photobooth')setupPhotobooth(m);
   if(type==='mirror')setupMirror(m);
   if(type==='weather')setupWeather(m);
+  if(type==='weatherwheel')setupWeatherWheel(m);
+  if(type==='seasonwheel')setupSeasonWheel(m);
   if(type==='temperature')setupTemperature(m);
   if(type==='worldmap')setupWorldMap(m);
   if(type==='compass')setupCompass(m);
@@ -5343,6 +5388,8 @@ const EDITABLE_TILE_HEADINGS={
   photobooth:'.photobooth-title',
   mirror:'.mirror-title',
   weather:'.weather-title',
+  weatherwheel:'.weatherwheel-title',
+  seasonwheel:'.seasonwheel-title',
   temperature:'.temperature-title'
 };
 
@@ -6359,6 +6406,175 @@ function setupWeather(m){
   queueMicrotask(()=>{if(!restored)loadLocal()});
   const prior=m._cleanup;
   m._cleanup=()=>{prior?.();disposed=true;controller.abort()};
+}
+
+const WEATHER_WHEEL_ITEMS=[
+  {name:'Sunny',icon:'☀️',color:'#ffd66b'},
+  {name:'Partly cloudy',icon:'🌤️',color:'#bcdff4'},
+  {name:'Cloudy',icon:'☁️',color:'#b8c3d1'},
+  {name:'Rainy',icon:'🌧️',color:'#77b6df'},
+  {name:'Stormy',icon:'⛈️',color:'#8b82b8'},
+  {name:'Snowy',icon:'🌨️',color:'#d8edf7'},
+  {name:'Windy',icon:'💨',color:'#9bd8d0'},
+  {name:'Foggy',icon:'🌫️',color:'#c8ced3'}
+];
+const SEASON_WHEEL_ITEMS=[
+  {name:'Spring',icon:'🌷',color:'#a9dfa9'},
+  {name:'Summer',icon:'☀️',color:'#ffd66b'},
+  {name:'Fall',icon:'🍂',color:'#e9a064'},
+  {name:'Winter',icon:'❄️',color:'#a9d8ee'}
+];
+
+function weatherWheelIndex(code){
+  const value=Number(code);
+  if(value===0||value===1)return 0;
+  if(value===2)return 1;
+  if(value===3)return 2;
+  if(value===45||value===48)return 7;
+  if((value>=51&&value<=67)||(value>=80&&value<=82))return 3;
+  if((value>=71&&value<=77)||(value>=85&&value<=86))return 5;
+  if(value>=95)return 4;
+  return 1;
+}
+
+function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
+  const title=bindEditableModuleTitle(m,titleSelector,titleFallback);
+  const face=m.querySelector('.choicewheel-face');
+  const options=m.querySelector('.choicewheel-options');
+  const pointer=m.querySelector('.choicewheel-pointer');
+  const current=m.querySelector('.choicewheel-current');
+  const selection=m.querySelector('.choicewheel-selection');
+  const sector=360/items.length;
+  let selected=0;
+  let manual=false;
+
+  m.style.setProperty('--choicewheel-count',String(items.length));
+  m.style.setProperty('--choicewheel-offset',`${-sector/2}deg`);
+  m.style.setProperty('--choicewheel-colors',items.map((item,index)=>`${item.color} ${index*sector}deg ${(index+1)*sector}deg`).join(','));
+
+  const renderSelection=(index,{angle=index*sector,notify=false,manualChoice=manual}={})=>{
+    selected=(Math.round(Number(index))%items.length+items.length)%items.length;
+    manual=Boolean(manualChoice);
+    pointer.style.setProperty('--pointer-angle',`${angle}deg`);
+    pointer.setAttribute('aria-valuenow',String(selected));
+    pointer.setAttribute('aria-valuetext',items[selected].name);
+    options.querySelectorAll('.choicewheel-option').forEach((option,optionIndex)=>option.classList.toggle('is-active',optionIndex===selected));
+    selection.textContent=`Arrow points to ${items[selected].name}`;
+    if(notify)notifyBoardChanged(`${m.dataset.type}-selection`);
+  };
+
+  items.forEach((item,index)=>{
+    const angle=index*sector*Math.PI/180;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='choicewheel-option';
+    button.style.left=`${50+Math.sin(angle)*35}%`;
+    button.style.top=`${50-Math.cos(angle)*35}%`;
+    button.style.setProperty('--choice-color',item.color);
+    button.setAttribute('aria-label',`Point to ${item.name}`);
+    const icon=document.createElement('span');icon.textContent=item.icon;icon.setAttribute('aria-hidden','true');
+    const label=document.createElement('strong');label.textContent=item.name;
+    button.append(icon,label);
+    button.addEventListener('click',event=>{event.stopPropagation();renderSelection(index,{notify:true,manualChoice:true})});
+    options.appendChild(button);
+  });
+
+  const indexFromPointer=event=>{
+    const rect=face.getBoundingClientRect();
+    const dx=event.clientX-(rect.left+rect.width/2);
+    const dy=event.clientY-(rect.top+rect.height/2);
+    const angle=(Math.atan2(dy,dx)*180/Math.PI+90+360)%360;
+    return{angle,index:Math.round(angle/sector)%items.length};
+  };
+  face.addEventListener('pointerdown',event=>{
+    if(event.button!==0||event.target.closest('.choicewheel-option'))return;
+    event.preventDefault();event.stopPropagation();
+    pointer.focus({preventScroll:true});
+    const pointerId=event.pointerId;
+    face.setPointerCapture?.(pointerId);
+    m.classList.add('is-wheel-dragging');
+    const move=moveEvent=>{
+      if(moveEvent.pointerId!==pointerId)return;
+      moveEvent.preventDefault();moveEvent.stopPropagation();
+      const next=indexFromPointer(moveEvent);
+      renderSelection(next.index,{angle:next.angle,manualChoice:true});
+    };
+    const end=endEvent=>{
+      if(endEvent.pointerId!==pointerId)return;
+      face.removeEventListener('pointermove',move);
+      face.removeEventListener('pointerup',end);
+      face.removeEventListener('pointercancel',end);
+      m.classList.remove('is-wheel-dragging');
+      renderSelection(selected,{notify:true,manualChoice:true});
+    };
+    move(event);
+    face.addEventListener('pointermove',move);
+    face.addEventListener('pointerup',end);
+    face.addEventListener('pointercancel',end);
+  });
+  pointer.addEventListener('keydown',event=>{
+    let next=null;
+    if(event.key==='ArrowRight'||event.key==='ArrowDown')next=selected+1;
+    if(event.key==='ArrowLeft'||event.key==='ArrowUp')next=selected-1;
+    if(event.key==='Home')next=0;
+    if(event.key==='End')next=items.length-1;
+    if(next===null)return;
+    event.preventDefault();event.stopPropagation();
+    renderSelection(next,{notify:true,manualChoice:true});
+  });
+  m.querySelector('.choicewheel-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.choicewheel-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  current.textContent=currentLabel;
+  renderSelection(0,{manualChoice:false});
+  return{
+    setCurrent(text,index){current.textContent=text;if(!manual)renderSelection(index,{manualChoice:false})},
+    setStatus(text){current.textContent=text},
+    getState:()=>({title:title.get(),selected,manual}),
+    setState(saved){title.set(saved?.title);selected=clamp(Math.round(Number(saved?.selected)||0),0,items.length-1);manual=Boolean(saved?.manual);renderSelection(selected,{manualChoice:manual})}
+  };
+}
+
+function setupWeatherWheel(m){
+  const wheel=setupChoiceWheel(m,{items:WEATHER_WHEEL_ITEMS,titleSelector:'.weatherwheel-title',titleFallback:'Weather Wheel',currentLabel:'Finding local weather…'});
+  const controller=new AbortController();
+  let disposed=false;
+  const loadCurrent=async()=>{
+    try{
+      const coords=await requestLocalCoordinates();
+      const conditions=await fetchCurrentConditions({name:'My location',...coords},controller.signal,{extended:false});
+      const info=weatherCodeInfo(conditions.code);
+      wheel.setCurrent(`${info[1]} ${info[0]} · ${displayTemperature(conditions.tempC,'f')}`,weatherWheelIndex(conditions.code));
+    }catch(error){
+      if(error?.name!=='AbortError')wheel.setStatus(error?.code===1?'Location is off — choose the weather by hand.':'Current weather is unavailable — choose by hand.');
+    }
+  };
+  m._boardGetState=()=>wheel.getState();
+  m._boardSetState=saved=>wheel.setState(saved);
+  queueMicrotask(()=>{if(!disposed)loadCurrent()});
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true;controller.abort()};
+}
+
+function setupSeasonWheel(m){
+  const wheel=setupChoiceWheel(m,{items:SEASON_WHEEL_ITEMS,titleSelector:'.seasonwheel-title',titleFallback:'Season Wheel',currentLabel:'Checking the current season…'});
+  let disposed=false;
+  const currentSeasonIndex=southern=>{
+    const month=new Date().getMonth();
+    let index=month>=2&&month<=4?0:month>=5&&month<=7?1:month>=8&&month<=10?2:3;
+    if(southern)index=(index+2)%4;
+    return index;
+  };
+  const loadCurrent=async()=>{
+    if(disposed)return;
+    const index=currentSeasonIndex(false);
+    wheel.setCurrent(`${SEASON_WHEEL_ITEMS[index].icon} ${SEASON_WHEEL_ITEMS[index].name} · Northern Hemisphere`,index);
+  };
+  m._boardGetState=()=>wheel.getState();
+  m._boardSetState=saved=>wheel.setState(saved);
+  queueMicrotask(loadCurrent);
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true};
 }
 
 function setupTemperature(m){

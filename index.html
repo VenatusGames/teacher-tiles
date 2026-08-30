@@ -439,7 +439,7 @@
                 <div><span class="help-mouse-icon">↔</span><p><strong data-i18n="help.mouse.pan.title">Pan the board</strong><small data-i18n="help.mouse.pan.copy">Left-drag empty board space or middle-mouse drag anywhere on the board.</small></p></div>
                 <div><span class="help-mouse-icon">⇧</span><p><strong data-i18n="help.mouse.select.title">Group select</strong><small data-i18n="help.mouse.select.copy">Hold Shift and left-drag empty space to draw a selection box.</small></p></div>
                 <div><span class="help-mouse-icon">☰</span><p><strong data-i18n="help.mouse.menu.title">Add tiles</strong><small data-i18n="help.mouse.menu.copy">Right-click empty board space to open the Add Tile menu.</small></p></div>
-                <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Use the mouse wheel or trackpad scroll over the board.</small></p></div>
+                <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Scroll over the board for fast zoom. Hold Shift while scrolling for precise 1% steps.</small></p></div>
                 <div><span class="help-mouse-icon">✥</span><p><strong data-i18n="help.mouse.move.title">Move tiles</strong><small data-i18n="help.mouse.move.copy">Drag anywhere on a tile that is not an active button, slider, canvas, or other control.</small></p></div>
                 <div><span class="help-mouse-icon">⧉</span><p><strong data-i18n="help.mouse.snap.title">Snap &amp; group</strong><small data-i18n="help.mouse.snap.copy">Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.</small></p></div>
                 <div><span class="help-mouse-icon">↝</span><p><strong data-i18n="help.mouse.tug.title">Hold, then tug</strong><small data-i18n="help.mouse.tug.copy">Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.</small></p></div>
@@ -1372,6 +1372,14 @@
       <button class="context-menu__item" data-module="weather" data-category="tools planning">
         <span class="context-menu__icon context-menu__icon--weather" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 16.5H18a3 3 0 0 0 .2-6 5.3 5.3 0 0 0-10-1.5A3.8 3.8 0 0 0 8.2 16.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5.5v-2M2.8 7.7H1M6.7 3.8 5.4 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
         <span><strong>Weather</strong><small>Compare current weather in several places</small></span>
+      </button>
+      <button class="context-menu__item" data-module="weatherwheel" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--choicewheel" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.5V12l5.9-6M12 12l8.4 2M12 12l-4.6 7.2M12 12 3.8 9" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="m12 12 1.2-5.6 1.5 5.5-2.7.1Z" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span>
+        <span><strong>Weather Wheel</strong><small>Point to today’s weather</small></span>
+      </button>
+      <button class="context-menu__item" data-module="seasonwheel" data-category="tools science">
+        <span class="context-menu__icon context-menu__icon--choicewheel" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.5v17M3.5 12h17" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="m12 12 4.9-4.3-3.2 5.8-1.7-1.5Z" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span>
+        <span><strong>Season Wheel</strong><small>Explore spring, summer, fall, and winter</small></span>
       </button>
       <button class="context-menu__item" data-module="temperature" data-category="tools science planning">
         <span class="context-menu__icon context-menu__icon--temperature" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5a3 3 0 0 1 6 0v8.1a5 5 0 1 1-6 0V5Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="2.1" fill="currentColor"/></svg></span>
@@ -3372,6 +3380,34 @@
       <div class="weather-add-panel"><form class="weather-place-form"><input class="weather-place-input" type="search" maxlength="80" placeholder="Add a city or postal code…" aria-label="Weather place"><button type="submit">Add place</button></form><button class="weather-use-location" type="button">Use my location</button></div>
       <div class="weather-status-row"><p class="weather-message" aria-live="polite">Finding your local weather…</p><small class="weather-credit">Weather: Open-Meteo · Air quality: CAMS ENSEMBLE</small></div>
       <div class="customization-bar weather-customization" aria-label="Weather customization"><button class="custom-icon weather-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon weather-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon weather-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="weatherwheel-template">
+    <section class="module choicewheel-module weatherwheel-module" data-type="weatherwheel" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete weather wheel">×</button><div class="module-drag-handle"></div>
+      <header class="choicewheel-header"><strong class="weatherwheel-title" contenteditable="true" data-text-edit-mode="double">Weather Wheel</strong><span class="choicewheel-state"><i></i><b>CURRENT</b></span></header>
+      <div class="choicewheel-stage">
+        <div class="choicewheel-face" role="group" aria-label="Weather choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Weather wheel pointer" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
+        <div class="choicewheel-readout"><span>Current weather</span><strong class="choicewheel-current">Finding local weather…</strong><small class="choicewheel-selection">Arrow points to Sunny</small></div>
+      </div>
+      <p class="choicewheel-hint">Drag the arrow or tap a picture to choose the weather.</p>
+      <div class="customization-bar choicewheel-customization" aria-label="Weather wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="seasonwheel-template">
+    <section class="module choicewheel-module seasonwheel-module" data-type="seasonwheel" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete season wheel">×</button><div class="module-drag-handle"></div>
+      <header class="choicewheel-header"><strong class="seasonwheel-title" contenteditable="true" data-text-edit-mode="double">Season Wheel</strong><span class="choicewheel-state"><i></i><b>NOW</b></span></header>
+      <div class="choicewheel-stage">
+        <div class="choicewheel-face" role="group" aria-label="Season choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Season wheel pointer" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
+        <div class="choicewheel-readout"><span>Current season</span><strong class="choicewheel-current">Checking the season…</strong><small class="choicewheel-selection">Arrow points to Spring</small></div>
+      </div>
+      <p class="choicewheel-hint">Drag the arrow or tap a picture to choose a season.</p>
+      <div class="customization-bar choicewheel-customization" aria-label="Season wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
