@@ -1266,7 +1266,7 @@ const menuCategoryCycle=menu.querySelector('.context-menu__category-cycle');
 const menuCategoryCycleLabel=menu.querySelector('.context-menu__category-cycle-label');
 const menuDrawerFilters=[...menu.querySelectorAll('[data-category-drawer-filter]')];
 const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
-const menuCategoryDrawerToggle=menu.querySelector('.context-menu__category-drawer-toggle');
+const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
 const menuCategoryOrder=['all','text','media','tools','time','audio','games','literacy','math','science','planning','pbis','sel'];
@@ -1312,7 +1312,7 @@ function setMenuCategory(category='all'){
   activeMenuCategory=menuCategoryOrder.includes(category)?category:'all';
   const label=menuCategoryLabel(activeMenuCategory);
   if(menuCategoryCycleLabel)menuCategoryCycleLabel.textContent=label;
-  if(menuCategoryCycle)menuCategoryCycle.setAttribute('aria-label',`Showing ${label}. Click to show the next category.`);
+  if(menuCategoryCycle)menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
   menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===activeMenuCategory));
   applyMenuView();
 }
@@ -1322,10 +1322,7 @@ function setMenuCategoryDrawer(open){
   menu.classList.toggle('has-category-drawer',show);
   menuCategoryDrawerToggle?.setAttribute('aria-expanded',String(show));
   menuCategoryDrawer?.setAttribute('aria-hidden',String(!show));
-  if(show){
-    const rect=menu.getBoundingClientRect();
-    menu.classList.toggle('category-drawer-left',innerWidth-rect.right<244&&rect.left>=244);
-  }else menu.classList.remove('category-drawer-left');
+  menu.classList.remove('category-drawer-left');
 }
 
 function clearMenuSearch(){
@@ -1336,15 +1333,13 @@ function clearMenuSearch(){
 
 menuCategoryCycle?.addEventListener('click',event=>{
   event.stopPropagation();
-  const current=Math.max(0,menuCategoryOrder.indexOf(activeMenuCategory));
-  setMenuCategory(menuCategoryOrder[(current+1)%menuCategoryOrder.length]);
+  setMenuCategoryDrawer(!menu.classList.contains('has-category-drawer'));
 });
 menuDrawerFilters.forEach(b=>b.addEventListener('click',e=>{
   e.stopPropagation();
   setMenuCategory(b.dataset.categoryDrawerFilter);
   setMenuCategoryDrawer(false);
 }));
-menuCategoryDrawerToggle?.addEventListener('click',event=>{event.stopPropagation();setMenuCategoryDrawer(!menu.classList.contains('has-category-drawer'))});
 menuCategoryDrawerClose?.addEventListener('click',event=>{event.stopPropagation();setMenuCategoryDrawer(false)});
 
 menuSearch?.addEventListener('input',applyMenuView);

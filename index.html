@@ -1265,14 +1265,12 @@
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
       <div class="context-menu__category-rail">
-        <button type="button" class="context-menu__category-cycle" aria-label="Cycle tile category" title="Click to show the next category">
+        <button type="button" class="context-menu__category-cycle" aria-label="Choose tile category" title="Choose tile category" aria-expanded="false" aria-controls="context-menu-category-drawer">
           <span class="context-menu__category-cycle-copy"><small>Category</small><strong class="context-menu__category-cycle-label">ALL</strong></span>
-        </button>
-        <button type="button" class="context-menu__category-drawer-toggle" aria-label="Open all categories" title="Open all categories" aria-expanded="false" aria-controls="context-menu-category-drawer">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+          <svg class="context-menu__category-cycle-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
         </button>
         <div id="context-menu-category-drawer" class="context-menu__category-drawer" aria-hidden="true">
-          <div class="context-menu__category-drawer-head"><strong>All categories</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
+          <div class="context-menu__category-drawer-head"><strong>Choose a category</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
           <div class="context-menu__category-drawer-grid" role="tablist" aria-label="All module categories">
             <button type="button" class="context-menu__filter context-menu__category-drawer-all" data-category-drawer-filter="all" data-i18n="context.all">ALL</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="text" data-i18n="context.cat.text">TEXT</button>
