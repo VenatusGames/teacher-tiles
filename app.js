@@ -8334,6 +8334,7 @@ function setupCollectionShelf(){
     'default-sticker-drawer':'classroom teacher school sticker stickers',
     'emoji-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions celebration',
     'nature-emojis-sticker-drawer':'nature outdoors plant plants botanical botanicals weather sky',
+    'weather-emojis-sticker-drawer':'weather forecast climate sun sunny cloud cloudy rain rainy storm thunder lightning snow snowy fog foggy wind windy tornado rainbow',
     'animal-emojis-sticker-drawer':'animal animals pet pets wildlife insect insects critter critters',
     'more-faces-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions emotion emotions',
     'symbols-sticker-drawer':'symbol symbols classroom math mark marks sign signs',
@@ -8602,6 +8603,11 @@ function populateGeneratedStickerPacks(){
     ['💖','Sparkling heart'],['💗','Growing heart'],['💓','Beating heart'],['💕','Two hearts'],['💞','Revolving hearts'],['💝','Heart with ribbon'],
     ['💘','Heart with arrow'],['💟','Heart decoration'],['❤️‍🔥','Heart on fire'],['❤️‍🩹','Mending heart']
   ].map(([emoji,name])=>({emoji,name}));
+  const weatherEmojis=[
+    ['☀️','Sunny'],['🌤️','Mostly sunny'],['⛅','Partly cloudy'],['🌥️','Mostly cloudy'],['☁️','Cloudy'],['🌦️','Sun shower'],['🌧️','Rainy'],
+    ['⛈️','Thunderstorm'],['🌩️','Lightning'],['🌨️','Snow showers'],['❄️','Snowflake'],['🌫️','Foggy'],['💨','Windy'],['🌪️','Tornado']
+  ].map(([emoji,name])=>({emoji,name}));
+  fill('weather-emojis',weatherEmojis);
   fill('colored-hearts',coloredHearts);
   fill('decorative-hearts',decorativeHearts);
 

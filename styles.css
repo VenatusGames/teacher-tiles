@@ -12655,6 +12655,7 @@ body.dark .shop-coins-button{background:linear-gradient(135deg,#493c19,var(--sur
   white-space:nowrap;
 }
 .shop-product__preview--emoji-nature{background:linear-gradient(145deg,#eef9ec,#eef8ff)}
+.shop-product__preview--emoji-weather{background:linear-gradient(145deg,#e7f6ff,#f7f2ff)}
 .shop-product__preview--emoji-animals{background:linear-gradient(145deg,#fff5df,#f1f7ff)}
 .shop-product__preview--emoji-faces{background:linear-gradient(145deg,#fff4c9,#ffeef4)}
 .shop-product__preview--emoji-symbols{background:linear-gradient(145deg,#f1f3f7,#f9f5ff)}
