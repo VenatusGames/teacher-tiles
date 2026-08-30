@@ -259,6 +259,53 @@ function fitNameModuleToRoster(module,count,{namesPerRow=5,rowHeight=31,threshol
   module.style.height=`${desired}px`;
 }
 
+function bindStudentPointerDrag(chip,name,module,onDrop){
+  let pointerId=null;
+  let startX=0,startY=0;
+  let active=false;
+  let ghost=null;
+
+  const cleanup=()=>{
+    ghost?.remove();ghost=null;active=false;pointerId=null;
+    chip.classList.remove('is-dragging');
+    module.classList.remove('is-dragging-student');
+    module.querySelectorAll('.is-drop-target').forEach(node=>node.classList.remove('is-drop-target'));
+  };
+
+  chip.draggable=false;
+  chip.addEventListener('pointerdown',event=>{
+    if(event.button!==0||event.target.closest('button'))return;
+    pointerId=event.pointerId;startX=event.clientX;startY=event.clientY;
+    chip.setPointerCapture(pointerId);
+  });
+  chip.addEventListener('pointermove',event=>{
+    if(event.pointerId!==pointerId)return;
+    if(!active&&Math.hypot(event.clientX-startX,event.clientY-startY)<5)return;
+    if(!active){
+      active=true;chip.classList.add('is-dragging');module.classList.add('is-dragging-student');
+      ghost=document.createElement('div');ghost.className='student-drag-ghost';ghost.textContent=name;document.body.appendChild(ghost);
+    }
+    ghost.style.left=`${event.clientX}px`;ghost.style.top=`${event.clientY}px`;
+    ghost.hidden=true;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-student-drop-target]');
+    ghost.hidden=false;
+    module.querySelectorAll('.is-drop-target').forEach(node=>node.classList.remove('is-drop-target'));
+    if(target&&module.contains(target))target.classList.add('is-drop-target');
+  });
+  const finish=event=>{
+    if(event.pointerId!==pointerId)return;
+    try{chip.releasePointerCapture(pointerId)}catch{}
+    if(active){
+      ghost.hidden=true;
+      const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-student-drop-target]');
+      if(target&&module.contains(target))onDrop(target.dataset.studentDropTarget||'');
+    }
+    cleanup();
+  };
+  chip.addEventListener('pointerup',finish);
+  chip.addEventListener('pointercancel',cleanup);
+}
+
 function setupProfileClasses(){
   const openButton=document.getElementById('profile-classes-button');
   const panel=document.getElementById('profile-classes-panel');
@@ -1393,10 +1440,10 @@ function isInteractiveModuleTarget(target,m){
   if(target.closest('.module-drag-handle'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return textField.classList.contains('module-text-edit-active');
-  if(target.closest('button,input,select,textarea,[contenteditable],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
+  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
-    if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='not-allowed'||cursor.includes('resize'))return true;
+    if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='grab'||cursor==='grabbing'||cursor==='not-allowed'||cursor.includes('resize'))return true;
   }
   return false;
 }
