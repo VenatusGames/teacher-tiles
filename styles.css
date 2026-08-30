@@ -2680,7 +2680,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
 .context-menu__category-cycle:hover .context-menu__category-cycle-icon{opacity:1}
 .context-menu__category-cycle[aria-expanded="true"] .context-menu__category-cycle-icon{transform:rotate(180deg)}
 .context-menu__category-cycle[aria-expanded="true"]{background:color-mix(in srgb,var(--surface-soft) 72%,var(--text) 10%)}
-.context-menu__category-drawer{position:absolute;z-index:4;left:1px;right:1px;top:calc(100% + 6px);width:auto;padding:9px;border:1px solid var(--border);border-radius:13px;background:var(--surface-solid,var(--surface));box-shadow:0 18px 48px rgba(15,23,42,.2);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-7px) scale(.985);transform-origin:center top;transition:opacity .16s ease,transform .18s cubic-bezier(.2,.85,.25,1),visibility .16s}
+.context-menu__category-drawer{position:absolute;z-index:4;left:var(--category-drawer-offset,1px);right:auto;top:calc(100% + 6px);width:var(--category-drawer-width,calc(100% - 2px));max-width:calc(100vw - 16px);padding:9px;border:1px solid var(--border);border-radius:13px;background:var(--surface-solid,var(--surface));box-shadow:0 18px 48px rgba(15,23,42,.2);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-7px) scale(.985);transform-origin:center top;transition:opacity .16s ease,transform .18s cubic-bezier(.2,.85,.25,1),visibility .16s}
 .context-menu.has-category-drawer{overflow:visible!important}
 .context-menu.has-category-drawer .context-menu__category-drawer{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1)}
 .context-menu__category-drawer-head{height:29px;display:flex;align-items:center;justify-content:space-between;padding:0 2px 6px 5px}
@@ -2688,7 +2688,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
 .context-menu__category-drawer-close{width:24px;height:24px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:18px;line-height:1}
 .context-menu__category-drawer-close:hover{background:var(--surface-soft);color:var(--text)}
 .context-menu__category-drawer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-.context-menu__category-drawer-grid .context-menu__filter{min-width:0;min-height:34px;height:auto;padding:5px 3px;white-space:normal;overflow:visible;overflow-wrap:anywhere;word-break:normal;font-size:clamp(6px,2.2cqw,8px);line-height:1.05;text-align:center}
+.context-menu__category-drawer-grid .context-menu__filter{min-width:0;min-height:34px;height:auto;padding:5px 7px;white-space:normal;overflow:visible;overflow-wrap:break-word;word-break:normal;font-size:9px;line-height:1.08;text-align:center}
 .context-menu__category-drawer-all{grid-column:1/-1}
 .context-menu.is-searching .context-menu__category-rail{display:none}
 
@@ -13745,9 +13745,8 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 .groupmaker-name-chip,.lunchcount-student-chip,.voting-student-chip,.spinner-name-chip{min-height:29px;padding:4px 5px 4px 10px!important;border-color:color-mix(in srgb,var(--module-text,#17191d) 10%,transparent)!important;background:color-mix(in srgb,var(--module-bg,#fff) 89%,var(--module-text,#17191d) 11%)!important;box-shadow:0 3px 9px rgba(15,23,42,.045);cursor:grab;user-select:none}.groupmaker-name-chip:active,.lunchcount-student-chip:active,.voting-student-chip:active{cursor:grabbing}.groupmaker-name-chip button,.lunchcount-student-chip>button,.voting-student-chip>button,.spinner-name-chip button{opacity:0;transform:scale(.82);transition:opacity .12s ease,transform .12s ease,background .12s ease}.groupmaker-name-chip:hover button,.groupmaker-name-chip button:focus,.lunchcount-student-chip:hover>button,.lunchcount-student-chip>button:focus,.voting-student-chip:hover>button,.voting-student-chip>button:focus,.spinner-name-chip:hover button,.spinner-name-chip button:focus{opacity:1;transform:scale(1)}
 .lunchcount-inline-actions,.voting-inline-actions{right:14px;bottom:54px}.groupmaker-customization,.lunchcount-customization,.voting-customization,.spinner-customization{bottom:9px}.groupmaker-name-list,.spinner-name-list,.lunchcount-pool-list,.voting-pool-list{gap:7px;padding:5px;border:0;background:transparent}
 
-/* Final interaction polish for tile headers, category labels, cameras, weather, and maps. */
+/* Final interaction polish for tile headers, cameras, weather, and maps. */
 .module span:has(+ .editable-tile-heading){display:none!important}
-.context-menu__category-drawer-grid [data-category-drawer-filter="accessibility"]{font-size:6px;letter-spacing:-.04em;white-space:nowrap;overflow-wrap:normal;word-break:normal}
 .photobooth-placeholder,.mirror-placeholder{width:100%;border:0;padding:12px;font-family:inherit;cursor:pointer}
 .weather-module{height:490px;min-height:420px}
 .weather-weekly{margin-top:8px}
@@ -13792,8 +13791,6 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 /* Fast wheel zoom with a discoverable Shift precision mode. */
 .zoom-indicator{width:auto;min-width:66px;height:auto;min-height:35px;display:flex;align-items:center;justify-content:center;gap:9px}.zoom-indicator strong{font:inherit}.zoom-indicator small{padding:4px 7px;border-radius:7px;background:color-mix(in srgb,var(--text) 10%,transparent);font-size:8px;font-weight:950;letter-spacing:.06em;white-space:nowrap}.zoom-indicator.is-precise{border-color:color-mix(in srgb,#4c8ed9 45%,var(--border));box-shadow:0 10px 28px rgba(37,93,153,.2)}
 
-/* Keep long category names readable and make multi-place weather scrolling obvious. */
-.context-menu__category-drawer-grid [data-category-drawer-filter="accessibility"]{grid-column:1/-1;justify-self:center;width:120px;padding-inline:4px;font-size:10px;letter-spacing:-.035em;white-space:nowrap;overflow-wrap:normal;word-break:normal}
-.context-menu__category-cycle[data-active-category="accessibility"] .context-menu__category-cycle-label{font-size:13px;line-height:1;letter-spacing:-.045em;white-space:nowrap;overflow-wrap:normal;word-break:normal}
+/* Keep multi-place weather scrolling obvious. */
 .weather-segments{overflow-x:auto!important;overflow-y:hidden!important;padding-bottom:10px;scrollbar-color:color-mix(in srgb,var(--module-text,#17191d) 35%,transparent) color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);scrollbar-width:auto}
 .weather-segments::-webkit-scrollbar{height:10px}.weather-segments::-webkit-scrollbar-track{border-radius:999px;background:color-mix(in srgb,var(--module-text,#17191d) 8%,transparent)}.weather-segments::-webkit-scrollbar-thumb{border:2px solid color-mix(in srgb,var(--module-bg,#fff) 92%,transparent);border-radius:999px;background:color-mix(in srgb,var(--module-text,#17191d) 34%,transparent)}.weather-segments::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--module-text,#17191d) 48%,transparent)}
