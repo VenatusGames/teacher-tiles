@@ -379,6 +379,26 @@
                 <select id="settings-language" class="settings-select">
                   <option value="en">English</option>
                   <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="it">Italiano</option>
+                  <option value="pt">Português</option>
+                  <option value="zh-CN">中文（简体）</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                  <option value="ar">العربية</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="ru">Русский</option>
+                  <option value="uk">Українська</option>
+                  <option value="pl">Polski</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="tr">Türkçe</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="tl">Filipino</option>
+                  <option value="ht">Kreyòl ayisyen</option>
+                  <option value="el">Ελληνικά</option>
+                  <option value="he">עברית</option>
+                  <option value="sv">Svenska</option>
                 </select>
               </label>
             </div>
@@ -3315,7 +3335,7 @@
       <header class="photobooth-header"><div><span>CAMERA</span><strong class="photobooth-title" contenteditable="true" data-text-edit-mode="double">Photobooth</strong></div><span class="photobooth-camera-state"><i></i><b>OFF</b></span></header>
       <div class="photobooth-stage">
         <video class="photobooth-video" autoplay muted playsinline aria-label="Live photobooth preview"></video>
-        <div class="photobooth-placeholder"><span aria-hidden="true">◎</span><strong>Camera is off</strong><small>Start the camera to take a photo.</small></div>
+        <button class="photobooth-placeholder" type="button" aria-label="Start the photobooth camera"><span aria-hidden="true">◎</span><strong>Camera is off</strong><small>Click here or use Start camera below.</small></button>
         <div class="photobooth-flash" aria-hidden="true"></div>
       </div>
       <div class="photobooth-actions"><button class="photobooth-camera-toggle" type="button">Start camera</button><button class="photobooth-shutter primary" type="button" disabled><span aria-hidden="true"></span>Take photo</button></div>
@@ -3336,7 +3356,7 @@
     <section class="module mirror-module" data-type="mirror" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete mirror tile">×</button><div class="module-drag-handle"></div>
       <header class="mirror-header"><div><span>CAMERA</span><strong class="mirror-title" contenteditable="true" data-text-edit-mode="double">Mirror</strong></div><span class="mirror-camera-state"><i></i><b>OFF</b></span></header>
-      <div class="mirror-stage"><video class="mirror-video" autoplay muted playsinline aria-label="Mirrored live camera view"></video><div class="mirror-placeholder"><span aria-hidden="true">◐</span><strong>Your mirror is ready</strong><small>Camera video stays on this device.</small></div></div>
+      <div class="mirror-stage"><video class="mirror-video" autoplay muted playsinline aria-label="Mirrored live camera view"></video><button class="mirror-placeholder" type="button" aria-label="Start the mirror camera"><span aria-hidden="true">◐</span><strong>Your mirror is ready</strong><small>Click here to turn it on. Video stays on this device.</small></button></div>
       <button class="mirror-toggle primary" type="button">Start mirror</button>
       <p class="mirror-message" aria-live="polite">Camera is off.</p>
       <div class="customization-bar mirror-customization" aria-label="Mirror customization"><button class="custom-icon mirror-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon mirror-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon mirror-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>

@@ -469,6 +469,32 @@ function setupProfileClasses(){
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
 
+const TRANSLATION_LANGUAGES=[
+  {code:'en',name:'English',nativeName:'English',speech:'en-US'},
+  {code:'es',name:'Spanish',nativeName:'Español',speech:'es-ES'},
+  {code:'fr',name:'French',nativeName:'Français',speech:'fr-FR'},
+  {code:'de',name:'German',nativeName:'Deutsch',speech:'de-DE'},
+  {code:'it',name:'Italian',nativeName:'Italiano',speech:'it-IT'},
+  {code:'pt',name:'Portuguese',nativeName:'Português',speech:'pt-BR'},
+  {code:'zh-CN',name:'Chinese (Simplified)',nativeName:'中文（简体）',speech:'zh-CN'},
+  {code:'ja',name:'Japanese',nativeName:'日本語',speech:'ja-JP'},
+  {code:'ko',name:'Korean',nativeName:'한국어',speech:'ko-KR'},
+  {code:'ar',name:'Arabic',nativeName:'العربية',speech:'ar-SA'},
+  {code:'hi',name:'Hindi',nativeName:'हिन्दी',speech:'hi-IN'},
+  {code:'ru',name:'Russian',nativeName:'Русский',speech:'ru-RU'},
+  {code:'uk',name:'Ukrainian',nativeName:'Українська',speech:'uk-UA'},
+  {code:'pl',name:'Polish',nativeName:'Polski',speech:'pl-PL'},
+  {code:'nl',name:'Dutch',nativeName:'Nederlands',speech:'nl-NL'},
+  {code:'tr',name:'Turkish',nativeName:'Türkçe',speech:'tr-TR'},
+  {code:'vi',name:'Vietnamese',nativeName:'Tiếng Việt',speech:'vi-VN'},
+  {code:'tl',name:'Filipino',nativeName:'Filipino',speech:'fil-PH'},
+  {code:'ht',name:'Haitian Creole',nativeName:'Kreyòl ayisyen',speech:'ht-HT'},
+  {code:'el',name:'Greek',nativeName:'Ελληνικά',speech:'el-GR'},
+  {code:'he',name:'Hebrew',nativeName:'עברית',speech:'he-IL'},
+  {code:'sv',name:'Swedish',nativeName:'Svenska',speech:'sv-SE'}
+];
+const APP_LANGUAGE_CODES=new Set(TRANSLATION_LANGUAGES.map(language=>language.code));
+
 function normalizeAppPreferences(value={}){
   const source=value&&typeof value==='object'?value:{};
   const prefClamp=(number,min,max)=>Math.max(min,Math.min(max,number));
@@ -479,7 +505,7 @@ function normalizeAppPreferences(value={}){
     uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
     scrollSpeed:prefClamp(Number.isFinite(rawScroll)?rawScroll:100,50,175),
     defaultViewSize:[75,100,125,150].includes(Number(source.defaultViewSize))?Number(source.defaultViewSize):100,
-    language:source.language==='es'?'es':'en'
+    language:APP_LANGUAGE_CODES.has(source.language)?source.language:'en'
   };
 }
 
@@ -513,7 +539,7 @@ function boardPreferenceSnapshot(){
     uiVolume:Number.isFinite(Number(appPreferences.uiVolume))?Number(appPreferences.uiVolume):100,
     scrollSpeed:Number(appPreferences.scrollSpeed)||100,
     defaultViewSize:Number(appPreferences.defaultViewSize)||100,
-    language:appPreferences.language==='es'?'es':'en'
+    language:APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en'
   };
 }
 
@@ -670,7 +696,9 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
-    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes']
+    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
+    livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
+    weather:['Weather','Compare current weather for several places'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
@@ -682,17 +710,88 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
-    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula']
+    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
+    livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
+    weather:['Clima','Compara el clima actual de varios lugares'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
 };
 
-function translateAppText(key){
-  const lang=appPreferences.language==='es'?'es':'en';
-  return APP_TRANSLATIONS[lang]?.[key]||APP_TRANSLATIONS.en[key]||key;
+const runtimeInterfaceTranslations={};
+const interfaceTranslationRequests=new Map();
+const INTERFACE_TRANSLATION_CACHE_VERSION='v2';
+
+function readCachedInterfaceTranslations(language){
+  try{
+    const value=JSON.parse(localStorage.getItem(`tt-interface-${INTERFACE_TRANSLATION_CACHE_VERSION}-${language}`)||'null');
+    return value&&typeof value==='object'&&!Array.isArray(value)?value:null;
+  }catch{return null}
 }
 
-function applyAppLanguage(){
-  const lang=appPreferences.language==='es'?'es':'en';
+function writeCachedInterfaceTranslations(language,value){
+  try{localStorage.setItem(`tt-interface-${INTERFACE_TRANSLATION_CACHE_VERSION}-${language}`,JSON.stringify(value))}catch{}
+}
+
+async function translateInterfaceChunk(language,phrases){
+  const marker='\uE000';
+  const request=async values=>{
+    const source=values.join(`\n${marker}\n`);
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(language)}&dt=t&q=${encodeURIComponent(source)}`;
+    const response=await fetch(url);
+    if(!response.ok)throw new Error(`interface-translation-${response.status}`);
+    const data=await response.json();
+    const result=Array.isArray(data?.[0])?data[0].map(segment=>Array.isArray(segment)?String(segment[0]||''):'').join(''):'';
+    return result.split(marker).map(value=>value.trim());
+  };
+  const translated=await request(phrases);
+  if(translated.length===phrases.length)return translated;
+  return Promise.all(phrases.map(async phrase=>(await request([phrase]))[0]||phrase));
+}
+
+async function loadInterfaceTranslations(language){
+  if(language==='en'||language==='es')return;
+  if(runtimeInterfaceTranslations[language])return;
+  if(interfaceTranslationRequests.has(language))return interfaceTranslationRequests.get(language);
+  const request=(async()=>{
+    const cached=readCachedInterfaceTranslations(language);
+    if(cached){runtimeInterfaceTranslations[language]=cached;return}
+    const sources=[...new Set([
+      ...Object.values(APP_TRANSLATIONS.en),
+      ...Object.values(CONTEXT_MODULE_TRANSLATIONS.en).flat()
+    ])];
+    const chunks=[];
+    for(let index=0;index<sources.length;){
+      const chunk=[];
+      let length=0;
+      while(index<sources.length&&chunk.length<12&&length+sources[index].length<2400){
+        chunk.push(sources[index]);
+        length+=sources[index].length+3;
+        index++;
+      }
+      chunks.push(chunk);
+    }
+    const translatedBySource={};
+    for(let index=0;index<chunks.length;index+=4){
+      const group=chunks.slice(index,index+4);
+      const results=await Promise.all(group.map(chunk=>translateInterfaceChunk(language,chunk)));
+      group.forEach((chunk,chunkIndex)=>chunk.forEach((source,itemIndex)=>translatedBySource[source]=results[chunkIndex][itemIndex]||source));
+    }
+    translatedBySource.TEACHERTILES='TEACHERTILES';
+    translatedBySource['TEACHERTILES ACCOUNT']='TEACHERTILES ACCOUNT';
+    runtimeInterfaceTranslations[language]=translatedBySource;
+    writeCachedInterfaceTranslations(language,translatedBySource);
+  })().finally(()=>interfaceTranslationRequests.delete(language));
+  interfaceTranslationRequests.set(language,request);
+  return request;
+}
+
+function translateAppText(key){
+  const lang=APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en';
+  const english=APP_TRANSLATIONS.en[key];
+  return APP_TRANSLATIONS[lang]?.[key]||runtimeInterfaceTranslations[lang]?.[english]||english||key;
+}
+
+function applyAppLanguage({load=true}={}){
+  const lang=APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en';
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(node=>{
     const key=node.getAttribute('data-i18n');
@@ -705,7 +804,8 @@ function applyAppLanguage(){
     if(value)node.setAttribute('placeholder',value);
   });
   document.querySelectorAll('.context-menu__item[data-module]').forEach(item=>{
-    const copy=CONTEXT_MODULE_TRANSLATIONS[lang]?.[item.dataset.module]||CONTEXT_MODULE_TRANSLATIONS.en[item.dataset.module];
+    const englishCopy=CONTEXT_MODULE_TRANSLATIONS.en[item.dataset.module];
+    const copy=CONTEXT_MODULE_TRANSLATIONS[lang]?.[item.dataset.module]||(englishCopy?englishCopy.map(value=>runtimeInterfaceTranslations[lang]?.[value]||value):null);
     if(!copy)return;
     const strong=item.querySelector('strong');
     const small=item.querySelector('small');
@@ -718,7 +818,18 @@ function applyAppLanguage(){
     const stickerPanel=document.getElementById('sticker-shelf-content');
     shelfTitle.textContent=stickerPanel&&!stickerPanel.hidden?translateAppText('top.stickers'):translateAppText('top.themes');
   }
+  const settingsTitle=document.getElementById('settings-title');
+  const activeSettingsTab=document.querySelector('[data-settings-tab].is-active [data-i18n]');
+  if(settingsTitle&&activeSettingsTab)settingsTitle.textContent=activeSettingsTab.textContent.trim();
   window.dispatchEvent(new CustomEvent('teachertiles:languagechange',{detail:{language:lang}}));
+  if(load&&lang!=='en'&&lang!=='es'&&!runtimeInterfaceTranslations[lang]){
+    document.documentElement.dataset.interfaceLanguageLoading='true';
+    loadInterfaceTranslations(lang).then(()=>{
+      if(appPreferences.language===lang)applyAppLanguage({load:false});
+    }).catch(()=>{}).finally(()=>{
+      if(appPreferences.language===lang)delete document.documentElement.dataset.interfaceLanguageLoading;
+    });
+  }else delete document.documentElement.dataset.interfaceLanguageLoading;
 }
 
 function updateSettingsControls(){
@@ -878,8 +989,6 @@ const BOARD_MAX_ZOOM=1.8;
 const BOARD_OVERSCROLL=120;
 const zoomIndicator=document.getElementById('zoom-indicator');
 let zoomIndicatorTimer=0;
-let boardZoomIntentPercent=100;
-let boardZoomWheelAt=0;
 
 function showZoomIndicator(scale=boardCamera.scale){
   if(!zoomIndicator)return;
@@ -927,16 +1036,9 @@ centerBoardCamera();
 workspace.addEventListener('wheel',e=>{
   if(e.ctrlKey)return;
   e.preventDefault();
-  const now=performance.now();
-  if(now-boardZoomWheelAt>220)boardZoomIntentPercent=Math.round(boardCamera.scale*100);
-  boardZoomWheelAt=now;
-  const delta=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*innerHeight:e.deltaY;
-  boardZoomIntentPercent=clamp(
-    boardZoomIntentPercent-delta*.12*(appPreferences.scrollSpeed/100),
-    BOARD_MIN_ZOOM*100,
-    BOARD_MAX_ZOOM*100
-  );
-  const next=clamp(Math.round(boardZoomIntentPercent)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  if(!e.deltaY)return;
+  const nextPercent=clamp(Math.round(boardCamera.scale*100)+(e.deltaY<0?1:-1),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
+  const next=nextPercent/100;
   showZoomIndicator(next);
   if(Math.abs(next-boardCamera.scale)<.0001)return;
   const anchor=screenToBoard(e.clientX,e.clientY);
@@ -5180,31 +5282,6 @@ function setupDictionary(m){
   };
 }
 
-const TRANSLATION_LANGUAGES=[
-  {code:'en',name:'English',speech:'en-US'},
-  {code:'es',name:'Spanish',speech:'es-ES'},
-  {code:'fr',name:'French',speech:'fr-FR'},
-  {code:'de',name:'German',speech:'de-DE'},
-  {code:'it',name:'Italian',speech:'it-IT'},
-  {code:'pt',name:'Portuguese',speech:'pt-BR'},
-  {code:'zh-CN',name:'Chinese (Simplified)',speech:'zh-CN'},
-  {code:'ja',name:'Japanese',speech:'ja-JP'},
-  {code:'ko',name:'Korean',speech:'ko-KR'},
-  {code:'ar',name:'Arabic',speech:'ar-SA'},
-  {code:'hi',name:'Hindi',speech:'hi-IN'},
-  {code:'ru',name:'Russian',speech:'ru-RU'},
-  {code:'uk',name:'Ukrainian',speech:'uk-UA'},
-  {code:'pl',name:'Polish',speech:'pl-PL'},
-  {code:'nl',name:'Dutch',speech:'nl-NL'},
-  {code:'tr',name:'Turkish',speech:'tr-TR'},
-  {code:'vi',name:'Vietnamese',speech:'vi-VN'},
-  {code:'tl',name:'Filipino',speech:'fil-PH'},
-  {code:'ht',name:'Haitian Creole',speech:'ht-HT'},
-  {code:'el',name:'Greek',speech:'el-GR'},
-  {code:'he',name:'Hebrew',speech:'he-IL'},
-  {code:'sv',name:'Swedish',speech:'sv-SE'}
-];
-
 function bindEditableModuleTitle(m,selectorOrElement,fallback){
   const title=selectorOrElement instanceof Element?selectorOrElement:m.querySelector(selectorOrElement);
   if(!title)return{get:()=>fallback,set:()=>{}};
@@ -5851,7 +5928,19 @@ function setupBoardPhotoDrop(){
 
 async function requestFrontCamera(){
   if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
-  return navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+  try{
+    return await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}},audio:false});
+  }catch(error){
+    if(error?.name==='NotAllowedError'||error?.name==='SecurityError')throw error;
+    return navigator.mediaDevices.getUserMedia({video:true,audio:false});
+  }
+}
+
+function cameraStartMessage(error){
+  if(error?.name==='NotAllowedError'||error?.name==='SecurityError')return'Camera permission was not granted. Allow camera access, then try again.';
+  if(error?.name==='NotFoundError'||error?.name==='DevicesNotFoundError')return'No camera was found on this device.';
+  if(error?.message==='unsupported')return'Camera access is not supported in this browser.';
+  return'The camera could not be started. Check that another app is not using it, then try again.';
 }
 
 function setupPhotobooth(m){
@@ -5865,6 +5954,7 @@ function setupPhotobooth(m){
   const list=m.querySelector('.photobooth-photo-list');
   const count=m.querySelector('.photobooth-photo-count');
   const drawerToggle=m.querySelector('.photobooth-drawer-toggle');
+  const placeholder=m.querySelector('.photobooth-placeholder');
   const flash=m.querySelector('.photobooth-flash');
   let stream=null;
   let filter='normal';
@@ -5881,13 +5971,15 @@ function setupPhotobooth(m){
     state.textContent='OFF';
   };
   const startCamera=async()=>{
-    if(stream){stopCamera();message.textContent='Camera is off.';return}
+    if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stopCamera();message.textContent='Camera is off.';return}
+    if(stream)stopCamera();
     toggle.disabled=true;
     message.textContent='Starting the camera…';
     try{
       const next=await requestFrontCamera();
       if(disposed){next.getTracks().forEach(track=>track.stop());return}
       stream=next;
+      video.muted=true;
       video.srcObject=stream;
       await video.play().catch(()=>{});
       m.classList.add('has-camera');
@@ -5895,8 +5987,9 @@ function setupPhotobooth(m){
       shutter.disabled=false;
       state.textContent='ON';
       message.textContent='Choose a filter, then take a photo.';
+      stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stopCamera()},{once:true}));
     }catch(error){
-      message.textContent=error?.name==='NotAllowedError'?'Camera permission was not granted.':'The camera could not be started.';
+      message.textContent=cameraStartMessage(error);
     }finally{toggle.disabled=false}
   };
   const setFilter=value=>{
@@ -5966,6 +6059,7 @@ function setupPhotobooth(m){
   };
 
   toggle.addEventListener('click',startCamera);
+  placeholder?.addEventListener('click',startCamera);
   shutter.addEventListener('click',takePhoto);
   drawerToggle.addEventListener('click',()=>{const open=m.classList.toggle('is-drawer-open');drawerToggle.setAttribute('aria-expanded',String(open))});
   m.querySelectorAll('[data-photo-filter-choice]').forEach(button=>button.addEventListener('click',()=>setFilter(button.dataset.photoFilterChoice)));
@@ -5984,6 +6078,7 @@ function setupMirror(m){
   const tileTitle=bindEditableModuleTitle(m,'.mirror-title','Mirror');
   const video=m.querySelector('.mirror-video');
   const toggle=m.querySelector('.mirror-toggle');
+  const placeholder=m.querySelector('.mirror-placeholder');
   const state=m.querySelector('.mirror-camera-state b');
   const message=m.querySelector('.mirror-message');
   let stream=null;
@@ -5993,17 +6088,20 @@ function setupMirror(m){
     m.classList.remove('has-camera');toggle.textContent='Start mirror';state.textContent='OFF';message.textContent='Camera is off.';
   };
   const start=async()=>{
-    if(stream){stop();return}
+    if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stop();return}
+    if(stream)stop();
     toggle.disabled=true;message.textContent='Starting your mirror…';
     try{
       const next=await requestFrontCamera();
       if(disposed){next.getTracks().forEach(track=>track.stop());return}
-      stream=next;video.srcObject=stream;await video.play().catch(()=>{});
+      stream=next;video.muted=true;video.srcObject=stream;await video.play().catch(()=>{});
       m.classList.add('has-camera');toggle.textContent='Stop mirror';state.textContent='ON';message.textContent='Mirror is on. Video stays on this device.';
-    }catch(error){message.textContent=error?.name==='NotAllowedError'?'Camera permission was not granted.':'The camera could not be started.'}
+      stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stop()},{once:true}));
+    }catch(error){message.textContent=cameraStartMessage(error)}
     finally{toggle.disabled=false}
   };
   toggle.addEventListener('click',start);
+  placeholder?.addEventListener('click',start);
   m.querySelector('.mirror-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.mirror-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.mirror-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -6360,11 +6458,21 @@ function setupWorldMap(m){
   let centerX=500;
   let centerY=260;
   let pendingCountry='';
+  let suppressMapClickUntil=0;
   const controller=new AbortController();
   const continentViews={
     'north-america':{x:205,y:145,zoom:1.65},'south-america':{x:300,y:330,zoom:1.75},europe:{x:515,y:145,zoom:2.35},africa:{x:520,y:285,zoom:1.8},asia:{x:710,y:165,zoom:1.5},australia:{x:825,y:350,zoom:2.05},antarctica:{x:500,y:462,zoom:1.55}
   };
-  const applyZoom=()=>mapLayer.setAttribute('transform',`translate(${500-centerX*zoom} ${260-centerY*zoom}) scale(${zoom})`);
+  const constrainCenter=()=>{
+    const halfWidth=500/zoom;
+    const halfHeight=260/zoom;
+    centerX=clamp(centerX,halfWidth,1000-halfWidth);
+    centerY=clamp(centerY,halfHeight,520-halfHeight);
+  };
+  const applyZoom=()=>{
+    constrainCenter();
+    mapLayer.setAttribute('transform',`translate(${500-centerX*zoom} ${260-centerY*zoom}) scale(${zoom})`);
+  };
   const selectRegion=(id,{animate=true}={})=>{
     const region=WORLD_MAP_REGIONS.find(item=>item.id===id);
     if(!region)return;
@@ -6430,7 +6538,7 @@ function setupWorldMap(m){
       path.setAttribute('tabindex','0');
       path.setAttribute('role','button');
       path.setAttribute('aria-label',countryName);
-      path.addEventListener('click',()=>selectCountry(path.dataset.countryId,countryName));
+      path.addEventListener('click',()=>{if(performance.now()>=suppressMapClickUntil)selectCountry(path.dataset.countryId,countryName)});
       path.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCountry(path.dataset.countryId,countryName)}});
       fragment.appendChild(path);
     }
@@ -6474,6 +6582,46 @@ function setupWorldMap(m){
     applyZoom();
     notifyBoardChanged('world-map-wheel-zoom');
   },{passive:false});
+  stage?.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.stopPropagation();
+    const rect=stage.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const pointerId=event.pointerId;
+    const startX=event.clientX;
+    const startY=event.clientY;
+    const startCenterX=centerX;
+    const startCenterY=centerY;
+    let moved=false;
+    stage.setPointerCapture?.(pointerId);
+    const move=moveEvent=>{
+      if(moveEvent.pointerId!==pointerId)return;
+      const dx=moveEvent.clientX-startX;
+      const dy=moveEvent.clientY-startY;
+      if(!moved&&Math.hypot(dx,dy)<4)return;
+      moved=true;
+      moveEvent.preventDefault();
+      moveEvent.stopPropagation();
+      m.classList.add('is-map-panning');
+      centerX=startCenterX-dx/rect.width*1000/zoom;
+      centerY=startCenterY-dy/rect.height*520/zoom;
+      applyZoom();
+    };
+    const end=endEvent=>{
+      if(endEvent.pointerId!==pointerId)return;
+      stage.removeEventListener('pointermove',move);
+      stage.removeEventListener('pointerup',end);
+      stage.removeEventListener('pointercancel',end);
+      m.classList.remove('is-map-panning');
+      if(moved){
+        suppressMapClickUntil=performance.now()+250;
+        notifyBoardChanged('world-map-pan');
+      }
+    };
+    stage.addEventListener('pointermove',move);
+    stage.addEventListener('pointerup',end);
+    stage.addEventListener('pointercancel',end);
+  });
   m.querySelector('.worldmap-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));

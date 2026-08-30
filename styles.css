@@ -13743,3 +13743,13 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 .groupmaker-name-input,.lunchcount-name-input,.voting-name-input,.spinner-name-input{border:0!important;background:transparent!important;box-shadow:none!important}.groupmaker-add-name,.lunchcount-add-name,.voting-add-name,.spinner-add-name{height:32px!important;border-radius:8px!important;padding:0 13px!important}
 .groupmaker-name-chip,.lunchcount-student-chip,.voting-student-chip,.spinner-name-chip{min-height:29px;padding:4px 5px 4px 10px!important;border-color:color-mix(in srgb,var(--module-text,#17191d) 10%,transparent)!important;background:color-mix(in srgb,var(--module-bg,#fff) 89%,var(--module-text,#17191d) 11%)!important;box-shadow:0 3px 9px rgba(15,23,42,.045);cursor:grab;user-select:none}.groupmaker-name-chip:active,.lunchcount-student-chip:active,.voting-student-chip:active{cursor:grabbing}.groupmaker-name-chip button,.lunchcount-student-chip>button,.voting-student-chip>button,.spinner-name-chip button{opacity:0;transform:scale(.82);transition:opacity .12s ease,transform .12s ease,background .12s ease}.groupmaker-name-chip:hover button,.groupmaker-name-chip button:focus,.lunchcount-student-chip:hover>button,.lunchcount-student-chip>button:focus,.voting-student-chip:hover>button,.voting-student-chip>button:focus,.spinner-name-chip:hover button,.spinner-name-chip button:focus{opacity:1;transform:scale(1)}
 .lunchcount-inline-actions,.voting-inline-actions{right:14px;bottom:54px}.groupmaker-customization,.lunchcount-customization,.voting-customization,.spinner-customization{bottom:9px}.groupmaker-name-list,.spinner-name-list,.lunchcount-pool-list,.voting-pool-list{gap:7px;padding:5px;border:0;background:transparent}
+
+/* Final interaction polish for tile headers, category labels, cameras, weather, and maps. */
+.module span:has(+ .editable-tile-heading){display:none!important}
+.context-menu__category-drawer-grid [data-category-drawer-filter="accessibility"]{font-size:6px;letter-spacing:-.04em;white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.photobooth-placeholder,.mirror-placeholder{width:100%;border:0;padding:12px;font-family:inherit;cursor:pointer}
+.weather-module{height:490px;min-height:420px}
+.weather-weekly{margin-top:8px}
+.worldmap-stage{cursor:grab;touch-action:none}
+.worldmap-module.is-map-panning .worldmap-stage{cursor:grabbing}
+.worldmap-module.is-map-panning .worldmap-map-layer{transition:none}
