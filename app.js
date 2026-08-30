@@ -4554,12 +4554,27 @@ function setupPunchcards(m){
     reset.disabled=currentProgress()===0||(scope==='student'&&!student);
   };
   const punch=(hole,index)=>{
-    if(busy||index!==currentProgress())return;busy=true;hole.classList.add('is-punching');
+    if(busy||index!==currentProgress())return;
+    busy=true;
+    const cardRect=card.getBoundingClientRect(),holeRect=hole.getBoundingClientRect();
+    const disk=document.createElement('span');
+    disk.className='punchcard-punched-disk';
+    const inset=Math.max(4,Math.min(7,holeRect.width*.11));
+    const size=Math.max(12,holeRect.width-inset*2);
+    disk.style.left=`${holeRect.left-cardRect.left+inset}px`;
+    disk.style.top=`${holeRect.top-cardRect.top+inset}px`;
+    disk.style.width=`${size}px`;
+    disk.style.height=`${size}px`;
+    disk.style.setProperty('--punch-fall-distance',`${Math.max(120,cardRect.bottom-holeRect.top+72)}px`);
+    card.append(disk);
+    disk.addEventListener('animationend',()=>disk.remove(),{once:true});
+    setTimeout(()=>disk.remove(),900);
+    hole.classList.add('is-punching');
     setTimeout(()=>{
       if(index===9){const target=scope==='class'?roster()?.name:student;awardPoint();completeName.textContent=target||'Punchcard';completePoints.textContent=String(currentPoints());complete.hidden=false;completeDone.focus({preventScroll:true})}
       else persistProgress(index+1);
       busy=false;render();
-    },360);
+    },260);
   };
   const setClass=id=>{
     const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;
