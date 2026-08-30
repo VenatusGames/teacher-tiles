@@ -4549,26 +4549,30 @@ function setupPunchcards(m){
     card.classList.toggle('is-disabled',scope==='student'&&!student);holes.replaceChildren();const punched=currentProgress();
     for(let i=0;i<10;i++){
       const hole=document.createElement('button');hole.type='button';hole.className='punchcard-hole';hole.dataset.index=String(i);hole.setAttribute('aria-label',i<punched?`Punch ${i+1} completed`:`Punch hole ${i+1}`);hole.disabled=busy||i<punched||(scope==='student'&&!student);if(i<punched)hole.classList.add('is-punched');
-      hole.addEventListener('click',()=>punch(hole,i));holes.append(hole);
+      hole.addEventListener('click',event=>punch(hole,i,event));holes.append(hole);
     }
     reset.disabled=currentProgress()===0||(scope==='student'&&!student);
   };
-  const punch=(hole,index)=>{
+  const punch=(hole,index,event)=>{
     if(busy||index!==currentProgress())return;
     busy=true;
     const cardRect=card.getBoundingClientRect(),holeRect=hole.getBoundingClientRect();
     const disk=document.createElement('span');
     disk.className='punchcard-punched-disk';
-    const inset=Math.max(4,Math.min(7,holeRect.width*.11));
-    const size=Math.max(12,holeRect.width-inset*2);
-    disk.style.left=`${holeRect.left-cardRect.left+inset}px`;
-    disk.style.top=`${holeRect.top-cardRect.top+inset}px`;
+    const size=Math.max(12,holeRect.width);
+    const clickX=Number.isFinite(event?.clientX)?event.clientX:holeRect.left+holeRect.width/2;
+    const clickY=Number.isFinite(event?.clientY)?event.clientY:holeRect.top+holeRect.height/2;
+    disk.style.left=`${clickX-cardRect.left-size/2}px`;
+    disk.style.top=`${clickY-cardRect.top-size/2}px`;
     disk.style.width=`${size}px`;
     disk.style.height=`${size}px`;
-    disk.style.setProperty('--punch-fall-distance',`${Math.max(120,cardRect.bottom-holeRect.top+72)}px`);
+    disk.style.setProperty('--punch-fall-distance',`${Math.max(150,cardRect.bottom-clickY+size+86)}px`);
+    disk.style.setProperty('--punch-drift-x',`${Math.round((Math.random()-.5)*42)}px`);
+    disk.style.setProperty('--punch-drift-mid',`${Math.round((Math.random()-.5)*18)}px`);
+    disk.style.setProperty('--punch-spin',`${Math.round((Math.random()>.5?1:-1)*(150+Math.random()*150))}deg`);
     card.append(disk);
     disk.addEventListener('animationend',()=>disk.remove(),{once:true});
-    setTimeout(()=>disk.remove(),900);
+    setTimeout(()=>disk.remove(),1250);
     hole.classList.add('is-punching');
     setTimeout(()=>{
       if(index===9){const target=scope==='class'?roster()?.name:student;awardPoint();completeName.textContent=target||'Punchcard';completePoints.textContent=String(currentPoints());complete.hidden=false;completeDone.focus({preventScroll:true})}
