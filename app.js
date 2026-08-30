@@ -621,17 +621,17 @@ function setupProfileClasses(){
       return;
     }
     classes.forEach(item=>{
-      const card=document.createElement('button');
-      card.type='button';
+      const card=document.createElement('article');
       card.className='profile-class-card';
       const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent=normalizeClassLogo(item.logo);
       const copy=document.createElement('span');copy.className='profile-class-card__copy';
       const title=document.createElement('strong');title.textContent=item.name;
       const count=document.createElement('small');count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
       copy.append(title,count);
-      const arrow=document.createElement('i');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
-      card.addEventListener('click',()=>openRoster(item));
-      card.append(icon,copy,arrow);list.append(card);
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='profile-class-card__edit';edit.textContent='Edit Class';edit.setAttribute('aria-label',`Edit ${item.name}`);
+      edit.addEventListener('click',()=>openRoster(item));
+      card.append(icon,copy,edit);list.append(card);
     });
   };
 
@@ -3827,10 +3827,12 @@ function setupStarChart(m){
   const setSubtractPanelOpen=(card,open)=>{
     studentGrid.querySelectorAll('.starchart-subtract-panel').forEach(panel=>panel.hidden=true);
     studentGrid.querySelectorAll('.starchart-subtract-toggle').forEach(button=>button.setAttribute('aria-expanded','false'));
+    studentGrid.querySelectorAll('.starchart-student-row.is-subtract-open').forEach(row=>row.classList.remove('is-subtract-open'));
     const panel=card?.querySelector('.starchart-subtract-panel');
     const toggle=card?.querySelector('.starchart-subtract-toggle');
     if(!panel||!toggle||!open){if(showAllStudents)scheduleShowAllSize();return}
     panel.hidden=false;
+    card.classList.add('is-subtract-open');
     toggle.setAttribute('aria-expanded','true');
     requestAnimationFrame(()=>{const input=panel.querySelector('input');input?.focus({preventScroll:true});input?.select()});
     if(showAllStudents)scheduleShowAllSize();
@@ -4818,9 +4820,10 @@ function setupLunchCount(m){
     }
     renderCategories();
     renderPool();
+    notifyBoardChanged('lunch-count-assignment');
   };
 
-  const studentChip=(name,{removable=false}={})=>{
+  const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
     chip.className='lunchcount-student-chip';
     chip.draggable=true;
@@ -4846,10 +4849,11 @@ function setupLunchCount(m){
       const remove=document.createElement('button');
       remove.type='button';
       remove.textContent='×';
-      remove.setAttribute('aria-label',`Remove ${name}`);
+      remove.setAttribute('aria-label',unassignOnly?`Return ${name} to unassigned`:`Remove ${name}`);
       remove.addEventListener('click',event=>{
         event.stopPropagation();
-        removeStudent(name);
+        if(unassignOnly)assign(name,'');
+        else removeStudent(name);
       });
       chip.appendChild(remove);
     }
@@ -4967,7 +4971,7 @@ function setupLunchCount(m){
 
       if(namesMode){
         if(category.students.length){
-          category.students.forEach(name=>content.appendChild(studentChip(name,{removable:true})));
+          category.students.forEach(name=>content.appendChild(studentChip(name,{removable:true,unassignOnly:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='lunchcount-category-empty';
@@ -5286,9 +5290,10 @@ function setupVoting(m){
     }
     renderChoices();
     renderPool();
+    notifyBoardChanged('voting-assignment');
   };
 
-  const studentChip=(name,{removable=false}={})=>{
+  const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
     chip.className='voting-student-chip';
     chip.draggable=true;
@@ -5314,10 +5319,11 @@ function setupVoting(m){
       const remove=document.createElement('button');
       remove.type='button';
       remove.textContent='×';
-      remove.setAttribute('aria-label',`Remove ${name}`);
+      remove.setAttribute('aria-label',unassignOnly?`Return ${name} to unassigned`:`Remove ${name}`);
       remove.addEventListener('click',event=>{
         event.stopPropagation();
-        removeStudent(name);
+        if(unassignOnly)assign(name,'');
+        else removeStudent(name);
       });
       chip.appendChild(remove);
     }
@@ -5424,7 +5430,7 @@ function setupVoting(m){
 
       if(namesMode){
         if(choice.students.length){
-          choice.students.forEach(name=>content.appendChild(studentChip(name,{removable:true})));
+          choice.students.forEach(name=>content.appendChild(studentChip(name,{removable:true,unassignOnly:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='voting-choice-empty';

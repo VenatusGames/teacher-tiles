@@ -14004,3 +14004,24 @@ body>.student-view-panel{position:fixed;inset:0;z-index:57600;padding:24px;displ
 
 /* Photobooth photo actions stay out of the way until the photo is hovered/focused. */
 .photobooth-photo-actions{position:absolute;z-index:3;right:4px;top:4px;display:flex;gap:4px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease,visibility .12s ease}.photobooth-photo-card:hover .photobooth-photo-actions,.photobooth-photo-card:focus-within .photobooth-photo-actions{opacity:1;visibility:visible;pointer-events:auto}.photobooth-photo-card .photobooth-photo-actions button{position:static;width:22px;height:22px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(10,12,16,.76);color:#fff;font-size:14px;line-height:1;box-shadow:0 2px 7px rgba(0,0,0,.22)}.photobooth-photo-card .photobooth-photo-download{font-size:15px;font-weight:900}.photobooth-photo-card .photobooth-photo-actions button:hover{background:rgba(10,12,16,.92);transform:scale(1.05)}
+
+/* Manage Classes uses a clear hover action instead of a chevron. */
+.profile-class-card{grid-template-columns:52px minmax(0,1fr) auto}
+.profile-class-card__edit{min-width:86px;height:34px;padding:0 12px;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,var(--surface-solid));color:var(--text);font-size:9px;font-weight:900;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(5px);transition:opacity .14s ease,visibility .14s ease,transform .14s ease,background .14s ease,border-color .14s ease}
+.profile-class-card:hover .profile-class-card__edit,.profile-class-card:focus-within .profile-class-card__edit,.profile-class-card__edit:focus-visible{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.profile-class-card__edit:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));background:color-mix(in srgb,var(--accent) 16%,var(--surface-solid))}
+@media(max-width:560px){.profile-class-card{grid-template-columns:46px minmax(0,1fr) auto}.profile-class-card__icon{width:46px;height:46px}.profile-class-card__edit{min-width:72px;padding-inline:9px;font-size:8px}}
+
+/* In Show All Students, subtraction opens as an in-card overlay instead of being clipped by the compact grid. */
+.starchart-module.is-showing-all-students .starchart-student-grid{overflow:visible}
+.starchart-module.is-showing-all-students .starchart-student-row{overflow:visible}
+.starchart-module.is-showing-all-students .starchart-student-row.is-subtract-open{z-index:30}
+.starchart-module.is-showing-all-students .starchart-student-row.is-subtract-open .starchart-student-row__main{visibility:hidden}
+.starchart-module.is-showing-all-students .starchart-subtract-panel{position:absolute;z-index:31;inset:5px;min-width:0;padding:7px 8px;border:1px solid color-mix(in srgb,#cf5264 22%,color-mix(in srgb,var(--module-text,#17191d) 10%,transparent));border-radius:10px;background:color-mix(in srgb,#cf5264 7%,var(--module-bg,#fff));box-shadow:0 8px 22px rgba(48,35,44,.16);align-items:center}
+.starchart-module.is-showing-all-students .starchart-subtract-panel>span{font-size:6px}
+.starchart-module.is-showing-all-students .starchart-subtract-form{min-width:0;flex:1;justify-content:flex-end}
+.starchart-module.is-showing-all-students .starchart-subtract-form input{width:48px;height:28px}
+.starchart-module.is-showing-all-students .starchart-subtract-form button{height:28px;padding-inline:7px;font-size:6px}
+@container(max-width:559px){.starchart-module.is-showing-all-students .starchart-subtract-panel{align-items:stretch;flex-direction:column;justify-content:center;gap:4px}.starchart-module.is-showing-all-students .starchart-subtract-form{width:100%}}
+body>.profile-classes-panel .profile-class-card{grid-template-columns:52px minmax(0,1fr) auto}
+@media(max-width:560px){body>.profile-classes-panel .profile-class-card{grid-template-columns:46px minmax(0,1fr) auto}}
