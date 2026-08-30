@@ -184,8 +184,8 @@
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
-              <span class="profile-tool-button__icon profile-tool-button__icon--pbis" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span><strong>PBIS View</strong><small>View each student and their PBIS stats</small></span>
+              <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 11.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-5.1 0-8.3 2.7-8.3 6.1 0 1 .8 1.9 1.9 1.9h12.8c1 0 1.9-.8 1.9-1.9 0-3.4-3.2-6.1-8.3-6.1Z" fill="currentColor"/></svg></span>
+              <span><strong>Student View</strong><small>Manage PBIS through detailed stats and view student/class profiles</small></span>
               <i aria-hidden="true">›</i>
             </button>
           </section>
@@ -194,7 +194,8 @@
             <div class="classes-window" role="dialog" aria-modal="true" aria-labelledby="profile-classes-title">
               <section id="profile-classes-list-view" class="classes-view classes-list-view">
                 <div class="profile-classes-panel__head">
-                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Manage Classes</h3><p>Reusable class lists for every name-based tile.</p></div>
+                  <button id="profile-classes-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
+                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Manage Classes</h3><p>Create class rosters for use with PBIS and other tiles.</p></div>
                   <button id="profile-classes-close" type="button" aria-label="Close Manage Classes">×</button>
                 </div>
                 <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
@@ -234,8 +235,9 @@
             <div class="student-view-window__backdrop" aria-hidden="true"></div>
             <div class="student-view-window" role="dialog" aria-modal="true" aria-labelledby="student-view-title">
               <header class="student-view-header">
-                <div><span>PBIS PROFILES</span><h3 id="student-view-title">PBIS View</h3><p>See PBIS progress across all of your saved classes.</p></div>
-                <button id="profile-student-view-close" type="button" aria-label="Close PBIS View">×</button>
+                <button id="profile-student-view-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
+                <div><span>PBIS PROFILES</span><h3 id="student-view-title">Student View</h3><p>Manage PBIS through detailed stats and view student/class profiles</p></div>
+                <button id="profile-student-view-close" type="button" aria-label="Close Student View">×</button>
               </header>
               <section class="student-view-stat-settings" aria-label="PBIS profile settings">
                 <label class="student-view-search">

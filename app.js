@@ -520,6 +520,7 @@ function setupProfileClasses(){
   const openButton=document.getElementById('profile-classes-button');
   const panel=document.getElementById('profile-classes-panel');
   const closeButton=document.getElementById('profile-classes-close');
+  const backButton=document.getElementById('profile-classes-back');
   const form=document.getElementById('profile-class-create');
   const nameInput=document.getElementById('profile-class-name');
   const list=document.getElementById('profile-class-list');
@@ -649,6 +650,7 @@ function setupProfileClasses(){
     setOpen(true);
   });
   closeButton?.addEventListener('click',()=>setOpen(false));
+  backButton?.addEventListener('click',()=>{setOpen(false);document.getElementById('profile-toggle')?.click()});
   panel.querySelector('.classes-window__backdrop')?.addEventListener('click',()=>setOpen(false));
   rosterBack?.addEventListener('click',showList);
   rosterDone?.addEventListener('click',showList);
@@ -739,6 +741,7 @@ function setupStudentView(){
   const openButton=document.getElementById('profile-student-view-button');
   const panel=document.getElementById('profile-student-view-panel');
   const closeButton=document.getElementById('profile-student-view-close');
+  const backButton=document.getElementById('profile-student-view-back');
   const rosterContainer=document.getElementById('student-view-rosters');
   const studentSearch=document.getElementById('student-view-search');
   const statMenuToggle=document.getElementById('student-view-stat-menu-toggle');
@@ -908,6 +911,7 @@ function setupStudentView(){
     if(!statMenu.hidden&&!event.target.closest('.student-view-stat-menu'))setStatMenuOpen(false);
   });
   closeButton.addEventListener('click',()=>setOpen(false));
+  backButton?.addEventListener('click',()=>{setOpen(false);document.getElementById('profile-toggle')?.click()});
   panel.querySelector('.student-view-window__backdrop')?.addEventListener('click',()=>setOpen(false));
   detailClose?.addEventListener('click',closeDetail);
   detail.querySelector('.student-view-detail__backdrop')?.addEventListener('click',closeDetail);
@@ -4180,6 +4184,10 @@ function setupClassMeter(m){
   settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
   orientationButton.addEventListener('click',()=>setOrientation(m.dataset.orientation==='horizontal'?'vertical':'horizontal',{resize:true,notify:true}));
   m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.classmeter-settings-wrap'))setSettingsOpen(false)});
+  m.addEventListener('pointerleave',()=>{
+    if(holding)stopHolding();
+    setSettingsOpen(false);
+  });
   const decreaseProgress=()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=Math.max(0,(Number(progress.fill)||0)-5);persistProgress()};
   decreaseButton.addEventListener('click',decreaseProgress);
   removeProgress.addEventListener('click',decreaseProgress);
@@ -4454,6 +4462,7 @@ function setupCollections(m){
   emptyCurrent.addEventListener('click',()=>{emptyJar();setSettingsOpen(false)});
   settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
   m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.collection-settings-wrap'))setSettingsOpen(false)});
+  m.addEventListener('pointerleave',()=>{setSettingsOpen(false);closePicker()});
   addFill.addEventListener('click',()=>{progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);persistProgress();renderFilledState()});
   removeFill.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled-1);persistProgress();renderFilledState()});
   resetFills.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=0;persistProgress();renderFilledState();setSettingsOpen(false)});
