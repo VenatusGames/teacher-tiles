@@ -612,7 +612,7 @@ const APP_TRANSLATIONS={
     'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Use the mouse wheel or trackpad scroll over the board.',
     'help.mouse.move.title':'Move tiles','help.mouse.move.copy':'Drag anywhere on a tile that is not an active button, slider, canvas, or other control.',
     'help.mouse.snap.title':'Snap & group','help.mouse.snap.copy':'Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.',
-    'help.mouse.tug.title':'Tug to ungroup','help.mouse.tug.copy':'Give one grouped tile a quick tug to detach it, then move it independently.',
+    'help.mouse.tug.title':'Hold, then tug','help.mouse.tug.copy':'Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.',
     'help.mouse.text.title':'Edit text','help.mouse.text.copy':'Double-click a text field to type. Click away from it to leave text-edit mode.',
     'help.mouse.sticker.title':'Transform stickers','help.mouse.sticker.copy':'Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.',
     'help.mouse.trash.title':'Delete by dragging','help.mouse.trash.copy':'Drag any snapped tile into the corner trash to delete its entire group.',
@@ -647,7 +647,7 @@ const APP_TRANSLATIONS={
     'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Usa la rueda del ratón o el desplazamiento del trackpad sobre el tablero.',
     'help.mouse.move.title':'Mover tiles','help.mouse.move.copy':'Arrastra cualquier parte de un tile que no sea un botón, deslizador, lienzo u otro control activo.',
     'help.mouse.snap.title':'Acoplar y agrupar','help.mouse.snap.copy':'Coloca un tile junto a otro para acoplarlos en un grupo. Los tiles agrupados se mueven juntos y comparten una capa.',
-    'help.mouse.tug.title':'Tirar para desagrupar','help.mouse.tug.copy':'Da un tirón rápido a un tile agrupado para separarlo y moverlo de forma independiente.',
+    'help.mouse.tug.title':'Mantener y tirar','help.mouse.tug.copy':'Mantén pulsado un tile agrupado hasta que tiemble y luego tira venciendo la resistencia para separarlo y moverlo de forma independiente.',
     'help.mouse.text.title':'Editar texto','help.mouse.text.copy':'Haz doble clic en un campo de texto para escribir. Haz clic fuera para salir del modo de edición.',
     'help.mouse.sticker.title':'Transformar pegatinas','help.mouse.sticker.copy':'Usa las esquinas para cambiar el tamaño y el control circular para rotar. Mantén Shift para ajustar la rotación en pasos de 15°.',
     'help.mouse.trash.title':'Eliminar arrastrando','help.mouse.trash.copy':'Arrastra cualquier tile acoplado a la papelera de la esquina para eliminar todo su grupo.',
@@ -1676,11 +1676,14 @@ function setupDrag(m){
     let group=[...expanded];
     let multi=group.length>1;
     let tugCandidate=selected.length===1&&selected[0]===m&&connectedToAnchor.length>1;
+    let tugArmed=false;
     let tugged=false;
+    let tugBreakDx=0,tugBreakDy=0,tugBreakVisualDx=0,tugBreakVisualDy=0;
     const dragStartGroup=[...group];
     const origins=new Map(group.map(g=>[g,captureModuleTransform(g)]));
     h.setPointerCapture(e.pointerId);
-    const sx=e.clientX,sy=e.clientY,startedAt=performance.now();
+    const sx=e.clientX,sy=e.clientY;
+    const tugHoldTimer=tugCandidate?setTimeout(()=>{tugArmed=true;m.classList.add('is-tug-armed')},520):null;
     let pending=null,overTrash=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
     const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
@@ -1688,17 +1691,23 @@ function setupDrag(m){
     const move=ev=>{
       const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
       const distance=Math.hypot(ev.clientX-sx,ev.clientY-sy);
-      const elapsed=performance.now()-startedAt;
-      if(tugCandidate&&distance>=42&&elapsed<=210){
+      if(tugCandidate&&!tugArmed&&distance>8){clearTimeout(tugHoldTimer);tugCandidate=false}
+      if(tugArmed&&!tugged&&distance>=36){
+        tugBreakDx=dx;tugBreakDy=dy;
+        tugBreakVisualDx=dx*.2;tugBreakVisualDy=dy*.2;
         for(const member of group)if(member!==m)applyModuleTransform(member,origins.get(member));
         clearSnapGroupMember(m);
         group=[m];multi=false;tugCandidate=false;tugged=true;
+        tugArmed=false;m.classList.remove('is-tug-armed');
         bringToFront(m);
-      }else if(elapsed>210)tugCandidate=false;
+      }
       for(const g of group){
         const o=origins.get(g);
-        g.style.left=`${clamp(o.left+dx,0,BOARD_WIDTH-g.offsetWidth)}px`;
-        g.style.top=`${clamp(o.top+dy,0,BOARD_HEIGHT-g.offsetHeight)}px`;
+        let moveX=dx,moveY=dy;
+        if(tugArmed&&!tugged&&g===m){moveX=dx*.2;moveY=dy*.2}
+        else if(tugged&&g===m){moveX=tugBreakVisualDx+(dx-tugBreakDx);moveY=tugBreakVisualDy+(dy-tugBreakDy)}
+        g.style.left=`${clamp(o.left+moveX,0,BOARD_WIDTH-g.offsetWidth)}px`;
+        g.style.top=`${clamp(o.top+moveY,0,BOARD_HEIGHT-g.offsetHeight)}px`;
       }
       clearPreview();
       overTrash=trashHit(ev);
@@ -1716,9 +1725,10 @@ function setupDrag(m){
         Object.assign(guideY.style,{top:`${pending.seamY}px`,left:`${st}px`,width:`${len}px`});guideY.classList.add('is-visible')
       }
     };
-    const cleanup=()=>{m.classList.remove('is-dragging');clearPreview();setTrash(false,false);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
+    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');clearPreview();setTrash(false,false);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
     const end=()=>{
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
+      if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}
       let willSnap=false;
       if(!multi&&pending){
         willSnap=pending.left!==null||pending.top!==null;
@@ -10482,7 +10492,7 @@ function setupSpinner(m){
 const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
-  'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','stoplight-pop','is-flipping',
+  'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
   'is-fitting','is-shuffling','is-dragover','is-drop-target'
 ]);
 let activeTeacherTilesBoardId='';

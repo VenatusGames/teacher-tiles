@@ -161,7 +161,9 @@ body.dark{--bg:#15171b;--grid:rgba(255,255,255,.065);--surface:rgba(36,39,45,.96
 .module.snap-pop{animation:snapPop .22s cubic-bezier(.2,.9,.25,1)}
 @keyframes snapWiggle{from{transform:translateX(-.6px) rotate(-.08deg)}to{transform:translateX(.6px) rotate(.08deg)}}
 @keyframes snapPop{0%{transform:scale(1)}45%{transform:scale(1.018)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.module.is-snap-ready,.module.snap-pop{animation:none}}
+@keyframes tugReadyShake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-1.6px) rotate(-.22deg)}75%{transform:translateX(1.6px) rotate(.22deg)}}
+.module.is-tug-armed{animation:tugReadyShake .13s ease-in-out infinite;cursor:grabbing}
+@media (prefers-reduced-motion:reduce){.module.is-snap-ready,.module.snap-pop,.module.is-tug-armed{animation:none}}
 
 /* Keep the expanded timer toolbars from clipping at default module size. */
 .timer-module .timer-controls,.interactive-module .timer-controls{max-height:245px}
