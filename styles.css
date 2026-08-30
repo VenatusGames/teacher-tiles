@@ -13512,6 +13512,10 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 
 /* Refined, hover-revealed name controls for classroom tiles. */
 .groupmaker-module,.lunchcount-module,.voting-module,.spinner-module{padding-bottom:58px}
+.groupmaker-module:not(:hover):not(:focus-within) .groupmaker-setup,
+.lunchcount-module:not(:hover):not(:focus-within) .lunchcount-name-pool,
+.voting-module:not(:hover):not(:focus-within) .voting-name-pool,
+.spinner-module:not(:hover):not(:focus-within) .spinner-settings{display:none!important}
 .tile-class-loader,.groupmaker-name-entry,.lunchcount-name-entry,.voting-name-entry,.spinner-name-entry{max-height:42px;opacity:1;transform:translateY(0);overflow:hidden;transition:opacity .16s ease,transform .16s ease,max-height .18s ease,margin .18s ease}
 .groupmaker-module:not(:hover):not(:focus-within) .tile-class-loader,.lunchcount-module:not(:hover):not(:focus-within) .tile-class-loader,.voting-module:not(:hover):not(:focus-within) .tile-class-loader,.spinner-module:not(:hover):not(:focus-within) .tile-class-loader,.groupmaker-module:not(:hover):not(:focus-within) .groupmaker-name-entry,.lunchcount-module:not(:hover):not(:focus-within) .lunchcount-name-entry,.voting-module:not(:hover):not(:focus-within) .voting-name-entry,.spinner-module:not(:hover):not(:focus-within) .spinner-name-entry{max-height:0;margin-top:0;margin-bottom:0;opacity:0;transform:translateY(5px);pointer-events:none}
 .tile-class-loader{position:relative;margin:0 0 8px;padding:6px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 9%,transparent);border-radius:12px;background:color-mix(in srgb,var(--module-bg,#fff) 94%,var(--module-text,#17191d) 6%);box-shadow:0 5px 15px rgba(15,23,42,.05)}.tile-class-loader select{height:32px;border:0;background:transparent;padding-left:7px}.tile-class-loader button{height:32px;border-radius:8px;padding:0 12px;box-shadow:0 3px 8px rgba(15,23,42,.1)}
