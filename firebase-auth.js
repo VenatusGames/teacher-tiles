@@ -2072,7 +2072,7 @@ async function renderUser(user) {
 
     loadEncryptedClasses().catch(error => {
       console.error("TeacherTiles could not decrypt class rosters", error);
-      setStatus("Saved class rosters could not be opened. Open Class Sync for details.", true);
+      setStatus("Saved class rosters could not be opened. Please sign out and sign back in, then try again.", true);
       classSyncMode = inferredClassSyncMode();
       refreshClassSyncUi();
     });

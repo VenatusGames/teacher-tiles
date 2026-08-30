@@ -183,11 +183,6 @@
               <span><strong>Manage Classes</strong><small>Create and manage reusable student rosters</small></span>
               <i aria-hidden="true">›</i>
             </button>
-            <button id="profile-class-sync-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-class-sync-panel">
-              <span class="profile-tool-button__icon profile-tool-button__icon--sync" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.2 18.2H5.8a3.8 3.8 0 0 1-.4-7.6A6.7 6.7 0 0 1 18 8.7a4.6 4.6 0 0 1 .2 9.2h-1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="8.2" y="13.2" width="7.6" height="6.8" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.2 13.2v-1.4a1.8 1.8 0 0 1 3.6 0v1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-              <span><strong>Class Sync</strong><small id="profile-class-sync-summary">Automatic encrypted sync with your Google account</small></span>
-              <i aria-hidden="true">›</i>
-            </button>
             <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 11.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-5.1 0-8.3 2.7-8.3 6.1 0 1 .8 1.9 1.9 1.9h12.8c1 0 1.9-.8 1.9-1.9 0-3.4-3.2-6.1-8.3-6.1Z" fill="currentColor"/></svg></span>
               <span><strong>Student View</strong><small>Manage PBIS through detailed stats and view student/class profiles</small></span>
@@ -238,31 +233,6 @@
                   </section>
                 </div>
               </section>
-            </div>
-          </section>
-          <section id="profile-class-sync-panel" class="class-sync-panel" hidden aria-hidden="true" aria-labelledby="class-sync-title">
-            <div class="class-sync-window__backdrop" aria-hidden="true"></div>
-            <div class="class-sync-window" role="dialog" aria-modal="true" aria-labelledby="class-sync-title">
-              <header class="class-sync-header">
-                <button id="profile-class-sync-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
-                <div><span>ENCRYPTED ROSTER SYNC</span><h3 id="class-sync-title">Class Sync</h3><p>Keep classes, students, and PBIS stats available across your signed-in devices.</p></div>
-              </header>
-              <div class="class-sync-body">
-                <section class="class-sync-status-card">
-                  <span id="class-sync-state-badge" class="class-sync-state-badge" data-state="checking">CONNECTING</span>
-                  <h4 id="class-sync-state-title">Connecting encrypted class sync</h4>
-                  <p id="class-sync-state-copy">Firebase is verifying your Google sign-in and loading your private class encryption key.</p>
-                </section>
-                <p class="class-sync-private-note"><strong>Automatic protection:</strong> class, student, and PBIS data is encrypted in your browser with AES-256-GCM before it is saved. The encryption key is stored separately in a private Firestore key vault restricted to your signed-in Google/Firebase account.</p>
-                <div class="class-sync-actions">
-                  <button id="class-sync-retry" type="button" hidden>Retry Sync</button>
-                </div>
-                <p id="class-sync-feedback" class="class-sync-feedback" role="status" aria-live="polite"></p>
-                <aside class="class-sync-recovery-note">
-                  <strong>No separate sync password.</strong>
-                  <p>Once an existing roster is migrated, signing into the same Google account on another browser, device, or incognito window automatically retrieves the same private encryption key.</p>
-                </aside>
-              </div>
             </div>
           </section>
           <section id="profile-student-view-panel" class="student-view-panel" hidden aria-labelledby="student-view-title">
