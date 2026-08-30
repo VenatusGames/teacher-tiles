@@ -3597,16 +3597,20 @@ function setupStarChart(m){
     return tokens[tokens.length-1]||container;
   };
 
-  const animateStarAward=(sourceRect,targetRect,studentKey)=>{
+  const animateStarAward=(sourceRect,targetRect)=>{
     const popLanding=()=>{
-      const landing=landingTargetFor(studentKey);
-      if(!landing)return;
-      landing.classList.remove('is-landing');
-      void landing.offsetWidth;
-      landing.classList.add('is-landing');
-      scheduleAnimation(()=>landing.classList.remove('is-landing'),520);
+      if(!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      const flash=document.createElement('span');
+      flash.className='starchart-landing-flash';
+      flash.textContent='★';
+      flash.setAttribute('aria-hidden','true');
+      flash.style.left=`${targetRect.left+targetRect.width*.5}px`;
+      flash.style.top=`${targetRect.top+targetRect.height*.5}px`;
+      document.body.append(flash);
+      flyingStars.add(flash);
+      scheduleAnimation(()=>{flyingStars.delete(flash);flash.remove()},520);
     };
-    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches){popLanding();return}
+    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 
     const star=document.createElement('span');
     star.className='starchart-flying-star';
@@ -3614,7 +3618,7 @@ function setupStarChart(m){
     star.setAttribute('aria-hidden','true');
     const startX=sourceRect.left+Math.min(sourceRect.width*.78,sourceRect.width-10);
     const startY=sourceRect.top+sourceRect.height*.5;
-    const endX=targetRect.left+Math.min(Math.max(26,targetRect.width*.42),Math.max(26,targetRect.width-20));
+    const endX=targetRect.left+targetRect.width*.5;
     const endY=targetRect.top+targetRect.height*.5;
     const dx=endX-startX;
     const dy=endY-startY;
@@ -3750,10 +3754,10 @@ function setupStarChart(m){
     const current=normalizeStarChartCount(progress.studentStars[key]);
     const adding=action.dataset.starAction==='add';
     if(!adding&&!current)return;
-    const flight=adding?{source:action.getBoundingClientRect(),target:row.querySelector('.starchart-star-stage')?.getBoundingClientRect()}:null;
+    const source=adding?action.getBoundingClientRect():null;
     progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
     persistProgress();
-    if(flight)animateStarAward(flight.source,flight.target,key);
+    if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());
   });
 
   studentGrid.addEventListener('submit',event=>{
@@ -3778,10 +3782,9 @@ function setupStarChart(m){
 
   wholeAdd.addEventListener('click',()=>{
     const source=wholeAdd.getBoundingClientRect();
-    const target=wholeBundles.getBoundingClientRect();
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
     persistProgress();
-    animateStarAward(source,target,'__whole__');
+    animateStarAward(source,landingTargetFor('__whole__')?.getBoundingClientRect());
   });
   wholeRemove.addEventListener('click',()=>{
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
