@@ -6551,7 +6551,10 @@ function setupCustomizeLauncher(){
   const toggle=document.getElementById('customize-toggle');
   const menu=document.getElementById('customize-launch-menu');
   if(!launcher||!toggle||!menu)return;
+  let closeTimer=0;
+  const cancelClose=()=>{clearTimeout(closeTimer);closeTimer=0};
   const setOpen=open=>{
+    cancelClose();
     launcher.classList.toggle('is-open',open);
     toggle.classList.toggle('is-active',open);
     toggle.setAttribute('aria-expanded',String(open));
@@ -6561,9 +6564,11 @@ function setupCustomizeLauncher(){
     event.stopPropagation();
     setOpen(!launcher.classList.contains('is-open'));
   });
-  menu.addEventListener('click',()=>setOpen(false));
-  document.addEventListener('pointerdown',event=>{
-    if(event.target instanceof Node&&!launcher.contains(event.target))setOpen(false);
+  launcher.addEventListener('pointerenter',cancelClose);
+  launcher.addEventListener('pointerleave',()=>{
+    if(!launcher.classList.contains('is-open'))return;
+    cancelClose();
+    closeTimer=setTimeout(()=>setOpen(false),900);
   });
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&launcher.classList.contains('is-open'))setOpen(false);
