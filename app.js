@@ -250,6 +250,19 @@ function attachClassRosterLoader(anchor,onLoad){
   return()=>window.removeEventListener('teachertiles:classeschange',refresh);
 }
 
+const NAME_UI_MODULE_SELECTOR='.groupmaker-module,.lunchcount-module,.voting-module,.spinner-module';
+document.addEventListener('pointerover',event=>{
+  if(!(event.target instanceof Element))return;
+  event.target.closest(NAME_UI_MODULE_SELECTOR)?.classList.remove('name-ui-force-hidden');
+});
+document.addEventListener('pointerout',event=>{
+  if(!(event.target instanceof Element))return;
+  const module=event.target.closest(NAME_UI_MODULE_SELECTOR);
+  if(module&&!(event.relatedTarget instanceof Node&&module.contains(event.relatedTarget))){
+    module.classList.add('name-ui-force-hidden');
+  }
+});
+
 function fitNameModuleToRoster(module,count,{namesPerRow=5,rowHeight=31,threshold=10}={}){
   if(!module)return;
   if(!module.dataset.rosterBaseHeight)module.dataset.rosterBaseHeight=String(Math.max(module.offsetHeight,Number.parseFloat(getComputedStyle(module).height)||0));
@@ -10114,7 +10127,8 @@ function setupSpinner(m){
     m.classList.add('spinner-pop');
 
     fireSpinnerConfetti();
-    playUiSfx('collection');
+    playUiSfx('confetti');
+    playUiSfx('timer-tada');
   }
 
   async function spin(){
@@ -10239,6 +10253,9 @@ function setupSpinner(m){
 
   const ro=new ResizeObserver(()=>drawWheel());
   ro.observe(m);
+  const refreshWheelLayout=()=>requestAnimationFrame(drawWheel);
+  m.addEventListener('pointerenter',refreshWheelLayout);
+  m.addEventListener('pointerleave',refreshWheelLayout);
 
   renderNameList();
   drawWheel();
@@ -10270,6 +10287,8 @@ function setupSpinner(m){
     detachRosterLoader();
     cancelAnimationFrame(raf);
     ro.disconnect();
+    m.removeEventListener('pointerenter',refreshWheelLayout);
+    m.removeEventListener('pointerleave',refreshWheelLayout);
     spinAudio.pause();
     spinAudio.currentTime=0;
   };
