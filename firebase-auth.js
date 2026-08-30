@@ -24,6 +24,18 @@ const profileBadgeCount = document.getElementById("profile-badge-count");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
+const classSyncButton = document.getElementById("profile-class-sync-button");
+const classSyncSummary = document.getElementById("profile-class-sync-summary");
+const classSyncPanel = document.getElementById("profile-class-sync-panel");
+const classSyncBack = document.getElementById("profile-class-sync-back");
+const classSyncBackdrop = document.querySelector("#profile-class-sync-panel .class-sync-window__backdrop");
+const classSyncStateBadge = document.getElementById("class-sync-state-badge");
+const classSyncStateTitle = document.getElementById("class-sync-state-title");
+const classSyncStateCopy = document.getElementById("class-sync-state-copy");
+const classSyncRetry = document.getElementById("class-sync-retry");
+const classSyncFeedback = document.getElementById("class-sync-feedback");
+if (classSyncPanel && classSyncPanel.parentElement !== document.body) document.body.appendChild(classSyncPanel);
+
 const boardsToggle = document.getElementById("boards-toggle");
 const boardsView = document.getElementById("boards-view");
 const boardsBack = document.getElementById("boards-back");
@@ -42,6 +54,16 @@ let currentUser = null;
 let authReady = false;
 let busy = false;
 let lastFocused = null;
+
+let classSyncDocumentExists = false;
+let classSyncHasCiphertext = false;
+let classSyncMode = "checking";
+let classSyncBusy = false;
+let classEncryptionKeyBytes = null;
+let classEncryptionKeyUid = "";
+let automaticClassKeyPromise = null;
+let classKeyProtection = "";
+let classSyncLastError = "";
 
 let boardList = [];
 let activeBoardId = "";
@@ -74,6 +96,10 @@ function classesDocument(uid) {
   return firestoreSdk.doc(db, "users", uid, "private", "classes");
 }
 
+function classKeyVaultDocument(uid) {
+  return firestoreSdk.doc(db, "users", uid, "private", "classKey");
+}
+
 function bytesToBase64(bytes) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -85,51 +111,333 @@ function base64ToBytes(value) {
   return Uint8Array.from(binary, character => character.charCodeAt(0));
 }
 
-async function getClassEncryptionKey(uid, { create = false } = {}) {
-  const storageKey = classEncryptionKeyStorageKey(uid);
-  let encoded = localStorage.getItem(storageKey) || "";
-  if (!encoded && create) {
-    const generated = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-    encoded = bytesToBase64(new Uint8Array(await crypto.subtle.exportKey("raw", generated)));
-    localStorage.setItem(storageKey, encoded);
-    return generated;
+function legacyClassEncryptionKeyBytes(uid = currentUser?.uid) {
+  if (!uid) return null;
+  try {
+    const raw = base64ToBytes(localStorage.getItem(classEncryptionKeyStorageKey(uid)) || "");
+    return raw.length === 32 ? raw : null;
+  } catch {
+    return null;
   }
-  if (!encoded) return null;
-  return crypto.subtle.importKey("raw", base64ToBytes(encoded), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+function setActiveClassEncryptionKey(uid, raw, { removeLegacy = false } = {}) {
+  const bytes = raw instanceof Uint8Array ? raw : new Uint8Array(raw || []);
+  if (!uid || bytes.length !== 32) throw new Error("The class encryption key is invalid");
+  classEncryptionKeyUid = uid;
+  classEncryptionKeyBytes = new Uint8Array(bytes);
+  if (removeLegacy) {
+    try { localStorage.removeItem(classEncryptionKeyStorageKey(uid)); } catch {}
+  }
+}
+
+function clearActiveClassEncryptionKey() {
+  classEncryptionKeyUid = "";
+  classEncryptionKeyBytes = null;
+  automaticClassKeyPromise = null;
+}
+
+function hasActiveClassEncryptionKey(uid = currentUser?.uid) {
+  return Boolean(uid && classEncryptionKeyUid === uid && classEncryptionKeyBytes?.length === 32);
+}
+
+async function importClassEncryptionKey(raw, usages = ["encrypt", "decrypt"]) {
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, usages);
+}
+
+async function getClassEncryptionKey(uid) {
+  if (!uid || !hasActiveClassEncryptionKey(uid)) return null;
+  return importClassEncryptionKey(classEncryptionKeyBytes);
+}
+
+function isLegacyMigrationRequiredError(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "").toLowerCase();
+  return code.includes("failed-precondition") && message.includes("original browser key");
+}
+
+async function markAutomaticKeyProtection() {
+  if (!currentUser || !db || !firestoreSdk) return;
+  try {
+    await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
+      version: 4,
+      keyProtection: "FIRESTORE_PRIVATE_VAULT",
+      keyEnvelope: firestoreSdk.deleteField(),
+      updatedAt: firestoreSdk.serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.warn("TeacherTiles could not update the class key protection marker", error);
+  }
+}
+
+async function validateLegacyClassKey(raw, encryptedValue) {
+  if (!raw?.length || !encryptedValue?.ciphertext || !encryptedValue?.iv) return false;
+  try {
+    const key = await importClassEncryptionKey(raw, ["decrypt"]);
+    await decryptClassesValue(encryptedValue, key);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readOrCreatePrivateClassKey(uid, candidateRaw, encryptedValue) {
+  const vaultRef = classKeyVaultDocument(uid);
+  const result = await firestoreSdk.runTransaction(db, async transaction => {
+    const vaultSnapshot = await transaction.get(vaultRef);
+    if (vaultSnapshot.exists()) {
+      return { key: String(vaultSnapshot.data()?.keyMaterial || ""), existing: true };
+    }
+
+    let raw = candidateRaw instanceof Uint8Array ? candidateRaw : null;
+    const hasExistingRoster = Boolean(encryptedValue?.ciphertext && encryptedValue?.iv);
+    if (hasExistingRoster) {
+      if (!raw?.length || !(await validateLegacyClassKey(raw, encryptedValue))) {
+        const migrationError = new Error("This older encrypted roster needs its original browser key one time before automatic sync can be enabled.");
+        migrationError.code = "failed-precondition/original-browser-key";
+        throw migrationError;
+      }
+    } else if (!raw?.length) {
+      raw = crypto.getRandomValues(new Uint8Array(32));
+    }
+
+    if (raw.length !== 32) throw new Error("The class encryption key is invalid");
+    const keyMaterial = bytesToBase64(raw);
+    transaction.set(vaultRef, {
+      version: 1,
+      algorithm: "AES-GCM-256",
+      keyMaterial,
+      ownerUid: uid,
+      createdAt: firestoreSdk.serverTimestamp(),
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    return { key: keyMaterial, existing: false };
+  });
+
+  const raw = base64ToBytes(result.key || "");
+  if (raw.length !== 32) throw new Error("The private class key vault contains invalid key material");
+  return { raw, existing: result.existing };
+}
+
+async function requestAutomaticClassKey({ force = false } = {}) {
+  if (!currentUser || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
+  const uid = currentUser.uid;
+  if (!force && hasActiveClassEncryptionKey(uid) && classSyncMode === "ready") return classEncryptionKeyBytes;
+  if (!force && automaticClassKeyPromise) return automaticClassKeyPromise;
+
+  const legacyRaw = legacyClassEncryptionKeyBytes(uid) || (hasActiveClassEncryptionKey(uid) ? classEncryptionKeyBytes : null);
+  classSyncMode = "checking";
+  classSyncLastError = "";
+  refreshClassSyncUi();
+
+  automaticClassKeyPromise = (async () => {
+    try {
+      const classesSnapshot = await firestoreSdk.getDoc(classesDocument(uid));
+      const encryptedValue = classesSnapshot.exists() ? (classesSnapshot.data() || {}) : {};
+      const { raw } = await readOrCreatePrivateClassKey(uid, legacyRaw, encryptedValue);
+      setActiveClassEncryptionKey(uid, raw, { removeLegacy: true });
+      classKeyProtection = "FIRESTORE_PRIVATE_VAULT";
+      classSyncMode = "ready";
+      classSyncLastError = "";
+      refreshClassSyncUi();
+      markAutomaticKeyProtection();
+      return classEncryptionKeyBytes;
+    } catch (error) {
+      if (isLegacyMigrationRequiredError(error)) {
+        clearActiveClassEncryptionKey();
+        classSyncMode = "legacy-missing";
+        classSyncLastError = "This older encrypted roster needs to be opened once in a browser that still has its original key.";
+        refreshClassSyncUi();
+        throw error;
+      }
+      if (legacyRaw?.length === 32) {
+        setActiveClassEncryptionKey(uid, legacyRaw);
+        classSyncMode = "migration-pending";
+        classSyncLastError = "Cloud key sync is temporarily unavailable, so this browser is using its existing local key.";
+        refreshClassSyncUi();
+        return classEncryptionKeyBytes;
+      }
+      clearActiveClassEncryptionKey();
+      classSyncMode = "error";
+      classSyncLastError = error?.message || "Automatic encrypted class sync is unavailable.";
+      refreshClassSyncUi();
+      throw error;
+    }
+  })();
+
+  try {
+    return await automaticClassKeyPromise;
+  } finally {
+    automaticClassKeyPromise = null;
+  }
+}
+
+async function decryptClassesValue(value, key) {
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBytes(value.iv) },
+    key,
+    base64ToBytes(value.ciphertext)
+  );
+  const classes = JSON.parse(new TextDecoder().decode(plaintext));
+  return Array.isArray(classes) ? classes : [];
+}
+
+function dispatchEncryptedClassesLoaded(classes) {
+  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
 }
 
 async function saveEncryptedClasses(classes) {
   if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
-  const key = await getClassEncryptionKey(currentUser.uid, { create: true });
+  await requestAutomaticClassKey();
+  const key = await getClassEncryptionKey(currentUser.uid);
+  if (!key) throw new Error("The class encryption key is not available");
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = new TextEncoder().encode(JSON.stringify(Array.isArray(classes) ? classes : []));
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
-  await firestoreSdk.setDoc(classesDocument(currentUser.uid), {
-    version: 1,
+  const payload = {
+    version: classSyncMode === "ready" ? 4 : 1,
     algorithm: "AES-GCM-256",
+    keyProtection: classSyncMode === "ready" ? "FIRESTORE_PRIVATE_VAULT" : "LEGACY_BROWSER_KEY",
     iv: bytesToBase64(iv),
     ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
     updatedAt: firestoreSdk.serverTimestamp()
-  });
+  };
+  await firestoreSdk.setDoc(classesDocument(currentUser.uid), payload, { merge: true });
+  classSyncDocumentExists = true;
+  classSyncHasCiphertext = true;
+  refreshClassSyncUi();
 }
 
 async function loadEncryptedClasses() {
   if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) return [];
   const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
-  if (!snapshot.exists()) return [];
-  const value = snapshot.data() || {};
-  if (!value.ciphertext || !value.iv) return [];
-  const key = await getClassEncryptionKey(currentUser.uid);
-  if (!key) throw new Error("This device does not have the encryption key for these rosters");
-  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(value.iv) }, key, base64ToBytes(value.ciphertext));
-  const classes = JSON.parse(new TextDecoder().decode(plaintext));
-  window.dispatchEvent(new CustomEvent("teachertiles:encryptedclassesloaded", { detail: { classes } }));
-  return classes;
+  classSyncDocumentExists = snapshot.exists();
+  const value = snapshot.exists() ? (snapshot.data() || {}) : {};
+  classSyncHasCiphertext = Boolean(value.ciphertext && value.iv);
+
+  let raw;
+  try {
+    raw = await requestAutomaticClassKey();
+  } catch (error) {
+    if (classSyncMode === "legacy-missing") return [];
+    throw error;
+  }
+
+  if (!classSyncHasCiphertext) {
+    refreshClassSyncUi();
+    return [];
+  }
+
+  const key = await importClassEncryptionKey(raw, ["decrypt"]);
+  try {
+    const classes = await decryptClassesValue(value, key);
+    dispatchEncryptedClassesLoaded(classes);
+    refreshClassSyncUi();
+    return classes;
+  } catch (error) {
+    if (classSyncMode === "migration-pending") {
+      classSyncLastError = "The saved classes could not be decrypted with this browser's legacy key.";
+      classSyncMode = "legacy-missing";
+      refreshClassSyncUi();
+    } else {
+      classSyncLastError = "The encrypted class roster could not be decrypted with the account key.";
+      classSyncMode = "error";
+      refreshClassSyncUi();
+    }
+    throw error;
+  }
 }
 
 function setStatus(message = "", isError = false) {
   status.textContent = message;
   status.classList.toggle("is-error", isError);
+}
+
+function inferredClassSyncMode() {
+  if (!currentUser) return "checking";
+  if (classSyncMode === "legacy-missing" || classSyncMode === "error" || classSyncMode === "migration-pending") return classSyncMode;
+  if (hasActiveClassEncryptionKey(currentUser.uid)) return "ready";
+  return "checking";
+}
+
+function setClassSyncFeedback(message = "", isError = false) {
+  if (!classSyncFeedback) return;
+  classSyncFeedback.textContent = message;
+  classSyncFeedback.classList.toggle("is-error", isError);
+}
+
+function refreshClassSyncUi() {
+  if (!classSyncButton) return;
+  const mode = inferredClassSyncMode();
+  if (classSyncSummary) {
+    classSyncSummary.textContent = mode === "ready"
+      ? "Automatic encrypted sync with your Google account"
+      : mode === "migration-pending"
+        ? "Using this browser's key while automatic sync reconnects"
+        : mode === "legacy-missing"
+          ? "One-time migration needs an original browser"
+          : mode === "error"
+            ? "Encrypted sync needs attention"
+            : "Connecting automatic encrypted class sync…";
+  }
+  classSyncButton.dataset.syncState = mode === "ready" ? "ready" : mode === "checking" ? "checking" : "locked";
+
+  if (!classSyncPanel || classSyncPanel.hidden) return;
+  classSyncMode = mode;
+  const state = mode === "ready" ? "ready" : mode === "checking" ? "checking" : "locked";
+  if (classSyncStateBadge) {
+    classSyncStateBadge.textContent = mode === "ready"
+      ? "PROTECTED"
+      : mode === "checking"
+        ? "CONNECTING"
+        : mode === "migration-pending"
+          ? "MIGRATION PENDING"
+          : mode === "legacy-missing"
+            ? "ORIGINAL BROWSER NEEDED"
+            : "SYNC ERROR";
+    classSyncStateBadge.dataset.state = state;
+  }
+  if (classSyncStateTitle) classSyncStateTitle.textContent = mode === "ready"
+    ? "Your classes follow your Google account"
+    : mode === "checking"
+      ? "Connecting encrypted class sync"
+      : mode === "migration-pending"
+        ? "Your classes still work on this browser"
+        : mode === "legacy-missing"
+          ? "One-time migration is required"
+          : "Automatic encrypted sync needs attention";
+  if (classSyncStateCopy) classSyncStateCopy.textContent = mode === "ready"
+    ? "TeacherTiles encrypts class, student, and PBIS data with AES-256-GCM before it is saved. The account key is stored separately in a private Firestore key vault that only your signed-in Firebase UID can access. No separate sync passphrase is needed."
+    : mode === "checking"
+      ? "Firebase is verifying your Google sign-in and loading your private class encryption key."
+      : mode === "migration-pending"
+        ? "This browser still has the older local encryption key, so your classes remain available. TeacherTiles will automatically copy that key into your private Firestore key vault when cloud sync is reachable."
+        : mode === "legacy-missing"
+          ? "This roster was encrypted before automatic account-key sync and this browser no longer has the original AES key. Open the updated TeacherTiles once in a browser where these classes still load; migration happens automatically there."
+          : (classSyncLastError || "TeacherTiles could not retrieve the protected account key.");
+  if (classSyncRetry) classSyncRetry.hidden = mode === "ready" || mode === "checking";
+  setClassSyncFeedback(mode === "ready" ? "Google sign-in will load the same private class key automatically on your other devices." : "", false);
+}
+
+function openClassSyncPanel() {
+  if (!classSyncPanel || !currentUser) return;
+  if (modal.hidden) openProfile();
+  classSyncPanel.hidden = false;
+  classSyncPanel.setAttribute("aria-hidden", "false");
+  classSyncButton?.setAttribute("aria-expanded", "true");
+  refreshClassSyncUi();
+  requestAnimationFrame(() => {
+    if (!classSyncRetry?.hidden) classSyncRetry.focus({ preventScroll: true });
+    else classSyncBack?.focus({ preventScroll: true });
+  });
+}
+
+function closeClassSyncPanel() {
+  if (!classSyncPanel || classSyncPanel.hidden) return;
+  classSyncPanel.hidden = true;
+  classSyncPanel.setAttribute("aria-hidden", "true");
+  classSyncButton?.setAttribute("aria-expanded", "false");
+  setClassSyncFeedback();
 }
 
 function setBoardStatus(message = "", isError = false) {
@@ -175,6 +483,7 @@ function openProfile() {
 
 function closeProfile() {
   if (modal.hidden) return;
+  closeClassSyncPanel();
   modal.hidden = true;
   modal.setAttribute("aria-hidden", "true");
   toggle.setAttribute("aria-expanded", "false");
@@ -1723,6 +2032,15 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const previousUser = currentUser;
   currentUser = user || null;
+  if (!user || previousUser?.uid !== user?.uid) {
+    classSyncDocumentExists = false;
+    classSyncHasCiphertext = false;
+    classSyncMode = "checking";
+    classKeyProtection = "";
+    classSyncLastError = "";
+    clearActiveClassEncryptionKey();
+    closeClassSyncPanel();
+  }
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   authReady = true;
@@ -1754,7 +2072,9 @@ async function renderUser(user) {
 
     loadEncryptedClasses().catch(error => {
       console.error("TeacherTiles could not decrypt class rosters", error);
-      setStatus("Saved class rosters could not be opened on this device.", true);
+      setStatus("Saved class rosters could not be opened. Please sign out and sign back in, then try again.", true);
+      classSyncMode = inferredClassSyncMode();
+      refreshClassSyncUi();
     });
 
     if (!previousUser || previousUser.uid !== user.uid) {
@@ -1907,6 +2227,27 @@ document.addEventListener("click", event => {
 }, true);
 
 toggle.addEventListener("click", () => modal.hidden ? openProfile() : closeProfile());
+classSyncButton?.addEventListener("click", openClassSyncPanel);
+classSyncBack?.addEventListener("click", closeClassSyncPanel);
+classSyncBackdrop?.addEventListener("click", closeClassSyncPanel);
+classSyncRetry?.addEventListener("click", async () => {
+  if (classSyncBusy || !currentUser) return;
+  classSyncBusy = true;
+  classSyncRetry.disabled = true;
+  setClassSyncFeedback("Retrying automatic encrypted sync…");
+  try {
+    await requestAutomaticClassKey({ force: true });
+    await loadEncryptedClasses();
+    setClassSyncFeedback(classSyncMode === "ready" ? "Encrypted class sync is connected." : classSyncLastError, classSyncMode !== "ready");
+  } catch (error) {
+    setClassSyncFeedback(classSyncLastError || error?.message || "Automatic encrypted sync could not connect.", true);
+  } finally {
+    classSyncBusy = false;
+    classSyncRetry.disabled = false;
+    refreshClassSyncUi();
+  }
+});
+
 modal.querySelectorAll("[data-profile-close]").forEach(button => button.addEventListener("click", closeProfile));
 signInButton.addEventListener("click", handleSignIn);
 signOutButton.addEventListener("click", handleSignOut);
@@ -1966,7 +2307,11 @@ window.TeacherTilesAuth = {
 
 window.TeacherTilesEncryptedClasses = {
   save: saveEncryptedClasses,
-  load: loadEncryptedClasses
+  load: loadEncryptedClasses,
+  retrySync: () => requestAutomaticClassKey({ force: true }),
+  get syncEnabled() { return classSyncMode === "ready"; },
+  get unlocked() { return Boolean(currentUser && hasActiveClassEncryptionKey(currentUser.uid)); },
+  get protection() { return classKeyProtection || (classSyncMode === "ready" ? "FIRESTORE_PRIVATE_VAULT" : ""); }
 };
 
 window.TeacherTilesCloudBoards = {

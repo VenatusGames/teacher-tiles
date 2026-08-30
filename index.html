@@ -123,7 +123,13 @@
           <span class="profile-panel__eyebrow" data-i18n="profile.eyebrow">TEACHERTILES ACCOUNT</span>
           <strong id="profile-title" data-i18n="profile.title">Profile</strong>
         </div>
-        <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile">×</button>
+        <div class="profile-panel__header-actions">
+          <button class="profile-notification-button" type="button" aria-label="Notifications — Coming soon" aria-disabled="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.25 9.75a4.75 4.75 0 0 1 9.5 0v3.15c0 1.3.45 2.55 1.28 3.55l.72.87H5.25l.72-.87a5.53 5.53 0 0 0 1.28-3.55V9.75Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19.1a2.25 2.25 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span>Coming soon</span>
+          </button>
+          <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile">×</button>
+        </div>
       </header>
 
       <div class="profile-panel__body">
@@ -167,9 +173,19 @@
           </div>
           <section class="profile-tools" aria-labelledby="profile-tools-title">
             <div class="profile-tools__head"><span>ACCOUNT TOOLS</span><h3 id="profile-tools-title">Your tools</h3></div>
+            <button class="profile-tool-button profile-tool-button--coming-soon" type="button" disabled aria-disabled="true">
+              <span class="profile-tool-button__icon profile-tool-button__icon--organization" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7.5L12 4v16M12 9h8v11M7.5 9.5h1M7.5 13h1M7.5 16.5h1M15.5 12.5h1M15.5 16h1M2.5 20h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span><strong>Organizations</strong><small>Create an organization for your school, club, group, or team. Share org-wide PBIS stats, boards, and other features amongst your colleagues and collaborators.</small></span>
+              <i aria-hidden="true">Coming Soon</i>
+            </button>
             <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
-              <span class="profile-tool-button__icon" aria-hidden="true">👥</span>
-              <span><strong>Classes</strong><small>Create and manage reusable student rosters</small></span>
+              <span class="profile-tool-button__icon profile-tool-button__icon--book" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5c2.8-.6 5.4.1 8 2.1v11c-2.6-2-5.2-2.7-8-2.1v-11Zm16 0c-2.8-.6-5.4.1-8 2.1v11c2.6-2 5.2-2.7 8-2.1v-11Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 7.6v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+              <span><strong>Manage Classes</strong><small>Create and manage reusable student rosters</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+            <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
+              <span class="profile-tool-button__icon profile-tool-button__icon--students" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 11.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-5.1 0-8.3 2.7-8.3 6.1 0 1 .8 1.9 1.9 1.9h12.8c1 0 1.9-.8 1.9-1.9 0-3.4-3.2-6.1-8.3-6.1Z" fill="currentColor"/></svg></span>
+              <span><strong>Student View</strong><small>Manage PBIS through detailed stats and view student/class profiles</small></span>
               <i aria-hidden="true">›</i>
             </button>
           </section>
@@ -178,8 +194,9 @@
             <div class="classes-window" role="dialog" aria-modal="true" aria-labelledby="profile-classes-title">
               <section id="profile-classes-list-view" class="classes-view classes-list-view">
                 <div class="profile-classes-panel__head">
-                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Classes</h3><p>Reusable class lists for every name-based tile.</p></div>
-                  <button id="profile-classes-close" type="button" aria-label="Close Classes">×</button>
+                  <button id="profile-classes-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
+                  <div><span>TEACHERTILES ROSTERS</span><h3 id="profile-classes-title">Manage Classes</h3><p>Create class rosters for use with PBIS and other tiles.</p></div>
+                  <button id="profile-classes-close" type="button" aria-label="Close Manage Classes">×</button>
                 </div>
                 <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
                 <form id="profile-class-create" class="profile-class-create">
@@ -190,11 +207,16 @@
               </section>
               <section id="profile-roster-view" class="classes-view roster-editor-view" hidden>
                 <div class="roster-editor__head">
-                  <button id="profile-roster-back" class="roster-back" type="button">← Classes</button>
+                  <button id="profile-roster-back" class="roster-back" type="button">← Manage Classes</button>
                   <div><span>EDIT ROSTER</span><input id="profile-roster-name" type="text" maxlength="50" aria-label="Class name"></div>
                   <button id="profile-roster-done" class="roster-done" type="button">Done</button>
                 </div>
                 <div class="roster-editor__body">
+                  <section class="roster-logo-card" aria-labelledby="profile-roster-logo-title">
+                    <div class="roster-logo-card__copy"><strong id="profile-roster-logo-title">Class logo</strong><p>Pick a fun symbol for this class. It will appear on whole-class PBIS tools and profiles.</p></div>
+                    <div id="profile-roster-logo-options" class="roster-logo-options" role="group" aria-label="Premade class logo symbols"></div>
+                    <label class="roster-logo-custom"><span>Or use your own symbol</span><input id="profile-roster-custom-logo" type="text" maxlength="16" placeholder="✨" aria-label="Custom class logo symbol"></label>
+                  </section>
                   <div class="roster-entry-card">
                     <label for="profile-student-name">Add students</label>
                     <p>Use first names or nicknames only.</p>
@@ -205,8 +227,51 @@
                   </div>
                   <div class="roster-students-heading"><strong>Students</strong><span id="profile-roster-count">0 students</span></div>
                   <div id="profile-roster-students" class="roster-student-chips"></div>
+                  <section class="roster-danger-zone" aria-label="Delete class">
+                    <div><strong>Delete class</strong><p>Permanently remove this class roster and its saved PBIS stats.</p></div>
+                    <button id="profile-roster-delete" type="button">Delete Class</button>
+                  </section>
                 </div>
               </section>
+            </div>
+          </section>
+          <section id="profile-student-view-panel" class="student-view-panel" hidden aria-labelledby="student-view-title">
+            <div class="student-view-window__backdrop" aria-hidden="true"></div>
+            <div class="student-view-window" role="dialog" aria-modal="true" aria-labelledby="student-view-title">
+              <header class="student-view-header">
+                <button id="profile-student-view-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
+                <div><span>PBIS PROFILES</span><h3 id="student-view-title">Student View</h3><p>Manage PBIS through detailed stats and view student/class profiles</p></div>
+                <button id="profile-student-view-close" type="button" aria-label="Close Student View">×</button>
+              </header>
+              <section class="student-view-stat-settings" aria-label="PBIS profile settings">
+                <label class="student-view-search">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  <input id="student-view-search" type="search" placeholder="Search students…" autocomplete="off" aria-label="Search students">
+                </label>
+                <div class="student-view-stat-menu">
+                  <button id="student-view-stat-menu-toggle" class="student-view-stat-menu__toggle" type="button" aria-expanded="false" aria-controls="student-view-stat-menu">
+                    <span aria-hidden="true">★</span>
+                    <strong>Enable/Disable PBIS Types</strong>
+                    <i aria-hidden="true">⌄</i>
+                  </button>
+                  <div id="student-view-stat-menu" class="student-view-stat-menu__popover" hidden>
+                    <div class="student-view-stat-menu__header"><strong>PBIS types</strong><small>Choose which stats appear on student and whole-class profiles.</small></div>
+                    <div id="student-view-stat-toggles" class="student-view-stat-toggles"></div>
+                  </div>
+                </div>
+              </section>
+              <div id="student-view-rosters" class="student-view-rosters"></div>
+
+              <div id="student-view-detail" class="student-view-detail" hidden>
+                <button class="student-view-detail__backdrop" type="button" aria-label="Close student profile"></button>
+                <article class="student-profile-card" role="dialog" aria-modal="true" aria-labelledby="student-profile-name">
+                  <button id="student-view-detail-close" class="student-profile-close" type="button" aria-label="Close student profile">×</button>
+                  <div id="student-profile-avatar" class="student-profile-avatar" aria-hidden="true">S</div>
+                  <span id="student-profile-class" class="student-profile-class">Class</span>
+                  <h4 id="student-profile-name">Student</h4>
+                  <div id="student-profile-stats" class="student-profile-stats"></div>
+                </article>
+              </div>
             </div>
           </section>
           <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
@@ -525,7 +590,7 @@
             <div class="terms-document">
               <div class="terms-notice"><strong>Plain-language note</strong><span>These terms are a general starter document and do not replace advice from a qualified attorney.</span></div>
               <article><h3>1. Acceptance and eligibility</h3><p>By accessing or using TeacherTiles, you agree to these Terms. If you use TeacherTiles for a school, district, or other organization, you confirm that you are authorized to accept these Terms for that organization. Do not use the service if you do not agree.</p></article>
-              <article><h3>2. Classroom use, accounts, and data protection</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p><p>TeacherTiles encrypts saved student-roster data in your browser before it is transmitted to our cloud database, so student names are stored on the server as encrypted data rather than readable text. Personal and account data transmitted through TeacherTiles is protected with encrypted network connections, and our cloud providers apply encryption at rest to stored service data. No security system is infallible, so users should still enter only the minimum information necessary and use first names or nicknames for student rosters.</p></article>
+              <article><h3>2. Classroom use, accounts, and data protection</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p><p>TeacherTiles encrypts saved student-roster data in your browser before it is transmitted to our cloud database, so student names are stored in Firestore as encrypted data rather than readable text. For signed-in class sync, the roster encryption key is stored separately in a private Firestore key-vault document restricted to the signed-in Firebase account by Security Rules, allowing the same Google account to recover it automatically on another browser or device. Personal and account data transmitted through TeacherTiles is protected with encrypted network connections, and our cloud providers apply encryption at rest to stored service data. No security system is infallible, so users should still enter only the minimum information necessary and use first names or nicknames for student rosters.</p></article>
               <article><h3>3. Your content</h3><p>You keep ownership of text, images, flashcards, boards, and other content you create or upload. You grant TeacherTiles a limited license to host, process, display, and store that content only as needed to operate and improve the service. You confirm that you have the rights and permissions needed for anything you upload.</p></article>
               <article><h3>4. TeacherTiles intellectual property and license</h3><p>The TeacherTiles software, interface, visual design, branding, original artwork, documentation, and other original materials are owned by TeacherTiles or its licensors and may be protected by copyright, trademark, and other laws. We grant you a limited, personal, non-exclusive, non-transferable, revocable license to use the service for its intended purpose. Except where applicable law or an identified open-source license permits it, you may not reproduce, redistribute, sell, sublicense, scrape, reverse engineer, remove ownership notices from, or create a competing product from TeacherTiles code or assets without prior written permission. These Terms do not restrict lawful fair use or other rights that cannot legally be waived.</p></article>
               <article><h3>5. Acceptable use</h3><p>You may not interfere with the service, bypass access controls, introduce malware, impersonate another person, abuse redemption or virtual-currency systems, infringe others’ rights, or use TeacherTiles for unlawful, harmful, deceptive, or harassing activity. We may suspend access needed to protect users, the service, or legal rights.</p></article>
@@ -1389,7 +1454,7 @@
         <span class="context-menu__icon context-menu__icon--weather" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 16.5H18a3 3 0 0 0 .2-6 5.3 5.3 0 0 0-10-1.5A3.8 3.8 0 0 0 8.2 16.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5.5v-2M2.8 7.7H1M6.7 3.8 5.4 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
         <span><strong>Weather</strong><small>Compare current weather in several places</small></span>
       </button>
-      <button class="context-menu__item" data-module="weatherwheel" data-category="tools">
+      <button class="context-menu__item" data-module="weatherwheel" data-category="tools science">
         <span class="context-menu__icon context-menu__icon--choicewheel" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.5V12l5.9-6M12 12l8.4 2M12 12l-4.6 7.2M12 12 3.8 9" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="m12 12 1.2-5.6 1.5 5.5-2.7.1Z" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span>
         <span><strong>Weather Wheel</strong><small>Point to today’s weather</small></span>
       </button>
@@ -1541,8 +1606,21 @@
         <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
-      <button class="context-menu__item" data-module="collections" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
-      <button class="context-menu__item" data-module="stoplight" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
+      <button class="context-menu__item" data-module="pbisconsole" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--pbisconsole" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><strong>PBIS Console</strong><small>Manage every tracked PBIS stat in one place</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="prizeboard" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--prizeboard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v4H3zM12 7v13M8.2 7C6 7 4.7 5.8 5.1 4.4c.4-1.5 2.1-1.8 3.4-.8C9.5 4.4 10.3 5.6 12 7c1.7-1.4 2.5-2.6 3.5-3.4 1.3-1 3-.7 3.4.8.4 1.4-.9 2.6-3.1 2.6H8.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><strong>Prize Board</strong><small>Create and redeem student or whole-class rewards</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="starchart" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--starchart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Star Chart</strong><small>Award stars to a class or individual students</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="classmeter" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classmeter" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 1 6 0v9.1a5 5 0 1 1-6 0V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v9.5M9.2 17.2h5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><strong>Class Meter</strong><small>Hold to fill a whole-class reward meter</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="collections" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a class reward jar together</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="punchcards" data-category="pbis" data-pbis-tracking="true">
+        <span class="context-menu__icon context-menu__icon--punchcards" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h.1M12 9h.1M17 9h.1M7 15h.1M12 15h.1M17 15h.1" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M9.5 5v14M14.5 5v14" stroke="currentColor" stroke-width="1" opacity=".3" stroke-dasharray="1.5 2"/></svg></span>
+        <span><strong>Punchcards</strong><small>Punch reward cards for students or the whole class</small></span><span class="context-menu__tracking-badge">PBIS</span>
+      </button>
+      <button class="context-menu__item" data-module="racer" data-category="pbis" data-pbis-tracking="true">
+        <span class="context-menu__icon context-menu__icon--racer" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V4m0 1h11l-2.2 3L16 11H5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.2 19c.3-2.4 1-3.6 1.8-3.6S10.5 16.6 10.8 19m3.5-5.6h4.2m-2.1-2.1v4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span><strong>Racer</strong><small>Move student racers toward the finish line</small></span><span class="context-menu__tracking-badge">PBIS</span>
+      </button>
+      <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -2003,31 +2081,63 @@
 
 
   <template id="collections-template">
-    <section class="module collections-module" data-type="collections" data-item="pompom" data-bg="white">
+    <section class="module collections-module" data-type="collections" data-item="pompom" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete collection jar">×</button><div class="module-drag-handle"></div>
-      <div class="collection-stage">
-        <div class="collection-title">Collection Jar</div>
-        <canvas class="collection-canvas" aria-label="Interactive collection jar. Click the jar to add an item."></canvas>
-        <div class="collection-count">0 items</div>
+
+      <div class="collection-import">
+        <div class="collection-import__mark" aria-hidden="true">🫙</div>
+        <strong>Choose a class to begin</strong>
+        <p>Load a saved class, then fill a shared reward jar together.</p>
+        <div class="collection-loader-anchor" hidden></div>
+        <small>Jar progress and fills stay with the class, even if this tile is deleted.</small>
       </div>
-      <div class="collection-controls">
-        <button class="collection-add primary" type="button">+ Add</button>
-        <div class="collection-picker-wrap">
-          <button class="collection-type" type="button" title="Choose collectible" aria-expanded="false">
-            <span class="collectible-preview collection-current-preview preview-pompom" aria-hidden="true"></span><span class="collection-type-label">Pom poms</span><span class="collection-chevron">⌃</span>
-          </button>
-          <div class="collection-picker" hidden>
-            <button type="button" data-collection-type="pompom"><span class="collectible-preview preview-pompom"></span><span>Pom poms</span></button>
-            <button type="button" data-collection-type="candy"><span class="collectible-preview preview-candy"></span><span>Candies</span></button>
-            <button type="button" data-collection-type="star"><span class="collectible-preview preview-star"></span><span>Stars</span></button>
-            <button type="button" data-collection-type="jellybean"><span class="collectible-preview preview-jellybean"></span><span>Jellybeans</span></button>
-            <button type="button" data-collection-type="fruit"><span class="collectible-preview preview-fruit"></span><span>Fruits</span></button>
-            <button type="button" data-collection-type="coin"><span class="collectible-preview preview-coin"></span><span>Coins</span></button>
+
+      <div class="collection-dashboard" hidden data-skip-board-save>
+        <header class="collection-class-header">
+          <span class="collection-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="collection-class-name">Class</strong><small>WHOLE-CLASS COLLECTION</small></div>
+          <button class="collection-change-class" type="button">Change class</button>
+        </header>
+        <div class="collection-stage">
+          <canvas class="collection-canvas" aria-label="Interactive class collection jar. Click the jar to add an item."></canvas>
+          <button class="collection-fill-line-handle" type="button" aria-label="Move jar fill line" title="Drag to move fill line"><span aria-hidden="true">⋮</span></button>
+          <div class="collection-count">0 items</div>
+          <div class="collection-filled-banner" role="status" aria-live="polite" hidden>
+            <span aria-hidden="true">🏆</span><strong>Jar Filled!</strong><small>Celebrate, then clear the jar and start again.</small>
+            <button class="collection-banner-restart primary" type="button">Clear &amp; start over</button>
           </div>
         </div>
-        <button class="custom-icon collection-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette"></span></button>
-        <button class="collection-clear" type="button">Clear</button>
+        <div class="collection-controls">
+          <button class="collection-add primary" type="button">+ Add</button>
+          <div class="collection-picker-wrap">
+            <button class="collection-type" type="button" title="Choose collectible" aria-expanded="false">
+              <span class="collectible-preview collection-current-preview preview-pompom" aria-hidden="true"></span><span class="collection-type-label">Pom poms</span><span class="collection-chevron">⌃</span>
+            </button>
+            <div class="collection-picker" hidden>
+              <button type="button" data-collection-type="pompom"><span class="collectible-preview preview-pompom"></span><span>Pom poms</span></button>
+              <button type="button" data-collection-type="candy"><span class="collectible-preview preview-candy"></span><span>Candies</span></button>
+              <button type="button" data-collection-type="star"><span class="collectible-preview preview-star"></span><span>Stars</span></button>
+              <button type="button" data-collection-type="jellybean"><span class="collectible-preview preview-jellybean"></span><span>Jellybeans</span></button>
+              <button type="button" data-collection-type="fruit"><span class="collectible-preview preview-fruit"></span><span>Fruits</span></button>
+              <button type="button" data-collection-type="coin"><span class="collectible-preview preview-coin"></span><span>Coins</span></button>
+            </div>
+          </div>
+          <button class="custom-icon collection-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette"></span></button>
+          <div class="collection-settings-wrap">
+            <button class="collection-settings-toggle" type="button" aria-expanded="false" aria-label="Open Collection Jar settings">⚙</button>
+            <div class="collection-settings" hidden>
+              <strong>Jars Filled</strong><small>Correct the class tally when needed.</small>
+              <div class="collection-jars-total"><span aria-hidden="true">🫙</span><b class="collection-jars-filled">0</b></div>
+              <button class="collection-empty-current" type="button">Empty current jar</button>
+              <button class="collection-add-fill" type="button">Add one jar filled</button>
+              <button class="collection-remove-fill" type="button">Remove one jar filled</button>
+              <button class="collection-reset-fills" type="button">Reset jars filled to 0</button>
+            </div>
+          </div>
+          <button class="collection-restart primary" type="button" hidden>Clear &amp; start over</button>
+        </div>
       </div>
+      <div class="confetti-layer" aria-hidden="true"></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -2062,6 +2172,300 @@
           </div>
         </div>
         <button class="custom-icon stoplight-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="starchart-template">
+    <section class="module starchart-module" data-type="starchart" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete star chart">×</button><div class="module-drag-handle"></div>
+
+      <div class="starchart-import">
+        <div class="starchart-import__mark" aria-hidden="true">★</div>
+        <strong>Choose a class to begin</strong>
+        <p>Import one of your saved class rosters, then award stars to the whole class or individual students.</p>
+        <div class="starchart-loader-anchor" hidden></div>
+        <small>Star progress stays with the class, even if this tile is deleted.</small>
+      </div>
+
+      <div class="starchart-dashboard" hidden>
+        <header class="starchart-header">
+          <div><strong class="starchart-class-name">Class</strong></div>
+          <button class="starchart-change-class" type="button">Change class</button>
+        </header>
+        <div class="starchart-mode" role="tablist" aria-label="Star chart mode">
+          <button type="button" data-starchart-mode="student" role="tab">Students</button>
+          <button type="button" data-starchart-mode="whole" role="tab">Whole Class</button>
+        </div>
+
+        <section class="starchart-student-view" aria-label="Student stars">
+          <div class="starchart-student-toolbar">
+            <p class="starchart-student-hint"><span aria-hidden="true">★</span> Click a student to award a star. Click a displayed star to remove one.</p>
+            <button class="starchart-show-all" type="button" aria-pressed="false"><span aria-hidden="true"><i></i></span><strong>Show all students</strong></button>
+          </div>
+          <div class="starchart-student-grid" data-skip-board-save></div>
+          <p class="starchart-no-students" hidden>This class does not have any students yet. Add first names or nicknames in Classes, then return here.</p>
+        </section>
+
+        <section class="starchart-whole-view" hidden aria-label="Whole class stars" data-skip-board-save>
+          <div class="starchart-whole-badge" aria-hidden="true">★</div>
+          <strong class="starchart-whole-class-name">Class</strong>
+          <div class="starchart-whole-count"><span>★</span><b>0</b></div>
+          <p>stars earned together</p>
+          <div class="starchart-whole-bundles" aria-label="Whole class star bundles"></div>
+          <div class="starchart-whole-actions">
+            <button class="starchart-whole-remove" type="button" aria-label="Remove a whole class star">−</button>
+            <button class="starchart-whole-add" type="button">Award a star <span aria-hidden="true">★</span></button>
+          </div>
+        </section>
+      </div>
+
+      <div class="starchart-customization customization-bar">
+        <button class="custom-icon starchart-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon starchart-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon starchart-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="classmeter-template">
+    <section class="module classmeter-module" data-type="classmeter" data-bg="white" data-font="inter" data-text="dark" data-orientation="vertical">
+      <button class="module-delete" aria-label="Delete Class Meter">×</button><div class="module-drag-handle"></div>
+
+      <div class="classmeter-import">
+        <div class="classmeter-import__mark" aria-hidden="true">🌟</div>
+        <strong>Choose a class to begin</strong>
+        <p>Load a saved class, then hold the fill button to build toward a whole-class celebration.</p>
+        <div class="classmeter-loader-anchor" hidden></div>
+        <small>Meter progress and wins stay with the class, even if this tile is deleted.</small>
+      </div>
+
+      <div class="classmeter-dashboard" hidden data-skip-board-save>
+        <header class="classmeter-header">
+          <span class="classmeter-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="classmeter-class-name">Class</strong><small>WHOLE-CLASS METER</small></div>
+          <button class="classmeter-change-class" type="button">Change class</button>
+        </header>
+        <div class="classmeter-stage">
+          <div class="classmeter-win-count" aria-label="Meter wins"><span aria-hidden="true">🏆</span><strong><b>0</b> fills</strong></div>
+          <div class="classmeter-meter" role="meter" aria-label="Class Meter fill" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="classmeter-liquid" aria-hidden="true"><i></i><span></span></div>
+            <div class="classmeter-meter-shine" aria-hidden="true"></div>
+            <div class="classmeter-meter-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="classmeter-meter-copy"><small>CLASS GOAL</small><strong class="classmeter-percent">0%</strong></div>
+          </div>
+        </div>
+        <div class="classmeter-hover-tools">
+          <button class="classmeter-fill" type="button"><span aria-hidden="true">＋</span><strong>Hold to fill</strong></button>
+          <button class="classmeter-decrease" type="button" aria-label="Remove 5 percent from the meter"><span aria-hidden="true">−</span><strong>5%</strong></button>
+          <button class="classmeter-orientation" type="button" aria-label="Switch to horizontal meter"><span aria-hidden="true">↔</span><strong>Horizontal</strong></button>
+          <div class="classmeter-settings-wrap">
+            <button class="classmeter-settings-toggle" type="button" aria-expanded="false" aria-label="Open Class Meter settings">⚙</button>
+            <div class="classmeter-settings" hidden>
+              <strong>Meter progress</strong><small>Adjust the current fill or correct the win tally.</small>
+              <button class="classmeter-remove-progress" type="button">Remove 5%</button>
+              <button class="classmeter-reset-progress" type="button">Start meter over</button>
+              <button class="classmeter-remove-win" type="button">Remove one win</button>
+              <button class="classmeter-reset-wins" type="button">Reset wins to 0</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="classmeter-win-popup" role="status" aria-live="polite" hidden><span aria-hidden="true">🏆</span><strong>Filled meter!</strong></div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+      <div class="classmeter-customization customization-bar">
+        <button class="custom-icon classmeter-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon classmeter-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon classmeter-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="prizeboard-template">
+    <section class="module prizeboard-module" data-type="prizeboard" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Prize Board">×</button><div class="module-drag-handle"></div>
+      <div class="prizeboard-import">
+        <div class="prizeboard-import__mark" aria-hidden="true">🎟️</div>
+        <strong>Choose a class to begin</strong>
+        <p>Build student and whole-class prize menus, then redeem rewards directly from tracked PBIS balances.</p>
+        <div class="prizeboard-loader-anchor" hidden></div>
+        <small>Prize definitions stay with this tile. PBIS balances stay with the class.</small>
+      </div>
+      <div class="prizeboard-dashboard" hidden data-skip-board-save>
+        <header class="prizeboard-header">
+          <span class="prizeboard-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="prizeboard-class-name">Class</strong><small>PRIZE BOARD</small></div>
+          <button class="prizeboard-change-class" type="button">Change class</button>
+        </header>
+        <div class="prizeboard-tabs" role="tablist" aria-label="Prize categories">
+          <button type="button" data-prize-scope="student" role="tab">Prizes</button>
+          <button type="button" data-prize-scope="class" role="tab">Whole Class Prizes</button>
+        </div>
+        <div class="prizeboard-grid" data-skip-board-save></div>
+        <button class="prizeboard-add" type="button"><span aria-hidden="true">＋</span> Add prize</button>
+      </div>
+      <div class="prizeboard-customization customization-bar">
+        <button class="custom-icon prizeboard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon prizeboard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon prizeboard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="pbisconsole-template">
+    <section class="module pbisconsole-module" data-type="pbisconsole" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete PBIS Console">×</button><div class="module-drag-handle"></div>
+      <div class="pbisconsole-import">
+        <div class="pbisconsole-import__mark" aria-hidden="true">★</div>
+        <strong>Choose a class to manage</strong>
+        <p>Adjust student and whole-class PBIS balances from one central console.</p>
+        <div class="pbisconsole-loader-anchor" hidden></div>
+        <small>Every change updates the same PBIS data used by your other tiles.</small>
+      </div>
+      <div class="pbisconsole-dashboard" hidden data-skip-board-save>
+        <header class="pbisconsole-header">
+          <span class="pbisconsole-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="pbisconsole-class-name">Class</strong><small>PBIS CONSOLE</small></div>
+          <button class="pbisconsole-change-class" type="button">Change class</button>
+        </header>
+        <div class="pbisconsole-tabs" role="tablist" aria-label="PBIS Console views">
+          <button type="button" data-pbisconsole-view="students" role="tab">Students</button>
+          <button type="button" data-pbisconsole-view="class" role="tab">Whole Class</button>
+        </div>
+        <div class="pbisconsole-toolbar pbisconsole-student-toolbar">
+          <label><span>Student</span><select class="pbisconsole-student" aria-label="Choose student"></select></label>
+        </div>
+        <div class="pbisconsole-stats" data-skip-board-save></div>
+      </div>
+      <div class="pbisconsole-customization customization-bar">
+        <button class="custom-icon pbisconsole-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon pbisconsole-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon pbisconsole-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="punchcards-template">
+    <section class="module punchcard-module" data-type="punchcards" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Punchcards">×</button><div class="module-drag-handle"></div>
+      <div class="punchcard-import">
+        <div class="punchcard-import__mark" aria-hidden="true">●</div>
+        <strong>Choose a class to begin</strong>
+        <p>Create an interactive 10-punch reward card for a student or your whole class.</p>
+        <div class="punchcard-loader-anchor" hidden></div>
+        <small>Every completed card earns one tracked Punchcard Point.</small>
+      </div>
+      <div class="punchcard-dashboard" hidden data-skip-board-save>
+        <header class="punchcard-header">
+          <span class="punchcard-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="punchcard-class-name">Class</strong><small>PUNCHCARDS</small></div>
+          <button class="punchcard-change-class" type="button">Change class</button>
+        </header>
+        <div class="punchcard-tabs" role="tablist" aria-label="Punchcard target">
+          <button type="button" data-punchcard-scope="student" role="tab">Student</button>
+          <button type="button" data-punchcard-scope="class" role="tab">Whole Class</button>
+        </div>
+        <label class="punchcard-student-wrap"><span>Student</span><select class="punchcard-student" aria-label="Choose student"></select></label>
+        <div class="punchcard-card" data-skip-board-save>
+          <div class="punchcard-card__top">
+            <div><small class="punchcard-type">STUDENT PUNCHCARD</small><strong class="punchcard-name">Student</strong></div>
+            <div class="punchcard-points"><span>POINTS</span><strong class="punchcard-points-value">0</strong></div>
+          </div>
+          <div class="punchcard-holes" aria-label="Punchcard holes"></div>
+          <div class="punchcard-card__footer"><span>TEACHERTILES PBIS</span><i aria-hidden="true">✦</i><span>10 PUNCHES = 1 POINT</span></div>
+        </div>
+        <button class="punchcard-reset" type="button">Reset current card</button>
+      </div>
+      <div class="punchcard-complete" role="dialog" aria-modal="true" aria-live="polite" hidden>
+        <div class="punchcard-complete__burst" aria-hidden="true">✦</div>
+        <small>10 / 10 PUNCHES</small>
+        <h3>Punchcard Complete!</h3>
+        <p><strong class="punchcard-complete-name">Student</strong> earned a Punchcard Point.</p>
+        <div class="punchcard-complete__total"><span>Total Punchcard Points</span><strong class="punchcard-complete-points">1</strong></div>
+        <button class="punchcard-complete-done" type="button">Start New Card</button>
+      </div>
+      <div class="punchcard-customization customization-bar">
+        <button class="custom-icon punchcard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon punchcard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon punchcard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="racer-template">
+    <section class="module racer-module" data-type="racer" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Racer">×</button><div class="module-drag-handle"></div>
+      <div class="racer-import">
+        <div class="racer-import__mark" aria-hidden="true">🏁</div>
+        <strong>Choose a class to race</strong>
+        <p>Every student gets a standee. Move them along the track and award a Race Win when they cross the finish.</p>
+        <div class="racer-loader-anchor" hidden></div>
+        <small>Race Wins are personal PBIS stats and the race resets only when you choose.</small>
+      </div>
+      <div class="racer-dashboard" hidden data-skip-board-save>
+        <header class="racer-header">
+          <span class="racer-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="racer-class-name">Class</strong><small>RACER</small></div>
+          <button class="racer-change-class" type="button">Change class</button>
+        </header>
+        <div class="racer-stage" data-skip-board-save>
+          <svg class="racer-track-art" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+            <path class="racer-track-shadow" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-track-line" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-start-line" d="M60 166v56"/>
+            <path class="racer-finish-line" d="M940 148v78"/>
+          </svg>
+          <div class="racer-start-label">START</div>
+          <div class="racer-finish"><span class="racer-finish-flag" aria-hidden="true"></span><strong>FINISH</strong></div>
+          <div class="racer-standees"></div>
+          <div class="racer-status">Move a student forward to begin the race</div>
+        </div>
+        <div class="racer-controls">
+          <label><span>Student</span><select class="racer-student" aria-label="Choose student racer"></select></label>
+          <label class="racer-distance-wrap"><span>Distance</span><input class="racer-distance" type="number" min="1" max="100" step="1" value="10" aria-label="Distance to add"></label>
+          <button class="racer-move" type="button">Add distance</button>
+          <button class="racer-reset" type="button">Reset race</button>
+        </div>
+      </div>
+      <div class="racer-win" role="dialog" aria-modal="true" aria-live="polite" hidden>
+        <div class="racer-win__flag" aria-hidden="true">🏁</div>
+        <small>FINISH LINE CROSSED</small>
+        <h3>Race Win!</h3>
+        <p><strong class="racer-win-name">Student</strong> earned a personal Race Win.</p>
+        <div class="racer-win__total"><span>Total Race Wins</span><strong class="racer-win-total">1</strong></div>
+        <button class="racer-win-done" type="button">Keep Racing</button>
+      </div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+      <div class="racer-customization customization-bar">
+        <button class="custom-icon racer-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon racer-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon racer-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="classvsclass-template">
+    <section class="module classvsclass-module" data-type="classvsclass">
+      <button class="module-delete" aria-label="Delete Class vs Class">×</button><div class="module-drag-handle"></div>
+      <div class="classvsclass-content">
+        <div class="classvsclass-flags" aria-hidden="true"><span>★</span><i>VS</i><span>★</span></div>
+        <strong>Coming Soon</strong>
+        <h3>Class vs Class</h3>
+        <p>A versus-style student incentive tool where your class can compete with classes from other TeacherTiles users in friendly, goal-based competitions.</p>
+        <div class="classvsclass-features"><span>Shared challenges</span><span>Class progress</span><span>Friendly rewards</span></div>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>

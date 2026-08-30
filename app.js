@@ -194,6 +194,26 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
 
 const CLASS_ROSTERS_KEY='teachertiles-class-rosters-v1';
 const classRostersStorageKey=()=>`${CLASS_ROSTERS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const STAR_CHART_LAST_CLASS_KEY='teachertiles-star-chart-last-class-v1';
+const starChartLastClassStorageKey=()=>`${STAR_CHART_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const CLASS_METER_LAST_CLASS_KEY='teachertiles-class-meter-last-class-v1';
+const classMeterLastClassStorageKey=()=>`${CLASS_METER_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const COLLECTIONS_LAST_CLASS_KEY='teachertiles-collections-last-class-v1';
+const collectionsLastClassStorageKey=()=>`${COLLECTIONS_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const COLLECTION_ITEM_TYPES=new Set(['pompom','candy','star','jellybean','fruit','coin']);
+const CLASS_LOGO_OPTIONS=Object.freeze([
+  Object.freeze({symbol:'👥',label:'Class team'}),Object.freeze({symbol:'🌟',label:'Shining star'}),
+  Object.freeze({symbol:'🚀',label:'Rocket'}),Object.freeze({symbol:'🦉',label:'Owl'}),
+  Object.freeze({symbol:'🐯',label:'Tiger'}),Object.freeze({symbol:'🌈',label:'Rainbow'}),
+  Object.freeze({symbol:'⚡',label:'Lightning'}),Object.freeze({symbol:'🏆',label:'Trophy'}),
+  Object.freeze({symbol:'🧠',label:'Brain'}),Object.freeze({symbol:'🎨',label:'Art palette'}),
+  Object.freeze({symbol:'🌱',label:'Growing plant'}),Object.freeze({symbol:'🐝',label:'Bee'})
+]);
+
+function normalizeClassLogo(value){
+  const logo=String(value||'').trim();
+  return logo?Array.from(logo).slice(0,8).join(''):'👥';
+}
 
 function normalizeRosterNames(values){
   const names=[];
@@ -208,26 +228,252 @@ function normalizeRosterNames(values){
   return names.slice(0,300);
 }
 
+function starChartStudentKey(name){
+  return`student:${String(name||'').trim().toLocaleLowerCase()}`;
+}
+
+function normalizeStarChartCount(value){
+  return Math.max(0,Math.min(9999,Math.round(Number(value)||0)));
+}
+
+function normalizeStarChartProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourceStudents=source.studentStars&&typeof source.studentStars==='object'&&!Array.isArray(source.studentStars)?source.studentStars:{};
+  const studentStars={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    studentStars[key]=normalizeStarChartCount(sourceStudents[key]??sourceStudents[name]);
+  });
+  return{
+    mode:source.mode==='whole'?'whole':'student',
+    wholeClassStars:normalizeStarChartCount(source.wholeClassStars),
+    studentStars
+  };
+}
+
+function normalizeClassMeterProgress(value){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  return{
+    fill:Math.max(0,Math.min(100,Number(source.fill)||0)),
+    wins:normalizeStarChartCount(source.wins)
+  };
+}
+
+function normalizeCollectionProgress(value){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const fillLineRaw=Number(source.fillLine);
+  return{
+    item:COLLECTION_ITEM_TYPES.has(source.item)?source.item:'pompom',
+    count:Math.max(0,Math.min(80,Math.round(Number(source.count)||0))),
+    filled:Boolean(source.filled),
+    jarsFilled:normalizeStarChartCount(source.jarsFilled),
+    fillLine:Number.isFinite(fillLineRaw)?Math.max(.24,Math.min(.72,fillLineRaw)):.32
+  };
+}
+
+function normalizePunchcardProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourceStudentPoints=source.studentPoints&&typeof source.studentPoints==='object'&&!Array.isArray(source.studentPoints)?source.studentPoints:{};
+  const sourceStudentProgress=source.studentProgress&&typeof source.studentProgress==='object'&&!Array.isArray(source.studentProgress)?source.studentProgress:{};
+  const studentPoints={},studentProgress={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    studentPoints[key]=normalizeStarChartCount(sourceStudentPoints[key]??sourceStudentPoints[name]);
+    studentProgress[key]=Math.max(0,Math.min(9,Math.round(Number(sourceStudentProgress[key]??sourceStudentProgress[name])||0)));
+  });
+  return{
+    wholeClassPoints:normalizeStarChartCount(source.wholeClassPoints),
+    wholeClassProgress:Math.max(0,Math.min(9,Math.round(Number(source.wholeClassProgress)||0))),
+    studentPoints,
+    studentProgress
+  };
+}
+
+function normalizeRacerProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourcePositions=source.positions&&typeof source.positions==='object'&&!Array.isArray(source.positions)?source.positions:{};
+  const sourceWins=source.studentWins&&typeof source.studentWins==='object'&&!Array.isArray(source.studentWins)?source.studentWins:{};
+  const sourceFinished=source.finished&&typeof source.finished==='object'&&!Array.isArray(source.finished)?source.finished:{};
+  const positions={},studentWins={},finished={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    positions[key]=Math.max(0,Math.min(100,Number(sourcePositions[key]??sourcePositions[name])||0));
+    studentWins[key]=normalizeStarChartCount(sourceWins[key]??sourceWins[name]);
+    finished[key]=Boolean(sourceFinished[key]??sourceFinished[name])||positions[key]>=100;
+    if(finished[key])positions[key]=100;
+  });
+  return{positions,studentWins,finished};
+}
+
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
     if(!Array.isArray(value))return [];
-    return value.filter(Boolean).map((item,index)=>({
-      id:String(item.id||`class-${index+1}`),
-      name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
-      students:normalizeRosterNames(item.students)
-    }));
+    return value.filter(Boolean).map((item,index)=>{
+      const students=normalizeRosterNames(item.students);
+      return{
+        id:String(item.id||`class-${index+1}`),
+        name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
+        logo:normalizeClassLogo(item.logo),
+        students,
+        starChart:normalizeStarChartProgress(item.starChart,students),
+        classMeter:normalizeClassMeterProgress(item.classMeter),
+        collectionJar:normalizeCollectionProgress(item.collectionJar),
+        punchcards:normalizePunchcardProgress(item.punchcards,students),
+        racer:normalizeRacerProgress(item.racer,students)
+      };
+    });
   }catch{return []}
 }
 
+const PBIS_CLOUD_SAVE_INTERVAL=10*60*1000;
+let pbisCloudSaveTimer=0;
+let pbisCloudSaveScope='';
+let encryptedClassSaveQueue=Promise.resolve();
+const lastEncryptedClassSaveSignatureByScope=new Map();
+const pendingEncryptedClassSaveSignatureByScope=new Map();
+
+const pbisDirtyStorageKey=(scope=window.TeacherTilesClassScope||'local')=>`teachertiles-pbis-dirty:${scope}`;
+function markPbisLocalDirty(classes){
+  const signature=JSON.stringify(Array.isArray(classes)?classes:[]);
+  localStorage.setItem(pbisDirtyStorageKey(),signature);
+  return signature;
+}
+function clearPbisLocalDirty(signature,scope=window.TeacherTilesClassScope||'local'){
+  const key=pbisDirtyStorageKey(scope);
+  if(localStorage.getItem(key)===signature)localStorage.removeItem(key);
+}
+
+function queueEncryptedClassSave(classes,description='classes'){
+  const snapshot=structuredClone(Array.isArray(classes)?classes:[]);
+  const scope=window.TeacherTilesClassScope||'local';
+  const signature=JSON.stringify(snapshot);
+  if(lastEncryptedClassSaveSignatureByScope.get(scope)===signature||pendingEncryptedClassSaveSignatureByScope.get(scope)===signature)return encryptedClassSaveQueue;
+  pendingEncryptedClassSaveSignatureByScope.set(scope,signature);
+  encryptedClassSaveQueue=encryptedClassSaveQueue.catch(()=>{}).then(()=>{
+    if((window.TeacherTilesClassScope||'local')!==scope)return;
+    const save=window.TeacherTilesEncryptedClasses?.save;
+    if(typeof save!=='function')return;
+    return save(snapshot).then(()=>{
+      lastEncryptedClassSaveSignatureByScope.set(scope,signature);
+      clearPbisLocalDirty(signature,scope);
+    });
+  }).catch(error=>console.error(`TeacherTiles could not save encrypted ${description}`,error)).finally(()=>{
+    if(pendingEncryptedClassSaveSignatureByScope.get(scope)===signature)pendingEncryptedClassSaveSignatureByScope.delete(scope);
+  });
+  return encryptedClassSaveQueue;
+}
+
+function cancelPendingPbisCloudSave(){
+  clearTimeout(pbisCloudSaveTimer);
+  pbisCloudSaveTimer=0;
+  pbisCloudSaveScope='';
+}
+
+function flushPbisCloudSave(){
+  if(!pbisCloudSaveTimer&&!pbisCloudSaveScope)return;
+  clearTimeout(pbisCloudSaveTimer);
+  pbisCloudSaveTimer=0;
+  const scope=pbisCloudSaveScope;
+  pbisCloudSaveScope='';
+  if(!scope||(window.TeacherTilesClassScope||'local')!==scope)return;
+  const latest=readClassRosters();
+  queueEncryptedClassSave(latest,'PBIS stats');
+}
+
+function schedulePbisCloudSave(){
+  const scope=window.TeacherTilesClassScope||'local';
+  if(pbisCloudSaveScope&&pbisCloudSaveScope!==scope)cancelPendingPbisCloudSave();
+  pbisCloudSaveScope=scope;
+  if(!pbisCloudSaveTimer)pbisCloudSaveTimer=setTimeout(flushPbisCloudSave,PBIS_CLOUD_SAVE_INTERVAL);
+}
+
 function writeClassRosters(classes){
+  cancelPendingPbisCloudSave();
+  markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));
-  window.TeacherTilesEncryptedClasses?.save?.(classes).catch(error=>console.error('TeacherTiles could not save encrypted classes',error));
+  queueEncryptedClassSave(classes);
 }
+
+function writeClassStarChart(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.starChart=normalizeStarChartProgress(value,roster.students);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:starchartchange',{detail:{classId,progress:roster.starChart}}));
+  schedulePbisCloudSave();
+  return roster.starChart;
+}
+
+function writeClassMeter(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.classMeter=normalizeClassMeterProgress(value);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:classmeterchange',{detail:{classId,progress:roster.classMeter}}));
+  schedulePbisCloudSave();
+  return roster.classMeter;
+}
+
+function writeClassCollection(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.collectionJar=normalizeCollectionProgress(value);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:collectionchange',{detail:{classId,progress:roster.collectionJar}}));
+  schedulePbisCloudSave();
+  return roster.collectionJar;
+}
+
+function writeClassPunchcards(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.punchcards=normalizePunchcardProgress(value,roster.students);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:punchcardchange',{detail:{classId,progress:roster.punchcards}}));
+  schedulePbisCloudSave();
+  return roster.punchcards;
+}
+
+
+function writeClassRacer(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.racer=normalizeRacerProgress(value,roster.students);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:racerchange',{detail:{classId,progress:roster.racer}}));
+  schedulePbisCloudSave();
+  return roster.racer;
+}
+
+window.addEventListener('pagehide',flushPbisCloudSave);
 
 window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
   const classes=Array.isArray(event.detail?.classes)?event.detail.classes:[];
+  const scope=window.TeacherTilesClassScope||'local';
+  const cloudSignature=JSON.stringify(classes);
+  lastEncryptedClassSaveSignatureByScope.set(scope,cloudSignature);
+  const localDirtySignature=localStorage.getItem(pbisDirtyStorageKey(scope));
+  const localSnapshot=localStorage.getItem(classRostersStorageKey());
+  if(localDirtySignature===cloudSignature)clearPbisLocalDirty(localDirtySignature,scope);
+  else if(localDirtySignature&&localSnapshot!==null){
+    const localClasses=readClassRosters();
+    window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes:localClasses,source:'local-dirty'}}));
+    queueEncryptedClassSave(localClasses,'pending PBIS stats');
+    return;
+  }
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes,source:'encrypted-cloud'}}));
 });
@@ -338,6 +584,7 @@ function setupProfileClasses(){
   const openButton=document.getElementById('profile-classes-button');
   const panel=document.getElementById('profile-classes-panel');
   const closeButton=document.getElementById('profile-classes-close');
+  const backButton=document.getElementById('profile-classes-back');
   const form=document.getElementById('profile-class-create');
   const nameInput=document.getElementById('profile-class-name');
   const list=document.getElementById('profile-class-list');
@@ -345,19 +592,42 @@ function setupProfileClasses(){
   const rosterView=document.getElementById('profile-roster-view');
   const rosterBack=document.getElementById('profile-roster-back');
   const rosterDone=document.getElementById('profile-roster-done');
+  const rosterDelete=document.getElementById('profile-roster-delete');
   const rosterName=document.getElementById('profile-roster-name');
   const studentForm=document.getElementById('profile-student-add');
   const studentInput=document.getElementById('profile-student-name');
   const studentChips=document.getElementById('profile-roster-students');
   const rosterCount=document.getElementById('profile-roster-count');
+  const logoOptions=document.getElementById('profile-roster-logo-options');
+  const customLogoInput=document.getElementById('profile-roster-custom-logo');
   if(!openButton||!panel||!form||!nameInput||!list||!listView||!rosterView)return;
   document.body.appendChild(panel);
   let editingId='';
   let draftName='';
+  let draftLogo='👥';
   let draftStudents=[];
   let originalSignature='';
 
-  const draftSignature=()=>JSON.stringify({name:draftName.trim(),students:normalizeRosterNames(draftStudents)});
+  const draftSignature=()=>JSON.stringify({name:draftName.trim(),logo:normalizeClassLogo(draftLogo),students:normalizeRosterNames(draftStudents)});
+
+  const syncLogoPicker=({syncCustom=true}={})=>{
+    const logo=normalizeClassLogo(draftLogo);
+    logoOptions?.querySelectorAll('[data-class-logo]').forEach(button=>{
+      const selected=button.dataset.classLogo===logo;
+      button.classList.toggle('is-selected',selected);
+      button.setAttribute('aria-pressed',String(selected));
+    });
+    if(syncCustom&&customLogoInput)customLogoInput.value=CLASS_LOGO_OPTIONS.some(option=>option.symbol===logo)?'':logo;
+  };
+
+  CLASS_LOGO_OPTIONS.forEach(option=>{
+    if(!logoOptions)return;
+    const button=document.createElement('button');
+    button.type='button';button.className='roster-logo-option';button.dataset.classLogo=option.symbol;
+    button.textContent=option.symbol;button.title=option.label;button.setAttribute('aria-label',`Use ${option.label} as the class logo`);button.setAttribute('aria-pressed','false');
+    button.addEventListener('click',()=>{draftLogo=option.symbol;syncLogoPicker()});
+    logoOptions.append(button);
+  });
 
   const renderDraft=()=>{
     studentChips.replaceChildren();
@@ -385,6 +655,7 @@ function setupProfileClasses(){
     const target=classes.find(item=>item.id===editingId);
     if(!target)return false;
     target.name=draftName;target.students=[...draftStudents];
+    target.logo=normalizeClassLogo(draftLogo);
     writeClassRosters(classes);
     originalSignature=draftSignature();
     return true;
@@ -395,9 +666,9 @@ function setupProfileClasses(){
   };
 
   const openRoster=item=>{
-    editingId=item.id;draftName=item.name;draftStudents=[...item.students];
+    editingId=item.id;draftName=item.name;draftLogo=normalizeClassLogo(item.logo);draftStudents=[...item.students];
     rosterName.value=draftName;originalSignature=draftSignature();
-    listView.hidden=true;rosterView.hidden=false;renderDraft();
+    listView.hidden=true;rosterView.hidden=false;syncLogoPicker();renderDraft();
     requestAnimationFrame(()=>studentInput.focus({preventScroll:true}));
   };
 
@@ -412,23 +683,17 @@ function setupProfileClasses(){
       return;
     }
     classes.forEach(item=>{
-      const card=document.createElement('button');
-      card.type='button';
+      const card=document.createElement('article');
       card.className='profile-class-card';
-      const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent='👥';
+      const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent=normalizeClassLogo(item.logo);
       const copy=document.createElement('span');copy.className='profile-class-card__copy';
       const title=document.createElement('strong');title.textContent=item.name;
       const count=document.createElement('small');count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
       copy.append(title,count);
-      const remove=document.createElement('button');
-      remove.type='button';remove.className='profile-class-card__delete';remove.textContent='×';remove.setAttribute('aria-label',`Delete ${item.name}`);
-      remove.addEventListener('click',event=>{
-        event.stopPropagation();
-        writeClassRosters(readClassRosters().filter(entry=>entry.id!==item.id));render();
-      });
-      const arrow=document.createElement('i');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
-      card.addEventListener('click',()=>openRoster(item));
-      card.append(icon,copy,remove,arrow);list.append(card);
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='profile-class-card__edit';edit.textContent='Edit Class';edit.setAttribute('aria-label',`Edit ${item.name}`);
+      edit.addEventListener('click',()=>openRoster(item));
+      card.append(icon,copy,edit);list.append(card);
     });
   };
 
@@ -439,14 +704,32 @@ function setupProfileClasses(){
     else document.getElementById('profile-toggle')?.focus({preventScroll:true});
   };
   openButton.addEventListener('click',()=>{
+    document.getElementById('profile-student-view-close')?.click();
     document.querySelector('[data-profile-close]')?.click();
     setOpen(true);
   });
   closeButton?.addEventListener('click',()=>setOpen(false));
+  backButton?.addEventListener('click',()=>{setOpen(false);document.getElementById('profile-toggle')?.click()});
   panel.querySelector('.classes-window__backdrop')?.addEventListener('click',()=>setOpen(false));
   rosterBack?.addEventListener('click',showList);
   rosterDone?.addEventListener('click',showList);
+  rosterDelete?.addEventListener('click',()=>{
+    if(!editingId)return;
+    const classes=readClassRosters();
+    const target=classes.find(item=>item.id===editingId);
+    if(!target)return;
+    if(!confirm(`Delete ${target.name}? This removes the class roster and its saved PBIS stats.`))return;
+    const deletedId=editingId;
+    editingId='';draftName='';draftLogo='👥';draftStudents=[];originalSignature='';
+    writeClassRosters(classes.filter(item=>item.id!==deletedId));
+    listView.hidden=false;rosterView.hidden=true;render();
+  });
   rosterName?.addEventListener('input',()=>draftName=rosterName.value);
+  customLogoInput?.addEventListener('input',()=>{
+    const next=String(customLogoInput.value||'').trim();
+    draftLogo=next?normalizeClassLogo(next):'👥';
+    syncLogoPicker({syncCustom:false});
+  });
   studentForm?.addEventListener('submit',event=>{
     event.preventDefault();
     const name=String(studentInput.value||'').trim().replace(/\s+/g,' ');
@@ -457,7 +740,7 @@ function setupProfileClasses(){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
-    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),students:[]});
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null),punchcards:normalizePunchcardProgress(null,[]),racer:normalizeRacerProgress(null,[])});
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
@@ -469,6 +752,280 @@ function setupProfileClasses(){
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
+
+const STUDENT_VIEW_STATS_KEY='teachertiles-student-view-stats-v1';
+const studentViewStatsStorageKey=()=>`${STUDENT_VIEW_STATS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
+  Object.freeze({
+    id:'stars',
+    label:'Stars',
+    description:'Stars earned in Star Chart',
+    wholeClassDescription:'Whole-class stars earned in Star Chart',
+    icon:'★',
+    value:(roster,name)=>normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(name)]),
+    wholeClassValue:roster=>normalizeStarChartCount(roster.starChart?.wholeClassStars)
+  }),
+  Object.freeze({
+    id:'punchcardPoints',
+    label:'Punchcard Points',
+    description:'Punchcards completed by this student',
+    wholeClassDescription:'Whole-class Punchcards completed by this class',
+    icon:'●',
+    value:(roster,name)=>normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(name)]||0,
+    wholeClassValue:roster=>normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints
+  }),
+  Object.freeze({
+    id:'raceWins',
+    label:'Race Wins',
+    description:'Racer finish-line wins earned by this student',
+    icon:'🏁',
+    studentOnly:true,
+    value:(roster,name)=>normalizeRacerProgress(roster.racer,roster.students).studentWins[starChartStudentKey(name)]||0,
+    wholeClassValue:()=>0
+  }),
+  Object.freeze({
+    id:'meterWins',
+    label:'Class Meter Wins',
+    description:'Whole-class Class Meter fills',
+    wholeClassDescription:'Times this class filled its Class Meter',
+    icon:'🌡️',
+    wholeClassOnly:true,
+    value:()=>0,
+    wholeClassValue:roster=>normalizeClassMeterProgress(roster.classMeter).wins
+  }),
+  Object.freeze({
+    id:'jarsFilled',
+    label:'Jars Filled',
+    description:'Whole-class Collection Jars filled',
+    wholeClassDescription:'Collection Jars filled by this class',
+    icon:'🫙',
+    wholeClassOnly:true,
+    value:()=>0,
+    wholeClassValue:roster=>normalizeCollectionProgress(roster.collectionJar).jarsFilled
+  })
+]);
+
+function readStudentViewStatPreferences(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(studentViewStatsStorageKey())||'{}')||{}}catch{}
+  return Object.fromEntries(PBIS_STUDENT_STAT_DEFINITIONS.map(stat=>[stat.id,saved[stat.id]!==false]));
+}
+
+function writeStudentViewStatPreferences(preferences){
+  localStorage.setItem(studentViewStatsStorageKey(),JSON.stringify(preferences));
+  window.dispatchEvent(new CustomEvent('teachertiles:studentstatschange',{detail:{preferences}}));
+}
+
+function studentProfileVisual(name,classId=''){
+  const clean=String(name||'Student').trim()||'Student';
+  const parts=clean.split(/\s+/).filter(Boolean);
+  const initials=((parts[0]?.[0]||'S')+(parts.length>1?(parts.at(-1)?.[0]||''):'')).toLocaleUpperCase();
+  let hash=0;
+  for(const character of`${classId}:${clean}`)hash=(hash*31+character.codePointAt(0))>>>0;
+  return{initials:initials.slice(0,2),hue:hash%360};
+}
+
+function setupStudentView(){
+  const openButton=document.getElementById('profile-student-view-button');
+  const panel=document.getElementById('profile-student-view-panel');
+  const closeButton=document.getElementById('profile-student-view-close');
+  const backButton=document.getElementById('profile-student-view-back');
+  const rosterContainer=document.getElementById('student-view-rosters');
+  const studentSearch=document.getElementById('student-view-search');
+  const statMenuToggle=document.getElementById('student-view-stat-menu-toggle');
+  const statMenu=document.getElementById('student-view-stat-menu');
+  const toggleContainer=document.getElementById('student-view-stat-toggles');
+  const detail=document.getElementById('student-view-detail');
+  const detailClose=document.getElementById('student-view-detail-close');
+  const detailAvatar=document.getElementById('student-profile-avatar');
+  const detailClass=document.getElementById('student-profile-class');
+  const detailName=document.getElementById('student-profile-name');
+  const detailStats=document.getElementById('student-profile-stats');
+  if(!openButton||!panel||!closeButton||!rosterContainer||!studentSearch||!statMenuToggle||!statMenu||!toggleContainer||!detail)return;
+  document.body.appendChild(panel);
+  let activeStudent=null;
+
+  const setStatMenuOpen=open=>{
+    statMenu.hidden=!open;
+    statMenuToggle.setAttribute('aria-expanded',String(open));
+    if(open)requestAnimationFrame(()=>statMenu.querySelector('input')?.focus({preventScroll:true}));
+  };
+
+  const enabledStats=({wholeClass=false}={})=>{
+    const preferences=readStudentViewStatPreferences();
+    return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]&&(!stat.wholeClassOnly||wholeClass)&&(!stat.studentOnly||!wholeClass));
+  };
+
+  const resetProfileStat=(stat,roster,name,{wholeClass=false}={})=>{
+    if(!roster?.id)return;
+    const target=wholeClass?roster.name:(String(name||'Student').trim()||'Student');
+    const scope=wholeClass?`the whole-class ${stat.label} for ${target}`:`${stat.label} for ${target}`;
+    if(!window.confirm(`Reset ${scope}? This cannot be undone.`))return;
+    if(stat.id==='stars'){
+      const progress=normalizeStarChartProgress(roster.starChart,roster.students);
+      if(wholeClass)progress.wholeClassStars=0;else progress.studentStars[starChartStudentKey(name)]=0;
+      writeClassStarChart(roster.id,progress);
+    }else if(stat.id==='punchcardPoints'){
+      const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
+      if(wholeClass)progress.wholeClassPoints=0;else progress.studentPoints[starChartStudentKey(name)]=0;
+      writeClassPunchcards(roster.id,progress);
+    }else if(stat.id==='raceWins'){
+      const progress=normalizeRacerProgress(roster.racer,roster.students);
+      progress.studentWins[starChartStudentKey(name)]=0;
+      writeClassRacer(roster.id,progress);
+    }else if(stat.id==='meterWins'){
+      const progress=normalizeClassMeterProgress(roster.classMeter);
+      progress.wins=0;
+      writeClassMeter(roster.id,progress);
+    }else if(stat.id==='jarsFilled'){
+      const progress=normalizeCollectionProgress(roster.collectionJar);
+      progress.jarsFilled=0;
+      writeClassCollection(roster.id,progress);
+    }
+    flushPbisCloudSave();
+  };
+
+  const appendStats=(container,roster,name,{compact=false,wholeClass=false}={})=>{
+    container.replaceChildren();
+    const stats=enabledStats({wholeClass});
+    if(!stats.length){
+      const empty=document.createElement(compact?'span':'p');
+      empty.className=compact?'student-view-stat-summary--empty':'student-profile-stats-empty';
+      empty.textContent=compact?'Stats hidden':'No PBIS stats are currently enabled for student profiles.';
+      container.append(empty);return;
+    }
+    stats.forEach(stat=>{
+      const value=wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
+      const item=document.createElement(compact?'span':'div');
+      item.className=compact?'student-view-stat-summary':'student-profile-stat';
+      const icon=document.createElement('i');icon.textContent=stat.icon;icon.setAttribute('aria-hidden','true');
+      const count=document.createElement('strong');count.textContent=String(value);
+      if(compact){item.append(icon,count)}else{
+        const copy=document.createElement('span');
+        const label=document.createElement('small');label.textContent=wholeClass?(stat.wholeClassDescription||stat.description):stat.description;
+        const reset=document.createElement('button');reset.type='button';reset.className='student-profile-stat__reset';reset.textContent='Reset';reset.disabled=Number(value)<=0;reset.setAttribute('aria-label',`Reset ${stat.label} for ${wholeClass?roster.name:name}`);
+        reset.addEventListener('click',()=>resetProfileStat(stat,roster,name,{wholeClass}));
+        copy.append(count,label);item.append(icon,copy,reset);
+      }
+      container.append(item);
+    });
+  };
+
+  const renderDetail=()=>{
+    if(!activeStudent)return;
+    const roster=readClassRosters().find(item=>item.id===activeStudent.classId);
+    if(!roster||(!activeStudent.wholeClass&&!roster.students.includes(activeStudent.name))){detail.hidden=true;activeStudent=null;return}
+    const visual=studentProfileVisual(activeStudent.wholeClass?roster.name:activeStudent.name,`${roster.id}:${activeStudent.wholeClass?'whole':'student'}`);
+    detailAvatar.textContent=activeStudent.wholeClass?normalizeClassLogo(roster.logo):visual.initials;
+    detailAvatar.style.setProperty('--student-avatar-hue',String(visual.hue));
+    detailClass.textContent=activeStudent.wholeClass?'Whole Class Profile':roster.name;
+    detailName.textContent=activeStudent.wholeClass?roster.name:activeStudent.name;
+    appendStats(detailStats,roster,activeStudent.name,{wholeClass:activeStudent.wholeClass});
+  };
+
+  const openDetail=(roster,name,{wholeClass=false}={})=>{
+    activeStudent={classId:roster.id,name,wholeClass};
+    detail.hidden=false;
+    renderDetail();
+    if(activeStudent)requestAnimationFrame(()=>detailClose?.focus({preventScroll:true}));
+  };
+  const closeDetail=()=>{detail.hidden=true;activeStudent=null};
+
+  const renderToggles=()=>{
+    const preferences=readStudentViewStatPreferences();
+    toggleContainer.replaceChildren();
+    PBIS_STUDENT_STAT_DEFINITIONS.forEach(stat=>{
+      const label=document.createElement('label');label.className='student-view-stat-toggle';
+      const input=document.createElement('input');input.type='checkbox';input.checked=preferences[stat.id];input.setAttribute('aria-label',`Show ${stat.label} on ${stat.wholeClassOnly?'whole-class':stat.studentOnly?'student':'student and class'} profiles`);
+      const track=document.createElement('span');track.className='student-view-stat-toggle__track';
+      const copy=document.createElement('span');
+      const title=document.createElement('strong');title.textContent=`${stat.icon} ${stat.label}`;
+      const description=document.createElement('small');description.textContent=stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description;
+      copy.append(title,description);label.append(input,track,copy);
+      input.addEventListener('change',()=>{
+        const next=readStudentViewStatPreferences();next[stat.id]=input.checked;writeStudentViewStatPreferences(next);renderRosters();renderDetail();
+      });
+      toggleContainer.append(label);
+    });
+  };
+
+  const renderRosters=()=>{
+    const classes=readClassRosters();
+    rosterContainer.replaceChildren();
+    const query=studentSearch.value.trim().toLocaleLowerCase();
+    const populated=classes.map(roster=>({
+      ...roster,
+      students:query?roster.students.filter(name=>name.toLocaleLowerCase().includes(query)):roster.students
+    })).filter(roster=>!query||roster.students.length||roster.name.toLocaleLowerCase().includes(query));
+    if(!populated.length){
+      const empty=document.createElement('div');empty.className='student-view-empty';
+      empty.innerHTML=query?'<span aria-hidden="true">⌕</span><strong>No students found</strong><p>Try a different student or class name.</p>':'<span aria-hidden="true">👥</span><strong>No classes yet</strong><p>Create a class to see its whole-class profile and student profiles here.</p>';
+      rosterContainer.append(empty);return;
+    }
+    populated.forEach(roster=>{
+      const section=document.createElement('section');section.className='student-view-class';
+      const header=document.createElement('header');
+      const classProfile=document.createElement('button');classProfile.type='button';classProfile.className='student-view-class-profile';classProfile.setAttribute('aria-label',`Open ${roster.name} whole-class profile`);
+      const classAvatar=document.createElement('span');classAvatar.className='student-view-class-profile__avatar';classAvatar.textContent=normalizeClassLogo(roster.logo);classAvatar.setAttribute('aria-hidden','true');
+      const classCopy=document.createElement('span');classCopy.className='student-view-class-profile__copy';
+      const classEyebrow=document.createElement('small');classEyebrow.textContent='WHOLE CLASS PROFILE';
+      const title=document.createElement('h4');title.textContent=roster.name;title.title=roster.name;
+      const classStats=document.createElement('span');classStats.className='student-view-class-profile__stats';appendStats(classStats,roster,'',{compact:true,wholeClass:true});
+      classCopy.append(classEyebrow,title,classStats);
+      const classArrow=document.createElement('i');classArrow.textContent='›';classArrow.setAttribute('aria-hidden','true');
+      classProfile.append(classAvatar,classCopy,classArrow);classProfile.addEventListener('click',()=>openDetail(roster,'',{wholeClass:true}));
+      const count=document.createElement('span');count.textContent=`${roster.students.length} ${roster.students.length===1?'student':'students'}`;
+      header.append(classProfile,count);
+      const grid=document.createElement('div');grid.className='student-view-grid';
+      roster.students.forEach(name=>{
+        const visual=studentProfileVisual(name,roster.id);
+        const card=document.createElement('button');card.type='button';card.className='student-view-person';card.setAttribute('aria-label',`Open ${name}'s student profile`);
+        const avatar=document.createElement('span');avatar.className='student-view-person__avatar';avatar.textContent=visual.initials;avatar.style.setProperty('--student-avatar-hue',String(visual.hue));
+        const copy=document.createElement('span');copy.className='student-view-person__copy';
+        const studentName=document.createElement('strong');studentName.textContent=name;studentName.title=name;
+        const stats=document.createElement('span');stats.className='student-view-person__stats';appendStats(stats,roster,name,{compact:true});
+        copy.append(studentName,stats);const arrow=document.createElement('i');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
+        card.append(avatar,copy,arrow);card.addEventListener('click',()=>openDetail(roster,name));grid.append(card);
+      });
+      section.append(header,grid);rosterContainer.append(section);
+    });
+  };
+
+  const render=()=>{renderToggles();renderRosters();if(!detail.hidden)renderDetail()};
+  const setOpen=open=>{
+    panel.hidden=!open;openButton.setAttribute('aria-expanded',String(open));
+    if(open){setStatMenuOpen(false);render();requestAnimationFrame(()=>closeButton.focus({preventScroll:true}))}else{setStatMenuOpen(false);closeDetail();document.getElementById('profile-toggle')?.focus({preventScroll:true})}
+  };
+  openButton.addEventListener('click',()=>{
+    document.getElementById('profile-classes-close')?.click();
+    document.querySelector('[data-profile-close]')?.click();
+    setOpen(true);
+  });
+  studentSearch.addEventListener('input',renderRosters);
+  statMenuToggle.addEventListener('click',()=>setStatMenuOpen(statMenu.hidden));
+  panel.addEventListener('pointerdown',event=>{
+    if(!statMenu.hidden&&!event.target.closest('.student-view-stat-menu'))setStatMenuOpen(false);
+  });
+  closeButton.addEventListener('click',()=>setOpen(false));
+  backButton?.addEventListener('click',()=>{setOpen(false);document.getElementById('profile-toggle')?.click()});
+  panel.querySelector('.student-view-window__backdrop')?.addEventListener('click',()=>setOpen(false));
+  detailClose?.addEventListener('click',closeDetail);
+  detail.querySelector('.student-view-detail__backdrop')?.addEventListener('click',closeDetail);
+  window.addEventListener('teachertiles:classeschange',()=>{if(!panel.hidden)render()});
+  window.addEventListener('teachertiles:starchartchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:classmeterchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:collectionchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:punchcardchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:racerchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Escape'||panel.hidden)return;
+    event.preventDefault();
+    if(!statMenu.hidden){setStatMenuOpen(false);statMenuToggle.focus({preventScroll:true})}
+    else if(!detail.hidden)closeDetail();else setOpen(false);
+  });
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupStudentView,{once:true});else setupStudentView();
 
 const TRANSLATION_LANGUAGES=[
   {code:'en',name:'English',nativeName:'English',speech:'en-US'},
@@ -528,6 +1085,8 @@ const timerTadaSfxPrototype=new Audio('assets/ui/timer-tada.mp3');
 timerTadaSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
+const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
+holePunchSfxPrototype.preload='auto';
 
 function persistAppPreferences(){
   try{localStorage.setItem(APP_PREFERENCES_KEY,JSON.stringify(appPreferences))}catch{}
@@ -547,11 +1106,11 @@ function boardPreferenceSnapshot(){
 function playUiSfx(kind='click'){
   if(appPreferences.uiMuted)return;
   try{
-    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:uiSfxPrototype;
+    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='collection'?.18:.11;
+    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='collection'?.18:.11;
     sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
-    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
   }catch{}
@@ -561,7 +1120,7 @@ document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#settings-ui-sfx-toggle'))return;
+  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click');
 },true);
@@ -695,7 +1254,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -709,7 +1268,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -719,7 +1278,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
 
 const runtimeInterfaceTranslations={};
 const interfaceTranslationRequests=new Map();
-const INTERFACE_TRANSLATION_CACHE_VERSION='v4';
+const INTERFACE_TRANSLATION_CACHE_VERSION='v5';
 
 function readCachedInterfaceTranslations(language){
   try{
@@ -1598,7 +2157,13 @@ function setupModuleByType(m,type){
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
+  if(type==='starchart')setupStarChart(m);
+  if(type==='classmeter')setupClassMeter(m);
   if(type==='collections')setupCollections(m);
+  if(type==='prizeboard')setupPrizeBoard(m);
+  if(type==='pbisconsole')setupPbisConsole(m);
+  if(type==='punchcards')setupPunchcards(m);
+  if(type==='racer')setupRacer(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
   if(type==='lunchcount')setupLunchCount(m);
@@ -1637,6 +2202,14 @@ function createModule(type,x,y,{record=true,boardState=null}={}){
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
+  const pbisMenuItem=menu.querySelector(`[data-module="${CSS.escape(type)}"][data-pbis-tracking="true"]`);
+  if(pbisMenuItem){
+    const badge=document.createElement('span');
+    badge.className='module-pbis-badge';
+    badge.textContent='PBIS';
+    badge.setAttribute('aria-label','PBIS tracking tile');
+    m.appendChild(badge);
+  }
   if(boardState)applyBoardPreSetupState(m,boardState);
   workspace.appendChild(m);
   const w=m.offsetWidth,h=m.offsetHeight;
@@ -3192,8 +3765,1001 @@ function setupNoise(m){
   };
 }
 
+function setupStarChart(m){
+  const importView=m.querySelector('.starchart-import');
+  const dashboard=m.querySelector('.starchart-dashboard');
+  const className=m.querySelector('.starchart-class-name');
+  const wholeClassName=m.querySelector('.starchart-whole-class-name');
+  const wholeClassLogo=m.querySelector('.starchart-whole-badge');
+  const changeClass=m.querySelector('.starchart-change-class');
+  const modeButtons=[...m.querySelectorAll('[data-starchart-mode]')];
+  const studentView=m.querySelector('.starchart-student-view');
+  const wholeView=m.querySelector('.starchart-whole-view');
+  const studentGrid=m.querySelector('.starchart-student-grid');
+  const noStudents=m.querySelector('.starchart-no-students');
+  const wholeCount=m.querySelector('.starchart-whole-count b');
+  const wholeBundles=m.querySelector('.starchart-whole-bundles');
+  const wholeAdd=m.querySelector('.starchart-whole-add');
+  const wholeRemove=m.querySelector('.starchart-whole-remove');
+  const showAllButton=m.querySelector('.starchart-show-all');
+  let activeClassId='';
+  let pendingClassId='';
+  let roster=null;
+  let progress=normalizeStarChartProgress(null,[]);
+  let showAllStudents=false;
+  let collapsedHeight=Math.max(380,m.offsetHeight||560);
+  let showAllFrame=0;
+  const animationTimers=new Set();
+  const flyingStars=new Set();
+  const bundleLevels=[
+    {weight:1000,level:3,label:'1K'},
+    {weight:100,level:2,label:'100'},
+    {weight:10,level:1,label:'10'},
+    {weight:1,level:0,label:'1'}
+  ];
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+
+  const syncShowAllSize=()=>{
+    showAllFrame=0;
+    if(!showAllStudents||progress.mode!=='student'||studentView.hidden||studentGrid.hidden){
+      if(showAllStudents)m.style.height=`${collapsedHeight}px`;
+      return;
+    }
+    m.style.height=`${collapsedHeight}px`;
+    const availableGridHeight=studentGrid.clientHeight;
+    const fullGridHeight=studentGrid.scrollHeight;
+    const desired=fullGridHeight<=availableGridHeight+1?collapsedHeight:Math.ceil(collapsedHeight-availableGridHeight+fullGridHeight+4);
+    m.style.height=`${clamp(desired,collapsedHeight,Math.max(collapsedHeight,BOARD_HEIGHT-m.offsetTop))}px`;
+  };
+
+  const scheduleShowAllSize=()=>{
+    if(showAllFrame)cancelAnimationFrame(showAllFrame);
+    showAllFrame=requestAnimationFrame(syncShowAllSize);
+  };
+
+  const setShowAllStudents=(show,{notify=false,captureHeight=true}={})=>{
+    const next=Boolean(show);
+    if(next&&!showAllStudents&&captureHeight)collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);
+    showAllStudents=next;
+    m.classList.toggle('is-showing-all-students',showAllStudents);
+    showAllButton.setAttribute('aria-pressed',String(showAllStudents));
+    if(showAllStudents)scheduleShowAllSize();
+    else{
+      if(showAllFrame)cancelAnimationFrame(showAllFrame);
+      showAllFrame=0;
+      m.style.height=`${collapsedHeight}px`;
+    }
+    if(notify)notifyBoardChanged('star-chart-show-all');
+  };
+
+  const scheduleAnimation=(callback,delay)=>{
+    const timer=setTimeout(()=>{animationTimers.delete(timer);callback()},delay);
+    animationTimers.add(timer);
+    return timer;
+  };
+
+  const renderStarBundles=(container,total,ownerLabel)=>{
+    const count=normalizeStarChartCount(total);
+    container.replaceChildren();
+    container.dataset.total=String(count);
+    if(!count){
+      const empty=document.createElement('span');
+      empty.className='starchart-star-empty';
+      empty.textContent='No stars yet';
+      container.append(empty);
+      return;
+    }
+
+    let remaining=count;
+    bundleLevels.forEach(level=>{
+      const quantity=Math.floor(remaining/level.weight);
+      remaining%=level.weight;
+      for(let index=0;index<quantity;index++){
+        const token=document.createElement('button');
+        token.type='button';
+        token.className=`starchart-star-token starchart-star-token--level-${level.level}`;
+        token.dataset.starAction='remove';
+        token.dataset.bundleValue=String(level.weight);
+        const represented=level.weight===1?'1 star':`${level.weight.toLocaleString()} stars`;
+        token.setAttribute('aria-label',`${represented} for ${ownerLabel}. Remove one star.`);
+        token.title=`${represented} combined · click to remove 1`;
+        const icon=document.createElement('span');icon.textContent='★';icon.setAttribute('aria-hidden','true');
+        const value=document.createElement('small');value.textContent=level.label;value.setAttribute('aria-hidden','true');
+        token.append(icon,value);container.append(token);
+      }
+    });
+  };
+
+  const landingTargetFor=studentKey=>{
+    const container=studentKey==='__whole__'?wholeBundles:[...studentGrid.querySelectorAll('[data-student-key]')].find(row=>row.dataset.studentKey===studentKey)?.querySelector('.starchart-star-stage');
+    if(!container)return null;
+    const tokens=container.querySelectorAll('.starchart-star-token');
+    return tokens[tokens.length-1]||container;
+  };
+
+  const animateStarAward=(sourceRect,targetRect)=>{
+    const popLanding=()=>{
+      if(!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      const flash=document.createElement('span');
+      flash.className='starchart-landing-flash';
+      flash.textContent='★';
+      flash.setAttribute('aria-hidden','true');
+      flash.style.left=`${targetRect.left+targetRect.width*.5}px`;
+      flash.style.top=`${targetRect.top+targetRect.height*.5}px`;
+      document.body.append(flash);
+      flyingStars.add(flash);
+      scheduleAnimation(()=>{flyingStars.delete(flash);flash.remove()},520);
+    };
+    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+
+    const star=document.createElement('span');
+    star.className='starchart-flying-star';
+    star.textContent='★';
+    star.setAttribute('aria-hidden','true');
+    const startX=sourceRect.left+Math.min(sourceRect.width*.78,sourceRect.width-10);
+    const startY=sourceRect.top+sourceRect.height*.5;
+    const endX=targetRect.left+targetRect.width*.5;
+    const endY=targetRect.top+targetRect.height*.5;
+    const dx=endX-startX;
+    const dy=endY-startY;
+    star.style.left=`${startX}px`;
+    star.style.top=`${startY}px`;
+    document.body.append(star);
+    flyingStars.add(star);
+    const animation=star.animate([
+      {opacity:0,transform:'translate(-50%,-50%) scale(.15) rotate(-35deg)'},
+      {offset:.18,opacity:1,transform:'translate(-50%,-50%) scale(1.45) rotate(35deg)'},
+      {offset:.7,opacity:1,transform:`translate(calc(-50% + ${dx*.8}px),calc(-50% + ${dy-34}px)) scale(1.05) rotate(285deg)`},
+      {opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.62) rotate(390deg)`}
+    ],{duration:620,easing:'cubic-bezier(.2,.78,.24,1)',fill:'forwards'});
+    scheduleAnimation(popLanding,455);
+    const removeFlyingStar=()=>{flyingStars.delete(star);star.remove()};
+    animation.finished.then(removeFlyingStar,removeFlyingStar);
+  };
+
+  const setSubtractPanelOpen=(card,open)=>{
+    studentGrid.querySelectorAll('.starchart-subtract-panel').forEach(panel=>panel.hidden=true);
+    studentGrid.querySelectorAll('.starchart-subtract-toggle').forEach(button=>button.setAttribute('aria-expanded','false'));
+    studentGrid.querySelectorAll('.starchart-student-row.is-subtract-open').forEach(row=>row.classList.remove('is-subtract-open'));
+    const panel=card?.querySelector('.starchart-subtract-panel');
+    const toggle=card?.querySelector('.starchart-subtract-toggle');
+    if(!panel||!toggle||!open){if(showAllStudents)scheduleShowAllSize();return}
+    panel.hidden=false;
+    card.classList.add('is-subtract-open');
+    toggle.setAttribute('aria-expanded','true');
+    requestAnimationFrame(()=>{const input=panel.querySelector('input');input?.focus({preventScroll:true});input?.select()});
+    if(showAllStudents)scheduleShowAllSize();
+  };
+
+  const renderStudentGrid=()=>{
+    studentGrid.replaceChildren();
+    const students=roster?.students||[];
+    studentGrid.style.setProperty('--starchart-student-count',String(students.length));
+    noStudents.hidden=students.length>0;
+    studentGrid.hidden=!students.length;
+
+    students.forEach(name=>{
+      const key=starChartStudentKey(name);
+      const count=normalizeStarChartCount(progress.studentStars[key]);
+      const row=document.createElement('article');
+      row.className='starchart-student-row';
+      row.dataset.studentKey=key;
+
+      const main=document.createElement('div');main.className='starchart-student-row__main';
+      const nameButton=document.createElement('button');
+      nameButton.type='button';nameButton.className='starchart-student-name';nameButton.dataset.starAction='add';nameButton.setAttribute('aria-label',`Award a star to ${name}`);nameButton.title=`Click to award a star to ${name}`;
+      const label=document.createElement('strong');label.textContent=name;label.title=name;
+      const exact=document.createElement('span');
+      const exactNumber=document.createElement('b');exactNumber.textContent=count.toLocaleString();
+      exact.append(exactNumber,document.createTextNode(` ${count===1?'star':'stars'} total`));
+      nameButton.append(label,exact);
+
+      const starStage=document.createElement('div');starStage.className='starchart-star-stage';starStage.setAttribute('aria-label',`${count} stars earned by ${name}`);
+      renderStarBundles(starStage,count,name);
+
+      const subtractToggle=document.createElement('button');
+      subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
+      subtractToggle.innerHTML='<span aria-hidden="true">−#</span><small>Subtract</small>';
+      main.append(nameButton,starStage,subtractToggle);
+
+      const panel=document.createElement('div');panel.className='starchart-subtract-panel';panel.hidden=true;
+      const prompt=document.createElement('span');prompt.textContent=`Take stars away from ${name}`;
+      const form=document.createElement('form');form.className='starchart-subtract-form';
+      const input=document.createElement('input');input.type='number';input.min='1';input.max=String(count);input.step='1';input.value='1';input.inputMode='numeric';input.setAttribute('aria-label',`Number of stars to subtract from ${name}`);
+      const takeAway=document.createElement('button');takeAway.type='submit';takeAway.textContent='Take away';
+      const cancel=document.createElement('button');cancel.type='button';cancel.className='starchart-subtract-cancel';cancel.dataset.subtractCancel='';cancel.textContent='Cancel';
+      subtractToggle.addEventListener('click',event=>{
+        event.stopPropagation();
+        setSubtractPanelOpen(row,subtractToggle.getAttribute('aria-expanded')!=='true');
+      });
+      cancel.addEventListener('click',event=>{event.stopPropagation();setSubtractPanelOpen(row,false)});
+      form.addEventListener('submit',event=>{
+        event.preventDefault();event.stopPropagation();
+        if(!activeClassId)return;
+        const currentValue=normalizeStarChartCount(progress.studentStars[key]);
+        const requestedValue=Math.round(Number(input.value));
+        if(!currentValue||!Number.isFinite(requestedValue)||requestedValue<1)return;
+        progress.studentStars[key]=normalizeStarChartCount(currentValue-Math.min(currentValue,requestedValue));
+        persistProgress();
+        if(showAllStudents)scheduleShowAllSize();
+      });
+      form.append(input,takeAway,cancel);panel.append(prompt,form);
+      row.append(main,panel);studentGrid.append(row);
+    });
+  };
+
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    wholeClassName.textContent=roster.name;
+    wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
+    wholeCount.textContent=String(progress.wholeClassStars);
+    wholeRemove.disabled=progress.wholeClassStars===0;
+    renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
+    const mode=progress.mode==='whole'?'whole':'student';
+    modeButtons.forEach(button=>{
+      const active=button.dataset.starchartMode===mode;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-selected',String(active));
+    });
+    studentView.hidden=mode!=='student';
+    wholeView.hidden=mode!=='whole';
+    renderStudentGrid();
+    if(showAllStudents)scheduleShowAllSize();
+  };
+
+  const loadClass=(classId,{notify=false}={})=>{
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){
+      activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
+    }
+    activeClassId=next.id;
+    pendingClassId='';
+    localStorage.setItem(starChartLastClassStorageKey(),activeClassId);
+    roster=next;
+    progress=normalizeStarChartProgress(next.starChart,next.students);
+    render();
+    if(notify)notifyBoardChanged('star-chart-class');
+    return true;
+  };
+
+  const persistProgress=()=>{
+    const saved=writeClassStarChart(activeClassId,progress);
+    if(saved)progress=saved;
+  };
+
+  modeButtons.forEach(button=>button.addEventListener('click',()=>{
+    const mode=button.dataset.starchartMode==='whole'?'whole':'student';
+    if(progress.mode===mode)return;
+    progress.mode=mode;
+    persistProgress();
+    notifyBoardChanged('star-chart-mode');
+  }));
+
+  studentGrid.addEventListener('click',event=>{
+    const target=event.target instanceof Element?event.target:null;
+    const row=target?.closest('[data-student-key]');
+    if(!row||!activeClassId)return;
+    if(target.closest('[data-subtract-toggle],[data-subtract-cancel]'))return;
+    const action=target.closest('[data-star-action]');
+    if(!action)return;
+    const key=row.dataset.studentKey;
+    const current=normalizeStarChartCount(progress.studentStars[key]);
+    const adding=action.dataset.starAction==='add';
+    if(!adding&&!current)return;
+    const source=adding?action.getBoundingClientRect():null;
+    progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
+    persistProgress();
+    if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());
+  });
+
+  studentGrid.addEventListener('wheel',event=>{
+    if(studentGrid.scrollHeight>studentGrid.clientHeight+1)event.stopPropagation();
+  },{passive:true});
+  showAllButton.addEventListener('click',()=>setShowAllStudents(!showAllStudents,{notify:true}));
+
+  wholeAdd.addEventListener('click',()=>{
+    const source=wholeAdd.getBoundingClientRect();
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
+    persistProgress();
+    animateStarAward(source,landingTargetFor('__whole__')?.getBoundingClientRect());
+  });
+  wholeRemove.addEventListener('click',()=>{
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
+    persistProgress();
+  });
+  wholeBundles.addEventListener('click',event=>{
+    if(!event.target.closest('.starchart-star-token')||!progress.wholeClassStars)return;
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
+    persistProgress();
+  });
+  changeClass.addEventListener('click',()=>{
+    activeClassId='';pendingClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();notifyBoardChanged('star-chart-class');
+  });
+
+  m.querySelector('.starchart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.starchart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.starchart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.starchart-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();return}
+    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+  };
+  const handleStarChartChange=event=>{
+    if(event.detail?.classId!==activeClassId)return;
+    const next=currentRoster();
+    if(!next)return;
+    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:starchartchange',handleStarChartChange);
+
+  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight});
+  m._boardSetState=state=>{
+    if(Number.isFinite(Number(state?.collapsedHeight)))collapsedHeight=clamp(Number(state.collapsedHeight),380,BOARD_HEIGHT);
+    setShowAllStudents(Boolean(state?.showAllStudents),{captureHeight:false});
+    const classId=String(state?.classId||'');
+    if(!classId)return;
+    if(!loadClass(classId))pendingClassId=classId;
+  };
+  const lastClassId=localStorage.getItem(starChartLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();detachRosterLoader();
+    animationTimers.forEach(clearTimeout);animationTimers.clear();
+    flyingStars.forEach(star=>star.remove());flyingStars.clear();
+    if(showAllFrame)cancelAnimationFrame(showAllFrame);
+    window.removeEventListener('teachertiles:classeschange',handleClassesChange);
+    window.removeEventListener('teachertiles:starchartchange',handleStarChartChange);
+  };
+}
+
+function setupClassMeter(m){
+  const importView=m.querySelector('.classmeter-import');
+  const dashboard=m.querySelector('.classmeter-dashboard');
+  const className=m.querySelector('.classmeter-class-name');
+  const classLogo=m.querySelector('.classmeter-class-logo');
+  const changeClass=m.querySelector('.classmeter-change-class');
+  const meter=m.querySelector('.classmeter-meter');
+  const percent=m.querySelector('.classmeter-percent');
+  const winCount=m.querySelector('.classmeter-win-count b');
+  const fillButton=m.querySelector('.classmeter-fill');
+  const decreaseButton=m.querySelector('.classmeter-decrease');
+  const orientationButton=m.querySelector('.classmeter-orientation');
+  const orientationIcon=orientationButton.querySelector('span');
+  const orientationLabel=orientationButton.querySelector('strong');
+  const settingsToggle=m.querySelector('.classmeter-settings-toggle');
+  const settings=m.querySelector('.classmeter-settings');
+  const removeWin=m.querySelector('.classmeter-remove-win');
+  const resetWins=m.querySelector('.classmeter-reset-wins');
+  const removeProgress=m.querySelector('.classmeter-remove-progress');
+  const resetProgress=m.querySelector('.classmeter-reset-progress');
+  const popup=m.querySelector('.classmeter-win-popup');
+  let activeClassId='';
+  let pendingClassId='';
+  let roster=null;
+  let progress=normalizeClassMeterProgress(null);
+  let holding=false;
+  let holdFrame=0;
+  let lastFrameAt=0;
+  let celebrationTimer=0;
+  let celebrating=false;
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const renderProgress=()=>{
+    const fill=Math.max(0,Math.min(100,Number(progress.fill)||0));
+    m.style.setProperty('--classmeter-fill',`${fill}%`);
+    m.classList.toggle('has-meter-fill',fill>0);
+    meter.setAttribute('aria-valuenow',String(Math.round(fill)));
+    percent.textContent=`${Math.round(fill)}%`;
+    winCount.textContent=String(normalizeStarChartCount(progress.wins));
+    decreaseButton.disabled=fill<=0||celebrating;
+    removeProgress.disabled=fill<=0||celebrating;
+    resetProgress.disabled=fill<=0||celebrating;
+    removeWin.disabled=progress.wins<=0;
+    resetWins.disabled=progress.wins<=0;
+  };
+
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    classLogo.textContent=normalizeClassLogo(roster.logo);
+    renderProgress();
+  };
+
+  const persistProgress=()=>{
+    const saved=writeClassMeter(activeClassId,progress);
+    if(saved)progress=saved;
+    renderProgress();
+  };
+
+  const setSettingsOpen=open=>{
+    const show=Boolean(open);
+    settings.hidden=!show;
+    settingsToggle.setAttribute('aria-expanded',String(show));
+  };
+
+  const setOrientation=(orientation,{resize=false,notify=false}={})=>{
+    const horizontal=orientation==='horizontal';
+    m.dataset.orientation=horizontal?'horizontal':'vertical';
+    orientationIcon.textContent=horizontal?'↕':'↔';
+    orientationLabel.textContent=horizontal?'Vertical':'Horizontal';
+    orientationButton.setAttribute('aria-label',`Switch to ${horizontal?'vertical':'horizontal'} meter`);
+    if(resize){
+      const width=horizontal?680:420;
+      const height=horizontal?360:610;
+      m.style.width=`${width}px`;
+      m.style.height=`${height}px`;
+      m.style.left=`${clamp(m.offsetLeft,0,BOARD_WIDTH-width)}px`;
+      m.style.top=`${clamp(m.offsetTop,0,BOARD_HEIGHT-height)}px`;
+    }
+    if(notify)notifyBoardChanged('class-meter-orientation');
+  };
+
+  const stopHolding=({persist=true}={})=>{
+    if(!holding)return;
+    holding=false;
+    m.classList.remove('is-meter-filling');
+    if(holdFrame)cancelAnimationFrame(holdFrame);
+    holdFrame=0;
+    if(persist&&activeClassId&&!celebrating)persistProgress();
+  };
+
+  const celebrateFilledMeter=()=>{
+    stopHolding({persist:false});
+    celebrating=true;
+    const saved=writeClassMeter(activeClassId,{fill:0,wins:normalizeStarChartCount(progress.wins+1)})||normalizeClassMeterProgress({fill:0,wins:progress.wins+1});
+    progress={...saved,fill:100};
+    renderProgress();
+    m.classList.add('is-meter-filled');
+    popup.hidden=false;
+    launchConfetti(m);
+    playUiSfx('confetti');
+    clearTimeout(celebrationTimer);
+    celebrationTimer=setTimeout(()=>{
+      celebrating=false;
+      progress=normalizeClassMeterProgress(saved);
+      m.classList.remove('is-meter-filled');
+      popup.hidden=true;
+      renderProgress();
+    },1500);
+  };
+
+  const fillTick=timestamp=>{
+    if(!holding||celebrating)return;
+    if(!lastFrameAt)lastFrameAt=timestamp;
+    const elapsed=Math.min(50,Math.max(0,timestamp-lastFrameAt));
+    lastFrameAt=timestamp;
+    progress.fill=Math.min(100,progress.fill+elapsed*.022);
+    renderProgress();
+    if(progress.fill>=100){celebrateFilledMeter();return}
+    holdFrame=requestAnimationFrame(fillTick);
+  };
+
+  const startHolding=()=>{
+    if(holding||celebrating||!activeClassId)return;
+    holding=true;
+    lastFrameAt=performance.now();
+    m.classList.add('is-meter-filling');
+    holdFrame=requestAnimationFrame(fillTick);
+  };
+
+  const loadClass=(classId,{notify=false}={})=>{
+    stopHolding({persist:false});
+    clearTimeout(celebrationTimer);celebrating=false;m.classList.remove('is-meter-filled');popup.hidden=true;
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){activeClassId='';roster=null;progress=normalizeClassMeterProgress(null);render();return false}
+    activeClassId=next.id;pendingClassId='';roster=next;progress=normalizeClassMeterProgress(next.classMeter);
+    localStorage.setItem(classMeterLastClassStorageKey(),activeClassId);
+    render();
+    if(notify)notifyBoardChanged('class-meter-class');
+    return true;
+  };
+
+  fillButton.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.preventDefault();
+    try{fillButton.setPointerCapture(event.pointerId)}catch{}
+    startHolding();
+  });
+  fillButton.addEventListener('pointerup',event=>{try{fillButton.releasePointerCapture(event.pointerId)}catch{}stopHolding()});
+  fillButton.addEventListener('pointercancel',()=>stopHolding());
+  fillButton.addEventListener('lostpointercapture',()=>stopHolding());
+  fillButton.addEventListener('keydown',event=>{
+    if((event.key===' '||event.key==='Enter')&&!event.repeat){event.preventDefault();startHolding()}
+  });
+  fillButton.addEventListener('keyup',event=>{
+    if(event.key===' '||event.key==='Enter'){event.preventDefault();stopHolding()}
+  });
+  fillButton.addEventListener('blur',()=>stopHolding());
+
+  settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
+  orientationButton.addEventListener('click',()=>setOrientation(m.dataset.orientation==='horizontal'?'vertical':'horizontal',{resize:true,notify:true}));
+  m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.classmeter-settings-wrap'))setSettingsOpen(false)});
+  m.addEventListener('pointerleave',()=>{
+    if(holding)stopHolding();
+    setSettingsOpen(false);
+  });
+  const decreaseProgress=()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=Math.max(0,(Number(progress.fill)||0)-5);persistProgress()};
+  decreaseButton.addEventListener('click',decreaseProgress);
+  removeProgress.addEventListener('click',decreaseProgress);
+  resetProgress.addEventListener('click',()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=0;persistProgress();setSettingsOpen(false)});
+  removeWin.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=normalizeStarChartCount(progress.wins-1);persistProgress()});
+  resetWins.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=0;persistProgress();flushPbisCloudSave();setSettingsOpen(false)});
+  changeClass.addEventListener('click',()=>{
+    stopHolding();activeClassId='';pendingClassId='';roster=null;progress=normalizeClassMeterProgress(null);localStorage.removeItem(classMeterLastClassStorageKey());setSettingsOpen(false);render();notifyBoardChanged('class-meter-class');
+  });
+
+  m.querySelector('.classmeter-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.classmeter-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.classmeter-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.classmeter-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeClassMeterProgress(null);localStorage.removeItem(classMeterLastClassStorageKey());render();return}
+    roster=next;
+    if(!holding&&!celebrating)progress=normalizeClassMeterProgress(next.classMeter);
+    render();
+  };
+  const handleMeterChange=event=>{
+    if(event.detail?.classId!==activeClassId||celebrating||holding)return;
+    const next=currentRoster();if(!next)return;
+    roster=next;progress=normalizeClassMeterProgress(next.classMeter);render();
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:classmeterchange',handleMeterChange);
+
+  m._boardGetState=()=>({classId:activeClassId,orientation:m.dataset.orientation==='horizontal'?'horizontal':'vertical'});
+  m._boardSetState=state=>{
+    setOrientation(state?.orientation==='horizontal'?'horizontal':'vertical');
+    const classId=String(state?.classId||'');
+    if(classId&&!loadClass(classId))pendingClassId=classId;
+  };
+  setOrientation(m.dataset.orientation);
+  const lastClassId=localStorage.getItem(classMeterLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();stopHolding();clearTimeout(celebrationTimer);detachRosterLoader();
+    window.removeEventListener('teachertiles:classeschange',handleClassesChange);
+    window.removeEventListener('teachertiles:classmeterchange',handleMeterChange);
+  };
+}
+
+
+const PRIZE_STAT_OPTIONS=Object.freeze([
+  Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
+  Object.freeze({id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●',scope:'student'}),
+  Object.freeze({id:'studentRaceWins',label:'Race Wins',icon:'🏁',scope:'student'}),
+  Object.freeze({id:'classStars',label:'Whole-class Stars',icon:'★',scope:'class'}),
+  Object.freeze({id:'meterWins',label:'Class Meter Wins',icon:'🏆',scope:'class'}),
+  Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'}),
+  Object.freeze({id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●',scope:'class'})
+]);
+
+function prizePresetImage(kind='gift'){
+  const presets={
+    gift:['#6c7be8','#8f6ad8','🎁'],game:['#3ea886','#74c86b','🎮'],snack:['#ee835e','#f0ba4a','🍿'],choice:['#4d91df','#7dc5f2','⭐'],break:['#6c8db7','#9bb9d5','🛋️'],music:['#b66bc6','#e58db5','🎵'],helper:['#e0a13e','#f5cf67','👑'],mystery:['#4d566e','#828ba2','❓']
+  };
+  const [a,b,emoji]=presets[kind]||presets.gift;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="600" height="360" rx="46" fill="url(#g)"/><circle cx="520" cy="55" r="110" fill="white" opacity=".11"/><circle cx="60" cy="330" r="130" fill="white" opacity=".08"/><text x="300" y="215" text-anchor="middle" font-size="150" font-family="Arial, sans-serif">${emoji}</text></svg>`;
+  return`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`prize-${Date.now()}-${Math.random().toString(36).slice(2,8)}`}
+function normalizePrize(value){
+  const source=value&&typeof value==='object'?value:{};
+  const scope=source.scope==='class'?'class':'student';
+  const allowed=scope==='student'?['studentStars','studentPunchcardPoints','studentRaceWins']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
+  return{
+    id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
+    description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
+    cost:Math.max(0,Math.min(9999,Math.round(Number(source.cost)||1))),image:String(source.image||prizePresetImage('gift'))
+  };
+}
+
+function pbisBalance(roster,statId,studentName=''){
+  if(!roster)return 0;
+  if(statId==='studentStars')return normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(studentName)]);
+  if(statId==='classStars')return normalizeStarChartCount(roster.starChart?.wholeClassStars);
+  if(statId==='studentPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(studentName)]||0;
+  if(statId==='classPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints;
+  if(statId==='studentRaceWins')return normalizeRacerProgress(roster.racer,roster.students).studentWins[starChartStudentKey(studentName)]||0;
+  if(statId==='meterWins')return normalizeClassMeterProgress(roster.classMeter).wins;
+  if(statId==='jarsFilled')return normalizeCollectionProgress(roster.collectionJar).jarsFilled;
+  if(statId==='meterFill')return Math.round(normalizeClassMeterProgress(roster.classMeter).fill);
+  if(statId==='jarItems')return normalizeCollectionProgress(roster.collectionJar).count;
+  return 0;
+}
+
+function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={}){
+  const roster=readClassRosters().find(item=>item.id===classId);if(!roster)return null;
+  const current=pbisBalance(roster,statId,studentName);
+  let next=mode==='set'?Number(amount):current+Number(amount);
+  if(statId==='meterFill')next=Math.max(0,Math.min(100,next));else if(statId==='jarItems')next=Math.max(0,Math.min(80,Math.round(next)));else next=normalizeStarChartCount(next);
+  if(statId==='studentStars'||statId==='classStars'){
+    const progress=normalizeStarChartProgress(roster.starChart,roster.students);
+    if(statId==='studentStars')progress.studentStars[starChartStudentKey(studentName)]=next;else progress.wholeClassStars=next;
+    writeClassStarChart(classId,progress);
+  }else if(statId==='studentPunchcardPoints'||statId==='classPunchcardPoints'){
+    const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
+    if(statId==='studentPunchcardPoints')progress.studentPoints[starChartStudentKey(studentName)]=next;else progress.wholeClassPoints=next;
+    writeClassPunchcards(classId,progress);
+  }else if(statId==='studentRaceWins'){
+    const progress=normalizeRacerProgress(roster.racer,roster.students);
+    progress.studentWins[starChartStudentKey(studentName)]=next;
+    writeClassRacer(classId,progress);
+  }else if(statId==='meterWins'||statId==='meterFill'){
+    const progress=normalizeClassMeterProgress(roster.classMeter);
+    if(statId==='meterWins')progress.wins=next;else progress.fill=next;
+    writeClassMeter(classId,progress);
+  }else if(statId==='jarsFilled'||statId==='jarItems'){
+    const progress=normalizeCollectionProgress(roster.collectionJar);
+    if(statId==='jarsFilled')progress.jarsFilled=next;else{progress.count=next;progress.filled=false}
+    writeClassCollection(classId,progress);
+  }
+  flushPbisCloudSave();
+  return next;
+}
+
+function makePrizeModal(){
+  const overlay=document.createElement('div');overlay.className='prize-modal-overlay';overlay.hidden=true;
+  const panel=document.createElement('section');panel.className='prize-modal';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');
+  overlay.append(panel);document.body.append(overlay);
+  overlay.addEventListener('pointerdown',event=>{if(event.target===overlay)overlay.hidden=true});
+  return{overlay,panel,close:()=>{overlay.hidden=true;panel.replaceChildren()}};
+}
+
+async function downloadPrizeCoupon(prize,roster,recipient,statLabel){
+  const canvas=document.createElement('canvas');canvas.width=1500;canvas.height=760;const ctx=canvas.getContext('2d');
+  const draw=async()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const grad=ctx.createLinearGradient(0,0,1500,760);grad.addColorStop(0,'#edf6ff');grad.addColorStop(1,'#f4edff');ctx.fillStyle=grad;ctx.fillRect(0,0,1500,760);
+    ctx.save();ctx.strokeStyle='#4d91df';ctx.lineWidth=8;ctx.setLineDash([24,18]);ctx.strokeRect(36,36,1428,688);ctx.restore();
+    ctx.fillStyle='#1e4168';ctx.font='900 34px Arial';ctx.fillText('TEACHERTILES PRIZE COUPON',82,105);
+    ctx.fillStyle='#132238';ctx.font='900 70px Arial';ctx.fillText(prize.title,82,205);
+    ctx.fillStyle='#526174';ctx.font='600 29px Arial';
+    const words=(prize.description||'Classroom reward').split(/\s+/);let line='',y=270;
+    for(const word of words){const test=`${line}${word} `;if(ctx.measureText(test).width>790){ctx.fillText(line.trim(),82,y);line=`${word} `;y+=42}else line=test}if(line)ctx.fillText(line.trim(),82,y);
+    ctx.fillStyle='#fff';ctx.strokeStyle='#d4dfed';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(82,470,850,190,28);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('REDEEMED BY',120,525);ctx.fillStyle='#14243a';ctx.font='900 38px Arial';ctx.fillText(recipient,120,570);
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('CLASS',510,525);ctx.fillStyle='#14243a';ctx.font='900 34px Arial';ctx.fillText(roster.name,510,570);
+    ctx.fillStyle='#6a7788';ctx.font='800 23px Arial';ctx.fillText('COST',120,625);ctx.fillStyle='#286fb8';ctx.font='900 30px Arial';ctx.fillText(`${prize.cost} ${statLabel}`,220,625);
+    try{
+      const img=new Image();img.src=prize.image;await img.decode();
+      const boxX=1000,boxY=130,boxW=390,boxH=390;
+      const imageW=img.naturalWidth||img.width||boxW,imageH=img.naturalHeight||img.height||boxH;
+      const scale=Math.min(boxW/imageW,boxH/imageH);
+      const drawW=imageW*scale,drawH=imageH*scale,drawX=boxX+(boxW-drawW)/2,drawY=boxY+(boxH-drawH)/2;
+      ctx.drawImage(img,drawX,drawY,drawW,drawH);
+    }catch{}
+    ctx.fillStyle='#53647a';ctx.font='700 21px Arial';ctx.fillText('Redeemed with TeacherTiles PBIS',1005,575);ctx.font='600 18px Arial';ctx.fillText(new Date().toLocaleDateString(),1005,612);
+  };
+  await draw();
+  const link=document.createElement('a');link.download=`${prize.title.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').toLowerCase()||'prize'}-coupon.png`;link.href=canvas.toDataURL('image/png');link.click();
+}
+
+function setupPrizeBoard(m){
+  const importView=m.querySelector('.prizeboard-import'),dashboard=m.querySelector('.prizeboard-dashboard'),loaderAnchor=m.querySelector('.prizeboard-loader-anchor');
+  const className=m.querySelector('.prizeboard-class-name'),classLogo=m.querySelector('.prizeboard-class-logo'),changeClass=m.querySelector('.prizeboard-change-class');
+  const tabs=[...m.querySelectorAll('[data-prize-scope]')],grid=m.querySelector('.prizeboard-grid'),add=m.querySelector('.prizeboard-add');
+  let activeClassId='',scope='student',prizes=[];const modal=makePrizeModal();
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const statDefinition=id=>PRIZE_STAT_OPTIONS.find(item=>item.id===id)||PRIZE_STAT_OPTIONS[0];
+  const notify=reason=>notifyBoardChanged(`prizeboard-${reason}`);
+  const syncModuleSize=()=>requestAnimationFrame(()=>{
+    if(!dashboard||dashboard.hidden)return;const count=Math.max(1,prizes.filter(p=>p.scope===scope).length);const width=Math.max(340,m.clientWidth-28);const cols=Math.max(1,Math.floor(width/190));const rows=Math.ceil(count/cols);const needed=245+rows*165;
+    if(m.offsetHeight<needed)m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,needed)}px`;
+  });
+  const setClass=id=>{
+    const roster=readClassRosters().find(item=>item.id===id);activeClassId=roster?.id||'';importView.hidden=Boolean(roster);dashboard.hidden=!roster;
+    if(roster){className.textContent=roster.name;classLogo.textContent=normalizeClassLogo(roster.logo)}render();
+  };
+  const closeEditor=()=>modal.close();
+  const openEditor=(existing=null)=>{
+    const editing=existing?normalizePrize(existing):null;const working=editing||normalizePrize({scope,title:'',description:'',cost:1,image:prizePresetImage('gift')});
+    modal.overlay.hidden=false;modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-editor"><div><small>${editing?'EDIT PRIZE':'NEW PRIZE'}</small><h2>${editing?'Update prize':'Create a prize'}</h2></div><label>Category<select class="prize-editor-scope"><option value="student">Prizes</option><option value="class">Whole Class Prizes</option></select></label><label>Title<input class="prize-editor-title" maxlength="80" placeholder="Prize title"></label><label>Description<textarea class="prize-editor-description" maxlength="400" rows="3" placeholder="What does the student earn?"></textarea></label><div class="prize-editor-row"><label>Cost<input class="prize-editor-cost" type="number" min="0" max="9999" step="1"></label><label>PBIS stat<select class="prize-editor-stat"></select></label></div><div><span class="prize-editor-label">Prize image</span><div class="prize-preset-grid"></div><label class="prize-upload">Upload your own<input type="file" accept="image/*"></label><div class="prize-editor-preview"><img alt="Prize preview"></div></div><div class="prize-editor-actions">${editing?'<button class="prize-editor-delete" type="button">Delete prize</button>':''}<button class="prize-editor-cancel" type="button">Cancel</button><button class="prize-editor-save" type="button">Save prize</button></div></div>`;
+    const q=s=>modal.panel.querySelector(s),scopeSelect=q('.prize-editor-scope'),title=q('.prize-editor-title'),desc=q('.prize-editor-description'),cost=q('.prize-editor-cost'),stat=q('.prize-editor-stat'),preview=q('.prize-editor-preview img');
+    scopeSelect.value=working.scope;title.value=working.title==='New Prize'?'':working.title;desc.value=working.description;cost.value=working.cost;preview.src=working.image;
+    let selectedImage=working.image;
+    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS.filter(item=>item.scope==='student'):PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
+    const presets=q('.prize-preset-grid');['gift','game','snack','choice','break','music','helper','mystery'].forEach(kind=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<img src="${prizePresetImage(kind)}" alt="${kind} preset">`;b.addEventListener('click',()=>{selectedImage=prizePresetImage(kind);preview.src=selectedImage});presets.append(b)});
+    q('.prize-upload input').addEventListener('change',event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedImage=String(reader.result||selectedImage);preview.src=selectedImage};reader.readAsDataURL(file)});
+    q('.prize-modal-close').addEventListener('click',closeEditor);q('.prize-editor-cancel').addEventListener('click',closeEditor);
+    q('.prize-editor-delete')?.addEventListener('click',()=>{if(!confirm(`Delete ${working.title}?`))return;prizes=prizes.filter(item=>item.id!==working.id);closeEditor();render();notify('delete')});
+    q('.prize-editor-save').addEventListener('click',()=>{const titleValue=title.value.trim();if(!titleValue){title.focus();return}const next=normalizePrize({id:editing?.id||prizeId(),scope:scopeSelect.value,title:titleValue,description:desc.value,cost:Number(cost.value),costStat:stat.value,image:selectedImage});if(editing)prizes=prizes.map(item=>item.id===editing.id?next:item);else prizes.push(next);scope=next.scope;closeEditor();render();notify('save')});
+  };
+  const openPrize=(prize)=>{
+    const roster=currentRoster();if(!roster)return;const stat=statDefinition(prize.costStat);modal.overlay.hidden=false;
+    const students=roster.students;modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-detail"><img class="prize-detail-image" src="${prize.image}" alt=""><div class="prize-detail-copy"><small>${prize.scope==='class'?'WHOLE CLASS PRIZE':'STUDENT PRIZE'}</small><h2></h2><p></p><div class="prize-detail-cost"><span>${stat.icon}</span><strong>${prize.cost}</strong><small>${stat.label}</small></div><div class="prize-redeem-target"></div><div class="prize-detail-balance"></div><div class="prize-detail-actions"><button class="prize-edit" type="button">Edit</button><button class="prize-redeem" type="button">Redeem prize</button></div></div></div>`;
+    modal.panel.querySelector('h2').textContent=prize.title;modal.panel.querySelector('.prize-detail-copy>p').textContent=prize.description||'No description added.';
+    const targetWrap=modal.panel.querySelector('.prize-redeem-target'),balance=modal.panel.querySelector('.prize-detail-balance'),redeem=modal.panel.querySelector('.prize-redeem');let student='';
+    if(prize.scope==='student'){
+      const label=document.createElement('label');label.innerHTML='<span>Redeem for</span>';const select=document.createElement('select');select.append(new Option(students.length?'Choose a student…':'No students in this class',''));students.forEach(name=>select.add(new Option(name,name)));label.append(select);targetWrap.append(label);select.addEventListener('change',()=>{student=select.value;refreshBalance()});
+    }else{targetWrap.innerHTML=`<div class="prize-class-target"><span aria-hidden="true">${normalizeClassLogo(roster.logo)}</span><strong>${roster.name}</strong><small>Whole class redemption</small></div>`}
+    const refreshBalance=()=>{const targetStudent=stat.scope==='student'?student:'';const amount=pbisBalance(currentRoster(),prize.costStat,targetStudent);const missing=amount<prize.cost;balance.innerHTML=`<span>Available balance</span><strong>${amount} ${stat.label}</strong>${missing?'<small>Not enough credit for this reward.</small>':''}`;redeem.disabled=missing||(prize.scope==='student'&&!student)};refreshBalance();
+    modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-edit').addEventListener('click',()=>openEditor(prize));
+    redeem.addEventListener('click',async()=>{const recipient=prize.scope==='class'?roster.name:student;if(!recipient)return;const spendStudent=stat.scope==='student'?student:'';if(pbisBalance(currentRoster(),prize.costStat,spendStudent)<prize.cost){refreshBalance();return}adjustPbisBalance(activeClassId,prize.costStat,-prize.cost,{studentName:spendStudent});modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-redeemed"><span aria-hidden="true">🎉</span><small>PRIZE REDEEMED</small><h2>${prize.title}</h2><p><strong>${recipient}</strong> redeemed this prize for ${prize.cost} ${stat.label}.</p><div class="prize-redeemed-actions"><button class="prize-coupon" type="button">Download coupon PNG</button><button class="prize-done" type="button">Done</button></div></div>`;modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-done').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-coupon').addEventListener('click',()=>downloadPrizeCoupon(prize,roster,recipient,stat.label));});
+  };
+  const render=()=>{
+    tabs.forEach(tab=>{const on=tab.dataset.prizeScope===scope;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on))});grid.replaceChildren();
+    const visible=prizes.filter(item=>item.scope===scope);if(!visible.length){const empty=document.createElement('button');empty.type='button';empty.className='prizeboard-empty';empty.innerHTML=`<span aria-hidden="true">${scope==='class'?'🎉':'🎁'}</span><strong>No ${scope==='class'?'whole-class prizes':'prizes'} yet</strong><small>Add your first reward to this board.</small>`;empty.addEventListener('click',()=>openEditor());grid.append(empty)}
+    visible.forEach(prize=>{const stat=statDefinition(prize.costStat);const card=document.createElement('article');card.className='prize-card';card.innerHTML=`<button class="prize-card-open" type="button"><img alt=""><span class="prize-card-copy"><strong></strong><small></small></span><span class="prize-card-cost"><i>${stat.icon}</i><b>${prize.cost}</b></span></button><button class="prize-card-delete" type="button" title="Delete prize">×</button>`;const openButton=card.querySelector('.prize-card-open'),deleteButton=card.querySelector('.prize-card-delete');openButton.setAttribute('aria-label',`Open ${prize.title}`);deleteButton.setAttribute('aria-label',`Delete ${prize.title}`);card.querySelector('img').src=prize.image;card.querySelector('.prize-card-copy strong').textContent=prize.title;card.querySelector('.prize-card-copy small').textContent=prize.description||stat.label;openButton.addEventListener('click',()=>openPrize(prize));deleteButton.addEventListener('click',event=>{event.stopPropagation();if(!confirm(`Delete ${prize.title}?`))return;prizes=prizes.filter(item=>item.id!==prize.id);render();notify('delete')});grid.append(card)});syncModuleSize();
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.prizeScope;render();notify('tab')}));add.addEventListener('click',()=>openEditor());changeClass.addEventListener('click',()=>{activeClassId='';importView.hidden=false;dashboard.hidden=true;render();notify('class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
+  m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const ro=new ResizeObserver(syncModuleSize);ro.observe(m);
+  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);window.addEventListener('teachertiles:punchcardchange',refresh);window.addEventListener('teachertiles:racerchange',refresh);
+  m._boardGetState=()=>({activeClassId,scope,prizes:prizes.map(normalizePrize)});m._boardSetState=state=>{if(!state)return;scope=state.scope==='class'?'class':'student';prizes=Array.isArray(state.prizes)?state.prizes.map(normalizePrize):[];setClass(String(state.activeClassId||''));render()};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh);window.removeEventListener('teachertiles:punchcardchange',refresh);window.removeEventListener('teachertiles:racerchange',refresh)};
+  render();
+}
+
+function setupPbisConsole(m){
+  const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
+  let activeClassId='',student='',view='students';
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'},{id:'studentRaceWins',label:'Race Wins',icon:'🏁'}];
+  const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'○'}];
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);
+    activeClassId=r?.id||'';
+    importView.hidden=Boolean(r);dashboard.hidden=!r;
+    if(r){
+      className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);
+      const prior=student;
+      studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));
+      r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+      student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student;
+    }
+    render();
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    tabs.forEach(tab=>{const active=tab.dataset.pbisconsoleView===view;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    studentToolbar.hidden=view!=='students';
+    stats.replaceChildren();
+    const definitions=view==='students'?studentDefinitions:classDefinitions;
+    definitions.forEach(def=>{
+      const value=pbisBalance(r,def.id,student);
+      const row=document.createElement('section');row.className='pbisconsole-stat';
+      if(view==='students'){
+        row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>${student||'Choose a student'}</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-reset"><button type="button" ${student&&value>0?'':'disabled'}>Reset</button></div>`;
+        row.querySelector('button').addEventListener('click',()=>{if(!student)return;if(!confirm(`Reset ${def.label} for ${student}?`))return;adjustPbisBalance(activeClassId,def.id,0,{studentName:student,mode:'set'});render();notifyBoardChanged('pbis-console-student-reset')});
+      }else{
+        row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>Whole class</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-adjust"><input type="number" min="1" max="9999" step="1" value="1" aria-label="Adjustment amount"><button type="button" data-op="remove">Remove</button><button type="button" data-op="add">Add</button><button type="button" data-op="clear">Clear</button></div>`;
+        const input=row.querySelector('input');
+        row.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{const amount=Math.max(1,Math.round(Number(input.value)||1));if(button.dataset.op==='clear')adjustPbisBalance(activeClassId,def.id,0,{mode:'set'});else adjustPbisBalance(activeClassId,def.id,button.dataset.op==='add'?amount:-amount);render();notifyBoardChanged('pbis-console-class-adjust')}));
+      }
+      stats.append(row);
+    });
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{view=tab.dataset.pbisconsoleView==='class'?'class':'students';render();notifyBoardChanged('pbis-console-view')}));
+  studentSelect.addEventListener('change',()=>{student=studentSelect.value;render();notifyBoardChanged('pbis-console-student')});
+  changeClass.addEventListener('click',()=>{activeClassId='';student='';importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('pbis-console-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('pbis-console-class')});
+  m.querySelector('.pbisconsole-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
+  m._boardGetState=()=>({activeClassId,student,view});
+  m._boardSetState=state=>{student=String(state?.student||'');view=state?.view==='class'?'class':'students';setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'].forEach(name=>window.removeEventListener(name,refresh))};
+}
+
+
+function setupRacer(m){
+  const importView=m.querySelector('.racer-import'),dashboard=m.querySelector('.racer-dashboard'),loaderAnchor=m.querySelector('.racer-loader-anchor');
+  const className=m.querySelector('.racer-class-name'),classLogo=m.querySelector('.racer-class-logo'),changeClass=m.querySelector('.racer-change-class');
+  const stage=m.querySelector('.racer-stage'),racers=m.querySelector('.racer-standees'),studentSelect=m.querySelector('.racer-student'),distanceInput=m.querySelector('.racer-distance'),moveButton=m.querySelector('.racer-move'),reset=m.querySelector('.racer-reset');
+  const status=m.querySelector('.racer-status'),win=m.querySelector('.racer-win'),winName=m.querySelector('.racer-win-name'),winTotal=m.querySelector('.racer-win-total'),winDone=m.querySelector('.racer-win-done');
+  let activeClassId='',selectedStudent='';
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};
+  const curveY=t=>54-40*t*(1-t);
+  const keyFor=name=>starChartStudentKey(name);
+  const studentIndex=(r,name)=>Math.max(0,r.students.indexOf(name));
+  const tierFor=index=>index%6;
+  const groupFor=index=>Math.floor(index/6)%5;
+  const positionFor=(r,name,p)=>{
+    const index=studentIndex(r,name),t=Math.max(0,Math.min(1,(p.positions[keyFor(name)]||0)/100));
+    const x=Math.max(4.7,Math.min(95.3,6+t*88+(groupFor(index)-2)*.32));
+    return{x,y:curveY(t),tier:tierFor(index),t};
+  };
+  const updateStatus=()=>{
+    const r=roster();if(!r){status.textContent='';return}
+    const p=progress(),finishers=r.students.filter(name=>p.finished[keyFor(name)]).length;
+    status.textContent=finishers?`${finishers} ${finishers===1?'finisher':'finishers'} • Race continues until you reset`:'Move a student forward to begin the race';
+  };
+  const buildStandee=name=>{
+    const r=roster(),visual=studentProfileVisual(name,r?.id||'');
+    const node=document.createElement('button');node.type='button';node.className='racer-standee';node.dataset.student=name;node.setAttribute('aria-label',`Select ${name}`);
+    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
+    node.style.setProperty('--racer-hue',String(visual.hue));
+    node.querySelector('.racer-character strong').textContent=name;
+    node.addEventListener('click',()=>{selectedStudent=name;studentSelect.value=name;renderSelection()});
+    return node;
+  };
+  const renderSelection=()=>{
+    const r=roster();if(!r)return;
+    const p=progress(),key=keyFor(selectedStudent),done=Boolean(p.finished[key]);
+    racers.querySelectorAll('.racer-standee').forEach(node=>node.classList.toggle('is-selected',node.dataset.student===selectedStudent));
+    moveButton.disabled=!selectedStudent||done;distanceInput.disabled=!selectedStudent||done;
+    moveButton.textContent=done?'Finished':'Add distance';
+  };
+  const renderTrack=()=>{
+    const r=roster();if(!r)return;
+    const p=progress(),wanted=new Set(r.students);
+    racers.querySelectorAll('.racer-standee').forEach(node=>{if(!wanted.has(node.dataset.student))node.remove()});
+    r.students.forEach(name=>{
+      let node=[...racers.children].find(child=>child.dataset.student===name);
+      if(!node){node=buildStandee(name);racers.append(node);requestAnimationFrame(()=>node.classList.add('is-ready'))}
+      const pos=positionFor(r,name,p),key=keyFor(name),wins=p.studentWins[key]||0;
+      node.style.left=`${pos.x}%`;node.style.top=`${pos.y}%`;node.style.setProperty('--racer-stick-height',`${18+pos.tier*14}px`);node.style.zIndex=String(20+pos.tier);
+      node.classList.toggle('is-finished',Boolean(p.finished[key]));node.title=`${name} • ${Math.round(p.positions[key]||0)}% • ${wins} Race ${wins===1?'Win':'Wins'}`;
+      const mark=node.querySelector('.racer-winner-mark');if(mark)mark.title=`${wins} Race ${wins===1?'Win':'Wins'}`;
+    });
+    updateStatus();renderSelection();
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);
+    const prior=selectedStudent;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));
+    r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+    selectedStudent=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=selectedStudent;
+    renderTrack();
+  };
+  const showWin=(name,total)=>{
+    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('confetti');requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
+  };
+  const moveStudent=()=>{
+    const r=roster(),name=selectedStudent;if(!r||!name)return;
+    const p=progress(),key=keyFor(name);if(p.finished[key])return;
+    const amount=Math.max(1,Math.min(100,Math.round(Number(distanceInput.value)||1))),before=p.positions[key]||0,next=Math.min(100,before+amount),won=before<100&&next>=100;
+    p.positions[key]=next;
+    if(won){p.finished[key]=true;p.studentWins[key]=normalizeStarChartCount((p.studentWins[key]||0)+1)}
+    writeClassRacer(activeClassId,p);if(won)flushPbisCloudSave();notifyBoardChanged('racer-distance');renderTrack();
+    if(won)setTimeout(()=>showWin(name,p.studentWins[key]),520);
+  };
+  const resetRace=()=>{
+    const r=roster();if(!r||!r.students.length)return;if(!confirm(`Reset the race board for ${r.name}? Race Win totals will be kept.`))return;
+    const p=progress();r.students.forEach(name=>{const key=keyFor(name);p.positions[key]=0;p.finished[key]=false});writeClassRacer(activeClassId,p);flushPbisCloudSave();win.hidden=true;renderTrack();notifyBoardChanged('racer-reset');
+  };
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;win.hidden=true;
+    if(r)selectedStudent=r.students.includes(selectedStudent)?selectedStudent:(r.students[0]||'');else selectedStudent='';render();
+  };
+  studentSelect.addEventListener('change',()=>{selectedStudent=studentSelect.value;renderSelection();notifyBoardChanged('racer-student')});
+  distanceInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();moveStudent()}});
+  moveButton.addEventListener('click',moveStudent);reset.addEventListener('click',resetRace);winDone.addEventListener('click',()=>{win.hidden=true;moveButton.focus({preventScroll:true})});
+  changeClass.addEventListener('click',()=>{activeClassId='';selectedStudent='';win.hidden=true;importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('racer-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('racer-class')});
+  m.querySelector('.racer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.racer-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.racer-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
+  const ro=new ResizeObserver(renderTrack);ro.observe(stage);
+  m._boardGetState=()=>({activeClassId,selectedStudent});
+  m._boardSetState=state=>{selectedStudent=String(state?.selectedStudent||'');setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  render();
+}
+
+function setupPunchcards(m){
+  const importView=m.querySelector('.punchcard-import'),dashboard=m.querySelector('.punchcard-dashboard'),loaderAnchor=m.querySelector('.punchcard-loader-anchor');
+  const className=m.querySelector('.punchcard-class-name'),classLogo=m.querySelector('.punchcard-class-logo'),changeClass=m.querySelector('.punchcard-change-class');
+  const tabs=[...m.querySelectorAll('[data-punchcard-scope]')],studentWrap=m.querySelector('.punchcard-student-wrap'),studentSelect=m.querySelector('.punchcard-student');
+  const card=m.querySelector('.punchcard-card'),cardName=m.querySelector('.punchcard-name'),cardType=m.querySelector('.punchcard-type'),holes=m.querySelector('.punchcard-holes'),points=m.querySelector('.punchcard-points-value');
+  const reset=m.querySelector('.punchcard-reset'),complete=m.querySelector('.punchcard-complete'),completeName=m.querySelector('.punchcard-complete-name'),completePoints=m.querySelector('.punchcard-complete-points'),completeDone=m.querySelector('.punchcard-complete-done');
+  let activeClassId='',scope='student',student='',busy=false;
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const targetKey=()=>starChartStudentKey(student);
+  const currentProgress=()=>{
+    const r=roster();if(!r)return 0;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    return scope==='class'?progress.wholeClassProgress:(progress.studentProgress[targetKey()]||0);
+  };
+  const currentPoints=()=>{
+    const r=roster();if(!r)return 0;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    return scope==='class'?progress.wholeClassPoints:(progress.studentPoints[targetKey()]||0);
+  };
+  const persistProgress=value=>{
+    const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r.punchcards,r.students);const next=Math.max(0,Math.min(9,Math.round(Number(value)||0)));
+    if(scope==='class')progress.wholeClassProgress=next;else if(student)progress.studentProgress[targetKey()]=next;
+    writeClassPunchcards(activeClassId,progress);notifyBoardChanged('punchcard-progress');
+  };
+  const awardPoint=()=>{
+    const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    if(scope==='class'){progress.wholeClassPoints=normalizeStarChartCount(progress.wholeClassPoints+1);progress.wholeClassProgress=0}
+    else if(student){const key=targetKey();progress.studentPoints[key]=normalizeStarChartCount((progress.studentPoints[key]||0)+1);progress.studentProgress[key]=0}
+    writeClassPunchcards(activeClassId,progress);flushPbisCloudSave();notifyBoardChanged('punchcard-complete');
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    tabs.forEach(tab=>{const active=tab.dataset.punchcardScope===scope;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    studentWrap.hidden=scope!=='student';
+    const prior=student;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students in this class',''));r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+    student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student;
+    const target=scope==='class'?r.name:(student||'Choose a student');cardName.textContent=target;cardType.textContent=scope==='class'?'WHOLE CLASS PUNCHCARD':'STUDENT PUNCHCARD';points.textContent=String(currentPoints());
+    card.classList.toggle('is-disabled',scope==='student'&&!student);holes.replaceChildren();const punched=currentProgress();
+    for(let i=0;i<10;i++){
+      const hole=document.createElement('button');hole.type='button';hole.className='punchcard-hole';hole.dataset.index=String(i);hole.setAttribute('aria-label',i<punched?`Punch ${i+1} completed`:`Punch hole ${i+1}`);hole.disabled=busy||i<punched||(scope==='student'&&!student);if(i<punched)hole.classList.add('is-punched');
+      hole.addEventListener('click',event=>punch(hole,i,event));holes.append(hole);
+    }
+    reset.disabled=currentProgress()===0||(scope==='student'&&!student);
+  };
+  const punch=(hole,index,event)=>{
+    if(busy||index!==currentProgress())return;
+    busy=true;
+    playUiSfx('hole-punch');
+    const cardRect=card.getBoundingClientRect(),holeRect=hole.getBoundingClientRect();
+    const disk=document.createElement('span');
+    disk.className='punchcard-punched-disk';
+    const size=Math.max(12,holeRect.width);
+    const clickX=Number.isFinite(event?.clientX)?event.clientX:holeRect.left+holeRect.width/2;
+    const clickY=Number.isFinite(event?.clientY)?event.clientY:holeRect.top+holeRect.height/2;
+    disk.style.left=`${clickX-cardRect.left-size/2}px`;
+    disk.style.top=`${clickY-cardRect.top-size/2}px`;
+    disk.style.width=`${size}px`;
+    disk.style.height=`${size}px`;
+    disk.style.setProperty('--punch-fall-distance',`${Math.max(150,cardRect.bottom-clickY+size+86)}px`);
+    disk.style.setProperty('--punch-drift-x',`${Math.round((Math.random()-.5)*42)}px`);
+    disk.style.setProperty('--punch-drift-mid',`${Math.round((Math.random()-.5)*18)}px`);
+    disk.style.setProperty('--punch-spin',`${Math.round((Math.random()>.5?1:-1)*(150+Math.random()*150))}deg`);
+    card.append(disk);
+    disk.addEventListener('animationend',()=>disk.remove(),{once:true});
+    setTimeout(()=>disk.remove(),1250);
+    hole.classList.add('is-punching');
+    setTimeout(()=>{
+      if(index===9){const target=scope==='class'?roster()?.name:student;awardPoint();completeName.textContent=target||'Punchcard';completePoints.textContent=String(currentPoints());complete.hidden=false;completeDone.focus({preventScroll:true})}
+      else persistProgress(index+1);
+      busy=false;render();
+    },260);
+  };
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;
+    if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);student=r.students.includes(student)?student:(r.students[0]||'')}
+    render();
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.punchcardScope==='class'?'class':'student';complete.hidden=true;render();notifyBoardChanged('punchcard-scope')}));
+  studentSelect.addEventListener('change',()=>{student=studentSelect.value;complete.hidden=true;render();notifyBoardChanged('punchcard-student')});
+  reset.addEventListener('click',()=>{const target=scope==='class'?roster()?.name:student;if(!target||currentProgress()===0)return;if(!confirm(`Reset the current Punchcard for ${target}?`))return;persistProgress(0);render()});
+  completeDone.addEventListener('click',()=>{complete.hidden=true;render()});
+  changeClass.addEventListener('click',()=>{activeClassId='';student='';complete.hidden=true;importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('punchcard-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('punchcard-class')});
+  m.querySelector('.punchcard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.punchcard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.punchcard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:punchcardchange'].forEach(name=>window.addEventListener(name,refresh));
+  m._boardGetState=()=>({activeClassId,scope,student});
+  m._boardSetState=state=>{scope=state?.scope==='class'?'class':'student';student=String(state?.student||'');setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:punchcardchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  render();
+}
+
 function setupCollections(m){
-  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),clear=m.querySelector('.collection-clear'),bgBtn=m.querySelector('.collection-bg');
+  const importView=m.querySelector('.collection-import'),dashboard=m.querySelector('.collection-dashboard'),className=m.querySelector('.collection-class-name'),classLogo=m.querySelector('.collection-class-logo'),changeClass=m.querySelector('.collection-change-class');
+  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),fillHandle=m.querySelector('.collection-fill-line-handle'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
+  const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),bannerRestart=m.querySelector('.collection-banner-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),emptyCurrent=m.querySelector('.collection-empty-current'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
   const types=[
     {id:'pompom',label:'Pom poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
     {id:'jellybean',label:'Jellybeans'},{id:'fruit',label:'Fruits'},{id:'coin',label:'Coins'}
@@ -3202,16 +4768,19 @@ function setupCollections(m){
   const jarBehind=new Image();
   jarBehind.src='assets/jar-behind.png';
   let typeIndex=0,bodies=[],particles=[],raf=0,last=performance.now(),cw=260,ch=320,dpr=1,dead=false,currentJar=null;
+  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0,fillReachedAt=0,draggingFillLine=false;
 
   const jarRectFor=(w,h)=>{const size=Math.max(140,Math.min(w*.96,h*.98));return{x:(w-size)/2,y:(h-size)/2,w:size,h:size}};
   const jarBounds=()=>{const j=currentJar||jarRectFor(cw,ch);return{floor:j.y+j.h*.895,top:j.y+j.h*.105,neckL:j.x+j.w*.285,neckR:j.x+j.w*.715,bodyL:j.x+j.w*.215,bodyR:j.x+j.w*.785,shoulderTop:j.y+j.h*.205,shoulderBottom:j.y+j.h*.31,bottomCurve:j.y+j.h*.765,bottomL:j.x+j.w*.265,bottomR:j.x+j.w*.735,j}};
+  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*progress.fillLine};
   const wallsAt=y=>{const b=jarBounds();if(y<b.shoulderTop)return[b.neckL,b.neckR];if(y<b.shoulderBottom){const t=clamp((y-b.shoulderTop)/(b.shoulderBottom-b.shoulderTop),0,1),ease=t*t*(3-2*t);return[b.neckL+(b.bodyL-b.neckL)*ease,b.neckR+(b.bodyR-b.neckR)*ease]}if(y>b.bottomCurve){const t=clamp((y-b.bottomCurve)/(b.floor-b.bottomCurve),0,1),ease=t*t*(3-2*t);return[b.bodyL+(b.bottomL-b.bodyL)*ease,b.bodyR+(b.bottomR-b.bodyR)*ease]}return[b.bodyL,b.bodyR]};
+  const positionFillHandle=()=>{if(!fillHandle)return;const line=fillLineY(),[,lineR]=wallsAt(line);fillHandle.style.left=`${lineR+8}px`;fillHandle.style.top=`${line}px`};
 
   function resizeCanvas(){
     const nw=Math.max(220,canvas.clientWidth),nh=Math.max(210,canvas.clientHeight),old=currentJar||jarRectFor(cw,ch),next=jarRectFor(nw,nh),scale=next.w/old.w;
     if(bodies.length)for(const b of bodies){b.x=next.x+(b.x-old.x)*scale;b.y=next.y+(b.y-old.y)*scale;b.r*=scale}
     if(particles.length)for(const p of particles){p.x=next.x+(p.x-old.x)*scale;p.y=next.y+(p.y-old.y)*scale;p.r*=scale}
-    cw=nw;ch=nh;currentJar=next;dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)
+    cw=nw;ch=nh;currentJar=next;dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);positionFillHandle()
   }
   const ro=new ResizeObserver(resizeCanvas);ro.observe(canvas);resizeCanvas();
 
@@ -3219,13 +4788,21 @@ function setupCollections(m){
     for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=18+Math.random()*48;particles.push({type:body.type,variant:body.variant,color:body.color,x:body.x+(Math.random()-.5)*body.r*.5,y:body.y+body.r*.4,vx:Math.cos(a)*s,vy:Math.sin(a)*s-18,life:.38+Math.random()*.28,max:.66,r:Math.max(1.4,body.r*(.11+Math.random()*.08)),rot:Math.random()*Math.PI*2,av:(Math.random()-.5)*4})}
   }
 
-  function addItem(){
-    if(bodies.length>=80)return;
+  function addItem({persist=true,detect=true}={}){
+    if(bodies.length>=80||progress.filled||!activeClassId)return;
     const t=types[typeIndex],b=jarBounds(),r=Math.max(9,Math.min(16,b.j.w*.036))*(.88+Math.random()*.22);
-    bodies.push({type:t.id,x:(b.neckL+b.neckR)/2+(Math.random()-.5)*(b.neckR-b.neckL)*.28,y:b.top-r-22,vx:(Math.random()-.5)*20,vy:18+Math.random()*12,r,rot:(Math.random()-.5)*.4,av:(Math.random()-.5)*1.25,color:colors[bodies.length%colors.length],variant:Math.floor(Math.random()*4),impact:false,onFloor:false});
-    updateCount()
+    bodies.push({type:t.id,x:(b.neckL+b.neckR)/2+(Math.random()-.5)*(b.neckR-b.neckL)*.28,y:b.top-r-22,vx:(Math.random()-.5)*20,vy:18+Math.random()*12,r,rot:(Math.random()-.5)*.4,av:(Math.random()-.5)*1.25,color:colors[bodies.length%colors.length],variant:Math.floor(Math.random()*4),impact:false,onFloor:false,bornAt:detect?performance.now():performance.now()-1200});
+    if(detect)fillArmedAt=performance.now()+300;
+    updateCount();
+    if(persist)persistProgress();
   }
-  function updateCount(){countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`}
+  function updateCount(){
+    countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`;
+    jarsFilledEl.textContent=String(normalizeStarChartCount(progress.jarsFilled));
+    emptyCurrent.disabled=bodies.length<=0&&!progress.filled;
+    removeFill.disabled=progress.jarsFilled<=0;
+    resetFills.disabled=progress.jarsFilled<=0;
+  }
 
   function physics(dt){
     const floor=jarBounds().floor;
@@ -3255,7 +4832,35 @@ function setupCollections(m){
       if(Math.hypot(b.vx,b.vy)<2.2&&Math.abs(b.av)<.1){b.vx=0;if(Math.abs(b.vy)<2)b.vy=0;b.av=0}
     }
     for(const p of particles){p.vy+=180*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.av*dt;p.life-=dt}
-    particles=particles.filter(p=>p.life>0)
+    particles=particles.filter(p=>p.life>0);
+    checkJarFilled();
+  }
+
+  function checkJarFilled(){
+    const now=performance.now();
+    if(progress.filled||!activeClassId||now<fillArmedAt){fillReachedAt=0;return}
+    const line=fillLineY(),bounds=jarBounds(),tolerance=Math.max(3,bounds.j.h*.012);
+    const pileTop=bodies.reduce((top,body)=>{
+      const age=now-(Number(body.bornAt)||0);
+      const settledEnough=age>=450&&Math.abs(body.vy)<180&&Math.abs(body.vx)<100;
+      const insideJar=body.y>=bounds.shoulderTop&&body.y<=bounds.floor;
+      return settledEnough&&insideJar?Math.min(top,body.y-body.r):top;
+    },Infinity);
+    const reached=Number.isFinite(pileTop)&&pileTop<=line+tolerance;
+    if(!reached){
+      if(fillReachedAt&&now-fillReachedAt<140)return;
+      fillReachedAt=0;
+      return;
+    }
+    if(!fillReachedAt){fillReachedAt=now;return}
+    if(now-fillReachedAt<180)return;
+    fillReachedAt=0;
+    progress.filled=true;
+    progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);
+    persistProgress();
+    renderFilledState();
+    launchConfetti(m);
+    playUiSfx('confetti');
   }
 
   function starPath(r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.46:r,px=Math.cos(a)*rad,py=Math.sin(a)*rad;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
@@ -3293,6 +4898,8 @@ function setupCollections(m){
   function draw(){
     ctx.clearRect(0,0,cw,ch);const j=currentJar||jarRectFor(cw,ch);
     if(jarBehind.complete)ctx.drawImage(jarBehind,j.x,j.y,j.w,j.h);
+    const line=fillLineY(),[lineL,lineR]=wallsAt(line);
+    ctx.save();ctx.strokeStyle=progress.filled?'rgba(50,159,105,.9)':'rgba(77,145,223,.78)';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=Math.max(1.5,j.w*.006);ctx.setLineDash([Math.max(5,j.w*.02),Math.max(4,j.w*.014)]);ctx.beginPath();ctx.moveTo(lineL+5,line);ctx.lineTo(lineR-5,line);ctx.stroke();ctx.setLineDash([]);ctx.font=`900 ${Math.max(7,j.w*.025)}px Inter,system-ui,sans-serif`;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(progress.filled?'FILLED':'FILL LINE',lineR-5,line-5);ctx.restore();
     for(const b of bodies)drawBody(b);for(const p of particles)drawParticle(p);
     if(jarBehind.complete){ctx.save();ctx.beginPath();ctx.rect(j.x+j.w*.205,j.y+j.h*.092,j.w*.59,j.h*.078);ctx.clip();ctx.drawImage(jarBehind,j.x,j.y,j.w,j.h);ctx.restore()}
   }
@@ -3300,25 +4907,117 @@ function setupCollections(m){
   function renderType(){const t=types[typeIndex];m.dataset.item=t.id;typeLabel.textContent=t.label.toUpperCase();const preview=m.querySelector('.collection-current-preview');preview.className=`collectible-preview collection-current-preview preview-${t.id}`;pickerButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.collectionType===t.id))}
   function closePicker(){picker.hidden=true;typeBtn.setAttribute('aria-expanded','false')}
   function togglePicker(){picker.hidden=!picker.hidden;typeBtn.setAttribute('aria-expanded',String(!picker.hidden))}
-  canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
-  add.addEventListener('click',addItem);
-  typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
-  picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();closePicker()}});
-  document.addEventListener('pointerdown',e=>{if(!m.contains(e.target)||!e.target.closest('.collection-picker-wrap'))closePicker()});
-  bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  clear.addEventListener('click',()=>{bodies=[];particles=[];updateCount()});renderType();updateCount();raf=requestAnimationFrame(loop);
-  m._boardGetState=()=>({item:types[typeIndex]?.id||'pompom',count:bodies.length});
-  m._boardSetState=state=>{
-    if(!state)return;
-    const nextIndex=types.findIndex(type=>type.id===state.item);
-    if(nextIndex>=0)typeIndex=nextIndex;
-    bodies=[];particles=[];
-    renderType();
-    const count=Math.max(0,Math.min(300,Math.round(Number(state.count)||0)));
-    for(let i=0;i<count;i++)addItem();
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const setSettingsOpen=open=>{const show=Boolean(open);settings.hidden=!show;settingsToggle.setAttribute('aria-expanded',String(show))};
+  const renderFilledState=()=>{
+    const filled=Boolean(progress.filled);
+    m.classList.toggle('is-collection-filled',filled);
+    filledBanner.hidden=!filled;
+    restart.hidden=!filled;
+    add.hidden=filled;
+    typeBtn.disabled=filled;
+    fillHandle.disabled=filled;
+    canvas.setAttribute('aria-disabled',String(filled));
+    positionFillHandle();
     updateCount();
   };
-  m._cleanup=()=>{dead=true;cancelAnimationFrame(raf);ro.disconnect()}
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    classLogo.textContent=normalizeClassLogo(roster.logo);
+    renderType();renderFilledState();
+  };
+  const persistProgress=()=>{
+    if(!activeClassId)return;
+    progress.item=types[typeIndex]?.id||'pompom';
+    progress.count=bodies.length;
+    writing=true;
+    const saved=writeClassCollection(activeClassId,progress);
+    writing=false;
+    if(saved)progress=saved;
+    updateCount();
+  };
+  const rebuildBodies=count=>{
+    bodies=[];particles=[];
+    const filled=progress.filled;
+    progress.filled=false;
+    const safeCount=Math.max(0,Math.min(80,Math.round(Number(count)||0)));
+    for(let i=0;i<safeCount;i++)addItem({persist:false,detect:false});
+    progress.filled=filled;
+    fillArmedAt=performance.now()+450;fillReachedAt=0;
+    updateCount();
+  };
+  const applyRosterProgress=next=>{
+    roster=next;
+    progress=normalizeCollectionProgress(next.collectionJar);
+    const nextIndex=types.findIndex(type=>type.id===progress.item);
+    typeIndex=nextIndex>=0?nextIndex:0;
+    rebuildBodies(progress.count);
+    render();
+  };
+  const loadClass=(classId,{notify=false}={})=>{
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){activeClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];render();return false}
+    activeClassId=next.id;pendingClassId='';
+    localStorage.setItem(collectionsLastClassStorageKey(),activeClassId);
+    applyRosterProgress(next);
+    if(notify)notifyBoardChanged('collection-class');
+    return true;
+  };
+
+  const updateFillLineFromPointer=e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),scale=boardCamera.scale||1,y=(e.clientY-r.top)/scale,j=jarBounds().j;progress.fillLine=clamp((y-j.y)/j.h,.24,.72);fillArmedAt=performance.now()+250;fillReachedAt=0;positionFillHandle()};
+  fillHandle.addEventListener('pointerdown',e=>{if(progress.filled)return;e.preventDefault();e.stopPropagation();draggingFillLine=true;m.classList.add('is-moving-fill-line');try{fillHandle.setPointerCapture(e.pointerId)}catch{}updateFillLineFromPointer(e)});
+  fillHandle.addEventListener('pointermove',e=>{if(!draggingFillLine)return;e.preventDefault();updateFillLineFromPointer(e)});
+  const finishFillLineDrag=e=>{if(!draggingFillLine)return;draggingFillLine=false;m.classList.remove('is-moving-fill-line');try{if(e&&fillHandle.hasPointerCapture(e.pointerId))fillHandle.releasePointerCapture(e.pointerId)}catch{}persistProgress()};
+  fillHandle.addEventListener('pointerup',finishFillLineDrag);fillHandle.addEventListener('pointercancel',finishFillLineDrag);fillHandle.addEventListener('lostpointercapture',()=>{if(draggingFillLine){draggingFillLine=false;m.classList.remove('is-moving-fill-line');persistProgress()}});
+  canvas.addEventListener('pointerdown',e=>{if(progress.filled||draggingFillLine)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
+  add.addEventListener('click',()=>addItem());
+  typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
+  picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();persistProgress();closePicker()}});
+  document.addEventListener('pointerdown',e=>{if(!m.contains(e.target)||!e.target.closest('.collection-picker-wrap'))closePicker()});
+  bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  const emptyJar=()=>{
+    if(!activeClassId)return;
+    bodies=[];particles=[];progress.count=0;progress.filled=false;fillArmedAt=performance.now()+450;fillReachedAt=0;persistProgress();renderFilledState();
+  };
+  restart.addEventListener('click',emptyJar);
+  bannerRestart.addEventListener('click',emptyJar);
+  emptyCurrent.addEventListener('click',()=>{emptyJar();setSettingsOpen(false)});
+  settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
+  m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.collection-settings-wrap'))setSettingsOpen(false)});
+  m.addEventListener('pointerleave',()=>{setSettingsOpen(false);closePicker()});
+  addFill.addEventListener('click',()=>{progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);persistProgress();renderFilledState()});
+  removeFill.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled-1);persistProgress();renderFilledState()});
+  resetFills.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=0;persistProgress();renderFilledState();setSettingsOpen(false)});
+  changeClass.addEventListener('click',()=>{activeClassId='';pendingClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];localStorage.removeItem(collectionsLastClassStorageKey());setSettingsOpen(false);render();notifyBoardChanged('collection-class')});
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.collection-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];localStorage.removeItem(collectionsLastClassStorageKey());render();return}
+    applyRosterProgress(next);
+  };
+  const handleCollectionChange=event=>{
+    if(writing||event.detail?.classId!==activeClassId)return;
+    const next=currentRoster();if(next)applyRosterProgress(next);
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:collectionchange',handleCollectionChange);
+
+  renderType();updateCount();raf=requestAnimationFrame(loop);
+  m._boardGetState=()=>({classId:activeClassId});
+  m._boardSetState=state=>{
+    const classId=String(state?.classId||'');
+    if(classId&&!loadClass(classId))pendingClassId=classId;
+  };
+  const lastClassId=localStorage.getItem(collectionsLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+  m._cleanup=()=>{dead=true;draggingFillLine=false;cancelAnimationFrame(raf);ro.disconnect();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange);window.removeEventListener('teachertiles:collectionchange',handleCollectionChange)}
 }
 
 const LUNCH_COUNT_ICONS=[
@@ -3407,6 +5106,7 @@ function setupLunchCount(m){
     students=students.filter(student=>student!==name);
     renderCategories();
     renderPool();
+    notifyBoardChanged('lunch-count-remove-student');
   };
 
   const assign=(name,targetId='')=>{
@@ -3419,9 +5119,10 @@ function setupLunchCount(m){
     }
     renderCategories();
     renderPool();
+    notifyBoardChanged('lunch-count-assignment');
   };
 
-  const studentChip=(name,{removable=false}={})=>{
+  const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
     chip.className='lunchcount-student-chip';
     chip.draggable=true;
@@ -3447,10 +5148,11 @@ function setupLunchCount(m){
       const remove=document.createElement('button');
       remove.type='button';
       remove.textContent='×';
-      remove.setAttribute('aria-label',`Remove ${name}`);
+      remove.setAttribute('aria-label',unassignOnly?`Return ${name} to unassigned`:`Remove ${name}`);
       remove.addEventListener('click',event=>{
         event.stopPropagation();
-        removeStudent(name);
+        if(unassignOnly)assign(name,'');
+        else removeStudent(name);
       });
       chip.appendChild(remove);
     }
@@ -3568,7 +5270,7 @@ function setupLunchCount(m){
 
       if(namesMode){
         if(category.students.length){
-          category.students.forEach(name=>content.appendChild(studentChip(name)));
+          category.students.forEach(name=>content.appendChild(studentChip(name,{removable:true,unassignOnly:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='lunchcount-category-empty';
@@ -3874,6 +5576,7 @@ function setupVoting(m){
     students=students.filter(student=>student!==name);
     renderChoices();
     renderPool();
+    notifyBoardChanged('voting-remove-student');
   };
 
   const assign=(name,targetId='')=>{
@@ -3886,9 +5589,10 @@ function setupVoting(m){
     }
     renderChoices();
     renderPool();
+    notifyBoardChanged('voting-assignment');
   };
 
-  const studentChip=(name,{removable=false}={})=>{
+  const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
     chip.className='voting-student-chip';
     chip.draggable=true;
@@ -3914,10 +5618,11 @@ function setupVoting(m){
       const remove=document.createElement('button');
       remove.type='button';
       remove.textContent='×';
-      remove.setAttribute('aria-label',`Remove ${name}`);
+      remove.setAttribute('aria-label',unassignOnly?`Return ${name} to unassigned`:`Remove ${name}`);
       remove.addEventListener('click',event=>{
         event.stopPropagation();
-        removeStudent(name);
+        if(unassignOnly)assign(name,'');
+        else removeStudent(name);
       });
       chip.appendChild(remove);
     }
@@ -4024,7 +5729,7 @@ function setupVoting(m){
 
       if(namesMode){
         if(choice.students.length){
-          choice.students.forEach(name=>content.appendChild(studentChip(name)));
+          choice.students.forEach(name=>content.appendChild(studentChip(name,{removable:true,unassignOnly:true})));
         }else{
           const empty=document.createElement('span');
           empty.className='voting-choice-empty';
@@ -6210,11 +7915,23 @@ function setupPhotobooth(m){
       img.src=photo;
       img.alt='';
       img.draggable=false;
+      const actions=document.createElement('div');
+      actions.className='photobooth-photo-actions';
+      const download=document.createElement('button');
+      download.type='button';download.className='photobooth-photo-download';download.textContent='↓';download.title='Download photo';download.setAttribute('aria-label',`Download photo ${index+1}`);
+      download.addEventListener('pointerdown',event=>event.stopPropagation());
+      download.addEventListener('click',event=>{
+        event.stopPropagation();
+        const link=document.createElement('a');
+        link.href=photo;link.download=`teachertiles-photo-${index+1}.jpg`;link.click();
+      });
       const remove=document.createElement('button');
-      remove.type='button';
+      remove.type='button';remove.className='photobooth-photo-delete';
       remove.textContent='×';
       remove.setAttribute('aria-label',`Delete photo ${index+1}`);
+      remove.addEventListener('pointerdown',event=>event.stopPropagation());
       remove.addEventListener('click',event=>{event.stopPropagation();photos.splice(index,1);renderPhotos();notifyBoardChanged('photobooth-delete')});
+      actions.append(download,remove);
       card.addEventListener('dragstart',event=>{
         event.stopPropagation();
         event.dataTransfer?.setData('application/x-teachertiles-photo',photo);
@@ -6222,7 +7939,7 @@ function setupPhotobooth(m){
         card.classList.add('is-dragging');
       });
       card.addEventListener('dragend',()=>card.classList.remove('is-dragging'));
-      card.append(img,remove);
+      card.append(img,actions);
       list.appendChild(card);
     });
   };
@@ -12465,7 +14182,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target'
+  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled'
 ]);
 let activeTeacherTilesBoardId='';
 
@@ -12785,17 +14502,17 @@ function blankTeacherTilesBoard(){
 }
 
 workspace.addEventListener('input',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))notifyBoardChanged('input');
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))notifyBoardChanged('input');
 },true);
 workspace.addEventListener('change',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))notifyBoardChanged('change');
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))notifyBoardChanged('change');
 },true);
 workspace.addEventListener('click',event=>{
-  if(event.target instanceof Element&&event.target.closest('.module'))setTimeout(()=>notifyBoardChanged('module-action'),0);
+  if(event.target instanceof Element&&event.target.closest('.module')&&!event.target.closest('[data-skip-board-save]'))setTimeout(()=>notifyBoardChanged('module-action'),0);
 },true);
 document.addEventListener('pointerup',event=>{
   const target=event.target;
-  if(target instanceof Element&&(target.closest('.module')||target.classList.contains('board-drawing-canvas')))notifyBoardChanged('pointer-action');
+  if(target instanceof Element&&!target.closest('[data-skip-board-save]')&&(target.closest('.module')||target.classList.contains('board-drawing-canvas')))notifyBoardChanged('pointer-action');
 },true);
 
 window.TeacherTilesBoard={
@@ -12834,6 +14551,7 @@ function setupChangelog(){
     safe=safe.replace(/`([^`]+)`/g,'<code>$1</code>');
     safe=safe.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
     safe=safe.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+    safe=safe.replace(/!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,'<img class="changelog-image" src="$2" alt="$1" loading="lazy" decoding="async">');
     safe=safe.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     return safe;
   };
