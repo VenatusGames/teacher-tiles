@@ -196,6 +196,21 @@ const CLASS_ROSTERS_KEY='teachertiles-class-rosters-v1';
 const classRostersStorageKey=()=>`${CLASS_ROSTERS_KEY}:${window.TeacherTilesClassScope||'local'}`;
 const STAR_CHART_LAST_CLASS_KEY='teachertiles-star-chart-last-class-v1';
 const starChartLastClassStorageKey=()=>`${STAR_CHART_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const CLASS_METER_LAST_CLASS_KEY='teachertiles-class-meter-last-class-v1';
+const classMeterLastClassStorageKey=()=>`${CLASS_METER_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const CLASS_LOGO_OPTIONS=Object.freeze([
+  Object.freeze({symbol:'👥',label:'Class team'}),Object.freeze({symbol:'🌟',label:'Shining star'}),
+  Object.freeze({symbol:'🚀',label:'Rocket'}),Object.freeze({symbol:'🦉',label:'Owl'}),
+  Object.freeze({symbol:'🐯',label:'Tiger'}),Object.freeze({symbol:'🌈',label:'Rainbow'}),
+  Object.freeze({symbol:'⚡',label:'Lightning'}),Object.freeze({symbol:'🏆',label:'Trophy'}),
+  Object.freeze({symbol:'🧠',label:'Brain'}),Object.freeze({symbol:'🎨',label:'Art palette'}),
+  Object.freeze({symbol:'🌱',label:'Growing plant'}),Object.freeze({symbol:'🐝',label:'Bee'})
+]);
+
+function normalizeClassLogo(value){
+  const logo=String(value||'').trim();
+  return logo?Array.from(logo).slice(0,8).join(''):'👥';
+}
 
 function normalizeRosterNames(values){
   const names=[];
@@ -233,6 +248,14 @@ function normalizeStarChartProgress(value,students=[]){
   };
 }
 
+function normalizeClassMeterProgress(value){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  return{
+    fill:Math.max(0,Math.min(100,Number(source.fill)||0)),
+    wins:normalizeStarChartCount(source.wins)
+  };
+}
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
@@ -242,8 +265,10 @@ function readClassRosters(){
       return{
         id:String(item.id||`class-${index+1}`),
         name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
+        logo:normalizeClassLogo(item.logo),
         students,
-        starChart:normalizeStarChartProgress(item.starChart,students)
+        starChart:normalizeStarChartProgress(item.starChart,students),
+        classMeter:normalizeClassMeterProgress(item.classMeter)
       };
     });
   }catch{return []}
@@ -313,6 +338,17 @@ function writeClassStarChart(classId,value){
   window.dispatchEvent(new CustomEvent('teachertiles:starchartchange',{detail:{classId,progress:roster.starChart}}));
   schedulePbisCloudSave();
   return roster.starChart;
+}
+
+function writeClassMeter(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.classMeter=normalizeClassMeterProgress(value);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:classmeterchange',{detail:{classId,progress:roster.classMeter}}));
+  schedulePbisCloudSave();
+  return roster.classMeter;
 }
 
 window.addEventListener('pagehide',flushPbisCloudSave);
@@ -442,14 +478,36 @@ function setupProfileClasses(){
   const studentInput=document.getElementById('profile-student-name');
   const studentChips=document.getElementById('profile-roster-students');
   const rosterCount=document.getElementById('profile-roster-count');
+  const logoOptions=document.getElementById('profile-roster-logo-options');
+  const customLogoInput=document.getElementById('profile-roster-custom-logo');
   if(!openButton||!panel||!form||!nameInput||!list||!listView||!rosterView)return;
   document.body.appendChild(panel);
   let editingId='';
   let draftName='';
+  let draftLogo='👥';
   let draftStudents=[];
   let originalSignature='';
 
-  const draftSignature=()=>JSON.stringify({name:draftName.trim(),students:normalizeRosterNames(draftStudents)});
+  const draftSignature=()=>JSON.stringify({name:draftName.trim(),logo:normalizeClassLogo(draftLogo),students:normalizeRosterNames(draftStudents)});
+
+  const syncLogoPicker=({syncCustom=true}={})=>{
+    const logo=normalizeClassLogo(draftLogo);
+    logoOptions?.querySelectorAll('[data-class-logo]').forEach(button=>{
+      const selected=button.dataset.classLogo===logo;
+      button.classList.toggle('is-selected',selected);
+      button.setAttribute('aria-pressed',String(selected));
+    });
+    if(syncCustom&&customLogoInput)customLogoInput.value=CLASS_LOGO_OPTIONS.some(option=>option.symbol===logo)?'':logo;
+  };
+
+  CLASS_LOGO_OPTIONS.forEach(option=>{
+    if(!logoOptions)return;
+    const button=document.createElement('button');
+    button.type='button';button.className='roster-logo-option';button.dataset.classLogo=option.symbol;
+    button.textContent=option.symbol;button.title=option.label;button.setAttribute('aria-label',`Use ${option.label} as the class logo`);button.setAttribute('aria-pressed','false');
+    button.addEventListener('click',()=>{draftLogo=option.symbol;syncLogoPicker()});
+    logoOptions.append(button);
+  });
 
   const renderDraft=()=>{
     studentChips.replaceChildren();
@@ -477,6 +535,7 @@ function setupProfileClasses(){
     const target=classes.find(item=>item.id===editingId);
     if(!target)return false;
     target.name=draftName;target.students=[...draftStudents];
+    target.logo=normalizeClassLogo(draftLogo);
     writeClassRosters(classes);
     originalSignature=draftSignature();
     return true;
@@ -487,9 +546,9 @@ function setupProfileClasses(){
   };
 
   const openRoster=item=>{
-    editingId=item.id;draftName=item.name;draftStudents=[...item.students];
+    editingId=item.id;draftName=item.name;draftLogo=normalizeClassLogo(item.logo);draftStudents=[...item.students];
     rosterName.value=draftName;originalSignature=draftSignature();
-    listView.hidden=true;rosterView.hidden=false;renderDraft();
+    listView.hidden=true;rosterView.hidden=false;syncLogoPicker();renderDraft();
     requestAnimationFrame(()=>studentInput.focus({preventScroll:true}));
   };
 
@@ -507,7 +566,7 @@ function setupProfileClasses(){
       const card=document.createElement('button');
       card.type='button';
       card.className='profile-class-card';
-      const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent='👥';
+      const icon=document.createElement('span');icon.className='profile-class-card__icon';icon.textContent=normalizeClassLogo(item.logo);
       const copy=document.createElement('span');copy.className='profile-class-card__copy';
       const title=document.createElement('strong');title.textContent=item.name;
       const count=document.createElement('small');count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
@@ -540,6 +599,11 @@ function setupProfileClasses(){
   rosterBack?.addEventListener('click',showList);
   rosterDone?.addEventListener('click',showList);
   rosterName?.addEventListener('input',()=>draftName=rosterName.value);
+  customLogoInput?.addEventListener('input',()=>{
+    const next=String(customLogoInput.value||'').trim();
+    draftLogo=next?normalizeClassLogo(next):'👥';
+    syncLogoPicker({syncCustom:false});
+  });
   studentForm?.addEventListener('submit',event=>{
     event.preventDefault();
     const name=String(studentInput.value||'').trim().replace(/\s+/g,' ');
@@ -550,7 +614,7 @@ function setupProfileClasses(){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
-    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),students:[]});
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null)});
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
@@ -574,6 +638,16 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
     icon:'★',
     value:(roster,name)=>normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(name)]),
     wholeClassValue:roster=>normalizeStarChartCount(roster.starChart?.wholeClassStars)
+  }),
+  Object.freeze({
+    id:'meterWins',
+    label:'Class Meter Wins',
+    description:'Whole-class Class Meter fills',
+    wholeClassDescription:'Times this class filled its Class Meter',
+    icon:'🌡️',
+    wholeClassOnly:true,
+    value:()=>0,
+    wholeClassValue:roster=>normalizeClassMeterProgress(roster.classMeter).wins
   })
 ]);
 
@@ -622,14 +696,14 @@ function setupStudentView(){
     if(open)requestAnimationFrame(()=>statMenu.querySelector('input')?.focus({preventScroll:true}));
   };
 
-  const enabledStats=()=>{
+  const enabledStats=({wholeClass=false}={})=>{
     const preferences=readStudentViewStatPreferences();
-    return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]);
+    return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]&&(!stat.wholeClassOnly||wholeClass));
   };
 
   const appendStats=(container,roster,name,{compact=false,wholeClass=false}={})=>{
     container.replaceChildren();
-    const stats=enabledStats();
+    const stats=enabledStats({wholeClass});
     if(!stats.length){
       const empty=document.createElement(compact?'span':'p');
       empty.className=compact?'student-view-stat-summary--empty':'student-profile-stats-empty';
@@ -656,7 +730,7 @@ function setupStudentView(){
     const roster=readClassRosters().find(item=>item.id===activeStudent.classId);
     if(!roster||(!activeStudent.wholeClass&&!roster.students.includes(activeStudent.name))){detail.hidden=true;activeStudent=null;return}
     const visual=studentProfileVisual(activeStudent.wholeClass?roster.name:activeStudent.name,`${roster.id}:${activeStudent.wholeClass?'whole':'student'}`);
-    detailAvatar.textContent=activeStudent.wholeClass?'👥':visual.initials;
+    detailAvatar.textContent=activeStudent.wholeClass?normalizeClassLogo(roster.logo):visual.initials;
     detailAvatar.style.setProperty('--student-avatar-hue',String(visual.hue));
     detailClass.textContent=activeStudent.wholeClass?'Whole Class Profile':roster.name;
     detailName.textContent=activeStudent.wholeClass?roster.name:activeStudent.name;
@@ -676,11 +750,11 @@ function setupStudentView(){
     toggleContainer.replaceChildren();
     PBIS_STUDENT_STAT_DEFINITIONS.forEach(stat=>{
       const label=document.createElement('label');label.className='student-view-stat-toggle';
-      const input=document.createElement('input');input.type='checkbox';input.checked=preferences[stat.id];input.setAttribute('aria-label',`Show ${stat.label} on student profiles`);
+      const input=document.createElement('input');input.type='checkbox';input.checked=preferences[stat.id];input.setAttribute('aria-label',`Show ${stat.label} on ${stat.wholeClassOnly?'whole-class':'student and class'} profiles`);
       const track=document.createElement('span');track.className='student-view-stat-toggle__track';
       const copy=document.createElement('span');
       const title=document.createElement('strong');title.textContent=`${stat.icon} ${stat.label}`;
-      const description=document.createElement('small');description.textContent=stat.description;
+      const description=document.createElement('small');description.textContent=stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description;
       copy.append(title,description);label.append(input,track,copy);
       input.addEventListener('change',()=>{
         const next=readStudentViewStatPreferences();next[stat.id]=input.checked;writeStudentViewStatPreferences(next);renderRosters();renderDetail();
@@ -706,7 +780,7 @@ function setupStudentView(){
       const section=document.createElement('section');section.className='student-view-class';
       const header=document.createElement('header');
       const classProfile=document.createElement('button');classProfile.type='button';classProfile.className='student-view-class-profile';classProfile.setAttribute('aria-label',`Open ${roster.name} whole-class profile`);
-      const classAvatar=document.createElement('span');classAvatar.className='student-view-class-profile__avatar';classAvatar.textContent='👥';classAvatar.setAttribute('aria-hidden','true');
+      const classAvatar=document.createElement('span');classAvatar.className='student-view-class-profile__avatar';classAvatar.textContent=normalizeClassLogo(roster.logo);classAvatar.setAttribute('aria-hidden','true');
       const classCopy=document.createElement('span');classCopy.className='student-view-class-profile__copy';
       const classEyebrow=document.createElement('small');classEyebrow.textContent='WHOLE CLASS PROFILE';
       const title=document.createElement('h4');title.textContent=roster.name;title.title=roster.name;
@@ -752,6 +826,7 @@ function setupStudentView(){
   detail.querySelector('.student-view-detail__backdrop')?.addEventListener('click',closeDetail);
   window.addEventListener('teachertiles:classeschange',()=>{if(!panel.hidden)render()});
   window.addEventListener('teachertiles:starchartchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:classmeterchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||panel.hidden)return;
     event.preventDefault();
@@ -987,7 +1062,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1001,7 +1076,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -1891,6 +1966,7 @@ function setupModuleByType(m,type){
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='starchart')setupStarChart(m);
+  if(type==='classmeter')setupClassMeter(m);
   if(type==='collections')setupCollections(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
@@ -3490,6 +3566,7 @@ function setupStarChart(m){
   const dashboard=m.querySelector('.starchart-dashboard');
   const className=m.querySelector('.starchart-class-name');
   const wholeClassName=m.querySelector('.starchart-whole-class-name');
+  const wholeClassLogo=m.querySelector('.starchart-whole-badge');
   const changeClass=m.querySelector('.starchart-change-class');
   const modeButtons=[...m.querySelectorAll('[data-starchart-mode]')];
   const studentView=m.querySelector('.starchart-student-view');
@@ -3698,6 +3775,7 @@ function setupStarChart(m){
     if(!hasClass)return;
     className.textContent=roster.name;
     wholeClassName.textContent=roster.name;
+    wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
     wholeCount.textContent=String(progress.wholeClassStars);
     wholeRemove.disabled=progress.wholeClassStars===0;
     renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
@@ -3838,6 +3916,186 @@ function setupStarChart(m){
     if(showAllFrame)cancelAnimationFrame(showAllFrame);
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);
     window.removeEventListener('teachertiles:starchartchange',handleStarChartChange);
+  };
+}
+
+function setupClassMeter(m){
+  const importView=m.querySelector('.classmeter-import');
+  const dashboard=m.querySelector('.classmeter-dashboard');
+  const className=m.querySelector('.classmeter-class-name');
+  const classLogo=m.querySelector('.classmeter-class-logo');
+  const changeClass=m.querySelector('.classmeter-change-class');
+  const thermometer=m.querySelector('.classmeter-thermometer');
+  const percent=m.querySelector('.classmeter-percent');
+  const winCount=m.querySelector('.classmeter-win-count b');
+  const fillButton=m.querySelector('.classmeter-fill');
+  const settingsToggle=m.querySelector('.classmeter-settings-toggle');
+  const settings=m.querySelector('.classmeter-settings');
+  const removeWin=m.querySelector('.classmeter-remove-win');
+  const resetWins=m.querySelector('.classmeter-reset-wins');
+  const popup=m.querySelector('.classmeter-win-popup');
+  let activeClassId='';
+  let pendingClassId='';
+  let roster=null;
+  let progress=normalizeClassMeterProgress(null);
+  let holding=false;
+  let holdFrame=0;
+  let lastFrameAt=0;
+  let celebrationTimer=0;
+  let celebrating=false;
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const renderProgress=()=>{
+    const fill=Math.max(0,Math.min(100,Number(progress.fill)||0));
+    m.style.setProperty('--classmeter-fill',`${fill}%`);
+    thermometer.setAttribute('aria-valuenow',String(Math.round(fill)));
+    percent.textContent=`${Math.round(fill)}%`;
+    winCount.textContent=String(normalizeStarChartCount(progress.wins));
+    removeWin.disabled=progress.wins<=0;
+    resetWins.disabled=progress.wins<=0;
+  };
+
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    classLogo.textContent=normalizeClassLogo(roster.logo);
+    renderProgress();
+  };
+
+  const persistProgress=()=>{
+    const saved=writeClassMeter(activeClassId,progress);
+    if(saved)progress=saved;
+    renderProgress();
+  };
+
+  const setSettingsOpen=open=>{
+    const show=Boolean(open);
+    settings.hidden=!show;
+    settingsToggle.setAttribute('aria-expanded',String(show));
+  };
+
+  const stopHolding=({persist=true}={})=>{
+    if(!holding)return;
+    holding=false;
+    m.classList.remove('is-meter-filling');
+    if(holdFrame)cancelAnimationFrame(holdFrame);
+    holdFrame=0;
+    if(persist&&activeClassId&&!celebrating)persistProgress();
+  };
+
+  const celebrateFilledMeter=()=>{
+    stopHolding({persist:false});
+    celebrating=true;
+    const saved=writeClassMeter(activeClassId,{fill:0,wins:normalizeStarChartCount(progress.wins+1)})||normalizeClassMeterProgress({fill:0,wins:progress.wins+1});
+    progress={...saved,fill:100};
+    renderProgress();
+    m.classList.add('is-meter-filled');
+    popup.hidden=false;
+    launchConfetti(m);
+    playUiSfx('confetti');
+    clearTimeout(celebrationTimer);
+    celebrationTimer=setTimeout(()=>{
+      celebrating=false;
+      progress=normalizeClassMeterProgress(saved);
+      m.classList.remove('is-meter-filled');
+      popup.hidden=true;
+      renderProgress();
+    },1500);
+  };
+
+  const fillTick=timestamp=>{
+    if(!holding||celebrating)return;
+    if(!lastFrameAt)lastFrameAt=timestamp;
+    const elapsed=Math.min(50,Math.max(0,timestamp-lastFrameAt));
+    lastFrameAt=timestamp;
+    progress.fill=Math.min(100,progress.fill+elapsed*.022);
+    renderProgress();
+    if(progress.fill>=100){celebrateFilledMeter();return}
+    holdFrame=requestAnimationFrame(fillTick);
+  };
+
+  const startHolding=()=>{
+    if(holding||celebrating||!activeClassId)return;
+    holding=true;
+    lastFrameAt=performance.now();
+    m.classList.add('is-meter-filling');
+    holdFrame=requestAnimationFrame(fillTick);
+  };
+
+  const loadClass=(classId,{notify=false}={})=>{
+    stopHolding({persist:false});
+    clearTimeout(celebrationTimer);celebrating=false;m.classList.remove('is-meter-filled');popup.hidden=true;
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){activeClassId='';roster=null;progress=normalizeClassMeterProgress(null);render();return false}
+    activeClassId=next.id;pendingClassId='';roster=next;progress=normalizeClassMeterProgress(next.classMeter);
+    localStorage.setItem(classMeterLastClassStorageKey(),activeClassId);
+    render();
+    if(notify)notifyBoardChanged('class-meter-class');
+    return true;
+  };
+
+  fillButton.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.preventDefault();
+    try{fillButton.setPointerCapture(event.pointerId)}catch{}
+    startHolding();
+  });
+  fillButton.addEventListener('pointerup',event=>{try{fillButton.releasePointerCapture(event.pointerId)}catch{}stopHolding()});
+  fillButton.addEventListener('pointercancel',()=>stopHolding());
+  fillButton.addEventListener('lostpointercapture',()=>stopHolding());
+  fillButton.addEventListener('keydown',event=>{
+    if((event.key===' '||event.key==='Enter')&&!event.repeat){event.preventDefault();startHolding()}
+  });
+  fillButton.addEventListener('keyup',event=>{
+    if(event.key===' '||event.key==='Enter'){event.preventDefault();stopHolding()}
+  });
+  fillButton.addEventListener('blur',()=>stopHolding());
+
+  settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
+  m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.classmeter-settings-wrap'))setSettingsOpen(false)});
+  removeWin.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=normalizeStarChartCount(progress.wins-1);persistProgress()});
+  resetWins.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=0;persistProgress();setSettingsOpen(false)});
+  changeClass.addEventListener('click',()=>{
+    stopHolding();activeClassId='';pendingClassId='';roster=null;progress=normalizeClassMeterProgress(null);localStorage.removeItem(classMeterLastClassStorageKey());setSettingsOpen(false);render();notifyBoardChanged('class-meter-class');
+  });
+
+  m.querySelector('.classmeter-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.classmeter-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.classmeter-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.classmeter-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeClassMeterProgress(null);localStorage.removeItem(classMeterLastClassStorageKey());render();return}
+    roster=next;
+    if(!holding&&!celebrating)progress=normalizeClassMeterProgress(next.classMeter);
+    render();
+  };
+  const handleMeterChange=event=>{
+    if(event.detail?.classId!==activeClassId||celebrating||holding)return;
+    const next=currentRoster();if(!next)return;
+    roster=next;progress=normalizeClassMeterProgress(next.classMeter);render();
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:classmeterchange',handleMeterChange);
+
+  m._boardGetState=()=>({classId:activeClassId});
+  m._boardSetState=state=>{
+    const classId=String(state?.classId||'');
+    if(classId&&!loadClass(classId))pendingClassId=classId;
+  };
+  const lastClassId=localStorage.getItem(classMeterLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();stopHolding();clearTimeout(celebrationTimer);detachRosterLoader();
+    window.removeEventListener('teachertiles:classeschange',handleClassesChange);
+    window.removeEventListener('teachertiles:classmeterchange',handleMeterChange);
   };
 }
 
@@ -13114,7 +13372,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target'
+  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled'
 ]);
 let activeTeacherTilesBoardId='';
 

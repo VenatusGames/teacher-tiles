@@ -205,6 +205,11 @@
                   <button id="profile-roster-done" class="roster-done" type="button">Done</button>
                 </div>
                 <div class="roster-editor__body">
+                  <section class="roster-logo-card" aria-labelledby="profile-roster-logo-title">
+                    <div class="roster-logo-card__copy"><strong id="profile-roster-logo-title">Class logo</strong><p>Pick a fun symbol for this class. It will appear on whole-class PBIS tools and profiles.</p></div>
+                    <div id="profile-roster-logo-options" class="roster-logo-options" role="group" aria-label="Premade class logo symbols"></div>
+                    <label class="roster-logo-custom"><span>Or use your own symbol</span><input id="profile-roster-custom-logo" type="text" maxlength="16" placeholder="✨" aria-label="Custom class logo symbol"></label>
+                  </section>
                   <div class="roster-entry-card">
                     <label for="profile-student-name">Add students</label>
                     <p>Use first names or nicknames only.</p>
@@ -238,7 +243,7 @@
                     <i aria-hidden="true">⌄</i>
                   </button>
                   <div id="student-view-stat-menu" class="student-view-stat-menu__popover" hidden>
-                    <div class="student-view-stat-menu__header"><strong>PBIS types</strong><small>Choose which stats appear on every student profile.</small></div>
+                    <div class="student-view-stat-menu__header"><strong>PBIS types</strong><small>Choose which stats appear on student and whole-class profiles.</small></div>
                     <div id="student-view-stat-toggles" class="student-view-stat-toggles"></div>
                   </div>
                 </div>
@@ -1590,6 +1595,7 @@
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
       <button class="context-menu__item" data-module="starchart" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--starchart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Star Chart</strong><small>Award stars to a class or individual students</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="classmeter" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classmeter" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 1 6 0v9.1a5 5 0 1 1-6 0V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v9.5M9.2 17.2h5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><strong>Class Meter</strong><small>Hold to fill a whole-class reward meter</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="collections" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
       <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
@@ -2166,6 +2172,57 @@
         <button class="custom-icon starchart-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon starchart-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon starchart-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="classmeter-template">
+    <section class="module classmeter-module" data-type="classmeter" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Class Meter">×</button><div class="module-drag-handle"></div>
+
+      <div class="classmeter-import">
+        <div class="classmeter-import__mark" aria-hidden="true">🌟</div>
+        <strong>Choose a class to begin</strong>
+        <p>Load a saved class, then hold the fill button to build toward a whole-class celebration.</p>
+        <div class="classmeter-loader-anchor" hidden></div>
+        <small>Meter progress and wins stay with the class, even if this tile is deleted.</small>
+      </div>
+
+      <div class="classmeter-dashboard" hidden data-skip-board-save>
+        <header class="classmeter-header">
+          <span class="classmeter-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="classmeter-class-name">Class</strong><small>WHOLE-CLASS METER</small></div>
+          <button class="classmeter-change-class" type="button">Change class</button>
+        </header>
+        <div class="classmeter-stage">
+          <div class="classmeter-win-count" aria-label="Meter wins"><span aria-hidden="true">🏆</span><strong><b>0</b> fills</strong></div>
+          <div class="classmeter-thermometer" role="meter" aria-label="Class Meter fill" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="classmeter-tube"><div class="classmeter-liquid"><i></i></div><div class="classmeter-glass-shine"></div></div>
+            <div class="classmeter-bulb"><span></span></div>
+            <div class="classmeter-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <strong class="classmeter-percent">0%</strong>
+        </div>
+        <div class="classmeter-hover-tools">
+          <button class="classmeter-fill" type="button"><span aria-hidden="true">＋</span><strong>Hold to fill</strong></button>
+          <div class="classmeter-settings-wrap">
+            <button class="classmeter-settings-toggle" type="button" aria-expanded="false" aria-label="Open Class Meter settings">⚙</button>
+            <div class="classmeter-settings" hidden>
+              <strong>Meter wins</strong><small>Correct the class tally when needed.</small>
+              <button class="classmeter-remove-win" type="button">Remove one win</button>
+              <button class="classmeter-reset-wins" type="button">Reset wins to 0</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="classmeter-win-popup" role="status" aria-live="polite" hidden><span aria-hidden="true">🏆</span><strong>Filled meter!</strong></div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+      <div class="classmeter-customization customization-bar">
+        <button class="custom-icon classmeter-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon classmeter-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon classmeter-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
