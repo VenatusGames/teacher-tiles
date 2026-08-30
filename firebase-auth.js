@@ -992,8 +992,39 @@ function nextBoardName() {
   return `Board ${n}`;
 }
 
+function showBoardLimitPopup() {
+  let popup = document.getElementById("board-limit-popup");
+  if (!popup) {
+    popup = document.createElement("div");
+    popup.id = "board-limit-popup";
+    popup.className = "board-limit-popup";
+    popup.hidden = true;
+    popup.innerHTML = `
+      <button class="board-limit-popup__backdrop" type="button" aria-label="Close subscription message"></button>
+      <div class="board-limit-popup__card" role="dialog" aria-modal="true" aria-labelledby="board-limit-popup-title">
+        <span class="board-limit-popup__crown" aria-hidden="true">♛</span>
+        <strong id="board-limit-popup-title">Subscribe to save more than two boards.</strong>
+        <button class="board-limit-popup__close" type="button">Got it</button>
+      </div>`;
+    document.body.appendChild(popup);
+    popup.querySelectorAll(".board-limit-popup__backdrop,.board-limit-popup__close").forEach(button => {
+      button.addEventListener("click", () => {
+        popup.classList.remove("is-open");
+        window.setTimeout(() => popup.hidden = true, 160);
+      });
+    });
+  }
+  popup.hidden = false;
+  requestAnimationFrame(() => popup.classList.add("is-open"));
+  popup.querySelector(".board-limit-popup__close")?.focus({ preventScroll: true });
+}
+
 async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
+  if (boardList.length >= 2) {
+    showBoardLimitPopup();
+    return;
+  }
   const api = boardApi();
   if (!api) return;
 
@@ -1575,10 +1606,11 @@ function createBoardCard(board) {
 }
 
 function createNewBoardCard() {
+  const isAtFreeLimit = boardList.length >= 2;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "board-new-card";
-  button.setAttribute("aria-label", boardUiText("boards.create", "Create new blank board"));
+  button.className = `board-new-card${isAtFreeLimit ? " is-subscriber-gated" : ""}`;
+  button.setAttribute("aria-label", isAtFreeLimit ? "Subscribe to save more than two boards" : boardUiText("boards.create", "Create new blank board"));
 
   const preview = document.createElement("div");
   preview.className = "board-new-card__preview";
@@ -1588,13 +1620,20 @@ function createNewBoardCard() {
   plus.textContent = "+";
 
   preview.appendChild(plus);
+  if (isAtFreeLimit) {
+    const crown = document.createElement("span");
+    crown.className = "board-new-card__crown";
+    crown.textContent = "♛";
+    crown.setAttribute("aria-hidden", "true");
+    preview.appendChild(crown);
+  }
 
   const label = document.createElement("strong");
   label.className = "board-new-card__label";
   label.textContent = boardUiText("boards.new", "New Board");
 
   button.append(preview, label);
-  button.addEventListener("click", createBlankBoard);
+  button.addEventListener("click", () => isAtFreeLimit ? showBoardLimitPopup() : createBlankBoard());
   return button;
 }
 
