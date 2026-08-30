@@ -592,7 +592,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -627,7 +627,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -1280,7 +1280,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['all','text','media','tools','language','geography','time','audio','games','literacy','math','science','planning','pbis','sel'];
+const menuCategoryOrder=['all','text','media','tools','time','audio','games','planning','pbis','accessibility','language','literacy','math','science','geography','sel'];
 
 function menuCategoryLabel(category){
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -5190,7 +5190,23 @@ const TRANSLATION_LANGUAGES=[
   {code:'sv',name:'Swedish',speech:'sv-SE'}
 ];
 
+function bindEditableModuleTitle(m,selector,fallback){
+  const title=m.querySelector(selector);
+  if(!title)return{get:()=>fallback,set:()=>{}};
+  const normalize=value=>String(value||'').replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim().slice(0,60);
+  const set=value=>{title.textContent=normalize(value)||fallback};
+  title.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();exitModuleTextEdit(title)}});
+  title.addEventListener('input',()=>{
+    const clean=normalize(title.textContent);
+    if(title.textContent!==clean)title.textContent=clean;
+    notifyBoardChanged('module-title');
+  });
+  title.addEventListener('blur',()=>{if(!normalize(title.textContent))set(fallback)});
+  return{get:()=>normalize(title.textContent)||fallback,set};
+}
+
 function setupTranslation(m){
+  const tileTitle=bindEditableModuleTitle(m,'.translation-title','Language bridge');
   const source=m.querySelector('.translation-source');
   const target=m.querySelector('.translation-target');
   const sourcePickerRoot=m.querySelector('[data-language-picker="source"]');
@@ -5397,9 +5413,10 @@ function setupTranslation(m){
 
   renderOutput('');
   updateCount();
-  m._boardGetState=()=>({source:sourcePicker.get(),target:targetPicker.get(),input:input.value,output:translatedText});
+  m._boardGetState=()=>({title:tileTitle.get(),source:sourcePicker.get(),target:targetPicker.get(),input:input.value,output:translatedText});
   m._boardSetState=state=>{
     if(!state)return;
+    tileTitle.set(state.title);
     sourcePicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.source)?state.source:'en');
     targetPicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.target)?state.target:'es');
     input.value=String(state.input||'').slice(0,450);
@@ -5411,6 +5428,7 @@ function setupTranslation(m){
 }
 
 function setupLiveCaption(m){
+  const tileTitle=bindEditableModuleTitle(m,'.livecaption-title','Live Captions');
   const toggle=m.querySelector('.livecaption-toggle');
   const toggleLabel=toggle.querySelector('span');
   const stateLabel=m.querySelector('.livecaption-state b');
@@ -5581,8 +5599,9 @@ function setupLiveCaption(m){
   m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   renderHistory();
   setListeningUI(false);
-  m._boardGetState=()=>({history:[...history]});
+  m._boardGetState=()=>({title:tileTitle.get(),history:[...history]});
   m._boardSetState=state=>{
+    tileTitle.set(state?.title);
     history=Array.isArray(state?.history)?state.history.map(value=>String(value||'').trim()).filter(Boolean).slice(-100):[];
     if(history.length)displayCurrent(history[history.length-1]);
     renderHistory();
@@ -5593,6 +5612,7 @@ function setupLiveCaption(m){
 }
 
 function setupVoiceMemo(m){
+  const tileTitle=bindEditableModuleTitle(m,'.voicememo-title','Voice Memos');
   const recordButton=m.querySelector('.voicememo-record');
   const recordLabel=recordButton.querySelector('span');
   const timeEl=m.querySelector('.voicememo-time');
@@ -5628,9 +5648,15 @@ function setupVoiceMemo(m){
       const row=document.createElement('article');
       row.className='voicememo-item';
       const meta=document.createElement('div');
-      const title=document.createElement('strong');
+      const title=document.createElement('input');
       const duration=document.createElement('small');
-      title.textContent=`Memo ${index+1}`;
+      title.type='text';
+      title.className='voicememo-name';
+      title.maxLength=40;
+      title.value=String(memo.name||`Memo ${index+1}`).slice(0,40);
+      title.setAttribute('aria-label',`Rename Memo ${index+1}`);
+      title.addEventListener('input',()=>{memo.name=title.value.slice(0,40);notifyBoardChanged('voice-memo-rename')});
+      title.addEventListener('blur',()=>{if(!title.value.trim()){memo.name=`Memo ${index+1}`;title.value=memo.name}});
       duration.textContent=formatDuration(memo.duration||0);
       meta.append(title,duration);
       const audio=document.createElement('audio');
@@ -5677,7 +5703,7 @@ function setupVoiceMemo(m){
         if(!blob.size){message.textContent='No audio was captured.';return}
         const reader=new FileReader();
         reader.onload=()=>{
-          memos.push({dataUrl:String(reader.result||''),duration});
+          memos.push({name:`Memo ${memos.length+1}`,dataUrl:String(reader.result||''),duration});
           render();
           message.textContent='Memo saved and ready to play.';
           notifyBoardChanged('voice-memo-add');
@@ -5706,8 +5732,8 @@ function setupVoiceMemo(m){
   m.querySelector('.voicememo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.voicememo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   render();
-  m._boardGetState=()=>({memos:memos.map(memo=>({...memo}))});
-  m._boardSetState=state=>{memos=Array.isArray(state?.memos)?state.memos.filter(memo=>typeof memo?.dataUrl==='string'&&memo.dataUrl.startsWith('data:audio/')).slice(0,5):[];render()};
+  m._boardGetState=()=>({title:tileTitle.get(),memos:memos.map(memo=>({...memo}))});
+  m._boardSetState=state=>{tileTitle.set(state?.title);memos=Array.isArray(state?.memos)?state.memos.filter(memo=>typeof memo?.dataUrl==='string'&&memo.dataUrl.startsWith('data:audio/')).slice(0,5):[];render()};
   const prior=m._cleanup;
   m._cleanup=()=>{prior?.();disposed=true;clearInterval(timerId);try{if(recorder?.state==='recording')recorder.stop()}catch{}stopTracks()};
 }
@@ -5723,26 +5749,99 @@ const WORLD_MAP_REGIONS=[
 ];
 
 function setupWorldMap(m){
-  const land=m.querySelector('.worldmap-land');
-  const labels=m.querySelector('.worldmap-labels');
+  const tileTitle=bindEditableModuleTitle(m,'.worldmap-title','Explore the World');
+  const mapLayer=m.querySelector('.worldmap-map-layer');
+  const countries=m.querySelector('.worldmap-countries');
   const legend=m.querySelector('.worldmap-legend');
+  const kicker=m.querySelector('.worldmap-kicker');
   const name=m.querySelector('.worldmap-name');
   const hemisphere=m.querySelector('.worldmap-hemisphere');
   const fact=m.querySelector('.worldmap-fact');
   let selected='';
+  let selectedCountry='';
   let zoom=1;
-  const applyZoom=()=>{const transform=`translate(${500*(1-zoom)} ${260*(1-zoom)}) scale(${zoom})`;land.setAttribute('transform',transform);labels.setAttribute('transform',transform)};
+  let centerX=500;
+  let centerY=260;
+  let pendingCountry='';
+  const controller=new AbortController();
+  const continentViews={
+    'north-america':{x:205,y:145,zoom:1.65},'south-america':{x:300,y:330,zoom:1.75},europe:{x:515,y:145,zoom:2.35},africa:{x:520,y:285,zoom:1.8},asia:{x:710,y:165,zoom:1.5},australia:{x:825,y:350,zoom:2.05},antarctica:{x:500,y:462,zoom:1.55}
+  };
+  const applyZoom=()=>mapLayer.setAttribute('transform',`translate(${500-centerX*zoom} ${260-centerY*zoom}) scale(${zoom})`);
   const selectRegion=(id,{animate=true}={})=>{
     const region=WORLD_MAP_REGIONS.find(item=>item.id===id);
     if(!region)return;
     selected=region.id;
-    m.querySelectorAll('[data-map-region]').forEach(path=>path.classList.toggle('is-selected',path.dataset.mapRegion===selected));
+    selectedCountry='';
+    countries.querySelectorAll('[data-country-id]').forEach(path=>path.classList.remove('is-selected'));
     legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.toggle('is-active',button.dataset.mapLegend===selected));
+    kicker.textContent='CONTINENT VIEW';
     name.textContent=region.name;
     hemisphere.textContent=region.hemisphere;
     fact.textContent=region.fact;
+    const view=continentViews[id];
+    if(view){centerX=view.x;centerY=view.y;zoom=view.zoom;applyZoom()}
     if(animate&&m.querySelector('.worldmap-info')?.animate)m.querySelector('.worldmap-info').animate([{opacity:.45,transform:'translateY(4px)'},{opacity:1,transform:'none'}],{duration:230,easing:'ease-out'});
     notifyBoardChanged('world-map-region');
+  };
+  const selectCountry=(id,countryName,{notify=true}={})=>{
+    selectedCountry=String(id||'');
+    selected='';
+    legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.remove('is-active'));
+    countries.querySelectorAll('[data-country-id]').forEach(path=>path.classList.toggle('is-selected',path.dataset.countryId===selectedCountry));
+    kicker.textContent='COUNTRY';
+    name.textContent=countryName||'Country';
+    hemisphere.textContent='Natural Earth country boundary';
+    fact.textContent='Click another country to compare its location, or use a continent button for a closer regional view.';
+    if(notify)notifyBoardChanged('world-map-country');
+  };
+  const project=point=>[(point[0]+180)/360*1000,(90-point[1])/180*480+20];
+  const renderTopology=topology=>{
+    const scale=topology.transform?.scale||[1,1];
+    const translate=topology.transform?.translate||[0,0];
+    const decoded=topology.arcs.map(arc=>{
+      let x=0,y=0;
+      return arc.map(delta=>{x+=delta[0];y+=delta[1];return[x*scale[0]+translate[0],y*scale[1]+translate[1]]});
+    });
+    const pointsForArc=reference=>{
+      const points=decoded[reference<0?~reference:reference]||[];
+      return reference<0?[...points].reverse():points;
+    };
+    const ringPoints=references=>references.flatMap((reference,index)=>{const points=pointsForArc(reference);return index?points.slice(1):points});
+    const ringPath=references=>{
+      const points=ringPoints(references);
+      if(!points.length)return'';
+      const projected=points.map(project);
+      for(let index=1;index<projected.length;index++){
+        while(projected[index][0]-projected[index-1][0]>500)projected[index][0]-=1000;
+        while(projected[index-1][0]-projected[index][0]>500)projected[index][0]+=1000;
+      }
+      return[-1000,0,1000].map(offset=>projected.map((point,index)=>`${index?'L':'M'}${(point[0]+offset).toFixed(2)} ${point[1].toFixed(2)}`).join('')+'Z').join('');
+    };
+    const geometryPath=geometry=>{
+      const polygons=geometry.type==='Polygon'?[geometry.arcs]:geometry.type==='MultiPolygon'?geometry.arcs:[];
+      return polygons.map(polygon=>polygon.map(ringPath).join('')).join('');
+    };
+    const svgNs='http://www.w3.org/2000/svg';
+    const fragment=document.createDocumentFragment();
+    for(const geometry of topology.objects?.countries?.geometries||[]){
+      const path=document.createElementNS(svgNs,'path');
+      const countryName=geometry.properties?.name||'Country';
+      path.setAttribute('d',geometryPath(geometry));
+      path.dataset.countryId=String(geometry.id||countryName);
+      path.dataset.countryName=countryName;
+      path.setAttribute('tabindex','0');
+      path.setAttribute('role','button');
+      path.setAttribute('aria-label',countryName);
+      path.addEventListener('click',()=>selectCountry(path.dataset.countryId,countryName));
+      path.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCountry(path.dataset.countryId,countryName)}});
+      fragment.appendChild(path);
+    }
+    countries.replaceChildren(fragment);
+    if(pendingCountry){
+      const path=countries.querySelector(`[data-country-id="${CSS.escape(pendingCountry)}"]`);
+      if(path)selectCountry(pendingCountry,path.dataset.countryName,{notify:false});
+    }
   };
   WORLD_MAP_REGIONS.forEach(region=>{
     const button=document.createElement('button');
@@ -5752,17 +5851,10 @@ function setupWorldMap(m){
     button.addEventListener('click',()=>selectRegion(region.id));
     legend.appendChild(button);
   });
-  m.querySelectorAll('[data-map-region]').forEach(path=>{
-    path.setAttribute('tabindex','0');
-    path.setAttribute('role','button');
-    const region=WORLD_MAP_REGIONS.find(item=>item.id===path.dataset.mapRegion);
-    path.setAttribute('aria-label',`Explore ${region?.name||'continent'}`);
-    path.addEventListener('click',()=>selectRegion(path.dataset.mapRegion));
-    path.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRegion(path.dataset.mapRegion)}});
-  });
   m.querySelectorAll('[data-map-zoom]').forEach(button=>button.addEventListener('click',()=>{
     const action=button.dataset.mapZoom;
-    zoom=action==='reset'?1:clamp(zoom+(action==='in' ? .2 : -.2),1,1.8);
+    if(action==='reset'){zoom=1;centerX=500;centerY=260;selected='';legend.querySelectorAll('[data-map-legend]').forEach(item=>item.classList.remove('is-active'))}
+    else zoom=clamp(zoom+(action==='in' ? .2 : -.2),1,2.6);
     applyZoom();
     notifyBoardChanged('world-map-zoom');
   }));
@@ -5770,8 +5862,23 @@ function setupWorldMap(m){
   m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   applyZoom();
-  m._boardGetState=()=>({selected,zoom});
-  m._boardSetState=state=>{zoom=clamp(Number(state?.zoom)||1,1,1.8);applyZoom();if(state?.selected)selectRegion(state.selected,{animate:false})};
+  name.textContent='Loading world map…';
+  fetch('assets/world-countries-110m.json',{signal:controller.signal}).then(response=>{if(!response.ok)throw new Error('map-data');return response.json()}).then(topology=>{
+    renderTopology(topology);
+    if(!selected&&!pendingCountry){name.textContent='World Map';hemisphere.textContent='Real Natural Earth boundaries';fact.textContent='Click any country, or use a continent button to zoom and learn.'}
+  }).catch(error=>{if(error?.name!=='AbortError'){name.textContent='Map unavailable';fact.textContent='The geographic boundary file could not be loaded.'}});
+  m._boardGetState=()=>({title:tileTitle.get(),selected,selectedCountry,zoom,centerX,centerY});
+  m._boardSetState=state=>{
+    tileTitle.set(state?.title);
+    zoom=clamp(Number(state?.zoom)||1,1,2.6);
+    centerX=Number.isFinite(Number(state?.centerX))?Number(state.centerX):500;
+    centerY=Number.isFinite(Number(state?.centerY))?Number(state.centerY):260;
+    pendingCountry=String(state?.selectedCountry||'');
+    applyZoom();
+    if(state?.selected)selectRegion(state.selected,{animate:false});
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();controller.abort()};
 }
 
 const COMPASS_PARTS={
@@ -5782,6 +5889,7 @@ const COMPASS_PARTS={
 };
 
 function setupCompass(m){
+  const tileTitle=bindEditableModuleTitle(m,'.compass-title','Compass Explorer');
   const svg=m.querySelector('.compass-face');
   const ticks=m.querySelector('.compass-ticks');
   const needle=m.querySelector('.compass-needle');
@@ -5827,8 +5935,8 @@ function setupCompass(m){
   m.querySelector('.compass-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.compass-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   setHeading(0,{notify:false});setPart('needle',{notify:false});
-  m._boardGetState=()=>({heading,part});
-  m._boardSetState=state=>{setHeading(state?.heading||0,{notify:false});setPart(state?.part||'needle',{notify:false})};
+  m._boardGetState=()=>({title:tileTitle.get(),heading,part});
+  m._boardSetState=state=>{tileTitle.set(state?.title);setHeading(state?.heading||0,{notify:false});setPart(state?.part||'needle',{notify:false})};
 }
 
 const SHAPES_TILE_DATA=[
