@@ -592,7 +592,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -627,7 +627,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -876,6 +876,16 @@ const boardCamera={x:0,y:0,scale:1};
 const BOARD_MIN_ZOOM=.35;
 const BOARD_MAX_ZOOM=1.8;
 const BOARD_OVERSCROLL=120;
+const zoomIndicator=document.getElementById('zoom-indicator');
+let zoomIndicatorTimer=0;
+
+function showZoomIndicator(scale=boardCamera.scale){
+  if(!zoomIndicator)return;
+  zoomIndicator.textContent=`${Math.round(scale*100)}%`;
+  zoomIndicator.classList.add('is-visible');
+  clearTimeout(zoomIndicatorTimer);
+  zoomIndicatorTimer=setTimeout(()=>zoomIndicator.classList.remove('is-visible'),720);
+}
 
 workspace.style.width=`${BOARD_WIDTH}px`;
 workspace.style.height=`${BOARD_HEIGHT}px`;
@@ -917,6 +927,7 @@ workspace.addEventListener('wheel',e=>{
   e.preventDefault();
   const factor=Math.exp(-e.deltaY*.0012*(appPreferences.scrollSpeed/100));
   const next=clamp(boardCamera.scale*factor,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  showZoomIndicator(next);
   if(Math.abs(next-boardCamera.scale)<.0001)return;
   const anchor=screenToBoard(e.clientX,e.clientY);
   boardCamera.scale=next;
@@ -1269,7 +1280,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['all','text','media','tools','time','audio','games','literacy','math','science','planning','pbis','sel'];
+const menuCategoryOrder=['all','text','media','tools','language','time','audio','games','literacy','math','science','planning','pbis','sel'];
 
 function menuCategoryLabel(category){
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -1381,6 +1392,7 @@ function setupModuleByType(m,type){
   if(type==='draw')setupDraw(m);
   if(type==='dictionary')setupDictionary(m);
   if(type==='translation')setupTranslation(m);
+  if(type==='livecaption')setupLiveCaption(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -5273,6 +5285,7 @@ function setupTranslation(m){
       }
     });
     search.addEventListener('blur',()=>setTimeout(()=>{if(!root.contains(document.activeElement))close()},0));
+    menu.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
     choose(defaultCode,{announce:false});
     render();
     return{
@@ -5392,6 +5405,138 @@ function setupTranslation(m){
   };
   const prior=m._cleanup;
   m._cleanup=()=>{prior?.();requestController?.abort();recognition?.abort();if('speechSynthesis'in window)speechSynthesis.cancel()};
+}
+
+function setupLiveCaption(m){
+  const toggle=m.querySelector('.livecaption-toggle');
+  const toggleLabel=toggle.querySelector('span');
+  const stateLabel=m.querySelector('.livecaption-state b');
+  const message=m.querySelector('.livecaption-message');
+  const current=m.querySelector('.livecaption-current-text');
+  const historyEl=m.querySelector('.livecaption-history');
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let recognition=null;
+  let wantsListening=false;
+  let isListening=false;
+  let restartTimer=0;
+  let history=[];
+
+  const renderHistory=()=>{
+    historyEl.replaceChildren();
+    if(!history.length){
+      const empty=document.createElement('p');
+      empty.className='livecaption-empty';
+      empty.textContent='Your caption history will appear here.';
+      historyEl.appendChild(empty);
+      return;
+    }
+    history.forEach((caption,index)=>{
+      const row=document.createElement('p');
+      const number=document.createElement('span');
+      const text=document.createElement('strong');
+      number.textContent=String(index+1).padStart(2,'0');
+      text.textContent=caption;
+      row.append(number,text);
+      historyEl.appendChild(row);
+    });
+    requestAnimationFrame(()=>{historyEl.scrollTop=historyEl.scrollHeight});
+  };
+  const setListeningUI=listening=>{
+    isListening=listening;
+    m.classList.toggle('is-listening',listening);
+    m.classList.toggle('is-paused',!listening);
+    toggle.setAttribute('aria-pressed',String(listening));
+    toggleLabel.textContent=listening?'Pause captions':'Start captions';
+    stateLabel.textContent=listening?'ON':'OFF';
+    if(!listening)renderHistory();
+  };
+  const addCaption=value=>{
+    const text=String(value||'').replace(/\s+/g,' ').trim();
+    if(!text)return;
+    if(history[history.length-1]!==text)history.push(text);
+    if(history.length>100)history=history.slice(-100);
+    current.textContent=text;
+    notifyBoardChanged('live-caption');
+  };
+  const startRecognition=()=>{
+    if(!SpeechRecognition||!wantsListening)return;
+    clearTimeout(restartTimer);
+    recognition=new SpeechRecognition();
+    recognition.continuous=true;
+    recognition.interimResults=true;
+    recognition.maxAlternatives=1;
+    recognition.lang=document.documentElement.lang==='es'?'es-US':'en-US';
+    recognition.onstart=()=>{
+      if(!wantsListening){recognition.stop();return}
+      setListeningUI(true);
+      message.textContent='Listening clearly…';
+      if(!history.length)current.textContent='Listening… start speaking when you’re ready.';
+    };
+    recognition.onresult=event=>{
+      let interim='';
+      for(let index=event.resultIndex;index<event.results.length;index++){
+        const transcript=event.results[index][0]?.transcript||'';
+        if(event.results[index].isFinal)addCaption(transcript);
+        else interim+=transcript;
+      }
+      const cleanInterim=interim.replace(/\s+/g,' ').trim();
+      if(cleanInterim)current.textContent=cleanInterim;
+    };
+    recognition.onerror=event=>{
+      if(event.error==='no-speech'){message.textContent='Still listening — no speech detected yet.';return}
+      wantsListening=false;
+      const denied=event.error==='not-allowed'||event.error==='service-not-allowed';
+      message.textContent=denied?'Microphone permission was not granted.':'Live captions could not continue. Try again.';
+      setListeningUI(false);
+    };
+    recognition.onend=()=>{
+      recognition=null;
+      if(wantsListening){restartTimer=setTimeout(startRecognition,220);return}
+      if(isListening)setListeningUI(false);
+    };
+    try{recognition.start()}catch{
+      wantsListening=false;
+      message.textContent='Live captions could not start. Try again.';
+      setListeningUI(false);
+    }
+  };
+  const start=()=>{
+    if(!SpeechRecognition)return;
+    wantsListening=true;
+    setListeningUI(true);
+    current.textContent='Starting microphone…';
+    message.textContent='Starting live captions…';
+    startRecognition();
+  };
+  const pause=()=>{
+    wantsListening=false;
+    clearTimeout(restartTimer);
+    try{recognition?.stop()}catch{}
+    setListeningUI(false);
+    message.textContent=history.length?'Paused — scroll to review the caption history.':'Captions are paused.';
+  };
+
+  if(!SpeechRecognition){
+    toggle.disabled=true;
+    message.textContent='Live captions are not supported in this browser.';
+    current.textContent='This browser does not provide speech recognition.';
+  }else toggle.addEventListener('click',()=>wantsListening||isListening?pause():start());
+
+  historyEl.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  m.querySelector('.livecaption-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.livecaption-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  renderHistory();
+  setListeningUI(false);
+  m._boardGetState=()=>({history:[...history]});
+  m._boardSetState=state=>{
+    history=Array.isArray(state?.history)?state.history.map(value=>String(value||'').trim()).filter(Boolean).slice(-100):[];
+    if(history.length)current.textContent=history[history.length-1];
+    renderHistory();
+    setListeningUI(false);
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();wantsListening=false;clearTimeout(restartTimer);try{recognition?.abort()}catch{}};
 }
 
 const SHAPES_TILE_DATA=[
