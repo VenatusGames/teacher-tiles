@@ -205,6 +205,8 @@ const uiSfxPrototype=new Audio('assets/ui/pop.mp3');
 uiSfxPrototype.preload='auto';
 const confettiSfxPrototype=new Audio('assets/ui/confetti-pop.mp3');
 confettiSfxPrototype.preload='auto';
+const timerTadaSfxPrototype=new Audio('assets/ui/timer-tada.mp3');
+timerTadaSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
 
@@ -226,11 +228,11 @@ function boardPreferenceSnapshot(){
 function playUiSfx(kind='click'){
   if(appPreferences.uiMuted)return;
   try{
-    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='money'?moneySfxPrototype:uiSfxPrototype;
+    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='money'?.5:kind==='collection'?.18:.11;
+    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='collection'?.18:.11;
     sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
-    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='money'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
   }catch{}
@@ -1473,6 +1475,7 @@ function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!la
 function celebrateTimerFinish(m){
   launchConfetti(m);
   playUiSfx('confetti');
+  playUiSfx('timer-tada');
 }
 
 function bindTimerControls(m,onRender,{onFinish}={}){
@@ -8031,6 +8034,18 @@ function setupMoney(m){
 
   const denom=id=>denominations.find(item=>item.id===id);
 
+  const workspacePoint=(clientX,clientY)=>{
+    const rect=workspaceEl.getBoundingClientRect();
+    const scaleX=rect.width>0?workspaceEl.clientWidth/rect.width:1;
+    const scaleY=rect.height>0?workspaceEl.clientHeight/rect.height:1;
+    return{
+      x:(clientX-rect.left)*scaleX,
+      y:(clientY-rect.top)*scaleY
+    };
+  };
+
+  const pieceSize=denomId=>denomId==='dollar'?{width:104,height:82}:{width:78,height:78};
+
   const updateSummary=()=>{
     const cents=pieces.reduce((sum,piece)=>sum+(denom(piece.denom)?.cents||0),0);
     totalEl.textContent=`$${(cents/100).toFixed(2)}`;
@@ -8041,23 +8056,21 @@ function setupMoney(m){
   };
 
   const clampPiece=(piece,el)=>{
-    const rect=workspaceEl.getBoundingClientRect();
     const w=el?.offsetWidth||76;
     const h=el?.offsetHeight||76;
-    piece.x=Math.max(0,Math.min(rect.width-w,piece.x));
-    piece.y=Math.max(0,Math.min(rect.height-h,piece.y));
+    piece.x=Math.max(0,Math.min(workspaceEl.clientWidth-w,piece.x));
+    piece.y=Math.max(0,Math.min(workspaceEl.clientHeight-h,piece.y));
   };
 
   const addPiece=(denomId,x=null,y=null)=>{
-    const rect=workspaceEl.getBoundingClientRect();
     const d=denom(denomId);
     if(!d)return;
 
     const piece={
       id:++nextId,
       denom:denomId,
-      x:x===null?Math.max(8,(rect.width-76)/2+(Math.random()-.5)*70):x,
-      y:y===null?Math.max(8,(rect.height-76)/2+(Math.random()-.5)*50):y
+      x:x===null?Math.max(8,(workspaceEl.clientWidth-76)/2+(Math.random()-.5)*70):x,
+      y:y===null?Math.max(8,(workspaceEl.clientHeight-76)/2+(Math.random()-.5)*50):y
     };
     pieces.push(piece);
     renderPieces();
@@ -8092,18 +8105,18 @@ function setupMoney(m){
         if(event.button!==0)return;
         event.stopPropagation();
         dragging=true;
-        const pieceRect=el.getBoundingClientRect();
-        offsetX=event.clientX-pieceRect.left;
-        offsetY=event.clientY-pieceRect.top;
+        const point=workspacePoint(event.clientX,event.clientY);
+        offsetX=point.x-piece.x;
+        offsetY=point.y-piece.y;
         el.setPointerCapture(event.pointerId);
         el.classList.add('is-dragging');
       });
 
       el.addEventListener('pointermove',event=>{
         if(!dragging)return;
-        const rect=workspaceEl.getBoundingClientRect();
-        piece.x=event.clientX-rect.left-offsetX;
-        piece.y=event.clientY-rect.top-offsetY;
+        const point=workspacePoint(event.clientX,event.clientY);
+        piece.x=point.x-offsetX;
+        piece.y=point.y-offsetY;
         clampPiece(piece,el);
         el.style.left=`${piece.x}px`;
         el.style.top=`${piece.y}px`;
@@ -8184,8 +8197,9 @@ function setupMoney(m){
     const id=paletteDragId||event.dataTransfer?.getData('text/plain');
     if(!denom(id))return;
 
-    const rect=workspaceEl.getBoundingClientRect();
-    addPiece(id,event.clientX-rect.left-38,event.clientY-rect.top-38);
+    const point=workspacePoint(event.clientX,event.clientY);
+    const size=pieceSize(id);
+    addPiece(id,point.x-size.width/2,point.y-size.height/2);
   });
 
   toggleTotal.addEventListener('click',()=>{
