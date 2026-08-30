@@ -81,7 +81,7 @@
         </button>
       </div>
       <button id="customize-toggle" class="workspace-control upcoming-control customize-toggle" type="button" aria-label="Open customization options" data-feature-label="Customize" aria-expanded="false" aria-controls="customize-launch-menu">
-        <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.2 5.1 4.7 4.7-8.2 8.2-5.4 1.3 1.3-5.4 7.6-8.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m12.5 7 4.6 4.6M6.6 13.9l4.1 4.1M5.3 19.3c-.8.1-1.4-.1-1.8-.6-.5-.7 0-1.5.7-1.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg class="upcoming-control__icon customize-paintbrush-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.7 3.9a1.5 1.5 0 0 1 2.1 2.1l-8.2 8.2-2.8-2.8 8.9-7.5Z"/><path d="M8.8 12.4c-1.9 0-3.4 1.5-3.4 3.4 0 1.4-.7 2.6-2.1 3.5 1.2.7 2.7 1.1 4.2 1.1 3.2 0 5.4-1.8 5.4-4.4 0-1.9-1.8-3.6-4.1-3.6Z"/><path d="m9.8 11.4 2.8 2.8" fill="none" stroke="var(--surface-solid)" stroke-width="1.2"/></svg>
         <span class="upcoming-control__tooltip"><strong>Customize</strong></span>
       </button>
     </div>
@@ -405,7 +405,7 @@
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>D</kbd></div><span data-i18n="help.key.duplicate">Duplicate the current selection.</span></div>
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Z</kbd></div><span data-i18n="help.key.undo">Undo the latest board action.</span></div>
                 <div class="help-shortcut"><div><kbd>Ctrl</kbd><b>/</b><kbd>⌘</kbd><b>+</b><kbd>Y</kbd></div><span data-i18n="help.key.redo">Redo an undone action. Ctrl/⌘ + Shift + Z also works.</span></div>
-                <div class="help-shortcut"><div><kbd>Delete</kbd></div><span data-i18n="help.key.delete">Delete the selected tile, sticker, or group.</span></div>
+                <div class="help-shortcut"><div><kbd>Delete</kbd><b>/</b><kbd>Backspace</kbd></div><span data-i18n="help.key.delete">Delete only the selected tile or sticker—even when it belongs to a snapped group.</span></div>
                 <div class="help-shortcut"><div><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div><span data-i18n="help.key.arrows">Navigate around the board.</span></div>
                 <div class="help-shortcut"><div><kbd>Esc</kbd></div><span data-i18n="help.key.escape">Exit text editing or close the active overlay/menu.</span></div>
               </div>
@@ -419,9 +419,11 @@
                 <div><span class="help-mouse-icon">☰</span><p><strong data-i18n="help.mouse.menu.title">Add tiles</strong><small data-i18n="help.mouse.menu.copy">Right-click empty board space to open the Add Tile menu.</small></p></div>
                 <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Use the mouse wheel or trackpad scroll over the board.</small></p></div>
                 <div><span class="help-mouse-icon">✥</span><p><strong data-i18n="help.mouse.move.title">Move tiles</strong><small data-i18n="help.mouse.move.copy">Drag anywhere on a tile that is not an active button, slider, canvas, or other control.</small></p></div>
+                <div><span class="help-mouse-icon">⧉</span><p><strong data-i18n="help.mouse.snap.title">Snap &amp; group</strong><small data-i18n="help.mouse.snap.copy">Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.</small></p></div>
+                <div><span class="help-mouse-icon">↝</span><p><strong data-i18n="help.mouse.tug.title">Tug to ungroup</strong><small data-i18n="help.mouse.tug.copy">Give one grouped tile a quick tug to detach it, then move it independently.</small></p></div>
                 <div><span class="help-mouse-icon">I</span><p><strong data-i18n="help.mouse.text.title">Edit text</strong><small data-i18n="help.mouse.text.copy">Double-click a text field to type. Click away from it to leave text-edit mode.</small></p></div>
                 <div><span class="help-mouse-icon">◌</span><p><strong data-i18n="help.mouse.sticker.title">Transform stickers</strong><small data-i18n="help.mouse.sticker.copy">Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.</small></p></div>
-                <div><span class="help-mouse-icon">⌫</span><p><strong data-i18n="help.mouse.trash.title">Delete by dragging</strong><small data-i18n="help.mouse.trash.copy">Drag selected objects into the trash can in the bottom-right.</small></p></div>
+                <div><span class="help-mouse-icon">⌫</span><p><strong data-i18n="help.mouse.trash.title">Delete by dragging</strong><small data-i18n="help.mouse.trash.copy">Drag any snapped tile into the corner trash to delete its entire group.</small></p></div>
                 <div><span class="help-mouse-icon">○</span><p><strong data-i18n="help.mouse.clear.title">Clear selection</strong><small data-i18n="help.mouse.clear.copy">Click outside the current selection to deselect it.</small></p></div>
               </div>
             </div>

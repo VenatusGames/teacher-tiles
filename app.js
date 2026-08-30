@@ -53,12 +53,14 @@ function captureModuleTransform(m){
     top:m.offsetTop,
     width:m.offsetWidth,
     height:m.offsetHeight,
-    rotation:m.dataset.stickerRotation??null
+    rotation:m.dataset.stickerRotation??null,
+    snapGroup:m.dataset.snapGroup??null
   };
 }
 
 function applyModuleTransform(m,state){
   if(!m||!state)return;
+  const priorSnapGroup=m.dataset.snapGroup||'';
   Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width}px`,height:`${state.height}px`});
   if(state.rotation!==null){
     m.dataset.stickerRotation=String(state.rotation);
@@ -66,12 +68,19 @@ function applyModuleTransform(m,state){
     const readout=m.querySelector('.sticker-rotation-readout');
     if(readout)readout.textContent=`${Math.round(((Number(state.rotation)%360)+360)%360)}°`;
   }
+  if(state.snapGroup!==undefined){
+    if(state.snapGroup)m.dataset.snapGroup=String(state.snapGroup);
+    else delete m.dataset.snapGroup;
+    if(priorSnapGroup)refreshSnapGroupState(priorSnapGroup);
+    if(state.snapGroup)refreshSnapGroupState(String(state.snapGroup));
+    else m.classList.remove('is-snap-grouped');
+  }
   if(m.dataset.type==='sticker')updateStickerVisualSize(m);
 }
 
 function transformsDiffer(a,b){
   if(!a||!b)return true;
-  return Math.abs(a.left-b.left)>.1||Math.abs(a.top-b.top)>.1||Math.abs(a.width-b.width)>.1||Math.abs(a.height-b.height)>.1||String(a.rotation)!==String(b.rotation);
+  return Math.abs(a.left-b.left)>.1||Math.abs(a.top-b.top)>.1||Math.abs(a.width-b.width)>.1||Math.abs(a.height-b.height)>.1||String(a.rotation)!==String(b.rotation)||String(a.snapGroup)!==String(b.snapGroup);
 }
 
 function historyElements(action){
@@ -106,20 +115,25 @@ function recordTransformHistory(modules,before){
 }
 
 function detachHistoryElements(elements){
+  const snapGroups=new Set(elements.map(el=>el?.dataset.snapGroup).filter(Boolean));
   for(const el of elements){
     selectedModules.delete(el);
     el.classList.remove('is-selected','is-over-trash','is-dragging');
     if(el.isConnected)el.remove();
   }
+  for(const id of snapGroups)refreshSnapGroupState(id);
 }
 
 function restoreDeletedEntries(entries){
+  const snapGroups=new Set();
   for(const entry of [...entries].reverse()){
     const {el,nextSibling}=entry;
+    if(el.dataset.snapGroup)snapGroups.add(el.dataset.snapGroup);
     if(el.isConnected)continue;
     if(nextSibling?.parentNode===workspace)workspace.insertBefore(el,nextSibling);
     else workspace.appendChild(el);
   }
+  for(const id of snapGroups)refreshSnapGroupState(id);
 }
 
 function applyHistoryAction(action,direction){
@@ -590,16 +604,18 @@ const APP_TRANSLATIONS={
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
     'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
     'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
-    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete the selected tile, sticker, or group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
+    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete only the selected tile or sticker—even when it belongs to a snapped group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
     'help.mouse.title':'Mouse & trackpad','help.mouse.copy':'The board is designed to stay fast without switching tools.',
     'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
     'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
     'help.mouse.menu.title':'Add tiles','help.mouse.menu.copy':'Right-click empty board space to open the Add Tile menu.',
     'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Use the mouse wheel or trackpad scroll over the board.',
     'help.mouse.move.title':'Move tiles','help.mouse.move.copy':'Drag anywhere on a tile that is not an active button, slider, canvas, or other control.',
+    'help.mouse.snap.title':'Snap & group','help.mouse.snap.copy':'Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.',
+    'help.mouse.tug.title':'Tug to ungroup','help.mouse.tug.copy':'Give one grouped tile a quick tug to detach it, then move it independently.',
     'help.mouse.text.title':'Edit text','help.mouse.text.copy':'Double-click a text field to type. Click away from it to leave text-edit mode.',
     'help.mouse.sticker.title':'Transform stickers','help.mouse.sticker.copy':'Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.',
-    'help.mouse.trash.title':'Delete by dragging','help.mouse.trash.copy':'Drag selected objects into the trash can in the bottom-right.',
+    'help.mouse.trash.title':'Delete by dragging','help.mouse.trash.copy':'Drag any snapped tile into the corner trash to delete its entire group.',
     'help.mouse.clear.title':'Clear selection','help.mouse.clear.copy':'Click outside the current selection to deselect it.',
     'help.tutorial.kicker':'GUIDES','help.tutorial.title':'More tutorials are coming soon.','help.tutorial.copy':'Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.',
     'profile.eyebrow':'TEACHERTILES ACCOUNT','profile.title':'Profile','profile.checking':'Checking your account…','profile.welcome':'WELCOME','profile.signinTitle':'Sign in to TeacherTiles','profile.signinCopy':'Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.','profile.google':'Continue with Google','profile.signedIn':'SIGNED IN','profile.coins':'COINS','profile.balance':'Account balance','profile.connectedTitle':'Your profile is connected.','profile.connectedCopy':'This account will be used for your saved TeacherTiles boards and account data.','profile.signout':'Sign out',
@@ -623,16 +639,18 @@ const APP_TRANSLATIONS={
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
     'help.search':'Búsqueda de ayuda — próximamente','help.comingSoon':'PRÓXIMAMENTE','help.keyboard.title':'Atajos de teclado','help.keyboard.copy':'Los atajos se ignoran cuando estás escribiendo, cuando corresponde.',
     'help.key.selectAll':'Selecciona todos los tiles y pegatinas; vuelve a pulsar para limpiar la selección.','help.key.copy':'Copia la selección actual del tablero.','help.key.paste':'Pega tiles o pegatinas copiados.','help.key.duplicate':'Duplica la selección actual.',
-    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina el tile, pegatina o grupo seleccionado.','help.key.arrows':'Navega por el tablero.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
+    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina solo el tile o la pegatina seleccionada, incluso si pertenece a un grupo acoplado.','help.key.arrows':'Navega por el tablero.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
     'help.mouse.title':'Ratón y trackpad','help.mouse.copy':'El tablero está diseñado para trabajar rápido sin cambiar de herramienta.',
     'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
     'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
     'help.mouse.menu.title':'Añadir tiles','help.mouse.menu.copy':'Haz clic derecho en un espacio vacío para abrir el menú Añadir tile.',
     'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Usa la rueda del ratón o el desplazamiento del trackpad sobre el tablero.',
     'help.mouse.move.title':'Mover tiles','help.mouse.move.copy':'Arrastra cualquier parte de un tile que no sea un botón, deslizador, lienzo u otro control activo.',
+    'help.mouse.snap.title':'Acoplar y agrupar','help.mouse.snap.copy':'Coloca un tile junto a otro para acoplarlos en un grupo. Los tiles agrupados se mueven juntos y comparten una capa.',
+    'help.mouse.tug.title':'Tirar para desagrupar','help.mouse.tug.copy':'Da un tirón rápido a un tile agrupado para separarlo y moverlo de forma independiente.',
     'help.mouse.text.title':'Editar texto','help.mouse.text.copy':'Haz doble clic en un campo de texto para escribir. Haz clic fuera para salir del modo de edición.',
     'help.mouse.sticker.title':'Transformar pegatinas','help.mouse.sticker.copy':'Usa las esquinas para cambiar el tamaño y el control circular para rotar. Mantén Shift para ajustar la rotación en pasos de 15°.',
-    'help.mouse.trash.title':'Eliminar arrastrando','help.mouse.trash.copy':'Arrastra los objetos seleccionados a la papelera en la esquina inferior derecha.',
+    'help.mouse.trash.title':'Eliminar arrastrando','help.mouse.trash.copy':'Arrastra cualquier tile acoplado a la papelera de la esquina para eliminar todo su grupo.',
     'help.mouse.clear.title':'Limpiar selección','help.mouse.clear.copy':'Haz clic fuera de la selección actual para deseleccionarla.',
     'help.tutorial.kicker':'GUÍAS','help.tutorial.title':'Próximamente habrá más tutoriales.','help.tutorial.copy':'Esta página tendrá guías paso a paso, recorridos de funciones y ayuda con búsqueda.',
     'profile.eyebrow':'CUENTA DE TEACHERTILES','profile.title':'Perfil','profile.checking':'Comprobando tu cuenta…','profile.welcome':'BIENVENIDO','profile.signinTitle':'Inicia sesión en TeacherTiles','profile.signinCopy':'Inicia sesión en una cuenta para guardar tus TileSets, comprar cosméticos opcionales, acceder a toda la aplicación y descubrir todo lo que TeacherTiles ofrece.','profile.google':'Continuar con Google','profile.signedIn':'SESIÓN INICIADA','profile.coins':'MONEDAS','profile.balance':'Saldo de la cuenta','profile.connectedTitle':'Tu perfil está conectado.','profile.connectedCopy':'Esta cuenta se usará para tus tableros guardados de TeacherTiles y los datos de tu cuenta.','profile.signout':'Cerrar sesión',
@@ -1099,10 +1117,24 @@ function duplicateBoardObjects(objects,{distance=34,record=true}={}){
   if(!Array.isArray(objects)||!objects.length)return[];
   const source=cloneBoardClipboardValue(objects);
   const offset=boardDuplicateOffset(source,distance);
+  const snapGroupCounts=new Map();
+  for(const state of source){
+    const id=state?.dataset?.snapGroup;
+    if(id)snapGroupCounts.set(id,(snapGroupCounts.get(id)||0)+1);
+  }
+  const duplicatedSnapGroups=new Map();
   const states=source.map(state=>{
     const next=cloneBoardClipboardValue(state);
     next.id=makeBoardObjectId();
     delete next.zIndex;
+    const priorGroup=next?.dataset?.snapGroup;
+    if(priorGroup){
+      if((snapGroupCounts.get(priorGroup)||0)<2)delete next.dataset.snapGroup;
+      else{
+        if(!duplicatedSnapGroups.has(priorGroup))duplicatedSnapGroups.set(priorGroup,makeSnapGroupId());
+        next.dataset.snapGroup=duplicatedSnapGroups.get(priorGroup);
+      }
+    }
     const t=next.transform||{};
     const width=Math.max(1,Number(t.width)||160);
     const height=Math.max(1,Number(t.height)||120);
@@ -1129,6 +1161,7 @@ function duplicateBoardObjects(objects,{distance=34,record=true}={}){
   });
 
   if(!created.length)return[];
+  normalizeSnapGroups();
   selectModules(created);
   if(record)recordHistory({type:'add',elements:created});
   updateWorkspaceEmptyState();
@@ -1189,7 +1222,7 @@ document.addEventListener('keydown',e=>{
     else undoBoardAction();
     return;
   }
-  if(e.key==='Delete'&&selectedModules.size){
+  if((e.key==='Delete'||e.key==='Backspace')&&selectedModules.size){
     e.preventDefault();
     deleteModules([...selectedModules]);
     return;
@@ -1384,9 +1417,83 @@ const workspaceSpellcheckObserver=new MutationObserver(records=>{
 });
 workspaceSpellcheckObserver.observe(workspace,{childList:true,subtree:true});
 
+let snapGroupSequence=0;
+function makeSnapGroupId(){return`sg-${Date.now().toString(36)}-${(++snapGroupSequence).toString(36)}`}
+function snapGroupMembers(m){
+  const id=m?.dataset.snapGroup;
+  if(!id)return m?[m]:[];
+  return[...workspace.querySelectorAll('.module')].filter(module=>module.dataset.snapGroup===id);
+}
+function refreshSnapGroupState(id){
+  if(!id)return[];
+  const members=[...workspace.querySelectorAll('.module')].filter(module=>module.dataset.snapGroup===id);
+  syncSnapGroupClass(members);
+  if(members.length>1){
+    const z=Math.max(...members.map(module=>Number(module.style.zIndex)||1));
+    for(const module of members)module.style.zIndex=String(z);
+  }
+  return members;
+}
+function syncSnapGroupClass(modules){
+  const list=[...new Set(modules.filter(Boolean))];
+  const grouped=list.length>1;
+  for(const module of list)module.classList.toggle('is-snap-grouped',grouped);
+}
+function clearSnapGroupMember(m,{notify=true}={}){
+  const id=m?.dataset.snapGroup;
+  if(!id)return false;
+  const prior=snapGroupMembers(m);
+  delete m.dataset.snapGroup;
+  m.classList.remove('is-snap-grouped');
+  const remaining=prior.filter(module=>module!==m&&module.isConnected);
+  if(remaining.length<=1){
+    for(const module of remaining){delete module.dataset.snapGroup;module.classList.remove('is-snap-grouped')}
+  }else syncSnapGroupClass(remaining);
+  if(notify)notifyBoardChanged('ungroup');
+  return true;
+}
+function assignSnapGroup(modules){
+  const connected=[...new Set(modules.filter(module=>module?.isConnected&&module.dataset.type!=='sticker'))];
+  if(connected.length<2)return connected;
+  const expanded=new Set(connected);
+  for(const module of connected)for(const member of snapGroupMembers(module))if(member.dataset.type!=='sticker')expanded.add(member);
+  const group=[...expanded];
+  const id=group.map(module=>module.dataset.snapGroup).find(Boolean)||makeSnapGroupId();
+  for(const module of group)module.dataset.snapGroup=id;
+  syncSnapGroupClass(group);
+  syncSnapGroupLayer(group);
+  notifyBoardChanged('group');
+  return group;
+}
+function syncSnapGroupLayer(modules){
+  const group=[...new Set(modules.filter(module=>module?.isConnected))];
+  if(!group.length)return;
+  const tiles=group.filter(module=>module.dataset.type!=='sticker');
+  if(tiles.length){
+    tileZ=Math.min(tileZ+1,STICKER_Z_BASE-1);
+    for(const module of tiles)module.style.zIndex=String(tileZ);
+  }
+}
+function normalizeSnapGroups(){
+  const groups=new Map();
+  for(const module of workspace.querySelectorAll('.module')){
+    const id=module.dataset.snapGroup;
+    if(id){if(!groups.has(id))groups.set(id,[]);groups.get(id).push(module)}
+  }
+  for(const modules of groups.values()){
+    if(modules.length<2){delete modules[0]?.dataset.snapGroup;modules[0]?.classList.remove('is-snap-grouped');continue}
+    syncSnapGroupClass(modules);
+    const z=Math.max(...modules.map(module=>Number(module.style.zIndex)||1));
+    for(const module of modules)module.style.zIndex=String(z);
+    tileZ=Math.max(tileZ,z);
+  }
+}
 function bringToFront(m){
-  if(m?.dataset.type==='sticker')m.style.zIndex=String(STICKER_Z_BASE+(++stickerZ));
-  else{tileZ=Math.min(tileZ+1,STICKER_Z_BASE-1);m.style.zIndex=String(tileZ);}
+  if(!m)return;
+  if(m.dataset.type==='sticker'){m.style.zIndex=String(STICKER_Z_BASE+(++stickerZ));return}
+  const group=snapGroupMembers(m);
+  if(group.length>1){syncSnapGroupLayer(group);return}
+  tileZ=Math.min(tileZ+1,STICKER_Z_BASE-1);m.style.zIndex=String(tileZ);
 }
 let activeModuleTextEditor=null;
 const moduleTextClickState=new WeakMap();
@@ -1559,17 +1666,35 @@ function setupDrag(m){
     m.classList.add('is-dragging');
     bringToFront(m);
     if(!selectedModules.has(m)){if(!e.shiftKey)clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
-    const group=[...selectedModules],multi=group.length>1;
-    for(const g of group)bringToFront(g);
+    const selected=[...selectedModules];
+    const connectedToAnchor=snapGroupMembers(m);
+    const expanded=new Set();
+    for(const selectedModule of selected){
+      expanded.add(selectedModule);
+      for(const member of snapGroupMembers(selectedModule))expanded.add(member);
+    }
+    let group=[...expanded];
+    let multi=group.length>1;
+    let tugCandidate=selected.length===1&&selected[0]===m&&connectedToAnchor.length>1;
+    let tugged=false;
+    const dragStartGroup=[...group];
     const origins=new Map(group.map(g=>[g,captureModuleTransform(g)]));
     h.setPointerCapture(e.pointerId);
-    const sx=e.clientX,sy=e.clientY;
+    const sx=e.clientX,sy=e.clientY,startedAt=performance.now();
     let pending=null,overTrash=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
-    const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of group)g.classList.toggle('is-over-trash',visible&&armed)};
+    const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
     setTrash(true,false);
     const move=ev=>{
       const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
+      const distance=Math.hypot(ev.clientX-sx,ev.clientY-sy);
+      const elapsed=performance.now()-startedAt;
+      if(tugCandidate&&distance>=42&&elapsed<=210){
+        for(const member of group)if(member!==m)applyModuleTransform(member,origins.get(member));
+        clearSnapGroupMember(m);
+        group=[m];multi=false;tugCandidate=false;tugged=true;
+        bringToFront(m);
+      }else if(elapsed>210)tugCandidate=false;
       for(const g of group){
         const o=origins.get(g);
         g.style.left=`${clamp(o.left+dx,0,BOARD_WIDTH-g.offsetWidth)}px`;
@@ -1593,18 +1718,24 @@ function setupDrag(m){
     };
     const cleanup=()=>{m.classList.remove('is-dragging');clearPreview();setTrash(false,false);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
     const end=()=>{
-      if(overTrash){cleanup();deleteModules(group);return}
+      if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       let willSnap=false;
       if(!multi&&pending){
         willSnap=pending.left!==null||pending.top!==null;
         if(pending.left!==null)m.style.left=`${clamp(pending.left,0,BOARD_WIDTH-m.offsetWidth)}px`;
         if(pending.top!==null)m.style.top=`${clamp(pending.top,0,BOARD_HEIGHT-m.offsetHeight)}px`;
       }
-      recordTransformHistory(group,origins);
+      let joined=group;
+      if(willSnap){
+        const snapMembers=snappedGroup(m);
+        for(const member of snapMembers)if(!origins.has(member))origins.set(member,captureModuleTransform(member));
+        joined=assignSnapGroup(snapMembers);
+      }
+      recordTransformHistory([...origins.keys()],origins);
       cleanup();
-      pulse(multi?group:(willSnap?snappedGroup(m):[m]));
+      pulse(multi?group:(willSnap?joined:[m]));
     };
-    const cancel=()=>{for(const g of group)applyModuleTransform(g,origins.get(g));cleanup()};
+    const cancel=()=>{for(const [g,origin] of origins)applyModuleTransform(g,origin);if(tugged)assignSnapGroup(connectedToAnchor);cleanup()};
     h.addEventListener('pointermove',move);
     h.addEventListener('pointerup',end);
     h.addEventListener('pointercancel',cancel);
@@ -1615,8 +1746,10 @@ function setupResize(m){
   for(const d of ['t','r','b','l'])if(!m.querySelector(`[data-resize="${d}"]`)){const h=document.createElement('div');h.className=`resize-handle resize-handle--${d}`;h.dataset.resize=d;m.appendChild(h)}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
-    e.preventDefault();e.stopPropagation();bringToFront(m);h.setPointerCapture(e.pointerId);
-    const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight,cs=getComputedStyle(m),mw=parseFloat(cs.minWidth)||220,mh=parseFloat(cs.minHeight)||180;
+    e.preventDefault();e.stopPropagation();
+    const before=captureModuleTransform(m);
+    clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
+    const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight,cs=getComputedStyle(m),mw=parseFloat(cs.minWidth)||220,mh=parseFloat(cs.minHeight)||180;
     const move=ev=>{
       const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
       let l=sl,t=st,w=sw,hh=sh;
@@ -10349,7 +10482,7 @@ function setupSpinner(m){
 const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
-  'is-sticker-resizing','is-sticker-rotating','stoplight-pop','is-flipping',
+  'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','stoplight-pop','is-flipping',
   'is-fitting','is-shuffling','is-dragover','is-drop-target'
 ]);
 let activeTeacherTilesBoardId='';
@@ -10642,6 +10775,7 @@ function loadTeacherTilesBoard(snapshot){
         if(object?.id)removedObjectIds.push(object.id);
       }
     }
+    normalizeSnapGroups();
     clearSelection();
     undoStack.splice(0,undoStack.length);
     redoStack.splice(0,redoStack.length);
