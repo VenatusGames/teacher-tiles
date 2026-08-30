@@ -1616,6 +1616,10 @@
         <span class="context-menu__icon context-menu__icon--punchcards" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h.1M12 9h.1M17 9h.1M7 15h.1M12 15h.1M17 15h.1" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M9.5 5v14M14.5 5v14" stroke="currentColor" stroke-width="1" opacity=".3" stroke-dasharray="1.5 2"/></svg></span>
         <span><strong>Punchcards</strong><small>Punch reward cards for students or the whole class</small></span><span class="context-menu__tracking-badge">PBIS</span>
       </button>
+      <button class="context-menu__item" data-module="racer" data-category="pbis" data-pbis-tracking="true">
+        <span class="context-menu__icon context-menu__icon--racer" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V4m0 1h11l-2.2 3L16 11H5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.2 19c.3-2.4 1-3.6 1.8-3.6S10.5 16.6 10.8 19m3.5-5.6h4.2m-2.1-2.1v4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span><strong>Racer</strong><small>Move student racers toward the finish line</small></span><span class="context-menu__tracking-badge">PBIS</span>
+      </button>
       <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
@@ -2393,6 +2397,60 @@
         <button class="custom-icon punchcard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon punchcard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon punchcard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="racer-template">
+    <section class="module racer-module" data-type="racer" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Racer">×</button><div class="module-drag-handle"></div>
+      <div class="racer-import">
+        <div class="racer-import__mark" aria-hidden="true">🏁</div>
+        <strong>Choose a class to race</strong>
+        <p>Every student gets a standee. Move them along the track and award a Race Win when they cross the finish.</p>
+        <div class="racer-loader-anchor" hidden></div>
+        <small>Race Wins are personal PBIS stats and the race resets only when you choose.</small>
+      </div>
+      <div class="racer-dashboard" hidden data-skip-board-save>
+        <header class="racer-header">
+          <span class="racer-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="racer-class-name">Class</strong><small>RACER</small></div>
+          <button class="racer-change-class" type="button">Change class</button>
+        </header>
+        <div class="racer-stage" data-skip-board-save>
+          <svg class="racer-track-art" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+            <path class="racer-track-shadow" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-track-line" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-start-line" d="M60 166v56"/>
+            <path class="racer-finish-line" d="M940 148v78"/>
+          </svg>
+          <div class="racer-start-label">START</div>
+          <div class="racer-finish"><span class="racer-finish-flag" aria-hidden="true"></span><strong>FINISH</strong></div>
+          <div class="racer-standees"></div>
+          <div class="racer-status">Move a student forward to begin the race</div>
+        </div>
+        <div class="racer-controls">
+          <label><span>Student</span><select class="racer-student" aria-label="Choose student racer"></select></label>
+          <label class="racer-distance-wrap"><span>Distance</span><input class="racer-distance" type="number" min="1" max="100" step="1" value="10" aria-label="Distance to add"></label>
+          <button class="racer-move" type="button">Add distance</button>
+          <button class="racer-reset" type="button">Reset race</button>
+        </div>
+      </div>
+      <div class="racer-win" role="dialog" aria-modal="true" aria-live="polite" hidden>
+        <div class="racer-win__flag" aria-hidden="true">🏁</div>
+        <small>FINISH LINE CROSSED</small>
+        <h3>Race Win!</h3>
+        <p><strong class="racer-win-name">Student</strong> earned a personal Race Win.</p>
+        <div class="racer-win__total"><span>Total Race Wins</span><strong class="racer-win-total">1</strong></div>
+        <button class="racer-win-done" type="button">Keep Racing</button>
+      </div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+      <div class="racer-customization customization-bar">
+        <button class="custom-icon racer-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon racer-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon racer-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>

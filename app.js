@@ -289,6 +289,23 @@ function normalizePunchcardProgress(value,students=[]){
   };
 }
 
+function normalizeRacerProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourcePositions=source.positions&&typeof source.positions==='object'&&!Array.isArray(source.positions)?source.positions:{};
+  const sourceWins=source.studentWins&&typeof source.studentWins==='object'&&!Array.isArray(source.studentWins)?source.studentWins:{};
+  const sourceFinished=source.finished&&typeof source.finished==='object'&&!Array.isArray(source.finished)?source.finished:{};
+  const positions={},studentWins={},finished={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    positions[key]=Math.max(0,Math.min(100,Number(sourcePositions[key]??sourcePositions[name])||0));
+    studentWins[key]=normalizeStarChartCount(sourceWins[key]??sourceWins[name]);
+    finished[key]=Boolean(sourceFinished[key]??sourceFinished[name])||positions[key]>=100;
+    if(finished[key])positions[key]=100;
+  });
+  return{positions,studentWins,finished};
+}
+
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
@@ -303,7 +320,8 @@ function readClassRosters(){
         starChart:normalizeStarChartProgress(item.starChart,students),
         classMeter:normalizeClassMeterProgress(item.classMeter),
         collectionJar:normalizeCollectionProgress(item.collectionJar),
-        punchcards:normalizePunchcardProgress(item.punchcards,students)
+        punchcards:normalizePunchcardProgress(item.punchcards,students),
+        racer:normalizeRacerProgress(item.racer,students)
       };
     });
   }catch{return []}
@@ -425,6 +443,19 @@ function writeClassPunchcards(classId,value){
   window.dispatchEvent(new CustomEvent('teachertiles:punchcardchange',{detail:{classId,progress:roster.punchcards}}));
   schedulePbisCloudSave();
   return roster.punchcards;
+}
+
+
+function writeClassRacer(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.racer=normalizeRacerProgress(value,roster.students);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:racerchange',{detail:{classId,progress:roster.racer}}));
+  schedulePbisCloudSave();
+  return roster.racer;
 }
 
 window.addEventListener('pagehide',flushPbisCloudSave);
@@ -709,7 +740,7 @@ function setupProfileClasses(){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
-    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null),punchcards:normalizePunchcardProgress(null,[])});
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null),punchcards:normalizePunchcardProgress(null,[]),racer:normalizeRacerProgress(null,[])});
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
@@ -742,6 +773,15 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
     icon:'●',
     value:(roster,name)=>normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(name)]||0,
     wholeClassValue:roster=>normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints
+  }),
+  Object.freeze({
+    id:'raceWins',
+    label:'Race Wins',
+    description:'Racer finish-line wins earned by this student',
+    icon:'🏁',
+    studentOnly:true,
+    value:(roster,name)=>normalizeRacerProgress(roster.racer,roster.students).studentWins[starChartStudentKey(name)]||0,
+    wholeClassValue:()=>0
   }),
   Object.freeze({
     id:'meterWins',
@@ -813,7 +853,7 @@ function setupStudentView(){
 
   const enabledStats=({wholeClass=false}={})=>{
     const preferences=readStudentViewStatPreferences();
-    return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]&&(!stat.wholeClassOnly||wholeClass));
+    return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]&&(!stat.wholeClassOnly||wholeClass)&&(!stat.studentOnly||!wholeClass));
   };
 
   const resetProfileStat=(stat,roster,name,{wholeClass=false}={})=>{
@@ -829,6 +869,10 @@ function setupStudentView(){
       const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
       if(wholeClass)progress.wholeClassPoints=0;else progress.studentPoints[starChartStudentKey(name)]=0;
       writeClassPunchcards(roster.id,progress);
+    }else if(stat.id==='raceWins'){
+      const progress=normalizeRacerProgress(roster.racer,roster.students);
+      progress.studentWins[starChartStudentKey(name)]=0;
+      writeClassRacer(roster.id,progress);
     }else if(stat.id==='meterWins'){
       const progress=normalizeClassMeterProgress(roster.classMeter);
       progress.wins=0;
@@ -892,7 +936,7 @@ function setupStudentView(){
     toggleContainer.replaceChildren();
     PBIS_STUDENT_STAT_DEFINITIONS.forEach(stat=>{
       const label=document.createElement('label');label.className='student-view-stat-toggle';
-      const input=document.createElement('input');input.type='checkbox';input.checked=preferences[stat.id];input.setAttribute('aria-label',`Show ${stat.label} on ${stat.wholeClassOnly?'whole-class':'student and class'} profiles`);
+      const input=document.createElement('input');input.type='checkbox';input.checked=preferences[stat.id];input.setAttribute('aria-label',`Show ${stat.label} on ${stat.wholeClassOnly?'whole-class':stat.studentOnly?'student':'student and class'} profiles`);
       const track=document.createElement('span');track.className='student-view-stat-toggle__track';
       const copy=document.createElement('span');
       const title=document.createElement('strong');title.textContent=`${stat.icon} ${stat.label}`;
@@ -972,6 +1016,7 @@ function setupStudentView(){
   window.addEventListener('teachertiles:classmeterchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   window.addEventListener('teachertiles:collectionchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   window.addEventListener('teachertiles:punchcardchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:racerchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||panel.hidden)return;
     event.preventDefault();
@@ -1040,6 +1085,8 @@ const timerTadaSfxPrototype=new Audio('assets/ui/timer-tada.mp3');
 timerTadaSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
+const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
+holePunchSfxPrototype.preload='auto';
 
 function persistAppPreferences(){
   try{localStorage.setItem(APP_PREFERENCES_KEY,JSON.stringify(appPreferences))}catch{}
@@ -1059,11 +1106,11 @@ function boardPreferenceSnapshot(){
 function playUiSfx(kind='click'){
   if(appPreferences.uiMuted)return;
   try{
-    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:uiSfxPrototype;
+    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='collection'?.18:.11;
+    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='collection'?.18:.11;
     sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
-    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
   }catch{}
@@ -1073,7 +1120,7 @@ document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#settings-ui-sfx-toggle'))return;
+  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click');
 },true);
@@ -1207,7 +1254,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1221,7 +1268,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -2116,6 +2163,7 @@ function setupModuleByType(m,type){
   if(type==='prizeboard')setupPrizeBoard(m);
   if(type==='pbisconsole')setupPbisConsole(m);
   if(type==='punchcards')setupPunchcards(m);
+  if(type==='racer')setupRacer(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
   if(type==='lunchcount')setupLunchCount(m);
@@ -4297,6 +4345,7 @@ function setupClassMeter(m){
 const PRIZE_STAT_OPTIONS=Object.freeze([
   Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
   Object.freeze({id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●',scope:'student'}),
+  Object.freeze({id:'studentRaceWins',label:'Race Wins',icon:'🏁',scope:'student'}),
   Object.freeze({id:'classStars',label:'Whole-class Stars',icon:'★',scope:'class'}),
   Object.freeze({id:'meterWins',label:'Class Meter Wins',icon:'🏆',scope:'class'}),
   Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'}),
@@ -4316,7 +4365,7 @@ function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`pri
 function normalizePrize(value){
   const source=value&&typeof value==='object'?value:{};
   const scope=source.scope==='class'?'class':'student';
-  const allowed=scope==='student'?['studentStars','studentPunchcardPoints']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
+  const allowed=scope==='student'?['studentStars','studentPunchcardPoints','studentRaceWins']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
   return{
     id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
     description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
@@ -4330,6 +4379,7 @@ function pbisBalance(roster,statId,studentName=''){
   if(statId==='classStars')return normalizeStarChartCount(roster.starChart?.wholeClassStars);
   if(statId==='studentPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(studentName)]||0;
   if(statId==='classPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints;
+  if(statId==='studentRaceWins')return normalizeRacerProgress(roster.racer,roster.students).studentWins[starChartStudentKey(studentName)]||0;
   if(statId==='meterWins')return normalizeClassMeterProgress(roster.classMeter).wins;
   if(statId==='jarsFilled')return normalizeCollectionProgress(roster.collectionJar).jarsFilled;
   if(statId==='meterFill')return Math.round(normalizeClassMeterProgress(roster.classMeter).fill);
@@ -4350,6 +4400,10 @@ function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={
     const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
     if(statId==='studentPunchcardPoints')progress.studentPoints[starChartStudentKey(studentName)]=next;else progress.wholeClassPoints=next;
     writeClassPunchcards(classId,progress);
+  }else if(statId==='studentRaceWins'){
+    const progress=normalizeRacerProgress(roster.racer,roster.students);
+    progress.studentWins[starChartStudentKey(studentName)]=next;
+    writeClassRacer(classId,progress);
   }else if(statId==='meterWins'||statId==='meterFill'){
     const progress=normalizeClassMeterProgress(roster.classMeter);
     if(statId==='meterWins')progress.wins=next;else progress.fill=next;
@@ -4451,9 +4505,9 @@ function setupPrizeBoard(m){
   const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
   m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const ro=new ResizeObserver(syncModuleSize);ro.observe(m);
-  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);window.addEventListener('teachertiles:punchcardchange',refresh);
+  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);window.addEventListener('teachertiles:punchcardchange',refresh);window.addEventListener('teachertiles:racerchange',refresh);
   m._boardGetState=()=>({activeClassId,scope,prizes:prizes.map(normalizePrize)});m._boardSetState=state=>{if(!state)return;scope=state.scope==='class'?'class':'student';prizes=Array.isArray(state.prizes)?state.prizes.map(normalizePrize):[];setClass(String(state.activeClassId||''));render()};
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh);window.removeEventListener('teachertiles:punchcardchange',refresh)};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh);window.removeEventListener('teachertiles:punchcardchange',refresh);window.removeEventListener('teachertiles:racerchange',refresh)};
   render();
 }
 
@@ -4461,7 +4515,7 @@ function setupPbisConsole(m){
   const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
   let activeClassId='',student='',view='students';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
-  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'}];
+  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'},{id:'studentRaceWins',label:'Race Wins',icon:'🏁'}];
   const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'○'}];
   const setClass=id=>{
     const r=readClassRosters().find(item=>item.id===id);
@@ -4504,11 +4558,110 @@ function setupPbisConsole(m){
   m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
-  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange'].forEach(name=>window.addEventListener(name,refresh));
+  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
   m._boardGetState=()=>({activeClassId,student,view});
   m._boardSetState=state=>{student=String(state?.student||'');view=state?.view==='class'?'class':'students';setClass(String(state?.activeClassId||''))};
   const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'].forEach(name=>window.removeEventListener(name,refresh))};
+}
+
+
+function setupRacer(m){
+  const importView=m.querySelector('.racer-import'),dashboard=m.querySelector('.racer-dashboard'),loaderAnchor=m.querySelector('.racer-loader-anchor');
+  const className=m.querySelector('.racer-class-name'),classLogo=m.querySelector('.racer-class-logo'),changeClass=m.querySelector('.racer-change-class');
+  const stage=m.querySelector('.racer-stage'),racers=m.querySelector('.racer-standees'),studentSelect=m.querySelector('.racer-student'),distanceInput=m.querySelector('.racer-distance'),moveButton=m.querySelector('.racer-move'),reset=m.querySelector('.racer-reset');
+  const status=m.querySelector('.racer-status'),win=m.querySelector('.racer-win'),winName=m.querySelector('.racer-win-name'),winTotal=m.querySelector('.racer-win-total'),winDone=m.querySelector('.racer-win-done');
+  let activeClassId='',selectedStudent='';
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};
+  const curveY=t=>54-40*t*(1-t);
+  const keyFor=name=>starChartStudentKey(name);
+  const studentIndex=(r,name)=>Math.max(0,r.students.indexOf(name));
+  const tierFor=index=>index%6;
+  const groupFor=index=>Math.floor(index/6)%5;
+  const positionFor=(r,name,p)=>{
+    const index=studentIndex(r,name),t=Math.max(0,Math.min(1,(p.positions[keyFor(name)]||0)/100));
+    const x=Math.max(4.7,Math.min(95.3,6+t*88+(groupFor(index)-2)*.32));
+    return{x,y:curveY(t),tier:tierFor(index),t};
+  };
+  const updateStatus=()=>{
+    const r=roster();if(!r){status.textContent='';return}
+    const p=progress(),finishers=r.students.filter(name=>p.finished[keyFor(name)]).length;
+    status.textContent=finishers?`${finishers} ${finishers===1?'finisher':'finishers'} • Race continues until you reset`:'Move a student forward to begin the race';
+  };
+  const buildStandee=name=>{
+    const r=roster(),visual=studentProfileVisual(name,r?.id||'');
+    const node=document.createElement('button');node.type='button';node.className='racer-standee';node.dataset.student=name;node.setAttribute('aria-label',`Select ${name}`);
+    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
+    node.style.setProperty('--racer-hue',String(visual.hue));
+    node.querySelector('.racer-character strong').textContent=name;
+    node.addEventListener('click',()=>{selectedStudent=name;studentSelect.value=name;renderSelection()});
+    return node;
+  };
+  const renderSelection=()=>{
+    const r=roster();if(!r)return;
+    const p=progress(),key=keyFor(selectedStudent),done=Boolean(p.finished[key]);
+    racers.querySelectorAll('.racer-standee').forEach(node=>node.classList.toggle('is-selected',node.dataset.student===selectedStudent));
+    moveButton.disabled=!selectedStudent||done;distanceInput.disabled=!selectedStudent||done;
+    moveButton.textContent=done?'Finished':'Add distance';
+  };
+  const renderTrack=()=>{
+    const r=roster();if(!r)return;
+    const p=progress(),wanted=new Set(r.students);
+    racers.querySelectorAll('.racer-standee').forEach(node=>{if(!wanted.has(node.dataset.student))node.remove()});
+    r.students.forEach(name=>{
+      let node=[...racers.children].find(child=>child.dataset.student===name);
+      if(!node){node=buildStandee(name);racers.append(node);requestAnimationFrame(()=>node.classList.add('is-ready'))}
+      const pos=positionFor(r,name,p),key=keyFor(name),wins=p.studentWins[key]||0;
+      node.style.left=`${pos.x}%`;node.style.top=`${pos.y}%`;node.style.setProperty('--racer-stick-height',`${18+pos.tier*14}px`);node.style.zIndex=String(20+pos.tier);
+      node.classList.toggle('is-finished',Boolean(p.finished[key]));node.title=`${name} • ${Math.round(p.positions[key]||0)}% • ${wins} Race ${wins===1?'Win':'Wins'}`;
+      const mark=node.querySelector('.racer-winner-mark');if(mark)mark.title=`${wins} Race ${wins===1?'Win':'Wins'}`;
+    });
+    updateStatus();renderSelection();
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);
+    const prior=selectedStudent;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));
+    r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+    selectedStudent=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=selectedStudent;
+    renderTrack();
+  };
+  const showWin=(name,total)=>{
+    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('confetti');requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
+  };
+  const moveStudent=()=>{
+    const r=roster(),name=selectedStudent;if(!r||!name)return;
+    const p=progress(),key=keyFor(name);if(p.finished[key])return;
+    const amount=Math.max(1,Math.min(100,Math.round(Number(distanceInput.value)||1))),before=p.positions[key]||0,next=Math.min(100,before+amount),won=before<100&&next>=100;
+    p.positions[key]=next;
+    if(won){p.finished[key]=true;p.studentWins[key]=normalizeStarChartCount((p.studentWins[key]||0)+1)}
+    writeClassRacer(activeClassId,p);if(won)flushPbisCloudSave();notifyBoardChanged('racer-distance');renderTrack();
+    if(won)setTimeout(()=>showWin(name,p.studentWins[key]),520);
+  };
+  const resetRace=()=>{
+    const r=roster();if(!r||!r.students.length)return;if(!confirm(`Reset the race board for ${r.name}? Race Win totals will be kept.`))return;
+    const p=progress();r.students.forEach(name=>{const key=keyFor(name);p.positions[key]=0;p.finished[key]=false});writeClassRacer(activeClassId,p);flushPbisCloudSave();win.hidden=true;renderTrack();notifyBoardChanged('racer-reset');
+  };
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;win.hidden=true;
+    if(r)selectedStudent=r.students.includes(selectedStudent)?selectedStudent:(r.students[0]||'');else selectedStudent='';render();
+  };
+  studentSelect.addEventListener('change',()=>{selectedStudent=studentSelect.value;renderSelection();notifyBoardChanged('racer-student')});
+  distanceInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();moveStudent()}});
+  moveButton.addEventListener('click',moveStudent);reset.addEventListener('click',resetRace);winDone.addEventListener('click',()=>{win.hidden=true;moveButton.focus({preventScroll:true})});
+  changeClass.addEventListener('click',()=>{activeClassId='';selectedStudent='';win.hidden=true;importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('racer-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('racer-class')});
+  m.querySelector('.racer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.racer-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.racer-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
+  const ro=new ResizeObserver(renderTrack);ro.observe(stage);
+  m._boardGetState=()=>({activeClassId,selectedStudent});
+  m._boardSetState=state=>{selectedStudent=String(state?.selectedStudent||'');setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  render();
 }
 
 function setupPunchcards(m){
@@ -4556,6 +4709,7 @@ function setupPunchcards(m){
   const punch=(hole,index,event)=>{
     if(busy||index!==currentProgress())return;
     busy=true;
+    playUiSfx('hole-punch');
     const cardRect=card.getBoundingClientRect(),holeRect=hole.getBoundingClientRect();
     const disk=document.createElement('span');
     disk.className='punchcard-punched-disk';
