@@ -1597,7 +1597,7 @@
       <button class="context-menu__item" data-module="starchart" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--starchart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.3 12.1 1.7 1.7 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Star Chart</strong><small>Award stars to a class or individual students</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="classmeter" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classmeter" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 1 6 0v9.1a5 5 0 1 1-6 0V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v9.5M9.2 17.2h5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><strong>Class Meter</strong><small>Hold to fill a whole-class reward meter</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
-      <button class="context-menu__item" data-module="collections" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
+      <button class="context-menu__item" data-module="collections" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a class reward jar together</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
@@ -2059,31 +2059,60 @@
 
 
   <template id="collections-template">
-    <section class="module collections-module" data-type="collections" data-item="pompom" data-bg="white">
+    <section class="module collections-module" data-type="collections" data-item="pompom" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete collection jar">×</button><div class="module-drag-handle"></div>
-      <div class="collection-stage">
-        <div class="collection-title">Collection Jar</div>
-        <canvas class="collection-canvas" aria-label="Interactive collection jar. Click the jar to add an item."></canvas>
-        <div class="collection-count">0 items</div>
+
+      <div class="collection-import">
+        <div class="collection-import__mark" aria-hidden="true">🫙</div>
+        <strong>Choose a class to begin</strong>
+        <p>Load a saved class, then fill a shared reward jar together.</p>
+        <div class="collection-loader-anchor" hidden></div>
+        <small>Jar progress and fills stay with the class, even if this tile is deleted.</small>
       </div>
-      <div class="collection-controls">
-        <button class="collection-add primary" type="button">+ Add</button>
-        <div class="collection-picker-wrap">
-          <button class="collection-type" type="button" title="Choose collectible" aria-expanded="false">
-            <span class="collectible-preview collection-current-preview preview-pompom" aria-hidden="true"></span><span class="collection-type-label">Pom poms</span><span class="collection-chevron">⌃</span>
-          </button>
-          <div class="collection-picker" hidden>
-            <button type="button" data-collection-type="pompom"><span class="collectible-preview preview-pompom"></span><span>Pom poms</span></button>
-            <button type="button" data-collection-type="candy"><span class="collectible-preview preview-candy"></span><span>Candies</span></button>
-            <button type="button" data-collection-type="star"><span class="collectible-preview preview-star"></span><span>Stars</span></button>
-            <button type="button" data-collection-type="jellybean"><span class="collectible-preview preview-jellybean"></span><span>Jellybeans</span></button>
-            <button type="button" data-collection-type="fruit"><span class="collectible-preview preview-fruit"></span><span>Fruits</span></button>
-            <button type="button" data-collection-type="coin"><span class="collectible-preview preview-coin"></span><span>Coins</span></button>
+
+      <div class="collection-dashboard" hidden data-skip-board-save>
+        <header class="collection-class-header">
+          <span class="collection-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="collection-class-name">Class</strong><small>WHOLE-CLASS COLLECTION</small></div>
+          <button class="collection-change-class" type="button">Change class</button>
+        </header>
+        <div class="collection-stage">
+          <canvas class="collection-canvas" aria-label="Interactive class collection jar. Click the jar to add an item."></canvas>
+          <div class="collection-count">0 items</div>
+          <div class="collection-filled-banner" role="status" aria-live="polite" hidden>
+            <span aria-hidden="true">🏆</span><strong>Jar Filled!</strong><small>Celebrate, then start over when you are ready.</small>
           </div>
         </div>
-        <button class="custom-icon collection-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette"></span></button>
-        <button class="collection-clear" type="button">Clear</button>
+        <div class="collection-controls">
+          <button class="collection-add primary" type="button">+ Add</button>
+          <div class="collection-picker-wrap">
+            <button class="collection-type" type="button" title="Choose collectible" aria-expanded="false">
+              <span class="collectible-preview collection-current-preview preview-pompom" aria-hidden="true"></span><span class="collection-type-label">Pom poms</span><span class="collection-chevron">⌃</span>
+            </button>
+            <div class="collection-picker" hidden>
+              <button type="button" data-collection-type="pompom"><span class="collectible-preview preview-pompom"></span><span>Pom poms</span></button>
+              <button type="button" data-collection-type="candy"><span class="collectible-preview preview-candy"></span><span>Candies</span></button>
+              <button type="button" data-collection-type="star"><span class="collectible-preview preview-star"></span><span>Stars</span></button>
+              <button type="button" data-collection-type="jellybean"><span class="collectible-preview preview-jellybean"></span><span>Jellybeans</span></button>
+              <button type="button" data-collection-type="fruit"><span class="collectible-preview preview-fruit"></span><span>Fruits</span></button>
+              <button type="button" data-collection-type="coin"><span class="collectible-preview preview-coin"></span><span>Coins</span></button>
+            </div>
+          </div>
+          <button class="custom-icon collection-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette"></span></button>
+          <div class="collection-settings-wrap">
+            <button class="collection-settings-toggle" type="button" aria-expanded="false" aria-label="Open Collection Jar settings">⚙</button>
+            <div class="collection-settings" hidden>
+              <strong>Jars Filled</strong><small>Correct the class tally when needed.</small>
+              <div class="collection-jars-total"><span aria-hidden="true">🫙</span><b class="collection-jars-filled">0</b></div>
+              <button class="collection-add-fill" type="button">Add one jar filled</button>
+              <button class="collection-remove-fill" type="button">Remove one jar filled</button>
+              <button class="collection-reset-fills" type="button">Reset jars filled to 0</button>
+            </div>
+          </div>
+          <button class="collection-restart primary" type="button" hidden>Start over</button>
+        </div>
       </div>
+      <div class="confetti-layer" aria-hidden="true"></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -2179,7 +2208,7 @@
 
 
   <template id="classmeter-template">
-    <section class="module classmeter-module" data-type="classmeter" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module classmeter-module" data-type="classmeter" data-bg="white" data-font="inter" data-text="dark" data-orientation="vertical">
       <button class="module-delete" aria-label="Delete Class Meter">×</button><div class="module-drag-handle"></div>
 
       <div class="classmeter-import">
@@ -2207,6 +2236,7 @@
         </div>
         <div class="classmeter-hover-tools">
           <button class="classmeter-fill" type="button"><span aria-hidden="true">＋</span><strong>Hold to fill</strong></button>
+          <button class="classmeter-orientation" type="button" aria-label="Switch to horizontal meter"><span aria-hidden="true">↔</span><strong>Horizontal</strong></button>
           <div class="classmeter-settings-wrap">
             <button class="classmeter-settings-toggle" type="button" aria-expanded="false" aria-label="Open Class Meter settings">⚙</button>
             <div class="classmeter-settings" hidden>

@@ -198,6 +198,9 @@ const STAR_CHART_LAST_CLASS_KEY='teachertiles-star-chart-last-class-v1';
 const starChartLastClassStorageKey=()=>`${STAR_CHART_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
 const CLASS_METER_LAST_CLASS_KEY='teachertiles-class-meter-last-class-v1';
 const classMeterLastClassStorageKey=()=>`${CLASS_METER_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const COLLECTIONS_LAST_CLASS_KEY='teachertiles-collections-last-class-v1';
+const collectionsLastClassStorageKey=()=>`${COLLECTIONS_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const COLLECTION_ITEM_TYPES=new Set(['pompom','candy','star','jellybean','fruit','coin']);
 const CLASS_LOGO_OPTIONS=Object.freeze([
   Object.freeze({symbol:'👥',label:'Class team'}),Object.freeze({symbol:'🌟',label:'Shining star'}),
   Object.freeze({symbol:'🚀',label:'Rocket'}),Object.freeze({symbol:'🦉',label:'Owl'}),
@@ -256,6 +259,16 @@ function normalizeClassMeterProgress(value){
   };
 }
 
+function normalizeCollectionProgress(value){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  return{
+    item:COLLECTION_ITEM_TYPES.has(source.item)?source.item:'pompom',
+    count:Math.max(0,Math.min(80,Math.round(Number(source.count)||0))),
+    filled:Boolean(source.filled),
+    jarsFilled:normalizeStarChartCount(source.jarsFilled)
+  };
+}
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
@@ -268,7 +281,8 @@ function readClassRosters(){
         logo:normalizeClassLogo(item.logo),
         students,
         starChart:normalizeStarChartProgress(item.starChart,students),
-        classMeter:normalizeClassMeterProgress(item.classMeter)
+        classMeter:normalizeClassMeterProgress(item.classMeter),
+        collectionJar:normalizeCollectionProgress(item.collectionJar)
       };
     });
   }catch{return []}
@@ -349,6 +363,17 @@ function writeClassMeter(classId,value){
   window.dispatchEvent(new CustomEvent('teachertiles:classmeterchange',{detail:{classId,progress:roster.classMeter}}));
   schedulePbisCloudSave();
   return roster.classMeter;
+}
+
+function writeClassCollection(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.collectionJar=normalizeCollectionProgress(value);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:collectionchange',{detail:{classId,progress:roster.collectionJar}}));
+  schedulePbisCloudSave();
+  return roster.collectionJar;
 }
 
 window.addEventListener('pagehide',flushPbisCloudSave);
@@ -614,7 +639,7 @@ function setupProfileClasses(){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
-    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null)});
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null)});
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
@@ -648,6 +673,16 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
     wholeClassOnly:true,
     value:()=>0,
     wholeClassValue:roster=>normalizeClassMeterProgress(roster.classMeter).wins
+  }),
+  Object.freeze({
+    id:'jarsFilled',
+    label:'Jars Filled',
+    description:'Whole-class Collection Jars filled',
+    wholeClassDescription:'Collection Jars filled by this class',
+    icon:'🫙',
+    wholeClassOnly:true,
+    value:()=>0,
+    wholeClassValue:roster=>normalizeCollectionProgress(roster.collectionJar).jarsFilled
   })
 ]);
 
@@ -827,6 +862,7 @@ function setupStudentView(){
   window.addEventListener('teachertiles:classeschange',()=>{if(!panel.hidden)render()});
   window.addEventListener('teachertiles:starchartchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   window.addEventListener('teachertiles:classmeterchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:collectionchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||panel.hidden)return;
     event.preventDefault();
@@ -1062,7 +1098,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1076,7 +1112,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -3929,6 +3965,9 @@ function setupClassMeter(m){
   const percent=m.querySelector('.classmeter-percent');
   const winCount=m.querySelector('.classmeter-win-count b');
   const fillButton=m.querySelector('.classmeter-fill');
+  const orientationButton=m.querySelector('.classmeter-orientation');
+  const orientationIcon=orientationButton.querySelector('span');
+  const orientationLabel=orientationButton.querySelector('strong');
   const settingsToggle=m.querySelector('.classmeter-settings-toggle');
   const settings=m.querySelector('.classmeter-settings');
   const removeWin=m.querySelector('.classmeter-remove-win');
@@ -3975,6 +4014,23 @@ function setupClassMeter(m){
     const show=Boolean(open);
     settings.hidden=!show;
     settingsToggle.setAttribute('aria-expanded',String(show));
+  };
+
+  const setOrientation=(orientation,{resize=false,notify=false}={})=>{
+    const horizontal=orientation==='horizontal';
+    m.dataset.orientation=horizontal?'horizontal':'vertical';
+    orientationIcon.textContent=horizontal?'↕':'↔';
+    orientationLabel.textContent=horizontal?'Vertical':'Horizontal';
+    orientationButton.setAttribute('aria-label',`Switch to ${horizontal?'vertical':'horizontal'} meter`);
+    if(resize){
+      const width=horizontal?600:320;
+      const height=horizontal?320:560;
+      m.style.width=`${width}px`;
+      m.style.height=`${height}px`;
+      m.style.left=`${clamp(m.offsetLeft,0,BOARD_WIDTH-width)}px`;
+      m.style.top=`${clamp(m.offsetTop,0,BOARD_HEIGHT-height)}px`;
+    }
+    if(notify)notifyBoardChanged('class-meter-orientation');
   };
 
   const stopHolding=({persist=true}={})=>{
@@ -4055,6 +4111,7 @@ function setupClassMeter(m){
   fillButton.addEventListener('blur',()=>stopHolding());
 
   settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
+  orientationButton.addEventListener('click',()=>setOrientation(m.dataset.orientation==='horizontal'?'vertical':'horizontal',{resize:true,notify:true}));
   m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.classmeter-settings-wrap'))setSettingsOpen(false)});
   removeWin.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=normalizeStarChartCount(progress.wins-1);persistProgress()});
   resetWins.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=0;persistProgress();setSettingsOpen(false)});
@@ -4083,11 +4140,13 @@ function setupClassMeter(m){
   window.addEventListener('teachertiles:classeschange',handleClassesChange);
   window.addEventListener('teachertiles:classmeterchange',handleMeterChange);
 
-  m._boardGetState=()=>({classId:activeClassId});
+  m._boardGetState=()=>({classId:activeClassId,orientation:m.dataset.orientation==='horizontal'?'horizontal':'vertical'});
   m._boardSetState=state=>{
+    setOrientation(state?.orientation==='horizontal'?'horizontal':'vertical');
     const classId=String(state?.classId||'');
     if(classId&&!loadClass(classId))pendingClassId=classId;
   };
+  setOrientation(m.dataset.orientation);
   const lastClassId=localStorage.getItem(classMeterLastClassStorageKey())||'';
   if(!lastClassId||!loadClass(lastClassId))render();
 
@@ -4100,7 +4159,9 @@ function setupClassMeter(m){
 }
 
 function setupCollections(m){
-  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),clear=m.querySelector('.collection-clear'),bgBtn=m.querySelector('.collection-bg');
+  const importView=m.querySelector('.collection-import'),dashboard=m.querySelector('.collection-dashboard'),className=m.querySelector('.collection-class-name'),classLogo=m.querySelector('.collection-class-logo'),changeClass=m.querySelector('.collection-change-class');
+  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
+  const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
   const types=[
     {id:'pompom',label:'Pom poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
     {id:'jellybean',label:'Jellybeans'},{id:'fruit',label:'Fruits'},{id:'coin',label:'Coins'}
@@ -4109,9 +4170,11 @@ function setupCollections(m){
   const jarBehind=new Image();
   jarBehind.src='assets/jar-behind.png';
   let typeIndex=0,bodies=[],particles=[],raf=0,last=performance.now(),cw=260,ch=320,dpr=1,dead=false,currentJar=null;
+  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0;
 
   const jarRectFor=(w,h)=>{const size=Math.max(140,Math.min(w*.96,h*.98));return{x:(w-size)/2,y:(h-size)/2,w:size,h:size}};
   const jarBounds=()=>{const j=currentJar||jarRectFor(cw,ch);return{floor:j.y+j.h*.895,top:j.y+j.h*.105,neckL:j.x+j.w*.285,neckR:j.x+j.w*.715,bodyL:j.x+j.w*.215,bodyR:j.x+j.w*.785,shoulderTop:j.y+j.h*.205,shoulderBottom:j.y+j.h*.31,bottomCurve:j.y+j.h*.765,bottomL:j.x+j.w*.265,bottomR:j.x+j.w*.735,j}};
+  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*.4};
   const wallsAt=y=>{const b=jarBounds();if(y<b.shoulderTop)return[b.neckL,b.neckR];if(y<b.shoulderBottom){const t=clamp((y-b.shoulderTop)/(b.shoulderBottom-b.shoulderTop),0,1),ease=t*t*(3-2*t);return[b.neckL+(b.bodyL-b.neckL)*ease,b.neckR+(b.bodyR-b.neckR)*ease]}if(y>b.bottomCurve){const t=clamp((y-b.bottomCurve)/(b.floor-b.bottomCurve),0,1),ease=t*t*(3-2*t);return[b.bodyL+(b.bottomL-b.bodyL)*ease,b.bodyR+(b.bottomR-b.bodyR)*ease]}return[b.bodyL,b.bodyR]};
 
   function resizeCanvas(){
@@ -4126,13 +4189,20 @@ function setupCollections(m){
     for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=18+Math.random()*48;particles.push({type:body.type,variant:body.variant,color:body.color,x:body.x+(Math.random()-.5)*body.r*.5,y:body.y+body.r*.4,vx:Math.cos(a)*s,vy:Math.sin(a)*s-18,life:.38+Math.random()*.28,max:.66,r:Math.max(1.4,body.r*(.11+Math.random()*.08)),rot:Math.random()*Math.PI*2,av:(Math.random()-.5)*4})}
   }
 
-  function addItem(){
-    if(bodies.length>=80)return;
+  function addItem({persist=true,detect=true}={}){
+    if(bodies.length>=80||progress.filled||!activeClassId)return;
     const t=types[typeIndex],b=jarBounds(),r=Math.max(9,Math.min(16,b.j.w*.036))*(.88+Math.random()*.22);
     bodies.push({type:t.id,x:(b.neckL+b.neckR)/2+(Math.random()-.5)*(b.neckR-b.neckL)*.28,y:b.top-r-22,vx:(Math.random()-.5)*20,vy:18+Math.random()*12,r,rot:(Math.random()-.5)*.4,av:(Math.random()-.5)*1.25,color:colors[bodies.length%colors.length],variant:Math.floor(Math.random()*4),impact:false,onFloor:false});
-    updateCount()
+    if(detect)fillArmedAt=performance.now()+300;
+    updateCount();
+    if(persist)persistProgress();
   }
-  function updateCount(){countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`}
+  function updateCount(){
+    countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`;
+    jarsFilledEl.textContent=String(normalizeStarChartCount(progress.jarsFilled));
+    removeFill.disabled=progress.jarsFilled<=0;
+    resetFills.disabled=progress.jarsFilled<=0;
+  }
 
   function physics(dt){
     const floor=jarBounds().floor;
@@ -4162,7 +4232,21 @@ function setupCollections(m){
       if(Math.hypot(b.vx,b.vy)<2.2&&Math.abs(b.av)<.1){b.vx=0;if(Math.abs(b.vy)<2)b.vy=0;b.av=0}
     }
     for(const p of particles){p.vy+=180*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.av*dt;p.life-=dt}
-    particles=particles.filter(p=>p.life>0)
+    particles=particles.filter(p=>p.life>0);
+    checkJarFilled();
+  }
+
+  function checkJarFilled(){
+    if(progress.filled||!activeClassId||performance.now()<fillArmedAt)return;
+    const line=fillLineY();
+    const reached=bodies.some(body=>body.y>=line&&body.y-body.r<=line&&Math.hypot(body.vx,body.vy)<22);
+    if(!reached)return;
+    progress.filled=true;
+    progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);
+    persistProgress();
+    renderFilledState();
+    launchConfetti(m);
+    playUiSfx('confetti');
   }
 
   function starPath(r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.46:r,px=Math.cos(a)*rad,py=Math.sin(a)*rad;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
@@ -4200,6 +4284,8 @@ function setupCollections(m){
   function draw(){
     ctx.clearRect(0,0,cw,ch);const j=currentJar||jarRectFor(cw,ch);
     if(jarBehind.complete)ctx.drawImage(jarBehind,j.x,j.y,j.w,j.h);
+    const line=fillLineY(),[lineL,lineR]=wallsAt(line);
+    ctx.save();ctx.strokeStyle=progress.filled?'rgba(50,159,105,.9)':'rgba(77,145,223,.78)';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=Math.max(1.5,j.w*.006);ctx.setLineDash([Math.max(5,j.w*.02),Math.max(4,j.w*.014)]);ctx.beginPath();ctx.moveTo(lineL+5,line);ctx.lineTo(lineR-5,line);ctx.stroke();ctx.setLineDash([]);ctx.font=`900 ${Math.max(7,j.w*.025)}px Inter,system-ui,sans-serif`;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(progress.filled?'FILLED':'FILL LINE',lineR-5,line-5);ctx.restore();
     for(const b of bodies)drawBody(b);for(const p of particles)drawParticle(p);
     if(jarBehind.complete){ctx.save();ctx.beginPath();ctx.rect(j.x+j.w*.205,j.y+j.h*.092,j.w*.59,j.h*.078);ctx.clip();ctx.drawImage(jarBehind,j.x,j.y,j.w,j.h);ctx.restore()}
   }
@@ -4207,25 +4293,103 @@ function setupCollections(m){
   function renderType(){const t=types[typeIndex];m.dataset.item=t.id;typeLabel.textContent=t.label.toUpperCase();const preview=m.querySelector('.collection-current-preview');preview.className=`collectible-preview collection-current-preview preview-${t.id}`;pickerButtons.forEach(b=>b.classList.toggle('is-active',b.dataset.collectionType===t.id))}
   function closePicker(){picker.hidden=true;typeBtn.setAttribute('aria-expanded','false')}
   function togglePicker(){picker.hidden=!picker.hidden;typeBtn.setAttribute('aria-expanded',String(!picker.hidden))}
-  canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
-  add.addEventListener('click',addItem);
-  typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
-  picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();closePicker()}});
-  document.addEventListener('pointerdown',e=>{if(!m.contains(e.target)||!e.target.closest('.collection-picker-wrap'))closePicker()});
-  bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  clear.addEventListener('click',()=>{bodies=[];particles=[];updateCount()});renderType();updateCount();raf=requestAnimationFrame(loop);
-  m._boardGetState=()=>({item:types[typeIndex]?.id||'pompom',count:bodies.length});
-  m._boardSetState=state=>{
-    if(!state)return;
-    const nextIndex=types.findIndex(type=>type.id===state.item);
-    if(nextIndex>=0)typeIndex=nextIndex;
-    bodies=[];particles=[];
-    renderType();
-    const count=Math.max(0,Math.min(300,Math.round(Number(state.count)||0)));
-    for(let i=0;i<count;i++)addItem();
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const setSettingsOpen=open=>{const show=Boolean(open);settings.hidden=!show;settingsToggle.setAttribute('aria-expanded',String(show))};
+  const renderFilledState=()=>{
+    const filled=Boolean(progress.filled);
+    m.classList.toggle('is-collection-filled',filled);
+    filledBanner.hidden=!filled;
+    restart.hidden=!filled;
+    add.hidden=filled;
+    typeBtn.disabled=filled;
+    canvas.setAttribute('aria-disabled',String(filled));
     updateCount();
   };
-  m._cleanup=()=>{dead=true;cancelAnimationFrame(raf);ro.disconnect()}
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    classLogo.textContent=normalizeClassLogo(roster.logo);
+    renderType();renderFilledState();
+  };
+  const persistProgress=()=>{
+    if(!activeClassId)return;
+    progress.item=types[typeIndex]?.id||'pompom';
+    progress.count=bodies.length;
+    writing=true;
+    const saved=writeClassCollection(activeClassId,progress);
+    writing=false;
+    if(saved)progress=saved;
+    updateCount();
+  };
+  const rebuildBodies=count=>{
+    bodies=[];particles=[];
+    const filled=progress.filled;
+    progress.filled=false;
+    const safeCount=Math.max(0,Math.min(80,Math.round(Number(count)||0)));
+    for(let i=0;i<safeCount;i++)addItem({persist:false,detect:false});
+    progress.filled=filled;
+    fillArmedAt=performance.now()+450;
+    updateCount();
+  };
+  const applyRosterProgress=next=>{
+    roster=next;
+    progress=normalizeCollectionProgress(next.collectionJar);
+    const nextIndex=types.findIndex(type=>type.id===progress.item);
+    typeIndex=nextIndex>=0?nextIndex:0;
+    rebuildBodies(progress.count);
+    render();
+  };
+  const loadClass=(classId,{notify=false}={})=>{
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){activeClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];render();return false}
+    activeClassId=next.id;pendingClassId='';
+    localStorage.setItem(collectionsLastClassStorageKey(),activeClassId);
+    applyRosterProgress(next);
+    if(notify)notifyBoardChanged('collection-class');
+    return true;
+  };
+
+  canvas.addEventListener('pointerdown',e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
+  add.addEventListener('click',()=>addItem());
+  typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
+  picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();persistProgress();closePicker()}});
+  document.addEventListener('pointerdown',e=>{if(!m.contains(e.target)||!e.target.closest('.collection-picker-wrap'))closePicker()});
+  bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  restart.addEventListener('click',()=>{bodies=[];particles=[];progress.count=0;progress.filled=false;persistProgress();renderFilledState()});
+  settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
+  m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.collection-settings-wrap'))setSettingsOpen(false)});
+  addFill.addEventListener('click',()=>{progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);persistProgress();renderFilledState()});
+  removeFill.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled-1);persistProgress();renderFilledState()});
+  resetFills.addEventListener('click',()=>{if(progress.jarsFilled<=0)return;progress.jarsFilled=0;persistProgress();renderFilledState();setSettingsOpen(false)});
+  changeClass.addEventListener('click',()=>{activeClassId='';pendingClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];localStorage.removeItem(collectionsLastClassStorageKey());setSettingsOpen(false);render();notifyBoardChanged('collection-class')});
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.collection-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];localStorage.removeItem(collectionsLastClassStorageKey());render();return}
+    applyRosterProgress(next);
+  };
+  const handleCollectionChange=event=>{
+    if(writing||event.detail?.classId!==activeClassId)return;
+    const next=currentRoster();if(next)applyRosterProgress(next);
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:collectionchange',handleCollectionChange);
+
+  renderType();updateCount();raf=requestAnimationFrame(loop);
+  m._boardGetState=()=>({classId:activeClassId});
+  m._boardSetState=state=>{
+    const classId=String(state?.classId||'');
+    if(classId&&!loadClass(classId))pendingClassId=classId;
+  };
+  const lastClassId=localStorage.getItem(collectionsLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+  m._cleanup=()=>{dead=true;cancelAnimationFrame(raf);ro.disconnect();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange);window.removeEventListener('teachertiles:collectionchange',handleCollectionChange)}
 }
 
 const LUNCH_COUNT_ICONS=[
@@ -13372,7 +13536,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled'
+  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled'
 ]);
 let activeTeacherTilesBoardId='';
 
