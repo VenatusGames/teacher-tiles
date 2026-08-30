@@ -185,7 +185,7 @@
             </button>
             <button id="profile-class-sync-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-class-sync-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--sync" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.2 18.2H5.8a3.8 3.8 0 0 1-.4-7.6A6.7 6.7 0 0 1 18 8.7a4.6 4.6 0 0 1 .2 9.2h-1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="8.2" y="13.2" width="7.6" height="6.8" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.2 13.2v-1.4a1.8 1.8 0 0 1 3.6 0v1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-              <span><strong>Class Sync</strong><small id="profile-class-sync-summary">Set up encrypted class sync across devices</small></span>
+              <span><strong>Class Sync</strong><small id="profile-class-sync-summary">Automatic encrypted sync with your Google account</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-student-view-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-student-view-panel">
@@ -249,30 +249,18 @@
               </header>
               <div class="class-sync-body">
                 <section class="class-sync-status-card">
-                  <span id="class-sync-state-badge" class="class-sync-state-badge" data-state="setup">SETUP</span>
-                  <h4 id="class-sync-state-title">Enable encrypted Class Sync</h4>
-                  <p id="class-sync-state-copy">Create a separate passphrase that protects your class encryption key.</p>
+                  <span id="class-sync-state-badge" class="class-sync-state-badge" data-state="checking">CONNECTING</span>
+                  <h4 id="class-sync-state-title">Connecting encrypted class sync</h4>
+                  <p id="class-sync-state-copy">Firebase is verifying your Google sign-in and loading your private class encryption key.</p>
                 </section>
-                <form id="class-sync-form" class="class-sync-form">
-                  <label class="class-sync-field">
-                    <span>Class Sync passphrase</span>
-                    <input id="class-sync-passphrase" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters" required>
-                  </label>
-                  <label id="class-sync-confirm-wrap" class="class-sync-field">
-                    <span>Confirm passphrase</span>
-                    <input id="class-sync-confirm" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="Enter it again">
-                  </label>
-                  <p class="class-sync-private-note"><strong>Private by design:</strong> this passphrase is used only in your browser to unlock the AES encryption key. It is never sent to Firebase or saved by TeacherTiles.</p>
-                  <button id="class-sync-submit" class="class-sync-primary" type="submit">Enable Class Sync</button>
-                </form>
+                <p class="class-sync-private-note"><strong>Automatic protection:</strong> class, student, and PBIS data is encrypted in your browser with AES-256-GCM before it is saved. The encryption key is stored separately in a private Firestore key vault restricted to your signed-in Google/Firebase account.</p>
                 <div class="class-sync-actions">
-                  <button id="class-sync-change" type="button" hidden>Change Sync Passphrase</button>
-                  <button id="class-sync-retry" type="button" hidden>Check Again</button>
+                  <button id="class-sync-retry" type="button" hidden>Retry Sync</button>
                 </div>
                 <p id="class-sync-feedback" class="class-sync-feedback" role="status" aria-live="polite"></p>
                 <aside class="class-sync-recovery-note">
-                  <strong>Do not lose the passphrase.</strong>
-                  <p>If you forget it, a browser that still has the classes unlocked can set a new one. If no device has the AES key anymore, TeacherTiles cannot decrypt the old roster data.</p>
+                  <strong>No separate sync password.</strong>
+                  <p>Once an existing roster is migrated, signing into the same Google account on another browser, device, or incognito window automatically retrieves the same private encryption key.</p>
                 </aside>
               </div>
             </div>
@@ -632,7 +620,7 @@
             <div class="terms-document">
               <div class="terms-notice"><strong>Plain-language note</strong><span>These terms are a general starter document and do not replace advice from a qualified attorney.</span></div>
               <article><h3>1. Acceptance and eligibility</h3><p>By accessing or using TeacherTiles, you agree to these Terms. If you use TeacherTiles for a school, district, or other organization, you confirm that you are authorized to accept these Terms for that organization. Do not use the service if you do not agree.</p></article>
-              <article><h3>2. Classroom use, accounts, and data protection</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p><p>TeacherTiles encrypts saved student-roster data in your browser before it is transmitted to our cloud database, so student names are stored on the server as encrypted data rather than readable text. Personal and account data transmitted through TeacherTiles is protected with encrypted network connections, and our cloud providers apply encryption at rest to stored service data. No security system is infallible, so users should still enter only the minimum information necessary and use first names or nicknames for student rosters.</p></article>
+              <article><h3>2. Classroom use, accounts, and data protection</h3><p>TeacherTiles is a classroom organization and presentation tool. You are responsible for your account, the accuracy of information you provide, activity performed through your account, and obtaining any permissions required by your school, district, employer, parent, or guardian. Do not upload sensitive student records, confidential information, or unlawful content.</p><p>TeacherTiles encrypts saved student-roster data in your browser before it is transmitted to our cloud database, so student names are stored in Firestore as encrypted data rather than readable text. For signed-in class sync, the roster encryption key is stored separately in a private Firestore key-vault document restricted to the signed-in Firebase account by Security Rules, allowing the same Google account to recover it automatically on another browser or device. Personal and account data transmitted through TeacherTiles is protected with encrypted network connections, and our cloud providers apply encryption at rest to stored service data. No security system is infallible, so users should still enter only the minimum information necessary and use first names or nicknames for student rosters.</p></article>
               <article><h3>3. Your content</h3><p>You keep ownership of text, images, flashcards, boards, and other content you create or upload. You grant TeacherTiles a limited license to host, process, display, and store that content only as needed to operate and improve the service. You confirm that you have the rights and permissions needed for anything you upload.</p></article>
               <article><h3>4. TeacherTiles intellectual property and license</h3><p>The TeacherTiles software, interface, visual design, branding, original artwork, documentation, and other original materials are owned by TeacherTiles or its licensors and may be protected by copyright, trademark, and other laws. We grant you a limited, personal, non-exclusive, non-transferable, revocable license to use the service for its intended purpose. Except where applicable law or an identified open-source license permits it, you may not reproduce, redistribute, sell, sublicense, scrape, reverse engineer, remove ownership notices from, or create a competing product from TeacherTiles code or assets without prior written permission. These Terms do not restrict lawful fair use or other rights that cannot legally be waived.</p></article>
               <article><h3>5. Acceptable use</h3><p>You may not interfere with the service, bypass access controls, introduce malware, impersonate another person, abuse redemption or virtual-currency systems, infringe others’ rights, or use TeacherTiles for unlawful, harmful, deceptive, or harassing activity. We may suspend access needed to protect users, the service, or legal rights.</p></article>
