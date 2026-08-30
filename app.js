@@ -9904,9 +9904,9 @@ function setupSpinner(m){
   let winnerVisible=false;
 
   const palette=[
-    '#f2b5a7','#f5d38b','#bedca8','#9fd8cf',
-    '#a9c8ef','#c5b5ec','#efb5d0','#d7c6a5',
-    '#f3c1a0','#b8d6e8','#c9dda5','#e5b7a7'
+    ['#ffb8a7','#ed806e'],['#ffe09a','#eebf50'],['#c8eaa9','#81bd67'],['#a9e7dc','#55bbaa'],
+    ['#b7d7ff','#6fa5e9'],['#d5c4fa','#987bd8'],['#f7bed9','#df7dad'],['#ead9b8','#c7a36c'],
+    ['#ffc9a8','#ef9364'],['#c4e4f5','#6eafd1'],['#d8eba8','#9ebd53'],['#efc1b2','#d77966']
   ];
 
   const getWheelFont=()=>{
@@ -9941,6 +9941,10 @@ function setupSpinner(m){
   function drawWheel(){
     const dpr=Math.max(1,window.devicePixelRatio||1);
     const size=560;
+    const wheelWrap=canvas.parentElement;
+    const displaySize=Math.max(190,Math.min(390,(wheelWrap?.clientWidth||390)*.94,wheelWrap?.clientHeight||390));
+    m.style.setProperty('--spinner-wheel-size',`${displaySize}px`);
+    m.style.setProperty('--spinner-wheel-radius',`${displaySize/2}px`);
     if(canvas.width!==size*dpr||canvas.height!==size*dpr){
       canvas.width=size*dpr;
       canvas.height=size*dpr;
@@ -9967,46 +9971,92 @@ function setupSpinner(m){
     }
 
     const arc=Math.PI*2/names.length;
-    const fontBase=Math.max(12,Math.min(25,165/names.length+10));
     const wheelFont=getWheelFont();
+    const labelStart=72;
+    const labelEnd=r-24;
+    const labelWidth=labelEnd-labelStart;
+
+    const fitLabel=(name,maxFont)=>{
+      const clean=String(name).trim()||'—';
+      let lines=[clean];
+      const words=clean.split(/\s+/);
+      if(words.length>1){
+        let best=[clean];
+        let bestBalance=Infinity;
+        for(let split=1;split<words.length;split++){
+          const candidate=[words.slice(0,split).join(' '),words.slice(split).join(' ')];
+          const balance=Math.max(...candidate.map(line=>line.length));
+          if(balance<bestBalance){best=candidate;bestBalance=balance;}
+        }
+        lines=best;
+      }
+      let fontSize=maxFont;
+      const fits=()=>{
+        ctx.font=`850 ${fontSize}px ${wheelFont}`;
+        return lines.every(line=>ctx.measureText(line).width<=labelWidth);
+      };
+      while(fontSize>7&&!fits())fontSize-=.5;
+      if(!fits()&&lines.length===1&&clean.length>1){
+        const split=Math.ceil(clean.length/2);
+        lines=[clean.slice(0,split),clean.slice(split)];
+        fontSize=maxFont;
+        while(fontSize>7&&!fits())fontSize-=.5;
+      }
+      return{lines,fontSize};
+    };
 
     names.forEach((name,i)=>{
       const start=-Math.PI/2+i*arc;
       const end=start+arc;
+      const middle=start+arc/2;
 
       ctx.beginPath();
       ctx.moveTo(0,0);
       ctx.arc(0,0,r,start,end);
       ctx.closePath();
-      ctx.fillStyle=palette[i%palette.length];
+      const [innerColor,outerColor]=palette[i%palette.length];
+      const fill=ctx.createRadialGradient(0,0,r*.08,0,0,r);
+      fill.addColorStop(0,innerColor);
+      fill.addColorStop(1,outerColor);
+      ctx.fillStyle=fill;
       ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.68)';
-      ctx.lineWidth=2;
+      ctx.strokeStyle='rgba(255,255,255,.82)';
+      ctx.lineWidth=2.5;
       ctx.stroke();
 
       ctx.save();
-      ctx.rotate(start+arc/2);
-      ctx.translate(r*.63,0);
-      ctx.rotate(Math.PI/2);
-      ctx.fillStyle='#22252a';
-      ctx.textAlign='center';
+      ctx.rotate(middle);
+      const upsideDown=Math.cos(middle)<0;
+      if(upsideDown)ctx.rotate(Math.PI);
+      ctx.translate(upsideDown?-labelStart:labelStart,0);
+      ctx.fillStyle='#17202b';
+      ctx.textAlign=upsideDown?'right':'left';
       ctx.textBaseline='middle';
-      ctx.font=`800 ${fontBase}px ${wheelFont}`;
-
-      let label=name;
-      const maxWidth=Math.max(60,r*arc*.58);
-      if(ctx.measureText(label).width>maxWidth){
-        while(label.length>3&&ctx.measureText(label+'…').width>maxWidth)label=label.slice(0,-1);
-        label+='…';
-      }
-      ctx.fillText(label,0,0);
+      const maxFont=Math.max(8,Math.min(19,arc*105*.52));
+      const fitted=fitLabel(name,maxFont);
+      ctx.font=`850 ${fitted.fontSize}px ${wheelFont}`;
+      ctx.shadowColor='rgba(255,255,255,.72)';
+      ctx.shadowBlur=2;
+      const lineHeight=fitted.fontSize*1.04;
+      fitted.lines.forEach((line,lineIndex)=>{
+        const y=(lineIndex-(fitted.lines.length-1)/2)*lineHeight;
+        ctx.fillText(line,0,y);
+      });
       ctx.restore();
     });
 
     ctx.beginPath();
     ctx.arc(0,0,r,0,Math.PI*2);
-    ctx.strokeStyle='rgba(0,0,0,.13)';
-    ctx.lineWidth=4;
+    ctx.strokeStyle='rgba(20,27,35,.24)';
+    ctx.lineWidth=5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0,0,56,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,.2)';
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.72)';
+    ctx.lineWidth=3;
     ctx.stroke();
     ctx.restore();
   }

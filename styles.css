@@ -746,25 +746,26 @@ body.dark .teachertiles-intro__tile--right {
 }
 .spinner-wheel-wrap{
   position:relative;flex:1;min-height:210px;display:grid;place-items:center;
+  border-radius:28px;background:radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--module-text,#17191d) 4%,transparent),transparent 66%);
 }
 .spinner-canvas{
-  width:min(88cqw,58cqh,360px);height:auto;aspect-ratio:1;display:block;
-  filter:drop-shadow(0 12px 22px rgba(0,0,0,.12));
+  width:var(--spinner-wheel-size,min(94cqw,390px));height:auto;max-width:100%;max-height:100%;aspect-ratio:1;display:block;
+  filter:drop-shadow(0 16px 26px rgba(24,31,42,.19));cursor:pointer;
 }
 .spinner-pointer{
-  position:absolute;top:calc(50% - min(44cqw,29cqh,180px) - 8px);left:50%;
+  position:absolute;top:calc(50% - var(--spinner-wheel-radius,180px) - 9px);left:50%;
   transform:translateX(-50%);z-index:4;width:0;height:0;
-  border-left:13px solid transparent;border-right:13px solid transparent;
-  border-top:24px solid #17191d;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));
+  border-left:15px solid transparent;border-right:15px solid transparent;
+  border-top:27px solid #17191d;filter:drop-shadow(0 4px 3px rgba(0,0,0,.22));
 }
 .spinner-spin-button{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  z-index:5;width:78px;height:78px;border-radius:50%;border:7px solid rgba(255,255,255,.92);
-  background:#17191d;color:#fff;font-size:12px;font-weight:900;letter-spacing:.08em;
-  box-shadow:0 6px 18px rgba(0,0,0,.20);cursor:pointer;
+  z-index:5;width:86px;height:86px;border-radius:50%;border:7px solid rgba(255,255,255,.9);
+  background:linear-gradient(145deg,#303640,#111419);color:#fff;font-size:12px;font-weight:950;letter-spacing:.1em;
+  box-shadow:0 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.18);cursor:pointer;
   transition:transform .12s ease,box-shadow .12s ease;
 }
-.spinner-spin-button:hover{transform:translate(-50%,-50%) scale(1.045)}
+.spinner-spin-button:hover{transform:translate(-50%,-50%) scale(1.055);box-shadow:0 11px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.2)}
 .spinner-spin-button:active{transform:translate(-50%,-50%) scale(.98)}
 .spinner-spin-button:disabled{opacity:.6;cursor:default}
 .spinner-settings{
