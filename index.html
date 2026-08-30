@@ -1607,7 +1607,7 @@
       <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="collections" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a class reward jar together</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="prizeboard" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--prizeboard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v4H3zM12 7v13M8.2 7C6 7 4.7 5.8 5.1 4.4c.4-1.5 2.1-1.8 3.4-.8C9.5 4.4 10.3 5.6 12 7c1.7-1.4 2.5-2.6 3.5-3.4 1.3-1 3-.7 3.4.8.4 1.4-.9 2.6-3.1 2.6H8.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><strong>Prize Board</strong><small>Create and redeem student or whole-class rewards</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
-      <button class="context-menu__item" data-module="pbisconsole" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--pbisconsole" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="var(--surface-solid,#fff)" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2" fill="var(--surface-solid,#fff)" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="18" r="2" fill="var(--surface-solid,#fff)" stroke="currentColor" stroke-width="1.6"/></svg></span><span><strong>PBIS Console</strong><small>Manage every tracked PBIS stat in one place</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="pbisconsole" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--pbisconsole" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><strong>PBIS Console</strong><small>Manage every tracked PBIS stat in one place</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
@@ -2088,6 +2088,7 @@
         </header>
         <div class="collection-stage">
           <canvas class="collection-canvas" aria-label="Interactive class collection jar. Click the jar to add an item."></canvas>
+          <button class="collection-fill-line-handle" type="button" aria-label="Move jar fill line" title="Drag to move fill line"><span aria-hidden="true">⋮</span></button>
           <div class="collection-count">0 items</div>
           <div class="collection-filled-banner" role="status" aria-live="polite" hidden>
             <span aria-hidden="true">🏆</span><strong>Jar Filled!</strong><small>Celebrate, then clear the jar and start again.</small>
@@ -2322,9 +2323,12 @@
           <div><strong class="pbisconsole-class-name">Class</strong><small>PBIS CONSOLE</small></div>
           <button class="pbisconsole-change-class" type="button">Change class</button>
         </header>
-        <div class="pbisconsole-toolbar">
+        <div class="pbisconsole-tabs" role="tablist" aria-label="PBIS Console views">
+          <button type="button" data-pbisconsole-view="students" role="tab">Students</button>
+          <button type="button" data-pbisconsole-view="class" role="tab">Whole Class</button>
+        </div>
+        <div class="pbisconsole-toolbar pbisconsole-student-toolbar">
           <label><span>Student</span><select class="pbisconsole-student" aria-label="Choose student"></select></label>
-          <button class="pbisconsole-clear-student" type="button">Clear student points</button>
         </div>
         <div class="pbisconsole-stats" data-skip-board-save></div>
       </div>

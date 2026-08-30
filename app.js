@@ -261,11 +261,13 @@ function normalizeClassMeterProgress(value){
 
 function normalizeCollectionProgress(value){
   const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const fillLineRaw=Number(source.fillLine);
   return{
     item:COLLECTION_ITEM_TYPES.has(source.item)?source.item:'pompom',
     count:Math.max(0,Math.min(80,Math.round(Number(source.count)||0))),
     filled:Boolean(source.filled),
-    jarsFilled:normalizeStarChartCount(source.jarsFilled)
+    jarsFilled:normalizeStarChartCount(source.jarsFilled),
+    fillLine:Number.isFinite(fillLineRaw)?Math.max(.24,Math.min(.72,fillLineRaw)):.32
   };
 }
 
@@ -4260,7 +4262,7 @@ function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`pri
 function normalizePrize(value){
   const source=value&&typeof value==='object'?value:{};
   const scope=source.scope==='class'?'class':'student';
-  const allowed=scope==='student'?['studentStars','classStars','meterWins','jarsFilled']:['classStars','meterWins','jarsFilled'];
+  const allowed=scope==='student'?['studentStars']:['classStars','meterWins','jarsFilled'];
   return{
     id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
     description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
@@ -4354,7 +4356,7 @@ function setupPrizeBoard(m){
     const q=s=>modal.panel.querySelector(s),scopeSelect=q('.prize-editor-scope'),title=q('.prize-editor-title'),desc=q('.prize-editor-description'),cost=q('.prize-editor-cost'),stat=q('.prize-editor-stat'),preview=q('.prize-editor-preview img');
     scopeSelect.value=working.scope;title.value=working.title==='New Prize'?'':working.title;desc.value=working.description;cost.value=working.cost;preview.src=working.image;
     let selectedImage=working.image;
-    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS:PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
+    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS.filter(item=>item.id==='studentStars'):PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
     const presets=q('.prize-preset-grid');['gift','game','snack','choice','break','music','helper','mystery'].forEach(kind=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<img src="${prizePresetImage(kind)}" alt="${kind} preset">`;b.addEventListener('click',()=>{selectedImage=prizePresetImage(kind);preview.src=selectedImage});presets.append(b)});
     q('.prize-upload input').addEventListener('change',event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedImage=String(reader.result||selectedImage);preview.src=selectedImage};reader.readAsDataURL(file)});
     q('.prize-modal-close').addEventListener('click',closeEditor);q('.prize-editor-cancel').addEventListener('click',closeEditor);
@@ -4376,7 +4378,7 @@ function setupPrizeBoard(m){
   const render=()=>{
     tabs.forEach(tab=>{const on=tab.dataset.prizeScope===scope;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on))});grid.replaceChildren();
     const visible=prizes.filter(item=>item.scope===scope);if(!visible.length){const empty=document.createElement('button');empty.type='button';empty.className='prizeboard-empty';empty.innerHTML=`<span aria-hidden="true">${scope==='class'?'🎉':'🎁'}</span><strong>No ${scope==='class'?'whole-class prizes':'prizes'} yet</strong><small>Add your first reward to this board.</small>`;empty.addEventListener('click',()=>openEditor());grid.append(empty)}
-    visible.forEach(prize=>{const stat=statDefinition(prize.costStat);const card=document.createElement('button');card.type='button';card.className='prize-card';card.innerHTML=`<img alt=""><span class="prize-card-copy"><strong></strong><small></small></span><span class="prize-card-cost"><i>${stat.icon}</i><b>${prize.cost}</b></span>`;card.querySelector('img').src=prize.image;card.querySelector('.prize-card-copy strong').textContent=prize.title;card.querySelector('.prize-card-copy small').textContent=prize.description||stat.label;card.addEventListener('click',()=>openPrize(prize));grid.append(card)});syncModuleSize();
+    visible.forEach(prize=>{const stat=statDefinition(prize.costStat);const card=document.createElement('article');card.className='prize-card';card.innerHTML=`<button class="prize-card-open" type="button"><img alt=""><span class="prize-card-copy"><strong></strong><small></small></span><span class="prize-card-cost"><i>${stat.icon}</i><b>${prize.cost}</b></span></button><button class="prize-card-delete" type="button" title="Delete prize">×</button>`;const openButton=card.querySelector('.prize-card-open'),deleteButton=card.querySelector('.prize-card-delete');openButton.setAttribute('aria-label',`Open ${prize.title}`);deleteButton.setAttribute('aria-label',`Delete ${prize.title}`);card.querySelector('img').src=prize.image;card.querySelector('.prize-card-copy strong').textContent=prize.title;card.querySelector('.prize-card-copy small').textContent=prize.description||stat.label;openButton.addEventListener('click',()=>openPrize(prize));deleteButton.addEventListener('click',event=>{event.stopPropagation();if(!confirm(`Delete ${prize.title}?`))return;prizes=prizes.filter(item=>item.id!==prize.id);render();notify('delete')});grid.append(card)});syncModuleSize();
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.prizeScope;render();notify('tab')}));add.addEventListener('click',()=>openEditor());changeClass.addEventListener('click',()=>{activeClassId='';importView.hidden=false;dashboard.hidden=true;render();notify('class')});
   const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
@@ -4389,21 +4391,62 @@ function setupPrizeBoard(m){
 }
 
 function setupPbisConsole(m){
-  const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),clearStudent=m.querySelector('.pbisconsole-clear-student'),stats=m.querySelector('.pbisconsole-stats');
-  let activeClassId='',student='';const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
-  const definitions=[{id:'studentStars',label:'Student Stars',icon:'★',student:true},{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'●'}];
-  const setClass=id=>{const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);const prior=student;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));r.students.forEach(name=>studentSelect.add(new Option(name,name)));student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student}render()};
-  const render=()=>{const r=roster();if(!r)return;stats.replaceChildren();definitions.forEach(def=>{const value=pbisBalance(r,def.id,student);const row=document.createElement('section');row.className='pbisconsole-stat';row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>${def.student?(student||'Choose a student'):'Whole class'}</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-adjust"><input type="number" min="1" max="9999" step="1" value="1" aria-label="Adjustment amount"><button type="button" data-op="remove">Remove</button><button type="button" data-op="add">Add</button><button type="button" data-op="clear">Clear</button></div>`;const input=row.querySelector('input');row.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{if(def.student&&!student)return;const amount=Math.max(1,Math.round(Number(input.value)||1));if(button.dataset.op==='clear')adjustPbisBalance(activeClassId,def.id,0,{studentName:student,mode:'set'});else adjustPbisBalance(activeClassId,def.id,button.dataset.op==='add'?amount:-amount,{studentName:student});render();notifyBoardChanged('pbis-console-adjust')}));stats.append(row)});clearStudent.disabled=!student||pbisBalance(r,'studentStars',student)<=0};
-  clearStudent.addEventListener('click',()=>{if(!student)return;if(!confirm(`Clear all earned Stars for ${student}?`))return;adjustPbisBalance(activeClassId,'studentStars',0,{studentName:student,mode:'set'});render();notifyBoardChanged('pbis-console-clear-student')});studentSelect.addEventListener('change',()=>{student=studentSelect.value;render();notifyBoardChanged('pbis-console-student')});changeClass.addEventListener('click',()=>{activeClassId='';student='';importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('pbis-console-class')});
+  const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
+  let activeClassId='',student='',view='students';
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'}];
+  const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'●'}];
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);
+    activeClassId=r?.id||'';
+    importView.hidden=Boolean(r);dashboard.hidden=!r;
+    if(r){
+      className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);
+      const prior=student;
+      studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students',''));
+      r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+      student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student;
+    }
+    render();
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    tabs.forEach(tab=>{const active=tab.dataset.pbisconsoleView===view;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    studentToolbar.hidden=view!=='students';
+    stats.replaceChildren();
+    const definitions=view==='students'?studentDefinitions:classDefinitions;
+    definitions.forEach(def=>{
+      const value=pbisBalance(r,def.id,student);
+      const row=document.createElement('section');row.className='pbisconsole-stat';
+      if(view==='students'){
+        row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>${student||'Choose a student'}</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-reset"><button type="button" ${student&&value>0?'':'disabled'}>Reset</button></div>`;
+        row.querySelector('button').addEventListener('click',()=>{if(!student)return;if(!confirm(`Reset ${def.label} for ${student}?`))return;adjustPbisBalance(activeClassId,def.id,0,{studentName:student,mode:'set'});render();notifyBoardChanged('pbis-console-student-reset')});
+      }else{
+        row.innerHTML=`<div class="pbisconsole-stat-copy"><span>${def.icon}</span><div><strong>${def.label}</strong><small>Whole class</small></div></div><div class="pbisconsole-stat-value"><strong>${value}${def.suffix||''}</strong></div><div class="pbisconsole-adjust"><input type="number" min="1" max="9999" step="1" value="1" aria-label="Adjustment amount"><button type="button" data-op="remove">Remove</button><button type="button" data-op="add">Add</button><button type="button" data-op="clear">Clear</button></div>`;
+        const input=row.querySelector('input');
+        row.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{const amount=Math.max(1,Math.round(Number(input.value)||1));if(button.dataset.op==='clear')adjustPbisBalance(activeClassId,def.id,0,{mode:'set'});else adjustPbisBalance(activeClassId,def.id,button.dataset.op==='add'?amount:-amount);render();notifyBoardChanged('pbis-console-class-adjust')}));
+      }
+      stats.append(row);
+    });
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{view=tab.dataset.pbisconsoleView==='class'?'class':'students';render();notifyBoardChanged('pbis-console-view')}));
+  studentSelect.addEventListener('change',()=>{student=studentSelect.value;render();notifyBoardChanged('pbis-console-student')});
+  changeClass.addEventListener('click',()=>{activeClassId='';student='';importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('pbis-console-class')});
   const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('pbis-console-class')});
-  m.querySelector('.pbisconsole-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
-  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.addEventListener(name,refresh));
-  m._boardGetState=()=>({activeClassId,student});m._boardSetState=state=>{student=String(state?.student||'');setClass(String(state?.activeClassId||''))};const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  m.querySelector('.pbisconsole-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.addEventListener(name,refresh));
+  m._boardGetState=()=>({activeClassId,student,view});
+  m._boardSetState=state=>{student=String(state?.student||'');view=state?.view==='class'?'class':'students';setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.removeEventListener(name,refresh))};
 }
 
 function setupCollections(m){
   const importView=m.querySelector('.collection-import'),dashboard=m.querySelector('.collection-dashboard'),className=m.querySelector('.collection-class-name'),classLogo=m.querySelector('.collection-class-logo'),changeClass=m.querySelector('.collection-change-class');
-  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
+  const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),fillHandle=m.querySelector('.collection-fill-line-handle'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
   const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),bannerRestart=m.querySelector('.collection-banner-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),emptyCurrent=m.querySelector('.collection-empty-current'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
   const types=[
     {id:'pompom',label:'Pom poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
@@ -4413,18 +4456,19 @@ function setupCollections(m){
   const jarBehind=new Image();
   jarBehind.src='assets/jar-behind.png';
   let typeIndex=0,bodies=[],particles=[],raf=0,last=performance.now(),cw=260,ch=320,dpr=1,dead=false,currentJar=null;
-  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0,fillReachedAt=0;
+  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0,fillReachedAt=0,draggingFillLine=false;
 
   const jarRectFor=(w,h)=>{const size=Math.max(140,Math.min(w*.96,h*.98));return{x:(w-size)/2,y:(h-size)/2,w:size,h:size}};
   const jarBounds=()=>{const j=currentJar||jarRectFor(cw,ch);return{floor:j.y+j.h*.895,top:j.y+j.h*.105,neckL:j.x+j.w*.285,neckR:j.x+j.w*.715,bodyL:j.x+j.w*.215,bodyR:j.x+j.w*.785,shoulderTop:j.y+j.h*.205,shoulderBottom:j.y+j.h*.31,bottomCurve:j.y+j.h*.765,bottomL:j.x+j.w*.265,bottomR:j.x+j.w*.735,j}};
-  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*.32};
+  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*progress.fillLine};
   const wallsAt=y=>{const b=jarBounds();if(y<b.shoulderTop)return[b.neckL,b.neckR];if(y<b.shoulderBottom){const t=clamp((y-b.shoulderTop)/(b.shoulderBottom-b.shoulderTop),0,1),ease=t*t*(3-2*t);return[b.neckL+(b.bodyL-b.neckL)*ease,b.neckR+(b.bodyR-b.neckR)*ease]}if(y>b.bottomCurve){const t=clamp((y-b.bottomCurve)/(b.floor-b.bottomCurve),0,1),ease=t*t*(3-2*t);return[b.bodyL+(b.bottomL-b.bodyL)*ease,b.bodyR+(b.bottomR-b.bodyR)*ease]}return[b.bodyL,b.bodyR]};
+  const positionFillHandle=()=>{if(!fillHandle)return;const line=fillLineY(),[,lineR]=wallsAt(line);fillHandle.style.left=`${lineR+8}px`;fillHandle.style.top=`${line}px`};
 
   function resizeCanvas(){
     const nw=Math.max(220,canvas.clientWidth),nh=Math.max(210,canvas.clientHeight),old=currentJar||jarRectFor(cw,ch),next=jarRectFor(nw,nh),scale=next.w/old.w;
     if(bodies.length)for(const b of bodies){b.x=next.x+(b.x-old.x)*scale;b.y=next.y+(b.y-old.y)*scale;b.r*=scale}
     if(particles.length)for(const p of particles){p.x=next.x+(p.x-old.x)*scale;p.y=next.y+(p.y-old.y)*scale;p.r*=scale}
-    cw=nw;ch=nh;currentJar=next;dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)
+    cw=nw;ch=nh;currentJar=next;dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);positionFillHandle()
   }
   const ro=new ResizeObserver(resizeCanvas);ro.observe(canvas);resizeCanvas();
 
@@ -4561,7 +4605,9 @@ function setupCollections(m){
     restart.hidden=!filled;
     add.hidden=filled;
     typeBtn.disabled=filled;
+    fillHandle.disabled=filled;
     canvas.setAttribute('aria-disabled',String(filled));
+    positionFillHandle();
     updateCount();
   };
   const render=()=>{
@@ -4611,7 +4657,12 @@ function setupCollections(m){
     return true;
   };
 
-  canvas.addEventListener('pointerdown',e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
+  const updateFillLineFromPointer=e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),scale=boardCamera.scale||1,y=(e.clientY-r.top)/scale,j=jarBounds().j;progress.fillLine=clamp((y-j.y)/j.h,.24,.72);fillArmedAt=performance.now()+250;fillReachedAt=0;positionFillHandle()};
+  fillHandle.addEventListener('pointerdown',e=>{if(progress.filled)return;e.preventDefault();e.stopPropagation();draggingFillLine=true;m.classList.add('is-moving-fill-line');try{fillHandle.setPointerCapture(e.pointerId)}catch{}updateFillLineFromPointer(e)});
+  fillHandle.addEventListener('pointermove',e=>{if(!draggingFillLine)return;e.preventDefault();updateFillLineFromPointer(e)});
+  const finishFillLineDrag=e=>{if(!draggingFillLine)return;draggingFillLine=false;m.classList.remove('is-moving-fill-line');try{if(e&&fillHandle.hasPointerCapture(e.pointerId))fillHandle.releasePointerCapture(e.pointerId)}catch{}persistProgress()};
+  fillHandle.addEventListener('pointerup',finishFillLineDrag);fillHandle.addEventListener('pointercancel',finishFillLineDrag);fillHandle.addEventListener('lostpointercapture',()=>{if(draggingFillLine){draggingFillLine=false;m.classList.remove('is-moving-fill-line');persistProgress()}});
+  canvas.addEventListener('pointerdown',e=>{if(progress.filled||draggingFillLine)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
   add.addEventListener('click',()=>addItem());
   typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
   picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();persistProgress();closePicker()}});
@@ -4654,7 +4705,7 @@ function setupCollections(m){
   };
   const lastClassId=localStorage.getItem(collectionsLastClassStorageKey())||'';
   if(!lastClassId||!loadClass(lastClassId))render();
-  m._cleanup=()=>{dead=true;cancelAnimationFrame(raf);ro.disconnect();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange);window.removeEventListener('teachertiles:collectionchange',handleCollectionChange)}
+  m._cleanup=()=>{dead=true;draggingFillLine=false;cancelAnimationFrame(raf);ro.disconnect();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange);window.removeEventListener('teachertiles:collectionchange',handleCollectionChange)}
 }
 
 const LUNCH_COUNT_ICONS=[
