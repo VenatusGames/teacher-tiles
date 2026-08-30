@@ -1612,6 +1612,10 @@
       <button class="context-menu__item" data-module="collections" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a class reward jar together</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="prizeboard" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--prizeboard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v4H3zM12 7v13M8.2 7C6 7 4.7 5.8 5.1 4.4c.4-1.5 2.1-1.8 3.4-.8C9.5 4.4 10.3 5.6 12 7c1.7-1.4 2.5-2.6 3.5-3.4 1.3-1 3-.7 3.4.8.4 1.4-.9 2.6-3.1 2.6H8.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><strong>Prize Board</strong><small>Create and redeem student or whole-class rewards</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="pbisconsole" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--pbisconsole" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><strong>PBIS Console</strong><small>Manage every tracked PBIS stat in one place</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+      <button class="context-menu__item" data-module="punchcards" data-category="pbis" data-pbis-tracking="true">
+        <span class="context-menu__icon context-menu__icon--punchcards" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h.1M12 9h.1M17 9h.1M7 15h.1M12 15h.1M17 15h.1" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M9.5 5v14M14.5 5v14" stroke="currentColor" stroke-width="1" opacity=".3" stroke-dasharray="1.5 2"/></svg></span>
+        <span><strong>Punchcards</strong><small>Punch reward cards for students or the whole class</small></span><span class="context-menu__tracking-badge">PBIS</span>
+      </button>
       <button class="context-menu__item" data-module="stoplight" data-category="sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
@@ -2340,6 +2344,55 @@
         <button class="custom-icon pbisconsole-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon pbisconsole-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon pbisconsole-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="punchcards-template">
+    <section class="module punchcard-module" data-type="punchcards" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Punchcards">×</button><div class="module-drag-handle"></div>
+      <div class="punchcard-import">
+        <div class="punchcard-import__mark" aria-hidden="true">●</div>
+        <strong>Choose a class to begin</strong>
+        <p>Create an interactive 10-punch reward card for a student or your whole class.</p>
+        <div class="punchcard-loader-anchor" hidden></div>
+        <small>Every completed card earns one tracked Punchcard Point.</small>
+      </div>
+      <div class="punchcard-dashboard" hidden data-skip-board-save>
+        <header class="punchcard-header">
+          <span class="punchcard-class-logo" aria-hidden="true">👥</span>
+          <div><strong class="punchcard-class-name">Class</strong><small>PUNCHCARDS</small></div>
+          <button class="punchcard-change-class" type="button">Change class</button>
+        </header>
+        <div class="punchcard-tabs" role="tablist" aria-label="Punchcard target">
+          <button type="button" data-punchcard-scope="student" role="tab">Student</button>
+          <button type="button" data-punchcard-scope="class" role="tab">Whole Class</button>
+        </div>
+        <label class="punchcard-student-wrap"><span>Student</span><select class="punchcard-student" aria-label="Choose student"></select></label>
+        <div class="punchcard-card" data-skip-board-save>
+          <div class="punchcard-card__top">
+            <div><small class="punchcard-type">STUDENT PUNCHCARD</small><strong class="punchcard-name">Student</strong></div>
+            <div class="punchcard-points"><span>POINTS</span><strong class="punchcard-points-value">0</strong></div>
+          </div>
+          <div class="punchcard-holes" aria-label="Punchcard holes"></div>
+          <div class="punchcard-card__footer"><span>TEACHERTILES PBIS</span><i aria-hidden="true">✦</i><span>10 PUNCHES = 1 POINT</span></div>
+        </div>
+        <button class="punchcard-reset" type="button">Reset current card</button>
+      </div>
+      <div class="punchcard-complete" role="dialog" aria-modal="true" aria-live="polite" hidden>
+        <div class="punchcard-complete__burst" aria-hidden="true">✦</div>
+        <small>10 / 10 PUNCHES</small>
+        <h3>Punchcard Complete!</h3>
+        <p><strong class="punchcard-complete-name">Student</strong> earned a Punchcard Point.</p>
+        <div class="punchcard-complete__total"><span>Total Punchcard Points</span><strong class="punchcard-complete-points">1</strong></div>
+        <button class="punchcard-complete-done" type="button">Start New Card</button>
+      </div>
+      <div class="punchcard-customization customization-bar">
+        <button class="custom-icon punchcard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon punchcard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon punchcard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>

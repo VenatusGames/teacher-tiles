@@ -271,6 +271,24 @@ function normalizeCollectionProgress(value){
   };
 }
 
+function normalizePunchcardProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourceStudentPoints=source.studentPoints&&typeof source.studentPoints==='object'&&!Array.isArray(source.studentPoints)?source.studentPoints:{};
+  const sourceStudentProgress=source.studentProgress&&typeof source.studentProgress==='object'&&!Array.isArray(source.studentProgress)?source.studentProgress:{};
+  const studentPoints={},studentProgress={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    studentPoints[key]=normalizeStarChartCount(sourceStudentPoints[key]??sourceStudentPoints[name]);
+    studentProgress[key]=Math.max(0,Math.min(9,Math.round(Number(sourceStudentProgress[key]??sourceStudentProgress[name])||0)));
+  });
+  return{
+    wholeClassPoints:normalizeStarChartCount(source.wholeClassPoints),
+    wholeClassProgress:Math.max(0,Math.min(9,Math.round(Number(source.wholeClassProgress)||0))),
+    studentPoints,
+    studentProgress
+  };
+}
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
@@ -284,7 +302,8 @@ function readClassRosters(){
         students,
         starChart:normalizeStarChartProgress(item.starChart,students),
         classMeter:normalizeClassMeterProgress(item.classMeter),
-        collectionJar:normalizeCollectionProgress(item.collectionJar)
+        collectionJar:normalizeCollectionProgress(item.collectionJar),
+        punchcards:normalizePunchcardProgress(item.punchcards,students)
       };
     });
   }catch{return []}
@@ -396,8 +415,19 @@ function writeClassCollection(classId,value){
   return roster.collectionJar;
 }
 
+function writeClassPunchcards(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.punchcards=normalizePunchcardProgress(value,roster.students);
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:punchcardchange',{detail:{classId,progress:roster.punchcards}}));
+  schedulePbisCloudSave();
+  return roster.punchcards;
+}
+
 window.addEventListener('pagehide',flushPbisCloudSave);
-window.addEventListener('teachertiles:classsyncenabled',()=>queueEncryptedClassSave(readClassRosters(),'Class Sync'));
 
 window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
   const classes=Array.isArray(event.detail?.classes)?event.detail.classes:[];
@@ -679,7 +709,7 @@ function setupProfileClasses(){
   form.addEventListener('submit',event=>{
     event.preventDefault();
     const name=nameInput.value.trim();if(!name)return;
-    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null)});
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),logo:'👥',students:[],classMeter:normalizeClassMeterProgress(null),collectionJar:normalizeCollectionProgress(null),punchcards:normalizePunchcardProgress(null,[])});
     writeClassRosters(classes);nameInput.value='';render();
   });
   window.addEventListener('teachertiles:classeschange',render);
@@ -703,6 +733,15 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
     icon:'★',
     value:(roster,name)=>normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(name)]),
     wholeClassValue:roster=>normalizeStarChartCount(roster.starChart?.wholeClassStars)
+  }),
+  Object.freeze({
+    id:'punchcardPoints',
+    label:'Punchcard Points',
+    description:'Punchcards completed by this student',
+    wholeClassDescription:'Whole-class Punchcards completed by this class',
+    icon:'●',
+    value:(roster,name)=>normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(name)]||0,
+    wholeClassValue:roster=>normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints
   }),
   Object.freeze({
     id:'meterWins',
@@ -786,6 +825,10 @@ function setupStudentView(){
       const progress=normalizeStarChartProgress(roster.starChart,roster.students);
       if(wholeClass)progress.wholeClassStars=0;else progress.studentStars[starChartStudentKey(name)]=0;
       writeClassStarChart(roster.id,progress);
+    }else if(stat.id==='punchcardPoints'){
+      const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
+      if(wholeClass)progress.wholeClassPoints=0;else progress.studentPoints[starChartStudentKey(name)]=0;
+      writeClassPunchcards(roster.id,progress);
     }else if(stat.id==='meterWins'){
       const progress=normalizeClassMeterProgress(roster.classMeter);
       progress.wins=0;
@@ -928,6 +971,7 @@ function setupStudentView(){
   window.addEventListener('teachertiles:starchartchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   window.addEventListener('teachertiles:classmeterchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   window.addEventListener('teachertiles:collectionchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
+  window.addEventListener('teachertiles:punchcardchange',()=>{if(!panel.hidden){renderRosters();renderDetail()}});
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||panel.hidden)return;
     event.preventDefault();
@@ -1163,7 +1207,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1177,7 +1221,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -2071,6 +2115,7 @@ function setupModuleByType(m,type){
   if(type==='collections')setupCollections(m);
   if(type==='prizeboard')setupPrizeBoard(m);
   if(type==='pbisconsole')setupPbisConsole(m);
+  if(type==='punchcards')setupPunchcards(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
   if(type==='lunchcount')setupLunchCount(m);
@@ -4251,9 +4296,11 @@ function setupClassMeter(m){
 
 const PRIZE_STAT_OPTIONS=Object.freeze([
   Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
+  Object.freeze({id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●',scope:'student'}),
   Object.freeze({id:'classStars',label:'Whole-class Stars',icon:'★',scope:'class'}),
   Object.freeze({id:'meterWins',label:'Class Meter Wins',icon:'🏆',scope:'class'}),
-  Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'})
+  Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'}),
+  Object.freeze({id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●',scope:'class'})
 ]);
 
 function prizePresetImage(kind='gift'){
@@ -4269,7 +4316,7 @@ function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`pri
 function normalizePrize(value){
   const source=value&&typeof value==='object'?value:{};
   const scope=source.scope==='class'?'class':'student';
-  const allowed=scope==='student'?['studentStars']:['classStars','meterWins','jarsFilled'];
+  const allowed=scope==='student'?['studentStars','studentPunchcardPoints']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
   return{
     id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
     description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
@@ -4281,6 +4328,8 @@ function pbisBalance(roster,statId,studentName=''){
   if(!roster)return 0;
   if(statId==='studentStars')return normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(studentName)]);
   if(statId==='classStars')return normalizeStarChartCount(roster.starChart?.wholeClassStars);
+  if(statId==='studentPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(studentName)]||0;
+  if(statId==='classPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).wholeClassPoints;
   if(statId==='meterWins')return normalizeClassMeterProgress(roster.classMeter).wins;
   if(statId==='jarsFilled')return normalizeCollectionProgress(roster.collectionJar).jarsFilled;
   if(statId==='meterFill')return Math.round(normalizeClassMeterProgress(roster.classMeter).fill);
@@ -4297,6 +4346,10 @@ function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={
     const progress=normalizeStarChartProgress(roster.starChart,roster.students);
     if(statId==='studentStars')progress.studentStars[starChartStudentKey(studentName)]=next;else progress.wholeClassStars=next;
     writeClassStarChart(classId,progress);
+  }else if(statId==='studentPunchcardPoints'||statId==='classPunchcardPoints'){
+    const progress=normalizePunchcardProgress(roster.punchcards,roster.students);
+    if(statId==='studentPunchcardPoints')progress.studentPoints[starChartStudentKey(studentName)]=next;else progress.wholeClassPoints=next;
+    writeClassPunchcards(classId,progress);
   }else if(statId==='meterWins'||statId==='meterFill'){
     const progress=normalizeClassMeterProgress(roster.classMeter);
     if(statId==='meterWins')progress.wins=next;else progress.fill=next;
@@ -4370,7 +4423,7 @@ function setupPrizeBoard(m){
     const q=s=>modal.panel.querySelector(s),scopeSelect=q('.prize-editor-scope'),title=q('.prize-editor-title'),desc=q('.prize-editor-description'),cost=q('.prize-editor-cost'),stat=q('.prize-editor-stat'),preview=q('.prize-editor-preview img');
     scopeSelect.value=working.scope;title.value=working.title==='New Prize'?'':working.title;desc.value=working.description;cost.value=working.cost;preview.src=working.image;
     let selectedImage=working.image;
-    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS.filter(item=>item.id==='studentStars'):PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
+    const fillStats=()=>{const options=scopeSelect.value==='student'?PRIZE_STAT_OPTIONS.filter(item=>item.scope==='student'):PRIZE_STAT_OPTIONS.filter(item=>item.scope==='class');const wanted=stat.value||working.costStat;stat.replaceChildren(...options.map(item=>new Option(`${item.icon} ${item.label}`,item.id)));stat.value=options.some(item=>item.id===wanted)?wanted:options[0].id};fillStats();scopeSelect.addEventListener('change',fillStats);
     const presets=q('.prize-preset-grid');['gift','game','snack','choice','break','music','helper','mystery'].forEach(kind=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<img src="${prizePresetImage(kind)}" alt="${kind} preset">`;b.addEventListener('click',()=>{selectedImage=prizePresetImage(kind);preview.src=selectedImage});presets.append(b)});
     q('.prize-upload input').addEventListener('change',event=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{selectedImage=String(reader.result||selectedImage);preview.src=selectedImage};reader.readAsDataURL(file)});
     q('.prize-modal-close').addEventListener('click',closeEditor);q('.prize-editor-cancel').addEventListener('click',closeEditor);
@@ -4385,9 +4438,9 @@ function setupPrizeBoard(m){
     if(prize.scope==='student'){
       const label=document.createElement('label');label.innerHTML='<span>Redeem for</span>';const select=document.createElement('select');select.append(new Option(students.length?'Choose a student…':'No students in this class',''));students.forEach(name=>select.add(new Option(name,name)));label.append(select);targetWrap.append(label);select.addEventListener('change',()=>{student=select.value;refreshBalance()});
     }else{targetWrap.innerHTML=`<div class="prize-class-target"><span aria-hidden="true">${normalizeClassLogo(roster.logo)}</span><strong>${roster.name}</strong><small>Whole class redemption</small></div>`}
-    const refreshBalance=()=>{const targetStudent=prize.costStat==='studentStars'?student:'';const amount=pbisBalance(currentRoster(),prize.costStat,targetStudent);const missing=amount<prize.cost;balance.innerHTML=`<span>Available balance</span><strong>${amount} ${stat.label}</strong>${missing?'<small>Not enough credit for this reward.</small>':''}`;redeem.disabled=missing||(prize.scope==='student'&&!student)};refreshBalance();
+    const refreshBalance=()=>{const targetStudent=stat.scope==='student'?student:'';const amount=pbisBalance(currentRoster(),prize.costStat,targetStudent);const missing=amount<prize.cost;balance.innerHTML=`<span>Available balance</span><strong>${amount} ${stat.label}</strong>${missing?'<small>Not enough credit for this reward.</small>':''}`;redeem.disabled=missing||(prize.scope==='student'&&!student)};refreshBalance();
     modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-edit').addEventListener('click',()=>openEditor(prize));
-    redeem.addEventListener('click',async()=>{const recipient=prize.scope==='class'?roster.name:student;if(!recipient)return;const spendStudent=prize.costStat==='studentStars'?student:'';if(pbisBalance(currentRoster(),prize.costStat,spendStudent)<prize.cost){refreshBalance();return}adjustPbisBalance(activeClassId,prize.costStat,-prize.cost,{studentName:spendStudent});modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-redeemed"><span aria-hidden="true">🎉</span><small>PRIZE REDEEMED</small><h2>${prize.title}</h2><p><strong>${recipient}</strong> redeemed this prize for ${prize.cost} ${stat.label}.</p><div class="prize-redeemed-actions"><button class="prize-coupon" type="button">Download coupon PNG</button><button class="prize-done" type="button">Done</button></div></div>`;modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-done').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-coupon').addEventListener('click',()=>downloadPrizeCoupon(prize,roster,recipient,stat.label));});
+    redeem.addEventListener('click',async()=>{const recipient=prize.scope==='class'?roster.name:student;if(!recipient)return;const spendStudent=stat.scope==='student'?student:'';if(pbisBalance(currentRoster(),prize.costStat,spendStudent)<prize.cost){refreshBalance();return}adjustPbisBalance(activeClassId,prize.costStat,-prize.cost,{studentName:spendStudent});modal.panel.innerHTML=`<button class="prize-modal-close" type="button" aria-label="Close">×</button><div class="prize-redeemed"><span aria-hidden="true">🎉</span><small>PRIZE REDEEMED</small><h2>${prize.title}</h2><p><strong>${recipient}</strong> redeemed this prize for ${prize.cost} ${stat.label}.</p><div class="prize-redeemed-actions"><button class="prize-coupon" type="button">Download coupon PNG</button><button class="prize-done" type="button">Done</button></div></div>`;modal.panel.querySelector('.prize-modal-close').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-done').addEventListener('click',()=>modal.close());modal.panel.querySelector('.prize-coupon').addEventListener('click',()=>downloadPrizeCoupon(prize,roster,recipient,stat.label));});
   };
   const render=()=>{
     tabs.forEach(tab=>{const on=tab.dataset.prizeScope===scope;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on))});grid.replaceChildren();
@@ -4398,9 +4451,9 @@ function setupPrizeBoard(m){
   const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
   m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const ro=new ResizeObserver(syncModuleSize);ro.observe(m);
-  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);
+  const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);window.addEventListener('teachertiles:punchcardchange',refresh);
   m._boardGetState=()=>({activeClassId,scope,prizes:prizes.map(normalizePrize)});m._boardSetState=state=>{if(!state)return;scope=state.scope==='class'?'class':'student';prizes=Array.isArray(state.prizes)?state.prizes.map(normalizePrize):[];setClass(String(state.activeClassId||''));render()};
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh)};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();modal.overlay.remove();window.removeEventListener('teachertiles:classeschange',refresh);window.removeEventListener('teachertiles:starchartchange',refresh);window.removeEventListener('teachertiles:classmeterchange',refresh);window.removeEventListener('teachertiles:collectionchange',refresh);window.removeEventListener('teachertiles:punchcardchange',refresh)};
   render();
 }
 
@@ -4408,8 +4461,8 @@ function setupPbisConsole(m){
   const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
   let activeClassId='',student='',view='students';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
-  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'}];
-  const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'●'}];
+  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'}];
+  const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'○'}];
   const setClass=id=>{
     const r=readClassRosters().find(item=>item.id===id);
     activeClassId=r?.id||'';
@@ -4451,11 +4504,83 @@ function setupPbisConsole(m){
   m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
-  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.addEventListener(name,refresh));
+  ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange'].forEach(name=>window.addEventListener(name,refresh));
   m._boardGetState=()=>({activeClassId,student,view});
   m._boardSetState=state=>{student=String(state?.student||'');view=state?.view==='class'?'class':'students';setClass(String(state?.activeClassId||''))};
   const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange'].forEach(name=>window.removeEventListener(name,refresh))};
+}
+
+function setupPunchcards(m){
+  const importView=m.querySelector('.punchcard-import'),dashboard=m.querySelector('.punchcard-dashboard'),loaderAnchor=m.querySelector('.punchcard-loader-anchor');
+  const className=m.querySelector('.punchcard-class-name'),classLogo=m.querySelector('.punchcard-class-logo'),changeClass=m.querySelector('.punchcard-change-class');
+  const tabs=[...m.querySelectorAll('[data-punchcard-scope]')],studentWrap=m.querySelector('.punchcard-student-wrap'),studentSelect=m.querySelector('.punchcard-student');
+  const card=m.querySelector('.punchcard-card'),cardName=m.querySelector('.punchcard-name'),cardType=m.querySelector('.punchcard-type'),holes=m.querySelector('.punchcard-holes'),points=m.querySelector('.punchcard-points-value');
+  const reset=m.querySelector('.punchcard-reset'),complete=m.querySelector('.punchcard-complete'),completeName=m.querySelector('.punchcard-complete-name'),completePoints=m.querySelector('.punchcard-complete-points'),completeDone=m.querySelector('.punchcard-complete-done');
+  let activeClassId='',scope='student',student='',busy=false;
+  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const targetKey=()=>starChartStudentKey(student);
+  const currentProgress=()=>{
+    const r=roster();if(!r)return 0;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    return scope==='class'?progress.wholeClassProgress:(progress.studentProgress[targetKey()]||0);
+  };
+  const currentPoints=()=>{
+    const r=roster();if(!r)return 0;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    return scope==='class'?progress.wholeClassPoints:(progress.studentPoints[targetKey()]||0);
+  };
+  const persistProgress=value=>{
+    const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r.punchcards,r.students);const next=Math.max(0,Math.min(9,Math.round(Number(value)||0)));
+    if(scope==='class')progress.wholeClassProgress=next;else if(student)progress.studentProgress[targetKey()]=next;
+    writeClassPunchcards(activeClassId,progress);notifyBoardChanged('punchcard-progress');
+  };
+  const awardPoint=()=>{
+    const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r.punchcards,r.students);
+    if(scope==='class'){progress.wholeClassPoints=normalizeStarChartCount(progress.wholeClassPoints+1);progress.wholeClassProgress=0}
+    else if(student){const key=targetKey();progress.studentPoints[key]=normalizeStarChartCount((progress.studentPoints[key]||0)+1);progress.studentProgress[key]=0}
+    writeClassPunchcards(activeClassId,progress);flushPbisCloudSave();notifyBoardChanged('punchcard-complete');
+  };
+  const render=()=>{
+    const r=roster();if(!r)return;
+    tabs.forEach(tab=>{const active=tab.dataset.punchcardScope===scope;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    studentWrap.hidden=scope!=='student';
+    const prior=student;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students in this class',''));r.students.forEach(name=>studentSelect.add(new Option(name,name)));
+    student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student;
+    const target=scope==='class'?r.name:(student||'Choose a student');cardName.textContent=target;cardType.textContent=scope==='class'?'WHOLE CLASS PUNCHCARD':'STUDENT PUNCHCARD';points.textContent=String(currentPoints());
+    card.classList.toggle('is-disabled',scope==='student'&&!student);holes.replaceChildren();const punched=currentProgress();
+    for(let i=0;i<10;i++){
+      const hole=document.createElement('button');hole.type='button';hole.className='punchcard-hole';hole.dataset.index=String(i);hole.setAttribute('aria-label',i<punched?`Punch ${i+1} completed`:`Punch hole ${i+1}`);hole.disabled=busy||i<punched||(scope==='student'&&!student);if(i<punched)hole.classList.add('is-punched');
+      hole.addEventListener('click',()=>punch(hole,i));holes.append(hole);
+    }
+    reset.disabled=currentProgress()===0||(scope==='student'&&!student);
+  };
+  const punch=(hole,index)=>{
+    if(busy||index!==currentProgress())return;busy=true;hole.classList.add('is-punching');
+    setTimeout(()=>{
+      if(index===9){const target=scope==='class'?roster()?.name:student;awardPoint();completeName.textContent=target||'Punchcard';completePoints.textContent=String(currentPoints());complete.hidden=false;completeDone.focus({preventScroll:true})}
+      else persistProgress(index+1);
+      busy=false;render();
+    },360);
+  };
+  const setClass=id=>{
+    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;
+    if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);student=r.students.includes(student)?student:(r.students[0]||'')}
+    render();
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.punchcardScope==='class'?'class':'student';complete.hidden=true;render();notifyBoardChanged('punchcard-scope')}));
+  studentSelect.addEventListener('change',()=>{student=studentSelect.value;complete.hidden=true;render();notifyBoardChanged('punchcard-student')});
+  reset.addEventListener('click',()=>{const target=scope==='class'?roster()?.name:student;if(!target||currentProgress()===0)return;if(!confirm(`Reset the current Punchcard for ${target}?`))return;persistProgress(0);render()});
+  completeDone.addEventListener('click',()=>{complete.hidden=true;render()});
+  changeClass.addEventListener('click',()=>{activeClassId='';student='';complete.hidden=true;importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('punchcard-class')});
+  const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('punchcard-class')});
+  m.querySelector('.punchcard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.punchcard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.punchcard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
+  ['teachertiles:classeschange','teachertiles:punchcardchange'].forEach(name=>window.addEventListener(name,refresh));
+  m._boardGetState=()=>({activeClassId,scope,student});
+  m._boardSetState=state=>{scope=state?.scope==='class'?'class':'student';student=String(state?.student||'');setClass(String(state?.activeClassId||''))};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();['teachertiles:classeschange','teachertiles:punchcardchange'].forEach(name=>window.removeEventListener(name,refresh))};
+  render();
 }
 
 function setupCollections(m){
