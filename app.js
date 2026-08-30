@@ -1548,8 +1548,12 @@ function findModuleTextEditTarget(target,m){
   return field&&m.contains(field)?field:null;
 }
 
+function isDoubleClickModuleText(field){
+  return field instanceof HTMLElement&&field.dataset.textEditMode==='double';
+}
+
 function isImmediateModuleInput(field){
-  return field instanceof HTMLInputElement&&field.type==='search';
+  return !isDoubleClickModuleText(field);
 }
 
 function exitModuleTextEdit(field=activeModuleTextEditor){
@@ -1603,7 +1607,7 @@ function isInteractiveModuleTarget(target,m){
   if(!(target instanceof Element)||!m)return false;
   if(target.closest('.module-drag-handle'))return false;
   const textField=findModuleTextEditTarget(target,m);
-  if(textField)return textField.classList.contains('module-text-edit-active');
+  if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
   if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
@@ -5174,6 +5178,8 @@ const TRANSLATION_LANGUAGES=[
 function setupTranslation(m){
   const source=m.querySelector('.translation-source');
   const target=m.querySelector('.translation-target');
+  const sourcePickerRoot=m.querySelector('[data-language-picker="source"]');
+  const targetPickerRoot=m.querySelector('[data-language-picker="target"]');
   const input=m.querySelector('.translation-input');
   const output=m.querySelector('.translation-output');
   const count=m.querySelector('.translation-count');
@@ -5189,23 +5195,94 @@ function setupTranslation(m){
   let recognition=null;
   let listening=false;
 
-  const languageOptions=TRANSLATION_LANGUAGES.map(language=>{
-    const option=document.createElement('option');
-    option.value=language.code;
-    option.textContent=language.name;
-    return option;
-  });
-  source.replaceChildren(...languageOptions.map(option=>option.cloneNode(true)));
-  target.replaceChildren(...languageOptions.map(option=>option.cloneNode(true)));
-  source.value='en';
-  target.value='es';
-
   const languageFor=code=>TRANSLATION_LANGUAGES.find(language=>language.code===code)||TRANSLATION_LANGUAGES[0];
-  const decodeEntities=value=>{
-    const textarea=document.createElement('textarea');
-    textarea.innerHTML=String(value||'');
-    return textarea.value;
+  const setupLanguagePicker=(root,field,defaultCode)=>{
+    const search=root.querySelector('.translation-language-search');
+    const menu=root.querySelector('.translation-language-menu');
+    let visibleLanguages=[...TRANSLATION_LANGUAGES];
+    let activeIndex=-1;
+
+    const currentLanguage=()=>languageFor(field.value||defaultCode);
+    const close=({restore=true}={})=>{
+      root.classList.remove('is-open');
+      search.setAttribute('aria-expanded','false');
+      activeIndex=-1;
+      if(restore)search.value=currentLanguage().name;
+    };
+    const choose=(code,{announce=true}={})=>{
+      const language=languageFor(code);
+      field.value=language.code;
+      search.value=language.name;
+      close({restore:false});
+      if(announce){status.textContent='';notifyBoardChanged('translation-language')}
+    };
+    const render=(query='')=>{
+      const normalized=query.trim().toLocaleLowerCase();
+      visibleLanguages=TRANSLATION_LANGUAGES.filter(language=>!normalized||language.name.toLocaleLowerCase().includes(normalized)||language.code.toLocaleLowerCase().includes(normalized));
+      activeIndex=visibleLanguages.length?0:-1;
+      menu.replaceChildren();
+      if(!visibleLanguages.length){
+        const empty=document.createElement('span');
+        empty.className='translation-language-empty';
+        empty.textContent='No languages found';
+        menu.appendChild(empty);
+        return;
+      }
+      visibleLanguages.forEach((language,index)=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='translation-language-option';
+        button.setAttribute('role','option');
+        button.dataset.languageCode=language.code;
+        button.setAttribute('aria-selected',String(language.code===field.value));
+        const name=document.createElement('strong');
+        const codeLabel=document.createElement('small');
+        name.textContent=language.name;
+        codeLabel.textContent=language.code;
+        button.append(name,codeLabel);
+        button.classList.toggle('is-keyboard-active',index===activeIndex);
+        button.addEventListener('pointerdown',event=>event.preventDefault());
+        button.addEventListener('click',()=>{choose(language.code);search.focus({preventScroll:true})});
+        menu.appendChild(button);
+      });
+    };
+    const syncActiveOption=()=>{
+      const options=[...menu.querySelectorAll('.translation-language-option')];
+      options.forEach((option,index)=>option.classList.toggle('is-keyboard-active',index===activeIndex));
+      options[activeIndex]?.scrollIntoView({block:'nearest'});
+    };
+    const open=()=>{
+      root.classList.add('is-open');
+      search.setAttribute('aria-expanded','true');
+      render(search.value===currentLanguage().name?'':search.value);
+    };
+    search.addEventListener('focus',()=>{search.select();open()});
+    search.addEventListener('input',()=>{open();render(search.value)});
+    search.addEventListener('keydown',event=>{
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+        event.preventDefault();
+        if(!root.classList.contains('is-open'))open();
+        if(visibleLanguages.length)activeIndex=(activeIndex+(event.key==='ArrowDown'?1:-1)+visibleLanguages.length)%visibleLanguages.length;
+        syncActiveOption();
+      }else if(event.key==='Enter'){
+        if(root.classList.contains('is-open')&&visibleLanguages[activeIndex]){event.preventDefault();choose(visibleLanguages[activeIndex].code)}
+      }else if(event.key==='Escape'){
+        event.preventDefault();
+        close();
+        search.blur();
+      }
+    });
+    search.addEventListener('blur',()=>setTimeout(()=>{if(!root.contains(document.activeElement))close()},0));
+    choose(defaultCode,{announce:false});
+    render();
+    return{
+      get:()=>field.value||defaultCode,
+      set:(code,options={})=>choose(code,{announce:options.announce??false}),
+      setDisabled:disabled=>{if(disabled)close();search.disabled=disabled;root.classList.toggle('is-disabled',disabled)}
+    };
   };
+  const sourcePicker=setupLanguagePicker(sourcePickerRoot,source,'en');
+  const targetPicker=setupLanguagePicker(targetPickerRoot,target,'es');
   const renderOutput=(value,placeholder='Your translation will appear here.')=>{
     translatedText=String(value||'');
     output.replaceChildren();
@@ -5218,8 +5295,8 @@ function setupTranslation(m){
   const setLoading=loading=>{
     m.classList.toggle('is-translating',loading);
     submit.disabled=loading;
-    source.disabled=loading;
-    target.disabled=loading;
+    sourcePicker.setDisabled(loading);
+    targetPicker.setDisabled(loading);
   };
 
   async function translate(){
@@ -5232,13 +5309,14 @@ function setupTranslation(m){
     status.textContent='Translating…';
     setLoading(true);
     try{
-      if(source.value===target.value){renderOutput(text);status.textContent='Languages match — no translation needed.';return}
-      const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(source.value)}%7C${encodeURIComponent(target.value)}&mt=1`;
+      if(sourcePicker.get()===targetPicker.get()){renderOutput(text);status.textContent='Languages match — no translation needed.';return}
+      const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sourcePicker.get())}&tl=${encodeURIComponent(targetPicker.get())}&dt=t&q=${encodeURIComponent(text)}`;
       const response=await fetch(url,{signal:controller.signal});
       if(!response.ok)throw new Error(`translation-${response.status}`);
       const data=await response.json();
-      if(Number(data?.responseStatus||200)>=400||!data?.responseData?.translatedText)throw new Error('translation-unavailable');
-      renderOutput(decodeEntities(data.responseData.translatedText));
+      const result=Array.isArray(data?.[0])?data[0].map(segment=>Array.isArray(segment)?String(segment[0]||''):'').join('').trim():'';
+      if(!result||/^[\s\-–—_.]+$/.test(result)||/^(testvalue|null|undefined)$/i.test(result))throw new Error('translation-unavailable');
+      renderOutput(result);
       status.textContent='Translated';
       notifyBoardChanged('translation-result');
     }catch(error){
@@ -5254,9 +5332,9 @@ function setupTranslation(m){
   input.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();translate()}});
   submit.addEventListener('click',translate);
   swap.addEventListener('click',()=>{
-    const priorSource=source.value;
-    source.value=target.value;
-    target.value=priorSource;
+    const priorSource=sourcePicker.get();
+    sourcePicker.set(targetPicker.get());
+    targetPicker.set(priorSource);
     if(translatedText){const priorInput=input.value;input.value=translatedText;renderOutput(priorInput);updateCount()}
     status.textContent='Languages swapped';
     notifyBoardChanged('translation-swap');
@@ -5269,7 +5347,7 @@ function setupTranslation(m){
     mic.addEventListener('click',()=>{
       if(listening){recognition?.stop();return}
       recognition=new SpeechRecognition();
-      recognition.lang=languageFor(source.value).speech;
+      recognition.lang=languageFor(sourcePicker.get()).speech;
       recognition.interimResults=true;
       recognition.continuous=false;
       recognition.maxAlternatives=1;
@@ -5289,7 +5367,7 @@ function setupTranslation(m){
     if(!translatedText||!('speechSynthesis'in window))return;
     speechSynthesis.cancel();
     const utterance=new SpeechSynthesisUtterance(translatedText);
-    utterance.lang=languageFor(target.value).speech;
+    utterance.lang=languageFor(targetPicker.get()).speech;
     speechSynthesis.speak(utterance);
   });
   copy.addEventListener('click',async()=>{
@@ -5297,19 +5375,17 @@ function setupTranslation(m){
     try{await navigator.clipboard.writeText(translatedText);status.textContent='Copied translation'}
     catch{status.textContent='Could not copy automatically.'}
   });
-  source.addEventListener('change',()=>{status.textContent='';notifyBoardChanged('translation-language')});
-  target.addEventListener('change',()=>{status.textContent='';notifyBoardChanged('translation-language')});
   m.querySelector('.translation-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.translation-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.translation-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
   renderOutput('');
   updateCount();
-  m._boardGetState=()=>({source:source.value,target:target.value,input:input.value,output:translatedText});
+  m._boardGetState=()=>({source:sourcePicker.get(),target:targetPicker.get(),input:input.value,output:translatedText});
   m._boardSetState=state=>{
     if(!state)return;
-    source.value=TRANSLATION_LANGUAGES.some(language=>language.code===state.source)?state.source:'en';
-    target.value=TRANSLATION_LANGUAGES.some(language=>language.code===state.target)?state.target:'es';
+    sourcePicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.source)?state.source:'en');
+    targetPicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.target)?state.target:'es');
     input.value=String(state.input||'').slice(0,450);
     renderOutput(String(state.output||''));
     updateCount();

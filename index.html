@@ -1267,7 +1267,7 @@
       <div class="context-menu__category-rail">
         <button type="button" class="context-menu__category-cycle" aria-label="Choose tile category" title="Choose tile category" aria-expanded="false" aria-controls="context-menu-category-drawer">
           <span class="context-menu__category-cycle-copy"><small>Category</small><strong class="context-menu__category-cycle-label">ALL</strong></span>
-          <svg class="context-menu__category-cycle-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+          <svg class="context-menu__category-cycle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg>
         </button>
         <div id="context-menu-category-drawer" class="context-menu__category-drawer" aria-hidden="true">
           <div class="context-menu__category-drawer-head"><strong>Choose a category</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
@@ -2248,7 +2248,7 @@
   <template id="textbubble-template">
     <section class="module textbubble-module" data-type="textbubble" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete text bubble">×</button><div class="module-drag-handle"></div>
-      <div class="textbubble-text" contenteditable="true" spellcheck="true">TYPE HERE</div>
+      <div class="textbubble-text" contenteditable="true" spellcheck="true" data-text-edit-mode="double">TYPE HERE</div>
       <div class="customization-bar textbubble-customization" aria-label="Text bubble customization">
         <button class="custom-icon textbubble-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon textbubble-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -2261,7 +2261,7 @@
   <template id="todo-template">
     <section class="module todo-module" data-type="todo" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete checklist">×</button><div class="module-drag-handle"></div>
-      <input class="todo-title" type="text" value="TO-DO" aria-label="Checklist title">
+      <input class="todo-title" type="text" value="TO-DO" aria-label="Checklist title" data-text-edit-mode="double">
       <div class="todo-list" aria-label="Checklist items"></div>
       <div class="todo-footer">
         <button class="todo-add primary" type="button">+ Add step</button>
@@ -2375,7 +2375,7 @@
       <div class="confetti-layer" aria-hidden="true"></div>
 
       <div class="progress-bar-heading">
-        <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title">
+        <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title" data-text-edit-mode="double">
         <div class="progress-bar-time-readout">
           <strong class="progress-bar-remaining">60:00</strong>
           <span class="progress-bar-end-label">until 10:00 AM</span>
@@ -2442,7 +2442,7 @@
       <button class="module-delete" aria-label="Delete visual schedule">×</button>
       <div class="module-drag-handle"></div>
 
-      <input class="visual-schedule-title" type="text" value="VISUAL SCHEDULE" aria-label="Schedule title">
+      <input class="visual-schedule-title" type="text" value="VISUAL SCHEDULE" aria-label="Schedule title" data-text-edit-mode="double">
 
       <div class="visual-schedule-list" aria-label="Schedule segments"></div>
 
@@ -3190,9 +3190,9 @@
       </header>
 
       <div class="translation-language-row">
-        <label><span>From</span><select class="translation-source" aria-label="Translate from language"></select></label>
+        <label><span>From</span><div class="translation-language-picker" data-language-picker="source"><input class="translation-language-value translation-source" type="hidden" value="en"><input class="translation-language-search" type="text" value="English" autocomplete="off" spellcheck="false" role="combobox" aria-label="Search source languages" aria-autocomplete="list" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg><div class="translation-language-menu" role="listbox" aria-label="Source languages"></div></div></label>
         <button class="translation-swap" type="button" aria-label="Swap languages" title="Swap languages">⇄</button>
-        <label><span>To</span><select class="translation-target" aria-label="Translate to language"></select></label>
+        <label><span>To</span><div class="translation-language-picker" data-language-picker="target"><input class="translation-language-value translation-target" type="hidden" value="es"><input class="translation-language-search" type="text" value="Spanish" autocomplete="off" spellcheck="false" role="combobox" aria-label="Search target languages" aria-autocomplete="list" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg><div class="translation-language-menu" role="listbox" aria-label="Target languages"></div></div></label>
       </div>
 
       <div class="translation-panels">
@@ -3207,7 +3207,7 @@
         </section>
       </div>
 
-      <footer class="translation-footer"><div><span class="translation-status" aria-live="polite"></span><small>Translations via the MyMemory online service.</small></div><button class="translation-submit primary" type="button">Translate</button></footer>
+      <footer class="translation-footer"><div><span class="translation-status" aria-live="polite"></span><small>Machine translation powered by Google.</small></div><button class="translation-submit primary" type="button">Translate</button></footer>
 
       <div class="customization-bar translation-customization" aria-label="Translation tile customization">
         <button class="custom-icon translation-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
