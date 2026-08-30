@@ -1266,22 +1266,34 @@
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
       <div class="context-menu__category-rail">
-        <button type="button" class="context-menu__category-arrow context-menu__category-arrow--back" aria-label="Previous categories">‹</button>
         <div class="context-menu__filters" role="tablist" aria-label="Module categories">
           <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
           <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
           <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
           <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
-          <button type="button" class="context-menu__filter" data-category-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
-          <button type="button" class="context-menu__filter" data-category-filter="games" data-i18n="context.cat.games">GAMES</button>
           <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
           <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
-          <button type="button" class="context-menu__filter" data-category-filter="science" data-i18n="context.cat.science">SCIENCE</button>
-          <button type="button" class="context-menu__filter" data-category-filter="planning" data-i18n="context.cat.planning">PLANNING</button>
-          <button type="button" class="context-menu__filter" data-category-filter="pbis" data-i18n="context.cat.pbis">PBIS</button>
-          <button type="button" class="context-menu__filter" data-category-filter="sel" data-i18n="context.cat.sel">SEL</button>
         </div>
-        <button type="button" class="context-menu__category-arrow context-menu__category-arrow--next" aria-label="Next categories">›</button>
+        <button type="button" class="context-menu__category-drawer-toggle" aria-label="Show all categories" title="Show all categories" aria-expanded="false" aria-controls="context-menu-category-drawer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+        </button>
+        <div id="context-menu-category-drawer" class="context-menu__category-drawer" aria-hidden="true">
+          <div class="context-menu__category-drawer-head"><strong>All categories</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
+          <div class="context-menu__category-drawer-grid" role="tablist" aria-label="All module categories">
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="text" data-i18n="context.cat.text">TEXT</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="media" data-i18n="context.cat.media">MEDIA</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="time" data-i18n="context.cat.time">TIME</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="games" data-i18n="context.cat.games">GAMES</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="math" data-i18n="context.cat.math">MATH</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="science" data-i18n="context.cat.science">SCIENCE</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="planning" data-i18n="context.cat.planning">PLANNING</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="pbis" data-i18n="context.cat.pbis">PBIS</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="sel" data-i18n="context.cat.sel">SEL</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="context-menu__list">
@@ -1289,7 +1301,7 @@
         <strong data-i18n="context.none">No tiles found</strong>
         <small data-i18n="context.try">Try another search.</small>
       </div>
-      <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
+      <button class="context-menu__item" data-module="sticky" data-category="text planning"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
       <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
       <button class="context-menu__item" data-module="visualschedule" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
@@ -1428,7 +1440,7 @@
         </span>
         <span><strong>Graphing Tool</strong><small>Plot points and graph equations</small></span>
       </button>
-      <button class="context-menu__item" data-module="periodictable" data-category="math science">
+      <button class="context-menu__item" data-module="periodictable" data-category="science">
         <span class="context-menu__icon context-menu__icon--periodic" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <rect x="3" y="3" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
