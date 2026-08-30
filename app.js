@@ -2042,6 +2042,14 @@ function createModule(type,x,y,{record=true,boardState=null}={}){
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
+  const pbisMenuItem=menu.querySelector(`[data-module="${CSS.escape(type)}"][data-pbis-tracking="true"]`);
+  if(pbisMenuItem){
+    const badge=document.createElement('span');
+    badge.className='module-pbis-badge';
+    badge.textContent='PBIS';
+    badge.setAttribute('aria-label','PBIS tracking tile');
+    m.appendChild(badge);
+  }
   if(boardState)applyBoardPreSetupState(m,boardState);
   workspace.appendChild(m);
   const w=m.offsetWidth,h=m.offsetHeight;
@@ -3965,6 +3973,7 @@ function setupClassMeter(m){
   const percent=m.querySelector('.classmeter-percent');
   const winCount=m.querySelector('.classmeter-win-count b');
   const fillButton=m.querySelector('.classmeter-fill');
+  const decreaseButton=m.querySelector('.classmeter-decrease');
   const orientationButton=m.querySelector('.classmeter-orientation');
   const orientationIcon=orientationButton.querySelector('span');
   const orientationLabel=orientationButton.querySelector('strong');
@@ -3972,6 +3981,8 @@ function setupClassMeter(m){
   const settings=m.querySelector('.classmeter-settings');
   const removeWin=m.querySelector('.classmeter-remove-win');
   const resetWins=m.querySelector('.classmeter-reset-wins');
+  const removeProgress=m.querySelector('.classmeter-remove-progress');
+  const resetProgress=m.querySelector('.classmeter-reset-progress');
   const popup=m.querySelector('.classmeter-win-popup');
   let activeClassId='';
   let pendingClassId='';
@@ -3990,6 +4001,9 @@ function setupClassMeter(m){
     thermometer.setAttribute('aria-valuenow',String(Math.round(fill)));
     percent.textContent=`${Math.round(fill)}%`;
     winCount.textContent=String(normalizeStarChartCount(progress.wins));
+    decreaseButton.disabled=fill<=0||celebrating;
+    removeProgress.disabled=fill<=0||celebrating;
+    resetProgress.disabled=fill<=0||celebrating;
     removeWin.disabled=progress.wins<=0;
     resetWins.disabled=progress.wins<=0;
   };
@@ -4023,8 +4037,8 @@ function setupClassMeter(m){
     orientationLabel.textContent=horizontal?'Vertical':'Horizontal';
     orientationButton.setAttribute('aria-label',`Switch to ${horizontal?'vertical':'horizontal'} meter`);
     if(resize){
-      const width=horizontal?600:320;
-      const height=horizontal?320:560;
+      const width=horizontal?640:360;
+      const height=horizontal?330:600;
       m.style.width=`${width}px`;
       m.style.height=`${height}px`;
       m.style.left=`${clamp(m.offsetLeft,0,BOARD_WIDTH-width)}px`;
@@ -4113,6 +4127,10 @@ function setupClassMeter(m){
   settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
   orientationButton.addEventListener('click',()=>setOrientation(m.dataset.orientation==='horizontal'?'vertical':'horizontal',{resize:true,notify:true}));
   m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.classmeter-settings-wrap'))setSettingsOpen(false)});
+  const decreaseProgress=()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=Math.max(0,(Number(progress.fill)||0)-5);persistProgress()};
+  decreaseButton.addEventListener('click',decreaseProgress);
+  removeProgress.addEventListener('click',decreaseProgress);
+  resetProgress.addEventListener('click',()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=0;persistProgress();setSettingsOpen(false)});
   removeWin.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=normalizeStarChartCount(progress.wins-1);persistProgress()});
   resetWins.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=0;persistProgress();setSettingsOpen(false)});
   changeClass.addEventListener('click',()=>{
@@ -4161,7 +4179,7 @@ function setupClassMeter(m){
 function setupCollections(m){
   const importView=m.querySelector('.collection-import'),dashboard=m.querySelector('.collection-dashboard'),className=m.querySelector('.collection-class-name'),classLogo=m.querySelector('.collection-class-logo'),changeClass=m.querySelector('.collection-change-class');
   const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
-  const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
+  const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),bannerRestart=m.querySelector('.collection-banner-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),emptyCurrent=m.querySelector('.collection-empty-current'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
   const types=[
     {id:'pompom',label:'Pom poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
     {id:'jellybean',label:'Jellybeans'},{id:'fruit',label:'Fruits'},{id:'coin',label:'Coins'}
@@ -4174,7 +4192,7 @@ function setupCollections(m){
 
   const jarRectFor=(w,h)=>{const size=Math.max(140,Math.min(w*.96,h*.98));return{x:(w-size)/2,y:(h-size)/2,w:size,h:size}};
   const jarBounds=()=>{const j=currentJar||jarRectFor(cw,ch);return{floor:j.y+j.h*.895,top:j.y+j.h*.105,neckL:j.x+j.w*.285,neckR:j.x+j.w*.715,bodyL:j.x+j.w*.215,bodyR:j.x+j.w*.785,shoulderTop:j.y+j.h*.205,shoulderBottom:j.y+j.h*.31,bottomCurve:j.y+j.h*.765,bottomL:j.x+j.w*.265,bottomR:j.x+j.w*.735,j}};
-  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*.4};
+  const fillLineY=()=>{const j=jarBounds().j;return j.y+j.h*.32};
   const wallsAt=y=>{const b=jarBounds();if(y<b.shoulderTop)return[b.neckL,b.neckR];if(y<b.shoulderBottom){const t=clamp((y-b.shoulderTop)/(b.shoulderBottom-b.shoulderTop),0,1),ease=t*t*(3-2*t);return[b.neckL+(b.bodyL-b.neckL)*ease,b.neckR+(b.bodyR-b.neckR)*ease]}if(y>b.bottomCurve){const t=clamp((y-b.bottomCurve)/(b.floor-b.bottomCurve),0,1),ease=t*t*(3-2*t);return[b.bodyL+(b.bottomL-b.bodyL)*ease,b.bodyR+(b.bottomR-b.bodyR)*ease]}return[b.bodyL,b.bodyR]};
 
   function resizeCanvas(){
@@ -4200,6 +4218,7 @@ function setupCollections(m){
   function updateCount(){
     countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`;
     jarsFilledEl.textContent=String(normalizeStarChartCount(progress.jarsFilled));
+    emptyCurrent.disabled=bodies.length<=0&&!progress.filled;
     removeFill.disabled=progress.jarsFilled<=0;
     resetFills.disabled=progress.jarsFilled<=0;
   }
@@ -4239,7 +4258,8 @@ function setupCollections(m){
   function checkJarFilled(){
     if(progress.filled||!activeClassId||performance.now()<fillArmedAt)return;
     const line=fillLineY();
-    const reached=bodies.some(body=>body.y>=line&&body.y-body.r<=line&&Math.hypot(body.vx,body.vy)<22);
+    const bounds=jarBounds();
+    const reached=bodies.some(body=>body.y-body.r<=line&&body.y+body.r>=bounds.shoulderTop&&Math.hypot(body.vx,body.vy)<45);
     if(!reached)return;
     progress.filled=true;
     progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);
@@ -4359,7 +4379,13 @@ function setupCollections(m){
   picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();persistProgress();closePicker()}});
   document.addEventListener('pointerdown',e=>{if(!m.contains(e.target)||!e.target.closest('.collection-picker-wrap'))closePicker()});
   bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  restart.addEventListener('click',()=>{bodies=[];particles=[];progress.count=0;progress.filled=false;persistProgress();renderFilledState()});
+  const emptyJar=()=>{
+    if(!activeClassId)return;
+    bodies=[];particles=[];progress.count=0;progress.filled=false;fillArmedAt=performance.now()+450;persistProgress();renderFilledState();
+  };
+  restart.addEventListener('click',emptyJar);
+  bannerRestart.addEventListener('click',emptyJar);
+  emptyCurrent.addEventListener('click',()=>{emptyJar();setSettingsOpen(false)});
   settingsToggle.addEventListener('click',()=>setSettingsOpen(settings.hidden));
   m.addEventListener('pointerdown',event=>{if(!settings.hidden&&!event.target.closest('.collection-settings-wrap'))setSettingsOpen(false)});
   addFill.addEventListener('click',()=>{progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);persistProgress();renderFilledState()});
