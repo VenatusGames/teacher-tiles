@@ -3998,7 +3998,7 @@ function setupClassMeter(m){
   const className=m.querySelector('.classmeter-class-name');
   const classLogo=m.querySelector('.classmeter-class-logo');
   const changeClass=m.querySelector('.classmeter-change-class');
-  const thermometer=m.querySelector('.classmeter-thermometer');
+  const meter=m.querySelector('.classmeter-meter');
   const percent=m.querySelector('.classmeter-percent');
   const winCount=m.querySelector('.classmeter-win-count b');
   const fillButton=m.querySelector('.classmeter-fill');
@@ -4027,7 +4027,8 @@ function setupClassMeter(m){
   const renderProgress=()=>{
     const fill=Math.max(0,Math.min(100,Number(progress.fill)||0));
     m.style.setProperty('--classmeter-fill',`${fill}%`);
-    thermometer.setAttribute('aria-valuenow',String(Math.round(fill)));
+    m.classList.toggle('has-meter-fill',fill>0);
+    meter.setAttribute('aria-valuenow',String(Math.round(fill)));
     percent.textContent=`${Math.round(fill)}%`;
     winCount.textContent=String(normalizeStarChartCount(progress.wins));
     decreaseButton.disabled=fill<=0||celebrating;
@@ -4066,8 +4067,8 @@ function setupClassMeter(m){
     orientationLabel.textContent=horizontal?'Vertical':'Horizontal';
     orientationButton.setAttribute('aria-label',`Switch to ${horizontal?'vertical':'horizontal'} meter`);
     if(resize){
-      const width=horizontal?640:360;
-      const height=horizontal?330:600;
+      const width=horizontal?680:420;
+      const height=horizontal?360:610;
       m.style.width=`${width}px`;
       m.style.height=`${height}px`;
       m.style.left=`${clamp(m.offsetLeft,0,BOARD_WIDTH-width)}px`;
@@ -4217,7 +4218,7 @@ function setupCollections(m){
   const jarBehind=new Image();
   jarBehind.src='assets/jar-behind.png';
   let typeIndex=0,bodies=[],particles=[],raf=0,last=performance.now(),cw=260,ch=320,dpr=1,dead=false,currentJar=null;
-  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0;
+  let activeClassId='',pendingClassId='',roster=null,progress=normalizeCollectionProgress(null),writing=false,fillArmedAt=0,fillReachedAt=0;
 
   const jarRectFor=(w,h)=>{const size=Math.max(140,Math.min(w*.96,h*.98));return{x:(w-size)/2,y:(h-size)/2,w:size,h:size}};
   const jarBounds=()=>{const j=currentJar||jarRectFor(cw,ch);return{floor:j.y+j.h*.895,top:j.y+j.h*.105,neckL:j.x+j.w*.285,neckR:j.x+j.w*.715,bodyL:j.x+j.w*.215,bodyR:j.x+j.w*.785,shoulderTop:j.y+j.h*.205,shoulderBottom:j.y+j.h*.31,bottomCurve:j.y+j.h*.765,bottomL:j.x+j.w*.265,bottomR:j.x+j.w*.735,j}};
@@ -4239,7 +4240,7 @@ function setupCollections(m){
   function addItem({persist=true,detect=true}={}){
     if(bodies.length>=80||progress.filled||!activeClassId)return;
     const t=types[typeIndex],b=jarBounds(),r=Math.max(9,Math.min(16,b.j.w*.036))*(.88+Math.random()*.22);
-    bodies.push({type:t.id,x:(b.neckL+b.neckR)/2+(Math.random()-.5)*(b.neckR-b.neckL)*.28,y:b.top-r-22,vx:(Math.random()-.5)*20,vy:18+Math.random()*12,r,rot:(Math.random()-.5)*.4,av:(Math.random()-.5)*1.25,color:colors[bodies.length%colors.length],variant:Math.floor(Math.random()*4),impact:false,onFloor:false});
+    bodies.push({type:t.id,x:(b.neckL+b.neckR)/2+(Math.random()-.5)*(b.neckR-b.neckL)*.28,y:b.top-r-22,vx:(Math.random()-.5)*20,vy:18+Math.random()*12,r,rot:(Math.random()-.5)*.4,av:(Math.random()-.5)*1.25,color:colors[bodies.length%colors.length],variant:Math.floor(Math.random()*4),impact:false,onFloor:false,bornAt:detect?performance.now():performance.now()-1200});
     if(detect)fillArmedAt=performance.now()+300;
     updateCount();
     if(persist)persistProgress();
@@ -4285,11 +4286,24 @@ function setupCollections(m){
   }
 
   function checkJarFilled(){
-    if(progress.filled||!activeClassId||performance.now()<fillArmedAt)return;
-    const line=fillLineY();
-    const bounds=jarBounds();
-    const reached=bodies.some(body=>body.y-body.r<=line&&body.y+body.r>=bounds.shoulderTop&&Math.hypot(body.vx,body.vy)<45);
-    if(!reached)return;
+    const now=performance.now();
+    if(progress.filled||!activeClassId||now<fillArmedAt){fillReachedAt=0;return}
+    const line=fillLineY(),bounds=jarBounds(),tolerance=Math.max(3,bounds.j.h*.012);
+    const pileTop=bodies.reduce((top,body)=>{
+      const age=now-(Number(body.bornAt)||0);
+      const settledEnough=age>=450&&Math.abs(body.vy)<180&&Math.abs(body.vx)<100;
+      const insideJar=body.y>=bounds.shoulderTop&&body.y<=bounds.floor;
+      return settledEnough&&insideJar?Math.min(top,body.y-body.r):top;
+    },Infinity);
+    const reached=Number.isFinite(pileTop)&&pileTop<=line+tolerance;
+    if(!reached){
+      if(fillReachedAt&&now-fillReachedAt<140)return;
+      fillReachedAt=0;
+      return;
+    }
+    if(!fillReachedAt){fillReachedAt=now;return}
+    if(now-fillReachedAt<180)return;
+    fillReachedAt=0;
     progress.filled=true;
     progress.jarsFilled=normalizeStarChartCount(progress.jarsFilled+1);
     persistProgress();
@@ -4381,7 +4395,7 @@ function setupCollections(m){
     const safeCount=Math.max(0,Math.min(80,Math.round(Number(count)||0)));
     for(let i=0;i<safeCount;i++)addItem({persist:false,detect:false});
     progress.filled=filled;
-    fillArmedAt=performance.now()+450;
+    fillArmedAt=performance.now()+450;fillReachedAt=0;
     updateCount();
   };
   const applyRosterProgress=next=>{
@@ -4410,7 +4424,7 @@ function setupCollections(m){
   bgBtn.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   const emptyJar=()=>{
     if(!activeClassId)return;
-    bodies=[];particles=[];progress.count=0;progress.filled=false;fillArmedAt=performance.now()+450;persistProgress();renderFilledState();
+    bodies=[];particles=[];progress.count=0;progress.filled=false;fillArmedAt=performance.now()+450;fillReachedAt=0;persistProgress();renderFilledState();
   };
   restart.addEventListener('click',emptyJar);
   bannerRestart.addEventListener('click',emptyJar);
