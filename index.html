@@ -157,6 +157,26 @@
             </div>
             <small data-i18n="profile.balance">Account balance</small>
           </div>
+          <section class="profile-tools" aria-labelledby="profile-tools-title">
+            <div class="profile-tools__head"><span>ACCOUNT TOOLS</span><h3 id="profile-tools-title">Your tools</h3></div>
+            <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
+              <span class="profile-tool-button__icon" aria-hidden="true">👥</span>
+              <span><strong>Classes</strong><small>Create and manage reusable student rosters</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+          </section>
+          <section id="profile-classes-panel" class="profile-classes-panel" hidden aria-labelledby="profile-classes-title">
+            <div class="profile-classes-panel__head">
+              <div><span>ROSTERS</span><h3 id="profile-classes-title">Classes</h3></div>
+              <button id="profile-classes-close" type="button" aria-label="Close Classes">×</button>
+            </div>
+            <p class="profile-classes-disclaimer"><strong>Disclaimer:</strong> Do not upload sensitive student information. While we keep everything encrypted and safe, it is still good practice to ensure privacy for students. The rostering system should be used for first names or nicknames only!</p>
+            <form id="profile-class-create" class="profile-class-create">
+              <input id="profile-class-name" type="text" maxlength="50" placeholder="Class name, e.g. Homeroom" aria-label="New class name" required>
+              <button type="submit">Create Class</button>
+            </form>
+            <div id="profile-class-list" class="profile-class-list"></div>
+          </section>
           <section class="profile-badge-showcase" aria-labelledby="profile-badges-title">
             <div class="profile-badge-showcase__head">
               <div><span>YOUR PROFILE</span><h3 id="profile-badges-title">Patch Collection</h3></div>

@@ -1625,6 +1625,8 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const previousUser = currentUser;
   currentUser = user || null;
+  window.TeacherTilesClassScope = user?.uid || "local";
+  window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   authReady = true;
   loadingState.hidden = true;
   signedInState.hidden = !user;

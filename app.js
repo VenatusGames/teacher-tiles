@@ -177,6 +177,142 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
   language:'en'
 });
 
+const CLASS_ROSTERS_KEY='teachertiles-class-rosters-v1';
+const classRostersStorageKey=()=>`${CLASS_ROSTERS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+
+function normalizeRosterNames(values){
+  const names=[];
+  const seen=new Set();
+  for(const raw of Array.isArray(values)?values:[]){
+    const name=String(raw||'').trim().replace(/\s+/g,' ');
+    const key=name.toLocaleLowerCase();
+    if(!name||seen.has(key))continue;
+    seen.add(key);
+    names.push(name.slice(0,60));
+  }
+  return names.slice(0,300);
+}
+
+function readClassRosters(){
+  try{
+    const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
+    if(!Array.isArray(value))return [];
+    return value.filter(Boolean).map((item,index)=>({
+      id:String(item.id||`class-${index+1}`),
+      name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
+      students:normalizeRosterNames(item.students)
+    }));
+  }catch{return []}
+}
+
+function writeClassRosters(classes){
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));
+}
+
+function classRosterId(){
+  return typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():`class-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+}
+
+function attachClassRosterLoader(anchor,onLoad){
+  if(!anchor||typeof onLoad!=='function')return()=>{};
+  const row=document.createElement('div');
+  row.className='tile-class-loader';
+  const select=document.createElement('select');
+  select.setAttribute('aria-label','Choose a saved class roster');
+  const load=document.createElement('button');
+  load.type='button';
+  load.textContent='Load Class';
+  const refresh=()=>{
+    const current=select.value;
+    const classes=readClassRosters();
+    select.replaceChildren(new Option(classes.length?'Choose a class…':'No saved classes',''));
+    classes.forEach(item=>select.add(new Option(`${item.name} (${item.students.length})`,item.id)));
+    if(classes.some(item=>item.id===current))select.value=current;
+    load.disabled=!select.value;
+  };
+  load.addEventListener('click',()=>{
+    const roster=readClassRosters().find(item=>item.id===select.value);
+    if(roster)onLoad([...roster.students],roster);
+  });
+  select.addEventListener('change',()=>load.disabled=!select.value);
+  row.append(select,load);
+  anchor.before(row);
+  refresh();
+  window.addEventListener('teachertiles:classeschange',refresh);
+  return()=>window.removeEventListener('teachertiles:classeschange',refresh);
+}
+
+function setupProfileClasses(){
+  const openButton=document.getElementById('profile-classes-button');
+  const panel=document.getElementById('profile-classes-panel');
+  const closeButton=document.getElementById('profile-classes-close');
+  const form=document.getElementById('profile-class-create');
+  const nameInput=document.getElementById('profile-class-name');
+  const list=document.getElementById('profile-class-list');
+  if(!openButton||!panel||!form||!nameInput||!list)return;
+
+  const render=()=>{
+    const classes=readClassRosters();
+    list.replaceChildren();
+    if(!classes.length){
+      const empty=document.createElement('p');
+      empty.className='profile-class-empty';
+      empty.textContent='No classes yet. Create one to build your first roster.';
+      list.append(empty);
+      return;
+    }
+    classes.forEach(item=>{
+      const card=document.createElement('article');
+      card.className='profile-class-card';
+      const head=document.createElement('div');
+      head.className='profile-class-card__head';
+      const title=document.createElement('input');
+      title.type='text';title.maxLength=50;title.value=item.name;title.setAttribute('aria-label','Class name');
+      const count=document.createElement('span');
+      count.textContent=`${item.students.length} ${item.students.length===1?'student':'students'}`;
+      head.append(title,count);
+      const textarea=document.createElement('textarea');
+      textarea.rows=6;textarea.value=item.students.join('\n');textarea.placeholder='One first name or nickname per line';
+      textarea.setAttribute('aria-label',`Student names for ${item.name}`);
+      const actions=document.createElement('div');
+      actions.className='profile-class-card__actions';
+      const remove=document.createElement('button');
+      remove.type='button';remove.className='is-delete';remove.textContent='Delete Class';
+      const save=document.createElement('button');
+      save.type='button';save.textContent='Save Roster';
+      save.addEventListener('click',()=>{
+        const next=readClassRosters();
+        const target=next.find(entry=>entry.id===item.id);
+        if(!target)return;
+        target.name=title.value.trim().slice(0,50)||'Untitled Class';
+        target.students=normalizeRosterNames(textarea.value.split(/\r?\n|,/));
+        writeClassRosters(next);render();
+      });
+      remove.addEventListener('click',()=>{
+        writeClassRosters(readClassRosters().filter(entry=>entry.id!==item.id));render();
+      });
+      actions.append(remove,save);card.append(head,textarea,actions);list.append(card);
+    });
+  };
+
+  const setOpen=open=>{
+    panel.hidden=!open;openButton.setAttribute('aria-expanded',String(open));
+    if(open){render();requestAnimationFrame(()=>nameInput.focus({preventScroll:true}))}
+  };
+  openButton.addEventListener('click',()=>setOpen(panel.hidden));
+  closeButton?.addEventListener('click',()=>setOpen(false));
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=nameInput.value.trim();if(!name)return;
+    const classes=readClassRosters();classes.push({id:classRosterId(),name:name.slice(0,50),students:[]});
+    writeClassRosters(classes);nameInput.value='';render();
+  });
+  window.addEventListener('teachertiles:classeschange',render);
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
+
 function normalizeAppPreferences(value={}){
   const source=value&&typeof value==='object'?value:{};
   const prefClamp=(number,min,max)=>Math.max(min,Math.min(max,number));
@@ -3067,6 +3203,14 @@ function setupLunchCount(m){
   m.querySelector('.lunchcount-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.lunchcount-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
+  const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.lunchcount-name-entry'),rosterNames=>{
+    students=normalizeRosterNames(rosterNames);
+    categories.forEach(category=>category.students=[]);
+    setMode('names');
+    renderCategories();
+    renderPool();
+  });
+
   m._boardGetState=()=>({
     mode:m.dataset.lunchMode||'tally',
     students:[...students],
@@ -3097,6 +3241,8 @@ function setupLunchCount(m){
   };
 
   setMode('tally');
+  const priorCleanup=m._cleanup;
+  m._cleanup=()=>{priorCleanup?.();detachRosterLoader()};
 }
 
 function setupVoting(m){
@@ -3470,6 +3616,14 @@ function setupVoting(m){
   m.querySelector('.voting-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.voting-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
+  const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.voting-name-entry'),rosterNames=>{
+    students=normalizeRosterNames(rosterNames);
+    choices.forEach(choice=>choice.students=[]);
+    setMode('names');
+    renderChoices();
+    renderPool();
+  });
+
   m._boardGetState=()=>({
     mode:m.dataset.votingMode||'tally',
     students:[...students],
@@ -3498,6 +3652,9 @@ function setupVoting(m){
     renderChoices();
     renderPool();
   };
+
+  const priorCleanup=m._cleanup;
+  m._cleanup=()=>{priorCleanup?.();detachRosterLoader()};
 
   setMode('tally');
 }
@@ -3713,6 +3870,15 @@ function setupGroupMaker(m){
   renderNameList();
   updateCount();
 
+  const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.groupmaker-name-entry'),rosterNames=>{
+    names=normalizeRosterNames(rosterNames);
+    groupTitles=[];
+    m.classList.remove('has-groups');
+    summary.textContent='Class roster loaded';
+    renderNameList();
+    updateCount();
+  });
+
   m._boardGetState=()=>({
     names:[...names],
     groupTitles:[...groupTitles],
@@ -3735,6 +3901,7 @@ function setupGroupMaker(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
+    detachRosterLoader();
     clearTimeout(shuffleTimer);
   };
 }
@@ -9893,6 +10060,15 @@ function setupSpinner(m){
   renderNameList();
   drawWheel();
 
+  const detachRosterLoader=attachClassRosterLoader(input.closest('.spinner-name-entry'),rosterNames=>{
+    if(spinning)return;
+    names=normalizeRosterNames(rosterNames);
+    dismissWinner();
+    renderNameList();
+    drawWheel();
+    winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';
+  });
+
   m._boardGetState=()=>({names:[...names],rotation});
   m._boardSetState=state=>{
     if(!state)return;
@@ -9908,6 +10084,7 @@ function setupSpinner(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
+    detachRosterLoader();
     cancelAnimationFrame(raf);
     ro.disconnect();
     spinAudio.pause();
