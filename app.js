@@ -4218,8 +4218,12 @@ function setupImage(m){
     m.style.top=`${clamp(m.offsetTop,0,BOARD_HEIGHT-h)}px`;
   };
 
-  const setSrc=(src,alt='Board image')=>{
-    img.onload=fitModule;
+  const setSrc=(src,alt='Board image',{fit=true}={})=>{
+    img.onload=()=>{
+      const ratio=(img.naturalWidth||1)/(img.naturalHeight||1);
+      m._imageRatio=ratio;
+      if(fit)fitModule();
+    };
     img.onerror=()=>{img.hidden=true;m.classList.remove('has-image')};
     img.src=src;img.alt=alt;img.hidden=false;m.classList.add('has-image');
   };
@@ -4237,18 +4241,18 @@ function setupImage(m){
     }).catch(()=>{});
   };
 
-  const setUrl=(url,{notify=true}={})=>{
+  const setUrl=(url,{notify=true,fit=true}={})=>{
     if(!url)return;
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=''}
     boardImageSrc=url;
-    setSrc(url,'Board image');
+    setSrc(url,'Board image',{fit});
     if(notify)notifyBoardChanged('image');
   };
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
   m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:'')});
-  m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false})};
+  m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false,fit:false})};
 
   stage.addEventListener('click',()=>input.click());
   replace?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();input.click()});
