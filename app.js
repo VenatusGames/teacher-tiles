@@ -592,7 +592,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -627,7 +627,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -1280,7 +1280,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['all','text','media','tools','language','time','audio','games','literacy','math','science','planning','pbis','sel'];
+const menuCategoryOrder=['all','text','media','tools','language','geography','time','audio','games','literacy','math','science','planning','pbis','sel'];
 
 function menuCategoryLabel(category){
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -1393,6 +1393,9 @@ function setupModuleByType(m,type){
   if(type==='dictionary')setupDictionary(m);
   if(type==='translation')setupTranslation(m);
   if(type==='livecaption')setupLiveCaption(m);
+  if(type==='voicememo')setupVoiceMemo(m);
+  if(type==='worldmap')setupWorldMap(m);
+  if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -5420,6 +5423,45 @@ function setupLiveCaption(m){
   let isListening=false;
   let restartTimer=0;
   let history=[];
+  let pendingInterim='';
+  let currentFitFrame=0;
+
+  const segmentCaptionText=value=>{
+    const normalized=String(value||'').replace(/\s+/g,' ').trim();
+    if(!normalized)return[];
+    const sentences=normalized.match(/[^.!?]+(?:[.!?]+|$)/g)||[normalized];
+    const segments=[];
+    for(const sentence of sentences){
+      const words=sentence.trim().split(/\s+/).filter(Boolean);
+      let chunk=[];
+      for(const word of words){
+        const candidate=[...chunk,word].join(' ');
+        if(chunk.length&&(chunk.length>=14||candidate.length>88)){
+          segments.push(chunk.join(' '));
+          chunk=[word];
+        }else chunk.push(word);
+      }
+      if(chunk.length)segments.push(chunk.join(' '));
+    }
+    return segments.filter(Boolean);
+  };
+  const fitCurrentText=()=>{
+    cancelAnimationFrame(currentFitFrame);
+    currentFitFrame=requestAnimationFrame(()=>{
+      let low=16,high=56,best=16;
+      while(high-low>.5){
+        const size=(low+high)/2;
+        current.style.fontSize=`${size}px`;
+        if(current.scrollHeight<=current.clientHeight+1&&current.scrollWidth<=current.clientWidth+1){best=size;low=size}else high=size;
+      }
+      current.style.fontSize=`${best}px`;
+    });
+  };
+  const displayCurrent=value=>{
+    const phrase=segmentCaptionText(value).at(-1)||'Listening…';
+    current.textContent=phrase;
+    fitCurrentText();
+  };
 
   const renderHistory=()=>{
     historyEl.replaceChildren();
@@ -5451,12 +5493,17 @@ function setupLiveCaption(m){
     if(!listening)renderHistory();
   };
   const addCaption=value=>{
-    const text=String(value||'').replace(/\s+/g,' ').trim();
-    if(!text)return;
-    if(history[history.length-1]!==text)history.push(text);
+    const segments=segmentCaptionText(value);
+    if(!segments.length)return;
+    for(const text of segments)if(history[history.length-1]!==text)history.push(text);
     if(history.length>100)history=history.slice(-100);
-    current.textContent=text;
+    displayCurrent(segments.at(-1));
     notifyBoardChanged('live-caption');
+  };
+  const commitPending=()=>{
+    if(!pendingInterim)return;
+    addCaption(pendingInterim);
+    pendingInterim='';
   };
   const startRecognition=()=>{
     if(!SpeechRecognition||!wantsListening)return;
@@ -5470,20 +5517,22 @@ function setupLiveCaption(m){
       if(!wantsListening){recognition.stop();return}
       setListeningUI(true);
       message.textContent='Listening clearly…';
-      if(!history.length)current.textContent='Listening… start speaking when you’re ready.';
+      if(!history.length)displayCurrent('Listening… start speaking when you’re ready.');
     };
     recognition.onresult=event=>{
+      if(!wantsListening&&!isListening)return;
       let interim='';
       for(let index=event.resultIndex;index<event.results.length;index++){
         const transcript=event.results[index][0]?.transcript||'';
-        if(event.results[index].isFinal)addCaption(transcript);
+        if(event.results[index].isFinal){addCaption(transcript);pendingInterim=''}
         else interim+=transcript;
       }
       const cleanInterim=interim.replace(/\s+/g,' ').trim();
-      if(cleanInterim)current.textContent=cleanInterim;
+      if(cleanInterim){pendingInterim=cleanInterim;displayCurrent(cleanInterim)}
     };
     recognition.onerror=event=>{
       if(event.error==='no-speech'){message.textContent='Still listening — no speech detected yet.';return}
+      commitPending();
       wantsListening=false;
       const denied=event.error==='not-allowed'||event.error==='service-not-allowed';
       message.textContent=denied?'Microphone permission was not granted.':'Live captions could not continue. Try again.';
@@ -5492,7 +5541,7 @@ function setupLiveCaption(m){
     recognition.onend=()=>{
       recognition=null;
       if(wantsListening){restartTimer=setTimeout(startRecognition,220);return}
-      if(isListening)setListeningUI(false);
+      if(isListening){commitPending();setListeningUI(false)}
     };
     try{recognition.start()}catch{
       wantsListening=false;
@@ -5504,13 +5553,15 @@ function setupLiveCaption(m){
     if(!SpeechRecognition)return;
     wantsListening=true;
     setListeningUI(true);
-    current.textContent='Starting microphone…';
+    pendingInterim='';
+    displayCurrent('Starting microphone…');
     message.textContent='Starting live captions…';
     startRecognition();
   };
   const pause=()=>{
     wantsListening=false;
     clearTimeout(restartTimer);
+    commitPending();
     try{recognition?.stop()}catch{}
     setListeningUI(false);
     message.textContent=history.length?'Paused — scroll to review the caption history.':'Captions are paused.';
@@ -5519,10 +5570,12 @@ function setupLiveCaption(m){
   if(!SpeechRecognition){
     toggle.disabled=true;
     message.textContent='Live captions are not supported in this browser.';
-    current.textContent='This browser does not provide speech recognition.';
+    displayCurrent('This browser does not provide speech recognition.');
   }else toggle.addEventListener('click',()=>wantsListening||isListening?pause():start());
 
   historyEl.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  const captionResizeObserver=new ResizeObserver(fitCurrentText);
+  captionResizeObserver.observe(m.querySelector('.livecaption-current'));
   m.querySelector('.livecaption-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.livecaption-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -5531,12 +5584,251 @@ function setupLiveCaption(m){
   m._boardGetState=()=>({history:[...history]});
   m._boardSetState=state=>{
     history=Array.isArray(state?.history)?state.history.map(value=>String(value||'').trim()).filter(Boolean).slice(-100):[];
-    if(history.length)current.textContent=history[history.length-1];
+    if(history.length)displayCurrent(history[history.length-1]);
     renderHistory();
     setListeningUI(false);
   };
   const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();wantsListening=false;clearTimeout(restartTimer);try{recognition?.abort()}catch{}};
+  m._cleanup=()=>{prior?.();wantsListening=false;clearTimeout(restartTimer);cancelAnimationFrame(currentFitFrame);captionResizeObserver.disconnect();try{recognition?.abort()}catch{}};
+}
+
+function setupVoiceMemo(m){
+  const recordButton=m.querySelector('.voicememo-record');
+  const recordLabel=recordButton.querySelector('span');
+  const timeEl=m.querySelector('.voicememo-time');
+  const message=m.querySelector('.voicememo-message');
+  const list=m.querySelector('.voicememo-list');
+  const count=m.querySelector('.voicememo-count');
+  let memos=[];
+  let recorder=null;
+  let stream=null;
+  let chunks=[];
+  let startedAt=0;
+  let timerId=0;
+  let disposed=false;
+
+  const formatDuration=seconds=>`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
+  const setRecordingUI=recording=>{
+    m.classList.toggle('is-recording',recording);
+    recordButton.setAttribute('aria-pressed',String(recording));
+    recordLabel.textContent=recording?'Stop recording':'Record memo';
+  };
+  const stopTracks=()=>{stream?.getTracks().forEach(track=>track.stop());stream=null};
+  const render=()=>{
+    count.textContent=`${memos.length} / 5`;
+    list.replaceChildren();
+    if(!memos.length){
+      const empty=document.createElement('p');
+      empty.className='voicememo-empty';
+      empty.textContent='Your recordings will appear here.';
+      list.appendChild(empty);
+      return;
+    }
+    memos.forEach((memo,index)=>{
+      const row=document.createElement('article');
+      row.className='voicememo-item';
+      const meta=document.createElement('div');
+      const title=document.createElement('strong');
+      const duration=document.createElement('small');
+      title.textContent=`Memo ${index+1}`;
+      duration.textContent=formatDuration(memo.duration||0);
+      meta.append(title,duration);
+      const audio=document.createElement('audio');
+      audio.controls=true;
+      audio.preload='metadata';
+      audio.src=memo.dataUrl;
+      audio.setAttribute('controlsList','nodownload');
+      audio.setAttribute('aria-label',`Play Memo ${index+1}`);
+      audio.addEventListener('play',()=>list.querySelectorAll('audio').forEach(other=>{if(other!==audio)other.pause()}));
+      const remove=document.createElement('button');
+      remove.type='button';
+      remove.className='voicememo-remove';
+      remove.setAttribute('aria-label',`Delete Memo ${index+1}`);
+      remove.textContent='×';
+      remove.addEventListener('click',()=>{memos.splice(index,1);render();message.textContent='Memo deleted.';notifyBoardChanged('voice-memo-delete')});
+      row.append(meta,audio,remove);
+      list.appendChild(row);
+    });
+  };
+  const finishRecording=()=>{
+    clearInterval(timerId);
+    timerId=0;
+    if(recorder?.state==='recording')recorder.stop();
+  };
+  const beginRecording=async()=>{
+    if(memos.length>=5){message.textContent='Delete a memo before recording another.';return}
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){message.textContent='Audio recording is not supported in this browser.';return}
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+      const preferred=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type=>MediaRecorder.isTypeSupported?.(type));
+      recorder=new MediaRecorder(stream,preferred?{mimeType:preferred,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000});
+      chunks=[];
+      startedAt=performance.now();
+      recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
+      recorder.onerror=()=>{message.textContent='Recording stopped because of an audio error.';stopTracks();setRecordingUI(false)};
+      recorder.onstop=()=>{
+        const duration=Math.min(30,(performance.now()-startedAt)/1000);
+        const blob=new Blob(chunks,{type:recorder?.mimeType||chunks[0]?.type||'audio/webm'});
+        chunks=[];
+        stopTracks();
+        if(disposed)return;
+        setRecordingUI(false);
+        timeEl.textContent='0:00';
+        if(!blob.size){message.textContent='No audio was captured.';return}
+        const reader=new FileReader();
+        reader.onload=()=>{
+          memos.push({dataUrl:String(reader.result||''),duration});
+          render();
+          message.textContent='Memo saved and ready to play.';
+          notifyBoardChanged('voice-memo-add');
+        };
+        reader.onerror=()=>{message.textContent='The recording could not be prepared.'};
+        reader.readAsDataURL(blob);
+      };
+      recorder.start(500);
+      setRecordingUI(true);
+      message.textContent='Recording… tap Stop when finished.';
+      timerId=setInterval(()=>{
+        const elapsed=Math.min(30,(performance.now()-startedAt)/1000);
+        timeEl.textContent=formatDuration(elapsed);
+        if(elapsed>=30)finishRecording();
+      },200);
+    }catch(error){
+      stopTracks();
+      setRecordingUI(false);
+      message.textContent=error?.name==='NotAllowedError'?'Microphone permission was not granted.':'The microphone could not be started.';
+    }
+  };
+
+  recordButton.addEventListener('click',()=>recorder?.state==='recording'?finishRecording():beginRecording());
+  list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  m.querySelector('.voicememo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.voicememo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.voicememo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  render();
+  m._boardGetState=()=>({memos:memos.map(memo=>({...memo}))});
+  m._boardSetState=state=>{memos=Array.isArray(state?.memos)?state.memos.filter(memo=>typeof memo?.dataUrl==='string'&&memo.dataUrl.startsWith('data:audio/')).slice(0,5):[];render()};
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true;clearInterval(timerId);try{if(recorder?.state==='recording')recorder.stop()}catch{}stopTracks()};
+}
+
+const WORLD_MAP_REGIONS=[
+  {id:'north-america',name:'North America',hemisphere:'Northern and Western Hemispheres',fact:'North America stretches from the Arctic to the tropics and includes 23 independent countries.'},
+  {id:'south-america',name:'South America',hemisphere:'Mostly Southern and Western Hemispheres',fact:'South America is home to the Andes, the world’s longest continental mountain range.'},
+  {id:'europe',name:'Europe',hemisphere:'Northern Hemisphere; Eastern and Western Hemispheres',fact:'Europe and Asia share one large landmass called Eurasia.'},
+  {id:'africa',name:'Africa',hemisphere:'All four hemispheres',fact:'Both the Equator and Prime Meridian cross Africa, placing it in all four hemispheres.'},
+  {id:'asia',name:'Asia',hemisphere:'Mostly Northern and Eastern Hemispheres',fact:'Asia is the largest continent by both land area and population.'},
+  {id:'australia',name:'Australia',hemisphere:'Southern and Eastern Hemispheres',fact:'Australia is the smallest continent and is surrounded by the Indian and Pacific Oceans.'},
+  {id:'antarctica',name:'Antarctica',hemisphere:'Southern Hemisphere',fact:'Antarctica surrounds the South Pole and is the coldest continent on Earth.'}
+];
+
+function setupWorldMap(m){
+  const land=m.querySelector('.worldmap-land');
+  const labels=m.querySelector('.worldmap-labels');
+  const legend=m.querySelector('.worldmap-legend');
+  const name=m.querySelector('.worldmap-name');
+  const hemisphere=m.querySelector('.worldmap-hemisphere');
+  const fact=m.querySelector('.worldmap-fact');
+  let selected='';
+  let zoom=1;
+  const applyZoom=()=>{const transform=`translate(${500*(1-zoom)} ${260*(1-zoom)}) scale(${zoom})`;land.setAttribute('transform',transform);labels.setAttribute('transform',transform)};
+  const selectRegion=(id,{animate=true}={})=>{
+    const region=WORLD_MAP_REGIONS.find(item=>item.id===id);
+    if(!region)return;
+    selected=region.id;
+    m.querySelectorAll('[data-map-region]').forEach(path=>path.classList.toggle('is-selected',path.dataset.mapRegion===selected));
+    legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.toggle('is-active',button.dataset.mapLegend===selected));
+    name.textContent=region.name;
+    hemisphere.textContent=region.hemisphere;
+    fact.textContent=region.fact;
+    if(animate&&m.querySelector('.worldmap-info')?.animate)m.querySelector('.worldmap-info').animate([{opacity:.45,transform:'translateY(4px)'},{opacity:1,transform:'none'}],{duration:230,easing:'ease-out'});
+    notifyBoardChanged('world-map-region');
+  };
+  WORLD_MAP_REGIONS.forEach(region=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.dataset.mapLegend=region.id;
+    button.textContent=region.name;
+    button.addEventListener('click',()=>selectRegion(region.id));
+    legend.appendChild(button);
+  });
+  m.querySelectorAll('[data-map-region]').forEach(path=>{
+    path.setAttribute('tabindex','0');
+    path.setAttribute('role','button');
+    const region=WORLD_MAP_REGIONS.find(item=>item.id===path.dataset.mapRegion);
+    path.setAttribute('aria-label',`Explore ${region?.name||'continent'}`);
+    path.addEventListener('click',()=>selectRegion(path.dataset.mapRegion));
+    path.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRegion(path.dataset.mapRegion)}});
+  });
+  m.querySelectorAll('[data-map-zoom]').forEach(button=>button.addEventListener('click',()=>{
+    const action=button.dataset.mapZoom;
+    zoom=action==='reset'?1:clamp(zoom+(action==='in' ? .2 : -.2),1,1.8);
+    applyZoom();
+    notifyBoardChanged('world-map-zoom');
+  }));
+  m.querySelector('.worldmap-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  applyZoom();
+  m._boardGetState=()=>({selected,zoom});
+  m._boardSetState=state=>{zoom=clamp(Number(state?.zoom)||1,1,1.8);applyZoom();if(state?.selected)selectRegion(state.selected,{animate:false})};
+}
+
+const COMPASS_PARTS={
+  needle:{name:'Direction needle',copy:'The colored end points toward the selected heading. Rotate it to practice finding directions.'},
+  cardinal:{name:'Cardinal directions',copy:'North, east, south, and west are the four main—or cardinal—directions.'},
+  intercardinal:{name:'Intercardinal directions',copy:'Northeast, southeast, southwest, and northwest sit halfway between the cardinal directions.'},
+  degrees:{name:'Degree ring',copy:'A full turn is 360°. North is 0°, east is 90°, south is 180°, and west is 270°.'}
+};
+
+function setupCompass(m){
+  const svg=m.querySelector('.compass-face');
+  const ticks=m.querySelector('.compass-ticks');
+  const needle=m.querySelector('.compass-needle');
+  const slider=m.querySelector('.compass-slider input');
+  const output=m.querySelector('.compass-heading');
+  const partName=m.querySelector('.compass-part-name');
+  const partCopy=m.querySelector('.compass-part-copy');
+  let heading=0;
+  let part='needle';
+  const svgNs='http://www.w3.org/2000/svg';
+  for(let degree=0;degree<360;degree+=5){
+    const line=document.createElementNS(svgNs,'line');
+    const major=degree%45===0;
+    line.setAttribute('x1','210');line.setAttribute('x2','210');line.setAttribute('y1',major?'32':'36');line.setAttribute('y2',major?'50':'44');line.setAttribute('transform',`rotate(${degree} 210 210)`);line.classList.toggle('is-major',major);ticks.appendChild(line);
+  }
+  const directionFor=value=>['North','Northeast','East','Southeast','South','Southwest','West','Northwest'][Math.round(value/45)%8];
+  const setHeading=(value,{notify=true}={})=>{
+    heading=(Math.round(Number(value))%360+360)%360;
+    slider.value=String(heading);
+    needle.style.transform=`rotate(${heading}deg)`;
+    output.textContent=`${heading}° · ${directionFor(heading)}`;
+    if(notify)notifyBoardChanged('compass-heading');
+  };
+  const setPart=(next,{notify=true}={})=>{
+    part=COMPASS_PARTS[next]?next:'needle';
+    m.dataset.compassPart=part;
+    partName.textContent=COMPASS_PARTS[part].name;
+    partCopy.textContent=COMPASS_PARTS[part].copy;
+    m.querySelectorAll('[data-compass-part]').forEach(button=>button.classList.toggle('is-active',button.dataset.compassPart===part));
+    if(notify)notifyBoardChanged('compass-part');
+  };
+  slider.addEventListener('input',()=>setHeading(slider.value));
+  m.querySelectorAll('[data-compass-part]').forEach(button=>button.addEventListener('click',()=>setPart(button.dataset.compassPart)));
+  svg.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.stopPropagation();
+    const rect=svg.getBoundingClientRect();
+    const x=(event.clientX-rect.left)*420/rect.width-210;
+    const y=(event.clientY-rect.top)*420/rect.height-210;
+    setHeading(Math.atan2(x,-y)*180/Math.PI);
+  });
+  m.querySelector('.compass-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.compass-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.compass-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  setHeading(0,{notify:false});setPart('needle',{notify:false});
+  m._boardGetState=()=>({heading,part});
+  m._boardSetState=state=>{setHeading(state?.heading||0,{notify:false});setPart(state?.part||'needle',{notify:false})};
 }
 
 const SHAPES_TILE_DATA=[

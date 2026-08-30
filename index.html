@@ -1279,6 +1279,7 @@
             <button type="button" class="context-menu__filter" data-category-drawer-filter="media" data-i18n="context.cat.media">MEDIA</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="language" data-i18n="context.cat.language">LANGUAGE</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="geography" data-i18n="context.cat.geography">GEOGRAPHY</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="time" data-i18n="context.cat.time">TIME</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="games" data-i18n="context.cat.games">GAMES</button>
@@ -1331,9 +1332,21 @@
         <span class="context-menu__icon context-menu__icon--translation" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/></svg></span>
         <span><strong>Translation</strong><small>Translate typed or spoken language</small></span>
       </button>
-      <button class="context-menu__item" data-module="livecaption" data-category="tools language">
+      <button class="context-menu__item" data-module="livecaption" data-category="tools language audio">
         <span class="context-menu__icon context-menu__icon--livecaption" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h4M7 14h6M15 10h2M15 14h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
         <span><strong>Live Captions</strong><small>Display speech as clear, readable text</small></span>
+      </button>
+      <button class="context-menu__item" data-module="voicememo" data-category="audio">
+        <span class="context-menu__icon context-menu__icon--voicememo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.7 11.5a5.3 5.3 0 0 0 10.6 0M12 16.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span><strong>Voice Memos</strong><small>Record and replay short audio notes</small></span>
+      </button>
+      <button class="context-menu__item" data-module="worldmap" data-category="geography">
+        <span class="context-menu__icon context-menu__icon--worldmap" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.35"/></svg></span>
+        <span><strong>World Map</strong><small>Explore continents and hemispheres</small></span>
+      </button>
+      <button class="context-menu__item" data-module="compass" data-category="geography">
+        <span class="context-menu__icon context-menu__icon--compass" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m14.8 7.2-1.7 5.9-5.9 1.7 1.7-5.9 5.9-1.7Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span>
+        <span><strong>Compass</strong><small>Explore directions and compass parts</small></span>
       </button>
       <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
@@ -3257,6 +3270,73 @@
         <button class="custom-icon livecaption-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
 
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="voicememo-template">
+    <section class="module voicememo-module" data-type="voicememo" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete voice memo tile">×</button><div class="module-drag-handle"></div>
+      <header class="voicememo-header"><div><span>AUDIO</span><strong>Voice Memos</strong></div><span class="voicememo-count">0 / 5</span></header>
+      <div class="voicememo-recorder">
+        <button class="voicememo-record" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>Record memo</span></button>
+        <div class="voicememo-recording-status"><strong class="voicememo-time">0:00</strong><div class="voicememo-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small class="voicememo-message" aria-live="polite">Ready to record a short memo.</small></div>
+      </div>
+      <div class="voicememo-list" aria-label="Recorded voice memos"><p class="voicememo-empty">Your recordings will appear here.</p></div>
+      <div class="customization-bar voicememo-customization" aria-label="Voice memo customization">
+        <button class="custom-icon voicememo-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon voicememo-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon voicememo-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="worldmap-template">
+    <section class="module worldmap-module" data-type="worldmap" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete world map tile">×</button><div class="module-drag-handle"></div>
+      <header class="worldmap-header"><div><span>GEOGRAPHY</span><strong>Explore the World</strong></div><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom">⌂</button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></header>
+      <div class="worldmap-layout">
+        <div class="worldmap-stage">
+          <svg class="worldmap-svg" viewBox="0 0 1000 520" role="img" aria-label="Interactive world map with selectable continents">
+            <g class="worldmap-grid" aria-hidden="true"><path d="M0 130h1000M0 260h1000M0 390h1000M250 0v520M500 0v520M750 0v520"/><ellipse cx="500" cy="260" rx="480" ry="220"/><ellipse cx="500" cy="260" rx="250" ry="220"/></g>
+            <g class="worldmap-land">
+              <path data-map-region="north-america" d="M78 112 135 73 215 62 291 92 324 132 292 168 252 174 226 215 186 230 164 195 123 185 91 148Z"/>
+              <path data-map-region="south-america" d="M250 224 309 235 338 275 324 320 302 352 292 403 263 456 241 408 230 353 208 310 218 266Z"/>
+              <path data-map-region="europe" d="M442 128 486 111 535 123 551 154 525 178 484 170 455 187 423 166Z"/>
+              <path data-map-region="africa" d="M438 191 505 180 561 213 570 267 541 323 510 385 468 350 447 298 416 250Z"/>
+              <path data-map-region="asia" d="M536 111 621 75 735 88 836 127 873 178 822 203 770 191 730 229 672 218 633 184 572 190 548 157Z"/>
+              <path data-map-region="australia" d="M753 318 817 297 876 330 872 374 824 401 772 384 739 352Z"/>
+              <path data-map-region="antarctica" d="M151 461 274 448 394 462 512 449 644 462 757 447 861 463 824 496 677 502 540 490 395 503 242 494Z"/>
+            </g>
+            <g class="worldmap-labels" aria-hidden="true"><text x="186" y="137">NORTH AMERICA</text><text x="268" y="322">SOUTH AMERICA</text><text x="481" y="151">EUROPE</text><text x="500" y="267">AFRICA</text><text x="700" y="145">ASIA</text><text x="809" y="350">AUSTRALIA</text><text x="508" y="480">ANTARCTICA</text></g>
+          </svg>
+        </div>
+        <aside class="worldmap-info" aria-live="polite"><span class="worldmap-kicker">SELECT A CONTINENT</span><strong class="worldmap-name">World Map</strong><small class="worldmap-hemisphere">Click the map to explore.</small><p class="worldmap-fact">Discover the seven continents, their hemispheres, and memorable geography facts.</p></aside>
+      </div>
+      <div class="worldmap-legend" role="list" aria-label="Continents"></div>
+      <div class="customization-bar worldmap-customization" aria-label="World map customization"><button class="custom-icon worldmap-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon worldmap-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon worldmap-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="compass-template">
+    <section class="module compass-module" data-type="compass" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete compass tile">×</button><div class="module-drag-handle"></div>
+      <header class="compass-header"><div><span>GEOGRAPHY</span><strong>Compass Explorer</strong></div><output class="compass-heading">0° · North</output></header>
+      <div class="compass-layout">
+        <div class="compass-face-wrap">
+          <svg class="compass-face" viewBox="0 0 420 420" role="img" aria-label="Interactive compass rose">
+            <circle class="compass-ring" cx="210" cy="210" r="184"/><g class="compass-ticks"></g>
+            <g class="compass-points"><text x="210" y="54">N</text><text x="366" y="219">E</text><text x="210" y="382">S</text><text x="54" y="219">W</text><text x="319" y="103">NE</text><text x="319" y="329">SE</text><text x="101" y="329">SW</text><text x="101" y="103">NW</text></g>
+            <g class="compass-needle"><path class="compass-needle-north" d="M210 60 236 210 210 192 184 210Z"/><path class="compass-needle-south" d="M210 360 184 210 210 228 236 210Z"/><circle cx="210" cy="210" r="13"/></g>
+            <circle class="compass-pin" cx="210" cy="210" r="5"/>
+          </svg>
+        </div>
+        <aside class="compass-info"><span>EXPLORE A PART</span><strong class="compass-part-name">Direction needle</strong><p class="compass-part-copy">The colored end points toward the selected heading. Rotate it to practice finding directions.</p><div class="compass-part-buttons"><button type="button" data-compass-part="needle">Needle</button><button type="button" data-compass-part="cardinal">Cardinal</button><button type="button" data-compass-part="intercardinal">Intercardinal</button><button type="button" data-compass-part="degrees">Degree ring</button></div></aside>
+      </div>
+      <label class="compass-slider"><span>Turn the needle</span><input type="range" min="0" max="359" value="0" step="1" aria-label="Compass heading in degrees"></label>
+      <div class="customization-bar compass-customization" aria-label="Compass customization"><button class="custom-icon compass-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon compass-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon compass-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
