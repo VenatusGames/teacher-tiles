@@ -1265,16 +1265,23 @@
         <input id="context-menu-search" class="context-menu__search" type="search" placeholder="Search tiles..." data-i18n-placeholder="context.search" autocomplete="off" spellcheck="false" aria-label="Search tiles">
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
-      <div class="context-menu__filters" role="tablist" aria-label="Module categories">
-        <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
-        <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
-        <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
-        <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
-        <button type="button" class="context-menu__filter" data-category-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
-        <button type="button" class="context-menu__filter" data-category-filter="games" data-i18n="context.cat.games">GAMES</button>
-        <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
-        <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
-        <button type="button" class="context-menu__filter" data-category-filter="sel" data-i18n="context.cat.sel">SEL</button>
+      <div class="context-menu__category-rail">
+        <button type="button" class="context-menu__category-arrow context-menu__category-arrow--back" aria-label="Previous categories">‹</button>
+        <div class="context-menu__filters" role="tablist" aria-label="Module categories">
+          <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
+          <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
+          <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
+          <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
+          <button type="button" class="context-menu__filter" data-category-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
+          <button type="button" class="context-menu__filter" data-category-filter="games" data-i18n="context.cat.games">GAMES</button>
+          <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
+          <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
+          <button type="button" class="context-menu__filter" data-category-filter="science" data-i18n="context.cat.science">SCIENCE</button>
+          <button type="button" class="context-menu__filter" data-category-filter="planning" data-i18n="context.cat.planning">PLANNING</button>
+          <button type="button" class="context-menu__filter" data-category-filter="pbis" data-i18n="context.cat.pbis">PBIS</button>
+          <button type="button" class="context-menu__filter" data-category-filter="sel" data-i18n="context.cat.sel">SEL</button>
+        </div>
+        <button type="button" class="context-menu__category-arrow context-menu__category-arrow--next" aria-label="Next categories">›</button>
       </div>
     </div>
     <div class="context-menu__list">
@@ -1284,8 +1291,8 @@
       </div>
       <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
-      <button class="context-menu__item" data-module="todo" data-category="text"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
-      <button class="context-menu__item" data-module="visualschedule" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
+      <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
+      <button class="context-menu__item" data-module="visualschedule" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
       <button class="context-menu__item" data-module="windowshare" data-category="media">
@@ -1302,7 +1309,7 @@
       <button class="context-menu__item" data-module="interactive" data-category="time"><span class="context-menu__icon">⌛</span><span><strong>Interactive timers</strong><small>Hourglass and melting candle</small></span></button>
       <button class="context-menu__item" data-module="clock" data-category="time"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
       <button class="context-menu__item" data-module="date" data-category="time"><span class="context-menu__icon" aria-hidden="true">31</span><span><strong>Date</strong><small>Today’s date in your chosen style</small></span></button>
-      <button class="context-menu__item" data-module="calendar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
+      <button class="context-menu__item" data-module="calendar" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
       <button class="context-menu__item" data-module="progressbar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▰</span><span><strong>Progress Bar</strong><small>Fill toward a set end time</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
@@ -1421,7 +1428,7 @@
         </span>
         <span><strong>Graphing Tool</strong><small>Plot points and graph equations</small></span>
       </button>
-      <button class="context-menu__item" data-module="periodictable" data-category="math">
+      <button class="context-menu__item" data-module="periodictable" data-category="math science">
         <span class="context-menu__icon context-menu__icon--periodic" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <rect x="3" y="3" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -1444,8 +1451,8 @@
         <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
-      <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
-      <button class="context-menu__item" data-module="stoplight" data-category="tools"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
+      <button class="context-menu__item" data-module="collections" data-category="tools pbis"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
+      <button class="context-menu__item" data-module="stoplight" data-category="tools pbis"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -2145,6 +2152,22 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5v3h15v-3M12 16V4.5m0 0L8.2 8.3M12 4.5l3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Replace</span>
       </button>
+      <div class="image-customization" aria-label="Image border customization">
+        <label class="image-border-control">
+          <span>Border</span>
+          <select class="image-border-style" aria-label="Image border style">
+            <option value="none">None</option>
+            <option value="thin">Thin</option>
+            <option value="medium">Medium</option>
+            <option value="thick">Thick</option>
+            <option value="double">Double</option>
+          </select>
+        </label>
+        <label class="image-border-color-wrap" title="Border color">
+          <span>Color</span>
+          <input class="image-border-color" type="color" value="#17191d" aria-label="Image border color">
+        </label>
+      </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>

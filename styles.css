@@ -2668,6 +2668,16 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
   min-width:0;
 }
 
+/* Compact, expandable Add Tile category rail. */
+.context-menu__category-rail{display:grid;grid-template-columns:24px minmax(0,1fr) 24px;align-items:center;gap:4px;padding:0 1px}
+.context-menu__filters{display:flex!important;grid-template-columns:none!important;gap:5px!important;overflow-x:auto;overflow-y:hidden;padding:1px;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.context-menu__filters::-webkit-scrollbar{display:none}
+.context-menu__filters .context-menu__filter{flex:0 0 auto;min-width:58px;padding:0 9px;scroll-snap-align:center}
+.context-menu__category-arrow{width:24px;height:28px;padding:0;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);display:grid;place-items:center;font-size:18px;line-height:1;transition:opacity .14s ease,background .14s ease}
+.context-menu__category-arrow:hover:not(:disabled){background:color-mix(in srgb,var(--surface-soft) 70%,var(--text) 8%)}
+.context-menu__category-arrow:disabled{opacity:.22;cursor:default}
+.context-menu.is-searching .context-menu__category-rail{display:none}
+
 /* Draw module */
 .draw-module{
   width:430px;
@@ -13468,6 +13478,19 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 /* Image replacement and custom activity artwork */
 .image-replace{position:absolute;z-index:15;left:50%;top:14px;transform:translate(-50%,-7px);min-height:34px;padding:0 13px;border:1px solid rgba(255,255,255,.58);border-radius:11px;background:rgba(18,22,29,.76);color:#fff;display:flex;align-items:center;gap:7px;opacity:0;visibility:hidden;pointer-events:none;box-shadow:0 9px 24px rgba(0,0,0,.2);backdrop-filter:blur(9px);font-size:10px;font-weight:850;transition:opacity .16s ease,transform .16s ease,background .16s ease}
 .image-replace svg{width:16px;height:16px}.image-module.has-image:hover .image-replace,.image-replace:focus-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}.image-replace:hover{background:rgba(18,22,29,.92)}
+.image-module .image-stage{border:var(--image-border-width,0) var(--image-border-line,solid) var(--image-border-color,#17191d)!important}
+.image-module[data-image-border="none"]{--image-border-width:0}
+.image-module[data-image-border="thin"]{--image-border-width:2px;--image-border-line:solid}
+.image-module[data-image-border="medium"]{--image-border-width:5px;--image-border-line:solid}
+.image-module[data-image-border="thick"]{--image-border-width:9px;--image-border-line:solid}
+.image-module[data-image-border="double"]{--image-border-width:7px;--image-border-line:double}
+.image-customization{position:absolute;z-index:16;left:50%;bottom:12px;transform:translate(-50%,7px);display:flex;align-items:center;gap:6px;min-height:38px;padding:5px 7px;border:1px solid rgba(255,255,255,.58);border-radius:12px;background:rgba(18,22,29,.82);color:#fff;opacity:0;visibility:hidden;pointer-events:none;box-shadow:0 9px 24px rgba(0,0,0,.22);backdrop-filter:blur(9px);transition:opacity .16s ease,transform .16s ease}
+.image-module:hover .image-customization,.image-customization:focus-within{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}
+.image-border-control,.image-border-color-wrap{display:flex;align-items:center;gap:5px;margin:0;color:rgba(255,255,255,.72);font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.image-border-style{height:27px;min-width:72px;padding:0 21px 0 8px;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:#252a32;color:#fff;font-size:9px;font-weight:800;outline:none}
+.image-border-color-wrap{height:27px;padding:0 5px 0 7px;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:#252a32}
+.image-border-color{width:20px;height:20px;padding:0;border:0;border-radius:6px;background:transparent;overflow:hidden;cursor:pointer}
+.image-border-color::-webkit-color-swatch-wrapper{padding:1px}.image-border-color::-webkit-color-swatch{border:1px solid rgba(255,255,255,.52);border-radius:5px}.image-border-color::-moz-color-swatch{border:1px solid rgba(255,255,255,.52);border-radius:5px}
 .visual-schedule-icon-option--upload,.progress-bar-icon-option--upload{justify-content:center;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 11%,#fff),#fff);border-style:dashed;color:var(--accent)}
 .visual-schedule-icon-option--upload .custom-image-upload-mark,.progress-bar-icon-option--upload .custom-image-upload-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:color-mix(in srgb,var(--accent) 13%,#fff);font-size:25px;font-weight:500;line-height:1;overflow:visible}
 
@@ -13488,7 +13511,7 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 #theme-shelf-content .theme-pack--cardboard .theme-pack__meta small,#theme-shelf-content .theme-pack--cardboard .theme-pack__chevron{color:#674426!important}#theme-shelf-content .theme-pack--corkboard .theme-pack__meta small,#theme-shelf-content .theme-pack--corkboard .theme-pack__chevron{color:#55351f!important}
 
 @media(max-width:760px){.shop-membership-grid{grid-template-columns:1fr}.shop-membership-perks{grid-template-columns:1fr}.profile-badge-grid{grid-template-columns:1fr}.terms-notice{display:block}.terms-notice strong{display:block;margin-bottom:4px}}
-@media(prefers-reduced-motion:reduce){.profile-badge__shine{animation:none}.image-replace{transition:none}}
+@media(prefers-reduced-motion:reduce){.profile-badge__shine{animation:none}.image-replace,.image-customization{transition:none}}
 .profile-badge[hidden]{display:none!important}
 
 /* Compact embroidered circular patches inspired by the reference collection. */

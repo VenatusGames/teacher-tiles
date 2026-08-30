@@ -592,7 +592,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -627,7 +627,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -1252,6 +1252,9 @@ const menuSearch=menu.querySelector('#context-menu-search');
 const menuSearchClear=menu.querySelector('.context-menu__search-clear');
 const menuNoResults=menu.querySelector('.context-menu__no-results');
 const menuItems=[...menu.querySelectorAll('.context-menu__item[data-category]')];
+const menuCategoryRail=menu.querySelector('.context-menu__filters');
+const menuCategoryBack=menu.querySelector('.context-menu__category-arrow--back');
+const menuCategoryNext=menu.querySelector('.context-menu__category-arrow--next');
 let activeMenuCategory='all';
 
 function normalizeMenuSearch(value=''){
@@ -1274,7 +1277,8 @@ function applyMenuView(){
     ].join(' ').toLowerCase();
 
     const matchesSearch=!searching||searchable.includes(query);
-    const matchesCategory=activeMenuCategory==='all'||item.dataset.category===activeMenuCategory;
+    const categories=(item.dataset.category||'').split(/\s+/).filter(Boolean);
+    const matchesCategory=activeMenuCategory==='all'||categories.includes(activeMenuCategory);
     const visible=searching?matchesSearch:matchesCategory;
     item.hidden=!visible;
     if(visible)visibleCount++;
@@ -1288,6 +1292,8 @@ function applyMenuView(){
 function setMenuCategory(category='all'){
   activeMenuCategory=category;
   menuFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryFilter===category));
+  const activeFilter=menuFilters.find(b=>b.dataset.categoryFilter===category);
+  if(activeFilter&&menuCategoryRail?.contains(activeFilter))activeFilter.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   applyMenuView();
 }
 
@@ -1319,6 +1325,23 @@ menuSearchClear?.addEventListener('click',e=>{
   clearMenuSearch();
   menuSearch?.focus();
 });
+
+function updateMenuCategoryArrows(){
+  if(!menuCategoryRail)return;
+  const max=Math.max(0,menuCategoryRail.scrollWidth-menuCategoryRail.clientWidth);
+  if(menuCategoryBack)menuCategoryBack.disabled=menuCategoryRail.scrollLeft<=2;
+  if(menuCategoryNext)menuCategoryNext.disabled=menuCategoryRail.scrollLeft>=max-2;
+}
+menuCategoryBack?.addEventListener('click',event=>{event.stopPropagation();menuCategoryRail?.scrollBy({left:-170,behavior:'smooth'})});
+menuCategoryNext?.addEventListener('click',event=>{event.stopPropagation();menuCategoryRail?.scrollBy({left:170,behavior:'smooth'})});
+menuCategoryRail?.addEventListener('scroll',updateMenuCategoryArrows,{passive:true});
+menuCategoryRail?.addEventListener('wheel',event=>{
+  if(Math.abs(event.deltaY)<=Math.abs(event.deltaX))return;
+  event.preventDefault();
+  menuCategoryRail.scrollLeft+=event.deltaY;
+},{passive:false});
+new ResizeObserver(updateMenuCategoryArrows).observe(menuCategoryRail);
+queueMicrotask(updateMenuCategoryArrows);
 
 setMenuCategory('all');
 
@@ -4344,9 +4367,17 @@ async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=
 }
 
 function setupImage(m){
-  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace');
+  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace'),borderStyle=m.querySelector('.image-border-style'),borderColor=m.querySelector('.image-border-color');
   let objectUrl='';
   let boardImageSrc='';
+
+  const applyBorder=()=>{
+    const style=borderStyle?.value||'none';
+    const color=borderColor?.value||'#17191d';
+    m.dataset.imageBorder=style;
+    m.style.setProperty('--image-border-color',color);
+  };
+  applyBorder();
 
   const fitModule=()=>{
     const ratio=(img.naturalWidth||1)/(img.naturalHeight||1);
@@ -4394,11 +4425,20 @@ function setupImage(m){
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
-  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:'')});
-  m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false,fit:false})};
+  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d'});
+  m._boardSetState=state=>{
+    if(!state)return;
+    if(borderStyle)borderStyle.value=['none','thin','medium','thick','double'].includes(state.border)?state.border:'none';
+    if(borderColor&&/^#[0-9a-f]{6}$/i.test(state.borderColor||''))borderColor.value=state.borderColor;
+    applyBorder();
+    if(state.src)setUrl(state.src,{notify:false,fit:false});
+  };
 
   stage.addEventListener('click',()=>input.click());
   replace?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();input.click()});
+  borderStyle?.addEventListener('change',()=>{applyBorder();notifyBoardChanged('image-border')});
+  borderColor?.addEventListener('input',applyBorder);
+  borderColor?.addEventListener('change',()=>{applyBorder();notifyBoardChanged('image-border')});
   input.addEventListener('change',()=>{setFile(input.files?.[0]);input.value=''});
   stage.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();stage.classList.add('is-dragover')});
   stage.addEventListener('dragleave',()=>stage.classList.remove('is-dragover'));
