@@ -119,6 +119,7 @@ function detachHistoryElements(elements){
   for(const el of elements){
     selectedModules.delete(el);
     el.classList.remove('is-selected','is-over-trash','is-dragging');
+    el._deactivate?.();
     if(el.isConnected)el.remove();
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
@@ -469,6 +470,32 @@ function setupProfileClasses(){
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
 
+const TRANSLATION_LANGUAGES=[
+  {code:'en',name:'English',nativeName:'English',speech:'en-US'},
+  {code:'es',name:'Spanish',nativeName:'Español',speech:'es-ES'},
+  {code:'fr',name:'French',nativeName:'Français',speech:'fr-FR'},
+  {code:'de',name:'German',nativeName:'Deutsch',speech:'de-DE'},
+  {code:'it',name:'Italian',nativeName:'Italiano',speech:'it-IT'},
+  {code:'pt',name:'Portuguese',nativeName:'Português',speech:'pt-BR'},
+  {code:'zh-CN',name:'Chinese (Simplified)',nativeName:'中文（简体）',speech:'zh-CN'},
+  {code:'ja',name:'Japanese',nativeName:'日本語',speech:'ja-JP'},
+  {code:'ko',name:'Korean',nativeName:'한국어',speech:'ko-KR'},
+  {code:'ar',name:'Arabic',nativeName:'العربية',speech:'ar-SA'},
+  {code:'hi',name:'Hindi',nativeName:'हिन्दी',speech:'hi-IN'},
+  {code:'ru',name:'Russian',nativeName:'Русский',speech:'ru-RU'},
+  {code:'uk',name:'Ukrainian',nativeName:'Українська',speech:'uk-UA'},
+  {code:'pl',name:'Polish',nativeName:'Polski',speech:'pl-PL'},
+  {code:'nl',name:'Dutch',nativeName:'Nederlands',speech:'nl-NL'},
+  {code:'tr',name:'Turkish',nativeName:'Türkçe',speech:'tr-TR'},
+  {code:'vi',name:'Vietnamese',nativeName:'Tiếng Việt',speech:'vi-VN'},
+  {code:'tl',name:'Filipino',nativeName:'Filipino',speech:'fil-PH'},
+  {code:'ht',name:'Haitian Creole',nativeName:'Kreyòl ayisyen',speech:'ht-HT'},
+  {code:'el',name:'Greek',nativeName:'Ελληνικά',speech:'el-GR'},
+  {code:'he',name:'Hebrew',nativeName:'עברית',speech:'he-IL'},
+  {code:'sv',name:'Swedish',nativeName:'Svenska',speech:'sv-SE'}
+];
+const APP_LANGUAGE_CODES=new Set(TRANSLATION_LANGUAGES.map(language=>language.code));
+
 function normalizeAppPreferences(value={}){
   const source=value&&typeof value==='object'?value:{};
   const prefClamp=(number,min,max)=>Math.max(min,Math.min(max,number));
@@ -479,7 +506,7 @@ function normalizeAppPreferences(value={}){
     uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
     scrollSpeed:prefClamp(Number.isFinite(rawScroll)?rawScroll:100,50,175),
     defaultViewSize:[75,100,125,150].includes(Number(source.defaultViewSize))?Number(source.defaultViewSize):100,
-    language:source.language==='es'?'es':'en'
+    language:APP_LANGUAGE_CODES.has(source.language)?source.language:'en'
   };
 }
 
@@ -513,7 +540,7 @@ function boardPreferenceSnapshot(){
     uiVolume:Number.isFinite(Number(appPreferences.uiVolume))?Number(appPreferences.uiVolume):100,
     scrollSpeed:Number(appPreferences.scrollSpeed)||100,
     defaultViewSize:Number(appPreferences.defaultViewSize)||100,
-    language:appPreferences.language==='es'?'es':'en'
+    language:APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en'
   };
 }
 
@@ -592,8 +619,8 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -609,7 +636,7 @@ const APP_TRANSLATIONS={
     'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
     'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
     'help.mouse.menu.title':'Add tiles','help.mouse.menu.copy':'Right-click empty board space to open the Add Tile menu.',
-    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Use the mouse wheel or trackpad scroll over the board.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Scroll over the board for fast zoom. Hold Shift while scrolling for precise 1% steps.',
     'help.mouse.move.title':'Move tiles','help.mouse.move.copy':'Drag anywhere on a tile that is not an active button, slider, canvas, or other control.',
     'help.mouse.snap.title':'Snap & group','help.mouse.snap.copy':'Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.',
     'help.mouse.tug.title':'Hold, then tug','help.mouse.tug.copy':'Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.',
@@ -627,8 +654,8 @@ const APP_TRANSLATIONS={
     'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -644,7 +671,7 @@ const APP_TRANSLATIONS={
     'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
     'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
     'help.mouse.menu.title':'Añadir tiles','help.mouse.menu.copy':'Haz clic derecho en un espacio vacío para abrir el menú Añadir tile.',
-    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Usa la rueda del ratón o el desplazamiento del trackpad sobre el tablero.',
+    'help.mouse.zoom.title':'Zoom','help.mouse.zoom.copy':'Desplázate sobre el tablero para usar el zoom rápido. Mantén Shift mientras te desplazas para ajustar en pasos precisos del 1 %.',
     'help.mouse.move.title':'Mover tiles','help.mouse.move.copy':'Arrastra cualquier parte de un tile que no sea un botón, deslizador, lienzo u otro control activo.',
     'help.mouse.snap.title':'Acoplar y agrupar','help.mouse.snap.copy':'Coloca un tile junto a otro para acoplarlos en un grupo. Los tiles agrupados se mueven juntos y comparten una capa.',
     'help.mouse.tug.title':'Mantener y tirar','help.mouse.tug.copy':'Mantén pulsado un tile agrupado hasta que tiemble y luego tira venciendo la resistencia para separarlo y moverlo de forma independiente.',
@@ -664,35 +691,108 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual timer','Shape-based progress timer'],
     interactive:['Interactive timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
-    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes']
+    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
+    livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
+    weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
-    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula']
+    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
+    livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
+    weather:['Clima','Compara el clima actual de varios lugares'],weatherwheel:['Rueda del clima','Señala el clima de hoy'],seasonwheel:['Rueda de estaciones','Explora primavera, verano, otoño e invierno'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
 };
 
-function translateAppText(key){
-  const lang=appPreferences.language==='es'?'es':'en';
-  return APP_TRANSLATIONS[lang]?.[key]||APP_TRANSLATIONS.en[key]||key;
+const runtimeInterfaceTranslations={};
+const interfaceTranslationRequests=new Map();
+const INTERFACE_TRANSLATION_CACHE_VERSION='v4';
+
+function readCachedInterfaceTranslations(language){
+  try{
+    const value=JSON.parse(localStorage.getItem(`tt-interface-${INTERFACE_TRANSLATION_CACHE_VERSION}-${language}`)||'null');
+    return value&&typeof value==='object'&&!Array.isArray(value)?value:null;
+  }catch{return null}
 }
 
-function applyAppLanguage(){
-  const lang=appPreferences.language==='es'?'es':'en';
+function writeCachedInterfaceTranslations(language,value){
+  try{localStorage.setItem(`tt-interface-${INTERFACE_TRANSLATION_CACHE_VERSION}-${language}`,JSON.stringify(value))}catch{}
+}
+
+async function translateInterfaceChunk(language,phrases){
+  const marker='\uE000';
+  const request=async values=>{
+    const source=values.join(`\n${marker}\n`);
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(language)}&dt=t&q=${encodeURIComponent(source)}`;
+    const response=await fetch(url);
+    if(!response.ok)throw new Error(`interface-translation-${response.status}`);
+    const data=await response.json();
+    const result=Array.isArray(data?.[0])?data[0].map(segment=>Array.isArray(segment)?String(segment[0]||''):'').join(''):'';
+    return result.split(marker).map(value=>value.trim());
+  };
+  const translated=await request(phrases);
+  if(translated.length===phrases.length)return translated;
+  return Promise.all(phrases.map(async phrase=>(await request([phrase]))[0]||phrase));
+}
+
+async function loadInterfaceTranslations(language){
+  if(language==='en'||language==='es')return;
+  if(runtimeInterfaceTranslations[language])return;
+  if(interfaceTranslationRequests.has(language))return interfaceTranslationRequests.get(language);
+  const request=(async()=>{
+    const cached=readCachedInterfaceTranslations(language);
+    if(cached){runtimeInterfaceTranslations[language]=cached;return}
+    const sources=[...new Set([
+      ...Object.values(APP_TRANSLATIONS.en),
+      ...Object.values(CONTEXT_MODULE_TRANSLATIONS.en).flat()
+    ])];
+    const chunks=[];
+    for(let index=0;index<sources.length;){
+      const chunk=[];
+      let length=0;
+      while(index<sources.length&&chunk.length<12&&length+sources[index].length<2400){
+        chunk.push(sources[index]);
+        length+=sources[index].length+3;
+        index++;
+      }
+      chunks.push(chunk);
+    }
+    const translatedBySource={};
+    for(let index=0;index<chunks.length;index+=4){
+      const group=chunks.slice(index,index+4);
+      const results=await Promise.all(group.map(chunk=>translateInterfaceChunk(language,chunk)));
+      group.forEach((chunk,chunkIndex)=>chunk.forEach((source,itemIndex)=>translatedBySource[source]=results[chunkIndex][itemIndex]||source));
+    }
+    translatedBySource.TEACHERTILES='TEACHERTILES';
+    translatedBySource['TEACHERTILES ACCOUNT']='TEACHERTILES ACCOUNT';
+    runtimeInterfaceTranslations[language]=translatedBySource;
+    writeCachedInterfaceTranslations(language,translatedBySource);
+  })().finally(()=>interfaceTranslationRequests.delete(language));
+  interfaceTranslationRequests.set(language,request);
+  return request;
+}
+
+function translateAppText(key){
+  const lang=APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en';
+  const english=APP_TRANSLATIONS.en[key];
+  return APP_TRANSLATIONS[lang]?.[key]||runtimeInterfaceTranslations[lang]?.[english]||english||key;
+}
+
+function applyAppLanguage({load=true}={}){
+  const lang=APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en';
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(node=>{
     const key=node.getAttribute('data-i18n');
@@ -705,7 +805,8 @@ function applyAppLanguage(){
     if(value)node.setAttribute('placeholder',value);
   });
   document.querySelectorAll('.context-menu__item[data-module]').forEach(item=>{
-    const copy=CONTEXT_MODULE_TRANSLATIONS[lang]?.[item.dataset.module]||CONTEXT_MODULE_TRANSLATIONS.en[item.dataset.module];
+    const englishCopy=CONTEXT_MODULE_TRANSLATIONS.en[item.dataset.module];
+    const copy=CONTEXT_MODULE_TRANSLATIONS[lang]?.[item.dataset.module]||(englishCopy?englishCopy.map(value=>runtimeInterfaceTranslations[lang]?.[value]||value):null);
     if(!copy)return;
     const strong=item.querySelector('strong');
     const small=item.querySelector('small');
@@ -718,7 +819,18 @@ function applyAppLanguage(){
     const stickerPanel=document.getElementById('sticker-shelf-content');
     shelfTitle.textContent=stickerPanel&&!stickerPanel.hidden?translateAppText('top.stickers'):translateAppText('top.themes');
   }
+  const settingsTitle=document.getElementById('settings-title');
+  const activeSettingsTab=document.querySelector('[data-settings-tab].is-active [data-i18n]');
+  if(settingsTitle&&activeSettingsTab)settingsTitle.textContent=activeSettingsTab.textContent.trim();
   window.dispatchEvent(new CustomEvent('teachertiles:languagechange',{detail:{language:lang}}));
+  if(load&&lang!=='en'&&lang!=='es'&&!runtimeInterfaceTranslations[lang]){
+    document.documentElement.dataset.interfaceLanguageLoading='true';
+    loadInterfaceTranslations(lang).then(()=>{
+      if(appPreferences.language===lang)applyAppLanguage({load:false});
+    }).catch(()=>{}).finally(()=>{
+      if(appPreferences.language===lang)delete document.documentElement.dataset.interfaceLanguageLoading;
+    });
+  }else delete document.documentElement.dataset.interfaceLanguageLoading;
 }
 
 function updateSettingsControls(){
@@ -777,6 +889,7 @@ function setupSettingsHub(){
   const closeButtons=[...document.querySelectorAll('[data-settings-close]')];
   const tabs=[...document.querySelectorAll('[data-settings-tab]')];
   const panes=[...document.querySelectorAll('[data-settings-pane]')];
+  const title=document.getElementById('settings-title');
   const mute=document.getElementById('settings-ui-sfx-toggle');
   const volume=document.getElementById('settings-ui-volume');
   const scroll=document.getElementById('settings-scroll-speed');
@@ -784,8 +897,16 @@ function setupSettingsHub(){
   const language=document.getElementById('settings-language');
   if(!modal||!settingsToggle)return;
   let lastFocus=null;
+  let currentTab='settings';
+
+  const updateTitle=()=>{
+    const active=tabs.find(tab=>tab.dataset.settingsTab===currentTab);
+    const label=active?.lastElementChild?.textContent?.trim();
+    if(title&&label)title.textContent=label;
+  };
 
   const showTab=name=>{
+    currentTab=name;
     tabs.forEach(tab=>{
       const active=tab.dataset.settingsTab===name;
       tab.classList.toggle('is-active',active);
@@ -796,6 +917,7 @@ function setupSettingsHub(){
       pane.hidden=!active;
       pane.classList.toggle('is-active',active);
     });
+    updateTitle();
     window.dispatchEvent(new CustomEvent('teachertiles:settings-tab',{detail:{name}}));
   };
   const close=()=>{
@@ -817,6 +939,7 @@ function setupSettingsHub(){
     settingsToggle.setAttribute('aria-expanded','true');
     updateSettingsControls();
     applyAppLanguage();
+    updateTitle();
     requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
   };
 
@@ -841,7 +964,7 @@ function setupSettingsHub(){
   });
   scroll?.addEventListener('change',()=>notifyBoardChanged('preferences'));
   view?.addEventListener('change',()=>applyAppPreferences({defaultViewSize:Number(view.value)},{notify:true,applyView:true}));
-  language?.addEventListener('change',()=>applyAppPreferences({language:language.value},{notify:true}));
+  language?.addEventListener('change',()=>{applyAppPreferences({language:language.value},{notify:true});updateTitle();setMenuCategory(activeMenuCategory)});
 
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&!modal.hidden){event.preventDefault();close()}
@@ -852,9 +975,9 @@ function setupSettingsHub(){
     if(target)close();
   },true);
 
-  showTab('settings');
   updateSettingsControls();
   applyAppLanguage();
+  showTab('settings');
 }
 
 setupSettingsHub();
@@ -865,6 +988,28 @@ const boardCamera={x:0,y:0,scale:1};
 const BOARD_MIN_ZOOM=.35;
 const BOARD_MAX_ZOOM=1.8;
 const BOARD_OVERSCROLL=120;
+const zoomIndicator=document.getElementById('zoom-indicator');
+let zoomIndicatorTimer=0;
+let boardZoomIntentPercent=100;
+let boardZoomWheelAt=0;
+let boardZoomPrecision=false;
+
+function showZoomIndicator(scale=boardCamera.scale,{precise=boardZoomPrecision}={}){
+  if(!zoomIndicator)return;
+  zoomIndicator.replaceChildren();
+  const value=document.createElement('strong');
+  value.textContent=`${Math.round(scale*100)}%`;
+  zoomIndicator.appendChild(value);
+  if(precise){
+    const hint=document.createElement('small');
+    hint.textContent='SHIFT · 1% STEPS';
+    zoomIndicator.appendChild(hint);
+  }
+  zoomIndicator.classList.toggle('is-precise',precise);
+  zoomIndicator.classList.add('is-visible');
+  clearTimeout(zoomIndicatorTimer);
+  if(!precise)zoomIndicatorTimer=setTimeout(()=>zoomIndicator.classList.remove('is-visible'),720);
+}
 
 workspace.style.width=`${BOARD_WIDTH}px`;
 workspace.style.height=`${BOARD_HEIGHT}px`;
@@ -904,8 +1049,26 @@ centerBoardCamera();
 workspace.addEventListener('wheel',e=>{
   if(e.ctrlKey)return;
   e.preventDefault();
-  const factor=Math.exp(-e.deltaY*.0012*(appPreferences.scrollSpeed/100));
-  const next=clamp(boardCamera.scale*factor,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  const wheelDelta=e.deltaY||e.deltaX;
+  if(!wheelDelta)return;
+  const now=performance.now();
+  let next;
+  if(e.shiftKey){
+    boardZoomPrecision=true;
+    boardZoomIntentPercent=Math.round(boardCamera.scale*100);
+    boardZoomWheelAt=now;
+    const nextPercent=clamp(boardZoomIntentPercent+(wheelDelta<0?1:-1),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
+    boardZoomIntentPercent=nextPercent;
+    next=nextPercent/100;
+  }else{
+    boardZoomPrecision=false;
+    if(now-boardZoomWheelAt>220)boardZoomIntentPercent=Math.round(boardCamera.scale*100);
+    boardZoomWheelAt=now;
+    const delta=e.deltaMode===1?wheelDelta*16:e.deltaMode===2?wheelDelta*innerHeight:wheelDelta;
+    boardZoomIntentPercent=clamp(boardZoomIntentPercent-delta*.12*(appPreferences.scrollSpeed/100),BOARD_MIN_ZOOM*100,BOARD_MAX_ZOOM*100);
+    next=clamp(Math.round(boardZoomIntentPercent)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  }
+  showZoomIndicator(next,{precise:e.shiftKey});
   if(Math.abs(next-boardCamera.scale)<.0001)return;
   const anchor=screenToBoard(e.clientX,e.clientY);
   boardCamera.scale=next;
@@ -913,6 +1076,21 @@ workspace.addEventListener('wheel',e=>{
   boardCamera.y=e.clientY-anchor.y*next;
   applyBoardCamera();
 },{passive:false});
+
+window.addEventListener('keydown',event=>{
+  if(event.key!=='Shift'||event.repeat)return;
+  boardZoomPrecision=true;
+  showZoomIndicator(boardCamera.scale,{precise:true});
+});
+window.addEventListener('keyup',event=>{
+  if(event.key!=='Shift')return;
+  boardZoomPrecision=false;
+  showZoomIndicator(boardCamera.scale,{precise:false});
+});
+window.addEventListener('blur',()=>{
+  boardZoomPrecision=false;
+  zoomIndicator?.classList.remove('is-precise','is-visible');
+});
 
 function beginBoardPan(e){
   closeMenu();
@@ -1236,7 +1414,7 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('resize',applyBoardCamera);
 
 
-workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r=menu.getBoundingClientRect();menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false')});
+workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r=menu.getBoundingClientRect();menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false')});
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
 
 document.addEventListener('pointerdown',e=>{
@@ -1247,12 +1425,22 @@ document.addEventListener('pointerdown',e=>{
   clearSelection();
 },true);
 
-const menuFilters=[...menu.querySelectorAll('[data-category-filter]')];
 const menuSearch=menu.querySelector('#context-menu-search');
 const menuSearchClear=menu.querySelector('.context-menu__search-clear');
 const menuNoResults=menu.querySelector('.context-menu__no-results');
 const menuItems=[...menu.querySelectorAll('.context-menu__item[data-category]')];
+const menuCategoryCycle=menu.querySelector('.context-menu__category-cycle');
+const menuCategoryCycleLabel=menu.querySelector('.context-menu__category-cycle-label');
+const menuDrawerFilters=[...menu.querySelectorAll('[data-category-drawer-filter]')];
+const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
+const menuCategoryDrawerToggle=menuCategoryCycle;
+const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
+const menuCategoryOrder=['all','text','media','tools','time','audio','games','planning','pbis','accessibility','language','literacy','math','science','geography','sel'];
+
+function menuCategoryLabel(category){
+  return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
+}
 
 function normalizeMenuSearch(value=''){
   return value.toLowerCase().trim().replace(/\s+/g,' ');
@@ -1262,6 +1450,7 @@ function applyMenuView(){
   const query=normalizeMenuSearch(menuSearch?.value);
   const searching=Boolean(query);
   menu.classList.toggle('is-searching',searching);
+  if(searching)setMenuCategoryDrawer(false);
   menuSearchClear?.classList.toggle('is-visible',searching);
 
   let visibleCount=0;
@@ -1274,7 +1463,8 @@ function applyMenuView(){
     ].join(' ').toLowerCase();
 
     const matchesSearch=!searching||searchable.includes(query);
-    const matchesCategory=activeMenuCategory==='all'||item.dataset.category===activeMenuCategory;
+    const categories=(item.dataset.category||'').split(/\s+/).filter(Boolean);
+    const matchesCategory=activeMenuCategory==='all'||categories.includes(activeMenuCategory);
     const visible=searching?matchesSearch:matchesCategory;
     item.hidden=!visible;
     if(visible)visibleCount++;
@@ -1286,9 +1476,56 @@ function applyMenuView(){
 }
 
 function setMenuCategory(category='all'){
-  activeMenuCategory=category;
-  menuFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryFilter===category));
+  activeMenuCategory=menuCategoryOrder.includes(category)?category:'all';
+  const label=menuCategoryLabel(activeMenuCategory);
+  if(menuCategoryCycleLabel)menuCategoryCycleLabel.textContent=label;
+  if(menuCategoryCycle){
+    menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
+  }
+  menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===activeMenuCategory));
   applyMenuView();
+}
+
+function syncMenuCategoryDrawerLayout(){
+  if(!menuCategoryDrawer||!menuDrawerFilters.length)return;
+  const categoryButtons=menuDrawerFilters.filter(button=>button.dataset.categoryDrawerFilter!=='all');
+  const sample=categoryButtons[0];
+  if(!sample)return;
+
+  const style=getComputedStyle(sample);
+  const canvas=syncMenuCategoryDrawerLayout.canvas||(syncMenuCategoryDrawerLayout.canvas=document.createElement('canvas'));
+  const context=canvas.getContext('2d');
+  let longestLabel=0;
+  if(context){
+    context.font=`${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const letterSpacing=Number.parseFloat(style.letterSpacing)||0;
+    categoryButtons.forEach(button=>{
+      const label=(button.textContent||'').trim();
+      longestLabel=Math.max(longestLabel,context.measureText(label).width+Math.max(0,label.length-1)*letterSpacing);
+    });
+  }
+
+  const viewportWidth=Math.max(0,window.innerWidth-16);
+  const menuWidth=menu.getBoundingClientRect().width||268;
+  const columnWidth=Math.max(72,Math.ceil(longestLabel+22));
+  const desiredWidth=Math.max(menuWidth,columnWidth*3+30);
+  const drawerWidth=Math.min(viewportWidth,400,desiredWidth);
+  menu.style.setProperty('--category-drawer-width',`${drawerWidth}px`);
+
+  const menuRect=menu.getBoundingClientRect();
+  const railRect=menuCategoryDrawer.parentElement?.getBoundingClientRect()||menuRect;
+  const centeredLeft=menuRect.left+(menuRect.width-drawerWidth)/2;
+  const viewportLeft=clamp(centeredLeft,8,Math.max(8,window.innerWidth-drawerWidth-8));
+  menu.style.setProperty('--category-drawer-offset',`${Math.round(viewportLeft-railRect.left)}px`);
+}
+
+function setMenuCategoryDrawer(open){
+  const show=Boolean(open);
+  if(show)syncMenuCategoryDrawerLayout();
+  menu.classList.toggle('has-category-drawer',show);
+  menuCategoryDrawerToggle?.setAttribute('aria-expanded',String(show));
+  menuCategoryDrawer?.setAttribute('aria-hidden',String(!show));
+  menu.classList.remove('category-drawer-left');
 }
 
 function clearMenuSearch(){
@@ -1297,17 +1534,25 @@ function clearMenuSearch(){
   applyMenuView();
 }
 
-menuFilters.forEach(b=>b.addEventListener('click',e=>{
+menuCategoryCycle?.addEventListener('click',event=>{
+  event.stopPropagation();
+  setMenuCategoryDrawer(!menu.classList.contains('has-category-drawer'));
+});
+menuDrawerFilters.forEach(b=>b.addEventListener('click',e=>{
   e.stopPropagation();
-  setMenuCategory(b.dataset.categoryFilter);
+  setMenuCategory(b.dataset.categoryDrawerFilter);
+  setMenuCategoryDrawer(false);
 }));
+menuCategoryDrawerClose?.addEventListener('click',event=>{event.stopPropagation();setMenuCategoryDrawer(false)});
 
 menuSearch?.addEventListener('input',applyMenuView);
 menuSearch?.addEventListener('pointerdown',e=>e.stopPropagation());
 menuSearch?.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     e.stopPropagation();
-    if(menuSearch.value){
+    if(menu.classList.contains('has-category-drawer')){
+      setMenuCategoryDrawer(false);
+    }else if(menuSearch.value){
       clearMenuSearch();
     }else{
       closeMenu();
@@ -1321,8 +1566,11 @@ menuSearchClear?.addEventListener('click',e=>{
 });
 
 setMenuCategory('all');
+window.addEventListener('resize',()=>{if(menu.classList.contains('has-category-drawer'))syncMenuCategoryDrawerLayout()});
+window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(syncMenuCategoryDrawerLayout));
 
 function closeMenu(){
+  setMenuCategoryDrawer(false);
   menu.classList.remove('is-open');
   menu.setAttribute('aria-hidden','true');
 }
@@ -1337,6 +1585,17 @@ function setupModuleByType(m,type){
   if(type==='stopwatch')setupStopwatch(m);
   if(type==='draw')setupDraw(m);
   if(type==='dictionary')setupDictionary(m);
+  if(type==='translation')setupTranslation(m);
+  if(type==='livecaption')setupLiveCaption(m);
+  if(type==='voicememo')setupVoiceMemo(m);
+  if(type==='photobooth')setupPhotobooth(m);
+  if(type==='mirror')setupMirror(m);
+  if(type==='weather')setupWeather(m);
+  if(type==='weatherwheel')setupWeatherWheel(m);
+  if(type==='seasonwheel')setupSeasonWheel(m);
+  if(type==='temperature')setupTemperature(m);
+  if(type==='worldmap')setupWorldMap(m);
+  if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
   if(type==='collections')setupCollections(m);
@@ -1371,6 +1630,7 @@ function setupModuleByType(m,type){
   if(type==='progressbar')setupProgressBar(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
+  setupEditableTileHeading(m,type);
 }
 
 function createModule(type,x,y,{record=true,boardState=null}={}){
@@ -1504,8 +1764,12 @@ function findModuleTextEditTarget(target,m){
   return field&&m.contains(field)?field:null;
 }
 
+function isDoubleClickModuleText(field){
+  return field instanceof HTMLElement&&field.dataset.textEditMode==='double';
+}
+
 function isImmediateModuleInput(field){
-  return field instanceof HTMLInputElement&&field.type==='search';
+  return !isDoubleClickModuleText(field);
 }
 
 function exitModuleTextEdit(field=activeModuleTextEditor){
@@ -1559,7 +1823,7 @@ function isInteractiveModuleTarget(target,m){
   if(!(target instanceof Element)||!m)return false;
   if(target.closest('.module-drag-handle'))return false;
   const textField=findModuleTextEditTarget(target,m);
-  if(textField)return textField.classList.contains('module-text-edit-active');
+  if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
   if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
@@ -4344,9 +4608,17 @@ async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=
 }
 
 function setupImage(m){
-  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace');
+  const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace'),borderStyle=m.querySelector('.image-border-style'),borderColor=m.querySelector('.image-border-color');
   let objectUrl='';
   let boardImageSrc='';
+
+  const applyBorder=()=>{
+    const style=borderStyle?.value||'none';
+    const color=borderColor?.value||'#17191d';
+    m.dataset.imageBorder=style;
+    m.style.setProperty('--image-border-color',color);
+  };
+  applyBorder();
 
   const fitModule=()=>{
     const ratio=(img.naturalWidth||1)/(img.naturalHeight||1);
@@ -4394,11 +4666,20 @@ function setupImage(m){
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
-  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:'')});
-  m._boardSetState=state=>{if(state?.src)setUrl(state.src,{notify:false,fit:false})};
+  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d'});
+  m._boardSetState=state=>{
+    if(!state)return;
+    if(borderStyle)borderStyle.value=['none','thin','medium','thick','double'].includes(state.border)?state.border:'none';
+    if(borderColor&&/^#[0-9a-f]{6}$/i.test(state.borderColor||''))borderColor.value=state.borderColor;
+    applyBorder();
+    if(state.src)setUrl(state.src,{notify:false,fit:false});
+  };
 
   stage.addEventListener('click',()=>input.click());
   replace?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();input.click()});
+  borderStyle?.addEventListener('change',()=>{applyBorder();notifyBoardChanged('image-border')});
+  borderColor?.addEventListener('input',applyBorder);
+  borderColor?.addEventListener('change',()=>{applyBorder();notifyBoardChanged('image-border')});
   input.addEventListener('change',()=>{setFile(input.files?.[0]);input.value=''});
   stage.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();stage.classList.add('is-dragover')});
   stage.addEventListener('dragleave',()=>stage.classList.remove('is-dragover'));
@@ -5083,6 +5364,1691 @@ function setupDictionary(m){
     activeAudio?.pause();
     if('speechSynthesis'in window)speechSynthesis.cancel();
   };
+}
+
+function bindEditableModuleTitle(m,selectorOrElement,fallback){
+  const title=selectorOrElement instanceof Element?selectorOrElement:m.querySelector(selectorOrElement);
+  if(!title)return{get:()=>fallback,set:()=>{}};
+  if(title._teacherTilesTitleBinding)return title._teacherTilesTitleBinding;
+  const normalize=value=>String(value||'').replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim().slice(0,60);
+  const set=value=>{title.textContent=normalize(value)||fallback};
+  const placeCaretAtEnd=()=>{
+    if(document.activeElement!==title||!title.isContentEditable)return;
+    const selection=getSelection();
+    if(!selection)return;
+    const range=document.createRange();
+    range.selectNodeContents(title);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+  title.addEventListener('keydown',event=>{
+    if(event.key===' '){event.stopPropagation();return}
+    if(event.key==='Enter'){event.preventDefault();event.stopPropagation();exitModuleTextEdit(title)}
+  });
+  title.addEventListener('input',()=>{
+    const clean=String(title.textContent||'').replace(/[\r\n]+/g,' ').slice(0,60);
+    if(title.textContent!==clean){title.textContent=clean;placeCaretAtEnd()}
+    notifyBoardChanged('module-title');
+  });
+  title.addEventListener('blur',()=>set(title.textContent));
+  const binding={get:()=>normalize(title.textContent)||fallback,set};
+  title._teacherTilesTitleBinding=binding;
+  return binding;
+}
+
+const EDITABLE_TILE_HEADINGS={
+  noise:'.noise-heading strong',
+  collections:'.collection-title',
+  groupmaker:'.groupmaker-heading strong',
+  lunchcount:'.lunchcount-heading strong',
+  voting:'.voting-heading strong',
+  ruler:'.ruler-header>div>span',
+  calculator:'.calculator-header>span',
+  grapher:'.grapher-header strong',
+  periodictable:'.periodic-header strong',
+  money:'.money-header strong:first-of-type',
+  cvcword:'.cvcword-header>div>span:first-child',
+  highfrequency:'.highfrequency-header>div>span:first-child',
+  customflashcards:'.customflashcards-header>div>span:first-child',
+  abc:'.abc-header>div>span:first-child',
+  numberline:'.numberline-heading>span:first-child',
+  hundredschart:'.hundreds-header>div>span:first-child',
+  tenframes:'.tenframes-heading>span:first-child',
+  dictionary:'.dictionary-header strong',
+  translation:'.translation-title',
+  livecaption:'.livecaption-title',
+  voicememo:'.voicememo-title',
+  worldmap:'.worldmap-title',
+  compass:'.compass-title',
+  shapes:'.shapes-header>div>span:first-child',
+  hangman:'.hangman-kicker',
+  wordypuzzle:'.wordy-kicker',
+  photobooth:'.photobooth-title',
+  mirror:'.mirror-title',
+  weather:'.weather-title',
+  temperature:'.temperature-title'
+};
+
+function setupEditableTileHeading(m,type){
+  const selector=EDITABLE_TILE_HEADINGS[type];
+  if(!selector)return;
+  const title=m.querySelector(selector);
+  if(!title)return;
+  const fallback=String(title.textContent||'Tile').replace(/\s+/g,' ').trim()||'Tile';
+  title.contentEditable='true';
+  title.dataset.textEditMode='double';
+  title.classList.add('module-text-edit-target','editable-tile-heading');
+  title.setAttribute('role','textbox');
+  title.setAttribute('aria-label','Tile title');
+  bindEditableModuleTitle(m,title,fallback);
+}
+
+function setupTranslation(m){
+  const tileTitle=bindEditableModuleTitle(m,'.translation-title','Language bridge');
+  const source=m.querySelector('.translation-source');
+  const target=m.querySelector('.translation-target');
+  const sourcePickerRoot=m.querySelector('[data-language-picker="source"]');
+  const targetPickerRoot=m.querySelector('[data-language-picker="target"]');
+  const input=m.querySelector('.translation-input');
+  const output=m.querySelector('.translation-output');
+  const count=m.querySelector('.translation-count');
+  const status=m.querySelector('.translation-status');
+  const submit=m.querySelector('.translation-submit');
+  const swap=m.querySelector('.translation-swap');
+  const mic=m.querySelector('.translation-mic');
+  const speak=m.querySelector('.translation-speak');
+  const copy=m.querySelector('.translation-copy');
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let translatedText='';
+  let requestController=null;
+  let recognition=null;
+  let listening=false;
+
+  const languageFor=code=>TRANSLATION_LANGUAGES.find(language=>language.code===code)||TRANSLATION_LANGUAGES[0];
+  const setupLanguagePicker=(root,field,defaultCode)=>{
+    const search=root.querySelector('.translation-language-search');
+    const menu=root.querySelector('.translation-language-menu');
+    let visibleLanguages=[...TRANSLATION_LANGUAGES];
+    let activeIndex=-1;
+
+    const currentLanguage=()=>languageFor(field.value||defaultCode);
+    const close=({restore=true}={})=>{
+      root.classList.remove('is-open');
+      search.setAttribute('aria-expanded','false');
+      activeIndex=-1;
+      if(restore)search.value=currentLanguage().name;
+    };
+    const choose=(code,{announce=true}={})=>{
+      const language=languageFor(code);
+      field.value=language.code;
+      search.value=language.name;
+      close({restore:false});
+      if(announce){status.textContent='';notifyBoardChanged('translation-language')}
+    };
+    const render=(query='')=>{
+      const normalized=query.trim().toLocaleLowerCase();
+      visibleLanguages=TRANSLATION_LANGUAGES.filter(language=>!normalized||language.name.toLocaleLowerCase().includes(normalized)||language.code.toLocaleLowerCase().includes(normalized));
+      activeIndex=visibleLanguages.length?0:-1;
+      menu.replaceChildren();
+      if(!visibleLanguages.length){
+        const empty=document.createElement('span');
+        empty.className='translation-language-empty';
+        empty.textContent='No languages found';
+        menu.appendChild(empty);
+        return;
+      }
+      visibleLanguages.forEach((language,index)=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='translation-language-option';
+        button.setAttribute('role','option');
+        button.dataset.languageCode=language.code;
+        button.setAttribute('aria-selected',String(language.code===field.value));
+        const name=document.createElement('strong');
+        const codeLabel=document.createElement('small');
+        name.textContent=language.name;
+        codeLabel.textContent=language.code;
+        button.append(name,codeLabel);
+        button.classList.toggle('is-keyboard-active',index===activeIndex);
+        button.addEventListener('pointerdown',event=>event.preventDefault());
+        button.addEventListener('click',()=>{choose(language.code);search.focus({preventScroll:true})});
+        menu.appendChild(button);
+      });
+    };
+    const syncActiveOption=()=>{
+      const options=[...menu.querySelectorAll('.translation-language-option')];
+      options.forEach((option,index)=>option.classList.toggle('is-keyboard-active',index===activeIndex));
+      options[activeIndex]?.scrollIntoView({block:'nearest'});
+    };
+    const open=()=>{
+      root.classList.add('is-open');
+      search.setAttribute('aria-expanded','true');
+      render(search.value===currentLanguage().name?'':search.value);
+    };
+    search.addEventListener('focus',()=>{search.select();open()});
+    search.addEventListener('input',()=>{open();render(search.value)});
+    search.addEventListener('keydown',event=>{
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+        event.preventDefault();
+        if(!root.classList.contains('is-open'))open();
+        if(visibleLanguages.length)activeIndex=(activeIndex+(event.key==='ArrowDown'?1:-1)+visibleLanguages.length)%visibleLanguages.length;
+        syncActiveOption();
+      }else if(event.key==='Enter'){
+        if(root.classList.contains('is-open')&&visibleLanguages[activeIndex]){event.preventDefault();choose(visibleLanguages[activeIndex].code)}
+      }else if(event.key==='Escape'){
+        event.preventDefault();
+        close();
+        search.blur();
+      }
+    });
+    search.addEventListener('blur',()=>setTimeout(()=>{if(!root.contains(document.activeElement))close()},0));
+    menu.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+    choose(defaultCode,{announce:false});
+    render();
+    return{
+      get:()=>field.value||defaultCode,
+      set:(code,options={})=>choose(code,{announce:options.announce??false}),
+      setDisabled:disabled=>{if(disabled)close();search.disabled=disabled;root.classList.toggle('is-disabled',disabled)}
+    };
+  };
+  const sourcePicker=setupLanguagePicker(sourcePickerRoot,source,'en');
+  const targetPicker=setupLanguagePicker(targetPickerRoot,target,'es');
+  const renderOutput=(value,placeholder='Your translation will appear here.')=>{
+    translatedText=String(value||'');
+    output.replaceChildren();
+    if(translatedText)output.textContent=translatedText;
+    else{const span=document.createElement('span');span.textContent=placeholder;output.appendChild(span)}
+    speak.disabled=!translatedText;
+    copy.disabled=!translatedText;
+  };
+  const updateCount=()=>{count.textContent=`${input.value.length} / 450`};
+  const setLoading=loading=>{
+    m.classList.toggle('is-translating',loading);
+    submit.disabled=loading;
+    sourcePicker.setDisabled(loading);
+    targetPicker.setDisabled(loading);
+  };
+
+  async function translate(){
+    const text=input.value.trim();
+    if(!text){status.textContent='Enter something to translate.';input.focus();return}
+    if(new TextEncoder().encode(text).length>480){status.textContent='Please shorten the text slightly.';return}
+    requestController?.abort();
+    const controller=new AbortController();
+    requestController=controller;
+    status.textContent='Translating…';
+    setLoading(true);
+    try{
+      if(sourcePicker.get()===targetPicker.get()){renderOutput(text);status.textContent='Languages match — no translation needed.';return}
+      const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sourcePicker.get())}&tl=${encodeURIComponent(targetPicker.get())}&dt=t&q=${encodeURIComponent(text)}`;
+      const response=await fetch(url,{signal:controller.signal});
+      if(!response.ok)throw new Error(`translation-${response.status}`);
+      const data=await response.json();
+      const result=Array.isArray(data?.[0])?data[0].map(segment=>Array.isArray(segment)?String(segment[0]||''):'').join('').trim():'';
+      if(!result||/^[\s\-–—_.]+$/.test(result)||/^(testvalue|null|undefined)$/i.test(result))throw new Error('translation-unavailable');
+      renderOutput(result);
+      status.textContent='Translated';
+      notifyBoardChanged('translation-result');
+    }catch(error){
+      if(error?.name==='AbortError')return;
+      status.textContent='Translation is unavailable right now. Try again.';
+      renderOutput('', 'Could not translate this text.');
+    }finally{
+      if(requestController===controller){requestController=null;setLoading(false)}
+    }
+  }
+
+  input.addEventListener('input',()=>{updateCount();status.textContent=''});
+  input.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();translate()}});
+  submit.addEventListener('click',translate);
+  swap.addEventListener('click',()=>{
+    const priorSource=sourcePicker.get();
+    sourcePicker.set(targetPicker.get());
+    targetPicker.set(priorSource);
+    if(translatedText){const priorInput=input.value;input.value=translatedText;renderOutput(priorInput);updateCount()}
+    status.textContent='Languages swapped';
+    notifyBoardChanged('translation-swap');
+  });
+
+  if(!SpeechRecognition){
+    mic.disabled=true;
+    mic.title='Speech input is not supported in this browser';
+  }else{
+    mic.addEventListener('click',()=>{
+      if(listening){recognition?.stop();return}
+      recognition=new SpeechRecognition();
+      recognition.lang=languageFor(sourcePicker.get()).speech;
+      recognition.interimResults=true;
+      recognition.continuous=false;
+      recognition.maxAlternatives=1;
+      recognition.onstart=()=>{listening=true;m.classList.add('is-listening');status.textContent='Listening…'};
+      recognition.onresult=event=>{
+        let transcript='';
+        for(let i=event.resultIndex;i<event.results.length;i++)transcript+=event.results[i][0]?.transcript||'';
+        if(transcript){input.value=transcript.trim();updateCount()}
+      };
+      recognition.onerror=event=>{status.textContent=event.error==='not-allowed'?'Microphone permission was not granted.':'Speech input could not start.'};
+      recognition.onend=()=>{listening=false;m.classList.remove('is-listening');if(input.value.trim()){status.textContent='Speech captured';notifyBoardChanged('translation-speech')}};
+      try{recognition.start()}catch{status.textContent='Speech input could not start.'}
+    });
+  }
+
+  speak.addEventListener('click',()=>{
+    if(!translatedText||!('speechSynthesis'in window))return;
+    speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(translatedText);
+    utterance.lang=languageFor(targetPicker.get()).speech;
+    speechSynthesis.speak(utterance);
+  });
+  copy.addEventListener('click',async()=>{
+    if(!translatedText)return;
+    try{await navigator.clipboard.writeText(translatedText);status.textContent='Copied translation'}
+    catch{status.textContent='Could not copy automatically.'}
+  });
+  m.querySelector('.translation-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.translation-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.translation-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  renderOutput('');
+  updateCount();
+  m._boardGetState=()=>({title:tileTitle.get(),source:sourcePicker.get(),target:targetPicker.get(),input:input.value,output:translatedText});
+  m._boardSetState=state=>{
+    if(!state)return;
+    tileTitle.set(state.title);
+    sourcePicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.source)?state.source:'en');
+    targetPicker.set(TRANSLATION_LANGUAGES.some(language=>language.code===state.target)?state.target:'es');
+    input.value=String(state.input||'').slice(0,450);
+    renderOutput(String(state.output||''));
+    updateCount();
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();requestController?.abort();recognition?.abort();if('speechSynthesis'in window)speechSynthesis.cancel()};
+}
+
+function setupLiveCaption(m){
+  const tileTitle=bindEditableModuleTitle(m,'.livecaption-title','Live Captions');
+  const toggle=m.querySelector('.livecaption-toggle');
+  const toggleLabel=toggle.querySelector('span');
+  const stateLabel=m.querySelector('.livecaption-state b');
+  const message=m.querySelector('.livecaption-message');
+  const current=m.querySelector('.livecaption-current-text');
+  const historyEl=m.querySelector('.livecaption-history');
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let recognition=null;
+  let wantsListening=false;
+  let isListening=false;
+  let restartTimer=0;
+  let history=[];
+  let pendingInterim='';
+  let currentFitFrame=0;
+
+  const segmentCaptionText=value=>{
+    const normalized=String(value||'').replace(/\s+/g,' ').trim();
+    if(!normalized)return[];
+    const sentences=normalized.match(/[^.!?]+(?:[.!?]+|$)/g)||[normalized];
+    const segments=[];
+    for(const sentence of sentences){
+      const words=sentence.trim().split(/\s+/).filter(Boolean);
+      let chunk=[];
+      for(const word of words){
+        const candidate=[...chunk,word].join(' ');
+        if(chunk.length&&(chunk.length>=14||candidate.length>88)){
+          segments.push(chunk.join(' '));
+          chunk=[word];
+        }else chunk.push(word);
+      }
+      if(chunk.length)segments.push(chunk.join(' '));
+    }
+    return segments.filter(Boolean);
+  };
+  const fitCurrentText=()=>{
+    cancelAnimationFrame(currentFitFrame);
+    currentFitFrame=requestAnimationFrame(()=>{
+      let low=16,high=56,best=16;
+      while(high-low>.5){
+        const size=(low+high)/2;
+        current.style.fontSize=`${size}px`;
+        if(current.scrollHeight<=current.clientHeight+1&&current.scrollWidth<=current.clientWidth+1){best=size;low=size}else high=size;
+      }
+      current.style.fontSize=`${best}px`;
+    });
+  };
+  const displayCurrent=value=>{
+    const phrase=segmentCaptionText(value).at(-1)||'Listening…';
+    current.textContent=phrase;
+    fitCurrentText();
+  };
+
+  const renderHistory=()=>{
+    historyEl.replaceChildren();
+    if(!history.length){
+      const empty=document.createElement('p');
+      empty.className='livecaption-empty';
+      empty.textContent='Your caption history will appear here.';
+      historyEl.appendChild(empty);
+      return;
+    }
+    history.forEach((caption,index)=>{
+      const row=document.createElement('p');
+      const number=document.createElement('span');
+      const text=document.createElement('strong');
+      number.textContent=String(index+1).padStart(2,'0');
+      text.textContent=caption;
+      row.append(number,text);
+      historyEl.appendChild(row);
+    });
+    requestAnimationFrame(()=>{historyEl.scrollTop=historyEl.scrollHeight});
+  };
+  const setListeningUI=listening=>{
+    isListening=listening;
+    m.classList.toggle('is-listening',listening);
+    m.classList.toggle('is-paused',!listening);
+    toggle.setAttribute('aria-pressed',String(listening));
+    toggleLabel.textContent=listening?'Pause captions':'Start captions';
+    stateLabel.textContent=listening?'ON':'OFF';
+    if(!listening)renderHistory();
+  };
+  const addCaption=value=>{
+    const segments=segmentCaptionText(value);
+    if(!segments.length)return;
+    for(const text of segments)if(history[history.length-1]!==text)history.push(text);
+    if(history.length>100)history=history.slice(-100);
+    displayCurrent(segments.at(-1));
+    notifyBoardChanged('live-caption');
+  };
+  const commitPending=()=>{
+    if(!pendingInterim)return;
+    addCaption(pendingInterim);
+    pendingInterim='';
+  };
+  const startRecognition=()=>{
+    if(!SpeechRecognition||!wantsListening)return;
+    clearTimeout(restartTimer);
+    recognition=new SpeechRecognition();
+    recognition.continuous=true;
+    recognition.interimResults=true;
+    recognition.maxAlternatives=1;
+    recognition.lang=document.documentElement.lang==='es'?'es-US':'en-US';
+    recognition.onstart=()=>{
+      if(!wantsListening){recognition.stop();return}
+      setListeningUI(true);
+      message.textContent='Listening clearly…';
+      if(!history.length)displayCurrent('Listening… start speaking when you’re ready.');
+    };
+    recognition.onresult=event=>{
+      if(!wantsListening&&!isListening)return;
+      let interim='';
+      for(let index=event.resultIndex;index<event.results.length;index++){
+        const transcript=event.results[index][0]?.transcript||'';
+        if(event.results[index].isFinal){addCaption(transcript);pendingInterim=''}
+        else interim+=transcript;
+      }
+      const cleanInterim=interim.replace(/\s+/g,' ').trim();
+      if(cleanInterim){pendingInterim=cleanInterim;displayCurrent(cleanInterim)}
+    };
+    recognition.onerror=event=>{
+      if(event.error==='no-speech'){message.textContent='Still listening — no speech detected yet.';return}
+      commitPending();
+      wantsListening=false;
+      const denied=event.error==='not-allowed'||event.error==='service-not-allowed';
+      message.textContent=denied?'Microphone permission was not granted.':'Live captions could not continue. Try again.';
+      setListeningUI(false);
+    };
+    recognition.onend=()=>{
+      recognition=null;
+      if(wantsListening){restartTimer=setTimeout(startRecognition,220);return}
+      if(isListening){commitPending();setListeningUI(false)}
+    };
+    try{recognition.start()}catch{
+      wantsListening=false;
+      message.textContent='Live captions could not start. Try again.';
+      setListeningUI(false);
+    }
+  };
+  const start=()=>{
+    if(!SpeechRecognition)return;
+    wantsListening=true;
+    setListeningUI(true);
+    pendingInterim='';
+    displayCurrent('Starting microphone…');
+    message.textContent='Starting live captions…';
+    startRecognition();
+  };
+  const pause=()=>{
+    wantsListening=false;
+    clearTimeout(restartTimer);
+    commitPending();
+    try{recognition?.stop()}catch{}
+    setListeningUI(false);
+    message.textContent=history.length?'Paused — scroll to review the caption history.':'Captions are paused.';
+  };
+
+  if(!SpeechRecognition){
+    toggle.disabled=true;
+    message.textContent='Live captions are not supported in this browser.';
+    displayCurrent('This browser does not provide speech recognition.');
+  }else toggle.addEventListener('click',()=>wantsListening||isListening?pause():start());
+
+  historyEl.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  const captionResizeObserver=new ResizeObserver(fitCurrentText);
+  captionResizeObserver.observe(m.querySelector('.livecaption-current'));
+  m.querySelector('.livecaption-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.livecaption-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  renderHistory();
+  setListeningUI(false);
+  m._boardGetState=()=>({title:tileTitle.get(),history:[...history]});
+  m._boardSetState=state=>{
+    tileTitle.set(state?.title);
+    history=Array.isArray(state?.history)?state.history.map(value=>String(value||'').trim()).filter(Boolean).slice(-100):[];
+    if(history.length)displayCurrent(history[history.length-1]);
+    renderHistory();
+    setListeningUI(false);
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();wantsListening=false;clearTimeout(restartTimer);cancelAnimationFrame(currentFitFrame);captionResizeObserver.disconnect();try{recognition?.abort()}catch{}};
+}
+
+function setupVoiceMemo(m){
+  const tileTitle=bindEditableModuleTitle(m,'.voicememo-title','Voice Memos');
+  const recordButton=m.querySelector('.voicememo-record');
+  const recordLabel=recordButton.querySelector('span');
+  const timeEl=m.querySelector('.voicememo-time');
+  const message=m.querySelector('.voicememo-message');
+  const list=m.querySelector('.voicememo-list');
+  const count=m.querySelector('.voicememo-count');
+  let memos=[];
+  let recorder=null;
+  let stream=null;
+  let chunks=[];
+  let startedAt=0;
+  let timerId=0;
+  let disposed=false;
+
+  const formatDuration=seconds=>`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
+  const setRecordingUI=recording=>{
+    m.classList.toggle('is-recording',recording);
+    recordButton.setAttribute('aria-pressed',String(recording));
+    recordLabel.textContent=recording?'Stop recording':'Record memo';
+  };
+  const stopTracks=()=>{stream?.getTracks().forEach(track=>track.stop());stream=null};
+  const render=()=>{
+    count.textContent=`${memos.length} / 5`;
+    list.replaceChildren();
+    if(!memos.length){
+      const empty=document.createElement('p');
+      empty.className='voicememo-empty';
+      empty.textContent='Your recordings will appear here.';
+      list.appendChild(empty);
+      return;
+    }
+    memos.forEach((memo,index)=>{
+      const row=document.createElement('article');
+      row.className='voicememo-item';
+      const meta=document.createElement('div');
+      const title=document.createElement('input');
+      const duration=document.createElement('small');
+      title.type='text';
+      title.className='voicememo-name';
+      title.maxLength=40;
+      title.value=String(memo.name||`Memo ${index+1}`).slice(0,40);
+      title.setAttribute('aria-label',`Rename Memo ${index+1}`);
+      title.addEventListener('input',()=>{memo.name=title.value.slice(0,40);notifyBoardChanged('voice-memo-rename')});
+      title.addEventListener('blur',()=>{if(!title.value.trim()){memo.name=`Memo ${index+1}`;title.value=memo.name}});
+      duration.textContent=formatDuration(memo.duration||0);
+      meta.append(title,duration);
+      const audio=document.createElement('audio');
+      audio.controls=true;
+      audio.preload='metadata';
+      audio.src=memo.dataUrl;
+      audio.setAttribute('controlsList','nodownload');
+      audio.setAttribute('aria-label',`Play Memo ${index+1}`);
+      audio.addEventListener('play',()=>list.querySelectorAll('audio').forEach(other=>{if(other!==audio)other.pause()}));
+      const remove=document.createElement('button');
+      remove.type='button';
+      remove.className='voicememo-remove';
+      remove.setAttribute('aria-label',`Delete Memo ${index+1}`);
+      remove.textContent='×';
+      remove.addEventListener('click',()=>{memos.splice(index,1);render();message.textContent='Memo deleted.';notifyBoardChanged('voice-memo-delete')});
+      row.append(meta,audio,remove);
+      list.appendChild(row);
+    });
+  };
+  const finishRecording=()=>{
+    clearInterval(timerId);
+    timerId=0;
+    if(recorder?.state==='recording')recorder.stop();
+  };
+  const beginRecording=async()=>{
+    if(memos.length>=5){message.textContent='Delete a memo before recording another.';return}
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){message.textContent='Audio recording is not supported in this browser.';return}
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+      const preferred=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type=>MediaRecorder.isTypeSupported?.(type));
+      recorder=new MediaRecorder(stream,preferred?{mimeType:preferred,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000});
+      chunks=[];
+      startedAt=performance.now();
+      recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
+      recorder.onerror=()=>{message.textContent='Recording stopped because of an audio error.';stopTracks();setRecordingUI(false)};
+      recorder.onstop=()=>{
+        const duration=Math.min(30,(performance.now()-startedAt)/1000);
+        const blob=new Blob(chunks,{type:recorder?.mimeType||chunks[0]?.type||'audio/webm'});
+        chunks=[];
+        stopTracks();
+        if(disposed)return;
+        setRecordingUI(false);
+        timeEl.textContent='0:00';
+        if(!blob.size){message.textContent='No audio was captured.';return}
+        const reader=new FileReader();
+        reader.onload=()=>{
+          memos.push({name:`Memo ${memos.length+1}`,dataUrl:String(reader.result||''),duration});
+          render();
+          message.textContent='Memo saved and ready to play.';
+          notifyBoardChanged('voice-memo-add');
+        };
+        reader.onerror=()=>{message.textContent='The recording could not be prepared.'};
+        reader.readAsDataURL(blob);
+      };
+      recorder.start(500);
+      setRecordingUI(true);
+      message.textContent='Recording… tap Stop when finished.';
+      timerId=setInterval(()=>{
+        const elapsed=Math.min(30,(performance.now()-startedAt)/1000);
+        timeEl.textContent=formatDuration(elapsed);
+        if(elapsed>=30)finishRecording();
+      },200);
+    }catch(error){
+      stopTracks();
+      setRecordingUI(false);
+      message.textContent=error?.name==='NotAllowedError'?'Microphone permission was not granted.':'The microphone could not be started.';
+    }
+  };
+
+  recordButton.addEventListener('click',()=>recorder?.state==='recording'?finishRecording():beginRecording());
+  list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  m.querySelector('.voicememo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.voicememo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.voicememo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  render();
+  m._boardGetState=()=>({title:tileTitle.get(),memos:memos.map(memo=>({...memo}))});
+  m._boardSetState=state=>{tileTitle.set(state?.title);memos=Array.isArray(state?.memos)?state.memos.filter(memo=>typeof memo?.dataUrl==='string'&&memo.dataUrl.startsWith('data:audio/')).slice(0,5):[];render()};
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true;clearInterval(timerId);try{if(recorder?.state==='recording')recorder.stop()}catch{}stopTracks()};
+}
+
+const PHOTOBOOTH_FILTERS={
+  normal:'none',
+  mono:'grayscale(1) contrast(1.12)',
+  sepia:'sepia(.82) saturate(1.18) contrast(1.04)',
+  pop:'saturate(1.75) contrast(1.18) brightness(1.04)',
+  cool:'saturate(1.12) contrast(1.06) hue-rotate(176deg)',
+  warm:'sepia(.24) saturate(1.32) contrast(1.05) brightness(1.04)'
+};
+let boardPhotoDropReady=false;
+
+function setupBoardPhotoDrop(){
+  if(boardPhotoDropReady)return;
+  boardPhotoDropReady=true;
+  const hasPhoto=event=>Array.from(event.dataTransfer?.types||[]).includes('application/x-teachertiles-photo');
+  workspace.addEventListener('dragover',event=>{
+    if(!hasPhoto(event))return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect='copy';
+  });
+  workspace.addEventListener('drop',event=>{
+    if(!hasPhoto(event))return;
+    event.preventDefault();
+    event.stopPropagation();
+    const src=event.dataTransfer?.getData('application/x-teachertiles-photo')||'';
+    if(!src.startsWith('data:image/'))return;
+    const point=screenToBoard(event.clientX,event.clientY);
+    const imageTile=createModule('image',point.x,point.y);
+    imageTile?._setImageUrl?.(src);
+    notifyBoardChanged('photobooth-drop');
+  });
+}
+
+const activeCameraStreams=new Map();
+
+function releaseCameraStream(stream){
+  if(!stream)return;
+  stream.getTracks().forEach(track=>track.stop());
+  activeCameraStreams.delete(stream);
+}
+
+function releaseAllCameraStreams(){
+  for(const stream of [...activeCameraStreams.keys()])releaseCameraStream(stream);
+}
+
+function deactivateOtherCameraTiles(owner){
+  document.querySelectorAll('.photobooth-module,.mirror-module').forEach(tile=>{
+    if(tile!==owner)tile._deactivate?.();
+  });
+  for(const [stream,streamOwner] of [...activeCameraStreams]){
+    if(streamOwner!==owner)releaseCameraStream(stream);
+  }
+}
+
+window.addEventListener('pagehide',releaseAllCameraStreams);
+
+async function requestFrontCamera(owner){
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
+  deactivateOtherCameraTiles(owner);
+  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+  activeCameraStreams.set(stream,owner);
+  const track=stream.getVideoTracks()[0];
+  track?.applyConstraints({width:{ideal:1280},height:{ideal:720},facingMode:{ideal:'user'}}).catch(()=>{});
+  track?.addEventListener('ended',()=>activeCameraStreams.delete(stream),{once:true});
+  return stream;
+}
+
+function cameraPreviewError(){
+  const error=new Error('camera-preview');
+  error.name='CameraPreviewError';
+  return error;
+}
+
+function cameraAbortError(){
+  try{return new DOMException('Camera startup was cancelled.','AbortError')}
+  catch{const error=new Error('Camera startup was cancelled.');error.name='AbortError';return error}
+}
+
+async function attachCameraPreview(video,stream,signal){
+  video.pause();
+  video.srcObject=null;
+  video.autoplay=true;
+  video.muted=true;
+  video.playsInline=true;
+  video.setAttribute('autoplay','');
+  video.setAttribute('muted','');
+  video.setAttribute('playsinline','');
+  video.srcObject=stream;
+
+  const track=stream.getVideoTracks()[0];
+  if(!track||track.readyState!=='live')throw cameraPreviewError();
+
+  const frameReady=new Promise((resolve,reject)=>{
+    let settled=false;
+    let frameCallback=null;
+    const timeout=window.setTimeout(()=>finish(reject,cameraPreviewError()),8000);
+    const events=['loadeddata','canplay','playing','resize'];
+    const finish=(callback,value)=>{
+      if(settled)return;
+      settled=true;
+      window.clearTimeout(timeout);
+      events.forEach(name=>video.removeEventListener(name,onReady));
+      track.removeEventListener('ended',onEnded);
+      signal?.removeEventListener('abort',onAbort);
+      if(frameCallback!==null&&typeof video.cancelVideoFrameCallback==='function')video.cancelVideoFrameCallback(frameCallback);
+      callback(value);
+    };
+    const onFrame=()=>{frameCallback=null;finish(resolve)};
+    const onReady=()=>{
+      if(video.readyState<2||video.videoWidth<1||video.videoHeight<1)return;
+      if(typeof video.requestVideoFrameCallback==='function'){
+        if(frameCallback===null)frameCallback=video.requestVideoFrameCallback(onFrame);
+      }else finish(resolve);
+    };
+    const onEnded=()=>finish(reject,cameraPreviewError());
+    const onAbort=()=>finish(reject,cameraAbortError());
+    events.forEach(name=>video.addEventListener(name,onReady));
+    track.addEventListener('ended',onEnded,{once:true});
+    signal?.addEventListener('abort',onAbort,{once:true});
+    if(signal?.aborted){onAbort();return}
+    onReady();
+  });
+
+  let playback;
+  try{playback=video.play()}
+  catch{throw cameraPreviewError()}
+  try{await Promise.all([Promise.resolve(playback),frameReady])}
+  catch(error){
+    if(error?.name==='AbortError')throw error;
+    throw cameraPreviewError();
+  }
+}
+
+function cameraStartMessage(error){
+  if(error?.name==='NotAllowedError'||error?.name==='SecurityError')return'Camera permission was not granted. Allow camera access, then try again.';
+  if(error?.name==='NotFoundError'||error?.name==='DevicesNotFoundError')return'No camera was found on this device.';
+  if(error?.name==='NotReadableError'||error?.name==='TrackStartError')return'The browser found your camera but could not open it. Reload this page to release a stuck camera session, then try again.';
+  if(error?.name==='OverconstrainedError'||error?.name==='ConstraintNotSatisfiedError')return'This camera could not use the requested video settings. Reload the page, then try again.';
+  if(error?.name==='CameraPreviewError')return'Chrome opened the camera, but no video reached this tile. Reload this tab and try again.';
+  if(error?.name==='AbortError')return'The camera stopped while starting. Wait a moment, then try again.';
+  if(error?.message==='unsupported')return'Camera access is not supported in this browser.';
+  return'The camera could not be started. Reload this page, then try again.';
+}
+
+function setupPhotobooth(m){
+  setupBoardPhotoDrop();
+  const tileTitle=bindEditableModuleTitle(m,'.photobooth-title','Photobooth');
+  const video=m.querySelector('.photobooth-video');
+  const toggle=m.querySelector('.photobooth-camera-toggle');
+  const shutter=m.querySelector('.photobooth-shutter');
+  const state=m.querySelector('.photobooth-camera-state b');
+  const message=m.querySelector('.photobooth-message');
+  const list=m.querySelector('.photobooth-photo-list');
+  const count=m.querySelector('.photobooth-photo-count');
+  const drawerToggle=m.querySelector('.photobooth-drawer-toggle');
+  const placeholder=m.querySelector('.photobooth-placeholder');
+  const flash=m.querySelector('.photobooth-flash');
+  let stream=null;
+  let filter='normal';
+  let photos=[];
+  let disposed=false;
+  let cameraAttempt=0;
+  let cameraAbort=null;
+
+  const stopCamera=()=>{
+    cameraAttempt++;
+    cameraAbort?.abort();
+    cameraAbort=null;
+    releaseCameraStream(stream);
+    stream=null;
+    video.pause();
+    video.srcObject=null;
+    m.classList.remove('has-camera');
+    toggle.textContent='Start camera';
+    toggle.disabled=false;
+    shutter.disabled=true;
+    state.textContent='OFF';
+  };
+  const startCamera=async()=>{
+    if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stopCamera();message.textContent='Camera is off.';return}
+    if(stream)stopCamera();
+    const attempt=++cameraAttempt;
+    const controller=new AbortController();
+    cameraAbort=controller;
+    toggle.disabled=true;
+    message.textContent='Starting the camera…';
+    let next=null;
+    try{
+      next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
+      stream=next;
+      await attachCameraPreview(video,stream,controller.signal);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
+      m.classList.add('has-camera');
+      toggle.textContent='Stop camera';
+      shutter.disabled=false;
+      state.textContent='ON';
+      message.textContent='Choose a filter, then take a photo.';
+      stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stopCamera()},{once:true}));
+    }catch(error){
+      if(stream===next){releaseCameraStream(next);stream=null;video.pause();video.srcObject=null}
+      if(attempt===cameraAttempt&&!disposed){
+        m.classList.remove('has-camera');toggle.textContent='Start camera';shutter.disabled=true;state.textContent='OFF';message.textContent=cameraStartMessage(error);
+      }
+    }finally{if(attempt===cameraAttempt){cameraAbort=null;toggle.disabled=false}}
+  };
+  const setFilter=value=>{
+    filter=PHOTOBOOTH_FILTERS[value]?value:'normal';
+    m.dataset.photoFilter=filter;
+    video.style.filter=PHOTOBOOTH_FILTERS[filter];
+    m.querySelectorAll('[data-photo-filter-choice]').forEach(button=>button.classList.toggle('is-active',button.dataset.photoFilterChoice===filter));
+  };
+  const renderPhotos=()=>{
+    count.textContent=String(photos.length);
+    list.replaceChildren();
+    if(!photos.length){
+      const empty=document.createElement('p');
+      empty.className='photobooth-photo-empty';
+      empty.textContent='Your photos will appear here.';
+      list.appendChild(empty);
+      return;
+    }
+    photos.forEach((photo,index)=>{
+      const card=document.createElement('div');
+      card.className='photobooth-photo-card';
+      card.draggable=true;
+      card.tabIndex=0;
+      card.setAttribute('role','img');
+      card.setAttribute('aria-label',`Photo ${index+1}. Drag onto the board.`);
+      const img=document.createElement('img');
+      img.src=photo;
+      img.alt='';
+      img.draggable=false;
+      const remove=document.createElement('button');
+      remove.type='button';
+      remove.textContent='×';
+      remove.setAttribute('aria-label',`Delete photo ${index+1}`);
+      remove.addEventListener('click',event=>{event.stopPropagation();photos.splice(index,1);renderPhotos();notifyBoardChanged('photobooth-delete')});
+      card.addEventListener('dragstart',event=>{
+        event.stopPropagation();
+        event.dataTransfer?.setData('application/x-teachertiles-photo',photo);
+        if(event.dataTransfer)event.dataTransfer.effectAllowed='copy';
+        card.classList.add('is-dragging');
+      });
+      card.addEventListener('dragend',()=>card.classList.remove('is-dragging'));
+      card.append(img,remove);
+      list.appendChild(card);
+    });
+  };
+  const takePhoto=()=>{
+    if(!stream||!video.videoWidth||photos.length>=8){message.textContent=photos.length>=8?'The drawer holds up to 8 photos. Delete one to take another.':'The camera is still getting ready.';return}
+    const sourceW=video.videoWidth,sourceH=video.videoHeight;
+    const scale=Math.min(1,960/Math.max(sourceW,sourceH));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(sourceW*scale));
+    canvas.height=Math.max(1,Math.round(sourceH*scale));
+    const ctx=canvas.getContext('2d');
+    ctx.save();
+    ctx.filter=PHOTOBOOTH_FILTERS[filter];
+    ctx.translate(canvas.width,0);
+    ctx.scale(-1,1);
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    ctx.restore();
+    photos.unshift(canvas.toDataURL('image/jpeg',.8));
+    renderPhotos();
+    m.classList.add('is-drawer-open');
+    drawerToggle.setAttribute('aria-expanded','true');
+    flash.classList.remove('is-flashing');void flash.offsetWidth;flash.classList.add('is-flashing');
+    message.textContent='Photo saved. Drag it from the drawer onto the board.';
+    notifyBoardChanged('photobooth-photo');
+  };
+
+  toggle.addEventListener('click',startCamera);
+  placeholder?.addEventListener('click',startCamera);
+  shutter.addEventListener('click',takePhoto);
+  drawerToggle.addEventListener('click',()=>{const open=m.classList.toggle('is-drawer-open');drawerToggle.setAttribute('aria-expanded',String(open))});
+  m.querySelectorAll('[data-photo-filter-choice]').forEach(button=>button.addEventListener('click',()=>setFilter(button.dataset.photoFilterChoice)));
+  list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  m.querySelector('.photobooth-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.photobooth-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.photobooth-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  setFilter(filter);renderPhotos();
+  m._boardGetState=()=>({title:tileTitle.get(),filter,photos:[...photos]});
+  m._boardSetState=saved=>{tileTitle.set(saved?.title);photos=Array.isArray(saved?.photos)?saved.photos.filter(src=>typeof src==='string'&&src.startsWith('data:image/')).slice(0,8):[];setFilter(saved?.filter);renderPhotos()};
+  m._deactivate=stopCamera;
+  const prior=m._cleanup;
+  m._cleanup=()=>{disposed=true;stopCamera();prior?.()};
+}
+
+function setupMirror(m){
+  const tileTitle=bindEditableModuleTitle(m,'.mirror-title','Mirror');
+  const video=m.querySelector('.mirror-video');
+  const toggle=m.querySelector('.mirror-toggle');
+  const placeholder=m.querySelector('.mirror-placeholder');
+  const state=m.querySelector('.mirror-camera-state b');
+  const message=m.querySelector('.mirror-message');
+  let stream=null;
+  let disposed=false;
+  let cameraAttempt=0;
+  let cameraAbort=null;
+  const stop=()=>{
+    cameraAttempt++;cameraAbort?.abort();cameraAbort=null;releaseCameraStream(stream);stream=null;video.pause();video.srcObject=null;
+    m.classList.remove('has-camera');toggle.textContent='Start mirror';toggle.disabled=false;state.textContent='OFF';message.textContent='Camera is off.';
+  };
+  const start=async()=>{
+    if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stop();return}
+    if(stream)stop();
+    const attempt=++cameraAttempt;
+    const controller=new AbortController();
+    cameraAbort=controller;
+    toggle.disabled=true;message.textContent='Starting your mirror…';
+    let next=null;
+    try{
+      next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
+      stream=next;await attachCameraPreview(video,stream,controller.signal);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt||controller.signal.aborted){releaseCameraStream(next);return}
+      m.classList.add('has-camera');toggle.textContent='Stop mirror';state.textContent='ON';message.textContent='Mirror is on. Video stays on this device.';
+      stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stop()},{once:true}));
+    }catch(error){
+      if(stream===next){releaseCameraStream(next);stream=null;video.pause();video.srcObject=null}
+      if(attempt===cameraAttempt&&!disposed){m.classList.remove('has-camera');toggle.textContent='Start mirror';state.textContent='OFF';message.textContent=cameraStartMessage(error)}
+    }
+    finally{if(attempt===cameraAttempt){cameraAbort=null;toggle.disabled=false}}
+  };
+  toggle.addEventListener('click',start);
+  placeholder?.addEventListener('click',start);
+  m.querySelector('.mirror-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.mirror-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.mirror-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m._boardGetState=()=>({title:tileTitle.get()});
+  m._boardSetState=saved=>tileTitle.set(saved?.title);
+  m._deactivate=stop;
+  const prior=m._cleanup;
+  m._cleanup=()=>{disposed=true;stop();prior?.()};
+}
+
+const WEATHER_CODES={
+  0:['Clear sky','☀'],1:['Mostly clear','🌤'],2:['Partly cloudy','⛅'],3:['Overcast','☁'],
+  45:['Fog','≋'],48:['Icy fog','≋'],51:['Light drizzle','🌦'],53:['Drizzle','🌦'],55:['Heavy drizzle','🌧'],
+  56:['Freezing drizzle','🌧'],57:['Freezing drizzle','🌧'],61:['Light rain','🌦'],63:['Rain','🌧'],65:['Heavy rain','🌧'],
+  66:['Freezing rain','🌧'],67:['Freezing rain','🌧'],71:['Light snow','🌨'],73:['Snow','🌨'],75:['Heavy snow','❄'],77:['Snow grains','❄'],
+  80:['Rain showers','🌦'],81:['Rain showers','🌧'],82:['Heavy showers','🌧'],85:['Snow showers','🌨'],86:['Heavy snow showers','❄'],
+  95:['Thunderstorm','⛈'],96:['Thunderstorm with hail','⛈'],99:['Thunderstorm with hail','⛈']
+};
+let localCoordinatesPromise=null;
+
+function weatherCodeInfo(code){return WEATHER_CODES[Number(code)]||['Current conditions','○']}
+function airQualityInfo(value){
+  const aqi=Math.round(Number(value));
+  if(!Number.isFinite(aqi))return{label:'Unavailable',className:'unknown',value:null};
+  if(aqi<=50)return{label:'Good',className:'good',value:aqi};
+  if(aqi<=100)return{label:'Moderate',className:'moderate',value:aqi};
+  if(aqi<=150)return{label:'Sensitive groups',className:'sensitive',value:aqi};
+  if(aqi<=200)return{label:'Unhealthy',className:'unhealthy',value:aqi};
+  if(aqi<=300)return{label:'Very unhealthy',className:'very-unhealthy',value:aqi};
+  return{label:'Hazardous',className:'hazardous',value:aqi};
+}
+function weatherDayLabel(value,index){
+  if(index===0)return'Today';
+  const date=new Date(`${value}T12:00:00Z`);
+  return Number.isNaN(date.getTime())?'Day':date.toLocaleDateString(undefined,{weekday:'short',timeZone:'UTC'});
+}
+function weatherClockLabel(value){
+  const match=String(value||'').match(/T(\d{2}):(\d{2})/);
+  if(!match)return'—';
+  const hour=Number(match[1]);
+  return`${hour%12||12}:${match[2]} ${hour>=12?'PM':'AM'}`;
+}
+function displayTemperature(celsius,unit){
+  const value=unit==='f'?Number(celsius)*9/5+32:Number(celsius);
+  return Number.isFinite(value)?`${Math.round(value)}°${unit.toUpperCase()}`:'—';
+}
+function requestLocalCoordinates(){
+  if(localCoordinatesPromise)return localCoordinatesPromise;
+  localCoordinatesPromise=new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){reject(new Error('unsupported'));return}
+    navigator.geolocation.getCurrentPosition(
+      position=>resolve({lat:position.coords.latitude,lon:position.coords.longitude}),
+      error=>reject(error),
+      {enableHighAccuracy:false,timeout:12000,maximumAge:10*60*1000}
+    );
+  }).catch(error=>{localCoordinatesPromise=null;throw error});
+  return localCoordinatesPromise;
+}
+async function geocodeWeatherPlace(query,signal){
+  const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`,{signal});
+  if(!response.ok)throw new Error('geocoding');
+  const result=(await response.json())?.results?.[0];
+  if(!result)throw new Error('not-found');
+  return{name:[result.name,result.admin1||result.country].filter(Boolean).join(', '),lat:Number(result.latitude),lon:Number(result.longitude),isLocal:false};
+}
+async function fetchCurrentConditions(location,signal,{extended=true}={}){
+  const weatherQuery={
+    latitude:String(location.lat),longitude:String(location.lon),
+    current:'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,is_day',
+    timezone:'auto'
+  };
+  if(extended){
+    weatherQuery.daily='weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,uv_index_max,sunrise,sunset';
+    weatherQuery.forecast_days='7';
+  }
+  const params=new URLSearchParams(weatherQuery);
+  const airParams=new URLSearchParams({
+    latitude:String(location.lat),longitude:String(location.lon),
+    current:'us_aqi,pm2_5',timezone:'auto'
+  });
+  const [response,airResult]=await Promise.all([
+    fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{signal}),
+    extended?fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${airParams}`,{signal}).then(async airResponse=>airResponse.ok?airResponse.json():null).catch(error=>{if(error?.name==='AbortError')throw error;return null}):Promise.resolve(null)
+  ]);
+  if(!response.ok)throw new Error('forecast');
+  const data=await response.json();
+  if(!data?.current)throw new Error('forecast');
+  const daily=data.daily||{};
+  const days=Array.isArray(daily.time)?daily.time.slice(0,7).map((date,index)=>({
+    date,
+    label:weatherDayLabel(date,index),
+    code:Number(daily.weather_code?.[index]),
+    highC:Number(daily.temperature_2m_max?.[index]),
+    lowC:Number(daily.temperature_2m_min?.[index]),
+    precipitationProbability:Number(daily.precipitation_probability_max?.[index]),
+    precipitation:Number(daily.precipitation_sum?.[index]),
+    wind:Number(daily.wind_speed_10m_max?.[index]),
+    uv:Number(daily.uv_index_max?.[index]),
+    sunrise:daily.sunrise?.[index]||'',
+    sunset:daily.sunset?.[index]||''
+  })):[];
+  return{
+    tempC:Number(data.current.temperature_2m),
+    apparentC:Number(data.current.apparent_temperature),
+    humidity:Number(data.current.relative_humidity_2m),
+    wind:Number(data.current.wind_speed_10m),
+    code:Number(data.current.weather_code),
+    precipitation:Number(data.current.precipitation),
+    isDay:Boolean(data.current.is_day),
+    time:data.current.time||'',
+    forecast:days,
+    air:{aqi:Number(airResult?.current?.us_aqi),pm25:Number(airResult?.current?.pm2_5)}
+  };
+}
+function makeWeatherLocation(raw={}){
+  return{
+    id:String(raw.id||`weather-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`),
+    name:String(raw.name||'My location').slice(0,80),
+    lat:Number(raw.lat),lon:Number(raw.lon),isLocal:Boolean(raw.isLocal),
+    loading:false,error:'',current:null
+  };
+}
+
+function setupWeather(m){
+  const tileTitle=bindEditableModuleTitle(m,'.weather-title','Weather');
+  const segments=m.querySelector('.weather-segments');
+  const form=m.querySelector('.weather-place-form');
+  const input=m.querySelector('.weather-place-input');
+  const useLocation=m.querySelector('.weather-use-location');
+  const message=m.querySelector('.weather-message');
+  const controller=new AbortController();
+  let unit='f';
+  let locations=[];
+  let restored=false;
+  let disposed=false;
+
+  const setMessage=value=>message.textContent=value;
+  const render=()=>{
+    segments.replaceChildren();
+    segments.dataset.count=String(locations.length);
+    for(const location of locations){
+      const card=document.createElement('article');
+      card.className='weather-card';
+      if(location.loading)card.classList.add('is-loading');
+      const head=document.createElement('header');
+      const icon=document.createElement('span');
+      const place=document.createElement('strong');
+      place.textContent=location.name;
+      const info=weatherCodeInfo(location.current?.code);
+      icon.textContent=location.loading?'…':location.error?'!':info[1];
+      head.append(icon,place);
+      if(locations.length>1||!location.isLocal){
+        const remove=document.createElement('button');
+        remove.type='button';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${location.name}`);
+        remove.addEventListener('click',()=>{locations=locations.filter(item=>item!==location);render();notifyBoardChanged('weather-remove')});
+        head.appendChild(remove);
+      }
+      const temp=document.createElement('div');
+      temp.className='weather-card-temperature';
+      temp.textContent=location.loading?'—':displayTemperature(location.current?.tempC,unit);
+      const condition=document.createElement('p');
+      condition.textContent=location.loading?'Loading current conditions…':location.error||info[0];
+      const metrics=document.createElement('div');
+      metrics.className='weather-card-metrics';
+      if(location.current){
+        const today=location.current.forecast?.[0]||{};
+        const aqi=airQualityInfo(location.current.air?.aqi);
+        const addMetric=(label,text,className='')=>{
+          const item=document.createElement('span');
+          if(className)item.className=className;
+          const key=document.createElement('b');key.textContent=label;
+          const val=document.createElement('em');val.textContent=text;
+          item.append(key,val);metrics.appendChild(item);
+          return item;
+        };
+        addMetric('Feels',displayTemperature(location.current.apparentC,unit));
+        addMetric('Humidity',`${Math.round(location.current.humidity)}%`);
+        addMetric('Precipitation',`${Math.round(today.precipitationProbability||0)}% · ${Number(today.precipitation||0).toFixed(1)} mm`);
+        addMetric('Wind',`${Math.round(location.current.wind)} km/h`);
+        addMetric('UV',Number.isFinite(today.uv)?today.uv.toFixed(1):'—');
+        const airItem=addMetric('Air quality',aqi.value===null?'Unavailable':`${aqi.label} · AQI ${aqi.value}`,`weather-aqi weather-aqi--${aqi.className}`);
+        if(Number.isFinite(location.current.air?.pm25))airItem.title=`PM2.5: ${location.current.air.pm25.toFixed(1)} µg/m³`;
+        addMetric('Sunrise',weatherClockLabel(today.sunrise));
+        addMetric('Sunset',weatherClockLabel(today.sunset));
+      }
+      const weekly=document.createElement('div');
+      weekly.className='weather-weekly';
+      for(const [index,day] of (location.current?.forecast||[]).entries()){
+        const forecast=document.createElement('article');
+        forecast.className='weather-forecast-day';
+        const dayName=document.createElement('strong');dayName.textContent=day.label||weatherDayLabel(day.date,index);
+        const dayIcon=document.createElement('span');dayIcon.textContent=weatherCodeInfo(day.code)[1];dayIcon.setAttribute('aria-label',weatherCodeInfo(day.code)[0]);
+        const high=document.createElement('b');high.textContent=displayTemperature(day.highC,unit).replace(/[FC]$/,'');
+        const low=document.createElement('small');low.textContent=displayTemperature(day.lowC,unit).replace(/[FC]$/,'');
+        const rain=document.createElement('em');rain.textContent=`${Math.round(day.precipitationProbability||0)}%`;
+        rain.title=`${Number(day.precipitation||0).toFixed(1)} mm precipitation`;
+        forecast.append(dayName,dayIcon,high,low,rain);
+        weekly.appendChild(forecast);
+      }
+      card.append(head,temp,condition,metrics,weekly);
+      segments.appendChild(card);
+    }
+    if(!locations.length){
+      const empty=document.createElement('div');empty.className='weather-empty';empty.textContent='Add a place or use your location.';segments.appendChild(empty);
+    }
+    m.querySelectorAll('[data-weather-unit]').forEach(button=>button.classList.toggle('is-active',button.dataset.weatherUnit===unit));
+  };
+  const refresh=async location=>{
+    if(!Number.isFinite(location.lat)||!Number.isFinite(location.lon))return;
+    location.loading=true;location.error='';render();
+    try{location.current=await fetchCurrentConditions(location,controller.signal);setMessage(`Updated ${location.name}.`)}
+    catch(error){if(error?.name==='AbortError')return;location.error='Weather is unavailable right now.';setMessage('Current weather could not be loaded.')}
+    finally{location.loading=false;if(!disposed)render()}
+  };
+  const loadLocal=async({replace=true}={})=>{
+    useLocation.disabled=true;setMessage('Finding your local weather…');
+    let location=locations.find(item=>item.isLocal);
+    if(!location){location=makeWeatherLocation({name:'My location',isLocal:true});if(replace)locations.unshift(location);else locations.push(location)}
+    location.loading=true;location.error='';render();
+    try{
+      const coords=await requestLocalCoordinates();
+      location.lat=coords.lat;location.lon=coords.lon;location.loading=false;
+      await refresh(location);
+      notifyBoardChanged('weather-local');
+    }catch(error){
+      location.loading=false;location.error=error?.code===1?'Location permission is needed.':'Your location could not be found.';
+      render();setMessage('Use the city box if you prefer not to share location.');
+    }finally{useLocation.disabled=false}
+  };
+  const addPlace=async query=>{
+    if(locations.length>=4){setMessage('This tile can compare up to 4 places.');return}
+    setMessage('Finding that place…');
+    try{
+      const result=await geocodeWeatherPlace(query,controller.signal);
+      if(locations.some(item=>Math.abs(item.lat-result.lat)<.001&&Math.abs(item.lon-result.lon)<.001)){setMessage('That place is already on this tile.');return}
+      const location=makeWeatherLocation(result);locations.push(location);input.value='';render();await refresh(location);notifyBoardChanged('weather-place');
+    }catch(error){if(error?.name!=='AbortError')setMessage(error?.message==='not-found'?'No matching place was found.':'That place could not be loaded.')}
+  };
+
+  form.addEventListener('submit',event=>{event.preventDefault();const query=input.value.trim();if(query)addPlace(query)});
+  useLocation.addEventListener('click',()=>loadLocal());
+  m.querySelectorAll('[data-weather-unit]').forEach(button=>button.addEventListener('click',()=>{unit=button.dataset.weatherUnit;render();notifyBoardChanged('weather-unit')}));
+  segments.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  m.querySelector('.weather-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.weather-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.weather-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  render();
+  m._boardGetState=()=>({title:tileTitle.get(),unit,locations:locations.map(location=>location.isLocal?{name:location.name,isLocal:true}:{name:location.name,lat:location.lat,lon:location.lon,isLocal:false})});
+  m._boardSetState=saved=>{
+    restored=true;tileTitle.set(saved?.title);unit=saved?.unit==='c'?'c':'f';
+    const savedLocations=Array.isArray(saved?.locations)?saved.locations.slice(0,4):[];
+    locations=savedLocations.map(makeWeatherLocation);render();
+    locations.forEach(location=>location.isLocal?loadLocal():refresh(location));
+    if(!locations.length)loadLocal();
+  };
+  queueMicrotask(()=>{if(!restored)loadLocal()});
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true;controller.abort()};
+}
+
+const WEATHER_WHEEL_ITEMS=[
+  {name:'Sunny',icon:'☀️',color:'#ffd66b'},
+  {name:'Partly cloudy',icon:'🌤️',color:'#bcdff4'},
+  {name:'Cloudy',icon:'☁️',color:'#b8c3d1'},
+  {name:'Rainy',icon:'🌧️',color:'#77b6df'},
+  {name:'Stormy',icon:'⛈️',color:'#8b82b8'},
+  {name:'Snowy',icon:'🌨️',color:'#d8edf7'},
+  {name:'Windy',icon:'💨',color:'#9bd8d0'},
+  {name:'Foggy',icon:'🌫️',color:'#c8ced3'}
+];
+const SEASON_WHEEL_ITEMS=[
+  {name:'Spring',icon:'🌷',color:'#a9dfa9'},
+  {name:'Summer',icon:'☀️',color:'#ffd66b'},
+  {name:'Fall',icon:'🍂',color:'#e9a064'},
+  {name:'Winter',icon:'❄️',color:'#a9d8ee'}
+];
+
+function setupChoiceWheel(m,{items}){
+  const face=m.querySelector('.choicewheel-face');
+  const options=m.querySelector('.choicewheel-options');
+  const pointer=m.querySelector('.choicewheel-pointer');
+  const selectionDisplay=m.querySelector('.choicewheel-selection-display');
+  const selectionIcon=m.querySelector('.choicewheel-selection-icon');
+  const selectionName=m.querySelector('.choicewheel-selection-name');
+  const hint=m.querySelector('.choicewheel-hint');
+  const sector=360/items.length;
+  let selected=0;
+  let resizeFrame=0;
+
+  const syncWheelSize=()=>{
+    resizeFrame=0;
+    const style=getComputedStyle(m);
+    const number=value=>Number.parseFloat(value)||0;
+    const width=m.clientWidth-number(style.paddingLeft)-number(style.paddingRight);
+    const reservedHeight=selectionDisplay.offsetHeight+hint.offsetHeight+(number(style.rowGap)||number(style.gap)||5)*2;
+    const height=m.clientHeight-number(style.paddingTop)-number(style.paddingBottom)-reservedHeight;
+    const size=Math.max(160,Math.min(560,width,height));
+    m.style.setProperty('--choicewheel-size',`${Math.floor(size)}px`);
+  };
+  const scheduleWheelSize=()=>{
+    if(resizeFrame)return;
+    resizeFrame=requestAnimationFrame(syncWheelSize);
+  };
+  const wheelResizeObserver=typeof ResizeObserver==='function'?new ResizeObserver(scheduleWheelSize):null;
+  wheelResizeObserver?.observe(m);
+  queueMicrotask(scheduleWheelSize);
+
+  m.style.setProperty('--choicewheel-count',String(items.length));
+  m.style.setProperty('--choicewheel-offset',`${-sector/2}deg`);
+  m.style.setProperty('--choicewheel-colors',items.map((item,index)=>`${item.color} ${index*sector}deg ${(index+1)*sector}deg`).join(','));
+
+  const renderSelection=(index,{angle=index*sector,notify=false}={})=>{
+    selected=(Math.round(Number(index))%items.length+items.length)%items.length;
+    pointer.style.setProperty('--pointer-angle',`${angle}deg`);
+    pointer.setAttribute('aria-valuenow',String(selected));
+    pointer.setAttribute('aria-valuetext',items[selected].name);
+    options.querySelectorAll('.choicewheel-option').forEach((option,optionIndex)=>option.classList.toggle('is-active',optionIndex===selected));
+    selectionIcon.textContent=items[selected].icon;
+    selectionName.textContent=items[selected].name;
+    if(notify)notifyBoardChanged(`${m.dataset.type}-selection`);
+  };
+
+  items.forEach((item,index)=>{
+    const angle=index*sector*Math.PI/180;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='choicewheel-option';
+    button.style.left=`${50+Math.sin(angle)*35}%`;
+    button.style.top=`${50-Math.cos(angle)*35}%`;
+    button.style.setProperty('--choice-color',item.color);
+    button.setAttribute('aria-label',`Point to ${item.name}`);
+    const icon=document.createElement('span');icon.textContent=item.icon;icon.setAttribute('aria-hidden','true');
+    const label=document.createElement('strong');label.textContent=item.name;
+    button.append(icon,label);
+    button.addEventListener('click',event=>{event.stopPropagation();renderSelection(index,{notify:true})});
+    options.appendChild(button);
+  });
+
+  const indexFromPointer=event=>{
+    const rect=face.getBoundingClientRect();
+    const dx=event.clientX-(rect.left+rect.width/2);
+    const dy=event.clientY-(rect.top+rect.height/2);
+    const angle=(Math.atan2(dy,dx)*180/Math.PI+90+360)%360;
+    return{angle,index:Math.round(angle/sector)%items.length};
+  };
+  face.addEventListener('pointerdown',event=>{
+    if(event.button!==0||event.target.closest('.choicewheel-option'))return;
+    event.preventDefault();event.stopPropagation();
+    pointer.focus({preventScroll:true});
+    const pointerId=event.pointerId;
+    face.setPointerCapture?.(pointerId);
+    m.classList.add('is-wheel-dragging');
+    const move=moveEvent=>{
+      if(moveEvent.pointerId!==pointerId)return;
+      moveEvent.preventDefault();moveEvent.stopPropagation();
+      const next=indexFromPointer(moveEvent);
+      renderSelection(next.index,{angle:next.angle});
+    };
+    const end=endEvent=>{
+      if(endEvent.pointerId!==pointerId)return;
+      face.removeEventListener('pointermove',move);
+      face.removeEventListener('pointerup',end);
+      face.removeEventListener('pointercancel',end);
+      m.classList.remove('is-wheel-dragging');
+      renderSelection(selected,{notify:true});
+    };
+    move(event);
+    face.addEventListener('pointermove',move);
+    face.addEventListener('pointerup',end);
+    face.addEventListener('pointercancel',end);
+  });
+  pointer.addEventListener('keydown',event=>{
+    let next=null;
+    if(event.key==='ArrowRight'||event.key==='ArrowDown')next=selected+1;
+    if(event.key==='ArrowLeft'||event.key==='ArrowUp')next=selected-1;
+    if(event.key==='Home')next=0;
+    if(event.key==='End')next=items.length-1;
+    if(next===null)return;
+    event.preventDefault();event.stopPropagation();
+    renderSelection(next,{notify:true});
+  });
+  m.querySelector('.choicewheel-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.choicewheel-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  renderSelection(0);
+  const prior=m._cleanup;
+  m._cleanup=()=>{wheelResizeObserver?.disconnect();if(resizeFrame)cancelAnimationFrame(resizeFrame);prior?.()};
+  return{
+    getState:()=>({selected}),
+    setState(saved){selected=clamp(Math.round(Number(saved?.selected)||0),0,items.length-1);renderSelection(selected)}
+  };
+}
+
+function setupWeatherWheel(m){
+  const wheel=setupChoiceWheel(m,{items:WEATHER_WHEEL_ITEMS});
+  m._boardGetState=()=>wheel.getState();
+  m._boardSetState=saved=>wheel.setState(saved);
+}
+
+function setupSeasonWheel(m){
+  const wheel=setupChoiceWheel(m,{items:SEASON_WHEEL_ITEMS});
+  m._boardGetState=()=>wheel.getState();
+  m._boardSetState=saved=>wheel.setState(saved);
+}
+
+function setupTemperature(m){
+  const tileTitle=bindEditableModuleTitle(m,'.temperature-title','Temperature');
+  const value=m.querySelector('.temperature-value');
+  const verticalValue=m.querySelector('.temperature-vertical-value');
+  const horizontalValue=m.querySelector('.temperature-horizontal-value');
+  const condition=m.querySelector('.temperature-condition');
+  const verticalCondition=m.querySelector('.temperature-vertical-condition');
+  const horizontalCondition=m.querySelector('.temperature-horizontal-condition');
+  const icon=m.querySelector('.temperature-weather-icon');
+  const form=m.querySelector('.temperature-place-form');
+  const input=m.querySelector('.temperature-place-input');
+  const useLocation=m.querySelector('.temperature-use-location');
+  const message=m.querySelector('.temperature-message');
+  const controller=new AbortController();
+  let unit='f';
+  let mode='number';
+  let location=null;
+  let current=null;
+  let restored=false;
+  let disposed=false;
+
+  const render=()=>{
+    m.dataset.temperatureMode=mode;
+    const text=displayTemperature(current?.tempC,unit);
+    value.textContent=text;verticalValue.textContent=text;horizontalValue.textContent=text;
+    const info=weatherCodeInfo(current?.code);
+    icon.textContent=current?info[1]:'○';
+    const conditionText=current?`${location?.name||'Outside'} · ${info[0]}`:'Finding local temperature…';
+    condition.textContent=conditionText;
+    verticalCondition.textContent=conditionText;
+    horizontalCondition.textContent=conditionText;
+    const level=Number.isFinite(current?.tempC)?clamp((current.tempC+20)/70*100,4,96):4;
+    m.style.setProperty('--temperature-level',`${level}%`);
+    m.querySelectorAll('[data-temperature-unit]').forEach(button=>button.classList.toggle('is-active',button.dataset.temperatureUnit===unit));
+    m.querySelectorAll('[data-temperature-mode-choice]').forEach(button=>button.classList.toggle('is-active',button.dataset.temperatureModeChoice===mode));
+  };
+  const load=async next=>{
+    location=makeWeatherLocation(next);current=null;render();message.textContent=`Loading temperature for ${location.name}…`;
+    try{current=await fetchCurrentConditions(location,controller.signal,{extended:false});message.textContent=`Current outdoor temperature for ${location.name}.`;notifyBoardChanged('temperature-place')}
+    catch(error){if(error?.name!=='AbortError')message.textContent='Current temperature could not be loaded.'}
+    finally{if(!disposed)render()}
+  };
+  const loadLocal=async()=>{
+    useLocation.disabled=true;message.textContent='Finding your local temperature…';
+    try{const coords=await requestLocalCoordinates();await load({name:'My location',isLocal:true,...coords})}
+    catch(error){message.textContent=error?.code===1?'Location permission was not granted. Search for a city instead.':'Your location could not be found.'}
+    finally{useLocation.disabled=false}
+  };
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();const query=input.value.trim();if(!query)return;
+    message.textContent='Finding that place…';
+    try{const result=await geocodeWeatherPlace(query,controller.signal);input.value='';await load(result)}
+    catch(error){if(error?.name!=='AbortError')message.textContent=error?.message==='not-found'?'No matching place was found.':'That place could not be loaded.'}
+  });
+  useLocation.addEventListener('click',loadLocal);
+  m.querySelectorAll('[data-temperature-unit]').forEach(button=>button.addEventListener('click',()=>{unit=button.dataset.temperatureUnit;render();notifyBoardChanged('temperature-unit')}));
+  m.querySelectorAll('[data-temperature-mode-choice]').forEach(button=>button.addEventListener('click',()=>{mode=['number','vertical','horizontal'].includes(button.dataset.temperatureModeChoice)?button.dataset.temperatureModeChoice:'number';render();notifyBoardChanged('temperature-mode')}));
+  m.querySelector('.temperature-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.temperature-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.temperature-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  render();
+  m._boardGetState=()=>({title:tileTitle.get(),unit,mode,location:location?.isLocal?{name:location.name,isLocal:true}:location?{name:location.name,lat:location.lat,lon:location.lon,isLocal:false}:null});
+  m._boardSetState=saved=>{
+    restored=true;tileTitle.set(saved?.title);unit=saved?.unit==='c'?'c':'f';mode=['number','vertical','horizontal'].includes(saved?.mode)?saved.mode:'number';render();
+    if(saved?.location?.isLocal)loadLocal();else if(saved?.location&&Number.isFinite(Number(saved.location.lat))&&Number.isFinite(Number(saved.location.lon)))load(saved.location);else loadLocal();
+  };
+  queueMicrotask(()=>{if(!restored)loadLocal()});
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();disposed=true;controller.abort()};
+}
+
+const WORLD_MAP_REGIONS=[
+  {id:'north-america',name:'North America',hemisphere:'Northern and Western Hemispheres',fact:'North America stretches from the Arctic to the tropics and includes 23 independent countries.'},
+  {id:'south-america',name:'South America',hemisphere:'Mostly Southern and Western Hemispheres',fact:'South America is home to the Andes, the world’s longest continental mountain range.'},
+  {id:'europe',name:'Europe',hemisphere:'Northern Hemisphere; Eastern and Western Hemispheres',fact:'Europe and Asia share one large landmass called Eurasia.'},
+  {id:'africa',name:'Africa',hemisphere:'All four hemispheres',fact:'Both the Equator and Prime Meridian cross Africa, placing it in all four hemispheres.'},
+  {id:'asia',name:'Asia',hemisphere:'Mostly Northern and Eastern Hemispheres',fact:'Asia is the largest continent by both land area and population.'},
+  {id:'australia',name:'Australia',hemisphere:'Southern and Eastern Hemispheres',fact:'Australia is the smallest continent and is surrounded by the Indian and Pacific Oceans.'},
+  {id:'antarctica',name:'Antarctica',hemisphere:'Southern Hemisphere',fact:'Antarctica surrounds the South Pole and is the coldest continent on Earth.'}
+];
+
+function setupWorldMap(m){
+  const tileTitle=bindEditableModuleTitle(m,'.worldmap-title','Explore the World');
+  const stage=m.querySelector('.worldmap-stage');
+  const mapLayer=m.querySelector('.worldmap-map-layer');
+  const countries=m.querySelector('.worldmap-countries');
+  const legend=m.querySelector('.worldmap-legend');
+  const kicker=m.querySelector('.worldmap-kicker');
+  const name=m.querySelector('.worldmap-name');
+  const hemisphere=m.querySelector('.worldmap-hemisphere');
+  const fact=m.querySelector('.worldmap-fact');
+  let selected='';
+  let selectedCountry='';
+  let zoom=1;
+  let centerX=500;
+  let centerY=260;
+  let pendingCountry='';
+  let suppressMapClickUntil=0;
+  const controller=new AbortController();
+  const continentViews={
+    'north-america':{x:205,y:145,zoom:1.65},'south-america':{x:300,y:330,zoom:1.75},europe:{x:515,y:145,zoom:2.35},africa:{x:520,y:285,zoom:1.8},asia:{x:710,y:165,zoom:1.5},australia:{x:825,y:350,zoom:2.05},antarctica:{x:500,y:462,zoom:1.55}
+  };
+  const constrainCenter=()=>{
+    const halfWidth=500/zoom;
+    const halfHeight=260/zoom;
+    centerX=clamp(centerX,halfWidth,1000-halfWidth);
+    centerY=clamp(centerY,halfHeight,520-halfHeight);
+  };
+  const applyZoom=()=>{
+    constrainCenter();
+    mapLayer.setAttribute('transform',`translate(${500-centerX*zoom} ${260-centerY*zoom}) scale(${zoom})`);
+  };
+  const selectRegion=(id,{animate=true}={})=>{
+    const region=WORLD_MAP_REGIONS.find(item=>item.id===id);
+    if(!region)return;
+    selected=region.id;
+    selectedCountry='';
+    countries.querySelectorAll('[data-country-id]').forEach(path=>path.classList.remove('is-selected'));
+    legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.toggle('is-active',button.dataset.mapLegend===selected));
+    kicker.textContent='CONTINENT VIEW';
+    name.textContent=region.name;
+    hemisphere.textContent=region.hemisphere;
+    fact.textContent=region.fact;
+    const view=continentViews[id];
+    if(view){centerX=view.x;centerY=view.y;zoom=view.zoom;applyZoom()}
+    if(animate&&m.querySelector('.worldmap-info')?.animate)m.querySelector('.worldmap-info').animate([{opacity:.45,transform:'translateY(4px)'},{opacity:1,transform:'none'}],{duration:230,easing:'ease-out'});
+    notifyBoardChanged('world-map-region');
+  };
+  const selectCountry=(id,countryName,{notify=true}={})=>{
+    selectedCountry=String(id||'');
+    selected='';
+    legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.remove('is-active'));
+    countries.querySelectorAll('[data-country-id]').forEach(path=>path.classList.toggle('is-selected',path.dataset.countryId===selectedCountry));
+    kicker.textContent='COUNTRY';
+    name.textContent=countryName||'Country';
+    hemisphere.textContent='Natural Earth country boundary';
+    fact.textContent='Click another country to compare its location, or use a continent button for a closer regional view.';
+    if(notify)notifyBoardChanged('world-map-country');
+  };
+  const project=point=>[(point[0]+180)/360*1000,(90-point[1])/180*480+20];
+  const renderTopology=topology=>{
+    const scale=topology.transform?.scale||[1,1];
+    const translate=topology.transform?.translate||[0,0];
+    const decoded=topology.arcs.map(arc=>{
+      let x=0,y=0;
+      return arc.map(delta=>{x+=delta[0];y+=delta[1];return[x*scale[0]+translate[0],y*scale[1]+translate[1]]});
+    });
+    const pointsForArc=reference=>{
+      const points=decoded[reference<0?~reference:reference]||[];
+      return reference<0?[...points].reverse():points;
+    };
+    const ringPoints=references=>references.flatMap((reference,index)=>{const points=pointsForArc(reference);return index?points.slice(1):points});
+    const ringPath=references=>{
+      const points=ringPoints(references);
+      if(!points.length)return'';
+      const projected=points.map(project);
+      for(let index=1;index<projected.length;index++){
+        while(projected[index][0]-projected[index-1][0]>500)projected[index][0]-=1000;
+        while(projected[index-1][0]-projected[index][0]>500)projected[index][0]+=1000;
+      }
+      return[-1000,0,1000].map(offset=>projected.map((point,index)=>`${index?'L':'M'}${(point[0]+offset).toFixed(2)} ${point[1].toFixed(2)}`).join('')+'Z').join('');
+    };
+    const geometryPath=geometry=>{
+      const polygons=geometry.type==='Polygon'?[geometry.arcs]:geometry.type==='MultiPolygon'?geometry.arcs:[];
+      return polygons.map(polygon=>polygon.map(ringPath).join('')).join('');
+    };
+    const svgNs='http://www.w3.org/2000/svg';
+    const fragment=document.createDocumentFragment();
+    for(const geometry of topology.objects?.countries?.geometries||[]){
+      const path=document.createElementNS(svgNs,'path');
+      const countryName=geometry.properties?.name||'Country';
+      path.setAttribute('d',geometryPath(geometry));
+      path.dataset.countryId=String(geometry.id||countryName);
+      path.dataset.countryName=countryName;
+      path.setAttribute('tabindex','0');
+      path.setAttribute('role','button');
+      path.setAttribute('aria-label',countryName);
+      path.addEventListener('click',()=>{if(performance.now()>=suppressMapClickUntil)selectCountry(path.dataset.countryId,countryName)});
+      path.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCountry(path.dataset.countryId,countryName)}});
+      fragment.appendChild(path);
+    }
+    countries.replaceChildren(fragment);
+    if(pendingCountry){
+      const path=countries.querySelector(`[data-country-id="${CSS.escape(pendingCountry)}"]`);
+      if(path)selectCountry(pendingCountry,path.dataset.countryName,{notify:false});
+    }
+  };
+  WORLD_MAP_REGIONS.forEach(region=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.dataset.mapLegend=region.id;
+    button.textContent=region.name;
+    button.addEventListener('click',()=>selectRegion(region.id));
+    legend.appendChild(button);
+  });
+  m.querySelectorAll('[data-map-zoom]').forEach(button=>button.addEventListener('click',()=>{
+    const action=button.dataset.mapZoom;
+    if(action==='reset'){zoom=1;centerX=500;centerY=260;selected='';legend.querySelectorAll('[data-map-legend]').forEach(item=>item.classList.remove('is-active'))}
+    else zoom=clamp(zoom+(action==='in' ? .2 : -.2),1,3.2);
+    applyZoom();
+    notifyBoardChanged('world-map-zoom');
+  }));
+  stage?.addEventListener('wheel',event=>{
+    if(event.ctrlKey)return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect=stage.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const pointerX=clamp((event.clientX-rect.left)/rect.width*1000,0,1000);
+    const pointerY=clamp((event.clientY-rect.top)/rect.height*520,0,520);
+    const mapX=centerX+(pointerX-500)/zoom;
+    const mapY=centerY+(pointerY-260)/zoom;
+    const delta=event.deltaMode===1?event.deltaY*16:event.deltaMode===2?event.deltaY*rect.height:event.deltaY;
+    const next=clamp(Math.round(zoom*Math.exp(-delta*.0017)*20)/20,1,3.2);
+    if(Math.abs(next-zoom)<.001)return;
+    centerX=clamp(mapX-(pointerX-500)/next,0,1000);
+    centerY=clamp(mapY-(pointerY-260)/next,0,520);
+    zoom=next;
+    applyZoom();
+    notifyBoardChanged('world-map-wheel-zoom');
+  },{passive:false});
+  stage?.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.stopPropagation();
+    const rect=stage.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    const pointerId=event.pointerId;
+    const startX=event.clientX;
+    const startY=event.clientY;
+    const startCenterX=centerX;
+    const startCenterY=centerY;
+    let moved=false;
+    stage.setPointerCapture?.(pointerId);
+    const move=moveEvent=>{
+      if(moveEvent.pointerId!==pointerId)return;
+      const dx=moveEvent.clientX-startX;
+      const dy=moveEvent.clientY-startY;
+      if(!moved&&Math.hypot(dx,dy)<4)return;
+      moved=true;
+      moveEvent.preventDefault();
+      moveEvent.stopPropagation();
+      m.classList.add('is-map-panning');
+      centerX=startCenterX-dx/rect.width*1000/zoom;
+      centerY=startCenterY-dy/rect.height*520/zoom;
+      applyZoom();
+    };
+    const end=endEvent=>{
+      if(endEvent.pointerId!==pointerId)return;
+      stage.removeEventListener('pointermove',move);
+      stage.removeEventListener('pointerup',end);
+      stage.removeEventListener('pointercancel',end);
+      m.classList.remove('is-map-panning');
+      if(moved){
+        suppressMapClickUntil=performance.now()+250;
+        notifyBoardChanged('world-map-pan');
+      }
+    };
+    stage.addEventListener('pointermove',move);
+    stage.addEventListener('pointerup',end);
+    stage.addEventListener('pointercancel',end);
+  });
+  m.querySelector('.worldmap-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  applyZoom();
+  name.textContent='Loading world map…';
+  fetch('assets/world-countries-110m.json',{signal:controller.signal}).then(response=>{if(!response.ok)throw new Error('map-data');return response.json()}).then(topology=>{
+    renderTopology(topology);
+    if(!selected&&!pendingCountry){name.textContent='World Map';hemisphere.textContent='Real Natural Earth boundaries';fact.textContent='Click any country, or use a continent button to zoom and learn.'}
+  }).catch(error=>{if(error?.name!=='AbortError'){name.textContent='Map unavailable';fact.textContent='The geographic boundary file could not be loaded.'}});
+  m._boardGetState=()=>({title:tileTitle.get(),selected,selectedCountry,zoom,centerX,centerY});
+  m._boardSetState=state=>{
+    tileTitle.set(state?.title);
+    zoom=clamp(Number(state?.zoom)||1,1,3.2);
+    centerX=Number.isFinite(Number(state?.centerX))?Number(state.centerX):500;
+    centerY=Number.isFinite(Number(state?.centerY))?Number(state.centerY):260;
+    pendingCountry=String(state?.selectedCountry||'');
+    applyZoom();
+    if(state?.selected)selectRegion(state.selected,{animate:false});
+  };
+  const prior=m._cleanup;
+  m._cleanup=()=>{prior?.();controller.abort()};
+}
+
+const COMPASS_PARTS={
+  needle:{name:'Direction needle',copy:'The colored end points toward the selected heading. Rotate it to practice finding directions.'},
+  cardinal:{name:'Cardinal directions',copy:'North, east, south, and west are the four main—or cardinal—directions.'},
+  intercardinal:{name:'Intercardinal directions',copy:'Northeast, southeast, southwest, and northwest sit halfway between the cardinal directions.'},
+  degrees:{name:'Degree ring',copy:'A full turn is 360°. North is 0°, east is 90°, south is 180°, and west is 270°.'}
+};
+
+function setupCompass(m){
+  const tileTitle=bindEditableModuleTitle(m,'.compass-title','Compass Explorer');
+  const svg=m.querySelector('.compass-face');
+  const ticks=m.querySelector('.compass-ticks');
+  const needle=m.querySelector('.compass-needle');
+  const slider=m.querySelector('.compass-slider input');
+  const output=m.querySelector('.compass-heading');
+  const partName=m.querySelector('.compass-part-name');
+  const partCopy=m.querySelector('.compass-part-copy');
+  let heading=0;
+  let part='needle';
+  const svgNs='http://www.w3.org/2000/svg';
+  for(let degree=0;degree<360;degree+=5){
+    const line=document.createElementNS(svgNs,'line');
+    const major=degree%45===0;
+    line.setAttribute('x1','210');line.setAttribute('x2','210');line.setAttribute('y1',major?'32':'36');line.setAttribute('y2',major?'50':'44');line.setAttribute('transform',`rotate(${degree} 210 210)`);line.classList.toggle('is-major',major);ticks.appendChild(line);
+  }
+  const directionFor=value=>['North','Northeast','East','Southeast','South','Southwest','West','Northwest'][Math.round(value/45)%8];
+  const setHeading=(value,{notify=true}={})=>{
+    heading=(Math.round(Number(value))%360+360)%360;
+    slider.value=String(heading);
+    needle.style.transform=`rotate(${heading}deg)`;
+    output.textContent=`${heading}° · ${directionFor(heading)}`;
+    if(notify)notifyBoardChanged('compass-heading');
+  };
+  const setPart=(next,{notify=true}={})=>{
+    part=COMPASS_PARTS[next]?next:'needle';
+    m.dataset.compassPart=part;
+    partName.textContent=COMPASS_PARTS[part].name;
+    partCopy.textContent=COMPASS_PARTS[part].copy;
+    m.querySelectorAll('[data-compass-part]').forEach(button=>button.classList.toggle('is-active',button.dataset.compassPart===part));
+    if(notify)notifyBoardChanged('compass-part');
+  };
+  slider.addEventListener('input',()=>setHeading(slider.value));
+  m.querySelectorAll('[data-compass-part]').forEach(button=>button.addEventListener('click',()=>setPart(button.dataset.compassPart)));
+  svg.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.stopPropagation();
+    const rect=svg.getBoundingClientRect();
+    const x=(event.clientX-rect.left)*420/rect.width-210;
+    const y=(event.clientY-rect.top)*420/rect.height-210;
+    setHeading(Math.atan2(x,-y)*180/Math.PI);
+  });
+  m.querySelector('.compass-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.compass-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.compass-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  setHeading(0,{notify:false});setPart('needle',{notify:false});
+  m._boardGetState=()=>({title:tileTitle.get(),heading,part});
+  m._boardSetState=state=>{tileTitle.set(state?.title);setHeading(state?.heading||0,{notify:false});setPart(state?.part||'needle',{notify:false})};
 }
 
 const SHAPES_TILE_DATA=[
@@ -6403,6 +8369,7 @@ function setupCollectionShelf(){
     'default-sticker-drawer':'classroom teacher school sticker stickers',
     'emoji-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions celebration',
     'nature-emojis-sticker-drawer':'nature outdoors plant plants botanical botanicals weather sky',
+    'weather-emojis-sticker-drawer':'weather forecast climate sun sunny cloud cloudy rain rainy storm thunder lightning snow snowy fog foggy wind windy tornado rainbow',
     'animal-emojis-sticker-drawer':'animal animals pet pets wildlife insect insects critter critters',
     'more-faces-sticker-drawer':'emoji emojis face faces reaction reactions expression expressions emotion emotions',
     'symbols-sticker-drawer':'symbol symbols classroom math mark marks sign signs',
@@ -6671,6 +8638,11 @@ function populateGeneratedStickerPacks(){
     ['💖','Sparkling heart'],['💗','Growing heart'],['💓','Beating heart'],['💕','Two hearts'],['💞','Revolving hearts'],['💝','Heart with ribbon'],
     ['💘','Heart with arrow'],['💟','Heart decoration'],['❤️‍🔥','Heart on fire'],['❤️‍🩹','Mending heart']
   ].map(([emoji,name])=>({emoji,name}));
+  const weatherEmojis=[
+    ['☀️','Sunny'],['🌤️','Mostly sunny'],['⛅','Partly cloudy'],['🌥️','Mostly cloudy'],['☁️','Cloudy'],['🌦️','Sun shower'],['🌧️','Rainy'],
+    ['⛈️','Thunderstorm'],['🌩️','Lightning'],['🌨️','Snow showers'],['❄️','Snowflake'],['🌫️','Foggy'],['💨','Windy'],['🌪️','Tornado']
+  ].map(([emoji,name])=>({emoji,name}));
+  fill('weather-emojis',weatherEmojis);
   fill('colored-hearts',coloredHearts);
   fill('decorative-hearts',decorativeHearts);
 

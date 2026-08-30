@@ -38,6 +38,8 @@
     <div id="workspace-empty-hint" class="workspace-empty-hint" data-i18n="hint.addTile" aria-hidden="true">Right-click anywhere to add a tile</div>
   </div>
 
+  <div id="zoom-indicator" class="zoom-indicator" role="status" aria-live="polite" aria-atomic="true">100%</div>
+
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
     <div class="trash-can" aria-hidden="true">
       <span class="trash-lid"></span><span class="trash-body"><i></i><i></i><i></i></span>
@@ -276,7 +278,7 @@
           </span>
           <div>
             <span class="settings-panel__eyebrow" data-i18n="settings.eyebrow">TEACHERTILES</span>
-            <strong id="settings-title" data-i18n="settings.title">Settings & Help</strong>
+            <strong id="settings-title">Settings</strong>
           </div>
         </div>
         <button class="settings-panel__close" type="button" data-settings-close aria-label="Close settings">×</button>
@@ -322,7 +324,7 @@
             <span class="settings-nav__icon settings-nav__icon--terms" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M6 3.8h9.2L19 7.6v12.6H6zM15.2 3.8v3.8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m8.7 7.4 1.1 1.1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span>Terms &amp; Conditions</span>
+            <span data-i18n="settings.tab.terms">Terms &amp; Conditions</span>
           </button>
         </nav>
 
@@ -377,6 +379,26 @@
                 <select id="settings-language" class="settings-select">
                   <option value="en">English</option>
                   <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="it">Italiano</option>
+                  <option value="pt">Português</option>
+                  <option value="zh-CN">中文（简体）</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                  <option value="ar">العربية</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="ru">Русский</option>
+                  <option value="uk">Українська</option>
+                  <option value="pl">Polski</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="tr">Türkçe</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="tl">Filipino</option>
+                  <option value="ht">Kreyòl ayisyen</option>
+                  <option value="el">Ελληνικά</option>
+                  <option value="he">עברית</option>
+                  <option value="sv">Svenska</option>
                 </select>
               </label>
             </div>
@@ -417,7 +439,7 @@
                 <div><span class="help-mouse-icon">↔</span><p><strong data-i18n="help.mouse.pan.title">Pan the board</strong><small data-i18n="help.mouse.pan.copy">Left-drag empty board space or middle-mouse drag anywhere on the board.</small></p></div>
                 <div><span class="help-mouse-icon">⇧</span><p><strong data-i18n="help.mouse.select.title">Group select</strong><small data-i18n="help.mouse.select.copy">Hold Shift and left-drag empty space to draw a selection box.</small></p></div>
                 <div><span class="help-mouse-icon">☰</span><p><strong data-i18n="help.mouse.menu.title">Add tiles</strong><small data-i18n="help.mouse.menu.copy">Right-click empty board space to open the Add Tile menu.</small></p></div>
-                <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Use the mouse wheel or trackpad scroll over the board.</small></p></div>
+                <div><span class="help-mouse-icon">⌁</span><p><strong data-i18n="help.mouse.zoom.title">Zoom</strong><small data-i18n="help.mouse.zoom.copy">Scroll over the board for fast zoom. Hold Shift while scrolling for precise 1% steps.</small></p></div>
                 <div><span class="help-mouse-icon">✥</span><p><strong data-i18n="help.mouse.move.title">Move tiles</strong><small data-i18n="help.mouse.move.copy">Drag anywhere on a tile that is not an active button, slider, canvas, or other control.</small></p></div>
                 <div><span class="help-mouse-icon">⧉</span><p><strong data-i18n="help.mouse.snap.title">Snap &amp; group</strong><small data-i18n="help.mouse.snap.copy">Place one tile against another to snap them into a group. Grouped tiles move together and share one layer.</small></p></div>
                 <div><span class="help-mouse-icon">↝</span><p><strong data-i18n="help.mouse.tug.title">Hold, then tug</strong><small data-i18n="help.mouse.tug.copy">Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.</small></p></div>
@@ -769,6 +791,18 @@
               </div>
 
               <div class="sticker-pack-wrap">
+                <button id="weather-emojis-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection" type="button" data-sticker-pack aria-expanded="false" aria-controls="weather-emojis-sticker-drawer">
+                  <span class="sticker-pack__stack sticker-pack__stack--emoji" aria-hidden="true"><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--one">☀️</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--two">🌧️</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--three">⛈️</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--four">❄️</span></span>
+                  <span class="theme-pack__meta"><strong>Weather Emojis</strong><small data-generated-sticker-count="weather-emojis">14 stickers</small></span>
+                  <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
+                </button>
+              </div>
+              <div id="weather-emojis-sticker-drawer" class="sticker-pack-drawer sticker-pack-drawer--scrollable" aria-hidden="true" role="group" aria-label="Weather emoji sticker pack">
+                <div class="sticker-pack-drawer__track" data-generated-stickers="weather-emojis"></div>
+                <span class="sticker-pack-drawer__hint">Drag a weather emoji onto the board</span>
+              </div>
+
+              <div class="sticker-pack-wrap">
                 <button id="animal-emojis-sticker-pack" class="theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection" type="button" data-sticker-pack aria-expanded="false" aria-controls="animal-emojis-sticker-drawer">
                   <span class="sticker-pack__stack sticker-pack__stack--emoji" aria-hidden="true"><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--one">🐶</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--two">🐱</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--three">🦊</span><span class="sticker-pack__emoji-sample sticker-pack__emoji-sample--four">🐸</span></span>
                   <span class="theme-pack__meta">
@@ -1063,6 +1097,10 @@
               <div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-nature" aria-hidden="true"><span>🌸</span><span>🌈</span><span>☀️</span><span>🌿</span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Nature Emojis</h3><p>Flowers, weather, leaves, and sky favorites.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div>
             </article>
+            <article class="shop-product" data-shop-product="sticker-weather-emojis" data-shop-price="180">
+              <div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-weather" aria-hidden="true"><span>☀️</span><span>🌧️</span><span>⛈️</span><span>❄️</span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Weather Emojis</h3><p>Fourteen sunny, cloudy, rainy, snowy, and stormy favorites.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div>
+            </article>
             <article class="shop-product" data-shop-product="sticker-animal-emojis" data-shop-price="180">
               <div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-animals" aria-hidden="true"><span>🐶</span><span>🐱</span><span>🦊</span><span>🐸</span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Animal Emojis</h3><p>Cute classroom-friendly animals and critters.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div>
@@ -1255,7 +1293,6 @@
     <div class="context-menu__header">
       <div class="context-menu__title-row">
         <div class="context-menu__title" data-i18n="context.addTile">Add tile</div>
-        <button type="button" class="context-menu__filter context-menu__filter--all is-active" data-category-filter="all" data-i18n="context.all">ALL</button>
       </div>
       <div class="context-menu__search-wrap">
         <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -1265,16 +1302,32 @@
         <input id="context-menu-search" class="context-menu__search" type="search" placeholder="Search tiles..." data-i18n-placeholder="context.search" autocomplete="off" spellcheck="false" aria-label="Search tiles">
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
-      <div class="context-menu__filters" role="tablist" aria-label="Module categories">
-        <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
-        <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
-        <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
-        <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
-        <button type="button" class="context-menu__filter" data-category-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
-        <button type="button" class="context-menu__filter" data-category-filter="games" data-i18n="context.cat.games">GAMES</button>
-        <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
-        <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
-        <button type="button" class="context-menu__filter" data-category-filter="sel" data-i18n="context.cat.sel">SEL</button>
+      <div class="context-menu__category-rail">
+        <button type="button" class="context-menu__category-cycle" aria-label="Choose tile category" title="Choose tile category" aria-expanded="false" aria-controls="context-menu-category-drawer">
+          <span class="context-menu__category-cycle-copy"><small>Category</small><strong class="context-menu__category-cycle-label">ALL</strong></span>
+          <svg class="context-menu__category-cycle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg>
+        </button>
+        <div id="context-menu-category-drawer" class="context-menu__category-drawer" aria-hidden="true">
+          <div class="context-menu__category-drawer-head"><strong>Choose a category</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
+          <div class="context-menu__category-drawer-grid" role="tablist" aria-label="All module categories">
+            <button type="button" class="context-menu__filter context-menu__category-drawer-all" data-category-drawer-filter="all" data-i18n="context.all">ALL</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="text" data-i18n="context.cat.text">TEXT</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="media" data-i18n="context.cat.media">MEDIA</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="time" data-i18n="context.cat.time">TIME</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="audio" data-i18n="context.cat.audio">AUDIO</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="games" data-i18n="context.cat.games">GAMES</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="planning" data-i18n="context.cat.planning">PLANNING</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="pbis" data-i18n="context.cat.pbis">PBIS</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="accessibility" data-i18n="context.cat.accessibility">ACCESSIBILITY</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="language" data-i18n="context.cat.language">LANGUAGE</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="math" data-i18n="context.cat.math">MATH</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="science" data-i18n="context.cat.science">SCIENCE</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="geography" data-i18n="context.cat.geography">GEOGRAPHY</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="sel" data-i18n="context.cat.sel">SEL</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="context-menu__list">
@@ -1282,10 +1335,10 @@
         <strong data-i18n="context.none">No tiles found</strong>
         <small data-i18n="context.try">Try another search.</small>
       </div>
-      <button class="context-menu__item" data-module="sticky" data-category="text"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
+      <button class="context-menu__item" data-module="sticky" data-category="text planning"><span class="context-menu__icon">▤</span><span><strong>Sticky note</strong><small>Write and format notes</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
-      <button class="context-menu__item" data-module="todo" data-category="text"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
-      <button class="context-menu__item" data-module="visualschedule" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
+      <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
+      <button class="context-menu__item" data-module="visualschedule" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
       <button class="context-menu__item" data-module="windowshare" data-category="media">
@@ -1302,7 +1355,7 @@
       <button class="context-menu__item" data-module="interactive" data-category="time"><span class="context-menu__icon">⌛</span><span><strong>Interactive timers</strong><small>Hourglass and melting candle</small></span></button>
       <button class="context-menu__item" data-module="clock" data-category="time"><span class="context-menu__icon">◴</span><span><strong>Clock</strong><small>Current time display</small></span></button>
       <button class="context-menu__item" data-module="date" data-category="time"><span class="context-menu__icon" aria-hidden="true">31</span><span><strong>Date</strong><small>Today’s date in your chosen style</small></span></button>
-      <button class="context-menu__item" data-module="calendar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
+      <button class="context-menu__item" data-module="calendar" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
       <button class="context-menu__item" data-module="stopwatch" data-category="time"><span class="context-menu__icon" aria-hidden="true">⏱</span><span><strong>Stopwatch</strong><small>Count up with lap times</small></span></button>
       <button class="context-menu__item" data-module="progressbar" data-category="time"><span class="context-menu__icon" aria-hidden="true">▰</span><span><strong>Progress Bar</strong><small>Fill toward a set end time</small></span></button>
       <button class="context-menu__item" data-module="draw" data-category="tools"><span class="context-menu__icon" aria-hidden="true">✎</span><span><strong>Draw</strong><small>Draw freely across the board</small></span></button>
@@ -1311,6 +1364,50 @@
           <svg viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12H7.5A2.5 2.5 0 0 1 5 16.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 19A2.5 2.5 0 0 1 5 16.5 2.5 2.5 0 0 1 7.5 14H18M9 8h5M9 11h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </span>
         <span><strong>Dictionary</strong><small>Look up complete word entries</small></span>
+      </button>
+      <button class="context-menu__item" data-module="translation" data-category="tools language accessibility">
+        <span class="context-menu__icon context-menu__icon--translation" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/></svg></span>
+        <span><strong>Translation</strong><small>Translate typed or spoken language</small></span>
+      </button>
+      <button class="context-menu__item" data-module="livecaption" data-category="tools language audio accessibility">
+        <span class="context-menu__icon context-menu__icon--livecaption" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h4M7 14h6M15 10h2M15 14h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        <span><strong>Live Captions</strong><small>Display speech as clear, readable text</small></span>
+      </button>
+      <button class="context-menu__item" data-module="voicememo" data-category="audio planning">
+        <span class="context-menu__icon context-menu__icon--voicememo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.7 11.5a5.3 5.3 0 0 0 10.6 0M12 16.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span><strong>Voice Memos</strong><small>Record and replay short audio notes</small></span>
+      </button>
+      <button class="context-menu__item" data-module="photobooth" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--photobooth" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.5 9 5h6l1.5 2.5H19A2 2 0 0 1 21 9.5v8A2 2 0 0 1 19 19H5a2 2 0 0 1-2-2v-7.5a2 2 0 0 1 2-2h2.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span><strong>Photobooth</strong><small>Take filtered photos with your webcam</small></span>
+      </button>
+      <button class="context-menu__item" data-module="mirror" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--mirror" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 4v16M9 7.5c-1.1 1.1-1.7 2.6-1.7 4.5s.6 3.4 1.7 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span><strong>Mirror</strong><small>Use the webcam as a classroom mirror</small></span>
+      </button>
+      <button class="context-menu__item" data-module="weather" data-category="tools planning">
+        <span class="context-menu__icon context-menu__icon--weather" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 16.5H18a3 3 0 0 0 .2-6 5.3 5.3 0 0 0-10-1.5A3.8 3.8 0 0 0 8.2 16.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 5.5v-2M2.8 7.7H1M6.7 3.8 5.4 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span><strong>Weather</strong><small>Compare current weather in several places</small></span>
+      </button>
+      <button class="context-menu__item" data-module="weatherwheel" data-category="tools">
+        <span class="context-menu__icon context-menu__icon--choicewheel" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.5V12l5.9-6M12 12l8.4 2M12 12l-4.6 7.2M12 12 3.8 9" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="m12 12 1.2-5.6 1.5 5.5-2.7.1Z" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span>
+        <span><strong>Weather Wheel</strong><small>Point to today’s weather</small></span>
+      </button>
+      <button class="context-menu__item" data-module="seasonwheel" data-category="tools science">
+        <span class="context-menu__icon context-menu__icon--choicewheel" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3.5v17M3.5 12h17" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="m12 12 4.9-4.3-3.2 5.8-1.7-1.5Z" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span>
+        <span><strong>Season Wheel</strong><small>Explore spring, summer, fall, and winter</small></span>
+      </button>
+      <button class="context-menu__item" data-module="temperature" data-category="tools science planning">
+        <span class="context-menu__icon context-menu__icon--temperature" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5a3 3 0 0 1 6 0v8.1a5 5 0 1 1-6 0V5Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="2.1" fill="currentColor"/></svg></span>
+        <span><strong>Temperature</strong><small>Show outdoor temperature your way</small></span>
+      </button>
+      <button class="context-menu__item" data-module="worldmap" data-category="geography">
+        <span class="context-menu__icon context-menu__icon--worldmap" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.35"/></svg></span>
+        <span><strong>World Map</strong><small>Explore continents and hemispheres</small></span>
+      </button>
+      <button class="context-menu__item" data-module="compass" data-category="geography">
+        <span class="context-menu__icon context-menu__icon--compass" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m14.8 7.2-1.7 5.9-5.9 1.7 1.7-5.9 5.9-1.7Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span>
+        <span><strong>Compass</strong><small>Explore directions and compass parts</small></span>
       </button>
       <button class="context-menu__item" data-module="writinglines" data-category="literacy">
         <span class="context-menu__icon" aria-hidden="true">
@@ -1401,7 +1498,7 @@
         </span>
         <span><strong>Ruler</strong><small>Measure with draggable ruler points</small></span>
       </button>
-      <button class="context-menu__item" data-module="calculator" data-category="math">
+      <button class="context-menu__item" data-module="calculator" data-category="tools math">
         <span class="context-menu__icon context-menu__icon--calculator" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <rect x="5" y="2.8" width="14" height="18.4" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -1421,7 +1518,7 @@
         </span>
         <span><strong>Graphing Tool</strong><small>Plot points and graph equations</small></span>
       </button>
-      <button class="context-menu__item" data-module="periodictable" data-category="math">
+      <button class="context-menu__item" data-module="periodictable" data-category="science">
         <span class="context-menu__icon context-menu__icon--periodic" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <rect x="3" y="3" width="5" height="5" rx=".8" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -1444,8 +1541,8 @@
         <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
-      <button class="context-menu__item" data-module="collections" data-category="tools"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
-      <button class="context-menu__item" data-module="stoplight" data-category="tools"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
+      <button class="context-menu__item" data-module="collections" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a jar with rewards</small></span></button>
+      <button class="context-menu__item" data-module="stoplight" data-category="pbis sel"><span class="context-menu__icon context-menu__icon--stoplight" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 5Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Zm0 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4Z"/></svg></span><span><strong>Stoplight</strong><small>GO, LISTEN, and STOP visual cue</small></span></button>
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -2145,6 +2242,22 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5v3h15v-3M12 16V4.5m0 0L8.2 8.3M12 4.5l3.8 3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Replace</span>
       </button>
+      <div class="image-customization" aria-label="Image border customization">
+        <label class="image-border-control">
+          <span>Border</span>
+          <select class="image-border-style" aria-label="Image border style">
+            <option value="none">None</option>
+            <option value="thin">Thin</option>
+            <option value="medium">Medium</option>
+            <option value="thick">Thick</option>
+            <option value="double">Double</option>
+          </select>
+        </label>
+        <label class="image-border-color-wrap" title="Border color">
+          <span>Color</span>
+          <input class="image-border-color" type="color" value="#17191d" aria-label="Image border color">
+        </label>
+      </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -2216,7 +2329,7 @@
   <template id="textbubble-template">
     <section class="module textbubble-module" data-type="textbubble" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete text bubble">×</button><div class="module-drag-handle"></div>
-      <div class="textbubble-text" contenteditable="true" spellcheck="true">TYPE HERE</div>
+      <div class="textbubble-text" contenteditable="true" spellcheck="true" data-text-edit-mode="double">TYPE HERE</div>
       <div class="customization-bar textbubble-customization" aria-label="Text bubble customization">
         <button class="custom-icon textbubble-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon textbubble-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -2229,7 +2342,7 @@
   <template id="todo-template">
     <section class="module todo-module" data-type="todo" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete checklist">×</button><div class="module-drag-handle"></div>
-      <input class="todo-title" type="text" value="TO-DO" aria-label="Checklist title">
+      <input class="todo-title" type="text" value="TO-DO" aria-label="Checklist title" data-text-edit-mode="double">
       <div class="todo-list" aria-label="Checklist items"></div>
       <div class="todo-footer">
         <button class="todo-add primary" type="button">+ Add step</button>
@@ -2343,7 +2456,7 @@
       <div class="confetti-layer" aria-hidden="true"></div>
 
       <div class="progress-bar-heading">
-        <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title">
+        <input class="progress-bar-title" type="text" value="" placeholder="Add Title" aria-label="Progress bar title" data-text-edit-mode="double">
         <div class="progress-bar-time-readout">
           <strong class="progress-bar-remaining">60:00</strong>
           <span class="progress-bar-end-label">until 10:00 AM</span>
@@ -2410,7 +2523,7 @@
       <button class="module-delete" aria-label="Delete visual schedule">×</button>
       <div class="module-drag-handle"></div>
 
-      <input class="visual-schedule-title" type="text" value="VISUAL SCHEDULE" aria-label="Schedule title">
+      <input class="visual-schedule-title" type="text" value="VISUAL SCHEDULE" aria-label="Schedule title" data-text-edit-mode="double">
 
       <div class="visual-schedule-list" aria-label="Schedule segments"></div>
 
@@ -3144,6 +3257,227 @@
         <button class="custom-icon dictionary-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
 
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="translation-template">
+    <section class="module translation-module" data-type="translation" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete translation tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="translation-header">
+        <div><span>TRANSLATION</span><strong class="translation-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Language bridge</strong></div>
+        <span class="translation-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M3.8 12h16.4M12 3.5c2.3 2.3 3.5 5.1 3.5 8.5S14.3 18.2 12 20.5M12 3.5C9.7 5.8 8.5 8.6 8.5 12s1.2 6.2 3.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>
+      </header>
+
+      <div class="translation-language-row">
+        <label><span>From</span><div class="translation-language-picker" data-language-picker="source"><input class="translation-language-value translation-source" type="hidden" value="en"><input class="translation-language-search" type="text" value="English" autocomplete="off" spellcheck="false" role="combobox" aria-label="Search source languages" aria-autocomplete="list" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg><div class="translation-language-menu" role="listbox" aria-label="Source languages"></div></div></label>
+        <button class="translation-swap" type="button" aria-label="Swap languages" title="Swap languages">⇄</button>
+        <label><span>To</span><div class="translation-language-picker" data-language-picker="target"><input class="translation-language-value translation-target" type="hidden" value="es"><input class="translation-language-search" type="text" value="Spanish" autocomplete="off" spellcheck="false" role="combobox" aria-label="Search target languages" aria-autocomplete="list" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg><div class="translation-language-menu" role="listbox" aria-label="Target languages"></div></div></label>
+      </div>
+
+      <div class="translation-panels">
+        <section class="translation-panel translation-panel--source">
+          <header><span>Original</span><button class="translation-mic" type="button" aria-label="Speak original text" title="Speak original text"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></header>
+          <textarea class="translation-input" maxlength="450" placeholder="Type or use the microphone…" aria-label="Text to translate"></textarea>
+          <span class="translation-count">0 / 450</span>
+        </section>
+        <section class="translation-panel translation-panel--result">
+          <header><span>Translation</span><div><button class="translation-speak" type="button" aria-label="Read translation aloud" title="Read translation aloud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h3l4-3.5v11L8 14H5zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.2 7.2 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="translation-copy" type="button" aria-label="Copy translation" title="Copy translation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button></div></header>
+          <div class="translation-output" role="status" aria-live="polite"><span>Your translation will appear here.</span></div>
+        </section>
+      </div>
+
+      <footer class="translation-footer"><div><span class="translation-status" aria-live="polite"></span><small>Machine translation powered by Google.</small></div><button class="translation-submit primary" type="button">Translate</button></footer>
+
+      <div class="customization-bar translation-customization" aria-label="Translation tile customization">
+        <button class="custom-icon translation-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon translation-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon translation-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="livecaption-template">
+    <section class="module livecaption-module is-paused" data-type="livecaption" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete live caption tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="livecaption-header">
+        <div><span>LANGUAGE</span><strong class="livecaption-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Live Captions</strong></div>
+        <span class="livecaption-state" aria-live="polite"><i></i><b>OFF</b></span>
+      </header>
+
+      <div class="livecaption-stage">
+        <section class="livecaption-current" aria-label="Current live caption">
+          <small>NOW SPEAKING</small>
+          <div class="livecaption-current-text" role="status" aria-live="polite" aria-atomic="true">Press Start captions when you’re ready.</div>
+        </section>
+        <section class="livecaption-history-panel" aria-label="Paused caption history">
+          <header><div><span>PAUSED</span><strong>Caption history</strong></div><small>Scroll to review</small></header>
+          <div class="livecaption-history" tabindex="0"><p class="livecaption-empty">Your caption history will appear here.</p></div>
+        </section>
+      </div>
+
+      <footer class="livecaption-footer">
+        <span class="livecaption-message" aria-live="polite">Captions are off.</span>
+        <button class="livecaption-toggle primary" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>Start captions</span></button>
+      </footer>
+
+      <div class="customization-bar livecaption-customization" aria-label="Live caption customization">
+        <button class="custom-icon livecaption-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon livecaption-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon livecaption-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="voicememo-template">
+    <section class="module voicememo-module" data-type="voicememo" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete voice memo tile">×</button><div class="module-drag-handle"></div>
+      <header class="voicememo-header"><div><span>AUDIO</span><strong class="voicememo-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Voice Memos</strong></div><span class="voicememo-count">0 / 5</span></header>
+      <div class="voicememo-recorder">
+        <button class="voicememo-record" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>Record memo</span></button>
+        <div class="voicememo-recording-status"><strong class="voicememo-time">0:00</strong><div class="voicememo-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small class="voicememo-message" aria-live="polite">Ready to record a short memo.</small></div>
+      </div>
+      <div class="voicememo-list" aria-label="Recorded voice memos"><p class="voicememo-empty">Your recordings will appear here.</p></div>
+      <div class="customization-bar voicememo-customization" aria-label="Voice memo customization">
+        <button class="custom-icon voicememo-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon voicememo-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon voicememo-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="photobooth-template">
+    <section class="module photobooth-module" data-type="photobooth" data-bg="white" data-font="inter" data-text="dark" data-photo-filter="normal">
+      <button class="module-delete" aria-label="Delete photobooth tile">×</button><div class="module-drag-handle"></div>
+      <header class="photobooth-header"><div><span>CAMERA</span><strong class="photobooth-title" contenteditable="true" data-text-edit-mode="double">Photobooth</strong></div><span class="photobooth-camera-state"><i></i><b>OFF</b></span></header>
+      <div class="photobooth-stage">
+        <video class="photobooth-video" autoplay muted playsinline aria-label="Live photobooth preview"></video>
+        <button class="photobooth-placeholder" type="button" aria-label="Start the photobooth camera"><span aria-hidden="true">◎</span><strong>Camera is off</strong><small>Click here or use Start camera below.</small></button>
+        <div class="photobooth-flash" aria-hidden="true"></div>
+      </div>
+      <div class="photobooth-actions"><button class="photobooth-camera-toggle" type="button">Start camera</button><button class="photobooth-shutter primary" type="button" disabled><span aria-hidden="true"></span>Take photo</button></div>
+      <div class="photobooth-filters" role="group" aria-label="Photo filter">
+        <button type="button" class="is-active" data-photo-filter-choice="normal">Normal</button><button type="button" data-photo-filter-choice="mono">Mono</button><button type="button" data-photo-filter-choice="sepia">Sepia</button><button type="button" data-photo-filter-choice="pop">Pop</button><button type="button" data-photo-filter-choice="cool">Cool</button><button type="button" data-photo-filter-choice="warm">Warm</button>
+      </div>
+      <section class="photobooth-drawer" aria-label="Taken photos">
+        <button class="photobooth-drawer-toggle" type="button" aria-expanded="false"><span>Photos <b class="photobooth-photo-count">0</b></span><small>Drag a photo onto the board</small><i aria-hidden="true">⌃</i></button>
+        <div class="photobooth-photo-list"></div>
+      </section>
+      <p class="photobooth-message" aria-live="polite">Photos stay in this board.</p>
+      <div class="customization-bar photobooth-customization" aria-label="Photobooth customization"><button class="custom-icon photobooth-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon photobooth-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon photobooth-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="mirror-template">
+    <section class="module mirror-module" data-type="mirror" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete mirror tile">×</button><div class="module-drag-handle"></div>
+      <header class="mirror-header"><div><span>CAMERA</span><strong class="mirror-title" contenteditable="true" data-text-edit-mode="double">Mirror</strong></div><span class="mirror-camera-state"><i></i><b>OFF</b></span></header>
+      <div class="mirror-stage"><video class="mirror-video" autoplay muted playsinline aria-label="Mirrored live camera view"></video><button class="mirror-placeholder" type="button" aria-label="Start the mirror camera"><span aria-hidden="true">◐</span><strong>Your mirror is ready</strong><small>Click here to turn it on. Video stays on this device.</small></button></div>
+      <button class="mirror-toggle primary" type="button">Start mirror</button>
+      <p class="mirror-message" aria-live="polite">Camera is off.</p>
+      <div class="customization-bar mirror-customization" aria-label="Mirror customization"><button class="custom-icon mirror-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon mirror-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon mirror-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="weather-template">
+    <section class="module weather-module" data-type="weather" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete weather tile">×</button><div class="module-drag-handle"></div>
+      <header class="weather-header"><div><span>PLANNING</span><strong class="weather-title" contenteditable="true" data-text-edit-mode="double">Weather</strong></div><div class="weather-unit-toggle" role="group" aria-label="Temperature unit"><button type="button" class="is-active" data-weather-unit="f">°F</button><button type="button" data-weather-unit="c">°C</button></div></header>
+      <div class="weather-segments" aria-live="polite"></div>
+      <div class="weather-add-panel"><form class="weather-place-form"><input class="weather-place-input" type="search" maxlength="80" placeholder="Add a city or postal code…" aria-label="Weather place"><button type="submit">Add place</button></form><button class="weather-use-location" type="button">Use my location</button></div>
+      <div class="weather-status-row"><p class="weather-message" aria-live="polite">Finding your local weather…</p><small class="weather-credit">Weather: Open-Meteo · Air quality: CAMS ENSEMBLE</small></div>
+      <div class="customization-bar weather-customization" aria-label="Weather customization"><button class="custom-icon weather-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon weather-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon weather-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="weatherwheel-template">
+    <section class="module choicewheel-module weatherwheel-module" data-type="weatherwheel" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete weather wheel">×</button><div class="module-drag-handle"></div>
+      <div class="choicewheel-stage">
+        <div class="choicewheel-face" role="group" aria-label="Weather choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Weather wheel pointer" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
+      </div>
+      <div class="choicewheel-selection-display" aria-live="polite"><span class="choicewheel-selection-icon" aria-hidden="true">☀️</span><strong class="choicewheel-selection-name">Sunny</strong></div>
+      <p class="choicewheel-hint">Drag the arrow or tap a picture to choose the weather.</p>
+      <div class="customization-bar choicewheel-customization" aria-label="Weather wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="seasonwheel-template">
+    <section class="module choicewheel-module seasonwheel-module" data-type="seasonwheel" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete season wheel">×</button><div class="module-drag-handle"></div>
+      <div class="choicewheel-stage">
+        <div class="choicewheel-face" role="group" aria-label="Season choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Season wheel pointer" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
+      </div>
+      <div class="choicewheel-selection-display" aria-live="polite"><span class="choicewheel-selection-icon" aria-hidden="true">🌷</span><strong class="choicewheel-selection-name">Spring</strong></div>
+      <p class="choicewheel-hint">Drag the arrow or tap a picture to choose a season.</p>
+      <div class="customization-bar choicewheel-customization" aria-label="Season wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="temperature-template">
+    <section class="module temperature-module" data-type="temperature" data-bg="white" data-font="inter" data-text="dark" data-temperature-mode="number">
+      <button class="module-delete" aria-label="Delete temperature tile">×</button><div class="module-drag-handle"></div>
+      <header class="temperature-header"><div><span>OUTDOOR CONDITIONS</span><strong class="temperature-title" contenteditable="true" data-text-edit-mode="double">Temperature</strong></div><div class="temperature-unit-toggle" role="group" aria-label="Temperature unit"><button type="button" class="is-active" data-temperature-unit="f">°F</button><button type="button" data-temperature-unit="c">°C</button></div></header>
+      <div class="temperature-stage">
+        <div class="temperature-number-view"><span class="temperature-weather-icon" aria-hidden="true">○</span><strong class="temperature-value">—</strong><small class="temperature-condition">Finding local temperature…</small></div>
+        <div class="temperature-vertical-view"><div class="temperature-vertical-thermometer"><div class="temperature-vertical-fill"></div><i></i></div><div><strong class="temperature-vertical-value">—</strong><small class="temperature-vertical-condition">Outside now</small></div></div>
+        <div class="temperature-horizontal-view"><div class="temperature-horizontal-heading"><strong class="temperature-horizontal-value">—</strong><small class="temperature-horizontal-condition">Outside now</small></div><div class="temperature-horizontal-track"><div class="temperature-horizontal-fill"></div><i></i></div><div class="temperature-horizontal-labels"><small>Cold</small><small>Warm</small></div></div>
+      </div>
+      <div class="temperature-controls"><div class="temperature-mode-toggle" role="group" aria-label="Temperature display"><button type="button" class="is-active" data-temperature-mode-choice="number">Number</button><button type="button" data-temperature-mode-choice="vertical">Vertical</button><button type="button" data-temperature-mode-choice="horizontal">Horizontal</button></div><form class="temperature-place-form"><input class="temperature-place-input" type="search" maxlength="80" placeholder="City or postal code…" aria-label="Temperature place"><button type="submit">Set</button></form><button class="temperature-use-location" type="button">My location</button></div>
+      <p class="temperature-message" aria-live="polite">Finding your local temperature…</p>
+      <div class="customization-bar temperature-customization" aria-label="Temperature customization"><button class="custom-icon temperature-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon temperature-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon temperature-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="worldmap-template">
+    <section class="module worldmap-module" data-type="worldmap" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete world map tile">×</button><div class="module-drag-handle"></div>
+      <header class="worldmap-header"><div><span>GEOGRAPHY</span><strong class="worldmap-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Explore the World</strong></div><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom">⌂</button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></header>
+      <div class="worldmap-layout">
+        <div class="worldmap-stage">
+          <svg class="worldmap-svg" viewBox="0 0 1000 520" role="img" aria-label="Interactive world map with selectable continents">
+            <g class="worldmap-grid" aria-hidden="true"><path d="M0 130h1000M0 260h1000M0 390h1000M250 0v520M500 0v520M750 0v520"/><ellipse cx="500" cy="260" rx="480" ry="220"/><ellipse cx="500" cy="260" rx="250" ry="220"/></g>
+            <g class="worldmap-map-layer"><g class="worldmap-countries" aria-label="Countries"></g></g>
+          </svg>
+        </div>
+        <aside class="worldmap-info" aria-live="polite"><span class="worldmap-kicker">SELECT A COUNTRY</span><strong class="worldmap-name">World Map</strong><small class="worldmap-hemisphere">Real Natural Earth boundaries</small><p class="worldmap-fact">Click any country, or use a continent button to zoom and learn.</p><em>Natural Earth · 1:110m</em></aside>
+      </div>
+      <div class="worldmap-legend" role="list" aria-label="Continents"></div>
+      <div class="customization-bar worldmap-customization" aria-label="World map customization"><button class="custom-icon worldmap-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon worldmap-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon worldmap-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="compass-template">
+    <section class="module compass-module" data-type="compass" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete compass tile">×</button><div class="module-drag-handle"></div>
+      <header class="compass-header"><div><span>GEOGRAPHY</span><strong class="compass-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Compass Explorer</strong></div><output class="compass-heading">0° · North</output></header>
+      <div class="compass-layout">
+        <div class="compass-face-wrap">
+          <svg class="compass-face" viewBox="0 0 420 420" role="img" aria-label="Interactive compass rose">
+            <circle class="compass-ring" cx="210" cy="210" r="184"/><g class="compass-ticks"></g>
+            <g class="compass-points"><text x="210" y="54">N</text><text x="366" y="219">E</text><text x="210" y="382">S</text><text x="54" y="219">W</text><text x="319" y="103">NE</text><text x="319" y="329">SE</text><text x="101" y="329">SW</text><text x="101" y="103">NW</text></g>
+            <g class="compass-needle"><path class="compass-needle-north" d="M210 60 236 210 210 192 184 210Z"/><path class="compass-needle-south" d="M210 360 184 210 210 228 236 210Z"/><circle cx="210" cy="210" r="13"/></g>
+            <circle class="compass-pin" cx="210" cy="210" r="5"/>
+          </svg>
+        </div>
+        <aside class="compass-info"><span>EXPLORE A PART</span><strong class="compass-part-name">Direction needle</strong><p class="compass-part-copy">The colored end points toward the selected heading. Rotate it to practice finding directions.</p><div class="compass-part-buttons"><button type="button" data-compass-part="needle">Needle</button><button type="button" data-compass-part="cardinal">Cardinal</button><button type="button" data-compass-part="intercardinal">Intercardinal</button><button type="button" data-compass-part="degrees">Degree ring</button></div></aside>
+      </div>
+      <label class="compass-slider"><span>Turn the needle</span><input type="range" min="0" max="359" value="0" step="1" aria-label="Compass heading in degrees"></label>
+      <div class="customization-bar compass-customization" aria-label="Compass customization"><button class="custom-icon compass-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon compass-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon compass-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
