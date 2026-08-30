@@ -194,6 +194,8 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
 
 const CLASS_ROSTERS_KEY='teachertiles-class-rosters-v1';
 const classRostersStorageKey=()=>`${CLASS_ROSTERS_KEY}:${window.TeacherTilesClassScope||'local'}`;
+const STAR_CHART_LAST_CLASS_KEY='teachertiles-star-chart-last-class-v1';
+const starChartLastClassStorageKey=()=>`${STAR_CHART_LAST_CLASS_KEY}:${window.TeacherTilesClassScope||'local'}`;
 
 function normalizeRosterNames(values){
   const names=[];
@@ -208,15 +210,42 @@ function normalizeRosterNames(values){
   return names.slice(0,300);
 }
 
+function starChartStudentKey(name){
+  return`student:${String(name||'').trim().toLocaleLowerCase()}`;
+}
+
+function normalizeStarChartCount(value){
+  return Math.max(0,Math.min(9999,Math.round(Number(value)||0)));
+}
+
+function normalizeStarChartProgress(value,students=[]){
+  const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  const sourceStudents=source.studentStars&&typeof source.studentStars==='object'&&!Array.isArray(source.studentStars)?source.studentStars:{};
+  const studentStars={};
+  normalizeRosterNames(students).forEach(name=>{
+    const key=starChartStudentKey(name);
+    studentStars[key]=normalizeStarChartCount(sourceStudents[key]??sourceStudents[name]);
+  });
+  return{
+    mode:source.mode==='whole'?'whole':'student',
+    wholeClassStars:normalizeStarChartCount(source.wholeClassStars),
+    studentStars
+  };
+}
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
     if(!Array.isArray(value))return [];
-    return value.filter(Boolean).map((item,index)=>({
-      id:String(item.id||`class-${index+1}`),
-      name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
-      students:normalizeRosterNames(item.students)
-    }));
+    return value.filter(Boolean).map((item,index)=>{
+      const students=normalizeRosterNames(item.students);
+      return{
+        id:String(item.id||`class-${index+1}`),
+        name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
+        students,
+        starChart:normalizeStarChartProgress(item.starChart,students)
+      };
+    });
   }catch{return []}
 }
 
@@ -224,6 +253,25 @@ function writeClassRosters(classes){
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));
   window.TeacherTilesEncryptedClasses?.save?.(classes).catch(error=>console.error('TeacherTiles could not save encrypted classes',error));
+}
+
+let starChartCloudSaveTimer=0;
+function writeClassStarChart(classId,value){
+  const classes=readClassRosters();
+  const roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  roster.starChart=normalizeStarChartProgress(value,roster.students);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:starchartchange',{detail:{classId,progress:roster.starChart}}));
+
+  const scope=window.TeacherTilesClassScope||'local';
+  clearTimeout(starChartCloudSaveTimer);
+  starChartCloudSaveTimer=setTimeout(()=>{
+    if((window.TeacherTilesClassScope||'local')!==scope)return;
+    const latest=readClassRosters();
+    window.TeacherTilesEncryptedClasses?.save?.(latest)?.catch?.(error=>console.error('TeacherTiles could not save encrypted star charts',error));
+  },450);
+  return roster.starChart;
 }
 
 window.addEventListener('teachertiles:encryptedclassesloaded',event=>{
@@ -695,7 +743,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
-    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a jar with rewards'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -709,7 +757,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
-    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
+    collections:['Colecciones','Llena un frasco con recompensas'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
@@ -719,7 +767,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
 
 const runtimeInterfaceTranslations={};
 const interfaceTranslationRequests=new Map();
-const INTERFACE_TRANSLATION_CACHE_VERSION='v4';
+const INTERFACE_TRANSLATION_CACHE_VERSION='v5';
 
 function readCachedInterfaceTranslations(language){
   try{
@@ -1598,6 +1646,7 @@ function setupModuleByType(m,type){
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')setupNoise(m);
+  if(type==='starchart')setupStarChart(m);
   if(type==='collections')setupCollections(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
@@ -3189,6 +3238,163 @@ function setupNoise(m){
     waveRO.disconnect();
     moduleRO.disconnect();
     stop();
+  };
+}
+
+function setupStarChart(m){
+  const importView=m.querySelector('.starchart-import');
+  const dashboard=m.querySelector('.starchart-dashboard');
+  const className=m.querySelector('.starchart-class-name');
+  const wholeClassName=m.querySelector('.starchart-whole-class-name');
+  const changeClass=m.querySelector('.starchart-change-class');
+  const modeButtons=[...m.querySelectorAll('[data-starchart-mode]')];
+  const studentView=m.querySelector('.starchart-student-view');
+  const wholeView=m.querySelector('.starchart-whole-view');
+  const studentGrid=m.querySelector('.starchart-student-grid');
+  const noStudents=m.querySelector('.starchart-no-students');
+  const wholeCount=m.querySelector('.starchart-whole-count b');
+  const wholeAdd=m.querySelector('.starchart-whole-add');
+  const wholeRemove=m.querySelector('.starchart-whole-remove');
+  let activeClassId='';
+  let pendingClassId='';
+  let roster=null;
+  let progress=normalizeStarChartProgress(null,[]);
+
+  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+
+  const renderStudentGrid=()=>{
+    studentGrid.replaceChildren();
+    const students=roster?.students||[];
+    const columns=Math.max(1,Math.ceil(Math.sqrt(students.length*1.55)));
+    studentGrid.style.setProperty('--starchart-columns',String(columns));
+    noStudents.hidden=students.length>0;
+    studentGrid.hidden=!students.length;
+
+    students.forEach(name=>{
+      const key=starChartStudentKey(name);
+      const count=normalizeStarChartCount(progress.studentStars[key]);
+      const card=document.createElement('article');
+      card.className='starchart-student-card';
+      card.dataset.studentKey=key;
+      const label=document.createElement('strong');
+      label.textContent=name;
+      label.title=name;
+      const score=document.createElement('div');
+      score.className='starchart-student-score';
+      const star=document.createElement('span');star.textContent='★';star.setAttribute('aria-hidden','true');
+      const value=document.createElement('b');value.textContent=String(count);
+      score.append(star,value);
+      const actions=document.createElement('div');actions.className='starchart-student-actions';
+      const remove=document.createElement('button');remove.type='button';remove.dataset.starAction='remove';remove.textContent='−';remove.setAttribute('aria-label',`Remove a star from ${name}`);remove.disabled=count===0;
+      const add=document.createElement('button');add.type='button';add.dataset.starAction='add';add.innerHTML='<span aria-hidden="true">★</span> Add';add.setAttribute('aria-label',`Award a star to ${name}`);
+      actions.append(remove,add);card.append(label,score,actions);studentGrid.append(card);
+    });
+  };
+
+  const render=()=>{
+    const hasClass=Boolean(roster&&activeClassId);
+    importView.hidden=hasClass;
+    dashboard.hidden=!hasClass;
+    if(!hasClass)return;
+    className.textContent=roster.name;
+    wholeClassName.textContent=roster.name;
+    wholeCount.textContent=String(progress.wholeClassStars);
+    wholeRemove.disabled=progress.wholeClassStars===0;
+    const mode=progress.mode==='whole'?'whole':'student';
+    modeButtons.forEach(button=>{
+      const active=button.dataset.starchartMode===mode;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-selected',String(active));
+    });
+    studentView.hidden=mode!=='student';
+    wholeView.hidden=mode!=='whole';
+    renderStudentGrid();
+  };
+
+  const loadClass=(classId,{notify=false}={})=>{
+    const next=readClassRosters().find(item=>item.id===classId);
+    if(!next){
+      activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
+    }
+    activeClassId=next.id;
+    pendingClassId='';
+    localStorage.setItem(starChartLastClassStorageKey(),activeClassId);
+    roster=next;
+    progress=normalizeStarChartProgress(next.starChart,next.students);
+    render();
+    if(notify)notifyBoardChanged('star-chart-class');
+    return true;
+  };
+
+  const persistProgress=()=>{
+    const saved=writeClassStarChart(activeClassId,progress);
+    if(saved)progress=saved;
+  };
+
+  modeButtons.forEach(button=>button.addEventListener('click',()=>{
+    const mode=button.dataset.starchartMode==='whole'?'whole':'student';
+    if(progress.mode===mode)return;
+    progress.mode=mode;
+    persistProgress();
+    notifyBoardChanged('star-chart-mode');
+  }));
+
+  studentGrid.addEventListener('click',event=>{
+    const action=event.target.closest('[data-star-action]');
+    const card=action?.closest('[data-student-key]');
+    if(!action||!card||!activeClassId)return;
+    const key=card.dataset.studentKey;
+    const current=normalizeStarChartCount(progress.studentStars[key]);
+    progress.studentStars[key]=normalizeStarChartCount(current+(action.dataset.starAction==='add'?1:-1));
+    persistProgress();
+  });
+
+  wholeAdd.addEventListener('click',()=>{
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
+    persistProgress();
+  });
+  wholeRemove.addEventListener('click',()=>{
+    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
+    persistProgress();
+  });
+  changeClass.addEventListener('click',()=>{
+    activeClassId='';pendingClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();notifyBoardChanged('star-chart-class');
+  });
+
+  m.querySelector('.starchart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.starchart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.starchart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const detachRosterLoader=attachClassRosterLoader(m.querySelector('.starchart-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const handleClassesChange=()=>{
+    if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
+    const next=currentRoster();
+    if(!next){activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();return}
+    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+  };
+  const handleStarChartChange=event=>{
+    if(event.detail?.classId!==activeClassId)return;
+    const next=currentRoster();
+    if(!next)return;
+    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+  window.addEventListener('teachertiles:starchartchange',handleStarChartChange);
+
+  m._boardGetState=()=>({classId:activeClassId});
+  m._boardSetState=state=>{
+    const classId=String(state?.classId||'');
+    if(!classId)return;
+    if(!loadClass(classId))pendingClassId=classId;
+  };
+  const lastClassId=localStorage.getItem(starChartLastClassStorageKey())||'';
+  if(!lastClassId||!loadClass(lastClassId))render();
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();detachRosterLoader();
+    window.removeEventListener('teachertiles:classeschange',handleClassesChange);
+    window.removeEventListener('teachertiles:starchartchange',handleStarChartChange);
   };
 }
 
