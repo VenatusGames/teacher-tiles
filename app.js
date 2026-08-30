@@ -119,6 +119,7 @@ function detachHistoryElements(elements){
   for(const el of elements){
     selectedModules.delete(el);
     el.classList.remove('is-selected','is-over-trash','is-dragging');
+    el._deactivate?.();
     if(el.isConnected)el.remove();
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
@@ -5388,8 +5389,6 @@ const EDITABLE_TILE_HEADINGS={
   photobooth:'.photobooth-title',
   mirror:'.mirror-title',
   weather:'.weather-title',
-  weatherwheel:'.weatherwheel-title',
-  seasonwheel:'.seasonwheel-title',
   temperature:'.temperature-title'
 };
 
@@ -5973,21 +5972,48 @@ function setupBoardPhotoDrop(){
   });
 }
 
-async function requestFrontCamera(){
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
-  try{
-    return await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}},audio:false});
-  }catch(error){
-    if(error?.name==='NotAllowedError'||error?.name==='SecurityError')throw error;
-    return navigator.mediaDevices.getUserMedia({video:true,audio:false});
+const activeCameraStreams=new Map();
+
+function releaseCameraStream(stream){
+  if(!stream)return;
+  stream.getTracks().forEach(track=>track.stop());
+  activeCameraStreams.delete(stream);
+}
+
+function releaseAllCameraStreams(){
+  for(const stream of [...activeCameraStreams.keys()])releaseCameraStream(stream);
+}
+
+function deactivateOtherCameraTiles(owner){
+  document.querySelectorAll('.photobooth-module,.mirror-module').forEach(tile=>{
+    if(tile!==owner)tile._deactivate?.();
+  });
+  for(const [stream,streamOwner] of [...activeCameraStreams]){
+    if(streamOwner!==owner)releaseCameraStream(stream);
   }
+}
+
+window.addEventListener('pagehide',releaseAllCameraStreams);
+
+async function requestFrontCamera(owner){
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
+  deactivateOtherCameraTiles(owner);
+  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+  activeCameraStreams.set(stream,owner);
+  const track=stream.getVideoTracks()[0];
+  track?.applyConstraints({width:{ideal:1280},height:{ideal:720},facingMode:{ideal:'user'}}).catch(()=>{});
+  track?.addEventListener('ended',()=>activeCameraStreams.delete(stream),{once:true});
+  return stream;
 }
 
 function cameraStartMessage(error){
   if(error?.name==='NotAllowedError'||error?.name==='SecurityError')return'Camera permission was not granted. Allow camera access, then try again.';
   if(error?.name==='NotFoundError'||error?.name==='DevicesNotFoundError')return'No camera was found on this device.';
+  if(error?.name==='NotReadableError'||error?.name==='TrackStartError')return'The browser found your camera but could not open it. Reload this page to release a stuck camera session, then try again.';
+  if(error?.name==='OverconstrainedError'||error?.name==='ConstraintNotSatisfiedError')return'This camera could not use the requested video settings. Reload the page, then try again.';
+  if(error?.name==='AbortError')return'The camera stopped while starting. Wait a moment, then try again.';
   if(error?.message==='unsupported')return'Camera access is not supported in this browser.';
-  return'The camera could not be started. Check that another app is not using it, then try again.';
+  return'The camera could not be started. Reload this page, then try again.';
 }
 
 function setupPhotobooth(m){
@@ -6007,9 +6033,11 @@ function setupPhotobooth(m){
   let filter='normal';
   let photos=[];
   let disposed=false;
+  let cameraAttempt=0;
 
   const stopCamera=()=>{
-    stream?.getTracks().forEach(track=>track.stop());
+    cameraAttempt++;
+    releaseCameraStream(stream);
     stream=null;
     video.srcObject=null;
     m.classList.remove('has-camera');
@@ -6020,11 +6048,12 @@ function setupPhotobooth(m){
   const startCamera=async()=>{
     if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stopCamera();message.textContent='Camera is off.';return}
     if(stream)stopCamera();
+    const attempt=++cameraAttempt;
     toggle.disabled=true;
     message.textContent='Starting the camera…';
     try{
-      const next=await requestFrontCamera();
-      if(disposed){next.getTracks().forEach(track=>track.stop());return}
+      const next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt){releaseCameraStream(next);return}
       stream=next;
       video.muted=true;
       video.srcObject=stream;
@@ -6036,8 +6065,8 @@ function setupPhotobooth(m){
       message.textContent='Choose a filter, then take a photo.';
       stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stopCamera()},{once:true}));
     }catch(error){
-      message.textContent=cameraStartMessage(error);
-    }finally{toggle.disabled=false}
+      if(attempt===cameraAttempt&&!disposed)message.textContent=cameraStartMessage(error);
+    }finally{if(attempt===cameraAttempt)toggle.disabled=false}
   };
   const setFilter=value=>{
     filter=PHOTOBOOTH_FILTERS[value]?value:'normal';
@@ -6117,8 +6146,9 @@ function setupPhotobooth(m){
   setFilter(filter);renderPhotos();
   m._boardGetState=()=>({title:tileTitle.get(),filter,photos:[...photos]});
   m._boardSetState=saved=>{tileTitle.set(saved?.title);photos=Array.isArray(saved?.photos)?saved.photos.filter(src=>typeof src==='string'&&src.startsWith('data:image/')).slice(0,8):[];setFilter(saved?.filter);renderPhotos()};
+  m._deactivate=stopCamera;
   const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();disposed=true;stopCamera()};
+  m._cleanup=()=>{disposed=true;stopCamera();prior?.()};
 }
 
 function setupMirror(m){
@@ -6130,22 +6160,24 @@ function setupMirror(m){
   const message=m.querySelector('.mirror-message');
   let stream=null;
   let disposed=false;
+  let cameraAttempt=0;
   const stop=()=>{
-    stream?.getTracks().forEach(track=>track.stop());stream=null;video.srcObject=null;
+    cameraAttempt++;releaseCameraStream(stream);stream=null;video.srcObject=null;
     m.classList.remove('has-camera');toggle.textContent='Start mirror';state.textContent='OFF';message.textContent='Camera is off.';
   };
   const start=async()=>{
     if(stream?.getVideoTracks().some(track=>track.readyState==='live')){stop();return}
     if(stream)stop();
+    const attempt=++cameraAttempt;
     toggle.disabled=true;message.textContent='Starting your mirror…';
     try{
-      const next=await requestFrontCamera();
-      if(disposed){next.getTracks().forEach(track=>track.stop());return}
+      const next=await requestFrontCamera(m);
+      if(disposed||!m.isConnected||attempt!==cameraAttempt){releaseCameraStream(next);return}
       stream=next;video.muted=true;video.srcObject=stream;await video.play().catch(()=>{});
       m.classList.add('has-camera');toggle.textContent='Stop mirror';state.textContent='ON';message.textContent='Mirror is on. Video stays on this device.';
       stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(stream===next)stop()},{once:true}));
-    }catch(error){message.textContent=cameraStartMessage(error)}
-    finally{toggle.disabled=false}
+    }catch(error){if(attempt===cameraAttempt&&!disposed)message.textContent=cameraStartMessage(error)}
+    finally{if(attempt===cameraAttempt)toggle.disabled=false}
   };
   toggle.addEventListener('click',start);
   placeholder?.addEventListener('click',start);
@@ -6154,8 +6186,9 @@ function setupMirror(m){
   m.querySelector('.mirror-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   m._boardGetState=()=>({title:tileTitle.get()});
   m._boardSetState=saved=>tileTitle.set(saved?.title);
+  m._deactivate=stop;
   const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();disposed=true;stop()};
+  m._cleanup=()=>{disposed=true;stop();prior?.()};
 }
 
 const WEATHER_CODES={
@@ -6425,41 +6458,27 @@ const SEASON_WHEEL_ITEMS=[
   {name:'Winter',icon:'❄️',color:'#a9d8ee'}
 ];
 
-function weatherWheelIndex(code){
-  const value=Number(code);
-  if(value===0||value===1)return 0;
-  if(value===2)return 1;
-  if(value===3)return 2;
-  if(value===45||value===48)return 7;
-  if((value>=51&&value<=67)||(value>=80&&value<=82))return 3;
-  if((value>=71&&value<=77)||(value>=85&&value<=86))return 5;
-  if(value>=95)return 4;
-  return 1;
-}
-
-function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
-  const title=bindEditableModuleTitle(m,titleSelector,titleFallback);
+function setupChoiceWheel(m,{items}){
   const face=m.querySelector('.choicewheel-face');
   const options=m.querySelector('.choicewheel-options');
   const pointer=m.querySelector('.choicewheel-pointer');
-  const current=m.querySelector('.choicewheel-current');
-  const selection=m.querySelector('.choicewheel-selection');
+  const selectionIcon=m.querySelector('.choicewheel-selection-icon');
+  const selectionName=m.querySelector('.choicewheel-selection-name');
   const sector=360/items.length;
   let selected=0;
-  let manual=false;
 
   m.style.setProperty('--choicewheel-count',String(items.length));
   m.style.setProperty('--choicewheel-offset',`${-sector/2}deg`);
   m.style.setProperty('--choicewheel-colors',items.map((item,index)=>`${item.color} ${index*sector}deg ${(index+1)*sector}deg`).join(','));
 
-  const renderSelection=(index,{angle=index*sector,notify=false,manualChoice=manual}={})=>{
+  const renderSelection=(index,{angle=index*sector,notify=false}={})=>{
     selected=(Math.round(Number(index))%items.length+items.length)%items.length;
-    manual=Boolean(manualChoice);
     pointer.style.setProperty('--pointer-angle',`${angle}deg`);
     pointer.setAttribute('aria-valuenow',String(selected));
     pointer.setAttribute('aria-valuetext',items[selected].name);
     options.querySelectorAll('.choicewheel-option').forEach((option,optionIndex)=>option.classList.toggle('is-active',optionIndex===selected));
-    selection.textContent=`Arrow points to ${items[selected].name}`;
+    selectionIcon.textContent=items[selected].icon;
+    selectionName.textContent=items[selected].name;
     if(notify)notifyBoardChanged(`${m.dataset.type}-selection`);
   };
 
@@ -6475,7 +6494,7 @@ function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
     const icon=document.createElement('span');icon.textContent=item.icon;icon.setAttribute('aria-hidden','true');
     const label=document.createElement('strong');label.textContent=item.name;
     button.append(icon,label);
-    button.addEventListener('click',event=>{event.stopPropagation();renderSelection(index,{notify:true,manualChoice:true})});
+    button.addEventListener('click',event=>{event.stopPropagation();renderSelection(index,{notify:true})});
     options.appendChild(button);
   });
 
@@ -6497,7 +6516,7 @@ function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
       if(moveEvent.pointerId!==pointerId)return;
       moveEvent.preventDefault();moveEvent.stopPropagation();
       const next=indexFromPointer(moveEvent);
-      renderSelection(next.index,{angle:next.angle,manualChoice:true});
+      renderSelection(next.index,{angle:next.angle});
     };
     const end=endEvent=>{
       if(endEvent.pointerId!==pointerId)return;
@@ -6505,7 +6524,7 @@ function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
       face.removeEventListener('pointerup',end);
       face.removeEventListener('pointercancel',end);
       m.classList.remove('is-wheel-dragging');
-      renderSelection(selected,{notify:true,manualChoice:true});
+      renderSelection(selected,{notify:true});
     };
     move(event);
     face.addEventListener('pointermove',move);
@@ -6520,61 +6539,28 @@ function setupChoiceWheel(m,{items,titleSelector,titleFallback,currentLabel}){
     if(event.key==='End')next=items.length-1;
     if(next===null)return;
     event.preventDefault();event.stopPropagation();
-    renderSelection(next,{notify:true,manualChoice:true});
+    renderSelection(next,{notify:true});
   });
   m.querySelector('.choicewheel-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.choicewheel-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
-  current.textContent=currentLabel;
-  renderSelection(0,{manualChoice:false});
+  renderSelection(0);
   return{
-    setCurrent(text,index){current.textContent=text;if(!manual)renderSelection(index,{manualChoice:false})},
-    setStatus(text){current.textContent=text},
-    getState:()=>({title:title.get(),selected,manual}),
-    setState(saved){title.set(saved?.title);selected=clamp(Math.round(Number(saved?.selected)||0),0,items.length-1);manual=Boolean(saved?.manual);renderSelection(selected,{manualChoice:manual})}
+    getState:()=>({selected}),
+    setState(saved){selected=clamp(Math.round(Number(saved?.selected)||0),0,items.length-1);renderSelection(selected)}
   };
 }
 
 function setupWeatherWheel(m){
-  const wheel=setupChoiceWheel(m,{items:WEATHER_WHEEL_ITEMS,titleSelector:'.weatherwheel-title',titleFallback:'Weather Wheel',currentLabel:'Finding local weather…'});
-  const controller=new AbortController();
-  let disposed=false;
-  const loadCurrent=async()=>{
-    try{
-      const coords=await requestLocalCoordinates();
-      const conditions=await fetchCurrentConditions({name:'My location',...coords},controller.signal,{extended:false});
-      const info=weatherCodeInfo(conditions.code);
-      wheel.setCurrent(`${info[1]} ${info[0]} · ${displayTemperature(conditions.tempC,'f')}`,weatherWheelIndex(conditions.code));
-    }catch(error){
-      if(error?.name!=='AbortError')wheel.setStatus(error?.code===1?'Location is off — choose the weather by hand.':'Current weather is unavailable — choose by hand.');
-    }
-  };
+  const wheel=setupChoiceWheel(m,{items:WEATHER_WHEEL_ITEMS});
   m._boardGetState=()=>wheel.getState();
   m._boardSetState=saved=>wheel.setState(saved);
-  queueMicrotask(()=>{if(!disposed)loadCurrent()});
-  const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();disposed=true;controller.abort()};
 }
 
 function setupSeasonWheel(m){
-  const wheel=setupChoiceWheel(m,{items:SEASON_WHEEL_ITEMS,titleSelector:'.seasonwheel-title',titleFallback:'Season Wheel',currentLabel:'Checking the current season…'});
-  let disposed=false;
-  const currentSeasonIndex=southern=>{
-    const month=new Date().getMonth();
-    let index=month>=2&&month<=4?0:month>=5&&month<=7?1:month>=8&&month<=10?2:3;
-    if(southern)index=(index+2)%4;
-    return index;
-  };
-  const loadCurrent=async()=>{
-    if(disposed)return;
-    const index=currentSeasonIndex(false);
-    wheel.setCurrent(`${SEASON_WHEEL_ITEMS[index].icon} ${SEASON_WHEEL_ITEMS[index].name} · Northern Hemisphere`,index);
-  };
+  const wheel=setupChoiceWheel(m,{items:SEASON_WHEEL_ITEMS});
   m._boardGetState=()=>wheel.getState();
   m._boardSetState=saved=>wheel.setState(saved);
-  queueMicrotask(loadCurrent);
-  const prior=m._cleanup;
-  m._cleanup=()=>{prior?.();disposed=true};
 }
 
 function setupTemperature(m){

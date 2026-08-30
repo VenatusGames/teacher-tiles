@@ -1482,7 +1482,7 @@
         </span>
         <span><strong>Ruler</strong><small>Measure with draggable ruler points</small></span>
       </button>
-      <button class="context-menu__item" data-module="calculator" data-category="math">
+      <button class="context-menu__item" data-module="calculator" data-category="tools math">
         <span class="context-menu__icon context-menu__icon--calculator" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <rect x="5" y="2.8" width="14" height="18.4" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
@@ -3387,11 +3387,10 @@
   <template id="weatherwheel-template">
     <section class="module choicewheel-module weatherwheel-module" data-type="weatherwheel" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete weather wheel">×</button><div class="module-drag-handle"></div>
-      <header class="choicewheel-header"><strong class="weatherwheel-title" contenteditable="true" data-text-edit-mode="double">Weather Wheel</strong><span class="choicewheel-state"><i></i><b>CURRENT</b></span></header>
       <div class="choicewheel-stage">
         <div class="choicewheel-face" role="group" aria-label="Weather choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Weather wheel pointer" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
-        <div class="choicewheel-readout"><span>Current weather</span><strong class="choicewheel-current">Finding local weather…</strong><small class="choicewheel-selection">Arrow points to Sunny</small></div>
       </div>
+      <div class="choicewheel-selection-display" aria-live="polite"><span class="choicewheel-selection-icon" aria-hidden="true">☀️</span><strong class="choicewheel-selection-name">Sunny</strong></div>
       <p class="choicewheel-hint">Drag the arrow or tap a picture to choose the weather.</p>
       <div class="customization-bar choicewheel-customization" aria-label="Weather wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
@@ -3401,11 +3400,10 @@
   <template id="seasonwheel-template">
     <section class="module choicewheel-module seasonwheel-module" data-type="seasonwheel" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete season wheel">×</button><div class="module-drag-handle"></div>
-      <header class="choicewheel-header"><strong class="seasonwheel-title" contenteditable="true" data-text-edit-mode="double">Season Wheel</strong><span class="choicewheel-state"><i></i><b>NOW</b></span></header>
       <div class="choicewheel-stage">
         <div class="choicewheel-face" role="group" aria-label="Season choices"><div class="choicewheel-options"></div><button class="choicewheel-pointer" type="button" role="slider" aria-label="Season wheel pointer" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"></button><span class="choicewheel-hub" aria-hidden="true"></span></div>
-        <div class="choicewheel-readout"><span>Current season</span><strong class="choicewheel-current">Checking the season…</strong><small class="choicewheel-selection">Arrow points to Spring</small></div>
       </div>
+      <div class="choicewheel-selection-display" aria-live="polite"><span class="choicewheel-selection-icon" aria-hidden="true">🌷</span><strong class="choicewheel-selection-name">Spring</strong></div>
       <p class="choicewheel-hint">Drag the arrow or tap a picture to choose a season.</p>
       <div class="customization-bar choicewheel-customization" aria-label="Season wheel customization"><button class="custom-icon choicewheel-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon choicewheel-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon choicewheel-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
