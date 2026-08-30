@@ -276,7 +276,7 @@
           </span>
           <div>
             <span class="settings-panel__eyebrow" data-i18n="settings.eyebrow">TEACHERTILES</span>
-            <strong id="settings-title" data-i18n="settings.title">Settings & Help</strong>
+            <strong id="settings-title">Settings</strong>
           </div>
         </div>
         <button class="settings-panel__close" type="button" data-settings-close aria-label="Close settings">×</button>
@@ -322,7 +322,7 @@
             <span class="settings-nav__icon settings-nav__icon--terms" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M6 3.8h9.2L19 7.6v12.6H6zM15.2 3.8v3.8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m8.7 7.4 1.1 1.1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span>Terms &amp; Conditions</span>
+            <span data-i18n="settings.tab.terms">Terms &amp; Conditions</span>
           </button>
         </nav>
 
@@ -1255,7 +1255,6 @@
     <div class="context-menu__header">
       <div class="context-menu__title-row">
         <div class="context-menu__title" data-i18n="context.addTile">Add tile</div>
-        <button type="button" class="context-menu__filter context-menu__filter--all is-active" data-category-filter="all" data-i18n="context.all">ALL</button>
       </div>
       <div class="context-menu__search-wrap">
         <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -1266,14 +1265,10 @@
         <button class="context-menu__search-clear" type="button" aria-label="Clear tile search" title="Clear search">×</button>
       </div>
       <div class="context-menu__category-rail">
-        <div class="context-menu__filters" role="tablist" aria-label="Module categories">
-          <button type="button" class="context-menu__filter" data-category-filter="text" data-i18n="context.cat.text">TEXT</button>
-          <button type="button" class="context-menu__filter" data-category-filter="media" data-i18n="context.cat.media">MEDIA</button>
-          <button type="button" class="context-menu__filter" data-category-filter="tools" data-i18n="context.cat.tools">TOOLS</button>
-          <button type="button" class="context-menu__filter" data-category-filter="time" data-i18n="context.cat.time">TIME</button>
-          <button type="button" class="context-menu__filter" data-category-filter="literacy" data-i18n="context.cat.literacy">LITERACY</button>
-          <button type="button" class="context-menu__filter" data-category-filter="math" data-i18n="context.cat.math">MATH</button>
-        </div>
+        <button type="button" class="context-menu__category-cycle" aria-label="Cycle tile category" title="Click to show the next category">
+          <span class="context-menu__category-cycle-copy"><small>Category</small><strong class="context-menu__category-cycle-label">ALL</strong></span>
+          <span class="context-menu__category-cycle-arrow" aria-hidden="true">›</span>
+        </button>
         <button type="button" class="context-menu__category-drawer-toggle" aria-label="Show all categories" title="Show all categories" aria-expanded="false" aria-controls="context-menu-category-drawer">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
         </button>

@@ -593,7 +593,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -628,7 +628,7 @@ const APP_TRANSLATIONS={
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -777,6 +777,7 @@ function setupSettingsHub(){
   const closeButtons=[...document.querySelectorAll('[data-settings-close]')];
   const tabs=[...document.querySelectorAll('[data-settings-tab]')];
   const panes=[...document.querySelectorAll('[data-settings-pane]')];
+  const title=document.getElementById('settings-title');
   const mute=document.getElementById('settings-ui-sfx-toggle');
   const volume=document.getElementById('settings-ui-volume');
   const scroll=document.getElementById('settings-scroll-speed');
@@ -784,8 +785,16 @@ function setupSettingsHub(){
   const language=document.getElementById('settings-language');
   if(!modal||!settingsToggle)return;
   let lastFocus=null;
+  let currentTab='settings';
+
+  const updateTitle=()=>{
+    const active=tabs.find(tab=>tab.dataset.settingsTab===currentTab);
+    const label=active?.lastElementChild?.textContent?.trim();
+    if(title&&label)title.textContent=label;
+  };
 
   const showTab=name=>{
+    currentTab=name;
     tabs.forEach(tab=>{
       const active=tab.dataset.settingsTab===name;
       tab.classList.toggle('is-active',active);
@@ -796,6 +805,7 @@ function setupSettingsHub(){
       pane.hidden=!active;
       pane.classList.toggle('is-active',active);
     });
+    updateTitle();
     window.dispatchEvent(new CustomEvent('teachertiles:settings-tab',{detail:{name}}));
   };
   const close=()=>{
@@ -817,6 +827,7 @@ function setupSettingsHub(){
     settingsToggle.setAttribute('aria-expanded','true');
     updateSettingsControls();
     applyAppLanguage();
+    updateTitle();
     requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
   };
 
@@ -841,7 +852,7 @@ function setupSettingsHub(){
   });
   scroll?.addEventListener('change',()=>notifyBoardChanged('preferences'));
   view?.addEventListener('change',()=>applyAppPreferences({defaultViewSize:Number(view.value)},{notify:true,applyView:true}));
-  language?.addEventListener('change',()=>applyAppPreferences({language:language.value},{notify:true}));
+  language?.addEventListener('change',()=>{applyAppPreferences({language:language.value},{notify:true});updateTitle();setMenuCategory(activeMenuCategory)});
 
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&!modal.hidden){event.preventDefault();close()}
@@ -852,9 +863,9 @@ function setupSettingsHub(){
     if(target)close();
   },true);
 
-  showTab('settings');
   updateSettingsControls();
   applyAppLanguage();
+  showTab('settings');
 }
 
 setupSettingsHub();
@@ -1247,17 +1258,22 @@ document.addEventListener('pointerdown',e=>{
   clearSelection();
 },true);
 
-const menuFilters=[...menu.querySelectorAll('[data-category-filter]')];
 const menuSearch=menu.querySelector('#context-menu-search');
 const menuSearchClear=menu.querySelector('.context-menu__search-clear');
 const menuNoResults=menu.querySelector('.context-menu__no-results');
 const menuItems=[...menu.querySelectorAll('.context-menu__item[data-category]')];
-const menuCategoryRail=menu.querySelector('.context-menu__filters');
+const menuCategoryCycle=menu.querySelector('.context-menu__category-cycle');
+const menuCategoryCycleLabel=menu.querySelector('.context-menu__category-cycle-label');
 const menuDrawerFilters=[...menu.querySelectorAll('[data-category-drawer-filter]')];
 const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menu.querySelector('.context-menu__category-drawer-toggle');
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
+const menuCategoryOrder=['all','text','media','tools','time','audio','games','literacy','math','science','planning','pbis','sel'];
+
+function menuCategoryLabel(category){
+  return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
+}
 
 function normalizeMenuSearch(value=''){
   return value.toLowerCase().trim().replace(/\s+/g,' ');
@@ -1293,9 +1309,11 @@ function applyMenuView(){
 }
 
 function setMenuCategory(category='all'){
-  activeMenuCategory=category;
-  menuFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryFilter===category));
-  menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===category));
+  activeMenuCategory=menuCategoryOrder.includes(category)?category:'all';
+  const label=menuCategoryLabel(activeMenuCategory);
+  if(menuCategoryCycleLabel)menuCategoryCycleLabel.textContent=label;
+  if(menuCategoryCycle)menuCategoryCycle.setAttribute('aria-label',`Showing ${label}. Click to show the next category.`);
+  menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===activeMenuCategory));
   applyMenuView();
 }
 
@@ -1316,10 +1334,11 @@ function clearMenuSearch(){
   applyMenuView();
 }
 
-menuFilters.forEach(b=>b.addEventListener('click',e=>{
-  e.stopPropagation();
-  setMenuCategory(b.dataset.categoryFilter);
-}));
+menuCategoryCycle?.addEventListener('click',event=>{
+  event.stopPropagation();
+  const current=Math.max(0,menuCategoryOrder.indexOf(activeMenuCategory));
+  setMenuCategory(menuCategoryOrder[(current+1)%menuCategoryOrder.length]);
+});
 menuDrawerFilters.forEach(b=>b.addEventListener('click',e=>{
   e.stopPropagation();
   setMenuCategory(b.dataset.categoryDrawerFilter);
