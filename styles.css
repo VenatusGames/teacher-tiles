@@ -2690,6 +2690,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
 .context-menu__category-drawer-close:hover{background:var(--surface-soft);color:var(--text)}
 .context-menu__category-drawer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .context-menu__category-drawer-grid .context-menu__filter{min-width:0;height:30px}
+.context-menu__category-drawer-all{grid-column:1/-1}
 .context-menu.is-searching .context-menu__category-rail{display:none}
 
 /* Draw module */
