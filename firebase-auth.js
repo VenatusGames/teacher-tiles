@@ -83,6 +83,7 @@ let localBoardDbPromise = null;
 const LOCAL_SAVE_DELAY = 280;
 const CLOUD_SAVE_DELAY = 8000;
 const BOARD_LIST_CACHE_TTL = 60000;
+const SESSION_CLOUD_RECHECK_TTL = 10 * 60 * 1000;
 const INLINE_OBJECT_BUDGET = 560000;
 const CHUNK_OBJECT_BUDGET = 520000;
 const MAX_SINGLE_OBJECT_BYTES = 900000;
@@ -91,6 +92,9 @@ const PREVIEW_OBJECT_BUDGET = 90000;
 const boardApi = () => window.TeacherTilesBoard || null;
 const activeBoardStorageKey = uid => `teachertiles-active-board-${uid}`;
 const classEncryptionKeyStorageKey = uid => `teachertiles-class-key-${uid}`;
+const classEncryptionKeySessionStorageKey = uid => `teachertiles-class-key-session-${uid}`;
+const classCloudLoadedSessionStorageKey = uid => `teachertiles-class-cloud-loaded-session-${uid}`;
+const boardCloudLoadedSessionStorageKey = uid => `teachertiles-board-cloud-loaded-session-${uid}`;
 
 function classesDocument(uid) {
   return firestoreSdk.doc(db, "users", uid, "private", "classes");
@@ -121,11 +125,58 @@ function legacyClassEncryptionKeyBytes(uid = currentUser?.uid) {
   }
 }
 
+function sessionClassEncryptionKeyBytes(uid = currentUser?.uid) {
+  if (!uid) return null;
+  try {
+    const raw = base64ToBytes(sessionStorage.getItem(classEncryptionKeySessionStorageKey(uid)) || "");
+    return raw.length === 32 ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheClassEncryptionKeyForSession(uid, raw) {
+  if (!uid || !raw?.length) return;
+  try { sessionStorage.setItem(classEncryptionKeySessionStorageKey(uid), bytesToBase64(raw)); } catch {}
+}
+
+function markClassCloudLoadedForSession(uid) {
+  if (!uid) return;
+  try { sessionStorage.setItem(classCloudLoadedSessionStorageKey(uid), String(Date.now())); } catch {}
+}
+
+function classCloudAlreadyLoadedThisSession(uid) {
+  if (!uid) return false;
+  try {
+    const checkedAt = Number(sessionStorage.getItem(classCloudLoadedSessionStorageKey(uid)) || 0);
+    return checkedAt > 0 && Date.now() - checkedAt < SESSION_CLOUD_RECHECK_TTL;
+  } catch { return false; }
+}
+
+function markBoardCloudLoadedForSession(uid) {
+  if (!uid) return;
+  try { sessionStorage.setItem(boardCloudLoadedSessionStorageKey(uid), String(Date.now())); } catch {}
+}
+
+function boardCloudAlreadyLoadedThisSession(uid) {
+  if (!uid) return false;
+  try {
+    const checkedAt = Number(sessionStorage.getItem(boardCloudLoadedSessionStorageKey(uid)) || 0);
+    return checkedAt > 0 && Date.now() - checkedAt < SESSION_CLOUD_RECHECK_TTL;
+  } catch { return false; }
+}
+
+function hasLocalClassRosterSnapshot(uid) {
+  if (!uid) return false;
+  try { return localStorage.getItem(`teachertiles-class-rosters-v1:${uid}`) !== null; } catch { return false; }
+}
+
 function setActiveClassEncryptionKey(uid, raw, { removeLegacy = false } = {}) {
   const bytes = raw instanceof Uint8Array ? raw : new Uint8Array(raw || []);
   if (!uid || bytes.length !== 32) throw new Error("The class encryption key is invalid");
   classEncryptionKeyUid = uid;
   classEncryptionKeyBytes = new Uint8Array(bytes);
+  cacheClassEncryptionKeyForSession(uid, bytes);
   if (removeLegacy) {
     try { localStorage.removeItem(classEncryptionKeyStorageKey(uid)); } catch {}
   }
@@ -219,10 +270,21 @@ async function readOrCreatePrivateClassKey(uid, candidateRaw, encryptedValue) {
   return { raw, existing: result.existing };
 }
 
-async function requestAutomaticClassKey({ force = false } = {}) {
+async function requestAutomaticClassKey({ force = false, encryptedValue = null } = {}) {
   if (!currentUser || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
   const uid = currentUser.uid;
   if (!force && hasActiveClassEncryptionKey(uid) && classSyncMode === "ready") return classEncryptionKeyBytes;
+  if (!force) {
+    const sessionRaw = sessionClassEncryptionKeyBytes(uid);
+    if (sessionRaw) {
+      setActiveClassEncryptionKey(uid, sessionRaw);
+      classKeyProtection = "FIRESTORE_PRIVATE_VAULT";
+      classSyncMode = "ready";
+      classSyncLastError = "";
+      refreshClassSyncUi();
+      return classEncryptionKeyBytes;
+    }
+  }
   if (!force && automaticClassKeyPromise) return automaticClassKeyPromise;
 
   const legacyRaw = legacyClassEncryptionKeyBytes(uid) || (hasActiveClassEncryptionKey(uid) ? classEncryptionKeyBytes : null);
@@ -232,15 +294,18 @@ async function requestAutomaticClassKey({ force = false } = {}) {
 
   automaticClassKeyPromise = (async () => {
     try {
-      const classesSnapshot = await firestoreSdk.getDoc(classesDocument(uid));
-      const encryptedValue = classesSnapshot.exists() ? (classesSnapshot.data() || {}) : {};
-      const { raw } = await readOrCreatePrivateClassKey(uid, legacyRaw, encryptedValue);
+      let cloudEncryptedValue = encryptedValue && typeof encryptedValue === "object" ? encryptedValue : null;
+      if (!cloudEncryptedValue) {
+        const classesSnapshot = await firestoreSdk.getDoc(classesDocument(uid));
+        cloudEncryptedValue = classesSnapshot.exists() ? (classesSnapshot.data() || {}) : {};
+      }
+      const { raw, existing } = await readOrCreatePrivateClassKey(uid, legacyRaw, cloudEncryptedValue);
       setActiveClassEncryptionKey(uid, raw, { removeLegacy: true });
       classKeyProtection = "FIRESTORE_PRIVATE_VAULT";
       classSyncMode = "ready";
       classSyncLastError = "";
       refreshClassSyncUi();
-      markAutomaticKeyProtection();
+      if (!existing || cloudEncryptedValue.keyProtection !== "FIRESTORE_PRIVATE_VAULT") markAutomaticKeyProtection();
       return classEncryptionKeyBytes;
     } catch (error) {
       if (isLegacyMigrationRequiredError(error)) {
@@ -305,6 +370,7 @@ async function saveEncryptedClasses(classes) {
   await firestoreSdk.setDoc(classesDocument(currentUser.uid), payload, { merge: true });
   classSyncDocumentExists = true;
   classSyncHasCiphertext = true;
+  markClassCloudLoadedForSession(currentUser.uid);
   refreshClassSyncUi();
 }
 
@@ -317,13 +383,14 @@ async function loadEncryptedClasses() {
 
   let raw;
   try {
-    raw = await requestAutomaticClassKey();
+    raw = await requestAutomaticClassKey({ encryptedValue: value });
   } catch (error) {
     if (classSyncMode === "legacy-missing") return [];
     throw error;
   }
 
   if (!classSyncHasCiphertext) {
+    markClassCloudLoadedForSession(currentUser.uid);
     refreshClassSyncUi();
     return [];
   }
@@ -331,6 +398,7 @@ async function loadEncryptedClasses() {
   const key = await importClassEncryptionKey(raw, ["decrypt"]);
   try {
     const classes = await decryptClassesValue(value, key);
+    markClassCloudLoadedForSession(currentUser.uid);
     dispatchEncryptedClassesLoaded(classes);
     refreshClassSyncUi();
     return classes;
@@ -1116,6 +1184,7 @@ async function fetchBoards() {
   const snapshot = await firestoreSdk.getDocs(boardCollection(currentUser.uid));
   boardList = sortBoards(snapshot.docs.map(normalizeBoardMetadata));
   boardListLoadedFromNetwork = true;
+  markBoardCloudLoadedForSession(currentUser.uid);
 
   // Inline boards arrive with their full state in the same billed document read.
   for (const board of boardList) {
@@ -1291,6 +1360,7 @@ async function createInitialBoardFromWorkspace() {
   api.setActiveBoardId(activeBoardId);
   await cacheSnapshotLocally(ref.id, snapshot, { dirty: true });
   await writeBoardSnapshotToCloud(ref.id, name, snapshot, { isNew: true });
+  markBoardCloudLoadedForSession(currentUser.uid);
   cacheBoardListMetadata();
   return board;
 }
@@ -1984,7 +2054,9 @@ async function initializeBoardsForUser(user) {
 
   try {
     const cached = restoreBoardListMetadata(user.uid);
-    const cachedIsFresh = Boolean(cached && Date.now() - cached.savedAt < BOARD_LIST_CACHE_TTL && cached.boards.length);
+    const cachedIsFresh = Boolean(cached && cached.boards.length && (
+      boardCloudAlreadyLoadedThisSession(user.uid) || Date.now() - cached.savedAt < BOARD_LIST_CACHE_TTL
+    ));
 
     if (cachedIsFresh) {
       boardList = sortBoards(cached.boards);
@@ -2032,6 +2104,13 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const previousUser = currentUser;
   currentUser = user || null;
+  if (!user && previousUser?.uid) {
+    try {
+      sessionStorage.removeItem(classEncryptionKeySessionStorageKey(previousUser.uid));
+      sessionStorage.removeItem(classCloudLoadedSessionStorageKey(previousUser.uid));
+      sessionStorage.removeItem(boardCloudLoadedSessionStorageKey(previousUser.uid));
+    } catch {}
+  }
   if (!user || previousUser?.uid !== user?.uid) {
     classSyncDocumentExists = false;
     classSyncHasCiphertext = false;
@@ -2070,12 +2149,24 @@ async function renderUser(user) {
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
 
-    loadEncryptedClasses().catch(error => {
-      console.error("TeacherTiles could not decrypt class rosters", error);
-      setStatus("Saved class rosters could not be opened. Please sign out and sign back in, then try again.", true);
-      classSyncMode = inferredClassSyncMode();
+    const sessionKey = sessionClassEncryptionKeyBytes(user.uid);
+    if (sessionKey) {
+      setActiveClassEncryptionKey(user.uid, sessionKey);
+      classKeyProtection = "FIRESTORE_PRIVATE_VAULT";
+      classSyncMode = "ready";
+      classSyncLastError = "";
       refreshClassSyncUi();
-    });
+    }
+
+    const canReuseLocalClasses = classCloudAlreadyLoadedThisSession(user.uid) && hasLocalClassRosterSnapshot(user.uid);
+    if (!canReuseLocalClasses) {
+      loadEncryptedClasses().catch(error => {
+        console.error("TeacherTiles could not decrypt class rosters", error);
+        setStatus("Saved class rosters could not be opened. Please sign out and sign back in, then try again.", true);
+        classSyncMode = inferredClassSyncMode();
+        refreshClassSyncUi();
+      });
+    }
 
     if (!previousUser || previousUser.uid !== user.uid) {
       activeBoardId = "";
