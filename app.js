@@ -4338,7 +4338,7 @@ async function downloadPrizeCoupon(prize,roster,recipient,statLabel){
       const imageW=img.naturalWidth||img.width||boxW,imageH=img.naturalHeight||img.height||boxH;
       const scale=Math.min(boxW/imageW,boxH/imageH);
       const drawW=imageW*scale,drawH=imageH*scale,drawX=boxX+(boxW-drawW)/2,drawY=boxY+(boxH-drawH)/2;
-      ctx.save();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.roundRect(boxX,boxY,boxW,boxH,44);ctx.fill();ctx.clip();ctx.drawImage(img,drawX,drawY,drawW,drawH);ctx.restore();
+      ctx.drawImage(img,drawX,drawY,drawW,drawH);
     }catch{}
     ctx.fillStyle='#53647a';ctx.font='700 21px Arial';ctx.fillText('Redeemed with TeacherTiles PBIS',1005,575);ctx.font='600 18px Arial';ctx.fillText(new Date().toLocaleDateString(),1005,612);
   };
