@@ -31,7 +31,8 @@ const boardsGrid = document.getElementById("boards-grid");
 const boardsLoading = document.getElementById("boards-loading");
 const boardsSaveStatus = document.getElementById("boards-save-status");
 
-const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "shop-toggle", "boards-toggle"]);
+const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle", "boards-toggle"]);
+const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg>`;
 
 let auth = null;
 let authSdk = null;
@@ -1002,7 +1003,7 @@ function showBoardLimitPopup() {
     popup.innerHTML = `
       <button class="board-limit-popup__backdrop" type="button" aria-label="Close subscription message"></button>
       <div class="board-limit-popup__card" role="dialog" aria-modal="true" aria-labelledby="board-limit-popup-title">
-        <span class="board-limit-popup__crown" aria-hidden="true">♛</span>
+        <span class="board-limit-popup__crown" aria-hidden="true">${subscriberMarkSvg}</span>
         <strong id="board-limit-popup-title">Subscribe to save more than two boards.</strong>
         <button class="board-limit-popup__close" type="button">Got it</button>
       </div>`;
@@ -1623,7 +1624,7 @@ function createNewBoardCard() {
   if (isAtFreeLimit) {
     const crown = document.createElement("span");
     crown.className = "board-new-card__crown";
-    crown.textContent = "♛";
+    crown.innerHTML = subscriberMarkSvg;
     crown.setAttribute("aria-hidden", "true");
     preview.appendChild(crown);
   }
@@ -1784,6 +1785,7 @@ async function renderUser(user) {
 
   document.getElementById("theme-shelf-toggle")?.setAttribute("aria-label", user ? "Open theme shelf" : "Sign in to open themes");
   document.getElementById("sticker-shelf-toggle")?.setAttribute("aria-label", user ? "Open sticker shelf" : "Sign in to open stickers");
+  document.getElementById("tile-skins-shelf-toggle")?.setAttribute("aria-label", user ? "Open Tile Skins shelf" : "Sign in to open Tile Skins");
   document.getElementById("shop-toggle")?.setAttribute("aria-label", user ? "Open shop" : "Sign in to open shop");
   boardsToggle?.setAttribute("aria-label", user ? "Open boards" : "Sign in to open boards");
 }
@@ -1893,7 +1895,7 @@ async function initializeFirebaseAuth() {
 
 document.addEventListener("click", event => {
   const target = event.target instanceof Element
-    ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #shop-toggle, #boards-toggle")
+    ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #tile-skins-shelf-toggle, #shop-toggle, #boards-toggle")
     : null;
 
   if (!target || !gatedFeatureIds.has(target.id) || currentUser) return;
@@ -1931,7 +1933,7 @@ document.addEventListener("keydown", event => {
   }
 });
 
-["theme-shelf-toggle", "sticker-shelf-toggle", "shop-toggle"].forEach(id => {
+["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle"].forEach(id => {
   document.getElementById(id)?.addEventListener("click", () => {
     if (!modal.hidden) closeProfile();
   });

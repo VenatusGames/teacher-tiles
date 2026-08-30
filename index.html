@@ -65,20 +65,26 @@
       <img id="profile-launch-avatar" class="profile-launch-avatar" alt="" hidden>
       <span class="upcoming-control__tooltip"><strong data-i18n="top.profile">Profile</strong></span>
     </button>
-    <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
-      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        <circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/>
-        <circle cx="10.4" cy="7.6" r=".9" fill="currentColor"/>
-        <circle cx="14" cy="7.8" r=".9" fill="currentColor"/>
-        <circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/>
-      </svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.themes">Themes</strong></span>
-    </button>
-    <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
-      <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
-    </button>
+    <div id="customize-launcher" class="customize-launcher">
+      <div id="customize-launch-menu" class="customize-launch-menu" aria-hidden="true">
+        <button id="theme-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open theme shelf" data-feature-label="Themes" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="8.3" cy="10.2" r=".9" fill="currentColor"/><circle cx="10.4" cy="7.6" r=".9" fill="currentColor"/><circle cx="14" cy="7.8" r=".9" fill="currentColor"/><circle cx="16.2" cy="10.6" r=".9" fill="currentColor"/></svg>
+          <span class="upcoming-control__tooltip"><strong data-i18n="top.themes">Themes</strong></span>
+        </button>
+        <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
+          <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
+        </button>
+        <button id="tile-skins-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Tile Skins shelf" data-feature-label="Tile Skins" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19h8a2 2 0 0 0 2-2V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="upcoming-control__tooltip"><strong>Tile Skins</strong></span>
+        </button>
+      </div>
+      <button id="customize-toggle" class="workspace-control upcoming-control customize-toggle" type="button" aria-label="Open customization options" data-feature-label="Customize" aria-expanded="false" aria-controls="customize-launch-menu">
+        <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5a7.5 7.5 0 1 0 0 15h1.1c1.15 0 1.75-1.35 1-2.2-.6-.68-.12-1.75.78-1.75H16a3.5 3.5 0 0 0 3.5-3.5A7.5 7.5 0 0 0 12 4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m8.4 15.4 7-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="upcoming-control__tooltip"><strong>Customize</strong></span>
+      </button>
+    </div>
     <button id="shop-toggle" class="workspace-control upcoming-control" type="button" aria-label="Open shop" data-feature-label="Shop" aria-expanded="false">
       <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 11h-13l1-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9V7a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="upcoming-control__tooltip"><strong data-i18n="top.shop">Shop</strong></span>
@@ -231,6 +237,16 @@
                 </span>
                 <span class="profile-badge__copy"><strong>Contributor</strong></span>
                 <span id="contributor-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Get your idea added to TeacherTiles</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--stickerer" type="button" aria-disabled="true" aria-describedby="stickerer-patch-requirement" aria-label="Stickerer patch. Locked. Place 1000 stickers to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 8h21l7 7v25H10V8Z"/><path d="M31 8v8h7M17 27c3.8 4.2 10.2 4.2 14 0M18 21h.1M30 21h.1"/></svg></span>
+                <span class="profile-badge__copy"><strong>Stickerer</strong></span>
+                <span id="stickerer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 1000 stickers</span>
+              </button>
+              <button class="profile-badge profile-badge--locked profile-badge--tile-layer" type="button" aria-disabled="true" aria-describedby="tile-layer-patch-requirement" aria-label="Tile Layer patch. Locked. Place 100 tiles to unlock.">
+                <span class="profile-badge__medallion" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="9" y="9" width="24" height="24" rx="4"/><path d="M15 39h21a3 3 0 0 0 3-3V15"/></svg></span>
+                <span class="profile-badge__copy"><strong>Tile Layer</strong></span>
+                <span id="tile-layer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 100 tiles</span>
               </button>
             </div>
           </section>
@@ -885,6 +901,12 @@
             </div>
           </div>
         </div>
+        <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
+          <div class="tile-skins-shelf-empty">
+            <span aria-hidden="true"><i></i><i></i><i></i></span>
+            <div><small>COMING SOON</small><strong>Tile Skins</strong><p>Give individual tiles new frames, textures, and visual styles.</p></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -942,7 +964,7 @@
             <article class="shop-membership-card">
               <div class="shop-membership-card__glow" aria-hidden="true"></div>
               <div class="shop-membership-card__head">
-                <span class="shop-membership-crown" aria-hidden="true">✦</span>
+                <span class="shop-membership-crown" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg></span>
                 <div><small>TEACHERTILES SUPPORTER</small><h3>Monthly Membership</h3></div>
                 <div class="shop-membership-price"><strong>$5.99</strong><span>/ month</span></div>
               </div>
@@ -987,7 +1009,7 @@
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
               <span class="shop-category__art shop-category__art--tiles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Packs</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Packs</em></span>
+              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Skins</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Skins</em></span>
               <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">

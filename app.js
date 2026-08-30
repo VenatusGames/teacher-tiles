@@ -603,7 +603,7 @@ const APP_TRANSLATIONS={
     'help.mouse.clear.title':'Clear selection','help.mouse.clear.copy':'Click outside the current selection to deselect it.',
     'help.tutorial.kicker':'GUIDES','help.tutorial.title':'More tutorials are coming soon.','help.tutorial.copy':'Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.',
     'profile.eyebrow':'TEACHERTILES ACCOUNT','profile.title':'Profile','profile.checking':'Checking your account…','profile.welcome':'WELCOME','profile.signinTitle':'Sign in to TeacherTiles','profile.signinCopy':'Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.','profile.google':'Continue with Google','profile.signedIn':'SIGNED IN','profile.coins':'COINS','profile.balance':'Account balance','profile.connectedTitle':'Your profile is connected.','profile.connectedCopy':'This account will be used for your saved TeacherTiles boards and account data.','profile.signout':'Sign out',
-    'shop.title':'Shop','shop.coins':'Coins','shop.kicker':'MAKE IT YOURS','shop.customize':'Customize your board','shop.browse':'Browse visual packs made for TeacherTiles.','shop.collection':'COLLECTION','shop.themeCopy':'Color & board styles','shop.stickerPacks':'Sticker Packs','shop.stickerCopy':'Decorate your workspace','shop.coming':'COMING SOON','shop.tilePacks':'Tile Packs','shop.tileCopy':'Cosmetic Tile Packs','shop.comingTitle':'Coming Soon','shop.extras':'Extras','shop.extrasCopy':'More ways to customize',
+    'shop.title':'Shop','shop.coins':'Coins','shop.kicker':'MAKE IT YOURS','shop.customize':'Customize your board','shop.browse':'Browse visual packs made for TeacherTiles.','shop.collection':'COLLECTION','shop.themeCopy':'Color & board styles','shop.stickerPacks':'Sticker Packs','shop.stickerCopy':'Decorate your workspace','shop.coming':'COMING SOON','shop.tilePacks':'Tile Skins','shop.tileCopy':'Cosmetic Tile Skins','shop.comingTitle':'Coming Soon','shop.extras':'Extras','shop.extrasCopy':'More ways to customize',
     'boards.new':'New Board','boards.delete':'Delete board','boards.create':'Create new blank board'
   },
   es:{
@@ -636,7 +636,7 @@ const APP_TRANSLATIONS={
     'help.mouse.clear.title':'Limpiar selección','help.mouse.clear.copy':'Haz clic fuera de la selección actual para deseleccionarla.',
     'help.tutorial.kicker':'GUÍAS','help.tutorial.title':'Próximamente habrá más tutoriales.','help.tutorial.copy':'Esta página tendrá guías paso a paso, recorridos de funciones y ayuda con búsqueda.',
     'profile.eyebrow':'CUENTA DE TEACHERTILES','profile.title':'Perfil','profile.checking':'Comprobando tu cuenta…','profile.welcome':'BIENVENIDO','profile.signinTitle':'Inicia sesión en TeacherTiles','profile.signinCopy':'Inicia sesión en una cuenta para guardar tus TileSets, comprar cosméticos opcionales, acceder a toda la aplicación y descubrir todo lo que TeacherTiles ofrece.','profile.google':'Continuar con Google','profile.signedIn':'SESIÓN INICIADA','profile.coins':'MONEDAS','profile.balance':'Saldo de la cuenta','profile.connectedTitle':'Tu perfil está conectado.','profile.connectedCopy':'Esta cuenta se usará para tus tableros guardados de TeacherTiles y los datos de tu cuenta.','profile.signout':'Cerrar sesión',
-    'shop.title':'Tienda','shop.coins':'Monedas','shop.kicker':'HAZLO TUYO','shop.customize':'Personaliza tu tablero','shop.browse':'Explora paquetes visuales creados para TeacherTiles.','shop.collection':'COLECCIÓN','shop.themeCopy':'Colores y estilos de tablero','shop.stickerPacks':'Paquetes de pegatinas','shop.stickerCopy':'Decora tu espacio de trabajo','shop.coming':'PRÓXIMAMENTE','shop.tilePacks':'Paquetes de tiles','shop.tileCopy':'Paquetes cosméticos de tiles','shop.comingTitle':'Próximamente','shop.extras':'Extras','shop.extrasCopy':'Más formas de personalizar',
+    'shop.title':'Tienda','shop.coins':'Monedas','shop.kicker':'HAZLO TUYO','shop.customize':'Personaliza tu tablero','shop.browse':'Explora paquetes visuales creados para TeacherTiles.','shop.collection':'COLECCIÓN','shop.themeCopy':'Colores y estilos de tablero','shop.stickerPacks':'Paquetes de pegatinas','shop.stickerCopy':'Decora tu espacio de trabajo','shop.coming':'PRÓXIMAMENTE','shop.tilePacks':'Aspectos de tiles','shop.tileCopy':'Aspectos cosméticos para tiles','shop.comingTitle':'Próximamente','shop.extras':'Extras','shop.extrasCopy':'Más formas de personalizar',
     'boards.new':'Nuevo tablero','boards.delete':'Eliminar tablero','boards.create':'Crear un tablero nuevo en blanco'
   }
 };
@@ -6242,8 +6242,10 @@ function setupCollectionShelf(){
   const closeButton=document.getElementById('asset-shelf-close');
   const themeButton=document.getElementById('theme-shelf-toggle');
   const stickerButton=document.getElementById('sticker-shelf-toggle');
+  const tileSkinsButton=document.getElementById('tile-skins-shelf-toggle');
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
+  const tileSkinsPanel=document.getElementById('tile-skins-shelf-content');
   const stickerSearch=document.getElementById('sticker-shelf-search');
   const stickerSearchClear=document.getElementById('sticker-shelf-search-clear');
   const stickerSearchStatus=document.getElementById('sticker-shelf-search-status');
@@ -6271,7 +6273,7 @@ function setupCollectionShelf(){
   const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
   stickerPanel?.querySelectorAll('.sticker-pack-drawer').forEach(drawer=>drawer.style.setProperty('--sticker-count',String(drawer.querySelectorAll('.sticker-shelf-item').length)));
   const shelfShell=shelf.querySelector('.asset-shelf__shell');
-  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!themePanel||!stickerPanel||!shelfShell||!packs.length)return;
+  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!tileSkinsButton||!themePanel||!stickerPanel||!tileSkinsPanel||!shelfShell||!packs.length)return;
 
   let activeShelf=null;
   let activePack=null;
@@ -6398,8 +6400,10 @@ function setupCollectionShelf(){
   const syncShelfButtons=()=>{
     themeButton.classList.toggle('is-active',activeShelf==='themes');
     stickerButton.classList.toggle('is-active',activeShelf==='stickers');
+    tileSkinsButton.classList.toggle('is-active',activeShelf==='tile-skins');
     themeButton.setAttribute('aria-expanded',String(activeShelf==='themes'));
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
+    tileSkinsButton.setAttribute('aria-expanded',String(activeShelf==='tile-skins'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
   };
 
@@ -6409,7 +6413,7 @@ function setupCollectionShelf(){
     closeThemeFan();
     closeStickerPack();
     clearStickerSearch();
-    shelf.classList.remove('is-open','is-sticker-mode');
+    shelf.classList.remove('is-open','is-sticker-mode','is-tile-skins-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -6420,12 +6424,17 @@ function setupCollectionShelf(){
     closeThemeFan();
     if(type!=='stickers')closeStickerPack();
     const themes=type==='themes';
+    const stickers=type==='stickers';
+    const tileSkins=type==='tile-skins';
     themePanel.hidden=!themes;
-    stickerPanel.hidden=themes;
+    stickerPanel.hidden=!stickers;
+    tileSkinsPanel.hidden=!tileSkins;
     themePanel.classList.toggle('is-active',themes);
-    stickerPanel.classList.toggle('is-active',!themes);
-    shelf.classList.toggle('is-sticker-mode',!themes);
-    title.textContent=window.TeacherTilesI18n?.t(themes?'top.themes':'top.stickers')||(themes?'Themes':'Stickers');
+    stickerPanel.classList.toggle('is-active',stickers);
+    tileSkinsPanel.classList.toggle('is-active',tileSkins);
+    shelf.classList.toggle('is-sticker-mode',stickers);
+    shelf.classList.toggle('is-tile-skins-mode',tileSkins);
+    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Tile Skins';
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
     syncShelfButtons();
@@ -6433,6 +6442,7 @@ function setupCollectionShelf(){
 
   themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
   stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
+  tileSkinsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('tile-skins')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
@@ -6531,6 +6541,32 @@ function populateGeneratedStickerPacks(){
 
 populateGeneratedStickerPacks();
 setupCollectionShelf();
+
+function setupCustomizeLauncher(){
+  const launcher=document.getElementById('customize-launcher');
+  const toggle=document.getElementById('customize-toggle');
+  const menu=document.getElementById('customize-launch-menu');
+  if(!launcher||!toggle||!menu)return;
+  const setOpen=open=>{
+    launcher.classList.toggle('is-open',open);
+    toggle.classList.toggle('is-active',open);
+    toggle.setAttribute('aria-expanded',String(open));
+    menu.setAttribute('aria-hidden',String(!open));
+  };
+  toggle.addEventListener('click',event=>{
+    event.stopPropagation();
+    setOpen(!launcher.classList.contains('is-open'));
+  });
+  menu.addEventListener('click',()=>setOpen(false));
+  document.addEventListener('pointerdown',event=>{
+    if(event.target instanceof Node&&!launcher.contains(event.target))setOpen(false);
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&launcher.classList.contains('is-open'))setOpen(false);
+  });
+}
+
+setupCustomizeLauncher();
 
 
 
@@ -10041,9 +10077,10 @@ function setupSpinner(m){
       ctx.rotate(middle);
       const upsideDown=Math.cos(middle)<0;
       if(upsideDown)ctx.rotate(Math.PI);
-      ctx.translate(upsideDown?-labelStart:labelStart,0);
+      const labelCenter=(labelStart+labelEnd)/2;
+      ctx.translate(upsideDown?-labelCenter:labelCenter,0);
       ctx.fillStyle='#111820';
-      ctx.textAlign=upsideDown?'right':'left';
+      ctx.textAlign='center';
       ctx.textBaseline='middle';
       const maxFont=Math.max(10,Math.min(24,arc*112*.72));
       const fitted=fitLabel(name,maxFont);
