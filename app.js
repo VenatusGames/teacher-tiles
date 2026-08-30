@@ -765,6 +765,27 @@ function setupStudentView(){
     return PBIS_STUDENT_STAT_DEFINITIONS.filter(stat=>preferences[stat.id]&&(!stat.wholeClassOnly||wholeClass));
   };
 
+  const resetProfileStat=(stat,roster,name,{wholeClass=false}={})=>{
+    if(!roster?.id)return;
+    const target=wholeClass?roster.name:(String(name||'Student').trim()||'Student');
+    const scope=wholeClass?`the whole-class ${stat.label} for ${target}`:`${stat.label} for ${target}`;
+    if(!window.confirm(`Reset ${scope}? This cannot be undone.`))return;
+    if(stat.id==='stars'){
+      const progress=normalizeStarChartProgress(roster.starChart,roster.students);
+      if(wholeClass)progress.wholeClassStars=0;else progress.studentStars[starChartStudentKey(name)]=0;
+      writeClassStarChart(roster.id,progress);
+    }else if(stat.id==='meterWins'){
+      const progress=normalizeClassMeterProgress(roster.classMeter);
+      progress.wins=0;
+      writeClassMeter(roster.id,progress);
+    }else if(stat.id==='jarsFilled'){
+      const progress=normalizeCollectionProgress(roster.collectionJar);
+      progress.jarsFilled=0;
+      writeClassCollection(roster.id,progress);
+    }
+    flushPbisCloudSave();
+  };
+
   const appendStats=(container,roster,name,{compact=false,wholeClass=false}={})=>{
     container.replaceChildren();
     const stats=enabledStats({wholeClass});
@@ -783,7 +804,9 @@ function setupStudentView(){
       if(compact){item.append(icon,count)}else{
         const copy=document.createElement('span');
         const label=document.createElement('small');label.textContent=wholeClass?(stat.wholeClassDescription||stat.description):stat.description;
-        copy.append(count,label);item.append(icon,copy);
+        const reset=document.createElement('button');reset.type='button';reset.className='student-profile-stat__reset';reset.textContent='Reset';reset.disabled=Number(value)<=0;reset.setAttribute('aria-label',`Reset ${stat.label} for ${wholeClass?roster.name:name}`);
+        reset.addEventListener('click',()=>resetProfileStat(stat,roster,name,{wholeClass}));
+        copy.append(count,label);item.append(icon,copy,reset);
       }
       container.append(item);
     });
