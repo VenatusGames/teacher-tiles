@@ -12765,7 +12765,18 @@ body.dark .profile-modal__backdrop{background:rgba(0,0,0,.52)}
   line-height:1;
   white-space:nowrap;
   opacity:.78;
-  pointer-events:none;
+  pointer-events:auto;
+  cursor:pointer;
+  user-select:none;
+}
+.signed-out-save-warning:hover{
+  opacity:1;
+  border-color:color-mix(in srgb,#d93a3a 38%,var(--border));
+}
+.signed-out-save-warning:focus-visible{
+  opacity:1;
+  outline:2px solid color-mix(in srgb,#d93a3a 65%,transparent);
+  outline-offset:3px;
 }
 body.dark .signed-out-save-warning{
   box-shadow:0 5px 18px rgba(0,0,0,.18);
