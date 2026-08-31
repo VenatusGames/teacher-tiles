@@ -1665,7 +1665,7 @@ function showBoardMinimap(){
 function beginBoardMinimapDelay(){
   clearTimeout(boardMinimapShowTimer);
   clearTimeout(boardMinimapHideTimer);
-  boardMinimapShowTimer=setTimeout(showBoardMinimap,1800);
+  boardMinimapShowTimer=setTimeout(showBoardMinimap,700);
 }
 
 function scheduleBoardMinimapHide(delay=1100){
