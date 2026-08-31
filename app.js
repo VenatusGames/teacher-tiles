@@ -14592,14 +14592,24 @@ function buildBoardPreview(objects){
   let maxY=Math.max(...boxes.map(box=>box.top+box.height));
   const pad=Math.max(120,Math.max(maxX-minX,maxY-minY)*.08);
   minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;
-  const spanX=Math.max(1,maxX-minX),spanY=Math.max(1,maxY-minY);
+  let spanX=Math.max(1,maxX-minX),spanY=Math.max(1,maxY-minY);
+  const previewAspect=16/10,contentAspect=spanX/spanY;
+  if(contentAspect>previewAspect){
+    const fittedHeight=spanX/previewAspect;
+    minY-=(fittedHeight-spanY)/2;
+    spanY=fittedHeight;
+  }else{
+    const fittedWidth=spanY*previewAspect;
+    minX-=(fittedWidth-spanX)/2;
+    spanX=fittedWidth;
+  }
 
   return boxes.map(({object,left,top,width,height})=>({
     type:object.type,
     x:clamp((left-minX)/spanX,0,1),
     y:clamp((top-minY)/spanY,0,1),
-    w:clamp(width/spanX,.025,.72),
-    h:clamp(height/spanY,.025,.72),
+    w:clamp(width/spanX,.001,1),
+    h:clamp(height/spanY,.001,1),
     emoji:object.sticker?.emoji||'',
     src:object.sticker?.src&&!String(object.sticker.src).startsWith('data:')?object.sticker.src:''
   }));

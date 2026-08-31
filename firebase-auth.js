@@ -1584,15 +1584,26 @@ function layoutBoardPreviewObjects(objects) {
   minY -= pad;
   maxX += pad;
   maxY += pad;
-  const spanX = Math.max(1, maxX - minX);
-  const spanY = Math.max(1, maxY - minY);
+  let spanX = Math.max(1, maxX - minX);
+  let spanY = Math.max(1, maxY - minY);
+  const previewAspect = 16 / 10;
+  const contentAspect = spanX / spanY;
+  if (contentAspect > previewAspect) {
+    const fittedHeight = spanX / previewAspect;
+    minY -= (fittedHeight - spanY) / 2;
+    spanY = fittedHeight;
+  } else {
+    const fittedWidth = spanY * previewAspect;
+    minX -= (fittedWidth - spanX) / 2;
+    spanX = fittedWidth;
+  }
 
   return boxes.map(({ state, left, top, width, height }) => ({
     type: state.type,
     x: Math.max(0, Math.min(1, (left - minX) / spanX)),
     y: Math.max(0, Math.min(1, (top - minY) / spanY)),
-    w: Math.max(.025, Math.min(.72, width / spanX)),
-    h: Math.max(.025, Math.min(.72, height / spanY)),
+    w: Math.max(.001, Math.min(1, width / spanX)),
+    h: Math.max(.001, Math.min(1, height / spanY)),
     emoji: state.sticker?.emoji || "",
     src: state.sticker?.src || "",
     state
@@ -2023,8 +2034,8 @@ function createMiniObject(item) {
 
   const x = Math.max(0, Math.min(1, Number(item.x) || 0));
   const y = Math.max(0, Math.min(1, Number(item.y) || 0));
-  const w = Math.max(.025, Math.min(.72, Number(item.w) || .08));
-  const h = Math.max(.025, Math.min(.72, Number(item.h) || .08));
+  const w = Math.max(.001, Math.min(1, Number(item.w) || .08));
+  const h = Math.max(.001, Math.min(1, Number(item.h) || .08));
 
   el.style.left = `${x * 100}%`;
   el.style.top = `${y * 100}%`;
@@ -2070,10 +2081,9 @@ function createMiniObject(item) {
 
       requestAnimationFrame(() => {
         if (!el.isConnected || !module.isConnected) return;
-        const scaleX = el.clientWidth / originalWidth;
-        const scaleY = el.clientHeight / originalHeight;
-        if (!Number.isFinite(scaleX) || !Number.isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
-        module.style.transform = `scale(${scaleX}, ${scaleY})`;
+        const scale = Math.min(el.clientWidth / originalWidth, el.clientHeight / originalHeight);
+        if (!Number.isFinite(scale) || scale <= 0) return;
+        module.style.transform = `scale(${scale})`;
       });
       return el;
     }
