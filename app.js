@@ -6496,10 +6496,30 @@ async function fileToBoardImageData(file,{maxSide=1200,maxLength=760000,quality=
   }
 }
 
+async function boardImagePreviewData(src,{maxSide=220,maxLength=28000}={}){
+  if(typeof src!=='string'||!src.startsWith('data:image/'))return src||'';
+  try{
+    const source=new Image();
+    source.src=src;
+    await source.decode();
+    const ratio=Math.min(1,maxSide/Math.max(source.naturalWidth||1,source.naturalHeight||1));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round((source.naturalWidth||1)*ratio));
+    canvas.height=Math.max(1,Math.round((source.naturalHeight||1)*ratio));
+    canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
+    for(const quality of [.68,.56,.44]){
+      const preview=canvas.toDataURL('image/webp',quality);
+      if(preview.length<=maxLength)return preview;
+    }
+  }catch{}
+  return'';
+}
+
 function setupImage(m){
   const stage=m.querySelector('.image-stage'),img=m.querySelector('.image-display'),input=m.querySelector('.image-input'),replace=m.querySelector('.image-replace'),borderStyle=m.querySelector('.image-border-style'),borderColor=m.querySelector('.image-border-color');
   let objectUrl='';
   let boardImageSrc='';
+  let boardImagePreviewSrc='';
 
   const applyBorder=()=>{
     const style=borderStyle?.value||'none';
@@ -6540,28 +6560,39 @@ function setupImage(m){
     fileToBoardImageData(file).then(data=>{
       if(data){
         boardImageSrc=data;
-        notifyBoardChanged('image');
+        return boardImagePreviewData(data).then(preview=>{
+          boardImagePreviewSrc=preview;
+          notifyBoardChanged('image');
+        });
       }
     }).catch(()=>{});
   };
 
-  const setUrl=(url,{notify=true,fit=true}={})=>{
+  const setUrl=(url,{notify=true,fit=true,previewSrc=''}={})=>{
     if(!url)return;
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=''}
     boardImageSrc=url;
+    boardImagePreviewSrc=previewSrc||(!url.startsWith('data:image/')?url:'');
     setSrc(url,'Board image',{fit});
+    if(url.startsWith('data:image/')&&!boardImagePreviewSrc){
+      boardImagePreviewData(url).then(preview=>{
+        if(!preview)return;
+        boardImagePreviewSrc=preview;
+        notifyBoardChanged('image-preview');
+      }).catch(()=>{});
+    }
     if(notify)notifyBoardChanged('image');
   };
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
-  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d'});
+  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),previewSrc:boardImagePreviewSrc,border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d'});
   m._boardSetState=state=>{
     if(!state)return;
     if(borderStyle)borderStyle.value=['none','thin','medium','thick','double'].includes(state.border)?state.border:'none';
     if(borderColor&&/^#[0-9a-f]{6}$/i.test(state.borderColor||''))borderColor.value=state.borderColor;
     applyBorder();
-    if(state.src)setUrl(state.src,{notify:false,fit:false});
+    if(state.src)setUrl(state.src,{notify:false,fit:false,previewSrc:String(state.previewSrc||'')});
   };
 
   stage.addEventListener('click',()=>input.click());

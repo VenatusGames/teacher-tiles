@@ -721,6 +721,64 @@ function compactPreviewValue(value, depth = 0) {
   return undefined;
 }
 
+function buildPbisPreviewRoster(object) {
+  const classKeyByType = {
+    starchart: "classId",
+    classmeter: "classId",
+    collections: "classId",
+    prizeboard: "activeClassId",
+    pbisconsole: "activeClassId",
+    punchcards: "activeClassId",
+    racer: "activeClassId"
+  };
+  const classKey = classKeyByType[object?.type];
+  const classId = classKey ? String(object?.special?.[classKey] || "") : "";
+  if (!classId) return null;
+  try {
+    if (typeof readClassRosters !== "function") return null;
+    const roster = readClassRosters().find(item => item?.id === classId);
+    if (!roster) return null;
+    const selected = String(object.special?.student || object.special?.selectedStudent || "");
+    const students = [...new Set([...(roster.students || []).slice(0, 10), selected].filter(Boolean))];
+    const keys = students.map(name => `student:${String(name).trim().toLocaleLowerCase()}`);
+    const selectValues = source => Object.fromEntries(keys.map(key => [key, source?.[key]]).filter(([, value]) => value !== undefined));
+    return {
+      id: String(roster.id || classId),
+      name: String(roster.name || "Class").slice(0, 50),
+      logo: String(roster.logo || "👥").slice(0, 12),
+      students,
+      starChart: {
+        mode: roster.starChart?.mode === "whole" ? "whole" : "student",
+        wholeClassStars: Number(roster.starChart?.wholeClassStars) || 0,
+        studentStars: selectValues(roster.starChart?.studentStars)
+      },
+      classMeter: {
+        fill: Number(roster.classMeter?.fill) || 0,
+        wins: Number(roster.classMeter?.wins) || 0
+      },
+      collectionJar: {
+        count: Number(roster.collectionJar?.count) || 0,
+        jarsFilled: Number(roster.collectionJar?.jarsFilled) || 0,
+        filled: Boolean(roster.collectionJar?.filled),
+        item: String(roster.collectionJar?.item || "pompom")
+      },
+      punchcards: {
+        wholeClassPoints: Number(roster.punchcards?.wholeClassPoints) || 0,
+        wholeClassProgress: Number(roster.punchcards?.wholeClassProgress) || 0,
+        studentPoints: selectValues(roster.punchcards?.studentPoints),
+        studentProgress: selectValues(roster.punchcards?.studentProgress)
+      },
+      racer: {
+        positions: selectValues(roster.racer?.positions),
+        studentWins: selectValues(roster.racer?.studentWins),
+        finished: selectValues(roster.racer?.finished)
+      }
+    };
+  } catch {
+    return null;
+  }
+}
+
 function compactPreviewObject(object) {
   const preview = {
     id: object.id,
@@ -736,6 +794,44 @@ function compactPreviewObject(object) {
 
   const special = compactPreviewValue(object.special);
   if (special !== undefined && byteLength(special) <= 4200) preview.special = special;
+
+  const pbisPreviewKeys = {
+    starchart: ["classId", "showAllStudents", "collapsedHeight"],
+    classmeter: ["classId", "orientation"],
+    collections: ["classId"],
+    prizeboard: ["activeClassId", "scope"],
+    pbisconsole: ["activeClassId", "student", "view"],
+    punchcards: ["activeClassId", "scope", "student"],
+    racer: ["activeClassId", "selectedStudent"]
+  };
+  const selectedPbisKeys = pbisPreviewKeys[object.type];
+  if (selectedPbisKeys && object.special && typeof object.special === "object") {
+    if (!preview.special || typeof preview.special !== "object") preview.special = {};
+    for (const key of selectedPbisKeys) {
+      const value = compactPreviewValue(object.special[key]);
+      if (value !== undefined) preview.special[key] = value;
+    }
+    if (object.type === "prizeboard" && Array.isArray(object.special.prizes)) {
+      preview.special.prizes = object.special.prizes.slice(0, 8).map(prize => ({
+        title: String(prize?.title || "").slice(0, 80),
+        cost: Number(prize?.cost) || 0,
+        scope: prize?.scope === "class" ? "class" : "student",
+        image: /^(?:https?:|assets\/|\.\/|\.\.\/)/i.test(String(prize?.image || "")) ? String(prize.image) : ""
+      }));
+    }
+    const previewRoster = buildPbisPreviewRoster(object);
+    if (previewRoster) preview.special.previewRoster = previewRoster;
+  }
+  if (object.type === "image" && typeof object.special?.previewSrc === "string") {
+    const previewSrc = object.special.previewSrc;
+    const safePreviewSrc = /^data:image\//i.test(previewSrc) && previewSrc.length <= 32000
+      ? previewSrc
+      : (/^(?:https?:|assets\/|\.\/|\.\.\/)/i.test(previewSrc) ? previewSrc : "");
+    if (safePreviewSrc) {
+      if (!preview.special || typeof preview.special !== "object") preview.special = {};
+      preview.special.previewSrc = safePreviewSrc;
+    }
+  }
   const timer = compactPreviewValue(object.timer);
   if (timer !== undefined && byteLength(timer) <= 1800) preview.timer = timer;
   return cleanFirestoreValue(preview);
@@ -1509,8 +1605,245 @@ function plainTextFromSavedHtml(html = "") {
   return template.content.textContent || "";
 }
 
+const PBIS_PREVIEW_SHELLS = {
+  starchart: ["starchart", "classId"],
+  classmeter: ["classmeter", "classId"],
+  collections: ["collection", "classId"],
+  prizeboard: ["prizeboard", "activeClassId"],
+  pbisconsole: ["pbisconsole", "activeClassId"],
+  punchcards: ["punchcard", "activeClassId"],
+  racer: ["racer", "activeClassId"]
+};
+
+function previewStudentKey(name = "") {
+  return `student:${String(name).trim().toLocaleLowerCase()}`;
+}
+
+function previewCount(value, max = 9999) {
+  return Math.max(0, Math.min(max, Math.round(Number(value) || 0)));
+}
+
+function previewRosterForState(state, special) {
+  const config = PBIS_PREVIEW_SHELLS[state?.type];
+  if (!config) return null;
+  const classId = String(special?.[config[1]] || "");
+  if (!classId) return null;
+  if (special?.previewRoster && typeof special.previewRoster === "object") return special.previewRoster;
+  try {
+    if (typeof readClassRosters !== "function") return null;
+    return readClassRosters().find(item => item?.id === classId) || null;
+  } catch {
+    return null;
+  }
+}
+
+function setPreviewText(module, selector, value) {
+  const element = module.querySelector(selector);
+  if (element) element.textContent = String(value ?? "");
+}
+
+function applyPbisPreviewState(module, state, special) {
+  const config = PBIS_PREVIEW_SHELLS[state?.type];
+  if (!config) return;
+  const roster = previewRosterForState(state, special);
+  if (!roster) return;
+  const prefix = config[0];
+  const importView = module.querySelector(`.${prefix}-import`);
+  const dashboard = module.querySelector(`.${prefix}-dashboard`);
+  if (importView) importView.hidden = true;
+  if (dashboard) dashboard.hidden = false;
+  setPreviewText(module, `.${prefix}-class-name`, roster.name || "Class");
+  setPreviewText(module, `.${prefix}-class-logo`, roster.logo || "👥");
+
+  if (state.type === "classmeter") {
+    const fill = Math.max(0, Math.min(100, Number(roster.classMeter?.fill) || 0));
+    const wins = previewCount(roster.classMeter?.wins);
+    module.dataset.orientation = special?.orientation === "horizontal" ? "horizontal" : "vertical";
+    module.style.setProperty("--classmeter-fill", `${fill}%`);
+    module.classList.toggle("has-meter-fill", fill > 0);
+    setPreviewText(module, ".classmeter-percent", `${Math.round(fill)}%`);
+    setPreviewText(module, ".classmeter-win-count b", wins);
+    module.querySelector(".classmeter-meter")?.setAttribute("aria-valuenow", String(Math.round(fill)));
+  }
+
+  if (state.type === "starchart") {
+    const progress = roster.starChart || {};
+    const whole = progress.mode === "whole";
+    module.querySelectorAll("[data-starchart-mode]").forEach(button => {
+      button.classList.toggle("is-active", button.dataset.starchartMode === (whole ? "whole" : "student"));
+    });
+    const studentView = module.querySelector(".starchart-student-view");
+    const wholeView = module.querySelector(".starchart-whole-view");
+    if (studentView) studentView.hidden = whole;
+    if (wholeView) wholeView.hidden = !whole;
+    setPreviewText(module, ".starchart-whole-class-name", roster.name || "Class");
+    setPreviewText(module, ".starchart-whole-badge", roster.logo || "★");
+    setPreviewText(module, ".starchart-whole-count b", previewCount(progress.wholeClassStars));
+    const bundles = module.querySelector(".starchart-whole-bundles");
+    if (bundles) bundles.textContent = "★".repeat(Math.min(12, previewCount(progress.wholeClassStars)));
+    const grid = module.querySelector(".starchart-student-grid");
+    if (grid) {
+      grid.replaceChildren();
+      for (const name of (roster.students || []).slice(0, 12)) {
+        const count = previewCount(progress.studentStars?.[previewStudentKey(name)]);
+        const row = document.createElement("article");
+        row.className = "starchart-student-row";
+        const main = document.createElement("div");
+        main.className = "starchart-student-row__main";
+        const identity = document.createElement("div");
+        identity.className = "starchart-student-name";
+        const label = document.createElement("strong");
+        label.textContent = name;
+        const total = document.createElement("span");
+        total.textContent = `${count} ${count === 1 ? "star" : "stars"}`;
+        const stars = document.createElement("div");
+        stars.className = "starchart-star-stage";
+        stars.textContent = count ? `${"★".repeat(Math.min(8, count))}${count > 8 ? ` +${count - 8}` : ""}` : "No stars yet";
+        identity.append(label, total);
+        main.append(identity, stars);
+        row.append(main);
+        grid.append(row);
+      }
+      grid.hidden = !(roster.students || []).length;
+    }
+    const noStudents = module.querySelector(".starchart-no-students");
+    if (noStudents) noStudents.hidden = Boolean((roster.students || []).length);
+  }
+
+  if (state.type === "collections") {
+    const progress = roster.collectionJar || {};
+    const count = previewCount(progress.count, 80);
+    const icons = { pompom: "●", candy: "🍬", star: "★", jellybean: "◉", fruit: "🍎", coin: "●" };
+    setPreviewText(module, ".collection-count", `${count} item${count === 1 ? "" : "s"}`);
+    setPreviewText(module, ".collection-jars-filled", previewCount(progress.jarsFilled));
+    setPreviewText(module, ".collection-type-label", String(progress.item || "pompom").replace(/^./, letter => letter.toUpperCase()));
+    module.classList.toggle("is-collection-filled", Boolean(progress.filled));
+    const filledBanner = module.querySelector(".collection-filled-banner");
+    if (filledBanner) filledBanner.hidden = !progress.filled;
+    const stage = module.querySelector(".collection-stage");
+    if (stage) {
+      const visual = document.createElement("div");
+      visual.className = "collection-preview-state";
+      visual.textContent = `${icons[progress.item] || "●"} ${count}`;
+      visual.style.cssText = "position:absolute;inset:15% 20%;z-index:3;display:grid;place-items:center;border:3px solid rgba(83,126,173,.32);border-radius:28% 28% 42% 42%;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(85,156,220,.16));font-size:clamp(28px,12cqw,72px);font-weight:950;color:#4d91df";
+      stage.append(visual);
+    }
+  }
+
+  if (state.type === "punchcards") {
+    const progress = roster.punchcards || {};
+    const scope = special?.scope === "class" ? "class" : "student";
+    const student = (roster.students || []).includes(special?.student) ? special.student : (roster.students?.[0] || "");
+    const key = previewStudentKey(student);
+    const punched = scope === "class" ? previewCount(progress.wholeClassProgress, 9) : previewCount(progress.studentProgress?.[key], 9);
+    const points = scope === "class" ? previewCount(progress.wholeClassPoints) : previewCount(progress.studentPoints?.[key]);
+    module.querySelectorAll("[data-punchcard-scope]").forEach(tab => tab.classList.toggle("is-active", tab.dataset.punchcardScope === scope));
+    const studentWrap = module.querySelector(".punchcard-student-wrap");
+    if (studentWrap) studentWrap.hidden = scope === "class";
+    setPreviewText(module, ".punchcard-name", scope === "class" ? roster.name : (student || "Student"));
+    setPreviewText(module, ".punchcard-type", scope === "class" ? "WHOLE CLASS PUNCHCARD" : "STUDENT PUNCHCARD");
+    setPreviewText(module, ".punchcard-points-value", points);
+    const holes = module.querySelector(".punchcard-holes");
+    if (holes) {
+      holes.replaceChildren();
+      for (let index = 0; index < 10; index++) {
+        const hole = document.createElement("span");
+        hole.className = `punchcard-hole${index < punched ? " is-punched" : ""}`;
+        holes.append(hole);
+      }
+    }
+  }
+
+  if (state.type === "racer") {
+    const progress = roster.racer || {};
+    const standees = module.querySelector(".racer-standees");
+    if (standees) {
+      standees.replaceChildren();
+      for (const [index, name] of (roster.students || []).slice(0, 10).entries()) {
+        const key = previewStudentKey(name);
+        const percent = Math.max(0, Math.min(100, Number(progress.positions?.[key]) || 0));
+        const t = percent / 100;
+        const standee = document.createElement("span");
+        standee.className = `racer-standee is-ready${progress.finished?.[key] ? " is-finished" : ""}`;
+        standee.style.left = `${6 + t * 88}%`;
+        standee.style.top = `${54 - 40 * t * (1 - t)}%`;
+        standee.style.zIndex = String(20 + index % 6);
+        standee.style.setProperty("--racer-hue", String((index * 47 + 195) % 360));
+        const character = document.createElement("span");
+        character.className = "racer-character";
+        const label = document.createElement("strong");
+        label.textContent = name;
+        character.append(label);
+        standee.append(character);
+        standees.append(standee);
+      }
+    }
+    const finishers = (roster.students || []).filter(name => progress.finished?.[previewStudentKey(name)]).length;
+    setPreviewText(module, ".racer-status", finishers ? `${finishers} ${finishers === 1 ? "finisher" : "finishers"}` : "Race in progress");
+  }
+
+  if (state.type === "pbisconsole") {
+    const view = special?.view === "class" ? "class" : "students";
+    const student = (roster.students || []).includes(special?.student) ? special.student : (roster.students?.[0] || "");
+    module.querySelectorAll("[data-pbisconsole-view]").forEach(tab => tab.classList.toggle("is-active", tab.dataset.pbisconsoleView === view));
+    const toolbar = module.querySelector(".pbisconsole-student-toolbar");
+    if (toolbar) toolbar.hidden = view === "class";
+    const key = previewStudentKey(student);
+    const definitions = view === "class"
+      ? [["★", "Whole-class Stars", roster.starChart?.wholeClassStars], ["🏆", "Meter Wins", roster.classMeter?.wins], ["🫙", "Jars Filled", roster.collectionJar?.jarsFilled], ["💧", "Meter Fill", `${Math.round(Number(roster.classMeter?.fill) || 0)}%`]]
+      : [["★", "Student Stars", roster.starChart?.studentStars?.[key]], ["●", "Punchcard Points", roster.punchcards?.studentPoints?.[key]], ["🏁", "Race Wins", roster.racer?.studentWins?.[key]]];
+    const stats = module.querySelector(".pbisconsole-stats");
+    if (stats) {
+      stats.replaceChildren();
+      for (const [icon, label, rawValue] of definitions) {
+        const row = document.createElement("section");
+        row.className = "pbisconsole-stat";
+        row.innerHTML = `<div class="pbisconsole-stat-copy"><span>${icon}</span><div><strong></strong><small></small></div></div><div class="pbisconsole-stat-value"><strong></strong></div>`;
+        row.querySelector(".pbisconsole-stat-copy strong").textContent = label;
+        row.querySelector(".pbisconsole-stat-copy small").textContent = view === "class" ? "Whole class" : (student || "Student");
+        row.querySelector(".pbisconsole-stat-value strong").textContent = typeof rawValue === "string" ? rawValue : String(previewCount(rawValue));
+        stats.append(row);
+      }
+    }
+  }
+
+  if (state.type === "prizeboard") {
+    const scope = special?.scope === "class" ? "class" : "student";
+    module.querySelectorAll("[data-prize-scope]").forEach(tab => tab.classList.toggle("is-active", tab.dataset.prizeScope === scope));
+    const grid = module.querySelector(".prizeboard-grid");
+    if (grid) {
+      grid.replaceChildren();
+      const prizes = (Array.isArray(special?.prizes) ? special.prizes : []).filter(prize => prize?.scope === scope).slice(0, 8);
+      if (!prizes.length) {
+        const empty = document.createElement("div");
+        empty.className = "prizeboard-empty";
+        empty.innerHTML = `<span>${scope === "class" ? "🎉" : "🎁"}</span><strong>No prizes yet</strong>`;
+        grid.append(empty);
+      }
+      for (const prize of prizes) {
+        const card = document.createElement("article");
+        card.className = "prize-card";
+        const image = document.createElement("img");
+        image.alt = "";
+        if (prize.image) image.src = prize.image;
+        const copy = document.createElement("span");
+        copy.className = "prize-card-copy";
+        const title = document.createElement("strong");
+        title.textContent = prize.title || "Prize";
+        const cost = document.createElement("span");
+        cost.className = "prize-card-cost";
+        cost.textContent = String(previewCount(prize.cost));
+        copy.append(title);
+        card.append(image, copy, cost);
+        grid.append(card);
+      }
+    }
+  }
+}
+
 function applyPreviewState(module, state) {
   if (!module || !state) return;
+  const special = state.special && typeof state.special === "object" ? state.special : null;
 
   for (const element of module.querySelectorAll("[id]")) element.removeAttribute("id");
   module.removeAttribute("id");
@@ -1612,7 +1945,20 @@ function applyPreviewState(module, state) {
     editable.removeAttribute("contenteditable");
   }
 
-  const special = state.special && typeof state.special === "object" ? state.special : null;
+  if (state.type === "image" && special) {
+    const image = module.querySelector(".image-display");
+    const src = String(special.previewSrc || special.src || "");
+    if (image && src) {
+      image.src = src;
+      image.alt = "";
+      image.hidden = false;
+      module.classList.add("has-image");
+    }
+    module.dataset.imageBorder = ["none", "thin", "medium", "thick", "double"].includes(special.border) ? special.border : "none";
+    if (/^#[0-9a-f]{6}$/i.test(special.borderColor || "")) module.style.setProperty("--image-border-color", special.borderColor);
+  }
+
+  applyPbisPreviewState(module, state, special);
   if (state.type === "progressbar" && special) {
     const applyIcon = (selector, src) => {
       const slot = module.querySelector(selector);
@@ -1690,14 +2036,13 @@ function createMiniObject(item) {
     const src = state?.sticker?.src || item.src || "";
     if (emoji) {
       el.textContent = emoji;
-      if (state?.transform?.rotation) el.style.transform = `rotate(${Number(state.transform.rotation) || 0}deg)`;
     } else if (src && !String(src).startsWith("data:")) {
       const image = document.createElement("img");
       image.src = src;
       image.alt = "";
       el.appendChild(image);
-      if (state?.transform?.rotation) image.style.transform = `rotate(${Number(state.transform.rotation) || 0}deg)`;
     }
+    if (state?.transform?.rotation) el.style.transform = `rotate(${Number(state.transform.rotation) || 0}deg)`;
     return el;
   }
 

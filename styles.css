@@ -12993,6 +12993,8 @@ body.dark .signed-out-save-warning{
   box-shadow:none;
   font-size:clamp(9px,1.35vw,20px);
   line-height:1;
+  overflow:visible;
+  transform-origin:center;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));
 }
 .board-mini-object.is-sticker img{width:100%;height:100%;object-fit:contain}
