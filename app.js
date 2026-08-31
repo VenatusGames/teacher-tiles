@@ -1116,6 +1116,95 @@ function playUiSfx(kind='click'){
   }catch{}
 }
 
+let classMeterFillAudioContext=null;
+let classMeterFillNoiseBuffer=null;
+function startClassMeterFillSfx(){
+  if(appPreferences.uiMuted||Number(appPreferences.uiVolume)<=0)return()=>{};
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return()=>{};
+  try{
+    if(!classMeterFillAudioContext||classMeterFillAudioContext.state==='closed'){
+      classMeterFillAudioContext=new AudioContextClass();
+      classMeterFillNoiseBuffer=null;
+    }
+    const ctx=classMeterFillAudioContext;
+    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+    if(!classMeterFillNoiseBuffer){
+      const length=Math.max(1,Math.round(ctx.sampleRate*2));
+      classMeterFillNoiseBuffer=ctx.createBuffer(1,length,ctx.sampleRate);
+      const samples=classMeterFillNoiseBuffer.getChannelData(0);
+      let smoothed=0;
+      for(let i=0;i<length;i++){
+        smoothed=(smoothed+(Math.random()*2-1)*.19)/1.17;
+        samples[i]=smoothed*2.4;
+      }
+    }
+
+    const now=ctx.currentTime;
+    const volume=clamp(Number(appPreferences.uiVolume)/100,0,1);
+    const output=ctx.createGain();
+    output.gain.setValueAtTime(0,now);
+    output.gain.linearRampToValueAtTime(.105*volume,now+.07);
+    output.connect(ctx.destination);
+
+    const pour=ctx.createBufferSource();
+    pour.buffer=classMeterFillNoiseBuffer;
+    pour.loop=true;
+    const body=ctx.createBiquadFilter();
+    body.type='bandpass';
+    body.frequency.value=720;
+    body.Q.value=.55;
+    const soften=ctx.createBiquadFilter();
+    soften.type='lowpass';
+    soften.frequency.value=2100;
+    soften.Q.value=.7;
+    pour.connect(body).connect(soften).connect(output);
+
+    const ripple=ctx.createOscillator();
+    const rippleGain=ctx.createGain();
+    ripple.type='sine';
+    ripple.frequency.value=92;
+    rippleGain.gain.value=.075;
+    ripple.connect(rippleGain).connect(output);
+
+    let stopped=false;
+    const makeBubble=()=>{
+      if(stopped||ctx.state==='closed')return;
+      const at=ctx.currentTime;
+      const bubble=ctx.createOscillator();
+      const bubbleGain=ctx.createGain();
+      bubble.type='sine';
+      const startFrequency=180+Math.random()*170;
+      bubble.frequency.setValueAtTime(startFrequency,at);
+      bubble.frequency.exponentialRampToValueAtTime(startFrequency*1.7,at+.11);
+      bubbleGain.gain.setValueAtTime(0,at);
+      bubbleGain.gain.linearRampToValueAtTime(.09,at+.018);
+      bubbleGain.gain.exponentialRampToValueAtTime(.001,at+.13);
+      bubble.connect(bubbleGain).connect(output);
+      bubble.start(at);
+      bubble.stop(at+.14);
+    };
+
+    pour.start(now);
+    ripple.start(now);
+    makeBubble();
+    const bubbleTimer=window.setInterval(makeBubble,190);
+    return()=>{
+      if(stopped)return;
+      stopped=true;
+      clearInterval(bubbleTimer);
+      const at=ctx.currentTime;
+      output.gain.cancelScheduledValues(at);
+      output.gain.setValueAtTime(output.gain.value,at);
+      output.gain.linearRampToValueAtTime(0,at+.12);
+      try{pour.stop(at+.14);ripple.stop(at+.14)}catch{}
+      window.setTimeout(()=>{try{pour.disconnect();body.disconnect();soften.disconnect();ripple.disconnect();rippleGain.disconnect();output.disconnect()}catch{}},180);
+    };
+  }catch{
+    return()=>{};
+  }
+}
+
 document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
@@ -4153,6 +4242,7 @@ function setupClassMeter(m){
   let lastFrameAt=0;
   let celebrationTimer=0;
   let celebrating=false;
+  let stopFillSfx=null;
 
   const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
   const renderProgress=()=>{
@@ -4209,6 +4299,8 @@ function setupClassMeter(m){
   };
 
   const stopHolding=({persist=true}={})=>{
+    stopFillSfx?.();
+    stopFillSfx=null;
     if(!holding)return;
     holding=false;
     m.classList.remove('is-meter-filling');
@@ -4253,6 +4345,7 @@ function setupClassMeter(m){
     holding=true;
     lastFrameAt=performance.now();
     m.classList.add('is-meter-filling');
+    stopFillSfx=startClassMeterFillSfx();
     holdFrame=requestAnimationFrame(fillTick);
   };
 
