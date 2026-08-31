@@ -1116,89 +1116,41 @@ function playUiSfx(kind='click'){
   }catch{}
 }
 
-let classMeterFillAudioContext=null;
-let classMeterFillNoiseBuffer=null;
+const classMeterFillSfxPrototype=new Audio('assets/ui/class-meter-fill.wav');
+classMeterFillSfxPrototype.preload='auto';
 function startClassMeterFillSfx(){
   if(appPreferences.uiMuted||Number(appPreferences.uiVolume)<=0)return()=>{};
-  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-  if(!AudioContextClass)return()=>{};
   try{
-    if(!classMeterFillAudioContext||classMeterFillAudioContext.state==='closed'){
-      classMeterFillAudioContext=new AudioContextClass();
-      classMeterFillNoiseBuffer=null;
-    }
-    const ctx=classMeterFillAudioContext;
-    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-    if(!classMeterFillNoiseBuffer){
-      const length=Math.max(1,Math.round(ctx.sampleRate*2));
-      classMeterFillNoiseBuffer=ctx.createBuffer(1,length,ctx.sampleRate);
-      const samples=classMeterFillNoiseBuffer.getChannelData(0);
-      let smoothed=0;
-      for(let i=0;i<length;i++){
-        smoothed=(smoothed+(Math.random()*2-1)*.19)/1.17;
-        samples[i]=smoothed*2.4;
-      }
-    }
-
-    const now=ctx.currentTime;
-    const volume=clamp(Number(appPreferences.uiVolume)/100,0,1);
-    const output=ctx.createGain();
-    output.gain.setValueAtTime(0,now);
-    output.gain.linearRampToValueAtTime(.105*volume,now+.07);
-    output.connect(ctx.destination);
-
-    const pour=ctx.createBufferSource();
-    pour.buffer=classMeterFillNoiseBuffer;
-    pour.loop=true;
-    const body=ctx.createBiquadFilter();
-    body.type='bandpass';
-    body.frequency.value=720;
-    body.Q.value=.55;
-    const soften=ctx.createBiquadFilter();
-    soften.type='lowpass';
-    soften.frequency.value=2100;
-    soften.Q.value=.7;
-    pour.connect(body).connect(soften).connect(output);
-
-    const ripple=ctx.createOscillator();
-    const rippleGain=ctx.createGain();
-    ripple.type='sine';
-    ripple.frequency.value=92;
-    rippleGain.gain.value=.075;
-    ripple.connect(rippleGain).connect(output);
-
+    const sound=classMeterFillSfxPrototype.cloneNode();
+    const targetVolume=clamp(.34*(Number(appPreferences.uiVolume)/100),0,1);
+    const fadeDuration=180;
+    let fadeFrame=0;
     let stopped=false;
-    const makeBubble=()=>{
-      if(stopped||ctx.state==='closed')return;
-      const at=ctx.currentTime;
-      const bubble=ctx.createOscillator();
-      const bubbleGain=ctx.createGain();
-      bubble.type='sine';
-      const startFrequency=180+Math.random()*170;
-      bubble.frequency.setValueAtTime(startFrequency,at);
-      bubble.frequency.exponentialRampToValueAtTime(startFrequency*1.7,at+.11);
-      bubbleGain.gain.setValueAtTime(0,at);
-      bubbleGain.gain.linearRampToValueAtTime(.09,at+.018);
-      bubbleGain.gain.exponentialRampToValueAtTime(.001,at+.13);
-      bubble.connect(bubbleGain).connect(output);
-      bubble.start(at);
-      bubble.stop(at+.14);
+    sound.volume=0;
+    sound.currentTime=0;
+    sound.loop=false;
+
+    const fade=(from,to,duration,onDone)=>{
+      if(fadeFrame)cancelAnimationFrame(fadeFrame);
+      const startedAt=performance.now();
+      const tick=now=>{
+        const progress=clamp((now-startedAt)/duration,0,1);
+        const eased=progress*progress*(3-2*progress);
+        sound.volume=clamp(from+(to-from)*eased,0,1);
+        if(progress<1)fadeFrame=requestAnimationFrame(tick);
+        else{fadeFrame=0;onDone?.()}
+      };
+      fadeFrame=requestAnimationFrame(tick);
     };
 
-    pour.start(now);
-    ripple.start(now);
-    makeBubble();
-    const bubbleTimer=window.setInterval(makeBubble,190);
+    sound.play().then(()=>{
+      if(stopped){sound.pause();sound.currentTime=0;return}
+      fade(0,targetVolume,fadeDuration);
+    }).catch(()=>{});
     return()=>{
       if(stopped)return;
       stopped=true;
-      clearInterval(bubbleTimer);
-      const at=ctx.currentTime;
-      output.gain.cancelScheduledValues(at);
-      output.gain.setValueAtTime(output.gain.value,at);
-      output.gain.linearRampToValueAtTime(0,at+.12);
-      try{pour.stop(at+.14);ripple.stop(at+.14)}catch{}
-      window.setTimeout(()=>{try{pour.disconnect();body.disconnect();soften.disconnect();ripple.disconnect();rippleGain.disconnect();output.disconnect()}catch{}},180);
+      fade(sound.volume,0,240,()=>{sound.pause();sound.currentTime=0});
     };
   }catch{
     return()=>{};
@@ -1230,9 +1182,15 @@ document.addEventListener('change',e=>{
 // Keyboard focus is preserved so the same controls remain accessible to tab users.
 let lastUiInteractionWasKeyboard=false;
 document.addEventListener('keydown',event=>{
-  if(event.key==='Tab'||event.key==='Enter'||event.key===' ')lastUiInteractionWasKeyboard=true;
+  if(event.key==='Tab'||event.key==='Enter'||event.key===' '){
+    lastUiInteractionWasKeyboard=true;
+    document.body.classList.add('is-keyboard-navigation');
+  }
 },true);
-document.addEventListener('pointerdown',()=>{lastUiInteractionWasKeyboard=false},true);
+document.addEventListener('pointerdown',()=>{
+  lastUiInteractionWasKeyboard=false;
+  document.body.classList.remove('is-keyboard-navigation');
+},true);
 document.addEventListener('pointerup',event=>{
   if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
   const control=event.target.closest('.customization-bar button,.lunchcount-inline-actions button');
@@ -1637,10 +1595,120 @@ const BOARD_MIN_ZOOM=.35;
 const BOARD_MAX_ZOOM=1.8;
 const BOARD_OVERSCROLL=120;
 const zoomIndicator=document.getElementById('zoom-indicator');
+const boardMinimap=document.getElementById('board-minimap');
+const boardMinimapCanvas=document.getElementById('board-minimap-canvas');
 let zoomIndicatorTimer=0;
 let boardZoomIntentPercent=100;
 let boardZoomWheelAt=0;
 let boardZoomPrecision=false;
+let boardMinimapShowTimer=0;
+let boardMinimapHideTimer=0;
+let boardMinimapFrame=0;
+
+function drawBoardMinimap(){
+  boardMinimapFrame=0;
+  if(!boardMinimap?.classList.contains('is-visible')||!boardMinimapCanvas)return;
+  const ctx=boardMinimapCanvas.getContext('2d');
+  if(!ctx)return;
+  const width=boardMinimapCanvas.width,height=boardMinimapCanvas.height,pad=12;
+  const scale=Math.min((width-pad*2)/BOARD_WIDTH,(height-pad*2)/BOARD_HEIGHT);
+  const boardWidth=BOARD_WIDTH*scale,boardHeight=BOARD_HEIGHT*scale;
+  const ox=(width-boardWidth)/2,oy=(height-boardHeight)/2;
+  const bodyStyle=getComputedStyle(document.body);
+  const background=bodyStyle.getPropertyValue('--bg').trim()||'#edf1f5';
+  const surface=bodyStyle.getPropertyValue('--surface-solid').trim()||'#ffffff';
+  const accent=bodyStyle.getPropertyValue('--accent').trim()||'#4c8ed9';
+  const text=bodyStyle.getPropertyValue('--text').trim()||'#17191d';
+  ctx.clearRect(0,0,width,height);
+  ctx.fillStyle=surface;ctx.fillRect(0,0,width,height);
+  ctx.fillStyle=background;ctx.fillRect(ox,oy,boardWidth,boardHeight);
+
+  for(const module of workspace.querySelectorAll('.module')){
+    const left=Number.parseFloat(module.style.left)||module.offsetLeft;
+    const top=Number.parseFloat(module.style.top)||module.offsetTop;
+    const moduleWidth=Number.parseFloat(module.style.width)||module.offsetWidth;
+    const moduleHeight=Number.parseFloat(module.style.height)||module.offsetHeight;
+    ctx.globalAlpha=module.dataset.type==='sticker'?.62:.82;
+    ctx.fillStyle=module.dataset.type==='sticker'?'#f2b84b':accent;
+    ctx.fillRect(ox+left*scale,oy+top*scale,Math.max(3,moduleWidth*scale),Math.max(3,moduleHeight*scale));
+  }
+  ctx.globalAlpha=1;
+
+  const bounds=visibleBoardBounds();
+  const left=clamp(bounds.left,0,BOARD_WIDTH);
+  const top=clamp(bounds.top,0,BOARD_HEIGHT);
+  const right=clamp(bounds.right,0,BOARD_WIDTH);
+  const bottom=clamp(bounds.bottom,0,BOARD_HEIGHT);
+  ctx.fillStyle='rgba(255,255,255,.13)';
+  ctx.strokeStyle=text;
+  ctx.lineWidth=4;
+  ctx.fillRect(ox+left*scale,oy+top*scale,Math.max(8,(right-left)*scale),Math.max(8,(bottom-top)*scale));
+  ctx.strokeRect(ox+left*scale,oy+top*scale,Math.max(8,(right-left)*scale),Math.max(8,(bottom-top)*scale));
+  ctx.strokeStyle='rgba(255,255,255,.62)';
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(ox+left*scale+2,oy+top*scale+2,Math.max(4,(right-left)*scale-4),Math.max(4,(bottom-top)*scale-4));
+}
+
+function requestBoardMinimapDraw(){
+  if(boardMinimapFrame||!boardMinimap?.classList.contains('is-visible'))return;
+  boardMinimapFrame=requestAnimationFrame(drawBoardMinimap);
+}
+
+function showBoardMinimap(){
+  if(!boardMinimap)return;
+  clearTimeout(boardMinimapHideTimer);
+  boardMinimap.classList.add('is-visible');
+  boardMinimap.setAttribute('aria-hidden','false');
+  requestBoardMinimapDraw();
+}
+
+function beginBoardMinimapDelay(){
+  clearTimeout(boardMinimapShowTimer);
+  clearTimeout(boardMinimapHideTimer);
+  boardMinimapShowTimer=setTimeout(showBoardMinimap,1800);
+}
+
+function scheduleBoardMinimapHide(delay=1100){
+  clearTimeout(boardMinimapShowTimer);
+  clearTimeout(boardMinimapHideTimer);
+  boardMinimapShowTimer=0;
+  boardMinimapHideTimer=setTimeout(()=>{
+    boardMinimap?.classList.remove('is-visible');
+    boardMinimap?.setAttribute('aria-hidden','true');
+  },delay);
+}
+
+function centerBoardFromMinimapPointer(event){
+  if(!boardMinimapCanvas)return;
+  const rect=boardMinimapCanvas.getBoundingClientRect();
+  const canvasX=(event.clientX-rect.left)/rect.width*boardMinimapCanvas.width;
+  const canvasY=(event.clientY-rect.top)/rect.height*boardMinimapCanvas.height;
+  const x=clamp((canvasX-12)/(boardMinimapCanvas.width-24),0,1)*BOARD_WIDTH;
+  const y=clamp((canvasY-12)/(boardMinimapCanvas.height-24),0,1)*BOARD_HEIGHT;
+  boardCamera.x=innerWidth/2-x*boardCamera.scale;
+  boardCamera.y=innerHeight/2-y*boardCamera.scale;
+  applyBoardCamera();
+}
+
+boardMinimapCanvas?.addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;
+  event.preventDefault();
+  clearTimeout(boardMinimapHideTimer);
+  boardMinimap?.classList.add('is-dragging');
+  boardMinimapCanvas.setPointerCapture(event.pointerId);
+  centerBoardFromMinimapPointer(event);
+  const move=next=>centerBoardFromMinimapPointer(next);
+  const end=()=>{
+    boardMinimap?.classList.remove('is-dragging');
+    boardMinimapCanvas.removeEventListener('pointermove',move);
+    boardMinimapCanvas.removeEventListener('pointerup',end);
+    boardMinimapCanvas.removeEventListener('pointercancel',end);
+    scheduleBoardMinimapHide(1300);
+  };
+  boardMinimapCanvas.addEventListener('pointermove',move);
+  boardMinimapCanvas.addEventListener('pointerup',end);
+  boardMinimapCanvas.addEventListener('pointercancel',end);
+});
 
 function showZoomIndicator(scale=boardCamera.scale,{precise=boardZoomPrecision}={}){
   if(!zoomIndicator)return;
@@ -1678,6 +1746,7 @@ function applyBoardCamera(){
   workspace.style.transform=`translate3d(${boardCamera.x}px,${boardCamera.y}px,0) scale(${boardCamera.scale})`;
   workspace.style.setProperty('--board-zoom',boardCamera.scale);
   requestAnimationFrame(()=>updateWorkspaceEmptyState());
+  requestBoardMinimapDraw();
   notifyBoardChanged('camera');
 }
 function screenToBoard(clientX,clientY){
@@ -1740,19 +1809,41 @@ window.addEventListener('blur',()=>{
   zoomIndicator?.classList.remove('is-precise','is-visible');
 });
 
+window.addEventListener('keydown',event=>{
+  if(event.code!=='Space'||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
+  const target=event.target instanceof Element?event.target:null;
+  if(isTypingTarget(target)||isTypingTarget(document.activeElement))return;
+  if(target?.closest('.module'))return;
+  const interactive=target?.closest('button,a,[role="button"],[role="slider"],[role="checkbox"],[role="radio"]');
+  if(interactive&&lastUiInteractionWasKeyboard)return;
+  if(boardKeyboardPanBlocked())return;
+  event.preventDefault();
+  event.stopPropagation();
+  const defaultScale=clamp((Number(appPreferences.defaultViewSize)||100)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  setCurrentBoardViewSize(appPreferences.defaultViewSize);
+  boardZoomIntentPercent=Math.round(defaultScale*100);
+  showZoomIndicator(defaultScale,{precise:false});
+},{capture:true});
+
 function beginBoardPan(e){
   closeMenu();
   e.preventDefault();
   workspace.classList.add('is-panning');
   workspace.setPointerCapture(e.pointerId);
   const sx=e.clientX,sy=e.clientY,startX=boardCamera.x,startY=boardCamera.y;
+  let minimapDelayStarted=false;
   const move=ev=>{
+    if(!minimapDelayStarted&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>=5){
+      minimapDelayStarted=true;
+      beginBoardMinimapDelay();
+    }
     boardCamera.x=startX+(ev.clientX-sx);
     boardCamera.y=startY+(ev.clientY-sy);
     applyBoardCamera();
   };
   const end=()=>{
     workspace.classList.remove('is-panning');
+    scheduleBoardMinimapHide();
     workspace.removeEventListener('pointermove',move);
     workspace.removeEventListener('pointerup',end);
     workspace.removeEventListener('pointercancel',end);
@@ -14841,30 +14932,61 @@ if(document.readyState==='loading'){
   const FULL_Y = 175;
   const NEAR_X = 330;
   const NEAR_Y = 235;
+  let pointerX = -1;
+  let pointerY = -1;
 
   const setState = (target, full, near) => {
     target.classList.toggle('is-revealed', full);
     target.classList.toggle('is-near', !full && near);
   };
 
+  const hasKeyboardFocus = target => lastUiInteractionWasKeyboard && target.matches(':focus-within');
+  const update = () => {
+    const pointerKnown = pointerX >= 0 && pointerY >= 0;
+    const topRightFull = pointerKnown && pointerX >= window.innerWidth - FULL_X && pointerY <= FULL_Y;
+    const topRightNear = pointerKnown && pointerX >= window.innerWidth - NEAR_X && pointerY <= NEAR_Y;
+    const bottomLeftFull = pointerKnown && pointerX <= FULL_X && pointerY >= window.innerHeight - FULL_Y;
+    const bottomLeftNear = pointerKnown && pointerX <= NEAR_X && pointerY >= window.innerHeight - NEAR_Y;
+    const topLeftFull = pointerKnown && pointerX <= FULL_X && pointerY <= FULL_Y;
+    const topLeftNear = pointerKnown && pointerX <= NEAR_X && pointerY <= NEAR_Y;
+
+    setState(topRightTray, topRightFull || topRightTray.matches(':hover') || hasKeyboardFocus(topRightTray), topRightNear);
+    setState(bottomLeftTray, bottomLeftFull || bottomLeftTray.matches(':hover') || hasKeyboardFocus(bottomLeftTray), bottomLeftNear);
+    setState(topLeftButton, topLeftFull || topLeftButton.matches(':hover') || (lastUiInteractionWasKeyboard && topLeftButton.matches(':focus-visible')), topLeftNear);
+  };
+
   document.addEventListener('pointermove', event => {
     if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
-
-    const topRightFull = event.clientX >= window.innerWidth - FULL_X && event.clientY <= FULL_Y;
-    const topRightNear = event.clientX >= window.innerWidth - NEAR_X && event.clientY <= NEAR_Y;
-    const bottomLeftFull = event.clientX <= FULL_X && event.clientY >= window.innerHeight - FULL_Y;
-    const bottomLeftNear = event.clientX <= NEAR_X && event.clientY >= window.innerHeight - NEAR_Y;
-    const topLeftFull = event.clientX <= FULL_X && event.clientY <= FULL_Y;
-    const topLeftNear = event.clientX <= NEAR_X && event.clientY <= NEAR_Y;
-
-    setState(topRightTray, topRightFull || topRightTray.matches(':hover') || topRightTray.matches(':focus-within'), topRightNear);
-    setState(bottomLeftTray, bottomLeftFull || bottomLeftTray.matches(':hover') || bottomLeftTray.matches(':focus-within'), bottomLeftNear);
-    setState(topLeftButton, topLeftFull || topLeftButton.matches(':hover') || topLeftButton.matches(':focus-visible'), topLeftNear);
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    update();
   }, { passive:true });
+
+  document.addEventListener('pointerdown', event => {
+    if (!event.pointerType || event.pointerType === 'mouse' || event.pointerType === 'pen') {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+    }
+    requestAnimationFrame(update);
+  }, { passive:true });
+
+  document.addEventListener('focusin', () => requestAnimationFrame(update));
+  document.addEventListener('focusout', () => requestAnimationFrame(update));
+  window.addEventListener('resize', update);
+  window.addEventListener('blur', () => {
+    pointerX = -1;
+    pointerY = -1;
+    setState(topRightTray, false, false);
+    setState(bottomLeftTray, false, false);
+    setState(topLeftButton, false, false);
+  });
 
   topRightTray.addEventListener('pointerenter', () => setState(topRightTray, true, true));
   bottomLeftTray.addEventListener('pointerenter', () => setState(bottomLeftTray, true, true));
   topLeftButton.addEventListener('pointerenter', () => setState(topLeftButton, true, true));
+  topRightTray.addEventListener('pointerleave', () => requestAnimationFrame(update));
+  bottomLeftTray.addEventListener('pointerleave', () => requestAnimationFrame(update));
+  topLeftButton.addEventListener('pointerleave', () => requestAnimationFrame(update));
 })();
 
 

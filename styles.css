@@ -314,6 +314,7 @@ body.dark .module[data-bg="white"].todo-module .customization-bar button{backgro
 
 .workspace-credit{position:fixed;right:18px;bottom:15px;z-index:0;font-size:12px;color:var(--muted);opacity:.48;pointer-events:none;user-select:none}
 .zoom-indicator{position:fixed;z-index:24000;right:18px;bottom:40px;min-width:66px;height:35px;padding:0 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);box-shadow:0 10px 28px rgba(15,23,42,.14);backdrop-filter:blur(14px);display:grid;place-items:center;font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:.025em;opacity:0;visibility:hidden;transform:translateY(6px) scale(.96);pointer-events:none;transition:opacity .16s ease,visibility .16s ease,transform .2s cubic-bezier(.2,.85,.25,1)}.zoom-indicator.is-visible{opacity:1;visibility:visible;transform:none}
+.board-minimap{position:fixed;z-index:23900;right:18px;bottom:92px;width:240px;padding:9px;border:1px solid var(--border);border-radius:15px;background:color-mix(in srgb,var(--surface-solid) 88%,transparent);color:var(--text);box-shadow:0 18px 46px rgba(15,23,42,.2);backdrop-filter:blur(16px);opacity:0;visibility:hidden;transform:translateY(10px) scale(.96);transform-origin:100% 100%;pointer-events:none;transition:opacity .2s ease,visibility .2s ease,transform .24s cubic-bezier(.2,.85,.25,1)}.board-minimap.is-visible{opacity:1;visibility:visible;transform:none;pointer-events:auto}.board-minimap__label{height:22px;padding:0 2px 6px;display:flex;align-items:center;justify-content:space-between;gap:10px}.board-minimap__label strong{font-size:8px;font-weight:950;letter-spacing:.14em}.board-minimap__label span{color:var(--muted);font-size:8px;font-weight:750}.board-minimap canvas{display:block;width:220px;height:auto;aspect-ratio:3/2;border:1px solid color-mix(in srgb,var(--text) 14%,transparent);border-radius:9px;cursor:crosshair}.board-minimap.is-dragging canvas{cursor:grabbing}body.boards-screen-open .board-minimap{display:none!important}@media(max-width:700px){.board-minimap{right:10px;bottom:76px;width:190px}.board-minimap canvas{width:170px}}@media(prefers-reduced-motion:reduce){.board-minimap{transition:none}}
 
 /* Clock and Text Bubble use virtually the entire module; their toolbars float above content only on hover. */
 .clock-module{padding:18px 8px 8px!important;gap:0!important}
@@ -4894,8 +4895,8 @@ body.dark .upcoming-control__tooltip{
 
 .workspace-controls.is-revealed,
 .workspace-upcoming-controls.is-revealed,
-.workspace-controls:focus-within,
-.workspace-upcoming-controls:focus-within{
+body.is-keyboard-navigation .workspace-controls:focus-within,
+body.is-keyboard-navigation .workspace-upcoming-controls:focus-within{
   opacity:1;
   filter:none;
 }
