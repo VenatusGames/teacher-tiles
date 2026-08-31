@@ -14165,16 +14165,14 @@ body>.profile-classes-panel .profile-class-card{grid-template-columns:52px minma
 .draw-tool-rack .draw-tool:hover{transform:translateY(7px)!important;filter:brightness(1.03)}
 .draw-tool-rack .draw-tool.is-active{z-index:3!important;transform:translateY(-8px)!important;background:transparent!important;color:var(--text)!important;box-shadow:none!important}
 .draw-tool-rack .draw-tool--brush{left:8px!important}.draw-tool-rack .draw-tool--pencil{left:70px!important}.draw-tool-rack .draw-tool--eraser{left:132px!important}
-.draw-tool-object{position:absolute;left:50%;top:0;width:28px;height:84px;transform:translateX(-50%);display:block;filter:drop-shadow(0 3px 2px rgba(38,27,18,.15))}
-.draw-tool-object i,.draw-tool-object b{position:absolute;left:50%;display:block;transform:translateX(-50%)}
-.draw-tool--brush .draw-tool-object i{top:0;width:25px;height:31px;border-radius:55% 55% 42% 42% / 72% 72% 30% 30%;background:repeating-linear-gradient(90deg,#3e2c22 0 3px,#684738 3px 6px);clip-path:polygon(50% 0,88% 25%,100% 100%,0 100%,12% 25%)}
-.draw-tool--brush .draw-tool-object b{top:28px;width:16px;height:55px;border-radius:4px 4px 7px 7px;background:linear-gradient(90deg,#266c9c,#6ba9cf 46%,#215d89);box-shadow:inset 3px 0 rgba(255,255,255,.18)}
-.draw-tool--pencil .draw-tool-object i{top:0;width:24px;height:30px;background:linear-gradient(135deg,transparent 49%,#d3ae7b 50%) 0 0/50% 100%,linear-gradient(225deg,transparent 49%,#e1bf8b 50%) 100% 0/50% 100%;background-repeat:no-repeat;clip-path:polygon(50% 0,100% 100%,0 100%)}
-.draw-tool--pencil .draw-tool-object i::after{content:"";position:absolute;left:10px;top:2px;width:5px;height:9px;background:#34302d;clip-path:polygon(50% 0,100% 100%,0 100%)}
-.draw-tool--pencil .draw-tool-object b{top:27px;width:22px;height:57px;border-radius:2px 2px 4px 4px;background:linear-gradient(90deg,#e5ac2e 0 24%,#f5cb54 25% 72%,#d99a22 73%);box-shadow:inset 0 4px #d7b07a}
-.draw-tool--eraser .draw-tool-object i{top:0;width:28px;height:32px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#da7585,#f2a0aa 55%,#c85f71);box-shadow:inset 0 -5px rgba(139,57,71,.14)}
-.draw-tool--eraser .draw-tool-object b{top:29px;width:23px;height:55px;border-radius:3px 3px 7px 7px;background:linear-gradient(90deg,#5b7189,#a8b7c5 48%,#53677d);box-shadow:inset 3px 0 rgba(255,255,255,.16)}
-.draw-tool-rack .draw-tool small{position:absolute;z-index:6;left:50%;bottom:5px;transform:translateX(-50%);color:#fff;font-size:6px;font-weight:900;letter-spacing:.04em;text-shadow:0 1px 2px rgba(42,25,15,.5)}
+.draw-tool-object{position:absolute;left:50%;top:0;width:32px;height:88px;transform:translateX(-50%);display:block;overflow:hidden;background-repeat:no-repeat;background-size:142px 142px;background-position:center top;filter:drop-shadow(0 3px 2px rgba(38,27,18,.15))}
+.draw-tool-object i,.draw-tool-object b{display:none}
+.draw-tool--brush .draw-tool-object{background-image:url("assets/draw-tools/brush.png");background-position:center -18px}
+.draw-tool--pencil .draw-tool-object{background-image:url("assets/draw-tools/pencil.png");background-position:center -23px}
+.draw-tool--eraser .draw-tool-object{background-image:url("assets/draw-tools/eraser.png");background-position:center -29px}
+.draw-tool-rack .draw-tool>small{display:none!important}
+.draw-tool-labels{position:absolute;z-index:6;left:7px;right:7px;bottom:10px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;pointer-events:none;color:#fff;text-align:center}
+.draw-tool-labels b{font-size:7px;font-weight:900;line-height:1;letter-spacing:.035em;text-shadow:0 1px 2px rgba(42,25,15,.62)}
 .draw-control-deck{min-width:0;display:grid;grid-template-columns:58px 34px minmax(100px,1fr) 62px 44px;grid-template-rows:1fr;align-items:center;gap:6px;padding:8px;border:1px solid color-mix(in srgb,var(--border) 74%,transparent);border-radius:15px;background:color-mix(in srgb,var(--surface-soft) 72%,transparent)}
 .draw-control-deck .draw-toggle,.draw-control-deck .draw-color-wrap,.draw-control-deck .draw-clear,.draw-history-controls button{position:relative!important;inset:auto!important;transform:none!important;height:36px!important;margin:0!important;border:1px solid var(--border)!important;background:var(--surface)!important;color:var(--text)!important;box-shadow:0 3px 8px rgba(15,23,42,.055)!important}
 .draw-control-deck .draw-toggle{width:58px!important;min-width:58px!important;border-radius:999px!important}
