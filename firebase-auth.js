@@ -2102,6 +2102,7 @@ async function initializeBoardsForUser(user) {
 }
 
 async function renderUser(user) {
+  const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
   currentUser = user || null;
   if (!user && previousUser?.uid) {
@@ -2192,6 +2193,12 @@ async function renderUser(user) {
     toggle.setAttribute("aria-label", "Open profile");
     profileAvatar.removeAttribute("src");
     closeOtherSurfaces();
+
+    if (isInitialAuthResolution) {
+      requestAnimationFrame(() => {
+        if (!currentUser && modal.hidden) openProfile();
+      });
+    }
   }
 
   document.getElementById("theme-shelf-toggle")?.setAttribute("aria-label", user ? "Open theme shelf" : "Sign in to open themes");
@@ -2291,6 +2298,7 @@ async function initializeFirebaseAuth() {
       signInButton.disabled = false;
       if (saveWarning) saveWarning.hidden = false;
       setStatus("We couldn't check your sign-in status. Refresh and try again.", true);
+      openProfile();
     });
   } catch (error) {
     console.error("TeacherTiles Firebase SDK failed to load", error);
@@ -2301,6 +2309,7 @@ async function initializeFirebaseAuth() {
     signInButton.disabled = true;
     if (saveWarning) saveWarning.hidden = false;
     setStatus("Google sign-in couldn't load. Check your internet connection and refresh the page.", true);
+    openProfile();
   }
 }
 
@@ -2343,8 +2352,25 @@ modal.querySelectorAll("[data-profile-close]").forEach(button => button.addEvent
 signInButton.addEventListener("click", handleSignIn);
 signOutButton.addEventListener("click", handleSignOut);
 
+if (saveWarning) {
+  saveWarning.setAttribute("role", "button");
+  saveWarning.setAttribute("tabindex", "0");
+  saveWarning.setAttribute("aria-label", "Sign in to save your TileSet layout");
+  const openSignInFromWarning = event => {
+    if (currentUser) return;
+    if (event?.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+    event?.preventDefault();
+    openProfile();
+  };
+  saveWarning.addEventListener("click", openSignInFromWarning);
+  saveWarning.addEventListener("keydown", openSignInFromWarning);
+}
+
 boardsToggle?.addEventListener("click", () => {
-  if (!currentUser) return;
+  if (!currentUser) {
+    openProfile();
+    return;
+  }
   if (boardsView.hidden) openBoardsView();
   else closeBoardsView();
 });
