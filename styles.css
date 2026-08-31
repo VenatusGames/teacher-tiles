@@ -12986,16 +12986,25 @@ body.dark .signed-out-save-warning{
 .board-mini-object.is-sticker{
   display:grid;
   place-items:center;
-  min-width:10px;
-  min-height:10px;
+  min-width:0;
+  min-height:0;
   border:0;
   background:transparent;
   box-shadow:none;
-  font-size:clamp(9px,1.35vw,20px);
   line-height:1;
   overflow:visible;
   transform-origin:center;
+  container-type:size;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));
+}
+.board-mini-sticker-emoji{
+  display:block;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  font-size:min(72cqw,72cqh);
+  font-variant-emoji:emoji;
+  line-height:1;
+  pointer-events:none;
+  user-select:none;
 }
 .board-mini-object.is-sticker img{width:100%;height:100%;object-fit:contain}
 .board-mini-object.is-real-tile{

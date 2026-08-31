@@ -2041,12 +2041,17 @@ function createMiniObject(item) {
   el.style.top = `${y * 100}%`;
   el.style.width = `${w * 100}%`;
   el.style.height = `${h * 100}%`;
+  const savedZIndex = Number(state?.zIndex ?? item?.zIndex);
+  if (Number.isFinite(savedZIndex)) el.style.zIndex = String(Math.round(savedZIndex));
 
   if (type === "sticker") {
     const emoji = state?.sticker?.emoji || item.emoji || "";
     const src = state?.sticker?.src || item.src || "";
     if (emoji) {
-      el.textContent = emoji;
+      const glyph = document.createElement("span");
+      glyph.className = "board-mini-sticker-emoji";
+      glyph.textContent = emoji;
+      el.appendChild(glyph);
     } else if (src && !String(src).startsWith("data:")) {
       const image = document.createElement("img");
       image.src = src;

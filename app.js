@@ -14610,6 +14610,7 @@ function buildBoardPreview(objects){
     y:clamp((top-minY)/spanY,0,1),
     w:clamp(width/spanX,.001,1),
     h:clamp(height/spanY,.001,1),
+    zIndex:Number(object.zIndex)||0,
     emoji:object.sticker?.emoji||'',
     src:object.sticker?.src&&!String(object.sticker.src).startsWith('data:')?object.sticker.src:''
   }));
