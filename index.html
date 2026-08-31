@@ -1443,6 +1443,10 @@
         <span class="context-menu__icon context-menu__icon--livecaption" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h4M7 14h6M15 10h2M15 14h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
         <span><strong>Live Captions</strong><small>Display speech as clear, readable text</small></span>
       </button>
+      <button class="context-menu__item" data-module="magnifier" data-category="accessibility tools">
+        <span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.3 15.3 5.2 5.2M8 10.5h5M10.5 8v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <span><strong>Magnifier</strong><small>Drag a see-through magnifying glass over tiles</small></span>
+      </button>
       <button class="context-menu__item" data-module="voicememo" data-category="audio planning">
         <span class="context-menu__icon context-menu__icon--voicememo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.7 11.5a5.3 5.3 0 0 0 10.6 0M12 16.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         <span><strong>Voice Memos</strong><small>Record and replay short audio notes</small></span>
@@ -1960,34 +1964,40 @@
       <div class="module-drag-handle"></div>
 
       <div class="draw-tools">
-        <button class="draw-toggle" type="button" aria-pressed="false" title="Turn drawing on or off">
-          <span class="draw-power-dot"></span>
-          <span class="draw-toggle-label">OFF</span>
-        </button>
+        <div class="draw-tool-rack" role="toolbar" aria-label="Drawing tools">
+          <button class="draw-tool draw-tool--brush is-active" data-draw-tool="brush" type="button" title="Brush" aria-label="Use brush"><span class="draw-tool-object" aria-hidden="true"><i></i><b></b></span><small>Brush</small></button>
+          <button class="draw-tool draw-tool--pencil" data-draw-tool="pencil" type="button" title="Pencil" aria-label="Use pencil"><span class="draw-tool-object" aria-hidden="true"><i></i><b></b></span><small>Pencil</small></button>
+          <button class="draw-tool draw-tool--eraser" data-draw-tool="eraser" type="button" title="Eraser" aria-label="Use eraser"><span class="draw-tool-object" aria-hidden="true"><i></i><b></b></span><small>Eraser</small></button>
+          <span class="draw-holster" aria-hidden="true"></span>
+        </div>
 
-        <label class="draw-color-wrap" title="Drawing color">
-          <input class="draw-color" type="color" value="#222222">
-          <span class="draw-color-swatch"></span>
-        </label>
+        <div class="draw-control-deck">
+          <button class="draw-toggle" type="button" aria-pressed="false" title="Turn drawing on or off"><span class="draw-power-dot"></span><span class="draw-toggle-label">OFF</span></button>
+          <label class="draw-color-wrap" title="Drawing color"><input class="draw-color" type="color" value="#222222"><span class="draw-color-swatch"></span></label>
+          <label class="draw-size-wrap" title="Tool size"><span>SIZE</span><input class="draw-size" type="range" min="2" max="42" value="10"></label>
+          <div class="draw-history-controls" role="group" aria-label="Drawing history">
+            <button class="draw-undo" type="button" title="Undo drawing" aria-label="Undo drawing" disabled>↶</button>
+            <button class="draw-redo" type="button" title="Redo drawing" aria-label="Redo drawing" disabled>↷</button>
+          </div>
+          <button class="draw-clear" type="button" title="Clear all drawings">Clear</button>
+        </div>
+      </div>
+    </section>
+  </template>
 
-        <button class="draw-tool is-active" data-draw-tool="brush" type="button" title="Brush">
-          <svg class="draw-brush-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M14.7 4.1 20 1.8a1.5 1.5 0 0 1 2 2l-2.3 5.3-6.1 6.1-5.1-5.1 6.2-6Z" fill="currentColor"/>
-            <path d="M8.9 10.6c-1.7-.2-3.5.4-4.6 1.6-1.4 1.4-1.3 3.1-1.7 4.6-.3 1.2-1 2.2-2 3 2.7.5 5.7.4 7.8-1.7 1.3-1.3 1.9-3 1.6-4.7l-1.1-2.8Z" fill="currentColor"/>
-            <path d="m12.7 7.3 4 4" fill="none" stroke="var(--surface,#fff)" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
-          </svg>
-        </button>
-
-        <button class="draw-tool" data-draw-tool="pencil" type="button" title="Pencil">✎</button>
-
-        <button class="draw-tool" data-draw-tool="eraser" type="button" title="Eraser">⌫</button>
-
-        <label class="draw-size-wrap" title="Tool size">
-          <span>SIZE</span>
-          <input class="draw-size" type="range" min="2" max="42" value="10">
-        </label>
-
-        <button class="draw-clear" type="button" title="Clear all drawings">Clear</button>
+  <template id="magnifier-template">
+    <section class="module magnifier-module" data-type="magnifier" data-zoom="2">
+      <button class="module-delete" aria-label="Delete magnifier">×</button>
+      <div class="module-drag-handle" aria-label="Drag magnifier"></div>
+      <div class="magnifier-lens" aria-hidden="true">
+        <div class="magnifier-live-view"></div>
+        <span class="magnifier-glare"></span>
+      </div>
+      <div class="magnifier-handle" aria-hidden="true"><span>2×</span></div>
+      <div class="magnifier-zoom-controls" role="group" aria-label="Magnification level">
+        <button class="magnifier-zoom-out" type="button" aria-label="Decrease magnification">−</button>
+        <output class="magnifier-zoom-value" aria-live="polite">2×</output>
+        <button class="magnifier-zoom-in" type="button" aria-label="Increase magnification">+</button>
       </div>
     </section>
   </template>

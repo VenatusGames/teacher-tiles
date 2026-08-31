@@ -86,11 +86,13 @@ function transformsDiffer(a,b){
 function historyElements(action){
   if(action.type==='transform')return action.entries.map(entry=>entry.el);
   if(action.type==='delete')return action.entries.map(entry=>entry.el);
+  if(action.type==='drawing')return action.el?[action.el]:[];
   return action.elements||[];
 }
 
 function finalizeHistoryAction(action){
   if(!action)return;
+  if(action.type==='drawing')return;
   for(const el of historyElements(action))if(el&&!el.isConnected)el._cleanup?.();
 }
 
@@ -133,6 +135,7 @@ function restoreDeletedEntries(entries){
     if(el.isConnected)continue;
     if(nextSibling?.parentNode===workspace)workspace.insertBefore(el,nextSibling);
     else workspace.appendChild(el);
+    el._reactivate?.();
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
 }
@@ -142,12 +145,14 @@ function applyHistoryAction(action,direction){
   try{
     if(action.type==='add'){
       if(direction==='undo')detachHistoryElements(action.elements);
-      else for(const el of action.elements)if(!el.isConnected)workspace.appendChild(el);
+      else for(const el of action.elements)if(!el.isConnected){workspace.appendChild(el);el._reactivate?.()}
     }else if(action.type==='delete'){
       if(direction==='undo')restoreDeletedEntries(action.entries);
       else detachHistoryElements(action.entries.map(entry=>entry.el));
     }else if(action.type==='transform'){
       for(const entry of action.entries)applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
+    }else if(action.type==='drawing'){
+      action.el?._setDrawHistoryCursor?.(direction==='undo'?action.before:action.after);
     }
     const active=historyElements(action).filter(el=>el.isConnected);
     if(active.length)selectModules(active);
@@ -2323,6 +2328,7 @@ function setupModuleByType(m,type){
   if(type==='clock')setupClock(m);
   if(type==='stopwatch')setupStopwatch(m);
   if(type==='draw')setupDraw(m);
+  if(type==='magnifier')setupMagnifier(m);
   if(type==='dictionary')setupDictionary(m);
   if(type==='translation')setupTranslation(m);
   if(type==='livecaption')setupLiveCaption(m);
@@ -2620,7 +2626,7 @@ function setupCommon(m){
   m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=isInteractiveModuleTarget(e.target,m);if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});
   m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
   setupDrag(m);
-  if(!['draw','sticker'].includes(m.dataset.type))setupResize(m)
+  if(!['draw','sticker','magnifier'].includes(m.dataset.type))setupResize(m)
 }
 document.addEventListener('pointerdown',event=>{
   if(!activeModuleTextEditor||!(event.target instanceof Node))return;
@@ -3470,6 +3476,128 @@ function setupStopwatch(m){
   m._cleanup=()=>cancelAnimationFrame(raf);
 }
 
+function setupMagnifier(m){
+  const lens=m.querySelector('.magnifier-lens');
+  const liveView=m.querySelector('.magnifier-live-view');
+  const zoomValue=m.querySelector('.magnifier-zoom-value');
+  const handleValue=m.querySelector('.magnifier-handle span');
+  const zoomOut=m.querySelector('.magnifier-zoom-out');
+  const zoomIn=m.querySelector('.magnifier-zoom-in');
+  let zoom=clamp(Number(m.dataset.zoom)||2,1.5,3);
+  let target=null;
+  let clone=null;
+  let lastCloneAt=0;
+  let raf=0;
+  let dead=false;
+
+  const lensCenter=()=>({
+    x:m.offsetLeft+lens.offsetLeft+lens.offsetWidth/2,
+    y:m.offsetTop+lens.offsetTop+lens.offsetHeight/2
+  });
+
+  const targetUnderLens=()=>{
+    const center=lensCenter();
+    const candidates=[...workspace.querySelectorAll('.module')].filter(module=>{
+      if(module===m||module.dataset.type==='magnifier'||!module.isConnected)return false;
+      const left=module.offsetLeft,top=module.offsetTop;
+      return center.x>=left&&center.x<=left+module.offsetWidth&&center.y>=top&&center.y<=top+module.offsetHeight;
+    });
+    return candidates.sort((a,b)=>{
+      const z=(Number(a.style.zIndex)||0)-(Number(b.style.zIndex)||0);
+      return z||([...workspace.children].indexOf(a)-[...workspace.children].indexOf(b));
+    }).at(-1)||null;
+  };
+
+  const copyLiveState=(source,next)=>{
+    const sourceFields=[...source.querySelectorAll('input,textarea,select')];
+    const nextFields=[...next.querySelectorAll('input,textarea,select')];
+    sourceFields.forEach((field,index)=>{
+      const copy=nextFields[index];
+      if(!copy)return;
+      copy.value=field.value;
+      if('checked'in field)copy.checked=field.checked;
+    });
+    next.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
+    next.removeAttribute('id');
+    next.querySelectorAll('button,input,textarea,select,a,[contenteditable]').forEach(control=>{
+      control.tabIndex=-1;
+      control.setAttribute('aria-hidden','true');
+    });
+  };
+
+  const rebuildClone=nextTarget=>{
+    liveView.replaceChildren();
+    clone=null;
+    if(!nextTarget)return;
+    const next=nextTarget.cloneNode(true);
+    next.classList.remove('is-selected','is-dragging','is-over-trash','is-snap-target','snap-pop');
+    next.classList.add('magnifier-source-clone');
+    next.setAttribute('aria-hidden','true');
+    copyLiveState(nextTarget,next);
+    next.style.width=`${nextTarget.offsetWidth}px`;
+    next.style.height=`${nextTarget.offsetHeight}px`;
+    next.style.minWidth='0';
+    next.style.minHeight='0';
+    next.style.maxWidth='none';
+    next.style.maxHeight='none';
+    next.style.margin='0';
+    next.style.zIndex='1';
+    next.style.pointerEvents='none';
+    liveView.appendChild(next);
+    const sourceCanvases=[...nextTarget.querySelectorAll('canvas')];
+    const nextCanvases=[...next.querySelectorAll('canvas')];
+    sourceCanvases.forEach((source,index)=>{
+      const copy=nextCanvases[index];
+      if(!copy)return;
+      try{copy.getContext('2d')?.drawImage(source,0,0)}catch{}
+    });
+    clone=next;
+  };
+
+  const syncZoom=()=>{
+    zoom=clamp(Math.round(zoom*4)/4,1.5,3);
+    m.dataset.zoom=String(zoom);
+    const label=`${Number.isInteger(zoom)?zoom:zoom.toFixed(2).replace(/0$/,'')}×`;
+    zoomValue.textContent=label;
+    handleValue.textContent=label;
+    zoomOut.disabled=zoom<=1.5;
+    zoomIn.disabled=zoom>=3;
+    notifyBoardChanged('magnifier-zoom');
+  };
+
+  const positionClone=()=>{
+    if(!clone||!target)return;
+    const center=lensCenter();
+    clone.style.setProperty('left',`${liveView.offsetWidth/2+(target.offsetLeft-center.x)*zoom}px`,'important');
+    clone.style.setProperty('top',`${liveView.offsetHeight/2+(target.offsetTop-center.y)*zoom}px`,'important');
+    clone.style.setProperty('transform-origin','0 0','important');
+    clone.style.setProperty('transform',`scale(${zoom})`,'important');
+  };
+
+  const loop=now=>{
+    if(dead||!m.isConnected)return;
+    const nextTarget=targetUnderLens();
+    if(nextTarget!==target||now-lastCloneAt>220){
+      target=nextTarget;
+      rebuildClone(target);
+      lastCloneAt=now;
+      m.classList.toggle('has-magnified-target',Boolean(target));
+    }
+    positionClone();
+    raf=requestAnimationFrame(loop);
+  };
+
+  zoomOut.addEventListener('click',()=>{zoom-=.25;syncZoom()});
+  zoomIn.addEventListener('click',()=>{zoom+=.25;syncZoom()});
+  syncZoom();
+  raf=requestAnimationFrame(loop);
+
+  m._boardGetState=()=>({zoom});
+  m._boardSetState=state=>{zoom=clamp(Number(state?.zoom)||2,1.5,3);syncZoom()};
+  const priorCleanup=m._cleanup;
+  m._cleanup=()=>{dead=true;cancelAnimationFrame(raf);priorCleanup?.()};
+}
+
 function setupDraw(m){
   const toggle=m.querySelector('.draw-toggle');
   const toggleLabel=m.querySelector('.draw-toggle-label');
@@ -3477,6 +3605,8 @@ function setupDraw(m){
   const swatch=m.querySelector('.draw-color-swatch');
   const size=m.querySelector('.draw-size');
   const clear=m.querySelector('.draw-clear');
+  const undo=m.querySelector('.draw-undo');
+  const redo=m.querySelector('.draw-redo');
   const toolButtons=[...m.querySelectorAll('.draw-tool')];
 
   const canvas=document.createElement('canvas');
@@ -3494,10 +3624,17 @@ function setupDraw(m){
   ctx.lineCap='round';
   ctx.lineJoin='round';
 
+  const baseCanvas=document.createElement('canvas');
+  baseCanvas.width=canvas.width;
+  baseCanvas.height=canvas.height;
+  const baseCtx=baseCanvas.getContext('2d');
+
   let enabled=false;
   let tool='brush';
   let drawing=false;
-  let lastX=0,lastY=0,lastTime=0;
+  let currentStroke=null;
+  let drawActions=[];
+  let drawCursor=0;
 
   const updatePointerMode=()=>{
     canvas.classList.toggle('is-active',enabled);
@@ -3510,6 +3647,11 @@ function setupDraw(m){
   const updateSwatch=()=>{swatch.style.background=color.value};
   updateSwatch();
 
+  const updateHistoryButtons=()=>{
+    undo.disabled=drawCursor<=0;
+    redo.disabled=drawCursor>=drawActions.length;
+  };
+
   toggle.addEventListener('click',()=>{enabled=!enabled;updatePointerMode()});
   color.addEventListener('input',updateSwatch);
 
@@ -3518,8 +3660,107 @@ function setupDraw(m){
     toolButtons.forEach(x=>x.classList.toggle('is-active',x===b));
   }));
 
+  const drawSegment=(action,from,to)=>{
+    const dx=to.x-from.x,dy=to.y-from.y;
+    const distance=Math.hypot(dx,dy);
+    const dt=Math.max(1,(to.time||0)-(from.time||0));
+    const speed=distance/dt;
+    const baseSize=Number(action.size)||10;
+    ctx.save();
+
+    if(action.tool==='eraser'){
+      ctx.globalCompositeOperation='destination-out';
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='#000';
+      ctx.lineWidth=Math.max(4,baseSize*1.6);
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(from.x,from.y);
+      ctx.lineTo(to.x,to.y);
+      ctx.stroke();
+    }else if(action.tool==='pencil'){
+      ctx.globalCompositeOperation='source-over';
+      ctx.globalAlpha=.9;
+      ctx.strokeStyle=action.color;
+      ctx.lineWidth=Math.max(1,baseSize*.28);
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(from.x,from.y);
+      ctx.lineTo(to.x,to.y);
+      ctx.stroke();
+    }else{
+      const speedFactor=clamp(1.15-speed*.18,.58,1.15);
+      const brushWidth=Math.max(2,baseSize*speedFactor);
+      ctx.globalCompositeOperation='source-over';
+      ctx.globalAlpha=.72;
+      ctx.strokeStyle=action.color;
+      ctx.lineWidth=brushWidth;
+      ctx.lineCap='round';
+      ctx.shadowColor=action.color;
+      ctx.shadowBlur=Math.max(.5,brushWidth*.16);
+      ctx.beginPath();
+      ctx.moveTo(from.x,from.y);
+      ctx.quadraticCurveTo(from.x,from.y,to.x,to.y);
+      ctx.stroke();
+      ctx.globalAlpha=.18;
+      ctx.lineWidth=brushWidth*1.35;
+      ctx.shadowBlur=0;
+      ctx.beginPath();
+      ctx.moveTo(from.x,from.y);
+      ctx.lineTo(to.x,to.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+
+  const renderAction=action=>{
+    if(action.type==='clear'){
+      ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
+      return;
+    }
+    const points=Array.isArray(action.points)?action.points:[];
+    if(points.length===1)drawSegment(action,points[0],{...points[0],x:points[0].x+.01,y:points[0].y+.01,time:points[0].time+1});
+    for(let index=1;index<points.length;index++)drawSegment(action,points[index-1],points[index]);
+  };
+
+  const redraw=()=>{
+    ctx.save();
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
+    if(baseCanvas.width&&baseCanvas.height)ctx.drawImage(baseCanvas,0,0,BOARD_WIDTH,BOARD_HEIGHT);
+    for(let index=0;index<drawCursor;index++)renderAction(drawActions[index]);
+    ctx.restore();
+    updateHistoryButtons();
+  };
+
+  const setHistoryCursor=next=>{
+    drawCursor=clamp(Math.round(Number(next)||0),0,drawActions.length);
+    redraw();
+  };
+
+  const changeHistory=(next,reason)=>{
+    const before=drawCursor;
+    const after=clamp(next,0,drawActions.length);
+    if(before===after)return;
+    setHistoryCursor(after);
+    recordHistory({type:'drawing',el:m,before,after,reason});
+  };
+
+  const pushAction=action=>{
+    if(drawCursor<drawActions.length)drawActions.splice(drawCursor);
+    const before=drawCursor;
+    drawActions.push(action);
+    drawCursor=drawActions.length;
+    updateHistoryButtons();
+    recordHistory({type:'drawing',el:m,before,after:drawCursor});
+  };
+
+  undo.addEventListener('click',()=>changeHistory(drawCursor-1,'draw-undo'));
+  redo.addEventListener('click',()=>changeHistory(drawCursor+1,'draw-redo'));
   clear.addEventListener('click',()=>{
-    ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
+    const action={type:'clear'};
+    renderAction(action);
+    pushAction(action);
   });
 
   const point=e=>screenToBoard(e.clientX,e.clientY);
@@ -3528,114 +3769,42 @@ function setupDraw(m){
     if(!enabled||e.button!==0)return;
     drawing=true;
     const p=point(e);
-    lastX=p.x;
-    lastY=p.y;
-    lastTime=performance.now();
+    currentStroke={type:'stroke',tool,color:color.value,size:Number(size.value),points:[{x:p.x,y:p.y,time:performance.now()}]};
     canvas.setPointerCapture?.(e.pointerId);
     e.preventDefault();
   };
 
   const move=e=>{
-    if(!drawing||!enabled)return;
-
+    if(!drawing||!enabled||!currentStroke)return;
     const p=point(e);
     const now=performance.now();
-    const dx=p.x-lastX;
-    const dy=p.y-lastY;
-    const distance=Math.hypot(dx,dy);
-    const dt=Math.max(1,now-lastTime);
-    const speed=distance/dt;
-    const baseSize=Number(size.value);
-
-    ctx.save();
-
-    if(tool==='eraser'){
-      ctx.globalCompositeOperation='destination-out';
-      ctx.globalAlpha=1;
-      ctx.strokeStyle='#000';
-      ctx.lineWidth=Math.max(4,baseSize*1.6);
-      ctx.lineCap='round';
-      ctx.lineJoin='round';
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY);
-      ctx.lineTo(p.x,p.y);
-      ctx.stroke();
-    }else if(tool==='pencil'){
-      ctx.globalCompositeOperation='source-over';
-      ctx.globalAlpha=.88;
-      ctx.strokeStyle=color.value;
-      ctx.lineWidth=Math.max(1,baseSize*.28);
-      ctx.lineCap='round';
-      ctx.lineJoin='round';
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY);
-      ctx.lineTo(p.x,p.y);
-      ctx.stroke();
-    }else{
-      // Brush is softer and responds to movement speed:
-      // slower strokes are fuller, faster strokes taper slightly.
-      const speedFactor=clamp(1.15-speed*.18,.58,1.15);
-      const brushWidth=Math.max(2,baseSize*speedFactor);
-
-      ctx.globalCompositeOperation='source-over';
-      ctx.globalAlpha=.72;
-      ctx.strokeStyle=color.value;
-      ctx.lineWidth=brushWidth;
-      ctx.lineCap='round';
-      ctx.lineJoin='round';
-      ctx.shadowColor=color.value;
-      ctx.shadowBlur=Math.max(0.5,brushWidth*.16);
-
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY);
-      ctx.quadraticCurveTo(lastX,lastY,p.x,p.y);
-      ctx.stroke();
-
-      // A lighter secondary pass gives the brush a softer painted edge.
-      ctx.globalAlpha=.18;
-      ctx.lineWidth=brushWidth*1.35;
-      ctx.shadowBlur=0;
-      ctx.beginPath();
-      ctx.moveTo(lastX,lastY);
-      ctx.lineTo(p.x,p.y);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-
-    lastX=p.x;
-    lastY=p.y;
-    lastTime=now;
+    const prior=currentStroke.points.at(-1);
+    if(Math.hypot(p.x-prior.x,p.y-prior.y)<.18)return;
+    const next={x:p.x,y:p.y,time:now};
+    currentStroke.points.push(next);
+    drawSegment(currentStroke,prior,next);
     e.preventDefault();
   };
 
-  const up=()=>{if(drawing)notifyBoardChanged('drawing');drawing=false};
+  const up=()=>{
+    if(drawing&&currentStroke){
+      if(currentStroke.points.length===1)renderAction(currentStroke);
+      pushAction(currentStroke);
+    }
+    drawing=false;
+    currentStroke=null;
+  };
 
   canvas.addEventListener('pointerdown',down);
   canvas.addEventListener('pointermove',move);
   canvas.addEventListener('pointerup',up);
   canvas.addEventListener('pointercancel',up);
 
-  const resize=()=>{
-    const old=document.createElement('canvas');
-    old.width=canvas.width;
-    old.height=canvas.height;
-    old.getContext('2d').drawImage(canvas,0,0);
-
-    const ndpr=devicePixelRatio||1;
-    canvas.width=Math.max(1,Math.round(innerWidth*ndpr));
-    canvas.height=Math.max(1,Math.round(innerHeight*ndpr));
-    canvas.style.width=`${innerWidth}px`;
-    canvas.style.height=`${innerHeight}px`;
-
-    ctx.setTransform(ndpr,0,0,ndpr,0,0);
-    ctx.drawImage(old,0,0,old.width,old.height,0,0,innerWidth,innerHeight);
-    ctx.lineCap='round';
-    ctx.lineJoin='round';
-  };
-
-  window.addEventListener('resize',resize);
   updatePointerMode();
+  updateHistoryButtons();
+  m._setDrawHistoryCursor=setHistoryCursor;
+  m._deactivate=()=>{enabled=false;updatePointerMode();canvas.hidden=true};
+  m._reactivate=()=>{canvas.hidden=false;updatePointerMode()};
 
   m._boardGetState=()=>{
     let image='';
@@ -3653,16 +3822,20 @@ function setupDraw(m){
     if(state.image){
       const image=new Image();
       image.onload=()=>{
-        ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
-        ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
+        baseCtx.clearRect(0,0,baseCanvas.width,baseCanvas.height);
+        baseCtx.drawImage(image,0,0,baseCanvas.width,baseCanvas.height);
+        drawActions=[];
+        drawCursor=0;
+        redraw();
       };
       image.src=state.image;
     }
   };
 
+  const priorCleanup=m._cleanup;
   m._cleanup=()=>{
-    window.removeEventListener('resize',resize);
     canvas.remove();
+    priorCleanup?.();
   };
 }
 

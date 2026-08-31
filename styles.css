@@ -14093,3 +14093,98 @@ body>.profile-classes-panel .profile-class-card{grid-template-columns:52px minma
   margin:12px 0 16px;
   border-radius:14px;
 }
+
+/* Draggable accessibility magnifier */
+.magnifier-module{
+  width:236px;
+  height:306px;
+  min-width:236px!important;
+  min-height:306px!important;
+  max-width:236px!important;
+  max-height:306px!important;
+  padding:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  cursor:grab;
+}
+.magnifier-module.is-dragging{cursor:grabbing}
+.magnifier-lens{
+  position:absolute;
+  z-index:3;
+  left:12px;
+  top:7px;
+  width:212px;
+  height:212px;
+  box-sizing:border-box;
+  overflow:hidden;
+  border:13px solid #344357;
+  border-radius:50%;
+  background:rgba(255,255,255,.035);
+  box-shadow:0 14px 30px rgba(22,31,43,.2),inset 0 0 0 3px rgba(255,255,255,.5),0 0 0 2px rgba(16,25,36,.18);
+  pointer-events:none;
+}
+.magnifier-live-view{position:absolute;inset:0;overflow:hidden;border-radius:50%;background:transparent;isolation:isolate}
+.magnifier-module:not(.has-magnified-target) .magnifier-live-view{background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.18),rgba(173,210,236,.045) 55%,rgba(82,118,148,.07))}
+.magnifier-source-clone{position:absolute!important;margin:0!important;pointer-events:none!important;user-select:none!important;transition:none!important;animation-play-state:paused!important}
+.magnifier-source-clone *{pointer-events:none!important;animation-play-state:paused!important;caret-color:transparent!important}
+.magnifier-source-clone .module-delete,.magnifier-source-clone .module-drag-handle,.magnifier-source-clone .resize-handle,.magnifier-source-clone .sticker-transform-control,.magnifier-source-clone .sticker-rotate-handle,.magnifier-source-clone .sticker-resize-handle{display:none!important}
+.magnifier-glare{position:absolute;z-index:5;left:26px;top:19px;width:66px;height:30px;border-radius:50%;border-top:5px solid rgba(255,255,255,.68);transform:rotate(-28deg);filter:blur(.3px);pointer-events:none}
+.magnifier-handle{position:absolute;z-index:2;left:127px;top:187px;width:63px;height:112px;border:2px solid rgba(16,25,36,.25);border-radius:17px 17px 25px 25px;background:linear-gradient(90deg,#29384c,#52647a 48%,#263548);box-shadow:8px 12px 22px rgba(22,31,43,.18),inset 7px 0 10px rgba(255,255,255,.1);transform:rotate(-34deg);transform-origin:50% 8%;pointer-events:none}
+.magnifier-handle::before{content:"";position:absolute;left:10px;right:10px;top:16px;height:2px;border-radius:99px;background:rgba(255,255,255,.2);box-shadow:0 51px rgba(255,255,255,.1)}
+.magnifier-handle span{position:absolute;left:50%;bottom:13px;transform:translateX(-50%);color:rgba(255,255,255,.78);font-size:10px;font-weight:950;letter-spacing:.04em}
+.magnifier-zoom-controls{position:absolute;z-index:8;left:14px;bottom:3px;height:34px;padding:3px;display:flex;align-items:center;gap:3px;border:1px solid color-mix(in srgb,var(--border) 86%,transparent);border-radius:999px;background:color-mix(in srgb,var(--surface) 90%,transparent);box-shadow:0 8px 20px rgba(15,23,42,.13);backdrop-filter:blur(10px);cursor:default}
+.magnifier-zoom-controls button{width:27px;height:27px;padding:0;border:0;border-radius:50%;background:var(--surface-soft);color:var(--text);font-size:16px;font-weight:850;line-height:1}
+.magnifier-zoom-controls button:disabled{opacity:.3}
+.magnifier-zoom-value{min-width:31px;text-align:center;color:var(--text);font-size:8px;font-weight:950}
+.magnifier-module .module-delete{z-index:10!important;right:4px!important;top:3px!important}
+.magnifier-module .module-drag-handle{position:absolute!important;z-index:7!important;inset:0!important;width:auto!important;height:auto!important;background:transparent!important;border-radius:50%!important;pointer-events:auto!important;cursor:move!important}
+.magnifier-module .module-drag-handle::after{display:none!important}
+
+/* Holstered drawing tools */
+.draw-module{
+  width:610px!important;
+  height:154px!important;
+  min-width:610px!important;
+  min-height:154px!important;
+  max-width:610px!important;
+  max-height:154px!important;
+  padding:29px 14px 12px!important;
+  border:1px solid color-mix(in srgb,var(--border) 90%,transparent)!important;
+  border-radius:22px!important;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--surface) 96%,#d8bd91 4%),var(--surface))!important;
+  box-shadow:0 13px 31px rgba(15,23,42,.11)!important;
+}
+.draw-tools{height:100%!important;display:grid!important;grid-template-columns:198px minmax(0,1fr)!important;align-items:stretch!important;gap:13px!important;padding:0!important}
+.draw-tool-rack{position:relative;height:111px;min-width:0;overflow:visible;border-radius:15px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 68%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--border) 75%,transparent)}
+.draw-holster{position:absolute;z-index:4;left:7px;right:7px;bottom:7px;height:45px;border:1px solid rgba(69,48,29,.2);border-radius:9px 9px 14px 14px;background:linear-gradient(100deg,#8f6544,#b48155 47%,#795236);box-shadow:0 5px 12px rgba(61,42,27,.16),inset 0 2px rgba(255,255,255,.16),inset 0 -7px rgba(62,38,22,.08);pointer-events:none}
+.draw-holster::after{content:"";position:absolute;left:14px;right:14px;top:11px;height:2px;border-radius:99px;background:rgba(255,255,255,.15)}
+.draw-tool-rack .draw-tool{position:absolute!important;z-index:3!important;top:4px!important;bottom:auto!important;width:54px!important;height:97px!important;min-width:54px!important;padding:0!important;border:0!important;border-radius:11px!important;background:transparent!important;color:var(--text)!important;box-shadow:none!important;display:block!important;overflow:visible!important;transform:translateY(12px)!important;transition:transform .22s cubic-bezier(.2,.85,.25,1),filter .18s ease!important}
+.draw-tool-rack .draw-tool:hover{transform:translateY(7px)!important;filter:brightness(1.03)}
+.draw-tool-rack .draw-tool.is-active{z-index:3!important;transform:translateY(-8px)!important;background:transparent!important;color:var(--text)!important;box-shadow:none!important}
+.draw-tool-rack .draw-tool--brush{left:8px!important}.draw-tool-rack .draw-tool--pencil{left:70px!important}.draw-tool-rack .draw-tool--eraser{left:132px!important}
+.draw-tool-object{position:absolute;left:50%;top:0;width:28px;height:84px;transform:translateX(-50%);display:block;filter:drop-shadow(0 3px 2px rgba(38,27,18,.15))}
+.draw-tool-object i,.draw-tool-object b{position:absolute;left:50%;display:block;transform:translateX(-50%)}
+.draw-tool--brush .draw-tool-object i{top:0;width:25px;height:31px;border-radius:55% 55% 42% 42% / 72% 72% 30% 30%;background:repeating-linear-gradient(90deg,#3e2c22 0 3px,#684738 3px 6px);clip-path:polygon(50% 0,88% 25%,100% 100%,0 100%,12% 25%)}
+.draw-tool--brush .draw-tool-object b{top:28px;width:16px;height:55px;border-radius:4px 4px 7px 7px;background:linear-gradient(90deg,#266c9c,#6ba9cf 46%,#215d89);box-shadow:inset 3px 0 rgba(255,255,255,.18)}
+.draw-tool--pencil .draw-tool-object i{top:0;width:24px;height:30px;background:linear-gradient(135deg,transparent 49%,#d3ae7b 50%) 0 0/50% 100%,linear-gradient(225deg,transparent 49%,#e1bf8b 50%) 100% 0/50% 100%;background-repeat:no-repeat;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.draw-tool--pencil .draw-tool-object i::after{content:"";position:absolute;left:10px;top:2px;width:5px;height:9px;background:#34302d;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.draw-tool--pencil .draw-tool-object b{top:27px;width:22px;height:57px;border-radius:2px 2px 4px 4px;background:linear-gradient(90deg,#e5ac2e 0 24%,#f5cb54 25% 72%,#d99a22 73%);box-shadow:inset 0 4px #d7b07a}
+.draw-tool--eraser .draw-tool-object i{top:0;width:28px;height:32px;border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#da7585,#f2a0aa 55%,#c85f71);box-shadow:inset 0 -5px rgba(139,57,71,.14)}
+.draw-tool--eraser .draw-tool-object b{top:29px;width:23px;height:55px;border-radius:3px 3px 7px 7px;background:linear-gradient(90deg,#5b7189,#a8b7c5 48%,#53677d);box-shadow:inset 3px 0 rgba(255,255,255,.16)}
+.draw-tool-rack .draw-tool small{position:absolute;z-index:6;left:50%;bottom:5px;transform:translateX(-50%);color:#fff;font-size:6px;font-weight:900;letter-spacing:.04em;text-shadow:0 1px 2px rgba(42,25,15,.5)}
+.draw-control-deck{min-width:0;display:grid;grid-template-columns:58px 34px minmax(100px,1fr) 62px 44px;grid-template-rows:1fr;align-items:center;gap:6px;padding:8px;border:1px solid color-mix(in srgb,var(--border) 74%,transparent);border-radius:15px;background:color-mix(in srgb,var(--surface-soft) 72%,transparent)}
+.draw-control-deck .draw-toggle,.draw-control-deck .draw-color-wrap,.draw-control-deck .draw-clear,.draw-history-controls button{position:relative!important;inset:auto!important;transform:none!important;height:36px!important;margin:0!important;border:1px solid var(--border)!important;background:var(--surface)!important;color:var(--text)!important;box-shadow:0 3px 8px rgba(15,23,42,.055)!important}
+.draw-control-deck .draw-toggle{width:58px!important;min-width:58px!important;border-radius:999px!important}
+.draw-control-deck .draw-color-wrap{width:34px!important;min-width:34px!important;border-radius:12px!important}
+.draw-control-deck .draw-size-wrap{position:relative!important;inset:auto!important;width:auto!important;min-width:0!important;height:50px!important;padding:7px 9px!important;border-radius:12px!important;background:var(--surface)!important}
+.draw-control-deck .draw-size{width:100%!important;min-width:82px}
+.draw-history-controls{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.draw-history-controls button{width:29px!important;min-width:29px!important;padding:0!important;border-radius:10px!important;font-size:17px!important;font-weight:800!important}
+.draw-history-controls button:disabled{opacity:.3!important;box-shadow:none!important}
+.draw-control-deck .draw-clear{width:44px!important;min-width:44px!important;border-radius:10px!important}
+.draw-module .module-drag-handle{top:1px!important;left:8px!important;right:36px!important;width:auto!important;height:25px!important}
+body.dark .draw-holster{background:linear-gradient(100deg,#5d402c,#805a3c 47%,#4d3425)}
+@media(prefers-reduced-motion:reduce){.draw-tool-rack .draw-tool{transition:none!important}}
