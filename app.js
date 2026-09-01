@@ -1209,15 +1209,19 @@ document.addEventListener('change',e=>{
 // Pointer-clicked module controls should disappear again when the pointer leaves.
 // Keyboard focus is preserved so the same controls remain accessible to tab users.
 let lastUiInteractionWasKeyboard=false;
+const SPACEBAR_FLASHCARD_SELECTOR='.abc-card,.cvcword-card,.highfrequency-card,.customflashcards-card';
+let activeSpacebarFlashcard=null;
 document.addEventListener('keydown',event=>{
   if(event.key==='Tab'||event.key==='Enter'||event.key===' '){
     lastUiInteractionWasKeyboard=true;
     document.body.classList.add('is-keyboard-navigation');
   }
 },true);
-document.addEventListener('pointerdown',()=>{
+document.addEventListener('pointerdown',event=>{
   lastUiInteractionWasKeyboard=false;
   document.body.classList.remove('is-keyboard-navigation');
+  const target=event.target instanceof Element?event.target:null;
+  activeSpacebarFlashcard=target?.closest(SPACEBAR_FLASHCARD_SELECTOR)||null;
 },true);
 document.addEventListener('pointerup',event=>{
   if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
@@ -1841,9 +1845,11 @@ window.addEventListener('keydown',event=>{
   if(event.code!=='Space'||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
   const target=event.target instanceof Element?event.target:null;
   if(isTypingTarget(target)||isTypingTarget(document.activeElement))return;
-  if(target?.closest('.module'))return;
+  const flashcard=target?.closest(SPACEBAR_FLASHCARD_SELECTOR)||null;
+  if(flashcard&&flashcard===activeSpacebarFlashcard)return;
+  if(target?.closest('.module')&&!flashcard)return;
   const interactive=target?.closest('button,a,[role="button"],[role="slider"],[role="checkbox"],[role="radio"]');
-  if(interactive&&lastUiInteractionWasKeyboard)return;
+  if(interactive&&lastUiInteractionWasKeyboard&&!flashcard)return;
   if(boardKeyboardPanBlocked())return;
   event.preventDefault();
   event.stopPropagation();
