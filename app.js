@@ -2430,9 +2430,9 @@ function applyAppCursor(id,{persist=true}={}){
   }
   else{
     const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png`,document.baseURI).href;
-    cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 5 1`);
-    cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 13 1`);
-    cursorRoot.style.setProperty('--teacher-cursor-grab',`url("${asset('grab')}") 16 16`);
+    cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
+    cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
+    cursorRoot.style.setProperty('--teacher-cursor-grab',`url("${asset('grab')}") 12 12`);
   }
   window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
   return cursor;
