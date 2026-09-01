@@ -11849,6 +11849,41 @@ body.theme-wood-oak .asset-shelf__shell,body.theme-wood-spruce .asset-shelf__she
   gap:12px;
 }
 .theme-pack-wrap{position:relative;flex:0 0 116px;width:116px;height:116px}
+.theme-pack-wrap.is-shop-locked .theme-pack,
+.sticker-pack-wrap.is-shop-locked .sticker-pack{
+  filter:grayscale(.62) saturate(.35);
+  opacity:.66;
+}
+.theme-pack-wrap.is-shop-locked .theme-pack:hover,
+.sticker-pack-wrap.is-shop-locked .sticker-pack:hover{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb,#f59e0b 42%,var(--border));
+}
+.collection-pack-lock{
+  position:absolute;
+  z-index:7;
+  top:7px;
+  right:7px;
+  min-height:23px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:4px 7px;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:999px;
+  background:rgba(22,28,38,.86);
+  color:#fff;
+  box-shadow:0 5px 15px rgba(15,23,42,.2);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.055em;
+  line-height:1;
+  text-transform:uppercase;
+  pointer-events:none;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.collection-pack-lock[hidden]{display:none}
 .theme-pack{
   position:relative;
   width:116px;
@@ -12278,6 +12313,11 @@ body.theme-pastel-lilac .module[data-bg="white"]{--module-bg:#fbf8fe}
   white-space:nowrap;
 }
 .sticker-pack-drawer.is-open .sticker-pack-drawer__hint{opacity:.7;transform:translateY(0)}
+.sticker-pack-drawer.is-shop-locked .sticker-pack-drawer__track{
+  filter:grayscale(.72);
+  opacity:.34;
+  pointer-events:none;
+}
 .sticker-shelf-item{
   position:relative;
   flex:0 0 84px;
@@ -13166,26 +13206,6 @@ body.boards-screen-open .trash-zone{visibility:hidden!important}
 .module.is-text-editing .module-text-edit-target.module-text-edit-active{
   pointer-events:auto;
 }
-
-/* Optional sandbox marker. Enabled only when sandbox.md is present beside index.html. */
-.sandbox-watermark{
-  position:absolute;
-  left:50%;
-  top:50%;
-  z-index:0;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-  user-select:none;
-  white-space:nowrap;
-  color:#6b7280;
-  opacity:.085;
-  font-family:Inter,system-ui,sans-serif;
-  font-size:clamp(620px,12vw,1450px);
-  font-weight:900;
-  letter-spacing:.12em;
-  line-height:1;
-}
-
 
 /* Settings + Help hub */
 .settings-gear-icon{width:21px;height:21px;display:block}

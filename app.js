@@ -2335,6 +2335,30 @@ const TILE_SKIN_CATALOG=Object.freeze([
 ]);
 const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
+const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'pastel-theme-pack':'theme-pastel',
+  'polka-dot-theme-pack':'theme-polka-dot',
+  'programmer-theme-pack':'theme-programmer',
+  'wood-theme-pack':'theme-wood',
+  'notebook-theme-pack':'theme-notebook',
+  'cardboard-theme-pack':'theme-cardboard',
+  'metal-theme-pack':'theme-metal',
+  'cosmos-theme-pack':'theme-cosmos',
+  'corkboard-theme-pack':'theme-corkboard',
+  'emoji-sticker-pack':'sticker-emoji',
+  'nature-emojis-sticker-pack':'sticker-nature-emojis',
+  'weather-emojis-sticker-pack':'sticker-weather-emojis',
+  'animal-emojis-sticker-pack':'sticker-animal-emojis',
+  'more-faces-sticker-pack':'sticker-more-faces',
+  'symbols-sticker-pack':'sticker-symbols',
+  'food-sticker-pack':'sticker-food',
+  'colored-hearts-sticker-pack':'sticker-colored-hearts',
+  'decorative-hearts-sticker-pack':'sticker-decorative-hearts',
+  'country-flags-sticker-pack':'sticker-country-flags'
+});
+const THEME_CHOICE_PRODUCTS=Object.freeze({
+  pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
+});
 
 function getOwnedShopProducts(){
   try{
@@ -2352,6 +2376,9 @@ function getDefaultTileSkins(){
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 function tileSkinIsOwned(skin){return Boolean(skin&&getOwnedShopProducts().has(skin.productId))}
+function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack?.id];return !product||getOwnedShopProducts().has(product)}
+function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>String(theme||'').startsWith(`${name}-`));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
+function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return !product||getOwnedShopProducts().has(product)}
 
 function activeTileSkinForType(type){
   const skin=tileSkinById(getDefaultTileSkins()[type]);
@@ -10446,7 +10473,8 @@ function applyMaterialThemeArtwork(theme){
 }
 
 function applyTeacherTheme(theme,{persist=true}={}){
-  const next=TEACHERTILES_THEMES.has(theme)?theme:'light';
+  const requested=TEACHERTILES_THEMES.has(theme)?theme:'light';
+  const next=themeChoiceIsOwned(requested)?requested:'light';
   document.body.classList.remove(...THEME_BODY_CLASSES);
   if(next==='dark')document.body.classList.add('dark');
   else if(next==='gray')document.body.classList.add('theme-gray');
@@ -10525,6 +10553,9 @@ function setupShelfStickerDrag(item,shelfShell){
   item.dataset.stickerDragReady='true';
   item.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
+    const drawer=item.closest('.sticker-pack-drawer');
+    const owner=drawer?.id?document.querySelector(`[data-sticker-pack][aria-controls="${CSS.escape(drawer.id)}"]`):null;
+    if(owner?.dataset.shopLocked==='true')return;
     const src=item.dataset.stickerSrc||'';
     const emoji=item.dataset.stickerEmoji||'';
     const isFlag=/flagcdn\.io\/flags\//i.test(src);
@@ -10639,6 +10670,29 @@ function setupCollectionShelf(){
   let activeFan=null;
   let activeStickerPack=null;
   let activeStickerDrawer=null;
+
+  const syncCollectionOwnership=()=>{
+    [...packs,...stickerPacks].forEach(pack=>{
+      const owned=collectionPackIsOwned(pack);
+      const wrapper=pack.closest('.theme-pack-wrap,.sticker-pack-wrap');
+      pack.dataset.shopLocked=String(!owned);
+      pack.setAttribute('aria-disabled',String(!owned));
+      wrapper?.classList.toggle('is-shop-locked',!owned);
+      const drawerId=pack.getAttribute('aria-controls');
+      document.getElementById(drawerId)?.classList.toggle('is-shop-locked',!owned);
+      let badge=wrapper?.querySelector(':scope > .collection-pack-lock');
+      if(!badge&&wrapper){
+        badge=document.createElement('span');badge.className='collection-pack-lock';badge.setAttribute('aria-hidden','true');wrapper.appendChild(badge);
+      }
+      if(badge){badge.textContent=owned?'✓ Owned':'🔒 Shop';badge.hidden=owned}
+    });
+    if(!themeChoiceIsOwned(document.body.dataset.theme||'light'))applyTeacherTheme('light');
+  };
+
+  const openLockedCollection=pack=>{
+    closeShelf();
+    window.TeacherTilesShop?.openPage(pack.matches('[data-theme-pack]')?'themes':'stickers');
+  };
 
   const makeClassicMagnifierArtwork=()=>{
     const art=document.createElement('span');
@@ -10807,6 +10861,7 @@ function setupCollectionShelf(){
   };
 
   const toggleThemeFan=pack=>{
+    if(pack.dataset.shopLocked==='true'){openLockedCollection(pack);return}
     const fanId=pack.getAttribute('aria-controls');
     const fan=fanId?document.getElementById(fanId):null;
     if(!fan)return;
@@ -10876,6 +10931,7 @@ function setupCollectionShelf(){
   };
 
   const toggleStickerPack=pack=>{
+    if(pack.dataset.shopLocked==='true'){openLockedCollection(pack);return}
     if(stickerPanel.classList.contains('is-searching'))return;
     const drawerId=pack.getAttribute('aria-controls');
     const drawer=drawerId?document.getElementById(drawerId):null;
@@ -10960,7 +11016,7 @@ function setupCollectionShelf(){
   });
   tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch?.focus()});
   tileSkinsSort?.addEventListener('change',renderTileSkinShelf);
-  window.addEventListener('teachertiles:shopownershipchange',renderTileSkinShelf);
+  window.addEventListener('teachertiles:shopownershipchange',()=>{syncCollectionOwnership();renderTileSkinShelf()});
   window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
@@ -10993,6 +11049,7 @@ function setupCollectionShelf(){
   });
 
   updateThemeControls(document.body.dataset.theme||'light');
+  syncCollectionOwnership();
   renderTileSkinShelf();
 }
 
@@ -15673,6 +15730,7 @@ function setupTeacherTilesShop(){
   subscribePreview?.addEventListener('click',()=>showToast('Membership checkout is not active yet.'));
   modal.querySelector('.shop-banner')?.addEventListener('pointerenter',stopBannerTimer);
   modal.querySelector('.shop-banner')?.addEventListener('pointerleave',startBannerTimer);
+  window.addEventListener('teachertiles:coinschange',()=>setCoins(getCoins()));
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||modal.hidden)return;
     if(coinMenu&&!coinMenu.hidden){closeCoins();return}
@@ -15684,23 +15742,19 @@ function setupTeacherTilesShop(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
 
-async function initializeSandboxWatermark(){
+async function initializeSandboxRuntime(){
   try{
-    const url=new URL('sandbox.md',window.location.href);
+    const url=new URL('sandbox/sandbox.md',window.location.href);
     url.searchParams.set('ttSandboxCheck',Date.now().toString(36));
     const response=await fetch(url,{cache:'no-store'});
     if(!response.ok)return;
     const contentType=(response.headers.get('content-type')||'').toLowerCase();
     if(contentType.includes('text/html'))return;
-    if(workspace.querySelector('.sandbox-watermark'))return;
-    const watermark=document.createElement('div');
-    watermark.className='sandbox-watermark';
-    watermark.setAttribute('aria-hidden','true');
-    watermark.textContent='SANDBOX';
-    workspace.prepend(watermark);
-    document.body.classList.add('sandbox-mode');
+    const moduleUrl=new URL('sandbox/dev-console.js',window.location.href);
+    moduleUrl.searchParams.set('ttSandboxRuntime',Date.now().toString(36));
+    await import(moduleUrl.href);
   }catch{
-    // Absence of sandbox.md is the normal production state.
+    // The removable sandbox/ folder is intentionally absent from production builds.
   }
 }
-initializeSandboxWatermark();
+initializeSandboxRuntime();
