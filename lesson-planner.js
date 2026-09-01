@@ -138,7 +138,9 @@
   function saveBlocks() {
     blocks.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks)); } catch {}
-    window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', { detail: { blocks: blocks.map(block => ({ ...block })) } }));
+    const snapshot = blocks.map(block => ({ ...block }));
+    window.TeacherTilesRefreshLessonPlannerTiles?.(snapshot);
+    window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', { detail: { blocks: snapshot } }));
   }
 
   function blocksForDate(date) {

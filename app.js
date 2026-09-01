@@ -10537,6 +10537,12 @@ function setupVisualSchedule(m){
   autoSize();
 }
 
+window.TeacherTilesRefreshLessonPlannerTiles=()=>{
+  const tiles=[...document.querySelectorAll('.lesson-plan-tile')];
+  tiles.forEach(tile=>tile._refreshLessonPlans?.());
+  if(tiles.length)notifyBoardChanged('lesson-planner-plans');
+};
+
 function setupLessonPlannerTile(m){
   const body=m.querySelector('.lesson-plan-tile__body');
   const title=m.querySelector('.lesson-plan-tile__title');
@@ -10594,9 +10600,10 @@ function setupLessonPlannerTile(m){
   m.querySelector('.lesson-plan-tile__font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.lesson-plan-tile__text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const handleChange=()=>render();window.addEventListener('teachertiles:lessonplannerchange',handleChange);
+  m._refreshLessonPlans=render;
   const dateTimer=setInterval(render,60000);
   m._boardGetState=()=>({mode});m._boardSetState=state=>{mode=state?.mode==='week'?'week':'day';render()};
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();clearInterval(dateTimer);window.removeEventListener('teachertiles:lessonplannerchange',handleChange)};
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();clearInterval(dateTimer);window.removeEventListener('teachertiles:lessonplannerchange',handleChange);delete m._refreshLessonPlans};
   render();
 }
 
