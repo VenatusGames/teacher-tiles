@@ -13934,16 +13934,16 @@ function setupShapeManipulatives(m){
   };
 
   definitions.forEach(def=>{
-    const button=document.createElement('button');button.type='button';button.className='shape-manipulatives-palette-item';button.draggable=false;button.dataset.shapeType=def.id;button.setAttribute('aria-label',`Add ${def.label}`);
-    const art=document.createElement('span');art.className=`pattern-block-art pattern-block-art--${def.id}`;art.draggable=true;art.style.setProperty('--pattern-block-color',def.color);
+    const button=document.createElement('button');button.type='button';button.className='shape-manipulatives-palette-item';button.draggable=true;button.dataset.shapeType=def.id;button.setAttribute('aria-label',`Add ${def.label}`);
+    const art=document.createElement('span');art.className=`pattern-block-art pattern-block-art--${def.id}`;art.draggable=false;art.style.setProperty('--pattern-block-color',def.color);
     const label=document.createElement('small');label.textContent=def.label.replace(/ rhombus/i,'');button.append(art,label);
     button.addEventListener('click',()=>addPiece(def.id));
-    art.addEventListener('dragstart',event=>{
+    button.addEventListener('dragstart',event=>{
       event.stopPropagation();paletteDragType=def.id;clearPaletteDragImage();paletteDragImage=createPaletteDragImage(def);document.body.appendChild(paletteDragImage);
       event.dataTransfer?.setData('text/plain',def.id);
       if(event.dataTransfer){event.dataTransfer.effectAllowed='copy';event.dataTransfer.setDragImage(paletteDragImage,paletteDragImage.width/2,paletteDragImage.height/2)}
     });
-    art.addEventListener('dragend',()=>{paletteDragType='';clearPaletteDragImage()});palette.appendChild(button);
+    button.addEventListener('dragend',()=>{paletteDragType='';clearPaletteDragImage()});palette.appendChild(button);
   });
   workspaceEl.addEventListener('pointerdown',event=>{if(event.target===workspaceEl||event.target===empty)selectPiece(0)});
   workspaceEl.addEventListener('dragover',event=>{event.preventDefault();workspaceEl.classList.add('is-drop-target');if(event.dataTransfer)event.dataTransfer.dropEffect='copy'});
