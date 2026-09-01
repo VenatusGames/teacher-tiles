@@ -2333,7 +2333,16 @@ const TILE_SKIN_CATALOG=Object.freeze([
     released:1
   })
 ]);
+const CURSOR_CATALOG=Object.freeze([
+  Object.freeze({id:'default',productId:'',name:'System Default',description:'Use your normal device cursor.',color:'#252a31'}),
+  Object.freeze({id:'blue',productId:'cursor-blue',name:'Electric Blue',description:'Bright and crisp.',color:'#3182f6'}),
+  Object.freeze({id:'red',productId:'cursor-red',name:'Cherry Red',description:'Bold classroom red.',color:'#ef4444'}),
+  Object.freeze({id:'green',productId:'cursor-green',name:'Marker Green',description:'Lively marker green.',color:'#22a860'}),
+  Object.freeze({id:'purple',productId:'cursor-purple',name:'Violet',description:'Rich violet purple.',color:'#8b5cf6'}),
+  Object.freeze({id:'gold',productId:'cursor-gold',name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'})
+]);
 const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
+const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
   'pastel-theme-pack':'theme-pastel',
@@ -2376,9 +2385,28 @@ function getDefaultTileSkins(){
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 function tileSkinIsOwned(skin){return Boolean(skin&&getOwnedShopProducts().has(skin.productId))}
+function cursorById(id){return CURSOR_CATALOG.find(cursor=>cursor.id===id)||CURSOR_CATALOG[0]}
+function cursorIsOwned(cursor){return Boolean(cursor&&(!cursor.productId||getOwnedShopProducts().has(cursor.productId)))}
 function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack?.id];return !product||getOwnedShopProducts().has(product)}
 function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>String(theme||'').startsWith(`${name}-`));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
 function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return !product||getOwnedShopProducts().has(product)}
+
+function applyAppCursor(id,{persist=true}={}){
+  const requested=cursorById(id);
+  const cursor=cursorIsOwned(requested)?requested:CURSOR_CATALOG[0];
+  if(persist){try{localStorage.setItem(ACTIVE_CURSOR_KEY,cursor.id)}catch{}}
+  document.body.dataset.appCursor=cursor.id;
+  document.body.classList.toggle('has-custom-cursor',cursor.id!=='default');
+  if(cursor.id==='default')document.documentElement.style.removeProperty('--teacher-cursor');
+  else{
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M3 2.5 25.5 20l-10.2 1.5L10 29 3 2.5Z" fill="${cursor.color}" stroke="white" stroke-width="2.3" stroke-linejoin="round"/><path d="m16 21 5.4 8" fill="none" stroke="#20242a" stroke-width="3.2" stroke-linecap="round"/><path d="m16 21 5.4 8" fill="none" stroke="white" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+    document.documentElement.style.setProperty('--teacher-cursor',`url("data:image/svg+xml,${encodeURIComponent(svg)}") 3 3`);
+  }
+  window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
+  return cursor;
+}
+
+applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false});
 
 function activeTileSkinForType(type){
   const skin=tileSkinById(getDefaultTileSkins()[type]);
@@ -10627,6 +10655,7 @@ function setupCollectionShelf(){
   const themeButton=document.getElementById('theme-shelf-toggle');
   const stickerButton=document.getElementById('sticker-shelf-toggle');
   const tileSkinsButton=document.getElementById('tile-skins-shelf-toggle');
+  const cursorsButton=document.getElementById('cursors-shelf-toggle');
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
   const tileSkinsPanel=document.getElementById('tile-skins-shelf-content');
@@ -10635,6 +10664,9 @@ function setupCollectionShelf(){
   const tileSkinsSort=document.getElementById('tile-skins-sort');
   const tileSkinsStatus=document.getElementById('tile-skins-search-status');
   const tileSkinsGroups=document.getElementById('tile-skins-groups');
+  const cursorsPanel=document.getElementById('cursors-shelf-content');
+  const cursorsGrid=document.getElementById('cursors-shelf-grid');
+  const cursorsStatus=document.getElementById('cursors-shelf-status');
   const stickerSearch=document.getElementById('sticker-shelf-search');
   const stickerSearchClear=document.getElementById('sticker-shelf-search-clear');
   const stickerSearchStatus=document.getElementById('sticker-shelf-search-status');
@@ -10663,7 +10695,7 @@ function setupCollectionShelf(){
   const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
   stickerPanel?.querySelectorAll('.sticker-pack-drawer').forEach(drawer=>drawer.style.setProperty('--sticker-count',String(drawer.querySelectorAll('.sticker-shelf-item').length)));
   const shelfShell=shelf.querySelector('.asset-shelf__shell');
-  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!tileSkinsButton||!themePanel||!stickerPanel||!tileSkinsPanel||!shelfShell||!packs.length)return;
+  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!tileSkinsButton||!cursorsButton||!themePanel||!stickerPanel||!tileSkinsPanel||!cursorsPanel||!shelfShell||!packs.length)return;
 
   let activeShelf=null;
   let activePack=null;
@@ -10800,20 +10832,22 @@ function setupCollectionShelf(){
         const hint=document.createElement('small');hint.textContent=owned?'Drag onto the board':`For the ${skin.tileLabel} tile`;
         copy.append(name,hint);drag.append(preview,copy);
         const actions=document.createElement('div');actions.className='tile-skin-card__actions';
-        const badge=document.createElement('span');badge.textContent=owned?'Owned':'Shop';
+        const badge=document.createElement('span');badge.className=owned?'tile-skin-owned-badge':'collection-pack-lock';badge.textContent=owned?'Owned':'🔒 Shop';
         const action=document.createElement('button');action.type='button';
         if(owned){
           action.className='tile-skin-default-toggle';
           action.setAttribute('aria-pressed',String(active));
-          action.setAttribute('aria-label',`${active?'Stop using':'Use'} ${skin.name} for new ${skin.tileLabel} tiles`);
-          const track=document.createElement('i');const label=document.createElement('b');label.textContent='New tiles';
+          action.setAttribute('aria-label',`${active?'Stop using':'Use'} ${skin.name} for all new ${skin.tileLabel} tiles`);
+          const track=document.createElement('i');const label=document.createElement('b');label.textContent='All Tiles';
           action.append(track,label);
           action.addEventListener('click',event=>{event.stopPropagation();setDefaultTileSkin(skin.tileType,active?'':skin.id)});
         }else{
           action.className='tile-skin-shop-link';action.textContent='View in Shop';
           action.addEventListener('click',()=>{closeShelf();window.TeacherTilesShop?.openPage('tile-skins')});
         }
-        actions.append(badge,action);card.append(drag,actions);grid.appendChild(card);
+        if(owned){actions.append(badge,action);card.append(drag,actions)}
+        else{actions.append(action);card.append(drag,actions,badge)}
+        grid.appendChild(card);
         setupTileSkinDrag(drag,skin);
         drag.addEventListener('keydown',event=>{
           if(!owned||(event.key!=='Enter'&&event.key!==' '))return;
@@ -10833,6 +10867,38 @@ function setupCollectionShelf(){
     const ownedCount=matching.filter(tileSkinIsOwned).length;
     if(tileSkinsStatus)tileSkinsStatus.textContent=query?`${matching.length} ${matching.length===1?'skin':'skins'} found`:`${matching.length} ${matching.length===1?'skin':'skins'} · ${ownedCount} owned`;
     if(tileSkinsSearchClear)tileSkinsSearchClear.hidden=!query;
+  };
+
+  const renderCursorShelf=()=>{
+    if(!cursorsGrid)return;
+    const saved=cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default');
+    const active=cursorIsOwned(saved)?saved.id:'default';
+    if(active!==saved.id)applyAppCursor('default');
+    cursorsGrid.replaceChildren();
+    CURSOR_CATALOG.forEach(cursor=>{
+      const owned=cursorIsOwned(cursor);
+      const selected=active===cursor.id;
+      const card=document.createElement('button');
+      card.type='button';
+      card.className=`cursor-shelf-card${owned?' is-owned':' is-shop-locked'}${selected?' is-selected':''}`;
+      card.style.setProperty('--cursor-color',cursor.color);
+      card.setAttribute('aria-pressed',String(selected));
+      card.setAttribute('aria-label',owned?`Use ${cursor.name} cursor`:`View ${cursor.name} cursor in Shop`);
+      const preview=document.createElement('span');preview.className='cursor-shelf-card__preview';
+      const arrow=document.createElement('i');arrow.className='cursor-arrow-art';preview.appendChild(arrow);
+      const copy=document.createElement('span');copy.className='cursor-shelf-card__copy';
+      const name=document.createElement('strong');name.textContent=cursor.name;
+      const hint=document.createElement('small');hint.textContent=selected?'Currently equipped':owned?'Click to equip':'Available in Shop';
+      copy.append(name,hint);card.append(preview,copy);
+      if(!owned){const lock=document.createElement('span');lock.className='collection-pack-lock';lock.textContent='🔒 Shop';lock.setAttribute('aria-hidden','true');card.appendChild(lock)}
+      else if(selected){const check=document.createElement('span');check.className='cursor-shelf-card__check';check.textContent='✓';card.appendChild(check)}
+      card.addEventListener('click',()=>{
+        if(!owned){closeShelf();window.TeacherTilesShop?.openPage('cursors');return}
+        applyAppCursor(cursor.id);
+      });
+      cursorsGrid.appendChild(card);
+    });
+    if(cursorsStatus)cursorsStatus.textContent=`${CURSOR_CATALOG.filter(cursorIsOwned).length} of ${CURSOR_CATALOG.length} owned`;
   };
 
   const positionThemeFan=()=>{
@@ -10957,9 +11023,11 @@ function setupCollectionShelf(){
     themeButton.classList.toggle('is-active',activeShelf==='themes');
     stickerButton.classList.toggle('is-active',activeShelf==='stickers');
     tileSkinsButton.classList.toggle('is-active',activeShelf==='tile-skins');
+    cursorsButton.classList.toggle('is-active',activeShelf==='cursors');
     themeButton.setAttribute('aria-expanded',String(activeShelf==='themes'));
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
     tileSkinsButton.setAttribute('aria-expanded',String(activeShelf==='tile-skins'));
+    cursorsButton.setAttribute('aria-expanded',String(activeShelf==='cursors'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
   };
 
@@ -10970,7 +11038,7 @@ function setupCollectionShelf(){
     closeStickerPack();
     clearStickerSearch();
     if(tileSkinsSearch)tileSkinsSearch.value='';
-    shelf.classList.remove('is-open','is-sticker-mode','is-tile-skins-mode');
+    shelf.classList.remove('is-open','is-sticker-mode','is-tile-skins-mode','is-cursors-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -10983,16 +11051,21 @@ function setupCollectionShelf(){
     const themes=type==='themes';
     const stickers=type==='stickers';
     const tileSkins=type==='tile-skins';
+    const cursors=type==='cursors';
     themePanel.hidden=!themes;
     stickerPanel.hidden=!stickers;
     tileSkinsPanel.hidden=!tileSkins;
+    cursorsPanel.hidden=!cursors;
     themePanel.classList.toggle('is-active',themes);
     stickerPanel.classList.toggle('is-active',stickers);
     tileSkinsPanel.classList.toggle('is-active',tileSkins);
+    cursorsPanel.classList.toggle('is-active',cursors);
     shelf.classList.toggle('is-sticker-mode',stickers);
     shelf.classList.toggle('is-tile-skins-mode',tileSkins);
+    shelf.classList.toggle('is-cursors-mode',cursors);
     if(tileSkins)renderTileSkinShelf();
-    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Tile Skins';
+    if(cursors)renderCursorShelf();
+    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):tileSkins?'Tile Skins':'Cursors';
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
     syncShelfButtons();
@@ -11001,6 +11074,7 @@ function setupCollectionShelf(){
   themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
   stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
   tileSkinsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('tile-skins')});
+  cursorsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('cursors')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
@@ -11016,8 +11090,14 @@ function setupCollectionShelf(){
   });
   tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch?.focus()});
   tileSkinsSort?.addEventListener('change',renderTileSkinShelf);
-  window.addEventListener('teachertiles:shopownershipchange',()=>{syncCollectionOwnership();renderTileSkinShelf()});
+  window.addEventListener('teachertiles:shopownershipchange',()=>{
+    syncCollectionOwnership();
+    renderTileSkinShelf();
+    if(!cursorIsOwned(cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default')))applyAppCursor('default');
+    renderCursorShelf();
+  });
   window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
+  window.addEventListener('teachertiles:cursorchange',renderCursorShelf);
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
@@ -11051,6 +11131,7 @@ function setupCollectionShelf(){
   updateThemeControls(document.body.dataset.theme||'light');
   syncCollectionOwnership();
   renderTileSkinShelf();
+  renderCursorShelf();
 }
 
 function populateGeneratedStickerPacks(){

@@ -63,7 +63,7 @@
     <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Toggle fullscreen">⛶<span class="upcoming-control__tooltip"><strong data-i18n="top.fullscreen">Fullscreen</strong></span></button>
   </div>
 
-  <div class="workspace-upcoming-controls" aria-label="Profile, theme, sticker, and shop controls">
+  <div class="workspace-upcoming-controls" aria-label="Profile, customization, and shop controls">
     <button id="profile-toggle" class="workspace-control upcoming-control profile-launch-control" type="button" aria-label="Open profile" data-feature-label="Profile" aria-expanded="false">
       <svg class="upcoming-control__icon profile-launch-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="8" r="3.25" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -85,6 +85,10 @@
         <button id="tile-skins-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Tile Skins shelf" data-feature-label="Tile Skins" aria-expanded="false">
           <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19h8a2 2 0 0 0 2-2V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
           <span class="upcoming-control__tooltip"><strong>Tile Skins</strong></span>
+        </button>
+        <button id="cursors-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Cursors shelf" data-feature-label="Cursors" aria-expanded="false">
+          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.8 18.2 14l-6.1 1.1-3.3 5.1L6 3.8Z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m12 14.9 3.2 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="upcoming-control__tooltip"><strong>Cursors</strong></span>
         </button>
       </div>
       <button id="customize-toggle" class="workspace-control upcoming-control customize-toggle" type="button" aria-label="Open customization options" data-feature-label="Customize" aria-expanded="false" aria-controls="customize-launch-menu">
@@ -1015,6 +1019,10 @@
           </div>
           <div id="tile-skins-groups" class="tile-skins-groups"></div>
         </div>
+        <div id="cursors-shelf-content" class="asset-shelf__content cursors-shelf-content" data-shelf-panel="cursors" hidden>
+          <div class="cursors-shelf-heading"><div><strong>Choose your cursor</strong><small>Cursor colors apply everywhere inside TeacherTiles.</small></div><span id="cursors-shelf-status" aria-live="polite"></span></div>
+          <div id="cursors-shelf-grid" class="cursors-shelf-grid"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1120,10 +1128,10 @@
               <span class="shop-category__copy"><small>COLLECTION</small><strong data-i18n="shop.tilePacks">Tile Skins</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Skins</em></span>
               <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
-            <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
-              <span class="shop-category__art shop-category__art--extras" aria-hidden="true">✦</span>
-              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.extras">Extras</strong><em data-i18n="shop.extrasCopy">More ways to customize</em></span>
-              <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
+            <button class="shop-category shop-category--cursors" type="button" data-shop-open-page="cursors">
+              <span class="shop-category__art shop-category__art--cursors" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="shop-category__copy"><small>COLLECTION</small><strong>Cursors</strong><em>Color your mouse pointer</em></span>
+              <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </section>
@@ -1205,6 +1213,20 @@
               <div class="shop-product__preview shop-product__preview--magnifier-classic" aria-hidden="true"><span class="classic-magnifier-art"><i></i><b><em>2×</em></b></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">MAGNIFIER SKIN</span><h3>Classic Magnifying Glass</h3><p>The original round lens, steel rim, and angled handle.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
+          </div>
+        </section>
+
+        <section class="shop-page" data-shop-page="cursors" hidden>
+          <div class="shop-page-heading">
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <div><span>CURSOR COLLECTION</span><h2>Cursors</h2><p>Give your mouse pointer a color that matches your board.</p></div>
+          </div>
+          <div class="shop-product-grid shop-product-grid--cursors">
+            <article class="shop-product" data-shop-product="cursor-blue" data-shop-price="100"><div class="shop-product__preview shop-product__preview--cursor" style="--cursor-color:#3182f6" aria-hidden="true"><span class="cursor-arrow-art"></span></div><div class="shop-product__body"><div><span class="shop-product__type">CURSOR COLOR</span><h3>Electric Blue</h3><p>A bright, crisp blue pointer.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>100</strong></button></div></article>
+            <article class="shop-product" data-shop-product="cursor-red" data-shop-price="100"><div class="shop-product__preview shop-product__preview--cursor" style="--cursor-color:#ef4444" aria-hidden="true"><span class="cursor-arrow-art"></span></div><div class="shop-product__body"><div><span class="shop-product__type">CURSOR COLOR</span><h3>Cherry Red</h3><p>A bold classroom-red pointer.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>100</strong></button></div></article>
+            <article class="shop-product" data-shop-product="cursor-green" data-shop-price="100"><div class="shop-product__preview shop-product__preview--cursor" style="--cursor-color:#22a860" aria-hidden="true"><span class="cursor-arrow-art"></span></div><div class="shop-product__body"><div><span class="shop-product__type">CURSOR COLOR</span><h3>Marker Green</h3><p>A lively green pointer.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>100</strong></button></div></article>
+            <article class="shop-product" data-shop-product="cursor-purple" data-shop-price="100"><div class="shop-product__preview shop-product__preview--cursor" style="--cursor-color:#8b5cf6" aria-hidden="true"><span class="cursor-arrow-art"></span></div><div class="shop-product__body"><div><span class="shop-product__type">CURSOR COLOR</span><h3>Violet</h3><p>A rich purple pointer.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>100</strong></button></div></article>
+            <article class="shop-product" data-shop-product="cursor-gold" data-shop-price="125"><div class="shop-product__preview shop-product__preview--cursor" style="--cursor-color:#e2a51f" aria-hidden="true"><span class="cursor-arrow-art"></span></div><div class="shop-product__body"><div><span class="shop-product__type">CURSOR COLOR</span><h3>Golden Chalk</h3><p>A warm golden-yellow pointer.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>125</strong></button></div></article>
           </div>
         </section>
       </div>
