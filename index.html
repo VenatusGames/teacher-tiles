@@ -133,10 +133,16 @@
           <strong id="profile-title" data-i18n="profile.title">Profile</strong>
         </div>
         <div class="profile-panel__header-actions">
-          <button class="profile-notification-button" type="button" aria-label="Notifications — Coming soon" aria-disabled="true">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.25 9.75a4.75 4.75 0 0 1 9.5 0v3.15c0 1.3.45 2.55 1.28 3.55l.72.87H5.25l.72-.87a5.53 5.53 0 0 0 1.28-3.55V9.75Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19.1a2.25 2.25 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-            <span>Coming soon</span>
-          </button>
+          <div class="profile-notification-wrap">
+            <button id="profile-notification-button" class="profile-notification-button" type="button" aria-label="Open notifications" aria-expanded="false" aria-controls="profile-notification-menu">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.25 9.75a4.75 4.75 0 0 1 9.5 0v3.15c0 1.3.45 2.55 1.28 3.55l.72.87H5.25l.72-.87a5.53 5.53 0 0 0 1.28-3.55V9.75Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19.1a2.25 2.25 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span id="profile-notification-count" class="profile-notification-button__count" hidden>0</span>
+            </button>
+            <section id="profile-notification-menu" class="profile-notification-menu" hidden aria-label="Notifications">
+              <header><div><span>INBOX</span><strong>Notifications</strong></div><small id="profile-notification-summary">All caught up</small></header>
+              <div id="profile-notification-list" class="profile-notification-list"></div>
+            </section>
+          </div>
           <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile">×</button>
         </div>
       </header>
@@ -182,10 +188,10 @@
           </div>
           <section class="profile-tools" aria-labelledby="profile-tools-title">
             <div class="profile-tools__head"><span>ACCOUNT TOOLS</span><h3 id="profile-tools-title">Your tools</h3></div>
-            <button class="profile-tool-button profile-tool-button--coming-soon" type="button" disabled aria-disabled="true">
+            <button id="profile-organizations-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-organizations-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--organization" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7.5L12 4v16M12 9h8v11M7.5 9.5h1M7.5 13h1M7.5 16.5h1M15.5 12.5h1M15.5 16h1M2.5 20h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               <span><strong>Organizations</strong><small>Create an organization for your school, club, group, or team. Share org-wide PBIS stats, boards, and other features amongst your colleagues and collaborators.</small></span>
-              <i aria-hidden="true">Coming Soon</i>
+              <i aria-hidden="true">›</i>
             </button>
             <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--book" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5c2.8-.6 5.4.1 8 2.1v11c-2.6-2-5.2-2.7-8-2.1v-11Zm16 0c-2.8-.6-5.4.1-8 2.1v11c2.6-2 5.2-2.7 8-2.1v-11Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 7.6v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
@@ -197,6 +203,54 @@
               <span><strong>Student View</strong><small>Manage PBIS through detailed stats and view student/class profiles</small></span>
               <i aria-hidden="true">›</i>
             </button>
+          </section>
+          <section id="profile-organizations-panel" class="profile-organizations-panel" hidden aria-hidden="true" aria-labelledby="profile-organizations-title">
+            <div class="organization-window__backdrop" aria-hidden="true"></div>
+            <div class="organization-window" role="dialog" aria-modal="true" aria-labelledby="profile-organizations-title">
+              <section id="organization-list-view" class="organization-view organization-list-view">
+                <header class="organization-window__header">
+                  <button id="profile-organizations-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
+                  <div><span>TEACHERTILES ORGANIZATIONS</span><h3 id="profile-organizations-title">Organizations</h3><p>Create a shared space and invite collaborators by Google-account email.</p></div>
+                  <button id="profile-organizations-close" type="button" aria-label="Close Organizations">×</button>
+                </header>
+                <div class="organization-list-body">
+                  <p id="organization-feedback" class="organization-feedback" hidden></p>
+                  <section id="organization-invitations" class="organization-invitations" hidden>
+                    <div class="organization-section-heading"><div><span>INVITATIONS</span><h4>Waiting for you</h4></div><small id="organization-invitation-count"></small></div>
+                    <div id="organization-invitation-list" class="organization-invitation-list"></div>
+                  </section>
+                  <form id="organization-create-form" class="organization-create-form">
+                    <label><span>New organization</span><input id="organization-create-name" type="text" maxlength="80" placeholder="Organization name, e.g. Lincoln Middle School" autocomplete="organization" required></label>
+                    <button type="submit">Create Organization</button>
+                  </form>
+                  <div class="organization-section-heading"><div><span>YOUR ORGANIZATIONS</span><h4>Shared spaces</h4></div><small id="organization-count">0 organizations</small></div>
+                  <div id="organization-list" class="organization-list"></div>
+                </div>
+              </section>
+
+              <section id="organization-editor-view" class="organization-view organization-editor-view" hidden>
+                <header class="organization-editor__header">
+                  <button id="organization-editor-back" class="tool-window-back" type="button" aria-label="Back to organizations"><span aria-hidden="true">←</span><strong>Organizations</strong></button>
+                  <label><span>ORGANIZATION NAME</span><input id="organization-name" type="text" maxlength="80" aria-label="Organization name"></label>
+                  <button id="organization-editor-done" type="button">Done</button>
+                </header>
+                <div class="organization-editor__body">
+                  <div class="organization-editor-summary"><span class="organization-editor-summary__icon" aria-hidden="true">⌂</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><span id="organization-current-role" class="organization-role-tag">Member</span></div>
+                  <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
+                  <form id="organization-invite-form" class="organization-invite-form">
+                    <div><label for="organization-invite-email">Invite a Google account</label><p>They will see an invitation when they sign in to TeacherTiles with this email.</p></div>
+                    <input id="organization-invite-email" type="email" maxlength="180" placeholder="teacher@example.com" autocomplete="email" required>
+                    <button type="submit">Send Invite</button>
+                  </form>
+                  <div class="organization-section-heading"><div><span>PEOPLE</span><h4>Organization members</h4></div><small id="organization-member-count"></small></div>
+                  <div id="organization-member-list" class="organization-member-list"></div>
+                  <section id="organization-pending-section" class="organization-pending-section" hidden>
+                    <div class="organization-section-heading"><div><span>PENDING</span><h4>Invited accounts</h4></div><small id="organization-pending-count"></small></div>
+                    <div id="organization-pending-list" class="organization-pending-list"></div>
+                  </section>
+                </div>
+              </section>
+            </div>
           </section>
           <section id="profile-classes-panel" class="profile-classes-panel" hidden aria-labelledby="profile-classes-title">
             <div class="classes-window__backdrop" aria-hidden="true"></div>

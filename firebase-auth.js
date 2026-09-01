@@ -36,6 +36,41 @@ const classSyncRetry = document.getElementById("class-sync-retry");
 const classSyncFeedback = document.getElementById("class-sync-feedback");
 if (classSyncPanel && classSyncPanel.parentElement !== document.body) document.body.appendChild(classSyncPanel);
 
+const organizationButton = document.getElementById("profile-organizations-button");
+const organizationPanel = document.getElementById("profile-organizations-panel");
+const organizationBack = document.getElementById("profile-organizations-back");
+const organizationClose = document.getElementById("profile-organizations-close");
+const organizationListView = document.getElementById("organization-list-view");
+const organizationEditorView = document.getElementById("organization-editor-view");
+const organizationCreateForm = document.getElementById("organization-create-form");
+const organizationCreateName = document.getElementById("organization-create-name");
+const organizationListElement = document.getElementById("organization-list");
+const organizationCount = document.getElementById("organization-count");
+const organizationFeedback = document.getElementById("organization-feedback");
+const organizationInvitations = document.getElementById("organization-invitations");
+const organizationInvitationCount = document.getElementById("organization-invitation-count");
+const organizationInvitationList = document.getElementById("organization-invitation-list");
+const organizationEditorBack = document.getElementById("organization-editor-back");
+const organizationEditorDone = document.getElementById("organization-editor-done");
+const organizationNameInput = document.getElementById("organization-name");
+const organizationEditorTitle = document.getElementById("organization-editor-title");
+const organizationEditorMeta = document.getElementById("organization-editor-meta");
+const organizationCurrentRole = document.getElementById("organization-current-role");
+const organizationEditorFeedback = document.getElementById("organization-editor-feedback");
+const organizationInviteForm = document.getElementById("organization-invite-form");
+const organizationInviteEmail = document.getElementById("organization-invite-email");
+const organizationMemberCount = document.getElementById("organization-member-count");
+const organizationMemberList = document.getElementById("organization-member-list");
+const organizationPendingSection = document.getElementById("organization-pending-section");
+const organizationPendingCount = document.getElementById("organization-pending-count");
+const organizationPendingList = document.getElementById("organization-pending-list");
+const notificationButton = document.getElementById("profile-notification-button");
+const notificationCount = document.getElementById("profile-notification-count");
+const notificationMenu = document.getElementById("profile-notification-menu");
+const notificationSummary = document.getElementById("profile-notification-summary");
+const notificationList = document.getElementById("profile-notification-list");
+if (organizationPanel && organizationPanel.parentElement !== document.body) document.body.appendChild(organizationPanel);
+
 const boardsToggle = document.getElementById("boards-toggle");
 const boardsView = document.getElementById("boards-view");
 const boardsBack = document.getElementById("boards-back");
@@ -54,6 +89,13 @@ let currentUser = null;
 let authReady = false;
 let busy = false;
 let lastFocused = null;
+let organizationBusy = false;
+let organizationMemberships = [];
+let organizationInvites = [];
+let activeOrganization = null;
+let activeOrganizationMembers = [];
+let activeOrganizationInvites = [];
+let organizationInviteUnsubscribe = null;
 
 let classSyncDocumentExists = false;
 let classSyncHasCiphertext = false;
@@ -521,6 +563,619 @@ function fallbackAvatarData(name = "Teacher") {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
+function organizationDocument(organizationId) {
+  return firestoreSdk.doc(db, "organizations", organizationId);
+}
+
+function organizationMemberDocument(organizationId, uid) {
+  return firestoreSdk.doc(db, "organizationMembers", `${organizationId}_${uid}`);
+}
+
+function organizationInviteDocument(inviteId) {
+  return firestoreSdk.doc(db, "organizationInvites", inviteId);
+}
+
+function normalizeOrganizationEmail(value = "") {
+  return String(value).trim().toLowerCase();
+}
+
+function setOrganizationFeedback(element, message = "", isError = false) {
+  if (!element) return;
+  element.textContent = message;
+  element.hidden = !message;
+  element.classList.toggle("is-error", Boolean(message && isError));
+}
+
+function currentOrganizationMembership() {
+  if (!activeOrganization || !currentUser) return null;
+  return activeOrganizationMembers.find(member => member.uid === currentUser.uid)
+    || activeOrganization.membership
+    || null;
+}
+
+function currentOrganizationRole() {
+  return currentOrganizationMembership()?.role || "Member";
+}
+
+function canInviteOrganizationMembers() {
+  return ["Owner", "Admin"].includes(currentOrganizationRole());
+}
+
+function canEditOrganizationRoles() {
+  return currentOrganizationRole() === "Owner";
+}
+
+function roleTag(role = "Member") {
+  const tag = document.createElement("span");
+  tag.className = "organization-role-tag";
+  tag.dataset.role = role;
+  tag.textContent = role;
+  return tag;
+}
+
+function closeNotificationMenu() {
+  if (!notificationMenu) return;
+  notificationMenu.hidden = true;
+  notificationButton?.setAttribute("aria-expanded", "false");
+}
+
+async function acceptOrganizationInvite(invite) {
+  if (organizationBusy || !currentUser || !firestoreSdk || !db) return;
+  organizationBusy = true;
+  setOrganizationFeedback(organizationFeedback, `Joining ${invite.organizationName || "organization"}…`);
+  try {
+    const batch = firestoreSdk.writeBatch(db);
+    batch.set(organizationMemberDocument(invite.organizationId, currentUser.uid), {
+      organizationId: invite.organizationId,
+      uid: currentUser.uid,
+      email: normalizeOrganizationEmail(currentUser.email),
+      displayName: currentUser.displayName?.trim() || "Teacher",
+      photoURL: currentUser.photoURL || "",
+      role: "Member",
+      inviteId: invite.id,
+      joinedAt: firestoreSdk.serverTimestamp(),
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    batch.delete(organizationInviteDocument(invite.id));
+    await batch.commit();
+    setOrganizationFeedback(organizationFeedback, `You joined ${invite.organizationName || "the organization"}.`);
+    await loadOrganizationIndex();
+  } catch (error) {
+    console.error("TeacherTiles could not accept the organization invitation", error);
+    setOrganizationFeedback(organizationFeedback, "The invitation could not be accepted. Please try again.", true);
+    if (notificationSummary) notificationSummary.textContent = "Could not join";
+  } finally {
+    organizationBusy = false;
+  }
+}
+
+async function declineOrganizationInvite(invite) {
+  if (organizationBusy || !currentUser || !firestoreSdk || !db) return;
+  organizationBusy = true;
+  try {
+    await firestoreSdk.deleteDoc(organizationInviteDocument(invite.id));
+  } catch (error) {
+    console.error("TeacherTiles could not decline the organization invitation", error);
+    setOrganizationFeedback(organizationFeedback, "The invitation could not be declined. Please try again.", true);
+    if (notificationSummary) notificationSummary.textContent = "Could not update";
+  } finally {
+    organizationBusy = false;
+  }
+}
+
+function buildInvitationActions(invite, compact = false) {
+  const actions = document.createElement("div");
+  actions.className = compact ? "profile-notification-card__actions" : "organization-invitation-actions";
+  const accept = document.createElement("button");
+  accept.type = "button";
+  accept.textContent = "Join";
+  accept.addEventListener("click", async event => {
+    event.stopPropagation();
+    accept.disabled = true;
+    decline.disabled = true;
+    await acceptOrganizationInvite(invite);
+    if (accept.isConnected) {
+      accept.disabled = false;
+      decline.disabled = false;
+    }
+  });
+  const decline = document.createElement("button");
+  decline.type = "button";
+  decline.textContent = "Decline";
+  decline.addEventListener("click", async event => {
+    event.stopPropagation();
+    accept.disabled = true;
+    decline.disabled = true;
+    await declineOrganizationInvite(invite);
+    if (accept.isConnected) {
+      accept.disabled = false;
+      decline.disabled = false;
+    }
+  });
+  actions.append(accept, decline);
+  return actions;
+}
+
+function renderNotificationInbox() {
+  if (!notificationList) return;
+  notificationList.replaceChildren();
+  const count = organizationInvites.length;
+  if (notificationCount) {
+    notificationCount.textContent = count > 99 ? "99+" : String(count);
+    notificationCount.hidden = count === 0;
+  }
+  if (notificationSummary) notificationSummary.textContent = count ? `${count} new` : "All caught up";
+  notificationButton?.setAttribute("aria-label", count ? `Open notifications, ${count} pending` : "Open notifications");
+  if (!count) {
+    const empty = document.createElement("div");
+    empty.className = "profile-notification-empty";
+    empty.textContent = currentUser ? "You do not have any new notifications." : "Sign in to view notifications.";
+    notificationList.appendChild(empty);
+    return;
+  }
+  organizationInvites.forEach(invite => {
+    const card = document.createElement("article");
+    card.className = "profile-notification-card";
+    const icon = document.createElement("span");
+    icon.className = "profile-notification-card__icon";
+    icon.textContent = "⌂";
+    const copy = document.createElement("div");
+    copy.className = "profile-notification-card__copy";
+    const title = document.createElement("strong");
+    title.textContent = invite.organizationName || "Organization invitation";
+    const detail = document.createElement("small");
+    detail.textContent = `${invite.invitedByName || "An organization owner"} invited you to join as a Member.`;
+    copy.append(title, detail, buildInvitationActions(invite, true));
+    card.append(icon, copy);
+    notificationList.appendChild(card);
+  });
+}
+
+function renderOrganizationInvitations() {
+  if (!organizationInvitationList || !organizationInvitations) return;
+  organizationInvitationList.replaceChildren();
+  organizationInvitations.hidden = organizationInvites.length === 0;
+  if (organizationInvitationCount) organizationInvitationCount.textContent = `${organizationInvites.length} pending`;
+  organizationInvites.forEach(invite => {
+    const card = document.createElement("article");
+    card.className = "organization-invitation-card";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = invite.organizationName || "Organization invitation";
+    const detail = document.createElement("small");
+    detail.textContent = `${invite.invitedByName || "An owner"} invited ${currentUser?.email || "your Google account"} as a Member.`;
+    copy.append(title, detail);
+    card.append(copy, buildInvitationActions(invite));
+    organizationInvitationList.appendChild(card);
+  });
+}
+
+function stopOrganizationInviteListener() {
+  organizationInviteUnsubscribe?.();
+  organizationInviteUnsubscribe = null;
+  organizationInvites = [];
+  renderNotificationInbox();
+  renderOrganizationInvitations();
+}
+
+function startOrganizationInviteListener(user) {
+  stopOrganizationInviteListener();
+  const email = normalizeOrganizationEmail(user?.email);
+  if (!user || !email || !firestoreSdk || !db) return;
+  const invitesQuery = firestoreSdk.query(
+    firestoreSdk.collection(db, "organizationInvites"),
+    firestoreSdk.where("email", "==", email)
+  );
+  organizationInviteUnsubscribe = firestoreSdk.onSnapshot(invitesQuery, snapshot => {
+    organizationInvites = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    renderNotificationInbox();
+    renderOrganizationInvitations();
+  }, error => {
+    console.error("TeacherTiles could not watch organization invitations", error);
+    organizationInvites = [];
+    renderNotificationInbox();
+    renderOrganizationInvitations();
+  });
+}
+
+function renderOrganizationList() {
+  if (!organizationListElement) return;
+  organizationListElement.replaceChildren();
+  if (organizationCount) organizationCount.textContent = `${organizationMemberships.length} ${organizationMemberships.length === 1 ? "organization" : "organizations"}`;
+  if (!organizationMemberships.length) {
+    const empty = document.createElement("div");
+    empty.className = "organization-empty";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = "No organizations yet";
+    const detail = document.createElement("p");
+    detail.textContent = "Create one above or accept an invitation from your notifications.";
+    copy.append(title, detail);
+    empty.appendChild(copy);
+    organizationListElement.appendChild(empty);
+    return;
+  }
+  organizationMemberships.forEach(item => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "organization-card";
+    const icon = document.createElement("span");
+    icon.className = "organization-card__icon";
+    icon.textContent = "⌂";
+    const copy = document.createElement("span");
+    copy.className = "organization-card__copy";
+    const title = document.createElement("strong");
+    title.textContent = item.name;
+    const detail = document.createElement("small");
+    detail.textContent = `Your role: ${item.membership.role}`;
+    copy.append(title, detail);
+    const arrow = document.createElement("i");
+    arrow.textContent = "›";
+    card.append(icon, copy, arrow);
+    card.addEventListener("click", () => openOrganizationEditor(item));
+    organizationListElement.appendChild(card);
+  });
+}
+
+async function loadOrganizationIndex() {
+  if (!currentUser || !firestoreSdk || !db) {
+    organizationMemberships = [];
+    renderOrganizationList();
+    return;
+  }
+  try {
+    const membershipsQuery = firestoreSdk.query(
+      firestoreSdk.collection(db, "organizationMembers"),
+      firestoreSdk.where("uid", "==", currentUser.uid)
+    );
+    const membershipsSnapshot = await firestoreSdk.getDocs(membershipsQuery);
+    const memberships = membershipsSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    const items = await Promise.all(memberships.map(async membership => {
+      const organizationSnapshot = await firestoreSdk.getDoc(organizationDocument(membership.organizationId));
+      if (!organizationSnapshot.exists()) return null;
+      return { id: organizationSnapshot.id, ...organizationSnapshot.data(), membership };
+    }));
+    organizationMemberships = items.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+    renderOrganizationList();
+  } catch (error) {
+    console.error("TeacherTiles could not load organizations", error);
+    setOrganizationFeedback(organizationFeedback, "Organizations could not be loaded. Check your connection and try again.", true);
+  }
+}
+
+function setOrganizationEditorOpen(open) {
+  if (!organizationListView || !organizationEditorView) return;
+  organizationListView.hidden = open;
+  organizationEditorView.hidden = !open;
+  if (!open) {
+    activeOrganization = null;
+    activeOrganizationMembers = [];
+    activeOrganizationInvites = [];
+    setOrganizationFeedback(organizationEditorFeedback);
+  }
+}
+
+function canRemoveOrganizationMember(member) {
+  if (!member || member.uid === currentUser?.uid || member.role === "Owner") return false;
+  const role = currentOrganizationRole();
+  return role === "Owner" || (role === "Admin" && member.role === "Member");
+}
+
+function renderOrganizationMembers() {
+  if (!organizationMemberList) return;
+  organizationMemberList.replaceChildren();
+  if (organizationMemberCount) organizationMemberCount.textContent = `${activeOrganizationMembers.length} ${activeOrganizationMembers.length === 1 ? "person" : "people"}`;
+  const currentRole = currentOrganizationRole();
+  if (organizationCurrentRole) {
+    organizationCurrentRole.textContent = currentRole;
+    organizationCurrentRole.dataset.role = currentRole;
+  }
+  if (organizationEditorMeta) organizationEditorMeta.textContent = `${activeOrganizationMembers.length} ${activeOrganizationMembers.length === 1 ? "member" : "members"} · You are ${currentRole}`;
+  activeOrganizationMembers.forEach(member => {
+    const card = document.createElement("article");
+    card.className = `organization-member-card${member.uid === currentUser?.uid ? " is-current" : ""}`;
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "organization-member-avatar-wrap";
+    const avatar = document.createElement("span");
+    avatar.className = "organization-member-avatar";
+    if (member.photoURL) {
+      const image = document.createElement("img");
+      image.src = member.photoURL;
+      image.alt = "";
+      avatar.appendChild(image);
+    } else avatar.textContent = (member.displayName?.trim()[0] || member.email?.trim()[0] || "T").toUpperCase();
+    avatarWrap.append(avatar, roleTag(member.role));
+    const copy = document.createElement("div");
+    copy.className = "organization-member-copy";
+    const name = document.createElement("strong");
+    name.textContent = `${member.displayName || "Teacher"}${member.uid === currentUser?.uid ? " (You)" : ""}`;
+    const email = document.createElement("small");
+    email.textContent = member.email || "Google account";
+    copy.append(name, email);
+    const actions = document.createElement("div");
+    actions.className = "organization-member-actions";
+    if (canEditOrganizationRoles() && member.uid !== currentUser?.uid) {
+      const select = document.createElement("select");
+      select.className = "organization-member-role";
+      select.setAttribute("aria-label", `Role for ${member.displayName || member.email}`);
+      ["Owner", "Admin", "Member"].forEach(role => {
+        const option = document.createElement("option");
+        option.value = role;
+        option.textContent = role;
+        option.selected = role === member.role;
+        select.appendChild(option);
+      });
+      select.addEventListener("change", () => updateOrganizationMemberRole(member, select.value));
+      actions.appendChild(select);
+    }
+    if (canRemoveOrganizationMember(member)) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "organization-member-remove";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", `Remove ${member.displayName || member.email}`);
+      remove.addEventListener("click", () => removeOrganizationMember(member));
+      actions.appendChild(remove);
+    }
+    card.append(avatarWrap, copy, actions);
+    organizationMemberList.appendChild(card);
+  });
+}
+
+function renderOrganizationPendingInvites() {
+  if (!organizationPendingList || !organizationPendingSection) return;
+  organizationPendingList.replaceChildren();
+  organizationPendingSection.hidden = activeOrganizationInvites.length === 0;
+  if (organizationPendingCount) organizationPendingCount.textContent = `${activeOrganizationInvites.length} pending`;
+  activeOrganizationInvites.forEach(invite => {
+    const card = document.createElement("article");
+    card.className = "organization-pending-card";
+    const copy = document.createElement("div");
+    const email = document.createElement("strong");
+    email.textContent = invite.email;
+    const detail = document.createElement("small");
+    detail.textContent = "Invited as Member";
+    copy.append(email, detail);
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "Cancel Invite";
+    cancel.addEventListener("click", async () => {
+      cancel.disabled = true;
+      try {
+        await firestoreSdk.deleteDoc(organizationInviteDocument(invite.id));
+        await refreshOrganizationEditor();
+      } catch (error) {
+        console.error("TeacherTiles could not cancel the organization invitation", error);
+        setOrganizationFeedback(organizationEditorFeedback, "The invitation could not be canceled.", true);
+        cancel.disabled = false;
+      }
+    });
+    card.append(copy, cancel);
+    organizationPendingList.appendChild(card);
+  });
+}
+
+async function refreshOrganizationEditor() {
+  if (!activeOrganization || !currentUser || !firestoreSdk || !db) return;
+  try {
+    const memberQuery = firestoreSdk.query(
+      firestoreSdk.collection(db, "organizationMembers"),
+      firestoreSdk.where("organizationId", "==", activeOrganization.id)
+    );
+    const memberSnapshot = await firestoreSdk.getDocs(memberQuery);
+    activeOrganizationMembers = memberSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    activeOrganizationMembers.sort((a, b) => {
+      const rank = { Owner: 0, Admin: 1, Member: 2 };
+      return (rank[a.role] ?? 3) - (rank[b.role] ?? 3) || String(a.displayName || a.email).localeCompare(String(b.displayName || b.email));
+    });
+    const role = currentOrganizationRole();
+    if (["Owner", "Admin"].includes(role)) {
+      const inviteQuery = firestoreSdk.query(
+        firestoreSdk.collection(db, "organizationInvites"),
+        firestoreSdk.where("organizationId", "==", activeOrganization.id)
+      );
+      const inviteSnapshot = await firestoreSdk.getDocs(inviteQuery);
+      activeOrganizationInvites = inviteSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    } else activeOrganizationInvites = [];
+    if (organizationInviteForm) organizationInviteForm.hidden = !canInviteOrganizationMembers();
+    if (organizationNameInput) organizationNameInput.disabled = role !== "Owner";
+    renderOrganizationMembers();
+    renderOrganizationPendingInvites();
+  } catch (error) {
+    console.error("TeacherTiles could not load organization members", error);
+    setOrganizationFeedback(organizationEditorFeedback, "Organization members could not be loaded.", true);
+  }
+}
+
+async function openOrganizationEditor(item) {
+  activeOrganization = item;
+  if (organizationNameInput) organizationNameInput.value = item.name;
+  if (organizationEditorTitle) organizationEditorTitle.textContent = item.name;
+  setOrganizationEditorOpen(true);
+  setOrganizationFeedback(organizationEditorFeedback, "Loading organization…");
+  await refreshOrganizationEditor();
+  if (!organizationEditorFeedback?.classList.contains("is-error")) setOrganizationFeedback(organizationEditorFeedback);
+}
+
+async function updateOrganizationMemberRole(member, role) {
+  if (!activeOrganization || !canEditOrganizationRoles() || !["Owner", "Admin", "Member"].includes(role)) return;
+  setOrganizationFeedback(organizationEditorFeedback, `Updating ${member.displayName || member.email}…`);
+  try {
+    await firestoreSdk.updateDoc(organizationMemberDocument(activeOrganization.id, member.uid), {
+      role,
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    await refreshOrganizationEditor();
+    setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} is now ${role}.`);
+  } catch (error) {
+    console.error("TeacherTiles could not update the organization role", error);
+    setOrganizationFeedback(organizationEditorFeedback, "That role could not be updated.", true);
+    await refreshOrganizationEditor();
+  }
+}
+
+async function removeOrganizationMember(member) {
+  if (!activeOrganization || !canRemoveOrganizationMember(member)) return;
+  if (!confirm(`Remove ${member.displayName || member.email} from ${activeOrganization.name}?`)) return;
+  setOrganizationFeedback(organizationEditorFeedback, `Removing ${member.displayName || member.email}…`);
+  try {
+    await firestoreSdk.deleteDoc(organizationMemberDocument(activeOrganization.id, member.uid));
+    await refreshOrganizationEditor();
+    setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} was removed.`);
+  } catch (error) {
+    console.error("TeacherTiles could not remove the organization member", error);
+    setOrganizationFeedback(organizationEditorFeedback, "That member could not be removed.", true);
+  }
+}
+
+async function saveOrganizationName() {
+  if (!activeOrganization || currentOrganizationRole() !== "Owner" || !organizationNameInput) return;
+  const name = organizationNameInput.value.trim();
+  if (!name) {
+    setOrganizationFeedback(organizationEditorFeedback, "Enter an organization name.", true);
+    organizationNameInput.focus();
+    return;
+  }
+  if (name === activeOrganization.name) return;
+  try {
+    await firestoreSdk.updateDoc(organizationDocument(activeOrganization.id), {
+      name,
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    activeOrganization.name = name;
+    if (organizationEditorTitle) organizationEditorTitle.textContent = name;
+    setOrganizationFeedback(organizationEditorFeedback, "Organization name saved.");
+    await loadOrganizationIndex();
+  } catch (error) {
+    console.error("TeacherTiles could not rename the organization", error);
+    setOrganizationFeedback(organizationEditorFeedback, "The organization name could not be saved.", true);
+  }
+}
+
+async function closeOrganizationEditor() {
+  await saveOrganizationName();
+  setOrganizationEditorOpen(false);
+  await loadOrganizationIndex();
+}
+
+async function openOrganizationsPanel() {
+  if (!currentUser) {
+    openProfile();
+    return;
+  }
+  closeNotificationMenu();
+  closeProfile();
+  organizationPanel.hidden = false;
+  organizationPanel.setAttribute("aria-hidden", "false");
+  organizationButton?.setAttribute("aria-expanded", "true");
+  setOrganizationEditorOpen(false);
+  setOrganizationFeedback(organizationFeedback, "Loading organizations…");
+  await loadOrganizationIndex();
+  if (!organizationFeedback?.classList.contains("is-error")) setOrganizationFeedback(organizationFeedback);
+  requestAnimationFrame(() => organizationClose?.focus({ preventScroll: true }));
+}
+
+function closeOrganizationsPanel({ reopenProfile = false } = {}) {
+  if (!organizationPanel || organizationPanel.hidden) return;
+  organizationPanel.hidden = true;
+  organizationPanel.setAttribute("aria-hidden", "true");
+  organizationButton?.setAttribute("aria-expanded", "false");
+  setOrganizationEditorOpen(false);
+  if (reopenProfile) openProfile();
+  else toggle?.focus({ preventScroll: true });
+}
+
+async function createOrganization(event) {
+  event?.preventDefault();
+  if (organizationBusy || !currentUser || !firestoreSdk || !db || !organizationCreateName) return;
+  const name = organizationCreateName.value.trim();
+  if (!name) return;
+  organizationBusy = true;
+  const submit = organizationCreateForm?.querySelector('button[type="submit"]');
+  if (submit) submit.disabled = true;
+  setOrganizationFeedback(organizationFeedback, `Creating ${name}…`);
+  try {
+    const reference = firestoreSdk.doc(firestoreSdk.collection(db, "organizations"));
+    const batch = firestoreSdk.writeBatch(db);
+    batch.set(reference, {
+      name,
+      ownerId: currentUser.uid,
+      ownerEmail: normalizeOrganizationEmail(currentUser.email),
+      createdAt: firestoreSdk.serverTimestamp(),
+      updatedAt: firestoreSdk.serverTimestamp(),
+      schemaVersion: 1
+    });
+    batch.set(organizationMemberDocument(reference.id, currentUser.uid), {
+      organizationId: reference.id,
+      uid: currentUser.uid,
+      email: normalizeOrganizationEmail(currentUser.email),
+      displayName: currentUser.displayName?.trim() || "Teacher",
+      photoURL: currentUser.photoURL || "",
+      role: "Owner",
+      inviteId: "",
+      joinedAt: firestoreSdk.serverTimestamp(),
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    await batch.commit();
+    organizationCreateName.value = "";
+    await loadOrganizationIndex();
+    const created = organizationMemberships.find(item => item.id === reference.id);
+    setOrganizationFeedback(organizationFeedback, `${name} was created.`);
+    if (created) await openOrganizationEditor(created);
+  } catch (error) {
+    console.error("TeacherTiles could not create the organization", error);
+    setOrganizationFeedback(organizationFeedback, "The organization could not be created. Please try again.", true);
+  } finally {
+    organizationBusy = false;
+    if (submit) submit.disabled = false;
+  }
+}
+
+async function inviteToOrganization(event) {
+  event?.preventDefault();
+  if (organizationBusy || !activeOrganization || !canInviteOrganizationMembers() || !organizationInviteEmail) return;
+  const email = normalizeOrganizationEmail(organizationInviteEmail.value);
+  if (!email || !email.includes("@")) return;
+  if (email === normalizeOrganizationEmail(currentUser?.email)) {
+    setOrganizationFeedback(organizationEditorFeedback, "You are already in this organization.", true);
+    return;
+  }
+  if (activeOrganizationMembers.some(member => normalizeOrganizationEmail(member.email) === email)) {
+    setOrganizationFeedback(organizationEditorFeedback, "That Google account is already a member.", true);
+    return;
+  }
+  if (activeOrganizationInvites.some(invite => normalizeOrganizationEmail(invite.email) === email)) {
+    setOrganizationFeedback(organizationEditorFeedback, "That Google account already has a pending invitation.", true);
+    return;
+  }
+  organizationBusy = true;
+  const submit = organizationInviteForm?.querySelector('button[type="submit"]');
+  if (submit) submit.disabled = true;
+  setOrganizationFeedback(organizationEditorFeedback, `Inviting ${email}…`);
+  try {
+    const reference = firestoreSdk.doc(firestoreSdk.collection(db, "organizationInvites"));
+    await firestoreSdk.setDoc(reference, {
+      organizationId: activeOrganization.id,
+      organizationName: activeOrganization.name,
+      email,
+      role: "Member",
+      invitedByUid: currentUser.uid,
+      invitedByName: currentUser.displayName?.trim() || "Teacher",
+      invitedByEmail: normalizeOrganizationEmail(currentUser.email),
+      createdAt: firestoreSdk.serverTimestamp()
+    });
+    organizationInviteEmail.value = "";
+    await refreshOrganizationEditor();
+    setOrganizationFeedback(organizationEditorFeedback, `Invitation sent to ${email}.`);
+  } catch (error) {
+    console.error("TeacherTiles could not invite the Google account", error);
+    setOrganizationFeedback(organizationEditorFeedback, "The invitation could not be sent. Please try again.", true);
+  } finally {
+    organizationBusy = false;
+    if (submit) submit.disabled = false;
+  }
+}
+
 function closeBoardsView() {
   if (!boardsView || boardsView.hidden) return;
   boardsView.hidden = true;
@@ -552,6 +1207,7 @@ function openProfile() {
 function closeProfile() {
   if (modal.hidden) return;
   closeClassSyncPanel();
+  closeNotificationMenu();
   modal.hidden = true;
   modal.setAttribute("aria-hidden", "true");
   toggle.setAttribute("aria-expanded", "false");
@@ -2480,6 +3136,13 @@ async function renderUser(user) {
     classSyncLastError = "";
     clearActiveClassEncryptionKey();
     closeClassSyncPanel();
+    stopOrganizationInviteListener();
+    organizationMemberships = [];
+    activeOrganization = null;
+    activeOrganizationMembers = [];
+    activeOrganizationInvites = [];
+    renderOrganizationList();
+    closeOrganizationsPanel();
   }
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
@@ -2509,6 +3172,11 @@ async function renderUser(user) {
     toggle.classList.add("is-signed-in");
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
+
+    if (!previousUser || previousUser.uid !== user.uid) {
+      startOrganizationInviteListener(user);
+      loadOrganizationIndex();
+    }
 
     const sessionKey = sessionClassEncryptionKeyBytes(user.uid);
     if (sessionKey) {
@@ -2553,6 +3221,7 @@ async function renderUser(user) {
     toggle.setAttribute("aria-label", "Open profile");
     profileAvatar.removeAttribute("src");
     closeOtherSurfaces();
+    closeNotificationMenu();
 
     if (isInitialAuthResolution) {
       requestAnimationFrame(() => {
@@ -2687,6 +3356,32 @@ document.addEventListener("click", event => {
 }, true);
 
 toggle.addEventListener("click", () => modal.hidden ? openProfile() : closeProfile());
+organizationButton?.addEventListener("click", openOrganizationsPanel);
+organizationBack?.addEventListener("click", () => closeOrganizationsPanel({ reopenProfile: true }));
+organizationClose?.addEventListener("click", () => closeOrganizationsPanel());
+organizationPanel?.querySelector(".organization-window__backdrop")?.addEventListener("click", () => closeOrganizationsPanel());
+organizationCreateForm?.addEventListener("submit", createOrganization);
+organizationInviteForm?.addEventListener("submit", inviteToOrganization);
+organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
+organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
+organizationNameInput?.addEventListener("keydown", event => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  saveOrganizationName();
+});
+notificationButton?.addEventListener("click", event => {
+  event.stopPropagation();
+  if (!notificationMenu) return;
+  const open = notificationMenu.hidden;
+  notificationMenu.hidden = !open;
+  notificationButton.setAttribute("aria-expanded", String(open));
+  if (open) renderNotificationInbox();
+});
+notificationMenu?.addEventListener("click", event => event.stopPropagation());
+document.addEventListener("click", event => {
+  if (notificationMenu?.hidden || event.target.closest?.(".profile-notification-wrap")) return;
+  closeNotificationMenu();
+});
 classSyncButton?.addEventListener("click", openClassSyncPanel);
 classSyncBack?.addEventListener("click", closeClassSyncPanel);
 classSyncBackdrop?.addEventListener("click", closeClassSyncPanel);
@@ -2738,6 +3433,19 @@ boardsBack?.addEventListener("click", closeBoardsView);
 
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape") return;
+
+  if (!organizationPanel?.hidden) {
+    event.preventDefault();
+    closeOrganizationsPanel();
+    return;
+  }
+
+  if (!notificationMenu?.hidden) {
+    event.preventDefault();
+    closeNotificationMenu();
+    notificationButton?.focus();
+    return;
+  }
 
   if (!boardsView?.hidden) {
     event.preventDefault();

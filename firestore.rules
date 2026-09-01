@@ -1,8 +1,93 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function organizationMemberPath(organizationId, userId) {
+      return /databases/$(database)/documents/organizationMembers/$(organizationId + "_" + userId);
+    }
+
+    function isOrganizationMember(organizationId) {
+      return signedIn() && exists(organizationMemberPath(organizationId, request.auth.uid));
+    }
+
+    function organizationRole(organizationId) {
+      return get(organizationMemberPath(organizationId, request.auth.uid)).data.role;
+    }
+
+    function canManageOrganization(organizationId) {
+      return isOrganizationMember(organizationId)
+        && organizationRole(organizationId) in ["Owner", "Admin"];
+    }
+
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /organizations/{organizationId} {
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80;
+      allow read: if isOrganizationMember(organizationId);
+      allow update: if organizationRole(organizationId) == "Owner"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name", "updatedAt"])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80;
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /organizationMembers/{memberId} {
+      allow read: if signedIn()
+        && (resource.data.uid == request.auth.uid
+          || isOrganizationMember(resource.data.organizationId));
+      allow create: if signedIn()
+        && memberId == request.resource.data.organizationId + "_" + request.resource.data.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.auth.token.email is string
+        && request.resource.data.email == request.auth.token.email.lower()
+        && (
+          (request.resource.data.role == "Owner"
+            && getAfter(/databases/$(database)/documents/organizations/$(request.resource.data.organizationId)).data.ownerId == request.auth.uid)
+          ||
+          (request.resource.data.role == "Member"
+            && request.resource.data.inviteId is string
+            && exists(/databases/$(database)/documents/organizationInvites/$(request.resource.data.inviteId))
+            && get(/databases/$(database)/documents/organizationInvites/$(request.resource.data.inviteId)).data.organizationId == request.resource.data.organizationId
+            && get(/databases/$(database)/documents/organizationInvites/$(request.resource.data.inviteId)).data.email == request.auth.token.email.lower())
+        );
+      allow update: if organizationRole(resource.data.organizationId) == "Owner"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["role", "updatedAt"])
+        && request.resource.data.role in ["Owner", "Admin", "Member"]
+        && (resource.data.uid != get(/databases/$(database)/documents/organizations/$(resource.data.organizationId)).data.ownerId
+          || request.resource.data.role == "Owner");
+      allow delete: if canManageOrganization(resource.data.organizationId)
+        && resource.data.role != "Owner"
+        && (organizationRole(resource.data.organizationId) == "Owner" || resource.data.role == "Member");
+    }
+
+    match /organizationInvites/{inviteId} {
+      allow read: if signedIn()
+        && request.auth.token.email is string
+        && (resource.data.email == request.auth.token.email.lower()
+          || canManageOrganization(resource.data.organizationId));
+      allow create: if signedIn()
+        && canManageOrganization(request.resource.data.organizationId)
+        && request.resource.data.invitedByUid == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 180
+        && request.resource.data.email == request.resource.data.email.lower()
+        && request.resource.data.role == "Member";
+      allow update: if false;
+      allow delete: if signedIn()
+        && request.auth.token.email is string
+        && (resource.data.email == request.auth.token.email.lower()
+          || canManageOrganization(resource.data.organizationId));
     }
   }
 }
