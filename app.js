@@ -13759,7 +13759,24 @@ function setupShapeManipulatives(m){
   let nextId=0;
   let selectedId=0;
   let paletteDragType='';
+  let paletteDragImage=null;
   const definition=id=>definitions.find(item=>item.id===id);
+  const clearPaletteDragImage=()=>{paletteDragImage?.remove();paletteDragImage=null};
+  const createPaletteDragImage=def=>{
+    const padding=10;
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.ceil(def.width+padding*2);canvas.height=Math.ceil(def.height+padding*2);
+    canvas.style.position='fixed';canvas.style.left='-10000px';canvas.style.top='-10000px';canvas.style.pointerEvents='none';
+    const ctx=canvas.getContext('2d');if(!ctx)return canvas;
+    const traceShape=()=>{
+      ctx.beginPath();def.vertices.forEach(([x,y],index)=>index?ctx.lineTo(x+padding,y+padding):ctx.moveTo(x+padding,y+padding));ctx.closePath();
+    };
+    ctx.save();ctx.shadowColor='rgba(15,23,42,.3)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;traceShape();ctx.fillStyle=def.color;ctx.fill();ctx.restore();
+    const gradient=ctx.createLinearGradient(padding,padding,padding+def.width,padding+def.height);
+    gradient.addColorStop(0,'rgba(255,255,255,.38)');gradient.addColorStop(.42,'rgba(255,255,255,.04)');gradient.addColorStop(1,'rgba(0,0,0,.22)');
+    traceShape();ctx.fillStyle=def.color;ctx.fill();ctx.fillStyle=gradient;ctx.fill();
+    return canvas;
+  };
   const selectedPiece=()=>pieces.find(piece=>piece.id===selectedId);
   const notify=reason=>notifyBoardChanged(`shape-manipulatives-${reason}`);
   const workspacePoint=(clientX,clientY)=>{
@@ -13921,8 +13938,12 @@ function setupShapeManipulatives(m){
     const art=document.createElement('span');art.className=`pattern-block-art pattern-block-art--${def.id}`;art.draggable=true;art.style.setProperty('--pattern-block-color',def.color);
     const label=document.createElement('small');label.textContent=def.label.replace(/ rhombus/i,'');button.append(art,label);
     button.addEventListener('click',()=>addPiece(def.id));
-    art.addEventListener('dragstart',event=>{event.stopPropagation();paletteDragType=def.id;event.dataTransfer?.setData('text/plain',def.id);if(event.dataTransfer)event.dataTransfer.effectAllowed='copy'});
-    art.addEventListener('dragend',()=>{paletteDragType=''});palette.appendChild(button);
+    art.addEventListener('dragstart',event=>{
+      event.stopPropagation();paletteDragType=def.id;clearPaletteDragImage();paletteDragImage=createPaletteDragImage(def);document.body.appendChild(paletteDragImage);
+      event.dataTransfer?.setData('text/plain',def.id);
+      if(event.dataTransfer){event.dataTransfer.effectAllowed='copy';event.dataTransfer.setDragImage(paletteDragImage,paletteDragImage.width/2,paletteDragImage.height/2)}
+    });
+    art.addEventListener('dragend',()=>{paletteDragType='';clearPaletteDragImage()});palette.appendChild(button);
   });
   workspaceEl.addEventListener('pointerdown',event=>{if(event.target===workspaceEl||event.target===empty)selectPiece(0)});
   workspaceEl.addEventListener('dragover',event=>{event.preventDefault();workspaceEl.classList.add('is-drop-target');if(event.dataTransfer)event.dataTransfer.dropEffect='copy'});
@@ -13943,7 +13964,7 @@ function setupShapeManipulatives(m){
     pieces=Array.isArray(state?.pieces)?state.pieces.filter(piece=>definition(piece.type)).slice(0,80).map((piece,index)=>({id:index+1,type:piece.type,x:Number(piece.x)||0,y:Number(piece.y)||0,rotation:Number(piece.rotation)||0})):[];
     nextId=pieces.length;selectedId=0;renderPieces();
   };
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();ro.disconnect()};renderPieces();
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();ro.disconnect();clearPaletteDragImage()};renderPieces();
 }
 
 function setupNumberLine(m){
