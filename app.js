@@ -2348,13 +2348,14 @@ const TILE_SKIN_CATALOG=Object.freeze([
     tags:'calendar paper pages stack realistic bound depth',released:4
   })
 ]);
+const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
   Object.freeze({id:'default',productId:'',name:'System Default',description:'Use your normal device cursor.',color:'#252a31'}),
-  Object.freeze({id:'blue',productId:'cursor-blue',name:'Electric Blue',description:'Bright and crisp.',color:'#3182f6'}),
-  Object.freeze({id:'red',productId:'cursor-red',name:'Cherry Red',description:'Bold classroom red.',color:'#ef4444'}),
-  Object.freeze({id:'green',productId:'cursor-green',name:'Marker Green',description:'Lively marker green.',color:'#22a860'}),
-  Object.freeze({id:'purple',productId:'cursor-purple',name:'Violet',description:'Rich violet purple.',color:'#8b5cf6'}),
-  Object.freeze({id:'gold',productId:'cursor-gold',name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'})
+  Object.freeze({id:'blue',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Electric Blue',description:'Bright and crisp.',color:'#3182f6'}),
+  Object.freeze({id:'red',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Cherry Red',description:'Bold classroom red.',color:'#ef4444'}),
+  Object.freeze({id:'green',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Marker Green',description:'Lively marker green.',color:'#22a860'}),
+  Object.freeze({id:'purple',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Violet',description:'Rich violet purple.',color:'#8b5cf6'}),
+  Object.freeze({id:'gold',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'})
 ]);
 const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
 const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
@@ -2391,6 +2392,15 @@ function getOwnedShopProducts(){
   }catch{return new Set()}
 }
 
+function migrateLegacyCursorOwnership(){
+  const owned=getOwnedShopProducts();
+  const legacy=['cursor-blue','cursor-red','cursor-green','cursor-purple','cursor-gold'];
+  if(owned.has(CURSOR_COLOR_PACK_PRODUCT_ID)||!legacy.some(id=>owned.has(id)))return;
+  legacy.forEach(id=>owned.delete(id));
+  owned.add(CURSOR_COLOR_PACK_PRODUCT_ID);
+  try{localStorage.setItem(SHOP_OWNED_PRODUCTS_KEY,JSON.stringify([...owned]))}catch{}
+}
+
 function getDefaultTileSkins(){
   try{
     const value=JSON.parse(localStorage.getItem(TILE_SKIN_DEFAULTS_KEY)||'{}');
@@ -2421,6 +2431,7 @@ function applyAppCursor(id,{persist=true}={}){
   return cursor;
 }
 
+migrateLegacyCursorOwnership();
 applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false});
 
 function activeTileSkinForType(type){
@@ -10901,30 +10912,44 @@ function setupCollectionShelf(){
     const active=cursorIsOwned(saved)?saved.id:'default';
     if(active!==saved.id)applyAppCursor('default');
     cursorsGrid.replaceChildren();
-    CURSOR_CATALOG.forEach(cursor=>{
-      const owned=cursorIsOwned(cursor);
-      const selected=active===cursor.id;
-      const card=document.createElement('button');
-      card.type='button';
-      card.className=`cursor-shelf-card${owned?' is-owned':' is-shop-locked'}${selected?' is-selected':''}`;
-      card.style.setProperty('--cursor-color',cursor.color);
-      card.setAttribute('aria-pressed',String(selected));
-      card.setAttribute('aria-label',owned?`Use ${cursor.name} cursor`:`View ${cursor.name} cursor in Shop`);
-      const preview=document.createElement('span');preview.className='cursor-shelf-card__preview';
-      const arrow=document.createElement('i');arrow.className='cursor-arrow-art';preview.appendChild(arrow);
-      const copy=document.createElement('span');copy.className='cursor-shelf-card__copy';
-      const name=document.createElement('strong');name.textContent=cursor.name;
-      const hint=document.createElement('small');hint.textContent=selected?'Currently equipped':owned?'Click to equip':'Available in Shop';
-      copy.append(name,hint);card.append(preview,copy);
-      if(!owned){const lock=document.createElement('span');lock.className='collection-pack-lock';lock.textContent='🔒 Shop';lock.setAttribute('aria-hidden','true');card.appendChild(lock)}
-      else if(selected){const check=document.createElement('span');check.className='cursor-shelf-card__check';check.textContent='✓';card.appendChild(check)}
-      card.addEventListener('click',()=>{
-        if(!owned){closeShelf();window.TeacherTilesShop?.openPage('cursors');return}
-        applyAppCursor(cursor.id);
-      });
-      cursorsGrid.appendChild(card);
+    const makeArrow=cursor=>{
+      const arrow=document.createElement('i');arrow.className='cursor-arrow-art';arrow.style.setProperty('--cursor-color',cursor.color);return arrow;
+    };
+    const makePack=(label,detail,cursors,{locked=false,onClick}={})=>{
+      const wrapper=document.createElement('div');wrapper.className=`cursor-pack-wrap${locked?' is-shop-locked':''}`;
+      const pack=document.createElement('button');pack.type='button';pack.className='theme-pack cursor-pack';pack.setAttribute('aria-expanded','false');
+      const stack=document.createElement('span');stack.className='cursor-pack__stack';stack.setAttribute('aria-hidden','true');
+      cursors.forEach(cursor=>stack.appendChild(makeArrow(cursor)));
+      const meta=document.createElement('span');meta.className='theme-pack__meta';meta.innerHTML=`<strong>${label}</strong><small>${detail}</small>`;
+      pack.append(stack,meta);
+      if(cursors.length>1){const chevron=document.createElement('span');chevron.className='theme-pack__chevron';chevron.textContent='⌃';chevron.setAttribute('aria-hidden','true');pack.appendChild(chevron)}
+      if(locked){const badge=document.createElement('span');badge.className='collection-pack-lock';badge.textContent='🔒 Shop';badge.setAttribute('aria-hidden','true');wrapper.append(pack,badge)}else wrapper.appendChild(pack);
+      pack.addEventListener('click',onClick);
+      return{wrapper,pack};
+    };
+    const defaultCursor=CURSOR_CATALOG[0];
+    const defaultPack=makePack('Default Cursor',active==='default'?'Equipped':'System pointer',[defaultCursor],{onClick:()=>applyAppCursor('default')});
+    if(active==='default'){const check=document.createElement('span');check.className='cursor-pack__check';check.textContent='✓';defaultPack.wrapper.appendChild(check)}
+    cursorsGrid.appendChild(defaultPack.wrapper);
+
+    const colors=CURSOR_CATALOG.slice(1);
+    const packOwned=getOwnedShopProducts().has(CURSOR_COLOR_PACK_PRODUCT_ID);
+    let drawer=null;
+    const colorPack=makePack('Colored Cursors',packOwned?'5 cursor colors':'Available in Shop',colors,{locked:!packOwned,onClick:()=>{
+      if(!packOwned){closeShelf();window.TeacherTilesShop?.openPage('cursors');return}
+      const open=!drawer.classList.contains('is-open');
+      drawer.classList.toggle('is-open',open);colorPack.pack.classList.toggle('is-open',open);colorPack.pack.setAttribute('aria-expanded',String(open));
+    }});
+    drawer=document.createElement('div');drawer.className='cursor-pack-drawer';drawer.setAttribute('aria-label','Colored cursor choices');
+    colors.forEach(cursor=>{
+      const choice=document.createElement('button');choice.type='button';choice.className=`cursor-choice${active===cursor.id?' is-selected':''}`;choice.style.setProperty('--cursor-color',cursor.color);choice.setAttribute('aria-pressed',String(active===cursor.id));
+      choice.appendChild(makeArrow(cursor));
+      const name=document.createElement('span');name.textContent=cursor.name;choice.appendChild(name);
+      if(active===cursor.id){const check=document.createElement('b');check.textContent='✓';choice.appendChild(check)}
+      choice.addEventListener('click',()=>applyAppCursor(cursor.id));drawer.appendChild(choice);
     });
-    if(cursorsStatus)cursorsStatus.textContent=`${CURSOR_CATALOG.filter(cursorIsOwned).length} of ${CURSOR_CATALOG.length} owned`;
+    cursorsGrid.append(colorPack.wrapper,drawer);
+    if(cursorsStatus)cursorsStatus.textContent=packOwned?'Color pack owned':'1 free · 1 Shop pack';
   };
 
   const positionThemeFan=()=>{
