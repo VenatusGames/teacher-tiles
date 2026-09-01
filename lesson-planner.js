@@ -138,6 +138,7 @@
   function saveBlocks() {
     blocks.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks)); } catch {}
+    window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', { detail: { blocks: blocks.map(block => ({ ...block })) } }));
   }
 
   function blocksForDate(date) {
@@ -269,7 +270,8 @@
         if (end <= DAY_START || start >= DAY_END) return;
         const eventButton = lessonBlockButton(block);
         eventButton.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
-        eventButton.style.height = `${Math.max(2.1, ((end - start) / (DAY_END - DAY_START)) * 100)}%`;
+        eventButton.style.minHeight = `${Math.max(52, ((end - start) / (DAY_END - DAY_START)) * 980)}px`;
+        eventButton.style.height = 'auto';
         column.append(eventButton);
       });
       if (dateKey(date) === dateKey(new Date())) {
@@ -503,5 +505,10 @@
     if (!editor.hidden) closeEditor(); else closePlanner(false);
   });
 
+  window.TeacherTilesLessonPlanner = Object.freeze({
+    getBlocks: () => blocks.map(block => ({ ...block })),
+    open: openPlanner,
+    close: () => closePlanner(false)
+  });
   renderColors();
 })();

@@ -1593,6 +1593,7 @@
       <button class="context-menu__item" data-module="textbubble" data-category="text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text bubble</strong><small>Simple scalable text display</small></span></button>
       <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon" aria-hidden="true">☑</span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
       <button class="context-menu__item" data-module="visualschedule" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
+      <button class="context-menu__item" data-module="lessonplannertile" data-category="planning time"><span class="context-menu__icon context-menu__icon--lesson-planner" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h14a2 2 0 0 1 2 2v13H3v-13a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7 2.8v3.4M17 2.8v3.4M3 8.7h18M7 12h3M14 12h3M7 15.5h3M14 15.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><strong>Lesson Planner</strong><small>Show today’s or this week’s lesson plans</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
       <button class="context-menu__item" data-module="windowshare" data-category="media">
@@ -3060,6 +3061,30 @@
         <button class="calendar-day-add" type="button">+ Add to this day</button>
       </div>
 
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+
+  <template id="lessonplannertile-template">
+    <section class="module lesson-plan-tile" data-type="lessonplannertile" data-bg="white" data-font="inter" data-text="dark" data-planner-tile-view="day">
+      <button class="module-delete" aria-label="Delete lesson planner">×</button>
+      <div class="module-drag-handle"></div>
+      <header class="lesson-plan-tile__header">
+        <span class="lesson-plan-tile__icon" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M6 5h16a2.5 2.5 0 0 1 2.5 2.5V23h-21V7.5A2.5 2.5 0 0 1 6 5Z" fill="currentColor" opacity=".16"/><path d="M8 3v5M20 3v5M3.5 10h21M8 15h4M16 15h4M8 19h4M16 19h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <div><small>LESSON PLANNER</small><strong class="lesson-plan-tile__title">Today’s Plans</strong><span class="lesson-plan-tile__range"></span></div>
+        <button class="lesson-plan-tile__edit" type="button">Edit plans</button>
+      </header>
+      <div class="lesson-plan-tile__toolbar" role="group" aria-label="Lesson planner tile view">
+        <button type="button" data-lesson-plan-tile-view="day" class="is-active">Day</button>
+        <button type="button" data-lesson-plan-tile-view="week">Week</button>
+      </div>
+      <div class="lesson-plan-tile__body" aria-live="polite"></div>
+      <div class="customization-bar lesson-plan-tile__customization" aria-label="Lesson planner tile customization">
+        <button class="custom-icon lesson-plan-tile__bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon lesson-plan-tile__font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon lesson-plan-tile__text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>

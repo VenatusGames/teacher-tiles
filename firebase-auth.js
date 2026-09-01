@@ -2864,6 +2864,51 @@ function applyPreviewState(module, state) {
     }
   }
 
+  if (state.type === "lessonplannertile") {
+    const body = module.querySelector(".lesson-plan-tile__body");
+    const title = module.querySelector(".lesson-plan-tile__title");
+    const range = module.querySelector(".lesson-plan-tile__range");
+    const mode = special?.mode === "week" ? "week" : "day";
+    const colors = { sun: "#f3bd3d", sky: "#5ca7e8", mint: "#61bf9a", coral: "#ee7b68", grape: "#a883dc", rose: "#dc79a6", ocean: "#397db9", slate: "#718096" };
+    const atNoon = value => { const date = new Date(value); date.setHours(12, 0, 0, 0); return date; };
+    const addDays = (date, amount) => { const next = atNoon(date); next.setDate(next.getDate() + amount); return next; };
+    const key = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const time = value => { const [hour, minute] = String(value || "00:00").split(":").map(Number); return `${hour % 12 || 12}:${String(minute || 0).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`; };
+    const plans = window.TeacherTilesLessonPlanner?.getBlocks?.() || [];
+    const today = atNoon(new Date());
+    const makePlan = plan => {
+      const card = document.createElement("article");
+      card.className = "lesson-plan-tile__block";
+      card.style.setProperty("--lesson-color", colors[plan.color] || colors.sun);
+      const clock = document.createElement("span"); clock.className = "lesson-plan-tile__time"; clock.textContent = `${time(plan.start)}–${time(plan.end)}`;
+      const heading = document.createElement("strong"); heading.textContent = String(plan.label || "Untitled lesson");
+      card.append(clock, heading);
+      if (plan.description) { const copy = document.createElement("p"); copy.textContent = String(plan.description); card.append(copy); }
+      return card;
+    };
+    module.querySelectorAll("[data-lesson-plan-tile-view]").forEach(button => button.classList.toggle("is-active", button.dataset.lessonPlanTileView === mode));
+    if (body) {
+      body.replaceChildren();
+      if (mode === "day") {
+        if (title) title.textContent = "Today’s Plans";
+        if (range) range.textContent = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric" }).format(today);
+        plans.filter(plan => plan.date === key(today)).forEach(plan => body.append(makePlan(plan)));
+      } else {
+        const first = addDays(today, today.getDay() === 0 ? -6 : 1 - today.getDay());
+        if (title) title.textContent = "This Week’s Plans";
+        if (range) range.textContent = `${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(first)}–${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(addDays(first, 6))}`;
+        for (let index = 0; index < 7; index++) {
+          const date = addDays(first, index);
+          const dayPlans = plans.filter(plan => plan.date === key(date));
+          if (!dayPlans.length) continue;
+          const group = document.createElement("section"); group.className = "lesson-plan-tile__day-group";
+          const heading = document.createElement("header"); heading.innerHTML = `<strong>${new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(date)}</strong><span>${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date)}</span>`;
+          group.append(heading); dayPlans.forEach(plan => group.append(makePlan(plan))); body.append(group);
+        }
+      }
+    }
+  }
+
   module.querySelectorAll("button,input,textarea,select,a").forEach(control => {
     control.tabIndex = -1;
     control.setAttribute("aria-hidden", "true");
