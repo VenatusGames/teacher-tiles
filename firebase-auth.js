@@ -103,6 +103,7 @@ let activeOrganizationMembers = [];
 let activeOrganizationInvites = [];
 let organizationInviteUnsubscribe = null;
 let organizationLogoDraft = "🏫";
+let organizationLogoFreshFocus = false;
 
 const ORGANIZATION_LOGO_OPTIONS = Object.freeze([
   "🏫", "🏢", "🏛️", "📚", "🎓", "🍎",
@@ -3501,11 +3502,26 @@ organizationCustomLogo?.addEventListener("input", () => {
   organizationLogoDraft = value ? normalizeOrganizationLogo(value) : "🏫";
   syncOrganizationLogoPicker({ syncCustom: false });
 });
+organizationCustomLogo?.addEventListener("focus", () => {
+  organizationLogoFreshFocus = true;
+  organizationCustomLogo.placeholder = "";
+  requestAnimationFrame(() => organizationCustomLogo.select());
+});
+organizationCustomLogo?.addEventListener("click", () => {
+  if (!organizationLogoFreshFocus) return;
+  organizationLogoFreshFocus = false;
+  organizationCustomLogo.select();
+});
+organizationCustomLogo?.addEventListener("blur", () => {
+  organizationLogoFreshFocus = false;
+  organizationCustomLogo.placeholder = "🏫";
+});
 organizationCustomLogo?.addEventListener("paste", event => {
   if (currentOrganizationRole() !== "Owner") return;
   const pasted = event.clipboardData?.getData("text");
   if (typeof pasted !== "string") return;
   event.preventDefault();
+  organizationLogoFreshFocus = false;
   organizationCustomLogo.value = normalizeOrganizationLogo(pasted);
   organizationCustomLogo.dispatchEvent(new Event("input", { bubbles: true }));
 });
