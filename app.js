@@ -9983,6 +9983,7 @@ function setupProgressBar(m){
   const fill=m.querySelector('.progress-bar-fill');
   const endInput=m.querySelector('.progress-bar-end-time');
   const setEndButton=m.querySelector('.progress-bar-set-end');
+  const resetButton=m.querySelector('.progress-bar-reset');
   const orientationButton=m.querySelector('.progress-bar-orientation');
   const styleButton=m.querySelector('.progress-bar-style');
   const iconStart=m.querySelector('.progress-bar-icon-start');
@@ -10005,6 +10006,7 @@ function setupProgressBar(m){
   let activeIconSlot=null;
   let interval=0;
   let completed=false;
+  let running=false;
 
   const pad=n=>String(n).padStart(2,'0');
   const formatInputTime=date=>`${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -10106,7 +10108,7 @@ function setupProgressBar(m){
   const render=()=>{
     const now=Date.now();
     const duration=Math.max(1,targetAt-initializedAt);
-    const elapsed=Math.max(0,now-initializedAt);
+    const elapsed=completed?duration:(running?Math.max(0,now-initializedAt):0);
     const progress=clamp(elapsed/duration,0,1);
 
     const vertical=m.dataset.orientation==='vertical';
@@ -10123,20 +10125,19 @@ function setupProgressBar(m){
     }
 
     m.style.setProperty('--progress',`${(progress*100).toFixed(4)}%`);
-    remaining.textContent=formatRemaining(targetAt-now);
+    remaining.textContent=formatRemaining(completed?0:(running?targetAt-now:duration));
     endLabel.textContent=`until ${formatClock(new Date(targetAt))}`;
 
     const isComplete=progress>=1;
     m.classList.toggle('is-complete',isComplete);
     if(isComplete&&!completed){
       completed=true;
+      running=false;
       celebrateTimerFinish(m);
-    }else if(!isComplete){
-      completed=false;
     }
   };
 
-  const initializeFromInput=()=>{
+  const targetFromInput=()=>{
     if(!endInput.value)return;
     const [hour,minute]=endInput.value.split(':').map(Number);
     if(!Number.isFinite(hour)||!Number.isFinite(minute))return;
@@ -10145,12 +10146,41 @@ function setupProgressBar(m){
     const target=new Date(now);
     target.setHours(hour,minute,0,0);
     if(target.getTime()<=now.getTime())target.setDate(target.getDate()+1);
+    return target.getTime();
+  };
 
-    initializedAt=Date.now();
-    targetAt=target.getTime();
+  const syncTimeFromInput=()=>{
+    const nextTarget=targetFromInput();
+    if(!nextTarget)return;
+    if(!running)initializedAt=Date.now();
+    targetAt=nextTarget;
     completed=false;
     m.classList.remove('is-complete');
     render();
+    notifyBoardChanged('progress-bar-time');
+  };
+
+  const start=()=>{
+    const nextTarget=targetFromInput();
+    if(!nextTarget)return;
+    initializedAt=Date.now();
+    targetAt=nextTarget;
+    completed=false;
+    running=true;
+    m.classList.remove('is-complete');
+    render();
+    notifyBoardChanged('progress-bar-start');
+  };
+
+  const reset=()=>{
+    const nextTarget=targetFromInput();
+    initializedAt=Date.now();
+    if(nextTarget)targetAt=nextTarget;
+    completed=false;
+    running=false;
+    m.classList.remove('is-complete');
+    render();
+    notifyBoardChanged('progress-bar-reset');
   };
 
   const setOrientation=orientation=>{
@@ -10199,11 +10229,13 @@ function setupProgressBar(m){
   m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   m.querySelector('.progress-bar-color').addEventListener('click',()=>cycleData(m,'barColor',colors));
 
-  setEndButton.addEventListener('click',initializeFromInput);
+  setEndButton.addEventListener('click',start);
+  resetButton.addEventListener('click',reset);
+  endInput.addEventListener('input',syncTimeFromInput);
   endInput.addEventListener('keydown',e=>{
     if(e.key==='Enter'){
       e.preventDefault();
-      initializeFromInput();
+      syncTimeFromInput();
       endInput.blur();
     }
   });
@@ -10227,7 +10259,7 @@ function setupProgressBar(m){
 
   const defaultEnd=new Date(Date.now()+30*60*1000);
   endInput.value=formatInputTime(defaultEnd);
-  initializeFromInput();
+  syncTimeFromInput();
   syncVisualControls();
 
   interval=window.setInterval(render,200);
@@ -10237,6 +10269,7 @@ function setupProgressBar(m){
     initializedAt,
     targetAt,
     completed,
+    running,
     orientation:m.dataset.orientation||'horizontal',
     barStyle:m.dataset.barStyle||'glass',
     startIconSrc:iconStart.dataset.iconSrc||'',
@@ -10247,6 +10280,7 @@ function setupProgressBar(m){
     initializedAt=Number(state.initializedAt)||Date.now();
     targetAt=Number(state.targetAt)||Date.now()+30*60*1000;
     completed=Boolean(state.completed);
+    running=state.running===undefined?!completed:Boolean(state.running);
     if(state.orientation==='vertical'||state.orientation==='horizontal')m.dataset.orientation=state.orientation;
     if(styles.some(option=>option.key===state.barStyle))m.dataset.barStyle=state.barStyle;
     syncVisualControls();
@@ -10364,6 +10398,12 @@ function setupVisualSchedule(m){
     e.stopPropagation();
   },{passive:true});
 
+  const setSegmentSize=(row,value)=>{
+    const size=clamp(Math.round(Number(value)||86),76,220);
+    row.dataset.segmentSize=String(size);
+    row.style.setProperty('--visual-segment-size',`${size}px`);
+  };
+
   const addSegment=(data={},focus=false)=>{
     const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
     const icon=resolveVisualScheduleIcon(data.iconSrc)||(typeof data.iconSrc==='string'&&data.iconSrc.startsWith('data:image/')?{src:data.iconSrc,label:'Custom image'}:fallbackIcon);
@@ -10380,7 +10420,9 @@ function setupVisualSchedule(m){
         <button class="visual-schedule-complete" type="button" aria-pressed="false">Complete</button>
         <button class="visual-schedule-remove" type="button" aria-label="Remove segment" title="Remove segment">×</button>
       </div>
+      <button class="visual-schedule-resize" type="button" aria-label="Resize this schedule segment" title="Drag to resize segment"></button>
     `;
+    setSegmentSize(row,data.size);
     const title=row.querySelector('.visual-schedule-segment-title');
     const time=row.querySelector('.visual-schedule-segment-time');
     title.value=data.title??'New Activity';
@@ -10404,6 +10446,41 @@ function setupVisualSchedule(m){
       if(activeSegment===row)closePicker();
       row.remove();
       autoSize();
+      notifyBoardChanged('visual-schedule-remove');
+    });
+    const resizeHandle=row.querySelector('.visual-schedule-resize');
+    resizeHandle.addEventListener('keydown',event=>{
+      if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
+      event.preventDefault();
+      setSegmentSize(row,(Number(row.dataset.segmentSize)||86)+(event.key==='ArrowDown'?8:-8));
+      autoSize();
+      notifyBoardChanged('visual-schedule-resize');
+    });
+    resizeHandle.addEventListener('pointerdown',event=>{
+      if(event.button!==0)return;
+      event.preventDefault();
+      event.stopPropagation();
+      const startY=event.clientY;
+      const startSize=Number(row.dataset.segmentSize)||86;
+      resizeHandle.setPointerCapture(event.pointerId);
+
+      const move=moveEvent=>{
+        moveEvent.preventDefault();
+        moveEvent.stopPropagation();
+        setSegmentSize(row,startSize+(moveEvent.clientY-startY)/boardCamera.scale);
+        autoSize();
+      };
+      const finish=finishEvent=>{
+        finishEvent.stopPropagation();
+        resizeHandle.removeEventListener('pointermove',move);
+        resizeHandle.removeEventListener('pointerup',finish);
+        resizeHandle.removeEventListener('pointercancel',finish);
+        notifyBoardChanged('visual-schedule-resize');
+      };
+
+      resizeHandle.addEventListener('pointermove',move);
+      resizeHandle.addEventListener('pointerup',finish);
+      resizeHandle.addEventListener('pointercancel',finish);
     });
 
     list.appendChild(row);
@@ -10421,7 +10498,8 @@ function setupVisualSchedule(m){
     title:row.querySelector('.visual-schedule-segment-title')?.value||'',
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
     iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
-    complete:row.classList.contains('is-complete')
+    complete:row.classList.contains('is-complete'),
+    size:Number(row.dataset.segmentSize)||86
   }))});
   m._boardSetState=state=>{
     closePicker();
@@ -11925,6 +12003,7 @@ function setupABC(m){
 
   const uppercase='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const lowercase='abcdefghijklmnopqrstuvwxyz'.split('');
+  const vowels=new Set(['a','e','i','o','u','y']);
 
   const modeNames={
     uppercase:'Uppercase Letters',
@@ -11943,13 +12022,13 @@ function setupABC(m){
 
   const measureLetterSize=letter=>{
     const rect=card.getBoundingClientRect();
-    const maxWidth=Math.max(80,rect.width-34);
-    const maxHeight=Math.max(80,rect.height-36);
+    const maxWidth=Math.max(80,rect.width-12);
+    const maxHeight=Math.max(80,rect.height-14);
 
     measurer.textContent=letter;
 
     let low=28;
-    let high=Math.max(36,Math.min(300,Math.floor(maxHeight*.9)));
+    let high=Math.max(36,Math.min(720,Math.floor(maxHeight*1.35)));
     let best=low;
 
     while(low<=high){
@@ -11984,6 +12063,7 @@ function setupABC(m){
   const applyLetter=(letter,size)=>{
     current=letter;
     letterEl.classList.add('is-fitting');
+    letterEl.classList.toggle('is-vowel',vowels.has(letter.toLowerCase()));
     letterEl.textContent=letter;
     letterEl.style.fontSize=`${size}px`;
     card.setAttribute('aria-label',`${letter}. Click for another letter.`);

@@ -2774,6 +2774,9 @@ function applyPreviewState(module, state) {
         const row = document.createElement("div");
         row.className = `visual-schedule-segment${segment?.complete ? " is-complete" : ""}`;
         if (segment?.iconSrc) row.dataset.iconSrc = String(segment.iconSrc);
+        const segmentSize = Math.max(76, Math.min(220, Number(segment?.size) || 86));
+        row.dataset.segmentSize = String(segmentSize);
+        row.style.setProperty("--visual-segment-size", `${segmentSize}px`);
 
         const imageButton = document.createElement("button");
         imageButton.type = "button";
