@@ -2429,7 +2429,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=2`,document.baseURI).href;
     cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
     cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
     cursorRoot.style.setProperty('--teacher-cursor-grab',`url("${asset('grab')}") 12 12`);
@@ -10920,17 +10920,18 @@ function setupCollectionShelf(){
     const active=cursorIsOwned(saved)?saved.id:'default';
     if(active!==saved.id)applyAppCursor('default');
     cursorsGrid.replaceChildren();
-    const makeArrow=cursor=>{
+    const makeArrow=(cursor,state='normal')=>{
       if(cursor.id==='default'){
         const arrow=document.createElement('i');arrow.className='cursor-arrow-art';arrow.style.setProperty('--cursor-color',cursor.color);return arrow;
       }
-      const arrow=document.createElement('img');arrow.className='cursor-arrow-art cursor-arrow-art--image';arrow.src=`assets/cursors/${cursor.id}-normal.png`;arrow.alt='';arrow.draggable=false;return arrow;
+      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=2`;arrow.alt='';arrow.draggable=false;return arrow;
     };
     const makePack=(label,detail,cursors,{locked=false,onClick}={})=>{
       const wrapper=document.createElement('div');wrapper.className=`cursor-pack-wrap${locked?' is-shop-locked':''}`;
       const pack=document.createElement('button');pack.type='button';pack.className='theme-pack cursor-pack';pack.setAttribute('aria-expanded','false');
       const stack=document.createElement('span');stack.className='cursor-pack__stack';stack.setAttribute('aria-hidden','true');
-      cursors.forEach(cursor=>stack.appendChild(makeArrow(cursor)));
+      const previewStates=['grab','point','normal','grab','point'];
+      cursors.forEach((cursor,index)=>stack.appendChild(makeArrow(cursor,cursors.length>1?previewStates[index%previewStates.length]:'normal')));
       const meta=document.createElement('span');meta.className='theme-pack__meta';meta.innerHTML=`<strong>${label}</strong><small>${detail}</small>`;
       pack.append(stack,meta);
       if(cursors.length>1){const chevron=document.createElement('span');chevron.className='theme-pack__chevron';chevron.textContent='⌃';chevron.setAttribute('aria-hidden','true');pack.appendChild(chevron)}
