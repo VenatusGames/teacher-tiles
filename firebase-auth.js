@@ -55,8 +55,12 @@ const organizationEditorDone = document.getElementById("organization-editor-done
 const organizationNameInput = document.getElementById("organization-name");
 const organizationEditorTitle = document.getElementById("organization-editor-title");
 const organizationEditorMeta = document.getElementById("organization-editor-meta");
+const organizationEditorLogo = document.getElementById("organization-editor-logo");
 const organizationCurrentRole = document.getElementById("organization-current-role");
 const organizationEditorFeedback = document.getElementById("organization-editor-feedback");
+const organizationLogoEditor = document.getElementById("organization-logo-editor");
+const organizationLogoOptions = document.getElementById("organization-logo-options");
+const organizationCustomLogo = document.getElementById("organization-custom-logo");
 const organizationInviteForm = document.getElementById("organization-invite-form");
 const organizationInviteEmail = document.getElementById("organization-invite-email");
 const organizationMemberCount = document.getElementById("organization-member-count");
@@ -64,6 +68,8 @@ const organizationMemberList = document.getElementById("organization-member-list
 const organizationPendingSection = document.getElementById("organization-pending-section");
 const organizationPendingCount = document.getElementById("organization-pending-count");
 const organizationPendingList = document.getElementById("organization-pending-list");
+const organizationDangerZone = document.getElementById("organization-danger-zone");
+const organizationDelete = document.getElementById("organization-delete");
 const notificationButton = document.getElementById("profile-notification-button");
 const notificationCount = document.getElementById("profile-notification-count");
 const notificationMenu = document.getElementById("profile-notification-menu");
@@ -96,6 +102,12 @@ let activeOrganization = null;
 let activeOrganizationMembers = [];
 let activeOrganizationInvites = [];
 let organizationInviteUnsubscribe = null;
+let organizationLogoDraft = "🏫";
+
+const ORGANIZATION_LOGO_OPTIONS = Object.freeze([
+  "🏫", "🏢", "🏛️", "📚", "🎓", "🍎",
+  "🤝", "🌟", "🚀", "🌈", "🧩", "🦉"
+]);
 
 let classSyncDocumentExists = false;
 let classSyncHasCiphertext = false;
@@ -579,6 +591,46 @@ function normalizeOrganizationEmail(value = "") {
   return String(value).trim().toLowerCase();
 }
 
+function normalizeOrganizationLogo(value = "") {
+  const logo = String(value).trim();
+  return logo ? Array.from(logo).slice(0, 8).join("") : "🏫";
+}
+
+function syncOrganizationLogoPicker({ syncCustom = true } = {}) {
+  const logo = normalizeOrganizationLogo(organizationLogoDraft);
+  organizationLogoOptions?.querySelectorAll("[data-organization-logo]").forEach(button => {
+    const selected = button.dataset.organizationLogo === logo;
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  if (syncCustom && organizationCustomLogo) {
+    organizationCustomLogo.value = ORGANIZATION_LOGO_OPTIONS.includes(logo) ? "" : logo;
+  }
+  if (organizationEditorLogo) organizationEditorLogo.textContent = logo;
+}
+
+function setOrganizationLogoEditable(editable) {
+  organizationLogoOptions?.querySelectorAll("button").forEach(button => button.disabled = !editable);
+  if (organizationCustomLogo) organizationCustomLogo.disabled = !editable;
+  if (organizationLogoEditor) organizationLogoEditor.classList.toggle("is-read-only", !editable);
+}
+
+ORGANIZATION_LOGO_OPTIONS.forEach(logo => {
+  if (!organizationLogoOptions) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.organizationLogo = logo;
+  button.textContent = logo;
+  button.setAttribute("aria-label", `Use ${logo} as the organization logo`);
+  button.setAttribute("aria-pressed", "false");
+  button.addEventListener("click", () => {
+    if (currentOrganizationRole() !== "Owner") return;
+    organizationLogoDraft = logo;
+    syncOrganizationLogoPicker();
+  });
+  organizationLogoOptions.appendChild(button);
+});
+
 function setOrganizationFeedback(element, message = "", isError = false) {
   if (!element) return;
   element.textContent = message;
@@ -727,7 +779,7 @@ function renderNotificationInbox() {
     card.className = "profile-notification-card";
     const icon = document.createElement("span");
     icon.className = "profile-notification-card__icon";
-    icon.textContent = "⌂";
+    icon.textContent = normalizeOrganizationLogo(invite.organizationLogo);
     const copy = document.createElement("div");
     copy.className = "profile-notification-card__copy";
     const title = document.createElement("strong");
@@ -810,7 +862,7 @@ function renderOrganizationList() {
     card.className = "organization-card";
     const icon = document.createElement("span");
     icon.className = "organization-card__icon";
-    icon.textContent = "⌂";
+    icon.textContent = normalizeOrganizationLogo(item.logo);
     const copy = document.createElement("span");
     copy.className = "organization-card__copy";
     const title = document.createElement("strong");
@@ -988,6 +1040,8 @@ async function refreshOrganizationEditor() {
     } else activeOrganizationInvites = [];
     if (organizationInviteForm) organizationInviteForm.hidden = !canInviteOrganizationMembers();
     if (organizationNameInput) organizationNameInput.disabled = role !== "Owner";
+    setOrganizationLogoEditable(role === "Owner");
+    if (organizationDangerZone) organizationDangerZone.hidden = role !== "Owner";
     renderOrganizationMembers();
     renderOrganizationPendingInvites();
   } catch (error) {
@@ -998,8 +1052,14 @@ async function refreshOrganizationEditor() {
 
 async function openOrganizationEditor(item) {
   activeOrganization = item;
+  organizationLogoDraft = normalizeOrganizationLogo(item.logo);
+  const initialRole = item.membership?.role || "Member";
   if (organizationNameInput) organizationNameInput.value = item.name;
   if (organizationEditorTitle) organizationEditorTitle.textContent = item.name;
+  if (organizationNameInput) organizationNameInput.disabled = initialRole !== "Owner";
+  setOrganizationLogoEditable(initialRole === "Owner");
+  if (organizationDangerZone) organizationDangerZone.hidden = initialRole !== "Owner";
+  syncOrganizationLogoPicker();
   setOrganizationEditorOpen(true);
   setOrganizationFeedback(organizationEditorFeedback, "Loading organization…");
   await refreshOrganizationEditor();
@@ -1037,34 +1097,88 @@ async function removeOrganizationMember(member) {
   }
 }
 
-async function saveOrganizationName() {
+async function saveOrganizationDetails() {
   if (!activeOrganization || currentOrganizationRole() !== "Owner" || !organizationNameInput) return;
   const name = organizationNameInput.value.trim();
+  const logo = normalizeOrganizationLogo(organizationLogoDraft);
   if (!name) {
     setOrganizationFeedback(organizationEditorFeedback, "Enter an organization name.", true);
     organizationNameInput.focus();
     return;
   }
-  if (name === activeOrganization.name) return;
+  if (name === activeOrganization.name && logo === normalizeOrganizationLogo(activeOrganization.logo)) return;
   try {
     await firestoreSdk.updateDoc(organizationDocument(activeOrganization.id), {
       name,
+      logo,
       updatedAt: firestoreSdk.serverTimestamp()
     });
     activeOrganization.name = name;
+    activeOrganization.logo = logo;
     if (organizationEditorTitle) organizationEditorTitle.textContent = name;
-    setOrganizationFeedback(organizationEditorFeedback, "Organization name saved.");
+    if (organizationEditorLogo) organizationEditorLogo.textContent = logo;
+    setOrganizationFeedback(organizationEditorFeedback, "Organization changes saved.");
     await loadOrganizationIndex();
   } catch (error) {
-    console.error("TeacherTiles could not rename the organization", error);
-    setOrganizationFeedback(organizationEditorFeedback, "The organization name could not be saved.", true);
+    console.error("TeacherTiles could not save the organization", error);
+    setOrganizationFeedback(organizationEditorFeedback, "The organization changes could not be saved.", true);
   }
 }
 
 async function closeOrganizationEditor() {
-  await saveOrganizationName();
+  await saveOrganizationDetails();
   setOrganizationEditorOpen(false);
   await loadOrganizationIndex();
+}
+
+async function deleteOrganizationReferences(references) {
+  for (let index = 0; index < references.length; index += 400) {
+    const batch = firestoreSdk.writeBatch(db);
+    references.slice(index, index + 400).forEach(reference => batch.delete(reference));
+    await batch.commit();
+  }
+}
+
+async function deleteActiveOrganization() {
+  if (organizationBusy || !activeOrganization || currentOrganizationRole() !== "Owner") return;
+  const organizationId = activeOrganization.id;
+  const organizationName = activeOrganization.name;
+  if (!confirm(`Permanently delete ${organizationName}? Its members and pending invitations will also be removed.`)) return;
+  organizationBusy = true;
+  if (organizationDelete) organizationDelete.disabled = true;
+  setOrganizationFeedback(organizationEditorFeedback, `Deleting ${organizationName}…`);
+  try {
+    const memberQuery = firestoreSdk.query(
+      firestoreSdk.collection(db, "organizationMembers"),
+      firestoreSdk.where("organizationId", "==", organizationId)
+    );
+    const inviteQuery = firestoreSdk.query(
+      firestoreSdk.collection(db, "organizationInvites"),
+      firestoreSdk.where("organizationId", "==", organizationId)
+    );
+    const [memberSnapshot, inviteSnapshot] = await Promise.all([
+      firestoreSdk.getDocs(memberQuery),
+      firestoreSdk.getDocs(inviteQuery)
+    ]);
+    await deleteOrganizationReferences(inviteSnapshot.docs.map(item => item.ref));
+    await deleteOrganizationReferences(
+      memberSnapshot.docs.filter(item => item.data().uid !== currentUser.uid).map(item => item.ref)
+    );
+    const finalBatch = firestoreSdk.writeBatch(db);
+    const currentMembership = memberSnapshot.docs.find(item => item.data().uid === currentUser.uid);
+    if (currentMembership) finalBatch.delete(currentMembership.ref);
+    finalBatch.delete(organizationDocument(organizationId));
+    await finalBatch.commit();
+    setOrganizationEditorOpen(false);
+    await loadOrganizationIndex();
+    setOrganizationFeedback(organizationFeedback, `${organizationName} was deleted.`);
+  } catch (error) {
+    console.error("TeacherTiles could not delete the organization", error);
+    setOrganizationFeedback(organizationEditorFeedback, organizationErrorMessage(error, "The organization could not be deleted. Please try again."), true);
+  } finally {
+    organizationBusy = false;
+    if (organizationDelete) organizationDelete.disabled = false;
+  }
 }
 
 async function openOrganizationsPanel() {
@@ -1108,6 +1222,7 @@ async function createOrganization(event) {
     const batch = firestoreSdk.writeBatch(db);
     batch.set(reference, {
       name,
+      logo: "🏫",
       ownerId: currentUser.uid,
       ownerEmail: normalizeOrganizationEmail(currentUser.email),
       createdAt: firestoreSdk.serverTimestamp(),
@@ -1166,6 +1281,7 @@ async function inviteToOrganization(event) {
     await firestoreSdk.setDoc(reference, {
       organizationId: activeOrganization.id,
       organizationName: activeOrganization.name,
+      organizationLogo: normalizeOrganizationLogo(activeOrganization.logo),
       email,
       role: "Member",
       invitedByUid: currentUser.uid,
@@ -3373,10 +3489,25 @@ organizationCreateForm?.addEventListener("submit", createOrganization);
 organizationInviteForm?.addEventListener("submit", inviteToOrganization);
 organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
 organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
+organizationDelete?.addEventListener("click", deleteActiveOrganization);
 organizationNameInput?.addEventListener("keydown", event => {
   if (event.key !== "Enter") return;
   event.preventDefault();
-  saveOrganizationName();
+  saveOrganizationDetails();
+});
+organizationCustomLogo?.addEventListener("input", () => {
+  if (currentOrganizationRole() !== "Owner") return;
+  const value = String(organizationCustomLogo.value || "").trim();
+  organizationLogoDraft = value ? normalizeOrganizationLogo(value) : "🏫";
+  syncOrganizationLogoPicker({ syncCustom: false });
+});
+organizationCustomLogo?.addEventListener("paste", event => {
+  if (currentOrganizationRole() !== "Owner") return;
+  const pasted = event.clipboardData?.getData("text");
+  if (typeof pasted !== "string") return;
+  event.preventDefault();
+  organizationCustomLogo.value = normalizeOrganizationLogo(pasted);
+  organizationCustomLogo.dispatchEvent(new Event("input", { bubbles: true }));
 });
 notificationButton?.addEventListener("click", event => {
   event.stopPropagation();

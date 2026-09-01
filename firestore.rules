@@ -31,14 +31,20 @@ service cloud.firestore {
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 80;
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.logo is string
+        && request.resource.data.logo.size() > 0
+        && request.resource.data.logo.size() <= 32;
       allow read: if isOrganizationMember(organizationId);
       allow update: if organizationRole(organizationId) == "Owner"
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name", "updatedAt"])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name", "logo", "updatedAt"])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 80;
-      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.logo is string
+        && request.resource.data.logo.size() > 0
+        && request.resource.data.logo.size() <= 32;
+      allow delete: if organizationRole(organizationId) == "Owner";
     }
 
     match /organizationMembers/{memberId} {
@@ -65,9 +71,9 @@ service cloud.firestore {
         && request.resource.data.role in ["Owner", "Admin", "Member"]
         && (resource.data.uid != get(/databases/$(database)/documents/organizations/$(resource.data.organizationId)).data.ownerId
           || request.resource.data.role == "Owner");
-      allow delete: if canManageOrganization(resource.data.organizationId)
-        && resource.data.role != "Owner"
-        && (organizationRole(resource.data.organizationId) == "Owner" || resource.data.role == "Member");
+      allow delete: if organizationRole(resource.data.organizationId) == "Owner"
+        || (organizationRole(resource.data.organizationId) == "Admin"
+          && resource.data.role == "Member");
     }
 
     match /organizationInvites/{inviteId} {

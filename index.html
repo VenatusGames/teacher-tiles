@@ -235,8 +235,13 @@
                   <button id="organization-editor-done" type="button">Done</button>
                 </header>
                 <div class="organization-editor__body">
-                  <div class="organization-editor-summary"><span class="organization-editor-summary__icon" aria-hidden="true">⌂</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><span id="organization-current-role" class="organization-role-tag">Member</span></div>
+                  <div class="organization-editor-summary"><span id="organization-editor-logo" class="organization-editor-summary__icon" aria-hidden="true">🏫</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><span id="organization-current-role" class="organization-role-tag">Member</span></div>
                   <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
+                  <section id="organization-logo-editor" class="organization-logo-editor" aria-labelledby="organization-logo-title">
+                    <div><span>ORGANIZATION LOGO</span><h4 id="organization-logo-title">Choose a symbol</h4><p>Pick a preset or enter your own emoji or short symbol.</p></div>
+                    <div id="organization-logo-options" class="organization-logo-options" role="group" aria-label="Organization logo symbols"></div>
+                    <label><span>Custom symbol</span><input id="organization-custom-logo" type="text" maxlength="16" placeholder="🏫" aria-label="Custom organization logo symbol"></label>
+                  </section>
                   <form id="organization-invite-form" class="organization-invite-form">
                     <div><label for="organization-invite-email">Invite a Google account</label><p>They will see an invitation when they sign in to TeacherTiles with this email.</p></div>
                     <input id="organization-invite-email" type="email" maxlength="180" placeholder="teacher@example.com" autocomplete="email" required>
@@ -247,6 +252,10 @@
                   <section id="organization-pending-section" class="organization-pending-section" hidden>
                     <div class="organization-section-heading"><div><span>PENDING</span><h4>Invited accounts</h4></div><small id="organization-pending-count"></small></div>
                     <div id="organization-pending-list" class="organization-pending-list"></div>
+                  </section>
+                  <section id="organization-danger-zone" class="organization-danger-zone">
+                    <div><strong>Delete organization</strong><p>Permanently removes this organization, its memberships, and all pending invitations.</p></div>
+                    <button id="organization-delete" type="button">Delete Organization</button>
                   </section>
                 </div>
               </section>
