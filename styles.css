@@ -10649,7 +10649,7 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
 .pattern-block-art--square,.shape-manipulative-piece--square .pattern-block-art{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
 .pattern-block-art--hexagon,.shape-manipulative-piece--hexagon .pattern-block-art{clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
 .pattern-block-art--trapezoid,.shape-manipulative-piece--trapezoid .pattern-block-art{clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
-.pattern-block-art--rhombus-blue,.shape-manipulative-piece--rhombus-blue .pattern-block-art{clip-path:polygon(25% 0,100% 0,75% 100%,0 100%)}
+.pattern-block-art--rhombus-blue,.shape-manipulative-piece--rhombus-blue .pattern-block-art{clip-path:polygon(33.333% 0,100% 0,66.667% 100%,0 100%)}
 .pattern-block-art--rhombus-tan,.shape-manipulative-piece--rhombus-tan .pattern-block-art{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
 .shape-manipulatives-palette-item .pattern-block-art{width:54px;height:46px}
 .shape-manipulatives-palette-item .pattern-block-art{user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -10657,7 +10657,7 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
 .shape-manipulatives-palette-item .pattern-block-art--square{width:43px;height:43px}
 .shape-manipulatives-palette-item .pattern-block-art--hexagon{width:55px;height:47px}
 .shape-manipulatives-palette-item .pattern-block-art--trapezoid{width:56px;height:36px}
-.shape-manipulatives-palette-item .pattern-block-art--rhombus-blue{width:56px;height:36px}
+.shape-manipulatives-palette-item .pattern-block-art--rhombus-blue{width:56px;height:32.33px}
 .shape-manipulatives-palette-item .pattern-block-art--rhombus-tan{width:57px;height:31px}
 .shape-manipulative-piece{position:absolute;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;transform-origin:center;transition:filter .12s ease,transform .13s ease;overflow:visible}
 .shape-manipulative-piece:hover{z-index:10;filter:brightness(1.04)}
