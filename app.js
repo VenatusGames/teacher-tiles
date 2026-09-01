@@ -10922,7 +10922,7 @@ function setupCollectionShelf(){
     cursorsGrid.replaceChildren();
     const makeArrow=(cursor,state='normal')=>{
       if(cursor.id==='default'){
-        const arrow=document.createElement('i');arrow.className='cursor-arrow-art';arrow.style.setProperty('--cursor-color',cursor.color);return arrow;
+        const arrow=document.createElement('img');arrow.className='cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--default';arrow.src='assets/cursors/default-normal.png?v=1';arrow.alt='';arrow.draggable=false;return arrow;
       }
       const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=2`;arrow.alt='';arrow.draggable=false;return arrow;
     };
