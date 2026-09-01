@@ -2838,9 +2838,9 @@ function applyPreviewState(module, state) {
     const workspace = module.querySelector(".shape-manipulatives-workspace");
     if (workspace) {
       const definitions = {
-        triangle: { color: "#15966f", width: 72, height: 64 }, square: { color: "#ef6547", width: 68, height: 68 },
-        hexagon: { color: "#f0ca35", width: 106, height: 92 }, trapezoid: { color: "#ed463d", width: 104, height: 62 },
-        "rhombus-blue": { color: "#315fae", width: 94, height: 60 }, "rhombus-tan": { color: "#d4ae6c", width: 92, height: 52 }
+        triangle: { color: "#15966f", width: 64, height: 55.4256 }, square: { color: "#ef6547", width: 64, height: 64 },
+        hexagon: { color: "#f0ca35", width: 128, height: 110.8512 }, trapezoid: { color: "#ed463d", width: 128, height: 55.4256 },
+        "rhombus-blue": { color: "#315fae", width: 96, height: 55.4256 }, "rhombus-tan": { color: "#d4ae6c", width: 123.638, height: 33.128 }
       };
       workspace.querySelectorAll(".shape-manipulative-piece").forEach(piece => piece.remove());
       const empty = workspace.querySelector(".shape-manipulatives-empty");
