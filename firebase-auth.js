@@ -586,6 +586,15 @@ function setOrganizationFeedback(element, message = "", isError = false) {
   element.classList.toggle("is-error", Boolean(message && isError));
 }
 
+function organizationErrorMessage(error, fallback) {
+  const code = String(error?.code || "").toLowerCase();
+  const message = String(error?.message || "").toLowerCase();
+  if (code.includes("permission-denied") || message.includes("missing or insufficient permissions")) {
+    return "Organizations are not active for this build yet. Publish the updated Firebase rules, then try again.";
+  }
+  return fallback;
+}
+
 function currentOrganizationMembership() {
   if (!activeOrganization || !currentUser) return null;
   return activeOrganizationMembers.find(member => member.uid === currentUser.uid)
@@ -839,7 +848,7 @@ async function loadOrganizationIndex() {
     renderOrganizationList();
   } catch (error) {
     console.error("TeacherTiles could not load organizations", error);
-    setOrganizationFeedback(organizationFeedback, "Organizations could not be loaded. Check your connection and try again.", true);
+    setOrganizationFeedback(organizationFeedback, organizationErrorMessage(error, "Organizations could not be loaded. Check your connection and try again."), true);
   }
 }
 
@@ -1124,7 +1133,7 @@ async function createOrganization(event) {
     if (created) await openOrganizationEditor(created);
   } catch (error) {
     console.error("TeacherTiles could not create the organization", error);
-    setOrganizationFeedback(organizationFeedback, "The organization could not be created. Please try again.", true);
+    setOrganizationFeedback(organizationFeedback, organizationErrorMessage(error, "The organization could not be created. Please try again."), true);
   } finally {
     organizationBusy = false;
     if (submit) submit.disabled = false;

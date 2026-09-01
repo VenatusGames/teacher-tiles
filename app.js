@@ -730,6 +730,29 @@ function setupProfileClasses(){
     listView.hidden=false;rosterView.hidden=true;render();
   });
   rosterName?.addEventListener('input',()=>draftName=rosterName.value);
+  let customLogoFreshFocus=false;
+  customLogoInput?.addEventListener('focus',()=>{
+    customLogoFreshFocus=true;
+    customLogoInput.placeholder='';
+    requestAnimationFrame(()=>customLogoInput.select());
+  });
+  customLogoInput?.addEventListener('click',()=>{
+    if(!customLogoFreshFocus)return;
+    customLogoFreshFocus=false;
+    customLogoInput.select();
+  });
+  customLogoInput?.addEventListener('blur',()=>{
+    customLogoFreshFocus=false;
+    customLogoInput.placeholder='✨';
+  });
+  customLogoInput?.addEventListener('paste',event=>{
+    const pasted=event.clipboardData?.getData('text');
+    if(typeof pasted!=='string')return;
+    event.preventDefault();
+    customLogoFreshFocus=false;
+    customLogoInput.value=pasted.trim();
+    customLogoInput.dispatchEvent(new Event('input',{bubbles:true}));
+  });
   customLogoInput?.addEventListener('input',()=>{
     const next=String(customLogoInput.value||'').trim();
     draftLogo=next?normalizeClassLogo(next):'👥';
