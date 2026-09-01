@@ -1008,10 +1008,12 @@
           </div>
         </div>
         <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
-          <div class="tile-skins-shelf-empty">
-            <span aria-hidden="true"><i></i><i></i><i></i></span>
-            <div><small>COMING SOON</small><strong>Tile Skins</strong><p>Give individual tiles new frames, textures, and visual styles.</p></div>
+          <div class="tile-skins-toolbar">
+            <label class="tile-skins-search" for="tile-skins-search"><span aria-hidden="true">⌕</span><input id="tile-skins-search" type="search" autocomplete="off" placeholder="Search skins or tile types"><button id="tile-skins-search-clear" type="button" aria-label="Clear Tile Skin search" hidden>×</button></label>
+            <label class="tile-skins-sort"><span>Sort</span><select id="tile-skins-sort" aria-label="Sort Tile Skins"><option value="tile">Tile type</option><option value="name">Skin name</option><option value="newest">Newest</option></select></label>
+            <output id="tile-skins-search-status" class="tile-skins-search-status" aria-live="polite">Browse by tile type</output>
           </div>
+          <div id="tile-skins-groups" class="tile-skins-groups"></div>
         </div>
       </div>
     </div>
@@ -1113,10 +1115,10 @@
               <span class="shop-category__copy"><small data-i18n="shop.collection">COLLECTION</small><strong data-i18n="shop.stickerPacks">Sticker Packs</strong><em data-i18n="shop.stickerCopy">Decorate your workspace</em></span>
               <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
-            <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
+            <button class="shop-category shop-category--tile-skins" type="button" data-shop-open-page="tile-skins">
               <span class="shop-category__art shop-category__art--tiles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span class="shop-category__copy"><small data-i18n="shop.coming">COMING SOON</small><strong data-i18n="shop.tilePacks">Tile Skins</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Skins</em></span>
-              <span class="shop-coming-badge" data-i18n="shop.comingTitle">Coming Soon</span>
+              <span class="shop-category__copy"><small>COLLECTION</small><strong data-i18n="shop.tilePacks">Tile Skins</strong><em data-i18n="shop.tileCopy">Cosmetic Tile Skins</em></span>
+              <span class="shop-category__arrow" aria-hidden="true">→</span>
             </button>
             <button class="shop-category shop-category--disabled" type="button" disabled aria-disabled="true">
               <span class="shop-category__art shop-category__art--extras" aria-hidden="true">✦</span>
@@ -1190,6 +1192,19 @@
             <article class="shop-product" data-shop-product="sticker-colored-hearts" data-shop-price="180"><div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-colored-hearts" aria-hidden="true"><span>❤️</span><span>💛</span><span>💙</span><span>💜</span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Colored Hearts</h3><p>Twelve simple hearts in every available color.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div></article>
             <article class="shop-product" data-shop-product="sticker-decorative-hearts" data-shop-price="180"><div class="shop-product__preview shop-product__preview--emoji shop-product__preview--emoji-decorative-hearts" aria-hidden="true"><span>💖</span><span>💕</span><span>💘</span><span>❤️‍🔥</span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Decorative Hearts</h3><p>Sparkles, ribbons, arrows, flames, and more.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>180</strong></button></div></article>
             <article class="shop-product" data-shop-product="sticker-country-flags" data-shop-price="250"><div class="shop-product__preview shop-product__preview--flags" aria-hidden="true"><img src="https://flagcdn.io/flags/4x3/us.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/ca.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/jp.svg" alt="" draggable="false"><img src="https://flagcdn.io/flags/4x3/br.svg" alt="" draggable="false"></div><div class="shop-product__body"><div><span class="shop-product__type">STICKER PACK</span><h3>Country Flags</h3><p>Real SVG artwork for the complete country collection.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+          </div>
+        </section>
+
+        <section class="shop-page" data-shop-page="tile-skins" hidden>
+          <div class="shop-page-heading">
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <div><span>TILE SKIN COLLECTION</span><h2>Tile Skins</h2><p>Give individual tiles a completely different silhouette and style.</p></div>
+          </div>
+          <div class="shop-product-grid shop-product-grid--tile-skins">
+            <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-magnifier-classic" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--magnifier-classic" aria-hidden="true"><span class="classic-magnifier-art"><i></i><b><em>2×</em></b></span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">MAGNIFIER SKIN</span><h3>Classic Magnifying Glass</h3><p>The original round lens, steel rim, and angled handle.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+            </article>
           </div>
         </section>
       </div>
@@ -1445,7 +1460,7 @@
       </button>
       <button class="context-menu__item" data-module="magnifier" data-category="accessibility tools">
         <span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.3 15.3 5.2 5.2M8 10.5h5M10.5 8v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-        <span><strong>Magnifier</strong><small>Drag a see-through magnifying glass over tiles</small></span>
+        <span><strong>Magnifier</strong><small>Move a see-through zoom panel over tiles</small></span>
       </button>
       <button class="context-menu__item" data-module="voicememo" data-category="audio planning">
         <span class="context-menu__icon context-menu__icon--voicememo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.7 11.5a5.3 5.3 0 0 0 10.6 0M12 16.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>

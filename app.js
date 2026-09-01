@@ -2321,6 +2321,58 @@ function closeMenu(){
 }
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
+const TILE_SKIN_CATALOG=Object.freeze([
+  Object.freeze({
+    id:'magnifier-classic',
+    productId:'tile-skin-magnifier-classic',
+    tileType:'magnifier',
+    tileLabel:'Magnifier',
+    name:'Classic Magnifying Glass',
+    description:'The original round lens with a steel rim and angled handle.',
+    tags:'accessibility lens glass round classic original',
+    released:1
+  })
+]);
+const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
+const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
+
+function getOwnedShopProducts(){
+  try{
+    const value=JSON.parse(localStorage.getItem(SHOP_OWNED_PRODUCTS_KEY)||'[]');
+    return Array.isArray(value)?new Set(value):new Set();
+  }catch{return new Set()}
+}
+
+function getDefaultTileSkins(){
+  try{
+    const value=JSON.parse(localStorage.getItem(TILE_SKIN_DEFAULTS_KEY)||'{}');
+    return value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  }catch{return{}}
+}
+
+function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
+function tileSkinIsOwned(skin){return Boolean(skin&&getOwnedShopProducts().has(skin.productId))}
+
+function activeTileSkinForType(type){
+  const skin=tileSkinById(getDefaultTileSkins()[type]);
+  return skin?.tileType===type&&tileSkinIsOwned(skin)?skin:null;
+}
+
+function setDefaultTileSkin(type,id=''){
+  const defaults=getDefaultTileSkins();
+  const skin=tileSkinById(id);
+  if(skin&&skin.tileType===type&&tileSkinIsOwned(skin))defaults[type]=skin.id;
+  else delete defaults[type];
+  try{localStorage.setItem(TILE_SKIN_DEFAULTS_KEY,JSON.stringify(defaults))}catch{}
+  window.dispatchEvent(new CustomEvent('teachertiles:tileskinchange',{detail:{type,skinId:defaults[type]||''}}));
+}
+
+function applyNewModuleTileSkin(m,type,requestedSkinId=''){
+  const requested=tileSkinById(requestedSkinId);
+  const skin=requested?.tileType===type&&tileSkinIsOwned(requested)?requested:activeTileSkinForType(type);
+  if(skin)m.dataset.tileSkin=skin.id;
+}
+
 function setupModuleByType(m,type){
   setupCommon(m);
   if(type==='sticky')setupSticky(m);
@@ -2385,7 +2437,7 @@ function setupModuleByType(m,type){
   setupEditableTileHeading(m,type);
 }
 
-function createModule(type,x,y,{record=true,boardState=null}={}){
+function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
@@ -2398,6 +2450,7 @@ function createModule(type,x,y,{record=true,boardState=null}={}){
     m.appendChild(badge);
   }
   if(boardState)applyBoardPreSetupState(m,boardState);
+  else applyNewModuleTileSkin(m,type,tileSkin);
   workspace.appendChild(m);
   const w=m.offsetWidth,h=m.offsetHeight;
   m.style.left=`${clamp(x-w/2,0,BOARD_WIDTH-w)}px`;
@@ -10546,6 +10599,11 @@ function setupCollectionShelf(){
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
   const tileSkinsPanel=document.getElementById('tile-skins-shelf-content');
+  const tileSkinsSearch=document.getElementById('tile-skins-search');
+  const tileSkinsSearchClear=document.getElementById('tile-skins-search-clear');
+  const tileSkinsSort=document.getElementById('tile-skins-sort');
+  const tileSkinsStatus=document.getElementById('tile-skins-search-status');
+  const tileSkinsGroups=document.getElementById('tile-skins-groups');
   const stickerSearch=document.getElementById('sticker-shelf-search');
   const stickerSearchClear=document.getElementById('sticker-shelf-search-clear');
   const stickerSearchStatus=document.getElementById('sticker-shelf-search-status');
@@ -10581,6 +10639,147 @@ function setupCollectionShelf(){
   let activeFan=null;
   let activeStickerPack=null;
   let activeStickerDrawer=null;
+
+  const makeClassicMagnifierArtwork=()=>{
+    const art=document.createElement('span');
+    art.className='classic-magnifier-art';
+    const lens=document.createElement('i');
+    const handle=document.createElement('b');
+    const value=document.createElement('em');
+    value.textContent='2×';
+    handle.appendChild(value);
+    art.append(lens,handle);
+    return art;
+  };
+
+  const setupTileSkinDrag=(button,skin)=>{
+    button.addEventListener('pointerdown',event=>{
+      if(event.button!==0||!tileSkinIsOwned(skin))return;
+      event.preventDefault();
+      event.stopPropagation();
+      button.setPointerCapture(event.pointerId);
+      const startX=event.clientX,startY=event.clientY;
+      let dragging=false,canDrop=false,ghost=null;
+      const ensureGhost=()=>{
+        if(ghost)return;
+        ghost=document.createElement('div');
+        ghost.className='tile-skin-drag-ghost';
+        ghost.appendChild(makeClassicMagnifierArtwork());
+        document.body.appendChild(ghost);
+      };
+      const updateGhost=ev=>{
+        ensureGhost();
+        ghost.style.left=`${ev.clientX}px`;
+        ghost.style.top=`${ev.clientY}px`;
+        const shellRect=shelfShell.getBoundingClientRect();
+        const insideShelf=ev.clientX>=shellRect.left&&ev.clientX<=shellRect.right&&ev.clientY>=shellRect.top&&ev.clientY<=shellRect.bottom;
+        const blocked=document.elementsFromPoint(ev.clientX,ev.clientY).some(el=>el.closest?.('.workspace-controls,.workspace-upcoming-controls,.context-menu,.shop-modal'));
+        canDrop=!insideShelf&&!blocked&&ev.clientX>=0&&ev.clientX<=innerWidth&&ev.clientY>=0&&ev.clientY<=innerHeight;
+        ghost.classList.toggle('can-drop',canDrop);
+      };
+      const move=ev=>{
+        if(!dragging&&Math.hypot(ev.clientX-startX,ev.clientY-startY)<5)return;
+        if(!dragging){dragging=true;button.classList.add('is-dragging');document.body.classList.add('is-dragging-tile-skin')}
+        updateGhost(ev);
+      };
+      const cleanup=()=>{
+        button.classList.remove('is-dragging');
+        document.body.classList.remove('is-dragging-tile-skin');
+        ghost?.remove();
+        button.removeEventListener('pointermove',move);
+        button.removeEventListener('pointerup',end);
+        button.removeEventListener('pointercancel',cancel);
+      };
+      const end=ev=>{
+        if(dragging&&canDrop){
+          const point=screenToBoard(ev.clientX,ev.clientY);
+          createModule(skin.tileType,point.x,point.y,{tileSkin:skin.id});
+          closeShelf();
+        }
+        cleanup();
+      };
+      const cancel=()=>cleanup();
+      button.addEventListener('pointermove',move);
+      button.addEventListener('pointerup',end);
+      button.addEventListener('pointercancel',cancel);
+    });
+  };
+
+  const normalizeTileSkinSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
+  const renderTileSkinShelf=()=>{
+    if(!tileSkinsGroups)return;
+    const query=normalizeTileSkinSearch(tileSkinsSearch?.value);
+    const terms=query.split(/\s+/).filter(Boolean);
+    const sort=tileSkinsSort?.value||'tile';
+    const matching=TILE_SKIN_CATALOG.filter(skin=>{
+      const haystack=normalizeTileSkinSearch(`${skin.name} ${skin.tileLabel} ${skin.description} ${skin.tags}`);
+      return terms.every(term=>haystack.includes(term));
+    }).sort((a,b)=>sort==='newest'?(b.released-a.released)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+    const grouped=new Map();
+    matching.forEach(skin=>{if(!grouped.has(skin.tileType))grouped.set(skin.tileType,[]);grouped.get(skin.tileType).push(skin)});
+    const groups=[...grouped.entries()].sort((a,b)=>a[1][0].tileLabel.localeCompare(b[1][0].tileLabel));
+    tileSkinsGroups.replaceChildren();
+    groups.forEach(([type,skins])=>{
+      const section=document.createElement('section');
+      section.className='tile-skin-group';
+      section.dataset.tileSkinGroup=type;
+      const heading=document.createElement('header');
+      const headingCopy=document.createElement('div');
+      const title=document.createElement('strong');title.textContent=skins[0].tileLabel;
+      const count=document.createElement('small');count.textContent=`${skins.length} ${skins.length===1?'skin':'skins'}`;
+      headingCopy.append(title,count);
+      const tileType=document.createElement('span');tileType.textContent='Tile type';
+      heading.append(headingCopy,tileType);
+      const grid=document.createElement('div');grid.className='tile-skin-grid';
+      skins.forEach(skin=>{
+        const owned=tileSkinIsOwned(skin);
+        const active=getDefaultTileSkins()[skin.tileType]===skin.id&&owned;
+        const card=document.createElement('article');
+        card.className=`tile-skin-card${owned?' is-owned':' is-locked'}${active?' is-default':''}`;
+        card.dataset.tileSkin=skin.id;
+        const drag=document.createElement('button');
+        drag.type='button';drag.className='tile-skin-card__drag';drag.disabled=!owned;
+        drag.setAttribute('aria-label',owned?`Drag ${skin.name} ${skin.tileLabel} skin onto the board`:`${skin.name} is available in the Shop`);
+        const preview=document.createElement('span');preview.className='tile-skin-card__preview';preview.appendChild(makeClassicMagnifierArtwork());
+        const copy=document.createElement('span');copy.className='tile-skin-card__copy';
+        const name=document.createElement('strong');name.textContent=skin.name;
+        const hint=document.createElement('small');hint.textContent=owned?'Drag onto the board':`For the ${skin.tileLabel} tile`;
+        copy.append(name,hint);drag.append(preview,copy);
+        const actions=document.createElement('div');actions.className='tile-skin-card__actions';
+        const badge=document.createElement('span');badge.textContent=owned?'Owned':'Shop';
+        const action=document.createElement('button');action.type='button';
+        if(owned){
+          action.className='tile-skin-default-toggle';
+          action.setAttribute('aria-pressed',String(active));
+          action.setAttribute('aria-label',`${active?'Stop using':'Use'} ${skin.name} for new ${skin.tileLabel} tiles`);
+          const track=document.createElement('i');const label=document.createElement('b');label.textContent='New tiles';
+          action.append(track,label);
+          action.addEventListener('click',event=>{event.stopPropagation();setDefaultTileSkin(skin.tileType,active?'':skin.id)});
+        }else{
+          action.className='tile-skin-shop-link';action.textContent='View in Shop';
+          action.addEventListener('click',()=>{closeShelf();window.TeacherTilesShop?.openPage('tile-skins')});
+        }
+        actions.append(badge,action);card.append(drag,actions);grid.appendChild(card);
+        setupTileSkinDrag(drag,skin);
+        drag.addEventListener('keydown',event=>{
+          if(!owned||(event.key!=='Enter'&&event.key!==' '))return;
+          event.preventDefault();
+          const view=visibleBoardBounds();
+          createModule(skin.tileType,(view.left+view.right)/2,(view.top+view.bottom)/2,{tileSkin:skin.id});
+          closeShelf();
+        });
+      });
+      section.append(heading,grid);tileSkinsGroups.appendChild(section);
+    });
+    if(!matching.length){
+      const empty=document.createElement('div');empty.className='tile-skins-no-results';
+      empty.innerHTML='<strong>No Tile Skins found</strong><small>Try another skin name or tile type.</small>';
+      tileSkinsGroups.appendChild(empty);
+    }
+    const ownedCount=matching.filter(tileSkinIsOwned).length;
+    if(tileSkinsStatus)tileSkinsStatus.textContent=query?`${matching.length} ${matching.length===1?'skin':'skins'} found`:`${matching.length} ${matching.length===1?'skin':'skins'} · ${ownedCount} owned`;
+    if(tileSkinsSearchClear)tileSkinsSearchClear.hidden=!query;
+  };
 
   const positionThemeFan=()=>{
     if(!activePack||!activeFan||!activeFan.classList.contains('is-open'))return;
@@ -10714,6 +10913,7 @@ function setupCollectionShelf(){
     closeThemeFan();
     closeStickerPack();
     clearStickerSearch();
+    if(tileSkinsSearch)tileSkinsSearch.value='';
     shelf.classList.remove('is-open','is-sticker-mode','is-tile-skins-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
@@ -10735,6 +10935,7 @@ function setupCollectionShelf(){
     tileSkinsPanel.classList.toggle('is-active',tileSkins);
     shelf.classList.toggle('is-sticker-mode',stickers);
     shelf.classList.toggle('is-tile-skins-mode',tileSkins);
+    if(tileSkins)renderTileSkinShelf();
     title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Tile Skins';
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
@@ -10751,6 +10952,16 @@ function setupCollectionShelf(){
   stickerSearch?.addEventListener('input',updateStickerSearch);
   stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
   stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
+  tileSkinsSearch?.addEventListener('input',renderTileSkinShelf);
+  tileSkinsSearch?.addEventListener('keydown',event=>{
+    if(event.key!=='Escape')return;
+    event.stopPropagation();
+    tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch.focus();
+  });
+  tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch?.focus()});
+  tileSkinsSort?.addEventListener('change',renderTileSkinShelf);
+  window.addEventListener('teachertiles:shopownershipchange',renderTileSkinShelf);
+  window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
@@ -10782,6 +10993,7 @@ function setupCollectionShelf(){
   });
 
   updateThemeControls(document.body.dataset.theme||'light');
+  renderTileSkinShelf();
 }
 
 function populateGeneratedStickerPacks(){
@@ -15312,7 +15524,6 @@ function setupTeacherTilesShop(){
   const subscribePreview=document.getElementById('shop-subscribe-preview');
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const COINS_KEY='teacherTilesCoins';
-  const OWNED_KEY='teacherTilesOwnedShopPacks';
   let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null;
 
   function getCoins(){
@@ -15326,12 +15537,12 @@ function setupTeacherTilesShop(){
     return safe;
   }
   function getOwned(){
-    try{
-      const value=JSON.parse(localStorage.getItem(OWNED_KEY)||'[]');
-      return Array.isArray(value)?new Set(value):new Set();
-    }catch{return new Set()}
+    return getOwnedShopProducts();
   }
-  function setOwned(set){localStorage.setItem(OWNED_KEY,JSON.stringify([...set]))}
+  function setOwned(set){
+    localStorage.setItem(SHOP_OWNED_PRODUCTS_KEY,JSON.stringify([...set]));
+    window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange',{detail:{owned:[...set]}}));
+  }
   function syncProducts(){
     const owned=getOwned();
     products.forEach(card=>{
@@ -15469,6 +15680,7 @@ function setupTeacherTilesShop(){
   });
   setCoins(getCoins());
   syncProducts();
+  window.TeacherTilesShop={open:openShop,openPage:name=>{openShop();showPage(name)},sync:syncProducts};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
 
