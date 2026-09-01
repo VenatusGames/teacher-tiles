@@ -2805,6 +2805,65 @@ function applyPreviewState(module, state) {
     }
   }
 
+  if (state.type === "patternmaker" && special && Array.isArray(special.rows)) {
+    const board = module.querySelector(".pattern-maker-board");
+    if (board) {
+      const palette = { red: "#ef4b45", orange: "#f58a3c", yellow: "#f2cf45", green: "#32a875", blue: "#3978cf", purple: "#8b5bc7", pink: "#e96f9e", teal: "#2aa8ad" };
+      const length = [8, 12, 16, 20].includes(Number(special.length)) ? Number(special.length) : 12;
+      board.replaceChildren();
+      special.rows.slice(0, 4).forEach((savedRow, rowIndex) => {
+        const line = document.createElement("div");
+        line.className = "pattern-maker-row";
+        const label = document.createElement("span");
+        label.className = "pattern-maker-row-label";
+        label.textContent = String(rowIndex + 1);
+        const cells = document.createElement("div");
+        cells.className = "pattern-maker-cells";
+        cells.style.gridTemplateColumns = `repeat(${length},minmax(18px,1fr))`;
+        for (let index = 0; index < length; index++) {
+          const colorId = String(savedRow?.[index] || "");
+          const cell = document.createElement("span");
+          cell.className = "pattern-maker-cell";
+          cell.dataset.color = palette[colorId] ? colorId : "";
+          cell.style.setProperty("--pattern-cell-color", palette[colorId] || "transparent");
+          cells.appendChild(cell);
+        }
+        line.append(label, cells);
+        board.appendChild(line);
+      });
+    }
+  }
+
+  if (state.type === "shapemanipulatives" && special && Array.isArray(special.pieces)) {
+    const workspace = module.querySelector(".shape-manipulatives-workspace");
+    if (workspace) {
+      const definitions = {
+        triangle: { color: "#15966f", width: 72, height: 64 }, square: { color: "#ef6547", width: 68, height: 68 },
+        hexagon: { color: "#f0ca35", width: 106, height: 92 }, trapezoid: { color: "#ed463d", width: 104, height: 62 },
+        "rhombus-blue": { color: "#315fae", width: 94, height: 60 }, "rhombus-tan": { color: "#d4ae6c", width: 92, height: 52 }
+      };
+      workspace.querySelectorAll(".shape-manipulative-piece").forEach(piece => piece.remove());
+      const empty = workspace.querySelector(".shape-manipulatives-empty");
+      if (empty) empty.hidden = special.pieces.length > 0;
+      special.pieces.slice(0, 80).forEach(saved => {
+        const definition = definitions[saved?.type];
+        if (!definition) return;
+        const piece = document.createElement("span");
+        piece.className = `shape-manipulative-piece shape-manipulative-piece--${saved.type}`;
+        piece.style.left = `${Number(saved.x) || 0}px`;
+        piece.style.top = `${Number(saved.y) || 0}px`;
+        piece.style.width = `${definition.width}px`;
+        piece.style.height = `${definition.height}px`;
+        piece.style.transform = `rotate(${Number(saved.rotation) || 0}deg)`;
+        piece.style.setProperty("--pattern-block-color", definition.color);
+        const art = document.createElement("span");
+        art.className = "pattern-block-art";
+        piece.appendChild(art);
+        workspace.appendChild(piece);
+      });
+    }
+  }
+
   module.querySelectorAll("button,input,textarea,select,a").forEach(control => {
     control.tabIndex = -1;
     control.setAttribute("aria-hidden", "true");

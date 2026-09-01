@@ -1732,6 +1732,18 @@
         </span>
         <span><strong>Money</strong><small>Drag money manipulatives and total them</small></span>
       </button>
+      <button class="context-menu__item" data-module="patternmaker" data-category="math">
+        <span class="context-menu__icon context-menu__icon--patternmaker" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="4" height="4" rx=".7"/><rect x="7.5" y="7.5" width="4" height="4" rx=".7" opacity=".45"/><rect x="12.5" y="7.5" width="4" height="4" rx=".7"/><rect x="17.5" y="7.5" width="4" height="4" rx=".7" opacity=".45"/><rect x="2.5" y="12.5" width="4" height="4" rx=".7" opacity=".45"/><rect x="7.5" y="12.5" width="4" height="4" rx=".7"/><rect x="12.5" y="12.5" width="4" height="4" rx=".7" opacity=".45"/><rect x="17.5" y="12.5" width="4" height="4" rx=".7"/></svg>
+        </span>
+        <span><strong>Pattern Maker</strong><small>Build repeating patterns with colored squares</small></span>
+      </button>
+      <button class="context-menu__item" data-module="shapemanipulatives" data-category="math">
+        <span class="context-menu__icon context-menu__icon--shape-manipulatives" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m5 4 4 7H1z"/><path d="M11 3h7l3 5-3 5h-7L8 8z" opacity=".62"/><path d="m5 13 6 6H2z" opacity=".42"/><path d="m14 14 7 3-5 5-6-3z"/></svg>
+        </span>
+        <span><strong>Shape Manipulatives</strong><small>Combine draggable pattern blocks into new shapes</small></span>
+      </button>
       <button class="context-menu__item" data-module="noise" data-category="audio"><span class="context-menu__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 11.5a5.2 5.2 0 0 0 10.4 0M12 16.7V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span><strong>Noise detector</strong><small>Live microphone sound level</small></span></button>
       <button class="context-menu__item" data-module="pbisconsole" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--pbisconsole" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><strong>PBIS Console</strong><small>Manage every tracked PBIS stat in one place</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="prizeboard" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--prizeboard" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v4H3zM12 7v13M8.2 7C6 7 4.7 5.8 5.1 4.4c.4-1.5 2.1-1.8 3.4-.8C9.5 4.4 10.3 5.6 12 7c1.7-1.4 2.5-2.6 3.5-3.4 1.3-1 3-.7 3.4.8.4 1.4-.9 2.6-3.1 2.6H8.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><strong>Prize Board</strong><small>Create and redeem student or whole-class rewards</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
@@ -3427,6 +3439,35 @@
         <button class="custom-icon money-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
 
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="patternmaker-template">
+    <section class="module pattern-maker-module" data-type="patternmaker" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete pattern maker">×</button><div class="module-drag-handle"></div>
+      <header class="pattern-maker-header"><div><span>PATTERNS</span><strong>Pattern Maker</strong></div><small>Choose a color, then paint the squares</small></header>
+      <div class="pattern-maker-controls">
+        <label><span>Pattern</span><select class="pattern-maker-type" aria-label="Pattern type"><option value="free">Free Build</option><option value="ab">AB</option><option value="aab">AAB</option><option value="abb">ABB</option><option value="abc">ABC</option><option value="abbc">ABBC</option></select></label>
+        <label><span>Length</span><select class="pattern-maker-length" aria-label="Pattern length"><option value="8">8</option><option value="12" selected>12</option><option value="16">16</option><option value="20">20</option></select></label>
+        <button class="pattern-maker-apply" type="button">Build Pattern</button>
+      </div>
+      <div class="pattern-maker-board" aria-label="Pattern rows"></div>
+      <div class="pattern-maker-palette" aria-label="Pattern colors"></div>
+      <footer class="pattern-maker-footer"><button class="pattern-maker-add-row" type="button">+ Add Row</button><button class="pattern-maker-clear" type="button">Clear</button></footer>
+      <div class="customization-bar pattern-maker-customization" aria-label="Pattern maker customization"><button class="custom-icon pattern-maker-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon pattern-maker-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon pattern-maker-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="shapemanipulatives-template">
+    <section class="module shape-manipulatives-module" data-type="shapemanipulatives" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete shape manipulatives">×</button><div class="module-drag-handle"></div>
+      <header class="shape-manipulatives-header"><div><span>PATTERN BLOCKS</span><strong>Shape Manipulatives</strong></div><small>Drag, combine, and rotate pieces</small></header>
+      <div class="shape-manipulatives-workspace" aria-label="Shape building workspace"><div class="shape-manipulatives-empty">Click or drag a shape below to start building</div></div>
+      <div class="shape-manipulatives-palette" aria-label="Shape pieces"></div>
+      <footer class="shape-manipulatives-footer"><span class="shape-manipulatives-count">0 pieces</span><div><button class="shape-manipulatives-rotate" type="button" disabled>Rotate 30°</button><button class="shape-manipulatives-delete" type="button" disabled>Delete</button><button class="shape-manipulatives-clear" type="button">Clear All</button></div></footer>
+      <div class="customization-bar shape-manipulatives-customization" aria-label="Shape manipulatives customization"><button class="custom-icon shape-manipulatives-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon shape-manipulatives-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon shape-manipulatives-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
