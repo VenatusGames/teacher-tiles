@@ -203,6 +203,72 @@
               <span><strong>Student View</strong><small>Manage PBIS through detailed stats and view student/class profiles</small></span>
               <i aria-hidden="true">›</i>
             </button>
+            <button id="profile-lesson-planner-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="lesson-planner-panel">
+              <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h14a2 2 0 0 1 2 2v13H3v-13a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7 2.8v3.4M17 2.8v3.4M3 8.7h18M7 12h3M14 12h3M7 15.5h3M14 15.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+              <span><strong>Lesson Planner</strong><small>Plan lessons across days, weeks, months, and the full school year</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+          </section>
+          <section id="lesson-planner-panel" class="lesson-planner-panel" hidden aria-hidden="true" aria-labelledby="lesson-planner-title">
+            <div class="lesson-planner-backdrop" aria-hidden="true"></div>
+            <div class="lesson-planner-window" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-title">
+              <header class="lesson-planner-header">
+                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
+                <div class="lesson-planner-brand">
+                  <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 5h18a3 3 0 0 1 3 3v19H4V8a3 3 0 0 1 3-3Z" fill="currentColor" opacity=".16"/><path d="M9 3v5M23 3v5M4 11h24M9 16h5M18 16h5M9 21h5M18 21h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+                  <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
+                </div>
+                <div class="lesson-planner-header__actions">
+                  <button id="lesson-planner-today" type="button">Today</button>
+                  <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
+                </div>
+              </header>
+              <section class="lesson-planner-toolbar" aria-label="Calendar controls">
+                <div class="lesson-planner-date-nav">
+                  <button id="lesson-planner-prev" type="button" aria-label="Previous date range">‹</button>
+                  <button id="lesson-planner-next" type="button" aria-label="Next date range">›</button>
+                  <div><small id="lesson-planner-range-kicker">THIS WEEK</small><strong id="lesson-planner-range-title">Calendar</strong></div>
+                </div>
+                <div id="lesson-planner-view-tabs" class="lesson-planner-view-tabs" role="tablist" aria-label="Planner view">
+                  <button type="button" data-planner-view="day" role="tab">Day</button>
+                  <button type="button" data-planner-view="week" role="tab" aria-selected="true">Week</button>
+                  <button type="button" data-planner-view="month" role="tab">Month</button>
+                  <button type="button" data-planner-view="year" role="tab">Year</button>
+                </div>
+                <label class="lesson-planner-zoom"><span>Zoom</span><input id="lesson-planner-zoom" type="range" min="0" max="3" step="1" value="1" aria-label="Calendar zoom from day to year"><i aria-hidden="true">−</i></label>
+              </section>
+              <div class="lesson-planner-layout">
+                <aside class="lesson-planner-sidebar">
+                  <button id="lesson-planner-new" class="lesson-planner-new" type="button"><span aria-hidden="true">＋</span><strong>New lesson block</strong></button>
+                  <section class="lesson-planner-focus-card">
+                    <span id="lesson-planner-focus-weekday">TODAY</span>
+                    <strong id="lesson-planner-focus-day">1</strong>
+                    <small id="lesson-planner-focus-month">September 2026</small>
+                  </section>
+                  <section class="lesson-planner-agenda" aria-labelledby="lesson-planner-agenda-title">
+                    <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
+                    <div id="lesson-planner-agenda-list"></div>
+                  </section>
+                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Quick plan</strong> Click any open time in Day or Week view to start a block there.</p></div>
+                </aside>
+                <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
+              </div>
+              <aside id="lesson-planner-editor" class="lesson-planner-editor" hidden aria-hidden="true" aria-labelledby="lesson-planner-editor-title">
+                <button class="lesson-planner-editor__backdrop" type="button" aria-label="Close lesson editor"></button>
+                <form id="lesson-planner-form" class="lesson-planner-editor__card">
+                  <header><div><span>LESSON BLOCK</span><h3 id="lesson-planner-editor-title">Plan a lesson</h3></div><button id="lesson-planner-editor-close" type="button" aria-label="Close lesson editor">×</button></header>
+                  <label class="lesson-planner-field"><span>Lesson label</span><input id="lesson-planner-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
+                  <div class="lesson-planner-field-row">
+                    <label class="lesson-planner-field"><span>Date</span><input id="lesson-planner-date" type="date" required></label>
+                    <label class="lesson-planner-field"><span>Starts</span><input id="lesson-planner-start" type="time" step="900" required></label>
+                    <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-end" type="time" step="900" required></label>
+                  </div>
+                  <fieldset class="lesson-planner-colors"><legend>Block color</legend><div id="lesson-planner-colors"></div></fieldset>
+                  <label class="lesson-planner-field lesson-planner-field--description"><span>Plans and notes</span><textarea id="lesson-planner-description" maxlength="4000" placeholder="Learning goal, materials, activities, differentiation, assessment notes…"></textarea><small><span id="lesson-planner-description-count">0</span>/4000</small></label>
+                  <div class="lesson-planner-editor__actions"><button id="lesson-planner-delete" class="lesson-planner-delete" type="button" hidden>Delete</button><span></span><button id="lesson-planner-duplicate" type="button" hidden>Duplicate</button><button class="lesson-planner-save" type="submit">Save lesson</button></div>
+                </form>
+              </aside>
+            </div>
           </section>
           <section id="profile-organizations-panel" class="profile-organizations-panel" hidden aria-hidden="true" aria-labelledby="profile-organizations-title">
             <div class="organization-window__backdrop" aria-hidden="true"></div>
@@ -3234,6 +3300,7 @@
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
   <script src="app.js"></script>
+  <script src="lesson-planner.js?v=1"></script>
   <script type="module" src="firebase-auth.js"></script>
 
 
