@@ -2383,6 +2383,20 @@ const CURSOR_CATALOG=Object.freeze([
 const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
 const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
+const stickerCatalogItems=(entries,tags='')=>Object.freeze(entries.map(([emoji,name])=>Object.freeze({emoji,name,tags})));
+const ADDITIONAL_STICKER_PACKS=Object.freeze([
+  Object.freeze({id:'faces-happy',productId:'sticker-faces-happy',category:'faces',name:'Happy Faces',description:'Eight cheerful smiles for celebrations and encouragement.',tags:'emoji emojis face faces happy smile smiles cheerful positive reaction emotion',price:180,items:stickerCatalogItems([['😄','Smiling face with open mouth'],['😁','Beaming face'],['😊','Smiling face with smiling eyes'],['🙂','Slightly smiling face'],['😇','Smiling face with halo'],['😌','Relieved face'],['☺️','Smiling face'],['🥰','Smiling face with hearts']])}),
+  Object.freeze({id:'faces-silly',productId:'sticker-faces-silly',category:'faces',name:'Silly Faces',description:'Eight playful reactions for fun classroom moments.',tags:'emoji emojis face faces silly playful funny reaction expression emotion',price:180,items:stickerCatalogItems([['😛','Face with tongue'],['😜','Winking face with tongue'],['😝','Squinting face with tongue'],['🤭','Face with hand over mouth'],['🤫','Shushing face'],['🤗','Hugging face'],['🫠','Melting face'],['🙃','Upside-down face']])}),
+  Object.freeze({id:'faces-worried',productId:'sticker-faces-worried',category:'faces',name:'Worried Faces',description:'Eight concerned and frustrated expressions.',tags:'emoji emojis face faces worried concern sad frustrated reaction expression emotion',price:180,items:stickerCatalogItems([['😟','Worried face'],['😕','Confused face'],['🙁','Slightly frowning face'],['☹️','Frowning face'],['😣','Persevering face'],['😖','Confounded face'],['😫','Tired face'],['😩','Weary face']])}),
+  Object.freeze({id:'faces-big-reactions',productId:'sticker-faces-big-reactions',category:'faces',name:'Big Reactions',description:'Eight surprised, amazed, and dramatic expressions.',tags:'emoji emojis face faces surprised amazed shocked dramatic reaction expression emotion',price:180,items:stickerCatalogItems([['😮','Face with open mouth'],['😯','Hushed face'],['😲','Astonished face'],['😳','Flushed face'],['🥺','Pleading face'],['😱','Face screaming in fear'],['🤯','Exploding head'],['🥶','Cold face']])}),
+  Object.freeze({id:'food-fruit',productId:'sticker-food-fruit',category:'food',name:'Fresh Fruit',description:'Eight colorful fruits for snacks, charts, and rewards.',tags:'food foods fruit fruits fresh snack healthy',price:180,items:stickerCatalogItems([['🍏','Green apple'],['🍐','Pear'],['🍊','Tangerine'],['🍋','Lemon'],['🍌','Banana'],['🍉','Watermelon'],['🍇','Grapes'],['🫐','Blueberries']])}),
+  Object.freeze({id:'food-vegetables',productId:'sticker-food-vegetables',category:'food',name:'Vegetables',description:'Eight garden vegetables and healthy classroom favorites.',tags:'food foods vegetable vegetables veggie veggies garden healthy',price:180,items:stickerCatalogItems([['🥕','Carrot'],['🌽','Ear of corn'],['🥦','Broccoli'],['🥒','Cucumber'],['🫑','Bell pepper'],['🍅','Tomato'],['🍆','Eggplant'],['🥔','Potato']])}),
+  Object.freeze({id:'food-meals',productId:'sticker-food-meals',category:'food',name:'Meals',description:'Eight lunch, dinner, and takeout favorites.',tags:'food foods meal meals lunch dinner entree',price:180,items:stickerCatalogItems([['🌭','Hot dog'],['🌮','Taco'],['🌯','Burrito'],['🥪','Sandwich'],['🍝','Spaghetti'],['🍜','Steaming bowl'],['🍣','Sushi'],['🍱','Bento box']])}),
+  Object.freeze({id:'food-sweet-treats',productId:'sticker-food-sweet-treats',category:'food',name:'Sweet Treats',description:'Eight desserts, candies, and celebration treats.',tags:'food foods sweet sweets treat treats dessert desserts candy celebration',price:180,items:stickerCatalogItems([['🍦','Soft ice cream'],['🍧','Shaved ice'],['🍨','Ice cream'],['🍰','Shortcake'],['🎂','Birthday cake'],['🍫','Chocolate bar'],['🍬','Candy'],['🍭','Lollipop']])}),
+  Object.freeze({id:'numbers-1-25',productId:'sticker-numbers-1-25',category:'learning',name:'Numbers 1–25',description:'Twenty-five bold number stickers for counting and labeling.',tags:'number numbers counting count math mathematics classroom label labels',price:180,items:Object.freeze(Array.from({length:25},(_,index)=>Object.freeze({emoji:String(index+1),name:`Number ${index+1}`,tags:'number numbers counting math'})))}),
+  Object.freeze({id:'letters-lowercase',productId:'sticker-letters-lowercase',category:'learning',name:'Lowercase Letters',description:'All twenty-six lowercase letter stickers from a to z.',tags:'letter letters lowercase alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(97+index);return Object.freeze({emoji:letter,name:`Lowercase ${letter}`,tags:'letter letters lowercase alphabet phonics'})}))}),
+  Object.freeze({id:'letters-uppercase',productId:'sticker-letters-uppercase',category:'learning',name:'Uppercase Letters',description:'All twenty-six uppercase letter stickers from A to Z.',tags:'letter letters uppercase capital capitals alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(65+index);return Object.freeze({emoji:letter,name:`Uppercase ${letter}`,tags:'letter letters uppercase capital alphabet phonics'})}))})
+]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
   'pastel-theme-pack':'theme-pastel',
   'polka-dot-theme-pack':'theme-polka-dot',
@@ -2402,7 +2416,8 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   'food-sticker-pack':'sticker-food',
   'colored-hearts-sticker-pack':'sticker-colored-hearts',
   'decorative-hearts-sticker-pack':'sticker-decorative-hearts',
-  'country-flags-sticker-pack':'sticker-country-flags'
+  'country-flags-sticker-pack':'sticker-country-flags',
+  ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
   pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
@@ -10584,6 +10599,7 @@ window.addEventListener('resize',()=>document.querySelectorAll('.module').forEac
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
   if(!src&&!emoji)return null;
   const isFlag=/flagcdn\.io\/flags\//i.test(src);
+  const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
   const p=screenToBoard(clientX,clientY);
   const ratio=emoji?1:(Number.isFinite(aspect)&&aspect>0?aspect:1);
   let width=180,height=180;
@@ -10591,7 +10607,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   width=Math.max(64,width);
   height=Math.max(64,height);
   const m=document.createElement('section');
-  m.className=`module sticker-module${isFlag?' sticker-module--flag':''}${animate?' sticker-placed':''}`;
+  m.className=`module sticker-module${isFlag?' sticker-module--flag':''}${isTextSticker?' sticker-module--text':''}${animate?' sticker-placed':''}`;
   m.dataset.type='sticker';
   m.dataset.stickerSrc=src;
   m.dataset.stickerEmoji=emoji;
@@ -10612,10 +10628,10 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   const del=document.createElement('button');
   del.className='module-delete';del.type='button';del.setAttribute('aria-label','Delete sticker');del.textContent='×';
   const art=document.createElement('div');art.className='sticker-art';
-  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}${isFlag?' sticker-visual--flag':''}`;
+  const visual=document.createElement('div');visual.className=`sticker-visual${emoji?' sticker-visual--emoji':''}${isFlag?' sticker-visual--flag':''}${isTextSticker?' sticker-visual--text':''}`;
   if(emoji){
     const glyph=document.createElement('span');
-    glyph.className='sticker-emoji';glyph.setAttribute('aria-hidden','true');glyph.textContent=emoji;
+    glyph.className=`sticker-emoji${isTextSticker?' sticker-emoji--text':''}`;glyph.setAttribute('aria-hidden','true');glyph.textContent=emoji;
     visual.appendChild(glyph);
   }else{
     const img=document.createElement('img');img.src=src;img.alt=name||'Sticker';img.draggable=false;
@@ -10643,6 +10659,7 @@ function setupShelfStickerDrag(item,shelfShell){
     if(owner?.dataset.shopLocked==='true')return;
     const src=item.dataset.stickerSrc||'';
     const emoji=item.dataset.stickerEmoji||'';
+    const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
     const isFlag=/flagcdn\.io\/flags\//i.test(src);
     const name=item.dataset.stickerName||'Sticker';
     const preview=item.querySelector('img');
@@ -10659,9 +10676,9 @@ function setupShelfStickerDrag(item,shelfShell){
     const ensureGhost=()=>{
       if(ghost)return;
       ghost=document.createElement('div');
-      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}${isFlag?' sticker-drag-ghost--flag':''}`;
+      ghost.className=`sticker-drag-ghost${emoji?' sticker-drag-ghost--emoji':''}${isFlag?' sticker-drag-ghost--flag':''}${isTextSticker?' sticker-drag-ghost--text':''}`;
       if(emoji){
-        const glyph=document.createElement('span');glyph.className='sticker-emoji sticker-emoji--ghost';glyph.textContent=emoji;ghost.appendChild(glyph);
+        const glyph=document.createElement('span');glyph.className=`sticker-emoji sticker-emoji--ghost${isTextSticker?' sticker-emoji--text':''}`;glyph.textContent=emoji;ghost.appendChild(glyph);
       }else{
         const img=document.createElement('img');img.src=src;img.alt='';img.draggable=false;ghost.appendChild(img);
       }
@@ -11220,10 +11237,130 @@ function setupCollectionShelf(){
   renderCursorShelf();
 }
 
+function createAdditionalStickerPackUi(){
+  const shelfRow=document.querySelector('#sticker-shelf-content .sticker-shelf__row');
+  const shopGrid=document.querySelector('[data-shop-page="stickers"] .shop-product-grid');
+  const sampleClasses=['one','two','three','four'];
+  ADDITIONAL_STICKER_PACKS.forEach(pack=>{
+    if(shelfRow&&!document.getElementById(`${pack.id}-sticker-pack`)){
+      const wrap=document.createElement('div');
+      wrap.className='sticker-pack-wrap';
+      const button=document.createElement('button');
+      button.id=`${pack.id}-sticker-pack`;
+      button.className=`theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection${pack.category==='learning'?' sticker-pack--text':''}`;
+      button.type='button';
+      button.dataset.stickerPack='';
+      button.setAttribute('aria-expanded','false');
+      button.setAttribute('aria-controls',`${pack.id}-sticker-drawer`);
+      const stack=document.createElement('span');
+      stack.className='sticker-pack__stack sticker-pack__stack--emoji';
+      stack.setAttribute('aria-hidden','true');
+      pack.items.slice(0,4).forEach((item,index)=>{
+        const sample=document.createElement('span');
+        sample.className=`sticker-pack__emoji-sample sticker-pack__emoji-sample--${sampleClasses[index]}`;
+        sample.textContent=item.emoji;
+        stack.appendChild(sample);
+      });
+      const meta=document.createElement('span');
+      meta.className='theme-pack__meta';
+      const name=document.createElement('strong');
+      name.textContent=pack.name;
+      const count=document.createElement('small');
+      count.dataset.generatedStickerCount=pack.id;
+      count.textContent=`${pack.items.length} stickers`;
+      meta.append(name,count);
+      const chevron=document.createElement('span');
+      chevron.className='theme-pack__chevron';
+      chevron.setAttribute('aria-hidden','true');
+      chevron.textContent='⌃';
+      button.append(stack,meta,chevron);
+      wrap.appendChild(button);
+      const drawer=document.createElement('div');
+      drawer.id=`${pack.id}-sticker-drawer`;
+      drawer.className=`sticker-pack-drawer${pack.items.length>8?' sticker-pack-drawer--scrollable':''}${pack.category==='learning'?' sticker-pack-drawer--text':''}`;
+      drawer.setAttribute('aria-hidden','true');
+      drawer.setAttribute('role','group');
+      drawer.setAttribute('aria-label',`${pack.name} sticker pack`);
+      const track=document.createElement('div');
+      track.className='sticker-pack-drawer__track';
+      track.dataset.generatedStickers=pack.id;
+      const hint=document.createElement('span');
+      hint.className='sticker-pack-drawer__hint';
+      hint.textContent='Drag a sticker onto the board';
+      drawer.append(track,hint);
+      const anchorId=pack.category==='faces'?'symbols-sticker-pack':'colored-hearts-sticker-pack';
+      const anchor=document.getElementById(anchorId)?.closest('.sticker-pack-wrap');
+      if(anchor)anchor.before(wrap,drawer);else shelfRow.append(wrap,drawer);
+    }
+    if(shopGrid&&!shopGrid.querySelector(`[data-shop-product="${pack.productId}"]`)){
+      const article=document.createElement('article');
+      article.className='shop-product';
+      article.dataset.shopProduct=pack.productId;
+      article.dataset.shopPrice=String(pack.price);
+      const preview=document.createElement('div');
+      preview.className=`shop-product__preview shop-product__preview--emoji${pack.category==='learning'?' shop-product__preview--text-stickers':''}`;
+      preview.setAttribute('aria-hidden','true');
+      pack.items.slice(0,4).forEach(item=>{
+        const sample=document.createElement('span');
+        sample.textContent=item.emoji;
+        preview.appendChild(sample);
+      });
+      const body=document.createElement('div');
+      body.className='shop-product__body';
+      const copy=document.createElement('div');
+      const type=document.createElement('span');
+      type.className='shop-product__type';
+      type.textContent='STICKER PACK';
+      const title=document.createElement('h3');
+      title.textContent=pack.name;
+      const description=document.createElement('p');
+      description.textContent=pack.description;
+      copy.append(type,title,description);
+      const buy=document.createElement('button');
+      buy.className='shop-buy';
+      buy.type='button';
+      buy.dataset.shopBuy='';
+      const coin=document.createElement('span');
+      coin.className='shop-coin-icon shop-coin-icon--small';
+      coin.setAttribute('aria-hidden','true');
+      const coinImage=document.createElement('img');
+      coinImage.src='assets/shop/coin.png';
+      coinImage.alt='';
+      coin.appendChild(coinImage);
+      const price=document.createElement('strong');
+      price.textContent=String(pack.price);
+      buy.append(coin,price);
+      body.append(copy,buy);
+      article.append(preview,body);
+      const anchorProduct=pack.category==='faces'?'sticker-symbols':'sticker-colored-hearts';
+      const anchor=shopGrid.querySelector(`[data-shop-product="${anchorProduct}"]`);
+      if(anchor)anchor.before(article);else shopGrid.appendChild(article);
+    }
+  });
+}
+
+function syncStickerShopPackCounts(){
+  const productToPack=new Map(Object.entries(COLLECTION_PACK_PRODUCTS).map(([packId,productId])=>[productId,packId]));
+  document.querySelectorAll('.shop-product[data-shop-product^="sticker-"]').forEach(product=>{
+    const packId=productToPack.get(product.dataset.shopProduct||'');
+    const packButton=packId?document.getElementById(packId):null;
+    const drawerId=packButton?.getAttribute('aria-controls')||'';
+    const stickerCount=drawerId?document.getElementById(drawerId)?.querySelectorAll('.sticker-shelf-item').length:0;
+    const preview=product.querySelector('.shop-product__preview');
+    if(!preview||!stickerCount)return;
+    let badge=preview.querySelector('.shop-sticker-count');
+    if(!badge){badge=document.createElement('span');badge.className='shop-sticker-count';preview.appendChild(badge)}
+    badge.textContent=String(stickerCount);
+    badge.title=`${stickerCount} stickers in this pack`;
+  });
+}
+
 function populateGeneratedStickerPacks(){
+  createAdditionalStickerPackUi();
   const makeStickerButton=({emoji='',src='',name,tags=''})=>{
     const button=document.createElement('button');
-    button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}`;
+    const isText=!src&&/^[A-Za-z0-9]+$/.test(emoji);
+    button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}${isText?' sticker-shelf-item--text':''}`;
     button.type='button';
     if(src)button.dataset.stickerSrc=src;
     else button.dataset.stickerEmoji=emoji;
@@ -11238,7 +11375,7 @@ function populateGeneratedStickerPacks(){
       button.appendChild(image);
     }else{
       const glyph=document.createElement('span');
-      glyph.className='sticker-shelf-emoji';
+      glyph.className=`sticker-shelf-emoji${isText?' sticker-shelf-emoji--text':''}`;
       glyph.setAttribute('aria-hidden','true');
       glyph.textContent=emoji;
       button.appendChild(glyph);
@@ -11268,6 +11405,7 @@ function populateGeneratedStickerPacks(){
   fill('weather-emojis',weatherEmojis);
   fill('colored-hearts',coloredHearts);
   fill('decorative-hearts',decorativeHearts);
+  ADDITIONAL_STICKER_PACKS.forEach(pack=>fill(pack.id,pack.items.map(item=>({...item,tags:`${item.tags||''} ${pack.tags}`.trim()}))));
 
   const regionCodes=`AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET EU FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM UN US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW`.split(/\s+/);
   const specialNames={EU:'European Union',UN:'United Nations',XK:'Kosovo'};
@@ -11279,6 +11417,7 @@ function populateGeneratedStickerPacks(){
     tags:`country countries flag flags nation geography world international ${code.toLowerCase()}`
   }));
   fill('country-flags',flags);
+  syncStickerShopPackCounts();
 }
 
 populateGeneratedStickerPacks();
@@ -15839,6 +15978,7 @@ function setupTeacherTilesShop(){
     showPage('home');
     setCoins(getCoins());
     syncProducts();
+    syncStickerShopPackCounts();
     showBanner(bannerIndex,false);
     requestAnimationFrame(()=>modal.classList.add('is-open'));
     startBannerTimer();
@@ -15905,6 +16045,7 @@ function setupTeacherTilesShop(){
   });
   setCoins(getCoins());
   syncProducts();
+  syncStickerShopPackCounts();
   window.TeacherTilesShop={open:openShop,openPage:name=>{openShop();showPage(name)},sync:syncProducts};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();

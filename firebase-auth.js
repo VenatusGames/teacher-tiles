@@ -2831,7 +2831,7 @@ function createMiniObject(item) {
     const src = state?.sticker?.src || item.src || "";
     if (emoji) {
       const glyph = document.createElement("span");
-      glyph.className = "board-mini-sticker-emoji";
+      glyph.className = `board-mini-sticker-emoji${/^[A-Za-z0-9]+$/.test(emoji) ? " is-text" : ""}`;
       glyph.textContent = emoji;
       el.appendChild(glyph);
     } else if (src && !String(src).startsWith("data:")) {
