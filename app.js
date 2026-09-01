@@ -2331,6 +2331,21 @@ const TILE_SKIN_CATALOG=Object.freeze([
     description:'The original round lens with a steel rim and angled handle.',
     tags:'accessibility lens glass round classic original',
     released:1
+  }),
+  Object.freeze({
+    id:'youtube-retro-tv',productId:'tile-skin-youtube-retro-tv',tileType:'youtube',tileLabel:'YouTube',
+    name:'Vintage Television',description:'A woodgrain television with rounded glass, speaker vents, and tuning knobs.',
+    tags:'youtube video tv television retro vintage old fashioned wood',released:2
+  }),
+  Object.freeze({
+    id:'todo-clipboard',productId:'tile-skin-todo-clipboard',tileType:'todo',tileLabel:'To-Do',
+    name:'Classroom Clipboard',description:'A paper checklist clipped onto a warm wooden board.',
+    tags:'todo to-do checklist clipboard paper classroom office',released:3
+  }),
+  Object.freeze({
+    id:'calendar-paper-stack',productId:'tile-skin-calendar-paper-stack',tileType:'calendar',tileLabel:'Calendar',
+    name:'Page-Stack Calendar',description:'A bound paper calendar with dimensional pages layered underneath.',
+    tags:'calendar paper pages stack realistic bound depth',released:4
   })
 ]);
 const CURSOR_CATALOG=Object.freeze([
@@ -2399,7 +2414,7 @@ function applyAppCursor(id,{persist=true}={}){
   document.body.classList.toggle('has-custom-cursor',cursor.id!=='default');
   if(cursor.id==='default')document.documentElement.style.removeProperty('--teacher-cursor');
   else{
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M3 2.5 25.5 20l-10.2 1.5L10 29 3 2.5Z" fill="${cursor.color}" stroke="white" stroke-width="2.3" stroke-linejoin="round"/><path d="m16 21 5.4 8" fill="none" stroke="#20242a" stroke-width="3.2" stroke-linecap="round"/><path d="m16 21 5.4 8" fill="none" stroke="white" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M3.5 2.5v24.2l6.4-6.2 4.5 9 4.3-2.2-4.5-8.7h8.7L3.5 2.5Z" fill="${cursor.color}" stroke="white" stroke-width="2.1" stroke-linejoin="round"/><path d="M3.5 2.5v24.2l6.4-6.2 4.5 9 4.3-2.2-4.5-8.7h8.7L3.5 2.5Z" fill="none" stroke="#20242a" stroke-width=".8" stroke-linejoin="round"/></svg>`;
     document.documentElement.style.setProperty('--teacher-cursor',`url("data:image/svg+xml,${encodeURIComponent(svg)}") 3 3`);
   }
   window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
@@ -10738,6 +10753,16 @@ function setupCollectionShelf(){
     return art;
   };
 
+  const makeTileSkinArtwork=skin=>{
+    if(skin.id==='magnifier-classic')return makeClassicMagnifierArtwork();
+    const art=document.createElement('span');
+    art.className=`tile-skin-art tile-skin-art--${skin.id}`;
+    if(skin.id==='youtube-retro-tv')art.innerHTML='<i></i><b><em></em><em></em></b><small></small>';
+    else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
+    else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
+    return art;
+  };
+
   const setupTileSkinDrag=(button,skin)=>{
     button.addEventListener('pointerdown',event=>{
       if(event.button!==0||!tileSkinIsOwned(skin))return;
@@ -10750,7 +10775,7 @@ function setupCollectionShelf(){
         if(ghost)return;
         ghost=document.createElement('div');
         ghost.className='tile-skin-drag-ghost';
-        ghost.appendChild(makeClassicMagnifierArtwork());
+        ghost.appendChild(makeTileSkinArtwork(skin));
         document.body.appendChild(ghost);
       };
       const updateGhost=ev=>{
@@ -10826,13 +10851,14 @@ function setupCollectionShelf(){
         const drag=document.createElement('button');
         drag.type='button';drag.className='tile-skin-card__drag';drag.disabled=!owned;
         drag.setAttribute('aria-label',owned?`Drag ${skin.name} ${skin.tileLabel} skin onto the board`:`${skin.name} is available in the Shop`);
-        const preview=document.createElement('span');preview.className='tile-skin-card__preview';preview.appendChild(makeClassicMagnifierArtwork());
+        const preview=document.createElement('span');preview.className='tile-skin-card__preview';preview.appendChild(makeTileSkinArtwork(skin));
+        if(!owned){const lock=document.createElement('span');lock.className='collection-pack-lock';lock.textContent='🔒 Shop';lock.setAttribute('aria-hidden','true');preview.appendChild(lock)}
         const copy=document.createElement('span');copy.className='tile-skin-card__copy';
         const name=document.createElement('strong');name.textContent=skin.name;
         const hint=document.createElement('small');hint.textContent=owned?'Drag onto the board':`For the ${skin.tileLabel} tile`;
         copy.append(name,hint);drag.append(preview,copy);
         const actions=document.createElement('div');actions.className='tile-skin-card__actions';
-        const badge=document.createElement('span');badge.className=owned?'tile-skin-owned-badge':'collection-pack-lock';badge.textContent=owned?'Owned':'🔒 Shop';
+        const badge=document.createElement('span');badge.className='tile-skin-owned-badge';badge.textContent='Owned';
         const action=document.createElement('button');action.type='button';
         if(owned){
           action.className='tile-skin-default-toggle';
@@ -10845,8 +10871,8 @@ function setupCollectionShelf(){
           action.className='tile-skin-shop-link';action.textContent='View in Shop';
           action.addEventListener('click',()=>{closeShelf();window.TeacherTilesShop?.openPage('tile-skins')});
         }
-        if(owned){actions.append(badge,action);card.append(drag,actions)}
-        else{actions.append(action);card.append(drag,actions,badge)}
+        if(owned)actions.append(badge,action);else actions.append(action);
+        card.append(drag,actions);
         grid.appendChild(card);
         setupTileSkinDrag(drag,skin);
         drag.addEventListener('keydown',event=>{
