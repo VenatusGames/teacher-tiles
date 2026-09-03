@@ -1775,7 +1775,10 @@ function clampBoardCamera(){
 }
 function applyBoardCamera(){
   clampBoardCamera();
-  workspace.style.transform=`translate3d(${boardCamera.x}px,${boardCamera.y}px,0) scale(${boardCamera.scale})`;
+  const pixelRatio=window.devicePixelRatio||1;
+  const renderedX=Math.round(boardCamera.x*pixelRatio)/pixelRatio;
+  const renderedY=Math.round(boardCamera.y*pixelRatio)/pixelRatio;
+  workspace.style.transform=`translate(${renderedX}px,${renderedY}px) scale(${boardCamera.scale})`;
   workspace.style.setProperty('--board-zoom',boardCamera.scale);
   requestAnimationFrame(()=>updateWorkspaceEmptyState());
   requestBoardMinimapDraw();

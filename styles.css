@@ -4845,7 +4845,7 @@ body.dark .upcoming-control__tooltip{
   height:8000px;
   overflow:visible;
   cursor:grab;
-  will-change:transform;
+  will-change:auto;
   transform-origin:0 0;
   background-size:24px 24px;
   z-index:1;
@@ -5259,6 +5259,7 @@ body.dark .visual-schedule-icon-option{
 .visual-schedule-segment{
   grid-template-columns:calc(var(--visual-segment-size) - 10px) minmax(0,1fr) auto;
 }
+.workspace.is-panning,.workspace.is-keyboard-panning{will-change:transform}
 
 .visual-schedule-resize{
   position:absolute;
@@ -14630,3 +14631,11 @@ body>.lesson-planner-panel{position:fixed;inset:0;z-index:57900;padding:10px;dis
 .terms-document{gap:14px}.terms-notice{gap:15px;padding:17px 18px}.terms-notice strong{font-size:13px}.terms-notice span{font-size:13px;line-height:1.6}.terms-document article{padding:20px 21px}.terms-document h3{margin-bottom:9px;font-size:16px}.terms-document p{font-size:13px;line-height:1.7}
 @media(max-width:760px){.settings-panel__header{height:80px;padding:14px 18px}.settings-panel__mark{width:44px;height:44px}.settings-panel__brand strong{font-size:21px}.settings-panel__layout{grid-template-columns:1fr}.settings-nav{padding:11px 14px;gap:7px}.settings-nav__item{height:48px;font-size:14px}.settings-panel__content{padding:28px 20px 36px}.settings-page-heading--preferences>span{font-size:30px}.settings-page-heading h2{font-size:29px}.settings-page-heading p{font-size:14px}.settings-row{min-height:96px;padding:18px}.settings-range-control{grid-template-columns:minmax(0,1fr) 56px;width:100%}.settings-range-control input[type="range"]{width:100%}.settings-select{width:100%}.help-shortcut-grid,.help-mouse-list{grid-template-columns:1fr}.settings-contact-card{padding:18px}}
 @media(max-width:500px){.settings-panel__header{height:74px;padding:12px 14px}.settings-panel__mark{width:40px;height:40px}.settings-panel__brand strong{font-size:19px}.settings-nav__item{font-size:13px;padding-inline:10px}.settings-panel__content{padding:24px 14px 32px}.settings-card__title,.settings-row{padding-inline:15px}.settings-card__title small,.settings-row>div:first-child small{font-size:12px}.settings-row>div:first-child strong{font-size:15px}.settings-page-heading p{font-size:13px}.settings-feed-content .changelog-entry{padding:17px 15px 18px}.settings-contact-card{padding:14px}.settings-contact-card .contact-actions{align-items:stretch;flex-direction:column}.settings-contact-card .contact-submit{width:100%}}
+
+/* Keep interface chrome and artwork from becoming accidental text selections. */
+body,body :where(*){-webkit-user-select:none;user-select:none}
+body :where(input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="url"],input[type="tel"],input[type="password"],input[type="number"],input[type="date"],input[type="time"],input[type="datetime-local"],input[type="month"],input[type="week"],textarea,[contenteditable="true"],[contenteditable="plaintext-only"],[role="textbox"]){-webkit-user-select:text;user-select:text}
+body :where(img,svg,canvas,video){-webkit-user-drag:none}
+
+/* The organization launcher has longer explanatory copy and must grow to show it. */
+#profile-organizations-button small{display:block;overflow:visible;-webkit-box-orient:initial;-webkit-line-clamp:unset}
