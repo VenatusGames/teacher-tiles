@@ -2594,8 +2594,10 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   m.style.left=`${clamp(x-w/2,0,BOARD_WIDTH-w)}px`;
   m.style.top=`${clamp(y-18,0,BOARD_HEIGHT-h)}px`;
   bringToFront(m);
+  m._isBoardRestore=Boolean(boardState);
   setupModuleByType(m,type);
   if(boardState)applyBoardPostSetupState(m,boardState);
+  delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
   return m;
 }
@@ -8818,6 +8820,24 @@ function setupWeather(m){
   let locations=[];
   let restored=false;
   let disposed=false;
+  let autoFitComplete=Boolean(m._isBoardRestore);
+
+  const fitNewWeatherTile=()=>{
+    if(autoFitComplete||disposed)return;
+    requestAnimationFrame(()=>{
+      if(autoFitComplete||disposed||!locations.some(location=>location.current))return;
+      const cards=[...segments.querySelectorAll('.weather-card')];
+      if(!cards.length)return;
+      const fullCardHeight=Math.max(...cards.map(card=>card.scrollHeight));
+      const fixedHeight=Math.max(0,m.offsetHeight-segments.clientHeight);
+      const neededHeight=Math.ceil(fixedHeight+fullCardHeight+4);
+      if(neededHeight>m.offsetHeight){
+        m.style.height=`${Math.min(neededHeight,BOARD_HEIGHT-m.offsetTop)}px`;
+        notifyBoardChanged('weather-auto-fit');
+      }
+      autoFitComplete=true;
+    });
+  };
 
   const setMessage=value=>message.textContent=value;
   const render=()=>{
@@ -8889,6 +8909,7 @@ function setupWeather(m){
       const empty=document.createElement('div');empty.className='weather-empty';empty.textContent='Add a place or use your location.';segments.appendChild(empty);
     }
     m.querySelectorAll('[data-weather-unit]').forEach(button=>button.classList.toggle('is-active',button.dataset.weatherUnit===unit));
+    fitNewWeatherTile();
   };
   const refresh=async location=>{
     if(!Number.isFinite(location.lat)||!Number.isFinite(location.lon))return;

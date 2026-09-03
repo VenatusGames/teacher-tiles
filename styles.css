@@ -14641,6 +14641,7 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 #profile-organizations-button small{display:block;overflow:visible;-webkit-box-orient:initial;-webkit-line-clamp:unset}
 
 /* Readable weather details at both the default and minimum tile sizes. */
+.weather-module{height:720px;min-height:640px}
 .weather-header>div>span{font-size:9px;color:color-mix(in srgb,var(--module-text,#17191d) 64%,transparent)}
 .weather-title{font-size:24px}
 .weather-card{padding:15px;border-color:color-mix(in srgb,var(--module-text,#17191d) 16%,transparent)}
@@ -14668,3 +14669,17 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 
 /* Give every Account Tools mark a crisp edge against its card. */
 .profile-tool-button__icon{border:1px solid color-mix(in srgb,currentColor 28%,var(--border));box-shadow:inset 0 1px rgba(255,255,255,.5)}
+
+/* Keep identity and coin balance together in one account summary card. */
+.profile-account-card{grid-template-columns:96px minmax(0,1fr) 190px;gap:21px}
+.profile-account-copy{padding-right:0}
+.profile-account-card .profile-connected-badge{position:static;width:max-content;margin-top:10px;padding:6px 9px}
+.profile-account-card .profile-coin-card{align-self:stretch;min-height:0;margin:0;padding:13px 14px;grid-template-columns:52px minmax(0,1fr);gap:11px;border-radius:17px}
+.profile-account-card .profile-coin-card__icon{width:52px;height:52px}
+.profile-account-card .profile-coin-card__copy span{font-size:10px}
+.profile-account-card .profile-coin-card__copy strong{font-size:28px}
+.profile-account-card .profile-coin-card__copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:750;white-space:nowrap}
+@media(max-width:640px){
+  .profile-account-card{grid-template-columns:76px minmax(0,1fr);gap:15px}
+  .profile-account-card .profile-coin-card{grid-column:1/-1;min-height:76px}
+}

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260902-3" />
+  <link rel="stylesheet" href="styles.css?v=20260902-5" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -175,16 +175,16 @@
               <span class="profile-state__kicker" data-i18n="profile.signedIn">SIGNED IN</span>
               <h2 id="profile-display-name">Teacher</h2>
               <p id="profile-email"></p>
+              <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
             </div>
-            <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
-          </div>
-          <div class="profile-coin-card" aria-label="TeacherTiles coin balance">
-            <div class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></div>
-            <div class="profile-coin-card__copy">
-              <span data-i18n="profile.coins">COINS</span>
-              <strong id="profile-coin-balance">0</strong>
+            <div class="profile-coin-card" aria-label="TeacherTiles coin balance">
+              <div class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></div>
+              <div class="profile-coin-card__copy">
+                <span data-i18n="profile.coins">COINS</span>
+                <strong id="profile-coin-balance">0</strong>
+                <small data-i18n="profile.balance">Account balance</small>
+              </div>
             </div>
-            <small data-i18n="profile.balance">Account balance</small>
           </div>
           <section class="profile-tools" aria-labelledby="profile-tools-title">
             <div class="profile-tools__head"><h3 id="profile-tools-title">Account Tools</h3></div>
@@ -3324,7 +3324,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260902-3"></script>
+  <script src="app.js?v=20260902-5"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js"></script>
 
