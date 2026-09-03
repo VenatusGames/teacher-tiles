@@ -1,6 +1,6 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBa1AkZfYLemz4gDAI505704wsG1CC_sSQ",
-  authDomain: "teachertiles.com",
+  authDomain: "teachertiles-6739b.firebaseapp.com",
   projectId: "teachertiles-6739b",
   storageBucket: "teachertiles-6739b.firebasestorage.app",
   messagingSenderId: "41204185343",
