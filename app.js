@@ -3680,10 +3680,10 @@ function setupMagnifier(m){
   let raf=0;
   let dead=false;
 
-  const lensCenter=()=>({
-    x:m.offsetLeft+lens.offsetLeft+lens.offsetWidth/2,
-    y:m.offsetTop+lens.offsetTop+lens.offsetHeight/2
-  });
+  const lensCenter=()=>{
+    const rect=lens.getBoundingClientRect();
+    return screenToBoard(rect.left+rect.width/2,rect.top+rect.height/2);
+  };
 
   const targetUnderLens=()=>{
     const center=lensCenter();
