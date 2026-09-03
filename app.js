@@ -2708,12 +2708,24 @@ function bringToFront(m){
   if(group.length>1){syncSnapGroupLayer(group);return}
   tileZ=Math.min(tileZ+1,STICKER_Z_BASE-1);m.style.zIndex=String(tileZ);
 }
+const TEXT_ENTRY_SELECTOR='textarea,[contenteditable]:not([contenteditable="false"]),[role="textbox"],input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="url"],input[type="tel"],input[type="password"]';
 let activeModuleTextEditor=null;
 const moduleTextClickState=new WeakMap();
 
+function collapseTextEntrySelection(field){
+  if(!(field instanceof HTMLElement))return;
+  if(field instanceof HTMLInputElement||field instanceof HTMLTextAreaElement){
+    const end=Number.isFinite(field.selectionEnd)?field.selectionEnd:field.value.length;
+    try{field.setSelectionRange(end,end)}catch{}
+    return;
+  }
+  const selection=getSelection();
+  if(selection)selection.removeAllRanges();
+}
+
 function findModuleTextEditTarget(target,m){
   if(!(target instanceof Element)||!m)return null;
-  const field=target.closest('textarea,[contenteditable]:not([contenteditable="false"]),input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="url"],input[type="tel"],input[type="password"]');
+  const field=target.closest(TEXT_ENTRY_SELECTOR);
   return field&&m.contains(field)?field:null;
 }
 
@@ -2727,6 +2739,7 @@ function isImmediateModuleInput(field){
 
 function exitModuleTextEdit(field=activeModuleTextEditor){
   if(!field)return;
+  collapseTextEntrySelection(field);
   field.classList.remove('module-text-edit-active');
   field.closest('.module')?.classList.remove('is-text-editing');
   if(document.activeElement===field)field.blur();
@@ -2756,7 +2769,7 @@ function enterModuleTextEdit(field){
 }
 
 function prepareModuleTextEditors(m){
-  const selector='textarea,[contenteditable]:not([contenteditable="false"]),input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="url"],input[type="tel"],input[type="password"]';
+  const selector=TEXT_ENTRY_SELECTOR;
   m.querySelectorAll(selector).forEach(field=>field.classList.add('module-text-edit-target'));
   const observer=new MutationObserver(records=>{
     for(const record of records){
@@ -2826,6 +2839,13 @@ document.addEventListener('pointerdown',event=>{
   if(!activeModuleTextEditor||!(event.target instanceof Node))return;
   if(event.target===activeModuleTextEditor||activeModuleTextEditor.contains(event.target))return;
   exitModuleTextEdit(activeModuleTextEditor);
+},true);
+
+document.addEventListener('pointerdown',event=>{
+  const field=document.activeElement;
+  if(!(field instanceof HTMLElement)||!field.matches(TEXT_ENTRY_SELECTOR)||!(event.target instanceof Node))return;
+  if(event.target===field||field.contains(event.target))return;
+  collapseTextEntrySelection(field);
 },true);
 
 document.addEventListener('keydown',event=>{
