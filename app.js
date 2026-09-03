@@ -9317,13 +9317,15 @@ function setupWorldMap(m){
     const startCenterX=centerX;
     const startCenterY=centerY;
     let moved=false;
-    stage.setPointerCapture?.(pointerId);
     const move=moveEvent=>{
       if(moveEvent.pointerId!==pointerId)return;
       const dx=moveEvent.clientX-startX;
       const dy=moveEvent.clientY-startY;
       if(!moved&&Math.hypot(dx,dy)<4)return;
-      moved=true;
+      if(!moved){
+        moved=true;
+        stage.setPointerCapture?.(pointerId);
+      }
       moveEvent.preventDefault();
       moveEvent.stopPropagation();
       m.classList.add('is-map-panning');
