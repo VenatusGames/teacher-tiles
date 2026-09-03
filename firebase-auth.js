@@ -101,7 +101,12 @@ let organizationInvites = [];
 let activeOrganization = null;
 let activeOrganizationMembers = [];
 let activeOrganizationInvites = [];
-let organizationInviteUnsubscribe = null;
+let organizationInvitesLoadedAt = 0;
+let organizationInvitesPromise = null;
+let organizationIndexLoadedAt = 0;
+let organizationIndexPromise = null;
+const organizationDetailCache = new Map();
+const organizationDetailPromises = new Map();
 let organizationLogoDraft = "🏫";
 let organizationLogoFreshFocus = false;
 
@@ -137,8 +142,9 @@ let localBoardDbPromise = null;
 
 const LOCAL_SAVE_DELAY = 280;
 const CLOUD_SAVE_DELAY = 8000;
-const BOARD_LIST_CACHE_TTL = 60000;
+const BOARD_LIST_CACHE_TTL = 10 * 60 * 1000;
 const SESSION_CLOUD_RECHECK_TTL = 10 * 60 * 1000;
+const ORGANIZATION_CACHE_TTL = 5 * 60 * 1000;
 const INLINE_OBJECT_BUDGET = 560000;
 const CHUNK_OBJECT_BUDGET = 520000;
 const MAX_SINGLE_OBJECT_BYTES = 900000;
@@ -197,26 +203,36 @@ function cacheClassEncryptionKeyForSession(uid, raw) {
 
 function markClassCloudLoadedForSession(uid) {
   if (!uid) return;
-  try { sessionStorage.setItem(classCloudLoadedSessionStorageKey(uid), String(Date.now())); } catch {}
+  const value = String(Date.now());
+  try { sessionStorage.setItem(classCloudLoadedSessionStorageKey(uid), value); } catch {}
+  try { localStorage.setItem(classCloudLoadedSessionStorageKey(uid), value); } catch {}
 }
 
 function classCloudAlreadyLoadedThisSession(uid) {
   if (!uid) return false;
   try {
-    const checkedAt = Number(sessionStorage.getItem(classCloudLoadedSessionStorageKey(uid)) || 0);
+    const checkedAt = Math.max(
+      Number(sessionStorage.getItem(classCloudLoadedSessionStorageKey(uid)) || 0),
+      Number(localStorage.getItem(classCloudLoadedSessionStorageKey(uid)) || 0)
+    );
     return checkedAt > 0 && Date.now() - checkedAt < SESSION_CLOUD_RECHECK_TTL;
   } catch { return false; }
 }
 
 function markBoardCloudLoadedForSession(uid) {
   if (!uid) return;
-  try { sessionStorage.setItem(boardCloudLoadedSessionStorageKey(uid), String(Date.now())); } catch {}
+  const value = String(Date.now());
+  try { sessionStorage.setItem(boardCloudLoadedSessionStorageKey(uid), value); } catch {}
+  try { localStorage.setItem(boardCloudLoadedSessionStorageKey(uid), value); } catch {}
 }
 
 function boardCloudAlreadyLoadedThisSession(uid) {
   if (!uid) return false;
   try {
-    const checkedAt = Number(sessionStorage.getItem(boardCloudLoadedSessionStorageKey(uid)) || 0);
+    const checkedAt = Math.max(
+      Number(sessionStorage.getItem(boardCloudLoadedSessionStorageKey(uid)) || 0),
+      Number(localStorage.getItem(boardCloudLoadedSessionStorageKey(uid)) || 0)
+    );
     return checkedAt > 0 && Date.now() - checkedAt < SESSION_CLOUD_RECHECK_TTL;
   } catch { return false; }
 }
@@ -700,8 +716,12 @@ async function acceptOrganizationInvite(invite) {
     });
     batch.delete(organizationInviteDocument(invite.id));
     await batch.commit();
+    organizationInvites = organizationInvites.filter(item => item.id !== invite.id);
+    renderNotificationInbox();
+    renderOrganizationInvitations();
     setOrganizationFeedback(organizationFeedback, `You joined ${invite.organizationName || "the organization"}.`);
-    await loadOrganizationIndex();
+    organizationIndexLoadedAt = 0;
+    await loadOrganizationIndex({ force: true });
   } catch (error) {
     console.error("TeacherTiles could not accept the organization invitation", error);
     setOrganizationFeedback(organizationFeedback, "The invitation could not be accepted. Please try again.", true);
@@ -716,6 +736,9 @@ async function declineOrganizationInvite(invite) {
   organizationBusy = true;
   try {
     await firestoreSdk.deleteDoc(organizationInviteDocument(invite.id));
+    organizationInvites = organizationInvites.filter(item => item.id !== invite.id);
+    renderNotificationInbox();
+    renderOrganizationInvitations();
   } catch (error) {
     console.error("TeacherTiles could not decline the organization invitation", error);
     setOrganizationFeedback(organizationFeedback, "The invitation could not be declined. Please try again.", true);
@@ -813,31 +836,42 @@ function renderOrganizationInvitations() {
 }
 
 function stopOrganizationInviteListener() {
-  organizationInviteUnsubscribe?.();
-  organizationInviteUnsubscribe = null;
+  organizationInvitesLoadedAt = 0;
+  organizationInvitesPromise = null;
   organizationInvites = [];
   renderNotificationInbox();
   renderOrganizationInvitations();
 }
 
-function startOrganizationInviteListener(user) {
-  stopOrganizationInviteListener();
-  const email = normalizeOrganizationEmail(user?.email);
-  if (!user || !email || !firestoreSdk || !db) return;
+async function refreshOrganizationInvites({ force = false } = {}) {
+  const email = normalizeOrganizationEmail(currentUser?.email);
+  if (!currentUser || !email || !firestoreSdk || !db) return organizationInvites;
+  const requestedUid = currentUser.uid;
+  if (!force && organizationInvitesLoadedAt && Date.now() - organizationInvitesLoadedAt < ORGANIZATION_CACHE_TTL) {
+    return organizationInvites;
+  }
+  if (organizationInvitesPromise) return organizationInvitesPromise;
   const invitesQuery = firestoreSdk.query(
     firestoreSdk.collection(db, "organizationInvites"),
     firestoreSdk.where("email", "==", email)
   );
-  organizationInviteUnsubscribe = firestoreSdk.onSnapshot(invitesQuery, snapshot => {
-    organizationInvites = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    renderNotificationInbox();
-    renderOrganizationInvitations();
-  }, error => {
-    console.error("TeacherTiles could not watch organization invitations", error);
-    organizationInvites = [];
-    renderNotificationInbox();
-    renderOrganizationInvitations();
-  });
+  organizationInvitesPromise = (async () => {
+    try {
+      const snapshot = await firestoreSdk.getDocs(invitesQuery);
+      if (currentUser?.uid !== requestedUid) return organizationInvites;
+      organizationInvites = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+      organizationInvitesLoadedAt = Date.now();
+      renderNotificationInbox();
+      renderOrganizationInvitations();
+      return organizationInvites;
+    } catch (error) {
+      console.error("TeacherTiles could not load organization invitations", error);
+      return organizationInvites;
+    } finally {
+      organizationInvitesPromise = null;
+    }
+  })();
+  return organizationInvitesPromise;
 }
 
 function renderOrganizationList() {
@@ -879,30 +913,46 @@ function renderOrganizationList() {
   });
 }
 
-async function loadOrganizationIndex() {
+async function loadOrganizationIndex({ force = false } = {}) {
   if (!currentUser || !firestoreSdk || !db) {
     organizationMemberships = [];
     renderOrganizationList();
-    return;
+    return organizationMemberships;
   }
-  try {
-    const membershipsQuery = firestoreSdk.query(
-      firestoreSdk.collection(db, "organizationMembers"),
-      firestoreSdk.where("uid", "==", currentUser.uid)
-    );
-    const membershipsSnapshot = await firestoreSdk.getDocs(membershipsQuery);
-    const memberships = membershipsSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    const items = await Promise.all(memberships.map(async membership => {
-      const organizationSnapshot = await firestoreSdk.getDoc(organizationDocument(membership.organizationId));
-      if (!organizationSnapshot.exists()) return null;
-      return { id: organizationSnapshot.id, ...organizationSnapshot.data(), membership };
-    }));
-    organizationMemberships = items.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+  if (!force && organizationIndexLoadedAt && Date.now() - organizationIndexLoadedAt < ORGANIZATION_CACHE_TTL) {
     renderOrganizationList();
-  } catch (error) {
-    console.error("TeacherTiles could not load organizations", error);
-    setOrganizationFeedback(organizationFeedback, organizationErrorMessage(error, "Organizations could not be loaded. Check your connection and try again."), true);
+    return organizationMemberships;
   }
+  if (organizationIndexPromise) return organizationIndexPromise;
+  const requestedUid = currentUser.uid;
+
+  organizationIndexPromise = (async () => {
+    try {
+      const membershipsQuery = firestoreSdk.query(
+        firestoreSdk.collection(db, "organizationMembers"),
+        firestoreSdk.where("uid", "==", currentUser.uid)
+      );
+      const membershipsSnapshot = await firestoreSdk.getDocs(membershipsQuery);
+      const memberships = membershipsSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+      const items = await Promise.all(memberships.map(async membership => {
+        const organizationSnapshot = await firestoreSdk.getDoc(organizationDocument(membership.organizationId));
+        if (!organizationSnapshot.exists()) return null;
+        return { id: organizationSnapshot.id, ...organizationSnapshot.data(), membership };
+      }));
+      if (currentUser?.uid !== requestedUid) return organizationMemberships;
+      organizationMemberships = items.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+      organizationIndexLoadedAt = Date.now();
+      renderOrganizationList();
+      return organizationMemberships;
+    } catch (error) {
+      console.error("TeacherTiles could not load organizations", error);
+      setOrganizationFeedback(organizationFeedback, organizationErrorMessage(error, "Organizations could not be loaded. Check your connection and try again."), true);
+      return organizationMemberships;
+    } finally {
+      organizationIndexPromise = null;
+    }
+  })();
+  return organizationIndexPromise;
 }
 
 function setOrganizationEditorOpen(open) {
@@ -1005,7 +1055,7 @@ function renderOrganizationPendingInvites() {
       cancel.disabled = true;
       try {
         await firestoreSdk.deleteDoc(organizationInviteDocument(invite.id));
-        await refreshOrganizationEditor();
+        await refreshOrganizationEditor({ force: true });
       } catch (error) {
         console.error("TeacherTiles could not cancel the organization invitation", error);
         setOrganizationFeedback(organizationEditorFeedback, "The invitation could not be canceled.", true);
@@ -1017,38 +1067,63 @@ function renderOrganizationPendingInvites() {
   });
 }
 
-async function refreshOrganizationEditor() {
+async function refreshOrganizationEditor({ force = false } = {}) {
   if (!activeOrganization || !currentUser || !firestoreSdk || !db) return;
-  try {
-    const memberQuery = firestoreSdk.query(
-      firestoreSdk.collection(db, "organizationMembers"),
-      firestoreSdk.where("organizationId", "==", activeOrganization.id)
-    );
-    const memberSnapshot = await firestoreSdk.getDocs(memberQuery);
-    activeOrganizationMembers = memberSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  const organizationId = activeOrganization.id;
+  const requestedUid = currentUser.uid;
+  const applyEditorData = (members, invites) => {
+    activeOrganizationMembers = members.map(member => ({ ...member }));
     activeOrganizationMembers.sort((a, b) => {
       const rank = { Owner: 0, Admin: 1, Member: 2 };
       return (rank[a.role] ?? 3) - (rank[b.role] ?? 3) || String(a.displayName || a.email).localeCompare(String(b.displayName || b.email));
     });
     const role = currentOrganizationRole();
-    if (["Owner", "Admin"].includes(role)) {
-      const inviteQuery = firestoreSdk.query(
-        firestoreSdk.collection(db, "organizationInvites"),
-        firestoreSdk.where("organizationId", "==", activeOrganization.id)
-      );
-      const inviteSnapshot = await firestoreSdk.getDocs(inviteQuery);
-      activeOrganizationInvites = inviteSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    } else activeOrganizationInvites = [];
+    activeOrganizationInvites = ["Owner", "Admin"].includes(role) ? invites.map(invite => ({ ...invite })) : [];
     if (organizationInviteForm) organizationInviteForm.hidden = !canInviteOrganizationMembers();
     if (organizationNameInput) organizationNameInput.disabled = role !== "Owner";
     setOrganizationLogoEditable(role === "Owner");
     if (organizationDangerZone) organizationDangerZone.hidden = role !== "Owner";
     renderOrganizationMembers();
     renderOrganizationPendingInvites();
-  } catch (error) {
-    console.error("TeacherTiles could not load organization members", error);
-    setOrganizationFeedback(organizationEditorFeedback, "Organization members could not be loaded.", true);
+  };
+
+  const cached = organizationDetailCache.get(organizationId);
+  if (!force && cached && Date.now() - cached.loadedAt < ORGANIZATION_CACHE_TTL) {
+    applyEditorData(cached.members, cached.invites);
+    return;
   }
+  if (organizationDetailPromises.has(organizationId)) return organizationDetailPromises.get(organizationId);
+
+  const request = (async () => {
+    try {
+      const memberQuery = firestoreSdk.query(
+        firestoreSdk.collection(db, "organizationMembers"),
+        firestoreSdk.where("organizationId", "==", organizationId)
+      );
+      const memberSnapshot = await firestoreSdk.getDocs(memberQuery);
+      const members = memberSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+      const ownMembership = members.find(member => member.uid === currentUser.uid) || activeOrganization.membership;
+      let invites = [];
+      if (["Owner", "Admin"].includes(ownMembership?.role)) {
+        const inviteQuery = firestoreSdk.query(
+          firestoreSdk.collection(db, "organizationInvites"),
+          firestoreSdk.where("organizationId", "==", organizationId)
+        );
+        const inviteSnapshot = await firestoreSdk.getDocs(inviteQuery);
+        invites = inviteSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+      }
+      if (currentUser?.uid !== requestedUid) return;
+      organizationDetailCache.set(organizationId, { loadedAt: Date.now(), members, invites });
+      if (activeOrganization?.id === organizationId) applyEditorData(members, invites);
+    } catch (error) {
+      console.error("TeacherTiles could not load organization members", error);
+      setOrganizationFeedback(organizationEditorFeedback, "Organization members could not be loaded.", true);
+    } finally {
+      organizationDetailPromises.delete(organizationId);
+    }
+  })();
+  organizationDetailPromises.set(organizationId, request);
+  return request;
 }
 
 async function openOrganizationEditor(item) {
@@ -1075,12 +1150,12 @@ async function updateOrganizationMemberRole(member, role) {
       role,
       updatedAt: firestoreSdk.serverTimestamp()
     });
-    await refreshOrganizationEditor();
+    await refreshOrganizationEditor({ force: true });
     setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} is now ${role}.`);
   } catch (error) {
     console.error("TeacherTiles could not update the organization role", error);
     setOrganizationFeedback(organizationEditorFeedback, "That role could not be updated.", true);
-    await refreshOrganizationEditor();
+    await refreshOrganizationEditor({ force: true });
   }
 }
 
@@ -1090,7 +1165,7 @@ async function removeOrganizationMember(member) {
   setOrganizationFeedback(organizationEditorFeedback, `Removing ${member.displayName || member.email}…`);
   try {
     await firestoreSdk.deleteDoc(organizationMemberDocument(activeOrganization.id, member.uid));
-    await refreshOrganizationEditor();
+    await refreshOrganizationEditor({ force: true });
     setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} was removed.`);
   } catch (error) {
     console.error("TeacherTiles could not remove the organization member", error);
@@ -1118,8 +1193,13 @@ async function saveOrganizationDetails() {
     activeOrganization.logo = logo;
     if (organizationEditorTitle) organizationEditorTitle.textContent = name;
     if (organizationEditorLogo) organizationEditorLogo.textContent = logo;
+    const cachedItem = organizationMemberships.find(item => item.id === activeOrganization.id);
+    if (cachedItem) {
+      cachedItem.name = name;
+      cachedItem.logo = logo;
+    }
+    renderOrganizationList();
     setOrganizationFeedback(organizationEditorFeedback, "Organization changes saved.");
-    await loadOrganizationIndex();
   } catch (error) {
     console.error("TeacherTiles could not save the organization", error);
     setOrganizationFeedback(organizationEditorFeedback, "The organization changes could not be saved.", true);
@@ -1129,7 +1209,7 @@ async function saveOrganizationDetails() {
 async function closeOrganizationEditor() {
   await saveOrganizationDetails();
   setOrganizationEditorOpen(false);
-  await loadOrganizationIndex();
+  renderOrganizationList();
 }
 
 async function deleteOrganizationReferences(references) {
@@ -1170,8 +1250,10 @@ async function deleteActiveOrganization() {
     if (currentMembership) finalBatch.delete(currentMembership.ref);
     finalBatch.delete(organizationDocument(organizationId));
     await finalBatch.commit();
+    organizationDetailCache.delete(organizationId);
+    organizationIndexLoadedAt = 0;
     setOrganizationEditorOpen(false);
-    await loadOrganizationIndex();
+    await loadOrganizationIndex({ force: true });
     setOrganizationFeedback(organizationFeedback, `${organizationName} was deleted.`);
   } catch (error) {
     console.error("TeacherTiles could not delete the organization", error);
@@ -1194,7 +1276,7 @@ async function openOrganizationsPanel() {
   organizationButton?.setAttribute("aria-expanded", "true");
   setOrganizationEditorOpen(false);
   setOrganizationFeedback(organizationFeedback, "Loading organizations…");
-  await loadOrganizationIndex();
+  await Promise.all([loadOrganizationIndex(), refreshOrganizationInvites()]);
   if (!organizationFeedback?.classList.contains("is-error")) setOrganizationFeedback(organizationFeedback);
   requestAnimationFrame(() => organizationClose?.focus({ preventScroll: true }));
 }
@@ -1243,7 +1325,8 @@ async function createOrganization(event) {
     });
     await batch.commit();
     organizationCreateName.value = "";
-    await loadOrganizationIndex();
+    organizationIndexLoadedAt = 0;
+    await loadOrganizationIndex({ force: true });
     const created = organizationMemberships.find(item => item.id === reference.id);
     setOrganizationFeedback(organizationFeedback, `${name} was created.`);
     if (created) await openOrganizationEditor(created);
@@ -1291,7 +1374,7 @@ async function inviteToOrganization(event) {
       createdAt: firestoreSdk.serverTimestamp()
     });
     organizationInviteEmail.value = "";
-    await refreshOrganizationEditor();
+    await refreshOrganizationEditor({ force: true });
     setOrganizationFeedback(organizationEditorFeedback, `Invitation sent to ${email}.`);
   } catch (error) {
     console.error("TeacherTiles could not invite the Google account", error);
@@ -1323,6 +1406,7 @@ function closeOtherSurfaces({ keepBoards = false } = {}) {
 function openProfile() {
   if (!modal.hidden) return;
   closeOtherSurfaces();
+  if (currentUser) void refreshOrganizationInvites();
   lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modal.hidden = false;
   modal.setAttribute("aria-hidden", "false");
@@ -3374,6 +3458,10 @@ async function renderUser(user) {
     activeOrganization = null;
     activeOrganizationMembers = [];
     activeOrganizationInvites = [];
+    organizationIndexLoadedAt = 0;
+    organizationIndexPromise = null;
+    organizationDetailCache.clear();
+    organizationDetailPromises.clear();
     renderOrganizationList();
     closeOrganizationsPanel();
   }
@@ -3405,11 +3493,6 @@ async function renderUser(user) {
     toggle.classList.add("is-signed-in");
     toggle.setAttribute("aria-label", `Open ${name}'s profile`);
     boardsToggle?.setAttribute("aria-label", "Open boards");
-
-    if (!previousUser || previousUser.uid !== user.uid) {
-      startOrganizationInviteListener(user);
-      loadOrganizationIndex();
-    }
 
     const sessionKey = sessionClassEncryptionKeyBytes(user.uid);
     if (sessionKey) {
@@ -3638,7 +3721,10 @@ notificationButton?.addEventListener("click", event => {
   const open = notificationMenu.hidden;
   notificationMenu.hidden = !open;
   notificationButton.setAttribute("aria-expanded", String(open));
-  if (open) renderNotificationInbox();
+  if (open) {
+    renderNotificationInbox();
+    void refreshOrganizationInvites();
+  }
 });
 notificationMenu?.addEventListener("click", event => event.stopPropagation());
 document.addEventListener("click", event => {
