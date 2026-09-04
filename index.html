@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-10" />
+  <link rel="stylesheet" href="styles.css?v=20260904-11" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -137,8 +137,8 @@
             <span class="profile-coin-card__copy">
               <small data-i18n="profile.coins">COINS</small>
               <span class="profile-coin-card__balance">
-                <strong id="profile-coin-balance">0</strong>
                 <span class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin-profile.png" alt=""></span>
+                <strong id="profile-coin-balance">0</strong>
               </span>
             </span>
           </button>
@@ -1174,8 +1174,10 @@
         </div>
         <div class="shop-header__actions">
           <button id="shop-coins-button" class="shop-coins-button" type="button" aria-label="Open coin purchasing menu" aria-expanded="false">
-            <span class="shop-coin-icon" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span>
-            <span class="shop-coins-button__copy"><small data-i18n="shop.coins">Coins</small><strong id="shop-coin-balance">0</strong></span>
+            <span class="shop-coins-button__copy">
+              <small data-i18n="shop.coins">COINS</small>
+              <span class="shop-coins-button__balance"><span class="shop-coins-button__icon" aria-hidden="true"><img src="assets/shop/coin-profile.png" alt=""></span><strong id="shop-coin-balance">0</strong></span>
+            </span>
             <span class="shop-coins-button__plus" aria-hidden="true">+</span>
           </button>
           <button id="shop-close" class="shop-close" type="button" aria-label="Close shop">×</button>
@@ -3374,7 +3376,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-11"></script>
+  <script src="app.js?v=20260904-12"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-shop-4"></script>
 
@@ -3603,7 +3605,7 @@
           <div class="attendance-magnet-stage" data-attendance-stage="default"></div>
         </section>
         <section class="attendance-board attendance-board--present" data-student-drop-target="present" aria-label="Present students">
-          <div class="attendance-world" aria-hidden="true"><img class="attendance-world__main" alt="" hidden><span></span><i></i><b></b><em></em><small></small></div>
+          <div class="attendance-world" aria-hidden="true"><div class="attendance-jungle-leaves"></div><img class="attendance-world__main" alt="" hidden><span></span><i></i><b></b><em></em><small></small></div>
           <header><span class="attendance-column-icon" aria-hidden="true">✓</span><div><strong>Present</strong><small>Ready to learn</small></div><b data-attendance-count="present">0</b></header>
           <div class="attendance-magnet-stage" data-attendance-stage="present"></div>
         </section>

@@ -8145,6 +8145,7 @@ function setupAttendance(m){
   const emptyState=m.querySelector('.attendance-empty-state');
   const statusNode=m.querySelector('.attendance-status');
   const worldImage=m.querySelector('.attendance-world__main');
+  const jungleLeaves=m.querySelector('.attendance-jungle-leaves');
   const stages=Object.fromEntries([...m.querySelectorAll('[data-attendance-stage]')].map(stage=>[stage.dataset.attendanceStage,stage]));
   const counts=Object.fromEntries([...m.querySelectorAll('[data-attendance-count]')].map(count=>[count.dataset.attendanceCount,count]));
   const orderedStatuses=['default','present'];
@@ -8382,6 +8383,25 @@ function setupAttendance(m){
 
   const sceneSource=sceneArt[m.dataset.tileSkin||'']||'';
   if(worldImage){worldImage.src=sceneSource;worldImage.hidden=!sceneSource}
+  if(jungleLeaves){
+    jungleLeaves.replaceChildren();
+    if(m.dataset.tileSkin==='attendance-monkeys'){
+      const leafSources=['assets/attendance/jungle-leaf.png','assets/attendance/jungle-leaf-cluster.png'];
+      for(let index=0;index<14;index++){
+        const leaf=document.createElement('img');
+        leaf.src=leafSources[index%leafSources.length];
+        leaf.alt='';
+        leaf.draggable=false;
+        leaf.style.setProperty('--jungle-leaf-x',`${-15+Math.random()*105}%`);
+        leaf.style.setProperty('--jungle-leaf-y',`${-12+Math.random()*93}%`);
+        leaf.style.setProperty('--jungle-leaf-size',`${20+Math.random()*28}%`);
+        leaf.style.setProperty('--jungle-leaf-turn',`${-44+Math.random()*88}deg`);
+        leaf.style.setProperty('--jungle-leaf-scale',`${.72+Math.random()*.56}`);
+        leaf.style.setProperty('--jungle-leaf-opacity',`${.36+Math.random()*.32}`);
+        jungleLeaves.appendChild(leaf);
+      }
+    }
+  }
   let resizeFrame=0;
   const keepMagnetsVisible=()=>{
     cancelAnimationFrame(resizeFrame);
@@ -17595,7 +17615,13 @@ function setupTeacherTilesShop(){
   };
   function syncBalance(){
     const state=accountState();
-    if(balanceNode)balanceNode.textContent=(Number(state.coinBalance)||0).toLocaleString();
+    const formattedBalance=(Number(state.coinBalance)||0).toLocaleString();
+    if(balanceNode)balanceNode.textContent=formattedBalance;
+    if(coinButton){
+      coinButton.dataset.coinDigits=String(formattedBalance.length);
+      coinButton.classList.toggle('is-wide-balance',formattedBalance.length>9);
+      coinButton.classList.toggle('is-extra-wide-balance',formattedBalance.length>13);
+    }
     coinButton?.classList.toggle('is-loading',Boolean(state.loading));
     coinPacks.forEach(button=>{button.disabled=state.loading||!state.signedIn||button.dataset.checkoutBusy==='true'});
   }

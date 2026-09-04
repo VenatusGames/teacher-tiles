@@ -15057,17 +15057,37 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 .timer-module[data-tile-skin="timer-freestanding"]:is(:hover,:focus-within,.is-settings-open) .timer-controls,
 .timer-module[data-tile-skin="timer-freestanding"] .timer-controls:is(:hover,:focus-within){opacity:1;visibility:visible;pointer-events:auto;max-height:245px;transition-delay:0s}
 
-/* Profile coin balance: header label, then a fluid number-first balance row. */
+/* Profile and Shop balances share a compact coin-first layout with fluid large-number sizing. */
 .profile-panel__header-actions .profile-coin-card{
   width:max-content;min-width:146px;max-width:min(248px,42vw);height:48px;min-height:48px;padding:4px 8px 5px 11px;display:block;
 }
 .profile-panel__header-actions .profile-coin-card__copy{min-width:0;display:block}
 .profile-panel__header-actions .profile-coin-card__copy>small{display:block!important;margin:0 0 1px;color:var(--muted);font-size:7.5px;line-height:1;font-weight:950;letter-spacing:.13em;text-align:left}
 .profile-panel__header-actions .profile-coin-card__balance{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:6px}
-.profile-panel__header-actions .profile-coin-card__balance strong{min-width:0;max-width:18ch;flex:1 1 auto;overflow:hidden;color:var(--text);font-size:19px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:-.045em;text-align:right;text-overflow:ellipsis;white-space:nowrap}
+.profile-panel__header-actions .profile-coin-card__balance strong{min-width:0;max-width:18ch;flex:0 1 auto;overflow:hidden;color:var(--text);font-size:19px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:-.045em;text-align:right;text-overflow:ellipsis;white-space:nowrap}
 .profile-panel__header-actions .profile-coin-card__icon{width:27px;height:27px;flex:0 0 27px}
 .profile-panel__header-actions .profile-coin-card.is-wide-balance{width:194px}
 .profile-panel__header-actions .profile-coin-card.is-wide-balance .profile-coin-card__balance strong{font-size:16px;letter-spacing:-.035em}
 .profile-panel__header-actions .profile-coin-card.is-extra-wide-balance{width:238px}
 .profile-panel__header-actions .profile-coin-card.is-extra-wide-balance .profile-coin-card__balance strong{font-size:13px;letter-spacing:-.02em}
 @media(max-width:480px){.profile-panel__header-actions .profile-coin-card{width:max-content;min-width:112px;max-width:42vw;padding-right:7px}.profile-panel__header-actions .profile-coin-card__copy>small{display:block!important}.profile-panel__header-actions .profile-coin-card__balance{justify-content:flex-end}.profile-panel__header-actions .profile-coin-card__icon{width:24px;height:24px;flex-basis:24px}}
+
+.shop-coins-button{width:max-content;min-width:146px;max-width:min(258px,42vw);height:48px;min-height:48px;padding:4px 7px 5px 11px;display:flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,#e3a526 42%,var(--border));border-radius:12px;background:linear-gradient(135deg,color-mix(in srgb,#ffd65a 18%,var(--surface-solid)),color-mix(in srgb,#eda51f 9%,var(--surface-soft)));color:var(--text);text-align:left;box-shadow:0 5px 14px rgba(125,82,5,.09),inset 0 1px rgba(255,255,255,.7);transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease}
+.shop-coins-button:hover{transform:translateY(-1px);border-color:color-mix(in srgb,#e3a526 72%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,#ffd65a 27%,var(--surface-solid)),color-mix(in srgb,#eda51f 15%,var(--surface-soft)));box-shadow:0 9px 19px rgba(125,82,5,.15),inset 0 1px rgba(255,255,255,.82)}
+.shop-coins-button__copy{min-width:0;flex:1 1 auto;display:block;text-align:left;line-height:1}
+.shop-coins-button__copy>small{display:block!important;margin:0 0 1px;color:var(--muted);font-size:7.5px;line-height:1;font-weight:950;letter-spacing:.13em;text-transform:uppercase}
+.shop-coins-button__balance{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.shop-coins-button__icon{width:27px;height:27px;flex:0 0 27px;display:grid;place-items:center}.shop-coins-button__icon img{width:100%;height:100%;display:block;object-fit:contain;filter:drop-shadow(0 4px 5px rgba(113,69,3,.2))}
+.shop-coins-button__balance strong{min-width:0;max-width:18ch;flex:0 1 auto;overflow:hidden;color:var(--text);font-size:19px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:-.045em;text-align:right;text-overflow:ellipsis;white-space:nowrap}
+.shop-coins-button__plus{width:23px;height:23px;flex:0 0 23px;margin-left:0;border-radius:7px}
+.shop-coins-button.is-wide-balance{width:204px}.shop-coins-button.is-wide-balance .shop-coins-button__balance strong{font-size:16px;letter-spacing:-.035em}
+.shop-coins-button.is-extra-wide-balance{width:248px}.shop-coins-button.is-extra-wide-balance .shop-coins-button__balance strong{font-size:13px;letter-spacing:-.02em}
+body.dark .shop-coins-button{background:linear-gradient(135deg,color-mix(in srgb,#ffd65a 11%,var(--surface-solid)),color-mix(in srgb,#eda51f 8%,var(--surface-soft)));border-color:color-mix(in srgb,#e3a526 42%,var(--border))}.dark .shop-coins-button__copy strong{color:var(--text)}.dark .shop-coins-button__copy small{color:var(--muted)}
+@media(max-width:520px){.shop-coins-button{width:max-content;min-width:112px;max-width:42vw;padding-right:6px}.shop-coins-button__icon{width:24px;height:24px;flex-basis:24px}.shop-coins-button__plus{display:none}}
+
+/* The supplied foliage creates a different layered jungle around each monkey tree. */
+.attendance-jungle-leaves{display:none}
+.attendance-module[data-tile-skin="attendance-monkeys"] .attendance-board--present{background-color:#568954;background-image:radial-gradient(ellipse at 50% -7%,rgba(230,255,201,.48),transparent 49%),linear-gradient(180deg,#a6d993 0%,#6eae65 47%,#416d40 100%)}
+.attendance-module[data-tile-skin="attendance-monkeys"] .attendance-jungle-leaves{position:absolute;z-index:1;inset:-5% -8% -7%;display:block;overflow:hidden;isolation:isolate}
+.attendance-module[data-tile-skin="attendance-monkeys"] .attendance-jungle-leaves img{position:absolute;left:var(--jungle-leaf-x);top:var(--jungle-leaf-y);width:var(--jungle-leaf-size);height:auto;display:block;opacity:var(--jungle-leaf-opacity);transform:rotate(var(--jungle-leaf-turn)) scale(var(--jungle-leaf-scale));transform-origin:center;object-fit:contain;filter:saturate(.92) drop-shadow(0 6px 5px rgba(18,59,24,.18));user-select:none}
+.attendance-module[data-tile-skin="attendance-monkeys"] .attendance-world__main{z-index:2;width:106%;height:108%;bottom:-12%;filter:drop-shadow(0 12px 11px rgba(23,49,28,.28))}
