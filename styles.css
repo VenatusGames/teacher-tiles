@@ -257,6 +257,11 @@ body.dark .module[data-bg="white"] .noise-main-controls button{color:#f7f8fa;bor
 .context-menu{max-height:min(620px,calc(100vh - 20px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .context-menu__title{position:sticky;top:-8px;z-index:2;background:var(--surface);padding-top:12px}
 .context-menu__icon svg{width:20px;height:20px;fill:currentColor;display:block}
+.context-menu__icon--sticky svg,.context-menu__icon--visual-schedule svg,.context-menu__icon--interactive-timers svg,.context-menu__icon--stopwatch svg,.context-menu__icon--progress-bar svg,.context-menu__icon--weather-wheel svg,.context-menu__icon--season-wheel svg{width:23px;height:23px}
+.context-menu__icon--visual-timer svg{width:26px;height:26px}
+.context-menu__icon--interactive-timers{color:var(--text)}
+.context-menu__icon--numberline svg{width:26px;height:26px}
+.context-menu__icon--numberline text{fill:currentColor;font:900 5.6px/1 Inter,system-ui,sans-serif}
 .context-menu__icon--jar,.context-menu__icon--stoplight{color:var(--text)}
 .context-menu.is-open{animation:contextMenuFade .14s ease-out!important}
 @keyframes contextMenuFade{from{opacity:0}to{opacity:1}}
@@ -9850,7 +9855,11 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
   100%{transform:scale(1);opacity:1}
 }
 
-.context-menu__icon--numberline svg,
+.context-menu__icon--numberline svg{
+  width:26px;
+  height:26px;
+}
+
 .context-menu__icon--hundreds svg,
 .context-menu__icon--tenframes svg{
   width:22px;
