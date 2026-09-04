@@ -29,20 +29,30 @@ jobs:
 
       - name: Prepare site
         run: |
+          set -e
           mkdir _site
+
+          trigger_branch="${GITHUB_REF_NAME:-$(git branch --show-current 2>/dev/null || echo unknown)}"
+          trigger_sha="${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
+          trigger_subject="$(git log -1 --pretty=%s 2>/dev/null || echo 'unknown commit')"
           main_commit=$(git rev-parse origin/main)
           sandbox_commit=$(git rev-parse origin/sandbox)
+          main_subject=$(git log -1 --pretty=%s origin/main 2>/dev/null || echo 'unknown main commit')
+          sandbox_subject=$(git log -1 --pretty=%s origin/sandbox 2>/dev/null || echo 'unknown sandbox commit')
+
           echo "Publishing main commit: ${main_commit} -> https://teachertiles.com/"
           echo "Publishing sandbox commit: ${sandbox_commit} -> https://teachertiles.com/sandbox/"
-          echo "Triggered by branch: ${GITHUB_REF_NAME} (${GITHUB_SHA})"
+          echo "Triggered by branch: ${trigger_branch} (${trigger_sha})"
+          echo "Triggered by commit: ${trigger_subject}"
           git archive origin/main | tar -x -C _site
           mkdir _site/sandbox
           git archive origin/sandbox | tar -x -C _site/sandbox
           {
             echo '### Deployment sources'
-            echo "- Triggered by: \\`${GITHUB_REF_NAME}\\` at \\`${GITHUB_SHA}\\`"
-            echo "- Main: \\`${main_commit:0:12}\\` -> [teachertiles.com](https://teachertiles.com/)"
-            echo "- Sandbox: \\`${sandbox_commit:0:12}\\` -> [teachertiles.com/sandbox](https://teachertiles.com/sandbox/)"
+            echo "- Triggered by: \`${trigger_branch}\` at \`${trigger_sha:0:12}\`"
+            echo "- Trigger message: ${trigger_subject}"
+            echo "- Main: \`${main_commit:0:12}\` -> [teachertiles.com](https://teachertiles.com/) — ${main_subject}"
+            echo "- Sandbox: \`${sandbox_commit:0:12}\` -> [teachertiles.com/sandbox](https://teachertiles.com/sandbox/) — ${sandbox_subject}"
             echo '- Artifact layout: `main` at `/`; `sandbox` at `/sandbox/`'
           } >> "$GITHUB_STEP_SUMMARY"
 
