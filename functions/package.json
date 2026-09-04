@@ -1,0 +1,22 @@
+{
+  "name": "teachertiles-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check catalog.js && node --check scripts/create-redemption-code.js && node --check scripts/set-shop-admin.js",
+    "code:create": "node scripts/create-redemption-code.js",
+    "admin:set": "node scripts/set-shop-admin.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.3.0",
+    "firebase-functions": "^7.3.2",
+    "google-auth-library": "^10.6.2",
+    "stripe": "^22.6.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

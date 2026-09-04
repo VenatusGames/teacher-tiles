@@ -2462,6 +2462,8 @@ const THEME_CHOICE_PRODUCTS=Object.freeze({
 });
 
 function getOwnedShopProducts(){
+  const accountState=window.TeacherTilesAccount?.state;
+  if(accountState?.ready&&Array.isArray(accountState.ownedProductIds))return new Set(accountState.ownedProductIds);
   try{
     const value=JSON.parse(localStorage.getItem(SHOP_OWNED_PRODUCTS_KEY)||'[]');
     return Array.isArray(value)?new Set(value):new Set();
@@ -11378,6 +11380,81 @@ function updateThemeControls(theme){
   });
 }
 
+const THEME_ENTITLEMENT_PREFIXES=[
+  ['pastel-','theme-pastel'],['polka-','theme-polka-dot'],['programmer-','theme-programmer'],
+  ['wood-','theme-wood'],['notebook-','theme-notebook'],['cardboard-','theme-cardboard'],
+  ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
+];
+const SHELF_ENTITLEMENTS={
+  'pastel-theme-pack':'theme-pastel','pastel-theme-fan':'theme-pastel',
+  'polka-dot-theme-pack':'theme-polka-dot','polka-dot-theme-fan':'theme-polka-dot',
+  'programmer-theme-pack':'theme-programmer','programmer-theme-fan':'theme-programmer',
+  'wood-theme-pack':'theme-wood','wood-theme-fan':'theme-wood',
+  'notebook-theme-pack':'theme-notebook','notebook-theme-fan':'theme-notebook',
+  'cardboard-theme-pack':'theme-cardboard','cardboard-theme-fan':'theme-cardboard',
+  'metal-theme-pack':'theme-metal','metal-theme-fan':'theme-metal',
+  'cosmos-theme-pack':'theme-cosmos','cosmos-theme-fan':'theme-cosmos',
+  'corkboard-theme-pack':'theme-corkboard','corkboard-theme-fan':'theme-corkboard',
+  'emoji-sticker-pack':'sticker-emoji','emoji-sticker-drawer':'sticker-emoji',
+  'nature-emojis-sticker-pack':'sticker-nature-emojis','nature-emojis-sticker-drawer':'sticker-nature-emojis',
+  'animal-emojis-sticker-pack':'sticker-animal-emojis','animal-emojis-sticker-drawer':'sticker-animal-emojis',
+  'more-faces-sticker-pack':'sticker-more-faces','more-faces-sticker-drawer':'sticker-more-faces',
+  'symbols-sticker-pack':'sticker-symbols','symbols-sticker-drawer':'sticker-symbols',
+  'food-sticker-pack':'sticker-food','food-sticker-drawer':'sticker-food',
+  'colored-hearts-sticker-pack':'sticker-colored-hearts','colored-hearts-sticker-drawer':'sticker-colored-hearts',
+  'decorative-hearts-sticker-pack':'sticker-decorative-hearts','decorative-hearts-sticker-drawer':'sticker-decorative-hearts',
+  'country-flags-sticker-pack':'sticker-country-flags','country-flags-sticker-drawer':'sticker-country-flags'
+};
+
+function themeEntitlement(theme){
+  return THEME_ENTITLEMENT_PREFIXES.find(([prefix])=>String(theme||'').startsWith(prefix))?.[1]||'';
+}
+function shelfEntitlement(element){
+  if(!element)return'';
+  if(element.dataset?.entitlement)return element.dataset.entitlement;
+  const owner=element.closest?.('[data-entitlement],.theme-fan,.sticker-pack-drawer,[data-theme-pack],[data-sticker-pack]');
+  return owner?.dataset?.entitlement||SHELF_ENTITLEMENTS[owner?.id]||SHELF_ENTITLEMENTS[element.id]||'';
+}
+function ownsCosmetic(productId){return !productId||Boolean(window.TeacherTilesAccount?.owns?.(productId))}
+function requestCosmeticPurchase(productId){
+  if(productId)window.dispatchEvent(new CustomEvent('teachertiles:shoprequest',{detail:{productId}}));
+}
+function requireCosmetic(element){
+  const productId=shelfEntitlement(element);
+  if(ownsCosmetic(productId))return true;
+  requestCosmeticPurchase(productId);
+  return false;
+}
+function syncCosmeticEntitlements(){
+  Object.entries(SHELF_ENTITLEMENTS).forEach(([id,productId])=>{
+    const element=document.getElementById(id);
+    if(!element)return;
+    element.dataset.entitlement=productId;
+    const locked=!ownsCosmetic(productId);
+    element.classList.toggle('is-cosmetic-locked',locked);
+    if(element.matches('button')){
+      if(!element.dataset.unlockedLabel)element.dataset.unlockedLabel=element.getAttribute('aria-label')||'';
+      element.setAttribute('aria-label',locked?`${element.dataset.unlockedLabel} — locked; purchase in Shop`:element.dataset.unlockedLabel);
+    }
+  });
+  document.querySelectorAll('.sticker-pack-drawer').forEach(drawer=>{
+    const productId=shelfEntitlement(drawer);
+    drawer.querySelectorAll('[data-sticker-src],[data-sticker-emoji]').forEach(item=>{
+      if(productId)item.dataset.entitlement=productId;
+      item.classList.toggle('is-cosmetic-locked',Boolean(productId)&&!ownsCosmetic(productId));
+    });
+  });
+
+  const state=window.TeacherTilesAccount?.state;
+  if(state?.ready&&!state.loading){
+    const activeTheme=document.body.dataset.theme||'light';
+    const required=themeEntitlement(activeTheme);
+    if(required&&!ownsCosmetic(required))applyTeacherTheme('light');
+  }
+}
+
+window.addEventListener('teachertiles:accountchange',syncCosmeticEntitlements);
+
 function materialRandomBetween(min,max){return min+Math.random()*(max-min)}
 function materialSvgUrl(svg){return`url("data:image/svg+xml,${encodeURIComponent(svg)}")`}
 
@@ -11534,9 +11611,9 @@ function setupShelfStickerDrag(item,shelfShell){
   item.dataset.stickerDragReady='true';
   item.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
-    const drawer=item.closest('.sticker-pack-drawer');
-    const owner=drawer?.id?document.querySelector(`[data-sticker-pack][aria-controls="${CSS.escape(drawer.id)}"]`):null;
-    if(owner?.dataset.shopLocked==='true')return;
+    if(!requireCosmetic(item)){
+      e.preventDefault();e.stopPropagation();return;
+    }
     const src=item.dataset.stickerSrc||'';
     const emoji=item.dataset.stickerEmoji||'';
     const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
@@ -12130,8 +12207,8 @@ function setupCollectionShelf(){
   tileSkinsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('tile-skins')});
   cursorsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('cursors')});
   closeButton.addEventListener('click',closeShelf);
-  packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleThemeFan(pack)}));
-  stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();toggleStickerPack(pack)}));
+  packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleThemeFan(pack)}));
+  stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleStickerPack(pack)}));
   stickerItems.forEach(item=>setupShelfStickerDrag(item,shelfShell));
   stickerSearch?.addEventListener('input',updateStickerSearch);
   stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
@@ -12151,12 +12228,19 @@ function setupCollectionShelf(){
     if(!cursorIsOwned(cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default')))applyAppCursor('default');
     renderCursorShelf();
   });
+  window.addEventListener('teachertiles:accountchange',()=>{
+    syncCollectionOwnership();
+    syncCosmeticEntitlements();
+    renderTileSkinShelf();
+    if(!cursorIsOwned(cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default')))applyAppCursor('default');
+    renderCursorShelf();
+  });
   window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
   window.addEventListener('teachertiles:cursorchange',renderCursorShelf);
   window.addEventListener('teachertiles:languagechange',()=>renderTileSkinShelf());
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
-    card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));
+    card.addEventListener('click',()=>{if(requireCosmetic(card))applyTeacherTheme(card.dataset.themeChoice)});
   });
 
   shelfScroll?.addEventListener('scroll',positionThemeFan,{passive:true});
@@ -12186,6 +12270,7 @@ function setupCollectionShelf(){
 
   updateThemeControls(document.body.dataset.theme||'light');
   syncCollectionOwnership();
+  syncCosmeticEntitlements();
   renderTileSkinShelf();
   renderCursorShelf();
 }
@@ -17222,29 +17307,24 @@ function setupTeacherTilesShop(){
   const redeemInput=document.getElementById('shop-redeem-code');
   const redeemStatus=document.getElementById('shop-redeem-status');
   const subscribePreview=document.getElementById('shop-subscribe-preview');
+  const coinPacks=[...modal.querySelectorAll('[data-coin-pack]')];
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const COINS_KEY='teacherTilesCoins';
-  let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null;
+  let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null,checkoutHandled=false;
 
-  function getCoins(){
-    const raw=Number(localStorage.getItem(COINS_KEY));
-    return Number.isFinite(raw)&&raw>=0?Math.floor(raw):0;
-  }
-  function setCoins(value){
-    const safe=Math.max(0,Math.floor(Number(value)||0));
-    localStorage.setItem(COINS_KEY,String(safe));
-    if(balanceNode)balanceNode.textContent=safe.toLocaleString();
-    return safe;
-  }
-  function getOwned(){
-    return getOwnedShopProducts();
-  }
-  function setOwned(set){
-    localStorage.setItem(SHOP_OWNED_PRODUCTS_KEY,JSON.stringify([...set]));
-    window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange',{detail:{owned:[...set]}}));
+  const accountState=()=>window.TeacherTilesAccount?.state||{ready:false,loading:true,signedIn:false,coinBalance:0,ownedProductIds:[]};
+  const errorMessage=(error,fallback)=>{
+    const raw=String(error?.message||'').replace(/^Firebase:\s*/i,'').replace(/^Error:\s*/i,'').trim();
+    return raw||fallback;
+  };
+  function syncBalance(){
+    const state=accountState();
+    if(balanceNode)balanceNode.textContent=(Number(state.coinBalance)||0).toLocaleString();
+    coinButton?.classList.toggle('is-loading',Boolean(state.loading));
+    coinPacks.forEach(button=>{button.disabled=state.loading||!state.signedIn||button.dataset.checkoutBusy==='true'});
   }
   function syncProducts(){
-    const owned=getOwned();
+    const state=accountState();
+    const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
       const isOwned=owned.has(card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
@@ -17252,8 +17332,10 @@ function setupTeacherTilesShop(){
       if(!button)return;
       button.innerHTML=isOwned?'<strong>Owned</strong>':`<span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>${Number(card.dataset.shopPrice||0).toLocaleString()}</strong>`;
       button.setAttribute('aria-label',isOwned?`${card.querySelector('h3')?.textContent||'Pack'} owned`:`Buy ${card.querySelector('h3')?.textContent||'pack'} for ${card.dataset.shopPrice||0} coins`);
+      button.disabled=isOwned||state.loading||!state.signedIn||card.classList.contains('is-purchasing');
     });
   }
+  function syncShop(){syncBalance();syncProducts()}
   function showToast(message){
     if(!toast)return;
     toast.textContent=message;
@@ -17313,8 +17395,7 @@ function setupTeacherTilesShop(){
     modal.setAttribute('aria-hidden','false');
     toggle.setAttribute('aria-expanded','true');
     showPage('home');
-    setCoins(getCoins());
-    syncProducts();
+    syncShop();
     syncStickerShopPackCounts();
     showBanner(bannerIndex,false);
     requestAnimationFrame(()=>modal.classList.add('is-open'));
@@ -17330,20 +17411,48 @@ function setupTeacherTilesShop(){
     setTimeout(()=>{modal.hidden=true},reduceMotion?0:220);
     if(lastFocus&&typeof lastFocus.focus==='function')lastFocus.focus({preventScroll:true});else toggle.focus({preventScroll:true});
   }
-  function tryBuy(card){
+  async function tryBuy(card){
     const id=card.dataset.shopProduct;
-    const owned=getOwned();
-    if(owned.has(id)){showToast('This pack is already owned.');return}
-    const price=Math.max(0,Number(card.dataset.shopPrice)||0);
-    const coins=getCoins();
-    if(coins<price){
-      showToast(`You need ${(price-coins).toLocaleString()} more coins.`);
-      setTimeout(openCoins,260);
-      return;
+    const state=accountState();
+    if((state.ownedProductIds||[]).includes(id)){showToast('This pack is already owned.');return}
+    if(!window.TeacherTilesAccount?.purchase){showToast('The secure shop is still loading.');return}
+    card.classList.add('is-purchasing');syncProducts();
+    try{
+      const result=await window.TeacherTilesAccount.purchase(id);
+      syncShop();
+      showToast(result.alreadyOwned?'This pack is already owned.':`${card.querySelector('h3')?.textContent||'Pack'} added to your collection.`);
+    }catch(error){
+      const shortfall=Number(error?.details?.shortfall);
+      if(Number.isFinite(shortfall)&&shortfall>0){showToast(`You need ${shortfall.toLocaleString()} more coins.`);setTimeout(openCoins,260)}
+      else showToast(errorMessage(error,'The purchase could not be completed.'));
+    }finally{card.classList.remove('is-purchasing');syncProducts()}
+  }
+  async function startCoinCheckout(button){
+    if(!window.TeacherTilesAccount?.createCoinCheckout){showToast('The secure coin store is still loading.');return}
+    const original=button.textContent;
+    button.dataset.checkoutBusy='true';button.disabled=true;button.textContent='Opening…';
+    try{
+      const {url}=await window.TeacherTilesAccount.createCoinCheckout(button.dataset.coinPack);
+      window.location.assign(url);
+    }catch(error){
+      showToast(errorMessage(error,'Stripe Checkout could not be opened.'));
+      delete button.dataset.checkoutBusy;button.disabled=!accountState().signedIn;button.textContent=original;
     }
-    setCoins(coins-price);
-    owned.add(id);setOwned(owned);syncProducts();
-    showToast(`${card.querySelector('h3')?.textContent||'Pack'} added to your collection.`);
+  }
+  function cleanCheckoutQuery(){
+    const url=new URL(window.location.href);url.searchParams.delete('tt_checkout');
+    history.replaceState(history.state,'',`${url.pathname}${url.search}${url.hash}`);
+  }
+  function handleCheckoutReturn(){
+    if(checkoutHandled)return;
+    const status=new URLSearchParams(window.location.search).get('tt_checkout');
+    if(!status||!accountState().signedIn)return;
+    checkoutHandled=true;openShop();openCoins();
+    if(status==='success'){
+      showToast('Payment complete. Your coin balance will update momentarily.');
+      [500,1600,3600,7000].forEach(delay=>setTimeout(()=>window.TeacherTilesAccount?.refresh?.().catch(()=>{}),delay));
+    }else showToast('Checkout cancelled — you were not charged.');
+    cleanCheckoutQuery();
   }
 
   toggle.addEventListener('click',openShop);
@@ -17356,34 +17465,49 @@ function setupTeacherTilesShop(){
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
   products.forEach(card=>card.querySelector('[data-shop-buy]')?.addEventListener('click',()=>tryBuy(card)));
+  coinPacks.forEach(button=>button.addEventListener('click',()=>startCoinCheckout(button)));
   redeemInput?.addEventListener('input',()=>{
     const start=redeemInput.selectionStart;
     redeemInput.value=redeemInput.value.toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,32);
     try{redeemInput.setSelectionRange(start,start)}catch{}
     if(redeemStatus)redeemStatus.textContent='';
   });
-  redeemForm?.addEventListener('submit',event=>{
+  redeemForm?.addEventListener('submit',async event=>{
     event.preventDefault();
     const code=redeemInput?.value.trim()||'';
     if(!redeemStatus)return;
     if(!code){redeemStatus.textContent='Enter a code to continue.';redeemStatus.classList.add('is-error');redeemInput?.focus();return}
-    redeemStatus.classList.remove('is-error');
-    redeemStatus.textContent='Code redemption is ready for a future rewards backend.';
-    showToast('Redemption UI ready — no code was applied.');
+    const button=redeemForm.querySelector('button[type="submit"]');
+    redeemStatus.classList.remove('is-error');redeemStatus.textContent='Checking code…';
+    if(button)button.disabled=true;
+    try{
+      const result=await window.TeacherTilesAccount.redeem(code);
+      redeemInput.value='';redeemStatus.textContent=`Added ${Number(result.grantedCoins||0).toLocaleString()} coins to your account.`;
+      showToast('Code redeemed successfully.');syncShop();
+    }catch(error){
+      redeemStatus.classList.add('is-error');redeemStatus.textContent=errorMessage(error,'That code could not be redeemed.');
+    }finally{if(button)button.disabled=false}
   });
   subscribePreview?.addEventListener('click',()=>showToast('Membership checkout is not active yet.'));
   modal.querySelector('.shop-banner')?.addEventListener('pointerenter',stopBannerTimer);
   modal.querySelector('.shop-banner')?.addEventListener('pointerleave',startBannerTimer);
-  window.addEventListener('teachertiles:coinschange',()=>setCoins(getCoins()));
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||modal.hidden)return;
     if(coinMenu&&!coinMenu.hidden){closeCoins();return}
     closeShop();
   });
-  setCoins(getCoins());
-  syncProducts();
+  window.addEventListener('teachertiles:accountchange',()=>{syncShop();handleCheckoutReturn()});
+  window.addEventListener('teachertiles:shoprequest',event=>{
+    const productId=event.detail?.productId;
+    if(!accountState().signedIn){window.TeacherTilesAuth?.openProfile?.();return}
+    openShop();showPage(String(productId).startsWith('sticker-')?'stickers':'themes');
+    const card=products.find(item=>item.dataset.shopProduct===productId);
+    if(card){card.classList.add('is-shop-highlighted');card.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});setTimeout(()=>card.classList.remove('is-shop-highlighted'),1300)}
+    showToast('Purchase this pack to unlock it in your shelf.');
+  });
   syncStickerShopPackCounts();
-  window.TeacherTilesShop={open:openShop,openPage:name=>{openShop();showPage(name)},sync:syncProducts};
+  window.TeacherTilesShop={open:openShop,openPage:name=>{openShop();showPage(name)},sync:()=>{syncShop();syncStickerShopPackCounts()}};
+  syncShop();handleCheckoutReturn();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
 

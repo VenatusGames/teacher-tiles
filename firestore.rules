@@ -5,6 +5,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function ownsUserData(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
     function organizationMemberPath(organizationId, userId) {
       return /databases/$(database)/documents/organizationMembers/$(organizationId + "_" + userId);
     }
@@ -22,8 +26,23 @@ service cloud.firestore {
         && organizationRole(organizationId) in ["Owner", "Admin"];
     }
 
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /users/{uid} {
+      allow read, write: if false;
+
+      match /private/{documentId} {
+        allow read, write: if ownsUserData(uid);
+      }
+
+      match /boards/{boardId} {
+        allow read, write: if ownsUserData(uid);
+        match /{document=**} {
+          allow read, write: if ownsUserData(uid);
+        }
+      }
+
+      match /{shopDocument=**} {
+        allow read, write: if false;
+      }
     }
 
     match /organizations/{organizationId} {
@@ -94,6 +113,18 @@ service cloud.firestore {
         && request.auth.token.email is string
         && (resource.data.email == request.auth.token.email.lower()
           || canManageOrganization(resource.data.organizationId));
+    }
+
+    match /stripeCoinGrants/{grantId} {
+      allow read, write: if false;
+    }
+
+    match /redemptionCodes/{codeHash} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

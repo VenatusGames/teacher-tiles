@@ -14852,3 +14852,17 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 @container(max-width:700px){.attendance-layout{gap:7px}.attendance-board>header{grid-template-columns:28px minmax(0,1fr) 24px;padding-inline:6px}.attendance-board>header .attendance-column-icon{width:27px;height:27px}.attendance-board>header small{display:none}.attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.92}.attendance-module[data-attendance-density="compact"] .attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.82}.attendance-module[data-attendance-density="dense"] .attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.72}}
 @container(max-height:520px){.attendance-world{top:41px}.attendance-board>header{height:41px;flex-basis:41px}.attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.88}.attendance-module[data-attendance-density="compact"] .attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.79}.attendance-module[data-attendance-density="dense"] .attendance-magnet-stage .attendance-student{--attendance-magnet-scale:.7}}
 @media(prefers-reduced-motion:reduce){.attendance-magnet-stage .attendance-student.is-arriving{animation:none}}
+
+/* Cloud shop ownership and Stripe checkout states */
+.theme-pack.is-cosmetic-locked{position:relative;cursor:pointer;filter:saturate(.55);opacity:.78}
+.theme-pack.is-cosmetic-locked::after{content:'🔒';position:absolute;z-index:8;right:8px;top:8px;width:24px;height:24px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.7);border-radius:9px;background:rgba(31,37,45,.86);color:#fff;font-size:12px;line-height:1;box-shadow:0 5px 12px rgba(15,23,42,.2)}
+.theme-pack.is-cosmetic-locked:hover{opacity:.94;filter:saturate(.8);transform:translateY(-2px)}
+.sticker-shelf-item.is-cosmetic-locked{position:relative;filter:grayscale(.7);opacity:.48;cursor:pointer}
+.sticker-shelf-item.is-cosmetic-locked::after{content:'🔒';position:absolute;right:3px;top:3px;width:18px;height:18px;display:grid;place-items:center;border-radius:7px;background:rgba(31,37,45,.84);color:#fff;font-size:9px}
+.shop-coin-pack>button{opacity:1;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease}
+.shop-coin-pack>button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 15px rgba(137,95,5,.15)}
+.shop-coin-pack>button:disabled,.shop-buy:disabled{opacity:.58;cursor:wait}
+.shop-product.is-purchasing{opacity:.72;pointer-events:none}
+.shop-product.is-shop-highlighted{animation:shopProductHighlight 1.2s ease}
+.shop-coins-button.is-loading #shop-coin-balance{opacity:.5}
+@keyframes shopProductHighlight{0%,100%{box-shadow:0 0 0 0 rgba(220,165,36,0)}35%{box-shadow:0 0 0 4px rgba(220,165,36,.4),0 16px 36px rgba(15,23,42,.12)}}
