@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-8" />
+  <link rel="stylesheet" href="styles.css?v=20260904-9" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -134,10 +134,12 @@
         </div>
         <div class="profile-panel__header-actions">
           <button id="profile-coin-card" class="profile-coin-card profile-coin-card--header" type="button" aria-label="Open the coin shop" hidden>
-            <span class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin-profile.png" alt=""></span>
             <span class="profile-coin-card__copy">
               <small data-i18n="profile.coins">COINS</small>
-              <strong id="profile-coin-balance">0</strong>
+              <span class="profile-coin-card__balance">
+                <strong id="profile-coin-balance">0</strong>
+                <span class="profile-coin-card__icon" aria-hidden="true"><img src="assets/shop/coin-profile.png" alt=""></span>
+              </span>
             </span>
           </button>
           <div class="profile-notification-wrap">
@@ -1396,7 +1398,7 @@
             </article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-stoplight-simplistic" data-shop-price="250" data-shop-tile-type="stoplight">
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--stoplight-simplistic"><img src="assets/stoplight-simplistic-green.svg" alt=""></span></div>
-              <div class="shop-product__body"><div><span class="shop-product__type">STOPLIGHT SKIN</span><h3>Simplistic Stoplight</h3><p>A bold, clean classroom stoplight using the supplied red, amber, and green artwork.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">STOPLIGHT SKIN</span><h3>Simplistic Stoplight</h3><p>A simplified version of the stoplight with minimalistic design.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-progressbar-capsule" data-shop-price="250" data-shop-tile-type="progressbar">
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--progressbar-capsule"><i><em></em></i></span></div>
@@ -3371,9 +3373,9 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-9"></script>
+  <script src="app.js?v=20260904-10"></script>
   <script src="lesson-planner.js?v=2"></script>
-  <script type="module" src="firebase-auth.js?v=20260904-shop-3"></script>
+  <script type="module" src="firebase-auth.js?v=20260904-shop-4"></script>
 
 
   <template id="ruler-template">

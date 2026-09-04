@@ -15017,3 +15017,47 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 .shop-product.is-shop-highlighted{animation:shopProductHighlight 1.2s ease}
 .shop-coins-button.is-loading #shop-coin-balance{opacity:.5}
 @keyframes shopProductHighlight{0%,100%{box-shadow:0 0 0 0 rgba(220,165,36,0)}35%{box-shadow:0 0 0 4px rgba(220,165,36,.4),0 16px 36px rgba(15,23,42,.12)}}
+
+/* Floating skins expose their real resize corners without restoring a tile shell. */
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"])>.resize-handle::before{
+  content:"";position:absolute;width:12px;height:12px;box-sizing:border-box;border-color:#ffffff;border-style:solid;border-width:0;
+  opacity:0;filter:drop-shadow(0 0 1px #1f3348) drop-shadow(0 2px 3px rgba(15,23,42,.42));pointer-events:none;
+  transition:opacity .14s ease,transform .16s cubic-bezier(.2,.85,.25,1);
+}
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"]):is(:hover,:focus-within)>.resize-handle::before{opacity:1;transform:scale(1.04)}
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"])>.resize-handle--tl::before{left:3px;top:3px;border-left-width:3px;border-top-width:3px;border-radius:4px 0 0}
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"])>.resize-handle--tr::before{right:3px;top:3px;border-right-width:3px;border-top-width:3px;border-radius:0 4px 0 0}
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"])>.resize-handle--bl::before{left:3px;bottom:3px;border-left-width:3px;border-bottom-width:3px;border-radius:0 0 0 4px}
+:is(.stoplight-module[data-tile-skin="stoplight-freestanding"],.progress-bar-module[data-tile-skin="progressbar-capsule"],.timer-module[data-tile-skin="timer-freestanding"],.magnifier-module[data-tile-skin="magnifier-classic"])>.resize-handle--br::before{right:3px;bottom:3px;border-right-width:3px;border-bottom-width:3px;border-radius:0 0 4px}
+
+/* Simplistic Stoplight is an illustrated skin inside the normal Stoplight tile. */
+.stoplight-module[data-tile-skin="stoplight-simplistic"]{
+  padding:30px 14px 14px;overflow:hidden;gap:6px;
+  border:1px solid var(--border)!important;border-radius:18px!important;
+  background:var(--module-bg,var(--surface))!important;box-shadow:var(--shadow)!important;
+}
+.stoplight-module[data-tile-skin="stoplight-simplistic"] .stoplight-stage{padding:2px 6px 0;overflow:hidden;filter:none}
+.stoplight-module[data-tile-skin="stoplight-simplistic"] .stoplight-label{position:static;padding:0;border-radius:0;background:transparent;box-shadow:none;font-size:clamp(25px,11cqw,54px);text-shadow:inherit}
+.stoplight-module[data-tile-skin="stoplight-simplistic"] .stoplight-image{width:auto;height:auto;max-width:94%;max-height:calc(100% - 44px)}
+.stoplight-module[data-tile-skin="stoplight-simplistic"] .stoplight-controls{position:relative;left:auto;bottom:auto;transform:none;width:auto;max-width:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+
+/* Give the floating timer enough hover forgiveness to reach and use its settings. */
+.timer-module[data-tile-skin="timer-freestanding"] .timer-controls{transition:opacity .16s ease,visibility 0s linear .32s,max-height .18s ease}
+.timer-module[data-tile-skin="timer-freestanding"] .timer-controls::before{content:"";position:absolute;left:0;right:0;top:-22px;height:22px}
+.timer-module[data-tile-skin="timer-freestanding"]:is(:hover,:focus-within,.is-settings-open) .timer-controls,
+.timer-module[data-tile-skin="timer-freestanding"] .timer-controls:is(:hover,:focus-within){opacity:1;visibility:visible;pointer-events:auto;max-height:245px;transition-delay:0s}
+
+/* Profile coin balance: header label, then a fluid number-first balance row. */
+.profile-panel__header-actions .profile-coin-card{
+  width:max-content;min-width:146px;max-width:min(248px,42vw);height:48px;min-height:48px;padding:4px 8px 5px 11px;display:block;
+}
+.profile-panel__header-actions .profile-coin-card__copy{min-width:0;display:block}
+.profile-panel__header-actions .profile-coin-card__copy>small{display:block!important;margin:0 0 1px;color:var(--muted);font-size:7.5px;line-height:1;font-weight:950;letter-spacing:.13em;text-align:left}
+.profile-panel__header-actions .profile-coin-card__balance{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.profile-panel__header-actions .profile-coin-card__balance strong{min-width:0;max-width:18ch;flex:1 1 auto;overflow:hidden;color:var(--text);font-size:19px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:-.045em;text-align:right;text-overflow:ellipsis;white-space:nowrap}
+.profile-panel__header-actions .profile-coin-card__icon{width:27px;height:27px;flex:0 0 27px}
+.profile-panel__header-actions .profile-coin-card.is-wide-balance{width:194px}
+.profile-panel__header-actions .profile-coin-card.is-wide-balance .profile-coin-card__balance strong{font-size:16px;letter-spacing:-.035em}
+.profile-panel__header-actions .profile-coin-card.is-extra-wide-balance{width:238px}
+.profile-panel__header-actions .profile-coin-card.is-extra-wide-balance .profile-coin-card__balance strong{font-size:13px;letter-spacing:-.02em}
+@media(max-width:480px){.profile-panel__header-actions .profile-coin-card{width:max-content;min-width:112px;max-width:42vw;padding-right:7px}.profile-panel__header-actions .profile-coin-card__copy>small{display:block!important}.profile-panel__header-actions .profile-coin-card__balance{justify-content:flex-end}.profile-panel__header-actions .profile-coin-card__icon{width:24px;height:24px;flex-basis:24px}}

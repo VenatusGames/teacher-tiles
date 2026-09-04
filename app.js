@@ -2415,7 +2415,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   }),
   Object.freeze({
     id:'stoplight-simplistic',productId:'tile-skin-stoplight-simplistic',tileType:'stoplight',tileLabel:'Stoplight',
-    name:'Simplistic Stoplight',description:'A crisp classroom stoplight with bold outlines and simple color states.',
+    name:'Simplistic Stoplight',description:'A simplified version of the stoplight with minimalistic design.',
     tags:'stoplight traffic light simple simplistic classroom gray',released:10
   }),
   Object.freeze({
@@ -3285,7 +3285,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
 }
 
 function setupTimer(m){
-  const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeButtons=[...m.querySelectorAll('.timer-shapes [data-shape]')];
+  const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeButtons=[...m.querySelectorAll('.timer-shapes [data-shape]')];
   const clipId=`shape-clip-${++uid}`;
   clip.id=clipId;
   foreign.setAttribute('clip-path',`url(#${clipId})`);
@@ -3330,6 +3330,25 @@ function setupTimer(m){
   if(stage)sizeObserver.observe(stage);
   requestAnimationFrame(sizeVisual);
 
+  let settingsHideTimer=0;
+  const keepSettingsOpen=()=>{
+    clearTimeout(settingsHideTimer);
+    m.classList.add('is-settings-open');
+  };
+  const releaseSettings=()=>{
+    clearTimeout(settingsHideTimer);
+    settingsHideTimer=setTimeout(()=>{
+      if(m.matches(':hover,:focus-within')||controls?.matches(':hover,:focus-within'))return;
+      m.classList.remove('is-settings-open');
+    },520);
+  };
+  m.addEventListener('pointerenter',keepSettingsOpen);
+  m.addEventListener('pointerleave',releaseSettings);
+  m.addEventListener('focusin',keepSettingsOpen);
+  m.addEventListener('focusout',releaseSettings);
+  controls?.addEventListener('pointerenter',keepSettingsOpen);
+  controls?.addEventListener('pointerleave',releaseSettings);
+
   const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
   shapeButtons.forEach(button=>button.classList.toggle('is-active',button.dataset.shape===initialShape));
   setShape(initialShape);
@@ -3344,6 +3363,7 @@ function setupTimer(m){
   },{onFinish:()=>celebrateTimerFinish(m)});
 
   m._cleanup=()=>{
+    clearTimeout(settingsHideTimer);
     stopTimer();
     sizeObserver.disconnect();
   };

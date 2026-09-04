@@ -602,8 +602,14 @@ function publishShopAccount(patch = {}) {
     (Array.isArray(shopAccountState.ownedProductIds) ? shopAccountState.ownedProductIds : [])
       .filter(value => typeof value === "string")
   )];
-  if (profileCoinBalance) profileCoinBalance.textContent = shopAccountState.coinBalance.toLocaleString();
-  document.getElementById("profile-coin-card")?.setAttribute("aria-label", `Open the coin shop. Balance: ${shopAccountState.coinBalance.toLocaleString()} coins.`);
+  const formattedCoinBalance = shopAccountState.coinBalance.toLocaleString();
+  if (profileCoinBalance) profileCoinBalance.textContent = formattedCoinBalance;
+  if (profileCoinCard) {
+    profileCoinCard.dataset.coinDigits = String(formattedCoinBalance.length);
+    profileCoinCard.classList.toggle("is-wide-balance", formattedCoinBalance.length > 9);
+    profileCoinCard.classList.toggle("is-extra-wide-balance", formattedCoinBalance.length > 13);
+    profileCoinCard.setAttribute("aria-label", `Open the coin shop. Balance: ${formattedCoinBalance} coins.`);
+  }
   window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
     detail: {
       ready: shopAccountState.ready,
