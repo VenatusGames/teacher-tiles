@@ -11864,10 +11864,10 @@ function setupCollectionShelf(){
     else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
     else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
     else if(skin.tileType==='attendance'&&skin.magnetSrc){const image=document.createElement('img');image.src=skin.magnetSrc;image.alt='';image.draggable=false;art.appendChild(image)}
-    else if(skin.id==='stoplight-freestanding')art.innerHTML='<i><em></em><em></em><em></em></i>';
+    else if(skin.id==='stoplight-freestanding'){const image=document.createElement('img');image.src='assets/stoplight-green.png';image.alt='';image.draggable=false;art.appendChild(image)}
     else if(skin.id==='stoplight-simplistic'){const image=document.createElement('img');image.src='assets/stoplight-simplistic-green.svg';image.alt='';image.draggable=false;art.appendChild(image)}
     else if(skin.id==='progressbar-capsule')art.innerHTML='<i><em></em></i>';
-    else if(skin.id==='timer-freestanding')art.innerHTML='<i><em></em><b>5:00</b></i>';
+    else if(skin.id==='timer-freestanding'){const image=document.createElement('img');image.src='assets/tile-skins/freestanding-visual-timer.svg';image.alt='';image.draggable=false;art.appendChild(image)}
     return art;
   };
 
@@ -17401,6 +17401,76 @@ function setupTeacherTilesShop(){
   let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null,checkoutHandled=false;
 
   const shopBrowserClean=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
+  const setupShopSelect=select=>{
+    if(!select||select.dataset.customized==='true')return;
+    const host=select.closest('.shop-browser-sort');
+    if(!host)return;
+    select.dataset.customized='true';
+    select.hidden=true;
+    select.tabIndex=-1;
+    select.setAttribute('aria-hidden','true');
+    const trigger=document.createElement('button');
+    trigger.type='button';
+    trigger.className='shop-select-button';
+    trigger.setAttribute('aria-haspopup','listbox');
+    trigger.setAttribute('aria-expanded','false');
+    trigger.setAttribute('aria-label',select.getAttribute('aria-label')||'Choose an option');
+    const value=document.createElement('b');
+    const chevron=document.createElement('i');
+    chevron.setAttribute('aria-hidden','true');
+    chevron.textContent='⌄';
+    trigger.append(value,chevron);
+    const menu=document.createElement('div');
+    menu.className='shop-select-menu';
+    menu.setAttribute('role','listbox');
+    menu.hidden=true;
+    const close=()=>{menu.hidden=true;trigger.setAttribute('aria-expanded','false');host.classList.remove('is-select-open')};
+    const sync=()=>{
+      value.textContent=select.selectedOptions[0]?.textContent||'';
+      menu.querySelectorAll('button').forEach(option=>{
+        const selected=option.dataset.value===select.value;
+        option.classList.toggle('is-selected',selected);
+        option.setAttribute('aria-selected',String(selected));
+      });
+    };
+    [...select.options].forEach(nativeOption=>{
+      const option=document.createElement('button');
+      option.type='button';
+      option.dataset.value=nativeOption.value;
+      option.setAttribute('role','option');
+      option.innerHTML=`<span>${nativeOption.textContent}</span><i aria-hidden="true">✓</i>`;
+      option.addEventListener('click',event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        select.value=nativeOption.value;
+        sync();
+        select.dispatchEvent(new Event('change',{bubbles:true}));
+        close();
+        trigger.focus();
+      });
+      menu.appendChild(option);
+    });
+    trigger.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      const open=menu.hidden;
+      document.querySelectorAll('.shop-select-menu:not([hidden])').forEach(other=>{
+        if(other===menu)return;
+        other.hidden=true;
+        other.previousElementSibling?.setAttribute('aria-expanded','false');
+        other.closest('.shop-browser-sort')?.classList.remove('is-select-open');
+      });
+      menu.hidden=!open;
+      trigger.setAttribute('aria-expanded',String(open));
+      host.classList.toggle('is-select-open',open);
+      if(open)menu.querySelector('.is-selected')?.focus();
+    });
+    trigger.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();close()}});
+    select.addEventListener('change',sync);
+    document.addEventListener('click',event=>{if(!host.contains(event.target))close()});
+    host.append(trigger,menu);
+    sync();
+  };
   const setupShopBrowser=toolbar=>{
     const page=toolbar.closest('[data-shop-page]');
     const pageName=toolbar.dataset.shopBrowser;
@@ -17408,8 +17478,11 @@ function setupTeacherTilesShop(){
     const search=toolbar.querySelector('[data-shop-search]');
     const clearButton=toolbar.querySelector('[data-shop-search-clear]');
     const sort=toolbar.querySelector('[data-shop-sort]');
+    const filter=toolbar.querySelector('[data-shop-filter]');
     const result=toolbar.querySelector('[data-shop-results]');
     if(!container||!search||!sort)return()=>{};
+    setupShopSelect(filter);
+    setupShopSelect(sort);
     const items=[...container.children].filter(item=>item.matches(pageName==='home'?'.shop-category':'.shop-product'));
     const globalResults=pageName==='home'?document.createElement('div'):null;
     if(globalResults){globalResults.className='shop-global-results';globalResults.hidden=true;toolbar.insertAdjacentElement('afterend',globalResults)}
@@ -17422,6 +17495,7 @@ function setupTeacherTilesShop(){
     const render=()=>{
       const terms=shopBrowserClean(search.value).split(/\s+/).filter(Boolean);
       const mode=sort.value;
+      const tileType=filter?.value||'all';
       if(pageName==='home'&&terms.length){
         const matched=products.filter(item=>terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
@@ -17466,7 +17540,9 @@ function setupTeacherTilesShop(){
       });
       let visible=0;
       ordered.forEach(item=>{
-        const match=terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term));
+        const searchMatch=terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term));
+        const typeMatch=tileType==='all'||item.dataset.shopTileType===tileType;
+        const match=searchMatch&&typeMatch;
         item.hidden=!match;
         item.classList.toggle('shop-filter-hidden',!match);
         if(match)visible++;
@@ -17480,6 +17556,7 @@ function setupTeacherTilesShop(){
     search.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();search.value='';render();search.focus()}});
     clearButton.addEventListener('click',()=>{search.value='';render();search.focus()});
     sort.addEventListener('change',render);
+    filter?.addEventListener('change',render);
     render();
     return render;
   };

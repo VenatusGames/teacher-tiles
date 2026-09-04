@@ -22,6 +22,7 @@ const profileEmail = document.getElementById("profile-email");
 const profileBetaBadge = document.getElementById("profile-beta-badge");
 const profileBadgeCount = document.getElementById("profile-badge-count");
 const profileCoinBalance = document.getElementById("profile-coin-balance");
+const profileCoinCard = document.getElementById("profile-coin-card");
 const status = document.getElementById("profile-auth-status");
 const saveWarning = document.getElementById("signed-out-save-warning");
 
@@ -3674,6 +3675,7 @@ async function renderUser(user) {
   loadingState.hidden = true;
   signedInState.hidden = !user;
   signedOutState.hidden = Boolean(user);
+  if (profileCoinCard) profileCoinCard.hidden = !user;
   signInButton.disabled = false;
   setStatus();
 
@@ -3857,6 +3859,7 @@ async function initializeFirebaseAuth() {
       loadingState.hidden = true;
       signedOutState.hidden = false;
       signedInState.hidden = true;
+      if (profileCoinCard) profileCoinCard.hidden = true;
       signInButton.disabled = false;
       if (saveWarning) saveWarning.hidden = false;
       setStatus("We couldn't check your sign-in status. Refresh and try again.", true);
@@ -3868,6 +3871,7 @@ async function initializeFirebaseAuth() {
     loadingState.hidden = true;
     signedOutState.hidden = false;
     signedInState.hidden = true;
+    if (profileCoinCard) profileCoinCard.hidden = true;
     signInButton.disabled = true;
     if (saveWarning) saveWarning.hidden = false;
     setStatus("Google sign-in couldn't load. Check your internet connection and refresh the page.", true);

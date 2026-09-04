@@ -14780,7 +14780,7 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 .profile-tool-button__icon{border:1px solid color-mix(in srgb,currentColor 28%,var(--border));box-shadow:inset 0 1px rgba(255,255,255,.5)}
 
 /* Keep identity and coin balance together in one account summary card. */
-.profile-account-card{grid-template-columns:96px minmax(0,1fr) 220px;gap:21px}
+.profile-account-card{grid-template-columns:96px minmax(0,1fr);gap:21px}
 .profile-account-copy{padding-right:0}
 .profile-account-card .profile-connected-badge{position:static;width:max-content;margin-top:10px;padding:6px 9px}
 .profile-account-card .profile-coin-card{align-self:stretch;min-height:0;margin:0;padding:13px 14px;grid-template-columns:52px minmax(0,1fr);gap:11px;border-radius:17px}
@@ -14838,6 +14838,46 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 
 /* Readable controls and finishing feedback for the chart tools. */
 .table-maker-chart-types button,.table-maker-data-toggle{font-size:10px}
+
+/* Compact coin access belongs in the Profile header. */
+.profile-panel__header-actions .profile-coin-card{
+  width:168px;height:44px;min-height:44px;margin:0;padding:4px 12px 4px 7px;
+  display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:9px;
+  border:1px solid color-mix(in srgb,#e3a526 42%,var(--border));border-radius:12px;
+  background:linear-gradient(135deg,color-mix(in srgb,#ffd65a 18%,var(--surface-solid)),color-mix(in srgb,#eda51f 9%,var(--surface-soft)));
+  color:var(--text);text-align:left;cursor:pointer;
+  box-shadow:0 5px 14px rgba(125,82,5,.09),inset 0 1px rgba(255,255,255,.7);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.profile-panel__header-actions .profile-coin-card[hidden]{display:none!important}
+.profile-panel__header-actions .profile-coin-card:hover{transform:translateY(-1px);border-color:color-mix(in srgb,#e3a526 72%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,#ffd65a 27%,var(--surface-solid)),color-mix(in srgb,#eda51f 15%,var(--surface-soft)));box-shadow:0 9px 19px rgba(125,82,5,.15),inset 0 1px rgba(255,255,255,.82)}
+.profile-panel__header-actions .profile-coin-card:active{transform:scale(.985)}
+.profile-panel__header-actions .profile-coin-card:focus-visible{outline:3px solid color-mix(in srgb,#e3a526 38%,transparent);outline-offset:3px}
+.profile-panel__header-actions .profile-coin-card__icon{width:34px;height:34px;display:grid;place-items:center}
+.profile-panel__header-actions .profile-coin-card__icon img{width:100%;height:100%;display:block;object-fit:contain;filter:drop-shadow(0 4px 5px rgba(113,69,3,.2))}
+.profile-panel__header-actions .profile-coin-card__copy{min-width:0;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.profile-panel__header-actions .profile-coin-card__copy small{color:var(--muted);font-size:9px;font-weight:950;letter-spacing:.1em}
+.profile-panel__header-actions .profile-coin-card__copy strong{overflow:hidden;color:var(--text);font-size:18px;line-height:1;font-weight:950;letter-spacing:-.035em;text-overflow:ellipsis}
+
+/* Shop selects use the same custom surface, type, and interaction styling as the toolbar. */
+.shop-browser-toolbar--tile-skins{grid-template-columns:minmax(210px,1fr) minmax(165px,205px) minmax(165px,205px) max-content}
+.shop-browser-sort{position:relative}
+.shop-browser-sort select[hidden]{display:none!important}
+.shop-select-button{min-width:0;width:100%;height:32px;padding:0 7px 0 9px;display:flex;align-items:center;justify-content:space-between;gap:7px;border:1px solid color-mix(in srgb,#8068c1 18%,var(--border));border-radius:9px;background:color-mix(in srgb,#8068c1 6%,var(--surface-solid));color:var(--text);font:850 10.5px/1 Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
+.shop-select-button b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shop-select-button i{width:18px;height:18px;display:grid;place-items:center;border-radius:6px;background:color-mix(in srgb,#8068c1 9%,transparent);color:#7359aa;font-size:13px;font-style:normal;transition:transform .14s ease}
+.shop-browser-sort.is-select-open{z-index:55;border-color:color-mix(in srgb,#8068c1 48%,var(--border));box-shadow:0 0 0 3px color-mix(in srgb,#8068c1 9%,transparent)}
+.shop-browser-sort.is-select-open .shop-select-button i{transform:rotate(180deg)}
+.shop-select-menu{position:absolute;z-index:60;left:-1px;right:-1px;top:calc(100% + 6px);max-height:282px;padding:5px;overflow:auto;border:1px solid color-mix(in srgb,#8068c1 27%,var(--border));border-radius:12px;background:var(--surface-solid);box-shadow:0 14px 30px rgba(15,23,42,.22)}
+.shop-select-menu[hidden]{display:none!important}.shop-select-menu button{width:100%;height:32px;padding:0 8px;display:flex;align-items:center;justify-content:space-between;border:0;border-radius:8px;background:transparent;color:var(--text);font:800 10.5px/1 Inter,system-ui,sans-serif;text-align:left;cursor:pointer}.shop-select-menu button:hover,.shop-select-menu button:focus-visible{outline:0;background:color-mix(in srgb,#8068c1 10%,var(--surface-soft))}.shop-select-menu button i{visibility:hidden;color:#7359aa;font-style:normal;font-weight:950}.shop-select-menu button.is-selected{background:color-mix(in srgb,#8068c1 12%,var(--surface-soft));color:#634a99}.shop-select-menu button.is-selected i{visibility:visible}
+
+/* Collection art now uses the real live tile visuals. */
+.tile-skin-art--stoplight-freestanding,.tile-skin-art--timer-freestanding{width:112px;height:112px}
+.tile-skin-art--stoplight-freestanding>i,.tile-skin-art--timer-freestanding>i{display:none}
+.tile-skin-art--stoplight-freestanding img,.tile-skin-art--timer-freestanding img{width:100%;height:100%;display:block;object-fit:contain}
+
+@media(max-width:920px){.shop-browser-toolbar--tile-skins{grid-template-columns:minmax(180px,1fr) minmax(155px,1fr) minmax(155px,1fr)}.shop-browser-toolbar--tile-skins output{display:none}}
+@media(max-width:720px){.profile-panel__header-actions .profile-coin-card{width:142px}.shop-browser-toolbar--tile-skins{grid-template-columns:1fr 1fr}.shop-browser-toolbar--tile-skins .shop-browser-search{grid-column:1/-1}}
+@media(max-width:480px){.profile-panel__header-actions .profile-coin-card{width:112px;padding-right:8px}.profile-panel__header-actions .profile-coin-card__copy small{display:none}.profile-panel__header-actions .profile-coin-card__copy{justify-content:flex-end}.shop-browser-toolbar--tile-skins{grid-template-columns:1fr}.shop-browser-toolbar--tile-skins .shop-browser-search{grid-column:auto}}
 .table-maker-data-toggle b{font-size:8px}
 .table-maker-axis-label,.table-maker-x-label{font-size:11px}
 .table-maker-value-label{font-size:12px}

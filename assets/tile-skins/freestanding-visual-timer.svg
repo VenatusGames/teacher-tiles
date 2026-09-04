@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Freestanding Visual Timer shown in its default five minute ready state">
+  <defs>
+    <radialGradient id="timerFace" cx="30%" cy="19%" r="82%">
+      <stop offset="0" stop-color="#a9d4ff"/>
+      <stop offset="0.42" stop-color="#63adf6"/>
+      <stop offset="1" stop-color="#3b88db"/>
+    </radialGradient>
+    <linearGradient id="timerSheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".36"/>
+      <stop offset=".48" stop-color="#ffffff" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#000000" stop-opacity=".05"/>
+    </linearGradient>
+    <filter id="timerShadow" x="-24%" y="-20%" width="148%" height="158%">
+      <feDropShadow dx="0" dy="15" stdDeviation="13" flood-color="#1a2838" flood-opacity=".22"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1a2838" flood-opacity=".15"/>
+    </filter>
+    <filter id="readoutShadow" x="-20%" y="-45%" width="140%" height="190%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#192331" flood-opacity=".14"/>
+    </filter>
+  </defs>
+  <g filter="url(#timerShadow)">
+    <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#285f99" stroke-width="8"/>
+    <circle cx="210" cy="210" r="169" fill="url(#timerSheen)" stroke="#ffffff" stroke-opacity=".48" stroke-width="3"/>
+  </g>
+  <g filter="url(#readoutShadow)">
+    <rect x="72" y="151" width="276" height="118" rx="59" fill="#ffffff" fill-opacity=".82" stroke="#17314e" stroke-opacity=".12" stroke-width="2"/>
+    <text x="210" y="222" text-anchor="middle" fill="#17202a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="820" letter-spacing="-4">05:00</text>
+    <text x="210" y="251" text-anchor="middle" fill="#536579" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="900" letter-spacing="4">READY</text>
+  </g>
+</svg>
