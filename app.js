@@ -2407,6 +2407,26 @@ const TILE_SKIN_CATALOG=Object.freeze([
     id:'attendance-bubble-tea',productId:'tile-skin-attendance-bubble-tea',tileType:'attendance',tileLabel:'Attendance',
     name:'Bubble Tea',description:'Students become boba pearls that drop into a colorful bubble tea cup.',
     tags:'attendance bubble tea boba pearls drink cup cafe',magnetSrc:'assets/attendance/boba.png',released:8
+  }),
+  Object.freeze({
+    id:'stoplight-freestanding',productId:'tile-skin-stoplight-freestanding',tileType:'stoplight',tileLabel:'Stoplight',
+    name:'Freestanding Stoplight',description:'The stoplight itself becomes the tile, floating cleanly on the board.',
+    tags:'stoplight traffic light freestanding floating object sel',released:9
+  }),
+  Object.freeze({
+    id:'stoplight-simplistic',productId:'tile-skin-stoplight-simplistic',tileType:'stoplight',tileLabel:'Stoplight',
+    name:'Simplistic Stoplight',description:'A crisp classroom stoplight with bold outlines and simple color states.',
+    tags:'stoplight traffic light simple simplistic classroom gray',released:10
+  }),
+  Object.freeze({
+    id:'progressbar-capsule',productId:'tile-skin-progressbar-capsule',tileType:'progressbar',tileLabel:'Progress Bar',
+    name:'Floating Progress Capsule',description:'A large pill-shaped progress bar without a rectangular tile shell.',
+    tags:'progress bar capsule pill floating freestanding timer',released:11
+  }),
+  Object.freeze({
+    id:'timer-freestanding',productId:'tile-skin-timer-freestanding',tileType:'timer',tileLabel:'Visual Timer',
+    name:'Freestanding Visual Timer',description:'The animated timer shape becomes the tile and floats directly on the board.',
+    tags:'visual timer floating freestanding object clock countdown',released:12
   })
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
@@ -6880,10 +6900,11 @@ function setupStoplight(m){
     }
   };
 
+  const simplistic=m.dataset.tileSkin==='stoplight-simplistic';
   const states=[
-    {id:'green',src:'assets/stoplight-green.png',alt:'Green stoplight'},
-    {id:'yellow',src:'assets/stoplight-yellow.png',alt:'Yellow stoplight'},
-    {id:'red',src:'assets/stoplight-red.png',alt:'Red stoplight'}
+    {id:'green',src:simplistic?'assets/stoplight-simplistic-green.svg':'assets/stoplight-green.png',alt:'Green stoplight'},
+    {id:'yellow',src:simplistic?'assets/stoplight-simplistic-yellow.svg':'assets/stoplight-yellow.png',alt:'Yellow stoplight'},
+    {id:'red',src:simplistic?'assets/stoplight-simplistic-red.svg':'assets/stoplight-red.png',alt:'Red stoplight'}
   ];
 
   let i=0;
@@ -11730,6 +11751,69 @@ function setupCollectionShelf(){
   const shelfShell=shelf.querySelector('.asset-shelf__shell');
   if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!tileSkinsButton||!cursorsButton||!themePanel||!stickerPanel||!tileSkinsPanel||!cursorsPanel||!shelfShell||!packs.length)return;
 
+  const setupTileSkinSelect=select=>{
+    if(!select||select.dataset.customized==='true')return;
+    const host=select.closest('.tile-skins-sort');
+    if(!host)return;
+    select.dataset.customized='true';
+    select.hidden=true;
+    select.tabIndex=-1;
+    select.setAttribute('aria-hidden','true');
+    const trigger=document.createElement('button');
+    trigger.type='button';
+    trigger.className='tile-skins-select-button';
+    trigger.setAttribute('aria-haspopup','listbox');
+    trigger.setAttribute('aria-expanded','false');
+    trigger.setAttribute('aria-label',select.getAttribute('aria-label')||'Choose an option');
+    const value=document.createElement('b');
+    const chevron=document.createElement('i');
+    chevron.setAttribute('aria-hidden','true');
+    chevron.textContent='⌄';
+    trigger.append(value,chevron);
+    const menu=document.createElement('div');
+    menu.className='tile-skins-select-menu';
+    menu.setAttribute('role','listbox');
+    menu.hidden=true;
+    const close=()=>{menu.hidden=true;trigger.setAttribute('aria-expanded','false');host.classList.remove('is-select-open')};
+    const sync=()=>{
+      value.textContent=select.selectedOptions[0]?.textContent||'';
+      menu.querySelectorAll('button').forEach(option=>{
+        const selected=option.dataset.value===select.value;
+        option.classList.toggle('is-selected',selected);
+        option.setAttribute('aria-selected',String(selected));
+      });
+    };
+    [...select.options].forEach(nativeOption=>{
+      const option=document.createElement('button');
+      option.type='button';
+      option.dataset.value=nativeOption.value;
+      option.setAttribute('role','option');
+      option.innerHTML=`<span>${nativeOption.textContent}</span><i aria-hidden="true">✓</i>`;
+      option.addEventListener('click',event=>{
+        event.stopPropagation();
+        select.value=nativeOption.value;
+        select.dispatchEvent(new Event('change',{bubbles:true}));
+        sync();close();trigger.focus();
+      });
+      menu.appendChild(option);
+    });
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      const open=menu.hidden;
+      document.querySelectorAll('.tile-skins-select-menu:not([hidden])').forEach(other=>{if(other!==menu){other.hidden=true;other.previousElementSibling?.setAttribute('aria-expanded','false');other.closest('.tile-skins-sort')?.classList.remove('is-select-open')}});
+      menu.hidden=!open;
+      trigger.setAttribute('aria-expanded',String(open));
+      host.classList.toggle('is-select-open',open);
+      if(open)menu.querySelector('.is-selected')?.focus();
+    });
+    trigger.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();close()}});
+    document.addEventListener('click',event=>{if(!host.contains(event.target))close()});
+    host.append(trigger,menu);
+    sync();
+  };
+  setupTileSkinSelect(tileSkinsFilter);
+  setupTileSkinSelect(tileSkinsSort);
+
   let activeShelf=null;
   let activePack=null;
   let activeFan=null;
@@ -11780,6 +11864,10 @@ function setupCollectionShelf(){
     else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
     else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
     else if(skin.tileType==='attendance'&&skin.magnetSrc){const image=document.createElement('img');image.src=skin.magnetSrc;image.alt='';image.draggable=false;art.appendChild(image)}
+    else if(skin.id==='stoplight-freestanding')art.innerHTML='<i><em></em><em></em><em></em></i>';
+    else if(skin.id==='stoplight-simplistic'){const image=document.createElement('img');image.src='assets/stoplight-simplistic-green.svg';image.alt='';image.draggable=false;art.appendChild(image)}
+    else if(skin.id==='progressbar-capsule')art.innerHTML='<i><em></em></i>';
+    else if(skin.id==='timer-freestanding')art.innerHTML='<i><em></em><b>5:00</b></i>';
     return art;
   };
 

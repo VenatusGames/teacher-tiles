@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-4" />
+  <link rel="stylesheet" href="styles.css?v=20260904-5" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1143,8 +1143,8 @@
         <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
           <div class="tile-skins-toolbar">
             <label class="tile-skins-search" for="tile-skins-search"><span aria-hidden="true">⌕</span><input id="tile-skins-search" type="search" autocomplete="off" placeholder="Search skins or tile types"><button id="tile-skins-search-clear" type="button" aria-label="Clear Tile Skin search" hidden>×</button></label>
-            <label class="tile-skins-sort tile-skins-filter"><span>Show</span><select id="tile-skins-filter" aria-label="Filter Tile Skins"><option value="all">All skins</option><option value="owned">Owned</option><option value="shop">In Shop</option></select></label>
-            <label class="tile-skins-sort"><span>Sort</span><select id="tile-skins-sort" aria-label="Sort Tile Skins"><option value="tile">Tile type</option><option value="name">Skin name</option><option value="newest">Newest</option></select></label>
+            <div class="tile-skins-sort tile-skins-filter"><span>Show</span><select id="tile-skins-filter" aria-label="Filter Tile Skins"><option value="all">All skins</option><option value="owned">Owned</option><option value="shop">In Shop</option></select></div>
+            <div class="tile-skins-sort"><span>Sort</span><select id="tile-skins-sort" aria-label="Sort Tile Skins"><option value="tile">Tile type</option><option value="name">Skin name</option><option value="newest">Newest</option></select></div>
             <output id="tile-skins-search-status" class="tile-skins-search-status" aria-live="polite">Browse by tile type</output>
           </div>
           <div class="tile-skins-browser">
@@ -1378,6 +1378,22 @@
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-attendance-bubble-tea" data-shop-price="300">
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--attendance-bubble-tea"><img src="assets/attendance/boba.png" alt=""></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">ATTENDANCE SKIN</span><h3>Bubble Tea</h3><p>Turn students into boba pearls and drop them into a colorful bubble tea cup.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div>
+            </article>
+            <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-stoplight-freestanding" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--stoplight-freestanding"><i><em></em><em></em><em></em></i></span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">STOPLIGHT SKIN</span><h3>Freestanding Stoplight</h3><p>Remove the tile shell and let the stoplight itself float on your board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+            </article>
+            <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-stoplight-simplistic" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--stoplight-simplistic"><img src="assets/stoplight-simplistic-green.svg" alt=""></span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">STOPLIGHT SKIN</span><h3>Simplistic Stoplight</h3><p>A bold, clean classroom stoplight using the supplied red, amber, and green artwork.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+            </article>
+            <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-progressbar-capsule" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--progressbar-capsule"><i><em></em></i></span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">PROGRESS BAR SKIN</span><h3>Floating Progress Capsule</h3><p>A large pill-shaped progress bar that exists without a rectangular tile shell.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
+            </article>
+            <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-timer-freestanding" data-shop-price="250">
+              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--timer-freestanding"><i><em></em><b>5:00</b></i></span></div>
+              <div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Freestanding Visual Timer</h3><p>The animated timer shape becomes the tile and floats directly on the board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
           </div>
         </section>
@@ -1853,9 +1869,10 @@
       <button class="context-menu__item" data-module="spinner" data-category="tools">
         <span class="context-menu__icon context-menu__icon--spinner" aria-hidden="true">
           <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
-            <path d="M12 3.5v8.5l6.3 3.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 1.6l-1.6 2.5h3.2z" fill="currentColor"/>
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 12 17.8 6.7" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+            <path d="m19.7 4.8-1.1 5-3.8-3.5z" fill="currentColor"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
           </svg>
         </span>
         <span><strong>Spinner</strong><small>Spin a wheel to pick a name</small></span>
@@ -3343,7 +3360,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-5"></script>
+  <script src="app.js?v=20260904-6"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-attendance-3"></script>
 
