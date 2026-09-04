@@ -1332,7 +1332,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
-    grapher:['Graphing Tool','Plot points and graph equations'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
+    grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
@@ -1346,7 +1346,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
-    grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
+    grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
@@ -2559,6 +2559,8 @@ function setupModuleByType(m,type){
   if(type==='ruler')setupRuler(m);
   if(type==='calculator')setupCalculator(m);
   if(type==='grapher')setupGrapher(m);
+  if(type==='tablemaker')setupTableMaker(m);
+  if(type==='tallychart')setupTallyChart(m);
   if(type==='periodictable')setupPeriodicTable(m);
   if(type==='money')setupMoney(m);
   if(type==='patternmaker')setupPatternMaker(m);
@@ -7797,6 +7799,8 @@ const EDITABLE_TILE_HEADINGS={
   ruler:'.ruler-header>div>span',
   calculator:'.calculator-header>span',
   grapher:'.grapher-header strong',
+  tablemaker:'.table-maker-title',
+  tallychart:'.tally-chart-title',
   periodictable:'.periodic-header strong',
   money:'.money-header strong:first-of-type',
   cvcword:'.cvcword-header>div>span:first-child',
@@ -10653,6 +10657,254 @@ function setupLessonPlannerTile(m){
   m._boardGetState=()=>({mode});m._boardSetState=state=>{mode=state?.mode==='week'?'week':'day';render()};
   const prior=m._cleanup;m._cleanup=()=>{prior?.();clearInterval(dateTimer);window.removeEventListener('teachertiles:lessonplannerchange',handleChange);delete m._refreshLessonPlans};
   render();
+}
+
+const TABLE_MAKER_COLORS=['#4f8fe8','#ef6f78','#f0b44d','#55ae7b','#8d6bdd','#38aab7','#e47ca8','#7e91a8','#dd7a43','#74a84f','#5965c9','#c35c84'];
+
+function makeChartSvgNode(tag,attributes={},text=''){
+  const node=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.entries(attributes).forEach(([key,value])=>node.setAttribute(key,String(value)));
+  if(text!==''&&text!==undefined)node.textContent=String(text);
+  return node;
+}
+
+function chartNiceMaximum(value){
+  const max=Math.max(1,Number(value)||0);
+  const magnitude=10**Math.floor(Math.log10(max));
+  const fraction=max/magnitude;
+  const nice=fraction<=1?1:fraction<=2?2:fraction<=5?5:10;
+  return nice*magnitude;
+}
+
+function setupTableMaker(m){
+  const chart=m.querySelector('.table-maker-chart');
+  const legend=m.querySelector('.table-maker-legend');
+  const empty=m.querySelector('.table-maker-empty');
+  const editor=m.querySelector('.table-maker-editor');
+  const dataRows=m.querySelector('.table-maker-data-rows');
+  const dataToggle=m.querySelector('.table-maker-data-toggle');
+  const dataCount=dataToggle.querySelector('b');
+  const addRowButton=m.querySelector('.table-maker-add-row');
+  const totalNode=m.querySelector('.table-maker-summary strong');
+  const status=m.querySelector('.table-maker-status');
+  const typeButtons=[...m.querySelectorAll('[data-chart-type]')];
+  let chartType='bar';
+  let editorOpen=true;
+  let rows=[
+    {label:'Reading',value:18,color:TABLE_MAKER_COLORS[0]},
+    {label:'Math',value:24,color:TABLE_MAKER_COLORS[1]},
+    {label:'Science',value:14,color:TABLE_MAKER_COLORS[2]},
+    {label:'Writing',value:20,color:TABLE_MAKER_COLORS[3]}
+  ];
+
+  const normalizeRows=value=>(Array.isArray(value)?value:[]).slice(0,12).map((row,index)=>({
+    label:String(row?.label||`Category ${index+1}`).slice(0,28),
+    value:Math.max(0,Math.min(999999,Number(row?.value)||0)),
+    color:/^#[0-9a-f]{6}$/i.test(String(row?.color||''))?String(row.color):TABLE_MAKER_COLORS[index%TABLE_MAKER_COLORS.length]
+  }));
+  const displayLabel=value=>String(value||'Untitled').trim().slice(0,12)||'Untitled';
+  const setEditorOpen=open=>{
+    editorOpen=Boolean(open);
+    m.dataset.editorOpen=String(editorOpen);
+    editor.hidden=!editorOpen;
+    dataToggle.classList.toggle('is-active',editorOpen);
+    dataToggle.setAttribute('aria-expanded',String(editorOpen));
+    dataToggle.querySelector('span').textContent=editorOpen?'Hide Data':'Edit Data';
+  };
+  const addAxis=(maxValue,{left=54,right=22,top=22,bottom=53,width=600,height=340}={})=>{
+    const plotWidth=width-left-right,plotHeight=height-top-bottom;
+    for(let tick=0;tick<=4;tick++){
+      const ratio=tick/4,y=top+plotHeight-(plotHeight*ratio);
+      chart.appendChild(makeChartSvgNode('line',{x1:left,y1:y,x2:width-right,y2:y,class:'table-maker-grid-line'}));
+      chart.appendChild(makeChartSvgNode('text',{x:left-10,y:y+4,'text-anchor':'end',class:'table-maker-axis-label'},Math.round(maxValue*ratio*100)/100));
+    }
+    chart.appendChild(makeChartSvgNode('line',{x1:left,y1:top,x2:left,y2:height-bottom,class:'table-maker-axis-line'}));
+    chart.appendChild(makeChartSvgNode('line',{x1:left,y1:height-bottom,x2:width-right,y2:height-bottom,class:'table-maker-axis-line'}));
+    return{left,right,top,bottom,width,height,plotWidth,plotHeight};
+  };
+  const renderLegend=activeRows=>{
+    legend.replaceChildren();
+    activeRows.forEach(row=>{
+      const item=document.createElement('span');
+      item.innerHTML='<i></i><b></b>';
+      item.querySelector('i').style.background=row.color;
+      item.querySelector('b').textContent=row.label||'Untitled';
+      legend.appendChild(item);
+    });
+  };
+  const renderChart=()=>{
+    chart.replaceChildren();
+    const activeRows=rows.filter(row=>row.value>0);
+    const total=rows.reduce((sum,row)=>sum+row.value,0);
+    totalNode.textContent=Number.isInteger(total)?total.toLocaleString():total.toLocaleString(undefined,{maximumFractionDigits:2});
+    dataCount.textContent=String(rows.length);
+    status.textContent=`${rows.length} ${rows.length===1?'category':'categories'} · ${chartType==='donut'?'donut':chartType} chart`;
+    empty.hidden=activeRows.length>0;
+    chart.hidden=activeRows.length===0;
+    renderLegend(activeRows);
+    if(!activeRows.length)return;
+    chart.setAttribute('aria-label',`${chartType} chart with ${activeRows.length} categories and total ${total}`);
+    if(chartType==='bar'||chartType==='line'){
+      const maxValue=chartNiceMaximum(Math.max(...activeRows.map(row=>row.value)));
+      const frame=addAxis(maxValue);
+      if(chartType==='bar'){
+        const slot=frame.plotWidth/activeRows.length;
+        const barWidth=Math.min(76,Math.max(16,slot*.62));
+        activeRows.forEach((row,index)=>{
+          const height=Math.max(2,(row.value/maxValue)*frame.plotHeight);
+          const x=frame.left+slot*index+(slot-barWidth)/2,y=frame.top+frame.plotHeight-height;
+          const group=makeChartSvgNode('g',{class:'table-maker-bar-group'});
+          group.style.setProperty('--chart-delay',`${index*45}ms`);
+          const rect=makeChartSvgNode('rect',{x,y,width:barWidth,height,rx:Math.min(9,barWidth/4),fill:row.color,class:'table-maker-bar'});
+          const value=makeChartSvgNode('text',{x:x+barWidth/2,y:y-8,'text-anchor':'middle',class:'table-maker-value-label'},Number(row.value).toLocaleString());
+          const label=makeChartSvgNode('text',{x:x+barWidth/2,y:frame.height-28,'text-anchor':'middle',class:'table-maker-x-label'},displayLabel(row.label));
+          group.append(rect,value,label);chart.appendChild(group);
+        });
+      }else{
+        const slot=activeRows.length===1?0:frame.plotWidth/(activeRows.length-1);
+        const points=activeRows.map((row,index)=>({row,x:activeRows.length===1?frame.left+frame.plotWidth/2:frame.left+slot*index,y:frame.top+frame.plotHeight-(row.value/maxValue)*frame.plotHeight}));
+        const linePath=points.map((point,index)=>`${index?'L':'M'}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ');
+        const areaPath=`M${points[0].x} ${frame.height-frame.bottom} ${points.map(point=>`L${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ')} L${points.at(-1).x} ${frame.height-frame.bottom} Z`;
+        const area=makeChartSvgNode('path',{d:areaPath,fill:points[0].row.color,class:'table-maker-line-area'});
+        const line=makeChartSvgNode('path',{d:linePath,fill:'none',stroke:points[0].row.color,class:'table-maker-line'});
+        chart.append(area,line);
+        points.forEach((point,index)=>{
+          const dot=makeChartSvgNode('circle',{cx:point.x,cy:point.y,r:6,fill:point.row.color,class:'table-maker-point'});dot.style.setProperty('--chart-delay',`${index*55}ms`);
+          chart.append(dot,makeChartSvgNode('text',{x:point.x,y:point.y-12,'text-anchor':'middle',class:'table-maker-value-label'},Number(point.row.value).toLocaleString()),makeChartSvgNode('text',{x:point.x,y:frame.height-28,'text-anchor':'middle',class:'table-maker-x-label'},displayLabel(point.row.label)));
+        });
+      }
+      return;
+    }
+    const cx=300,cy=165,r=124;
+    let angle=-Math.PI/2;
+    activeRows.forEach((row,index)=>{
+      const share=row.value/total;
+      const next=angle+share*Math.PI*2;
+      if(chartType==='donut'){
+        const circumference=2*Math.PI*r;
+        const circle=makeChartSvgNode('circle',{cx,cy,r,fill:'none',stroke:row.color,'stroke-width':62,'stroke-dasharray':`${Math.max(0,circumference*share-2)} ${circumference}`,'stroke-dashoffset':-(circumference*((angle+Math.PI/2)/(Math.PI*2))),transform:`rotate(-90 ${cx} ${cy})`,class:'table-maker-donut-segment'});
+        circle.style.setProperty('--chart-delay',`${index*65}ms`);chart.appendChild(circle);
+      }else if(share>.9999){
+        chart.appendChild(makeChartSvgNode('circle',{cx,cy,r,fill:row.color,class:'table-maker-pie-slice'}));
+      }else{
+        const startX=cx+r*Math.cos(angle),startY=cy+r*Math.sin(angle),endX=cx+r*Math.cos(next),endY=cy+r*Math.sin(next);
+        const path=makeChartSvgNode('path',{d:`M${cx} ${cy} L${startX} ${startY} A${r} ${r} 0 ${share>.5?1:0} 1 ${endX} ${endY} Z`,fill:row.color,class:'table-maker-pie-slice'});
+        path.style.setProperty('--chart-delay',`${index*55}ms`);chart.appendChild(path);
+      }
+      angle=next;
+    });
+    if(chartType==='donut'){
+      chart.append(makeChartSvgNode('circle',{cx,cy,r:76,class:'table-maker-donut-hole'}),makeChartSvgNode('text',{x:cx,y:cy-3,'text-anchor':'middle',class:'table-maker-donut-total'},Number(total).toLocaleString()),makeChartSvgNode('text',{x:cx,y:cy+22,'text-anchor':'middle',class:'table-maker-donut-caption'},'TOTAL'));
+    }
+  };
+  const renderEditor=()=>{
+    dataRows.replaceChildren();
+    rows.forEach((row,index)=>{
+      const item=document.createElement('div');item.className='table-maker-data-row';
+      const color=document.createElement('input');color.type='color';color.value=row.color;color.setAttribute('aria-label',`Color for ${row.label}`);
+      const label=document.createElement('input');label.type='text';label.maxLength=28;label.value=row.label;label.placeholder=`Category ${index+1}`;label.setAttribute('aria-label',`Label for row ${index+1}`);
+      const value=document.createElement('input');value.type='number';value.min='0';value.max='999999';value.step='any';value.value=String(row.value);value.setAttribute('aria-label',`Value for ${row.label}`);
+      const remove=document.createElement('button');remove.type='button';remove.className='table-maker-remove-row';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${row.label}`);
+      color.addEventListener('input',()=>{row.color=color.value;renderChart();notifyBoardChanged('table-maker-color')});
+      label.addEventListener('input',()=>{row.label=label.value.slice(0,28);renderChart()});
+      value.addEventListener('input',()=>{row.value=Math.max(0,Math.min(999999,Number(value.value)||0));renderChart()});
+      remove.addEventListener('click',()=>{rows.splice(index,1);renderEditor();renderChart();notifyBoardChanged('table-maker-remove-row')});
+      item.append(color,label,value,remove);dataRows.appendChild(item);
+    });
+    addRowButton.disabled=rows.length>=12;
+    addRowButton.textContent=rows.length>=12?'12 row limit':'+ Add Data Row';
+  };
+  typeButtons.forEach(button=>button.addEventListener('click',()=>{
+    chartType=['bar','line','pie','donut'].includes(button.dataset.chartType)?button.dataset.chartType:'bar';
+    m.dataset.chartType=chartType;typeButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderChart();notifyBoardChanged('table-maker-type');
+  }));
+  dataToggle.addEventListener('click',()=>{setEditorOpen(!editorOpen);notifyBoardChanged('table-maker-editor')});
+  m.querySelector('.table-maker-editor-close').addEventListener('click',()=>{setEditorOpen(false);notifyBoardChanged('table-maker-editor')});
+  addRowButton.addEventListener('click',()=>{
+    if(rows.length>=12)return;
+    rows.push({label:`Category ${rows.length+1}`,value:10,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});renderEditor();renderChart();notifyBoardChanged('table-maker-add-row');
+    requestAnimationFrame(()=>{const field=dataRows.lastElementChild?.querySelector('input[type="text"]');if(field){enterModuleTextEdit(field);field.select()}});
+  });
+  m.querySelector('.table-maker-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.table-maker-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.table-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m._boardGetState=()=>({chartType,editorOpen,rows:rows.map(row=>({...row}))});
+  m._boardSetState=state=>{
+    rows=normalizeRows(state?.rows);if(!rows.length&&Array.isArray(state?.rows))rows=[];
+    chartType=['bar','line','pie','donut'].includes(state?.chartType)?state.chartType:'bar';
+    editorOpen=state?.editorOpen!==false;typeButtons.forEach(button=>{const active=button.dataset.chartType===chartType;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active))});m.dataset.chartType=chartType;setEditorOpen(editorOpen);renderEditor();renderChart();
+  };
+  typeButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.chartType===chartType)));setEditorOpen(true);renderEditor();renderChart();
+}
+
+function setupTallyChart(m){
+  const list=m.querySelector('.tally-chart-rows');
+  const empty=m.querySelector('.tally-chart-empty');
+  const totalNode=m.querySelector('.tally-chart-total strong');
+  const sortButton=m.querySelector('.tally-chart-sort');
+  const addButton=m.querySelector('.tally-chart-add');
+  const resetButton=m.querySelector('.tally-chart-reset');
+  const viewButtons=[...m.querySelectorAll('[data-tally-view]')];
+  let view='tallies',sort='added';
+  let rows=[
+    {label:'Option A',count:3,color:TABLE_MAKER_COLORS[0]},
+    {label:'Option B',count:5,color:TABLE_MAKER_COLORS[1]},
+    {label:'Option C',count:2,color:TABLE_MAKER_COLORS[3]}
+  ];
+  const normalizeRows=value=>(Array.isArray(value)?value:[]).slice(0,16).map((row,index)=>({label:String(row?.label||`Category ${index+1}`).slice(0,28),count:Math.max(0,Math.min(999,Math.round(Number(row?.count)||0))),color:/^#[0-9a-f]{6}$/i.test(String(row?.color||''))?String(row.color):TABLE_MAKER_COLORS[index%TABLE_MAKER_COLORS.length]}));
+  const renderTallies=(target,count)=>{
+    target.replaceChildren();
+    if(!count){const hint=document.createElement('small');hint.textContent='Click to tally';target.appendChild(hint);return}
+    for(let remaining=count;remaining>0;remaining-=5){
+      const amount=Math.min(5,remaining),group=document.createElement('span');group.className=`tally-mark-group${amount===5?' is-five':''}`;
+      for(let index=0;index<Math.min(4,amount);index++)group.appendChild(document.createElement('i'));
+      if(amount===5)group.appendChild(document.createElement('b'));
+      target.appendChild(group);
+    }
+  };
+  const updateTotal=()=>{totalNode.textContent=rows.reduce((sum,row)=>sum+row.count,0).toLocaleString()};
+  const renderRows=()=>{
+    list.replaceChildren();empty.hidden=rows.length>0;list.hidden=rows.length===0;updateTotal();addButton.disabled=rows.length>=16;addButton.textContent=rows.length>=16?'16 category limit':'+ Add Category';resetButton.disabled=!rows.some(row=>row.count>0);
+    const ordered=rows.map((row,index)=>({row,index}));if(sort==='highest')ordered.sort((a,b)=>b.row.count-a.row.count||a.index-b.index);
+    const max=Math.max(1,...rows.map(row=>row.count));
+    ordered.forEach(({row,index},visualIndex)=>{
+      const item=document.createElement('div');item.className='tally-chart-row';item.style.setProperty('--tally-color',row.color);item.style.setProperty('--tally-delay',`${visualIndex*35}ms`);
+      const category=document.createElement('div');category.className='tally-chart-category';
+      const color=document.createElement('input');color.type='color';color.value=row.color;color.setAttribute('aria-label',`Color for ${row.label}`);
+      const label=document.createElement('input');label.type='text';label.maxLength=28;label.value=row.label;label.setAttribute('aria-label',`Tally category ${index+1}`);
+      category.append(color,label);
+      let display;
+      if(view==='bars'){
+        display=document.createElement('div');display.className='tally-chart-bar';display.innerHTML='<span></span>';display.querySelector('span').style.width=`${(row.count/max)*100}%`;
+      }else{
+        display=document.createElement('button');display.type='button';display.className='tally-chart-marks';display.setAttribute('aria-label',`Add one tally to ${row.label}`);renderTallies(display,row.count);
+        display.addEventListener('click',()=>adjust(index,1));
+      }
+      const count=document.createElement('strong');count.className='tally-chart-count';count.textContent=String(row.count);
+      const actions=document.createElement('div');actions.className='tally-chart-row-actions';
+      const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.disabled=row.count===0;minus.setAttribute('aria-label',`Remove one tally from ${row.label}`);
+      const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label',`Add one tally to ${row.label}`);
+      const remove=document.createElement('button');remove.type='button';remove.className='tally-chart-remove';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${row.label}`);
+      minus.addEventListener('click',()=>adjust(index,-1));plus.addEventListener('click',()=>adjust(index,1));remove.addEventListener('click',()=>{rows.splice(index,1);renderRows();notifyBoardChanged('tally-remove-category')});
+      color.addEventListener('input',()=>{row.color=color.value;item.style.setProperty('--tally-color',row.color);notifyBoardChanged('tally-color')});
+      label.addEventListener('input',()=>{row.label=label.value.slice(0,28)});
+      actions.append(minus,plus,remove);item.append(category,display,count,actions);list.appendChild(item);
+    });
+  };
+  const adjust=(index,amount)=>{const row=rows[index];if(!row)return;row.count=Math.max(0,Math.min(999,row.count+amount));renderRows();notifyBoardChanged('tally-count')};
+  viewButtons.forEach(button=>button.addEventListener('click',()=>{view=button.dataset.tallyView==='bars'?'bars':'tallies';m.dataset.tallyView=view;viewButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderRows();notifyBoardChanged('tally-view')}));
+  sortButton.addEventListener('click',()=>{sort=sort==='added'?'highest':'added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows();notifyBoardChanged('tally-sort')});
+  addButton.addEventListener('click',()=>{
+    if(rows.length>=16)return;rows.push({label:`Category ${rows.length+1}`,count:0,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});sort='added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=' Added Order';sortButton.classList.remove('is-active');renderRows();notifyBoardChanged('tally-add-category');
+    requestAnimationFrame(()=>{const field=list.lastElementChild?.querySelector('.tally-chart-category input[type="text"]');if(field){enterModuleTextEdit(field);field.select()}});
+  });
+  resetButton.addEventListener('click',()=>{rows.forEach(row=>row.count=0);renderRows();notifyBoardChanged('tally-reset')});
+  m.querySelector('.tally-chart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.tally-chart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.tally-chart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m._boardGetState=()=>({view,sort,rows:rows.map(row=>({...row}))});
+  m._boardSetState=state=>{rows=normalizeRows(state?.rows);view=state?.view==='bars'?'bars':'tallies';sort=state?.sort==='highest'?'highest':'added';m.dataset.tallyView=view;m.dataset.tallySort=sort;viewButtons.forEach(button=>{const active=button.dataset.tallyView===view;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active))});sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows()};
+  viewButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tallyView===view)));sortButton.setAttribute('aria-pressed','false');renderRows();
 }
 
 function setupTodo(m){

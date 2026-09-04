@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260903-6" />
+  <link rel="stylesheet" href="styles.css?v=20260903-7" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1768,6 +1768,14 @@
         </span>
         <span><strong>Graphing Tool</strong><small>Plot points and graph equations</small></span>
       </button>
+      <button class="context-menu__item" data-module="tablemaker" data-category="math tools planning">
+        <span class="context-menu__icon context-menu__icon--tablemaker" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V4M4 20h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="7" y="12" width="2.8" height="6" rx=".7"/><rect x="11" y="8" width="2.8" height="10" rx=".7" opacity=".7"/><rect x="15" y="5" width="2.8" height="13" rx=".7" opacity=".42"/><path d="M6.5 6.5h4M6.5 9h2.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+        <span><strong>Table Maker</strong><small>Turn your data into animated charts</small></span>
+      </button>
+      <button class="context-menu__item" data-module="tallychart" data-category="math tools planning">
+        <span class="context-menu__icon context-menu__icon--tallychart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.5 5v14M9.5 5v14M13.5 5v14M17.5 5v14M3.5 17.5 19.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span><strong>Tally Chart</strong><small>Count and compare results in real time</small></span>
+      </button>
       <button class="context-menu__item" data-module="periodictable" data-category="science">
         <span class="context-menu__icon context-menu__icon--periodic" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -3311,7 +3319,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260903-3"></script>
+  <script src="app.js?v=20260903-4"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260902-reads-1"></script>
 
@@ -3518,6 +3526,61 @@
         <button class="custom-icon money-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
 
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="tablemaker-template">
+    <section class="module table-maker-module" data-type="tablemaker" data-bg="white" data-font="inter" data-text="dark" data-chart-type="bar" data-editor-open="true">
+      <button class="module-delete" aria-label="Delete Table Maker tile">×</button><div class="module-drag-handle"></div>
+      <header class="table-maker-header">
+        <div><span>DATA STUDIO</span><strong class="table-maker-title" contenteditable="true" data-text-edit-mode="double">Table Maker</strong></div>
+        <div class="table-maker-summary"><strong>0</strong><span>total</span></div>
+      </header>
+      <nav class="table-maker-toolbar" aria-label="Chart type">
+        <div class="table-maker-chart-types" role="group" aria-label="Choose chart type">
+          <button type="button" data-chart-type="bar" class="is-active"><i class="chart-type-icon chart-type-icon--bar" aria-hidden="true"></i><span>Bars</span></button>
+          <button type="button" data-chart-type="line"><i class="chart-type-icon chart-type-icon--line" aria-hidden="true"></i><span>Line</span></button>
+          <button type="button" data-chart-type="pie"><i class="chart-type-icon chart-type-icon--pie" aria-hidden="true"></i><span>Pie</span></button>
+          <button type="button" data-chart-type="donut"><i class="chart-type-icon chart-type-icon--donut" aria-hidden="true"></i><span>Donut</span></button>
+        </div>
+        <button class="table-maker-data-toggle" type="button" aria-expanded="true"><span>Edit Data</span><b>4</b></button>
+      </nav>
+      <div class="table-maker-main">
+        <section class="table-maker-visual" aria-label="Chart preview">
+          <svg class="table-maker-chart" viewBox="0 0 600 340" role="img" aria-label="Data chart"></svg>
+          <div class="table-maker-legend" aria-label="Chart legend"></div>
+          <div class="table-maker-empty" hidden><span aria-hidden="true">＋</span><strong>Add a value to begin</strong><small>Your chart updates as you type.</small></div>
+        </section>
+        <aside class="table-maker-editor" aria-label="Chart data editor">
+          <header><div><strong>Chart Data</strong><span>Changes appear instantly</span></div><button class="table-maker-editor-close" type="button" aria-label="Close data editor">×</button></header>
+          <div class="table-maker-data-head"><span>Color</span><span>Label</span><span>Value</span><span></span></div>
+          <div class="table-maker-data-rows"></div>
+          <button class="table-maker-add-row" type="button">+ Add Data Row</button>
+        </aside>
+      </div>
+      <footer class="table-maker-footer"><span class="table-maker-status">4 categories</span><span>Live preview</span></footer>
+      <div class="customization-bar table-maker-customization" aria-label="Table Maker customization"><button class="custom-icon table-maker-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon table-maker-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon table-maker-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="tallychart-template">
+    <section class="module tally-chart-module" data-type="tallychart" data-bg="white" data-font="inter" data-text="dark" data-tally-view="tallies" data-tally-sort="added">
+      <button class="module-delete" aria-label="Delete Tally Chart tile">×</button><div class="module-drag-handle"></div>
+      <header class="tally-chart-header">
+        <div><span>LIVE COUNT</span><strong class="tally-chart-title" contenteditable="true" data-text-edit-mode="double">Tally Chart</strong></div>
+        <div class="tally-chart-total"><strong>0</strong><span>total tallies</span></div>
+      </header>
+      <div class="tally-chart-tools">
+        <div class="tally-chart-view" role="group" aria-label="Tally chart view"><button type="button" data-tally-view="tallies" class="is-active">Tally Marks</button><button type="button" data-tally-view="bars">Quick Bars</button></div>
+        <button class="tally-chart-sort" type="button" title="Change category sorting"><span aria-hidden="true">↕</span> Added Order</button>
+      </div>
+      <div class="tally-chart-columns" aria-hidden="true"><span>Category</span><span>Count</span><span>Controls</span></div>
+      <div class="tally-chart-rows" aria-label="Tally categories"></div>
+      <div class="tally-chart-empty" hidden><strong>No categories yet</strong><span>Add one below to begin counting.</span></div>
+      <footer class="tally-chart-footer"><button class="tally-chart-add" type="button">+ Add Category</button><button class="tally-chart-reset" type="button">Reset Counts</button></footer>
+      <div class="customization-bar tally-chart-customization" aria-label="Tally Chart customization"><button class="custom-icon tally-chart-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tally-chart-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tally-chart-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
