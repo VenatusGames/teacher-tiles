@@ -8154,27 +8154,40 @@ function setupAttendance(m){
       'attendance-beehive':[108,83],
       'attendance-monkeys':[82,108],
       'attendance-froggies':[100,88],
-      'attendance-bubble-tea':[78,78]
+      'attendance-bubble-tea':[64,64]
     };
     const density=students.length>24?.78:students.length>12?.9:1;
     return(sizes[m.dataset.tileSkin||'']||[126,48]).map(value=>value*density);
+  };
+  const placementRange=(status,insetX,insetY)=>{
+    const sceneBounds=status==='present'&&m.dataset.tileSkin==='attendance-bubble-tea'
+      ?{minX:.18,maxX:.82,minY:.4,maxY:.86}
+      :{minX:0,maxX:1,minY:0,maxY:1};
+    let minX=Math.max(insetX,sceneBounds.minX);
+    let maxX=Math.min(1-insetX,sceneBounds.maxX);
+    let minY=Math.max(insetY,sceneBounds.minY);
+    let maxY=Math.min(1-insetY,sceneBounds.maxY);
+    if(minX>maxX)minX=maxX=.5;
+    if(minY>maxY)minY=maxY=.5;
+    return{minX,maxX,minY,maxY};
   };
   const gridPosition=(index,total,status='default')=>{
     const stage=stages[status];
     const stageWidth=stage?.clientWidth||400;
     const stageHeight=stage?.clientHeight||340;
     const [pieceWidth,pieceHeight]=magnetFootprint();
+    const insetX=clamp((pieceWidth/2+7)/stageWidth,.16,.3);
+    const insetY=clamp((pieceHeight/2+7)/stageHeight,.14,.32);
+    const range=placementRange(status,insetX,insetY);
     const preferred=total<=8?3:total<=16?4:total<=25?5:6;
-    const fits=Math.max(1,Math.floor((stageWidth-14)/Math.max(50,pieceWidth*.9)));
+    const fits=Math.max(1,Math.floor((stageWidth*(range.maxX-range.minX))/Math.max(44,pieceWidth*.9))+1);
     const columns=Math.max(1,Math.min(total||1,preferred,fits));
     const rows=Math.max(1,Math.ceil(total/columns));
     const column=index%columns;
     const row=Math.floor(index/columns);
-    const insetX=clamp((pieceWidth/2+7)/stageWidth,.16,.3);
-    const insetY=clamp((pieceHeight/2+7)/stageHeight,.14,.32);
     return{
-      x:columns===1?.5:insetX+(column/(columns-1))*(1-insetX*2),
-      y:rows===1?.5:insetY+(row/(rows-1))*(1-insetY*2)
+      x:columns===1?(range.minX+range.maxX)/2:range.minX+(column/(columns-1))*(range.maxX-range.minX),
+      y:rows===1?(range.minY+range.maxY)/2:range.minY+(row/(rows-1))*(range.maxY-range.minY)
     };
   };
   const ensurePositions=grouped=>{
@@ -8214,16 +8227,17 @@ function setupAttendance(m){
     const chipRect=chip?.getBoundingClientRect();
     const insetX=clamp(((chipRect?.width||72)/2+5)/rect.width,.09,.3);
     const insetY=clamp(((chipRect?.height||55)/2+5)/rect.height,.1,.32);
-    const baseX=clamp((detail.clientX-rect.left)/rect.width,insetX,1-insetX);
-    const baseY=clamp((detail.clientY-rect.top)/rect.height,insetY,1-insetY);
+    const range=placementRange(status,insetX,insetY);
+    const baseX=clamp((detail.clientX-rect.left)/rect.width,range.minX,range.maxX);
+    const baseY=clamp((detail.clientY-rect.top)/rect.height,range.minY,range.maxY);
     const peers=students.filter(student=>student!==name&&normalizeStatus(assignments[student])===status).map(student=>positions[student]).filter(Boolean);
     const minDistance=m.dataset.attendanceDensity==='dense'?48:m.dataset.attendanceDensity==='compact'?58:68;
     for(let attempt=0;attempt<42;attempt++){
       const ring=Math.ceil(attempt/6);
       const angle=attempt*2.399963;
       const radius=ring*15;
-      const x=clamp(baseX+(Math.cos(angle)*radius)/rect.width,insetX,1-insetX);
-      const y=clamp(baseY+(Math.sin(angle)*radius)/rect.height,insetY,1-insetY);
+      const x=clamp(baseX+(Math.cos(angle)*radius)/rect.width,range.minX,range.maxX);
+      const y=clamp(baseY+(Math.sin(angle)*radius)/rect.height,range.minY,range.maxY);
       const collides=peers.some(peer=>Math.hypot((peer.x-x)*rect.width,(peer.y-y)*rect.height)<minDistance);
       if(!collides)return{zone:status,x,y};
     }
@@ -8238,6 +8252,13 @@ function setupAttendance(m){
     if(!changedColumn&&prior&&Math.abs(prior.x-nextPosition.x)<.001&&Math.abs(prior.y-nextPosition.y)<.001)return;
     assignments[name]=next;
     positions[name]=nextPosition;
+    const hasDropPoint=detail&&Number.isFinite(detail.clientX)&&Number.isFinite(detail.clientY);
+    if(changedColumn&&!hasDropPoint){
+      orderedStatuses.forEach(zone=>{
+        const group=students.filter(student=>normalizeStatus(assignments[student])===zone);
+        group.forEach((student,index)=>positions[student]={zone,...gridPosition(index,group.length,zone)});
+      });
+    }
     arrivingStudent=changedColumn?name:'';
     render();
     arrivingStudent='';
@@ -8333,8 +8354,9 @@ function setupAttendance(m){
           const chipRect=chip.getBoundingClientRect();
           const insetX=clamp((chipRect.width/2+5)/stageRect.width,.09,.3);
           const insetY=clamp((chipRect.height/2+5)/stageRect.height,.1,.32);
-          position.x=clamp(position.x,insetX,1-insetX);
-          position.y=clamp(position.y,insetY,1-insetY);
+          const range=placementRange(status,insetX,insetY);
+          position.x=clamp(position.x,range.minX,range.maxX);
+          position.y=clamp(position.y,range.minY,range.maxY);
           chip.style.left=`${position.x*100}%`;
           chip.style.top=`${position.y*100}%`;
         });
