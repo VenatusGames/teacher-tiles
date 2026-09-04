@@ -15226,3 +15226,19 @@ body.dark .shop-coins-button{background:linear-gradient(135deg,color-mix(in srgb
 .attendance-module[data-tile-skin="attendance-monkeys"] .attendance-jungle-leaves{position:absolute;z-index:1;inset:-5% -8% -7%;display:block;overflow:hidden;isolation:isolate}
 .attendance-module[data-tile-skin="attendance-monkeys"] .attendance-jungle-leaves img{position:absolute;left:var(--jungle-leaf-x);top:var(--jungle-leaf-y);width:var(--jungle-leaf-size);height:auto;display:block;opacity:var(--jungle-leaf-opacity);transform:rotate(var(--jungle-leaf-turn)) scale(var(--jungle-leaf-scale));transform-origin:center;object-fit:contain;filter:saturate(.92) drop-shadow(0 6px 5px rgba(18,59,24,.18));user-select:none}
 .attendance-module[data-tile-skin="attendance-monkeys"] .attendance-world__main{z-index:2;width:106%;height:108%;bottom:-12%;filter:drop-shadow(0 12px 11px rgba(23,49,28,.28))}
+
+/* Keep the active class visible while tucking the attendance loader away at rest. */
+.attendance-class-strip{transition:grid-template-columns .18s ease}
+.attendance-class-strip .tile-class-loader{min-width:0;width:100%;max-width:100%;max-height:44px;transition:opacity .15s ease,transform .15s ease,max-width .18s ease,max-height .18s ease,padding .18s ease,border-width .18s ease}
+.attendance-module:not(:hover) .attendance-class-strip{grid-template-columns:minmax(165px,1fr) 0 auto}
+.attendance-module:not(:hover) .attendance-class-strip .tile-class-loader{
+  width:0;max-width:0;max-height:0;height:0;margin:0;padding:0;border-width:0;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(4px);pointer-events:none;
+}
+body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-strip{grid-template-columns:minmax(165px,.8fr) minmax(315px,1.35fr) auto}
+body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-strip .tile-class-loader{width:100%;max-width:100%;max-height:44px;height:44px;padding:5px;border-width:1px;overflow:visible;opacity:1;visibility:visible;transform:none;pointer-events:auto}
+@container(max-width:700px){
+  .attendance-class-strip,.attendance-module:not(:hover) .attendance-class-strip{grid-template-columns:minmax(135px,1fr) 0 auto}
+  .attendance-class-current{display:flex}
+  .attendance-module:hover .attendance-class-strip,
+  body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-strip{grid-template-columns:minmax(135px,.75fr) minmax(245px,1.35fr) auto}
+}
