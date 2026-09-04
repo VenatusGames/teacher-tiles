@@ -17383,6 +17383,7 @@ function setupTeacherTilesShop(){
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
   const coinButton=document.getElementById('shop-coins-button');
+  const profileCoinCard=document.getElementById('profile-coin-card');
   const coinMenu=document.getElementById('shop-coin-menu');
   const coinMenuClose=document.getElementById('shop-coin-menu-close');
   const toast=document.getElementById('shop-toast');
@@ -17398,6 +17399,91 @@ function setupTeacherTilesShop(){
   const coinPacks=[...modal.querySelectorAll('[data-coin-pack]')];
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null,checkoutHandled=false;
+
+  const shopBrowserClean=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
+  const setupShopBrowser=toolbar=>{
+    const page=toolbar.closest('[data-shop-page]');
+    const pageName=toolbar.dataset.shopBrowser;
+    const container=pageName==='home'?page?.querySelector('.shop-category-grid'):page?.querySelector('.shop-product-grid');
+    const search=toolbar.querySelector('[data-shop-search]');
+    const clearButton=toolbar.querySelector('[data-shop-search-clear]');
+    const sort=toolbar.querySelector('[data-shop-sort]');
+    const result=toolbar.querySelector('[data-shop-results]');
+    if(!container||!search||!sort)return()=>{};
+    const items=[...container.children].filter(item=>item.matches(pageName==='home'?'.shop-category':'.shop-product'));
+    const globalResults=pageName==='home'?document.createElement('div'):null;
+    if(globalResults){globalResults.className='shop-global-results';globalResults.hidden=true;toolbar.insertAdjacentElement('afterend',globalResults)}
+    const empty=document.createElement('div');
+    empty.className='shop-browser-empty';
+    empty.innerHTML='<span aria-hidden="true">⌕</span><strong>No matches</strong><small>Try a different name or keyword.</small>';
+    empty.hidden=true;
+    container.insertAdjacentElement('afterend',empty);
+    const nameOf=item=>item.querySelector('h3,.shop-category__copy strong')?.textContent?.trim()||'';
+    const render=()=>{
+      const terms=shopBrowserClean(search.value).split(/\s+/).filter(Boolean);
+      const mode=sort.value;
+      if(pageName==='home'&&terms.length){
+        const matched=products.filter(item=>terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term))).sort((a,b)=>{
+          if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
+          if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
+          if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
+          if(mode==='price-desc')return Number(b.dataset.shopPrice||0)-Number(a.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
+          if(mode==='newest')return products.indexOf(b)-products.indexOf(a);
+          return products.indexOf(a)-products.indexOf(b);
+        });
+        globalResults.replaceChildren();
+        globalResults.classList.toggle('is-empty',matched.length===0);
+        matched.forEach(source=>{
+          const card=source.cloneNode(true);
+          card.classList.add('shop-search-result');
+          card.removeAttribute('data-shop-product');
+          const action=card.querySelector('[data-shop-buy]');
+          if(action){action.disabled=false;action.removeAttribute('data-shop-buy');action.className='shop-search-result__view';action.textContent='View →';action.addEventListener('click',()=>{
+            const targetPage=source.closest('[data-shop-page]')?.dataset.shopPage||'home';
+            showPage(targetPage);
+            source.classList.add('is-shop-highlighted');
+            source.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});
+            setTimeout(()=>source.classList.remove('is-shop-highlighted'),1300);
+          })}
+          globalResults.appendChild(card);
+        });
+        page.classList.add('is-global-searching');
+        if(!matched.length)globalResults.innerHTML='<span aria-hidden="true">⌕</span><strong>No shop items found</strong><small>Try another product name, collection, or keyword.</small>';
+        globalResults.hidden=false;
+        empty.hidden=true;
+        clearButton.hidden=false;
+        if(result)result.textContent=`${matched.length} ${matched.length===1?'result':'results'}`;
+        return;
+      }
+      if(pageName==='home'){page.classList.remove('is-global-searching');globalResults.hidden=true;globalResults.replaceChildren()}
+      const ordered=[...items].sort((a,b)=>{
+        if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
+        if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
+        if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
+        if(mode==='price-desc')return Number(b.dataset.shopPrice||0)-Number(a.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
+        if(mode==='newest')return items.indexOf(b)-items.indexOf(a);
+        return items.indexOf(a)-items.indexOf(b);
+      });
+      let visible=0;
+      ordered.forEach(item=>{
+        const match=terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term));
+        item.hidden=!match;
+        item.classList.toggle('shop-filter-hidden',!match);
+        if(match)visible++;
+        container.appendChild(item);
+      });
+      clearButton.hidden=!search.value;
+      empty.hidden=visible>0;
+      if(result)result.textContent=`${visible} ${pageName==='home'?(visible===1?'category':'categories'):(visible===1?'skin':'skins')}`;
+    };
+    search.addEventListener('input',render);
+    search.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();search.value='';render();search.focus()}});
+    clearButton.addEventListener('click',()=>{search.value='';render();search.focus()});
+    sort.addEventListener('change',render);
+    render();
+    return render;
+  };
+  const refreshShopBrowsers=[...modal.querySelectorAll('[data-shop-browser]')].map(setupShopBrowser);
 
   const accountState=()=>window.TeacherTilesAccount?.state||{ready:false,loading:true,signedIn:false,coinBalance:0,ownedProductIds:[]};
   const errorMessage=(error,fallback)=>{
@@ -17440,6 +17526,7 @@ function setupTeacherTilesShop(){
       page.classList.toggle('is-active',active);
     });
     modal.querySelector('.shop-content')?.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'});
+    refreshShopBrowsers.forEach(render=>render());
   }
   function showBanner(index,restart=true){
     if(!banners.length)return;
@@ -17548,6 +17635,11 @@ function setupTeacherTilesShop(){
   modal.querySelectorAll('[data-shop-close]').forEach(node=>node.addEventListener('click',closeShop));
   pageButtons.forEach(button=>button.addEventListener('click',()=>showPage(button.dataset.shopOpenPage)));
   coinButton?.addEventListener('click',openCoins);
+  profileCoinCard?.addEventListener('click',()=>{
+    document.querySelector('[data-profile-close]')?.click();
+    openShop();
+    openCoins();
+  });
   coinMenuClose?.addEventListener('click',()=>closeCoins());
   prev?.addEventListener('click',()=>showBanner(bannerIndex-1));
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
@@ -17588,13 +17680,14 @@ function setupTeacherTilesShop(){
   window.addEventListener('teachertiles:shoprequest',event=>{
     const productId=event.detail?.productId;
     if(!accountState().signedIn){window.TeacherTilesAuth?.openProfile?.();return}
-    openShop();showPage(String(productId).startsWith('sticker-')?'stickers':'themes');
+    const productPage=String(productId).startsWith('sticker-')?'stickers':String(productId).startsWith('tile-skin-')?'tile-skins':String(productId).startsWith('cursor-')?'cursors':'themes';
+    openShop();showPage(productPage);
     const card=products.find(item=>item.dataset.shopProduct===productId);
     if(card){card.classList.add('is-shop-highlighted');card.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});setTimeout(()=>card.classList.remove('is-shop-highlighted'),1300)}
     showToast('Purchase this pack to unlock it in your shelf.');
   });
   syncStickerShopPackCounts();
-  window.TeacherTilesShop={open:openShop,openPage:name=>{openShop();showPage(name)},sync:()=>{syncShop();syncStickerShopPackCounts()}};
+  window.TeacherTilesShop={open:openShop,openCoins:()=>{openShop();openCoins()},openPage:name=>{openShop();showPage(name)},sync:()=>{syncShop();syncStickerShopPackCounts();refreshShopBrowsers.forEach(render=>render())}};
   syncShop();handleCheckoutReturn();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();

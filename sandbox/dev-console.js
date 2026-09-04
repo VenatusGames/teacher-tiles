@@ -72,6 +72,8 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   const backdrop=consoleRoot.querySelector('.sandbox-dev-console__backdrop');
 
   const readCoins=()=>Math.max(0,Number.parseInt(localStorage.getItem(SANDBOX_COIN_KEY)||'0',10)||0);
+  const readOwned=()=>{try{const value=JSON.parse(localStorage.getItem(OWNED_PRODUCTS_KEY)||'[]');return Array.isArray(value)?[...new Set(value.map(String))]:[]}catch{return[]}};
+  const writeOwned=owned=>localStorage.setItem(OWNED_PRODUCTS_KEY,JSON.stringify([...new Set(owned.map(String))]));
   const writeCoins=coins=>{
     const next=Math.max(0,Math.floor(Number(coins)||0));
     localStorage.setItem(SANDBOX_COIN_KEY,String(next));
@@ -79,6 +81,60 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   };
   const setStatus=message=>{status.textContent=message};
   const coinsEnabled=()=>localStorage.getItem(SANDBOX_COIN_TOGGLE_KEY)==='true';
+  window.TeacherTilesSandbox={get coinsEnabled(){return coinsEnabled()}};
+
+  const syncSandboxAccount=()=>{
+    const state=window.TeacherTilesAccount?.state;
+    if(!state)return;
+    const profileBalance=document.getElementById('profile-coin-balance');
+    const shopBalance=document.getElementById('shop-coin-balance');
+    if(profileBalance)profileBalance.textContent=Number(state.coinBalance||0).toLocaleString();
+    if(shopBalance)shopBalance.textContent=Number(state.coinBalance||0).toLocaleString();
+    const sandboxAccess=coinsEnabled();
+    const sandboxLabels={
+      'shop-toggle':['Open shop','Sign in to open shop'],'theme-shelf-toggle':['Open theme shelf','Sign in to open themes'],
+      'sticker-shelf-toggle':['Open sticker shelf','Sign in to open stickers'],'tile-skins-shelf-toggle':['Open Tile Skins shelf','Sign in to open Tile Skins']
+    };
+    Object.entries(sandboxLabels).forEach(([id,labels])=>{
+      const control=document.getElementById(id);
+      if(control)control.setAttribute('aria-label',(sandboxAccess||state.signedIn)?labels[0]:labels[1]);
+    });
+    window.dispatchEvent(new CustomEvent('teachertiles:accountchange',{detail:state}));
+    window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange',{detail:{owned:[...(state.ownedProductIds||[])]}}));
+  };
+
+  let accountBridgeInstalled=false;
+  const installAccountBridge=()=>{
+    const account=window.TeacherTilesAccount;
+    if(!account||accountBridgeInstalled)return Boolean(accountBridgeInstalled);
+    const stateDescriptor=Object.getOwnPropertyDescriptor(account,'state');
+    const realState=stateDescriptor?.get?.bind(account);
+    const realOwns=account.owns?.bind(account);
+    const realPurchase=account.purchase?.bind(account);
+    if(!realState||!realOwns||!realPurchase)return false;
+    Object.defineProperty(account,'state',{configurable:true,get(){
+      const state=realState();
+      if(!coinsEnabled())return state;
+      return{...state,ready:true,loading:false,signedIn:true,coinBalance:SANDBOX_COIN_BALANCE,ownedProductIds:readOwned()};
+    }});
+    account.owns=productId=>coinsEnabled()?readOwned().includes(String(productId||'')):realOwns(productId);
+    account.purchase=async productId=>{
+      if(!coinsEnabled())return realPurchase(productId);
+      const id=String(productId||'');
+      const owned=readOwned();
+      const alreadyOwned=owned.includes(id);
+      if(id&&!alreadyOwned){owned.push(id);writeOwned(owned)}
+      syncSandboxAccount();
+      return{alreadyOwned,coinBalance:SANDBOX_COIN_BALANCE,ownedProductIds:readOwned()};
+    };
+    accountBridgeInstalled=true;
+    syncSandboxAccount();
+    return true;
+  };
+  if(!installAccountBridge()){
+    let attempts=0;
+    const bridgeTimer=setInterval(()=>{attempts++;if(installAccountBridge()||attempts>=80)clearInterval(bridgeTimer)},100);
+  }
 
   const setTestingCoins=enabled=>{
     if(enabled){
@@ -94,6 +150,8 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
       setStatus(`Testing coins disabled. Restored ${previous.toLocaleString()} coins.`);
     }
     coinsToggle.checked=enabled;
+    installAccountBridge();
+    syncSandboxAccount();
   };
 
   const openConsole=()=>{
@@ -121,6 +179,7 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
     localStorage.removeItem(DEFAULT_TILE_SKINS_KEY);
     window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange',{detail:{owned:[]}}));
     window.dispatchEvent(new CustomEvent('teachertiles:tileskinchange',{detail:{defaults:{}}}));
+    syncSandboxAccount();
     setStatus('All owned shop items have been reset.');
   });
   document.addEventListener('keydown',event=>{

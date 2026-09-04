@@ -95,6 +95,7 @@ let functionsSdk = null;
 let db = null;
 let cloudFunctions = null;
 let shopBackendSafetyBlocked = false;
+let sandboxBuildActive = false;
 let currentUser = null;
 let authReady = false;
 let busy = false;
@@ -601,6 +602,7 @@ function publishShopAccount(patch = {}) {
       .filter(value => typeof value === "string")
   )];
   if (profileCoinBalance) profileCoinBalance.textContent = shopAccountState.coinBalance.toLocaleString();
+  document.getElementById("profile-coin-card")?.setAttribute("aria-label", `Open the coin shop. Balance: ${shopAccountState.coinBalance.toLocaleString()} coins.`);
   window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
     detail: {
       ready: shopAccountState.ready,
@@ -3817,9 +3819,10 @@ async function initializeFirebaseAuth() {
   signInButton.disabled = true;
 
   try {
-    const sandboxBuild = await fetch(new URL("sandbox.md", window.location.href), { cache: "no-store" })
+    const sandboxBuild = await fetch(new URL("sandbox/sandbox.md", window.location.href), { cache: "no-store" })
       .then(response => response.ok)
       .catch(() => false);
+    sandboxBuildActive = sandboxBuild;
     const [appModule, authModule, firestoreModule, functionsModule] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"),
@@ -3877,7 +3880,8 @@ document.addEventListener("click", event => {
     ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #tile-skins-shelf-toggle, #shop-toggle, #boards-toggle")
     : null;
 
-  if (!target || !gatedFeatureIds.has(target.id) || currentUser) return;
+  const sandboxShopAccess = sandboxBuildActive && Boolean(window.TeacherTilesSandbox?.coinsEnabled) && target?.id !== "boards-toggle";
+  if (!target || !gatedFeatureIds.has(target.id) || currentUser || sandboxShopAccess) return;
 
   event.preventDefault();
   event.stopPropagation();
