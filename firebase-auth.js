@@ -1661,6 +1661,25 @@ function compactPreviewObject(object) {
   const special = compactPreviewValue(object.special);
   if (special !== undefined && byteLength(special) <= 4200) preview.special = special;
 
+  if (object.type === "attendance" && object.special && typeof object.special === "object") {
+    const students = (Array.isArray(object.special.students) ? object.special.students : [])
+      .map(name => String(name || "").trim().slice(0, 60))
+      .filter(Boolean)
+      .slice(0, 36);
+    const assignments = {};
+    for (const name of students) {
+      const status = object.special.assignments?.[name];
+      assignments[name] = status === "absent" || status === "present" ? status : "waiting";
+    }
+    preview.special = {
+      classId: String(object.special.classId || "").slice(0, 180),
+      className: String(object.special.className || "Class").slice(0, 100),
+      classLogo: String(object.special.classLogo || "👥").slice(0, 16),
+      students,
+      assignments
+    };
+  }
+
   const pbisPreviewKeys = {
     starchart: ["classId", "showAllStudents", "collapsedHeight"],
     classmeter: ["classId", "orientation"],
@@ -2833,6 +2852,55 @@ function applyPreviewState(module, state) {
     }
     module.dataset.imageBorder = ["none", "thin", "medium", "thick", "double"].includes(special.border) ? special.border : "none";
     if (/^#[0-9a-f]{6}$/i.test(special.borderColor || "")) module.style.setProperty("--image-border-color", special.borderColor);
+  }
+
+  if (state.type === "attendance" && special) {
+    const statuses = ["absent", "waiting", "present"];
+    const students = (Array.isArray(special.students) ? special.students : [])
+      .map(name => String(name || "").trim())
+      .filter(Boolean)
+      .slice(0, 36);
+    const grouped = { absent: [], waiting: [], present: [] };
+    for (const name of students) {
+      const saved = special.assignments?.[name];
+      grouped[saved === "absent" || saved === "present" ? saved : "waiting"].push(name);
+    }
+    const hasClass = Boolean(special.classId || students.length);
+    module.classList.toggle("has-attendance-class", hasClass);
+    module.dataset.attendanceReady = String(hasClass);
+    setPreviewText(module, ".attendance-class-name", hasClass ? (special.className || "Class") : "No class loaded");
+    setPreviewText(module, ".attendance-class-logo", hasClass ? (special.classLogo || "👥") : "👥");
+    setPreviewText(module, ".attendance-summary strong", `${grouped.present.length}/${students.length}`);
+    setPreviewText(module, ".attendance-status", hasClass ? `${grouped.waiting.length} waiting · ${grouped.present.length} present · ${grouped.absent.length} absent` : "Choose a saved class above to begin.");
+    const emptyState = module.querySelector(".attendance-empty-state");
+    if (emptyState) emptyState.hidden = hasClass;
+    const reset = module.querySelector(".attendance-reset");
+    if (reset) reset.hidden = true;
+    for (const status of statuses) {
+      const list = module.querySelector(`[data-attendance-list="${status}"]`);
+      const count = module.querySelector(`[data-attendance-count="${status}"]`);
+      if (count) count.textContent = String(grouped[status].length);
+      if (!list) continue;
+      list.replaceChildren();
+      for (const name of grouped[status]) {
+        const chip = document.createElement("span");
+        chip.className = "attendance-student";
+        const art = document.createElement("span");
+        art.className = "attendance-student-art";
+        art.innerHTML = "<i></i><b></b><em></em>";
+        const label = document.createElement("span");
+        label.className = "attendance-student-name";
+        label.textContent = name;
+        chip.append(art, label);
+        list.appendChild(chip);
+      }
+      if (!grouped[status].length) {
+        const hint = document.createElement("span");
+        hint.className = "attendance-column-empty";
+        hint.textContent = status === "waiting" ? "Everyone is sorted" : status === "present" ? "Present" : "Absent";
+        list.appendChild(hint);
+      }
+    }
   }
 
   applyPbisPreviewState(module, state, special);

@@ -538,7 +538,7 @@ function fitNameModuleToRoster(module,count,{namesPerRow=5,rowHeight=31,threshol
   module.style.height=`${desired}px`;
 }
 
-function bindStudentPointerDrag(chip,name,module,onDrop){
+function bindStudentPointerDrag(chip,name,module,onDrop,{ghostClass='',skinId=''}={}){
   let pointerId=null;
   let startX=0,startY=0;
   let active=false;
@@ -562,7 +562,12 @@ function bindStudentPointerDrag(chip,name,module,onDrop){
     if(!active&&Math.hypot(event.clientX-startX,event.clientY-startY)<5)return;
     if(!active){
       active=true;chip.classList.add('is-dragging');module.classList.add('is-dragging-student');
-      ghost=document.createElement('div');ghost.className='student-drag-ghost';ghost.textContent=name;document.body.appendChild(ghost);
+      ghost=document.createElement('div');ghost.className=`student-drag-ghost${ghostClass?` ${ghostClass}`:''}`;
+      if(skinId)ghost.dataset.tileSkin=skinId;
+      const art=chip.querySelector('.attendance-student-art')?.cloneNode(true);
+      const label=document.createElement('span');label.textContent=name;
+      if(art)ghost.append(art,label);else ghost.textContent=name;
+      document.body.appendChild(ghost);
     }
     ghost.style.left=`${event.clientX}px`;ghost.style.top=`${event.clientY}px`;
     ghost.hidden=true;
@@ -1329,7 +1334,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
     interactive:['Interactive Timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Sort a saved class into present and absent'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
@@ -1343,7 +1348,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Clasifica una clase guardada entre presentes y ausentes'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
@@ -2378,6 +2383,26 @@ const TILE_SKIN_CATALOG=Object.freeze([
     id:'calendar-paper-stack',productId:'tile-skin-calendar-paper-stack',tileType:'calendar',tileLabel:'Calendar',
     name:'Page-Stack Calendar',description:'A bound paper calendar with dimensional pages layered underneath.',
     tags:'calendar paper pages stack realistic bound depth',released:4
+  }),
+  Object.freeze({
+    id:'attendance-beehive',productId:'tile-skin-attendance-beehive',tileType:'attendance',tileLabel:'Attendance',
+    name:'Beehive',description:'Students become busy bees that check in by flying into a warm classroom hive.',
+    tags:'attendance bee bees beehive hive honey garden yellow classroom',released:5
+  }),
+  Object.freeze({
+    id:'attendance-monkeys',productId:'tile-skin-attendance-monkeys',tileType:'attendance',tileLabel:'Attendance',
+    name:'Monkeys',description:'Students become playful monkeys that check in on a leafy jungle tree.',
+    tags:'attendance monkey monkeys jungle tree forest animal green',released:6
+  }),
+  Object.freeze({
+    id:'attendance-froggies',productId:'tile-skin-attendance-froggies',tileType:'attendance',tileLabel:'Attendance',
+    name:'Froggies',description:'Students become little frogs that hop onto a giant lily pad in the pond.',
+    tags:'attendance frog frogs froggies pond lily pad lilypad water animal',released:7
+  }),
+  Object.freeze({
+    id:'attendance-bubble-tea',productId:'tile-skin-attendance-bubble-tea',tileType:'attendance',tileLabel:'Attendance',
+    name:'Bubble Tea',description:'Students become boba pearls that drop into a colorful bubble tea cup.',
+    tags:'attendance bubble tea boba pearls drink cup cafe',released:8
   })
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
@@ -2521,6 +2546,7 @@ function setupModuleByType(m,type){
   if(type==='magnifier')setupMagnifier(m);
   if(type==='dictionary')setupDictionary(m);
   if(type==='translation')setupTranslation(m);
+  if(type==='attendance')setupAttendance(m);
   if(type==='livecaption')setupLiveCaption(m);
   if(type==='voicememo')setupVoiceMemo(m);
   if(type==='photobooth')setupPhotobooth(m);
@@ -7812,6 +7838,7 @@ const EDITABLE_TILE_HEADINGS={
   tenframes:'.tenframes-heading>span:first-child',
   dictionary:'.dictionary-header strong',
   translation:'.translation-title',
+  attendance:'.attendance-title',
   livecaption:'.livecaption-title',
   voicememo:'.voicememo-title',
   worldmap:'.worldmap-title',
@@ -8059,6 +8086,162 @@ function setupTranslation(m){
   };
   const prior=m._cleanup;
   m._cleanup=()=>{prior?.();requestController?.abort();recognition?.abort();if('speechSynthesis'in window)speechSynthesis.cancel()};
+}
+
+function setupAttendance(m){
+  const loaderAnchor=m.querySelector('.attendance-loader-anchor');
+  const classNameNode=m.querySelector('.attendance-class-name');
+  const classLogoNode=m.querySelector('.attendance-class-logo');
+  const summaryValue=m.querySelector('.attendance-summary strong');
+  const summaryLabel=m.querySelector('.attendance-summary span');
+  const resetButton=m.querySelector('.attendance-reset');
+  const emptyState=m.querySelector('.attendance-empty-state');
+  const statusNode=m.querySelector('.attendance-status');
+  const lists=Object.fromEntries([...m.querySelectorAll('[data-attendance-list]')].map(list=>[list.dataset.attendanceList,list]));
+  const counts=Object.fromEntries([...m.querySelectorAll('[data-attendance-count]')].map(count=>[count.dataset.attendanceCount,count]));
+  const orderedStatuses=['absent','waiting','present'];
+  let activeClassId='';
+  let pendingClassId='';
+  let activeClassName='';
+  let activeClassLogo='👥';
+  let students=[];
+  let assignments=Object.create(null);
+  let arrivingStudent='';
+
+  const normalizeStatus=value=>orderedStatuses.includes(value)?value:'waiting';
+  const normalizeAssignments=(value,names)=>{
+    const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+    const next=Object.create(null);
+    names.forEach(name=>next[name]=normalizeStatus(source[name]));
+    return next;
+  };
+  const currentRoster=id=>readClassRosters().find(item=>item.id===id)||null;
+  const setRoster=(roster,{reset=false,notify=true}={})=>{
+    if(!roster)return false;
+    const nextStudents=normalizeRosterNames(roster.students);
+    const prior=assignments;
+    activeClassId=String(roster.id||'');
+    pendingClassId='';
+    activeClassName=String(roster.name||'Class').trim()||'Class';
+    activeClassLogo=normalizeClassLogo(roster.logo);
+    students=nextStudents;
+    assignments=reset?normalizeAssignments({},students):normalizeAssignments(prior,students);
+    render();
+    if(notify)notifyBoardChanged('attendance-class');
+    return true;
+  };
+  const assign=(name,status)=>{
+    if(!students.includes(name))return;
+    const next=normalizeStatus(status);
+    if(assignments[name]===next)return;
+    assignments[name]=next;
+    arrivingStudent=name;
+    render();
+    arrivingStudent='';
+    notifyBoardChanged('attendance-status');
+  };
+  const makeStudent=(name,status)=>{
+    const chip=document.createElement('div');
+    chip.className=`attendance-student${arrivingStudent===name?' is-arriving':''}`;
+    chip.tabIndex=0;
+    chip.setAttribute('role','button');
+    chip.setAttribute('aria-label',`${name}: ${status}. Drag to another column, or use the left and right arrow keys.`);
+    chip.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight A P W');
+    chip.title='Drag to a column · Arrow keys move · A absent · P present · W waiting';
+    const art=document.createElement('span');art.className='attendance-student-art';art.setAttribute('aria-hidden','true');art.innerHTML='<i></i><b></b><em></em>';
+    const label=document.createElement('span');label.className='attendance-student-name';label.textContent=name;
+    chip.append(art,label);
+    chip.addEventListener('keydown',event=>{
+      let next='';
+      const index=orderedStatuses.indexOf(status);
+      if(event.key==='ArrowLeft')next=orderedStatuses[Math.max(0,index-1)];
+      else if(event.key==='ArrowRight')next=orderedStatuses[Math.min(orderedStatuses.length-1,index+1)];
+      else if(event.key.toLocaleLowerCase()==='a')next='absent';
+      else if(event.key.toLocaleLowerCase()==='p')next='present';
+      else if(event.key.toLocaleLowerCase()==='w')next='waiting';
+      else if(event.key==='Enter'||event.key===' ')next=status==='waiting'?'present':'waiting';
+      if(!next||next===status)return;
+      event.preventDefault();event.stopPropagation();assign(name,next);
+      requestAnimationFrame(()=>[...m.querySelectorAll('.attendance-student')].find(item=>item.querySelector('.attendance-student-name')?.textContent===name)?.focus({preventScroll:true}));
+    });
+    bindStudentPointerDrag(chip,name,m,target=>assign(name,target),{ghostClass:'attendance-student-ghost',skinId:m.dataset.tileSkin||''});
+    return chip;
+  };
+  function render(){
+    const grouped={absent:[],waiting:[],present:[]};
+    students.forEach(name=>grouped[normalizeStatus(assignments[name])].push(name));
+    orderedStatuses.forEach(status=>{
+      const list=lists[status];if(!list)return;
+      list.replaceChildren();
+      grouped[status].forEach(name=>list.appendChild(makeStudent(name,status)));
+      if(!grouped[status].length){
+        const hint=document.createElement('span');hint.className='attendance-column-empty';
+        hint.textContent=status==='waiting'?(students.length?'Everyone is sorted':'Class roster appears here'):status==='present'?'Drag present students here':'Drag absent students here';
+        list.appendChild(hint);
+      }
+      if(counts[status])counts[status].textContent=String(grouped[status].length);
+    });
+    const hasClass=Boolean(activeClassId);
+    const checked=grouped.present.length+grouped.absent.length;
+    m.classList.toggle('has-attendance-class',hasClass);
+    m.dataset.attendanceReady=String(hasClass);
+    classNameNode.textContent=hasClass?activeClassName:'No class loaded';
+    classLogoNode.textContent=hasClass?activeClassLogo:'👥';
+    summaryValue.textContent=`${grouped.present.length}/${students.length}`;
+    summaryLabel.textContent='present';
+    emptyState.hidden=hasClass;
+    resetButton.hidden=!hasClass;
+    resetButton.disabled=!students.some(name=>normalizeStatus(assignments[name])!=='waiting');
+    statusNode.textContent=!hasClass?'Choose a saved class above to begin.':!students.length?'This class does not have any students yet.':checked===students.length?`Check-in complete · ${grouped.present.length} present · ${grouped.absent.length} absent`:`${students.length-checked} waiting · ${grouped.present.length} present · ${grouped.absent.length} absent`;
+  }
+
+  resetButton.addEventListener('click',()=>{
+    assignments=normalizeAssignments({},students);
+    render();
+    notifyBoardChanged('attendance-reset');
+  });
+  Object.values(lists).forEach(list=>list?.addEventListener('wheel',event=>event.stopPropagation(),{passive:true}));
+  m.querySelector('.attendance-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.attendance-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.attendance-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const detachRosterLoader=attachClassRosterLoader(loaderAnchor,(_names,roster)=>setRoster(roster,{reset:true}));
+  const handleClassesChange=()=>{
+    const wanted=pendingClassId||activeClassId;
+    if(!wanted)return;
+    const roster=currentRoster(wanted);
+    if(roster)setRoster(roster,{reset:false,notify:false});
+  };
+  window.addEventListener('teachertiles:classeschange',handleClassesChange);
+
+  m._boardGetState=()=>({
+    classId:activeClassId,
+    className:activeClassName,
+    classLogo:activeClassLogo,
+    students:[...students],
+    assignments:{...assignments}
+  });
+  m._boardSetState=state=>{
+    if(!state)return;
+    const classId=String(state.classId||'');
+    const savedStudents=normalizeRosterNames(state.students);
+    const roster=classId?currentRoster(classId):null;
+    if(roster){
+      setRoster(roster,{reset:true,notify:false});
+      assignments=normalizeAssignments(state.assignments,students);
+    }else{
+      activeClassId=classId;
+      pendingClassId=classId;
+      activeClassName=String(state.className||'Saved Class').trim()||'Saved Class';
+      activeClassLogo=normalizeClassLogo(state.classLogo);
+      students=savedStudents;
+      assignments=normalizeAssignments(state.assignments,students);
+    }
+    render();
+  };
+  render();
+  const priorCleanup=m._cleanup;
+  m._cleanup=()=>{priorCleanup?.();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange)};
 }
 
 function setupLiveCaption(m){
@@ -11349,6 +11532,7 @@ function setupCollectionShelf(){
     if(skin.id==='youtube-retro-tv')art.innerHTML='<i></i><b><em></em><em></em></b><small></small>';
     else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
     else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
+    else if(skin.tileType==='attendance')art.innerHTML='<i></i><b><em></em><em></em><em></em></b><small></small>';
     return art;
   };
 
