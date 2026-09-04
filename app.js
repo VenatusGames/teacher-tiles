@@ -1129,7 +1129,7 @@ const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
 const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
 holePunchSfxPrototype.preload='auto';
-const stickerPlaceSfxPrototype=new Audio('assets/ui/sticker-place.wav');
+const stickerPlaceSfxPrototype=new Audio('assets/ui/sticker-place.wav?v=20260904-2');
 stickerPlaceSfxPrototype.preload='auto';
 
 function persistAppPreferences(){
