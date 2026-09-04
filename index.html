@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260903-12" />
+  <link rel="stylesheet" href="styles.css?v=20260903-13" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1143,10 +1143,14 @@
         <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
           <div class="tile-skins-toolbar">
             <label class="tile-skins-search" for="tile-skins-search"><span aria-hidden="true">⌕</span><input id="tile-skins-search" type="search" autocomplete="off" placeholder="Search skins or tile types"><button id="tile-skins-search-clear" type="button" aria-label="Clear Tile Skin search" hidden>×</button></label>
+            <label class="tile-skins-sort tile-skins-filter"><span>Show</span><select id="tile-skins-filter" aria-label="Filter Tile Skins"><option value="all">All skins</option><option value="owned">Owned</option><option value="shop">In Shop</option></select></label>
             <label class="tile-skins-sort"><span>Sort</span><select id="tile-skins-sort" aria-label="Sort Tile Skins"><option value="tile">Tile type</option><option value="name">Skin name</option><option value="newest">Newest</option></select></label>
             <output id="tile-skins-search-status" class="tile-skins-search-status" aria-live="polite">Browse by tile type</output>
           </div>
-          <div id="tile-skins-groups" class="tile-skins-groups"></div>
+          <div class="tile-skins-browser">
+            <nav id="tile-skins-type-nav" class="tile-skins-type-nav" aria-label="Tile Skin types"></nav>
+            <div id="tile-skins-groups" class="tile-skins-groups" aria-live="polite"></div>
+          </div>
         </div>
         <div id="cursors-shelf-content" class="asset-shelf__content cursors-shelf-content" data-shelf-panel="cursors" hidden>
           <div class="cursors-shelf-heading"><div><strong>Choose your cursor</strong><small>Cursor colors apply everywhere inside TeacherTiles.</small></div><span id="cursors-shelf-status" aria-live="polite"></span></div>
@@ -3339,7 +3343,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260903-9"></script>
+  <script src="app.js?v=20260903-10"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260903-attendance-1"></script>
 

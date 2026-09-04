@@ -11448,8 +11448,10 @@ function setupCollectionShelf(){
   const tileSkinsPanel=document.getElementById('tile-skins-shelf-content');
   const tileSkinsSearch=document.getElementById('tile-skins-search');
   const tileSkinsSearchClear=document.getElementById('tile-skins-search-clear');
+  const tileSkinsFilter=document.getElementById('tile-skins-filter');
   const tileSkinsSort=document.getElementById('tile-skins-sort');
   const tileSkinsStatus=document.getElementById('tile-skins-search-status');
+  const tileSkinsTypeNav=document.getElementById('tile-skins-type-nav');
   const tileSkinsGroups=document.getElementById('tile-skins-groups');
   const cursorsPanel=document.getElementById('cursors-shelf-content');
   const cursorsGrid=document.getElementById('cursors-shelf-grid');
@@ -11489,6 +11491,7 @@ function setupCollectionShelf(){
   let activeFan=null;
   let activeStickerPack=null;
   let activeStickerDrawer=null;
+  let activeTileSkinType='';
 
   const syncCollectionOwnership=()=>{
     [...packs,...stickerPacks].forEach(pack=>{
@@ -11590,30 +11593,73 @@ function setupCollectionShelf(){
   };
 
   const normalizeTileSkinSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
-  const renderTileSkinShelf=()=>{
-    if(!tileSkinsGroups)return;
+  const renderTileSkinShelf=(options={})=>{
+    if(!tileSkinsGroups||!tileSkinsTypeNav)return;
+    const ensureSelection=Boolean(options?.ensureSelection);
     const query=normalizeTileSkinSearch(tileSkinsSearch?.value);
     const terms=query.split(/\s+/).filter(Boolean);
+    const filter=tileSkinsFilter?.value||'all';
     const sort=tileSkinsSort?.value||'tile';
     const matching=TILE_SKIN_CATALOG.filter(skin=>{
       const haystack=normalizeTileSkinSearch(`${skin.name} ${skin.tileLabel} ${skin.description} ${skin.tags}`);
-      return terms.every(term=>haystack.includes(term));
+      const owned=tileSkinIsOwned(skin);
+      return terms.every(term=>haystack.includes(term))&&(filter==='owned'?owned:filter==='shop'?!owned:true);
     }).sort((a,b)=>sort==='newest'?(b.released-a.released)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
     const grouped=new Map();
     matching.forEach(skin=>{if(!grouped.has(skin.tileType))grouped.set(skin.tileType,[]);grouped.get(skin.tileType).push(skin)});
-    const groups=[...grouped.entries()].sort((a,b)=>a[1][0].tileLabel.localeCompare(b[1][0].tileLabel));
-    tileSkinsGroups.replaceChildren();
+    const groups=[...grouped.entries()].sort((a,b)=>sort==='newest'?(Math.max(...b[1].map(skin=>skin.released))-Math.max(...a[1].map(skin=>skin.released)))||a[1][0].tileLabel.localeCompare(b[1][0].tileLabel):a[1][0].tileLabel.localeCompare(b[1][0].tileLabel));
+    if(activeTileSkinType&&!grouped.has(activeTileSkinType))activeTileSkinType='';
+    if(!activeTileSkinType&&groups.length&&(ensureSelection||query||filter!=='all'))activeTileSkinType=groups[0][0];
+
+    const navHeading=document.createElement('div');navHeading.className='tile-skins-type-nav__heading';
+    const navTitle=document.createElement('strong');navTitle.textContent='Tile types';
+    const navHint=document.createElement('small');navHint.textContent='Open one collection at a time';
+    navHeading.append(navTitle,navHint);
+    tileSkinsTypeNav.replaceChildren(navHeading);
     groups.forEach(([type,skins])=>{
-      const section=document.createElement('section');
-      section.className='tile-skin-group';
-      section.dataset.tileSkinGroup=type;
-      const heading=document.createElement('header');
+      const ownedCount=skins.filter(tileSkinIsOwned).length;
+      const open=activeTileSkinType===type;
+      const button=document.createElement('button');button.type='button';button.className=`tile-skins-type-button${open?' is-open':''}`;
+      button.dataset.tileSkinType=type;
+      button.setAttribute('aria-expanded',String(open));
+      button.setAttribute('aria-controls',`tile-skin-group-${type}`);
+      const mark=document.createElement('span');mark.className='tile-skins-type-button__mark';mark.textContent=skins[0].tileLabel.slice(0,2).toLocaleUpperCase();mark.setAttribute('aria-hidden','true');
+      const copy=document.createElement('span');copy.className='tile-skins-type-button__copy';
+      const label=document.createElement('strong');label.textContent=skins[0].tileLabel;
+      const detail=document.createElement('small');detail.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${ownedCount} owned`;
+      const chevron=document.createElement('span');chevron.className='tile-skins-type-button__chevron';chevron.textContent=open?'−':'+';chevron.setAttribute('aria-hidden','true');
+      copy.append(label,detail);button.append(mark,copy,chevron);
+      button.addEventListener('click',()=>{
+        activeTileSkinType=open?'':type;renderTileSkinShelf();
+        requestAnimationFrame(()=>tileSkinsTypeNav.querySelector(`[data-tile-skin-type="${CSS.escape(type)}"]`)?.focus());
+      });
+      button.addEventListener('keydown',event=>{
+        if(!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+        event.preventDefault();
+        const buttons=[...tileSkinsTypeNav.querySelectorAll('.tile-skins-type-button')];
+        const index=buttons.indexOf(event.currentTarget);
+        const next=event.key==='Home'?buttons[0]:event.key==='End'?buttons.at(-1):buttons[(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length];
+        next?.focus();
+      });
+      tileSkinsTypeNav.appendChild(button);
+    });
+
+    tileSkinsGroups.replaceChildren();
+    const selected=groups.find(([type])=>type===activeTileSkinType);
+    if(selected){
+      const [type,skins]=selected;
+      const section=document.createElement('section');section.className='tile-skin-group is-open';section.dataset.tileSkinGroup=type;section.id=`tile-skin-group-${type}`;
+      const heading=document.createElement('header');heading.className='tile-skin-group__header';
       const headingCopy=document.createElement('div');
+      const eyebrow=document.createElement('span');eyebrow.textContent='TILE TYPE';
       const title=document.createElement('strong');title.textContent=skins[0].tileLabel;
-      const count=document.createElement('small');count.textContent=`${skins.length} ${skins.length===1?'skin':'skins'}`;
-      headingCopy.append(title,count);
-      const tileType=document.createElement('span');tileType.textContent='Tile type';
-      heading.append(headingCopy,tileType);
+      const count=document.createElement('small');
+      const selectedOwned=skins.filter(tileSkinIsOwned).length;
+      count.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${selectedOwned} owned`;
+      headingCopy.append(eyebrow,title,count);
+      const collapse=document.createElement('button');collapse.type='button';collapse.className='tile-skin-group__close';collapse.textContent='−';collapse.setAttribute('aria-label',`Close ${skins[0].tileLabel} Tile Skins`);
+      collapse.addEventListener('click',()=>{activeTileSkinType='';renderTileSkinShelf();requestAnimationFrame(()=>tileSkinsTypeNav.querySelector(`[data-tile-skin-type="${CSS.escape(type)}"]`)?.focus())});
+      heading.append(headingCopy,collapse);
       const grid=document.createElement('div');grid.className='tile-skin-grid';
       skins.forEach(skin=>{
         const owned=tileSkinIsOwned(skin);
@@ -11657,14 +11703,17 @@ function setupCollectionShelf(){
         });
       });
       section.append(heading,grid);tileSkinsGroups.appendChild(section);
-    });
-    if(!matching.length){
+    }else if(!matching.length){
       const empty=document.createElement('div');empty.className='tile-skins-no-results';
-      empty.innerHTML='<strong>No Tile Skins found</strong><small>Try another skin name or tile type.</small>';
+      empty.innerHTML='<span aria-hidden="true">⌕</span><strong>No Tile Skins found</strong><small>Try another search or filter.</small>';
       tileSkinsGroups.appendChild(empty);
+    }else{
+      const closed=document.createElement('div');closed.className='tile-skins-closed-state';
+      closed.innerHTML='<span aria-hidden="true"><i></i><i></i><i></i></span><strong>Choose a tile type</strong><small>Open a collection on the left to see its skins. Select it again to close it.</small>';
+      tileSkinsGroups.appendChild(closed);
     }
     const ownedCount=matching.filter(tileSkinIsOwned).length;
-    if(tileSkinsStatus)tileSkinsStatus.textContent=query?`${matching.length} ${matching.length===1?'skin':'skins'} found`:`${matching.length} ${matching.length===1?'skin':'skins'} · ${ownedCount} owned`;
+    if(tileSkinsStatus)tileSkinsStatus.textContent=`${matching.length} ${matching.length===1?'skin':'skins'} · ${groups.length} ${groups.length===1?'type':'types'} · ${ownedCount} owned`;
     if(tileSkinsSearchClear)tileSkinsSearchClear.hidden=!query;
   };
 
@@ -11880,7 +11929,7 @@ function setupCollectionShelf(){
     shelf.classList.toggle('is-sticker-mode',stickers);
     shelf.classList.toggle('is-tile-skins-mode',tileSkins);
     shelf.classList.toggle('is-cursors-mode',cursors);
-    if(tileSkins)renderTileSkinShelf();
+    if(tileSkins)renderTileSkinShelf({ensureSelection:true});
     if(cursors)renderCursorShelf();
     title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):tileSkins?'Tile Skins':'Cursors';
     shelf.classList.add('is-open');
@@ -11899,14 +11948,15 @@ function setupCollectionShelf(){
   stickerSearch?.addEventListener('input',updateStickerSearch);
   stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
   stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
-  tileSkinsSearch?.addEventListener('input',renderTileSkinShelf);
+  tileSkinsSearch?.addEventListener('input',()=>renderTileSkinShelf({ensureSelection:true}));
   tileSkinsSearch?.addEventListener('keydown',event=>{
     if(event.key!=='Escape')return;
     event.stopPropagation();
-    tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch.focus();
+    tileSkinsSearch.value='';renderTileSkinShelf({ensureSelection:true});tileSkinsSearch.focus();
   });
-  tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf();tileSkinsSearch?.focus()});
-  tileSkinsSort?.addEventListener('change',renderTileSkinShelf);
+  tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf({ensureSelection:true});tileSkinsSearch?.focus()});
+  tileSkinsFilter?.addEventListener('change',()=>renderTileSkinShelf({ensureSelection:true}));
+  tileSkinsSort?.addEventListener('change',()=>renderTileSkinShelf({ensureSelection:true}));
   window.addEventListener('teachertiles:shopownershipchange',()=>{
     syncCollectionOwnership();
     renderTileSkinShelf();
