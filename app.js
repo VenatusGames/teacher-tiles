@@ -11880,7 +11880,13 @@ function setupCollectionShelf(){
     if(skin.id==='magnifier-classic')return makeClassicMagnifierArtwork();
     const art=document.createElement('span');
     art.className=`tile-skin-art tile-skin-art--${skin.id}`;
-    if(skin.id==='youtube-retro-tv')art.innerHTML='<i></i><b><em></em><em></em></b><small></small>';
+    if(skin.id==='youtube-retro-tv'){
+      const image=document.createElement('img');
+      image.src='assets/tile-skins/vintage-tv-frame.png';
+      image.alt='';
+      image.draggable=false;
+      art.appendChild(image);
+    }
     else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
     else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
     else if(skin.tileType==='attendance'&&skin.magnetSrc){const image=document.createElement('img');image.src=skin.magnetSrc;image.alt='';image.draggable=false;art.appendChild(image)}

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-9" />
+  <link rel="stylesheet" href="styles.css?v=20260904-10" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1266,7 +1266,7 @@
             <button class="shop-category shop-category--tile-skins" type="button" data-shop-open-page="tile-skins">
               <span class="shop-category__art shop-category__art--tiles" aria-hidden="true">
                 <span class="shop-category__tile-skin shop-category__tile-skin--magnifier"><span class="classic-magnifier-art"><i></i><b><em>TT</em></b></span></span>
-                <span class="shop-category__tile-skin shop-category__tile-skin--tv"><span class="tile-skin-art tile-skin-art--youtube-retro-tv"><i></i><b><em></em><em></em></b><small></small></span></span>
+                <span class="shop-category__tile-skin shop-category__tile-skin--tv"><span class="tile-skin-art tile-skin-art--youtube-retro-tv"><img src="assets/tile-skins/vintage-tv-frame.png" alt=""></span></span>
                 <span class="shop-category__tile-skin shop-category__tile-skin--clipboard"><span class="tile-skin-art tile-skin-art--todo-clipboard"><i><em></em><em></em><em></em></i><b></b></span></span>
                 <span class="shop-category__tile-skin shop-category__tile-skin--calendar"><span class="tile-skin-art tile-skin-art--calendar-paper-stack"><i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b></span></span>
               </span>
@@ -1365,7 +1365,7 @@
               <div class="shop-product__body"><div><span class="shop-product__type">MAGNIFIER SKIN</span><h3>Classic Magnifying Glass</h3><p>The original round lens, steel rim, and angled handle.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-youtube-retro-tv" data-shop-price="300" data-shop-tile-type="youtube">
-              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--youtube-retro-tv"><i></i><b><em></em><em></em></b><small></small></span></div>
+              <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--youtube-retro-tv"><img src="assets/tile-skins/vintage-tv-frame.png" alt=""></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">YOUTUBE SKIN</span><h3>Vintage Television</h3><p>Woodgrain casing, rounded glass, speaker vents, and tuning knobs.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div>
             </article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-todo-clipboard" data-shop-price="250" data-shop-tile-type="todo">
@@ -2932,6 +2932,7 @@
   <template id="youtube-template">
     <section class="module youtube-module" data-type="youtube" data-bg="white">
       <button class="module-delete" aria-label="Delete YouTube module">×</button><div class="module-drag-handle"></div>
+      <img class="youtube-tv-frame" src="assets/tile-skins/vintage-tv-frame.png" alt="" draggable="false" aria-hidden="true">
       <div class="youtube-stage">
         <iframe class="youtube-frame" title="YouTube video" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
         <div class="youtube-empty"><span class="youtube-play-icon">▶</span><strong>YOUTUBE</strong><span>Paste a video link below</span></div>
@@ -3373,7 +3374,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-10"></script>
+  <script src="app.js?v=20260904-11"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-shop-4"></script>
 
