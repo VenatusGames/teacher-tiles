@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-15" />
+  <link rel="stylesheet" href="styles.css?v=20260904-16" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -3231,18 +3231,22 @@
           <span class="visual-schedule-count">3 activities</span>
         </div>
         <div class="visual-schedule-toolbar" aria-label="Schedule actions">
-          <div class="visual-schedule-row-size" title="Set every schedule row to the same height">
-            <span>All rows</span>
-            <input class="visual-schedule-row-size-input" type="range" min="56" max="220" step="4" value="72" aria-label="Set the height of every schedule row">
-            <output class="visual-schedule-row-size-output">72 px</output>
-            <button class="visual-schedule-row-size-sync" type="button" title="Make every row the selected height" hidden>Match</button>
-          </div>
           <button class="visual-schedule-reset" type="button" title="Set every segment to incomplete"><span aria-hidden="true">↺</span> Reset</button>
         </div>
       </header>
 
-      <div class="visual-schedule-list" aria-label="Schedule segments"></div>
-      <button class="visual-schedule-add" type="button" aria-label="Add schedule segment" title="Add segment"><span aria-hidden="true">+</span> Add segment</button>
+      <div class="visual-schedule-list" aria-label="Schedule segments">
+        <button class="visual-schedule-add" type="button" aria-label="Add schedule segment" title="Add segment"><span aria-hidden="true">+</span> Add segment</button>
+      </div>
+
+      <div class="visual-schedule-scale-dock">
+        <div class="visual-schedule-row-size" title="Set every schedule row to the same height">
+          <span>Scale All</span>
+          <input class="visual-schedule-row-size-input" type="range" min="56" max="220" step="4" value="72" aria-label="Scale all schedule rows">
+          <output class="visual-schedule-row-size-output">72 px</output>
+          <button class="visual-schedule-row-size-sync" type="button" title="Make every row the selected height" hidden>Match</button>
+        </div>
+      </div>
 
       <div class="customization-bar visual-schedule-customization" aria-label="Visual schedule customization">
         <button class="custom-icon visual-schedule-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
@@ -3435,7 +3439,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-15"></script>
+  <script src="app.js?v=20260904-16"></script>
   <script src="lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-shop-4"></script>
 

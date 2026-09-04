@@ -10818,7 +10818,8 @@ function setupVisualSchedule(m){
   const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
-  const ADD_REVEAL_HEIGHT=43;
+  const MIN_ADD_REVEAL_HEIGHT=43;
+  let addRevealHeight=MIN_ADD_REVEAL_HEIGHT;
   let addExpanded=false;
   let restingHeight=0;
 
@@ -10844,28 +10845,31 @@ function setupVisualSchedule(m){
       m.classList.remove('is-measuring-rest');
       const minHeight=parseFloat(getComputedStyle(m).minHeight)||280;
       const viewportHeight=Math.max(minHeight,(innerHeight-96)/boardCamera.scale);
-      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top-ADD_REVEAL_HEIGHT));
+      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top-MIN_ADD_REVEAL_HEIGHT));
       restingHeight=clamp(desired,minHeight,maxHeight);
       if(addExpanded){
+        addRevealHeight=Math.max(MIN_ADD_REVEAL_HEIGHT,desired-restingHeight+MIN_ADD_REVEAL_HEIGHT);
         m._transientRestingHeight=restingHeight;
-        m._resizeDisplayHeightOffset=ADD_REVEAL_HEIGHT;
+        m._resizeDisplayHeightOffset=addRevealHeight;
       }
-      m.style.height=`${restingHeight+(addExpanded?ADD_REVEAL_HEIGHT:0)}px`;
+      m.style.height=`${restingHeight+(addExpanded?addRevealHeight:0)}px`;
     });
   };
 
   const expandAddFooter=()=>{
     if(addExpanded)return;
     restingHeight=m.offsetHeight;
+    addRevealHeight=Math.max(MIN_ADD_REVEAL_HEIGHT,list.scrollHeight-list.clientHeight+MIN_ADD_REVEAL_HEIGHT);
+    addRevealHeight=Math.min(addRevealHeight,Math.max(MIN_ADD_REVEAL_HEIGHT,BOARD_HEIGHT-m.offsetTop-restingHeight));
     addExpanded=true;
     m._transientRestingHeight=restingHeight;
-    m._resizeDisplayHeightOffset=ADD_REVEAL_HEIGHT;
+    m._resizeDisplayHeightOffset=addRevealHeight;
     m.classList.add('is-add-expanded');
-    m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,restingHeight+ADD_REVEAL_HEIGHT)}px`;
+    m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,restingHeight+addRevealHeight)}px`;
   };
   const collapseAddFooter=()=>{
     if(!addExpanded)return;
-    restingHeight=Number(m._transientRestingHeight)||Math.max(300,m.offsetHeight-ADD_REVEAL_HEIGHT);
+    restingHeight=Number(m._transientRestingHeight)||Math.max(300,m.offsetHeight-addRevealHeight);
     addExpanded=false;
     m._resizeDisplayHeightOffset=0;
     m.classList.remove('is-add-expanded');
@@ -10880,7 +10884,7 @@ function setupVisualSchedule(m){
   });
   m._syncTransientResize=()=>{
     if(!addExpanded)return;
-    restingHeight=Math.max(parseFloat(getComputedStyle(m).minHeight)||300,m.offsetHeight-ADD_REVEAL_HEIGHT);
+    restingHeight=Math.max(parseFloat(getComputedStyle(m).minHeight)||300,m.offsetHeight-addRevealHeight);
     m._transientRestingHeight=restingHeight;
   };
   m._afterModuleResize=()=>{
@@ -11072,7 +11076,7 @@ function setupVisualSchedule(m){
       resizeHandle.addEventListener('pointercancel',finish);
     });
 
-    list.appendChild(row);
+    list.insertBefore(row,add);
     syncRowSizeControl();
     autoSize();
     if(focus)requestAnimationFrame(()=>{title.focus();title.select()});
