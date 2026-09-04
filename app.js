@@ -582,7 +582,11 @@ function bindStudentPointerDrag(chip,name,module,onDrop,{ghostClass='',skinId=''
     if(active){
       ghost.hidden=true;
       const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-student-drop-target]');
-      if(target&&module.contains(target))onDrop(target.dataset.studentDropTarget||'');
+      if(target&&module.contains(target))onDrop(target.dataset.studentDropTarget||'',{
+        clientX:event.clientX,
+        clientY:event.clientY,
+        target
+      });
     }
     cleanup();
   };
@@ -1334,7 +1338,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
     interactive:['Interactive Timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Sort a saved class into present and absent'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets from Default to Present'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
@@ -1348,7 +1352,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Clasifica una clase guardada entre presentes y ausentes'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
@@ -2387,22 +2391,22 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({
     id:'attendance-beehive',productId:'tile-skin-attendance-beehive',tileType:'attendance',tileLabel:'Attendance',
     name:'Beehive',description:'Students become busy bees that check in by flying into a warm classroom hive.',
-    tags:'attendance bee bees beehive hive honey garden yellow classroom',released:5
+    tags:'attendance bee bees beehive hive honey garden yellow classroom',magnetSrc:'assets/attendance/bee.png',released:5
   }),
   Object.freeze({
     id:'attendance-monkeys',productId:'tile-skin-attendance-monkeys',tileType:'attendance',tileLabel:'Attendance',
     name:'Monkeys',description:'Students become playful monkeys that check in on a leafy jungle tree.',
-    tags:'attendance monkey monkeys jungle tree forest animal green',released:6
+    tags:'attendance monkey monkeys jungle tree forest animal green',magnetSrc:'assets/attendance/monkey.png',released:6
   }),
   Object.freeze({
     id:'attendance-froggies',productId:'tile-skin-attendance-froggies',tileType:'attendance',tileLabel:'Attendance',
     name:'Froggies',description:'Students become little frogs that hop onto a giant lily pad in the pond.',
-    tags:'attendance frog frogs froggies pond lily pad lilypad water animal',released:7
+    tags:'attendance frog frogs froggies pond lily pad lilypad water animal',magnetSrc:'assets/attendance/froggie.png',released:7
   }),
   Object.freeze({
     id:'attendance-bubble-tea',productId:'tile-skin-attendance-bubble-tea',tileType:'attendance',tileLabel:'Attendance',
     name:'Bubble Tea',description:'Students become boba pearls that drop into a colorful bubble tea cup.',
-    tags:'attendance bubble tea boba pearls drink cup cafe',released:8
+    tags:'attendance bubble tea boba pearls drink cup cafe',magnetSrc:'assets/attendance/boba.png',released:8
   })
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
@@ -8097,92 +8101,170 @@ function setupAttendance(m){
   const resetButton=m.querySelector('.attendance-reset');
   const emptyState=m.querySelector('.attendance-empty-state');
   const statusNode=m.querySelector('.attendance-status');
-  const lists=Object.fromEntries([...m.querySelectorAll('[data-attendance-list]')].map(list=>[list.dataset.attendanceList,list]));
+  const stages=Object.fromEntries([...m.querySelectorAll('[data-attendance-stage]')].map(stage=>[stage.dataset.attendanceStage,stage]));
   const counts=Object.fromEntries([...m.querySelectorAll('[data-attendance-count]')].map(count=>[count.dataset.attendanceCount,count]));
-  const orderedStatuses=['absent','waiting','present'];
+  const orderedStatuses=['default','present'];
+  const skinArt={
+    'attendance-beehive':'assets/attendance/bee.png',
+    'attendance-monkeys':'assets/attendance/monkey.png',
+    'attendance-froggies':'assets/attendance/froggie.png',
+    'attendance-bubble-tea':'assets/attendance/boba.png'
+  };
   let activeClassId='';
   let pendingClassId='';
   let activeClassName='';
   let activeClassLogo='👥';
   let students=[];
   let assignments=Object.create(null);
+  let positions=Object.create(null);
   let arrivingStudent='';
 
-  const normalizeStatus=value=>orderedStatuses.includes(value)?value:'waiting';
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+  const normalizeStatus=value=>value==='present'?'present':'default';
   const normalizeAssignments=(value,names)=>{
     const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
     const next=Object.create(null);
     names.forEach(name=>next[name]=normalizeStatus(source[name]));
     return next;
   };
+  const normalizePositions=(value,names,nextAssignments)=>{
+    const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+    const next=Object.create(null);
+    names.forEach(name=>{
+      const saved=source[name];
+      if(!saved||!Number.isFinite(Number(saved.x))||!Number.isFinite(Number(saved.y)))return;
+      next[name]={
+        zone:normalizeStatus(saved.zone||saved.status||nextAssignments[name]),
+        x:clamp(Number(saved.x),.06,.94),
+        y:clamp(Number(saved.y),.07,.93)
+      };
+      if(next[name].zone!==nextAssignments[name])next[name].zone=nextAssignments[name];
+    });
+    return next;
+  };
+  const gridPosition=(index,total)=>{
+    const columns=total<=8?3:total<=16?4:total<=25?5:6;
+    const rows=Math.max(1,Math.ceil(total/columns));
+    const column=index%columns;
+    const row=Math.floor(index/columns);
+    return{
+      x:columns===1?.5:.1+(column/(columns-1))*.8,
+      y:rows===1?.5:.1+(row/(rows-1))*.8
+    };
+  };
+  const ensurePositions=grouped=>{
+    orderedStatuses.forEach(status=>grouped[status].forEach((name,index)=>{
+      const saved=positions[name];
+      if(saved&&saved.zone===status)return;
+      positions[name]={zone:status,...gridPosition(index,grouped[status].length)};
+    }));
+  };
   const currentRoster=id=>readClassRosters().find(item=>item.id===id)||null;
   const setRoster=(roster,{reset=false,notify=true}={})=>{
     if(!roster)return false;
     const nextStudents=normalizeRosterNames(roster.students);
-    const prior=assignments;
+    const priorAssignments=assignments;
+    const priorPositions=positions;
     activeClassId=String(roster.id||'');
     pendingClassId='';
     activeClassName=String(roster.name||'Class').trim()||'Class';
     activeClassLogo=normalizeClassLogo(roster.logo);
     students=nextStudents;
-    assignments=reset?normalizeAssignments({},students):normalizeAssignments(prior,students);
+    assignments=reset?normalizeAssignments({},students):normalizeAssignments(priorAssignments,students);
+    positions=reset?Object.create(null):normalizePositions(priorPositions,students,assignments);
     render();
     if(notify)notifyBoardChanged('attendance-class');
     return true;
   };
-  const assign=(name,status)=>{
+  const openPosition=(name,status)=>{
+    const peers=students.filter(student=>student!==name&&normalizeStatus(assignments[student])===status);
+    return{zone:status,...gridPosition(peers.length,peers.length+1)};
+  };
+  const positionFromDrop=(name,status,detail)=>{
+    const stage=stages[status];
+    if(!stage||!detail||!Number.isFinite(detail.clientX)||!Number.isFinite(detail.clientY))return openPosition(name,status);
+    const rect=stage.getBoundingClientRect();
+    if(!rect.width||!rect.height)return openPosition(name,status);
+    const baseX=clamp((detail.clientX-rect.left)/rect.width,.06,.94);
+    const baseY=clamp((detail.clientY-rect.top)/rect.height,.07,.93);
+    const peers=students.filter(student=>student!==name&&normalizeStatus(assignments[student])===status).map(student=>positions[student]).filter(Boolean);
+    const minDistance=m.dataset.attendanceDensity==='dense'?42:m.dataset.attendanceDensity==='compact'?49:57;
+    for(let attempt=0;attempt<42;attempt++){
+      const ring=Math.ceil(attempt/6);
+      const angle=attempt*2.399963;
+      const radius=ring*15;
+      const x=clamp(baseX+(Math.cos(angle)*radius)/rect.width,.06,.94);
+      const y=clamp(baseY+(Math.sin(angle)*radius)/rect.height,.07,.93);
+      const collides=peers.some(peer=>Math.hypot((peer.x-x)*rect.width,(peer.y-y)*rect.height)<minDistance);
+      if(!collides)return{zone:status,x,y};
+    }
+    return{zone:status,x:baseX,y:baseY};
+  };
+  const place=(name,status,detail)=>{
     if(!students.includes(name))return;
     const next=normalizeStatus(status);
-    if(assignments[name]===next)return;
+    const changedColumn=assignments[name]!==next;
+    const nextPosition=positionFromDrop(name,next,detail);
+    const prior=positions[name];
+    if(!changedColumn&&prior&&Math.abs(prior.x-nextPosition.x)<.001&&Math.abs(prior.y-nextPosition.y)<.001)return;
     assignments[name]=next;
-    arrivingStudent=name;
+    positions[name]=nextPosition;
+    arrivingStudent=changedColumn?name:'';
     render();
     arrivingStudent='';
-    notifyBoardChanged('attendance-status');
+    notifyBoardChanged(changedColumn?'attendance-status':'attendance-position');
   };
   const makeStudent=(name,status)=>{
     const chip=document.createElement('div');
     chip.className=`attendance-student${arrivingStudent===name?' is-arriving':''}`;
+    chip.dataset.studentName=name;
     chip.tabIndex=0;
     chip.setAttribute('role','button');
-    chip.setAttribute('aria-label',`${name}: ${status}. Drag to another column, or use the left and right arrow keys.`);
-    chip.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight A P W');
-    chip.title='Drag to a column · Arrow keys move · A absent · P present · W waiting';
-    const art=document.createElement('span');art.className='attendance-student-art';art.setAttribute('aria-hidden','true');art.innerHTML='<i></i><b></b><em></em>';
+    chip.setAttribute('aria-label',`${name}: ${status==='present'?'present':'not checked in'}. Drag anywhere in either side, or use the left and right arrow keys.`);
+    chip.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight D P');
+    chip.title='Drag this magnet anywhere · D default · P present';
+    const art=document.createElement('span');art.className='attendance-student-art';art.setAttribute('aria-hidden','true');
+    const asset=skinArt[m.dataset.tileSkin||''];
+    if(asset){
+      const image=document.createElement('img');image.src=asset;image.alt='';image.draggable=false;art.appendChild(image);
+    }else art.innerHTML='<i></i><b></b>';
     const label=document.createElement('span');label.className='attendance-student-name';label.textContent=name;
     chip.append(art,label);
+    const position=positions[name]||{x:.5,y:.5};
+    chip.style.left=`${position.x*100}%`;
+    chip.style.top=`${position.y*100}%`;
+    const tilt=[...name].reduce((total,letter)=>total+letter.codePointAt(0),0)%7-3;
+    chip.style.setProperty('--attendance-tilt',`${tilt}deg`);
     chip.addEventListener('keydown',event=>{
       let next='';
-      const index=orderedStatuses.indexOf(status);
-      if(event.key==='ArrowLeft')next=orderedStatuses[Math.max(0,index-1)];
-      else if(event.key==='ArrowRight')next=orderedStatuses[Math.min(orderedStatuses.length-1,index+1)];
-      else if(event.key.toLocaleLowerCase()==='a')next='absent';
+      if(event.key==='ArrowLeft'||event.key.toLocaleLowerCase()==='d')next='default';
+      else if(event.key==='ArrowRight')next='present';
       else if(event.key.toLocaleLowerCase()==='p')next='present';
-      else if(event.key.toLocaleLowerCase()==='w')next='waiting';
-      else if(event.key==='Enter'||event.key===' ')next=status==='waiting'?'present':'waiting';
+      else if(event.key==='Enter'||event.key===' ')next=status==='default'?'present':'default';
       if(!next||next===status)return;
-      event.preventDefault();event.stopPropagation();assign(name,next);
-      requestAnimationFrame(()=>[...m.querySelectorAll('.attendance-student')].find(item=>item.querySelector('.attendance-student-name')?.textContent===name)?.focus({preventScroll:true}));
+      event.preventDefault();event.stopPropagation();place(name,next);
+      requestAnimationFrame(()=>[...m.querySelectorAll('.attendance-student')].find(item=>item.dataset.studentName===name)?.focus({preventScroll:true}));
     });
-    bindStudentPointerDrag(chip,name,m,target=>assign(name,target),{ghostClass:'attendance-student-ghost',skinId:m.dataset.tileSkin||''});
+    bindStudentPointerDrag(chip,name,m,(target,detail)=>place(name,target,detail),{ghostClass:'attendance-student-ghost',skinId:m.dataset.tileSkin||''});
     return chip;
   };
   function render(){
-    const grouped={absent:[],waiting:[],present:[]};
+    const grouped={default:[],present:[]};
     students.forEach(name=>grouped[normalizeStatus(assignments[name])].push(name));
+    ensurePositions(grouped);
+    m.dataset.attendanceDensity=students.length>24?'dense':students.length>12?'compact':'comfortable';
     orderedStatuses.forEach(status=>{
-      const list=lists[status];if(!list)return;
-      list.replaceChildren();
-      grouped[status].forEach(name=>list.appendChild(makeStudent(name,status)));
+      const stage=stages[status];if(!stage)return;
+      stage.replaceChildren();
+      grouped[status].forEach(name=>stage.appendChild(makeStudent(name,status)));
       if(!grouped[status].length){
-        const hint=document.createElement('span');hint.className='attendance-column-empty';
-        hint.textContent=status==='waiting'?(students.length?'Everyone is sorted':'Class roster appears here'):status==='present'?'Drag present students here':'Drag absent students here';
-        list.appendChild(hint);
+        const hint=document.createElement('span');hint.className='attendance-stage-empty';
+        hint.textContent=status==='present'?'Drop students anywhere here':students.length?'Every student is present':'No students in this class';
+        stage.appendChild(hint);
       }
       if(counts[status])counts[status].textContent=String(grouped[status].length);
     });
-    const hasClass=Boolean(activeClassId);
-    const checked=grouped.present.length+grouped.absent.length;
+    const hasClass=Boolean(activeClassId||students.length);
     m.classList.toggle('has-attendance-class',hasClass);
     m.dataset.attendanceReady=String(hasClass);
     classNameNode.textContent=hasClass?activeClassName:'No class loaded';
@@ -8191,16 +8273,16 @@ function setupAttendance(m){
     summaryLabel.textContent='present';
     emptyState.hidden=hasClass;
     resetButton.hidden=!hasClass;
-    resetButton.disabled=!students.some(name=>normalizeStatus(assignments[name])!=='waiting');
-    statusNode.textContent=!hasClass?'Choose a saved class above to begin.':!students.length?'This class does not have any students yet.':checked===students.length?`Check-in complete · ${grouped.present.length} present · ${grouped.absent.length} absent`:`${students.length-checked} waiting · ${grouped.present.length} present · ${grouped.absent.length} absent`;
+    resetButton.disabled=!students.length;
+    statusNode.textContent=!hasClass?'Choose a saved class above to begin.':!students.length?'This class does not have any students yet.':grouped.present.length===students.length?`Check-in complete · all ${students.length} students present`:`${grouped.default.length} not checked in · ${grouped.present.length} present`;
   }
 
   resetButton.addEventListener('click',()=>{
     assignments=normalizeAssignments({},students);
+    positions=Object.create(null);
     render();
     notifyBoardChanged('attendance-reset');
   });
-  Object.values(lists).forEach(list=>list?.addEventListener('wheel',event=>event.stopPropagation(),{passive:true}));
   m.querySelector('.attendance-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.attendance-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.attendance-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -8219,7 +8301,11 @@ function setupAttendance(m){
     className:activeClassName,
     classLogo:activeClassLogo,
     students:[...students],
-    assignments:{...assignments}
+    assignments:{...assignments},
+    positions:Object.fromEntries(students.map(name=>{
+      const position=positions[name]||{zone:normalizeStatus(assignments[name]),x:.5,y:.5};
+      return[name,{zone:normalizeStatus(position.zone),x:Number(position.x.toFixed(4)),y:Number(position.y.toFixed(4))}];
+    }))
   });
   m._boardSetState=state=>{
     if(!state)return;
@@ -8229,6 +8315,7 @@ function setupAttendance(m){
     if(roster){
       setRoster(roster,{reset:true,notify:false});
       assignments=normalizeAssignments(state.assignments,students);
+      positions=normalizePositions(state.positions,students,assignments);
     }else{
       activeClassId=classId;
       pendingClassId=classId;
@@ -8236,6 +8323,7 @@ function setupAttendance(m){
       activeClassLogo=normalizeClassLogo(state.classLogo);
       students=savedStudents;
       assignments=normalizeAssignments(state.assignments,students);
+      positions=normalizePositions(state.positions,students,assignments);
     }
     render();
   };
@@ -11535,7 +11623,7 @@ function setupCollectionShelf(){
     if(skin.id==='youtube-retro-tv')art.innerHTML='<i></i><b><em></em><em></em></b><small></small>';
     else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
     else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
-    else if(skin.tileType==='attendance')art.innerHTML='<i></i><b><em></em><em></em><em></em></b><small></small>';
+    else if(skin.tileType==='attendance'&&skin.magnetSrc){const image=document.createElement('img');image.src=skin.magnetSrc;image.alt='';image.draggable=false;art.appendChild(image)}
     return art;
   };
 
@@ -11592,6 +11680,16 @@ function setupCollectionShelf(){
     });
   };
 
+  const tileSkinTypeIdentity=(type,skins=[])=>{
+    const source=menu?.querySelector(`[data-module="${CSS.escape(type)}"]`);
+    const sourceName=source?.querySelector('strong')?.textContent?.trim();
+    const icon=source?.querySelector('.context-menu__icon')?.cloneNode(true)||null;
+    if(icon){
+      icon.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+      icon.setAttribute('aria-hidden','true');
+    }
+    return{name:sourceName||skins[0]?.tileLabel||type,icon};
+  };
   const normalizeTileSkinSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
   const renderTileSkinShelf=(options={})=>{
     if(!tileSkinsGroups||!tileSkinsTypeNav)return;
@@ -11619,13 +11717,15 @@ function setupCollectionShelf(){
     groups.forEach(([type,skins])=>{
       const ownedCount=skins.filter(tileSkinIsOwned).length;
       const open=activeTileSkinType===type;
+      const identity=tileSkinTypeIdentity(type,skins);
       const button=document.createElement('button');button.type='button';button.className=`tile-skins-type-button${open?' is-open':''}`;
       button.dataset.tileSkinType=type;
       button.setAttribute('aria-expanded',String(open));
       button.setAttribute('aria-controls',`tile-skin-group-${type}`);
-      const mark=document.createElement('span');mark.className='tile-skins-type-button__mark';mark.textContent=skins[0].tileLabel.slice(0,2).toLocaleUpperCase();mark.setAttribute('aria-hidden','true');
+      const mark=document.createElement('span');mark.className='tile-skins-type-button__mark';mark.setAttribute('aria-hidden','true');
+      if(identity.icon)mark.appendChild(identity.icon);else mark.textContent=identity.name.slice(0,2).toLocaleUpperCase();
       const copy=document.createElement('span');copy.className='tile-skins-type-button__copy';
-      const label=document.createElement('strong');label.textContent=skins[0].tileLabel;
+      const label=document.createElement('strong');label.textContent=identity.name;
       const detail=document.createElement('small');detail.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${ownedCount} owned`;
       const chevron=document.createElement('span');chevron.className='tile-skins-type-button__chevron';chevron.textContent=open?'−':'+';chevron.setAttribute('aria-hidden','true');
       copy.append(label,detail);button.append(mark,copy,chevron);
@@ -11648,16 +11748,17 @@ function setupCollectionShelf(){
     const selected=groups.find(([type])=>type===activeTileSkinType);
     if(selected){
       const [type,skins]=selected;
+      const identity=tileSkinTypeIdentity(type,skins);
       const section=document.createElement('section');section.className='tile-skin-group is-open';section.dataset.tileSkinGroup=type;section.id=`tile-skin-group-${type}`;
       const heading=document.createElement('header');heading.className='tile-skin-group__header';
       const headingCopy=document.createElement('div');
       const eyebrow=document.createElement('span');eyebrow.textContent='TILE TYPE';
-      const title=document.createElement('strong');title.textContent=skins[0].tileLabel;
+      const title=document.createElement('strong');title.textContent=identity.name;
       const count=document.createElement('small');
       const selectedOwned=skins.filter(tileSkinIsOwned).length;
       count.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${selectedOwned} owned`;
       headingCopy.append(eyebrow,title,count);
-      const collapse=document.createElement('button');collapse.type='button';collapse.className='tile-skin-group__close';collapse.textContent='−';collapse.setAttribute('aria-label',`Close ${skins[0].tileLabel} Tile Skins`);
+      const collapse=document.createElement('button');collapse.type='button';collapse.className='tile-skin-group__close';collapse.textContent='−';collapse.setAttribute('aria-label',`Close ${identity.name} Tile Skins`);
       collapse.addEventListener('click',()=>{activeTileSkinType='';renderTileSkinShelf();requestAnimationFrame(()=>tileSkinsTypeNav.querySelector(`[data-tile-skin-type="${CSS.escape(type)}"]`)?.focus())});
       heading.append(headingCopy,collapse);
       const grid=document.createElement('div');grid.className='tile-skin-grid';
@@ -11965,6 +12066,7 @@ function setupCollectionShelf(){
   });
   window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
   window.addEventListener('teachertiles:cursorchange',renderCursorShelf);
+  window.addEventListener('teachertiles:languagechange',()=>renderTileSkinShelf());
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>applyTeacherTheme(card.dataset.themeChoice));

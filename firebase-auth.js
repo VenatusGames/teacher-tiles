@@ -1667,16 +1667,26 @@ function compactPreviewObject(object) {
       .filter(Boolean)
       .slice(0, 36);
     const assignments = {};
+    const positions = {};
     for (const name of students) {
       const status = object.special.assignments?.[name];
-      assignments[name] = status === "absent" || status === "present" ? status : "waiting";
+      assignments[name] = status === "present" ? "present" : "default";
+      const saved = object.special.positions?.[name];
+      if (saved && Number.isFinite(Number(saved.x)) && Number.isFinite(Number(saved.y))) {
+        positions[name] = {
+          zone: assignments[name],
+          x: Math.max(0.06, Math.min(0.94, Number(saved.x))),
+          y: Math.max(0.07, Math.min(0.93, Number(saved.y)))
+        };
+      }
     }
     preview.special = {
       classId: String(object.special.classId || "").slice(0, 180),
       className: String(object.special.className || "Class").slice(0, 100),
       classLogo: String(object.special.classLogo || "👥").slice(0, 16),
       students,
-      assignments
+      assignments,
+      positions
     };
   }
 
@@ -2855,15 +2865,15 @@ function applyPreviewState(module, state) {
   }
 
   if (state.type === "attendance" && special) {
-    const statuses = ["absent", "waiting", "present"];
+    const statuses = ["default", "present"];
     const students = (Array.isArray(special.students) ? special.students : [])
       .map(name => String(name || "").trim())
       .filter(Boolean)
       .slice(0, 36);
-    const grouped = { absent: [], waiting: [], present: [] };
+    const grouped = { default: [], present: [] };
     for (const name of students) {
       const saved = special.assignments?.[name];
-      grouped[saved === "absent" || saved === "present" ? saved : "waiting"].push(name);
+      grouped[saved === "present" ? "present" : "default"].push(name);
     }
     const hasClass = Boolean(special.classId || students.length);
     module.classList.toggle("has-attendance-class", hasClass);
@@ -2871,33 +2881,63 @@ function applyPreviewState(module, state) {
     setPreviewText(module, ".attendance-class-name", hasClass ? (special.className || "Class") : "No class loaded");
     setPreviewText(module, ".attendance-class-logo", hasClass ? (special.classLogo || "👥") : "👥");
     setPreviewText(module, ".attendance-summary strong", `${grouped.present.length}/${students.length}`);
-    setPreviewText(module, ".attendance-status", hasClass ? `${grouped.waiting.length} waiting · ${grouped.present.length} present · ${grouped.absent.length} absent` : "Choose a saved class above to begin.");
+    setPreviewText(module, ".attendance-status", hasClass ? `${grouped.default.length} not checked in · ${grouped.present.length} present` : "Choose a saved class above to begin.");
     const emptyState = module.querySelector(".attendance-empty-state");
     if (emptyState) emptyState.hidden = hasClass;
     const reset = module.querySelector(".attendance-reset");
     if (reset) reset.hidden = true;
+    module.dataset.attendanceDensity = students.length > 24 ? "dense" : students.length > 12 ? "compact" : "comfortable";
+    const assets = {
+      "attendance-beehive": "assets/attendance/bee.png",
+      "attendance-monkeys": "assets/attendance/monkey.png",
+      "attendance-froggies": "assets/attendance/froggie.png",
+      "attendance-bubble-tea": "assets/attendance/boba.png"
+    };
+    const asset = assets[module.dataset.tileSkin || ""] || "";
+    const fallbackPosition = (index, total) => {
+      const columns = total <= 8 ? 3 : total <= 16 ? 4 : total <= 25 ? 5 : 6;
+      const rows = Math.max(1, Math.ceil(total / columns));
+      return {
+        x: columns === 1 ? 0.5 : 0.1 + ((index % columns) / (columns - 1)) * 0.8,
+        y: rows === 1 ? 0.5 : 0.1 + (Math.floor(index / columns) / (rows - 1)) * 0.8
+      };
+    };
     for (const status of statuses) {
-      const list = module.querySelector(`[data-attendance-list="${status}"]`);
+      const list = module.querySelector(`[data-attendance-stage="${status}"]`);
       const count = module.querySelector(`[data-attendance-count="${status}"]`);
       if (count) count.textContent = String(grouped[status].length);
       if (!list) continue;
       list.replaceChildren();
-      for (const name of grouped[status]) {
+      grouped[status].forEach((name, index) => {
         const chip = document.createElement("span");
         chip.className = "attendance-student";
         const art = document.createElement("span");
         art.className = "attendance-student-art";
-        art.innerHTML = "<i></i><b></b><em></em>";
+        if (asset) {
+          const image = document.createElement("img");
+          image.src = asset;
+          image.alt = "";
+          art.appendChild(image);
+        } else art.innerHTML = "<i></i><b></b>";
         const label = document.createElement("span");
         label.className = "attendance-student-name";
         label.textContent = name;
+        const saved = special.positions?.[name];
+        const position = saved && Number.isFinite(Number(saved.x)) && Number.isFinite(Number(saved.y)) ? {
+          x: Math.max(0.06, Math.min(0.94, Number(saved.x))),
+          y: Math.max(0.07, Math.min(0.93, Number(saved.y)))
+        } : fallbackPosition(index, grouped[status].length);
+        chip.style.left = `${position.x * 100}%`;
+        chip.style.top = `${position.y * 100}%`;
+        const tilt = [...name].reduce((total, letter) => total + letter.codePointAt(0), 0) % 7 - 3;
+        chip.style.setProperty("--attendance-tilt", `${tilt}deg`);
         chip.append(art, label);
         list.appendChild(chip);
-      }
+      });
       if (!grouped[status].length) {
         const hint = document.createElement("span");
-        hint.className = "attendance-column-empty";
-        hint.textContent = status === "waiting" ? "Everyone is sorted" : status === "present" ? "Present" : "Absent";
+        hint.className = "attendance-stage-empty";
+        hint.textContent = status === "present" ? "Drop students anywhere here" : "Every student is present";
         list.appendChild(hint);
       }
     }
