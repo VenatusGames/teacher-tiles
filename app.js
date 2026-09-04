@@ -2473,12 +2473,14 @@ function applyAppCursor(id,{persist=true}={}){
   if(cursor.id==='default'){
     cursorRoot.style.removeProperty('--teacher-cursor-normal');
     cursorRoot.style.removeProperty('--teacher-cursor-point');
+    cursorRoot.style.removeProperty('--teacher-cursor-open');
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=2`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=3`,document.baseURI).href;
     cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
     cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
+    cursorRoot.style.setProperty('--teacher-cursor-open',`url("${asset('open')}") 12 12`);
     cursorRoot.style.setProperty('--teacher-cursor-grab',`url("${asset('grab')}") 12 12`);
   }
   window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
@@ -11189,13 +11191,13 @@ function setupCollectionShelf(){
       if(cursor.id==='default'){
         const arrow=document.createElement('img');arrow.className='cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--default';arrow.src='assets/cursors/default-normal.png?v=1';arrow.alt='';arrow.draggable=false;return arrow;
       }
-      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=2`;arrow.alt='';arrow.draggable=false;return arrow;
+      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=3`;arrow.alt='';arrow.draggable=false;return arrow;
     };
     const makePack=(label,detail,cursors,{locked=false,onClick}={})=>{
       const wrapper=document.createElement('div');wrapper.className=`cursor-pack-wrap${locked?' is-shop-locked':''}`;
       const pack=document.createElement('button');pack.type='button';pack.className='theme-pack cursor-pack';pack.setAttribute('aria-expanded','false');
       const stack=document.createElement('span');stack.className='cursor-pack__stack';stack.setAttribute('aria-hidden','true');
-      const previewStates=['grab','point','normal','grab','point'];
+      const previewStates=['open','point','normal','grab','point'];
       cursors.forEach((cursor,index)=>stack.appendChild(makeArrow(cursor,cursors.length>1?previewStates[index%previewStates.length]:'normal')));
       const meta=document.createElement('span');meta.className='theme-pack__meta';meta.innerHTML=`<strong>${label}</strong><small>${detail}</small>`;
       pack.append(stack,meta);
