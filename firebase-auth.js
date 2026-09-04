@@ -2923,7 +2923,7 @@ function applyPreviewState(module, state) {
   const controls = [...module.querySelectorAll("input,textarea,select")];
   for (const saved of Array.isArray(state.fields) ? state.fields : []) {
     const field = controls[saved.index];
-    if (!field) continue;
+    if (!field || (field instanceof HTMLInputElement && field.type === "file")) continue;
     if (typeof saved.value === "string") field.value = saved.value;
     if (saved.checked !== undefined && "checked" in field) field.checked = Boolean(saved.checked);
     field.tabIndex = -1;
