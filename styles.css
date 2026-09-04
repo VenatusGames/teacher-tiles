@@ -4877,10 +4877,10 @@ body.dark .upcoming-control__tooltip{
   top:18px;
   min-height:34px;
   padding:0 15px;
-  border:1px solid color-mix(in srgb,var(--text) 16%,transparent);
+  border:1px solid color-mix(in srgb,#d93f50 35%,transparent);
   border-radius:999px;
-  background:color-mix(in srgb,var(--surface-solid) 94%,transparent);
-  color:var(--text);
+  background:color-mix(in srgb,var(--surface-solid) 92%,#d93f50 8%);
+  color:#d93f50;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -5392,7 +5392,7 @@ body.dark .visual-schedule-icon-option{
 .visual-schedule-heading{min-width:0;display:flex;flex-direction:column;gap:3px}
 .visual-schedule-title{padding:0;border:0;font-size:clamp(19px,5.8cqw,27px);line-height:1.02}
 .visual-schedule-count{font-size:9px;font-weight:800;letter-spacing:.045em;opacity:.48}
-.visual-schedule-toolbar{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.visual-schedule-toolbar{display:flex;align-items:center;gap:6px;flex:0 0 auto;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(2px);transition:opacity .13s ease,visibility .13s ease,transform .13s ease}
 .visual-schedule-toolbar button{
   height:31px;
   padding:0 10px;
@@ -5403,12 +5403,19 @@ body.dark .visual-schedule-icon-option{
   cursor:pointer;
   transition:transform .13s ease,background .13s ease,border-color .13s ease,opacity .13s ease;
 }
+.visual-schedule-module:hover .visual-schedule-toolbar,
+body.is-keyboard-navigation .visual-schedule-toolbar:focus-within{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.visual-schedule-scale-all{height:31px;display:flex;align-items:center;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 14%,transparent);border-radius:9px;overflow:hidden;background:color-mix(in srgb,var(--module-bg,#fff) 94%,var(--module-text,#17191d) 6%)}
+.visual-schedule-scale-all button{width:27px;padding:0;border:0;border-radius:0;background:transparent;font-size:15px}
+.visual-schedule-scale-all span{padding:0 5px;font-size:8px;font-weight:850;letter-spacing:.025em;opacity:.55;white-space:nowrap}
 .visual-schedule-reset{background:transparent}
 .visual-schedule-reset:disabled{opacity:.3;cursor:default}
-.visual-schedule-add{width:auto;min-height:31px;align-self:auto;display:flex;gap:5px;background:var(--module-text,#17191d)!important;color:var(--module-bg,#fff)!important;border-color:transparent!important;font-size:9px;transform:none}
+.visual-schedule-add{width:auto;min-height:31px;align-self:center;display:flex;gap:5px;background:var(--module-text,#17191d)!important;color:var(--module-bg,#fff)!important;border-color:transparent!important;border-radius:9px!important;padding:0 12px!important;font-size:9px;transform:translateY(-2px);opacity:0;visibility:hidden;pointer-events:none;flex:0 0 31px}
 .visual-schedule-add>span{font-size:15px;line-height:1;font-weight:600}
 .visual-schedule-toolbar button:not(:disabled):hover{transform:translateY(-1px);background:color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 22%)}
 .visual-schedule-add:hover{transform:translateY(-1px)}
+.visual-schedule-module:hover .visual-schedule-add,
+body.is-keyboard-navigation .visual-schedule-add:focus-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
 .visual-schedule-list{
   flex:1 1 auto;
   min-height:0;
@@ -5418,9 +5425,10 @@ body.dark .visual-schedule-icon-option{
   padding:1px 3px 3px 1px;
 }
 .visual-schedule-segment{
-  --visual-segment-size:68px;
+  --visual-segment-size:72px;
+  --visual-image-size:clamp(44px,min(calc(var(--visual-segment-size) - 12px),30cqw),150px);
   flex:0 0 auto;
-  grid-template-columns:clamp(34px,calc(var(--visual-segment-size) - 10px),210px) minmax(0,1fr) auto;
+  grid-template-columns:var(--visual-image-size) minmax(76px,1fr) auto;
   grid-template-rows:minmax(0,1fr) minmax(0,1fr);
   min-height:var(--visual-segment-size);
   height:var(--visual-segment-size);
@@ -5431,8 +5439,8 @@ body.dark .visual-schedule-icon-option{
   cursor:default;
 }
 .visual-schedule-image{
-  width:clamp(34px,calc(var(--visual-segment-size) - 10px),210px);
-  height:clamp(34px,calc(var(--visual-segment-size) - 10px),210px);
+  width:var(--visual-image-size);
+  height:var(--visual-image-size);
   padding:3px;
   border-radius:9px;
 }
@@ -5474,7 +5482,7 @@ body.dark .visual-schedule-icon-option{
 @container (max-width:390px){
   .visual-schedule-header{align-items:stretch;flex-direction:column;gap:7px}
   .visual-schedule-toolbar{justify-content:flex-end}
-  .visual-schedule-segment{grid-template-columns:clamp(34px,calc(var(--visual-segment-size) - 10px),150px) minmax(0,1fr) auto}
+  .visual-schedule-segment{--visual-image-size:clamp(44px,min(calc(var(--visual-segment-size) - 12px),26cqw),105px);grid-template-columns:var(--visual-image-size) minmax(62px,1fr) auto}
   .visual-schedule-complete,.visual-schedule-segment-actions .visual-schedule-remove{width:24px;min-width:24px;height:24px;min-height:24px}
 }
 

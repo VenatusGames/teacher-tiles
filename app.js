@@ -1125,6 +1125,8 @@ const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
 const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
 holePunchSfxPrototype.preload='auto';
+const stickerPlaceSfxPrototype=new Audio('assets/ui/sticker-place.wav');
+stickerPlaceSfxPrototype.preload='auto';
 
 function persistAppPreferences(){
   try{localStorage.setItem(APP_PREFERENCES_KEY,JSON.stringify(appPreferences))}catch{}
@@ -1144,11 +1146,11 @@ function boardPreferenceSnapshot(){
 function playUiSfx(kind='click'){
   if(appPreferences.uiMuted)return;
   try{
-    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:uiSfxPrototype;
+    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='collection'?.18:.11;
+    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
     sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
-    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
   }catch{}
@@ -10802,13 +10804,14 @@ function setupVisualSchedule(m){
   const add=m.querySelector('.visual-schedule-add');
   const reset=m.querySelector('.visual-schedule-reset');
   const count=m.querySelector('.visual-schedule-count');
+  const scaleDown=m.querySelector('.visual-schedule-scale-down');
+  const scaleUp=m.querySelector('.visual-schedule-scale-up');
   const picker=m.querySelector('.visual-schedule-picker');
   const pickerGrid=m.querySelector('.visual-schedule-picker__grid');
   const pickerClose=m.querySelector('.visual-schedule-picker__close');
   const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
-  let lastObservedWidth=0;
 
   m.querySelector('.visual-schedule-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.visual-schedule-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
@@ -10914,13 +10917,14 @@ function setupVisualSchedule(m){
   },{passive:true});
 
   const setSegmentSize=(row,value)=>{
-    const size=clamp(Math.round(Number(value)||68),44,220);
+    const size=clamp(Math.round(Number(value)||72),56,220);
     row.dataset.segmentSize=String(size);
     row.style.setProperty('--visual-segment-size',`${size}px`);
   };
 
   const addSegment=(data={},focus=false)=>{
-    const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(list.children.length%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
+    const segmentCount=list.querySelectorAll('.visual-schedule-segment').length;
+    const fallbackIcon=VISUAL_SCHEDULE_ICONS[data.iconIndex??(segmentCount%VISUAL_SCHEDULE_ICONS.length)]||VISUAL_SCHEDULE_ICONS[0];
     const icon=resolveVisualScheduleIcon(data.iconSrc)||(typeof data.iconSrc==='string'&&data.iconSrc.startsWith('data:image/')?{src:data.iconSrc,label:'Custom image'}:fallbackIcon);
     const row=document.createElement('div');
     row.className='visual-schedule-segment';
@@ -10972,7 +10976,7 @@ function setupVisualSchedule(m){
     resizeHandle.addEventListener('keydown',event=>{
       if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
       event.preventDefault();
-      setSegmentSize(row,(Number(row.dataset.segmentSize)||68)+(event.key==='ArrowDown'?8:-8));
+      setSegmentSize(row,(Number(row.dataset.segmentSize)||72)+(event.key==='ArrowDown'?8:-8));
       autoSize();
       notifyBoardChanged('visual-schedule-resize');
     });
@@ -10981,20 +10985,20 @@ function setupVisualSchedule(m){
       event.preventDefault();
       event.stopPropagation();
       const startY=event.clientY;
-      const startSize=Number(row.dataset.segmentSize)||68;
+      const startSize=Number(row.dataset.segmentSize)||72;
       resizeHandle.setPointerCapture(event.pointerId);
 
       const move=moveEvent=>{
         moveEvent.preventDefault();
         moveEvent.stopPropagation();
         setSegmentSize(row,startSize+(moveEvent.clientY-startY)/boardCamera.scale);
-        autoSize();
       };
       const finish=finishEvent=>{
         finishEvent.stopPropagation();
         resizeHandle.removeEventListener('pointermove',move);
         resizeHandle.removeEventListener('pointerup',finish);
         resizeHandle.removeEventListener('pointercancel',finish);
+        autoSize();
         notifyBoardChanged('visual-schedule-resize');
       };
 
@@ -11003,7 +11007,7 @@ function setupVisualSchedule(m){
       resizeHandle.addEventListener('pointercancel',finish);
     });
 
-    list.appendChild(row);
+    list.insertBefore(row,add);
     autoSize();
     if(focus)requestAnimationFrame(()=>{title.focus();title.select()});
   };
@@ -11012,6 +11016,15 @@ function setupVisualSchedule(m){
     addSegment({},true);
     notifyBoardChanged('visual-schedule-add');
   });
+  const scaleAllSegments=delta=>{
+    const rows=[...list.querySelectorAll('.visual-schedule-segment')];
+    if(!rows.length)return;
+    rows.forEach(row=>setSegmentSize(row,(Number(row.dataset.segmentSize)||72)+delta));
+    autoSize();
+    notifyBoardChanged('visual-schedule-resize-all');
+  };
+  scaleDown.addEventListener('click',()=>scaleAllSegments(-8));
+  scaleUp.addEventListener('click',()=>scaleAllSegments(8));
   reset.addEventListener('click',()=>{
     const completed=[...list.querySelectorAll('.visual-schedule-segment.is-complete')];
     if(!completed.length)return;
@@ -11032,30 +11045,20 @@ function setupVisualSchedule(m){
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
     iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
     complete:row.classList.contains('is-complete'),
-    size:Number(row.dataset.segmentSize)||68
+    size:Number(row.dataset.segmentSize)||72
   }))});
   m._boardSetState=state=>{
     closePicker();
-    list.replaceChildren();
+    list.querySelectorAll('.visual-schedule-segment').forEach(row=>row.remove());
     const segments=Array.isArray(state?.segments)?state.segments:[];
     segments.forEach(segment=>addSegment(segment,false));
     autoSize();
   };
 
-  const resizeObserver=new ResizeObserver(entries=>{
-    const width=entries[0]?.contentRect.width||m.offsetWidth;
-    if(Math.abs(width-lastObservedWidth)>1){
-      lastObservedWidth=width;
-      autoSize();
-    }
-  });
-  resizeObserver.observe(m);
-
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
     cancelAnimationFrame(autoSizeFrame);
-    resizeObserver.disconnect();
   };
 
   autoSize();
@@ -11722,7 +11725,10 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   setupCommon(m);
   setupStickerTransformControls(m);
   if(record)recordHistory({type:'add',elements:[m]});
-  if(animate)setTimeout(()=>m.classList.remove('sticker-placed'),620);
+  if(animate){
+    playUiSfx('sticker-place');
+    setTimeout(()=>m.classList.remove('sticker-placed'),620);
+  }
   return m;
 }
 
