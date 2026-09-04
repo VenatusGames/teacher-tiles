@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260904-1" />
+  <link rel="stylesheet" href="styles.css?v=20260904-2" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1646,7 +1646,7 @@
       </button>
       <button class="context-menu__item" data-module="attendance" data-category="tools sel">
         <span class="context-menu__icon context-menu__icon--attendance" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 5h17v14h-17zM8.7 5v14M15.3 5v14" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="9" r="1.45" fill="currentColor"/><path d="M10.2 14.9c.3-1.5 1-2.3 1.8-2.3s1.5.8 1.8 2.3M5.1 11.6l1.1 1.1 1.6-2M16.7 12l1.2 1.2 2-2.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span><strong>Attendance</strong><small>Move student magnets from Default to Present</small></span>
+        <span><strong>Attendance</strong><small>Move student magnets for attendance check-ins</small></span>
       </button>
       <button class="context-menu__item" data-module="livecaption" data-category="tools language audio accessibility">
         <span class="context-menu__icon context-menu__icon--livecaption" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h4M7 14h6M15 10h2M15 14h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
@@ -3343,9 +3343,9 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260904-1"></script>
+  <script src="app.js?v=20260904-3"></script>
   <script src="lesson-planner.js?v=2"></script>
-  <script type="module" src="firebase-auth.js?v=20260904-attendance-2"></script>
+  <script type="module" src="firebase-auth.js?v=20260904-attendance-3"></script>
 
 
   <template id="ruler-template">
@@ -3572,7 +3572,7 @@
           <div class="attendance-magnet-stage" data-attendance-stage="default"></div>
         </section>
         <section class="attendance-board attendance-board--present" data-student-drop-target="present" aria-label="Present students">
-          <div class="attendance-world" aria-hidden="true"><span></span><i></i><b></b><em></em><small></small></div>
+          <div class="attendance-world" aria-hidden="true"><img class="attendance-world__main" alt="" hidden><span></span><i></i><b></b><em></em><small></small></div>
           <header><span class="attendance-column-icon" aria-hidden="true">✓</span><div><strong>Present</strong><small>Ready to learn</small></div><b data-attendance-count="present">0</b></header>
           <div class="attendance-magnet-stage" data-attendance-stage="present"></div>
         </section>

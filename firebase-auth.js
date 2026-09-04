@@ -1675,8 +1675,8 @@ function compactPreviewObject(object) {
       if (saved && Number.isFinite(Number(saved.x)) && Number.isFinite(Number(saved.y))) {
         positions[name] = {
           zone: assignments[name],
-          x: Math.max(0.06, Math.min(0.94, Number(saved.x))),
-          y: Math.max(0.07, Math.min(0.93, Number(saved.y)))
+          x: Math.max(0.18, Math.min(0.82, Number(saved.x))),
+          y: Math.max(0.14, Math.min(0.86, Number(saved.y)))
         };
       }
     }
@@ -2894,12 +2894,25 @@ function applyPreviewState(module, state) {
       "attendance-bubble-tea": "assets/attendance/boba.png"
     };
     const asset = assets[module.dataset.tileSkin || ""] || "";
+    const scenes = {
+      "attendance-beehive": "assets/attendance/scene-hive.png",
+      "attendance-monkeys": "assets/attendance/scene-tree.png",
+      "attendance-froggies": "assets/attendance/scene-lily-pads.png",
+      "attendance-bubble-tea": "assets/attendance/scene-boba-cup.png"
+    };
+    const worldImage = module.querySelector(".attendance-world__main");
+    const scene = scenes[module.dataset.tileSkin || ""] || "";
+    if (worldImage) {
+      worldImage.src = scene;
+      worldImage.hidden = !scene;
+    }
     const fallbackPosition = (index, total) => {
-      const columns = total <= 8 ? 3 : total <= 16 ? 4 : total <= 25 ? 5 : 6;
+      const preferred = total <= 8 ? 3 : total <= 16 ? 4 : total <= 25 ? 5 : 6;
+      const columns = Math.max(1, Math.min(total || 1, preferred));
       const rows = Math.max(1, Math.ceil(total / columns));
       return {
-        x: columns === 1 ? 0.5 : 0.1 + ((index % columns) / (columns - 1)) * 0.8,
-        y: rows === 1 ? 0.5 : 0.1 + (Math.floor(index / columns) / (rows - 1)) * 0.8
+        x: columns === 1 ? 0.5 : 0.2 + ((index % columns) / (columns - 1)) * 0.6,
+        y: rows === 1 ? 0.5 : 0.17 + (Math.floor(index / columns) / (rows - 1)) * 0.66
       };
     };
     for (const status of statuses) {
@@ -2924,8 +2937,8 @@ function applyPreviewState(module, state) {
         label.textContent = name;
         const saved = special.positions?.[name];
         const position = saved && Number.isFinite(Number(saved.x)) && Number.isFinite(Number(saved.y)) ? {
-          x: Math.max(0.06, Math.min(0.94, Number(saved.x))),
-          y: Math.max(0.07, Math.min(0.93, Number(saved.y)))
+          x: Math.max(0.18, Math.min(0.82, Number(saved.x))),
+          y: Math.max(0.14, Math.min(0.86, Number(saved.y)))
         } : fallbackPosition(index, grouped[status].length);
         chip.style.left = `${position.x * 100}%`;
         chip.style.top = `${position.y * 100}%`;

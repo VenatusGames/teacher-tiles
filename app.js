@@ -1338,7 +1338,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
     interactive:['Interactive Timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets from Default to Present'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
@@ -8101,6 +8101,7 @@ function setupAttendance(m){
   const resetButton=m.querySelector('.attendance-reset');
   const emptyState=m.querySelector('.attendance-empty-state');
   const statusNode=m.querySelector('.attendance-status');
+  const worldImage=m.querySelector('.attendance-world__main');
   const stages=Object.fromEntries([...m.querySelectorAll('[data-attendance-stage]')].map(stage=>[stage.dataset.attendanceStage,stage]));
   const counts=Object.fromEntries([...m.querySelectorAll('[data-attendance-count]')].map(count=>[count.dataset.attendanceCount,count]));
   const orderedStatuses=['default','present'];
@@ -8109,6 +8110,12 @@ function setupAttendance(m){
     'attendance-monkeys':'assets/attendance/monkey.png',
     'attendance-froggies':'assets/attendance/froggie.png',
     'attendance-bubble-tea':'assets/attendance/boba.png'
+  };
+  const sceneArt={
+    'attendance-beehive':'assets/attendance/scene-hive.png',
+    'attendance-monkeys':'assets/attendance/scene-tree.png',
+    'attendance-froggies':'assets/attendance/scene-lily-pads.png',
+    'attendance-bubble-tea':'assets/attendance/scene-boba-cup.png'
   };
   let activeClassId='';
   let pendingClassId='';
@@ -8135,28 +8142,46 @@ function setupAttendance(m){
       if(!saved||!Number.isFinite(Number(saved.x))||!Number.isFinite(Number(saved.y)))return;
       next[name]={
         zone:normalizeStatus(saved.zone||saved.status||nextAssignments[name]),
-        x:clamp(Number(saved.x),.06,.94),
-        y:clamp(Number(saved.y),.07,.93)
+        x:clamp(Number(saved.x),.18,.82),
+        y:clamp(Number(saved.y),.14,.86)
       };
       if(next[name].zone!==nextAssignments[name])next[name].zone=nextAssignments[name];
     });
     return next;
   };
-  const gridPosition=(index,total)=>{
-    const columns=total<=8?3:total<=16?4:total<=25?5:6;
+  const magnetFootprint=()=>{
+    const sizes={
+      'attendance-beehive':[108,83],
+      'attendance-monkeys':[82,108],
+      'attendance-froggies':[100,88],
+      'attendance-bubble-tea':[78,78]
+    };
+    const density=students.length>24?.78:students.length>12?.9:1;
+    return(sizes[m.dataset.tileSkin||'']||[126,48]).map(value=>value*density);
+  };
+  const gridPosition=(index,total,status='default')=>{
+    const stage=stages[status];
+    const stageWidth=stage?.clientWidth||400;
+    const stageHeight=stage?.clientHeight||340;
+    const [pieceWidth,pieceHeight]=magnetFootprint();
+    const preferred=total<=8?3:total<=16?4:total<=25?5:6;
+    const fits=Math.max(1,Math.floor((stageWidth-14)/Math.max(50,pieceWidth*.9)));
+    const columns=Math.max(1,Math.min(total||1,preferred,fits));
     const rows=Math.max(1,Math.ceil(total/columns));
     const column=index%columns;
     const row=Math.floor(index/columns);
+    const insetX=clamp((pieceWidth/2+7)/stageWidth,.16,.3);
+    const insetY=clamp((pieceHeight/2+7)/stageHeight,.14,.32);
     return{
-      x:columns===1?.5:.1+(column/(columns-1))*.8,
-      y:rows===1?.5:.1+(row/(rows-1))*.8
+      x:columns===1?.5:insetX+(column/(columns-1))*(1-insetX*2),
+      y:rows===1?.5:insetY+(row/(rows-1))*(1-insetY*2)
     };
   };
   const ensurePositions=grouped=>{
     orderedStatuses.forEach(status=>grouped[status].forEach((name,index)=>{
       const saved=positions[name];
       if(saved&&saved.zone===status)return;
-      positions[name]={zone:status,...gridPosition(index,grouped[status].length)};
+      positions[name]={zone:status,...gridPosition(index,grouped[status].length,status)};
     }));
   };
   const currentRoster=id=>readClassRosters().find(item=>item.id===id)||null;
@@ -8178,23 +8203,27 @@ function setupAttendance(m){
   };
   const openPosition=(name,status)=>{
     const peers=students.filter(student=>student!==name&&normalizeStatus(assignments[student])===status);
-    return{zone:status,...gridPosition(peers.length,peers.length+1)};
+    return{zone:status,...gridPosition(peers.length,peers.length+1,status)};
   };
   const positionFromDrop=(name,status,detail)=>{
     const stage=stages[status];
     if(!stage||!detail||!Number.isFinite(detail.clientX)||!Number.isFinite(detail.clientY))return openPosition(name,status);
     const rect=stage.getBoundingClientRect();
     if(!rect.width||!rect.height)return openPosition(name,status);
-    const baseX=clamp((detail.clientX-rect.left)/rect.width,.06,.94);
-    const baseY=clamp((detail.clientY-rect.top)/rect.height,.07,.93);
+    const chip=[...m.querySelectorAll('.attendance-student')].find(item=>item.dataset.studentName===name);
+    const chipRect=chip?.getBoundingClientRect();
+    const insetX=clamp(((chipRect?.width||72)/2+5)/rect.width,.09,.3);
+    const insetY=clamp(((chipRect?.height||55)/2+5)/rect.height,.1,.32);
+    const baseX=clamp((detail.clientX-rect.left)/rect.width,insetX,1-insetX);
+    const baseY=clamp((detail.clientY-rect.top)/rect.height,insetY,1-insetY);
     const peers=students.filter(student=>student!==name&&normalizeStatus(assignments[student])===status).map(student=>positions[student]).filter(Boolean);
-    const minDistance=m.dataset.attendanceDensity==='dense'?42:m.dataset.attendanceDensity==='compact'?49:57;
+    const minDistance=m.dataset.attendanceDensity==='dense'?48:m.dataset.attendanceDensity==='compact'?58:68;
     for(let attempt=0;attempt<42;attempt++){
       const ring=Math.ceil(attempt/6);
       const angle=attempt*2.399963;
       const radius=ring*15;
-      const x=clamp(baseX+(Math.cos(angle)*radius)/rect.width,.06,.94);
-      const y=clamp(baseY+(Math.sin(angle)*radius)/rect.height,.07,.93);
+      const x=clamp(baseX+(Math.cos(angle)*radius)/rect.width,insetX,1-insetX);
+      const y=clamp(baseY+(Math.sin(angle)*radius)/rect.height,insetY,1-insetY);
       const collides=peers.some(peer=>Math.hypot((peer.x-x)*rect.width,(peer.y-y)*rect.height)<minDistance);
       if(!collides)return{zone:status,x,y};
     }
@@ -8240,7 +8269,7 @@ function setupAttendance(m){
       if(event.key==='ArrowLeft'||event.key.toLocaleLowerCase()==='d')next='default';
       else if(event.key==='ArrowRight')next='present';
       else if(event.key.toLocaleLowerCase()==='p')next='present';
-      else if(event.key==='Enter'||event.key===' ')next=status==='default'?'present':'default';
+      else if(event.key==='Enter')next=status==='default'?'present':'default';
       if(!next||next===status)return;
       event.preventDefault();event.stopPropagation();place(name,next);
       requestAnimationFrame(()=>[...m.querySelectorAll('.attendance-student')].find(item=>item.dataset.studentName===name)?.focus({preventScroll:true}));
@@ -8287,6 +8316,34 @@ function setupAttendance(m){
   m.querySelector('.attendance-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.attendance-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
+  const sceneSource=sceneArt[m.dataset.tileSkin||'']||'';
+  if(worldImage){worldImage.src=sceneSource;worldImage.hidden=!sceneSource}
+  let resizeFrame=0;
+  const keepMagnetsVisible=()=>{
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame=requestAnimationFrame(()=>{
+      orderedStatuses.forEach(status=>{
+        const stage=stages[status];
+        const stageRect=stage?.getBoundingClientRect();
+        if(!stageRect?.width||!stageRect.height)return;
+        stage.querySelectorAll('.attendance-student').forEach(chip=>{
+          const name=chip.dataset.studentName;
+          const position=positions[name];
+          if(!position)return;
+          const chipRect=chip.getBoundingClientRect();
+          const insetX=clamp((chipRect.width/2+5)/stageRect.width,.09,.3);
+          const insetY=clamp((chipRect.height/2+5)/stageRect.height,.1,.32);
+          position.x=clamp(position.x,insetX,1-insetX);
+          position.y=clamp(position.y,insetY,1-insetY);
+          chip.style.left=`${position.x*100}%`;
+          chip.style.top=`${position.y*100}%`;
+        });
+      });
+    });
+  };
+  const magnetResizeObserver=typeof ResizeObserver==='function'?new ResizeObserver(keepMagnetsVisible):null;
+  magnetResizeObserver?.observe(m);
+
   const detachRosterLoader=attachClassRosterLoader(loaderAnchor,(_names,roster)=>setRoster(roster,{reset:true}));
   const handleClassesChange=()=>{
     const wanted=pendingClassId||activeClassId;
@@ -8329,7 +8386,7 @@ function setupAttendance(m){
   };
   render();
   const priorCleanup=m._cleanup;
-  m._cleanup=()=>{priorCleanup?.();detachRosterLoader();window.removeEventListener('teachertiles:classeschange',handleClassesChange)};
+  m._cleanup=()=>{priorCleanup?.();detachRosterLoader();magnetResizeObserver?.disconnect();cancelAnimationFrame(resizeFrame);window.removeEventListener('teachertiles:classeschange',handleClassesChange)};
 }
 
 function setupLiveCaption(m){
@@ -11683,9 +11740,17 @@ function setupCollectionShelf(){
   const tileSkinTypeIdentity=(type,skins=[])=>{
     const source=menu?.querySelector(`[data-module="${CSS.escape(type)}"]`);
     const sourceName=source?.querySelector('strong')?.textContent?.trim();
-    const icon=source?.querySelector('.context-menu__icon')?.cloneNode(true)||null;
-    if(icon){
-      icon.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+    const sourceIcon=source?.querySelector('.context-menu__icon');
+    let icon=null;
+    if(sourceIcon){
+      icon=document.createElement('span');
+      icon.className='tile-skins-type-button__source-icon';
+      const graphic=sourceIcon.querySelector('svg,img');
+      if(graphic){
+        const copy=graphic.cloneNode(true);
+        copy.querySelectorAll?.('[id]').forEach(node=>node.removeAttribute('id'));
+        icon.appendChild(copy);
+      }else icon.textContent=sourceIcon.textContent?.trim()||'';
       icon.setAttribute('aria-hidden','true');
     }
     return{name:sourceName||skins[0]?.tileLabel||type,icon};
