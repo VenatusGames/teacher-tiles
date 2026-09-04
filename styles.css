@@ -260,7 +260,9 @@ body.dark .module[data-bg="white"] .noise-main-controls button{color:#f7f8fa;bor
 .context-menu__icon--sticky svg,.context-menu__icon--todo svg,.context-menu__icon--visual-schedule svg,.context-menu__icon--interactive-timers svg,.context-menu__icon--clock svg,.context-menu__icon--stopwatch svg,.context-menu__icon--progress-bar svg,.context-menu__icon--weather svg,.context-menu__icon--weather-wheel svg,.context-menu__icon--season-wheel svg,.context-menu__icon--racer svg{width:23px;height:23px}
 .context-menu__icon--visual-timer svg{width:26px;height:26px}
 .context-menu__icon--interactive-timers{color:var(--text)}
-.context-menu__icon--abc text,.context-menu__icon--cvcword text,.context-menu__icon--highfrequency text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:7.4px;font-weight:900;letter-spacing:-.25px}
+.context-menu__icon--abc text,.context-menu__icon--cvcword text,.context-menu__icon--highfrequency text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:9.2px;font-weight:900;letter-spacing:-.55px}
+.context-menu__icon--date svg{width:23px;height:23px}
+.context-menu__icon--date text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:8.3px;font-weight:900;letter-spacing:-.35px}
 .context-menu__icon--numberline svg{width:26px;height:26px}
 .context-menu__icon--numberline text{fill:currentColor;font:900 5.6px/1 Inter,system-ui,sans-serif}
 .context-menu__icon--jar,.context-menu__icon--stoplight{color:var(--text)}
