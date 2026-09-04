@@ -14730,11 +14730,16 @@ body :where(img,svg,canvas,video){-webkit-user-drag:none}
 .table-maker-add-row{font-size:9px}
 .table-maker-footer{font-size:8.5px;color:color-mix(in srgb,var(--module-text,#17191d) 54%,transparent)}
 .table-maker-add-row:disabled,.tally-chart-footer button:disabled{opacity:.45;cursor:not-allowed}
-.table-maker-donut-segment{animation:tableMakerDonutIn .42s cubic-bezier(.2,.88,.25,1) var(--chart-delay,0ms) both}
-@keyframes tableMakerDonutIn{from{stroke-width:0;opacity:.25}to{stroke-width:62;opacity:1}}
+.table-maker-donut-segment{stroke:var(--module-bg,#fff);stroke-width:3;stroke-linejoin:round;transform-box:fill-box;transform-origin:center;animation:tableMakerSliceIn .45s cubic-bezier(.2,.88,.25,1) var(--chart-delay,0ms) both}
 .tally-chart-view button,.tally-chart-sort,.tally-chart-footer button{font-size:9.5px}
 .tally-chart-columns{font-size:8px;color:color-mix(in srgb,var(--module-text,#17191d) 50%,transparent)}
 .tally-chart-category input[type="text"]{font-size:11px}
 .tally-chart-marks small{font-size:8.5px;color:color-mix(in srgb,var(--module-text,#17191d) 48%,transparent)}
 .tally-chart-empty span{font-size:9px;opacity:.6}
 @media(prefers-reduced-motion:reduce){.table-maker-donut-segment{animation:none!important}}
+
+/* Table Maker compact and hover states. */
+.table-maker-module[data-editor-open="false"] .table-maker-main{grid-template-columns:minmax(0,1fr)}
+.table-maker-module.is-editor-resizing{transition:width .24s cubic-bezier(.2,.82,.25,1),height .24s cubic-bezier(.2,.82,.25,1)}
+.table-maker-chart-types{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-4px);transition:opacity .15s ease,visibility .15s ease,transform .15s ease}
+.table-maker-module:hover .table-maker-chart-types,.table-maker-chart-types:focus-within{opacity:1;visibility:visible;pointer-events:auto;transform:none}

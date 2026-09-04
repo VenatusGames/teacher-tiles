@@ -10677,6 +10677,10 @@ function chartNiceMaximum(value){
 }
 
 function setupTableMaker(m){
+  const EDITOR_WIDTH=248;
+  const EDITOR_HEIGHT=120;
+  const COMPACT_WIDTH=520;
+  const COMPACT_HEIGHT=450;
   const chart=m.querySelector('.table-maker-chart');
   const legend=m.querySelector('.table-maker-legend');
   const empty=m.querySelector('.table-maker-empty');
@@ -10690,6 +10694,9 @@ function setupTableMaker(m){
   const typeButtons=[...m.querySelectorAll('[data-chart-type]')];
   let chartType='bar';
   let editorOpen=true;
+  let expandedWidth=null;
+  let expandedHeight=null;
+  let resizeTimer=0;
   let rows=[
     {label:'Reading',value:18,color:TABLE_MAKER_COLORS[0]},
     {label:'Math',value:24,color:TABLE_MAKER_COLORS[1]},
@@ -10703,8 +10710,38 @@ function setupTableMaker(m){
     color:/^#[0-9a-f]{6}$/i.test(String(row?.color||''))?String(row.color):TABLE_MAKER_COLORS[index%TABLE_MAKER_COLORS.length]
   }));
   const displayLabel=value=>String(value||'Untitled').trim().slice(0,12)||'Untitled';
-  const setEditorOpen=open=>{
-    editorOpen=Boolean(open);
+  const animateEditorSize=(targetWidth,targetHeight)=>{
+    const width=Math.max(COMPACT_WIDTH,Math.round(Number(targetWidth)||m.offsetWidth));
+    const height=Math.max(COMPACT_HEIGHT,Math.round(Number(targetHeight)||m.offsetHeight));
+    if(Math.abs(m.offsetWidth-width)<1&&Math.abs(m.offsetHeight-height)<1)return;
+    m.classList.remove('is-editor-resizing');
+    void m.offsetWidth;
+    m.classList.add('is-editor-resizing');
+    m.style.width=`${width}px`;
+    m.style.height=`${height}px`;
+    m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-width))}px`;
+    m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-height))}px`;
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>m.classList.remove('is-editor-resizing'),260);
+  };
+  const setEditorOpen=(open,{resize=false}={})=>{
+    const next=Boolean(open);
+    if(resize){
+      const current=m.offsetWidth;
+      const currentHeight=m.offsetHeight;
+      if(next){
+        const target=Math.max(Number(expandedWidth)||0,current);
+        const targetHeight=Math.max(Number(expandedHeight)||0,currentHeight);
+        expandedWidth=target;
+        expandedHeight=targetHeight;
+        animateEditorSize(target,targetHeight);
+      }else{
+        expandedWidth=current;
+        expandedHeight=currentHeight;
+        animateEditorSize(Math.max(COMPACT_WIDTH,current-EDITOR_WIDTH),Math.max(COMPACT_HEIGHT,currentHeight-EDITOR_HEIGHT));
+      }
+    }
+    editorOpen=next;
     m.dataset.editorOpen=String(editorOpen);
     editor.hidden=!editorOpen;
     dataToggle.classList.toggle('is-active',editorOpen);
@@ -10781,9 +10818,16 @@ function setupTableMaker(m){
       const share=row.value/total;
       const next=angle+share*Math.PI*2;
       if(chartType==='donut'){
-        const circumference=2*Math.PI*r;
-        const circle=makeChartSvgNode('circle',{cx,cy,r,fill:'none',stroke:row.color,'stroke-width':62,'stroke-dasharray':`${Math.max(0,circumference*share-2)} ${circumference}`,'stroke-dashoffset':-(circumference*((angle+Math.PI/2)/(Math.PI*2))),transform:`rotate(-90 ${cx} ${cy})`,class:'table-maker-donut-segment'});
-        circle.style.setProperty('--chart-delay',`${index*65}ms`);chart.appendChild(circle);
+        const inner=75;
+        if(share>.9999){
+          const circle=makeChartSvgNode('circle',{cx,cy,r,fill:row.color,class:'table-maker-donut-segment'});
+          circle.style.setProperty('--chart-delay',`${index*55}ms`);chart.appendChild(circle);
+        }else{
+          const outerStartX=cx+r*Math.cos(angle),outerStartY=cy+r*Math.sin(angle),outerEndX=cx+r*Math.cos(next),outerEndY=cy+r*Math.sin(next);
+          const innerStartX=cx+inner*Math.cos(angle),innerStartY=cy+inner*Math.sin(angle),innerEndX=cx+inner*Math.cos(next),innerEndY=cy+inner*Math.sin(next);
+          const path=makeChartSvgNode('path',{d:`M${outerStartX} ${outerStartY} A${r} ${r} 0 ${share>.5?1:0} 1 ${outerEndX} ${outerEndY} L${innerEndX} ${innerEndY} A${inner} ${inner} 0 ${share>.5?1:0} 0 ${innerStartX} ${innerStartY} Z`,fill:row.color,class:'table-maker-donut-segment'});
+          path.style.setProperty('--chart-delay',`${index*55}ms`);chart.appendChild(path);
+        }
       }else if(share>.9999){
         chart.appendChild(makeChartSvgNode('circle',{cx,cy,r,fill:row.color,class:'table-maker-pie-slice'}));
       }else{
@@ -10818,8 +10862,9 @@ function setupTableMaker(m){
     chartType=['bar','line','pie','donut'].includes(button.dataset.chartType)?button.dataset.chartType:'bar';
     m.dataset.chartType=chartType;typeButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderChart();notifyBoardChanged('table-maker-type');
   }));
-  dataToggle.addEventListener('click',()=>{setEditorOpen(!editorOpen);notifyBoardChanged('table-maker-editor')});
-  m.querySelector('.table-maker-editor-close').addEventListener('click',()=>{setEditorOpen(false);notifyBoardChanged('table-maker-editor')});
+  dataToggle.addEventListener('click',()=>{setEditorOpen(!editorOpen,{resize:true});notifyBoardChanged('table-maker-editor')});
+  m.querySelector('.table-maker-editor-close').addEventListener('click',()=>{setEditorOpen(false,{resize:true});notifyBoardChanged('table-maker-editor')});
+  dataRows.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   addRowButton.addEventListener('click',()=>{
     if(rows.length>=12)return;
     rows.push({label:`Category ${rows.length+1}`,value:10,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});renderEditor();renderChart();notifyBoardChanged('table-maker-add-row');
@@ -10828,13 +10873,18 @@ function setupTableMaker(m){
   m.querySelector('.table-maker-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.table-maker-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.table-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
-  m._boardGetState=()=>({chartType,editorOpen,rows:rows.map(row=>({...row}))});
+  m._boardGetState=()=>({chartType,editorOpen,expandedWidth:Math.round(Number(expandedWidth)||m.offsetWidth),expandedHeight:Math.round(Number(expandedHeight)||m.offsetHeight),rows:rows.map(row=>({...row}))});
   m._boardSetState=state=>{
     rows=normalizeRows(state?.rows);if(!rows.length&&Array.isArray(state?.rows))rows=[];
     chartType=['bar','line','pie','donut'].includes(state?.chartType)?state.chartType:'bar';
+    expandedWidth=Number.isFinite(Number(state?.expandedWidth))?Math.max(COMPACT_WIDTH,Number(state.expandedWidth)):null;
+    expandedHeight=Number.isFinite(Number(state?.expandedHeight))?Math.max(COMPACT_HEIGHT,Number(state.expandedHeight)):null;
     editorOpen=state?.editorOpen!==false;typeButtons.forEach(button=>{const active=button.dataset.chartType===chartType;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active))});m.dataset.chartType=chartType;setEditorOpen(editorOpen);renderEditor();renderChart();
+    if(!editorOpen&&(!expandedWidth||!expandedHeight))requestAnimationFrame(()=>{if(!editorOpen&&m.isConnected){expandedWidth=expandedWidth||m.offsetWidth;expandedHeight=expandedHeight||m.offsetHeight;animateEditorSize(Math.max(COMPACT_WIDTH,expandedWidth-EDITOR_WIDTH),Math.max(COMPACT_HEIGHT,expandedHeight-EDITOR_HEIGHT))}});
   };
-  typeButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.chartType===chartType)));setEditorOpen(true);renderEditor();renderChart();
+  const previousCleanup=m._cleanup;
+  m._cleanup=()=>{clearTimeout(resizeTimer);previousCleanup?.()};
+  expandedWidth=m.offsetWidth;expandedHeight=m.offsetHeight;typeButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.chartType===chartType)));setEditorOpen(true);renderEditor();renderChart();
 }
 
 function setupTallyChart(m){
@@ -10892,6 +10942,7 @@ function setupTallyChart(m){
     });
   };
   const adjust=(index,amount)=>{const row=rows[index];if(!row)return;row.count=Math.max(0,Math.min(999,row.count+amount));renderRows();notifyBoardChanged('tally-count')};
+  list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   viewButtons.forEach(button=>button.addEventListener('click',()=>{view=button.dataset.tallyView==='bars'?'bars':'tallies';m.dataset.tallyView=view;viewButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderRows();notifyBoardChanged('tally-view')}));
   sortButton.addEventListener('click',()=>{sort=sort==='added'?'highest':'added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows();notifyBoardChanged('tally-sort')});
   addButton.addEventListener('click',()=>{
