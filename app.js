@@ -49,11 +49,12 @@ function disableModuleSpellcheck(root){
 }
 
 function captureModuleTransform(m){
+  const restingHeight=Number(m?._transientRestingHeight);
   return{
     left:m.offsetLeft,
     top:m.offsetTop,
     width:m.offsetWidth,
-    height:m.offsetHeight,
+    height:Number.isFinite(restingHeight)?restingHeight:m.offsetHeight,
     rotation:m.dataset.stickerRotation??null,
     snapGroup:m.dataset.snapGroup??null
   };
@@ -62,7 +63,10 @@ function captureModuleTransform(m){
 function applyModuleTransform(m,state){
   if(!m||!state)return;
   const priorSnapGroup=m.dataset.snapGroup||'';
-  Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width}px`,height:`${state.height}px`});
+  const displayHeightOffset=Number(m._resizeDisplayHeightOffset)||0;
+  const stateHeight=Number(state.height)||m.offsetHeight;
+  if(displayHeightOffset)m._transientRestingHeight=stateHeight;
+  Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width}px`,height:`${stateHeight+displayHeightOffset}px`});
   if(state.rotation!==null){
     m.dataset.stickerRotation=String(state.rotation);
     m.style.setProperty('--sticker-rotation',`${state.rotation}deg`);
@@ -3079,6 +3083,7 @@ function setupResize(m){
     if(e.button!==0)return;
     e.preventDefault();e.stopPropagation();
     const before=captureModuleTransform(m);
+    m.classList.add('is-resizing');
     clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight,cs=getComputedStyle(m),mw=parseFloat(cs.minWidth)||220,mh=parseFloat(cs.minHeight)||180;
     const move=ev=>{
@@ -3103,7 +3108,7 @@ function setupResize(m){
       }
       Object.assign(m.style,{left:`${l}px`,top:`${t}px`,width:`${w}px`,height:`${hh}px`});
     };
-    const end=()=>{recordTransformHistory([m],new Map([[m,before]]));updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end)};
+    const end=()=>{m._syncTransientResize?.();m.classList.remove('is-resizing');m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end)};
     h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
   }));
 }
@@ -10804,14 +10809,18 @@ function setupVisualSchedule(m){
   const add=m.querySelector('.visual-schedule-add');
   const reset=m.querySelector('.visual-schedule-reset');
   const count=m.querySelector('.visual-schedule-count');
-  const scaleDown=m.querySelector('.visual-schedule-scale-down');
-  const scaleUp=m.querySelector('.visual-schedule-scale-up');
+  const rowSizeInput=m.querySelector('.visual-schedule-row-size-input');
+  const rowSizeOutput=m.querySelector('.visual-schedule-row-size-output');
+  const rowSizeSync=m.querySelector('.visual-schedule-row-size-sync');
   const picker=m.querySelector('.visual-schedule-picker');
   const pickerGrid=m.querySelector('.visual-schedule-picker__grid');
   const pickerClose=m.querySelector('.visual-schedule-picker__close');
   const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
+  const ADD_REVEAL_HEIGHT=43;
+  let addExpanded=false;
+  let restingHeight=0;
 
   m.querySelector('.visual-schedule-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.visual-schedule-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
@@ -10829,14 +10838,58 @@ function setupVisualSchedule(m){
     autoSizeFrame=requestAnimationFrame(()=>{
       updateSummary();
       const top=m.offsetTop;
+      m.classList.add('is-measuring-rest');
       m.style.height='auto';
       const desired=Math.ceil(m.scrollHeight);
+      m.classList.remove('is-measuring-rest');
       const minHeight=parseFloat(getComputedStyle(m).minHeight)||280;
       const viewportHeight=Math.max(minHeight,(innerHeight-96)/boardCamera.scale);
-      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top));
-      m.style.height=`${clamp(desired,minHeight,maxHeight)}px`;
+      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top-ADD_REVEAL_HEIGHT));
+      restingHeight=clamp(desired,minHeight,maxHeight);
+      if(addExpanded){
+        m._transientRestingHeight=restingHeight;
+        m._resizeDisplayHeightOffset=ADD_REVEAL_HEIGHT;
+      }
+      m.style.height=`${restingHeight+(addExpanded?ADD_REVEAL_HEIGHT:0)}px`;
     });
   };
+
+  const expandAddFooter=()=>{
+    if(addExpanded)return;
+    restingHeight=m.offsetHeight;
+    addExpanded=true;
+    m._transientRestingHeight=restingHeight;
+    m._resizeDisplayHeightOffset=ADD_REVEAL_HEIGHT;
+    m.classList.add('is-add-expanded');
+    m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,restingHeight+ADD_REVEAL_HEIGHT)}px`;
+  };
+  const collapseAddFooter=()=>{
+    if(!addExpanded)return;
+    restingHeight=Number(m._transientRestingHeight)||Math.max(300,m.offsetHeight-ADD_REVEAL_HEIGHT);
+    addExpanded=false;
+    m._resizeDisplayHeightOffset=0;
+    m.classList.remove('is-add-expanded');
+    m.style.height=`${restingHeight}px`;
+    delete m._transientRestingHeight;
+  };
+  const onPointerEnter=()=>expandAddFooter();
+  const onPointerLeave=()=>{if(!m.classList.contains('is-resizing'))collapseAddFooter()};
+  const onFocusIn=()=>expandAddFooter();
+  const onFocusOut=()=>requestAnimationFrame(()=>{
+    if(!m.matches(':hover')&&!m.contains(document.activeElement))collapseAddFooter();
+  });
+  m._syncTransientResize=()=>{
+    if(!addExpanded)return;
+    restingHeight=Math.max(parseFloat(getComputedStyle(m).minHeight)||300,m.offsetHeight-ADD_REVEAL_HEIGHT);
+    m._transientRestingHeight=restingHeight;
+  };
+  m._afterModuleResize=()=>{
+    if(addExpanded&&!m.matches(':hover'))collapseAddFooter();
+  };
+  m.addEventListener('pointerenter',onPointerEnter);
+  m.addEventListener('pointerleave',onPointerLeave);
+  m.addEventListener('focusin',onFocusIn);
+  m.addEventListener('focusout',onFocusOut);
 
   const closePicker=()=>{
     picker.hidden=true;
@@ -10921,6 +10974,15 @@ function setupVisualSchedule(m){
     row.dataset.segmentSize=String(size);
     row.style.setProperty('--visual-segment-size',`${size}px`);
   };
+  const syncRowSizeControl=()=>{
+    const sizes=[...list.querySelectorAll('.visual-schedule-segment')].map(row=>Number(row.dataset.segmentSize)||72);
+    const unique=[...new Set(sizes)];
+    const representative=unique.length===1?unique[0]:Math.round((sizes.reduce((sum,size)=>sum+size,0)/(sizes.length||1))/4)*4||72;
+    rowSizeInput.value=String(clamp(representative,56,220));
+    rowSizeOutput.value=unique.length>1?'Mixed':`${representative} px`;
+    rowSizeOutput.textContent=rowSizeOutput.value;
+    rowSizeSync.hidden=unique.length<=1;
+  };
 
   const addSegment=(data={},focus=false)=>{
     const segmentCount=list.querySelectorAll('.visual-schedule-segment').length;
@@ -10941,7 +11003,7 @@ function setupVisualSchedule(m){
       </div>
       <button class="visual-schedule-resize" type="button" aria-label="Resize this schedule segment" title="Drag to resize segment"></button>
     `;
-    setSegmentSize(row,data.size);
+    setSegmentSize(row,data.size??(Number(rowSizeInput.value)||72));
     const title=row.querySelector('.visual-schedule-segment-title');
     const time=row.querySelector('.visual-schedule-segment-time');
     title.value=data.title??'New Activity';
@@ -10969,6 +11031,7 @@ function setupVisualSchedule(m){
     row.querySelector('.visual-schedule-remove').addEventListener('click',()=>{
       if(activeSegment===row)closePicker();
       row.remove();
+      syncRowSizeControl();
       autoSize();
       notifyBoardChanged('visual-schedule-remove');
     });
@@ -10977,6 +11040,7 @@ function setupVisualSchedule(m){
       if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
       event.preventDefault();
       setSegmentSize(row,(Number(row.dataset.segmentSize)||72)+(event.key==='ArrowDown'?8:-8));
+      syncRowSizeControl();
       autoSize();
       notifyBoardChanged('visual-schedule-resize');
     });
@@ -10992,6 +11056,7 @@ function setupVisualSchedule(m){
         moveEvent.preventDefault();
         moveEvent.stopPropagation();
         setSegmentSize(row,startSize+(moveEvent.clientY-startY)/boardCamera.scale);
+        syncRowSizeControl();
       };
       const finish=finishEvent=>{
         finishEvent.stopPropagation();
@@ -11007,7 +11072,8 @@ function setupVisualSchedule(m){
       resizeHandle.addEventListener('pointercancel',finish);
     });
 
-    list.insertBefore(row,add);
+    list.appendChild(row);
+    syncRowSizeControl();
     autoSize();
     if(focus)requestAnimationFrame(()=>{title.focus();title.select()});
   };
@@ -11016,15 +11082,22 @@ function setupVisualSchedule(m){
     addSegment({},true);
     notifyBoardChanged('visual-schedule-add');
   });
-  const scaleAllSegments=delta=>{
+  const setAllSegmentSizes=value=>{
     const rows=[...list.querySelectorAll('.visual-schedule-segment')];
     if(!rows.length)return;
-    rows.forEach(row=>setSegmentSize(row,(Number(row.dataset.segmentSize)||72)+delta));
+    rows.forEach(row=>setSegmentSize(row,value));
+    syncRowSizeControl();
+  };
+  rowSizeInput.addEventListener('input',()=>setAllSegmentSizes(Number(rowSizeInput.value)||72));
+  rowSizeInput.addEventListener('change',()=>{
     autoSize();
     notifyBoardChanged('visual-schedule-resize-all');
-  };
-  scaleDown.addEventListener('click',()=>scaleAllSegments(-8));
-  scaleUp.addEventListener('click',()=>scaleAllSegments(8));
+  });
+  rowSizeSync.addEventListener('click',()=>{
+    setAllSegmentSizes(Number(rowSizeInput.value)||72);
+    autoSize();
+    notifyBoardChanged('visual-schedule-resize-all');
+  });
   reset.addEventListener('click',()=>{
     const completed=[...list.querySelectorAll('.visual-schedule-segment.is-complete')];
     if(!completed.length)return;
@@ -11052,6 +11125,7 @@ function setupVisualSchedule(m){
     list.querySelectorAll('.visual-schedule-segment').forEach(row=>row.remove());
     const segments=Array.isArray(state?.segments)?state.segments:[];
     segments.forEach(segment=>addSegment(segment,false));
+    syncRowSizeControl();
     autoSize();
   };
 
@@ -11059,9 +11133,18 @@ function setupVisualSchedule(m){
   m._cleanup=()=>{
     prior?.();
     cancelAnimationFrame(autoSizeFrame);
+    m.removeEventListener('pointerenter',onPointerEnter);
+    m.removeEventListener('pointerleave',onPointerLeave);
+    m.removeEventListener('focusin',onFocusIn);
+    m.removeEventListener('focusout',onFocusOut);
+    delete m._syncTransientResize;
+    delete m._afterModuleResize;
+    delete m._resizeDisplayHeightOffset;
+    delete m._transientRestingHeight;
   };
 
   autoSize();
+  requestAnimationFrame(()=>{if(m.matches(':hover'))expandAddFooter()});
 }
 
 window.TeacherTilesRefreshLessonPlannerTiles=()=>{
