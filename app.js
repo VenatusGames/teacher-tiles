@@ -1,4 +1,5 @@
 const workspace=document.getElementById('workspace');
+const snapDisabledIndicator=document.getElementById('snap-disabled-indicator');
 const menu=document.getElementById('context-menu');
 const settingsToggle=document.getElementById('settings-toggle');
 const fullscreenToggle=document.getElementById('fullscreen-toggle');
@@ -1218,7 +1219,7 @@ document.addEventListener('change',e=>{
 // Pointer-clicked module controls should disappear again when the pointer leaves.
 // Keyboard focus is preserved so the same controls remain accessible to tab users.
 let lastUiInteractionWasKeyboard=false;
-const SPACEBAR_FLASHCARD_SELECTOR='.abc-card,.cvcword-card,.highfrequency-card,.customflashcards-card';
+const SPACEBAR_FLASHCARD_SELECTOR='.abc-card,.number-flashcards-card,.cvcword-card,.highfrequency-card,.customflashcards-card';
 let activeSpacebarFlashcard=null;
 document.addEventListener('keydown',event=>{
   if(event.key==='Tab'||event.key==='Enter'||event.key===' '){
@@ -1278,7 +1279,7 @@ const APP_TRANSLATIONS={
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
     'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
     'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
-    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete only the selected tile or sticker—even when it belongs to a snapped group.','help.key.arrows':'Navigate around the board.','help.key.escape':'Exit text editing or close the active overlay/menu.',
+    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete only the selected tile or sticker—even when it belongs to a snapped group.','help.key.arrows':'Navigate around the board.','help.key.noSnap':'Temporarily disable tile snapping while you drag.','help.key.escape':'Exit text editing or close the active overlay/menu.',
     'help.mouse.title':'Mouse & trackpad','help.mouse.copy':'The board is designed to stay fast without switching tools.',
     'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
     'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
@@ -1313,7 +1314,7 @@ const APP_TRANSLATIONS={
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
     'help.search':'Búsqueda de ayuda — próximamente','help.comingSoon':'PRÓXIMAMENTE','help.keyboard.title':'Atajos de teclado','help.keyboard.copy':'Los atajos se ignoran cuando estás escribiendo, cuando corresponde.',
     'help.key.selectAll':'Selecciona todos los tiles y pegatinas; vuelve a pulsar para limpiar la selección.','help.key.copy':'Copia la selección actual del tablero.','help.key.paste':'Pega tiles o pegatinas copiados.','help.key.duplicate':'Duplica la selección actual.',
-    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina solo el tile o la pegatina seleccionada, incluso si pertenece a un grupo acoplado.','help.key.arrows':'Navega por el tablero.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
+    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina solo el tile o la pegatina seleccionada, incluso si pertenece a un grupo acoplado.','help.key.arrows':'Navega por el tablero.','help.key.noSnap':'Desactiva temporalmente el acoplamiento mientras arrastras un tile.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
     'help.mouse.title':'Ratón y trackpad','help.mouse.copy':'El tablero está diseñado para trabajar rápido sin cambiar de herramienta.',
     'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
     'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
@@ -1339,7 +1340,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
     interactive:['Interactive Timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
+    abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -1353,7 +1354,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -1789,6 +1790,7 @@ function applyBoardCamera(){
   const renderedY=Math.round(boardCamera.y*pixelRatio)/pixelRatio;
   workspace.style.transform=`translate(${renderedX}px,${renderedY}px) scale(${boardCamera.scale})`;
   workspace.style.setProperty('--board-zoom',boardCamera.scale);
+  workspace.style.setProperty('--board-edge-width',`${2.5/boardCamera.scale}px`);
   requestAnimationFrame(()=>updateWorkspaceEmptyState());
   requestBoardMinimapDraw();
   notifyBoardChanged('camera');
@@ -1840,12 +1842,14 @@ workspace.addEventListener('wheel',e=>{
 
 window.addEventListener('keydown',event=>{
   if(event.key!=='Shift'||event.repeat)return;
+  if(document.body.classList.contains('is-module-dragging'))return;
   boardZoomPrecision=true;
   showZoomIndicator(boardCamera.scale,{precise:true});
 });
 window.addEventListener('keyup',event=>{
   if(event.key!=='Shift')return;
   boardZoomPrecision=false;
+  if(document.body.classList.contains('is-module-dragging'))return;
   showZoomIndicator(boardCamera.scale,{precise:false});
 });
 window.addEventListener('blur',()=>{
@@ -2608,6 +2612,7 @@ function setupModuleByType(m,type){
   if(type==='highfrequency')setupHighFrequencyWords(m);
   if(type==='customflashcards')setupCustomFlashcards(m);
   if(type==='abc')setupABC(m);
+  if(type==='numberflashcards')setupNumberFlashcards(m);
   if(type==='ruler')setupRuler(m);
   if(type==='calculator')setupCalculator(m);
   if(type==='grapher')setupGrapher(m);
@@ -2885,7 +2890,6 @@ function setupCommon(m){
       enterModuleTextEdit(field);
     }
   },true);
-  m.addEventListener('pointerdown',e=>{if(e.button===0&&e.shiftKey&&!isInteractiveModuleTarget(e.target,m)){e.preventDefault();e.stopPropagation();toggleSelection(m);bringToFront(m)}},true);
   m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=isInteractiveModuleTarget(e.target,m);if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});
   m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
   setupDrag(m);
@@ -2954,12 +2958,12 @@ function setupDrag(m){
     return{left:sx,top:sy,targetX,targetY,seamX,seamY,xStart,xLength,yStart,yLength};
   };
   h.addEventListener('pointerdown',e=>{
-    if(e.button!==0||e.shiftKey||isInteractiveModuleTarget(e.target,m))return;
+    if(e.button!==0||isInteractiveModuleTarget(e.target,m))return;
     e.preventDefault();
     m.classList.add('is-dragging');
     document.body.classList.add('is-module-dragging');
     bringToFront(m);
-    if(!selectedModules.has(m)){if(!e.shiftKey)clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
+    if(!selectedModules.has(m)){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
     const selected=[...selectedModules];
     const connectedToAnchor=snapGroupMembers(m);
     const expanded=new Set();
@@ -2979,10 +2983,31 @@ function setupDrag(m){
     const sx=e.clientX,sy=e.clientY;
     const tugHoldTimer=tugCandidate?setTimeout(()=>{tugArmed=true;m.classList.add('is-tug-armed')},520):null;
     let pending=null,overTrash=false;
+    let snappingDisabled=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
     const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
+    const setSnappingDisabled=disabled=>{
+      snappingDisabled=Boolean(disabled);
+      if(snappingDisabled){
+        boardZoomPrecision=false;
+        zoomIndicator?.classList.remove('is-precise','is-visible');
+      }
+      if(snapDisabledIndicator){
+        snapDisabledIndicator.hidden=!snappingDisabled;
+        snapDisabledIndicator.classList.toggle('is-visible',snappingDisabled);
+      }
+      if(snappingDisabled){pending=null;clearPreview()}
+    };
+    const keyDown=event=>{if(event.key==='Shift')setSnappingDisabled(true)};
+    const keyUp=event=>{if(event.key==='Shift')setSnappingDisabled(false)};
+    const windowBlur=()=>setSnappingDisabled(false);
     setTrash(true,false);
+    window.addEventListener('keydown',keyDown);
+    window.addEventListener('keyup',keyUp);
+    window.addEventListener('blur',windowBlur);
+    setSnappingDisabled(e.shiftKey);
     const move=ev=>{
+      setSnappingDisabled(ev.shiftKey);
       const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
       const distance=Math.hypot(ev.clientX-sx,ev.clientY-sy);
       if(tugCandidate&&!tugArmed&&distance>8){clearTimeout(tugHoldTimer);tugCandidate=false}
@@ -3006,7 +3031,7 @@ function setupDrag(m){
       clearPreview();
       overTrash=trashHit(ev);
       setTrash(true,overTrash);
-      if(overTrash||multi){pending=null;return}
+      if(overTrash||multi||snappingDisabled){pending=null;return}
       pending=findSnap(m.offsetLeft,m.offsetTop);
       if(pending.targetX)pending.targetX.classList.add('is-snap-target');
       if(pending.targetY)pending.targetY.classList.add('is-snap-target');
@@ -3019,7 +3044,7 @@ function setupDrag(m){
         Object.assign(guideY.style,{top:`${pending.seamY}px`,left:`${st}px`,width:`${len}px`});guideY.classList.add('is-visible')
       }
     };
-    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');clearPreview();setTrash(false,false);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
+    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
     const end=()=>{
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}
@@ -7880,6 +7905,7 @@ const EDITABLE_TILE_HEADINGS={
   highfrequency:'.highfrequency-header>div>span:first-child',
   customflashcards:'.customflashcards-header>div>span:first-child',
   abc:'.abc-header>div>span:first-child',
+  numberflashcards:'.number-flashcards-header>div>span:first-child',
   numberline:'.numberline-heading>span:first-child',
   hundredschart:'.hundreds-header>div>span:first-child',
   tenframes:'.tenframes-heading>span:first-child',
@@ -10774,6 +10800,8 @@ function setupProgressBar(m){
 function setupVisualSchedule(m){
   const list=m.querySelector('.visual-schedule-list');
   const add=m.querySelector('.visual-schedule-add');
+  const reset=m.querySelector('.visual-schedule-reset');
+  const count=m.querySelector('.visual-schedule-count');
   const picker=m.querySelector('.visual-schedule-picker');
   const pickerGrid=m.querySelector('.visual-schedule-picker__grid');
   const pickerClose=m.querySelector('.visual-schedule-picker__close');
@@ -10786,14 +10814,24 @@ function setupVisualSchedule(m){
   m.querySelector('.visual-schedule-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.visual-schedule-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
+  const updateSummary=()=>{
+    const rows=[...list.querySelectorAll('.visual-schedule-segment')];
+    const complete=rows.filter(row=>row.classList.contains('is-complete')).length;
+    count.textContent=`${rows.length} ${rows.length===1?'activity':'activities'}${complete?` · ${complete} done`:''}`;
+    reset.disabled=!complete;
+  };
+
   const autoSize=()=>{
     cancelAnimationFrame(autoSizeFrame);
     autoSizeFrame=requestAnimationFrame(()=>{
+      updateSummary();
       const top=m.offsetTop;
       m.style.height='auto';
       const desired=Math.ceil(m.scrollHeight);
-      const maxHeight=Math.max(parseFloat(getComputedStyle(m).minHeight)||250,BOARD_HEIGHT-top);
-      m.style.height=`${Math.min(desired,maxHeight)}px`;
+      const minHeight=parseFloat(getComputedStyle(m).minHeight)||280;
+      const viewportHeight=Math.max(minHeight,(innerHeight-96)/boardCamera.scale);
+      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top));
+      m.style.height=`${clamp(desired,minHeight,maxHeight)}px`;
     });
   };
 
@@ -10871,9 +10909,12 @@ function setupVisualSchedule(m){
   picker.addEventListener('wheel',e=>{
     e.stopPropagation();
   },{passive:true});
+  list.addEventListener('wheel',event=>{
+    if(list.scrollHeight>list.clientHeight)event.stopPropagation();
+  },{passive:true});
 
   const setSegmentSize=(row,value)=>{
-    const size=clamp(Math.round(Number(value)||86),76,220);
+    const size=clamp(Math.round(Number(value)||68),44,220);
     row.dataset.segmentSize=String(size);
     row.style.setProperty('--visual-segment-size',`${size}px`);
   };
@@ -10891,7 +10932,7 @@ function setupVisualSchedule(m){
       <input class="visual-schedule-segment-title" type="text" aria-label="Activity title">
       <input class="visual-schedule-segment-time" type="text" aria-label="Activity time">
       <div class="visual-schedule-segment-actions">
-        <button class="visual-schedule-complete" type="button" aria-pressed="false">Complete</button>
+        <button class="visual-schedule-complete" type="button" aria-pressed="false" aria-label="Mark segment complete"><span aria-hidden="true">✓</span></button>
         <button class="visual-schedule-remove" type="button" aria-label="Remove segment" title="Remove segment">×</button>
       </div>
       <button class="visual-schedule-resize" type="button" aria-label="Resize this schedule segment" title="Drag to resize segment"></button>
@@ -10905,16 +10946,21 @@ function setupVisualSchedule(m){
     const completeButton=row.querySelector('.visual-schedule-complete');
     const syncCompleteButton=()=>{
       const complete=row.classList.contains('is-complete');
-      completeButton.textContent=complete?'Undo':'Complete';
       completeButton.setAttribute('aria-pressed',String(complete));
+      completeButton.setAttribute('aria-label',complete?'Mark segment incomplete':'Mark segment complete');
       completeButton.title=complete?'Mark segment incomplete':'Mark segment complete';
     };
+    row._syncCompleteButton=syncCompleteButton;
     syncCompleteButton();
 
     completeButton.addEventListener('click',()=>{
       row.classList.toggle('is-complete');
       syncCompleteButton();
+      updateSummary();
+      notifyBoardChanged('visual-schedule-complete');
     });
+    title.addEventListener('change',()=>notifyBoardChanged('visual-schedule-text'));
+    time.addEventListener('change',()=>notifyBoardChanged('visual-schedule-text'));
     row.querySelector('.visual-schedule-image').addEventListener('click',()=>openPicker(row));
     row.querySelector('.visual-schedule-remove').addEventListener('click',()=>{
       if(activeSegment===row)closePicker();
@@ -10926,7 +10972,7 @@ function setupVisualSchedule(m){
     resizeHandle.addEventListener('keydown',event=>{
       if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
       event.preventDefault();
-      setSegmentSize(row,(Number(row.dataset.segmentSize)||86)+(event.key==='ArrowDown'?8:-8));
+      setSegmentSize(row,(Number(row.dataset.segmentSize)||68)+(event.key==='ArrowDown'?8:-8));
       autoSize();
       notifyBoardChanged('visual-schedule-resize');
     });
@@ -10935,7 +10981,7 @@ function setupVisualSchedule(m){
       event.preventDefault();
       event.stopPropagation();
       const startY=event.clientY;
-      const startSize=Number(row.dataset.segmentSize)||86;
+      const startSize=Number(row.dataset.segmentSize)||68;
       resizeHandle.setPointerCapture(event.pointerId);
 
       const move=moveEvent=>{
@@ -10962,7 +11008,20 @@ function setupVisualSchedule(m){
     if(focus)requestAnimationFrame(()=>{title.focus();title.select()});
   };
 
-  add.addEventListener('click',()=>addSegment({},true));
+  add.addEventListener('click',()=>{
+    addSegment({},true);
+    notifyBoardChanged('visual-schedule-add');
+  });
+  reset.addEventListener('click',()=>{
+    const completed=[...list.querySelectorAll('.visual-schedule-segment.is-complete')];
+    if(!completed.length)return;
+    completed.forEach(row=>{
+      row.classList.remove('is-complete');
+      row._syncCompleteButton?.();
+    });
+    updateSummary();
+    notifyBoardChanged('visual-schedule-reset');
+  });
 
   addSegment({title:'Arrival',time:'8:00 AM',iconIndex:7});
   addSegment({title:'Morning Work',time:'8:15 AM',iconIndex:6});
@@ -10973,7 +11032,7 @@ function setupVisualSchedule(m){
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
     iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
     complete:row.classList.contains('is-complete'),
-    size:Number(row.dataset.segmentSize)||86
+    size:Number(row.dataset.segmentSize)||68
   }))});
   m._boardSetState=state=>{
     closePicker();
@@ -13226,6 +13285,119 @@ function setupABC(m){
     else{current='';showNext()}
   };
 
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    ro.disconnect();
+    cancelAnimationFrame(resizeFrame);
+    measurer.remove();
+  };
+}
+
+function setupNumberFlashcards(m){
+  const card=m.querySelector('.number-flashcards-card');
+  const valueEl=m.querySelector('.number-flashcards-value');
+  const modeLabel=m.querySelector('.number-flashcards-mode-label');
+  const modeSelect=m.querySelector('.number-flashcards-mode');
+  const nextButton=m.querySelector('.number-flashcards-next');
+  const modes={
+    '10':{max:10,label:'Numbers 1–10'},
+    '25':{max:25,label:'Numbers 1–25'},
+    '100':{max:100,label:'Numbers 1–100'}
+  };
+  let current='';
+  let animating=false;
+  let resizeFrame=0;
+
+  const measurer=document.createElement('span');
+  measurer.className='abc-letter abc-measurer';
+  measurer.setAttribute('aria-hidden','true');
+  card.appendChild(measurer);
+
+  const measureValueSize=value=>{
+    const rect=card.getBoundingClientRect();
+    const maxWidth=Math.max(80,rect.width-18);
+    const maxHeight=Math.max(80,rect.height-18);
+    measurer.textContent=value;
+    let low=28;
+    let high=Math.max(36,Math.min(720,Math.floor(maxHeight*1.35)));
+    let best=low;
+    while(low<=high){
+      const mid=Math.floor((low+high)/2);
+      measurer.style.fontSize=`${mid}px`;
+      const measured=measurer.getBoundingClientRect();
+      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){best=mid;low=mid+1}
+      else high=mid-1;
+    }
+    return best;
+  };
+
+  const poolForMode=mode=>{
+    const max=modes[mode]?.max||10;
+    return Array.from({length:max},(_,index)=>String(index+1));
+  };
+  const chooseValue=()=>{
+    const pool=poolForMode(m.dataset.numberFlashcardsMode||'10');
+    const candidates=pool.filter(value=>value!==current);
+    return (candidates.length?candidates:pool)[Math.floor(Math.random()*(candidates.length||pool.length))];
+  };
+  const applyValue=(value,size)=>{
+    current=value;
+    valueEl.classList.add('is-fitting');
+    valueEl.textContent=value;
+    valueEl.style.fontSize=`${size}px`;
+    card.setAttribute('aria-label',`${value}. Click for another number.`);
+    requestAnimationFrame(()=>valueEl.classList.remove('is-fitting'));
+  };
+  const fitCurrent=()=>{
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame=requestAnimationFrame(()=>{
+      if(!current)return;
+      valueEl.style.fontSize=`${measureValueSize(current)}px`;
+      valueEl.classList.remove('is-fitting');
+    });
+  };
+  const showNext=()=>{
+    if(animating)return;
+    const next=chooseValue();
+    const size=measureValueSize(next);
+    animating=true;
+    card.classList.remove('is-flipping');
+    void card.offsetWidth;
+    card.classList.add('is-flipping');
+    window.setTimeout(()=>applyValue(next,size),180);
+    window.setTimeout(()=>{card.classList.remove('is-flipping');animating=false},430);
+  };
+  const setMode=mode=>{
+    const next=mode in modes?mode:'10';
+    m.dataset.numberFlashcardsMode=next;
+    modeSelect.value=next;
+    modeLabel.textContent=modes[next].label;
+    current='';
+    showNext();
+  };
+
+  card.addEventListener('click',showNext);
+  nextButton.addEventListener('click',showNext);
+  modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
+  m.querySelector('.number-flashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.number-flashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+
+  const ro=new ResizeObserver(()=>{if(current)fitCurrent()});
+  ro.observe(card);
+  setMode('10');
+
+  m._boardGetState=()=>({mode:m.dataset.numberFlashcardsMode||'10',current});
+  m._boardSetState=state=>{
+    if(!state)return;
+    const mode=state.mode in modes?state.mode:'10';
+    m.dataset.numberFlashcardsMode=mode;
+    modeSelect.value=mode;
+    modeLabel.textContent=modes[mode].label;
+    const saved=String(state.current||'');
+    if(poolForMode(mode).includes(saved))applyValue(saved,measureValueSize(saved));
+    else{current='';showNext()}
+  };
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();

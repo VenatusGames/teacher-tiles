@@ -260,7 +260,7 @@ body.dark .module[data-bg="white"] .noise-main-controls button{color:#f7f8fa;bor
 .context-menu__icon--sticky svg,.context-menu__icon--todo svg,.context-menu__icon--visual-schedule svg,.context-menu__icon--interactive-timers svg,.context-menu__icon--clock svg,.context-menu__icon--stopwatch svg,.context-menu__icon--progress-bar svg,.context-menu__icon--weather svg,.context-menu__icon--weather-wheel svg,.context-menu__icon--season-wheel svg,.context-menu__icon--racer svg{width:23px;height:23px}
 .context-menu__icon--visual-timer svg{width:26px;height:26px}
 .context-menu__icon--interactive-timers{color:var(--text)}
-.context-menu__icon--abc text,.context-menu__icon--cvcword text,.context-menu__icon--highfrequency text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:9.2px;font-weight:900;letter-spacing:-.55px}
+.context-menu__icon--abc text,.context-menu__icon--number-flashcards text,.context-menu__icon--cvcword text,.context-menu__icon--highfrequency text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:9.2px;font-weight:900;letter-spacing:-.55px}
 .context-menu__icon--date svg{width:23px;height:23px}
 .context-menu__icon--date text{fill:currentColor;font-family:Inter,system-ui,sans-serif;font-size:8.3px;font-weight:900;letter-spacing:-.35px}
 .context-menu__icon--numberline svg{width:26px;height:26px}
@@ -4857,6 +4857,9 @@ body.dark .upcoming-control__tooltip{
   will-change:auto;
   transform-origin:0 0;
   background-size:24px 24px;
+  outline:var(--board-edge-width,2.5px) solid color-mix(in srgb,var(--text) 34%,transparent);
+  outline-offset:calc(var(--board-edge-width,2.5px) * -1);
+  box-shadow:inset 0 0 0 var(--board-edge-width,2.5px) color-mix(in srgb,var(--surface-solid) 58%,transparent);
   z-index:1;
 }
 .workspace.is-panning{cursor:grabbing}
@@ -4867,6 +4870,30 @@ body.dark .upcoming-control__tooltip{
 .module-grab-cursor{cursor:grab!important}
 .module.is-dragging .module-grab-cursor{cursor:grabbing!important}
 .snap-guide{pointer-events:none}
+.snap-disabled-indicator{
+  position:fixed;
+  z-index:50000;
+  left:50%;
+  top:18px;
+  min-height:34px;
+  padding:0 15px;
+  border:1px solid color-mix(in srgb,var(--text) 16%,transparent);
+  border-radius:999px;
+  background:color-mix(in srgb,var(--surface-solid) 94%,transparent);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font:850 11px/1 Inter,system-ui,sans-serif;
+  letter-spacing:.035em;
+  box-shadow:0 8px 24px rgba(15,23,42,.14);
+  pointer-events:none;
+  opacity:0;
+  transform:translate(-50%,-7px) scale(.96);
+  transition:opacity .14s ease,transform .14s ease;
+}
+.snap-disabled-indicator[hidden]{display:none!important}
+.snap-disabled-indicator.is-visible{opacity:1;transform:translate(-50%,0) scale(1)}
 
 
 /* Corner controls stay fixed in place and fade until the pointer is nearby. */
@@ -5351,6 +5378,104 @@ body.dark .visual-schedule-icon-option{
     padding:0 7px;
     font-size:9px;
   }
+}
+
+/* Compact, scalable visual schedule layout. */
+.visual-schedule-module{
+  height:520px;
+  min-height:300px;
+  padding:34px 14px 46px;
+  gap:8px;
+  overflow:hidden;
+}
+.visual-schedule-header{flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 2px 4px}
+.visual-schedule-heading{min-width:0;display:flex;flex-direction:column;gap:3px}
+.visual-schedule-title{padding:0;border:0;font-size:clamp(19px,5.8cqw,27px);line-height:1.02}
+.visual-schedule-count{font-size:9px;font-weight:800;letter-spacing:.045em;opacity:.48}
+.visual-schedule-toolbar{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.visual-schedule-toolbar button{
+  height:31px;
+  padding:0 10px;
+  border:1px solid color-mix(in srgb,var(--module-text,#17191d) 14%,transparent);
+  border-radius:9px;
+  color:inherit;
+  font:800 9px/1 var(--module-font,Inter,system-ui,sans-serif);
+  cursor:pointer;
+  transition:transform .13s ease,background .13s ease,border-color .13s ease,opacity .13s ease;
+}
+.visual-schedule-reset{background:transparent}
+.visual-schedule-reset:disabled{opacity:.3;cursor:default}
+.visual-schedule-add{width:auto;min-height:31px;align-self:auto;display:flex;gap:5px;background:var(--module-text,#17191d)!important;color:var(--module-bg,#fff)!important;border-color:transparent!important;font-size:9px;transform:none}
+.visual-schedule-add>span{font-size:15px;line-height:1;font-weight:600}
+.visual-schedule-toolbar button:not(:disabled):hover{transform:translateY(-1px);background:color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 22%)}
+.visual-schedule-add:hover{transform:translateY(-1px)}
+.visual-schedule-list{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  padding:1px 3px 3px 1px;
+}
+.visual-schedule-segment{
+  --visual-segment-size:68px;
+  flex:0 0 auto;
+  grid-template-columns:clamp(34px,calc(var(--visual-segment-size) - 10px),210px) minmax(0,1fr) auto;
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr);
+  min-height:var(--visual-segment-size);
+  height:var(--visual-segment-size);
+  padding:5px 6px;
+  column-gap:8px;
+  row-gap:0;
+  border-radius:12px;
+  cursor:default;
+}
+.visual-schedule-image{
+  width:clamp(34px,calc(var(--visual-segment-size) - 10px),210px);
+  height:clamp(34px,calc(var(--visual-segment-size) - 10px),210px);
+  padding:3px;
+  border-radius:9px;
+}
+.visual-schedule-segment-title{font-size:clamp(12px,4cqw,17px);line-height:1;padding:0 2px;align-self:end}
+.visual-schedule-segment-time{font-size:clamp(9px,2.8cqw,12px);line-height:1;padding:2px 2px 0;align-self:start}
+.visual-schedule-segment-actions{flex-direction:row;align-items:center;justify-content:flex-end;gap:4px}
+.visual-schedule-complete,.visual-schedule-segment-actions .visual-schedule-remove{
+  width:27px;
+  min-width:27px;
+  height:27px;
+  min-height:27px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  font-size:13px;
+  line-height:1;
+}
+.visual-schedule-complete{background:transparent;color:inherit}
+.visual-schedule-complete span{transform:scale(.9);opacity:.45}
+.visual-schedule-segment.is-complete .visual-schedule-complete span{opacity:1}
+.visual-schedule-segment.is-complete::after{content:none}
+.visual-schedule-resize{
+  right:50%;
+  bottom:-1px;
+  width:44px;
+  height:9px;
+  border-radius:5px 5px 0 0;
+  cursor:ns-resize;
+  transform:translateX(50%);
+  opacity:.22;
+}
+.visual-schedule-resize::before{
+  left:50%;right:auto;bottom:2px;width:18px;height:3px;
+  border:0;border-top:2px solid currentColor;border-bottom:1px solid currentColor;border-radius:2px;
+  transform:translateX(-50%);
+}
+.visual-schedule-customization{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);margin:0}
+@container (max-width:390px){
+  .visual-schedule-header{align-items:stretch;flex-direction:column;gap:7px}
+  .visual-schedule-toolbar{justify-content:flex-end}
+  .visual-schedule-segment{grid-template-columns:clamp(34px,calc(var(--visual-segment-size) - 10px),150px) minmax(0,1fr) auto}
+  .visual-schedule-complete,.visual-schedule-segment-actions .visual-schedule-remove{width:24px;min-width:24px;height:24px;min-height:24px}
 }
 
 
@@ -11619,6 +11744,8 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   width:22px;
   height:22px;
 }
+.context-menu__icon--number-flashcards svg{width:22px;height:22px}
+.number-flashcards-value{font-family:Inter,system-ui,sans-serif!important;font-weight:950;letter-spacing:-.065em}
 
 @container (max-width:480px){
   .abc-header{
