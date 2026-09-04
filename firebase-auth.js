@@ -95,8 +95,6 @@ let firestoreSdk = null;
 let functionsSdk = null;
 let db = null;
 let cloudFunctions = null;
-let shopBackendSafetyBlocked = false;
-let sandboxBuildActive = false;
 let currentUser = null;
 let authReady = false;
 let busy = false;
@@ -617,7 +615,6 @@ function publishShopAccount(patch = {}) {
 
 async function callShopFunction(name, data = {}) {
   if (!currentUser) throw new Error("Sign in to use the TeacherTiles shop.");
-  if (shopBackendSafetyBlocked) throw new Error("Sandbox payments need a separate Firebase sandbox project before they can be tested.");
   if (!cloudFunctions || !functionsSdk) throw new Error("The TeacherTiles shop is still loading. Try again in a moment.");
   const callable = functionsSdk.httpsCallable(cloudFunctions, name);
   return (await callable(data)).data || {};
@@ -3821,10 +3818,6 @@ async function initializeFirebaseAuth() {
   signInButton.disabled = true;
 
   try {
-    const sandboxBuild = await fetch(new URL("sandbox/sandbox.md", window.location.href), { cache: "no-store" })
-      .then(response => response.ok)
-      .catch(() => false);
-    sandboxBuildActive = sandboxBuild;
     const [appModule, authModule, firestoreModule, functionsModule] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"),
@@ -3839,8 +3832,7 @@ async function initializeFirebaseAuth() {
     const firebaseApp = appModule.initializeApp(firebaseConfig);
     auth = authModule.getAuth(firebaseApp);
     db = firestoreModule.getFirestore(firebaseApp);
-    shopBackendSafetyBlocked = sandboxBuild && firebaseConfig.projectId === "teachertiles-6739b";
-    cloudFunctions = shopBackendSafetyBlocked ? null : functionsModule.getFunctions(firebaseApp, SHOP_FUNCTION_REGION);
+    cloudFunctions = functionsModule.getFunctions(firebaseApp, SHOP_FUNCTION_REGION);
 
     try {
       await authModule.setPersistence(auth, authModule.browserLocalPersistence);
