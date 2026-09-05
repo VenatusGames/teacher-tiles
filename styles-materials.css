@@ -11,7 +11,9 @@ body:is(.theme-wood-oak,.theme-wood-spruce,.theme-wood-redwood,.theme-wood-cherr
 }
 body:is(.theme-cosmos-nebula,.theme-cosmos-pulsar,.theme-cosmos-milky-way,.theme-cosmos-red-dwarf) .workspace{
   background-color:#080c19;
-  background-size:2400px 1500px;
+  background-image:var(--cosmos-board-art);
+  background-size:100% 100%;
+  background-repeat:no-repeat;
 }
 body:is(.theme-metal-copper,.theme-metal-iron,.theme-metal-dark-steel,.theme-metal-cobalt) .workspace{
   background-size:1600px 1000px;
@@ -109,4 +111,5 @@ body:is(.theme-metal-copper,.theme-metal-iron,.theme-metal-dark-steel,.theme-met
 }
 [class*="board-preview-theme-corkboard-"]{background-size:400% auto;background-position:left top}
 [class*="board-preview-theme-cardboard-"]{background-size:300% auto;background-position:left top}
+[class*="board-preview-theme-cosmos-"]{background-image:var(--cosmos-board-art)}
 .shop-product__preview--cardboard,.shop-product__preview--corkboard{background-size:200% auto;background-position:left top}

@@ -99,7 +99,28 @@ function metal(dark, mid, light) {
   return svg(1600, 1000, defs, body);
 }
 
-function cosmos(kind, cloud, glow, secondary) {
+function cosmosBoard(kind, defs, feature, glow) {
+  // One composition spans the entire board. Rejection sampling keeps features
+  // irregularly spaced without assigning them to rows, columns, or repeat cells.
+  seed = { nebula: 9107, pulsar: 4219, 'milky-way': 7301, 'red-dwarf': 1837 }[kind];
+  const locations = [];
+  for (let attempt = 0; attempt < 4000 && locations.length < 25; attempt++) {
+    const x = random(150, 11850), y = random(150, 7850);
+    if (locations.some(p => Math.hypot(p.x - x, p.y - y) < 1250)) continue;
+    locations.push({ x, y, angle: random(-180, 180), scale: random(.85, 1.8), opacity: random(.65, 1) });
+  }
+  let body = '<rect width="12000" height="8000" fill="#080c19"/>';
+  body += locations.map(p => `<use href="#space-feature" transform="translate(${n(p.x)} ${n(p.y)}) rotate(${n(p.angle)}) scale(${n(p.scale)}) translate(-800 -500)" opacity="${n(p.opacity)}"/>`).join('');
+  // Stars are independently distributed across the board, not stamped with each feature.
+  const stars = Array.from({ length: 4 }, () => []);
+  for (let i = 0; i < 24000; i++) {
+    stars[i % 4].push(`M${n(random(2, 11998))} ${n(random(2, 7998))}h.01`);
+  }
+  body += stars.map((points, i) => `<path d="${points.join('')}" fill="none" stroke="${i === 3 ? glow : '#e4eeff'}" stroke-width="${[.8, 1.2, 1.8, 2.4][i]}" stroke-linecap="round" opacity="${[.28, .42, .58, .7][i]}"/>`).join('');
+  return svg(12000, 8000, `${defs}<g id="space-feature">${feature}</g>`, body);
+}
+
+function cosmos(kind, cloud, glow, secondary, fullBoard = false) {
   seed = 987;
   const defs = `<radialGradient id="haze"><stop stop-color="${cloud}" stop-opacity=".72"/><stop offset=".45" stop-color="${cloud}" stop-opacity=".34"/><stop offset="1" stop-color="${cloud}" stop-opacity="0"/></radialGradient><radialGradient id="halo"><stop stop-color="${glow}" stop-opacity=".65"/><stop offset=".18" stop-color="${cloud}" stop-opacity=".5"/><stop offset="1" stop-color="${cloud}" stop-opacity="0"/></radialGradient><radialGradient id="star"><stop stop-color="#fffef5"/><stop offset=".12" stop-color="${glow}"/><stop offset=".4" stop-color="${cloud}" stop-opacity=".36"/><stop offset="1" stop-color="${cloud}" stop-opacity="0"/></radialGradient><filter id="cloud" x="-45%" y="-60%" width="190%" height="220%"><feTurbulence type="fractalNoise" baseFrequency=".007 .011" numOctaves="3" seed="31" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="125"/><feGaussianBlur stdDeviation="15"/></filter><filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>`;
   let body = '<rect width="1600" height="1000" fill="#080c19"/>';
@@ -115,6 +136,7 @@ function cosmos(kind, cloud, glow, secondary) {
   } else {
     body += `<ellipse cx="1030" cy="430" rx="520" ry="400" fill="url(#haze)"/><circle cx="1030" cy="430" r="240" fill="url(#halo)"/><circle cx="1030" cy="430" r="73" fill="${cloud}" opacity=".45" filter="url(#cloud)"/><circle cx="1030" cy="430" r="45" fill="url(#star)"/><path d="M987 432C950 375 1053 336 1071 412" fill="none" stroke="${glow}" stroke-width="2" opacity=".45" filter="url(#soft)"/><ellipse cx="470" cy="640" rx="400" ry="240" fill="url(#haze)" opacity=".25"/>`;
   }
+  if (fullBoard) return cosmosBoard(kind, defs, body.replace('<rect width="1600" height="1000" fill="#080c19"/>', ''), glow);
   for (let i = 0; i < 1250; i++) {
     const x = random(3, 1597), y = random(3, 997), r = random(.25, i % 29 === 0 ? 1.5 : .85);
     body += `<circle cx="${n(x)}" cy="${n(y)}" r="${n(r)}" fill="${i % 7 === 0 ? glow : '#e4eeff'}" opacity="${n(random(.18, .85))}"/>`;
@@ -127,8 +149,11 @@ for (const [name, colors] of Object.entries({ oak: ['#b98b59', '#634128', '#eed5
 for (const [name, pin] of Object.entries({ red: '#ce4549', blue: '#397fc2', green: '#408e62', gold: '#dda936' })) write(`corkboard-${name}`, cork(pin));
 for (const [name, colors] of Object.entries({ kraft: ['#f6efdd', '#5b4936'], white: ['#fffdf5', '#65615b', true], blue: ['#bcd8e1', '#345567'], rose: ['#e4bbc0', '#714b55'] })) write(`cardboard-${name}`, cardboard(...colors));
 for (const [name, colors] of Object.entries({ copper: ['#704230', '#a26b4c', '#d4a382'], iron: ['#555e67', '#87919a', '#c1cbd0'], 'dark-steel': ['#171e26', '#303b47', '#606e7c'], cobalt: ['#122d49', '#2b5276', '#6388a6'] })) write(`metal-${name}`, metal(...colors));
-for (const [name, colors] of Object.entries({ nebula: ['#713c9f', '#e0a1ec', '#29799a'], pulsar: ['#9c442c', '#ffd4a0', '#754952'], 'milky-way': ['#536c95', '#e3e9ed', '#956f99'], 'red-dwarf': ['#99333d', '#ffb08e', '#6a263a'] })) write(`cosmos-${name}`, cosmos(name, ...colors));
-console.log('Generated 20 material theme SVGs.');
+for (const [name, colors] of Object.entries({ nebula: ['#713c9f', '#e0a1ec', '#29799a'], pulsar: ['#9c442c', '#ffd4a0', '#754952'], 'milky-way': ['#536c95', '#e3e9ed', '#956f99'], 'red-dwarf': ['#99333d', '#ffb08e', '#6a263a'] })) {
+  write(`cosmos-${name}`, cosmos(name, ...colors));
+  write(`cosmos-${name}-board`, cosmos(name, ...colors, true));
+}
+console.log('Generated 20 material theme SVGs and four non-repeating Cosmos boards.');
 
 // One artwork assignment for every surface prevents previews drifting from the board.
 const families = { wood: ['oak', 'spruce', 'redwood', 'cherry'], cardboard: ['kraft', 'white', 'blue', 'rose'], metal: ['copper', 'iron', 'dark-steel', 'cobalt'], cosmos: ['nebula', 'pulsar', 'milky-way', 'red-dwarf'], corkboard: ['red', 'blue', 'green', 'gold'] };
@@ -139,6 +164,7 @@ for (const [family, variants] of Object.entries(families)) {
     const card = `${family === 'corkboard' ? 'cork' : family}-${variant}`;
     const shop = ['wood', 'metal', 'cosmos'].includes(family) ? `,\n.shop-product__preview--${family} > i:nth-child(${index + 1})` : '';
     css += `body.theme-${theme},\n.theme-card--${card},\n.theme-pack__sheet--${card},\n.board-preview-theme-${theme}${shop}{--material-art:url("assets/themes/${theme}.svg")}\n`;
+    if (family === 'cosmos') css += `body.theme-${theme},\n.board-preview-theme-${theme}{--cosmos-board-art:url("assets/themes/${theme}-board.svg")}\n`;
   });
 }
 fs.writeFileSync(path.join(output, 'palette.css'), css);

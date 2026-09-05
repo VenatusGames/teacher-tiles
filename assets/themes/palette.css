@@ -60,21 +60,29 @@ body.theme-cosmos-nebula,
 .theme-pack__sheet--cosmos-nebula,
 .board-preview-theme-cosmos-nebula,
 .shop-product__preview--cosmos > i:nth-child(1){--material-art:url("assets/themes/cosmos-nebula.svg")}
+body.theme-cosmos-nebula,
+.board-preview-theme-cosmos-nebula{--cosmos-board-art:url("assets/themes/cosmos-nebula-board.svg")}
 body.theme-cosmos-pulsar,
 .theme-card--cosmos-pulsar,
 .theme-pack__sheet--cosmos-pulsar,
 .board-preview-theme-cosmos-pulsar,
 .shop-product__preview--cosmos > i:nth-child(2){--material-art:url("assets/themes/cosmos-pulsar.svg")}
+body.theme-cosmos-pulsar,
+.board-preview-theme-cosmos-pulsar{--cosmos-board-art:url("assets/themes/cosmos-pulsar-board.svg")}
 body.theme-cosmos-milky-way,
 .theme-card--cosmos-milky-way,
 .theme-pack__sheet--cosmos-milky-way,
 .board-preview-theme-cosmos-milky-way,
 .shop-product__preview--cosmos > i:nth-child(3){--material-art:url("assets/themes/cosmos-milky-way.svg")}
+body.theme-cosmos-milky-way,
+.board-preview-theme-cosmos-milky-way{--cosmos-board-art:url("assets/themes/cosmos-milky-way-board.svg")}
 body.theme-cosmos-red-dwarf,
 .theme-card--cosmos-red-dwarf,
 .theme-pack__sheet--cosmos-red-dwarf,
 .board-preview-theme-cosmos-red-dwarf,
 .shop-product__preview--cosmos > i:nth-child(4){--material-art:url("assets/themes/cosmos-red-dwarf.svg")}
+body.theme-cosmos-red-dwarf,
+.board-preview-theme-cosmos-red-dwarf{--cosmos-board-art:url("assets/themes/cosmos-red-dwarf-board.svg")}
 body.theme-corkboard-red,
 .theme-card--cork-red,
 .theme-pack__sheet--cork-red,
