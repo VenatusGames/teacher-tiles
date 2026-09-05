@@ -70,7 +70,7 @@ jobs:
           import re
 
           version = os.environ['ASSET_VERSION']
-          asset_pattern = r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!//)[^"\']+\.(?:js|css))(?P<suffix>["\'])'
+          asset_pattern = r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!//)[^"\'?]+\.(?:js|css))(?:\?[^"\']*)?(?P<suffix>["\'])'
 
           indexes = [Path('_site/index.html'), Path('_site/sandbox/index.html')]
           for index in indexes:
@@ -78,6 +78,10 @@ jobs:
               local_assets = list(re.finditer(asset_pattern, html))
               if not local_assets:
                   raise SystemExit(f'No local JavaScript or CSS assets found in {index}')
+              for match in local_assets:
+                  asset = (index.parent / match.group('asset')).resolve()
+                  if not asset.is_file():
+                      raise SystemExit(f'Missing local asset referenced by {index}: {match.group("asset")}')
 
               html, replacements = re.subn(
                   asset_pattern,

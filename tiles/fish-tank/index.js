@@ -12,21 +12,37 @@
     else {state.loud=Math.max(0,state.loud-dt*2);state.scared=Math.max(0,state.scared-dt);if(level<threshold-5)state.quiet+=dt;}
     return state;
   }
+  function advance(state,{mode,listening,level=0,threshold=45},dt){
+    if(mode==='ambient')ecology(state,0,threshold,dt);
+    else if(listening)ecology(state,level,threshold,dt);
+    return mode==='ambient'||listening;
+  }
   function setup(m){
     const canvas=m.querySelector('canvas'),ctx=canvas.getContext('2d'),button=m.querySelector('.fish-mic'),status=m.querySelector('.fish-status'),meter=m.querySelector('meter'),threshold=m.querySelector('.fish-threshold'),sensitivity=m.querySelector('.fish-sensitivity'),collection=m.querySelector('.fish-collection');
-    let fishes=[],food=[],frame=0,last=0,time=0,active=false,pending=false,disposed=false,visible=true,stream=null,audio=null,analyser=null,samples=null,request=0,level=0,nextArrival=8,lastFeed=0,lastStatus='',lastNotify=0;
+    let fishes=[],food=[],frame=0,last=0,time=0,active=false,pending=false,disposed=false,visible=true,stream=null,audio=null,analyser=null,samples=null,request=0,level=0,nextArrival=8,lastFeed=0,lastStatus='',lastNotify=0,mode='ambient';
     const environment={quiet:0,loud:0,scared:0};
     const images=species.map(s=>{const img=new Image();img.src=`tiles/fish-tank/assets/${s[0]}.png`;img.onload=()=>{if(!disposed)draw();};return img;});
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
     function addFish(index,inside=false){const s=species[index],direction=Math.random()<.5?1:-1;fishes.push({index,x:inside?.15+Math.random()*.7:direction>0?-.14:1.14,y:.2+Math.random()*.52,dir:direction,speed:.022+Math.random()*.025,size:s[0]==='shark'?.22:s[2]>0?.17:.12,phase:Math.random()*6.28});}
     [0,3,5,6].forEach(i=>addFish(i,true));
     function say(text){if(text!==lastStatus){status.textContent=text;lastStatus=text;}}
-    function stop(message='Microphone off · Feed the fish for fun'){
+    function stop(message='Microphone off · Enable it or choose No mic mode'){
       ++request;active=false;pending=false;stream?.getTracks().forEach(t=>t.stop());stream=null;
       if(audio&&audio.state!=='closed')audio.close().catch(()=>{});audio=analyser=samples=null;level=0;environment.quiet=environment.loud=environment.scared=0;nextArrival=8;
       button.disabled=false;button.textContent='Enable microphone';button.setAttribute('aria-pressed','false');meter.value=0;say(message);
     }
+    function setMode(next,{notify=true}={}){
+      next=next==='microphone'?'microphone':'ambient';
+      if(mode!==next){stop();mode=next;}
+      m.dataset.fishMode=mode;button.hidden=mode!=='microphone';meter.hidden=mode!=='microphone';
+      m.querySelectorAll('[data-fish-mode]').forEach(b=>{const selected=b.dataset.fishMode===mode;b.classList.toggle('is-active',selected);b.setAttribute('aria-pressed',String(selected));});
+      m.querySelectorAll('.fish-mic-setting').forEach(el=>el.hidden=mode!=='microphone');
+      say(mode==='ambient'?'No mic mode · Visitors arrive over time':'Microphone off · Enable it to listen');
+      if(notify)notifyBoardChanged('fish-mode');wake();
+    }
+    m.querySelectorAll('[data-fish-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.fishMode)));
     button.addEventListener('click',async()=>{
+      if(mode!=='microphone')return;
       if(active||pending){stop();return;}
       if(!navigator.mediaDevices?.getUserMedia){say('Microphone unavailable. You can still feed the fish.');return;}
       pending=true;button.textContent='Cancel microphone request';say('Allow microphone access to invite more fish.');const token=++request;
@@ -46,10 +62,12 @@
     function settings(){threshold.value=String(clamp(Number(threshold.value)||45,15,85));sensitivity.value=String(clamp(Number(sensitivity.value)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;notifyBoardChanged('fish-settings');}
     threshold.addEventListener('input',settings);sensitivity.addEventListener('input',settings);
     function update(dt){
-      if(active&&analyser){
+      if(mode==='microphone'&&active&&analyser){
         analyser.getByteTimeDomainData(samples);let sum=0;for(const v of samples)sum+=((v-128)/128)**2;
         const raw=clamp((20*Math.log10(Math.sqrt(sum/samples.length)||.00001)+60)/60*100,0,100)*Number(sensitivity.value)/100;
-        level+= (clamp(raw,0,100)-level)*Math.min(1,dt*9);meter.value=level;ecology(environment,level,Number(threshold.value),dt);
+        level+= (clamp(raw,0,100)-level)*Math.min(1,dt*9);meter.value=level;
+      }
+      if(advance(environment,{mode,listening:active,level,threshold:Number(threshold.value)},dt)){
         if(environment.quiet>=nextArrival){
           nextArrival=environment.quiet+8;
           const unlocked=eligible(environment.quiet);const visitor=[...unlocked].reverse().find(s=>s[2]>0&&!fishes.some(f=>species[f.index]===s));
@@ -57,7 +75,7 @@
           if(fishes.length<18){addFish(species.indexOf(visitor||unlocked[Math.floor(Math.random()*Math.min(7,unlocked.length))]));notifyBoardChanged('fish-visitor');}
         }
         if(environment.quiet===0)nextArrival=8;
-        say(environment.scared>0?'A little loud — the fish are finding shelter.':`Quiet for ${Math.floor(environment.quiet)}s · ${environment.quiet<30?'More fish are on their way':environment.quiet<180?'Keep it calm for rare visitors':'Rare visitors feel at home'}`);
+        say(mode==='ambient'?`No mic · ${Math.floor(environment.quiet)}s · ${environment.quiet<30?'Visitors on their way':'Rare visitors are exploring'}`:environment.scared>0?'A little loud — the fish are finding shelter.':`Quiet for ${Math.floor(environment.quiet)}s · ${environment.quiet<30?'More fish are on their way':environment.quiet<180?'Keep it calm for rare visitors':'Rare visitors feel at home'}`);
       }
       for(const f of fishes){
         if(environment.scared>0){f.dir=f.x<.5?-1:1;f.x+=f.dir*.45*dt;f.x=clamp(f.x,-.3,1.3);continue;}
@@ -91,9 +109,9 @@
     const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(!visible){cancelAnimationFrame(frame);frame=0;last=0;}else wake();});observer.observe(canvas);
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;last=0;if(active||pending)stop('Microphone paused while the tab is hidden.');}else wake();}
     document.addEventListener('visibilitychange',visibility);
-    m._boardGetState=()=>({threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.map(f=>f.index)});
-    m._boardSetState=s=>{stop();food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);(stock.length?stock:[0,3,5,6]).forEach(i=>addFish(i,true));draw();};
-    m._cleanup=()=>{disposed=true;stop();cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);images.forEach(img=>img.onload=null);};wake();
+    m._boardGetState=()=>({mode,threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.map(f=>f.index)});
+    m._boardSetState=s=>{stop();setMode(s?.mode,{notify:false});food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);(stock.length?stock:[0,3,5,6]).forEach(i=>addFish(i,true));draw();};
+    const prior=m._cleanup;m._cleanup=()=>{disposed=true;stop();cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);images.forEach(img=>img.onload=null);prior?.();};setMode('ambient',{notify:false});wake();
   }
-  window.TeacherTilesFishTank=Object.freeze({setup,eligible,ecology});
+  window.TeacherTilesFishTank=Object.freeze({setup,eligible,ecology,advance});
 })();

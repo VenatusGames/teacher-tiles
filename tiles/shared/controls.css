@@ -1,0 +1,18 @@
+/* Standalone tiles use the same module tokens and customization-bar controls. */
+.dice-module,.seating-chart-module,.fish-tank-module{background:var(--module-bg,#fff);color:var(--module-text,#17191d);font-family:var(--module-font,Inter,system-ui,sans-serif)}
+.tile-toolbar{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+.tile-action,.tile-setting select,.tile-setting input[type="number"]{min-height:32px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 12%,transparent);border-radius:9px;background:color-mix(in srgb,var(--module-bg,#fff) 92%,var(--module-text,#17191d) 8%);color:var(--module-text,#17191d);padding:0 11px;font-family:inherit;font-size:10px;font-weight:800;line-height:1.2}
+.tile-action:hover{background:color-mix(in srgb,var(--module-bg,#fff) 85%,var(--module-text,#17191d) 15%)}
+.tile-action:disabled{opacity:.4;cursor:not-allowed}.tile-action--primary{background:var(--module-text,#17191d);color:var(--module-bg,#fff)}
+.tile-action--primary:hover{background:color-mix(in srgb,var(--module-text,#17191d) 85%,var(--module-bg,#fff) 15%)}
+.tile-settings-wrap{position:relative}.tile-settings-panel{position:absolute;z-index:110;right:0;bottom:calc(100% + 9px);width:240px;max-width:calc(100cqw - 32px);padding:14px;display:grid;gap:12px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:15px;background:var(--module-bg,#fff);color:var(--module-text,#17191d);box-shadow:0 18px 42px rgba(15,23,42,.2);text-align:left;font-family:inherit}
+.tile-settings-panel[hidden]{display:none!important}.tile-settings-panel>strong{font-size:12px;font-weight:900}.tile-settings-panel>small{font-size:9px;font-weight:650;line-height:1.5;opacity:.65}
+.tile-setting{display:grid;gap:6px;font-size:10px;font-weight:750}.tile-setting>span{display:flex;justify-content:space-between;align-items:center;gap:8px}.tile-setting select{width:100%;padding:7px 9px;min-height:34px}.tile-setting input[type="range"]{width:100%;accent-color:var(--module-text,#17191d)}
+.tile-settings-panel .tile-action{width:100%}.tile-settings-panel .tile-setting[hidden]{display:none}
+.tile-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border-radius:11px;background:color-mix(in srgb,var(--module-bg,#fff) 88%,var(--module-text,#17191d) 12%)}
+.tile-mode-switch button{min-height:32px;min-width:0;border:0;border-radius:8px;background:transparent;color:var(--module-text,#17191d);font-family:inherit;font-size:10px;font-weight:800;line-height:1.25;opacity:.6}
+.tile-mode-switch button.is-active{background:var(--module-bg,#fff);box-shadow:0 3px 9px rgba(15,23,42,.09);opacity:1}
+.module.has-tile-settings-open .customization-bar{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+.tile-settings-toggle svg{width:18px;height:18px;display:block}
+.tile-settings-panel{max-height:calc(100cqh - 95px);overflow-y:auto;overscroll-behavior:contain}
+.context-menu__icon--dice svg,.context-menu__icon--seating svg,.context-menu__icon--fish svg{width:25px;height:25px;display:block;flex:none}

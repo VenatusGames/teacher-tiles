@@ -11,8 +11,8 @@
   function shuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
   function setup(m){
     const room=m.querySelector('.seating-room'),status=m.querySelector('.seating-status'),assignment=m.querySelector('.seating-assignment'),layoutSelect=m.querySelector('.seating-layout');
-    const editor=m.querySelector('.seating-editor'),nameInput=m.querySelector('.seating-names');
-    let names=[],desks=[],selected='',className='',serial=0,cancelDrag=null;
+    const editor=m.querySelector('.seating-editor'),importPanel=m.querySelector('.seating-class-import'),dashboard=m.querySelector('.seating-dashboard');
+    let names=[],desks=[],selected='',className='',classId='',classLogo='👥',classReady=false,serial=0,cancelDrag=null;
     const changed=()=>notifyBoardChanged('seating-chart');
     const selectedDesk=()=>desks.find(d=>d.id===selected);
     function dimensions(count,kind){
@@ -22,6 +22,9 @@
       return kind==='teacher'?[17,9]:kind==='table'?[16,12]:[width,height];
     }
     function render(){
+      importPanel.hidden=classReady;dashboard.hidden=!classReady;
+      m.querySelector('.seating-class-name').textContent=className||'Class';
+      m.querySelector('.seating-class-logo').textContent=classLogo;
       room.replaceChildren();const front=document.createElement('div');front.className='seating-front';front.textContent='FRONT OF CLASSROOM';room.append(front);
       const sizes={desk:dimensions(desks.length,'desk'),table:dimensions(desks.length,'table'),teacher:dimensions(desks.length,'teacher')};
       for(const desk of desks){
@@ -44,7 +47,7 @@
         room.append(el);
       }
       updateEditor();const seated=new Set(desks.map(d=>d.name).filter(Boolean));
-      status.textContent=names.length?`${className||'Class'} · ${seated.size}/${names.length} seated · Drag desks to arrange`:'Load a saved class or paste student names to begin.';
+      status.textContent=names.length?`${seated.size}/${names.length} seated · Drag desks to arrange`:'This class has no students yet. Add students in your class roster.';
     }
     function updateEditor(){
       const desk=selectedDesk();editor.hidden=!desk;
@@ -53,11 +56,22 @@
     }
     function arrange(){const positions=layout(desks.length,layoutSelect.value);desks.forEach((d,i)=>Object.assign(d,positions[i],{angle:0}));render();changed();}
     function load(students,roster){
-      names=[...new Set(students.map(v=>String(v).trim().slice(0,80)).filter(Boolean))].slice(0,80);className=String(roster?.name||'').slice(0,80);
+      names=normalizeRosterNames(students).slice(0,80);className=String(roster.name||'').slice(0,80);classId=roster.id;classLogo=normalizeClassLogo(roster.logo);classReady=true;
       const positions=layout(names.length,layoutSelect.value);desks=names.map((name,i)=>({id:`seat-${++serial}`,name,kind:'desk',angle:0,pinned:false,...positions[i]}));selected='';render();changed();
     }
-    const detach=attachClassRosterLoader(m.querySelector('.seating-toolbar'),load);
-    m.querySelector('.seating-import').addEventListener('click',()=>{load(nameInput.value.split(/[\n,]+/));m.querySelector('details').open=false;});
+    const detach=attachClassRosterLoader(m.querySelector('.seating-loader-anchor'),load);
+    m.querySelector('.seating-change-class').addEventListener('click',()=>{cancelDrag?.();classId='';classReady=false;className='';names=[];desks=[];selected='';render();changed();});
+    function syncClass(){
+      if(!classId)return;
+      const roster=readClassRosters().find(r=>r.id===classId);
+      if(!roster){classReady=false;render();return;}
+      names=normalizeRosterNames(roster.students).slice(0,80);className=roster.name;classLogo=normalizeClassLogo(roster.logo);classReady=true;
+      desks.forEach(d=>{if(d.name&&!names.includes(d.name)){d.name='';d.pinned=false;}});
+      // Keep teacher-created desk locations and locked assignments when the
+      // shared class roster changes. New students can be placed in empty desks.
+      render();
+    }
+    window.addEventListener('teachertiles:classeschange',syncClass);
     m.querySelector('.seating-arrange').addEventListener('click',arrange);
     m.querySelector('.seating-randomize').addEventListener('click',()=>{
       const pinned=new Set(desks.filter(d=>d.pinned).map(d=>d.name));const available=shuffle(names.filter(n=>!pinned.has(n)));
@@ -68,15 +82,16 @@
     m.querySelector('.seating-rotate').addEventListener('click',()=>{const d=selectedDesk();if(d){d.angle=(d.angle+90)%360;render();changed();}});
     m.querySelector('.seating-pin').addEventListener('click',()=>{const d=selectedDesk();if(d){d.pinned=!d.pinned;render();changed();}});
     m.querySelector('.seating-delete').addEventListener('click',()=>{desks=desks.filter(d=>d.id!==selected);selected='';render();changed();});
-    m._boardGetState=()=>({names:[...names],desks:desks.map(d=>({...d})),className,layout:layoutSelect.value});
+    m._boardGetState=()=>({classId,names:[...names],desks:desks.map(d=>({...d})),className,layout:layoutSelect.value});
     m._boardSetState=s=>{
       cancelDrag?.();names=[...new Set((Array.isArray(s?.names)?s.names:[]).map(n=>String(n).slice(0,80)))].filter(Boolean).slice(0,80);const used=new Set();
       layoutSelect.value=['rows','groups','horseshoe'].includes(s?.layout)?s.layout:'rows';
       const saved=(Array.isArray(s?.desks)?s.desks:[]).filter(d=>d&&typeof d==='object').slice(0,80);
       desks=saved.map(d=>{const name=names.includes(d.name)&&!used.has(d.name)?d.name:'';if(name)used.add(name);const kind=['desk','table','teacher'].includes(d.kind)?d.kind:'desk',[w,h]=dimensions(saved.length,kind);return{id:`seat-${++serial}`,name,kind,x:limit(d.x,0,100-w),y:limit(d.y,10,100-h),angle:[0,90,180,270].includes(d.angle)?d.angle:0,pinned:!!d.pinned};});
-      className=String(s?.className||'').slice(0,80);selected='';render();
+      className=String(s?.className||'').slice(0,80);classId=String(s?.classId||'').slice(0,160);classReady=!classId&&names.length>0;selected='';
+      if(classId)syncClass();else render();
     };
-    m._cleanup=()=>{cancelDrag?.();detach();};render();
+    const prior=m._cleanup;m._cleanup=()=>{cancelDrag?.();detach();window.removeEventListener('teachertiles:classeschange',syncClass);prior?.();};render();
   }
   window.TeacherTilesSeating=Object.freeze({setup,layout,shuffle});
 })();

@@ -3897,7 +3897,7 @@ document.addEventListener("click", event => {
     ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #tile-skins-shelf-toggle, #shop-toggle, #boards-toggle")
     : null;
 
-  const sandboxShopAccess = sandboxBuildActive && Boolean(window.TeacherTilesSandbox?.coinsEnabled) && target?.id !== "boards-toggle";
+  const sandboxShopAccess = document.body.classList.contains("sandbox-mode") && Boolean(window.TeacherTilesSandbox?.coinsEnabled) && target?.id !== "boards-toggle";
   if (!target || !gatedFeatureIds.has(target.id) || currentUser || sandboxShopAccess) return;
 
   event.preventDefault();

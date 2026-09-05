@@ -2375,7 +2375,7 @@ function closeMenu(){
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
-  Object.freeze({id:'dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',free:true,released:20}),
+  Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',free:true,released:20}),
   Object.freeze({
     id:'magnifier-classic',
     productId:'tile-skin-magnifier-classic',
@@ -2574,11 +2574,28 @@ function applyNewModuleTileSkin(m,type,requestedSkinId=''){
   if(skin)m.dataset.tileSkin=skin.id;
 }
 
+// Optional controls for standalone tile files use the board's existing
+// palette, typography, state notification and keyboard interaction helpers.
+function setupClassroomTileControls(m){
+  m.querySelector('.tile-bg')?.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.tile-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  m.querySelector('.tile-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  const toggle=m.querySelector('.tile-settings-toggle'),panel=m.querySelector('.tile-settings-panel');
+  if(!toggle||!panel)return;
+  const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));m.classList.toggle('has-tile-settings-open',open);};
+  toggle.addEventListener('click',()=>setOpen(panel.hidden));
+  const outside=event=>{if(!panel.hidden&&!toggle.parentElement.contains(event.target))setOpen(false);};
+  document.addEventListener('pointerdown',outside);
+  m.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){setOpen(false);toggle.focus();event.stopPropagation();}});
+  const prior=m._cleanup;m._cleanup=()=>{document.removeEventListener('pointerdown',outside);prior?.();};
+}
+
 function setupModuleByType(m,type){
+  setupCommon(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
-  setupCommon(m);
+  if(['dice','seatingchart','fishtank'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);
@@ -12043,7 +12060,7 @@ function setupCollectionShelf(){
 
   const makeTileSkinArtwork=skin=>{
     if(skin.id==='magnifier-classic')return makeClassicMagnifierArtwork();
-    if(skin.id==='dice-clear'){const art=document.createElement('span');art.className='tile-skin-art tile-skin-art--dice-clear';art.textContent='⚄';return art;}
+    if(skin.id==='dice-clear'){const art=document.createElement('span');art.className='tile-skin-art tile-skin-art--dice-clear';art.innerHTML="<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\"/><g fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"1.6\"/><circle cx=\"16\" cy=\"8\" r=\"1.6\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\"/><circle cx=\"8\" cy=\"16\" r=\"1.6\"/><circle cx=\"16\" cy=\"16\" r=\"1.6\"/></g></svg>";return art;}
     const art=document.createElement('span');
     art.className=`tile-skin-art tile-skin-art--${skin.id}`;
     if(skin.id==='youtube-retro-tv'){
@@ -17367,7 +17384,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled'
+  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open'
 ]);
 let activeTeacherTilesBoardId='';
 

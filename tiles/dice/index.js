@@ -3,7 +3,7 @@
   const dots={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
   function value(){const n=new Uint32Array(1);do{crypto.getRandomValues(n);}while(n[0]>=4294967292);return n[0]%6+1;}
   function setup(m){
-    const faces=m.querySelector('.dice-faces'),result=m.querySelector('.dice-result'),add=m.querySelector('.dice-add'),remove=m.querySelector('.dice-remove'),skin=m.querySelector('.dice-skin');
+    const faces=m.querySelector('.dice-faces'),result=m.querySelector('.dice-result'),add=m.querySelector('.dice-add'),remove=m.querySelector('.dice-remove');
     let values=[1],timeout=0;
     function render(){
       faces.replaceChildren();faces.dataset.count=String(values.length);
@@ -13,7 +13,6 @@
       });
       result.textContent=values.length>1?`${values.join(' + ')} = ${values.reduce((a,b)=>a+b,0)}`:`Rolled ${values[0]}`;
       add.disabled=values.length>=4;remove.disabled=values.length<=1;
-      skin.value=m.dataset.tileSkin==='dice-clear'?'dice-clear':'';
     }
     function roll(){
       clearTimeout(timeout);m.classList.remove('dice-rolling');values=values.map(value);render();
@@ -24,10 +23,9 @@
     m.querySelector('.dice-roll').addEventListener('click',roll);
     add.addEventListener('click',()=>{if(values.length<4){values.push(1);render();notifyBoardChanged('dice-count');}});
     remove.addEventListener('click',()=>{if(values.length>1){values.pop();render();notifyBoardChanged('dice-count');}});
-    skin.addEventListener('change',()=>{if(skin.value==='dice-clear')m.dataset.tileSkin='dice-clear';else delete m.dataset.tileSkin;notifyBoardChanged('dice-skin');});
     m._boardGetState=()=>({values:[...values]});
     m._boardSetState=s=>{clearTimeout(timeout);m.classList.remove('dice-rolling');values=(Array.isArray(s?.values)?s.values:[1]).slice(0,4).map(v=>Number.isInteger(v)&&v>=1&&v<=6?v:1);if(!values.length)values=[1];render();};
-    m._cleanup=()=>clearTimeout(timeout);render();
+    const prior=m._cleanup;m._cleanup=()=>{clearTimeout(timeout);prior?.();};render();
   }
   window.TeacherTilesDice=Object.freeze({setup,value});
 })();
