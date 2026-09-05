@@ -125,7 +125,8 @@ exports.createCoinCheckoutSession = onCall(
             unit_amount: pack.unitAmount,
             product_data: {
               name: pack.name,
-              description: "Virtual coins for cosmetic items inside TeacherTiles"
+              description: "Virtual coins for cosmetic items inside TeacherTiles",
+              tax_code: "txcd_10000000"
             }
           }
         }],
