@@ -1713,7 +1713,7 @@ function showBoardMinimap(){
 function beginBoardMinimapDelay(){
   clearTimeout(boardMinimapShowTimer);
   clearTimeout(boardMinimapHideTimer);
-  boardMinimapShowTimer=setTimeout(showBoardMinimap,700);
+  boardMinimapShowTimer=setTimeout(showBoardMinimap,900);
 }
 
 function scheduleBoardMinimapHide(delay=1100){
@@ -2865,6 +2865,14 @@ function isInteractiveModuleTarget(target,m){
   }
   return false;
 }
+
+const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','magnifier-classic']);
+function isFloatingTileSkinDragSurface(target,m){
+  if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
+  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return false;
+  const action=target.closest('button,[role="button"]');
+  return !action||(m.dataset.tileSkin==='stoplight-freestanding'&&action.classList.contains('stoplight-stage'));
+}
 function setupCommon(m){
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
@@ -2965,8 +2973,10 @@ function setupDrag(m){
     return{left:sx,top:sy,targetX,targetY,seamX,seamY,xStart,xLength,yStart,yLength};
   };
   h.addEventListener('pointerdown',e=>{
-    if(e.button!==0||isInteractiveModuleTarget(e.target,m))return;
-    e.preventDefault();
+    const floatingDragSurface=isFloatingTileSkinDragSurface(e.target,m);
+    if(e.button!==0||(isInteractiveModuleTarget(e.target,m)&&!floatingDragSurface))return;
+    const clickableStoplightSurface=floatingDragSurface&&e.target instanceof Element&&Boolean(e.target.closest('.stoplight-stage'));
+    if(!clickableStoplightSurface)e.preventDefault();
     m.classList.add('is-dragging');
     document.body.classList.add('is-module-dragging');
     bringToFront(m);
@@ -2986,10 +2996,11 @@ function setupDrag(m){
     let tugBreakDx=0,tugBreakDy=0,tugBreakVisualDx=0,tugBreakVisualDy=0;
     const dragStartGroup=[...group];
     const origins=new Map(group.map(g=>[g,captureModuleTransform(g)]));
-    h.setPointerCapture(e.pointerId);
+    let dragCaptured=false;
+    if(!clickableStoplightSurface){h.setPointerCapture(e.pointerId);dragCaptured=true}
     const sx=e.clientX,sy=e.clientY;
     const tugHoldTimer=tugCandidate?setTimeout(()=>{tugArmed=true;m.classList.add('is-tug-armed')},520):null;
-    let pending=null,overTrash=false;
+    let pending=null,overTrash=false,dragMoved=false;
     let snappingDisabled=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
     const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
@@ -3017,6 +3028,10 @@ function setupDrag(m){
       setSnappingDisabled(ev.shiftKey);
       const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
       const distance=Math.hypot(ev.clientX-sx,ev.clientY-sy);
+      if(distance>=4){
+        dragMoved=true;
+        if(!dragCaptured){try{h.setPointerCapture(e.pointerId);dragCaptured=true}catch{}}
+      }
       if(tugCandidate&&!tugArmed&&distance>8){clearTimeout(tugHoldTimer);tugCandidate=false}
       if(tugArmed&&!tugged&&distance>=36){
         tugBreakDx=dx;tugBreakDy=dy;
@@ -3051,8 +3066,16 @@ function setupDrag(m){
         Object.assign(guideY.style,{top:`${pending.seamY}px`,left:`${st}px`,width:`${len}px`});guideY.classList.add('is-visible')
       }
     };
-    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel)};
+    const dragEventTarget=clickableStoplightSurface?window:h;
+    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);dragEventTarget.removeEventListener('pointermove',move);dragEventTarget.removeEventListener('pointerup',end);dragEventTarget.removeEventListener('pointercancel',cancel)};
+    const suppressPostDragClick=()=>{
+      if(!dragMoved)return;
+      const block=event=>{event.preventDefault();event.stopImmediatePropagation()};
+      m.addEventListener('click',block,{capture:true,once:true});
+      setTimeout(()=>m.removeEventListener('click',block,true),0);
+    };
     const end=()=>{
+      suppressPostDragClick();
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}
       let willSnap=false;
@@ -3072,9 +3095,9 @@ function setupDrag(m){
       pulse(multi?group:(willSnap?joined:[m]));
     };
     const cancel=()=>{for(const [g,origin] of origins)applyModuleTransform(g,origin);if(tugged)assignSnapGroup(connectedToAnchor);cleanup()};
-    h.addEventListener('pointermove',move);
-    h.addEventListener('pointerup',end);
-    h.addEventListener('pointercancel',cancel);
+    dragEventTarget.addEventListener('pointermove',move);
+    dragEventTarget.addEventListener('pointerup',end);
+    dragEventTarget.addEventListener('pointercancel',cancel);
   });
 }
 
@@ -3375,8 +3398,15 @@ function setupTimer(m){
       m.classList.remove('is-settings-open');
     },520);
   };
+  const releasePointerSettings=()=>{
+    if(m.dataset.tileSkin==='timer-freestanding'){
+      const active=document.activeElement;
+      if(active instanceof HTMLElement&&controls?.contains(active))active.blur();
+    }
+    releaseSettings();
+  };
   m.addEventListener('pointerenter',keepSettingsOpen);
-  m.addEventListener('pointerleave',releaseSettings);
+  m.addEventListener('pointerleave',releasePointerSettings);
   m.addEventListener('focusin',keepSettingsOpen);
   m.addEventListener('focusout',releaseSettings);
   controls?.addEventListener('pointerenter',keepSettingsOpen);
