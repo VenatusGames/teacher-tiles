@@ -85,6 +85,10 @@ const boardsBack = document.getElementById("boards-back");
 const boardsGrid = document.getElementById("boards-grid");
 const boardsLoading = document.getElementById("boards-loading");
 const boardsSaveStatus = document.getElementById("boards-save-status");
+const boardsLibraryTab = document.getElementById("boards-library-tab");
+const boardTemplatesTab = document.getElementById("board-templates-tab");
+const boardsLibraryPanel = document.getElementById("boards-library-panel");
+const boardTemplatesPanel = document.getElementById("board-templates-panel");
 
 const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle", "boards-toggle"]);
 const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg>`;
@@ -1477,6 +1481,16 @@ function closeBoardsView() {
   boardsView.setAttribute("aria-hidden", "true");
   document.body.classList.remove("boards-screen-open");
   boardsToggle?.setAttribute("aria-expanded", "false");
+}
+
+function setBoardsMenu(menu = "boards") {
+  const showTemplates = menu === "templates";
+  boardsLibraryTab?.classList.toggle("is-active", !showTemplates);
+  boardTemplatesTab?.classList.toggle("is-active", showTemplates);
+  boardsLibraryTab?.setAttribute("aria-selected", String(!showTemplates));
+  boardTemplatesTab?.setAttribute("aria-selected", String(showTemplates));
+  if (boardsLibraryPanel) boardsLibraryPanel.hidden = showTemplates;
+  if (boardTemplatesPanel) boardTemplatesPanel.hidden = !showTemplates;
 }
 
 function closeOtherSurfaces({ keepBoards = false } = {}) {
@@ -3579,6 +3593,7 @@ async function openBoardsView() {
   boardsView.setAttribute("aria-hidden", "false");
   document.body.classList.add("boards-screen-open");
   boardsToggle?.setAttribute("aria-expanded", "true");
+  setBoardsMenu("boards");
 
   // Opening the manager is local-only: no Firestore read and no forced cloud write.
   await flushCurrentBoardLocal();
@@ -3999,6 +4014,8 @@ boardsToggle?.addEventListener("click", () => {
   else closeBoardsView();
 });
 boardsBack?.addEventListener("click", closeBoardsView);
+boardsLibraryTab?.addEventListener("click", () => setBoardsMenu("boards"));
+boardTemplatesTab?.addEventListener("click", () => setBoardsMenu("templates"));
 
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape") return;
