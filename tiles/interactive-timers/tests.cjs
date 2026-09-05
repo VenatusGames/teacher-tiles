@@ -26,3 +26,22 @@ assert.equal(sandLevels(-1).progress,0);
 assert.equal(sandLevels(2).progress,1);
 assert.equal(sandLevels(NaN).progress,0);
 console.log('Hourglass checks passed: monotonic draining/filling and conserved sand area at 101 timer positions.');
+vm.runInNewContext(fs.readFileSync(`${__dirname}/garden-rocket.js`,'utf8'),context);
+const {growth}=context.window.TeacherTilesGardenRocket;
+for(const total of [1,8,60,300,3600]) {
+  let prior=growth(0,total);
+  for(let i=1;i<=1000;i++) {
+    const current=growth(i/1000,total);
+    for(const part of ['seed','stem','leaves','bud','bloom']) {
+      assert.ok(current[part]>=prior[part] && current[part]<=1,`${part} must grow monotonically`);
+    }
+    if(current.seed<1)assert.equal(current.stem,0,'Seed must land before growth');
+    if(current.bloom>0)assert.equal(current.bud,1,'Bud must form before petals open');
+    prior=current;
+  }
+  assert.equal(prior.bloom,1,'Every duration must reach full bloom');
+  assert.equal(prior.label,'In full bloom');
+}
+assert.equal(growth(0).seed,0,'Reset restores the floating seed');
+assert.equal(growth(0).bloom,0,'Reset removes the flower');
+console.log('Sunflower checks passed: ordered planting and growth for five timer durations.');

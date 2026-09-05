@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=20260905-board-templates-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260905-2" />
   <link rel="stylesheet" href="styles-materials.css?v=20260905-2" />
-  <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260905-1" />
+  <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260905-2" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260905-4" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
@@ -1694,7 +1694,7 @@
         <span><strong>Window Share</strong><small>Share a tab, window, or screen</small></span>
       </button>
       <button class="context-menu__item" data-module="timer" data-category="time"><span class="context-menu__icon context-menu__icon--visual-timer" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5v8.5H3.5A8.5 8.5 0 0 1 12 3.5Z" fill="currentColor"/></svg></span><span><strong>Visual Timer</strong><small>Shape-based progress timer</small></span></button>
-      <button class="context-menu__item" data-module="interactive" data-category="time"><span class="context-menu__icon context-menu__icon--interactive-timers" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3h14M5 21h14M7 3c0 4.4.9 6.1 5 9-4.1 2.9-5 4.6-5 9M17 3c0 4.4-.9 6.1-5 9 4.1 2.9 5 4.6 5 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.2 6h7.6c-.4 2.1-1.5 3.5-3.8 5.2C9.7 9.5 8.6 8.1 8.2 6ZM8.5 19c.7-2 1.8-3.4 3.5-4.8 1.7 1.4 2.8 2.8 3.5 4.8h-7Z" fill="currentColor"/></svg></span><span><strong>Interactive Timers</strong><small>Hourglass and melting candle</small></span></button>
+      <button class="context-menu__item" data-module="interactive" data-category="time"><span class="context-menu__icon context-menu__icon--interactive-timers" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3h14M5 21h14M7 3c0 4.4.9 6.1 5 9-4.1 2.9-5 4.6-5 9M17 3c0 4.4-.9 6.1-5 9 4.1 2.9 5 4.6 5 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.2 6h7.6c-.4 2.1-1.5 3.5-3.8 5.2C9.7 9.5 8.6 8.1 8.2 6ZM8.5 19c.7-2 1.8-3.4 3.5-4.8 1.7 1.4 2.8 2.8 3.5 4.8h-7Z" fill="currentColor"/></svg></span><span><strong>Interactive Timers</strong><small>Hourglass, candle, rocket, and sunflower</small></span></button>
       <button class="context-menu__item" data-module="clock" data-category="time"><span class="context-menu__icon context-menu__icon--clock" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 6.2V12l4.3 2.5M12 3v1.3M21 12h-1.3M12 21v-1.3M3 12h1.3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/></svg></span><span><strong>Clock</strong><small>Current time display</small></span></button>
       <button class="context-menu__item" data-module="date" data-category="time"><span class="context-menu__icon context-menu__icon--date" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><text x="12" y="15.3" text-anchor="middle">31</text></svg></span><span><strong>Date</strong><small>Today’s date in your chosen style</small></span></button>
       <button class="context-menu__item" data-module="calendar" data-category="time planning"><span class="context-menu__icon" aria-hidden="true">▦</span><span><strong>Calendar</strong><small>Events, birthdays, holidays, and months</small></span></button>
@@ -2067,8 +2067,10 @@
           <div class="candle-base-shadow"></div>
         </div>
       </div>
+      <div class="rocket-stage timer-story-stage" hidden></div>
+      <div class="sunflower-stage timer-story-stage" hidden></div>
       <div class="timer-controls">
-        <div class="interactive-picker"><button type="button" data-interactive="hourglass" class="is-active" title="Hourglass">⌛</button><button type="button" data-interactive="candle" title="Candle">🕯</button></div>
+        <div class="interactive-picker"><button type="button" data-interactive="hourglass" class="is-active" title="Hourglass">⌛</button><button type="button" data-interactive="candle" title="Candle">🕯</button><button type="button" data-interactive="rocket" title="Rocket" aria-label="Rocket">🚀</button><button type="button" data-interactive="sunflower" title="Sunflower" aria-label="Sunflower">🌻</button></div>
         <div class="timer-customization interactive-customization" aria-label="Interactive timer customization">
           <button class="custom-icon interactive-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
           <button class="custom-icon candle-color-control" type="button" title="Change candle color" aria-label="Change candle color"><span class="candle-color-swatch" aria-hidden="true"></span></button>
@@ -3467,7 +3469,8 @@
   <script src="news/data.js"></script>
   <script src="tiles/image-search/index.js?v=20260905-3"></script>
   <script src="tiles/interactive-timers/hourglass.js?v=20260905-1"></script>
-  <script src="tiles/interactive-timers/index.js?v=20260905-1"></script>
+  <script src="tiles/interactive-timers/garden-rocket.js?v=20260905-1"></script>
+  <script src="tiles/interactive-timers/index.js?v=20260905-2"></script>
   <script src="app.js?v=20260905-floating-skin-drag-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260905-board-templates-1"></script>
