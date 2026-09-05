@@ -23,6 +23,7 @@
     }
     function render(){
       importPanel.hidden=classReady;dashboard.hidden=!classReady;
+      m.querySelector('.seating-clear').disabled=desks.length===0;
       m.querySelector('.seating-class-name').textContent=className||'Class';
       m.querySelector('.seating-class-logo').textContent=classLogo;
       room.replaceChildren();const front=document.createElement('div');front.className='seating-front';front.textContent='FRONT OF CLASSROOM';room.append(front);
@@ -82,6 +83,7 @@
     m.querySelector('.seating-rotate').addEventListener('click',()=>{const d=selectedDesk();if(d){d.angle=(d.angle+90)%360;render();changed();}});
     m.querySelector('.seating-pin').addEventListener('click',()=>{const d=selectedDesk();if(d){d.pinned=!d.pinned;render();changed();}});
     m.querySelector('.seating-delete').addEventListener('click',()=>{desks=desks.filter(d=>d.id!==selected);selected='';render();changed();});
+    m.querySelector('.seating-clear').addEventListener('click',()=>{cancelDrag?.();desks=[];selected='';render();changed();});
     m._boardGetState=()=>({classId,names:[...names],desks:desks.map(d=>({...d})),className,layout:layoutSelect.value});
     m._boardSetState=s=>{
       cancelDrag?.();names=[...new Set((Array.isArray(s?.names)?s.names:[]).map(n=>String(n).slice(0,80)))].filter(Boolean).slice(0,80);const used=new Set();

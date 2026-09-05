@@ -2375,7 +2375,7 @@ function closeMenu(){
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
-  Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',free:true,released:20}),
+  Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',released:20}),
   Object.freeze({
     id:'magnifier-classic',
     productId:'tile-skin-magnifier-classic',
@@ -7972,6 +7972,10 @@ function bindEditableModuleTitle(m,selectorOrElement,fallback){
 }
 
 const EDITABLE_TILE_HEADINGS={
+  dice:'.dice-module h2',
+  fishtank:'.fish-heading h2',
+  seatingchart:'.seating-title',
+  imagesearch:'.image-search-header h2',
   noise:'.noise-heading strong',
   collections:'.collection-title',
   groupmaker:'.groupmaker-heading strong',

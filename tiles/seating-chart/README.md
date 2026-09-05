@@ -5,3 +5,5 @@ Starts with the shared saved-class picker, then shows the selected class and a C
 Saved board state includes the class ID and label, student names, desk coordinates, rotation, furniture type and locked assignments. Legacy charts with embedded names remain supported. The tile does not modify the source class roster. Text is rendered with `textContent` and saved input is bounded and validated.
 
 Run `node tiles/seating-chart/tests.cjs` for layout and roster-preservation checks.
+
+Clear chart, in the gear menu, removes all desks and furniture and clears the selection while keeping the loaded class and roster. The empty layout is saved with the board.

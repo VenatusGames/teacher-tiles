@@ -8,6 +8,7 @@ const COIN_PACKS = Object.freeze({
 });
 
 const COSMETIC_PRODUCTS = Object.freeze({
+  "tile-skin-dice-clear": Object.freeze({ price: 250, name: "No Background Dice" }),
   "theme-pastel": Object.freeze({ price: 250, name: "Pastel Theme Pack" }),
   "theme-polka-dot": Object.freeze({ price: 250, name: "Polka Dot Theme Pack" }),
   "theme-programmer": Object.freeze({ price: 300, name: "Programmer Theme Pack" }),
