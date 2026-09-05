@@ -1,0 +1,4 @@
+.hourglass-stage{flex-direction:column;gap:0;padding:0 6px 2px}
+.hourglass-stage .hourglass-countdown{font-size:clamp(26px,10cqw,46px);letter-spacing:-.035em;line-height:1.1;flex:0 0 auto}
+.hourglass-canvas{display:block;flex:1 1 auto;min-height:0;width:100%;max-width:360px;object-fit:contain;aspect-ratio:300/380}
+.interactive-module.is-running:not(:hover) .hourglass-canvas{max-width:440px}

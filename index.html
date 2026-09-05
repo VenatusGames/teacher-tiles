@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=20260905-board-templates-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260905-2" />
   <link rel="stylesheet" href="styles-materials.css?v=20260905-2" />
+  <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260905-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260905-4" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
@@ -2049,32 +2050,7 @@
       <button class="module-delete" aria-label="Delete interactive timer">×</button><div class="module-drag-handle"></div><div class="confetti-layer" aria-hidden="true"></div>
       <div class="hourglass-stage">
         <div class="hourglass-countdown">05:00</div>
-        <svg class="hourglass-svg" viewBox="0 0 260 340" aria-label="Animated hourglass">
-          <defs>
-            <linearGradient id="woodTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#aa7847"/><stop offset="0.45" stop-color="#7b4f2c"/><stop offset="1" stop-color="#50301c"/></linearGradient>
-            <linearGradient id="woodPost" x1="0" x2="1"><stop offset="0" stop-color="#55311c"/><stop offset="0.45" stop-color="#98653a"/><stop offset="1" stop-color="#4c2a18"/></linearGradient>
-            <linearGradient id="glassGlow" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,.10)"/><stop offset=".35" stop-color="rgba(255,255,255,.72)"/><stop offset=".58" stop-color="rgba(218,239,255,.16)"/><stop offset="1" stop-color="rgba(255,255,255,.08)"/></linearGradient>
-            <linearGradient id="sandGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe8a6"/><stop offset=".48" stop-color="#edbd58"/><stop offset="1" stop-color="#c98328"/></linearGradient>
-            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-opacity=".2"/></filter>
-            <clipPath class="hg-top-clip"><path d="M58 62 H202 C193 104 170 132 140 158 H120 C90 132 67 104 58 62Z"/></clipPath>
-            <clipPath class="hg-bottom-clip"><path d="M120 182 H140 C170 208 193 236 202 278 H58 C67 236 90 208 120 182Z"/></clipPath>
-          </defs>
-          <g filter="url(#softShadow)">
-            <rect x="30" y="28" width="200" height="28" rx="14" fill="url(#woodTop)"/>
-            <rect x="30" y="284" width="200" height="28" rx="14" fill="url(#woodTop)"/>
-            <rect x="38" y="50" width="17" height="240" rx="8.5" fill="url(#woodPost)"/>
-            <rect x="205" y="50" width="17" height="240" rx="8.5" fill="url(#woodPost)"/>
-            <path d="M58 62 H202 C193 104 170 132 140 158 H120 C90 132 67 104 58 62Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="4"/>
-            <path d="M120 182 H140 C170 208 193 236 202 278 H58 C67 236 90 208 120 182Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="4"/>
-            <path d="M120 158 C124 166 124 176 120 182 H140 C136 176 136 166 140 158Z" fill="rgba(232,246,255,.20)" stroke="rgba(143,174,196,.72)" stroke-width="3"/>
-            <rect x="58" y="62" width="144" height="96" class="hg-sand-top" clip-path="url(#hg-top-placeholder)" fill="url(#sandGold)"/>
-            <rect x="58" y="278" width="144" height="0" class="hg-sand-bottom" fill="url(#sandGold)"/>
-            <path class="hg-bottom-pile" d="M75 278 Q130 244 185 278 Z" fill="url(#sandGold)" opacity="0"/>
-            <rect x="127" y="158" width="6" height="26" rx="3" class="hg-stream" fill="url(#sandGold)" opacity="0"/>
-            <path d="M72 70 C78 96 96 121 121 147" fill="none" stroke="url(#glassGlow)" stroke-width="7" stroke-linecap="round" opacity=".7"/>
-            <path d="M72 270 C78 244 96 219 121 193" fill="none" stroke="url(#glassGlow)" stroke-width="7" stroke-linecap="round" opacity=".56"/>
-          </g>
-        </svg>
+        <canvas class="hourglass-canvas" width="600" height="760" role="img" aria-label="Hourglass with sand flowing between glass chambers"></canvas>
       </div>
       <div class="candle-stage" hidden>
         <div class="candle-countdown">05:00</div>
@@ -3490,6 +3466,8 @@
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
   <script src="tiles/image-search/index.js?v=20260905-3"></script>
+  <script src="tiles/interactive-timers/hourglass.js?v=20260905-1"></script>
+  <script src="tiles/interactive-timers/index.js?v=20260905-1"></script>
   <script src="app.js?v=20260905-floating-skin-drag-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260905-board-templates-1"></script>
