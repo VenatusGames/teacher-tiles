@@ -3,6 +3,26 @@
   'use strict';
   const DRAG_TYPE = 'application/x-teachertiles-image-search';
   const LIMIT = 60;
+  const UNSAFE_CONTENT_PATTERNS = Object.freeze([
+    /\b(?:porn(?:ography|ographic)?|xxx|hentai|erotic(?:a)?|fetish(?:es)?)\b/i,
+    /\b(?:nude|nudity|naked|topless|explicit)\b/i,
+    /\b(?:sex(?:ual|ually)?|intercourse|masturbat(?:e|ion|ing))\b/i,
+    /\b(?:genitals?|penis|vagina|vulva|testicles?|semen)\b/i,
+    /\b(?:gore|gory|beheading|decapitat(?:e|ed|ion)|dismember(?:ed|ment)?)\b/i,
+    /\b(?:graphic violence|dead bod(?:y|ies)|human remains)\b/i
+  ]);
+  function safetyText(value) {
+    return plainMetadata(value).normalize('NFKC').replace(/[0]/g, 'o').replace(/[1!]/g, 'i').replace(/[$]/g, 's').toLowerCase();
+  }
+  function containsUnsafeContent(value) {
+    const text = safetyText(value);
+    return UNSAFE_CONTENT_PATTERNS.some(pattern => pattern.test(text));
+  }
+  function pagePassesClassroomFilter(page, info) {
+    const categories = (Array.isArray(page?.categories) ? page.categories : []).map(category => category?.title || '').join(' ');
+    const metadata = [page?.title, categories, info?.extmetadata?.ObjectName?.value, info?.extmetadata?.ImageDescription?.value].join(' ');
+    return !containsUnsafeContent(metadata);
+  }
   function safeUrl(value, source = false) {
     try {
       if (typeof value !== 'string' || value.length > 4096) return '';
@@ -132,6 +152,14 @@
     async function search(append = false) {
       const term = (append ? query : input.value).trim().slice(0, 120);
       if (!term) { input.focus(); message('Enter a subject to find images.'); return; }
+      if (containsUnsafeContent(term)) {
+        if (!append) {
+          query = ''; items = []; nextOffset = null; render();
+          message('Safe Search blocked that request. Try a classroom-appropriate topic.');
+          notifyBoardChanged('image-search-safe-block');
+        }
+        return;
+      }
       cancelDrag?.(); controller?.abort(); controller = new AbortController();
       const request = ++revision, signal = controller.signal;
       const offset = append ? nextOffset : 0;
@@ -142,17 +170,20 @@
       try {
         const params = new URLSearchParams({ action: 'query', format: 'json', formatversion: '2', origin: '*',
           generator: 'search', gsrsearch: `${term} filetype:bitmap`, gsrnamespace: '6', gsrlimit: '20', gsroffset: String(offset || 0),
-          prop: 'imageinfo', iiprop: 'url|mime|extmetadata', iiurlwidth: '960',
-          iiextmetadatafilter: 'Artist|LicenseShortName', iiextmetadatalanguage: 'en' });
+          prop: 'imageinfo|categories', cllimit: 'max', clshow: '!hidden',
+          iiprop: 'url|mime|extmetadata', iiurlwidth: '960',
+          iiextmetadatafilter: 'Artist|LicenseShortName|ObjectName|ImageDescription', iiextmetadatalanguage: 'en' });
         const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
         if (!response.ok) throw new Error('Search unavailable');
         const data = await response.json();
         if (data.error) throw new Error('Search unavailable');
         if (request !== revision) return;
         const pages = Array.isArray(data.query?.pages) ? [...data.query.pages].sort((a,b) => (a.index || 0) - (b.index || 0)) : [];
+        let filteredCount = 0;
         const found = pages.map(page => {
           const info = page.imageinfo?.[0];
           if (!info || !/^image\/(jpeg|png|gif|webp|avif)$/i.test(info.mime || '')) return null;
+          if (!pagePassesClassroomFilter(page, info)) { filteredCount++; return null; }
           return normalizeResult({ url: info.thumburl || info.url, sourceUrl: info.descriptionurl,
             title: String(page.title || '').replace(/^File:/, ''), creator: plainMetadata(info.extmetadata?.Artist?.value),
             license: plainMetadata(info.extmetadata?.LicenseShortName?.value) });
@@ -163,7 +194,11 @@
         const next = data.continue?.gsroffset;
         nextOffset = Number.isInteger(next) && next > (offset || 0) ? next : null;
         render();
-        message(items.length ? `${items.length} images · Drag onto the board or choose Add.` : 'No matching images. Try another search.');
+        message(items.length
+          ? `${items.length} classroom-filtered images · Drag onto the board or choose Add.`
+          : filteredCount
+            ? 'Safe Search filtered the available results. Try a different classroom topic.'
+            : 'No matching images. Try another search.');
         notifyBoardChanged('image-search-results');
       } catch {
         if (request !== revision) return;
@@ -186,9 +221,9 @@
     m._boardSetState = state => {
       ++revision; cancelDrag?.(); controller?.abort(); setBusy(false);
       query = String(state?.query || '').slice(0, 120); input.value = query;
-      items = (Array.isArray(state?.items) ? state.items.slice(0, LIMIT) : []).map(normalizeResult).filter(Boolean);
+      items = (Array.isArray(state?.items) ? state.items.slice(0, LIMIT) : []).map(normalizeResult).filter(item => item && !containsUnsafeContent(item.title));
       nextOffset = Number.isInteger(state?.nextOffset) && state.nextOffset > 0 && state.nextOffset < 10000 ? state.nextOffset : null;
-      render(); message(items.length ? `${items.length} saved results · Drag onto the board or choose Add.` : 'Search images from Wikimedia Commons.');
+      render(); message(items.length ? `${items.length} saved classroom-filtered results · Drag onto the board or choose Add.` : 'Search classroom-filtered images from Wikimedia Commons.');
     };
     const prior = m._cleanup;
     m._cleanup = () => { ++revision; cancelDrag?.(); controller?.abort(); results.removeEventListener('wheel', captureResultsWheel); prior?.(); };

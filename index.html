@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=20260905-image-search-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260905-2" />
   <link rel="stylesheet" href="styles-materials.css?v=20260905-2" />
-  <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260905-2" />
+  <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260905-3" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -2915,10 +2915,13 @@
       <button class="module-delete" aria-label="Delete image search">×</button><div class="module-drag-handle"></div>
       <header class="image-search-header"><div><small>DISCOVER &amp; CREATE</small><h2>Image Search</h2></div><span aria-hidden="true">▧</span></header>
       <form class="image-search-form" role="search"><input class="image-search-input" type="search" maxlength="120" placeholder="Try red pandas, planets, or flowers…" aria-label="Search images" autocomplete="off"><button class="primary" type="submit">Search</button></form>
-      <div class="image-search-status" role="status" aria-live="polite">Search images from Wikimedia Commons.</div>
+      <div class="image-search-status-row">
+        <div class="image-search-status" role="status" aria-live="polite">Search classroom-filtered images from Wikimedia Commons.</div>
+        <span class="image-search-safe-badge" title="Explicit queries and potentially unsafe results are filtered" aria-label="Classroom Safe Search is on"><span aria-hidden="true">✓</span> Safe Search</span>
+      </div>
       <div class="image-search-results" aria-label="Image search results" aria-busy="false"></div>
       <button class="image-search-more" type="button" hidden>Load more images</button>
-      <footer class="image-search-footer">Images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a><span>Source credits stay with your images.</span></footer>
+      <footer class="image-search-footer">Images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a><span>Safe Search reduces inappropriate results but cannot guarantee every image. Review results before displaying them.</span></footer>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
@@ -3456,7 +3459,7 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="tiles/image-search/index.js?v=20260905-2"></script>
+  <script src="tiles/image-search/index.js?v=20260905-3"></script>
   <script src="app.js?v=20260905-image-search-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-shop-5"></script>
