@@ -1351,7 +1351,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Detector','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
-    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],boombox:['Boom Box','Loop classroom soundscapes'],
+    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
     weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
@@ -1365,7 +1365,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
-    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
+    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],minesweeper:['Buscaminas','Despeja cada casilla segura sin tocar una mina'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
     weather:['Clima','Compara el clima actual de varios lugares'],weatherwheel:['Rueda del clima','Señala el clima de hoy'],seasonwheel:['Rueda de estaciones','Explora primavera, verano, otoño e invierno'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
@@ -2615,6 +2615,7 @@ function setupModuleByType(m,type){
   if(type==='spinner')setupSpinner(m);
   if(type==='hangman')setupHangman(m);
   if(type==='wordypuzzle')setupWordyPuzzle(m);
+  if(type==='minesweeper')setupMinesweeper(m);
   if(type==='cvcword')setupCVCWord(m);
   if(type==='highfrequency')setupHighFrequencyWords(m);
   if(type==='customflashcards')setupCustomFlashcards(m);
@@ -16374,6 +16375,331 @@ function setupWordyPuzzle(m){
       renderKeyboard();
     }
   };
+}
+
+function setupMinesweeper(m){
+  const board=m.querySelector('.minesweeper-board');
+  const minesLeft=m.querySelector('.minesweeper-mines-left');
+  const time=m.querySelector('.minesweeper-time');
+  const status=m.querySelector('.minesweeper-status');
+  const modeButton=m.querySelector('.minesweeper-mode');
+  const modeLabel=modeButton.querySelector('span');
+  const resetButton=m.querySelector('.minesweeper-reset');
+  const resetFace=resetButton.querySelector('span');
+  const levelButtons=[...m.querySelectorAll('[data-minesweeper-level]')];
+  const levels={
+    easy:{rows:9,cols:9,mines:10},
+    medium:{rows:12,cols:12,mines:24},
+    hard:{rows:16,cols:16,mines:40}
+  };
+
+  let level='easy';
+  let rows=levels.easy.rows;
+  let cols=levels.easy.cols;
+  let mineTotal=levels.easy.mines;
+  let cells=[];
+  let cellButtons=[];
+  let generated=false;
+  let started=false;
+  let finished=false;
+  let won=false;
+  let exploded=-1;
+  let elapsed=0;
+  let timerStart=0;
+  let timerId=0;
+  let mode='reveal';
+
+  const validIndex=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<rows*cols;
+  const neighborIndexes=index=>{
+    const row=Math.floor(index/cols),col=index%cols,result=[];
+    for(let rowOffset=-1;rowOffset<=1;rowOffset++){
+      for(let colOffset=-1;colOffset<=1;colOffset++){
+        if(!rowOffset&&!colOffset)continue;
+        const nextRow=row+rowOffset,nextCol=col+colOffset;
+        if(nextRow>=0&&nextRow<rows&&nextCol>=0&&nextCol<cols)result.push(nextRow*cols+nextCol);
+      }
+    }
+    return result;
+  };
+  const currentElapsed=()=>started&&!finished?Math.max(0,Math.floor((Date.now()-timerStart)/1000)):elapsed;
+  const formatTime=seconds=>{
+    const safe=Math.max(0,Math.min(5999,Math.floor(Number(seconds)||0)));
+    return `${Math.floor(safe/60)}:${String(safe%60).padStart(2,'0')}`;
+  };
+  const stopTimer=()=>{if(timerId){clearInterval(timerId);timerId=0}};
+  const renderTime=()=>{elapsed=currentElapsed();time.textContent=formatTime(elapsed)};
+  const startTimer=()=>{
+    if(started||finished)return;
+    started=true;
+    timerStart=Date.now()-elapsed*1000;
+    stopTimer();
+    timerId=setInterval(renderTime,250);
+    renderTime();
+  };
+  const syncLevels=()=>levelButtons.forEach(button=>{
+    const active=button.dataset.minesweeperLevel===level;
+    button.classList.toggle('is-active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  const syncMode=()=>{
+    const flagging=mode==='flag';
+    modeButton.dataset.mode=mode;
+    modeButton.classList.toggle('is-flagging',flagging);
+    modeButton.setAttribute('aria-pressed',String(flagging));
+    modeLabel.textContent=flagging?'Flag':'Reveal';
+  };
+  const flaggedCount=()=>cells.reduce((total,cell)=>total+(cell.flagged?1:0),0);
+  const safeLeft=()=>cells.reduce((total,cell)=>total+(!cell.mine&&!cell.revealed?1:0),0);
+
+  function syncStatus(){
+    minesLeft.textContent=String(Math.max(0,mineTotal-flaggedCount()));
+    if(finished){
+      status.textContent=won?'Board cleared — you won!':'Mine hit — try again';
+      resetFace.textContent=won?'😎':'😵';
+    }else if(started){
+      const remaining=safeLeft();
+      status.textContent=`${remaining} safe ${remaining===1?'square':'squares'} left`;
+      resetFace.textContent='🙂';
+    }else{
+      status.textContent='Reveal a square to begin';
+      resetFace.textContent='🙂';
+    }
+    renderTime();
+  }
+
+  function updateCell(index,{animate=false}={}){
+    const cell=cells[index],button=cellButtons[index];
+    if(!cell||!button)return;
+    button.className='minesweeper-cell';
+    button.textContent='';
+    delete button.dataset.number;
+    button.disabled=finished;
+    button.setAttribute('aria-pressed',String(Boolean(cell.revealed)));
+
+    if(cell.revealed){
+      button.classList.add('is-revealed');
+      if(cell.mine){
+        button.classList.add('is-mine');
+        if(index===exploded)button.classList.add('is-exploded');
+        button.textContent='✹';
+        button.setAttribute('aria-label',index===exploded?'Exploded mine':'Mine');
+      }else if(cell.adjacent){
+        button.dataset.number=String(cell.adjacent);
+        button.textContent=String(cell.adjacent);
+        button.setAttribute('aria-label',`${cell.adjacent} neighboring ${cell.adjacent===1?'mine':'mines'}`);
+      }else{
+        button.setAttribute('aria-label','Empty square');
+      }
+    }else if(cell.flagged){
+      button.classList.add('is-flagged');
+      if(finished&&!cell.mine){
+        button.classList.add('is-wrong-flag');
+        button.textContent='×';
+        button.setAttribute('aria-label','Incorrect flag');
+      }else{
+        button.textContent='⚑';
+        button.setAttribute('aria-label','Flagged square');
+      }
+    }else{
+      button.setAttribute('aria-label',`Hidden square, row ${Math.floor(index/cols)+1}, column ${index%cols+1}`);
+    }
+
+    if(animate){
+      button.classList.remove('is-popping');
+      void button.offsetWidth;
+      button.classList.add('is-popping');
+    }
+  }
+
+  const updateAllCells=()=>{
+    cells.forEach((_,index)=>updateCell(index));
+    syncStatus();
+  };
+
+  function generateMines(firstIndex){
+    const protectedIndexes=new Set([firstIndex,...neighborIndexes(firstIndex)]);
+    let candidates=Array.from({length:cells.length},(_,index)=>index).filter(index=>!protectedIndexes.has(index));
+    if(candidates.length<mineTotal)candidates=Array.from({length:cells.length},(_,index)=>index).filter(index=>index!==firstIndex);
+    for(let index=candidates.length-1;index>0;index--){
+      const swap=Math.floor(Math.random()*(index+1));
+      [candidates[index],candidates[swap]]=[candidates[swap],candidates[index]];
+    }
+    candidates.slice(0,mineTotal).forEach(index=>{cells[index].mine=true});
+    cells.forEach((cell,index)=>{cell.adjacent=neighborIndexes(index).reduce((sum,next)=>sum+(cells[next].mine?1:0),0)});
+    generated=true;
+  }
+
+  function finishGame(didWin){
+    const finalElapsed=currentElapsed();
+    won=Boolean(didWin);
+    finished=true;
+    elapsed=finalElapsed;
+    stopTimer();
+    if(!won)cells.forEach(cell=>{if(cell.mine)cell.revealed=true});
+    updateAllCells();
+    if(won)launchConfetti(m);
+  }
+
+  function reveal(index,{notify=true}={}){
+    if(finished||!validIndex(index))return;
+    const cell=cells[index];
+    if(cell.revealed||cell.flagged)return;
+    if(!generated)generateMines(index);
+    startTimer();
+
+    if(cell.mine){
+      cell.revealed=true;
+      exploded=index;
+      finishGame(false);
+      if(notify)notifyBoardChanged('minesweeper-loss');
+      return;
+    }
+
+    const queue=[index],seen=new Set();
+    while(queue.length){
+      const current=queue.shift();
+      if(seen.has(current))continue;
+      seen.add(current);
+      const nextCell=cells[current];
+      if(nextCell.revealed||nextCell.flagged||nextCell.mine)continue;
+      nextCell.revealed=true;
+      updateCell(current,{animate:true});
+      if(nextCell.adjacent===0)neighborIndexes(current).forEach(next=>{if(!seen.has(next))queue.push(next)});
+    }
+
+    if(safeLeft()===0)finishGame(true);
+    else syncStatus();
+    if(notify)notifyBoardChanged('minesweeper-reveal');
+  }
+
+  function toggleFlag(index){
+    if(finished||!validIndex(index)||cells[index].revealed)return;
+    cells[index].flagged=!cells[index].flagged;
+    updateCell(index,{animate:true});
+    syncStatus();
+    notifyBoardChanged('minesweeper-flag');
+  }
+
+  function chord(index){
+    if(finished||!validIndex(index))return;
+    const cell=cells[index];
+    if(!cell.revealed||!cell.adjacent)return;
+    const neighbors=neighborIndexes(index);
+    if(neighbors.filter(next=>cells[next].flagged).length!==cell.adjacent)return;
+    for(const next of neighbors){
+      if(finished)break;
+      if(!cells[next].flagged&&!cells[next].revealed)reveal(next,{notify:false});
+    }
+    notifyBoardChanged('minesweeper-chord');
+  }
+
+  function handleCellAction(index){
+    if(mode==='flag')toggleFlag(index);
+    else reveal(index);
+  }
+
+  function buildBoard(){
+    board.replaceChildren();
+    cellButtons=[];
+    board.style.setProperty('--minesweeper-cols',String(cols));
+    board.style.setProperty('--minesweeper-rows',String(rows));
+    board.setAttribute('aria-label',`${level[0].toUpperCase()+level.slice(1)} Minesweeper board, ${rows} by ${cols}`);
+    cells.forEach((_,index)=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='minesweeper-cell';
+      button.setAttribute('role','gridcell');
+      button.addEventListener('click',()=>handleCellAction(index));
+      button.addEventListener('dblclick',event=>{event.preventDefault();chord(index)});
+      button.addEventListener('contextmenu',event=>{event.preventDefault();event.stopPropagation();toggleFlag(index)});
+      button.addEventListener('keydown',event=>{
+        if(event.key.toLowerCase()==='f'){
+          event.preventDefault();
+          toggleFlag(index);
+          return;
+        }
+        const moves={ArrowLeft:-1,ArrowRight:1,ArrowUp:-cols,ArrowDown:cols};
+        if(!(event.key in moves))return;
+        event.preventDefault();
+        const next=index+moves[event.key];
+        if(validIndex(next)&&!(event.key==='ArrowLeft'&&index%cols===0)&&!(event.key==='ArrowRight'&&index%cols===cols-1))cellButtons[next]?.focus();
+      });
+      board.appendChild(button);
+      cellButtons.push(button);
+    });
+    updateAllCells();
+  }
+
+  function newGame(nextLevel=level,{notify=true}={}){
+    level=levels[nextLevel]?nextLevel:'easy';
+    ({rows,cols,mines:mineTotal}=levels[level]);
+    cells=Array.from({length:rows*cols},()=>({mine:false,revealed:false,flagged:false,adjacent:0}));
+    generated=false;
+    started=false;
+    finished=false;
+    won=false;
+    exploded=-1;
+    elapsed=0;
+    timerStart=0;
+    stopTimer();
+    m.dataset.minesweeperLevel=level;
+    syncLevels();
+    buildBoard();
+    if(notify)notifyBoardChanged('minesweeper-new-game');
+  }
+
+  levelButtons.forEach(button=>button.addEventListener('click',()=>newGame(button.dataset.minesweeperLevel)));
+  modeButton.addEventListener('click',()=>{mode=mode==='reveal'?'flag':'reveal';syncMode()});
+  resetButton.addEventListener('click',()=>newGame(level));
+  m.querySelector('.minesweeper-bg')?.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.minesweeper-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+
+  syncMode();
+  newGame('easy',{notify:false});
+
+  m._boardGetState=()=>({
+    level,
+    mode,
+    generated,
+    started,
+    finished,
+    won,
+    exploded,
+    elapsed:currentElapsed(),
+    mines:cells.flatMap((cell,index)=>cell.mine?[index]:[]),
+    revealed:cells.flatMap((cell,index)=>cell.revealed?[index]:[]),
+    flagged:cells.flatMap((cell,index)=>cell.flagged?[index]:[])
+  });
+  m._boardSetState=state=>{
+    const savedLevel=levels[state?.level]?state.level:'easy';
+    newGame(savedLevel,{notify:false});
+    if(!state)return;
+    const mineIndexes=new Set(Array.isArray(state.mines)?state.mines.map(Number).filter(validIndex):[]);
+    const revealedIndexes=new Set(Array.isArray(state.revealed)?state.revealed.map(Number).filter(validIndex):[]);
+    const flaggedIndexes=new Set(Array.isArray(state.flagged)?state.flagged.map(Number).filter(validIndex):[]);
+    generated=Boolean(state.generated)&&mineIndexes.size===mineTotal;
+    if(generated){
+      mineIndexes.forEach(index=>{cells[index].mine=true});
+      cells.forEach((cell,index)=>{cell.adjacent=neighborIndexes(index).reduce((sum,next)=>sum+(cells[next].mine?1:0),0)});
+    }
+    revealedIndexes.forEach(index=>{cells[index].revealed=true});
+    flaggedIndexes.forEach(index=>{if(!cells[index].revealed)cells[index].flagged=true});
+    finished=Boolean(state.finished);
+    won=finished&&Boolean(state.won);
+    exploded=validIndex(state.exploded)?Number(state.exploded):-1;
+    elapsed=Math.max(0,Math.floor(Number(state.elapsed)||0));
+    started=Boolean(state.started)&&generated;
+    mode=state.mode==='flag'?'flag':'reveal';
+    syncMode();
+    if(started&&!finished){
+      timerStart=Date.now()-elapsed*1000;
+      timerId=setInterval(renderTime,250);
+    }
+    updateAllCells();
+  };
+
+  const previousCleanup=m._cleanup;
+  m._cleanup=()=>{stopTimer();previousCleanup?.()};
 }
 
 function setupHangman(m){

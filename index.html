@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260905-interactive-timer-stability-2" />
+  <link rel="stylesheet" href="styles.css?v=20260905-minesweeper-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260905-2" />
   <link rel="stylesheet" href="styles-materials.css?v=20260905-2" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260905-2" />
@@ -1991,6 +1991,17 @@
         </span>
         <span><strong>Wordy Puzzle</strong><small>Guess the teacher’s secret word</small></span>
       </button>
+      <button class="context-menu__item" data-module="minesweeper" data-category="games">
+        <span class="context-menu__icon context-menu__icon--minesweeper" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9.15 3.8v16.4M14.85 3.8v16.4M3.8 9.15h16.4M3.8 14.85h16.4" fill="none" stroke="currentColor" stroke-width="1.15" opacity=".44"/>
+            <circle cx="12" cy="12" r="2.15" fill="currentColor"/>
+            <path d="M12 8.65V7.4M12 16.6v-1.25M8.65 12H7.4M16.6 12h-1.25M9.65 9.65l-.9-.9M15.25 15.25l-.9-.9M14.35 9.65l.9-.9M8.75 15.25l.9-.9" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span><strong>Minesweeper</strong><small>Clear every safe square without hitting a mine</small></span>
+      </button>
       <button class="context-menu__item" data-module="boombox" data-category="audio"><span class="context-menu__icon" aria-hidden="true">♫</span><span><strong>Boom Box</strong><small>Loop classroom soundscapes</small></span></button>
     </div>
   </div>
@@ -3471,7 +3482,7 @@
   <script src="tiles/interactive-timers/hourglass.js?v=20260905-1"></script>
   <script src="tiles/interactive-timers/garden-rocket.js?v=20260905-1"></script>
   <script src="tiles/interactive-timers/index.js?v=20260905-2"></script>
-  <script src="app.js?v=20260905-floating-skin-drag-1"></script>
+  <script src="app.js?v=20260905-minesweeper-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260905-board-templates-1"></script>
 
@@ -4422,6 +4433,56 @@
     </section>
   </template>
 
+
+  <template id="minesweeper-template">
+    <section class="module minesweeper-module" data-type="minesweeper" data-bg="white" data-font="inter" data-text="dark" tabindex="-1">
+      <button class="module-delete" aria-label="Delete Minesweeper">×</button>
+      <div class="module-drag-handle"></div>
+      <div class="confetti-layer" aria-hidden="true"></div>
+
+      <header class="minesweeper-header">
+        <div class="minesweeper-heading">
+          <span class="minesweeper-kicker">MINI GAME</span>
+          <strong>Minesweeper</strong>
+        </div>
+        <div class="minesweeper-stats" aria-label="Game statistics">
+          <span><small>MINES</small><strong class="minesweeper-mines-left">10</strong></span>
+          <span><small>TIME</small><strong class="minesweeper-time">0:00</strong></span>
+        </div>
+      </header>
+
+      <div class="minesweeper-toolbar">
+        <div class="minesweeper-levels" role="group" aria-label="Difficulty">
+          <button type="button" data-minesweeper-level="easy" class="is-active" aria-pressed="true">Easy</button>
+          <button type="button" data-minesweeper-level="medium" aria-pressed="false">Medium</button>
+          <button type="button" data-minesweeper-level="hard" aria-pressed="false">Hard</button>
+        </div>
+        <div class="minesweeper-actions">
+          <button class="minesweeper-mode" type="button" data-mode="reveal" aria-pressed="false" title="Switch between revealing and flagging squares">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 17V3m0 1h8.5l-2.2 3 2.2 3H5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Reveal</span>
+          </button>
+          <button class="minesweeper-reset" type="button" aria-label="Start a new game" title="New game"><span aria-hidden="true">🙂</span></button>
+        </div>
+      </div>
+
+      <div class="minesweeper-status" role="status" aria-live="polite">Reveal a square to begin</div>
+      <div class="minesweeper-board-wrap">
+        <div class="minesweeper-board" role="grid" aria-label="Minesweeper board"></div>
+      </div>
+      <div class="minesweeper-help"><span>Click to reveal</span><i></i><span>Right-click to flag</span><i></i><span>Double-click a number to clear around it</span></div>
+
+      <div class="customization-bar minesweeper-customization" aria-label="Minesweeper customization">
+        <button class="custom-icon minesweeper-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon minesweeper-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+      <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+      <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+      <div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
 
   <template id="hangman-template">
     <section class="module hangman-module" data-type="hangman" data-bg="white" data-font="inter">
