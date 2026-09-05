@@ -2577,6 +2577,11 @@ function applyNewModuleTileSkin(m,type,requestedSkinId=''){
 // Optional controls for standalone tile files use the board's existing
 // palette, typography, state notification and keyboard interaction helpers.
 function setupClassroomTileControls(m){
+  m.querySelectorAll('.widget-scroll,.widget-editor,.tile-settings-panel,.google-content,textarea').forEach(surface=>{
+    surface.addEventListener('wheel',event=>{
+      if(!event.ctrlKey&&!event.shiftKey&&(surface.scrollHeight>surface.clientHeight||surface.scrollWidth>surface.clientWidth))event.stopPropagation();
+    },{passive:true});
+  });
   m.querySelector('.tile-bg')?.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.tile-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.tile-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -2595,7 +2600,13 @@ function setupModuleByType(m,type){
   if(type==='dice')window.TeacherTilesDice.setup(m);
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
-  if(['dice','seatingchart','fishtank'].includes(type))setupClassroomTileControls(m);
+  if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
+  if(type==='quoteoftheday')window.TeacherTilesQuoteOfTheDay.setup(m);
+  if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
+  if(type==='timestables')window.TeacherTilesTimesTables.setup(m);
+  if(type==='google')window.TeacherTilesGoogle.setup(m);
+  if(type==='link')window.TeacherTilesLink.setup(m);
+  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);
@@ -7972,6 +7983,12 @@ function bindEditableModuleTitle(m,selectorOrElement,fallback){
 }
 
 const EDITABLE_TILE_HEADINGS={
+  wordoftheday:'.widget-title',
+  quoteoftheday:'.widget-title',
+  vocabulary:'.widget-title',
+  timestables:'.widget-title',
+  google:'.widget-title',
+  link:'.widget-title',
   dice:'.dice-module h2',
   fishtank:'.fish-heading h2',
   seatingchart:'.seating-title',
