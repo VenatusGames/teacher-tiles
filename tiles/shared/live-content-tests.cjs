@@ -1,19 +1,16 @@
-const assert=require('node:assert/strict');
-const {parseWord,handler}=require('../../functions/daily-learning');
-const raw='{{WOTD|skint|adj|{{lb|en|informal}} [[have#Verb|Having]] [[no]] [[money]]; [[broke#Adjective|broke]].|comment=Extra|September|5}}';
-assert.equal(parseWord(raw).definition,'Having no money; broke.');
-assert.equal(parseWord('malformed'),null);
-assert.equal(parseWord('{{WOTD|test|noun|sexual content|September|5}}'),null);
-let stored={},fetches=0;
-const ref={get:async()=>({data:()=>stored}),set:async v=>{stored=v;}};
-const db={collection:()=>({doc:()=>ref}),runTransaction:async fn=>fn({get:ref.get,set:(_,v)=>{stored={...stored,...v};}})};
-global.fetch=async url=>{fetches++;return {ok:true,text:async()=>JSON.stringify(url.includes('wiktionary')?{parse:{wikitext:{'*':raw}}}:[{q:'Learning gives us courage.',a:'Test author'}])};};
-function response(){return {code:200,set(){},status(c){this.code=c;return this;},json(v){this.body=v;},end(){}};}
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+let saved={},wordCalls=0,quoteCalls=0,quoteOnline=false,now=Date.now();
+class Clock extends Date {static now(){return now;}}
+const context={window:{TeacherTilesLive:{words:async()=>{wordCalls++;return [{word:'limnological'}];},quotes:async()=>{quoteCalls++;if(!quoteOnline)throw Error('offline');return [{text:'Keep discovering.',author:'Test author'}];}}},Date:Clock,localStorage:{getItem:k=>saved[k],setItem:(k,v)=>saved[k]=v}};
+vm.runInNewContext(fs.readFileSync('tiles/shared/daily.js','utf8'),context);
 (async()=>{
- const run=handler(db),r=response();await run({method:'GET'},r);assert.equal(r.body.words[0].word,'skint');assert.equal(r.body.quotes.length,1);assert.equal(fetches,2);
- await run({method:'GET'},response());assert.equal(fetches,2,'same-day content must use database cache');
- const bad=response();await run({method:'POST'},bad);assert.equal(bad.code,405);
- stored.day='old';stored.leaseUntil=Date.now()+60000;await run({method:'GET'},response());assert.equal(fetches,2,'active lease must prevent another upstream fetch');
- stored.leaseUntil=0;global.fetch=async()=>{throw Error('offline');};const offline=response();await run({method:'GET'},offline);assert.equal(offline.body.words[0].word,'skint');
- console.log('Live content: nested word parsing, filtering, database caching, lease, method restrictions and offline fallback passed.');
+ const daily=context.window.TeacherTilesDaily;
+ const [one,two]=await Promise.all([daily.feed(),daily.feed()]);assert.equal(wordCalls,1);assert.equal(quoteCalls,1);assert.equal(one.words.length,1);assert.equal(two.quotes.length,0);assert(!one.quotesDay);
+ await daily.feed();assert.equal(wordCalls,1,'failure retry is throttled');
+ now+=61000;quoteOnline=true;const full=await daily.feed();assert.equal(full.quotes.length,1);assert.equal(full.quotesDay,daily.dayKey());
+ await daily.feed();assert.equal(quoteCalls,2,'fresh content is cached for the day');
+ const parser={window:{}};vm.runInNewContext(fs.readFileSync('tiles/shared/live.js','utf8'),parser);
+ const parse=parser.window.TeacherTilesLive.parseWord;
+ assert.equal(parse('{{WOTD|limnological|adj|Relating to [[lake]]s.|comment=Extra|September|5}}').definition,'Relating to lakes.');assert.equal(parse('invalid'),null);
+ console.log('Live feeds: shared requests, independent freshness, failure retry, daily cache, and nested word parsing passed.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

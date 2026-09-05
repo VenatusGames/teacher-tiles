@@ -6,21 +6,31 @@
   const index=(length,offset=0,date=new Date())=>((dayNumber(date)+offset)%length+length)%length;
   function watch(m,render){
     let key='',lastRefresh=0;
-    const refresh=()=>{const next=dayKey();if(next!==key||Date.now()-lastRefresh>3600000){key=next;lastRefresh=Date.now();render(next);}};
+    const refresh=()=>{const next=dayKey();if(next!==key||Date.now()-lastRefresh>60000){key=next;lastRefresh=Date.now();render(next);}};
     const timer=setInterval(refresh,30000);
     document.addEventListener('visibilitychange',refresh);
     const prior=m._cleanup;m._cleanup=()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);prior?.();};
     refresh();
   }
-  let pending;
+
+  let pending,retryAfter=0;
   async function feed(){
-    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-v1'));}catch{}
-    if(cached?.day===new Date().toISOString().slice(0,10))return cached;
-    if(!pending)pending=fetch('https://us-central1-teachertiles-6739b.cloudfunctions.net/dailyLearning',{signal:AbortSignal.timeout(15000)}).then(r=>{if(!r.ok)throw Error('feed');return r.json();}).then(data=>{
-      if(!Array.isArray(data.words)||!Array.isArray(data.quotes))throw Error('feed');
-      try{localStorage.setItem('tt-daily-learning-v1',JSON.stringify(data));}catch{}return data;
-    }).catch(()=>cached||null);
-    const result=await pending;setTimeout(()=>{pending=null;},60000);return result;
+    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-v5'));}catch{}
+    const today=dayKey();
+    if(cached?.day===today&&cached.wordsDay===today&&cached.quotesDay===today)return cached;
+    if(Date.now()<retryAfter&&!pending)return cached||null;
+    if(!pending)pending=(async()=>{
+      const result=await Promise.allSettled([window.TeacherTilesLive.words(),window.TeacherTilesLive.quotes()]);
+      const freshWords=result[0].status==='fulfilled',freshQuotes=result[1].status==='fulfilled';
+      let words=freshWords?result[0].value:(cached?.words||[]);
+      if(freshWords){const pivot=index(words.length);words=[...words.slice(pivot),...words.slice(0,pivot)];}
+      let quotes=freshQuotes?result[1].value:(cached?.quotes||[]);
+      if(freshQuotes){const pivot=index(quotes.length);quotes=[...quotes.slice(pivot),...quotes.slice(0,pivot)];}
+      const data={day:today,wordsDay:freshWords?today:cached?.wordsDay,quotesDay:freshQuotes?today:cached?.quotesDay,words,quotes};
+      try{localStorage.setItem('tt-daily-learning-v5',JSON.stringify(data));}catch{}
+      retryAfter=Date.now()+60000;return data;
+    })().finally(()=>{pending=null;});
+    return pending;
   }
   window.TeacherTilesDaily=Object.freeze({dayKey,dayNumber,index,watch,feed});
 })();

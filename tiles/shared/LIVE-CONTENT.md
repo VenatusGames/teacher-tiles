@@ -1,11 +1,7 @@
-# Daily learning and embedded Google setup
+# Live classroom content
 
-The original offline collections contained 20 quotes and 80 words (40 per collection). The word fallback now contains 80 uncommon words. Those fallback banks still repeat; online refresh requires the backend below to be deployed.
+Word of the Day reads the latest 50 daily entries and a rotating batch of 50 archived entries from Wiktionary over its public CORS-enabled API. Longer single-word entries are selected for uncommon vocabulary. Quotes are fetched from Wikiquote’s education, learning, curiosity, creativity, perseverance, imagination, hope, and courage collections, preserving author credit and source links. Both collections refresh each local calendar day and rotate their daily selection. Each tile uses live content exclusively once available; the original collection is only an offline fallback.
 
-Deploy the `dailyLearning` Firebase function in project `teachertiles-6739b` with the normal release process. It reads the current Wiktionary Word of the Day and a ZenQuotes batch. It keeps up to 365 words and 365 quote records in the private `dailyLearning/current` Firestore document, avoids quote duplicates against that cache, and refreshes at most once per UTC day after a successful refresh. A transaction lease limits retries. The browser caches content locally and retries unavailable feeds hourly while mounted. No API key is needed. Existing Firestore rules deny direct client access to this cache.
+No Firebase function, paid account, API key, or backend deployment is required. The browser shares in-flight requests across tiles, caches successful feeds, and retries a failed source after a minute. Partial failures do not mark the other source as successfully refreshed. Source attribution includes the Wikimedia CC BY-SA credit. Keyword filters reduce unsuitable content; this is not human editorial review of the upstream collections.
 
-Wiktionary text is attributed under CC BY-SA; ZenQuotes links provide the required free-tier credit. Upstream content is filtered for basic unsuitable terms and quotes are selected for learning and encouragement. This is not human editorial review; upstream availability and content remain external dependencies.
-
-Set `engineId` in `tiles/google/config.js` to the site's Google Programmable Search engine ID (`cx`). The isolated `search.html` frame renders Google's supported Search Element with SafeSearch active. Results appear inside each tile; destination websites open separately because arbitrary websites may prohibit embedding. An unconfigured engine shows a connection message and does not open a Google results tab.
-
-Checks: `node tiles/shared/classroom-tests.cjs` and `node tiles/shared/live-content-tests.cjs`.
+Google’s new Programmable Search engines are limited to 50 configured websites. The Google tile requires the site’s actual engine ID in `tiles/google/config.js`; do not use a third-party engine ID or claim unrestricted Google search is supported by a new engine.

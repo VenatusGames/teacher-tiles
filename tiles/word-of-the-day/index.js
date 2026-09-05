@@ -4,7 +4,7 @@
     const daily=window.TeacherTilesDaily,bank=window.TeacherTilesWords;
     let level='everyday',offset=0,day=daily.dayKey(),live=[],disposed=false;
     const credit=document.createElement('a');credit.className='widget-status';credit.target='_blank';credit.rel='noopener noreferrer';m.querySelector('.daily-content').append(credit);
-    const wordsForDay=()=>live.length?[...live,...bank[level].filter(w=>!live.some(v=>v.word===w.word))]:bank[level];
+    const wordsForDay=()=>live.length?(level==='challenge'&&live.some(w=>w.word.length>=12)?live.filter(w=>w.word.length>=12):live):bank[level];
     const choice=m.querySelector('.word-level');
     function render(){
       const today=daily.dayKey();if(day!==today){day=today;offset=0;}
