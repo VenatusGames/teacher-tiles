@@ -152,9 +152,13 @@
       if(!state.running || state.left<=0 || reduce.matches){cancelAnimationFrame(frame);frame=0;last=0;draw();}
       else if(!frame)frame=requestAnimationFrame(animate);
     }
-    const resize=new ResizeObserver(()=>{
-      const bounds=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2.5);
-      if(bounds.width && bounds.height){canvas.width=Math.round(bounds.width*ratio);canvas.height=Math.round(bounds.height*ratio);refresh();}
+    const resize=new ResizeObserver(entries=>{
+      const bounds=entries[0].contentRect,ratio=Math.min(devicePixelRatio||1,2.5);
+      if(bounds.width && bounds.height){
+        const width=Math.round(bounds.width*ratio),height=Math.round(bounds.height*ratio);
+        if(canvas.width!==width || canvas.height!==height){canvas.width=width;canvas.height=height;draw();}
+        refresh();
+      }
     });resize.observe(canvas);
     const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;refresh();});intersection.observe(canvas);
     document.addEventListener('visibilitychange',refresh);reduce.addEventListener('change',refresh);

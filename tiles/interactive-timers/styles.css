@@ -4,6 +4,13 @@
 .interactive-module.is-running:not(:hover) .hourglass-canvas{max-width:440px}
 .timer-story-stage{display:flex;flex:1 1 0;min-height:0;flex-direction:column;align-items:center;overflow:hidden;gap:2px}
 .interactive-module .timer-controls{max-height:230px}
+/* Keep the scene's allocation stable across hover; fading controls must not
+   repeatedly collapse and expand the canvas while it is being resized. */
+.interactive-module.is-running:not(:hover) .timer-controls{max-height:230px;padding-top:2px;opacity:0;pointer-events:none}
+.interactive-module.is-running:focus-within .timer-controls{opacity:1;pointer-events:auto}
+.interactive-module .timer-controls{transition:opacity .14s}
+.interactive-module.is-running:not(:hover) .hourglass-canvas{max-width:360px}
+.interactive-module.is-running:not(:hover)[data-interactive-mode="candle"] .candle-scene{width:min(80cqw,330px)}
 .interactive-module .timer-story-stage[hidden]{display:none!important}
 .scene-countdown{flex:0 0 auto;font-size:clamp(26px,10cqw,46px);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1.1;color:var(--module-text,var(--text))}
 .timer-story-svg{display:block;flex:1 1 0;min-height:0;width:100%;max-width:360px;overflow:hidden}
