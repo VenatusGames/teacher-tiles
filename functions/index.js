@@ -361,3 +361,5 @@ exports.generateCoinCode = onCall({ region: REGION }, async request => {
   }
   throw new HttpsError("internal", "A unique code could not be generated. Try again.");
 });
+
+exports.dailyLearning = onRequest({ region: REGION, maxInstances: 3, timeoutSeconds: 45 }, require("./daily-learning").handler(db));

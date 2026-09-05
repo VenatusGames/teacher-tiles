@@ -18,3 +18,6 @@
 .tile-settings-toggle svg{width:18px;height:18px;display:block}
 .tile-settings-panel{max-height:calc(100cqh - 95px);overflow-y:auto;overscroll-behavior:contain}
 .context-menu__icon--dice svg,.context-menu__icon--seating svg,.context-menu__icon--fish svg{width:25px;height:25px;display:block;flex:none}
+
+/* Preserve intentionally outlined menu art against the legacy solid-icon rule. */
+.context-menu__icon svg[fill="none"]{fill:none}

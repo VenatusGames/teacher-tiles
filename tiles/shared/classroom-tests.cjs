@@ -27,4 +27,5 @@ for(const [type,category,folder] of [['wordoftheday','literacy','word-of-the-day
  assert(html.includes(`src="tiles/${folder}/index.js`));assert(html.includes(`href="tiles/${folder}/styles.css`));
 }
 for(const match of html.matchAll(/(?:href|src)="([^"?:]+\.(?:js|css))(?:\?[^" ]*)?"/g))assert(fs.existsSync(path.join(root,match[1])),`Missing asset ${match[1]}`);
+const literacy=[...html.matchAll(/data-module="([^"]+)" data-category="literacy"/g)].map(m=>m[1]);assert.deepEqual(literacy.slice(-2),['wordoftheday','quoteoftheday']);
 console.log('Six classroom tiles: daily rotation, content, bounded state, safe links, search encoding, categories, headings, and local assets passed.');

@@ -2587,7 +2587,7 @@ function setupClassroomTileControls(m){
   m.querySelector('.tile-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const toggle=m.querySelector('.tile-settings-toggle'),panel=m.querySelector('.tile-settings-panel');
   if(!toggle||!panel)return;
-  const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));m.classList.toggle('has-tile-settings-open',open);};
+  const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));m.classList.toggle('has-tile-settings-open',open);if(open)m._positionTileSettings?.();};
   toggle.addEventListener('click',()=>setOpen(panel.hidden));
   const outside=event=>{if(!panel.hidden&&!toggle.parentElement.contains(event.target))setOpen(false);};
   document.addEventListener('pointerdown',outside);

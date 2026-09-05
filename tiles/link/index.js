@@ -9,6 +9,19 @@
   function setup(m){
     const anchor=m.querySelector('.link-target'),image=m.querySelector('.link-image'),caption=m.querySelector('.link-caption'),form=m.querySelector('.link-form'),urlInput=m.querySelector('.link-url'),labelInput=m.querySelector('.link-label'),fileInput=m.querySelector('.link-file'),status=m.querySelector('.link-status');
     let url='',label='',imageData='',revision=0,disposed=false;
+    const panel=m.querySelector('.tile-settings-panel');
+    m._positionTileSettings=()=>{
+      if(panel.hidden)return;
+      const scale=m.getBoundingClientRect().width/m.offsetWidth||1;
+      panel.style.transform='';panel.style.maxHeight=`${Math.max(100,(innerHeight-24)/scale)}px`;
+      panel.style.maxWidth=`${Math.max(140,(innerWidth-24)/scale)}px`;
+      const rect=panel.getBoundingClientRect();
+      const dx=Math.max(12-rect.left,Math.min(0,innerWidth-12-rect.right));
+      const dy=Math.max(12-rect.top,Math.min(0,innerHeight-12-rect.bottom));
+      panel.style.transform=`translate(${dx/scale}px,${dy/scale}px)`;
+    };
+    const observer=new ResizeObserver(()=>m._positionTileSettings());observer.observe(m);
+    window.addEventListener('resize',m._positionTileSettings);
     function render(syncFields=true){
       m.classList.toggle('has-link-image',!!imageData);m.classList.toggle('has-link-target',!!url);
       if(url)anchor.href=url;else anchor.removeAttribute('href');
@@ -37,7 +50,7 @@
     m.addEventListener('drop',e=>{if(!e.dataTransfer?.files.length)return;e.preventDefault();e.stopPropagation();upload(e.dataTransfer.files[0]);});
     m._boardGetState=()=>({url,label,image:imageData});
     m._boardSetState=s=>{revision++;url=safeUrl(s?.url);label=String(s?.label??'').slice(0,100);imageData=safeImage(s?.image);render();};
-    const prior=m._cleanup;m._cleanup=()=>{disposed=true;revision++;prior?.();};render();
+    const prior=m._cleanup;m._cleanup=()=>{disposed=true;revision++;observer.disconnect();window.removeEventListener('resize',m._positionTileSettings);prior?.();};render();
   }
   window.TeacherTilesLink=Object.freeze({setup,safeUrl,safeImage});
 })();

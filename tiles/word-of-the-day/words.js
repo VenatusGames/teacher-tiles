@@ -1,487 +1,487 @@
-/* Original classroom definitions and examples; no network dependency. */
+/* Original uncommon-vocabulary fallback; live content is credited separately. */
 window.TeacherTilesWords=Object.freeze({
   "everyday": [
     {
-      "word": "curious",
+      "word": "petrichor",
+      "part": "noun",
+      "definition": "The pleasant smell that follows rain on dry ground.",
+      "example": "Write a sentence using “petrichor” that makes its meaning clear."
+    },
+    {
+      "word": "susurrus",
+      "part": "noun",
+      "definition": "A soft whispering or rustling sound.",
+      "example": "Write a sentence using “susurrus” that makes its meaning clear."
+    },
+    {
+      "word": "mellifluous",
       "part": "adjective",
-      "definition": "Eager to learn or find out more.",
-      "example": "The curious class asked how rainbows form."
+      "definition": "Smooth and pleasant to hear.",
+      "example": "Write a sentence using “mellifluous” that makes its meaning clear."
     },
     {
-      "word": "brave",
+      "word": "liminal",
       "part": "adjective",
-      "definition": "Ready to face something difficult, even when you feel afraid.",
-      "example": "It was brave to try again after a mistake."
+      "definition": "At a boundary or between two stages.",
+      "example": "Write a sentence using “liminal” that makes its meaning clear."
     },
     {
-      "word": "generous",
+      "word": "palimpsest",
+      "part": "noun",
+      "definition": "Something reused that still shows traces of its earlier form.",
+      "example": "Write a sentence using “palimpsest” that makes its meaning clear."
+    },
+    {
+      "word": "effervescent",
       "part": "adjective",
-      "definition": "Willing to share or give to others.",
-      "example": "The generous student shared her pencils."
+      "definition": "Full of lively energy, or giving off bubbles.",
+      "example": "Write a sentence using “effervescent” that makes its meaning clear."
     },
     {
-      "word": "patient",
+      "word": "numinous",
       "part": "adjective",
-      "definition": "Able to wait calmly without getting upset.",
-      "example": "We were patient while the seeds began to grow."
+      "definition": "Inspiring a sense of mystery and wonder.",
+      "example": "Write a sentence using “numinous” that makes its meaning clear."
     },
     {
-      "word": "notice",
-      "part": "verb",
-      "definition": "To become aware of something by paying attention.",
-      "example": "Did you notice the bird outside our window?"
-    },
-    {
-      "word": "compare",
-      "part": "verb",
-      "definition": "To look for ways that things are alike and different.",
-      "example": "Compare the two leaves by their shape and size."
-    },
-    {
-      "word": "predict",
-      "part": "verb",
-      "definition": "To say what you think will happen using what you know.",
-      "example": "Predict which object will float."
-    },
-    {
-      "word": "observe",
-      "part": "verb",
-      "definition": "To watch or examine something carefully.",
-      "example": "Observe how the shadow moves during the day."
-    },
-    {
-      "word": "create",
-      "part": "verb",
-      "definition": "To make something new.",
-      "example": "We will create a story together."
-    },
-    {
-      "word": "explore",
-      "part": "verb",
-      "definition": "To look around or investigate to learn more.",
-      "example": "Let's explore the different ways to solve this puzzle."
-    },
-    {
-      "word": "journey",
-      "part": "noun",
-      "definition": "A trip from one place to another.",
-      "example": "The story follows a turtle on a long journey."
-    },
-    {
-      "word": "habitat",
-      "part": "noun",
-      "definition": "The natural place where a living thing lives.",
-      "example": "A pond is a habitat for frogs."
-    },
-    {
-      "word": "pattern",
-      "part": "noun",
-      "definition": "A design or sequence that follows a rule.",
-      "example": "The beads make a repeating color pattern."
-    },
-    {
-      "word": "solution",
-      "part": "noun",
-      "definition": "An answer to a question or a way to fix a problem.",
-      "example": "Our team found a solution that helped everyone."
-    },
-    {
-      "word": "effort",
-      "part": "noun",
-      "definition": "The energy and work you put into doing something.",
-      "example": "Learning a new skill takes effort."
-    },
-    {
-      "word": "respect",
-      "part": "noun",
-      "definition": "Care and consideration for another person or thing.",
-      "example": "We show respect by listening when others speak."
-    },
-    {
-      "word": "cooperate",
-      "part": "verb",
-      "definition": "To work together toward a shared goal.",
-      "example": "We cooperate to keep our classroom tidy."
-    },
-    {
-      "word": "include",
-      "part": "verb",
-      "definition": "To make someone or something part of a group.",
-      "example": "Remember to include everyone in the game."
-    },
-    {
-      "word": "imagine",
-      "part": "verb",
-      "definition": "To form a picture or idea in your mind.",
-      "example": "Imagine a city built among the trees."
-    },
-    {
-      "word": "improve",
-      "part": "verb",
-      "definition": "To make something better.",
-      "example": "Practice can improve your reading."
-    },
-    {
-      "word": "connect",
-      "part": "verb",
-      "definition": "To join things or recognize a relationship between them.",
-      "example": "Connect the new idea to something you already know."
-    },
-    {
-      "word": "describe",
-      "part": "verb",
-      "definition": "To tell what something is like.",
-      "example": "Describe the character using details from the story."
-    },
-    {
-      "word": "explain",
-      "part": "verb",
-      "definition": "To make an idea clear by giving details or reasons.",
-      "example": "Explain how you solved the problem."
-    },
-    {
-      "word": "question",
-      "part": "noun",
-      "definition": "Something you ask to find out information.",
-      "example": "Her question helped us think more deeply."
-    },
-    {
-      "word": "wonder",
-      "part": "verb",
-      "definition": "To think with curiosity about something.",
-      "example": "I wonder why the moon seems to change shape."
-    },
-    {
-      "word": "unique",
+      "word": "crepuscular",
       "part": "adjective",
-      "definition": "Being the only one of its kind.",
-      "example": "Each snowflake has a unique pattern."
+      "definition": "Active or appearing around twilight.",
+      "example": "Write a sentence using “crepuscular” that makes its meaning clear."
     },
     {
-      "word": "gentle",
+      "word": "psithurism",
+      "part": "noun",
+      "definition": "The sound of wind rustling through leaves.",
+      "example": "Write a sentence using “psithurism” that makes its meaning clear."
+    },
+    {
+      "word": "apricity",
+      "part": "noun",
+      "definition": "The warmth of the sun in winter.",
+      "example": "Write a sentence using “apricity” that makes its meaning clear."
+    },
+    {
+      "word": "serein",
+      "part": "noun",
+      "definition": "Fine rain falling after sunset from an apparently clear sky.",
+      "example": "Write a sentence using “serein” that makes its meaning clear."
+    },
+    {
+      "word": "vespertine",
       "part": "adjective",
-      "definition": "Kind, careful, or using little force.",
-      "example": "Be gentle when you turn the book's old pages."
+      "definition": "Relating to or occurring in the evening.",
+      "example": "Write a sentence using “vespertine” that makes its meaning clear."
     },
     {
-      "word": "reliable",
+      "word": "iridescent",
       "part": "adjective",
-      "definition": "Able to be trusted or depended on.",
-      "example": "A reliable teammate follows through on a promise."
+      "definition": "Showing colors that seem to change with the viewing angle.",
+      "example": "Write a sentence using “iridescent” that makes its meaning clear."
     },
     {
-      "word": "proud",
+      "word": "chatoyant",
       "part": "adjective",
-      "definition": "Feeling pleased about something you or others have done.",
-      "example": "He felt proud of the story he finished."
+      "definition": "Having a shifting shine like a cat’s eye.",
+      "example": "Write a sentence using “chatoyant” that makes its meaning clear."
     },
     {
-      "word": "calm",
+      "word": "scintilla",
+      "part": "noun",
+      "definition": "A very small amount or a tiny spark.",
+      "example": "Write a sentence using “scintilla” that makes its meaning clear."
+    },
+    {
+      "word": "insouciance",
+      "part": "noun",
+      "definition": "A relaxed lack of worry.",
+      "example": "Write a sentence using “insouciance” that makes its meaning clear."
+    },
+    {
+      "word": "equanimity",
+      "part": "noun",
+      "definition": "Calmness during a difficult situation.",
+      "example": "Write a sentence using “equanimity” that makes its meaning clear."
+    },
+    {
+      "word": "peripatetic",
       "part": "adjective",
-      "definition": "Peaceful and not upset or excited.",
-      "example": "A slow breath helped me feel calm."
+      "definition": "Traveling from place to place.",
+      "example": "Write a sentence using “peripatetic” that makes its meaning clear."
     },
     {
-      "word": "flexible",
+      "word": "quiescent",
       "part": "adjective",
-      "definition": "Able to bend or change when needed.",
-      "example": "We stayed flexible when our plans changed."
+      "definition": "Quiet, still, or temporarily inactive.",
+      "example": "Write a sentence using “quiescent” that makes its meaning clear."
     },
     {
-      "word": "resource",
+      "word": "melliferous",
+      "part": "adjective",
+      "definition": "Producing honey or providing nectar for honey.",
+      "example": "Write a sentence using “melliferous” that makes its meaning clear."
+    },
+    {
+      "word": "floriferous",
+      "part": "adjective",
+      "definition": "Producing many flowers.",
+      "example": "Write a sentence using “floriferous” that makes its meaning clear."
+    },
+    {
+      "word": "sylvan",
+      "part": "adjective",
+      "definition": "Relating to woods or forests.",
+      "example": "Write a sentence using “sylvan” that makes its meaning clear."
+    },
+    {
+      "word": "lacustrine",
+      "part": "adjective",
+      "definition": "Relating to lakes.",
+      "example": "Write a sentence using “lacustrine” that makes its meaning clear."
+    },
+    {
+      "word": "riparian",
+      "part": "adjective",
+      "definition": "Relating to the banks of a river.",
+      "example": "Write a sentence using “riparian” that makes its meaning clear."
+    },
+    {
+      "word": "pelagic",
+      "part": "adjective",
+      "definition": "Relating to the open sea.",
+      "example": "Write a sentence using “pelagic” that makes its meaning clear."
+    },
+    {
+      "word": "benthic",
+      "part": "adjective",
+      "definition": "Relating to the bottom of a body of water.",
+      "example": "Write a sentence using “benthic” that makes its meaning clear."
+    },
+    {
+      "word": "vernal",
+      "part": "adjective",
+      "definition": "Relating to spring.",
+      "example": "Write a sentence using “vernal” that makes its meaning clear."
+    },
+    {
+      "word": "estival",
+      "part": "adjective",
+      "definition": "Relating to summer.",
+      "example": "Write a sentence using “estival” that makes its meaning clear."
+    },
+    {
+      "word": "hibernal",
+      "part": "adjective",
+      "definition": "Relating to winter.",
+      "example": "Write a sentence using “hibernal” that makes its meaning clear."
+    },
+    {
+      "word": "serotinal",
+      "part": "adjective",
+      "definition": "Relating to late summer.",
+      "example": "Write a sentence using “serotinal” that makes its meaning clear."
+    },
+    {
+      "word": "cerulean",
+      "part": "adjective",
+      "definition": "Deep blue like a clear sky.",
+      "example": "Write a sentence using “cerulean” that makes its meaning clear."
+    },
+    {
+      "word": "viridescent",
+      "part": "adjective",
+      "definition": "Greenish or becoming green.",
+      "example": "Write a sentence using “viridescent” that makes its meaning clear."
+    },
+    {
+      "word": "rubicund",
+      "part": "adjective",
+      "definition": "Having a rosy or reddish complexion.",
+      "example": "Write a sentence using “rubicund” that makes its meaning clear."
+    },
+    {
+      "word": "fulgent",
+      "part": "adjective",
+      "definition": "Shining brightly.",
+      "example": "Write a sentence using “fulgent” that makes its meaning clear."
+    },
+    {
+      "word": "lambent",
+      "part": "adjective",
+      "definition": "Glowing softly or flickering gently.",
+      "example": "Write a sentence using “lambent” that makes its meaning clear."
+    },
+    {
+      "word": "diaphanous",
+      "part": "adjective",
+      "definition": "Light and delicate enough to see through.",
+      "example": "Write a sentence using “diaphanous” that makes its meaning clear."
+    },
+    {
+      "word": "gossamer",
       "part": "noun",
-      "definition": "Something useful that helps you do a task.",
-      "example": "The library is a resource for our research."
+      "definition": "A very fine thread or delicate, light material.",
+      "example": "Write a sentence using “gossamer” that makes its meaning clear."
     },
     {
-      "word": "tradition",
-      "part": "noun",
-      "definition": "A custom passed from one generation to another.",
-      "example": "Sharing stories is a family tradition."
+      "word": "brumous",
+      "part": "adjective",
+      "definition": "Foggy or misty.",
+      "example": "Write a sentence using “brumous” that makes its meaning clear."
     },
     {
-      "word": "community",
-      "part": "noun",
-      "definition": "A group of people connected by a place or shared interest.",
-      "example": "Our school community cares for the garden."
+      "word": "pluvial",
+      "part": "adjective",
+      "definition": "Relating to rain.",
+      "example": "Write a sentence using “pluvial” that makes its meaning clear."
     },
     {
-      "word": "evidence",
-      "part": "noun",
-      "definition": "Facts or details that help show whether an idea is true.",
-      "example": "Find evidence in the text to support your answer."
-    },
-    {
-      "word": "balance",
-      "part": "noun",
-      "definition": "A steady state in which things are evenly supported.",
-      "example": "The blocks need balance to stay standing."
-    },
-    {
-      "word": "challenge",
-      "part": "noun",
-      "definition": "A task that takes effort or skill to complete.",
-      "example": "Building the bridge was an exciting challenge."
-    },
-    {
-      "word": "celebrate",
-      "part": "verb",
-      "definition": "To show happiness about something special.",
-      "example": "We celebrate the progress everyone has made."
-    },
-    {
-      "word": "discover",
-      "part": "verb",
-      "definition": "To find or learn something for the first time.",
-      "example": "We may discover a new way to sort these shapes."
-    },
-    {
-      "word": "reflect",
-      "part": "verb",
-      "definition": "To think carefully about an experience or idea.",
-      "example": "Take a moment to reflect on what you learned."
+      "word": "nacreous",
+      "part": "adjective",
+      "definition": "Having the pearly shine of the inside of a shell.",
+      "example": "Write a sentence using “nacreous” that makes its meaning clear."
     }
   ],
   "challenge": [
     {
-      "word": "resilient",
+      "word": "obstreperous",
       "part": "adjective",
-      "definition": "Able to recover or adapt after a difficulty.",
-      "example": "The resilient team learned from its first attempt."
+      "definition": "Noisy and difficult to control.",
+      "example": "Write a sentence using “obstreperous” that makes its meaning clear."
     },
     {
-      "word": "persevere",
-      "part": "verb",
-      "definition": "To keep working toward a goal despite difficulties.",
-      "example": "We persevere when a problem takes more than one try."
+      "word": "sesquipedalian",
+      "part": "adjective",
+      "definition": "Using or containing very long words.",
+      "example": "Write a sentence using “sesquipedalian” that makes its meaning clear."
     },
     {
-      "word": "perspective",
+      "word": "perspicacious",
+      "part": "adjective",
+      "definition": "Quick to notice and understand things.",
+      "example": "Write a sentence using “perspicacious” that makes its meaning clear."
+    },
+    {
+      "word": "sagacious",
+      "part": "adjective",
+      "definition": "Showing sound judgment and practical wisdom.",
+      "example": "Write a sentence using “sagacious” that makes its meaning clear."
+    },
+    {
+      "word": "assiduous",
+      "part": "adjective",
+      "definition": "Working with steady care and attention.",
+      "example": "Write a sentence using “assiduous” that makes its meaning clear."
+    },
+    {
+      "word": "sedulous",
+      "part": "adjective",
+      "definition": "Showing great care and persistence in a task.",
+      "example": "Write a sentence using “sedulous” that makes its meaning clear."
+    },
+    {
+      "word": "indefatigable",
+      "part": "adjective",
+      "definition": "Continuing with energy despite long effort.",
+      "example": "Write a sentence using “indefatigable” that makes its meaning clear."
+    },
+    {
+      "word": "inchoate",
+      "part": "adjective",
+      "definition": "Just beginning and not fully formed.",
+      "example": "Write a sentence using “inchoate” that makes its meaning clear."
+    },
+    {
+      "word": "ineluctable",
+      "part": "adjective",
+      "definition": "Impossible to avoid or escape.",
+      "example": "Write a sentence using “ineluctable” that makes its meaning clear."
+    },
+    {
+      "word": "ineffable",
+      "part": "adjective",
+      "definition": "Too great or unusual to describe in words.",
+      "example": "Write a sentence using “ineffable” that makes its meaning clear."
+    },
+    {
+      "word": "recondite",
+      "part": "adjective",
+      "definition": "Difficult to understand because it is little known.",
+      "example": "Write a sentence using “recondite” that makes its meaning clear."
+    },
+    {
+      "word": "arcane",
+      "part": "adjective",
+      "definition": "Understood by only a small number of people.",
+      "example": "Write a sentence using “arcane” that makes its meaning clear."
+    },
+    {
+      "word": "abstruse",
+      "part": "adjective",
+      "definition": "Difficult to understand.",
+      "example": "Write a sentence using “abstruse” that makes its meaning clear."
+    },
+    {
+      "word": "limpid",
+      "part": "adjective",
+      "definition": "Clear and transparent, or easy to understand.",
+      "example": "Write a sentence using “limpid” that makes its meaning clear."
+    },
+    {
+      "word": "pellucid",
+      "part": "adjective",
+      "definition": "Very clear in appearance or meaning.",
+      "example": "Write a sentence using “pellucid” that makes its meaning clear."
+    },
+    {
+      "word": "laconic",
+      "part": "adjective",
+      "definition": "Expressing much with very few words.",
+      "example": "Write a sentence using “laconic” that makes its meaning clear."
+    },
+    {
+      "word": "loquacious",
+      "part": "adjective",
+      "definition": "Talking a great deal.",
+      "example": "Write a sentence using “loquacious” that makes its meaning clear."
+    },
+    {
+      "word": "circumlocution",
       "part": "noun",
-      "definition": "A particular way of seeing or thinking about something.",
-      "example": "Listening to a classmate can give you a new perspective."
+      "definition": "An unnecessarily indirect way of saying something.",
+      "example": "Write a sentence using “circumlocution” that makes its meaning clear."
     },
     {
-      "word": "infer",
-      "part": "verb",
-      "definition": "To reach an idea using clues and what you already know.",
-      "example": "Infer how the character feels from her actions."
-    },
-    {
-      "word": "analyze",
-      "part": "verb",
-      "definition": "To examine something closely by considering its parts.",
-      "example": "Analyze the data before drawing a conclusion."
-    },
-    {
-      "word": "synthesize",
-      "part": "verb",
-      "definition": "To combine ideas or information into a new whole.",
-      "example": "Synthesize what you learned from the two articles."
-    },
-    {
-      "word": "collaborate",
-      "part": "verb",
-      "definition": "To work with others to create or achieve something.",
-      "example": "The partners collaborate on a science presentation."
-    },
-    {
-      "word": "empathy",
+      "word": "synecdoche",
       "part": "noun",
-      "definition": "The ability to understand another person's feelings or experience.",
-      "example": "Empathy helps us consider how a classmate might feel."
+      "definition": "A figure of speech using a part to stand for the whole, or the reverse.",
+      "example": "Write a sentence using “synecdoche” that makes its meaning clear."
     },
     {
-      "word": "integrity",
+      "word": "metonymy",
       "part": "noun",
-      "definition": "The quality of acting honestly and following your values.",
-      "example": "Returning the lost money showed integrity."
+      "definition": "Referring to something by the name of something closely associated with it.",
+      "example": "Write a sentence using “metonymy” that makes its meaning clear."
     },
     {
-      "word": "initiative",
+      "word": "anaphora",
       "part": "noun",
-      "definition": "The willingness to begin a helpful action without being asked.",
-      "example": "She showed initiative by organizing the shared supplies."
+      "definition": "Repetition of a word or phrase at the beginnings of successive clauses.",
+      "example": "Write a sentence using “anaphora” that makes its meaning clear."
     },
     {
-      "word": "adapt",
-      "part": "verb",
-      "definition": "To change to suit new conditions.",
-      "example": "We adapt our design after testing the model."
-    },
-    {
-      "word": "elaborate",
-      "part": "verb",
-      "definition": "To add details that make an idea clearer.",
-      "example": "Elaborate on your answer with an example."
-    },
-    {
-      "word": "precise",
-      "part": "adjective",
-      "definition": "Exact and carefully stated or measured.",
-      "example": "Use a precise measurement when cutting the paper."
-    },
-    {
-      "word": "relevant",
-      "part": "adjective",
-      "definition": "Closely connected to the subject being discussed.",
-      "example": "Choose a relevant fact to support your paragraph."
-    },
-    {
-      "word": "credible",
-      "part": "adjective",
-      "definition": "Believable because there is good reason to trust it.",
-      "example": "A credible source explains where its information came from."
-    },
-    {
-      "word": "innovative",
-      "part": "adjective",
-      "definition": "Using a new or original approach.",
-      "example": "Their innovative design used fewer materials."
-    },
-    {
-      "word": "ambiguous",
-      "part": "adjective",
-      "definition": "Having more than one possible meaning.",
-      "example": "The ambiguous clue led us to two different answers."
-    },
-    {
-      "word": "contrast",
-      "part": "verb",
-      "definition": "To examine how things are different.",
-      "example": "Contrast the settings of the two stories."
-    },
-    {
-      "word": "justify",
-      "part": "verb",
-      "definition": "To give reasons or evidence for an idea or choice.",
-      "example": "Justify your answer using the diagram."
-    },
-    {
-      "word": "revise",
-      "part": "verb",
-      "definition": "To change a piece of work to make it clearer or better.",
-      "example": "Revise your draft after reading the feedback."
-    },
-    {
-      "word": "strategy",
+      "word": "chiasmus",
       "part": "noun",
-      "definition": "A planned approach to reaching a goal.",
-      "example": "Drawing a picture was a useful strategy."
+      "definition": "A pattern in which the order of ideas in one phrase is reversed in the next.",
+      "example": "Write a sentence using “chiasmus” that makes its meaning clear."
     },
     {
-      "word": "hypothesis",
+      "word": "zeugma",
       "part": "noun",
-      "definition": "A possible explanation that can be tested.",
-      "example": "Our hypothesis predicted that light would affect plant growth."
+      "definition": "Using one word with two others in different senses.",
+      "example": "Write a sentence using “zeugma” that makes its meaning clear."
     },
     {
-      "word": "phenomenon",
+      "word": "antanaclasis",
       "part": "noun",
-      "definition": "An event or occurrence that can be observed.",
-      "example": "A rainbow is a natural phenomenon."
+      "definition": "Repeating a word with a different meaning each time.",
+      "example": "Write a sentence using “antanaclasis” that makes its meaning clear."
     },
     {
-      "word": "interdependence",
+      "word": "velleity",
       "part": "noun",
-      "definition": "A relationship in which people or things rely on one another.",
-      "example": "The garden shows the interdependence of plants and pollinators."
+      "definition": "A wish too slight to lead to action.",
+      "example": "Write a sentence using “velleity” that makes its meaning clear."
     },
     {
-      "word": "sustainable",
-      "part": "adjective",
-      "definition": "Able to continue over time without using up needed resources.",
-      "example": "Reusing materials can be part of a sustainable plan."
-    },
-    {
-      "word": "diverse",
-      "part": "adjective",
-      "definition": "Including many different kinds or experiences.",
-      "example": "A diverse collection of books offers many perspectives."
-    },
-    {
-      "word": "equitable",
-      "part": "adjective",
-      "definition": "Fair in a way that considers different needs and circumstances.",
-      "example": "An equitable plan gives each learner useful support."
-    },
-    {
-      "word": "constructive",
-      "part": "adjective",
-      "definition": "Intended to help improve something.",
-      "example": "Constructive feedback names a strength and a next step."
-    },
-    {
-      "word": "meticulous",
-      "part": "adjective",
-      "definition": "Very careful and attentive to details.",
-      "example": "The meticulous observer recorded each change."
-    },
-    {
-      "word": "inquisitive",
-      "part": "adjective",
-      "definition": "Interested in asking questions and learning more.",
-      "example": "The inquisitive readers wanted to learn about the author."
-    },
-    {
-      "word": "versatile",
-      "part": "adjective",
-      "definition": "Able to be used in many ways or do many different things.",
-      "example": "Cardboard is a versatile material for building models."
-    },
-    {
-      "word": "subtle",
-      "part": "adjective",
-      "definition": "Not obvious and needing careful attention to notice.",
-      "example": "A subtle change in tone suggested the character was worried."
-    },
-    {
-      "word": "coherent",
-      "part": "adjective",
-      "definition": "Clear and logically connected.",
-      "example": "Organize your ideas into a coherent explanation."
-    },
-    {
-      "word": "interpret",
-      "part": "verb",
-      "definition": "To explain or understand the meaning of something.",
-      "example": "Interpret the graph by looking for changes over time."
-    },
-    {
-      "word": "evaluate",
-      "part": "verb",
-      "definition": "To judge something carefully using reasons or criteria.",
-      "example": "Evaluate the model against our design goals."
-    },
-    {
-      "word": "priority",
+      "word": "connascence",
       "part": "noun",
-      "definition": "Something considered more important than other things.",
-      "example": "Safety is a priority during our experiment."
+      "definition": "The condition of developing or existing together from the beginning.",
+      "example": "Write a sentence using “connascence” that makes its meaning clear."
     },
     {
-      "word": "consensus",
+      "word": "consilience",
       "part": "noun",
-      "definition": "A general agreement reached by a group.",
-      "example": "After listening to each idea, the class reached a consensus."
+      "definition": "Agreement between conclusions drawn from different kinds of evidence.",
+      "example": "Write a sentence using “consilience” that makes its meaning clear."
     },
     {
-      "word": "aspiration",
+      "word": "adumbration",
       "part": "noun",
-      "definition": "A strong hope or goal for the future.",
-      "example": "Her aspiration is to design accessible playgrounds."
+      "definition": "A faint outline or an early suggestion of something.",
+      "example": "Write a sentence using “adumbration” that makes its meaning clear."
     },
     {
-      "word": "transform",
-      "part": "verb",
-      "definition": "To change the form, appearance, or nature of something.",
-      "example": "Water can transform from a liquid into ice."
-    },
-    {
-      "word": "curiosity",
+      "word": "prolegomenon",
       "part": "noun",
-      "definition": "A strong wish to learn or understand.",
-      "example": "Curiosity often begins with a thoughtful question."
+      "definition": "An introductory discussion that prepares for a larger work.",
+      "example": "Write a sentence using “prolegomenon” that makes its meaning clear."
+    },
+    {
+      "word": "heuristic",
+      "part": "noun",
+      "definition": "A practical approach that helps solve a problem without guaranteeing the best answer.",
+      "example": "Write a sentence using “heuristic” that makes its meaning clear."
+    },
+    {
+      "word": "syzygy",
+      "part": "noun",
+      "definition": "An alignment of three celestial bodies.",
+      "example": "Write a sentence using “syzygy” that makes its meaning clear."
+    },
+    {
+      "word": "analemma",
+      "part": "noun",
+      "definition": "The figure-eight pattern of the sun’s position at the same time over a year.",
+      "example": "Write a sentence using “analemma” that makes its meaning clear."
+    },
+    {
+      "word": "aphelion",
+      "part": "noun",
+      "definition": "The point in an orbit farthest from the sun.",
+      "example": "Write a sentence using “aphelion” that makes its meaning clear."
+    },
+    {
+      "word": "perihelion",
+      "part": "noun",
+      "definition": "The point in an orbit nearest to the sun.",
+      "example": "Write a sentence using “perihelion” that makes its meaning clear."
+    },
+    {
+      "word": "parhelion",
+      "part": "noun",
+      "definition": "A bright spot beside the sun caused by light passing through ice crystals.",
+      "example": "Write a sentence using “parhelion” that makes its meaning clear."
+    },
+    {
+      "word": "penumbra",
+      "part": "noun",
+      "definition": "The partly shaded outer region of a shadow.",
+      "example": "Write a sentence using “penumbra” that makes its meaning clear."
+    },
+    {
+      "word": "antepenultimate",
+      "part": "adjective",
+      "definition": "Third from last.",
+      "example": "Write a sentence using “antepenultimate” that makes its meaning clear."
+    },
+    {
+      "word": "quincunx",
+      "part": "noun",
+      "definition": "An arrangement of five things with one at each corner and one in the center.",
+      "example": "Write a sentence using “quincunx” that makes its meaning clear."
+    },
+    {
+      "word": "tessellation",
+      "part": "noun",
+      "definition": "A covering of a surface with shapes that leave no gaps or overlaps.",
+      "example": "Write a sentence using “tessellation” that makes its meaning clear."
+    },
+    {
+      "word": "boustrophedon",
+      "part": "noun",
+      "definition": "Writing whose lines alternate direction, like the path of a plow.",
+      "example": "Write a sentence using “boustrophedon” that makes its meaning clear."
     }
   ]
 });
