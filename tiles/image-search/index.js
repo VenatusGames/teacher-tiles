@@ -36,6 +36,10 @@
     const results = m.querySelector('.image-search-results'), status = m.querySelector('.image-search-status');
     const more = m.querySelector('.image-search-more'), submit = form.querySelector('button');
     let items = [], query = '', nextOffset = null, controller = null, revision = 0, cancelDrag = null;
+    const captureResultsWheel = event => {
+      if (results.scrollHeight > results.clientHeight) event.stopPropagation();
+    };
+    results.addEventListener('wheel', captureResultsWheel, { passive: true });
     const message = text => { status.textContent = text; };
     const setBusy = busy => {
       m.classList.toggle('is-loading', busy);
@@ -187,7 +191,7 @@
       render(); message(items.length ? `${items.length} saved results · Drag onto the board or choose Add.` : 'Search images from Wikimedia Commons.');
     };
     const prior = m._cleanup;
-    m._cleanup = () => { ++revision; cancelDrag?.(); controller?.abort(); prior?.(); };
+    m._cleanup = () => { ++revision; cancelDrag?.(); controller?.abort(); results.removeEventListener('wheel', captureResultsWheel); prior?.(); };
     render();
   }
   window.TeacherTilesImageSearch = Object.freeze({ setup, normalizeResult, readDrag, DRAG_TYPE });
