@@ -15337,29 +15337,16 @@ body.has-custom-cursor :is(.stoplight-module[data-tile-skin="stoplight-freestand
 .timer-module[data-tile-skin="timer-freestanding"]:is(:hover,:focus-within,.is-settings-open) .timer-controls,
 .timer-module[data-tile-skin="timer-freestanding"] .timer-controls:is(:hover,:focus-within){opacity:1;visibility:visible;pointer-events:auto;max-height:245px;transition-delay:0s}
 
-/* Interactive Timers keep a stable internal layout while running. The controls
-   fade without collapsing, so hover and corner resizing cannot repeatedly
-   reflow the hourglass or candle and make either view flash. */
-.interactive-module.is-running .timer-controls{
-  flex:0 0 auto;
+/* Interactive Timer controls still collapse so the timer artwork fills the
+   freed space. Avoid animating max-height during that handoff (which repeatedly
+   resized the SVG), and lock the controls open for the duration of a resize. */
+.interactive-module .timer-controls{transition:opacity .14s ease}
+.interactive-module.is-resizing .timer-controls{
   max-height:245px!important;
+  opacity:1!important;
   padding-top:2px!important;
-  transition:opacity .16s ease,visibility 0s linear .18s;
-}
-.interactive-module.is-running:not(:hover):not(:focus-within):not(.is-resizing) .timer-controls{
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-}
-.interactive-module.is-running:is(:hover,:focus-within,.is-resizing) .timer-controls{
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-  transition-delay:0s;
-}
-.interactive-module.is-running[data-interactive-mode="candle"] .candle-scene,
-.interactive-module.is-running:not(:hover)[data-interactive-mode="candle"] .candle-scene{
-  width:min(80cqw,330px)!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
 }
 
 /* Profile and Shop balances share a compact coin-first layout with fluid large-number sizing. */
