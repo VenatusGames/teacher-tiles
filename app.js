@@ -1270,7 +1270,7 @@ const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss
 const APP_TRANSLATIONS={
   en:{
     'top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
-    'warning.signin':'Sign-in to save your TileSet layout.','hint.addTile':'Right-click anywhere to add a tile',
+    'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
@@ -1305,7 +1305,7 @@ const APP_TRANSLATIONS={
   },
   es:{
     'top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
-    'warning.signin':'Inicia sesión para guardar el diseño de tu TileSet.','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
+    'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
@@ -11665,78 +11665,12 @@ function syncCosmeticEntitlements(){
 
 window.addEventListener('teachertiles:accountchange',syncCosmeticEntitlements);
 
-function materialRandomBetween(min,max){return min+Math.random()*(max-min)}
-function materialSvgUrl(svg){return`url("data:image/svg+xml,${encodeURIComponent(svg)}")`}
-
-function buildCosmosThemeArtwork(theme){
-  const palettes={
-    'cosmos-nebula':['#120b24','#7040b1','#dc72ff','#f7efff'],
-    'cosmos-pulsar':['#1d0e08','#a84a1b','#ff9a38','#fff1d7'],
-    'cosmos-milky-way':['#09101c','#66748f','#eef4ff','#ffffff'],
-    'cosmos-red-dwarf':['#1d080b','#962936','#ff596a','#ffe8eb']
-  };
-  const [base,cloud,glow,star]=palettes[theme]||palettes['cosmos-nebula'];
-  const seed=Math.floor(materialRandomBetween(1,9999));
-  const stars=Array.from({length:260},()=>{
-    const x=materialRandomBetween(8,1192).toFixed(1),y=materialRandomBetween(8,792).toFixed(1);
-    const radius=materialRandomBetween(.45,1.65).toFixed(2),opacity=materialRandomBetween(.35,.96).toFixed(2);
-    return`<circle cx="${x}" cy="${y}" r="${radius}" fill="${Math.random()>.72?glow:star}" opacity="${opacity}"/>`;
-  }).join('');
-  const spiralPath='M-175 7C-128-104 66-126 160-42C243 33 115 150-44 116C-157 91-205 7-135-61C-73-121 61-83 109-18C145 31 60 79-18 62C-76 50-89 2-49-27C-17-51 37-31 48 1';
-  const swirls=Array.from({length:24},(_,index)=>{
-    const x=materialRandomBetween(35,1165).toFixed(1),y=materialRandomBetween(30,770).toFixed(1);
-    const rotate=materialRandomBetween(-175,175).toFixed(1),scale=materialRandomBetween(.12,.34).toFixed(2);
-    const width=materialRandomBetween(7,16).toFixed(1),opacity=materialRandomBetween(.08,.2).toFixed(2);
-    const color=index%3===0?glow:cloud;
-    return`<g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#warp)"><path d="${spiralPath}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" opacity="${opacity}" filter="url(#soft)"/><path d="${spiralPath}" fill="none" stroke="${glow}" stroke-width="${materialRandomBetween(1,3).toFixed(1)}" stroke-linecap="round" opacity="${materialRandomBetween(.1,.22).toFixed(2)}"/></g>`;
-  }).join('');
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="warp" x="-45%" y="-45%" width="190%" height="190%"><feTurbulence type="fractalNoise" baseFrequency=".012 .025" numOctaves="2" seed="${seed}" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="22"/></filter><filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter><radialGradient id="shade"><stop stop-color="${base}" stop-opacity="0"/><stop offset="1" stop-color="${base}" stop-opacity=".25"/></radialGradient></defs>${stars}${swirls}<rect width="1200" height="800" fill="url(#shade)" pointer-events="none"/></svg>`;
-}
-
-function buildCardboardThemeArtwork(theme){
-  const labelColors={'cardboard-kraft':'#fffdf7','cardboard-white':'#fffdf7','cardboard-blue':'#b9dbea','cardboard-rose':'#e8bdc2'};
-  const label=labelColors[theme]||labelColors['cardboard-kraft'];
-  const ink=theme==='cardboard-blue'?'#274655':theme==='cardboard-rose'?'#5b343a':'#423a32';
-  const seed=Math.floor(materialRandomBetween(1,9999));
-  const cells=Array.from({length:96},(_,index)=>index).sort(()=>Math.random()-.5).slice(0,64);
-  const labels=cells.map(index=>{
-    const col=index%12,row=Math.floor(index/12);
-    const x=col*100+materialRandomBetween(8,42),y=row*100+materialRandomBetween(9,55);
-    const width=materialRandomBetween(28,52),height=materialRandomBetween(17,31),angle=materialRandomBetween(-14,14);
-    const scaleX=width/210,scaleY=height/120;
-    return`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${angle.toFixed(1)}) scale(${scaleX.toFixed(2)} ${scaleY.toFixed(2)})"><rect width="210" height="120" rx="9" fill="${label}" fill-opacity=".9" filter="url(#labelShadow)"/><path d="M21 27h90M21 44h145M21 62h112" stroke="${ink}" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/><path d="M23 82v23m8-23v23m7-23v23m11-23v23m6-23v23m13-23v23m7-23v23m11-23v23m6-23v23m13-23v23m8-23v23" stroke="${ink}" stroke-opacity=".52" stroke-width="3"/></g>`;
-  }).join('');
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="fiber"><feTurbulence type="fractalNoise" baseFrequency=".018 .11" numOctaves="3" seed="${seed}"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer></filter><filter id="labelShadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#4d2f19" flood-opacity=".2"/></filter></defs><rect width="1200" height="800" filter="url(#fiber)" opacity=".42"/>${labels}</svg>`;
-}
-
-function buildCorkboardThemeArtwork(theme){
-  const pinColors={'corkboard-red':'#d84b4b','corkboard-blue':'#3f79c8','corkboard-green':'#43a266','corkboard-gold':'#e0ad37'};
-  const pin=pinColors[theme]||pinColors['corkboard-red'];
-  const seed=Math.floor(materialRandomBetween(1,9999));
-  const points=[];
-  for(let attempts=0;attempts<2500&&points.length<68;attempts++){
-    const point={x:materialRandomBetween(18,1182),y:materialRandomBetween(18,782)};
-    if(points.every(other=>Math.hypot(point.x-other.x,point.y-other.y)>72))points.push(point);
+function applyMaterialThemeArtwork(){
+  // Artwork is shared with the shelf and board previews through theme CSS.
+  // Clear older inline artwork when switching themes or restoring a board.
+  for(const property of ['background-image','background-size','background-repeat','background-position']){
+    workspace.style.removeProperty(property);
   }
-  const flecks=Array.from({length:260},()=>`<circle cx="${materialRandomBetween(0,1200).toFixed(1)}" cy="${materialRandomBetween(0,800).toFixed(1)}" r="${materialRandomBetween(.45,1.5).toFixed(1)}" fill="${Math.random()>.5?'#6f4322':'#edc58f'}" opacity="${materialRandomBetween(.1,.28).toFixed(2)}"/>`).join('');
-  const pins=points.map(point=>`<g transform="translate(${point.x.toFixed(1)} ${point.y.toFixed(1)}) rotate(${materialRandomBetween(-16,16).toFixed(1)})"><ellipse cy="2.2" rx="4" ry="2.5" fill="#4b2a16" opacity=".25"/><circle r="3.6" fill="${pin}"/><circle cx="-1.1" cy="-1.1" r="1.1" fill="#fff" opacity=".48"/><path d="M0 3.2v4.5" stroke="#6b523f" stroke-width=".8" opacity=".55"/></g>`).join('');
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><filter id="cork"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="4" seed="${seed}"/><feColorMatrix type="saturate" values=".25"/><feComponentTransfer><feFuncA type="linear" slope=".18"/></feComponentTransfer></filter></defs><rect width="1200" height="800" filter="url(#cork)" opacity=".55"/>${flecks}${pins}</svg>`;
-}
-
-function applyMaterialThemeArtwork(theme){
-  workspace.style.removeProperty('background-image');
-  workspace.style.removeProperty('background-size');
-  workspace.style.removeProperty('background-repeat');
-  workspace.style.removeProperty('background-position');
-  let svg='';
-  if(theme.startsWith('cosmos-'))svg=buildCosmosThemeArtwork(theme);
-  else if(theme.startsWith('cardboard-'))svg=buildCardboardThemeArtwork(theme);
-  else if(theme.startsWith('corkboard-'))svg=buildCorkboardThemeArtwork(theme);
-  if(!svg)return;
-  workspace.style.backgroundImage=materialSvgUrl(svg);
-  workspace.style.backgroundSize='100% 100%';
-  workspace.style.backgroundRepeat='no-repeat';
-  workspace.style.backgroundPosition='center';
 }
 
 function applyTeacherTheme(theme,{persist=true}={}){

@@ -1,0 +1,112 @@
+/* Material theme artwork. Shared SVGs keep full boards and previews consistent. */
+body:is(.theme-wood-oak,.theme-wood-spruce,.theme-wood-redwood,.theme-wood-cherry,
+  .theme-cardboard-kraft,.theme-cardboard-white,.theme-cardboard-blue,.theme-cardboard-rose,
+  .theme-metal-copper,.theme-metal-iron,.theme-metal-dark-steel,.theme-metal-cobalt,
+  .theme-cosmos-nebula,.theme-cosmos-pulsar,.theme-cosmos-milky-way,.theme-cosmos-red-dwarf,
+  .theme-corkboard-red,.theme-corkboard-blue,.theme-corkboard-green,.theme-corkboard-gold) .workspace{
+  background-image:var(--material-art);
+  background-size:1200px 800px;
+  background-repeat:repeat;
+  background-position:0 0;
+}
+body:is(.theme-cosmos-nebula,.theme-cosmos-pulsar,.theme-cosmos-milky-way,.theme-cosmos-red-dwarf) .workspace{
+  background-color:#080c19;
+  background-size:2400px 1500px;
+}
+body:is(.theme-metal-copper,.theme-metal-iron,.theme-metal-dark-steel,.theme-metal-cobalt) .workspace{
+  background-size:1600px 1000px;
+}
+
+/* Retain the existing light/dark tile colors and all tile-specific appearance settings. */
+body:is(.theme-cosmos-nebula,.theme-cosmos-pulsar,.theme-cosmos-milky-way,.theme-cosmos-red-dwarf){
+  --surface:rgba(18,23,40,.96);
+  --surface-solid:#151d30;
+  --surface-soft:#242e44;
+  --border:rgba(186,202,236,.19);
+  --muted:#bcc7dc;
+}
+body:is(.theme-metal-copper,.theme-metal-iron,.theme-metal-dark-steel,.theme-metal-cobalt){
+  --surface:rgba(30,37,46,.97);
+  --surface-solid:#242d38;
+  --surface-soft:#34414e;
+  --border:rgba(224,236,248,.2);
+  --muted:#bdc8d1;
+}
+
+/* Existing preview markup remains intact; its artwork is now the actual material. */
+.theme-card:is([class*="--wood-"],[class*="--metal-"],[class*="--cosmos-"],[class*="--cardboard-"],[class*="--cork-"]){
+  background-image:var(--material-art);
+  background-size:cover;
+  background-position:center;
+}
+.theme-card:is([class*="--metal-"],[class*="--cosmos-"]) .theme-card__copy{
+  background:rgba(14,23,38,.92);
+  color:#f2f5ff;
+  box-shadow:inset 0 1px 0 rgba(220,232,255,.12);
+}
+.theme-card:is([class*="--metal-"],[class*="--cosmos-"]) .theme-card__copy small{color:#c6d1e5;opacity:1}
+.theme-card :is(.theme-card__preview--wood,.theme-card__preview--metal,.theme-card__preview--cosmos,.theme-card__preview--cardboard,.theme-card__preview--cork){
+  background:var(--material-art) center / cover no-repeat!important;
+  opacity:1;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 5px rgba(0,0,0,.15);
+}
+.theme-card :is(.theme-card__preview--wood,.theme-card__preview--metal,.theme-card__preview--cosmos,.theme-card__preview--cardboard,.theme-card__preview--cork)::before,
+.theme-card :is(.theme-card__preview--wood,.theme-card__preview--metal,.theme-card__preview--cosmos,.theme-card__preview--cardboard,.theme-card__preview--cork)::after,
+.theme-card :is(.theme-card__preview--wood,.theme-card__preview--metal,.theme-card__preview--cosmos,.theme-card__preview--cardboard,.theme-card__preview--cork)>*{display:none!important}
+.theme-pack :is(.theme-pack__stack--wood,.theme-pack__stack--metal,.theme-pack__stack--cosmos,.theme-pack__stack--cardboard,.theme-pack__stack--corkboard) .theme-pack__sheet{
+  background-image:var(--material-art)!important;
+  background-size:cover!important;
+  background-position:center!important;
+  border:1px solid rgba(255,255,255,.32);
+  box-shadow:0 3px 7px rgba(16,20,28,.25),inset 0 1px 0 rgba(255,255,255,.24);
+}
+.theme-pack :is(.theme-pack__stack--wood,.theme-pack__stack--metal,.theme-pack__stack--cosmos,.theme-pack__stack--cardboard,.theme-pack__stack--corkboard) .theme-pack__sheet::before,
+.theme-pack :is(.theme-pack__stack--wood,.theme-pack__stack--metal,.theme-pack__stack--cosmos,.theme-pack__stack--cardboard,.theme-pack__stack--corkboard) .theme-pack__sheet::after{display:none!important}
+:is([class*="board-preview-theme-wood-"],[class*="board-preview-theme-metal-"],[class*="board-preview-theme-cosmos-"],[class*="board-preview-theme-cardboard-"],[class*="board-preview-theme-corkboard-"]){
+  background-image:var(--material-art);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+.shop-product__preview:is(.shop-product__preview--wood,.shop-product__preview--metal,.shop-product__preview--cosmos){
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-template-rows:1fr;
+  gap:0;
+  background:#080c19;
+}
+.shop-product__preview:is(.shop-product__preview--wood,.shop-product__preview--metal,.shop-product__preview--cosmos)>i{
+  position:static;
+  display:block;
+  width:auto;
+  height:100%;
+  border:0;
+  border-right:1px solid rgba(255,255,255,.16);
+  border-radius:0;
+  background:var(--material-art) center / auto 100% no-repeat;
+  transform:none;
+  filter:none;
+  opacity:1;
+  box-shadow:none;
+}
+.shop-product__preview:is(.shop-product__preview--wood,.shop-product__preview--metal,.shop-product__preview--cosmos)>i::after{display:none}
+.shop-product__preview--wood::after{display:none}
+.shop-product__preview--cardboard{background:url('assets/themes/cardboard-blue.svg') center / cover}
+.shop-product__preview--corkboard{background:url('assets/themes/corkboard-red.svg') center / cover}
+.shop-product__preview:is(.shop-product__preview--cardboard,.shop-product__preview--corkboard)>*{display:none}
+
+/* Close material crops keep pin colors and shipping labels legible on tiny swatches. */
+.theme-card .theme-card__preview--cork,
+.theme-pack .theme-pack__stack--corkboard .theme-pack__sheet{
+  background-size:600% auto!important;
+  background-position:left top!important;
+}
+.theme-card .theme-card__preview--cardboard,
+.theme-pack .theme-pack__stack--cardboard .theme-pack__sheet{
+  background-size:400% auto!important;
+  background-position:left top!important;
+}
+[class*="board-preview-theme-corkboard-"]{background-size:400% auto;background-position:left top}
+[class*="board-preview-theme-cardboard-"]{background-size:300% auto;background-position:left top}
+.shop-product__preview--cardboard,.shop-product__preview--corkboard{background-size:200% auto;background-position:left top}

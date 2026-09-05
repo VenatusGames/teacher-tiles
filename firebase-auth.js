@@ -3979,7 +3979,7 @@ signOutButton.addEventListener("click", handleSignOut);
 if (saveWarning) {
   saveWarning.setAttribute("role", "button");
   saveWarning.setAttribute("tabindex", "0");
-  saveWarning.setAttribute("aria-label", "Sign in to save your TileSet layout");
+  saveWarning.setAttribute("aria-label", "Sign-in to save your board and more");
   const openSignInFromWarning = event => {
     if (currentUser) return;
     if (event?.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
