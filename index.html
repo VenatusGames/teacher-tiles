@@ -7,9 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260905-skins-1" />
+  <link rel="stylesheet" href="styles.css?v=20260905-image-search-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260905-2" />
   <link rel="stylesheet" href="styles-materials.css?v=20260905-2" />
+  <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260905-1" />
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -1649,6 +1650,7 @@
       <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon context-menu__icon--todo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m7 12.2 3.2 3.3L17.5 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
       <button class="context-menu__item" data-module="visualschedule" data-category="time planning"><span class="context-menu__icon context-menu__icon--visual-schedule" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="7" width="3" height="3" rx=".6" fill="currentColor"/><rect x="7" y="12" width="3" height="3" rx=".6" fill="currentColor"/><path d="M12.5 8.5H17M12.5 13.5H17M7 18h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
       <button class="context-menu__item" data-module="lessonplannertile" data-category="planning time"><span class="context-menu__icon context-menu__icon--lesson-planner" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span><span><strong>Lesson Planner</strong><small>Show today’s or this week’s lesson plans</small></span></button>
+      <button class="context-menu__item" data-module="imagesearch" data-category="media tools"><span class="context-menu__icon context-menu__icon--image-search" aria-hidden="true">⌕</span><span><strong>Image Search</strong><small>Find images and drag them onto the board</small></span></button>
       <button class="context-menu__item" data-module="image" data-category="media"><span class="context-menu__icon" aria-hidden="true">▧</span><span><strong>Image</strong><small>Display an image on the board</small></span></button>
       <button class="context-menu__item" data-module="youtube" data-category="media"><span class="context-menu__icon" aria-hidden="true">▶</span><span><strong>YouTube</strong><small>Play a YouTube video</small></span></button>
       <button class="context-menu__item" data-module="windowshare" data-category="media">
@@ -2908,6 +2910,19 @@
   </template>
 
 
+  <template id="imagesearch-template">
+    <section class="module image-search-module" data-type="imagesearch" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete image search">×</button><div class="module-drag-handle"></div>
+      <header class="image-search-header"><div><small>DISCOVER &amp; CREATE</small><h2>Image Search</h2></div><span aria-hidden="true">▧</span></header>
+      <form class="image-search-form" role="search"><input class="image-search-input" type="search" maxlength="120" placeholder="Try red pandas, planets, or flowers…" aria-label="Search images" autocomplete="off"><button class="primary" type="submit">Search</button></form>
+      <div class="image-search-status" role="status" aria-live="polite">Search images from Wikimedia Commons.</div>
+      <div class="image-search-results" aria-label="Image search results" aria-busy="false"></div>
+      <button class="image-search-more" type="button" hidden>Load more images</button>
+      <footer class="image-search-footer">Images from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a><span>Source credits stay with your images.</span></footer>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
   <template id="image-template">
     <section class="module image-module" data-type="image">
       <button class="module-delete" aria-label="Delete image">×</button><div class="module-drag-handle"></div>
@@ -3441,8 +3456,9 @@
 
   <script src="changelog/data.js"></script>
   <script src="news/data.js"></script>
-  <script src="app.js?v=20260905-2"></script>
-  <script src="lesson-planner.js?v=2"></script>
+  <script src="tiles/image-search/index.js?v=20260905-1"></script>
+  <script src="app.js?v=20260905-image-search-1"></script>
+  <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260904-shop-5"></script>
 
 

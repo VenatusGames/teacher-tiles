@@ -1345,7 +1345,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Sticky note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
     interactive:['Interactive Timers','Hourglass and melting candle'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
-    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
+    stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise detector','Live microphone sound level'],
@@ -1359,7 +1359,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
     interactive:['Temporizadores interactivos','Reloj de arena y vela que se derrite'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
-    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
+    stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],imagesearch:['Buscar imágenes','Busca imágenes y arrástralas al tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
@@ -2607,6 +2607,7 @@ function setupModuleByType(m,type){
   if(type==='lunchcount')setupLunchCount(m);
   if(type==='voting')setupVoting(m);
   if(type==='image')setupImage(m);
+  if(type==='imagesearch')window.TeacherTilesImageSearch.setup(m);
   if(type==='youtube')setupYoutube(m);
   if(type==='ambiencevideo')setupAmbienceVideo(m);
   if(type==='windowshare')setupWindowShare(m);
@@ -7032,6 +7033,10 @@ function setupStoplight(m){
 }
 
 function getDraggedImageSource(dt){
+  if(window.TeacherTilesImageSearch && [...dt.types].includes(window.TeacherTilesImageSearch.DRAG_TYPE)){
+    const item=window.TeacherTilesImageSearch.readDrag(dt);
+    return item?{url:item.url,attribution:item}:null;
+  }
   const file=[...dt.files].find(f=>f.type.startsWith('image/'));if(file)return{file};
   const uri=(dt.getData('text/uri-list')||'').split(/\r?\n/).find(x=>x&&!x.startsWith('#'));
   const html=dt.getData('text/html')||'';const match=html.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -7098,6 +7103,21 @@ function setupImage(m){
   let objectUrl='';
   let boardImageSrc='';
   let boardImagePreviewSrc='';
+  let attribution=null;
+  const credit=document.createElement('a');
+  credit.className='image-source-credit';credit.target='_blank';credit.rel='noopener noreferrer';credit.hidden=true;
+  credit.addEventListener('click',event=>event.stopPropagation());
+  credit.draggable=false;m.appendChild(credit);
+  const setAttribution=value=>{
+    attribution=window.TeacherTilesImageSearch?.normalizeResult(value) || null;
+    credit.hidden=!attribution;
+    if(attribution){
+      credit.href=attribution.sourceUrl;
+      credit.textContent=[attribution.creator,attribution.license].filter(Boolean).join(' · ');
+      credit.title=`${attribution.title} — View source and license`;
+      credit.setAttribute('aria-label',credit.title);
+    }else credit.removeAttribute('href');
+  };
 
   const applyBorder=()=>{
     const style=borderStyle?.value||'none';
@@ -7132,6 +7152,7 @@ function setupImage(m){
 
   const setFile=file=>{
     if(!file||!file.type?.startsWith('image/'))return;
+    setAttribution(null);
     if(objectUrl)URL.revokeObjectURL(objectUrl);
     objectUrl=URL.createObjectURL(file);
     setSrc(objectUrl,file.name||'Board image');
@@ -7146,12 +7167,13 @@ function setupImage(m){
     }).catch(()=>{});
   };
 
-  const setUrl=(url,{notify=true,fit=true,previewSrc=''}={})=>{
+  const setUrl=(url,{notify=true,fit=true,previewSrc='',attribution:sourceCredit=null}={})=>{
     if(!url)return;
+    setAttribution(sourceCredit);
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=''}
     boardImageSrc=url;
     boardImagePreviewSrc=previewSrc||(!url.startsWith('data:image/')?url:'');
-    setSrc(url,'Board image',{fit});
+    setSrc(url,attribution?.title||'Board image',{fit});
     if(url.startsWith('data:image/')&&!boardImagePreviewSrc){
       boardImagePreviewData(url).then(preview=>{
         if(!preview)return;
@@ -7164,13 +7186,13 @@ function setupImage(m){
 
   m._setImage=setFile;
   m._setImageUrl=setUrl;
-  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),previewSrc:boardImagePreviewSrc,border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d'});
+  m._boardGetState=()=>({src:boardImageSrc||(!img.src.startsWith('blob:')?img.src:''),previewSrc:boardImagePreviewSrc,border:borderStyle?.value||'none',borderColor:borderColor?.value||'#17191d',attribution});
   m._boardSetState=state=>{
     if(!state)return;
     if(borderStyle)borderStyle.value=['none','thin','medium','thick','double'].includes(state.border)?state.border:'none';
     if(borderColor&&/^#[0-9a-f]{6}$/i.test(state.borderColor||''))borderColor.value=state.borderColor;
     applyBorder();
-    if(state.src)setUrl(state.src,{notify:false,fit:false,previewSrc:String(state.previewSrc||'')});
+    if(state.src)setUrl(state.src,{notify:false,fit:false,previewSrc:String(state.previewSrc||''),attribution:state.attribution});
   };
 
   stage.addEventListener('click',()=>input.click());
@@ -7184,7 +7206,7 @@ function setupImage(m){
   stage.addEventListener('drop',e=>{
     e.preventDefault();e.stopPropagation();stage.classList.remove('is-dragover');
     const src=getDraggedImageSource(e.dataTransfer);
-    if(src?.file)setFile(src.file);else if(src?.url)setUrl(src.url);
+    if(src?.file)setFile(src.file);else if(src?.url)setUrl(src.url,{attribution:src.attribution});
   });
 
   const prior=m._cleanup;
@@ -11553,7 +11575,7 @@ function setupTodo(m){
 }
 
 workspace.addEventListener('dragover',e=>{const types=[...e.dataTransfer.types];if(types.includes('Files')||types.includes('text/uri-list')||types.includes('text/html')||types.includes('text/plain'))e.preventDefault()});
-workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))return;const src=getDraggedImageSource(e.dataTransfer);if(!src)return;e.preventDefault();const p=screenToBoard(e.clientX,e.clientY);const m=createModule('image',p.x,p.y);if(src.file)m?._setImage?.(src.file);else if(src.url)m?._setImageUrl?.(src.url)});
+workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))return;const src=getDraggedImageSource(e.dataTransfer);if(!src)return;e.preventDefault();const p=screenToBoard(e.clientX,e.clientY);const m=createModule('image',p.x,p.y);if(src.file)m?._setImage?.(src.file);else if(src.url)m?._setImageUrl?.(src.url,{attribution:src.attribution})});
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
