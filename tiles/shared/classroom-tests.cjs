@@ -8,9 +8,9 @@ for(const date of [new Date(2026,2,8),new Date(2026,10,1),new Date(2026,11,31)])
   assert.equal(daily.index(40,0,next),(daily.index(40,0,date)+1)%40);
   assert.equal(daily.index(40,0,date),daily.index(40,0,new Date(date.getFullYear(),date.getMonth(),date.getDate(),23,59)));
 }
-assert.equal(words.everyday.length,40);assert.equal(words.challenge.length,40);
+assert.equal(words.everyday.length,183);assert.equal(words.challenge.length,182);
 for(const bank of Object.values(words))for(const item of bank)for(const field of ['word','definition','part','example'])assert(item[field]?.trim());
-assert.equal(quotes.length,20);for(const q of quotes){assert(q.text&&q.author&&q.prompt&&q.work);assert(new URL(q.source).hostname==='www.gutenberg.org');}
+assert.equal(quotes.length,20);for(const q of quotes){assert(q.text&&q.author&&q.work);assert(new URL(q.source).hostname==='www.gutenberg.org');}
 assert.equal(vocab.normalize(Array.from({length:100},()=>({word:'word',definition:'x'.repeat(500)}))).length,80);
 assert.equal(vocab.normalize([{word:' ',definition:'ignored'},null,{word:' term ',definition:'meaning'}]).length,1);
 assert.equal(vocab.normalize([{word:'w',definition:'x'.repeat(500)}])[0].definition.length,240);

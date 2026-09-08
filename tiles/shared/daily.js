@@ -15,19 +15,18 @@
 
   let pending,retryAfter=0;
   async function feed(){
-    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-v6'));}catch{}
+    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-reviewed-v1'));}catch{}
+    if(cached&&typeof cached==='object'){cached.words=(Array.isArray(cached.words)?cached.words:[]).filter(window.TeacherTilesLive.validWord);cached.quotes=(Array.isArray(cached.quotes)?cached.quotes:[]).filter(window.TeacherTilesLive.validQuote);}else cached=null;
     const today=dayKey();
-    if(cached?.day===today&&cached.wordsDay===today&&cached.quotesDay===today)return cached;
+    if(cached?.day===today&&cached.wordsDay===today&&cached.quotesDay===today&&cached.words.length&&cached.quotes.length)return cached;
     if(Date.now()<retryAfter&&!pending)return cached||null;
     if(!pending)pending=(async()=>{
       const result=await Promise.allSettled([window.TeacherTilesLive.words(),window.TeacherTilesLive.quotes()]);
       const freshWords=result[0].status==='fulfilled',freshQuotes=result[1].status==='fulfilled';
       let words=freshWords?result[0].value:(cached?.words||[]);
-      if(freshWords){const pivot=index(words.length);words=[...words.slice(pivot),...words.slice(0,pivot)];}
       let quotes=freshQuotes?result[1].value:(cached?.quotes||[]);
-      if(freshQuotes){const pivot=index(quotes.length);quotes=[...quotes.slice(pivot),...quotes.slice(0,pivot)];}
       const data={day:today,wordsDay:freshWords?today:cached?.wordsDay,quotesDay:freshQuotes?today:cached?.quotesDay,words,quotes};
-      try{localStorage.setItem('tt-daily-learning-v6',JSON.stringify(data));}catch{}
+      try{localStorage.setItem('tt-daily-learning-reviewed-v1',JSON.stringify(data));}catch{}
       retryAfter=Date.now()+60000;return data;
     })().finally(()=>{pending=null;});
     return pending;

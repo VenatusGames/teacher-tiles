@@ -1,6 +1,6 @@
-/* Original classroom definitions; dictionary links are references, not copied definitions. */
-window.TeacherTilesWords=Object.freeze({
-  "everyday": [
+{
+  "version": 1,
+  "words": [
     {
       "word": "adapt",
       "part": "verb",
@@ -1830,9 +1830,7 @@ window.TeacherTilesWords=Object.freeze({
       "example": "Try using “remarkable” in a sentence that shows its meaning.",
       "source": "https://dictionary.cambridge.org/dictionary/english/remarkable",
       "credit": "TeacherTiles definition · Dictionary reference"
-    }
-  ],
-  "challenge": [
+    },
     {
       "word": "resilient",
       "part": "adjective",
@@ -3654,4 +3652,4 @@ window.TeacherTilesWords=Object.freeze({
       "credit": "TeacherTiles definition · Dictionary reference"
     }
   ]
-});
+}
