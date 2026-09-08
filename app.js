@@ -3429,7 +3429,7 @@ function setupTimer(m){
   const releaseSettings=()=>{
     clearTimeout(settingsHideTimer);
     settingsHideTimer=setTimeout(()=>{
-      if(m.matches(':hover,:focus-within')||controls?.matches(':hover,:focus-within'))return;
+      if(m.matches('.is-pointer-over,:has(:focus-visible)')||controls?.matches(':has(:focus-visible)'))return;
       m.classList.remove('is-settings-open');
     },520);
   };
@@ -3465,6 +3465,7 @@ function setupTimer(m){
     stopTimer();
     sizeObserver.disconnect();
   };
+  window.TeacherTilesTimerPointer.attach(m);
 }
 
 function setupHourglass(m){window.TeacherTilesInteractiveTimers.setup(m)}
@@ -17405,7 +17406,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open'
+  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus'
 ]);
 let activeTeacherTilesBoardId='';
 

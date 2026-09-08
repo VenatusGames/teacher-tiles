@@ -31,6 +31,7 @@
     m._boardGetState=()=>({mode});
     m._boardSetState=state=>setMode(state?.mode||m.dataset.interactiveMode);
     m._cleanup=()=>{hourglass.destroy();stories.destroy();cleanup();};
+    window.TeacherTilesTimerPointer.attach(m);
   }
   window.TeacherTilesInteractiveTimers=Object.freeze({setup});
 })();

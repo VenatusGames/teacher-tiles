@@ -4,4 +4,4 @@ Word of the Day reads the latest 50 daily entries and a rotating batch of 50 arc
 
 No Firebase function, paid account, API key, or backend deployment is required. The browser shares in-flight requests across tiles, caches successful feeds, and retries a failed source after a minute. Partial failures do not mark the other source as successfully refreshed. Source attribution includes the Wikimedia CC BY-SA credit. Keyword filters reduce unsuitable content; this is not human editorial review of the upstream collections.
 
-Google’s new Programmable Search engines are limited to 50 configured websites. The Google tile requires the site’s actual engine ID in `tiles/google/config.js`; do not use a third-party engine ID or claim unrestricted Google search is supported by a new engine.
+Google search opens a separate Google results tab, with SafeSearch active. It requires no custom engine or API key.

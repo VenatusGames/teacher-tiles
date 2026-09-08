@@ -34,3 +34,5 @@
 .image-source-credit[hidden]{display:none}.image-source-credit:hover,.image-source-credit:focus-visible{opacity:1;text-decoration:underline;max-width:calc(100% - 16px);white-space:normal}
 .context-menu__icon--image-search{background:var(--surface-soft);color:var(--text);font-size:27px}
 @container(max-width:380px){.image-search-card img{height:100px}.image-search-form button{padding-inline:8px}.image-search-input{font-size:11px}.image-search-header h2{font-size:22px}.image-search-status-row{align-items:flex-start;flex-direction:column;gap:4px}.image-search-safe-badge{align-self:flex-start}}
+
+.context-menu__icon--image-search{display:grid;place-items:center;line-height:1}.context-menu__icon--image-search svg{display:block;flex:none;margin:0;fill:none}

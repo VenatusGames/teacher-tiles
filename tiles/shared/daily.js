@@ -15,7 +15,7 @@
 
   let pending,retryAfter=0;
   async function feed(){
-    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-v5'));}catch{}
+    let cached;try{cached=JSON.parse(localStorage.getItem('tt-daily-learning-v6'));}catch{}
     const today=dayKey();
     if(cached?.day===today&&cached.wordsDay===today&&cached.quotesDay===today)return cached;
     if(Date.now()<retryAfter&&!pending)return cached||null;
@@ -27,7 +27,7 @@
       let quotes=freshQuotes?result[1].value:(cached?.quotes||[]);
       if(freshQuotes){const pivot=index(quotes.length);quotes=[...quotes.slice(pivot),...quotes.slice(0,pivot)];}
       const data={day:today,wordsDay:freshWords?today:cached?.wordsDay,quotesDay:freshQuotes?today:cached?.quotesDay,words,quotes};
-      try{localStorage.setItem('tt-daily-learning-v5',JSON.stringify(data));}catch{}
+      try{localStorage.setItem('tt-daily-learning-v6',JSON.stringify(data));}catch{}
       retryAfter=Date.now()+60000;return data;
     })().finally(()=>{pending=null;});
     return pending;

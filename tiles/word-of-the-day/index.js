@@ -23,7 +23,7 @@
     m.querySelector('.daily-today').addEventListener('click',()=>{offset=0;render();notifyBoardChanged('daily-word');});
     m._boardGetState=()=>({level,offset,day});
     m._boardSetState=s=>{level=s?.level==='challenge'?'challenge':'everyday';day=daily.dayKey();offset=s?.day===day&&Number.isInteger(s.offset)?Math.min(1000,Math.max(0,s.offset)):0;render();};
-    daily.watch(m,()=>{render();daily.feed().then(data=>{if(disposed)return;live=(data?.words||[]).filter(w=>typeof w.word==='string'&&typeof w.definition==='string');render();});});
+    daily.watch(m,()=>{render();daily.feed().then(data=>{if(disposed)return;live=(data?.words||[]).filter(w=>window.TeacherTilesLive.validWord(w));render();});});
     const prior=m._cleanup;m._cleanup=()=>{disposed=true;prior?.();};
   }
   window.TeacherTilesWordOfTheDay=Object.freeze({setup});

@@ -1,16 +1,16 @@
 .hourglass-stage{flex-direction:column;gap:0;padding:0 6px 2px}
 .hourglass-stage .hourglass-countdown{font-size:clamp(26px,10cqw,46px);letter-spacing:-.035em;line-height:1.1;flex:0 0 auto}
 .hourglass-canvas{display:block;flex:1 1 auto;min-height:0;width:100%;max-width:360px;object-fit:contain;aspect-ratio:300/380}
-.interactive-module.is-running:not(:hover) .hourglass-canvas{max-width:440px}
+.interactive-module.is-running:not(.is-pointer-over) .hourglass-canvas{max-width:440px}
 .timer-story-stage{display:flex;flex:1 1 0;min-height:0;flex-direction:column;align-items:center;overflow:hidden;gap:2px}
 .interactive-module .timer-controls{max-height:230px}
 /* Keep the scene's allocation stable across hover; fading controls must not
    repeatedly collapse and expand the canvas while it is being resized. */
-.interactive-module.is-running:not(:hover) .timer-controls{max-height:230px;padding-top:2px;opacity:0;pointer-events:none}
-.interactive-module.is-running:focus-within .timer-controls{opacity:1;pointer-events:auto}
+.interactive-module.is-running:not(.is-pointer-over) .timer-controls{max-height:230px;padding-top:2px;opacity:0;pointer-events:none}
+.interactive-module.is-running:has(:focus-visible) .timer-controls{opacity:1;pointer-events:auto}
 .interactive-module .timer-controls{transition:opacity .14s}
-.interactive-module.is-running:not(:hover) .hourglass-canvas{max-width:360px}
-.interactive-module.is-running:not(:hover)[data-interactive-mode="candle"] .candle-scene{width:min(80cqw,330px)}
+.interactive-module.is-running:not(.is-pointer-over) .hourglass-canvas{max-width:360px}
+.interactive-module.is-running:not(.is-pointer-over)[data-interactive-mode="candle"] .candle-scene{width:min(80cqw,330px)}
 .interactive-module .timer-story-stage[hidden]{display:none!important}
 .scene-countdown{flex:0 0 auto;font-size:clamp(26px,10cqw,46px);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1.1;color:var(--module-text,var(--text))}
 .timer-story-svg{display:block;flex:1 1 0;min-height:0;width:100%;max-width:360px;overflow:hidden}
@@ -18,3 +18,10 @@
 .sunflower-stage[data-idle="true"] .plant-seed{animation:timerSeedFloat 2.8s ease-in-out infinite}
 @keyframes timerSeedFloat{0%,100%{translate:0 -3px}50%{translate:0 3px}}
 @media(prefers-reduced-motion:reduce){.sunflower-stage .plant-seed{animation:none!important}}
+
+/* Release control space in one layout update; never retain an invisible panel. */
+.interactive-module.is-running:not(.is-pointer-over):not(.has-keyboard-focus):not(.is-resizing) .timer-controls{max-height:0;padding:0;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden}
+.interactive-module:is(.is-pointer-over,.has-keyboard-focus) .timer-controls{max-height:245px;padding-top:2px;opacity:1;visibility:visible;pointer-events:auto}
+.interactive-module .hourglass-canvas,.interactive-module.is-running:not(.is-pointer-over) .hourglass-canvas,.interactive-module .timer-story-svg{max-width:none;flex:1 1 0;height:0;min-height:0;width:100%}
+.interactive-module.is-running:not(.is-pointer-over)[data-interactive-mode="candle"] .candle-scene{width:94%}
+.interactive-module:not(.is-pointer-over):not(.has-keyboard-focus) .customization-bar{opacity:0;pointer-events:none}

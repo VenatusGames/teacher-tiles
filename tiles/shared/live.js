@@ -1,6 +1,26 @@
 (() => {
 'use strict';
-const clean=s=>String(s||'').replace(/\{\{[^{}]*\}\}/g,'').replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,'$1').replace(/<[^>]*>/g,'').replace(/'{2,}/g,'').replace(/\s+/g,' ').trim();
+// Unknown dictionary templates are rejected rather than erased from a definition.
+function clean(value){
+ let s=String(value||''),invalid=false;
+ for(let i=0;i<12&&/\{\{/.test(s);i++)s=s.replace(/\{\{([^{}]*)\}\}/g,(_,body)=>{
+   const args=body.split('|'),name=args.shift().trim().toLowerCase();
+   if(['lb','label','context','qualifier','q','senseid','anchor'].includes(name))return '';
+   if(['l','link','m','mention','ll'].includes(name))return args[2]||args[1]||'';
+   if(['w','wikipedia'].includes(name))return args[1]||args[0]||'';
+   if(['gloss','non-gloss definition','ngd','vern','smallcaps','smallcaps2','nowrap'].includes(name))return args[0]||'';
+   invalid=true;return '';
+ });
+ s=s.replace(/\[\[([^\]]+)\]\]/g,(_,body)=>{const parts=body.split('|');return parts.length>1?parts.at(-1):parts[0].split('#')[0];})
+   .replace(/<ref\b[^>]*>[\s\S]*?<\/ref>/gi,'').replace(/<[^>]*>/g,'').replace(/'{2,}/g,'')
+   .replace(/&(?:nbsp|amp|quot|apos|lt|gt);/g,e=>({'&nbsp;':' ','&amp;':'&','&quot;':'"','&apos;':"'",'&lt;':'<','&gt;':'>'}[e]))
+   .replace(/&#(x[0-9a-f]+|\d+);/gi,(_,n)=>{const cp=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):Number(n);return cp>0&&cp<=0x10ffff?String.fromCodePoint(cp):'';})
+   .replace(/\s+/g,' ').trim();
+ return invalid?'':s;
+}
+const readable=s=>typeof s==='string'&&s.trim().length>0&&!/[{}\[\]|<>\uFFFD]|&[a-z#0-9]+;|\b(?:undefined|null|NaN)\b/i.test(s);
+const validWord=w=>!!w&&readable(w.word)&&/^[a-z][a-z -]{1,59}$/i.test(w.word)&&readable(w.definition)&&w.definition.length>=15&&w.definition.length<=600&&(w.definition.match(/[a-z]+/gi)||[]).length>=3&&!/^(?:alternative|obsolete|archaic|plural|past tense|present participle|comparative|superlative) (?:form|spelling|of)\b/i.test(w.definition)&&!/[#=]/.test(w.definition)&&readable(w.part);
+const validQuote=q=>!!q&&readable(q.text)&&q.text.length>=35&&q.text.length<=400&&(q.text.match(/[a-z]+/gi)||[]).length>=7&&readable(q.author)&&q.author.length>=3&&q.author.length<=80;
 const appropriate=s=>!(/\b(sex|sexual|fuck|shit|suicide|penis|vagina|drunk|porn|bastard)\b/i.test(s));
 function parseWord(raw){
   // Split only at top-level pipes: definitions contain nested links/templates.
@@ -15,7 +35,8 @@ function parseWord(raw){
   }
   const word=clean(fields[0]),definition=clean(fields[2]).split(/\s+#(?:\s|$)/)[0];
   if(!word||word.length>60||!definition||definition.length>800||!appropriate(word+' '+definition))return null;
-  return {word,part:({n:'noun',adj:'adjective',adv:'adverb',v:'verb'}[clean(fields[1])]||clean(fields[1])).slice(0,40),definition,example:`Can you use “${word}” in a sentence?`,source:'https://en.wiktionary.org/wiki/'+encodeURIComponent(word),credit:'Wiktionary · CC BY-SA'};
+  const item={word,part:({n:'noun',adj:'adjective',adv:'adverb',v:'verb'}[clean(fields[1])]||clean(fields[1])).slice(0,40),definition,example:`Can you use “${word}” in a sentence?`,source:'https://en.wiktionary.org/wiki/'+encodeURIComponent(word),credit:'Wiktionary · CC BY-SA'};
+  return validWord(item)?item:null;
 }
 
 const text=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -29,10 +50,11 @@ function parseQuotes(html,topic){
  const doc=new DOMParser().parseFromString(html,'text/html'),output=[];
  for(const li of doc.querySelectorAll('.mw-parser-output > ul > li')){
    const citation=li.querySelector(':scope > ul > li'),author=citation?.querySelector('a[href^="/wiki/"]');
-   if(!author)continue;
+   if(!author||!text(citation.textContent).startsWith(text(author.textContent)))continue;
    const copy=li.cloneNode(true);copy.querySelectorAll('ul,ol,sup').forEach(n=>n.remove());const quote=text(copy.textContent),name=text(author.textContent);
+   if(!validQuote({text:quote,author:name})||/\b(?:misattributed|disputed|unsourced|attributed to|translation|variant)\b/i.test(citation.textContent))continue;
    if(quote.length<35||quote.length>260||name.length>80||!classroom(quote)||!/curio|grow|courage|dream|creat|imagin|discover|wonder|joy|possib|inspir|opportun|persever|achiev/i.test(quote))continue;
-   output.push({text:quote,author:name,work:`Wikiquote · ${topic} · CC BY-SA`,source:`https://en.wikiquote.org/wiki/${encodeURIComponent(topic)}`,prompt:'How could you put this idea into practice today?'});
+   output.push({text:quote,author:name,work:`Wikiquote · ${topic} · CC BY-SA`,source:`https://en.wikiquote.org/wiki/${encodeURIComponent(topic)}`});
  }
  return [...new Map(output.map(q=>[q.text,q])).values()];
 }
@@ -58,5 +80,5 @@ async function quotes(){
  const items=[...new Map(results.filter(r=>r.status==='fulfilled').flatMap(r=>r.value).map(q=>[q.text,q])).values()];
  if(!items.length)throw Error('Quote source unavailable');return items;
 }
-window.TeacherTilesLive=Object.freeze({words,quotes,parseWord,parseQuotes});
+window.TeacherTilesLive=Object.freeze({words,quotes,parseWord,parseQuotes,validWord,validQuote});
 })();
