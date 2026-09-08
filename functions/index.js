@@ -160,7 +160,7 @@ async function fulfillCoinCheckout(session, eventId) {
   const packId = String(session.metadata?.coinPackId || "");
   const pack = COIN_PACKS[packId];
   if (!uid || !pack) throw new Error("Checkout Session has invalid TeacherTiles metadata.");
-  if (session.currency !== "usd" || session.amount_total !== pack.unitAmount) {
+  if (session.currency !== "usd" || session.amount_subtotal !== pack.unitAmount) {
     throw new Error("Checkout Session total does not match the TeacherTiles coin catalog.");
   }
 
@@ -186,7 +186,7 @@ async function fulfillCoinCheckout(session, eventId) {
       uid,
       packId,
       coins: pack.coins,
-      amountPaid: pack.unitAmount,
+      amountPaid: session.amount_total,
       currency: "usd",
       stripeEventId: eventId,
       paymentIntentId: session.payment_intent || null,
@@ -227,7 +227,7 @@ exports.stripeWebhook = onRequest(
       }
       response.status(200).json({ received: true });
     } catch (error) {
-      logger.error("Stripe webhook fulfillment failed", { eventId: event.id, type: event.type, error });
+      logger.error("Stripe webhook fulfillment failed", { eventId: event.id, type: event.type, error: JSON.stringify(error, Object.getOwnPropertyNames(error)) });
       response.status(500).send("Webhook fulfillment failed");
     }
   }
