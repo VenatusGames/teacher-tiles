@@ -227,7 +227,7 @@ exports.stripeWebhook = onRequest(
       }
       response.status(200).json({ received: true });
     } catch (error) {
-      logger.error("Stripe webhook fulfillment failed", { eventId: event.id, type: event.type, error });
+      logger.error("Stripe webhook fulfillment failed", { eventId: event.id, type: event.type, error: JSON.stringify(error, Object.getOwnPropertyNames(error)) });
       response.status(500).send("Webhook fulfillment failed");
     }
   }
