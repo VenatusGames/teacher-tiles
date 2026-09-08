@@ -1566,6 +1566,7 @@ function normalizeBoardMetadata(docSnapshot) {
     name: typeof data.name === "string" && data.name.trim() ? data.name.trim() : "Board",
     theme: typeof data.theme === "string" ? data.theme : "light",
     camera: data.camera || null,
+    frames: Array.isArray(data.frames) ? data.frames.slice(0, 5) : [],
     preferences: data.preferences && typeof data.preferences === "object" ? data.preferences : {},
     calendarEvents: Array.isArray(data.calendarEvents) ? data.calendarEvents : [],
     preview: Array.isArray(data.preview) ? data.preview : [],
@@ -1636,6 +1637,7 @@ function cleanBoardSnapshot(snapshot) {
     schemaVersion: Number(data.schemaVersion) || 1,
     theme: data.theme || "light",
     camera: data.camera || null,
+    frames: Array.isArray(data.frames) ? data.frames.slice(0, 5) : [],
     preferences: data.preferences && typeof data.preferences === "object" ? data.preferences : {},
     calendarEvents: Array.isArray(data.calendarEvents) ? data.calendarEvents : [],
     objects: Array.isArray(data.objects) ? data.objects.filter(object => object?.id) : [],
@@ -1648,6 +1650,7 @@ function contentHashForSnapshot(snapshot) {
   return hashText(JSON.stringify({
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
+    frames: clean.frames,
     preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     objects: clean.objects
@@ -1660,6 +1663,7 @@ function localHashForSnapshot(snapshot) {
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     camera: clean.camera,
+    frames: clean.frames,
     preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     objects: clean.objects
@@ -1892,6 +1896,7 @@ function serializableBoardMetadata(board) {
     name: board.name,
     theme: board.theme || "light",
     camera: board.camera || null,
+    frames: Array.isArray(board.frames) ? board.frames.slice(0, 5) : [],
     preferences: board.preferences && typeof board.preferences === "object" ? board.preferences : {},
     calendarEvents: Array.isArray(board.calendarEvents) ? board.calendarEvents : [],
     preview: Array.isArray(board.preview) ? board.preview : [],
@@ -2020,6 +2025,7 @@ function snapshotFromBoard(board, objects) {
     schemaVersion: board.schemaVersion,
     theme: board.theme,
     camera: board.camera,
+    frames: board.frames,
     preferences: board.preferences || {},
     calendarEvents: board.calendarEvents,
     objects,
@@ -2031,6 +2037,7 @@ function updateBoardMemoryFromSnapshot(board, snapshot, { previewObjects = null 
   if (!board || !snapshot) return;
   board.theme = snapshot.theme;
   board.camera = snapshot.camera;
+  board.frames = snapshot.frames || [];
   board.preferences = snapshot.preferences || {};
   board.calendarEvents = snapshot.calendarEvents;
   board.preview = snapshot.preview;
@@ -2104,6 +2111,7 @@ async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = fals
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     camera: clean.camera,
+    frames: clean.frames,
     preferences: clean.preferences,
     calendarEvents: clean.calendarEvents,
     preview: clean.preview,
@@ -2428,6 +2436,7 @@ async function createInitialBoardFromWorkspace() {
     name,
     theme: snapshot.theme,
     camera: snapshot.camera,
+    frames: snapshot.frames,
     calendarEvents: snapshot.calendarEvents,
     preview: snapshot.preview,
     previewObjects: buildCompactPreviewObjects(snapshot.objects),
@@ -2509,6 +2518,7 @@ async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
     name,
     theme: snapshot.theme,
     camera: snapshot.camera,
+    frames: snapshot.frames,
     preferences: snapshot.preferences || {},
     calendarEvents: [],
     preview: [],

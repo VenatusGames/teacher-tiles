@@ -1285,7 +1285,7 @@ const APP_TRANSLATIONS={
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
     'help.search':'Help search — coming soon','help.comingSoon':'COMING SOON','help.keyboard.title':'Keyboard shortcuts','help.keyboard.copy':'Shortcuts are ignored while you are actively typing when appropriate.',
     'help.key.selectAll':'Select all tiles and stickers; press again to clear.','help.key.copy':'Copy the current board selection.','help.key.paste':'Paste copied tiles or stickers.','help.key.duplicate':'Duplicate the current selection.',
-    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete only the selected tile or sticker—even when it belongs to a snapped group.','help.key.arrows':'Navigate around the board.','help.key.noSnap':'Temporarily disable tile snapping while you drag.','help.key.escape':'Exit text editing or close the active overlay/menu.',
+    'help.key.undo':'Undo the latest board action.','help.key.redo':'Redo an undone action. Ctrl/⌘ + Shift + Z also works.','help.key.delete':'Delete only the selected tile or sticker—even when it belongs to a snapped group.','help.key.arrows':'Navigate around the board.','help.key.noSnap':'Temporarily disable tile snapping while you drag.','help.key.frames':'Hold F to open Board Frames, capture views, and jump between saved areas.','help.key.escape':'Exit text editing or close the active overlay/menu.',
     'help.mouse.title':'Mouse & trackpad','help.mouse.copy':'The board is designed to stay fast without switching tools.',
     'help.mouse.pan.title':'Pan the board','help.mouse.pan.copy':'Left-drag empty board space or middle-mouse drag anywhere on the board.',
     'help.mouse.select.title':'Group select','help.mouse.select.copy':'Hold Shift and left-drag empty space to draw a selection box.',
@@ -1320,7 +1320,7 @@ const APP_TRANSLATIONS={
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
     'help.search':'Búsqueda de ayuda — próximamente','help.comingSoon':'PRÓXIMAMENTE','help.keyboard.title':'Atajos de teclado','help.keyboard.copy':'Los atajos se ignoran cuando estás escribiendo, cuando corresponde.',
     'help.key.selectAll':'Selecciona todos los tiles y pegatinas; vuelve a pulsar para limpiar la selección.','help.key.copy':'Copia la selección actual del tablero.','help.key.paste':'Pega tiles o pegatinas copiados.','help.key.duplicate':'Duplica la selección actual.',
-    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina solo el tile o la pegatina seleccionada, incluso si pertenece a un grupo acoplado.','help.key.arrows':'Navega por el tablero.','help.key.noSnap':'Desactiva temporalmente el acoplamiento mientras arrastras un tile.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
+    'help.key.undo':'Deshace la última acción del tablero.','help.key.redo':'Rehace una acción deshecha. Ctrl/⌘ + Shift + Z también funciona.','help.key.delete':'Elimina solo el tile o la pegatina seleccionada, incluso si pertenece a un grupo acoplado.','help.key.arrows':'Navega por el tablero.','help.key.noSnap':'Desactiva temporalmente el acoplamiento mientras arrastras un tile.','help.key.frames':'Mantén F para abrir Marcos del tablero, guardar vistas y saltar entre áreas guardadas.','help.key.escape':'Sale de la edición de texto o cierra el menú/superposición activo.',
     'help.mouse.title':'Ratón y trackpad','help.mouse.copy':'El tablero está diseñado para trabajar rápido sin cambiar de herramienta.',
     'help.mouse.pan.title':'Mover el tablero','help.mouse.pan.copy':'Arrastra con clic izquierdo un espacio vacío o arrastra con el botón central en cualquier parte del tablero.',
     'help.mouse.select.title':'Selección de grupo','help.mouse.select.copy':'Mantén Shift y arrastra con clic izquierdo un espacio vacío para dibujar un área de selección.',
@@ -1647,6 +1647,16 @@ const BOARD_OVERSCROLL=120;
 const zoomIndicator=document.getElementById('zoom-indicator');
 const boardMinimap=document.getElementById('board-minimap');
 const boardMinimapCanvas=document.getElementById('board-minimap-canvas');
+const boardFrameMenu=document.getElementById('board-frame-menu');
+const boardFrameCapture=document.getElementById('board-frame-capture');
+const boardFrameList=document.getElementById('board-frame-list');
+const boardFrameEmpty=document.getElementById('board-frame-empty');
+const boardFrameCount=document.getElementById('board-frame-count');
+const BOARD_FRAME_LIMIT=5;
+let boardFrames=[];
+let boardFrameKeyHeld=false;
+let boardFrameCloseTimer=0;
+let boardFrameJumpTimer=0;
 let zoomIndicatorTimer=0;
 let boardZoomIntentPercent=100;
 let boardZoomWheelAt=0;
@@ -1654,6 +1664,187 @@ let boardZoomPrecision=false;
 let boardMinimapShowTimer=0;
 let boardMinimapHideTimer=0;
 let boardMinimapFrame=0;
+
+function normalizeBoardFrames(value){
+  if(!Array.isArray(value))return[];
+  return value.slice(0,BOARD_FRAME_LIMIT).map((frame,index)=>{
+    const data=frame&&typeof frame==='object'?frame:{};
+    const name=String(data.name||'').replace(/\s+/g,' ').trim().slice(0,40)||`Frame ${index+1}`;
+    const centerX=Number(data.centerX),centerY=Number(data.centerY),scale=Number(data.scale);
+    return{
+      id:String(data.id||`frame-${Date.now().toString(36)}-${index}`),
+      name,
+      centerX:Number.isFinite(centerX)?centerX:BOARD_WIDTH/2,
+      centerY:Number.isFinite(centerY)?centerY:BOARD_HEIGHT/2,
+      scale:clamp(Number.isFinite(scale)?scale:1,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM)
+    };
+  });
+}
+
+function closeBoardFrameMenu({force=false}={}){
+  const isRenaming=Boolean(boardFrameMenu?.querySelector('.board-frame-name-input'));
+  if(!boardFrameMenu||(!force&&(boardFrameKeyHeld||boardFrameMenu.matches(':hover')||isRenaming)))return;
+  clearTimeout(boardFrameCloseTimer);
+  boardFrameMenu.hidden=true;
+  boardFrameMenu.setAttribute('aria-hidden','true');
+}
+
+function scheduleBoardFrameMenuClose(delay=100){
+  clearTimeout(boardFrameCloseTimer);
+  boardFrameCloseTimer=setTimeout(()=>closeBoardFrameMenu(),delay);
+}
+
+function openBoardFrameMenu(){
+  if(!boardFrameMenu)return;
+  clearTimeout(boardFrameCloseTimer);
+  boardFrameMenu.hidden=false;
+  boardFrameMenu.setAttribute('aria-hidden','false');
+}
+
+function nextBoardFrameName(){
+  const used=new Set(boardFrames.map(frame=>frame.name));
+  for(let number=1;number<=BOARD_FRAME_LIMIT;number++)if(!used.has(`Frame ${number}`))return`Frame ${number}`;
+  return`Frame ${boardFrames.length+1}`;
+}
+
+function jumpToBoardFrame(frame){
+  if(!frame)return;
+  const centerX=Number(frame.centerX),centerY=Number(frame.centerY);
+  boardCamera.scale=clamp(Number(frame.scale)||1,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
+  boardCamera.x=innerWidth/2-(Number.isFinite(centerX)?centerX:BOARD_WIDTH/2)*boardCamera.scale;
+  boardCamera.y=innerHeight/2-(Number.isFinite(centerY)?centerY:BOARD_HEIGHT/2)*boardCamera.scale;
+  boardZoomIntentPercent=Math.round(boardCamera.scale*100);
+  applyBoardCamera();
+  showZoomIndicator(boardCamera.scale,{precise:false});
+  clearTimeout(boardFrameJumpTimer);
+  workspace.classList.remove('is-frame-jump');
+  void workspace.offsetWidth;
+  workspace.classList.add('is-frame-jump');
+  boardFrameJumpTimer=setTimeout(()=>workspace.classList.remove('is-frame-jump'),190);
+}
+
+function beginBoardFrameRename(frame,button){
+  clearTimeout(Number(button.dataset.jumpTimer)||0);
+  const input=document.createElement('input');
+  input.type='text';
+  input.maxLength=40;
+  input.className='board-frame-name-input';
+  input.value=frame.name;
+  input.setAttribute('aria-label',`Rename ${frame.name}`);
+  button.replaceWith(input);
+  let finished=false;
+  const commit=()=>{
+    if(finished)return;
+    finished=true;
+    const next=input.value.replace(/\s+/g,' ').trim().slice(0,40)||frame.name;
+    if(next!==frame.name){frame.name=next;notifyBoardChanged('board-frame-rename')}
+    renderBoardFrames();
+  };
+  input.addEventListener('keydown',event=>{
+    if(event.key==='Enter'){event.preventDefault();input.blur()}
+    if(event.key==='Escape'){event.preventDefault();input.value=frame.name;input.blur()}
+    event.stopPropagation();
+  });
+  input.addEventListener('blur',commit,{once:true});
+  input.focus({preventScroll:true});
+  input.select();
+}
+
+function renderBoardFrames(){
+  if(!boardFrameList)return;
+  boardFrameList.replaceChildren();
+  boardFrames.forEach((frame,index)=>{
+    const row=document.createElement('div');
+    row.className='board-frame-row';
+    row.style.setProperty('animation-delay',`${index*18}ms`);
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='board-frame-button';
+    button.textContent=frame.name;
+    button.title=`Jump to ${frame.name} · Double-click to rename`;
+    button.addEventListener('click',event=>{
+      if(event.detail===0){jumpToBoardFrame(frame);return}
+      clearTimeout(Number(button.dataset.jumpTimer)||0);
+      const timer=setTimeout(()=>jumpToBoardFrame(frame),220);
+      button.dataset.jumpTimer=String(timer);
+    });
+    button.addEventListener('dblclick',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      beginBoardFrameRename(frame,button);
+    });
+    const remove=document.createElement('button');
+    remove.type='button';
+    remove.className='board-frame-delete';
+    remove.title=`Delete ${frame.name}`;
+    remove.setAttribute('aria-label',`Delete ${frame.name}`);
+    remove.innerHTML='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    remove.addEventListener('click',()=>{
+      boardFrames=boardFrames.filter(item=>item.id!==frame.id);
+      renderBoardFrames();
+      notifyBoardChanged('board-frame-delete');
+    });
+    row.append(button,remove);
+    boardFrameList.appendChild(row);
+  });
+  if(boardFrameEmpty)boardFrameEmpty.hidden=boardFrames.length>0;
+  if(boardFrameCount)boardFrameCount.textContent=`${boardFrames.length} / ${BOARD_FRAME_LIMIT}`;
+  if(boardFrameCapture){
+    const full=boardFrames.length>=BOARD_FRAME_LIMIT;
+    boardFrameCapture.disabled=full;
+    const strong=boardFrameCapture.querySelector('strong');
+    const small=boardFrameCapture.querySelector('small');
+    if(strong)strong.textContent=full?'Frame limit reached':'Capture frame';
+    if(small)small.textContent=full?'Delete a frame to capture another.':'Save the current board view';
+  }
+}
+
+boardFrameCapture?.addEventListener('click',()=>{
+  if(boardFrames.length>=BOARD_FRAME_LIMIT)return;
+  const center=screenToBoard(innerWidth/2,innerHeight/2);
+  boardFrames.push({
+    id:`frame-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`,
+    name:nextBoardFrameName(),
+    centerX:center.x,
+    centerY:center.y,
+    scale:boardCamera.scale
+  });
+  renderBoardFrames();
+  notifyBoardChanged('board-frame-capture');
+});
+
+boardFrameMenu?.addEventListener('pointerenter',()=>clearTimeout(boardFrameCloseTimer));
+boardFrameMenu?.addEventListener('pointerleave',()=>scheduleBoardFrameMenuClose(120));
+boardFrameMenu?.addEventListener('focusin',()=>clearTimeout(boardFrameCloseTimer));
+boardFrameMenu?.addEventListener('focusout',()=>scheduleBoardFrameMenuClose(120));
+
+window.addEventListener('keydown',event=>{
+  if(event.key.toLowerCase()!=='f'||event.ctrlKey||event.metaKey||event.altKey)return;
+  const target=event.target instanceof Element?event.target:null;
+  if(isTypingTarget(target)||isTypingTarget(document.activeElement))return;
+  event.preventDefault();
+  event.stopPropagation();
+  if(event.repeat)return;
+  boardFrameKeyHeld=true;
+  openBoardFrameMenu();
+},{capture:true});
+
+window.addEventListener('keyup',event=>{
+  if(event.key.toLowerCase()!=='f')return;
+  boardFrameKeyHeld=false;
+  scheduleBoardFrameMenuClose(120);
+},{capture:true});
+
+window.addEventListener('blur',()=>{
+  boardFrameKeyHeld=false;
+  closeBoardFrameMenu({force:true});
+});
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!boardFrameMenu?.hidden)closeBoardFrameMenu({force:true});
+},{capture:true});
+
+renderBoardFrames();
 
 function drawBoardMinimap(){
   boardMinimapFrame=0;
@@ -16659,11 +16850,6 @@ function setupMinesweeper(m){
       button.addEventListener('dblclick',event=>{event.preventDefault();chord(index)});
       button.addEventListener('contextmenu',event=>{event.preventDefault();event.stopPropagation();toggleFlag(index)});
       button.addEventListener('keydown',event=>{
-        if(event.key.toLowerCase()==='f'){
-          event.preventDefault();
-          toggleFlag(index);
-          return;
-        }
         const moves={ArrowLeft:-1,ArrowRight:1,ArrowUp:-cols,ArrowDown:cols};
         if(!(event.key in moves))return;
         event.preventDefault();
@@ -17631,6 +17817,7 @@ function captureTeacherTilesBoard(){
     schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
     theme:document.body.dataset.theme||'light',
     camera:{x:boardCamera.x,y:boardCamera.y,scale:boardCamera.scale},
+    frames:boardFrames.map(frame=>({...frame})),
     preferences:boardPreferenceSnapshot(),
     calendarEvents:getStoredCalendarEvents(),
     objects,
@@ -17640,6 +17827,8 @@ function captureTeacherTilesBoard(){
 
 function clearTeacherTilesBoard(){
   clearSelection();
+  boardFrames=[];
+  renderBoardFrames();
   for(const m of [...workspace.querySelectorAll('.module')]){
     try{m._cleanup?.()}catch{}
     m.remove();
@@ -17695,6 +17884,8 @@ function loadTeacherTilesBoard(snapshot){
     boardCamera.x=Number.isFinite(Number(camera.x))?Number(camera.x):(innerWidth-BOARD_WIDTH*boardCamera.scale)/2;
     boardCamera.y=Number.isFinite(Number(camera.y))?Number(camera.y):(innerHeight-BOARD_HEIGHT*boardCamera.scale)/2;
     applyBoardCamera();
+    boardFrames=normalizeBoardFrames(data.frames);
+    renderBoardFrames();
 
     for(const object of Array.isArray(data.objects)?data.objects:[]){
       if(!boardTypeAvailable(object?.type)){
@@ -17729,6 +17920,7 @@ function blankTeacherTilesBoard(){
       y:(innerHeight-BOARD_HEIGHT*scale)/2,
       scale
     },
+    frames:[],
     preferences:boardPreferenceSnapshot(),
     calendarEvents:[],
     objects:[],

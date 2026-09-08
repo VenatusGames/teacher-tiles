@@ -4,7 +4,7 @@
     const daily=window.TeacherTilesDaily,bank=window.TeacherTilesWords;
     let level='all',offset=0,day=daily.dayKey(),live=[],disposed=false;
     const credit=document.createElement('a');credit.className='widget-status';credit.target='_blank';credit.rel='noopener noreferrer';m.querySelector('.daily-content').append(credit);
-    const wordsForDay=()=>{const pool=live.length?live:Object.values(bank).flat();return level==='all'?pool:pool.filter(w=>w.level===level);};
+    const wordsForDay=()=>{const pool=live.length?live:Object.values(bank).flat();return daily.mixed(level==='all'?pool:pool.filter(w=>w.level===level),'advanced-vocabulary-v2');};
     const choice=m.querySelector('.word-level');
     function render(){
       const today=daily.dayKey();if(day!==today){day=today;offset=0;}

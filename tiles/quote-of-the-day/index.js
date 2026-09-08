@@ -3,7 +3,7 @@
   function setup(m){
     const daily=window.TeacherTilesDaily,quotes=window.TeacherTilesQuotes;
     let offset=0,day=daily.dayKey(),live=[],disposed=false;
-    const collection=()=>live.length?live:quotes;
+    const collection=()=>daily.mixed(live.length?live:quotes,'classroom-quotes-v2');
     function render(){
       const today=daily.dayKey();if(day!==today){day=today;offset=0;}
       const bank=collection(),item=bank[daily.index(bank.length,offset)];

@@ -13,7 +13,8 @@
    if(!response.ok)throw Error('Classroom collection unavailable');
    const data=await response.json();if(data.version!==1||!Array.isArray(data[key]))throw Error('Invalid classroom collection');
    const entries=[...new Map(data[key].filter(validate).map(item=>[item.id,item])).values()];
-   if(!entries.length)throw Error('No approved classroom content');return entries;
+    const expected=key==='words'?wordBank().length:quoteBank().length;
+    if(entries.length!==expected)throw Error('Incomplete classroom collection');return entries;
  }
  window.TeacherTilesLive=Object.freeze({validWord,validQuote,
    words:()=>catalog('word-of-the-day','words',validWord),
