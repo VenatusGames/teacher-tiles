@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, runTransaction, writeBatch, deleteDoc, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, runTransaction, writeBatch, deleteDoc, query, orderBy, documentId, where, startAfter, limit, type QueryConstraint, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
 import { auth, requireDb } from './firebase';
 import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
@@ -221,6 +221,7 @@ async function performChange(access: Access, body: Record<string, unknown>) {
       const studentId = String(body.studentId);
       await deleteDoc(doc(record(access, 'students', studentId), 'responses', id));
       patchCachedRead<{ docs: Row[] }>(access, 'history:' + studentId + ':rows', rows => ({ docs: rows.docs.filter(row => row.id !== id) }));
+      invalidateReads(access, 'history:' + studentId + ':page:');
       invalidateReads(access, 'completed:' + studentId + ':'); return;
     }
     default: throw new Error('Unknown class action.');
@@ -245,6 +246,26 @@ export async function loadHistory(access: Access, studentId?: string): Promise<H
   }));
   return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
+export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };
+export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean }> {
+  const ref = studentRef(access, filter.studentId);
+  for (const day of [filter.from, filter.to, filter.after]) if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('Choose valid dates.');
+  if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
+  if (!['asc', 'desc'].includes(filter.order)) throw new Error('Choose a valid sort order.');
+  const profile = (await loadClass(access)).students.find(student => student.id === filter.studentId);
+  if (!profile) throw new Error('That student is no longer available.');
+  const constraints: QueryConstraint[] = [orderBy(documentId(), filter.order)];
+  if (filter.from) constraints.push(where(documentId(), '>=', filter.from));
+  if (filter.to) constraints.push(where(documentId(), '<=', filter.to));
+  if (filter.after) constraints.push(startAfter(filter.after));
+  constraints.push(limit(11));
+  // One look-ahead record enables Next without a count or an unbounded scan.
+  const rows = await cachedRead(access, 'history:' + filter.studentId + ':page:' + JSON.stringify(filter), () => getDocs(query(collection(ref, 'responses'), ...constraints)), Infinity);
+  const key = await classKey(access, filter.studentId);
+  return { hasMore: rows.docs.length > 10, entries: await Promise.all(rows.docs.slice(0, 10).map(async row => ({
+    ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: profile.id, studentName: profile.name,
+  }))) };
+}
 export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string, string>) {
   const active = data.questions.filter(q => !q.fridayOnly || new Date().getDay() === 5);
   if (!active.length || active.length > 20) throw new Error('The class must have between 1 and 20 questions per check-in.');
@@ -253,6 +274,7 @@ export async function submitResponse(access: Access, student: Student, data: App
   const payload = await encryptRecord({ createdAt: new Date().toISOString(), items }, await classKey(access, student.id), ref.path);
   await runTransaction(requireDb(), async tx => { if ((await tx.get(ref)).exists()) throw new Error('You already completed today’s check-in.'); tx.set(ref, payload); });
   patchCachedRead<{ docs: Row[] }>(access, 'history:' + student.id + ':rows', rows => ({ docs: [...rows.docs, { ref, id: ref.id, exists: () => true, data: () => payload }] }));
+  invalidateReads(access, 'history:' + student.id + ':page:');
   invalidateReads(access, 'completed:' + student.id + ':');
   await cachedRead(access, 'completed:' + student.id + ':' + ref.id, async () => true, Infinity);
 }

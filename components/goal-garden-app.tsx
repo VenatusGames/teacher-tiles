@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
-import { loadClass, changeClass, loadHistory, completedToday, submitResponse, refreshClassData } from '@/lib/class-store';
+import { loadClass, changeClass, loadHistoryPage, type HistoryFilter, completedToday, submitResponse, refreshClassData } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
@@ -36,8 +36,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [isFriday, setIsFriday] = useState(false);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const [saving, setSaving] = useState(false);
   const [checkingToday, setCheckingToday] = useState(false);
   const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
@@ -114,18 +113,10 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
     }
   };
 
-  const openHistory = async () => {
+  const openHistory = () => {
     if (!selectedStudent) return;
     setScreen('history');
-    setHistoryLoading(true);
     setError('');
-    try {
-      setHistory(await loadHistory(access, selectedStudent.id));
-    } catch {
-      setError('History could not load right now.');
-    } finally {
-      setHistoryLoading(false);
-    }
   };
 
   const submitCheckIn = async (answers = selectedAnswers) => {
@@ -159,10 +150,6 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
     }, 420);
   };
 
-  const questionColumns = useMemo(
-    () => Array.from(new Set(history.flatMap((entry) => entry.items.map((item) => item.question)))),
-    [history],
-  );
 
   if (loading) return <LoadingScreen />;
   if (!ready) return <main className="auth-gate"><section className="auth-card">
@@ -176,12 +163,12 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
     <main className="app-shell min-h-screen overflow-x-hidden bg-background text-foreground">
       <header className="site-header">
         <button className="brand-button" onClick={goHome} aria-label="Return to student profiles">
-          <span className="brand-mark"><Sparkles /></span><span>WIGs</span>
+          <img className="brand-mark brand-image" src="/wigs/favicon.png" alt="" /><span>WIGs</span>
         </button>
         <div className="account-controls"><span className="account-email">{email}</span>
           {screen !== 'lead' && <button className="admin-launch" disabled={refreshing} aria-label="Refresh from server" title="Refresh changes from another device" onClick={async () => {
             setRefreshing(true); setError(''); refreshClassData(access);
-            try { await refresh(); if (screen === 'history' && selectedStudent) setHistory(await loadHistory(access, selectedStudent.id)); }
+            try { await refresh(); setHistoryVersion(value => value + 1); }
             catch (err) { setError(friendlyError(err)); }
             finally { setRefreshing(false); }
           }}><RefreshCw className={refreshing ? 'spin' : ''} /></button>}
@@ -224,7 +211,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
               <LeadBars /><span><strong>Lead Measures</strong><small>Make today&apos;s check-in</small></span><ChevronRight />
             </button>
             <button className="path-card history-card" onClick={openHistory}>
-              <Rows3 /><span><strong>View All</strong><small>See your full history</small></span><ChevronRight />
+              <Rows3 /><span><strong>View history</strong><small>Browse past check-ins</small></span><ChevronRight />
             </button>
           </div>
         </section>
@@ -281,9 +268,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
       {screen === 'history' && selectedStudent && (
         <section className="page-section history-page page-enter">
           <div className="history-heading"><Database /><div><p className="eyebrow">Every check-in, together</p><h1>{selectedStudent.name}&apos;s history</h1></div></div>
-          {historyLoading ? <div className="loading-inline"><LoaderCircle className="spin" /> Loading history…</div> : history.length ? (
-            <HistoryTable history={history} columns={questionColumns} showStudent={false} />
-          ) : <div className="empty-card"><Rows3 /><h2>No check-ins yet</h2><p>Your saved lead measures will appear here as one big data set.</p></div>}
+          <HistoryBrowser key={`${selectedStudent.id}:${historyVersion}`} access={access} students={[selectedStudent]} />
         </section>
       )}
 
@@ -329,19 +314,69 @@ function HistoryAnswer({ item }: { item: HistoryItem | undefined }) {
     const Icon = preset.icon;
     return <span className="history-answer" aria-label={item.answer} title={item.answer}><span className="history-answer-visual preset"><Icon /></span></span>;
   }
-  if (item.imageKey?.startsWith('images/')) {
+  if (item.imageKey?.startsWith('images/') || item.imageKey?.startsWith('data:image/jpeg;base64,')) {
     return <span className="history-answer" aria-label={item.answer} title={item.answer}><span className="history-answer-visual"><img src={fileUrl(item.imageKey)} alt={item.answer} /></span></span>;
   }
   return <span className="answer-text-pill">{item.answer}</span>;
 }
 
-function HistoryTable({ history, columns, showStudent, onDelete }: { history: HistoryEntry[]; columns: string[]; showStudent: boolean; onDelete?: (entry: HistoryEntry) => void }) {
+function HistoryBrowser({ access, students, onDelete }: { access: Access; students: Student[]; onDelete?: (entry: HistoryEntry) => Promise<boolean> }) {
+  const initial: HistoryFilter = { studentId: students[0]?.id ?? '', from: '', to: '', order: 'desc' };
+  const [draft, setDraft] = useState(initial);
+  const [filter, setFilter] = useState(initial);
+  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [revision, setRevision] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const after = cursors[cursors.length - 1];
+  useEffect(() => {
+    let active = true;
+    setError(''); setLoading(true);
+    if (!filter.studentId) { setEntries([]); setHasMore(false); setLoading(false); return; }
+    loadHistoryPage(access, { ...filter, after }).then(page => {
+      if (active) { setEntries(page.entries); setHasMore(page.hasMore); }
+    }).catch(err => { if (active) { setEntries([]); setHasMore(false); setError(friendlyError(err)); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [access, filter, after, revision]);
+  const apply = (event: FormEvent) => {
+    event.preventDefault();
+    if (draft.from && draft.to && draft.from > draft.to) { setError('Choose an end date on or after the start date.'); return; }
+    setCursors([undefined]); setFilter({ ...draft });
+  };
   return (
-    <div className="data-table-wrap">
-      <table className="data-table">
-        <thead><tr>{showStudent && <th>Student</th>}<th>Date</th>{columns.map((column) => <th key={column}>{column}</th>)}{onDelete && <th>Delete</th>}</tr></thead>
-        <tbody>{history.map((entry) => <tr key={`${entry.studentId}:${entry.id}`}>{showStudent && <td><strong>{entry.studentName}</strong></td>}<td>{formatDate(entry.createdAt)}</td>{columns.map((column) => <td key={column}><HistoryAnswer item={entry.items.find((item) => item.question === column)} /></td>)}{onDelete && <td><button type="button" className="history-delete" onClick={() => onDelete(entry)} aria-label={`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}`}><Trash2 /></button></td>}</tr>)}</tbody>
-      </table>
+    <div className="history-browser">
+      <form className="history-filters" onSubmit={apply}>
+        {students.length > 1 && <label>Student<select aria-label="Student" value={draft.studentId} onChange={event => setDraft({ ...draft, studentId: event.target.value })}>{students.map(student => <option key={student.id} value={student.id}>{student.name}</option>)}</select></label>}
+        <label>From<input type="date" value={draft.from} onChange={event => setDraft({ ...draft, from: event.target.value })} /></label>
+        <label>Through<input type="date" value={draft.to} min={draft.from || undefined} onChange={event => setDraft({ ...draft, to: event.target.value })} /></label>
+        <label>Order<select aria-label="Sort order" value={draft.order} onChange={event => setDraft({ ...draft, order: event.target.value as 'asc' | 'desc' })}><option value="desc">Newest first</option><option value="asc">Oldest first</option></select></label>
+        <button type="submit" disabled={loading || deleting || !draft.studentId}>Apply filters</button>
+        <button type="button" disabled={loading || deleting} onClick={() => { const next = { ...draft, from: '', to: '', order: 'desc' as const }; setDraft(next); setFilter(next); setCursors([undefined]); }}>Reset dates</button>
+      </form>
+      {error && <p role="alert" className="history-feedback">{error} <button type="button" onClick={() => setRevision(value => value + 1)}>Try again</button></p>}
+      {loading ? <p role="status" className="history-feedback">Loading check-ins…</p> : <>
+        <p className="history-summary" role="status">{students.find(student => student.id === filter.studentId)?.name ?? 'History'} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
+        {!entries.length && !error && <p className="history-feedback">{students.length ? 'No check-ins in this date range. Try different dates or another student.' : 'Add a student to start collecting check-ins.'}</p>}
+        <div className="history-records">{entries.map(entry => <details className="history-record" key={`${entry.studentId}:${entry.id}`}>
+          <summary><span><strong>{formatDate(entry.createdAt)}</strong><small>{entry.items.length} answer{entry.items.length === 1 ? '' : 's'} · Select to view</small></span></summary>
+          <dl>{entry.items.map((item, index) => <div key={index}><dt>{item.question}</dt><dd><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</dd></div>)}</dl>
+          {onDelete && <button type="button" className="history-remove" disabled={deleting} onClick={async () => {
+            setDeleting(true);
+            try { if (await onDelete(entry)) { if (entries.length === 1 && cursors.length > 1) setCursors(previous => previous.slice(0, -1)); else setRevision(value => value + 1); } }
+            catch (err) { setError(friendlyError(err)); }
+            finally { setDeleting(false); }
+          }}><Trash2 /> Delete check-in</button>}
+        </details>)}</div>
+      </>}
+      <nav className="history-pagination" aria-label="History pages">
+        <button type="button" disabled={loading || deleting || cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>Previous</button>
+        <span>Page {cursors.length}</span>
+        <button type="button" disabled={loading || deleting || !hasMore || !entries.length} onClick={() => setCursors(previous => [...previous, entries[entries.length - 1].id])}>Next</button>
+      </nav>
     </div>
   );
 }
@@ -351,7 +386,6 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [successNotice, setSuccessNotice] = useState(false);
-  const [adminHistory, setAdminHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
     if (!message || !successNotice) return;
@@ -359,11 +393,6 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
     return () => window.clearTimeout(timer);
   }, [message, successNotice]);
 
-  useEffect(() => {
-    let active = true;
-    if (tab === 'history') loadHistory(access).then(history => { if (active) setAdminHistory(history); }).catch(err => { if (active) { setSuccessNotice(false); setMessage(friendlyError(err)); } });
-    return () => { active = false; };
-  }, [tab, access]);
 
   const action = async (body: Record<string, unknown>, success = 'Saved!') => {
     setBusy(true); setMessage(''); setSuccessNotice(false);
@@ -386,12 +415,9 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
     }
   };
 
-  const columns = Array.from(new Set(adminHistory.flatMap((entry) => entry.items.map((item) => item.question))));
   const deleteCheckIn = async (entry: HistoryEntry) => {
-    if (!window.confirm(`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}? This cannot be undone.`)) return;
-    if (await action({ action: 'deleteResponse', id: entry.id, studentId: entry.studentId }, 'Check-in deleted.')) {
-      setAdminHistory((current) => current.filter((item) => item.id !== entry.id));
-    }
+    if (!window.confirm(`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}? This cannot be undone.`)) return false;
+    return action({ action: 'deleteResponse', id: entry.id, studentId: entry.studentId }, 'Check-in deleted.');
   };
   return (
     <div className="admin-panel">
@@ -406,7 +432,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
       <div className="admin-scroll">
         {tab === 'students' && <StudentsAdmin students={data.students} busy={busy} upload={upload} action={action} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}
-        {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">All responses</p><h3>Combined history</h3></div><span className="count-pill">{adminHistory.length} check-ins</span></div>{adminHistory.length ? <HistoryTable history={adminHistory} columns={columns} showStudent onDelete={deleteCheckIn} /> : <div className="admin-empty">Student answers will collect here.</div>}</section>}
+        {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} onDelete={deleteCheckIn} /></section>}
       </div>
     </div>
   );

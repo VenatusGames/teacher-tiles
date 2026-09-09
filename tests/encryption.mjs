@@ -50,7 +50,24 @@ const firestore = {
   doc: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   collection: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   getDoc: async reference => { reads++; return snapshot(reference); },
-  getDocs: async reference => { const docs = [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path))); reads += Math.max(1, docs.length); return { docs }; },
+  getDocs: async reference => {
+    let docs = [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path)));
+    const constraints = reference.constraints ?? [];
+    const direction = constraints.find(c => c.kind === 'order')?.direction ?? 'asc';
+    docs.sort((a,b) => (direction === 'asc' ? 1 : -1) * a.id.localeCompare(b.id));
+    for (const c of constraints) {
+      if (c.kind === 'where') docs = docs.filter(row => c.op === '>=' ? row.id >= c.value : row.id <= c.value);
+      if (c.kind === 'after') docs = docs.filter(row => direction === 'asc' ? row.id > c.value : row.id < c.value);
+      if (c.kind === 'limit') docs = docs.slice(0,c.value);
+    }
+    reads += Math.max(1, docs.length); return { docs };
+  },
+  query: (reference, ...constraints) => ({ ...reference, constraints }),
+  documentId: () => '__name__',
+  orderBy: (_field, direction) => ({ kind: 'order', direction }),
+  where: (_field, op, value) => ({ kind: 'where', op, value }),
+  startAfter: value => ({ kind: 'after', value }),
+  limit: value => ({ kind: 'limit', value }),
   deleteDoc: async reference => { rows.delete(reference.path); },
   runTransaction: async (_db, fn) => {
     const writes = [];
@@ -71,7 +88,7 @@ const firestore = {
 };
 const auth = { currentUser: { uid: 'teacher-test', email: address('teacher') } };
 globalThis.encryptionHarness = { firestore, auth };
-const firestoreUrl = moduleUrl('export const { doc, collection, getDoc, getDocs, runTransaction, writeBatch, deleteDoc } = globalThis.encryptionHarness.firestore;');
+const firestoreUrl = moduleUrl('export const { doc, collection, getDoc, getDocs, runTransaction, writeBatch, deleteDoc, query, documentId, orderBy, where, startAfter, limit } = globalThis.encryptionHarness.firestore;');
 const firebaseUrl = moduleUrl('export const auth = globalThis.encryptionHarness.auth; export const requireDb = () => ({});');
 const modelUrl = compile('lib/model.ts');
 const cacheUrl = compile('lib/read-cache.ts', { './firebase': firebaseUrl });
@@ -180,6 +197,29 @@ await store.changeClass(teacher, { action: 'deleteQuestion', id: question.id });
 data = await store.loadClass(teacher);
 assert.equal(data.questions.length, 1);
 assert.equal(data.answers.length, 3);
+const historyKey = await importKey(rows.get(classPath + '/keys/student_' + child.id).keyMaterial);
+for (let day=1;day<=25;day++) {
+  const date = '2025-01-' + String(day).padStart(2,'0');
+  const recordPath = childPath + '/responses/' + date;
+  rows.set(recordPath, await encryptRecord({createdAt:date+'T12:00:00.000Z',items:[{question:'Synthetic question',answer:'Synthetic answer',imageKey:null}]},historyKey,recordPath));
+}
+const filter = {studentId:child.id,from:'',to:'',order:'desc'};
+const beforePageReads = reads;
+const firstPage = await store.loadHistoryPage(teacher,filter);
+assert.equal(firstPage.entries.length,10); assert(firstPage.hasMore);
+assert.equal(reads-beforePageReads,11,'A history page fetches only ten entries plus one look-ahead');
+const cachedPageReads = reads;
+await store.loadHistoryPage(teacher,filter);
+assert.equal(reads,cachedPageReads,'Returning to a history page reuses its cache');
+const page2=await store.loadHistoryPage(teacher,{...filter,after:firstPage.entries.at(-1).id});
+const page3=await store.loadHistoryPage(teacher,{...filter,after:page2.entries.at(-1).id});
+assert.equal(new Set([...firstPage.entries,...page2.entries,...page3.entries].map(row=>row.id)).size,26);
+assert.equal(page3.entries.length,6); assert(!page3.hasMore);
+const filtered=await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'});
+assert.deepEqual(filtered.entries.map(row=>row.id),['2025-01-05','2025-01-06','2025-01-07']);
+await assert.rejects(store.loadHistoryPage(student,{...filter,studentId:'other-student'}));
+await store.changeClass(teacher,{action:'deleteResponse',studentId:child.id,id:'2025-01-06'});
+assert.equal((await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'})).entries.length,2);
 await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
 assert(!rows.has(childPath));
 assert(![...rows.keys()].some(path => path.startsWith(childPath + '/')));
