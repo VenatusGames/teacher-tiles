@@ -138,9 +138,19 @@ auth.currentUser = { uid: 'child-user', email: address('child') };
 assert.equal((await store.loadClass(student)).students.length, 1);
 await assert.rejects(store.changeClass(student, { action: 'saveSettings', title: 'Forbidden', description: 'Forbidden' }));
 await assert.rejects(store.completedToday(student, 'other-student'));
+const beforePartialReads = reads, beforePartialWrites = writeCount;
+await assert.rejects(store.submitResponse(student, data.students[0], {
+  ...data, questions: [...data.questions, { id: 'unfinished', prompt: 'Another required question', position: 2, fridayOnly: false }],
+}, { starter: 'starter-1' }), /Answer every question/);
+await assert.rejects(store.submitResponse(student, data.students[0], data, {}), /Answer every question/);
+await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'invalid-choice' }), /Answer every question/);
+assert.equal(reads, beforePartialReads, 'Incomplete surveys must not contact Firestore');
+assert.equal(writeCount, beforePartialWrites, 'Incomplete surveys must not save partial responses');
 await store.submitResponse(student, data.students[0], data, { starter: 'starter-1' });
+assert.equal(writeCount, beforePartialWrites + 1, 'A finished survey saves exactly one response');
 assert(await store.completedToday(student, child.id));
 await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'starter-1' }), /already completed/);
+assert.equal(writeCount, beforePartialWrites + 1, 'Repeated submission must not write a second completion');
 const history = await store.loadHistory(student);
 assert.equal(history[0].items[0].answer, 'On My Way');
 const historyReads = reads;

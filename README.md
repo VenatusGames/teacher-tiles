@@ -35,6 +35,8 @@ The local encryption tests use real Web Crypto and an in-memory Firestore adapte
 
 ## Firestore usage
 
+Form edits remain local until Save/Add (or Enter submitting a form). Name blur, picture selection/removal, and schedule checkbox changes do not save automatically. Leaving an admin section discards its unsaved drafts. Deletes are explicit actions. Student answer selections stay in React memory; the app saves one encrypted response only after every active question has a valid answer. Incomplete surveys perform no submission reads or writes, and the daily transaction prevents duplicate completions. Initial class setup, encryption-key creation, and legacy migration remain necessary automatic writes.
+
 Immutable encryption keys are reused in tab memory for the current account and role. Class sections and history reads are reused for up to 30 seconds, with simultaneous requests sharing the same pending read. Local writes invalidate only affected sections; changes from another device may take up to that cache window to appear on a subsequent load. Account/role changes and sign-out clear cached records and keys. Nothing is added to persistent browser storage.
 
 The two assignment listeners remain active to enforce account routing and legacy migration. Their server-confirmed results are consumed directly, without duplicate transaction reads or reloading the class when the role is unchanged. Editing a student's profile no longer rewrites an unchanged email assignment. Opening history still reads the requested history on its first load; large histories and the initial encryption migration can generate substantial usage. Security-rule dependent reads also contribute to Firestore usage and are not included in the local request-count tests.

@@ -382,6 +382,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
   return (
     <div className="admin-panel">
       <div className="admin-topbar"><div><p className="eyebrow">WIGs</p><h2>Admin panel</h2></div></div>
+      <p className="template-help">Use Save or Add to keep your changes. Leaving a section discards its unsaved edits.</p>
       <nav className="admin-tabs" aria-label="Admin sections">
         <button className={tab === 'students' ? 'active' : ''} onClick={() => setTab('students')}><UserRound /> Students</button>
         <button className={tab === 'measures' ? 'active' : ''} onClick={() => setTab('measures')}><LeadBars /> Lead Measures</button>
@@ -405,6 +406,7 @@ function StudentsAdmin({ students, busy, upload, action }: { students: Student[]
 
 function StudentAdminCard({ student, busy, upload, action }: { student: Student; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
   const [uploading, setUploading] = useState(false);
+  const [pictureDraft, setPictureDraft] = useState<string | null | undefined>(undefined);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
   const [emailDraft, setEmailDraft] = useState(student.email);
@@ -421,7 +423,7 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
     setUploading(true);
     try {
       const imageKey = await upload(file);
-      if (imageKey) await action({ action: 'updateStudentImage', id: student.id, imageKey }, `${student.name}'s picture was updated.`);
+      if (imageKey) setPictureDraft(imageKey);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Image update failed.');
     } finally {
@@ -442,21 +444,23 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
   const saveScores = () => action({ action: 'updateStudentScores', id: student.id, currentScore: Number(currentScore), goalScore: Number(goalScore) }, `${student.name}'s scores were saved.`);
   return (
     <div className="admin-student">
-      <ProfileImage student={student} />
+      <ProfileImage student={pictureDraft === undefined ? student : { ...student, imageKey: pictureDraft }} />
       {editingName ? (
+        <form onSubmit={event => { event.preventDefault(); void saveName(); }}>
         <Input
           className="admin-input student-name-input"
           value={nameDraft}
           autoFocus
           onFocus={(event) => event.currentTarget.select()}
           onChange={(event) => setNameDraft(event.target.value)}
-          onBlur={() => void saveName()}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') event.currentTarget.blur();
             if (event.key === 'Escape') { event.preventDefault(); setNameDraft(student.name); setEditingName(false); }
           }}
           aria-label={`Edit ${student.name}'s name`}
         />
+        <Button type="submit" className="admin-secondary" disabled={busy || !nameDraft.trim()}>Save name</Button>
+        <button type="button" onClick={() => { setNameDraft(student.name); setEditingName(false); }}>Cancel</button>
+        </form>
       ) : (
         <strong
           className="admin-student-name"
@@ -468,11 +472,15 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
         >{student.name}</strong>
       )}
       <Button variant="destructive" size="icon" aria-label={`Delete ${student.name}`} onClick={() => action({ action: 'deleteStudent', id: student.id }, `${student.name} was removed.`)}><Trash2 /></Button>
-      <div className="student-photo-actions"><FilePicker label={uploading ? 'Updating…' : 'Change picture'} onFile={replaceImage} />{student.imageKey && <button type="button" onClick={() => action({ action: 'removeStudentImage', id: student.id }, `${student.name}'s picture was removed.`)}>Remove</button>}</div>
+      <div className="student-photo-actions"><FilePicker label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />{(pictureDraft === undefined ? student.imageKey : pictureDraft) && <button type="button" onClick={() => setPictureDraft(null)}>Remove</button>}
+        {pictureDraft !== undefined && <><Button type="button" className="admin-secondary" disabled={busy || uploading} onClick={async () => {
+          if (await action({ action: 'updateStudentImage', id: student.id, imageKey: pictureDraft }, 'Student picture saved.')) setPictureDraft(undefined);
+        }}>Save picture</Button><button type="button" disabled={busy || uploading} onClick={() => setPictureDraft(undefined)}>Cancel</button></>}
+      </div>
       <form className="student-email-editor" onSubmit={event => { event.preventDefault(); void action({ action: 'updateStudentEmail', id: student.id, email: emailDraft }, 'Student login updated.'); }}><label>Student Google email<Input className="admin-input" type="email" value={emailDraft} onChange={event => setEmailDraft(event.target.value)} placeholder="No student login assigned" maxLength={254} /></label><Button type="submit" className="admin-secondary" disabled={busy || emailDraft === student.email}>Save login</Button></form><div className="student-score-editor">
         <label>Current Score<Input className="admin-input" type="number" step="any" value={currentScore} onChange={(event) => setCurrentScore(event.target.value)} placeholder="0" /></label>
         <label>Goal Score<Input className="admin-input" type="number" step="any" value={goalScore} onChange={(event) => setGoalScore(event.target.value)} placeholder="0" /></label>
-        <Button type="button" className="admin-secondary" disabled={busy || currentScore === '' || goalScore === ''} onClick={saveScores}><Check /> Save scores</Button>
+        <Button type="button" className="admin-secondary" disabled={busy || currentScore === '' || goalScore === '' || (Number(currentScore) === student.currentScore && Number(goalScore) === student.goalScore)} onClick={saveScores}><Check /> Save scores</Button>
       </div>
     </div>
   );
@@ -483,7 +491,7 @@ function MeasuresAdmin({ data, busy, upload, action }: { data: AppData; busy: bo
   const [description, setDescription] = useState(data.settings.description);
   const [prompt, setPrompt] = useState('');
   const [fridayOnly, setFridayOnly] = useState(false);
-  useEffect(() => { setTitle(data.settings.title); setDescription(data.settings.description); }, [data.settings]);
+  useEffect(() => { setTitle(data.settings.title); setDescription(data.settings.description); }, [data.settings.title, data.settings.description]);
   const addQuestion = async (event: FormEvent) => {
     event.preventDefault();
     if (data.questions.length >= 20) return;
@@ -501,7 +509,7 @@ function MeasuresAdmin({ data, busy, upload, action }: { data: AppData; busy: bo
           <label>Title<Input className="admin-input" value={title} onChange={(event) => setTitle(event.target.value)} /></label>
           <label>Description<Textarea className="admin-textarea" value={description} onChange={(event) => setDescription(event.target.value)} /></label>
           <p className="template-help">Use <code>(name)</code>, <code>(score-a)</code>, and <code>(score-b)</code> to personalize descriptions and questions for each student. Line breaks are preserved.</p>
-          <Button className="admin-primary" disabled={busy} onClick={() => action({ action: 'saveSettings', title, description }, 'Heading updated.')}><Check /> Save heading</Button>
+          <Button className="admin-primary" disabled={busy || (title === data.settings.title && description === data.settings.description)} onClick={() => action({ action: 'saveSettings', title, description }, 'Heading updated.')}><Check /> Save heading</Button>
         </div>
       </section>
       <section className="admin-section">
@@ -523,6 +531,8 @@ function MeasuresAdmin({ data, busy, upload, action }: { data: AppData; busy: bo
 }
 
 function QuestionBuilder({ question, index, answers, busy, upload, action }: { question: Question; index: number; answers: Answer[]; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
+  const [scheduleDraft, setScheduleDraft] = useState(Boolean(question.fridayOnly));
+  useEffect(() => { setScheduleDraft(Boolean(question.fridayOnly)); }, [question.fridayOnly]);
   const [label, setLabel] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0); const [presetKey, setPresetKey] = useState('');
   const addAnswer = async (event: FormEvent) => { event.preventDefault(); try { const uploadedKey = await upload(file); const imageKey = uploadedKey || presetKey || null; if (await action({ action: 'addAnswer', questionId: question.id, label, imageKey }, 'Answer choice added.')) { setLabel(''); setFile(null); setPresetKey(''); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
   const choosePreset = (choice: typeof presetChoices[number]) => { setPresetKey(choice.key); setFile(null); setLabel(choice.label); setKey((value) => value + 1); };
@@ -534,12 +544,13 @@ function QuestionBuilder({ question, index, answers, busy, upload, action }: { q
           <strong>{question.prompt}</strong>
           <label className="question-schedule-toggle">
             <Checkbox
-              checked={Boolean(question.fridayOnly)}
+              checked={scheduleDraft}
               disabled={busy}
-              onCheckedChange={(checked) => void action({ action: 'setQuestionFridayOnly', id: question.id, fridayOnly: checked }, checked ? 'Question set to Fridays only.' : 'Question set to every day.')}
+              onCheckedChange={setScheduleDraft}
             />
             <span><CalendarDays /> Fridays only</span>
           </label>
+          {scheduleDraft !== Boolean(question.fridayOnly) && <><Button type="button" className="admin-secondary" disabled={busy} onClick={() => void action({ action: 'setQuestionFridayOnly', id: question.id, fridayOnly: scheduleDraft }, scheduleDraft ? 'Question set to Fridays only.' : 'Question set to every day.')}>Save schedule</Button><button type="button" disabled={busy} onClick={() => setScheduleDraft(Boolean(question.fridayOnly))}>Cancel</button></>}
         </div>
         <Button variant="destructive" size="icon" aria-label="Delete question" onClick={() => action({ action: 'deleteQuestion', id: question.id }, 'Question removed.')}><Trash2 /></Button>
       </div>
