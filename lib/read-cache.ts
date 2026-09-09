@@ -13,6 +13,15 @@ export function invalidateReads(access: Access, name: string) {
   const start = prefix(access) + name;
   for (const key of entries.keys()) if (key.startsWith(start)) entries.delete(key);
 }
+export function patchCachedRead<T>(access: Access, name: string, update: (old: T) => T) {
+  const key = prefix(access) + name;
+  const previous = entries.get(key);
+  if (!previous) return;
+  const value = previous.value.then(old => update(old as T));
+  const entry = { expires: previous.expires, value };
+  entries.set(key, entry);
+  void value.catch(() => { if (entries.get(key) === entry) entries.delete(key); });
+}
 export function cachedRead<T>(access: Access, name: string, load: () => Promise<T>, ttl = 30000): Promise<T> {
   const key = prefix(access) + name;
   const old = entries.get(key);

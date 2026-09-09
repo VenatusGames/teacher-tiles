@@ -262,3 +262,21 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .form-message-success { animation: notice-fade-out .3s ease 3.2s forwards; }
 @keyframes notice-fade-out { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .form-message-success { animation: none; } }
+
+/* Keep optional messages and image draft controls from changing the scroll row. */
+.admin-panel { display: flex; flex-direction: column; min-width: 0; }
+.admin-panel > :not(.admin-scroll) { flex-shrink: 0; }
+.admin-panel > .admin-scroll { flex: 1 1 0; min-height: 0; min-width: 0; }
+.admin-student-list { grid-template-columns: repeat(auto-fill,minmax(min(100%,18rem),1fr)); align-items: start; }
+.admin-student { min-width: 0; grid-template-columns: 3rem minmax(0,1fr) auto; }
+.admin-student > * { min-width: 0; }
+.admin-student .student-photo { width: 3rem; height: 3rem; min-width: 3rem; }
+.student-photo img { min-width: 0; min-height: 0; }
+.student-photo-actions { flex-wrap: wrap; align-items: stretch; }
+.student-photo-actions .file-picker { flex: 1 1 9rem; }
+.student-photo-actions > button { min-height: 2.5rem; }
+.student-photo-actions .admin-secondary { flex: 1 1 100%; }
+.student-score-editor { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.student-score-editor label, .student-email-editor label { min-width: 0; }
+.survey-start { display: flex; align-items: center; justify-content: center; gap: .8rem; min-width: 12rem; min-height: 4.5rem; margin: 2rem auto; padding: 1rem 2rem; border: 3px solid white; border-radius: 1.3rem; background: #bef264; color: #123b2e; font-size: 1.8rem; font-weight: 900; box-shadow: 0 6px 0 rgba(2,15,11,.3); cursor: pointer; }
+.survey-start:focus-visible { outline: 3px solid white; outline-offset: 5px; }

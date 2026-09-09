@@ -3,7 +3,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
   ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile, Sparkles,
-  Sprout, Target, Trash2, UserRound,
+  Sprout, Target, Trash2, UserRound, RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
-import { loadClass, changeClass, loadHistory, completedToday, submitResponse } from '@/lib/class-store';
+import { loadClass, changeClass, loadHistory, completedToday, submitResponse, refreshClassData } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
@@ -44,6 +44,8 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [celebrating, setCelebrating] = useState(false);
   const [error, setError] = useState('');
   const [adminOpen, setAdminOpen] = useState(false);
+  const [surveyStarted, setSurveyStarted] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
     const next = await loadClass(access);
@@ -72,6 +74,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   }, [access, data.students]);
 
   const goHome = () => {
+    setSurveyStarted(false);
     setScreen(access.role === 'student' ? 'menu' : 'students');
     setSelectedStudent(access.role === 'student' ? data.students[0] ?? null : null);
     setSelectedAnswers({});
@@ -82,6 +85,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   };
 
   const chooseStudent = (student: Student) => {
+    setSurveyStarted(false);
     setSelectedStudent(student);
     setScreen('menu');
     setSelectedAnswers({});
@@ -93,6 +97,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 
   const startLeadMeasures = async () => {
     if (!selectedStudent) return;
+    setSurveyStarted(false);
     setSelectedAnswers({});
     setCurrentQuestionIndex(0);
     setAdvancing(false);
@@ -173,7 +178,14 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
         <button className="brand-button" onClick={goHome} aria-label="Return to student profiles">
           <span className="brand-mark"><Sparkles /></span><span>WIGs</span>
         </button>
-        <div className="account-controls"><span className="account-email">{email}</span>{access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
+        <div className="account-controls"><span className="account-email">{email}</span>
+          {screen !== 'lead' && <button className="admin-launch" disabled={refreshing} aria-label="Refresh from server" title="Refresh changes from another device" onClick={async () => {
+            setRefreshing(true); setError(''); refreshClassData(access);
+            try { await refresh(); if (screen === 'history' && selectedStudent) setHistory(await loadHistory(access, selectedStudent.id)); }
+            catch (err) { setError(friendlyError(err)); }
+            finally { setRefreshing(false); }
+          }}><RefreshCw className={refreshing ? 'spin' : ''} /></button>}
+          {access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
       </header>
 
       {screen !== 'students' && !(access.role === 'student' && screen === 'menu') && (
@@ -220,11 +232,13 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 
       {screen === 'lead' && selectedStudent && (
         <section className="page-section lead-page page-enter">
-          <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{selectedStudent.name}&apos;s check-in</p><h1>{data.settings.title}</h1><p>{personalize(data.settings.description, selectedStudent)}</p></div></div>
+          {!surveyStarted && <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{selectedStudent.name}&apos;s check-in</p><h1>{data.settings.title}</h1><p>{personalize(data.settings.description, selectedStudent)}</p></div></div>}
           {checkingToday ? (
             <div className="loading-inline"><LoaderCircle className="spin" /> Checking today&apos;s progress…</div>
           ) : alreadyCheckedIn ? (
             <div className="empty-card already-checked-card"><Check /><h2>You&apos;re checked in for today!</h2><p>Come back tomorrow to keep growing your WIG.</p><button type="button" className="empty-card-action" onClick={openHistory}><Rows3 /> View my history</button></div>
+          ) : currentQuestion && !surveyStarted ? (
+            <button type="button" className="survey-start" onClick={() => setSurveyStarted(true)}>START <ChevronRight /></button>
           ) : currentQuestion ? (
             <div className="question-flow">
               <div className="question-progress" aria-label={`Question ${currentQuestionIndex + 1} of ${activeQuestions.length}`}>
@@ -275,10 +289,10 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 
       {celebrating && <div className="celebration" role="status"><span><Check /></span><strong>WIG saved!</strong><small>Nice work, {selectedStudent?.name}.</small></div>}
 
-      <a className="teacher-tiles-credit" href="https://teachertiles.com" aria-label="Powered by TeacherTiles">
+      {screen === 'students' && access.role === 'teacher' && <a className="teacher-tiles-credit" href="https://teachertiles.com" aria-label="Powered by TeacherTiles">
         <img src="/wigs/teacher-tiles.png" alt="" />
         <span>Powered by <strong>TeacherTiles</strong></span>
-      </a>
+      </a>}
 
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
