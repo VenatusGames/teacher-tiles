@@ -29,8 +29,17 @@ export function cachedRead<T>(access: Access, name: string, load: () => Promise<
   if (old && old.expires > Date.now()) return old.value as Promise<T>;
   const value = load();
   const entry = { expires: Date.now() + ttl, value };
-  if (entries.size >= 500) entries.delete(entries.keys().next().value!);
+  // History browsing must never evict the roster, settings, or encryption keys.
+  if (entries.size >= 500) {
+    const historyKey = [...entries.keys()].find(candidate => candidate.includes(':history:'));
+    if (historyKey) entries.delete(historyKey);
+  }
   entries.set(key, entry);
-  void value.catch(() => { if (entries.get(key) === entry) entries.delete(key); });
+  void value.catch(error => {
+    // Reopening a broken history screen cannot repair a missing index. Keep
+    // this failure until explicit Retry/Refresh instead of querying it again.
+    if (error?.code === 'failed-precondition' && /index/i.test(error?.message ?? '')) return;
+    if (entries.get(key) === entry) entries.delete(key);
+  });
   return value;
 }

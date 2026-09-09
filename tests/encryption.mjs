@@ -46,11 +46,13 @@ const snapshot = reference => {
 };
 let commits = 0, failAt = -1;
 let reads = 0, writeCount = 0;
+let missingIndex = false, failedQueries = 0;
 const firestore = {
   doc: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   collection: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   getDoc: async reference => { reads++; return snapshot(reference); },
   getDocs: async reference => {
+    if (missingIndex && reference.path.endsWith('/responses')) { failedQueries++; throw Object.assign(new Error('The query requires an index.'), { code: 'failed-precondition' }); }
     let docs = [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path)));
     const constraints = reference.constraints ?? [];
     const direction = constraints.find(c => c.kind === 'order')?.direction ?? 'asc';
@@ -93,8 +95,10 @@ const firebaseUrl = moduleUrl('export const auth = globalThis.encryptionHarness.
 const modelUrl = compile('lib/model.ts');
 const cacheUrl = compile('lib/read-cache.ts', { './firebase': firebaseUrl });
 const cache = await import(cacheUrl);
-const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
-const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl, './read-cache': cacheUrl }));
+const activityUrl = compile('lib/firestore-activity.ts', { 'firebase/firestore': firestoreUrl });
+const activity = await import(activityUrl);
+const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
+const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl, './read-cache': cacheUrl }));
 const teacher = { role: 'teacher', ownerId: auth.currentUser.uid };
 let cacheLoads = 0;
 await Promise.all([cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads), cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads)]);
@@ -115,6 +119,14 @@ auth.currentUser = { uid: 'different-account', email: address('different') };
 await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
 assert.equal(cacheLoads, 5, 'Another account must not reuse cached records');
 auth.currentUser = originalAccount;
+cache.clearReadCache();
+let essentialLoads = 0;
+await cache.cachedRead(teacher, 'students', async () => ++essentialLoads, Infinity);
+await cache.cachedRead(teacher, 'key:shared', async () => ++essentialLoads, Infinity);
+for (let i = 0; i < 550; i++) await cache.cachedRead(teacher, 'history:test:page:' + i, async () => i, Infinity);
+await cache.cachedRead(teacher, 'students', async () => ++essentialLoads, Infinity);
+await cache.cachedRead(teacher, 'key:shared', async () => ++essentialLoads, Infinity);
+assert.equal(essentialLoads, 2, 'History cache pressure cannot evict roster or encryption keys');
 cache.clearReadCache();
 const classPath = 'classes/' + teacher.ownerId;
 let data = await store.loadClass(teacher);
@@ -230,6 +242,15 @@ for (let day = 1; day <= 12; day++) {
   const path = classPath + '/students/' + secondChild.id + '/responses/' + date;
   rows.set(path, await encryptRecord({ createdAt: date + 'T12:00:00.000Z', items: [] }, secondKey, path));
 }
+missingIndex = true;
+const brokenFilter = { studentId: 'all', from: '', to: '', order: 'desc' };
+const failuresBefore = activity.getReadActivity().errors;
+for (let i = 0; i < 10; i++) await assert.rejects(store.loadHistoryPage(teacher, brokenFilter), /requires an index/);
+assert.equal(failedQueries, 1, 'Missing index must not fan out across students or retry on menu remount');
+assert.equal(activity.getReadActivity().errors - failuresBefore, 1);
+assert.equal(activity.getReadActivity().pending, 0);
+missingIndex = false;
+store.retryHistory(teacher);
 for (const order of ['asc', 'desc']) {
   const allFilter = { studentId: 'all', from: '', to: '', order };
   const beforeAll = reads;

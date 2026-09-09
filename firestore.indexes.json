@@ -1,5 +1,9 @@
 {
-  "indexes": [],
+  "indexes": [
+    { "collectionGroup": "responses", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "__name__", "order": "DESCENDING" }
+    ] }
+  ],
   "fieldOverrides": [
     { "collectionGroup": "classes", "fieldPath": "ciphertext", "indexes": [] },
     { "collectionGroup": "students", "fieldPath": "ciphertext", "indexes": [] },

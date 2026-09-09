@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { getDoc } from '@/lib/firestore-activity';
 import { emailLookup } from '@/lib/encryption';
 import { cachedRead, clearReadCache } from '@/lib/read-cache';
 import { LogIn, LoaderCircle, LogOut } from 'lucide-react';

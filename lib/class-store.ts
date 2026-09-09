@@ -1,4 +1,5 @@
-import { collection, doc, getDoc, getDocs, runTransaction, writeBatch, deleteDoc, query, orderBy, documentId, where, startAfter, limit, type QueryConstraint, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
+import { collection, doc, writeBatch, deleteDoc, query, orderBy, documentId, where, startAfter, limit, type QueryConstraint, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
+import { getDoc, getDocs, runTransaction } from './firestore-activity';
 import { auth, requireDb } from './firebase';
 import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
@@ -247,6 +248,7 @@ export async function loadHistory(access: Access, studentId?: string): Promise<H
   return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };
+export function retryHistory(access: Access) { invalidateReads(access, 'history:'); }
 export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean; nextCursor?: string }> {
   if (filter.studentId === 'all') return loadAllHistoryPage(access, filter);
   const ref = studentRef(access, filter.studentId);
@@ -288,7 +290,9 @@ async function loadAllHistoryPage(access: Access, filter: HistoryFilter) {
     const rows = await cachedRead(access, 'history:' + profile.id + ':page:head:' + JSON.stringify([filter.from, filter.to, filter.order, after]), () => getDocs(query(collection(studentRef(access, profile.id), 'responses'), ...constraints)), Infinity);
     return { profile, row: rows.docs[0] };
   };
-  const candidates = await Promise.all(students.map(head));
+  // Discover a missing index once before issuing queries for the whole class.
+  const first = students[0] ? await head(students[0]) : undefined;
+  const candidates = first ? [first, ...await Promise.all(students.slice(1).map(head))] : [];
   const entries: HistoryEntry[] = [];
   while (entries.length < 10) {
     candidates.sort((a, b) => {

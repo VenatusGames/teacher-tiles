@@ -1,4 +1,5 @@
-import { doc, getDoc, runTransaction } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { getDoc, runTransaction } from './firestore-activity';
 import { auth, requireDb } from './firebase';
 import { importKey, toBase64 } from './encryption';
 import type { Access } from './model';

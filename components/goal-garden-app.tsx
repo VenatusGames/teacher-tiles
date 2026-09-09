@@ -1,5 +1,6 @@
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { getReadActivity, subscribeReadActivity } from '@/lib/firestore-activity';
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
   ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile,
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
-import { loadClass, changeClass, loadHistoryPage, type HistoryFilter, completedToday, submitResponse } from '@/lib/class-store';
+import { loadClass, changeClass, loadHistoryPage, retryHistory, type HistoryFilter, completedToday, submitResponse } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
@@ -326,6 +327,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
   const [revision, setRevision] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const after = cursors[cursors.length - 1];
+  const indexLink = error.match(/https:\/\/console\.firebase\.google\.com\/[^\s]+/)?.[0];
   useEffect(() => {
     let active = true;
     setError(''); setLoading(true);
@@ -351,7 +353,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
         <button type="submit" disabled={loading || deleting || !draft.studentId}>Apply filters</button>
         <button type="button" disabled={loading || deleting} onClick={() => { const next = { ...draft, from: '', to: '', order: 'desc' as const }; setDraft(next); setFilter(next); setCursors([undefined]); }}>Reset dates</button>
       </form>
-      {error && <p role="alert" className="history-feedback">{error} <button type="button" onClick={() => setRevision(value => value + 1)}>Try again</button></p>}
+      {error && <div role="alert" className="history-feedback"><p>{error}</p>{indexLink && <p><a href={indexLink} target="_blank" rel="noopener noreferrer">Create the required Firestore index</a>. Wait for it to finish building, then try again.</p>}<button type="button" onClick={() => { retryHistory(access); setRevision(value => value + 1); }}>Try again</button></div>}
       {loading ? <p role="status" className="history-feedback">Loading check-ins…</p> : <>
         <p className="history-summary" role="status">{filter.studentId === 'all' ? 'All students' : students.find(student => student.id === filter.studentId)?.name ?? 'History'} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
         {!entries.length && !error && <p className="history-feedback">{students.length ? 'No check-ins in this date range. Try different dates or another student.' : 'Add a student to start collecting check-ins.'}</p>}
@@ -373,6 +375,11 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
       </nav>
     </div>
   );
+}
+
+function ReadActivity() {
+  const activity = useSyncExternalStore(subscribeReadActivity, getReadActivity);
+  return <details className="read-activity"><summary>Database activity in this tab: {activity.requests} read requests</summary><p>{activity.documents} documents returned · {activity.errors} failed requests · {activity.pending} pending</p><p>Last request: {activity.lastRequest ? new Date(activity.lastRequest).toLocaleTimeString() : 'None'}. Counts start when this page loads. Cached menu visits do not increase them. Firebase’s total also includes security-rule reads, minimum query charges, and other tabs/devices.</p></details>;
 }
 
 function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => Promise<void>; access: Access }) {
@@ -424,6 +431,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
       </nav>
       {message && <p key={message} className={`form-message${successNotice ? ' form-message-success' : ''}`} role="status">{message}</p>}
       <div className="admin-scroll">
+        <ReadActivity />
         {tab === 'students' && <StudentsAdmin students={data.students} busy={busy} upload={upload} action={action} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}
         {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} onDelete={deleteCheckIn} /></section>}
