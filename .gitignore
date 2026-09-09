@@ -47,3 +47,7 @@ credentials*.json
 *.bak
 *.backup
 
+
+/.firebase/
+/.wigs-source/
+

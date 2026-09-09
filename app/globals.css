@@ -240,3 +240,21 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+.auth-gate { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; background: #082c21; }
+.auth-card { width: min(100%, 32rem); display: grid; justify-items: center; gap: 1.3rem; padding: clamp(1.5rem, 5vw, 3rem); border: 3px solid #d9f99d; border-radius: 2rem; background: #123b2e; text-align: center; color: white; }
+.auth-card h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; }
+.auth-card > p:not(.eyebrow) { line-height: 1.5; color: #d1fae5; }
+.auth-mark { display: grid; place-items: center; background: #bef264; color: #123b2e; border-radius: 1rem; width: 4rem; height: 4rem; }
+.auth-mark svg { width: 2.5rem; height: 2.5rem; }
+.auth-card button { min-height: 3.2rem; display: flex; align-items: center; justify-content: center; gap: .7rem; padding: .8rem 1.3rem; border: 0; border-radius: .8rem; background: white; color: #123b2e; font-weight: 800; cursor: pointer; }
+.auth-card button:disabled { opacity: .6; cursor: wait; }
+.auth-card .auth-error { color: #fecaca !important; }
+.account-controls { display: flex; align-items: center; gap: .65rem; }
+.account-email { max-width: 15rem; overflow: hidden; text-overflow: ellipsis; font-size: .9rem; }
+.student-email-editor { grid-column: 1 / -1; display: grid; gap: .5rem; }
+.student-email-editor label { display: grid; gap: .3rem; font-size: .85rem; }
+.admin-form-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@media (max-width: 760px) { .account-email { display: none; } .admin-form-row { grid-template-columns: 1fr; } }
+:root { --font-heading-face: 'Fredoka Variable'; --font-body: 'Nunito Variable'; }
+@font-face { font-family: 'Fredoka Variable'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('@fontsource-variable/fredoka/files/fredoka-latin-wght-normal.woff2') format('woff2-variations'); }
+@font-face { font-family: 'Nunito Variable'; font-style: normal; font-weight: 200 1000; font-display: swap; src: url('@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2') format('woff2-variations'); }

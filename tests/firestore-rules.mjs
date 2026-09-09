@@ -1,0 +1,71 @@
+import { readFileSync } from 'node:fs';
+import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
+import { doc, getDoc, getDocs, collection, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import assert from 'node:assert/strict';
+const projectId='demo-wigs-tests';
+const env=await initializeTestEnvironment({projectId,firestore:{host:'127.0.0.1',port:8085,rules:readFileSync('firestore.rules','utf8')}});
+const email=name=>[name,'example.invalid'].join('@');
+const signed=(uid,address=uid,extra={})=>env.authenticatedContext(uid,{email:email(address),email_verified:true,firebase:{sign_in_provider:'google.com'},...extra}).firestore();
+const teacher=signed('teacher-a'), other=signed('teacher-b'), student=signed('student-user','child'), sibling=signed('sibling-user','sibling'), anonymous=env.unauthenticatedContext().firestore();
+const classPath='classes/teacher-a';
+const studentPath=classPath+'/students/child-1';
+const classData=owner=>({ownerId:owner,title:'Daily WIG',description:'Make a check-in.',createdAt:serverTimestamp()});
+const studentData=(id,address)=>({id,name:'Test student',email:email(address),imageKey:null,currentScore:1,goalScore:5});
+let checks=0;const ok=async p=>{await assertSucceeds(p);checks++},no=async p=>{await assertFails(p);checks++};
+try {
+ await env.clearFirestore();
+ await ok(getDoc(doc(student,'studentLinks',email('child'))));
+ await no(getDoc(doc(anonymous,classPath)));
+ await no(setDoc(doc(signed('unverified','unverified',{email_verified:false}),'classes/unverified'),classData('unverified')));
+ await no(setDoc(doc(signed('password-user','password-user',{firebase:{sign_in_provider:'password'}}),'classes/password-user'),classData('password-user')));
+ await ok(setDoc(doc(teacher,classPath),classData('teacher-a')));
+ await ok(setDoc(doc(other,'classes/teacher-b'),classData('teacher-b')));
+ await no(getDoc(doc(other,classPath)));
+ await no(getDocs(collection(teacher,'classes')));
+ // An email assignment must be created atomically with the matching student.
+ await no(setDoc(doc(teacher,studentPath),studentData('child-1','child')));
+ let batch=writeBatch(teacher);batch.set(doc(teacher,studentPath),studentData('child-1','child'));batch.set(doc(teacher,'studentLinks',email('child')),{ownerId:'teacher-a',studentId:'child-1'});await ok(batch.commit());
+ batch=writeBatch(teacher);batch.set(doc(teacher,classPath+'/students/child-2'),studentData('child-2','sibling'));batch.set(doc(teacher,'studentLinks',email('sibling')),{ownerId:'teacher-a',studentId:'child-2'});await ok(batch.commit());
+ await ok(getDoc(doc(student,studentPath)));
+ await no(getDoc(doc(student,classPath+'/students/child-2')));
+ await no(getDoc(doc(sibling,studentPath)));
+ await no(getDocs(collection(student,classPath+'/students')));
+ await no(getDocs(collection(student,'studentLinks')));
+ await no(getDoc(doc(other,'studentLinks',email('child'))));
+ await no(getDoc(doc(anonymous,'studentLinks',email('child'))));
+ await no(setDoc(doc(student,'classes/student-user'),classData('student-user')));
+ await no(updateDoc(doc(student,studentPath),{currentScore:900}));
+ await no(updateDoc(doc(other,studentPath),{name:'Changed'}));
+ await ok(updateDoc(doc(teacher,studentPath),{currentScore:2}));
+ // Teachers cannot take another teacher's existing email assignment.
+ batch=writeBatch(other);batch.set(doc(other,'classes/teacher-b/students/stolen'),studentData('stolen','child'));batch.set(doc(other,'studentLinks',email('child')),{ownerId:'teacher-b',studentId:'stolen'});await no(batch.commit());
+ // Students cannot assign themselves or alter the class's questions/answers.
+ await no(setDoc(doc(student,'studentLinks',email('other')),{ownerId:'student-user',studentId:'fake'}));
+ await no(updateDoc(doc(student,classPath),{title:'Changed'}));
+ const question={id:'q1',prompt:'How did you do?',position:1,fridayOnly:false};
+ await ok(setDoc(doc(teacher,classPath+'/questions/q1'),question));
+ await ok(getDoc(doc(student,classPath+'/questions/q1')));
+ await no(setDoc(doc(student,classPath+'/questions/q2'),{...question,id:'q2'}));
+ const answer={id:'a1',questionId:'q1',label:'On my way',position:1,imageKey:'preset:yes'};
+ await ok(setDoc(doc(teacher,classPath+'/answers/a1'),answer));
+ await no(setDoc(doc(other,classPath+'/answers/a2'),{...answer,id:'a2'}));
+ const response={createdAt:serverTimestamp(),localDate:'2026-09-09',items:[{question:'How did you do?',answer:'On my way',imageKey:'preset:yes'}]};
+ const responsePath=studentPath+'/responses/2026-09-09';
+ await ok(setDoc(doc(student,responsePath),response));
+ await ok(getDoc(doc(teacher,responsePath)));
+ await no(getDoc(doc(sibling,responsePath)));
+ await no(setDoc(doc(student,responsePath),response));
+ await no(deleteDoc(doc(student,responsePath)));
+ await no(setDoc(doc(student,classPath+'/students/child-2/responses/2026-09-09'),response));
+ await no(setDoc(doc(student,studentPath+'/responses/2026-09-10'),{...response,localDate:'2026-09-10',items:[{question:'x',answer:'y',imageKey:'x'.repeat(33001)}]}));
+ await no(setDoc(doc(student,studentPath+'/responses/2026-09-10'),{...response,localDate:'2026-09-10',items:Array(21).fill(response.items[0])}));
+ await ok(setDoc(doc(student,studentPath+'/responses/2026-09-10'),{...response,localDate:'2026-09-10',items:Array(20).fill(response.items[0])}));
+ // Removing an assignment alone or a student alone must fail; both changes are atomic.
+ await no(deleteDoc(doc(teacher,'studentLinks',email('child'))));
+ await no(deleteDoc(doc(teacher,studentPath)));
+ batch=writeBatch(teacher);batch.update(doc(teacher,studentPath),{email:email('new-child')});batch.delete(doc(teacher,'studentLinks',email('child')));batch.set(doc(teacher,'studentLinks',email('new-child')),{ownerId:'teacher-a',studentId:'child-1'});await ok(batch.commit());
+ await no(getDoc(doc(student,studentPath)));
+ await ok(getDoc(doc(signed('new-child-user','new-child'),studentPath)));
+ assert(checks>35);
+ console.log(`${checks} Firestore security checks passed.`);
+} finally { await env.cleanup(); }

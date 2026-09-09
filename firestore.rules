@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+    function email() { return request.auth.token.email.lower(); }
+    function linked() { return signedIn() && exists(/databases/$(database)/documents/studentLinks/$(email())); }
+    function teacher(owner) { return signedIn() && request.auth.uid == owner && !linked(); }
+    function student(owner, id) {
+      return linked() && get(/databases/$(database)/documents/studentLinks/$(email())).data == { 'ownerId': owner, 'studentId': id };
+    }
+    function member(owner) {
+      return teacher(owner) || (linked() && get(/databases/$(database)/documents/studentLinks/$(email())).data.ownerId == owner);
+    }
+    function boundedText(value, size) { return value is string && value.size() > 0 && value.size() <= size; }
+    function picture(value) {
+      return value == null || (value is string && value.size() <= 33000
+        && (value.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$') || value.matches('^preset:(smile|sad|yes|no)$')));
+    }
+    function score(value) { return value == null || (value is number && value >= -1000000000 && value <= 1000000000); }
+    function linkedAfter(owner, id, address) {
+      return address == '' || getAfter(/databases/$(database)/documents/studentLinks/$(address)).data == { 'ownerId': owner, 'studentId': id };
+    }
+    function validStudent(owner, id, data) {
+      return data.keys().hasOnly(['id','name','email','imageKey','currentScore','goalScore'])
+        && data.id == id && boundedText(data.name,100)
+        && data.email is string && data.email.size() <= 254 && data.email == data.email.lower()
+        && (data.email == '' || data.email.matches('^[^ /@]+@[^ /@]+[.][^ /@]+$'))
+        && data.email != email() && picture(data.imageKey) && score(data.currentScore) && score(data.goalScore)
+        && linkedAfter(owner,id,data.email);
+    }
+    function validItem(items, i) {
+      return items.size() <= i || (items[i] is map && items[i].keys().hasOnly(['question','answer','imageKey'])
+        && boundedText(items[i].question,2400) && boundedText(items[i].answer,300) && picture(items[i].imageKey));
+    }
+    function validItems(items) {
+      return items is list && items.size() > 0 && items.size() <= 20
+        && validItem(items,0) && validItem(items,1) && validItem(items,2) && validItem(items,3)
+        && validItem(items,4) && validItem(items,5) && validItem(items,6) && validItem(items,7)
+        && validItem(items,8) && validItem(items,9) && validItem(items,10) && validItem(items,11)
+        && validItem(items,12) && validItem(items,13) && validItem(items,14) && validItem(items,15)
+        && validItem(items,16) && validItem(items,17) && validItem(items,18) && validItem(items,19);
+    }
+    match /studentLinks/{address} {
+      // No public student-email directory. Only exact lookups by the student or owner.
+      allow get: if signedIn() && (address == email() || !exists(/databases/$(database)/documents/studentLinks/$(address)) || resource.data.ownerId == request.auth.uid);
+      allow list: if false;
+      allow create, update: if teacher(request.resource.data.ownerId)
+        && request.resource.data.keys().hasOnly(['ownerId','studentId'])
+        && boundedText(request.resource.data.studentId,100)
+        && address != email() && address == address.lower()
+        && (!exists(/databases/$(database)/documents/studentLinks/$(address)) || (resource.data.ownerId == request.auth.uid && resource.data.studentId == request.resource.data.studentId))
+        && getAfter(/databases/$(database)/documents/classes/$(request.auth.uid)/students/$(request.resource.data.studentId)).data.email == address;
+      allow delete: if teacher(resource.data.ownerId)
+        && (!existsAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId))
+          || getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.email != address);
+    }
+    match /classes/{owner} {
+      allow get: if member(owner);
+      allow list: if false;
+      allow create: if teacher(owner) && request.resource.data.keys().hasOnly(['ownerId','title','description','createdAt'])
+        && request.resource.data.ownerId == owner && request.resource.data.createdAt == request.time
+        && boundedText(request.resource.data.title,160) && boundedText(request.resource.data.description,4000);
+      allow update: if teacher(owner) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','description'])
+        && boundedText(request.resource.data.title,160) && boundedText(request.resource.data.description,4000);
+      match /students/{id} {
+        allow get: if teacher(owner) || student(owner,id);
+        allow list: if teacher(owner);
+        allow create: if teacher(owner) && validStudent(owner,id,request.resource.data);
+        allow update: if teacher(owner) && validStudent(owner,id,request.resource.data)
+          && (resource.data.email == '' || resource.data.email == request.resource.data.email
+            || !existsAfter(/databases/$(database)/documents/studentLinks/$(resource.data.email)));
+        allow delete: if teacher(owner) && (resource.data.email == '' || !existsAfter(/databases/$(database)/documents/studentLinks/$(resource.data.email)));
+        match /responses/{day} {
+          allow read: if teacher(owner) || student(owner,id);
+          allow create: if (teacher(owner) || student(owner,id))
+            && exists(/databases/$(database)/documents/classes/$(owner)/students/$(id))
+            && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && request.resource.data.keys().hasOnly(['createdAt','localDate','items'])
+            && request.resource.data.localDate == day && request.resource.data.createdAt == request.time
+            && validItems(request.resource.data.items);
+          allow delete: if teacher(owner);
+        }
+      }
+      match /questions/{id} {
+        allow read: if member(owner);
+        allow create, update: if teacher(owner) && request.resource.data.keys().hasOnly(['id','prompt','position','fridayOnly'])
+          && request.resource.data.id == id && boundedText(request.resource.data.prompt,2000)
+          && request.resource.data.position is number && request.resource.data.fridayOnly is bool;
+        allow delete: if teacher(owner);
+      }
+      match /answers/{id} {
+        allow read: if member(owner);
+        allow create, update: if teacher(owner) && request.resource.data.keys().hasOnly(['id','questionId','label','imageKey','position'])
+          && request.resource.data.id == id && boundedText(request.resource.data.label,300)
+          && request.resource.data.questionId is string && request.resource.data.position is number
+          && picture(request.resource.data.imageKey)
+          && existsAfter(/databases/$(database)/documents/classes/$(owner)/questions/$(request.resource.data.questionId));
+        allow delete: if teacher(owner);
+      }
+    }
+  }
+}

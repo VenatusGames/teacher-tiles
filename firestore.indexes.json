@@ -1,0 +1,8 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "students", "fieldPath": "imageKey", "indexes": [] },
+    { "collectionGroup": "answers", "fieldPath": "imageKey", "indexes": [] },
+    { "collectionGroup": "responses", "fieldPath": "items", "indexes": [] }
+  ]
+}

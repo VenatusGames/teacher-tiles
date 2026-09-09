@@ -1,9 +1,8 @@
-'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
-  ImagePlus, LoaderCircle, Plus, Rows3, Settings, Smile, Sparkles,
+  ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile, Sparkles,
   Sprout, Target, Trash2, UserRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,16 +11,10 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-type SettingsData = { title: string; description: string };
-type Student = { id: number; name: string; imageKey: string | null; currentScore: number | null; goalScore: number | null };
-type Question = { id: number; prompt: string; position: number; fridayOnly: boolean | number };
-type Answer = { id: number; questionId: number; label: string; imageKey: string | null; position: number };
-type AppData = { settings: SettingsData; students: Student[]; questions: Question[]; answers: Answer[] };
-type HistoryEntry = {
-  id: number; studentId: number; studentName: string; createdAt: string;
-  items: HistoryItem[];
-};
-type HistoryItem = { question: string; answer: string; imageKey: string | null };
+import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
+import { loadClass, changeClass, loadHistory, completedToday, submitResponse } from '@/lib/class-store';
+import { logOut, friendlyError } from '@/lib/firebase';
+
 type Screen = 'students' | 'menu' | 'lead' | 'history';
 type ImageUploader = (file: File | null) => Promise<string | null>;
 
@@ -32,17 +25,13 @@ const presetChoices = [
   { key: 'preset:no', label: 'No', icon: CircleX },
 ] as const;
 
-const emptyData: AppData = {
-  settings: { title: 'Daily WIG Check-In', description: 'Pick the picture that best matches your effort today.' },
-  students: [], questions: [], answers: [],
-};
 
-export function GoalGardenApp() {
+export function GoalGardenApp({ access, email }: { access: Access; email: string }) {
   const [data, setData] = useState<AppData>(emptyData);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState<Screen>('students');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [isFriday, setIsFriday] = useState(false);
@@ -56,15 +45,13 @@ export function GoalGardenApp() {
   const [adminOpen, setAdminOpen] = useState(false);
 
   const refresh = useCallback(async () => {
-    const response = await fetch('/wigs/api/bootstrap', { cache: 'no-store' });
-    if (!response.ok) throw new Error('Could not load WIGs.');
-    const next = await response.json() as AppData;
+    const next = await loadClass(access);
     setData(next);
     setSelectedStudent((current) => current ? next.students.find((student) => student.id === current.id) ?? null : null);
-  }, []);
+  }, [access]);
 
   useEffect(() => {
-    refresh().catch(() => setError('WIGs could not load. Please refresh the page.')).finally(() => setLoading(false));
+    refresh().catch(err => setError(friendlyError(err))).finally(() => setLoading(false));
   }, [refresh]);
 
   useEffect(() => { setIsFriday(new Date().getDay() === 5); }, []);
@@ -78,9 +65,13 @@ export function GoalGardenApp() {
     ? data.answers.filter((answer) => answer.questionId === currentQuestion.id)
     : [];
 
+  useEffect(() => {
+    if (access.role === 'student' && data.students[0]) { setSelectedStudent(data.students[0]); setScreen('menu'); }
+  }, [access, data.students]);
+
   const goHome = () => {
-    setScreen('students');
-    setSelectedStudent(null);
+    setScreen(access.role === 'student' ? 'menu' : 'students');
+    setSelectedStudent(access.role === 'student' ? data.students[0] ?? null : null);
     setSelectedAnswers({});
     setCurrentQuestionIndex(0);
     setAdvancing(false);
@@ -108,11 +99,7 @@ export function GoalGardenApp() {
     setError('');
     setScreen('lead');
     try {
-      const timezoneOffset = new Date().getTimezoneOffset();
-      const response = await fetch(`/wigs/api/responses?studentId=${selectedStudent.id}&timezoneOffset=${timezoneOffset}`, { cache: 'no-store' });
-      const result = await response.json() as { completed?: boolean; error?: string };
-      if (!response.ok) throw new Error(result.error ?? 'Could not check today’s status.');
-      setAlreadyCheckedIn(Boolean(result.completed));
+      setAlreadyCheckedIn(await completedToday(access, selectedStudent.id));
     } catch (statusError) {
       setError(statusError instanceof Error ? statusError.message : 'Could not check today’s status.');
     } finally {
@@ -126,9 +113,7 @@ export function GoalGardenApp() {
     setHistoryLoading(true);
     setError('');
     try {
-      const response = await fetch(`/wigs/api/history?studentId=${selectedStudent.id}`, { cache: 'no-store' });
-      const result = await response.json() as { history: HistoryEntry[] };
-      setHistory(result.history);
+      setHistory(await loadHistory(access, selectedStudent.id));
     } catch {
       setError('History could not load right now.');
     } finally {
@@ -140,20 +125,9 @@ export function GoalGardenApp() {
     if (!selectedStudent || activeQuestions.some((question) => !answers[question.id])) return;
     setSaving(true);
     setError('');
-    const response = await fetch('/wigs/api/responses', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        studentId: selectedStudent.id,
-        answers: activeQuestions.map((question) => ({ questionId: question.id, answerId: answers[question.id] })),
-        timezoneOffset: new Date().getTimezoneOffset(),
-      }),
-    });
-    const result = await response.json() as { error?: string };
-    setSaving(false);
-    if (!response.ok) {
-      if (response.status === 409) setAlreadyCheckedIn(true);
-      return setError(result.error ?? 'That check-in could not be saved.');
-    }
+    try { await submitResponse(access, selectedStudent, data, answers); }
+    catch (err) { setError(friendlyError(err)); return; }
+    finally { setSaving(false); }
     setCelebrating(true);
     window.setTimeout(() => {
       setCelebrating(false);
@@ -163,7 +137,7 @@ export function GoalGardenApp() {
     }, 1200);
   };
 
-  const chooseAnswer = (question: Question, answerId: number) => {
+  const chooseAnswer = (question: Question, answerId: string) => {
     if (advancing || saving) return;
     const nextAnswers = { ...selectedAnswers, [question.id]: answerId };
     setSelectedAnswers(nextAnswers);
@@ -191,20 +165,18 @@ export function GoalGardenApp() {
         <button className="brand-button" onClick={goHome} aria-label="Return to student profiles">
           <span className="brand-mark"><Sparkles /></span><span>WIGs</span>
         </button>
-        <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel">
-          <Settings />
-        </button>
+        <div className="account-controls"><span className="account-email">{email}</span>{access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
       </header>
 
-      {screen !== 'students' && (
-        <button className="back-button" onClick={() => setScreen(screen === 'menu' ? 'students' : 'menu')}>
+      {screen !== 'students' && !(access.role === 'student' && screen === 'menu') && (
+        <button className="back-button" onClick={() => setScreen(screen === 'menu' && access.role === 'teacher' ? 'students' : 'menu')}>
           <ArrowLeft /> <span>Back</span>
         </button>
       )}
 
       {error && <div className="error-banner" role="alert">{error}</div>}
 
-      {screen === 'students' && (
+      {screen === 'students' && access.role === 'teacher' && (
         <section className="page-section student-page page-enter">
           <p className="eyebrow">Choose your profile</p>
           <h1>Who is growing a goal today?</h1>
@@ -303,7 +275,7 @@ export function GoalGardenApp() {
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
           <DialogTitle className="sr-only">WIGs admin panel</DialogTitle>
-          <AdminPanel data={data} refresh={refresh} />
+          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} />}
         </DialogContent>
       </Dialog>
     </main>
@@ -315,7 +287,7 @@ function LoadingScreen() {
 }
 
 function ProfileImage({ student }: { student: Student }) {
-  return <span className="student-photo">{student.imageKey ? <img src={fileUrl(student.imageKey)} alt="" /> : <span className={`initial-avatar avatar-${student.id % 4}`}>{student.name.slice(0, 1).toUpperCase()}</span>}</span>;
+  return <span className="student-photo">{student.imageKey ? <img src={fileUrl(student.imageKey)} alt="" /> : <span className={`initial-avatar avatar-${Array.from(student.id).reduce((sum, char) => sum + char.charCodeAt(0), 0) % 4}`}>{student.name.slice(0, 1).toUpperCase()}</span>}</span>;
 }
 
 function AnswerVisual({ answer, index }: { answer: Answer; index: number }) {
@@ -346,28 +318,29 @@ function HistoryTable({ history, columns, showStudent, onDelete }: { history: Hi
     <div className="data-table-wrap">
       <table className="data-table">
         <thead><tr>{showStudent && <th>Student</th>}<th>Date</th>{columns.map((column) => <th key={column}>{column}</th>)}{onDelete && <th>Delete</th>}</tr></thead>
-        <tbody>{history.map((entry) => <tr key={entry.id}>{showStudent && <td><strong>{entry.studentName}</strong></td>}<td>{formatDate(entry.createdAt)}</td>{columns.map((column) => <td key={column}><HistoryAnswer item={entry.items.find((item) => item.question === column)} /></td>)}{onDelete && <td><button type="button" className="history-delete" onClick={() => onDelete(entry)} aria-label={`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}`}><Trash2 /></button></td>}</tr>)}</tbody>
+        <tbody>{history.map((entry) => <tr key={`${entry.studentId}:${entry.id}`}>{showStudent && <td><strong>{entry.studentName}</strong></td>}<td>{formatDate(entry.createdAt)}</td>{columns.map((column) => <td key={column}><HistoryAnswer item={entry.items.find((item) => item.question === column)} /></td>)}{onDelete && <td><button type="button" className="history-delete" onClick={() => onDelete(entry)} aria-label={`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}`}><Trash2 /></button></td>}</tr>)}</tbody>
       </table>
     </div>
   );
 }
 
-function AdminPanel({ data, refresh }: { data: AppData; refresh: () => Promise<void> }) {
+function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => Promise<void>; access: Access }) {
   const [tab, setTab] = useState<'students' | 'measures' | 'history'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [adminHistory, setAdminHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
-    if (tab === 'history') fetch('/wigs/api/history', { cache: 'no-store' }).then((r) => r.json() as Promise<{ history: HistoryEntry[] }>).then((result) => setAdminHistory(result.history));
-  }, [tab, data]);
+    let active = true;
+    if (tab === 'history') loadHistory(access).then(history => { if (active) setAdminHistory(history); }).catch(err => { if (active) setMessage(friendlyError(err)); });
+    return () => { active = false; };
+  }, [tab, data, access]);
 
   const action = async (body: Record<string, unknown>, success = 'Saved!') => {
     setBusy(true); setMessage('');
-    const response = await fetch('/wigs/api/admin/data', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
-    const result = await response.json() as { error?: string };
-    if (!response.ok) { setBusy(false); setMessage(result.error ?? 'Could not save that change.'); return false; }
-    await refresh(); setBusy(false); setMessage(success); return true;
+    try { await changeClass(access, body); await refresh(); setMessage(success); return true; }
+    catch (err) { setMessage(friendlyError(err)); return false; }
+    finally { setBusy(false); }
   };
 
   const upload: ImageUploader = async (file) => {
@@ -376,16 +349,7 @@ function AdminPanel({ data, refresh }: { data: AppData; refresh: () => Promise<v
     setMessage('Preparing image…');
     try {
       const preparedFile = await prepareImageForUpload(file);
-      const form = new FormData(); form.append('file', preparedFile, preparedFile.name);
-      const response = await fetch('/wigs/api/admin/upload', { method: 'POST', body: form });
-      const responseText = await response.text();
-      let result: { key?: string; error?: string } = {};
-      try { result = JSON.parse(responseText) as { key?: string; error?: string }; } catch { /* The platform can return plain text for rejected requests. */ }
-      if (!response.ok) {
-        const tooLarge = response.status === 413 || responseText.toLowerCase().includes('payload too large');
-        throw new Error(tooLarge ? 'That image is still too large. Try a different photo.' : result.error || responseText || 'Image upload failed.');
-      }
-      return result.key ?? null;
+      return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Could not read this picture.')); reader.readAsDataURL(preparedFile); });
     } finally {
       setBusy(false);
       setMessage('');
@@ -395,7 +359,7 @@ function AdminPanel({ data, refresh }: { data: AppData; refresh: () => Promise<v
   const columns = Array.from(new Set(adminHistory.flatMap((entry) => entry.items.map((item) => item.question))));
   const deleteCheckIn = async (entry: HistoryEntry) => {
     if (!window.confirm(`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}? This cannot be undone.`)) return;
-    if (await action({ action: 'deleteResponse', id: entry.id }, 'Check-in deleted.')) {
+    if (await action({ action: 'deleteResponse', id: entry.id, studentId: entry.studentId }, 'Check-in deleted.')) {
       setAdminHistory((current) => current.filter((item) => item.id !== entry.id));
     }
   };
@@ -418,15 +382,17 @@ function AdminPanel({ data, refresh }: { data: AppData; refresh: () => Promise<v
 }
 
 function StudentsAdmin({ students, busy, upload, action }: { students: Student[]; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
-  const [name, setName] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
-  const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, imageKey }, `${name} was added.`)) { setName(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
-  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student name" /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} busy={busy} upload={upload} action={action} />)}</div></section>;
+  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
+  const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, email, imageKey }, `${name} was added.`)) { setName(''); setEmail(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
+  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student name" required maxLength={100} /><Input className="admin-input" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="Student Google email (optional)" maxLength={254} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} busy={busy} upload={upload} action={action} />)}</div></section>;
 }
 
 function StudentAdminCard({ student, busy, upload, action }: { student: Student; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
+  const [emailDraft, setEmailDraft] = useState(student.email);
+  useEffect(() => { setEmailDraft(student.email); }, [student.email]);
   const [currentScore, setCurrentScore] = useState(student.currentScore === null ? '' : String(student.currentScore));
   const [goalScore, setGoalScore] = useState(student.goalScore === null ? '' : String(student.goalScore));
   useEffect(() => { if (!editingName) setNameDraft(student.name); }, [student.name, editingName]);
@@ -487,7 +453,7 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
       )}
       <Button variant="destructive" size="icon" aria-label={`Delete ${student.name}`} onClick={() => action({ action: 'deleteStudent', id: student.id }, `${student.name} was removed.`)}><Trash2 /></Button>
       <div className="student-photo-actions"><FilePicker label={uploading ? 'Updating…' : 'Change picture'} onFile={replaceImage} />{student.imageKey && <button type="button" onClick={() => action({ action: 'removeStudentImage', id: student.id }, `${student.name}'s picture was removed.`)}>Remove</button>}</div>
-      <div className="student-score-editor">
+      <form className="student-email-editor" onSubmit={event => { event.preventDefault(); void action({ action: 'updateStudentEmail', id: student.id, email: emailDraft }, 'Student login updated.'); }}><label>Student Google email<Input className="admin-input" type="email" value={emailDraft} onChange={event => setEmailDraft(event.target.value)} placeholder="No student login assigned" maxLength={254} /></label><Button type="submit" className="admin-secondary" disabled={busy || emailDraft === student.email}>Save login</Button></form><div className="student-score-editor">
         <label>Current Score<Input className="admin-input" type="number" step="any" value={currentScore} onChange={(event) => setCurrentScore(event.target.value)} placeholder="0" /></label>
         <label>Goal Score<Input className="admin-input" type="number" step="any" value={goalScore} onChange={(event) => setGoalScore(event.target.value)} placeholder="0" /></label>
         <Button type="button" className="admin-secondary" disabled={busy || currentScore === '' || goalScore === ''} onClick={saveScores}><Check /> Save scores</Button>
@@ -504,6 +470,7 @@ function MeasuresAdmin({ data, busy, upload, action }: { data: AppData; busy: bo
   useEffect(() => { setTitle(data.settings.title); setDescription(data.settings.description); }, [data.settings]);
   const addQuestion = async (event: FormEvent) => {
     event.preventDefault();
+    if (data.questions.length >= 20) return;
     if (await action({ action: 'addQuestion', prompt, fridayOnly }, 'Question added.')) {
       setPrompt('');
       setFridayOnly(false);
@@ -524,12 +491,12 @@ function MeasuresAdmin({ data, busy, upload, action }: { data: AppData; busy: bo
       <section className="admin-section">
         <div className="section-title"><div><p className="eyebrow">Question builder</p><h3>Questions & image choices</h3></div><span className="count-pill">{data.questions.length} questions</span></div>
         <form className="admin-form-row question-add-form" onSubmit={addQuestion}>
-          <Input className="admin-input" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Type a new question" />
+          <Input className="admin-input" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Type a new question" maxLength={2000} required />
           <label className="friday-option">
             <Checkbox checked={fridayOnly} onCheckedChange={(checked) => setFridayOnly(checked)} />
             <span><strong>Fridays only</strong><small>Ask at the end of the week</small></span>
           </label>
-          <Button type="submit" className="admin-primary" disabled={busy || !prompt.trim()}><Plus /> Add question</Button>
+          <Button type="submit" className="admin-primary" disabled={busy || !prompt.trim() || data.questions.length >= 20}><Plus /> Add question</Button>
         </form>
         <div className="question-builder-list">
           {data.questions.map((question, index) => <QuestionBuilder key={question.id} question={question} index={index} answers={data.answers.filter((answer) => answer.questionId === question.id)} busy={busy} upload={upload} action={action} />)}
@@ -572,9 +539,9 @@ function FilePicker({ label, onFile }: { label: string; onFile: (file: File | nu
 }
 
 async function prepareImageForUpload(file: File) {
-  const maxBytes = 700_000;
+  const maxBytes = 24 * 1024;
   if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
-  if (file.size <= maxBytes) return file;
+
 
   let bitmap: ImageBitmap;
   try {
@@ -585,7 +552,7 @@ async function prepareImageForUpload(file: File) {
 
   try {
     let smallest: Blob | null = null;
-    for (const maxEdge of [1280, 1024, 800, 640]) {
+    for (const maxEdge of [384, 256, 192, 128]) {
       const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.round(bitmap.width * scale));
@@ -604,7 +571,7 @@ async function prepareImageForUpload(file: File) {
         }
       }
     }
-    if (smallest) return new File([smallest], 'image.jpg', { type: 'image/jpeg' });
+    if (smallest && smallest.size <= maxBytes) return new File([smallest], 'image.jpg', { type: 'image/jpeg' });
     throw new Error('The image could not be prepared.');
   } finally {
     bitmap.close();
@@ -625,6 +592,6 @@ function personalize(text: string, student: Student) {
 }
 
 function formatScore(value: number | null) { return value === null ? '—' : String(value); }
-function fileUrl(key: string) { return `/wigs/api/files?key=${encodeURIComponent(key)}`; }
+function fileUrl(key: string) { return key; }
 function isFacePreset(key: string | null) { return key === 'preset:smile' || key === 'preset:sad'; }
 function formatDate(value: string) { return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value)); }
