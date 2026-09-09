@@ -9,7 +9,7 @@ const approved = new Set([
   '.github/workflows/deploy-pages.yml', '.gitignore', 'README.md',
   'app/globals.css', 'index.html', 'main.tsx',
   'components/auth-gate.tsx', 'lib/firebase.ts', 'lib/firebase-config.ts',
-  'lib/model.ts', 'lib/class-store.ts', 'firestore.rules', 'firebase.json',
+  'lib/model.ts', 'lib/class-store.ts', 'lib/encryption.ts', 'lib/key-vault.ts', 'firestore.rules', 'firebase.json',
   'firestore.indexes.json', '.firebaserc',
   'components/goal-garden-app.tsx', 'components/ui/button.tsx',
   'components/ui/checkbox.tsx', 'components/ui/dialog.tsx',
@@ -17,7 +17,7 @@ const approved = new Set([
   'env.d.ts', 'lib/utils.ts',
   'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml',
   'public/favicon.svg', 'public/teacher-tiles.png',
-  'tests/model.mjs', 'tests/firestore-rules.mjs', 'tests/public-source.mjs', 'tsconfig.json', 'vite.config.ts',
+  'tests/model.mjs', 'tests/encryption.mjs', 'tests/firestore-rules.mjs', 'tests/public-source.mjs', 'tsconfig.json', 'vite.config.ts',
 ]);
 const files = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean).filter(existsSync))];
 const rules = [

@@ -1,0 +1,165 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import ts from 'typescript';
+import { createHash } from 'node:crypto';
+
+const moduleUrl = source => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
+function compile(file, imports = {}) {
+  let source = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
+  for (const [name, url] of Object.entries(imports)) source = source.replaceAll("from '" + name + "'", "from '" + url + "'");
+  return moduleUrl(source);
+}
+const encryptionUrl = compile('lib/encryption.ts');
+const encryption = await import(encryptionUrl);
+const { encryptRecord, decryptRecord, importKey, toBase64, emailLookup } = encryption;
+const raw = crypto.getRandomValues(new Uint8Array(32));
+const key = await importKey(toBase64(raw));
+const path = 'classes/test/students/test';
+const payload = { name: 'Synthetic learner 🌱', imageKey: 'preset:smile', items: [{ answer: 'A test answer' }] };
+const first = await encryptRecord(payload, key, path);
+const second = await encryptRecord(payload, key, path);
+const syntheticPhoto = 'data:image/jpeg;base64,' + toBase64(crypto.getRandomValues(new Uint8Array(24 * 1024)));
+const photoEnvelope = await encryptRecord({ imageKey: syntheticPhoto }, key, path);
+assert.deepEqual(await decryptRecord(photoEnvelope, key, path), { imageKey: syntheticPhoto });
+assert(!JSON.stringify(photoEnvelope).includes(syntheticPhoto));
+assert.notEqual(first.iv, second.iv);
+assert.notEqual(first.ciphertext, second.ciphertext);
+assert.deepEqual(await decryptRecord(first, key, path), payload);
+assert(!JSON.stringify(first).includes(payload.name));
+await assert.rejects(decryptRecord(first, key, path + '-other'));
+await assert.rejects(decryptRecord(first, await importKey(toBase64(crypto.getRandomValues(new Uint8Array(32)))), path));
+await assert.rejects(decryptRecord({ ...first, version: 2 }, key, path));
+await assert.rejects(decryptRecord({ ...first, iv: 'broken' }, key, path));
+await assert.rejects(decryptRecord({ ...first, ciphertext: (first.ciphertext[0] === 'A' ? 'B' : 'A') + first.ciphertext.slice(1) }, key, path));
+await assert.rejects(encryptRecord('x'.repeat(720000), key, path), /too large/);
+const address = name => [name, 'example.invalid'].join('@');
+assert.equal(await emailLookup('  ' + address('Child').toUpperCase() + '  '), createHash('sha256').update(address('child')).digest('hex'));
+assert.equal(await emailLookup(''), '');
+
+// In-memory Firestore API exercises the real storage/migration code with Web Crypto.
+// This tests application behavior, not server-side security rules (separate suite).
+const rows = new Map();
+const ref = path => ({ path, id: path.split('/').at(-1) });
+const snapshot = reference => {
+  const value = rows.get(reference.path);
+  return { ref: reference, id: reference.id, exists: () => value !== undefined, data: () => value };
+};
+let commits = 0, failAt = -1;
+const firestore = {
+  doc: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
+  collection: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
+  getDoc: async reference => snapshot(reference),
+  getDocs: async reference => ({ docs: [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path))) }),
+  deleteDoc: async reference => { rows.delete(reference.path); },
+  runTransaction: async (_db, fn) => {
+    const writes = [];
+    const result = await fn({
+      get: async reference => snapshot(reference),
+      set: (reference, data) => { writes.push(() => rows.set(reference.path, data)); },
+      delete: reference => { writes.push(() => rows.delete(reference.path)); },
+    });
+    if (++commits === failAt) throw new Error('Simulated interruption');
+    for (const write of writes) write();
+    return result;
+  },
+  writeBatch: () => {
+    const deletes = [];
+    return { delete: reference => deletes.push(reference.path), commit: async () => { for (const path of deletes) rows.delete(path); } };
+  },
+};
+const auth = { currentUser: { uid: 'teacher-test', email: address('teacher') } };
+globalThis.encryptionHarness = { firestore, auth };
+const firestoreUrl = moduleUrl('export const { doc, collection, getDoc, getDocs, runTransaction, writeBatch, deleteDoc } = globalThis.encryptionHarness.firestore;');
+const firebaseUrl = moduleUrl('export const auth = globalThis.encryptionHarness.auth; export const requireDb = () => ({});');
+const modelUrl = compile('lib/model.ts');
+const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl });
+const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl }));
+const teacher = { role: 'teacher', ownerId: auth.currentUser.uid };
+const classPath = 'classes/' + teacher.ownerId;
+let data = await store.loadClass(teacher);
+assert.equal(data.students.length, 0);
+assert.equal(data.questions.length, 1);
+assert(rows.get(classPath).ciphertext);
+const sharedMaterial = rows.get(classPath + '/keys/shared').keyMaterial;
+await store.changeClass(teacher, { action: 'addStudent', name: 'Synthetic child', email: address('child'), imageKey: 'preset:smile' });
+data = await store.loadClass(teacher);
+const child = data.students[0];
+const childPath = classPath + '/students/' + child.id;
+assert(rows.get(childPath).ciphertext);
+assert.equal(rows.get(childPath).emailHash, await emailLookup(address('child')));
+assert.notEqual(rows.get(classPath + '/keys/student_' + child.id).keyMaterial, sharedMaterial);
+assert(!rows.has('studentLinks/' + address('child')));
+assert(!JSON.stringify([...rows]).includes(address('child')));
+await store.changeClass(teacher, { action: 'updateStudentScores', id: child.id, currentScore: 2, goalScore: 8 });
+await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Updated synthetic child' });
+await store.changeClass(teacher, { action: 'updateStudentImage', id: child.id, imageKey: 'preset:yes' });
+await store.changeClass(teacher, { action: 'saveSettings', title: 'Encrypted title', description: 'Encrypted description' });
+await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: false });
+data = await store.loadClass(teacher);
+assert.equal(data.students[0].currentScore, 2);
+assert.equal(data.students[0].name, 'Updated synthetic child');
+assert.equal(data.students[0].imageKey, 'preset:yes');
+assert.equal(data.settings.title, 'Encrypted title');
+const student = { role: 'student', ownerId: teacher.ownerId, studentId: child.id };
+auth.currentUser = { uid: 'child-user', email: address('child') };
+assert.equal((await store.loadClass(student)).students.length, 1);
+await assert.rejects(store.changeClass(student, { action: 'saveSettings', title: 'Forbidden', description: 'Forbidden' }));
+await assert.rejects(store.completedToday(student, 'other-student'));
+await store.submitResponse(student, data.students[0], data, { starter: 'starter-1' });
+assert(await store.completedToday(student, child.id));
+await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'starter-1' }), /already completed/);
+const history = await store.loadHistory(student);
+assert.equal(history[0].items[0].answer, 'On My Way');
+assert(!JSON.stringify([...rows]).includes('On My Way'));
+auth.currentUser = { uid: teacher.ownerId, email: address('teacher') };
+await store.changeClass(teacher, { action: 'updateStudentEmail', id: child.id, email: address('replacement') });
+assert(!rows.has('studentAccess/' + await emailLookup(address('child'))));
+assert(rows.has('studentAccess/' + await emailLookup(address('replacement'))));
+await store.changeClass(teacher, { action: 'addQuestion', prompt: 'Another encrypted question', fridayOnly: true });
+data = await store.loadClass(teacher);
+const question = data.questions.find(q => q.id !== 'starter');
+await store.changeClass(teacher, { action: 'addAnswer', questionId: question.id, label: 'Another encrypted answer', imageKey: null });
+await store.changeClass(teacher, { action: 'deleteQuestion', id: question.id });
+data = await store.loadClass(teacher);
+assert.equal(data.questions.length, 1);
+assert.equal(data.answers.length, 3);
+await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
+assert(!rows.has(childPath));
+assert(![...rows.keys()].some(path => path.startsWith(childPath + '/')));
+assert(!rows.has('studentAccess/' + await emailLookup(address('replacement'))));
+
+// Legacy migration preserves names, scores, pictures, email, and response times,
+// removes all old readable fields/paths, and can safely resume after interruption.
+rows.clear();
+rows.set(classPath, { ownerId: teacher.ownerId, title: 'Legacy class', description: 'Legacy description', createdAt: {} });
+rows.set(classPath + '/questions/q', { id: 'q', prompt: 'Legacy question', position: 1, fridayOnly: false });
+rows.set(classPath + '/answers/a', { id: 'a', questionId: 'q', label: 'Legacy answer', imageKey: 'preset:yes', position: 1 });
+rows.set(classPath + '/students/legacy', { id: 'legacy', name: 'Legacy synthetic child', email: address('legacy'), imageKey: 'preset:smile', currentScore: 3, goalScore: 7 });
+rows.set('studentLinks/' + address('legacy'), { ownerId: teacher.ownerId, studentId: 'legacy' });
+rows.set(classPath + '/students/legacy/responses/2026-01-02', { localDate: '2026-01-02', createdAt: { toDate: () => new Date('2026-01-02T15:00:00Z') }, items: [{ question: 'Legacy question', answer: 'Legacy answer', imageKey: 'preset:yes' }] });
+failAt = commits + 4;
+await assert.rejects(store.loadClass(teacher), /Simulated interruption/);
+failAt = -1;
+data = await store.loadClass(teacher);
+assert.equal(data.students[0].currentScore, 3);
+assert.equal(data.students[0].goalScore, 7);
+assert.equal(data.students[0].imageKey, 'preset:smile');
+assert.equal(data.students[0].email, address('legacy'));
+assert.equal(data.settings.title, 'Legacy class');
+assert.equal((await store.loadHistory(teacher))[0].createdAt, '2026-01-02T15:00:00.000Z');
+assert(!rows.has('studentLinks/' + address('legacy')));
+for (const [path, value] of rows) {
+  if (path.startsWith('studentAccess/')) continue;
+  if (path.includes('/keys/')) { assert.deepEqual(Object.keys(value).sort(), ['keyMaterial', 'version']); continue; }
+  assert(value.ciphertext, path);
+  assert.deepEqual(Object.keys(value).sort(), path.endsWith('/students/legacy') ? ['ciphertext', 'emailHash', 'iv', 'version'] : ['ciphertext', 'iv', 'version']);
+}
+const before = JSON.stringify([...rows]);
+await store.loadClass(teacher);
+assert.equal(JSON.stringify([...rows]), before);
+rows.delete(classPath + '/keys/shared');
+const missingKeyState = JSON.stringify([...rows]);
+await assert.rejects(store.loadClass(teacher), /encryption key is unavailable/);
+assert.equal(JSON.stringify([...rows]), missingKeyState);
+delete globalThis.encryptionHarness;
+console.log('Encryption round trips, tamper rejection, key separation, encrypted CRUD, and resumable legacy migration passed.');

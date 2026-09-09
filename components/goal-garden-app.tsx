@@ -29,6 +29,7 @@ const presetChoices = [
 export function GoalGardenApp({ access, email }: { access: Access; email: string }) {
   const [data, setData] = useState<AppData>(emptyData);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<Screen>('students');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
@@ -47,6 +48,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const refresh = useCallback(async () => {
     const next = await loadClass(access);
     setData(next);
+    setReady(true);
     setSelectedStudent((current) => current ? next.students.find((student) => student.id === current.id) ?? null : null);
   }, [access]);
 
@@ -158,6 +160,12 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   );
 
   if (loading) return <LoadingScreen />;
+  if (!ready) return <main className="auth-gate"><section className="auth-card">
+    <h1>Could not open your class</h1>
+    <p role="alert">{error || 'Please try again.'}</p>
+    <button onClick={() => { setLoading(true); setError(''); void refresh().catch(err => setError(friendlyError(err))).finally(() => setLoading(false)); }}>Try again</button>
+    <button onClick={() => void logOut().catch(err => setError(friendlyError(err)))}>Sign out</button>
+  </section></main>;
 
   return (
     <main className="app-shell min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -267,10 +275,10 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 
       {celebrating && <div className="celebration" role="status"><span><Check /></span><strong>WIG saved!</strong><small>Nice work, {selectedStudent?.name}.</small></div>}
 
-      <div className="teacher-tiles-credit" aria-label="Powered by TeacherTiles">
+      <a className="teacher-tiles-credit" href="https://teachertiles.com" aria-label="Powered by TeacherTiles">
         <img src="/wigs/teacher-tiles.png" alt="" />
         <span>Powered by <strong>TeacherTiles</strong></span>
-      </div>
+      </a>
 
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
@@ -328,17 +336,24 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
   const [tab, setTab] = useState<'students' | 'measures' | 'history'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [successNotice, setSuccessNotice] = useState(false);
   const [adminHistory, setAdminHistory] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
+    if (!message || !successNotice) return;
+    const timer = window.setTimeout(() => { setMessage(''); setSuccessNotice(false); }, 3500);
+    return () => window.clearTimeout(timer);
+  }, [message, successNotice]);
+
+  useEffect(() => {
     let active = true;
-    if (tab === 'history') loadHistory(access).then(history => { if (active) setAdminHistory(history); }).catch(err => { if (active) setMessage(friendlyError(err)); });
+    if (tab === 'history') loadHistory(access).then(history => { if (active) setAdminHistory(history); }).catch(err => { if (active) { setSuccessNotice(false); setMessage(friendlyError(err)); } });
     return () => { active = false; };
   }, [tab, data, access]);
 
   const action = async (body: Record<string, unknown>, success = 'Saved!') => {
-    setBusy(true); setMessage('');
-    try { await changeClass(access, body); await refresh(); setMessage(success); return true; }
+    setBusy(true); setMessage(''); setSuccessNotice(false);
+    try { await changeClass(access, body); await refresh(); setSuccessNotice(true); setMessage(success); return true; }
     catch (err) { setMessage(friendlyError(err)); return false; }
     finally { setBusy(false); }
   };
@@ -347,6 +362,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
     if (!file) return null;
     setBusy(true);
     setMessage('Preparing image…');
+    setSuccessNotice(false);
     try {
       const preparedFile = await prepareImageForUpload(file);
       return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('Could not read this picture.')); reader.readAsDataURL(preparedFile); });
@@ -371,7 +387,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
         <button className={tab === 'measures' ? 'active' : ''} onClick={() => setTab('measures')}><LeadBars /> Lead Measures</button>
         <button className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}><Database /> History</button>
       </nav>
-      {message && <p className="form-message">{message}</p>}
+      {message && <p key={message} className={`form-message${successNotice ? ' form-message-success' : ''}`} role="status">{message}</p>}
       <div className="admin-scroll">
         {tab === 'students' && <StudentsAdmin students={data.students} busy={busy} upload={upload} action={action} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}

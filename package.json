@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/model.mjs && node tests/public-source.mjs",
+    "test": "node tests/model.mjs && node tests/encryption.mjs && node tests/public-source.mjs",
     "test:rules": "node tests/firestore-rules.mjs"
   },
   "dependencies": {

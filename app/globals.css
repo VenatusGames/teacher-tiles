@@ -178,7 +178,7 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .empty-card > svg, .empty-card > .lead-bars { width: 4rem; height: 4rem; margin-bottom: .8rem; }.empty-card h2 { font-size: 2rem; }.empty-card p { margin-top: .6rem; color: #4f6f63; font-weight: 750; }
 .empty-card-action { display: inline-flex; min-height: 3.2rem; align-items: center; justify-content: center; gap: .55rem; margin-top: 1.3rem; padding: .65rem 1rem; border: 0; border-radius: .9rem; background: #0f766e; color: white; font-weight: 900; cursor: pointer; box-shadow: 0 5px 0 rgba(18,59,46,.2); transition: transform .18s ease; }.empty-card-action:hover { transform: translateY(-3px); }.empty-card-action svg { width: 1.15rem; height: 1.15rem; }
 .error-banner { width: min(100% - 2rem, 46rem); margin: .5rem auto 0; padding: .85rem 1rem; border: 3px solid #fecaca; border-radius: 1rem; background: #fee2e2; color: #991b1b; font-weight: 850; text-align: center; }
-.teacher-tiles-credit { display: flex; width: max-content; align-items: center; gap: .55rem; margin: auto auto 1rem; padding: .45rem .75rem .45rem .5rem; border: 2px solid rgba(255,255,255,.38); border-radius: 999px; background: rgba(2,15,11,.72); color: rgba(255,255,255,.82); box-shadow: 0 6px 18px rgba(2,15,11,.24); backdrop-filter: blur(8px); pointer-events: none; }
+.teacher-tiles-credit { display: flex; width: max-content; align-items: center; gap: .55rem; margin: auto auto 1rem; padding: .45rem .75rem .45rem .5rem; border: 2px solid rgba(255,255,255,.38); border-radius: 999px; background: rgba(2,15,11,.72); color: rgba(255,255,255,.82); box-shadow: 0 6px 18px rgba(2,15,11,.24); backdrop-filter: blur(8px); text-decoration: none; }
 .teacher-tiles-credit img { width: 3rem; height: 3rem; object-fit: contain; }.teacher-tiles-credit span { font-size: .78rem; font-weight: 750; white-space: nowrap; }.teacher-tiles-credit strong { color: white; font-weight: 900; }
 .celebration { position: fixed; inset: 0; z-index: 70; display: grid; place-content: center; justify-items: center; background: rgba(3,28,20,.78); color: white; backdrop-filter: blur(8px); animation: fade-in .2s both; }
 .celebration span { display: grid; width: 7rem; height: 7rem; place-items: center; border: 8px solid white; border-radius: 50%; background: #bef264; color: #123b2e; box-shadow: 0 12px 0 rgba(0,0,0,.25); animation: pop .55s cubic-bezier(.2,.9,.25,1.3) both; }
@@ -258,3 +258,7 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 :root { --font-heading-face: 'Fredoka Variable'; --font-body: 'Nunito Variable'; }
 @font-face { font-family: 'Fredoka Variable'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('@fontsource-variable/fredoka/files/fredoka-latin-wght-normal.woff2') format('woff2-variations'); }
 @font-face { font-family: 'Nunito Variable'; font-style: normal; font-weight: 200 1000; font-display: swap; src: url('@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2') format('woff2-variations'); }
+
+.form-message-success { animation: notice-fade-out .3s ease 3.2s forwards; }
+@keyframes notice-fade-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .form-message-success { animation: none; } }

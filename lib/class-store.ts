@@ -1,15 +1,18 @@
-import { collection, doc, getDoc, getDocs, orderBy, query, runTransaction, serverTimestamp, updateDoc, writeBatch, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, runTransaction, writeBatch, deleteDoc, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
 import { auth, requireDb } from './firebase';
+import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
+import { classKey } from './key-vault';
 import { emptyData, localDate, normalizeEmail, personalize, type Access, type AppData, type Student, type Question, type Answer, type HistoryEntry } from './model';
 
 const root = (access: Access) => doc(requireDb(), 'classes', access.ownerId);
 const records = (access: Access, name: string) => collection(root(access), name);
 const record = (access: Access, name: string, id: string) => doc(records(access, name), id);
+const link = (hash: string) => doc(requireDb(), 'studentAccess', hash);
 function requireTeacher(access: Access) {
   if (access.role !== 'teacher' || access.ownerId !== auth?.currentUser?.uid) throw new Error('Only your teacher can change the class.');
 }
 function text(value: unknown, label: string, max = 2000) {
-  if (typeof value !== 'string' || !value.trim() || value.trim().length > max) throw new Error(`Enter ${label} (up to ${max} characters).`);
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > max) throw new Error('Enter ' + label + ' (up to ' + max + ' characters).');
   return value.trim();
 }
 function imageValue(value: unknown): string | null {
@@ -17,107 +20,184 @@ function imageValue(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 33000 || (!/^data:image\/jpeg;base64,/.test(value) && !/^preset:(smile|sad|yes|no)$/.test(value))) throw new Error('Choose a smaller picture.');
   return value;
 }
-const sorted = <T extends {position:number}>(rows:T[]) => rows.sort((a,b)=>a.position-b.position);
-export async function loadClass(access: Access): Promise<AppData> {
-  if (access.role === 'teacher') {
+async function read<T>(snapshot: DocumentSnapshot, key: CryptoKey): Promise<T> {
+  if (!snapshot.exists()) throw new Error('That record is no longer available.');
+  return decryptRecord<T>(snapshot.data()!, key, snapshot.ref.path);
+}
+const sorted = <T extends { position: number }>(rows: T[]) => rows.sort((a, b) => a.position - b.position);
+
+// Full replacements remove plaintext. Transactions re-read their sources.
+// Encrypt the root last so an interrupted migration resumes on the next load.
+async function prepareClass(access: Access) {
+  requireTeacher(access);
+  const initial = await getDoc(root(access));
+  if (initial.exists() && isEncrypted(initial.data())) return;
+  const [questions, answers, students] = await Promise.all([
+    getDocs(records(access, 'questions')), getDocs(records(access, 'answers')), getDocs(records(access, 'students')),
+  ]);
+  const shared = await classKey(access, undefined, ![...questions.docs, ...answers.docs].some(s => isEncrypted(s.data())));
+  const migrate = async (ref: DocumentReference, key: CryptoKey, convert: (data: Record<string, any>) => unknown = data => data) => {
     await runTransaction(requireDb(), async tx => {
-      const ref = root(access); const snap = await tx.get(ref);
-      if (!snap.exists()) {
-        tx.set(ref, { ...emptyData.settings, ownerId: access.ownerId, createdAt: serverTimestamp() });
-        tx.set(record(access,'questions','starter'), {id:'starter',prompt:'How focused did you feel today?',position:1,fridayOnly:false});
-        ['Getting Started','On My Way','Locked In'].forEach((label,index) => tx.set(record(access,'answers',`starter-${index}`),{id:`starter-${index}`,questionId:'starter',label,imageKey:null,position:index+1}));
+      const current = await tx.get(ref);
+      if (!current.exists() || isEncrypted(current.data())) return;
+      tx.set(ref, await encryptRecord(convert(current.data()), key, ref.path));
+    });
+  };
+  for (const row of questions.docs) await migrate(row.ref, shared);
+  for (const row of answers.docs) await migrate(row.ref, shared);
+  for (const student of students.docs) {
+    const responses = await getDocs(collection(student.ref, 'responses'));
+    const key = await classKey(access, student.id, !isEncrypted(student.data()) && !responses.docs.some(s => isEncrypted(s.data())));
+    for (const response of responses.docs) await migrate(response.ref, key, data => ({
+      createdAt: data.createdAt?.toDate().toISOString() ?? response.id + 'T12:00:00.000Z', items: data.items,
+    }));
+    await runTransaction(requireDb(), async tx => {
+      const current = await tx.get(student.ref);
+      if (!current.exists() || isEncrypted(current.data())) return;
+      const data = current.data() as Student;
+      const email = normalizeEmail(data.email ?? '');
+      const hash = await emailLookup(email);
+      const existing = hash ? await tx.get(link(hash)) : null;
+      const legacyRef = email ? doc(requireDb(), 'studentLinks', email) : null;
+      const legacy = legacyRef ? await tx.get(legacyRef) : null;
+      if (existing?.exists() && (existing.data().ownerId !== access.ownerId || existing.data().studentId !== student.id)) throw new Error('A student email assignment conflicts. No assignment was replaced.');
+      if (legacy?.exists() && (legacy.data().ownerId !== access.ownerId || legacy.data().studentId !== student.id)) throw new Error('A legacy student email assignment conflicts. No assignment was replaced.');
+      tx.set(student.ref, { ...await encryptRecord({ ...data, id: student.id, email }, key, student.ref.path), emailHash: hash });
+      if (hash) {
+        tx.set(link(hash), { ownerId: access.ownerId, studentId: student.id });
+        if (legacy?.exists()) tx.delete(legacyRef!);
       }
     });
   }
-  const [settings, studentRows, questionRows, answerRows] = await Promise.all([
-    getDoc(root(access)),
-    access.role === 'student' ? getDoc(record(access,'students',access.studentId)).then(s => s.exists() ? [{...s.data(),id:s.id} as Student] : []) : getDocs(records(access,'students')).then(s => s.docs.map(d => ({...d.data(),id:d.id} as Student))),
-    getDocs(records(access,'questions')),
-    getDocs(records(access,'answers')),
-  ]);
-  if (!settings.exists()) throw new Error('Your class is no longer available. Contact your teacher.');
-  if (access.role === 'student' && !studentRows.length) throw new Error('Your student profile is no longer available. Contact your teacher.');
-  return { settings: { title: settings.data()!.title, description: settings.data()!.description }, students: studentRows.sort((a,b)=>a.name.localeCompare(b.name)), questions: sorted(questionRows.docs.map(d=>({...d.data(),id:d.id} as Question))), answers: sorted(answerRows.docs.map(d=>({...d.data(),id:d.id} as Answer))) };
+  await runTransaction(requireDb(), async tx => {
+    const current = await tx.get(root(access));
+    if (current.exists() && isEncrypted(current.data())) return;
+    const settings = current.exists() ? { title: current.data().title, description: current.data().description } : emptyData.settings;
+    tx.set(root(access), await encryptRecord(settings, shared, root(access).path));
+    if (!current.exists()) {
+      const question = record(access, 'questions', 'starter');
+      tx.set(question, await encryptRecord({ id: 'starter', prompt: 'How focused did you feel today?', position: 1, fridayOnly: false }, shared, question.path));
+      for (const [index, label] of ['Getting Started', 'On My Way', 'Locked In'].entries()) {
+        const answer = record(access, 'answers', 'starter-' + index);
+        tx.set(answer, await encryptRecord({ id: answer.id, questionId: 'starter', label, imageKey: null, position: index + 1 }, shared, answer.path));
+      }
+    }
+  });
 }
+
+export async function loadClass(access: Access): Promise<AppData> {
+  if (access.role === 'teacher') await prepareClass(access);
+  const settings = await getDoc(root(access));
+  if (!settings.exists()) throw new Error('Your class is no longer available. Contact your teacher.');
+  if (!isEncrypted(settings.data())) throw new Error('Your teacher needs to open the updated app once to finish protecting this class.');
+  const shared = await classKey(access);
+  const [studentRows, questionRows, answerRows] = await Promise.all([
+    access.role === 'student' ? getDoc(record(access, 'students', access.studentId)).then(s => [s]) : getDocs(records(access, 'students')).then(s => s.docs),
+    getDocs(records(access, 'questions')), getDocs(records(access, 'answers')),
+  ]);
+  const students = await Promise.all(studentRows.map(async s => ({ ...await read<Student>(s, await classKey(access, s.id)), id: s.id })));
+  return { settings: await read<AppData['settings']>(settings, shared), students: students.sort((a, b) => a.name.localeCompare(b.name)),
+    questions: sorted(await Promise.all(questionRows.docs.map(s => read<Question>(s, shared)))),
+    answers: sorted(await Promise.all(answerRows.docs.map(s => read<Answer>(s, shared)))) };
+}
+
 async function saveStudent(access: Access, id: string, values: Partial<Student>, creating: boolean) {
   requireTeacher(access);
-  const db = requireDb();
-  await runTransaction(db, async tx => {
-    const ref = record(access,'students',id); const previous = await tx.get(ref);
+  const key = await classKey(access, id, creating);
+  await runTransaction(requireDb(), async tx => {
+    const ref = record(access, 'students', id); const previous = await tx.get(ref);
     if (!creating && !previous.exists()) throw new Error('That student no longer exists.');
-    const old = previous.data() as Student | undefined;
-    const next = creating ? { id, name: '', email: '', imageKey: null, currentScore: null, goalScore: null, ...values } : {...old,...values,id};
-    const email = normalizeEmail(next.email ?? '');
-    if (email === normalizeEmail(auth!.currentUser!.email!)) throw new Error('Use the student’s Google email, not your teacher email.');
-    const linkRef = email ? doc(db,'studentLinks',email) : null;
-    if (linkRef && email !== old?.email) {
-      const existing = await tx.get(linkRef);
-      if (existing.exists()) throw new Error('That email is already attached to a student. Ask the current teacher to remove its assignment first.');
+    if (creating && previous.exists()) throw new Error('That student already exists.');
+    const old = previous.exists() ? await read<Student>(previous, key) : undefined;
+    const next: Student = { id, name: '', email: '', imageKey: null, currentScore: null, goalScore: null, ...old, ...values };
+    next.email = normalizeEmail(next.email);
+    if (next.email === normalizeEmail(auth!.currentUser!.email!)) throw new Error('Use the student’s Google email, not your teacher email.');
+    const hash = await emailLookup(next.email); const oldHash = await emailLookup(old?.email ?? '');
+    if (hash && hash !== oldHash) {
+      const existing = await tx.get(link(hash));
+      const legacy = await tx.get(doc(requireDb(), 'studentLinks', next.email));
+      if (existing.exists() || legacy.exists()) throw new Error('That email is already attached to a student. Ask the current teacher to remove its assignment first.');
     }
-    if (old?.email && old.email !== email) tx.delete(doc(db,'studentLinks',old.email));
-    tx.set(ref, {...next,email});
-    if (linkRef) tx.set(linkRef,{ownerId:access.ownerId,studentId:id});
+    if (oldHash && oldHash !== hash) tx.delete(link(oldHash));
+    tx.set(ref, { ...await encryptRecord(next, key, ref.path), emailHash: hash });
+    if (hash) tx.set(link(hash), { ownerId: access.ownerId, studentId: id });
+  });
+}
+async function editRecord(ref: DocumentReference, key: CryptoKey, values: Record<string, unknown>) {
+  return runTransaction(requireDb(), async tx => {
+    const current = await tx.get(ref);
+    const data = await read<Record<string, unknown>>(current, key);
+    tx.set(ref, await encryptRecord({ ...data, ...values }, key, ref.path));
   });
 }
 export async function changeClass(access: Access, body: Record<string, unknown>) {
   requireTeacher(access);
   const id = String(body.id ?? '');
-  const ref = record(access,'students',id || 'unused');
-  switch(body.action) {
-    case 'saveSettings': return updateDoc(root(access),{title:text(body.title,'a title',160),description:text(body.description,'a description',4000)});
-    case 'addStudent': return saveStudent(access,crypto.randomUUID(),{name:text(body.name,'a student name',100),email:normalizeEmail(String(body.email ?? '')),imageKey:imageValue(body.imageKey)},true);
-    case 'updateStudentName': return saveStudent(access,id,{name:text(body.name,'a student name',100)},false);
-    case 'updateStudentEmail': return saveStudent(access,id,{email:normalizeEmail(String(body.email ?? ''))},false);
-    case 'updateStudentImage': return updateDoc(ref,{imageKey:imageValue(body.imageKey)});
-    case 'removeStudentImage': return updateDoc(ref,{imageKey:null});
+  const ref = record(access, 'students', id || 'unused');
+  switch (body.action) {
+    case 'saveSettings': return editRecord(root(access), await classKey(access), { title: text(body.title, 'a title', 160), description: text(body.description, 'a description', 4000) });
+    case 'addStudent': return saveStudent(access, crypto.randomUUID(), { name: text(body.name, 'a student name', 100), email: normalizeEmail(String(body.email ?? '')), imageKey: imageValue(body.imageKey) }, true);
+    case 'updateStudentName': return saveStudent(access, id, { name: text(body.name, 'a student name', 100) }, false);
+    case 'updateStudentEmail': return saveStudent(access, id, { email: normalizeEmail(String(body.email ?? '')) }, false);
+    case 'updateStudentImage': return saveStudent(access, id, { imageKey: imageValue(body.imageKey) }, false);
+    case 'removeStudentImage': return saveStudent(access, id, { imageKey: null }, false);
     case 'updateStudentScores': {
-      if (![body.currentScore,body.goalScore].every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=1e9)) throw new Error('Enter valid scores.');
-      return updateDoc(ref,{currentScore:body.currentScore,goalScore:body.goalScore});
+      if (![body.currentScore, body.goalScore].every(n => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1e9)) throw new Error('Enter valid scores.');
+      return saveStudent(access, id, { currentScore: body.currentScore as number, goalScore: body.goalScore as number }, false);
     }
     case 'deleteStudent': {
-      // Delete nested history before deleting the student and the email assignment.
-      const responses = await getDocs(collection(ref,'responses'));
-      for (let i=0;i<responses.docs.length;i+=400) { const batch=writeBatch(requireDb()); responses.docs.slice(i,i+400).forEach(d=>batch.delete(d.ref)); await batch.commit(); }
-      return runTransaction(requireDb(),async tx=>{const student=await tx.get(ref);if(student.data()?.email)tx.delete(doc(requireDb(),'studentLinks',student.data()!.email));tx.delete(ref);});
+      const responses = await getDocs(collection(ref, 'responses'));
+      for (let i = 0; i < responses.docs.length; i += 400) { const batch = writeBatch(requireDb()); responses.docs.slice(i, i + 400).forEach(d => batch.delete(d.ref)); await batch.commit(); }
+      return runTransaction(requireDb(), async tx => {
+        const student = await tx.get(ref);
+        if (student.data()?.emailHash) tx.delete(link(student.data()!.emailHash));
+        tx.delete(ref);
+      });
     }
     case 'addQuestion': {
-      const id=crypto.randomUUID(); return runTransaction(requireDb(),async tx=>{tx.set(record(access,'questions',id),{id,prompt:text(body.prompt,'a question',2000),position:Date.now(),fridayOnly:Boolean(body.fridayOnly)});});
+      const ref = record(access, 'questions', crypto.randomUUID());
+      const payload = await encryptRecord({ id: ref.id, prompt: text(body.prompt, 'a question', 2000), position: Date.now(), fridayOnly: Boolean(body.fridayOnly) }, await classKey(access), ref.path);
+      return runTransaction(requireDb(), async tx => { tx.set(ref, payload); });
     }
-    case 'setQuestionFridayOnly': return updateDoc(record(access,'questions',id),{fridayOnly:Boolean(body.fridayOnly)});
+    case 'setQuestionFridayOnly': return editRecord(record(access, 'questions', id), await classKey(access), { fridayOnly: Boolean(body.fridayOnly) });
     case 'deleteQuestion': {
-      const all=await getDocs(records(access,'answers')); const matching=all.docs.filter(d=>d.data().questionId===id);
-      for(let i=0;i<matching.length;i+=400){const batch=writeBatch(requireDb());matching.slice(i,i+400).forEach(d=>batch.delete(d.ref));await batch.commit();}
-      return deleteDoc(record(access,'questions',id));
+      const key = await classKey(access); const all = await getDocs(records(access, 'answers'));
+      const matching = (await Promise.all(all.docs.map(async row => (await read<Answer>(row, key)).questionId === id ? row : null))).filter(row => row !== null);
+      for (let i = 0; i < matching.length; i += 400) { const batch = writeBatch(requireDb()); matching.slice(i, i + 400).forEach(d => batch.delete(d.ref)); await batch.commit(); }
+      return deleteDoc(record(access, 'questions', id));
     }
     case 'addAnswer': {
-      const id=crypto.randomUUID(); const questionId=String(body.questionId ?? '');
-      return runTransaction(requireDb(),async tx=>{const question=await tx.get(record(access,'questions',questionId));if(!question.exists())throw new Error('That question no longer exists.');tx.set(record(access,'answers',id),{id,questionId,label:text(body.label,'an answer',300),imageKey:imageValue(body.imageKey),position:Date.now()});});
+      const ref = record(access, 'answers', crypto.randomUUID()); const questionId = String(body.questionId ?? '');
+      const payload = await encryptRecord({ id: ref.id, questionId, label: text(body.label, 'an answer', 300), imageKey: imageValue(body.imageKey), position: Date.now() }, await classKey(access), ref.path);
+      return runTransaction(requireDb(), async tx => { if (!(await tx.get(record(access, 'questions', questionId))).exists()) throw new Error('That question no longer exists.'); tx.set(ref, payload); });
     }
-    case 'deleteAnswer': return deleteDoc(record(access,'answers',id));
-    case 'deleteResponse': return deleteDoc(doc(record(access,'students',String(body.studentId)), 'responses', id));
+    case 'deleteAnswer': return deleteDoc(record(access, 'answers', id));
+    case 'deleteResponse': return deleteDoc(doc(record(access, 'students', String(body.studentId)), 'responses', id));
     default: throw new Error('Unknown class action.');
   }
 }
-function studentRef(access: Access,id: string) {
-  if(access.role==='student' && access.studentId!==id)throw new Error('You can only access your own profile.');
-  return record(access,'students',id);
+function studentRef(access: Access, id: string) {
+  if (access.role === 'student' && access.studentId !== id) throw new Error('You can only access your own profile.');
+  return record(access, 'students', id);
 }
-export async function completedToday(access: Access,id: string) {
-  return (await getDoc(doc(studentRef(access,id),'responses',localDate()))).exists();
+export async function completedToday(access: Access, id: string) {
+  return (await getDoc(doc(studentRef(access, id), 'responses', localDate()))).exists();
 }
 export async function loadHistory(access: Access, studentId?: string): Promise<HistoryEntry[]> {
-  const students = studentId ? [await getDoc(studentRef(access,studentId))] : access.role==='student' ? [await getDoc(studentRef(access,access.studentId))] : (await getDocs(records(access,'students'))).docs;
-  const history=await Promise.all(students.map(async student=>{
-    if(!student.exists())return [];
-    const rows=await getDocs(query(collection(student.ref,'responses'),orderBy('createdAt','desc')));
-    return rows.docs.map(row=>{const data=row.data();return {id:row.id,studentId:student.id,studentName:student.data()!.name,createdAt:data.createdAt?.toDate().toISOString() ?? new Date().toISOString(),items:data.items} as HistoryEntry;});
+  const students = studentId ? [await getDoc(studentRef(access, studentId))] : access.role === 'student' ? [await getDoc(studentRef(access, access.studentId))] : (await getDocs(records(access, 'students'))).docs;
+  const history = await Promise.all(students.map(async student => {
+    if (!student.exists()) return [];
+    const key = await classKey(access, student.id); const profile = await read<Student>(student, key);
+    const rows = await getDocs(collection(student.ref, 'responses'));
+    return Promise.all(rows.docs.map(async row => ({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: student.id, studentName: profile.name })));
   }));
-  return history.flat().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
-export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string,string>) {
-  const active=data.questions.filter(q=>!q.fridayOnly || new Date().getDay()===5);
-  if(!active.length || active.length>20)throw new Error('The class must have between 1 and 20 questions per check-in.');
-  const items=active.map(q=>{const answer=data.answers.find(a=>a.id===selections[q.id] && a.questionId===q.id);if(!answer)throw new Error('Answer every question first.');return {question:personalize(q.prompt,student),answer:answer.label,imageKey:answer.imageKey};});
-  const ref=doc(studentRef(access,student.id),'responses',localDate());
-  await runTransaction(requireDb(),async tx=>{if((await tx.get(ref)).exists())throw new Error('You already completed today’s check-in.');tx.set(ref,{createdAt:serverTimestamp(),localDate:ref.id,items});});
+export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string, string>) {
+  const active = data.questions.filter(q => !q.fridayOnly || new Date().getDay() === 5);
+  if (!active.length || active.length > 20) throw new Error('The class must have between 1 and 20 questions per check-in.');
+  const items = active.map(q => { const answer = data.answers.find(a => a.id === selections[q.id] && a.questionId === q.id); if (!answer) throw new Error('Answer every question first.'); return { question: personalize(q.prompt, student), answer: answer.label, imageKey: answer.imageKey }; });
+  const ref = doc(studentRef(access, student.id), 'responses', localDate());
+  const payload = await encryptRecord({ createdAt: new Date().toISOString(), items }, await classKey(access, student.id), ref.path);
+  await runTransaction(requireDb(), async tx => { if ((await tx.get(ref)).exists()) throw new Error('You already completed today’s check-in.'); tx.set(ref, payload); });
 }

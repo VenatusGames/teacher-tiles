@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, runTransaction } from 'firebase/firestore';
+import { emailLookup } from '@/lib/encryption';
 import { LogIn, LoaderCircle, LogOut, Sprout } from 'lucide-react';
 import { auth, db, firebaseConfigured, googleSignIn, logOut, friendlyError } from '@/lib/firebase';
 import { normalizeEmail, resolveAccess, type Access } from '@/lib/model';
@@ -16,19 +17,39 @@ export function AuthGate() {
   useEffect(() => {
     if (!auth || !db) return;
     let stopRole = () => {};
+    let generation = 0;
     const stopAuth = onAuthStateChanged(auth, current => {
+      const session = ++generation;
       stopRole(); setAccess(null); setUser(current); setError('');
       if (!current) { setLoading(false); return; }
       if (!current.email || !current.emailVerified) {
         setError('Use a Google account with a verified email address.'); setLoading(false); return;
       }
       setLoading(true);
-      stopRole = onSnapshot(doc(db!, 'studentLinks', normalizeEmail(current.email)), snapshot => {
-        const data = snapshot.exists() ? snapshot.data() as { ownerId: string; studentId: string } : undefined;
-        setAccess(resolveAccess(current.uid, data)); setLoading(false); setError('');
-      }, err => { setAccess(null); setError(friendlyError(err)); setLoading(false); });
+      void emailLookup(current.email).then(hash => {
+        if (session !== generation) return;
+        const currentRef = doc(db!, 'studentAccess', hash);
+        const legacyRef = doc(db!, 'studentLinks', normalizeEmail(current.email!));
+        let revision = 0;
+        const fail = (err: unknown) => { if (session === generation) { setAccess(null); setError(friendlyError(err)); setLoading(false); } };
+        const refreshRole = () => {
+          const request = ++revision;
+          // Read both assignments consistently during the atomic legacy migration.
+          void runTransaction(db!, async tx => {
+            const currentLink = await tx.get(currentRef);
+            const legacyLink = await tx.get(legacyRef);
+            return (legacyLink.exists() ? legacyLink.data() : currentLink.data()) as { ownerId: string; studentId: string } | undefined;
+          }).then(data => {
+            if (session !== generation || request !== revision) return;
+            setAccess(resolveAccess(current.uid, data)); setLoading(false); setError('');
+          }).catch(err => { if (request === revision) fail(err); });
+        };
+        const stopCurrent = onSnapshot(currentRef, refreshRole, fail);
+        const stopLegacy = onSnapshot(legacyRef, refreshRole, fail);
+        stopRole = () => { revision++; stopCurrent(); stopLegacy(); };
+      }).catch(err => { if (session === generation) { setError(friendlyError(err)); setLoading(false); } });
     });
-    return () => { stopRole(); stopAuth(); };
+    return () => { generation++; stopRole(); stopAuth(); };
   }, [retry]);
   const login = async () => {
     setBusy(true); setError('');

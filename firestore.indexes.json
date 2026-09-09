@@ -1,6 +1,12 @@
 {
   "indexes": [],
   "fieldOverrides": [
+    { "collectionGroup": "classes", "fieldPath": "ciphertext", "indexes": [] },
+    { "collectionGroup": "students", "fieldPath": "ciphertext", "indexes": [] },
+    { "collectionGroup": "questions", "fieldPath": "ciphertext", "indexes": [] },
+    { "collectionGroup": "answers", "fieldPath": "ciphertext", "indexes": [] },
+    { "collectionGroup": "responses", "fieldPath": "ciphertext", "indexes": [] },
+    { "collectionGroup": "keys", "fieldPath": "keyMaterial", "indexes": [] },
     { "collectionGroup": "students", "fieldPath": "imageKey", "indexes": [] },
     { "collectionGroup": "answers", "fieldPath": "imageKey", "indexes": [] },
     { "collectionGroup": "responses", "fieldPath": "items", "indexes": [] }

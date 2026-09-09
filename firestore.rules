@@ -6,98 +6,111 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
     function email() { return request.auth.token.email.lower(); }
-    function linked() { return signedIn() && exists(/databases/$(database)/documents/studentLinks/$(email())); }
+    function emailHash() { return hashing.sha256(email().toUtf8()).toHexString().lower(); }
+    function linked() {
+      return signedIn() && (exists(/databases/$(database)/documents/studentAccess/$(emailHash()))
+        || exists(/databases/$(database)/documents/studentLinks/$(email())));
+    }
+    function assignment() {
+      // A new hashed assignment cannot override an existing legacy assignment.
+      return exists(/databases/$(database)/documents/studentLinks/$(email()))
+        ? get(/databases/$(database)/documents/studentLinks/$(email())).data
+        : get(/databases/$(database)/documents/studentAccess/$(emailHash())).data;
+    }
     function teacher(owner) { return signedIn() && request.auth.uid == owner && !linked(); }
     function student(owner, id) {
-      return linked() && get(/databases/$(database)/documents/studentLinks/$(email())).data == { 'ownerId': owner, 'studentId': id };
+      return linked() && assignment() == { 'ownerId': owner, 'studentId': id };
     }
-    function member(owner) {
-      return teacher(owner) || (linked() && get(/databases/$(database)/documents/studentLinks/$(email())).data.ownerId == owner);
+    function member(owner) { return teacher(owner) || (linked() && assignment().ownerId == owner); }
+    function envelope(data, maxSize) {
+      return data.version == 1 && data.iv is string && data.iv.matches('^[A-Za-z0-9+/]{16}$')
+        && data.ciphertext is string && data.ciphertext.size() >= 24 && data.ciphertext.size() <= maxSize
+        && data.ciphertext.matches('^[A-Za-z0-9+/]+={0,2}$');
     }
-    function boundedText(value, size) { return value is string && value.size() > 0 && value.size() <= size; }
-    function picture(value) {
-      return value == null || (value is string && value.size() <= 33000
-        && (value.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$') || value.matches('^preset:(smile|sad|yes|no)$')));
+    function cipherOnly(data, maxSize) {
+      return data.keys().hasOnly(['version','iv','ciphertext']) && envelope(data,maxSize);
     }
-    function score(value) { return value == null || (value is number && value >= -1000000000 && value <= 1000000000); }
-    function linkedAfter(owner, id, address) {
-      return address == '' || getAfter(/databases/$(database)/documents/studentLinks/$(address)).data == { 'ownerId': owner, 'studentId': id };
+    function hashValue(value) { return value is string && (value == '' || value.matches('^[a-f0-9]{64}$')); }
+    function assignedAfter(owner, id, hash) {
+      return hash == '' || getAfter(/databases/$(database)/documents/studentAccess/$(hash)).data == { 'ownerId': owner, 'studentId': id };
+    }
+    function oldAssignmentRemoved(data, nextHash) {
+      return ('emailHash' in data)
+        ? (data.emailHash == '' || data.emailHash == nextHash || !existsAfter(/databases/$(database)/documents/studentAccess/$(data.emailHash)))
+        : (data.email == '' || !existsAfter(/databases/$(database)/documents/studentLinks/$(data.email)));
     }
     function validStudent(owner, id, data) {
-      return data.keys().hasOnly(['id','name','email','imageKey','currentScore','goalScore'])
-        && data.id == id && boundedText(data.name,100)
-        && data.email is string && data.email.size() <= 254 && data.email == data.email.lower()
-        && (data.email == '' || data.email.matches('^[^ /@]+@[^ /@]+[.][^ /@]+$'))
-        && data.email != email() && picture(data.imageKey) && score(data.currentScore) && score(data.goalScore)
-        && linkedAfter(owner,id,data.email);
+      return data.keys().hasOnly(['version','iv','ciphertext','emailHash']) && envelope(data,60000)
+        && hashValue(data.emailHash) && data.emailHash != emailHash()
+        && assignedAfter(owner,id,data.emailHash)
+        && existsAfter(/databases/$(database)/documents/classes/$(owner)/keys/$('student_' + id));
     }
-    function validItem(items, i) {
-      return items.size() <= i || (items[i] is map && items[i].keys().hasOnly(['question','answer','imageKey'])
-        && boundedText(items[i].question,2400) && boundedText(items[i].answer,300) && picture(items[i].imageKey));
-    }
-    function validItems(items) {
-      return items is list && items.size() > 0 && items.size() <= 20
-        && validItem(items,0) && validItem(items,1) && validItem(items,2) && validItem(items,3)
-        && validItem(items,4) && validItem(items,5) && validItem(items,6) && validItem(items,7)
-        && validItem(items,8) && validItem(items,9) && validItem(items,10) && validItem(items,11)
-        && validItem(items,12) && validItem(items,13) && validItem(items,14) && validItem(items,15)
-        && validItem(items,16) && validItem(items,17) && validItem(items,18) && validItem(items,19);
-    }
-    match /studentLinks/{address} {
-      // No public student-email directory. Only exact lookups by the student or owner.
-      allow get: if signedIn() && (address == email() || !exists(/databases/$(database)/documents/studentLinks/$(address)) || resource.data.ownerId == request.auth.uid);
+    match /studentAccess/{hash} {
+      allow get: if signedIn() && (hash == emailHash() || !exists(/databases/$(database)/documents/studentAccess/$(hash)) || resource.data.ownerId == request.auth.uid);
       allow list: if false;
       allow create, update: if teacher(request.resource.data.ownerId)
         && request.resource.data.keys().hasOnly(['ownerId','studentId'])
-        && boundedText(request.resource.data.studentId,100)
-        && address != email() && address == address.lower()
-        && (!exists(/databases/$(database)/documents/studentLinks/$(address)) || (resource.data.ownerId == request.auth.uid && resource.data.studentId == request.resource.data.studentId))
-        && getAfter(/databases/$(database)/documents/classes/$(request.auth.uid)/students/$(request.resource.data.studentId)).data.email == address;
+        && request.resource.data.studentId is string && request.resource.data.studentId.size() > 0 && request.resource.data.studentId.size() <= 100
+        && hash.matches('^[a-f0-9]{64}$') && hash != emailHash()
+        && (!exists(/databases/$(database)/documents/studentAccess/$(hash)) || resource.data == request.resource.data)
+        && getAfter(/databases/$(database)/documents/classes/$(request.auth.uid)/students/$(request.resource.data.studentId)).data.emailHash == hash;
       allow delete: if teacher(resource.data.ownerId)
         && (!existsAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId))
-          || getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.email != address);
+          || getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.emailHash != hash);
+    }
+    // Legacy directory is read-only except for atomic migration/removal.
+    // No new readable email document names can be written.
+    match /studentLinks/{address} {
+      allow get: if signedIn() && (address == email() || !exists(/databases/$(database)/documents/studentLinks/$(address)) || resource.data.ownerId == request.auth.uid);
+      allow list: if false;
+      allow delete: if teacher(resource.data.ownerId)
+        && (!existsAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId))
+          || (getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.emailHash == hashing.sha256(address.toUtf8()).toHexString().lower()
+            && assignedAfter(resource.data.ownerId,resource.data.studentId,hashing.sha256(address.toUtf8()).toHexString().lower())));
     }
     match /classes/{owner} {
       allow get: if member(owner);
       allow list: if false;
-      allow create: if teacher(owner) && request.resource.data.keys().hasOnly(['ownerId','title','description','createdAt'])
-        && request.resource.data.ownerId == owner && request.resource.data.createdAt == request.time
-        && boundedText(request.resource.data.title,160) && boundedText(request.resource.data.description,4000);
-      allow update: if teacher(owner) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','description'])
-        && boundedText(request.resource.data.title,160) && boundedText(request.resource.data.description,4000);
+      allow create, update: if teacher(owner) && cipherOnly(request.resource.data,26000)
+        && existsAfter(/databases/$(database)/documents/classes/$(owner)/keys/shared);
+      match /keys/{keyId} {
+        allow get: if teacher(owner) || (member(owner) && keyId == 'shared')
+          || (linked() && assignment().ownerId == owner && keyId == 'student_' + assignment().studentId);
+        allow list: if false;
+        allow create: if teacher(owner)
+          && (keyId == 'shared' || keyId.matches('^student_[A-Za-z0-9-]{1,100}$'))
+          && request.resource.data.keys().hasOnly(['version','keyMaterial'])
+          && request.resource.data.version == 1 && request.resource.data.keyMaterial is string
+          && request.resource.data.keyMaterial.matches('^[A-Za-z0-9+/]{43}=$');
+        // Keys cannot be replaced or deleted. Retaining an orphaned key avoids
+        // losing a response if a check-in races with student deletion.
+      }
       match /students/{id} {
         allow get: if teacher(owner) || student(owner,id);
         allow list: if teacher(owner);
         allow create: if teacher(owner) && validStudent(owner,id,request.resource.data);
         allow update: if teacher(owner) && validStudent(owner,id,request.resource.data)
-          && (resource.data.email == '' || resource.data.email == request.resource.data.email
-            || !existsAfter(/databases/$(database)/documents/studentLinks/$(resource.data.email)));
-        allow delete: if teacher(owner) && (resource.data.email == '' || !existsAfter(/databases/$(database)/documents/studentLinks/$(resource.data.email)));
+          && oldAssignmentRemoved(resource.data,request.resource.data.emailHash);
+        allow delete: if teacher(owner) && oldAssignmentRemoved(resource.data,'');
         match /responses/{day} {
           allow read: if teacher(owner) || student(owner,id);
           allow create: if (teacher(owner) || student(owner,id))
             && exists(/databases/$(database)/documents/classes/$(owner)/students/$(id))
-            && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-            && request.resource.data.keys().hasOnly(['createdAt','localDate','items'])
-            && request.resource.data.localDate == day && request.resource.data.createdAt == request.time
-            && validItems(request.resource.data.items);
+            && exists(/databases/$(database)/documents/classes/$(owner)/keys/$('student_' + id))
+            && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && cipherOnly(request.resource.data,950000);
+          // Only legacy plaintext can be replaced, by its teacher, during migration.
+          allow update: if teacher(owner) && !('ciphertext' in resource.data) && cipherOnly(request.resource.data,950000);
           allow delete: if teacher(owner);
         }
       }
       match /questions/{id} {
         allow read: if member(owner);
-        allow create, update: if teacher(owner) && request.resource.data.keys().hasOnly(['id','prompt','position','fridayOnly'])
-          && request.resource.data.id == id && boundedText(request.resource.data.prompt,2000)
-          && request.resource.data.position is number && request.resource.data.fridayOnly is bool;
+        allow create, update: if teacher(owner) && cipherOnly(request.resource.data,16000);
         allow delete: if teacher(owner);
       }
       match /answers/{id} {
         allow read: if member(owner);
-        allow create, update: if teacher(owner) && request.resource.data.keys().hasOnly(['id','questionId','label','imageKey','position'])
-          && request.resource.data.id == id && boundedText(request.resource.data.label,300)
-          && request.resource.data.questionId is string && request.resource.data.position is number
-          && picture(request.resource.data.imageKey)
-          && existsAfter(/databases/$(database)/documents/classes/$(owner)/questions/$(request.resource.data.questionId));
+        allow create, update: if teacher(owner) && cipherOnly(request.resource.data,60000);
         allow delete: if teacher(owner);
       }
     }
