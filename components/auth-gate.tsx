@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { emailLookup } from '@/lib/encryption';
-import { clearReadCache } from '@/lib/read-cache';
+import { cachedRead, clearReadCache } from '@/lib/read-cache';
 import { LogIn, LoaderCircle, LogOut, Sprout } from 'lucide-react';
 import { auth, db, firebaseConfigured, googleSignIn, logOut, friendlyError } from '@/lib/firebase';
 import { normalizeEmail, resolveAccess, type Access } from '@/lib/model';
@@ -17,46 +17,41 @@ export function AuthGate() {
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     if (!auth || !db) return;
-    let stopRole = () => {};
     let generation = 0;
+    let identity: string | undefined;
     const stopAuth = onAuthStateChanged(auth, current => {
+      const nextIdentity = JSON.stringify([current?.uid, current?.email, current?.emailVerified]);
+      setUser(current);
+      // Token/User object refreshes for the same identity must not reload the class.
+      if (nextIdentity === identity) return;
+      identity = nextIdentity;
       const session = ++generation;
-      stopRole(); clearReadCache(); setAccess(null); setUser(current); setError('');
-      if (!current) { setLoading(false); return; }
+      setAccess(null); setError('');
+      if (!current) { clearReadCache(); setLoading(false); return; }
       if (!current.email || !current.emailVerified) {
-        setError('Use a Google account with a verified email address.'); setLoading(false); return;
+        clearReadCache(); setError('Use a Google account with a verified email address.'); setLoading(false); return;
       }
       setLoading(true);
-      void emailLookup(current.email).then(hash => {
+      const accountScope: Access = { role: 'teacher', ownerId: current.uid };
+      void cachedRead(accountScope, 'account-access', async () => {
+        const hash = await emailLookup(current.email!);
+        const [currentLink, legacyLink] = await Promise.all([
+          getDoc(doc(db!, 'studentAccess', hash)),
+          getDoc(doc(db!, 'studentLinks', normalizeEmail(current.email!))),
+        ]);
+        const assignment = (legacyLink.exists() ? legacyLink.data() : currentLink.data()) as { ownerId: string; studentId: string } | undefined;
+        return resolveAccess(current.uid, assignment);
+      }, Infinity).then(next => {
         if (session !== generation) return;
-        const currentRef = doc(db!, 'studentAccess', hash);
-        const legacyRef = doc(db!, 'studentLinks', normalizeEmail(current.email!));
-        type Link = { ownerId: string; studentId: string };
-        let currentLink: Link | null | undefined;
-        let legacyLink: Link | null | undefined;
-        let active = true;
-        let lastRole = '';
-        const fail = (err: unknown) => { if (active && session === generation) { lastRole = ''; clearReadCache(); setAccess(null); setError(friendlyError(err)); setLoading(false); } };
-        const refreshRole = () => {
-          if (!active || session !== generation || currentLink === undefined || legacyLink === undefined) return;
-          const next = resolveAccess(current.uid, legacyLink ?? currentLink ?? undefined);
-          const signature = JSON.stringify(next);
-          if (signature !== lastRole) { clearReadCache(); lastRole = signature; setAccess(next); }
-          setLoading(false); setError('');
-        };
-        // Use server-confirmed listener values instead of reading them again.
-        const stopCurrent = onSnapshot(currentRef, { includeMetadataChanges: true }, snapshot => {
-          if (snapshot.metadata.fromCache) return;
-          currentLink = snapshot.exists() ? snapshot.data() as Link : null; refreshRole();
-        }, fail);
-        const stopLegacy = onSnapshot(legacyRef, { includeMetadataChanges: true }, snapshot => {
-          if (snapshot.metadata.fromCache) return;
-          legacyLink = snapshot.exists() ? snapshot.data() as Link : null; refreshRole();
-        }, fail);
-        stopRole = () => { active = false; stopCurrent(); stopLegacy(); };
-      }).catch(err => { if (session === generation) { setError(friendlyError(err)); setLoading(false); } });
+        setAccess(next); setLoading(false);
+      }).catch(err => {
+        if (session !== generation) return;
+        setAccess(null); setError(friendlyError(err)); setLoading(false);
+      });
     });
-    return () => { generation++; stopRole(); stopAuth(); };
+    const refresh = () => { clearReadCache(); setLoading(true); setRetry(value => value + 1); };
+    window.addEventListener('wigs:refresh', refresh);
+    return () => { generation++; stopAuth(); window.removeEventListener('wigs:refresh', refresh); };
   }, [retry]);
   const login = async () => {
     setBusy(true); setError('');
@@ -71,7 +66,7 @@ export function AuthGate() {
     {loading ? <LoaderCircle className="spin" aria-label="Loading" /> : <>
       {!firebaseConfigured && <p role="status">WIGs sign-in is being set up. Please check back soon.</p>}
       {error && <p className="auth-error" role="alert">{error}</p>}
-      {user ? <><button onClick={() => { setError(''); setLoading(true); setRetry(v => v + 1); }}>Try again</button><button onClick={() => void logOut().catch(err => setError(friendlyError(err)))}><LogOut /> Use another account</button></> : <button className="google-sign-in" onClick={() => void login()} disabled={busy || !firebaseConfigured}>{busy ? <LoaderCircle className="spin" /> : <LogIn />} {busy ? 'Signing in…' : 'Sign in with Google'}</button>}
+      {user ? <><button onClick={() => { clearReadCache(); setError(''); setLoading(true); setRetry(v => v + 1); }}>Try again</button><button onClick={() => void logOut().catch(err => setError(friendlyError(err)))}><LogOut /> Use another account</button></> : <button className="google-sign-in" onClick={() => void login()} disabled={busy || !firebaseConfigured}>{busy ? <LoaderCircle className="spin" /> : <LogIn />} {busy ? 'Signing in…' : 'Sign in with Google'}</button>}
     </>}
   </section></main>;
 }

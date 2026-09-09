@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
-import { loadClass, changeClass, loadHistoryPage, type HistoryFilter, completedToday, submitResponse, refreshClassData } from '@/lib/class-store';
+import { loadClass, changeClass, loadHistoryPage, type HistoryFilter, completedToday, submitResponse } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
@@ -36,7 +36,6 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [isFriday, setIsFriday] = useState(false);
-  const [historyVersion, setHistoryVersion] = useState(0);
   const [saving, setSaving] = useState(false);
   const [checkingToday, setCheckingToday] = useState(false);
   const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
@@ -44,7 +43,6 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [error, setError] = useState('');
   const [adminOpen, setAdminOpen] = useState(false);
   const [surveyStarted, setSurveyStarted] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
     const next = await loadClass(access);
@@ -166,12 +164,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
           <img className="brand-mark brand-image" src="/wigs/favicon.png" alt="" /><span>WIGs</span>
         </button>
         <div className="account-controls"><span className="account-email">{email}</span>
-          {screen !== 'lead' && <button className="admin-launch" disabled={refreshing} aria-label="Refresh from server" title="Refresh changes from another device" onClick={async () => {
-            setRefreshing(true); setError(''); refreshClassData(access);
-            try { await refresh(); setHistoryVersion(value => value + 1); }
-            catch (err) { setError(friendlyError(err)); }
-            finally { setRefreshing(false); }
-          }}><RefreshCw className={refreshing ? 'spin' : ''} /></button>}
+          {screen !== 'lead' && <button className="admin-launch" aria-label="Refresh from server" title="Refresh account and changes from another device" onClick={() => window.dispatchEvent(new Event('wigs:refresh'))}><RefreshCw /></button>}
           {access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
       </header>
 
@@ -268,7 +261,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
       {screen === 'history' && selectedStudent && (
         <section className="page-section history-page page-enter">
           <div className="history-heading"><Database /><div><p className="eyebrow">Every check-in, together</p><h1>{selectedStudent.name}&apos;s history</h1></div></div>
-          <HistoryBrowser key={`${selectedStudent.id}:${historyVersion}`} access={access} students={[selectedStudent]} />
+          <HistoryBrowser key={selectedStudent.id} access={access} students={[selectedStudent]} />
         </section>
       )}
 

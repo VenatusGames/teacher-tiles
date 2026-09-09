@@ -3,10 +3,11 @@ import type { Access } from './model';
 
 // Tab-memory only. No decrypted data or keys are persisted to browser storage.
 const entries = new Map<string, { expires: number; value: Promise<unknown> }>();
-let account = auth?.currentUser;
-export function clearReadCache() { entries.clear(); account = auth?.currentUser; }
+const identity = () => JSON.stringify([auth?.currentUser?.uid, auth?.currentUser?.email, auth?.currentUser?.emailVerified]);
+let account = identity();
+export function clearReadCache() { entries.clear(); account = identity(); }
 function prefix(access: Access) {
-  if (account !== auth?.currentUser) clearReadCache();
+  if (account !== identity()) clearReadCache();
   return JSON.stringify([auth?.currentUser?.uid, access.ownerId, access.role, access.role === 'student' ? access.studentId : '']) + ':';
 }
 export function invalidateReads(access: Access, name: string) {
