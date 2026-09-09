@@ -16,7 +16,7 @@ const approved = new Set([
   'components/ui/input.tsx', 'components/ui/textarea.tsx',
   'env.d.ts', 'lib/utils.ts',
   'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml',
-  'public/favicon.svg', 'public/teacher-tiles.png',
+  'public/favicon.svg', 'public/favicon.png', 'public/teacher-tiles.png',
   'tests/model.mjs', 'tests/encryption.mjs', 'tests/firestore-rules.mjs', 'tests/public-source.mjs', 'tsconfig.json', 'vite.config.ts',
 ]);
 const files = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean).filter(existsSync))];
@@ -32,7 +32,7 @@ for (const file of files) {
   assert(approved.has(file), `Unreviewed public file: ${file}`);
   assert(!lstatSync(file).isSymbolicLink(), `Linked file is not allowed: ${file}`);
   const bytes = readFileSync(file);
-  if (file === 'public/teacher-tiles.png') {
+  if (file === 'public/teacher-tiles.png' || file === 'public/favicon.png') {
     assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
     let offset = 8;
     while (offset < bytes.length) {
