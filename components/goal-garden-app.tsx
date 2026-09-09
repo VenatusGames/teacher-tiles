@@ -2,7 +2,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
-  ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile, Sparkles,
+  ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile,
   Sprout, Target, Trash2, UserRound, RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -283,7 +283,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 }
 
 function LoadingScreen() {
-  return <main className="loading-screen"><div className="brand-mark"><Sparkles /></div><h1>WIGs</h1><LoaderCircle className="spin" /><p>Growing your dashboard…</p></main>;
+  return <main className="loading-screen"><img className="brand-mark brand-image" src="/wigs/favicon.png" alt="" /><h1>WIGs</h1><LoaderCircle className="spin" /><p>Growing your dashboard…</p></main>;
 }
 
 function ProfileImage({ student }: { student: Student }) {
@@ -320,6 +320,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
@@ -330,7 +331,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
     setError(''); setLoading(true);
     if (!filter.studentId) { setEntries([]); setHasMore(false); setLoading(false); return; }
     loadHistoryPage(access, { ...filter, after }).then(page => {
-      if (active) { setEntries(page.entries); setHasMore(page.hasMore); }
+      if (active) { setEntries(page.entries); setHasMore(page.hasMore); setNextCursor(page.nextCursor ?? page.entries.at(-1)?.id); }
     }).catch(err => { if (active) { setEntries([]); setHasMore(false); setError(friendlyError(err)); } })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -343,7 +344,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
   return (
     <div className="history-browser">
       <form className="history-filters" onSubmit={apply}>
-        {students.length > 1 && <label>Student<select aria-label="Student" value={draft.studentId} onChange={event => setDraft({ ...draft, studentId: event.target.value })}>{students.map(student => <option key={student.id} value={student.id}>{student.name}</option>)}</select></label>}
+        {(students.length > 1 || onDelete) && <label>Student<select aria-label="Student" value={draft.studentId} onChange={event => setDraft({ ...draft, studentId: event.target.value })}>{onDelete && <option value="all">All students</option>}{students.map(student => <option key={student.id} value={student.id}>{student.name}</option>)}</select></label>}
         <label>From<input type="date" value={draft.from} onChange={event => setDraft({ ...draft, from: event.target.value })} /></label>
         <label>Through<input type="date" value={draft.to} min={draft.from || undefined} onChange={event => setDraft({ ...draft, to: event.target.value })} /></label>
         <label>Order<select aria-label="Sort order" value={draft.order} onChange={event => setDraft({ ...draft, order: event.target.value as 'asc' | 'desc' })}><option value="desc">Newest first</option><option value="asc">Oldest first</option></select></label>
@@ -352,10 +353,10 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
       </form>
       {error && <p role="alert" className="history-feedback">{error} <button type="button" onClick={() => setRevision(value => value + 1)}>Try again</button></p>}
       {loading ? <p role="status" className="history-feedback">Loading check-ins…</p> : <>
-        <p className="history-summary" role="status">{students.find(student => student.id === filter.studentId)?.name ?? 'History'} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
+        <p className="history-summary" role="status">{filter.studentId === 'all' ? 'All students' : students.find(student => student.id === filter.studentId)?.name ?? 'History'} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
         {!entries.length && !error && <p className="history-feedback">{students.length ? 'No check-ins in this date range. Try different dates or another student.' : 'Add a student to start collecting check-ins.'}</p>}
         <div className="history-records">{entries.map(entry => <details className="history-record" key={`${entry.studentId}:${entry.id}`}>
-          <summary><span><strong>{formatDate(entry.createdAt)}</strong><small>{entry.items.length} answer{entry.items.length === 1 ? '' : 's'} · Select to view</small></span></summary>
+          <summary><span><strong>{filter.studentId === 'all' && <>{entry.studentName} · </>}{formatDate(entry.createdAt)}</strong><small>{entry.items.length} answer{entry.items.length === 1 ? '' : 's'} · Select to view</small></span></summary>
           <dl>{entry.items.map((item, index) => <div key={index}><dt>{item.question}</dt><dd><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</dd></div>)}</dl>
           {onDelete && <button type="button" className="history-remove" disabled={deleting} onClick={async () => {
             setDeleting(true);
@@ -368,7 +369,7 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
       <nav className="history-pagination" aria-label="History pages">
         <button type="button" disabled={loading || deleting || cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>Previous</button>
         <span>Page {cursors.length}</span>
-        <button type="button" disabled={loading || deleting || !hasMore || !entries.length} onClick={() => setCursors(previous => [...previous, entries[entries.length - 1].id])}>Next</button>
+        <button type="button" disabled={loading || deleting || !hasMore || !entries.length} onClick={() => setCursors(previous => [...previous, nextCursor])}>Next</button>
       </nav>
     </div>
   );

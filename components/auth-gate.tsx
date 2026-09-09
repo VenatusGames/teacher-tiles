@@ -3,7 +3,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { emailLookup } from '@/lib/encryption';
 import { cachedRead, clearReadCache } from '@/lib/read-cache';
-import { LogIn, LoaderCircle, LogOut, Sprout } from 'lucide-react';
+import { LogIn, LoaderCircle, LogOut } from 'lucide-react';
 import { auth, db, firebaseConfigured, googleSignIn, logOut, friendlyError } from '@/lib/firebase';
 import { normalizeEmail, resolveAccess, type Access } from '@/lib/model';
 import { GoalGardenApp } from './goal-garden-app';
@@ -60,7 +60,7 @@ export function AuthGate() {
   };
   if (user && access && !loading && !error) return <GoalGardenApp key={`${user.uid}:${access.ownerId}:${access.role === 'student' ? access.studentId : 'teacher'}`} access={access} email={user.email ?? ''} />;
   return <main className="auth-gate"><section className="auth-card" aria-labelledby="sign-in-title">
-    <span className="auth-mark"><Sprout /></span><p className="eyebrow">WIGs</p>
+    <img className="auth-mark brand-image" src="/wigs/favicon.png" alt="" /><p className="eyebrow">WIGs</p>
     <h1 id="sign-in-title">{loading ? 'Opening your WIGs…' : 'Sign in to continue'}</h1>
     <p>Use your Google account to open your class or your student profile.</p>
     {loading ? <LoaderCircle className="spin" aria-label="Loading" /> : <>

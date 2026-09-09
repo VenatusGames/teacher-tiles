@@ -221,7 +221,38 @@ assert.equal(page3.entries.length,6); assert(!page3.hasMore);
 const filtered=await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'});
 assert.deepEqual(filtered.entries.map(row=>row.id),['2025-01-05','2025-01-06','2025-01-07']);
 await assert.rejects(store.loadHistoryPage(student,{...filter,studentId:'other-student'}));
+await assert.rejects(store.loadHistoryPage(student,{...filter,studentId:'all'}), /Only your teacher/);
+await store.changeClass(teacher, { action: 'addStudent', name: 'Second synthetic child', email: '', imageKey: null });
+const secondChild = (await store.loadClass(teacher)).students.find(row => row.id !== child.id);
+const secondKey = await importKey(rows.get(classPath + '/keys/student_' + secondChild.id).keyMaterial);
+for (let day = 1; day <= 12; day++) {
+  const date = '2025-01-' + String(day).padStart(2, '0');
+  const path = classPath + '/students/' + secondChild.id + '/responses/' + date;
+  rows.set(path, await encryptRecord({ createdAt: date + 'T12:00:00.000Z', items: [] }, secondKey, path));
+}
+for (const order of ['asc', 'desc']) {
+  const allFilter = { studentId: 'all', from: '', to: '', order };
+  const beforeAll = reads;
+  const first = await store.loadHistoryPage(teacher, allFilter);
+  assert(reads - beforeAll <= 12, 'All-student first page reads at most one candidate per student plus ten replacements');
+  const warmReads = reads;
+  await store.loadHistoryPage(teacher, allFilter);
+  assert.equal(reads, warmReads, 'Reopening all-student history must reuse cached candidates');
+  let page = first;
+  const entries = [...page.entries];
+  while (page.hasMore) {
+    page = await store.loadHistoryPage(teacher, { ...allFilter, after: page.nextCursor });
+    entries.push(...page.entries);
+    assert(entries.length <= 38, 'Pagination must advance');
+  }
+  assert.equal(entries.length, 38);
+  assert.equal(new Set(entries.map(row => row.studentId + ':' + row.id)).size, 38, 'Same-day records cannot be skipped or duplicated');
+  assert.deepEqual(entries.map(row => row.id), entries.map(row => row.id).sort((a,b) => (order === 'asc' ? 1 : -1) * a.localeCompare(b)));
+}
+const allRange = { studentId: 'all', from: '2025-01-06', to: '2025-01-06', order: 'asc' };
+assert.equal((await store.loadHistoryPage(teacher, allRange)).entries.length, 2);
 await store.changeClass(teacher,{action:'deleteResponse',studentId:child.id,id:'2025-01-06'});
+assert.equal((await store.loadHistoryPage(teacher, allRange)).entries.length, 1, 'Deleting a check-in invalidates all-student candidates');
 assert.equal((await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'})).entries.length,2);
 await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
 assert(!rows.has(childPath));

@@ -247,7 +247,8 @@ export async function loadHistory(access: Access, studentId?: string): Promise<H
   return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };
-export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean }> {
+export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean; nextCursor?: string }> {
+  if (filter.studentId === 'all') return loadAllHistoryPage(access, filter);
   const ref = studentRef(access, filter.studentId);
   for (const day of [filter.from, filter.to, filter.after]) if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('Choose valid dates.');
   if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
@@ -265,6 +266,44 @@ export async function loadHistoryPage(access: Access, filter: HistoryFilter): Pr
   return { hasMore: rows.docs.length > 10, entries: await Promise.all(rows.docs.slice(0, 10).map(async row => ({
     ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: profile.id, studentName: profile.name,
   }))) };
+}
+
+// Merge one candidate per student instead of fetching a full page per student.
+// Per-student cursors keep same-day check-ins distinct across page boundaries.
+async function loadAllHistoryPage(access: Access, filter: HistoryFilter) {
+  requireTeacher(access);
+  for (const day of [filter.from, filter.to]) if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('Choose valid dates.');
+  if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
+  if (!['asc', 'desc'].includes(filter.order)) throw new Error('Choose a valid sort order.');
+  const positions: Record<string, string> = filter.after ? JSON.parse(filter.after) : {};
+  if (!positions || typeof positions !== 'object' || Array.isArray(positions) || Object.values(positions).some(day => typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day))) throw new Error('Invalid history page. Reset the filters.');
+  const students = (await loadClass(access)).students;
+  const head = async (profile: Student) => {
+    const after = positions[profile.id];
+    const constraints: QueryConstraint[] = [orderBy(documentId(), filter.order)];
+    if (filter.from) constraints.push(where(documentId(), '>=', filter.from));
+    if (filter.to) constraints.push(where(documentId(), '<=', filter.to));
+    if (after) constraints.push(startAfter(after));
+    constraints.push(limit(1));
+    const rows = await cachedRead(access, 'history:' + profile.id + ':page:head:' + JSON.stringify([filter.from, filter.to, filter.order, after]), () => getDocs(query(collection(studentRef(access, profile.id), 'responses'), ...constraints)), Infinity);
+    return { profile, row: rows.docs[0] };
+  };
+  const candidates = await Promise.all(students.map(head));
+  const entries: HistoryEntry[] = [];
+  while (entries.length < 10) {
+    candidates.sort((a, b) => {
+      if (!a.row) return b.row ? 1 : 0;
+      if (!b.row) return -1;
+      return (filter.order === 'asc' ? 1 : -1) * a.row.id.localeCompare(b.row.id) || a.profile.id.localeCompare(b.profile.id);
+    });
+    const candidate = candidates[0];
+    if (!candidate?.row) break;
+    const { profile, row } = candidate;
+    entries.push({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, await classKey(access, profile.id)), id: row.id, studentId: profile.id, studentName: profile.name });
+    positions[profile.id] = row.id;
+    candidates[0] = await head(profile);
+  }
+  return { entries, hasMore: candidates.some(candidate => candidate.row), nextCursor: JSON.stringify(positions) };
 }
 export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string, string>) {
   const active = data.questions.filter(q => !q.fridayOnly || new Date().getDay() === 5);
