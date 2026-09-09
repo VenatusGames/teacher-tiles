@@ -52,6 +52,10 @@ jobs:
           mkdir _site/sandbox
           git archive origin/sandbox | tar -x -C _site/sandbox
           mkdir _site/wigs
+          if git cat-file -e origin/wigs:package.json 2>/dev/null; then
+            echo 'Wig Tracker requires a server deployment. Refusing to publish application source through Pages.' >&2
+            exit 1
+          fi
           git archive origin/wigs | tar -x -C _site/wigs
           {
             echo '### Deployment sources'
