@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot, runTransaction } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { emailLookup } from '@/lib/encryption';
+import { clearReadCache } from '@/lib/read-cache';
 import { LogIn, LoaderCircle, LogOut, Sprout } from 'lucide-react';
 import { auth, db, firebaseConfigured, googleSignIn, logOut, friendlyError } from '@/lib/firebase';
 import { normalizeEmail, resolveAccess, type Access } from '@/lib/model';
@@ -20,7 +21,7 @@ export function AuthGate() {
     let generation = 0;
     const stopAuth = onAuthStateChanged(auth, current => {
       const session = ++generation;
-      stopRole(); setAccess(null); setUser(current); setError('');
+      stopRole(); clearReadCache(); setAccess(null); setUser(current); setError('');
       if (!current) { setLoading(false); return; }
       if (!current.email || !current.emailVerified) {
         setError('Use a Google account with a verified email address.'); setLoading(false); return;
@@ -30,23 +31,29 @@ export function AuthGate() {
         if (session !== generation) return;
         const currentRef = doc(db!, 'studentAccess', hash);
         const legacyRef = doc(db!, 'studentLinks', normalizeEmail(current.email!));
-        let revision = 0;
-        const fail = (err: unknown) => { if (session === generation) { setAccess(null); setError(friendlyError(err)); setLoading(false); } };
+        type Link = { ownerId: string; studentId: string };
+        let currentLink: Link | null | undefined;
+        let legacyLink: Link | null | undefined;
+        let active = true;
+        let lastRole = '';
+        const fail = (err: unknown) => { if (active && session === generation) { lastRole = ''; clearReadCache(); setAccess(null); setError(friendlyError(err)); setLoading(false); } };
         const refreshRole = () => {
-          const request = ++revision;
-          // Read both assignments consistently during the atomic legacy migration.
-          void runTransaction(db!, async tx => {
-            const currentLink = await tx.get(currentRef);
-            const legacyLink = await tx.get(legacyRef);
-            return (legacyLink.exists() ? legacyLink.data() : currentLink.data()) as { ownerId: string; studentId: string } | undefined;
-          }).then(data => {
-            if (session !== generation || request !== revision) return;
-            setAccess(resolveAccess(current.uid, data)); setLoading(false); setError('');
-          }).catch(err => { if (request === revision) fail(err); });
+          if (!active || session !== generation || currentLink === undefined || legacyLink === undefined) return;
+          const next = resolveAccess(current.uid, legacyLink ?? currentLink ?? undefined);
+          const signature = JSON.stringify(next);
+          if (signature !== lastRole) { clearReadCache(); lastRole = signature; setAccess(next); }
+          setLoading(false); setError('');
         };
-        const stopCurrent = onSnapshot(currentRef, refreshRole, fail);
-        const stopLegacy = onSnapshot(legacyRef, refreshRole, fail);
-        stopRole = () => { revision++; stopCurrent(); stopLegacy(); };
+        // Use server-confirmed listener values instead of reading them again.
+        const stopCurrent = onSnapshot(currentRef, { includeMetadataChanges: true }, snapshot => {
+          if (snapshot.metadata.fromCache) return;
+          currentLink = snapshot.exists() ? snapshot.data() as Link : null; refreshRole();
+        }, fail);
+        const stopLegacy = onSnapshot(legacyRef, { includeMetadataChanges: true }, snapshot => {
+          if (snapshot.metadata.fromCache) return;
+          legacyLink = snapshot.exists() ? snapshot.data() as Link : null; refreshRole();
+        }, fail);
+        stopRole = () => { active = false; stopCurrent(); stopLegacy(); };
       }).catch(err => { if (session === generation) { setError(friendlyError(err)); setLoading(false); } });
     });
     return () => { generation++; stopRole(); stopAuth(); };

@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs, runTransaction, writeBatch, deleteDoc
 import { auth, requireDb } from './firebase';
 import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
+import { cachedRead, invalidateReads } from './read-cache';
 import { emptyData, localDate, normalizeEmail, personalize, type Access, type AppData, type Student, type Question, type Answer, type HistoryEntry } from './model';
 
 const root = (access: Access) => doc(requireDb(), 'classes', access.ownerId);
@@ -28,9 +29,8 @@ const sorted = <T extends { position: number }>(rows: T[]) => rows.sort((a, b) =
 
 // Full replacements remove plaintext. Transactions re-read their sources.
 // Encrypt the root last so an interrupted migration resumes on the next load.
-async function prepareClass(access: Access) {
+async function prepareClass(access: Access, initial: DocumentSnapshot) {
   requireTeacher(access);
-  const initial = await getDoc(root(access));
   if (initial.exists() && isEncrypted(initial.data())) return;
   const [questions, answers, students] = await Promise.all([
     getDocs(records(access, 'questions')), getDocs(records(access, 'answers')), getDocs(records(access, 'students')),
@@ -86,14 +86,18 @@ async function prepareClass(access: Access) {
 }
 
 export async function loadClass(access: Access): Promise<AppData> {
-  if (access.role === 'teacher') await prepareClass(access);
-  const settings = await getDoc(root(access));
+  let settings = await cachedRead(access, 'settings', () => getDoc(root(access)));
+  if (access.role === 'teacher' && (!settings.exists() || !isEncrypted(settings.data()))) {
+    try { await cachedRead(access, 'migration', () => prepareClass(access, settings)); }
+    finally { invalidateReads(access, 'settings'); invalidateReads(access, 'migration'); }
+    settings = await cachedRead(access, 'settings', () => getDoc(root(access)));
+  }
   if (!settings.exists()) throw new Error('Your class is no longer available. Contact your teacher.');
   if (!isEncrypted(settings.data())) throw new Error('Your teacher needs to open the updated app once to finish protecting this class.');
   const shared = await classKey(access);
   const [studentRows, questionRows, answerRows] = await Promise.all([
-    access.role === 'student' ? getDoc(record(access, 'students', access.studentId)).then(s => [s]) : getDocs(records(access, 'students')).then(s => s.docs),
-    getDocs(records(access, 'questions')), getDocs(records(access, 'answers')),
+    cachedRead(access, 'students', () => access.role === 'student' ? getDoc(record(access, 'students', access.studentId)).then(s => [s]) : getDocs(records(access, 'students')).then(s => s.docs)),
+    cachedRead(access, 'questions', () => getDocs(records(access, 'questions'))), cachedRead(access, 'answers', () => getDocs(records(access, 'answers'))),
   ]);
   const students = await Promise.all(studentRows.map(async s => ({ ...await read<Student>(s, await classKey(access, s.id)), id: s.id })));
   return { settings: await read<AppData['settings']>(settings, shared), students: students.sort((a, b) => a.name.localeCompare(b.name)),
@@ -120,7 +124,7 @@ async function saveStudent(access: Access, id: string, values: Partial<Student>,
     }
     if (oldHash && oldHash !== hash) tx.delete(link(oldHash));
     tx.set(ref, { ...await encryptRecord(next, key, ref.path), emailHash: hash });
-    if (hash) tx.set(link(hash), { ownerId: access.ownerId, studentId: id });
+    if (hash && hash !== oldHash) tx.set(link(hash), { ownerId: access.ownerId, studentId: id });
   });
 }
 async function editRecord(ref: DocumentReference, key: CryptoKey, values: Record<string, unknown>) {
@@ -131,6 +135,17 @@ async function editRecord(ref: DocumentReference, key: CryptoKey, values: Record
   });
 }
 export async function changeClass(access: Access, body: Record<string, unknown>) {
+  try { return await performChange(access, body); }
+  finally {
+    const action = String(body.action);
+    if (action === 'saveSettings') invalidateReads(access, 'settings');
+    if (action.toLowerCase().includes('student')) invalidateReads(access, 'students');
+    if (action.toLowerCase().includes('question')) invalidateReads(access, 'questions');
+    if (action.toLowerCase().includes('answer') || action === 'deleteQuestion') invalidateReads(access, 'answers');
+    if (action === 'deleteStudent' || action === 'deleteResponse') invalidateReads(access, 'history:' + String(body.studentId ?? body.id) + ':');
+  }
+}
+async function performChange(access: Access, body: Record<string, unknown>) {
   requireTeacher(access);
   const id = String(body.id ?? '');
   const ref = record(access, 'students', id || 'unused');
@@ -184,12 +199,12 @@ export async function completedToday(access: Access, id: string) {
   return (await getDoc(doc(studentRef(access, id), 'responses', localDate()))).exists();
 }
 export async function loadHistory(access: Access, studentId?: string): Promise<HistoryEntry[]> {
-  const students = studentId ? [await getDoc(studentRef(access, studentId))] : access.role === 'student' ? [await getDoc(studentRef(access, access.studentId))] : (await getDocs(records(access, 'students'))).docs;
+  if (studentId) studentRef(access, studentId);
+  const students = (await loadClass(access)).students.filter(student => !studentId || student.id === studentId);
   const history = await Promise.all(students.map(async student => {
-    if (!student.exists()) return [];
-    const key = await classKey(access, student.id); const profile = await read<Student>(student, key);
-    const rows = await getDocs(collection(student.ref, 'responses'));
-    return Promise.all(rows.docs.map(async row => ({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: student.id, studentName: profile.name })));
+    const key = await classKey(access, student.id);
+    const rows = await cachedRead(access, 'history:' + student.id + ':rows', () => getDocs(collection(studentRef(access, student.id), 'responses')));
+    return Promise.all(rows.docs.map(async row => ({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: student.id, studentName: student.name })));
   }));
   return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
@@ -200,4 +215,5 @@ export async function submitResponse(access: Access, student: Student, data: App
   const ref = doc(studentRef(access, student.id), 'responses', localDate());
   const payload = await encryptRecord({ createdAt: new Date().toISOString(), items }, await classKey(access, student.id), ref.path);
   await runTransaction(requireDb(), async tx => { if ((await tx.get(ref)).exists()) throw new Error('You already completed today’s check-in.'); tx.set(ref, payload); });
+  invalidateReads(access, 'history:' + student.id + ':');
 }

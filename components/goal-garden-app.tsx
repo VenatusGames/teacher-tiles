@@ -349,7 +349,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
     let active = true;
     if (tab === 'history') loadHistory(access).then(history => { if (active) setAdminHistory(history); }).catch(err => { if (active) { setSuccessNotice(false); setMessage(friendlyError(err)); } });
     return () => { active = false; };
-  }, [tab, data, access]);
+  }, [tab, access]);
 
   const action = async (body: Record<string, unknown>, success = 'Saved!') => {
     setBusy(true); setMessage(''); setSuccessNotice(false);

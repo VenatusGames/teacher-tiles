@@ -33,6 +33,12 @@ After publishing the new rules and app, each teacher must open their class once.
 
 The local encryption tests use real Web Crypto and an in-memory Firestore adapter; they do not prove deployed rule enforcement. The separate emulator suite covers rule enforcement, student key isolation, plaintext rejection, assignment changes, and migration. Run that suite before production rollout. Verify the live rules and inspect the converted class after deployment; a local build does not encrypt existing server data.
 
+## Firestore usage
+
+Immutable encryption keys are reused in tab memory for the current account and role. Class sections and history reads are reused for up to 30 seconds, with simultaneous requests sharing the same pending read. Local writes invalidate only affected sections; changes from another device may take up to that cache window to appear on a subsequent load. Account/role changes and sign-out clear cached records and keys. Nothing is added to persistent browser storage.
+
+The two assignment listeners remain active to enforce account routing and legacy migration. Their server-confirmed results are consumed directly, without duplicate transaction reads or reloading the class when the role is unchanged. Editing a student's profile no longer rewrites an unchanged email assignment. Opening history still reads the requested history on its first load; large histories and the initial encryption migration can generate substantial usage. Security-rule dependent reads also contribute to Firestore usage and are not included in the local request-count tests.
+
 ## Accounts and permissions
 
 Google sign-in is required. The Google pop-up opens from the Sign in button because browsers require a user gesture; dismissing it never grants access. Authentication lasts for the tab's browser session. WIGs uses a named Firebase app and memory-only Firestore caching.

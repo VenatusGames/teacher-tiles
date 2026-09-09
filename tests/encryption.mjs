@@ -45,20 +45,22 @@ const snapshot = reference => {
   return { ref: reference, id: reference.id, exists: () => value !== undefined, data: () => value };
 };
 let commits = 0, failAt = -1;
+let reads = 0, writeCount = 0;
 const firestore = {
   doc: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   collection: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
-  getDoc: async reference => snapshot(reference),
-  getDocs: async reference => ({ docs: [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path))) }),
+  getDoc: async reference => { reads++; return snapshot(reference); },
+  getDocs: async reference => { const docs = [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path))); reads += Math.max(1, docs.length); return { docs }; },
   deleteDoc: async reference => { rows.delete(reference.path); },
   runTransaction: async (_db, fn) => {
     const writes = [];
     const result = await fn({
-      get: async reference => snapshot(reference),
+      get: async reference => { reads++; return snapshot(reference); },
       set: (reference, data) => { writes.push(() => rows.set(reference.path, data)); },
       delete: reference => { writes.push(() => rows.delete(reference.path)); },
     });
     if (++commits === failAt) throw new Error('Simulated interruption');
+    writeCount += writes.length;
     for (const write of writes) write();
     return result;
   },
@@ -72,9 +74,28 @@ globalThis.encryptionHarness = { firestore, auth };
 const firestoreUrl = moduleUrl('export const { doc, collection, getDoc, getDocs, runTransaction, writeBatch, deleteDoc } = globalThis.encryptionHarness.firestore;');
 const firebaseUrl = moduleUrl('export const auth = globalThis.encryptionHarness.auth; export const requireDb = () => ({});');
 const modelUrl = compile('lib/model.ts');
-const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl });
-const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl }));
+const cacheUrl = compile('lib/read-cache.ts', { './firebase': firebaseUrl });
+const cache = await import(cacheUrl);
+const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
+const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl, './read-cache': cacheUrl }));
 const teacher = { role: 'teacher', ownerId: auth.currentUser.uid };
+let cacheLoads = 0;
+await Promise.all([cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads), cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads)]);
+assert.equal(cacheLoads, 1);
+cache.invalidateReads(teacher, 'test:');
+await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
+assert.equal(cacheLoads, 2);
+await cache.cachedRead(teacher, 'test:expiry', async () => ++cacheLoads, -1);
+await cache.cachedRead(teacher, 'test:expiry', async () => ++cacheLoads, -1);
+assert.equal(cacheLoads, 4);
+await assert.rejects(cache.cachedRead(teacher, 'test:retry', async () => { throw new Error('Temporary failure'); }));
+assert.equal(await cache.cachedRead(teacher, 'test:retry', async () => 'recovered'), 'recovered');
+const originalAccount = auth.currentUser;
+auth.currentUser = { uid: 'different-account', email: address('different') };
+await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
+assert.equal(cacheLoads, 5, 'Another account must not reuse cached records');
+auth.currentUser = originalAccount;
+cache.clearReadCache();
 const classPath = 'classes/' + teacher.ownerId;
 let data = await store.loadClass(teacher);
 assert.equal(data.students.length, 0);
@@ -100,6 +121,18 @@ assert.equal(data.students[0].currentScore, 2);
 assert.equal(data.students[0].name, 'Updated synthetic child');
 assert.equal(data.students[0].imageKey, 'preset:yes');
 assert.equal(data.settings.title, 'Encrypted title');
+const warmReads = reads;
+await Promise.all([store.loadClass(teacher), store.loadClass(teacher)]);
+assert.equal(reads, warmReads, 'Repeated class loads must reuse memory reads');
+const beforeToggleReads = reads, beforeToggleWrites = writeCount;
+await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: true });
+assert.equal((await store.loadClass(teacher)).questions[0].fridayOnly, true);
+assert.equal(reads - beforeToggleReads, 2, 'Toggle reads only its transaction record and changed question collection');
+assert.equal(writeCount - beforeToggleWrites, 1);
+await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: false });
+const beforeNameWrites = writeCount;
+await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Updated synthetic child' });
+assert.equal(writeCount - beforeNameWrites, 1, 'Profile edits must not rewrite unchanged email assignments');
 const student = { role: 'student', ownerId: teacher.ownerId, studentId: child.id };
 auth.currentUser = { uid: 'child-user', email: address('child') };
 assert.equal((await store.loadClass(student)).students.length, 1);
@@ -110,6 +143,9 @@ assert(await store.completedToday(student, child.id));
 await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'starter-1' }), /already completed/);
 const history = await store.loadHistory(student);
 assert.equal(history[0].items[0].answer, 'On My Way');
+const historyReads = reads;
+await store.loadHistory(student);
+assert.equal(reads, historyReads, 'Repeated history opens must reuse memory reads');
 assert(!JSON.stringify([...rows]).includes('On My Way'));
 auth.currentUser = { uid: teacher.ownerId, email: address('teacher') };
 await store.changeClass(teacher, { action: 'updateStudentEmail', id: child.id, email: address('replacement') });
@@ -131,6 +167,7 @@ assert(!rows.has('studentAccess/' + await emailLookup(address('replacement'))));
 // Legacy migration preserves names, scores, pictures, email, and response times,
 // removes all old readable fields/paths, and can safely resume after interruption.
 rows.clear();
+cache.clearReadCache();
 rows.set(classPath, { ownerId: teacher.ownerId, title: 'Legacy class', description: 'Legacy description', createdAt: {} });
 rows.set(classPath + '/questions/q', { id: 'q', prompt: 'Legacy question', position: 1, fridayOnly: false });
 rows.set(classPath + '/answers/a', { id: 'a', questionId: 'q', label: 'Legacy answer', imageKey: 'preset:yes', position: 1 });
@@ -158,8 +195,9 @@ const before = JSON.stringify([...rows]);
 await store.loadClass(teacher);
 assert.equal(JSON.stringify([...rows]), before);
 rows.delete(classPath + '/keys/shared');
+cache.clearReadCache();
 const missingKeyState = JSON.stringify([...rows]);
 await assert.rejects(store.loadClass(teacher), /encryption key is unavailable/);
 assert.equal(JSON.stringify([...rows]), missingKeyState);
 delete globalThis.encryptionHarness;
-console.log('Encryption round trips, tamper rejection, key separation, encrypted CRUD, and resumable legacy migration passed.');
+console.log('Encryption, migration, cache isolation/expiry, and read-count regressions passed (warm Friday toggle: 2 document reads, 1 write; repeated warm class/history loads: 0 reads). Counts exclude server rule evaluation.');

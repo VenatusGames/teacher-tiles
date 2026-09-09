@@ -2,6 +2,7 @@ import { doc, getDoc, runTransaction } from 'firebase/firestore';
 import { auth, requireDb } from './firebase';
 import { importKey, toBase64 } from './encryption';
 import type { Access } from './model';
+import { cachedRead } from './read-cache';
 
 export const keyReference = (access: Access, studentId?: string) => doc(requireDb(), 'classes', access.ownerId, 'keys', studentId ? `student_${studentId}` : 'shared');
 
@@ -9,6 +10,9 @@ export const keyReference = (access: Access, studentId?: string) => doc(requireD
 // Never regenerate a missing key for records which are already encrypted.
 export async function classKey(access: Access, studentId?: string, allowCreate = false): Promise<CryptoKey> {
   if (access.role === 'student' && studentId && access.studentId !== studentId) throw new Error('You can only access your own profile.');
+  return cachedRead(access, 'key:' + (studentId ?? 'shared'), () => fetchKey(access, studentId, allowCreate), Infinity);
+}
+async function fetchKey(access: Access, studentId?: string, allowCreate = false): Promise<CryptoKey> {
   const ref = keyReference(access, studentId);
   let stored = (await getDoc(ref)).data();
   if (!stored && allowCreate && access.role === 'teacher' && access.ownerId === auth?.currentUser?.uid) {
