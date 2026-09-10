@@ -7,7 +7,7 @@ const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https")
 const { defineSecret } = require("firebase-functions/params");
 const { logger } = require("firebase-functions");
 const Stripe = require("stripe");
-const { COIN_PACKS, COSMETIC_PRODUCTS } = require("./catalog");
+const { COIN_PACKS, COSMETIC_PRODUCTS, SUBSCRIPTION_PRICES } = require("./catalog");
 
 initializeApp();
 
@@ -36,6 +36,10 @@ function publicAccount(data = {}) {
   };
 }
 
+function isSubscriptionActive(data = {}) {
+  return data.subscriptionStatus === "active" || data.subscriptionStatus === "trialing";
+}
+
 async function ensureAccount(uid) {
   const ref = accountRef(uid);
   await db.runTransaction(async transaction => {
@@ -44,6 +48,8 @@ async function ensureAccount(uid) {
       transaction.create(ref, {
         coinBalance: 0,
         ownedProductIds: [],
+        subscriptionStatus: "inactive",
+        subscriptionId: null,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       });
@@ -95,6 +101,21 @@ function stripeClient() {
 exports.getShopAccount = onCall({ region: REGION }, async request => {
   const uid = requireUser(request);
   return publicAccount((await ensureAccount(uid)).data());
+});
+
+exports.getSubscriptionStatus = onCall({ region: REGION }, async request => {
+  const uid = requireUser(request);
+  const snapshot = await accountRef(uid).get();
+  const data = snapshot.data() || {};
+  
+  return {
+    isActive: data.subscriptionStatus === "active",
+    status: data.subscriptionStatus || "inactive",
+    subscriptionId: data.subscriptionId || null,
+    currentPeriodEnd: data.subscriptionCurrentPeriodEnd ? data.subscriptionCurrentPeriodEnd.toDate?.() : null,
+    startedAt: data.subscriptionStartedAt ? data.subscriptionStartedAt.toDate?.() : null,
+    cancelledAt: data.subscriptionCancelledAt ? data.subscriptionCancelledAt.toDate?.() : null
+  };
 });
 
 exports.createCoinCheckoutSession = onCall(
@@ -152,6 +173,46 @@ exports.createCoinCheckoutSession = onCall(
   }
 );
 
+exports.createSubscriptionCheckoutSession = onCall(
+  { region: REGION, secrets: [stripeSecretKey] },
+  async request => {
+    const uid = requireUser(request);
+    const priceId = String(request.data?.priceId || "");
+    const price = SUBSCRIPTION_PRICES[priceId];
+    if (!price) throw new HttpsError("invalid-argument", "Choose a valid subscription plan.");
+
+    const returnUrl = validatedReturnUrl(request.data?.returnUrl);
+    const successUrl = new URL(returnUrl.href);
+    const cancelUrl = new URL(returnUrl.href);
+    successUrl.searchParams.set("tt_checkout", "success");
+    cancelUrl.searchParams.set("tt_checkout", "cancelled");
+
+    try {
+      const session = await stripeClient().checkout.sessions.create({
+        mode: "subscription",
+        client_reference_id: uid,
+        customer_email: request.auth.token.email || undefined,
+        success_url: successUrl.href,
+        cancel_url: cancelUrl.href,
+        line_items: [{
+          price: priceId,
+          quantity: 1
+        }],
+        metadata: {
+          purpose: "teachertiles_subscription",
+          firebaseUid: uid,
+          priceId: priceId
+        }
+      });
+      if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+      return { url: session.url };
+    } catch (error) {
+      logger.error("Could not create Stripe Subscription Checkout Session", { uid, priceId, error });
+      throw new HttpsError("internal", "Subscription checkout could not be started. Please try again.");
+    }
+  }
+);
+
 async function fulfillCoinCheckout(session, eventId) {
   if (session.metadata?.purpose !== "teachertiles_coin_pack") return;
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
@@ -202,6 +263,60 @@ async function fulfillCoinCheckout(session, eventId) {
   });
 }
 
+async function handleSubscriptionCreated(subscription) {
+  const uid = subscription.metadata?.firebaseUid || subscription.client_reference_id;
+  if (!uid) {
+    logger.error("Subscription created without Firebase UID", { subscriptionId: subscription.id });
+    return;
+  }
+
+  const userRef = accountRef(uid);
+  await userRef.set({
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+    subscriptionPriceId: subscription.items.data[0]?.price?.id || null,
+    subscriptionStartedAt: new Date(subscription.created * 1000),
+    subscriptionCurrentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
+    updatedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  logger.info("Subscription created", { uid, subscriptionId: subscription.id, status: subscription.status });
+}
+
+async function handleSubscriptionUpdated(subscription) {
+  const uid = subscription.metadata?.firebaseUid || subscription.client_reference_id;
+  if (!uid) {
+    logger.error("Subscription updated without Firebase UID", { subscriptionId: subscription.id });
+    return;
+  }
+
+  const userRef = accountRef(uid);
+  await userRef.set({
+    subscriptionStatus: subscription.status,
+    subscriptionCurrentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
+    updatedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  logger.info("Subscription updated", { uid, subscriptionId: subscription.id, status: subscription.status });
+}
+
+async function handleSubscriptionCancelled(subscription) {
+  const uid = subscription.metadata?.firebaseUid || subscription.client_reference_id;
+  if (!uid) {
+    logger.error("Subscription cancelled without Firebase UID", { subscriptionId: subscription.id });
+    return;
+  }
+
+  const userRef = accountRef(uid);
+  await userRef.set({
+    subscriptionStatus: "cancelled",
+    subscriptionCancelledAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  logger.info("Subscription cancelled", { uid, subscriptionId: subscription.id });
+}
+
 exports.stripeWebhook = onRequest(
   { region: REGION, secrets: [stripeSecretKey, stripeWebhookSecret], cors: false },
   async (request, response) => {
@@ -216,15 +331,28 @@ exports.stripeWebhook = onRequest(
       if (!signature) throw new Error("Missing Stripe-Signature header.");
       event = stripeClient().webhooks.constructEvent(request.rawBody, signature, stripeWebhookSecret.value());
     } catch (error) {
-      logger.warn("Stripe webhook signature verification failed", { message: error.message });
+      logger.error("Stripe webhook signature verification failed", { message: error.message });
       response.status(400).send("Invalid webhook signature");
       return;
     }
 
     try {
+      // Handle coin checkout events
       if (["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type)) {
         await fulfillCoinCheckout(event.data.object, event.id);
       }
+
+      // Handle subscription events
+      if (event.type === "customer.subscription.created") {
+        await handleSubscriptionCreated(event.data.object);
+      }
+      if (event.type === "customer.subscription.updated") {
+        await handleSubscriptionUpdated(event.data.object);
+      }
+      if (event.type === "customer.subscription.deleted") {
+        await handleSubscriptionCancelled(event.data.object);
+      }
+
       response.status(200).json({ received: true });
     } catch (error) {
       logger.error("Stripe webhook fulfillment failed", { eventId: event.id, type: event.type, error: JSON.stringify(error, Object.getOwnPropertyNames(error)) });
@@ -361,3 +489,37 @@ exports.generateCoinCode = onCall({ region: REGION }, async request => {
   }
   throw new HttpsError("internal", "A unique code could not be generated. Try again.");
 });
+
+exports.createBillingPortalSession = onCall(
+  { region: REGION, secrets: [stripeSecretKey] },
+  async request => {
+    const uid = requireUser(request);
+    const returnUrl = validatedReturnUrl(request.data?.returnUrl);
+
+    try {
+      const userSnapshot = await accountRef(uid).get();
+      const userData = userSnapshot.data() || {};
+      
+      if (!userData.subscriptionId) {
+        throw new HttpsError("failed-precondition", "No active subscription found.");
+      }
+
+      // Get the customer ID from Stripe by looking up the subscription
+      const subscription = await stripeClient().subscriptions.retrieve(userData.subscriptionId);
+      const customerId = subscription.customer;
+
+      // Create a billing portal session
+      const portalSession = await stripeClient().billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl.href
+      });
+
+      if (!portalSession.url) throw new Error("Stripe did not return a portal URL.");
+      return { url: portalSession.url };
+    } catch (error) {
+      logger.error("Could not create billing portal session", { uid, error });
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError("internal", "Could not open billing portal. Please try again.");
+    }
+  }
+);

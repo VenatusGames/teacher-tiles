@@ -29,6 +29,10 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if false;
 
+      allow read: if ownsUserData(uid) && (
+        request.query.limit <= 1
+      );
+
       match /private/{documentId} {
         allow read, write: if ownsUserData(uid);
       }

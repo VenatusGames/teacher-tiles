@@ -7,6 +7,14 @@ const COIN_PACKS = Object.freeze({
   "coins-7000": Object.freeze({ coins: 7000, unitAmount: 4999, name: "7,000 TeacherTiles Coins" })
 });
 
+const SUBSCRIPTION_PRICES = Object.freeze({
+  "price_1QnNhBFyVLw2TkX5g5h6i7j8": Object.freeze({
+    productId: "prod_VAGZHkXLwpIfYv",
+    name: "TeacherTiles Subscription",
+    description: "A monthly membership to support the development of TeacherTiles and receive some in-app perks."
+  })
+});
+
 const COSMETIC_PRODUCTS = Object.freeze({
   "tile-skin-dice-clear": Object.freeze({ price: 250, name: "No Background Dice" }),
   "theme-pastel": Object.freeze({ price: 250, name: "Pastel Theme Pack" }),
@@ -41,4 +49,4 @@ const COSMETIC_PRODUCTS = Object.freeze({
   "tile-skin-timer-freestanding": Object.freeze({ price: 250, name: "Freestanding Visual Timer" })
 });
 
-module.exports = { COIN_PACKS, COSMETIC_PRODUCTS };
+module.exports = { COIN_PACKS, COSMETIC_PRODUCTS, SUBSCRIPTION_PRICES };

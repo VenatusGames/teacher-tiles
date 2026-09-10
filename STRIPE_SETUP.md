@@ -52,6 +52,9 @@ Subscribe it to:
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
 
 Reveal that endpoint's signing secret, then store its `whsec_...` value through Firebase:
 
@@ -62,16 +65,16 @@ firebase deploy --only functions:stripeWebhook
 
 The webhook verifies Stripe's signature and the exact server-side pack price. A Checkout Session can grant its coins only once, even if Stripe retries delivery.
 
-## 4. Test before going live
+## 4. Test subscriptions before going live
 
-Sign into the sandbox site, open the Shop, select a coin bundle, and complete test Checkout with Stripe's test card `4242 4242 4242 4242`, any future expiry date, any three-digit CVC, and any postal code. Confirm:
+Sign into the sandbox site, open the Shop, select the subscription plan, and complete test Checkout with Stripe's test card `4242 4242 4242 4242`, any future expiry date, any three-digit CVC, and any postal code. Confirm:
 
 - Stripe shows the Checkout payment as successful.
-- The signed-in TeacherTiles balance increases once.
-- Refreshing or using another browser with the same account shows the same balance.
-- Buying a cosmetic deducts its server price and unlocks that pack.
-- A second click on an owned pack does not charge coins again.
-- Retrying the same webhook event does not grant the coins again.
+- The signed-in TeacherTiles account shows subscription status as "active".
+- Refreshing or using another browser with the same account shows the same subscription status.
+- The `getSubscriptionStatus` function returns `isActive: true`.
+- Clicking "Manage Subscription" opens the Stripe billing portal where the user can update payment method, cancel, or view invoices.
+- Cancelling the subscription via the portal immediately updates the account's subscription status to "cancelled".
 
 ## 5. Generate one-time coin codes
 
@@ -111,10 +114,18 @@ Refund behavior is intentionally not automated yet. Until a clear coin-refund po
 
 ## Stored data
 
-- `users/{uid}`: coin balance and owned product IDs
+- `users/{uid}`: coin balance, owned product IDs, and subscription status
 - `users/{uid}/cosmeticPurchases/{productId}`: purchase audit record
 - `users/{uid}/coinTransactions/{transactionId}`: Stripe/code coin audit record
 - `stripeCoinGrants/{checkoutSessionId}`: idempotency record preventing double grants
 - `redemptionCodes/{sha256}`: one-time code state; plaintext codes are not stored
 
-The browser never receives Stripe secret keys, redemption-code records, or write access to balances and ownership.
+Subscription fields in `users/{uid}`:
+- `subscriptionStatus`: "inactive", "active", "trialing", "past_due", or "cancelled"
+- `subscriptionId`: Stripe subscription ID
+- `subscriptionPriceId`: Stripe price ID
+- `subscriptionStartedAt`: subscription creation timestamp
+- `subscriptionCurrentPeriodEnd`: when the current billing period ends
+- `subscriptionCancelledAt`: when subscription was cancelled (if applicable)
+
+The browser never receives Stripe secret keys, redemption-code records, subscription IDs, or write access to balances, ownership, and subscription status.
