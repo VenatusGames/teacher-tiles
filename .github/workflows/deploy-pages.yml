@@ -28,6 +28,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check out WIGs source
+        uses: actions/checkout@v6
+        with:
+          ref: wigs
+          path: .wigs-source
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Build WIGs
+        working-directory: .wigs-source
+        run: |
+          npm install --global pnpm@11.19.0
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm build
+
       - name: Prepare site
         run: |
           set -e
@@ -52,7 +71,7 @@ jobs:
           mkdir _site/sandbox
           git archive origin/sandbox | tar -x -C _site/sandbox
           mkdir _site/wigs
-          git archive origin/wigs | tar -x -C _site/wigs
+          cp -R .wigs-source/dist/. _site/wigs/
           {
             echo '### Deployment sources'
             echo "- Triggered by: \`${trigger_branch}\` at \`${trigger_sha:0:12}\`"
@@ -79,12 +98,12 @@ jobs:
           version = os.environ['ASSET_VERSION']
           asset_pattern = r'(?P<prefix>(?:href|src)=["\'])(?P<asset>(?![a-zA-Z][a-zA-Z0-9+.-]*:)(?!//)[^"\'?]+\.(?:js|css))(?:\?[^"\']*)?(?P<suffix>["\'])'
 
-          required_indexes = [Path('_site/index.html'), Path('_site/sandbox/index.html')]
+          required_indexes = [Path('_site/index.html'), Path('_site/sandbox/index.html'), Path('_site/wigs/index.html')]
           missing = [str(index) for index in required_indexes if not index.is_file()]
           if missing:
               raise SystemExit(f'Missing required site entry point(s): {", ".join(missing)}')
 
-          candidates = [*required_indexes, Path('_site/wigs/index.html')]
+          candidates = required_indexes
           indexes = [index for index in candidates if index.is_file()]
           for index in indexes:
               html = index.read_text(encoding='utf-8')
@@ -95,7 +114,10 @@ jobs:
                   print(f'No local JavaScript or CSS assets to cache-bust in {index}; skipping.')
                   continue
               for match in local_assets:
-                  asset = (index.parent / match.group('asset')).resolve()
+                  asset_path = match.group('asset')
+                  asset = ((Path('_site') / asset_path.lstrip('/')) if asset_path.startswith('/') else (index.parent / asset_path)).resolve()
+                  if not asset.is_relative_to(Path('_site').resolve()):
+                      raise SystemExit('Asset path escapes the public site directory')
                   if not asset.is_file():
                       raise SystemExit(f'Missing local asset referenced by {index}: {match.group("asset")}')
 
