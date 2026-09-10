@@ -8,7 +8,7 @@ const COIN_PACKS = Object.freeze({
 });
 
 const SUBSCRIPTION_PRICES = Object.freeze({
-  "price_1QnNhBFyVLw2TkX5g5h6i7j8": Object.freeze({
+  "price_1U9w2B2H9EEY7x9T4O9EiCIv": Object.freeze({
     productId: "prod_VAGZHkXLwpIfYv",
     name: "TeacherTiles Subscription",
     description: "A monthly membership to support the development of TeacherTiles and receive some in-app perks."

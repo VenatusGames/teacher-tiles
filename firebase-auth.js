@@ -4117,6 +4117,14 @@ window.TeacherTilesAccount = {
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;
   },
+  async createSubscriptionCheckout(priceId) {
+    const returnUrl = new URL(window.location.href);
+    returnUrl.hash = "";
+    returnUrl.searchParams.delete("tt_checkout");
+    const result = await callShopFunction("createSubscriptionCheckoutSession", { priceId, returnUrl: returnUrl.href });
+    if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
+    return result;
+  },
   async purchase(productId) {
     return applyReturnedShopAccount(await callShopFunction("purchaseCosmetic", { productId }));
   },

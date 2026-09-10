@@ -18612,7 +18612,18 @@ function setupTeacherTilesShop(){
       redeemStatus.classList.add('is-error');redeemStatus.textContent=errorMessage(error,'That code could not be redeemed.');
     }finally{if(button)button.disabled=false}
   });
-  subscribePreview?.addEventListener('click',()=>showToast('Membership checkout is not active yet.'));
+  subscribePreview?.addEventListener('click',async()=>{
+    if(!window.TeacherTilesAccount?.createSubscriptionCheckout){showToast('The subscription store is still loading.');return}
+    const original=subscribePreview.textContent;
+    subscribePreview.disabled=true;subscribePreview.textContent='Opening…';
+    try{
+      const {url}=await window.TeacherTilesAccount.createSubscriptionCheckout('price_1U9w2B2H9EEY7x9T4O9EiCIv');
+      window.location.assign(url);
+    }catch(error){
+      showToast(errorMessage(error,'Subscription checkout could not be opened.'));
+      subscribePreview.disabled=false;subscribePreview.textContent=original;
+    }
+  });
   modal.querySelector('.shop-banner')?.addEventListener('pointerenter',stopBannerTimer);
   modal.querySelector('.shop-banner')?.addEventListener('pointerleave',startBannerTimer);
   document.addEventListener('keydown',event=>{
