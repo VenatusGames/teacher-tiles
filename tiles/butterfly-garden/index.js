@@ -88,7 +88,8 @@
       return clamp(Math.round((width*height)/4000),18,32);
     }
     function regularButterflyTarget(){
-      if(flowers.length<10)return 0;
+      if(flowers.length<3)return 0;
+      if(flowers.length<10)return 1;
       return Math.min(16,4+Math.floor((flowers.length-10)/1.5));
     }
     function chooseRegularVariant(){
