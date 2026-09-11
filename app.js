@@ -11263,8 +11263,14 @@ function setupVisualSchedule(m){
     e.stopPropagation();
   },{passive:true});
   list.addEventListener('wheel',event=>{
-    if(list.scrollHeight>list.clientHeight)event.stopPropagation();
-  },{passive:true});
+    if(list.scrollHeight<=list.clientHeight+1)return;
+    const wheelDelta=event.deltaY||event.deltaX;
+    if(!wheelDelta)return;
+    event.preventDefault();
+    event.stopPropagation();
+    const delta=event.deltaMode===1?wheelDelta*16:event.deltaMode===2?wheelDelta*list.clientHeight:wheelDelta;
+    list.scrollTop+=delta;
+  },{passive:false});
 
   const setSegmentSize=(row,value)=>{
     const size=clamp(Math.round(Number(value)||72),56,220);
