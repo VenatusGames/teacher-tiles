@@ -84,7 +84,7 @@
   will-change:transform,left,top,bottom;
 }
 .butterflygarden-flower{
-  width:78px;
+  width:66px;
   max-width:none;
   filter:drop-shadow(0 3px 6px rgba(32,64,22,.12));
 }
@@ -92,12 +92,12 @@
   z-index:18;
 }
 .butterflygarden-butterfly{
-  width:72px;
+  width:50px;
   transform-origin:center center;
   filter:drop-shadow(0 4px 10px rgba(69,77,112,.18));
 }
 .butterflygarden-butterfly.is-golden{
-  width:80px;
+  width:56px;
   filter:drop-shadow(0 0 10px rgba(255,204,79,.32)) drop-shadow(0 4px 12px rgba(189,129,0,.15));
 }
 .butterflygarden-rare{
@@ -132,21 +132,32 @@
   height:12px;
 }
 .butterflygarden-controls{
+  position:relative;
+  z-index:28;
   display:flex;
   justify-content:center;
   gap:8px;
   flex-wrap:wrap;
-  overflow:hidden;
-  max-height:72px;
-  opacity:1;
-  transition:max-height .18s ease,opacity .14s ease,margin .18s ease,padding .18s ease;
-}
-.butterflygarden-module:not(:hover):not(:focus-within):not(.has-tile-settings-open) .butterflygarden-controls{
+  min-height:0;
   max-height:0;
+  margin:0;
+  padding:0;
+  overflow:visible;
   opacity:0;
-  margin-top:0;
-  padding-top:0;
   pointer-events:none;
+  transform:translateY(5px);
+  transition:max-height .18s ease,opacity .14s ease,transform .18s ease;
+}
+.butterflygarden-module:hover .butterflygarden-controls,
+.butterflygarden-controls:focus-within,
+.butterflygarden-module.has-tile-settings-open .butterflygarden-controls{
+  max-height:36px;
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.butterflygarden-module.has-tile-settings-open{
+  overflow:visible;
 }
 .butterflygarden-controls .tile-settings-wrap{
   position:relative;
@@ -184,13 +195,13 @@
     font-size:16px;
   }
   .butterflygarden-flower{
-    width:66px;
+    width:56px;
   }
   .butterflygarden-butterfly{
-    width:62px;
+    width:44px;
   }
   .butterflygarden-butterfly.is-golden{
-    width:70px;
+    width:50px;
   }
   .butterflygarden-controls{
     gap:6px;

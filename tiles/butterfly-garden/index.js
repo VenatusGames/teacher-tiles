@@ -2,15 +2,24 @@
   'use strict';
 
   const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
-  const FLOWER_BASE_WIDTH=78;
-  const FLOWER_HEIGHT_RATIO=1.42;
-  const BUTTERFLY_BASE_WIDTH=72;
-  const GOLDEN_BASE_WIDTH=80;
-  const GROWTH_INTERVAL_AMBIENT=8;
-  const GROWTH_INTERVAL_QUIET=6;
-  const GOLDEN_AMBIENT_DELAY=180;
-  const GOLDEN_QUIET_DELAY=14;
+  const FLOWER_BASE_WIDTH=66;
+  const GROWTH_INTERVAL_AMBIENT=18;
+  const GROWTH_INTERVAL_QUIET=14;
+  const GOLDEN_AMBIENT_DELAY=240;
+  const GOLDEN_QUIET_DELAY=26;
   const FLOWER_SOURCES=Array.from({length:10},(_,index)=>`tiles/butterfly-garden/assets/flower-${String(index+1).padStart(2,'0')}.png`);
+  const FLOWER_PROFILES=[
+    {ratio:1.411,lift:.78,radius:.32,stem:.085},
+    {ratio:1.409,lift:.78,radius:.32,stem:.085},
+    {ratio:1.409,lift:.78,radius:.32,stem:.085},
+    {ratio:1.409,lift:.78,radius:.32,stem:.085},
+    {ratio:1.987,lift:.86,radius:.34,stem:.08},
+    {ratio:1.246,lift:.74,radius:.39,stem:.12},
+    {ratio:1.633,lift:.82,radius:.31,stem:.09},
+    {ratio:1.318,lift:.72,radius:.34,stem:.10},
+    {ratio:.670,lift:.58,radius:.43,stem:.24},
+    {ratio:.961,lift:.69,radius:.43,stem:.20}
+  ];
   const BUTTERFLY_VARIANTS=[
     {id:'blue',src:'tiles/butterfly-garden/assets/butterfly-blue.png'},
     {id:'mint',src:'tiles/butterfly-garden/assets/butterfly-mint.png'},
@@ -58,7 +67,8 @@
     let veryQuietRun=0;
     let ambientRun=0;
     let growthCharge=0;
-    let goldenCooldown=32;
+    let goldenCooldown=45;
+    let nextButterflyArrival=0;
     let stream=null;
     let audioContext=null;
     let analyser=null;
@@ -68,22 +78,20 @@
     function notify(reason){window.notifyBoardChanged?.(`butterfly-garden-${reason}`)}
     function getThreshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
     function getSensitivity(){return clamp(Number(sensitivityInput.value)||100,30,200)}
+    function stageSize(){return{width:Math.max(240,stage.clientWidth||360),height:Math.max(120,stage.clientHeight||200)}}
     function maxFlowers(){
-      const rect=stage.getBoundingClientRect();
-      const area=Math.max(1,rect.width*rect.height);
-      return clamp(Math.round(area/5200),14,28);
+      const {width,height}=stageSize();
+      return clamp(Math.round((width*height)/4000),18,32);
     }
     function regularButterflyTarget(){
       if(flowers.length<10)return 0;
-      return Math.min(4,1+Math.floor((flowers.length-10)/5));
+      return Math.min(12,3+Math.floor((flowers.length-10)/2));
     }
     function say(text){if(status.textContent!==text)status.textContent=text}
 
     function refreshCounts(){
       const butterflyCount=butterflies.length;
-      const flowerLabel=flowers.length===1?'flower':'flowers';
-      const butterflyLabel=butterflyCount===1?'butterfly':'butterflies';
-      counts.textContent=`${flowers.length} ${flowerLabel} · ${butterflyCount} ${butterflyLabel}`;
+      counts.textContent=`${flowers.length} ${flowers.length===1?'flower':'flowers'} · ${butterflyCount} ${butterflyCount===1?'butterfly':'butterflies'}`;
     }
 
     function clearFlowers(){
@@ -99,44 +107,78 @@
       refreshCounts();
     }
 
-    function stageSize(){
-      return {width:Math.max(240,stage.clientWidth||360),height:Math.max(120,stage.clientHeight||200)};
+    function flowerGeometry(candidate){
+      const {width:stageWidth,height:stageHeight}=stageSize();
+      const profile=FLOWER_PROFILES[candidate.assetIndex]||FLOWER_PROFILES[0];
+      const width=FLOWER_BASE_WIDTH*candidate.scale;
+      const height=width*profile.ratio;
+      const groundX=candidate.x*stageWidth;
+      const groundY=stageHeight-candidate.base*stageHeight;
+      const bloomX=groundX;
+      const bloomY=groundY-height*profile.lift;
+      const bloomRadius=width*profile.radius;
+      const stemHalf=width*profile.stem;
+      return{width,height,groundX,groundY,bloomX,bloomY,bloomRadius,stemHalf,top:groundY-height};
     }
 
-    function chooseFlowerSpot(){
-      const {width,height}=stageSize();
-      for(let attempt=0;attempt<120;attempt+=1){
-        const x=randomBetween(.08,.92);
-        const base=randomBetween(.02,.21);
-        const scale=randomBetween(.76,1.28);
-        const radius=16+scale*20;
-        let blocked=false;
-        for(const flower of flowers){
-          const dx=(x-flower.x)*width;
-          const dy=(base-flower.base)*height*1.35;
-          const minDistance=(radius+flower.radius)*.82;
-          if(dx*dx+dy*dy<minDistance*minDistance){blocked=true;break;}
-        }
-        if(!blocked)return{x,base,scale,radius};
+    function stemIntersectsBloom(stemFlower,bloomFlower){
+      const stem=flowerGeometry(stemFlower);
+      const bloom=flowerGeometry(bloomFlower);
+      const stemTop=Math.min(stem.groundY,stem.bloomY+stem.bloomRadius*.15);
+      const stemBottom=stem.groundY;
+      const bloomTop=bloom.bloomY-bloom.bloomRadius*.78;
+      const bloomBottom=bloom.bloomY+bloom.bloomRadius*.78;
+      const verticalOverlap=Math.min(stemBottom,bloomBottom)-Math.max(stemTop,bloomTop);
+      if(verticalOverlap<=0)return false;
+      return Math.abs(stem.groundX-bloom.bloomX)<stem.stemHalf+bloom.bloomRadius*.70;
+    }
+
+    function spotIsSafe(candidate){
+      const candidateGeometry=flowerGeometry(candidate);
+      const {width:stageWidth,height:stageHeight}=stageSize();
+      if(candidateGeometry.groundX-candidateGeometry.width*.48<4)return false;
+      if(candidateGeometry.groundX+candidateGeometry.width*.48>stageWidth-4)return false;
+      if(candidateGeometry.top<8)return false;
+      if(candidateGeometry.groundY>stageHeight+2)return false;
+      for(const flower of flowers){
+        const existingGeometry=flowerGeometry(flower);
+        const dx=candidateGeometry.bloomX-existingGeometry.bloomX;
+        const dy=candidateGeometry.bloomY-existingGeometry.bloomY;
+        const minBloomDistance=(candidateGeometry.bloomRadius+existingGeometry.bloomRadius)*.80;
+        if(dx*dx+dy*dy<minBloomDistance*minBloomDistance)return false;
+        if(stemIntersectsBloom(candidate,flower)||stemIntersectsBloom(flower,candidate))return false;
+        const groundDx=Math.abs(candidateGeometry.groundX-existingGeometry.groundX);
+        const groundDy=Math.abs(candidateGeometry.groundY-existingGeometry.groundY);
+        if(groundDx<(candidateGeometry.stemHalf+existingGeometry.stemHalf)*1.15&&groundDy<34)return false;
       }
+      return true;
+    }
+
+    function chooseFlowerSpot(assetIndex,preferred={}){
+      const attempts=preferred.x==null?180:1;
+      for(let attempt=0;attempt<attempts;attempt+=1){
+        const candidate={
+          assetIndex,
+          x:preferred.x==null?randomBetween(.08,.92):clamp(Number(preferred.x)||.5,.05,.95),
+          base:preferred.base==null?randomBetween(.015,.30):clamp(Number(preferred.base)||.08,.01,.31),
+          scale:preferred.scale==null?randomBetween(.64,.96):clamp(Number(preferred.scale)||1,.60,1.04)
+        };
+        if(spotIsSafe(candidate))return candidate;
+      }
+      if(preferred.x!=null)return chooseFlowerSpot(assetIndex,{});
       return null;
     }
 
     function sortFlowers(){
-      flowers.sort((a,b)=>a.base-b.base||a.x-b.x);
-      flowers.forEach((flower,index)=>{flower.element.style.zIndex=String(2+index);});
+      flowers.sort((a,b)=>b.base-a.base||a.x-b.x);
+      flowers.forEach((flower,index)=>{flower.element.style.zIndex=String(2+index)});
     }
 
     function addFlower(seed={},notifyChange=true){
       if(flowers.length>=maxFlowers())return false;
-      const spot=seed.x==null?chooseFlowerSpot():{
-        x:clamp(Number(seed.x)||.5,.05,.95),
-        base:clamp(Number(seed.base)||.08,.01,.24),
-        scale:clamp(Number(seed.scale)||1,.72,1.34),
-        radius:16+clamp(Number(seed.scale)||1,.72,1.34)*20
-      };
-      if(!spot)return false;
       const assetIndex=Number.isInteger(seed.assetIndex)?((seed.assetIndex%FLOWER_SOURCES.length)+FLOWER_SOURCES.length)%FLOWER_SOURCES.length:Math.floor(Math.random()*FLOWER_SOURCES.length);
+      const spot=chooseFlowerSpot(assetIndex,seed);
+      if(!spot)return false;
       const image=document.createElement('img');
       image.className='butterflygarden-flower';
       image.src=FLOWER_SOURCES[assetIndex];
@@ -151,7 +193,7 @@
         base:spot.base,
         scale:spot.scale,
         growth:clamp(Number(seed.growth)||0,0,1),
-        radius:spot.radius,
+        growDuration:randomBetween(5.8,8.4),
         swaySeed:randomBetween(0,Math.PI*2)
       });
       sortFlowers();
@@ -161,28 +203,24 @@
     }
 
     function getFlowerVisualMetrics(flower){
-      const grownScale=Math.max(.32,flower.growth)*flower.scale;
-      const width=FLOWER_BASE_WIDTH*grownScale;
-      const height=FLOWER_BASE_WIDTH*FLOWER_HEIGHT_RATIO*grownScale;
-      const {width:stageWidth,height:stageHeight}=stageSize();
-      return {
-        width,
-        height,
-        left:flower.x*stageWidth,
-        bottom:flower.base*stageHeight,
-        nectarX:flower.x*stageWidth,
-        nectarY:stageHeight-(flower.base*stageHeight+height*.74)
+      const geometry=flowerGeometry(flower);
+      return{
+        nectarX:geometry.bloomX,
+        nectarY:geometry.bloomY-geometry.bloomRadius*.15,
+        groundX:geometry.groundX,
+        groundY:geometry.groundY
       };
     }
 
     function updateFlowerStyles(dt){
       for(const flower of flowers){
-        flower.growth=Math.min(1,flower.growth+dt*.82);
-        const sway=Math.sin(elapsed*.8+flower.swaySeed)*3.2;
-        const rise=Math.sin(elapsed*.52+flower.swaySeed)*1.8;
+        flower.growth=Math.min(1,flower.growth+dt/flower.growDuration);
+        const sway=Math.sin(elapsed*.62+flower.swaySeed)*2.2;
+        const rise=Math.sin(elapsed*.38+flower.swaySeed)*1.15;
+        const visualScale=Math.max(.02,flower.growth*flower.scale);
         flower.element.style.left=`${(flower.x*100).toFixed(3)}%`;
         flower.element.style.bottom=`${(flower.base*100).toFixed(3)}%`;
-        flower.element.style.transform=`translateX(-50%) translateY(${rise.toFixed(2)}px) rotate(${sway.toFixed(2)}deg) scale(${(flower.growth*flower.scale).toFixed(4)})`;
+        flower.element.style.transform=`translateX(-50%) translateY(${rise.toFixed(2)}px) rotate(${sway.toFixed(2)}deg) scale(${visualScale.toFixed(4)})`;
       }
     }
 
@@ -195,14 +233,11 @@
     }
 
     function chooseButterflyTarget(butterfly){
-      if(!flowers.length){
-        butterfly.target=null;
-        butterfly.nextHop=elapsed+2;
-        return;
-      }
-      const candidates=[...flowers].sort(()=>Math.random()-.5).slice(0,Math.min(flowers.length,5));
-      butterfly.target=pick(candidates);
-      butterfly.nextHop=elapsed+randomBetween(2.6,5.3)+(butterfly.isGolden?1.5:0);
+      if(!flowers.length){butterfly.target=null;return;}
+      const choices=flowers.filter(flower=>flower.growth>.72&&flower!==butterfly.target);
+      butterfly.target=pick(choices.length?choices:flowers);
+      butterfly.state='travel';
+      butterfly.hoverUntil=0;
     }
 
     function spawnButterfly(variant){
@@ -214,17 +249,23 @@
       image.decoding='async';
       butterflyLayer.appendChild(image);
       const {width,height}=stageSize();
+      const enterFromLeft=Math.random()<.5;
       const butterfly={
         element:image,
         id:variant.id,
-        x:randomBetween(width*.18,width*.82),
-        y:randomBetween(height*.18,height*.48),
+        x:enterFromLeft?-54:width+54,
+        y:randomBetween(height*.14,height*.56),
         phase:randomBetween(0,Math.PI*2),
-        nextHop:0,
         target:null,
-        facing:1,
+        state:'travel',
+        hoverUntil:0,
+        facing:enterFromLeft?1:-1,
         isGolden:variant.id==='golden',
-        particleClock:randomBetween(.04,.22)
+        particleClock:randomBetween(.08,.30),
+        speed:variant.id==='golden'?randomBetween(27,34):randomBetween(34,43),
+        exiting:false,
+        exitX:0,
+        exitY:0
       };
       butterflies.push(butterfly);
       chooseButterflyTarget(butterfly);
@@ -235,77 +276,122 @@
 
     function ensureButterflyPopulation(){
       const goal=regularButterflyTarget();
-      const regular=butterflies.filter(butterfly=>!butterfly.isGolden);
-      while(regular.length<goal){regular.push(spawnButterfly(pick(BUTTERFLY_VARIANTS)));}
-      while(regular.length>goal){removeButterfly(regular.pop());}
+      const regular=butterflies.filter(butterfly=>!butterfly.isGolden&&!butterfly.exiting);
+      if(regular.length<goal&&elapsed>=nextButterflyArrival){
+        spawnButterfly(pick(BUTTERFLY_VARIANTS));
+        nextButterflyArrival=elapsed+randomBetween(1.7,2.8);
+      }
+      if(regular.length>goal){
+        const extra=regular[regular.length-1];
+        if(extra){
+          const {width,height}=stageSize();
+          extra.exiting=true;
+          extra.target=null;
+          extra.exitX=extra.x<width*.5?-60:width+60;
+          extra.exitY=clamp(extra.y+randomBetween(-35,35),10,height-10);
+        }
+      }
       if(flowers.length<10){
-        butterflies.filter(butterfly=>butterfly.isGolden).forEach(removeButterfly);
+        butterflies.filter(butterfly=>butterfly.isGolden).forEach(butterfly=>{
+          const {width,height}=stageSize();
+          butterfly.exiting=true;
+          butterfly.target=null;
+          butterfly.exitX=butterfly.x<width*.5?-70:width+70;
+          butterfly.exitY=clamp(butterfly.y-20,10,height-10);
+        });
       }
     }
 
     function maybeSpawnGoldenButterfly(dt){
-      if(flowers.length<10)return;
-      const activeGolden=butterflies.some(butterfly=>butterfly.isGolden);
-      if(activeGolden)return;
+      if(flowers.length<10||butterflies.some(butterfly=>butterfly.isGolden&&!butterfly.exiting))return;
       goldenCooldown=Math.max(0,goldenCooldown-dt);
       if(goldenCooldown>0)return;
       const quietReady=mode==='microphone'&&active&&veryQuietRun>=GOLDEN_QUIET_DELAY;
       const ambientReady=mode==='ambient'&&ambientRun>=GOLDEN_AMBIENT_DELAY;
       if(!quietReady&&!ambientReady)return;
-      const chance=quietReady?dt/6:dt/16;
+      const chance=quietReady?dt/18:dt/28;
       if(Math.random()<chance){
         const golden=spawnButterfly(GOLDEN_VARIANT);
-        golden.leaveAt=elapsed+randomBetween(14,22);
-        goldenCooldown=randomBetween(60,110);
+        golden.leaveAt=elapsed+randomBetween(18,26);
+        goldenCooldown=randomBetween(90,150);
         notify('golden-visitor');
       }
     }
 
     function spawnParticle(x,y,isGolden){
       particles.push({
-        x,
-        y,
-        vx:randomBetween(-9,9),
-        vy:randomBetween(15,30),
-        size:isGolden?randomBetween(1.6,3.2):randomBetween(1.2,2.3),
+        x,y,
+        vx:randomBetween(-7,7),
+        vy:randomBetween(12,24),
+        size:isGolden?randomBetween(1.5,2.8):randomBetween(1.0,2.0),
         life:0,
-        maxLife:isGolden?randomBetween(.9,1.45):randomBetween(1.2,1.9),
+        maxLife:isGolden?randomBetween(1.05,1.6):randomBetween(1.35,2.0),
         swaySeed:randomBetween(0,Math.PI*2),
         isGolden
       });
     }
 
+    function moveToward(butterfly,destinationX,destinationY,dt){
+      const dx=destinationX-butterfly.x;
+      const dy=destinationY-butterfly.y;
+      const distance=Math.hypot(dx,dy);
+      if(distance<.001)return 0;
+      const step=Math.min(distance,butterfly.speed*dt);
+      butterfly.x+=dx/distance*step;
+      butterfly.y+=dy/distance*step;
+      butterfly.facing=dx>=0?1:-1;
+      return distance;
+    }
+
     function updateButterflies(dt){
       const {width,height}=stageSize();
       for(const butterfly of butterflies.slice()){
-        if(butterfly.leaveAt&&elapsed>butterfly.leaveAt){
-          removeButterfly(butterfly);
-          continue;
+        if(butterfly.leaveAt&&elapsed>butterfly.leaveAt&&!butterfly.exiting){
+          butterfly.exiting=true;
+          butterfly.target=null;
+          butterfly.exitX=butterfly.x<width*.5?-70:width+70;
+          butterfly.exitY=clamp(butterfly.y+randomBetween(-30,25),8,height-8);
         }
-        if(!butterfly.target||!flowers.includes(butterfly.target)||elapsed>butterfly.nextHop)chooseButterflyTarget(butterfly);
-        let destinationX=width*.5;
-        let destinationY=height*.3;
-        if(butterfly.target){
-          const targetMetrics=getFlowerVisualMetrics(butterfly.target);
-          destinationX=targetMetrics.nectarX+Math.sin(elapsed*.8+butterfly.phase)*8;
-          destinationY=targetMetrics.nectarY-randomBetween(18,30)-(butterfly.isGolden?7:0);
+
+        let destinationX=butterfly.x;
+        let destinationY=butterfly.y;
+        if(butterfly.exiting){
+          destinationX=butterfly.exitX;
+          destinationY=butterfly.exitY;
+          const distance=moveToward(butterfly,destinationX,destinationY,dt);
+          if(distance<8){removeButterfly(butterfly);continue;}
+        }else{
+          if(!butterfly.target||!flowers.includes(butterfly.target))chooseButterflyTarget(butterfly);
+          const metrics=butterfly.target?getFlowerVisualMetrics(butterfly.target):null;
+          if(metrics){
+            destinationX=metrics.nectarX;
+            destinationY=metrics.nectarY-(butterfly.isGolden?16:11);
+            if(butterfly.state==='travel'){
+              const distance=moveToward(butterfly,destinationX,destinationY,dt);
+              if(distance<12){
+                butterfly.state='hover';
+                butterfly.hoverUntil=elapsed+randomBetween(2.7,5.1)+(butterfly.isGolden?1.2:0);
+              }
+            }else if(butterfly.state==='hover'){
+              moveToward(butterfly,destinationX,destinationY,dt*.35);
+              if(elapsed>=butterfly.hoverUntil)chooseButterflyTarget(butterfly);
+            }
+          }
         }
-        butterfly.facing=destinationX>=butterfly.x?1:-1;
-        butterfly.x+= (destinationX-butterfly.x)*Math.min(1,dt*1.8);
-        butterfly.y+= (destinationY-butterfly.y)*Math.min(1,dt*1.8);
-        const hover=Math.sin(elapsed*5.6+butterfly.phase)*(butterfly.isGolden?7:5);
-        const drift=Math.cos(elapsed*2.4+butterfly.phase)*3;
-        const flap=1+Math.sin(elapsed*18+butterfly.phase)*.045;
-        const tilt=Math.sin(elapsed*3.8+butterfly.phase)*4.2;
-        const drawX=clamp(butterfly.x+drift,18,width-18);
-        const drawY=clamp(butterfly.y+hover,12,height-10);
+
+        const hover=Math.sin(elapsed*4.4+butterfly.phase)*(butterfly.isGolden?5.2:4.2);
+        const drift=Math.cos(elapsed*1.8+butterfly.phase)*2.2;
+        const flap=1+Math.sin(elapsed*14+butterfly.phase)*.035;
+        const tilt=Math.sin(elapsed*2.7+butterfly.phase)*3.2;
+        const drawX=butterfly.x+drift;
+        const drawY=butterfly.y+hover;
         butterfly.element.style.left=`${drawX.toFixed(2)}px`;
         butterfly.element.style.top=`${drawY.toFixed(2)}px`;
         butterfly.element.style.transform=`translate(-50%,-50%) scale(${(butterfly.facing*flap).toFixed(4)},${flap.toFixed(4)}) rotate(${tilt.toFixed(2)}deg)`;
         butterfly.particleClock-=dt;
-        if(butterfly.particleClock<=0){
-          spawnParticle(drawX,drawY+(butterfly.isGolden?6:10),butterfly.isGolden);
-          butterfly.particleClock=butterfly.isGolden?randomBetween(.05,.11):randomBetween(.14,.28);
+        if(!butterfly.exiting&&butterfly.particleClock<=0){
+          spawnParticle(drawX,drawY+(butterfly.isGolden?5:7),butterfly.isGolden);
+          butterfly.particleClock=butterfly.isGolden?randomBetween(.07,.13):randomBetween(.19,.34);
         }
       }
     }
@@ -314,9 +400,9 @@
       const {height}=stageSize();
       for(const particle of particles){
         particle.life+=dt;
-        particle.x+=particle.vx*dt+Math.sin(elapsed*2.2+particle.swaySeed)*3*dt;
+        particle.x+=particle.vx*dt+Math.sin(elapsed*2+particle.swaySeed)*2.3*dt;
         particle.y+=particle.vy*dt;
-        particle.vy+=14*dt;
+        particle.vy+=11*dt;
       }
       particles=particles.filter(particle=>particle.life<particle.maxLife&&particle.y<height+24);
     }
@@ -385,9 +471,9 @@
         button.classList.toggle('is-active',selected);
         button.setAttribute('aria-pressed',String(selected));
       });
-      moduleElement.querySelectorAll('.butterflygarden-mic-setting').forEach(element=>{element.hidden=mode!=='microphone';});
+      moduleElement.querySelectorAll('.butterflygarden-mic-setting').forEach(element=>{element.hidden=mode!=='microphone'});
       if(mode==='ambient')say('No mic mode · Flowers grow over time and butterflies visit later.');
-      else if(!active) say('Microphone off · Enable it so quiet voices help the garden grow.');
+      else if(!active)say('Microphone off · Enable it so quiet voices help the garden grow.');
       if(notifyChange)notify('mode');
       wake();
     }
@@ -399,7 +485,6 @@
         return;
       }
       pending=true;
-      micButton.disabled=false;
       micButton.textContent='Cancel microphone request';
       say('Allow microphone access to let quiet voices grow the garden.');
       const token=++requestToken;
@@ -448,7 +533,7 @@
         if(level<threshold){
           quietRun+=dt;
           growthCharge+=dt/GROWTH_INTERVAL_QUIET;
-          if(level<threshold*.55)veryQuietRun+=dt;
+          if(level<threshold*.52)veryQuietRun+=dt;
           else veryQuietRun=0;
         }else{
           quietRun=0;
@@ -458,35 +543,29 @@
         quietRun=0;
         veryQuietRun=0;
       }
-      while(growthCharge>=1&&flowers.length<maxFlowers()){
-        growthCharge-=1;
-        addFlower();
+      if(growthCharge>=1&&flowers.length<maxFlowers()){
+        if(addFlower())growthCharge-=1;
+        else growthCharge=Math.min(growthCharge,1.15);
       }
-      if(flowers.length>=maxFlowers())growthCharge=Math.min(growthCharge,1.5);
+      if(flowers.length>=maxFlowers())growthCharge=Math.min(growthCharge,1.15);
     }
 
     function updateStatus(){
-      const hasGolden=butterflies.some(butterfly=>butterfly.isGolden);
-      if(hasGolden){
+      if(butterflies.some(butterfly=>butterfly.isGolden&&!butterfly.exiting)){
         say('Golden butterfly visiting · A very calm room brought a rare guest to the garden!');
         return;
       }
       if(mode==='ambient'){
-        if(flowers.length<10)say(`No mic mode · ${flowers.length} flowers blooming · More will grow over time.`);
+        if(flowers.length<10)say(`No mic mode · ${flowers.length} flowers blooming · More will grow slowly over time.`);
         else say(`No mic mode · ${flowers.length} flowers blooming · Butterflies are visiting the garden.`);
         return;
       }
-      if(!active&&!pending){
-        say('Microphone off · Enable it so quiet voices help the garden grow.');
-        return;
-      }
+      if(!active&&!pending){say('Microphone off · Enable it so quiet voices help the garden grow.');return;}
       if(pending)return;
       if(level<getThreshold()){
-        if(flowers.length<10)say(`Quiet classroom · ${Math.floor(quietRun)}s calm · New flowers are growing.`);
+        if(flowers.length<10)say(`Quiet classroom · ${Math.floor(quietRun)}s calm · The garden is growing.`);
         else say(`Quiet classroom · ${Math.floor(quietRun)}s calm · Butterflies are happily visiting.`);
-      }else{
-        say('A little loud right now · Growth pauses until the room gets quieter.');
-      }
+      }else say('A little loud right now · Growth pauses until the room gets quieter.');
     }
 
     function tick(now){
@@ -513,8 +592,8 @@
       animationFrame=requestAnimationFrame(tick);
     }
 
-    thresholdInput.addEventListener('input',()=>{applySettings();wake();});
-    sensitivityInput.addEventListener('input',()=>{applySettings();wake();});
+    thresholdInput.addEventListener('input',()=>{applySettings();wake()});
+    sensitivityInput.addEventListener('input',()=>{applySettings();wake()});
     moduleElement.querySelectorAll('[data-butterfly-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.butterflyMode)));
     micButton.addEventListener('click',()=>{
       if(mode!=='microphone')return;
@@ -522,11 +601,11 @@
       else startMicrophone();
     });
 
-    const resizeObserver=new ResizeObserver(()=>{resizeCanvas();drawParticles();});
+    const resizeObserver=new ResizeObserver(()=>{resizeCanvas();drawParticles()});
     resizeObserver.observe(stage);
     const intersectionObserver=new IntersectionObserver(entries=>{
       visible=Boolean(entries[0]?.isIntersecting);
-      if(!visible){cancelAnimationFrame(animationFrame);animationFrame=0;lastFrameTime=0;}
+      if(!visible){cancelAnimationFrame(animationFrame);animationFrame=0;lastFrameTime=0}
       else wake();
     });
     intersectionObserver.observe(stage);
@@ -563,15 +642,15 @@
       clearButterflies();
       ambientRun=Math.max(0,Number(state?.ambientRun)||0);
       growthCharge=Math.max(0,Number(state?.growthCharge)||0);
-      goldenCooldown=Math.max(12,Number(state?.goldenCooldown)||32);
+      goldenCooldown=Math.max(20,Number(state?.goldenCooldown)||45);
+      nextButterflyArrival=0;
       thresholdInput.value=String(clamp(Number(state?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(state?.sensitivity)||100,30,200));
       applySettings(false);
       setMode(state?.mode,{notifyChange:false});
       const savedFlowers=Array.isArray(state?.flowers)?state.flowers:[];
       savedFlowers.slice(0,maxFlowers()).forEach(savedFlower=>addFlower(savedFlower,false));
-      flowers.forEach(flower=>{flower.growth=1;});
-      ensureButterflyPopulation();
+      flowers.forEach(flower=>{flower.growth=1});
       updateFlowerStyles(0);
       updateStatus();
       drawParticles();
