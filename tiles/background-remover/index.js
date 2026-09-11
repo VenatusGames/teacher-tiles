@@ -120,6 +120,7 @@
     const choose=m.querySelector('.backgroundremover-choose');
     const removeButton=m.querySelector('.backgroundremover-remove');
     const replaceButton=m.querySelector('.backgroundremover-replace');
+    const clearButton=m.querySelector('.backgroundremover-clear');
     const status=m.querySelector('.backgroundremover-status');
     const list=m.querySelector('.backgroundremover-result-list');
     const count=m.querySelector('.backgroundremover-result-count');
@@ -140,6 +141,7 @@
       progress.hidden=!busy;
       removeButton.disabled=busy||!sourceFile||results.length>=MAX_RESULTS;
       replaceButton.disabled=busy;
+      clearButton.disabled=busy;
     };
 
     const setSource=file=>{
@@ -158,15 +160,17 @@
       setBusy(false);
     };
 
-    const clearSource=()=>{
+    const clearSource=(message='Choose an image to remove its background.')=>{
       sourceFile=null;
       if(sourceUrl)URL.revokeObjectURL(sourceUrl);
       sourceUrl='';
       previewImage.removeAttribute('src');
+      previewImage.alt='';
       preview.hidden=true;
       dropzone.hidden=false;
       input.value='';
       setBusy(false);
+      setStatus(message);
     };
 
     const renderResults=()=>{
@@ -275,6 +279,7 @@
 
     const openPicker=()=>{if(!busy)input.click()};
     replaceButton.addEventListener('click',openPicker);
+    clearButton.addEventListener('click',()=>{if(!busy)clearSource();});
     dropzone.addEventListener('click',openPicker);
     dropzone.addEventListener('keydown',event=>{
       if(event.key==='Enter'||event.key===' '){event.preventDefault();openPicker()}

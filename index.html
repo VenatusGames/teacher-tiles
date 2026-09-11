@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="tiles/times-tables/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/google/styles.css?v=20260908-reviewed-2">
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
-  <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-1">
+  <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-2">
   <link rel="icon" href="T.png" type="image/x-icon">
   <style>
     .context-menu__item[data-module="calendar"] .context-menu__icon{
@@ -33,19 +33,26 @@
       color:transparent;
     }
 
-    .context-menu__item[data-module="calendar"] .context-menu__icon::before,
-    .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__mark::before{
+    .context-menu__item[data-module="calendar"] .context-menu__icon::before{
       content:"";
-      width:22px;
-      height:22px;
+      width:24px;
+      height:24px;
       display:block;
-      background:center/contain no-repeat url("assets/calendar-menu-black.png?v=1");
+      background:center/contain no-repeat url("assets/calendar-menu-black.png?v=2");
     }
 
     .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__mark{
       position:relative;
       font-size:0;
       color:transparent;
+    }
+
+    .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__mark::before{
+      content:"";
+      width:24px;
+      height:24px;
+      display:block;
+      background:center/contain no-repeat url("assets/calendar-menu-purple.png?v=1");
     }
 
     .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__source-icon{
@@ -3674,7 +3681,7 @@
   <script src="tiles/times-tables/index.js?v=20260905-1"></script>
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
-  <script src="tiles/background-remover/index.js?v=20260910-background-remover-1"></script>
+  <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="app.js?v=20260910-background-remover-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260908-board-framing-1"></script>
@@ -4487,13 +4494,13 @@
   <template id="backgroundremover-template">
     <section class="module backgroundremover-module" data-type="backgroundremover" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete background remover tile">×</button><div class="module-drag-handle"></div>
-      <header class="backgroundremover-header"><div><span>IMAGE TOOL</span><strong class="backgroundremover-title">Background Remover</strong></div><span class="backgroundremover-badge">LOCAL AI</span></header>
+      <header class="backgroundremover-header"><div><span>IMAGE TOOL</span><strong class="backgroundremover-title">Background Remover</strong></div></header>
       <div class="backgroundremover-workspace">
         <button class="backgroundremover-dropzone" type="button">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 16 3.6-4 2.6 2.8 2.1-2.2 2.7 3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="15.8" cy="8.8" r="1.4" fill="currentColor"/></svg>
           <strong>Drop an image here</strong><small>PNG, JPG, or WebP</small><span class="backgroundremover-choose">Choose image</span>
         </button>
-        <div class="backgroundremover-preview" hidden><img class="backgroundremover-preview-image" alt=""><button class="backgroundremover-replace" type="button">Replace image</button></div>
+        <div class="backgroundremover-preview" hidden><img class="backgroundremover-preview-image" alt=""><div class="backgroundremover-preview-actions"><button class="backgroundremover-replace" type="button">Replace image</button><button class="backgroundremover-clear" type="button">Clear image</button></div></div>
         <input class="backgroundremover-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
       </div>
       <div class="backgroundremover-actions"><button class="backgroundremover-remove" type="button" disabled>Remove background</button><div class="backgroundremover-progress" hidden aria-label="Removing background"></div></div>
