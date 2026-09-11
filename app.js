@@ -11111,10 +11111,7 @@ function setupVisualSchedule(m){
   const customImageInput=m.querySelector('.visual-schedule-custom-image-input');
   let activeSegment=null;
   let autoSizeFrame=0;
-  const MIN_ADD_REVEAL_HEIGHT=43;
-  let addRevealHeight=MIN_ADD_REVEAL_HEIGHT;
   let addExpanded=false;
-  let restingHeight=0;
 
   m.querySelector('.visual-schedule-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.visual-schedule-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
@@ -11138,36 +11135,20 @@ function setupVisualSchedule(m){
       m.classList.remove('is-measuring-rest');
       const minHeight=parseFloat(getComputedStyle(m).minHeight)||280;
       const viewportHeight=Math.max(minHeight,(innerHeight-96)/boardCamera.scale);
-      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top-MIN_ADD_REVEAL_HEIGHT));
-      restingHeight=clamp(desired,minHeight,maxHeight);
-      if(addExpanded){
-        addRevealHeight=Math.max(MIN_ADD_REVEAL_HEIGHT,desired-restingHeight+MIN_ADD_REVEAL_HEIGHT);
-        m._transientRestingHeight=restingHeight;
-        m._resizeDisplayHeightOffset=addRevealHeight;
-      }
-      m.style.height=`${restingHeight+(addExpanded?addRevealHeight:0)}px`;
+      const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top));
+      m.style.height=`${clamp(desired,minHeight,maxHeight)}px`;
     });
   };
 
   const expandAddFooter=()=>{
     if(addExpanded)return;
-    restingHeight=m.offsetHeight;
-    addRevealHeight=Math.max(MIN_ADD_REVEAL_HEIGHT,list.scrollHeight-list.clientHeight+MIN_ADD_REVEAL_HEIGHT);
-    addRevealHeight=Math.min(addRevealHeight,Math.max(MIN_ADD_REVEAL_HEIGHT,BOARD_HEIGHT-m.offsetTop-restingHeight));
     addExpanded=true;
-    m._transientRestingHeight=restingHeight;
-    m._resizeDisplayHeightOffset=addRevealHeight;
     m.classList.add('is-add-expanded');
-    m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,restingHeight+addRevealHeight)}px`;
   };
   const collapseAddFooter=()=>{
     if(!addExpanded)return;
-    restingHeight=Number(m._transientRestingHeight)||Math.max(300,m.offsetHeight-addRevealHeight);
     addExpanded=false;
-    m._resizeDisplayHeightOffset=0;
     m.classList.remove('is-add-expanded');
-    m.style.height=`${restingHeight}px`;
-    delete m._transientRestingHeight;
   };
   const onPointerEnter=()=>expandAddFooter();
   const onPointerLeave=()=>{if(!m.classList.contains('is-resizing'))collapseAddFooter()};
@@ -11175,11 +11156,6 @@ function setupVisualSchedule(m){
   const onFocusOut=()=>requestAnimationFrame(()=>{
     if(!m.matches(':hover')&&!m.contains(document.activeElement))collapseAddFooter();
   });
-  m._syncTransientResize=()=>{
-    if(!addExpanded)return;
-    restingHeight=Math.max(parseFloat(getComputedStyle(m).minHeight)||300,m.offsetHeight-addRevealHeight);
-    m._transientRestingHeight=restingHeight;
-  };
   m._afterModuleResize=()=>{
     if(addExpanded&&!m.matches(':hover'))collapseAddFooter();
   };
@@ -11440,10 +11416,7 @@ function setupVisualSchedule(m){
     m.removeEventListener('pointerleave',onPointerLeave);
     m.removeEventListener('focusin',onFocusIn);
     m.removeEventListener('focusout',onFocusOut);
-    delete m._syncTransientResize;
     delete m._afterModuleResize;
-    delete m._resizeDisplayHeightOffset;
-    delete m._transientRestingHeight;
   };
 
   autoSize();
