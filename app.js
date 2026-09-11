@@ -1353,7 +1353,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Boom Box','Loop classroom soundscapes'],
-    livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],mirror:['Mirror','Use the camera as a classroom mirror'],
+    livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],backgroundremover:['Background Remover','Remove image backgrounds and save transparent cutouts'],mirror:['Mirror','Use the camera as a classroom mirror'],
     weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
   es:{
@@ -1368,7 +1368,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
     wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],minesweeper:['Buscaminas','Despeja cada casilla segura sin tocar una mina'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
-    livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],mirror:['Espejo','Usa la cámara como espejo del aula'],
+    livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],backgroundremover:['Quitar fondo','Elimina fondos de imágenes y guarda recortes transparentes'],mirror:['Espejo','Usa la cámara como espejo del aula'],
     weather:['Clima','Compara el clima actual de varios lugares'],weatherwheel:['Rueda del clima','Señala el clima de hoy'],seasonwheel:['Rueda de estaciones','Explora primavera, verano, otoño e invierno'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
 };
@@ -2793,13 +2793,14 @@ function setupModuleByType(m,type){
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
   if(type==='sleepymonster')window.TeacherTilesSleepyMonster.setup(m);
   if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
+  if(type==='backgroundremover'){setupBoardPhotoDrop();window.TeacherTilesBackgroundRemover.setup(m);}
   if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
   if(type==='quoteoftheday')window.TeacherTilesQuoteOfTheDay.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='timestables')window.TeacherTilesTimesTables.setup(m);
   if(type==='google')window.TeacherTilesGoogle.setup(m);
   if(type==='link')window.TeacherTilesLink.setup(m);
-  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','butterflygarden'].includes(type))setupClassroomTileControls(m);
+  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','butterflygarden','backgroundremover'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);
@@ -8220,6 +8221,7 @@ const EDITABLE_TILE_HEADINGS={
   hangman:'.hangman-kicker',
   wordypuzzle:'.wordy-kicker',
   photobooth:'.photobooth-title',
+  backgroundremover:'.backgroundremover-title',
   mirror:'.mirror-title',
   weather:'.weather-title',
   temperature:'.temperature-title'
