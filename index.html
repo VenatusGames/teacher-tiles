@@ -25,6 +25,32 @@
   <link rel="stylesheet" href="tiles/google/styles.css?v=20260908-reviewed-2">
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="icon" href="T.png" type="image/x-icon">
+  <style>
+    .context-menu__item[data-module="calendar"] .context-menu__icon{
+      position:relative;
+      font-size:0;
+      color:transparent;
+    }
+
+    .context-menu__item[data-module="calendar"] .context-menu__icon::before,
+    .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__mark::before{
+      content:"";
+      width:22px;
+      height:22px;
+      display:block;
+      background:center/contain no-repeat url("assets/calendar-menu-black.png?v=1");
+    }
+
+    .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__mark{
+      position:relative;
+      font-size:0;
+      color:transparent;
+    }
+
+    .tile-skins-type-button[data-tile-skin-type="calendar"] .tile-skins-type-button__source-icon{
+      display:none;
+    }
+  </style>
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
