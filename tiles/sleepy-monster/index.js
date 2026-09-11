@@ -71,6 +71,7 @@
     let goalReached=false;
     let goalEnabled=true;
     let goalSeconds=300;
+    let mode='ambient';
 
     function threshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
     function sensitivity(){return clamp(Number(sensitivityInput.value)||100,30,200)}
@@ -144,6 +145,27 @@
     }
 
     function say(text){status.textContent=text}
+
+    function setMode(next,{notify=true}={}){
+      const normalized=next==='microphone'?'microphone':'ambient';
+      if(mode!==normalized){
+        stop();
+        mode=normalized;
+      }
+      m.dataset.sleepyMode=mode;
+      micButton.hidden=mode!=='microphone';
+      meter.hidden=mode!=='microphone'||!active;
+      m.querySelectorAll('[data-sleepy-mode]').forEach(button=>{
+        const selected=button.dataset.sleepyMode===mode;
+        button.classList.toggle('is-active',selected);
+        button.setAttribute('aria-pressed',String(selected));
+      });
+      m.querySelectorAll('.sleepymonster-mic-setting').forEach(element=>{element.hidden=mode!=='microphone';});
+      if(mode==='ambient')say('No mic mode · He will doze off on his own after a little time.');
+      else if(!active)say('Microphone mode · Enable it so room noise can wake him up.');
+      if(notify)notifyBoardChanged('sleepy-monster-mode');
+      wake();
+    }
 
     function setSprite(src){
       if(lastSprite===src)return;
@@ -232,7 +254,7 @@
       setState('grumpy-walk');
     }
 
-    function stop(message='Microphone off · The monster can still doze off on his own'){
+    function stop(message='Microphone off · Enable it so the monster can react to room noise.'){
       ++request;
       active=false;
       pending=false;
@@ -244,14 +266,15 @@
       quietTime=0;
       loudTime=0;
       meter.value=0;
-      meter.hidden=true;
+      meter.hidden=mode!=='microphone'||!active;
       micButton.disabled=false;
       micButton.textContent='Enable microphone';
       micButton.setAttribute('aria-pressed','false');
-      say(message);
+      if(mode==='microphone')say(message);
     }
 
     async function startMicrophone(){
+      if(mode!=='microphone')return;
       if(active||pending){stop();return}
       if(!navigator.mediaDevices?.getUserMedia){say('Microphone unavailable in this browser.');return}
       pending=true;
@@ -289,6 +312,7 @@
     }
 
     micButton.addEventListener('click',startMicrophone);
+    m.querySelectorAll('[data-sleepy-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.sleepyMode)));
 
     function updateAudio(dt){
       if(active&&analyser&&samples){
@@ -305,9 +329,14 @@
     }
 
     function updateNoiseTimers(dt){
-      if(!active){
+      if(mode==='ambient'){
         if(state==='idle'||state==='walk'||state==='grumpy-walk')quietTime+=dt;
         else quietTime=0;
+        loudTime=0;
+        return;
+      }
+      if(!active){
+        quietTime=0;
         loudTime=0;
         return;
       }
@@ -341,22 +370,22 @@
       }
 
       if(state==='sleep-stand'||state==='sleep-back'){
-        if(active&&loudTime>=.22)startWaking();
+        if(mode==='microphone'&&active&&loudTime>=.22)startWaking();
         return;
       }
 
       if(state==='wake-stand'||state==='wake-back'){
         stateTimer-=dt;
-        if(active&&quietTime>=.62){fallAsleep();return}
+        if(mode==='microphone'&&active&&quietTime>=.62){fallAsleep();return}
         if(stateTimer<=0){
-          if(active&&level>=threshold())getAngry();
+          if(mode==='microphone'&&active&&level>=threshold())getAngry();
           else chooseAwakeState();
         }
         return;
       }
 
       if(state==='angry'){
-        if(!active){startGrumpyWalk();return}
+        if(mode!=='microphone'||!active){startGrumpyWalk();return}
         if(level<threshold()){startGrumpyWalk();return}
         return;
       }
@@ -474,6 +503,7 @@
       sleepGoalMinutes:sleepGoalMinutes(),
       cycleSleepSeconds,
       sleepCycleActive,
+      mode,
       state:state==='sleep-stand'||state==='sleep-back'?state:(state==='idle'||state==='walk'?state:'idle'),
       sleepVariant,
       x,
@@ -482,6 +512,7 @@
 
     m._boardSetState=s=>{
       stop();
+      mode=s?.mode==='microphone'?'microphone':'ambient';
       thresholdInput.value=String(clamp(Number(s?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(s?.sensitivity)||100,30,200));
       delayInput.value=String(clamp(Number(s?.quietDelay)||4.5,1.5,12));
@@ -502,11 +533,13 @@
       loudTime=0;
       animationTime=0;
       setState(restored,{announce:false});
+      setMode(mode,{notify:false});
       updateSettingLabels();
       updateMovement(0);
       updateSprite(0);
       savedStateRestored=true;
-      say(restored.startsWith('sleep-')?'Still asleep. Enable the microphone so room noise can wake him.':'Microphone off · Enable it so the monster can react to room noise.');
+      if(mode==='microphone')say(restored.startsWith('sleep-')?'Still asleep. Enable the microphone so room noise can wake him.':'Microphone mode · Enable it so the monster can react to room noise.');
+      else say(restored.startsWith('sleep-')?'Still asleep in No mic mode.':'No mic mode · He will doze off on his own after a little time.');
       wake();
     };
 
@@ -534,10 +567,11 @@
     goalEnabledInput.checked=goalEnabled;
     goalInput.disabled=!goalEnabled;
     updateSettingLabels();
+    setMode('ambient',{notify:false});
     setState('idle',{announce:false});
     updateMovement(0);
     updateSprite(0);
-    if(!savedStateRestored)say('Microphone off · He will doze off after a little quiet time.');
+    if(!savedStateRestored)say('No mic mode · He will doze off on his own after a little time.');
     wake();
   }
 

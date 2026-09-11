@@ -2146,7 +2146,7 @@
         <img class="sleepymonster-sprite" src="tiles/sleepy-monster/assets/idle.png" alt="" draggable="false">
       </div>
     </div>
-    <div class="sleepymonster-footer"><div class="sleepymonster-status" role="status" aria-live="polite">Microphone off · He will doze off after a little quiet time.</div><meter class="sleepymonster-meter" min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="sleepymonster-mic tile-action" type="button" aria-pressed="false">Enable microphone</button></div>
+    <div class="sleepymonster-footer"><div class="sleepymonster-status" role="status" aria-live="polite">Microphone off · He will doze off after a little quiet time.</div><meter class="sleepymonster-meter" min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="sleepymonster-mic tile-action" type="button" aria-pressed="false" hidden>Enable microphone</button></div>
     <div class="sleepymonster-goal" aria-label="Sleep goal progress">
       <div class="sleepymonster-goal-head"><strong>Current sleep <span class="sleepymonster-sleep-time">0:00</span></strong><span class="sleepymonster-goal-text">Goal 5:00</span></div>
       <div class="sleepymonster-goal-track" role="progressbar" aria-label="Sleep goal" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"><div class="sleepymonster-goal-fill"></div></div>
@@ -2157,8 +2157,9 @@
       <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       <div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open Sleepy Monster settings" title="Sleepy Monster settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button>
         <div class="tile-settings-panel" hidden><strong>Sleepy Monster settings</strong>
-          <label class="tile-setting"><span>Noise threshold <output class="sleepymonster-threshold-value">45%</output></span><input class="sleepymonster-threshold" aria-label="Noise threshold" type="range" min="15" max="85" value="45"></label>
-          <label class="tile-setting"><span>Microphone sensitivity <output class="sleepymonster-sensitivity-value">100%</output></span><input class="sleepymonster-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
+          <div class="tile-setting"><span>Microphone</span><div class="tile-mode-switch" role="group" aria-label="Sleepy Monster microphone mode"><button type="button" data-sleepy-mode="ambient" aria-pressed="true" class="is-active">Off</button><button type="button" data-sleepy-mode="microphone" aria-pressed="false">On</button></div></div>
+          <label class="tile-setting sleepymonster-mic-setting" hidden><span>Noise threshold <output class="sleepymonster-threshold-value">45%</output></span><input class="sleepymonster-threshold" aria-label="Noise threshold" type="range" min="15" max="85" value="45"></label>
+          <label class="tile-setting sleepymonster-mic-setting" hidden><span>Microphone sensitivity <output class="sleepymonster-sensitivity-value">100%</output></span><input class="sleepymonster-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
           <label class="tile-setting"><span>Quiet time before sleep <output class="sleepymonster-delay-value">4.5s</output></span><input class="sleepymonster-delay" aria-label="Quiet time before sleep" type="range" min="1.5" max="12" step="0.5" value="4.5"></label>
           <label class="tile-setting tile-check"><input class="sleepymonster-goal-enabled" type="checkbox" checked> Show sleep goal</label>
           <label class="tile-setting sleepymonster-goal-time-setting"><span>Goal time</span><input class="sleepymonster-goal-input" aria-label="Sleep goal time" type="text" inputmode="numeric" autocomplete="off" value="5:00" placeholder="5:00"></label>
@@ -2190,7 +2191,7 @@
       <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       <div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open Butterfly Garden settings" title="Butterfly Garden settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button>
         <div class="tile-settings-panel" hidden><strong>Butterfly Garden settings</strong>
-          <div class="tile-setting"><span>Growth mode</span><div class="tile-mode-switch" role="group" aria-label="Butterfly garden growth mode"><button type="button" data-butterfly-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-butterfly-mode="microphone" aria-pressed="false">Microphone</button></div></div>
+          <div class="tile-setting"><span>Microphone</span><div class="tile-mode-switch" role="group" aria-label="Butterfly Garden microphone mode"><button type="button" data-butterfly-mode="ambient" aria-pressed="true" class="is-active">Off</button><button type="button" data-butterfly-mode="microphone" aria-pressed="false">On</button></div></div>
           <label class="tile-setting butterflygarden-mic-setting" hidden><span>Quiet level <output class="butterflygarden-threshold-value">45%</output></span><input class="butterflygarden-threshold" aria-label="Quiet level" type="range" min="15" max="85" value="45"></label>
           <label class="tile-setting butterflygarden-mic-setting" hidden><span>Sensitivity <output class="butterflygarden-sensitivity-value">100%</output></span><input class="butterflygarden-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
           <small class="butterflygarden-note">In No mic mode, the garden blooms over time. In Microphone mode, flowers only grow while the room stays calm.</small>
@@ -3630,8 +3631,8 @@
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
   <script src="tiles/fish-tank/index.js?v=20260905-integration-2"></script>
-  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-5"></script>
-  <script src="tiles/butterfly-garden/index.js?v=20260910-butterfly-garden-1"></script>
+  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-7"></script>
+  <script src="tiles/butterfly-garden/index.js?v=20260910-butterfly-garden-3"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
   <script src="tiles/word-of-the-day/words.js?v=20260908-reviewed-2"></script>
@@ -3642,7 +3643,7 @@
   <script src="tiles/times-tables/index.js?v=20260905-1"></script>
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
-  <script src="app.js?v=20260910-butterfly-garden-1"></script>
+  <script src="app.js?v=20260910-mic-mode-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260908-board-framing-1"></script>
 

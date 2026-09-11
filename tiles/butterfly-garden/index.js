@@ -27,8 +27,6 @@
   function pick(list){return list[Math.floor(Math.random()*list.length)]}
 
   function setup(moduleElement){
-    window.setupClassroomTileControls?.(moduleElement);
-
     const stage=moduleElement.querySelector('.butterflygarden-stage');
     const flowerLayer=moduleElement.querySelector('.butterflygarden-flowers');
     const butterflyLayer=moduleElement.querySelector('.butterflygarden-butterflies');
