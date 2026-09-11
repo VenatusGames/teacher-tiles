@@ -91,11 +91,12 @@
       const changed=state!==next;
       state=next;
       stage.dataset.state=state;
+      actor.classList.toggle('is-idle',state==='idle');
       actor.classList.toggle('is-sleeping',state==='sleep-stand'||state==='sleep-back');
       actor.classList.toggle('is-walking',state==='walk'||state==='grumpy-walk');
-      actor.classList.toggle('is-angry',state==='angry'||state==='grumpy-walk');
+      actor.classList.toggle('is-angry',state==='angry');
       zzz.hidden=!(state==='sleep-stand'||state==='sleep-back');
-      scribble.hidden=!(state==='angry'||state==='grumpy-walk');
+      scribble.hidden=state!=='angry';
 
       if(state==='idle')stateLabel.textContent='AWAKE';
       else if(state==='walk')stateLabel.textContent='WANDERING';
@@ -267,9 +268,11 @@
       }
 
       if(state==='angry'){
-        stateTimer-=dt;
-        if(active&&quietTime>=.75){fallAsleep();return}
-        if(stateTimer<=0)startGrumpyWalk();
+        // Stay angry for as long as the room remains at or above the threshold.
+        // Once the smoothed microphone level drops below it, the angry bubble
+        // disappears and he stomps around grumpily before settling again.
+        if(!active){startGrumpyWalk();return}
+        if(level<threshold()){startGrumpyWalk();return}
         return;
       }
 
@@ -282,8 +285,8 @@
 
     function updateMovement(dt){
       let speed=0;
-      if(state==='walk')speed=.105;
-      else if(state==='grumpy-walk')speed=.16;
+      if(state==='walk')speed=.09;
+      else if(state==='grumpy-walk')speed=.135;
       if(speed){
         x+=direction*speed*dt;
         if(x<=.16){x=.16;direction=1}
@@ -296,13 +299,13 @@
     function updateSprite(dt){
       animationTime+=dt;
       if(state==='idle')setSprite(SPRITES.idle);
-      else if(state==='walk')setSprite(SPRITES.walk[Math.floor(animationTime*6.6)%SPRITES.walk.length]);
-      else if(state==='grumpy-walk')setSprite(SPRITES.walk[Math.floor(animationTime*8.2)%SPRITES.walk.length]);
+      else if(state==='walk')setSprite(SPRITES.walk[Math.floor(animationTime*5.2)%SPRITES.walk.length]);
+      else if(state==='grumpy-walk')setSprite(SPRITES.walk[Math.floor(animationTime*6.4)%SPRITES.walk.length]);
       else if(state==='angry')setSprite(SPRITES.angry);
       else if(state==='wake-stand')setSprite(SPRITES.wakeStand);
       else if(state==='wake-back')setSprite(SPRITES.wakeBack);
-      else if(state==='sleep-stand')setSprite(SPRITES.sleepStand[Math.floor(animationTime*2.5)%SPRITES.sleepStand.length]);
-      else if(state==='sleep-back')setSprite(SPRITES.sleepBack[Math.floor(animationTime*2.15)%SPRITES.sleepBack.length]);
+      else if(state==='sleep-stand')setSprite(SPRITES.sleepStand[Math.floor(animationTime*2.05)%SPRITES.sleepStand.length]);
+      else if(state==='sleep-back')setSprite(SPRITES.sleepBack[Math.floor(animationTime*1.8)%SPRITES.sleepBack.length]);
     }
 
     function tick(now){
