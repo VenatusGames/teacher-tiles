@@ -40,7 +40,7 @@
     const goalTrack=m.querySelector('.sleepymonster-goal-track');
     const goalFill=m.querySelector('.sleepymonster-goal-fill');
     const goalInput=m.querySelector('.sleepymonster-goal-input');
-    const goalValue=m.querySelector('.sleepymonster-goal-value');
+    const goalEnabledInput=m.querySelector('.sleepymonster-goal-enabled');
     const goalWrap=m.querySelector('.sleepymonster-goal');
 
     let state='idle';
@@ -69,11 +69,39 @@
     let cycleSleepSeconds=0;
     let sleepCycleActive=false;
     let goalReached=false;
+    let goalEnabled=true;
+    let goalSeconds=300;
 
     function threshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
     function sensitivity(){return clamp(Number(sensitivityInput.value)||100,30,200)}
     function quietDelay(){return clamp(Number(delayInput.value)||4.5,1.5,12)}
-    function sleepGoalMinutes(){return clamp(Number(goalInput.value)||5,.5,60)}
+    function sleepGoalMinutes(){return goalSeconds/60}
+
+    function parseGoalTime(value){
+      const raw=String(value??'').trim();
+      if(!raw)return null;
+      if(!/^\d+(?::\d{1,2}){0,2}$/.test(raw))return null;
+      const parts=raw.split(':').map(Number);
+      if(parts.some(part=>!Number.isFinite(part)))return null;
+      let seconds=0;
+      if(parts.length===1)seconds=parts[0]*60;
+      else if(parts.length===2){
+        if(parts[1]>59)return null;
+        seconds=parts[0]*60+parts[1];
+      }else{
+        if(parts[1]>59||parts[2]>59)return null;
+        seconds=parts[0]*3600+parts[1]*60+parts[2];
+      }
+      return clamp(Math.round(seconds),30,3600);
+    }
+
+    function formatGoalInput(seconds){
+      const safe=clamp(Math.round(Number(seconds)||300),30,3600);
+      const hours=Math.floor(safe/3600);
+      const minutes=Math.floor((safe%3600)/60);
+      const remainder=safe%60;
+      return hours?`${hours}:${String(minutes).padStart(2,'0')}:${String(remainder).padStart(2,'0')}`:`${minutes}:${String(remainder).padStart(2,'0')}`;
+    }
 
     function formatDuration(totalSeconds){
       const seconds=Math.max(0,Math.floor(Number(totalSeconds)||0));
@@ -83,20 +111,18 @@
       return hours?`${hours}:${String(minutes).padStart(2,'0')}:${String(remainder).padStart(2,'0')}`:`${minutes}:${String(remainder).padStart(2,'0')}`;
     }
 
-    function formatGoalSetting(minutes){
-      if(minutes<1)return `${Math.round(minutes*60)} sec`;
-      return Number.isInteger(minutes)?`${minutes} min`:`${minutes.toFixed(1)} min`;
-    }
-
     function updateGoalUI(){
-      const goalSeconds=sleepGoalMinutes()*60;
-      const progress=clamp(cycleSleepSeconds/goalSeconds,0,1);
-      const reached=cycleSleepSeconds>=goalSeconds;
+      const currentGoalSeconds=goalSeconds;
+      const progress=clamp(cycleSleepSeconds/currentGoalSeconds,0,1);
+      const reached=goalEnabled&&cycleSleepSeconds>=currentGoalSeconds;
       sleepTime.textContent=formatDuration(cycleSleepSeconds);
-      goalText.textContent=reached?'Goal reached!':`Goal ${formatDuration(goalSeconds)}`;
-      goalFill.style.width=`${progress*100}%`;
-      goalTrack.setAttribute('aria-valuemax',String(Math.round(goalSeconds)));
-      goalTrack.setAttribute('aria-valuenow',String(Math.round(Math.min(cycleSleepSeconds,goalSeconds))));
+      goalWrap.classList.toggle('is-disabled',!goalEnabled);
+      goalTrack.hidden=!goalEnabled;
+      goalText.textContent=!goalEnabled?'Goal off':(reached?'Goal reached!':`Goal ${formatDuration(currentGoalSeconds)}`);
+      goalFill.style.width=`${goalEnabled?progress*100:0}%`;
+      goalTrack.setAttribute('aria-valuemax',String(Math.round(currentGoalSeconds)));
+      goalTrack.setAttribute('aria-valuenow',String(Math.round(Math.min(cycleSleepSeconds,currentGoalSeconds))));
+      goalTrack.setAttribute('aria-hidden',goalEnabled?'false':'true');
       goalWrap.classList.toggle('is-complete',reached);
       if(reached&&!goalReached){
         goalReached=true;
@@ -112,7 +138,8 @@
       thresholdValue.textContent=`${Math.round(threshold())}%`;
       sensitivityValue.textContent=`${Math.round(sensitivity())}%`;
       delayValue.textContent=`${quietDelay().toFixed(1)}s`;
-      goalValue.textContent=formatGoalSetting(sleepGoalMinutes());
+      goalEnabledInput.checked=goalEnabled;
+      goalInput.disabled=!goalEnabled;
       updateGoalUI();
     }
 
@@ -386,14 +413,42 @@
       thresholdInput.value=String(threshold());
       sensitivityInput.value=String(sensitivity());
       delayInput.value=String(quietDelay());
-      goalInput.value=String(sleepGoalMinutes());
       updateSettingLabels();
       notifyBoardChanged('sleepy-monster-settings');
     }
+
+    function commitGoalTime(){
+      const parsed=parseGoalTime(goalInput.value);
+      if(parsed===null){
+        goalInput.setCustomValidity('Enter a time like 5:00 or 1:00:00.');
+        goalInput.reportValidity();
+        goalInput.value=formatGoalInput(goalSeconds);
+        goalInput.setCustomValidity('');
+        return;
+      }
+      goalSeconds=parsed;
+      goalInput.value=formatGoalInput(goalSeconds);
+      updateGoalUI();
+      notifyBoardChanged('sleepy-monster-goal-time');
+    }
+
     thresholdInput.addEventListener('input',updateSettings);
     sensitivityInput.addEventListener('input',updateSettings);
     delayInput.addEventListener('input',updateSettings);
-    goalInput.addEventListener('input',updateSettings);
+    goalEnabledInput.addEventListener('change',()=>{
+      goalEnabled=goalEnabledInput.checked;
+      goalInput.disabled=!goalEnabled;
+      updateGoalUI();
+      notifyBoardChanged('sleepy-monster-goal-toggle');
+    });
+    goalInput.addEventListener('change',commitGoalTime);
+    goalInput.addEventListener('keydown',event=>{
+      if(event.key==='Enter'){
+        event.preventDefault();
+        commitGoalTime();
+        goalInput.blur();
+      }
+    });
 
     const observer=new IntersectionObserver(entries=>{
       visible=entries[0]?.isIntersecting!==false;
@@ -414,6 +469,8 @@
       threshold:threshold(),
       sensitivity:sensitivity(),
       quietDelay:quietDelay(),
+      goalEnabled,
+      sleepGoalSeconds:goalSeconds,
       sleepGoalMinutes:sleepGoalMinutes(),
       cycleSleepSeconds,
       sleepCycleActive,
@@ -428,14 +485,18 @@
       thresholdInput.value=String(clamp(Number(s?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(s?.sensitivity)||100,30,200));
       delayInput.value=String(clamp(Number(s?.quietDelay)||4.5,1.5,12));
-      goalInput.value=String(clamp(Number(s?.sleepGoalMinutes)||5,.5,60));
+      goalEnabled=s?.goalEnabled!==false;
+      goalSeconds=clamp(Math.round(Number(s?.sleepGoalSeconds)||(Number(s?.sleepGoalMinutes)*60)||300),30,3600);
+      goalEnabledInput.checked=goalEnabled;
+      goalInput.value=formatGoalInput(goalSeconds);
+      goalInput.disabled=!goalEnabled;
       cycleSleepSeconds=Math.max(0,Number(s?.cycleSleepSeconds)||0);
       sleepVariant=s?.sleepVariant===2?2:1;
       x=clamp(Number(s?.x)||.28,.16,.84);
       direction=Number(s?.direction)<0?-1:1;
       const restored=STATES.has(s?.state)&&['idle','walk','sleep-stand','sleep-back'].includes(s.state)?s.state:'idle';
       sleepCycleActive=restored==='sleep-stand'||restored==='sleep-back'?s?.sleepCycleActive!==false:false;
-      goalReached=cycleSleepSeconds>=sleepGoalMinutes()*60;
+      goalReached=goalEnabled&&cycleSleepSeconds>=goalSeconds;
       stateTimer=random(1.8,3.4);
       quietTime=0;
       loudTime=0;
@@ -469,7 +530,9 @@
       priorCleanup?.();
     };
 
-    goalInput.value=String(sleepGoalMinutes());
+    goalInput.value=formatGoalInput(goalSeconds);
+    goalEnabledInput.checked=goalEnabled;
+    goalInput.disabled=!goalEnabled;
     updateSettingLabels();
     setState('idle',{announce:false});
     updateMovement(0);

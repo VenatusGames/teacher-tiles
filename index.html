@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="tiles/dice/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260908-polish-1" />
-  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-4" />
+  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-5" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/word-of-the-day/styles.css?v=20260908-polish-1">
@@ -2158,7 +2158,9 @@
           <label class="tile-setting"><span>Noise threshold <output class="sleepymonster-threshold-value">45%</output></span><input class="sleepymonster-threshold" aria-label="Noise threshold" type="range" min="15" max="85" value="45"></label>
           <label class="tile-setting"><span>Microphone sensitivity <output class="sleepymonster-sensitivity-value">100%</output></span><input class="sleepymonster-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
           <label class="tile-setting"><span>Quiet time before sleep <output class="sleepymonster-delay-value">4.5s</output></span><input class="sleepymonster-delay" aria-label="Quiet time before sleep" type="range" min="1.5" max="12" step="0.5" value="4.5"></label>
-          <label class="tile-setting"><span>Sleep goal <output class="sleepymonster-goal-value">5 min</output></span><input class="sleepymonster-goal-input" aria-label="Sleep goal" type="range" min="0.5" max="60" step="0.5" value="5"></label>
+          <label class="tile-setting tile-check"><input class="sleepymonster-goal-enabled" type="checkbox" checked> Show sleep goal</label>
+          <label class="tile-setting sleepymonster-goal-time-setting"><span>Goal time</span><input class="sleepymonster-goal-input" aria-label="Sleep goal time" type="text" inputmode="numeric" autocomplete="off" value="5:00" placeholder="5:00"></label>
+          <small>Type a goal as M:SS or H:MM:SS (30 seconds to 60 minutes). Turn the goal off to hide the meter while keeping the current sleep counter visible.</small>
           <small>The counter tracks only time actually asleep. Brief wake-ups pause the same sleep cycle; a new sleep cycle starts after he fully wakes up.</small>
           <small>Microphone audio stays on this device and is never recorded or uploaded.</small>
         </div>
@@ -3597,7 +3599,7 @@
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
   <script src="tiles/fish-tank/index.js?v=20260905-integration-2"></script>
-  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-4"></script>
+  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-5"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
   <script src="tiles/word-of-the-day/words.js?v=20260908-reviewed-2"></script>
