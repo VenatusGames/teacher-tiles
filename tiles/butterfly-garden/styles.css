@@ -92,12 +92,12 @@
   z-index:18;
 }
 .butterflygarden-butterfly{
-  width:50px;
+  width:44px;
   transform-origin:center center;
   filter:drop-shadow(0 4px 10px rgba(69,77,112,.18));
 }
 .butterflygarden-butterfly.is-golden{
-  width:56px;
+  width:50px;
   filter:drop-shadow(0 0 10px rgba(255,204,79,.32)) drop-shadow(0 4px 12px rgba(189,129,0,.15));
 }
 .butterflygarden-rare{
@@ -198,10 +198,10 @@
     width:56px;
   }
   .butterflygarden-butterfly{
-    width:44px;
+    width:39px;
   }
   .butterflygarden-butterfly.is-golden{
-    width:50px;
+    width:44px;
   }
   .butterflygarden-controls{
     gap:6px;

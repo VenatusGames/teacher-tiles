@@ -7,7 +7,7 @@
   const GROWTH_INTERVAL_QUIET=14;
   const GOLDEN_AMBIENT_DELAY=240;
   const GOLDEN_QUIET_DELAY=26;
-  const FLOWER_SOURCES=Array.from({length:10},(_,index)=>`tiles/butterfly-garden/assets/flower-${String(index+1).padStart(2,'0')}.png`);
+  const FLOWER_SOURCES=Array.from({length:9},(_,index)=>`tiles/butterfly-garden/assets/flower-${String(index+1).padStart(2,'0')}.png`);
   const FLOWER_PROFILES=[
     {ratio:1.411,lift:.78,radius:.32,stem:.085},
     {ratio:1.409,lift:.78,radius:.32,stem:.085},
@@ -17,13 +17,13 @@
     {ratio:1.246,lift:.74,radius:.39,stem:.12},
     {ratio:1.633,lift:.82,radius:.31,stem:.09},
     {ratio:1.318,lift:.72,radius:.34,stem:.10},
-    {ratio:.670,lift:.58,radius:.43,stem:.24},
-    {ratio:.961,lift:.69,radius:.43,stem:.20}
+    {ratio:.670,lift:.58,radius:.43,stem:.24}
   ];
   const BUTTERFLY_VARIANTS=[
     {id:'blue',src:'tiles/butterfly-garden/assets/butterfly-blue.png'},
     {id:'mint',src:'tiles/butterfly-garden/assets/butterfly-mint.png'},
-    {id:'pink',src:'tiles/butterfly-garden/assets/butterfly-pink.png'}
+    {id:'pink',src:'tiles/butterfly-garden/assets/butterfly-pink.png'},
+    {id:'purple',src:'tiles/butterfly-garden/assets/butterfly-purple.png'}
   ];
   const GOLDEN_VARIANT={id:'golden',src:'tiles/butterfly-garden/assets/butterfly-gold.png'};
 
@@ -69,6 +69,10 @@
     let growthCharge=0;
     let goldenCooldown=45;
     let nextButterflyArrival=0;
+    let loudRun=0;
+    let returnQuietRun=0;
+    let butterflyEvictionActive=false;
+    let lastDepartedVariant='';
     let stream=null;
     let audioContext=null;
     let analyser=null;
@@ -85,7 +89,18 @@
     }
     function regularButterflyTarget(){
       if(flowers.length<10)return 0;
-      return Math.min(12,3+Math.floor((flowers.length-10)/2));
+      return Math.min(16,4+Math.floor((flowers.length-10)/1.5));
+    }
+    function chooseRegularVariant(){
+      const activeCounts=new Map(BUTTERFLY_VARIANTS.map(variant=>[variant.id,0]));
+      butterflies.forEach(butterfly=>{
+        if(!butterfly.isGolden&&!butterfly.exiting)activeCounts.set(butterfly.id,(activeCounts.get(butterfly.id)||0)+1);
+      });
+      const minimum=Math.min(...activeCounts.values());
+      let choices=BUTTERFLY_VARIANTS.filter(variant=>(activeCounts.get(variant.id)||0)===minimum&&variant.id!==lastDepartedVariant);
+      if(!choices.length)choices=BUTTERFLY_VARIANTS.filter(variant=>variant.id!==lastDepartedVariant);
+      if(!choices.length)choices=BUTTERFLY_VARIANTS;
+      return pick(choices);
     }
     function say(text){if(status.textContent!==text)status.textContent=text}
 
@@ -229,6 +244,7 @@
       if(index>=0)butterflies.splice(index,1);
       target.element.remove();
       if(target.isGolden)rareBadge.hidden=true;
+      else lastDepartedVariant=target.id;
       refreshCounts();
     }
 
@@ -262,10 +278,13 @@
         facing:enterFromLeft?1:-1,
         isGolden:variant.id==='golden',
         particleClock:randomBetween(.08,.30),
-        speed:variant.id==='golden'?randomBetween(27,34):randomBetween(34,43),
+        speed:variant.id==='golden'?randomBetween(22,28):randomBetween(25,32),
         exiting:false,
         exitX:0,
-        exitY:0
+        exitY:0,
+        entering:true,
+        visitDuration:variant.id==='golden'?randomBetween(18,27):randomBetween(30,52),
+        leaveAt:0
       };
       butterflies.push(butterfly);
       chooseButterflyTarget(butterfly);
@@ -274,36 +293,49 @@
       return butterfly;
     }
 
+    function sendButterflyAway(butterfly,{fast=false}={}){
+      if(!butterfly||butterfly.exiting)return;
+      const {width,height}=stageSize();
+      butterfly.exiting=true;
+      butterfly.entering=false;
+      butterfly.target=null;
+      butterfly.state='exit';
+      butterfly.leaveAt=0;
+      butterfly.exitX=butterfly.x<width*.5?-84:width+84;
+      butterfly.exitY=clamp(butterfly.y+randomBetween(-42,28),8,height-8);
+      if(fast)butterfly.speed=Math.max(butterfly.speed,randomBetween(54,68));
+    }
+
+    function scareAwayAllButterflies(){
+      if(butterflyEvictionActive)return;
+      butterflyEvictionActive=true;
+      returnQuietRun=0;
+      nextButterflyArrival=Infinity;
+      butterflies.forEach(butterfly=>sendButterflyAway(butterfly,{fast:true}));
+      goldenCooldown=Math.max(goldenCooldown,75);
+    }
+
     function ensureButterflyPopulation(){
       const goal=regularButterflyTarget();
       const regular=butterflies.filter(butterfly=>!butterfly.isGolden&&!butterfly.exiting);
-      if(regular.length<goal&&elapsed>=nextButterflyArrival){
-        spawnButterfly(pick(BUTTERFLY_VARIANTS));
-        nextButterflyArrival=elapsed+randomBetween(1.7,2.8);
+      const arrivalInProgress=butterflies.some(butterfly=>butterfly.entering&&!butterfly.exiting);
+      const canInvite=!butterflyEvictionActive&&(mode!=='microphone'||!active||level<getThreshold());
+      if(regular.length<goal&&!arrivalInProgress&&canInvite&&elapsed>=nextButterflyArrival){
+        spawnButterfly(chooseRegularVariant());
+        nextButterflyArrival=Infinity;
       }
       if(regular.length>goal){
         const extra=regular[regular.length-1];
-        if(extra){
-          const {width,height}=stageSize();
-          extra.exiting=true;
-          extra.target=null;
-          extra.exitX=extra.x<width*.5?-60:width+60;
-          extra.exitY=clamp(extra.y+randomBetween(-35,35),10,height-10);
-        }
+        if(extra)sendButterflyAway(extra);
       }
       if(flowers.length<10){
-        butterflies.filter(butterfly=>butterfly.isGolden).forEach(butterfly=>{
-          const {width,height}=stageSize();
-          butterfly.exiting=true;
-          butterfly.target=null;
-          butterfly.exitX=butterfly.x<width*.5?-70:width+70;
-          butterfly.exitY=clamp(butterfly.y-20,10,height-10);
-        });
+        butterflies.filter(butterfly=>butterfly.isGolden).forEach(butterfly=>sendButterflyAway(butterfly));
       }
     }
 
     function maybeSpawnGoldenButterfly(dt){
-      if(flowers.length<10||butterflies.some(butterfly=>butterfly.isGolden&&!butterfly.exiting))return;
+      if(flowers.length<10||butterflyEvictionActive||butterflies.some(butterfly=>butterfly.isGolden&&!butterfly.exiting))return;
+      if(butterflies.some(butterfly=>butterfly.entering&&!butterfly.exiting))return;
       goldenCooldown=Math.max(0,goldenCooldown-dt);
       if(goldenCooldown>0)return;
       const quietReady=mode==='microphone'&&active&&veryQuietRun>=GOLDEN_QUIET_DELAY;
@@ -311,9 +343,8 @@
       if(!quietReady&&!ambientReady)return;
       const chance=quietReady?dt/18:dt/28;
       if(Math.random()<chance){
-        const golden=spawnButterfly(GOLDEN_VARIANT);
-        golden.leaveAt=elapsed+randomBetween(18,26);
-        goldenCooldown=randomBetween(90,150);
+        spawnButterfly(GOLDEN_VARIANT);
+        goldenCooldown=randomBetween(105,175);
         notify('golden-visitor');
       }
     }
@@ -346,12 +377,7 @@
     function updateButterflies(dt){
       const {width,height}=stageSize();
       for(const butterfly of butterflies.slice()){
-        if(butterfly.leaveAt&&elapsed>butterfly.leaveAt&&!butterfly.exiting){
-          butterfly.exiting=true;
-          butterfly.target=null;
-          butterfly.exitX=butterfly.x<width*.5?-70:width+70;
-          butterfly.exitY=clamp(butterfly.y+randomBetween(-30,25),8,height-8);
-        }
+        if(butterfly.leaveAt&&elapsed>butterfly.leaveAt&&!butterfly.exiting)sendButterflyAway(butterfly);
 
         let destinationX=butterfly.x;
         let destinationY=butterfly.y;
@@ -385,12 +411,21 @@
         const tilt=Math.sin(elapsed*2.7+butterfly.phase)*3.2;
         const drawX=butterfly.x+drift;
         const drawY=butterfly.y+hover;
+        if(butterfly.entering&&drawX>10&&drawX<width-10){
+          butterfly.entering=false;
+          butterfly.leaveAt=elapsed+butterfly.visitDuration;
+          nextButterflyArrival=elapsed+randomBetween(5.8,8.4);
+        }
         butterfly.element.style.left=`${drawX.toFixed(2)}px`;
         butterfly.element.style.top=`${drawY.toFixed(2)}px`;
         butterfly.element.style.transform=`translate(-50%,-50%) scale(${(butterfly.facing*flap).toFixed(4)},${flap.toFixed(4)}) rotate(${tilt.toFixed(2)}deg)`;
         butterfly.particleClock-=dt;
         if(!butterfly.exiting&&butterfly.particleClock<=0){
-          spawnParticle(drawX,drawY+(butterfly.isGolden?5:7),butterfly.isGolden);
+          const butterflyRect=butterfly.element.getBoundingClientRect();
+          const stageRect=stage.getBoundingClientRect();
+          const particleX=butterflyRect.left-stageRect.left+butterflyRect.width/2;
+          const particleY=butterflyRect.top-stageRect.top+butterflyRect.height/2;
+          spawnParticle(particleX,particleY,butterfly.isGolden);
           butterfly.particleClock=butterfly.isGolden?randomBetween(.07,.13):randomBetween(.19,.34);
         }
       }
@@ -522,6 +557,35 @@
       meter.value=level;
     }
 
+    function updateButterflyNoiseBehavior(dt){
+      if(mode!=='microphone'||!active){
+        loudRun=0;
+        if(butterflyEvictionActive){
+          butterflyEvictionActive=false;
+          returnQuietRun=0;
+          nextButterflyArrival=Math.min(nextButterflyArrival,elapsed+3);
+        }
+        return;
+      }
+      const threshold=getThreshold();
+      if(level>=threshold+7){
+        loudRun+=dt;
+        returnQuietRun=0;
+        if(loudRun>=.65)scareAwayAllButterflies();
+        return;
+      }
+      loudRun=Math.max(0,loudRun-dt*2.2);
+      if(!butterflyEvictionActive)return;
+      if(level<threshold){
+        returnQuietRun+=dt;
+        if(returnQuietRun>=2.4){
+          butterflyEvictionActive=false;
+          returnQuietRun=0;
+          nextButterflyArrival=elapsed+randomBetween(2.2,3.6);
+        }
+      }else returnQuietRun=0;
+    }
+
     function updateGrowth(dt){
       if(mode==='ambient'){
         ambientRun+=dt;
@@ -562,10 +626,12 @@
       }
       if(!active&&!pending){say('Microphone off · Enable it so quiet voices help the garden grow.');return;}
       if(pending)return;
+      if(butterflyEvictionActive&&level<getThreshold()){say('The room is calming down · Butterflies will return one by one.');return;}
       if(level<getThreshold()){
         if(flowers.length<10)say(`Quiet classroom · ${Math.floor(quietRun)}s calm · The garden is growing.`);
         else say(`Quiet classroom · ${Math.floor(quietRun)}s calm · Butterflies are happily visiting.`);
-      }else say('A little loud right now · Growth pauses until the room gets quieter.');
+      }else if(butterflyEvictionActive||loudRun>=.65)say('Too loud · The butterflies are flying away. Stay quiet and they will return one by one.');
+      else say('A little loud right now · Growth pauses until the room gets quieter.');
     }
 
     function tick(now){
@@ -575,6 +641,7 @@
       lastFrameTime=now;
       elapsed+=dt;
       updateAudio(dt);
+      updateButterflyNoiseBehavior(dt);
       updateGrowth(dt);
       ensureButterflyPopulation();
       maybeSpawnGoldenButterfly(dt);
