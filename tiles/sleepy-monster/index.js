@@ -35,6 +35,13 @@
     const delayValue=m.querySelector('.sleepymonster-delay-value');
     const zzz=m.querySelector('.sleepymonster-zzz');
     const scribble=m.querySelector('.sleepymonster-scribble');
+    const sleepTime=m.querySelector('.sleepymonster-sleep-time');
+    const goalText=m.querySelector('.sleepymonster-goal-text');
+    const goalTrack=m.querySelector('.sleepymonster-goal-track');
+    const goalFill=m.querySelector('.sleepymonster-goal-fill');
+    const goalInput=m.querySelector('.sleepymonster-goal-input');
+    const goalValue=m.querySelector('.sleepymonster-goal-value');
+    const goalWrap=m.querySelector('.sleepymonster-goal');
 
     let state='idle';
     let sleepVariant=1;
@@ -59,15 +66,54 @@
     let lastSprite='';
     let pulseTimer=0;
     let savedStateRestored=false;
+    let cycleSleepSeconds=0;
+    let sleepCycleActive=false;
+    let goalReached=false;
 
     function threshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
     function sensitivity(){return clamp(Number(sensitivityInput.value)||100,30,200)}
     function quietDelay(){return clamp(Number(delayInput.value)||4.5,1.5,12)}
+    function sleepGoalMinutes(){return clamp(Number(goalInput.value)||5,.5,60)}
+
+    function formatDuration(totalSeconds){
+      const seconds=Math.max(0,Math.floor(Number(totalSeconds)||0));
+      const hours=Math.floor(seconds/3600);
+      const minutes=Math.floor((seconds%3600)/60);
+      const remainder=seconds%60;
+      return hours?`${hours}:${String(minutes).padStart(2,'0')}:${String(remainder).padStart(2,'0')}`:`${minutes}:${String(remainder).padStart(2,'0')}`;
+    }
+
+    function formatGoalSetting(minutes){
+      if(minutes<1)return `${Math.round(minutes*60)} sec`;
+      return Number.isInteger(minutes)?`${minutes} min`:`${minutes.toFixed(1)} min`;
+    }
+
+    function updateGoalUI(){
+      const goalSeconds=sleepGoalMinutes()*60;
+      const progress=clamp(cycleSleepSeconds/goalSeconds,0,1);
+      const reached=cycleSleepSeconds>=goalSeconds;
+      sleepTime.textContent=formatDuration(cycleSleepSeconds);
+      goalText.textContent=reached?'Goal reached!':`Goal ${formatDuration(goalSeconds)}`;
+      goalFill.style.width=`${progress*100}%`;
+      goalTrack.setAttribute('aria-valuemax',String(Math.round(goalSeconds)));
+      goalTrack.setAttribute('aria-valuenow',String(Math.round(Math.min(cycleSleepSeconds,goalSeconds))));
+      goalWrap.classList.toggle('is-complete',reached);
+      if(reached&&!goalReached){
+        goalReached=true;
+        goalWrap.classList.remove('sleepymonster-goal-pop');
+        void goalWrap.offsetWidth;
+        goalWrap.classList.add('sleepymonster-goal-pop');
+      }else if(!reached){
+        goalReached=false;
+      }
+    }
 
     function updateSettingLabels(){
       thresholdValue.textContent=`${Math.round(threshold())}%`;
       sensitivityValue.textContent=`${Math.round(sensitivity())}%`;
       delayValue.textContent=`${quietDelay().toFixed(1)}s`;
+      goalValue.textContent=formatGoalSetting(sleepGoalMinutes());
+      updateGoalUI();
     }
 
     function say(text){status.textContent=text}
@@ -116,12 +162,22 @@
     }
 
     function chooseAwakeState(){
+      if(state==='wake-stand'||state==='wake-back')sleepCycleActive=false;
       stateTimer=random(1.7,3.6);
       setState(Math.random()<.58?'walk':'idle');
     }
 
     function fallAsleep(){
-      sleepVariant=Math.random()<.5?1:2;
+      const resumingCycle=state==='wake-stand'||state==='wake-back';
+      if(!resumingCycle){
+        cycleSleepSeconds=0;
+        sleepCycleActive=true;
+        goalReached=false;
+        updateGoalUI();
+      }else{
+        sleepCycleActive=true;
+      }
+      sleepVariant=resumingCycle?sleepVariant:(Math.random()<.5?1:2);
       quietTime=0;
       loudTime=0;
       animationTime=0;
@@ -137,6 +193,7 @@
     }
 
     function getAngry(){
+      sleepCycleActive=false;
       stateTimer=1.15;
       animationTime=0;
       setState('angry');
@@ -242,6 +299,10 @@
     }
 
     function updateState(dt){
+      if(sleepCycleActive&&(state==='sleep-stand'||state==='sleep-back')){
+        cycleSleepSeconds+=dt;
+        updateGoalUI();
+      }
       updateNoiseTimers(dt);
       const delay=quietDelay();
 
@@ -268,9 +329,6 @@
       }
 
       if(state==='angry'){
-        // Stay angry for as long as the room remains at or above the threshold.
-        // Once the smoothed microphone level drops below it, the angry bubble
-        // disappears and he stomps around grumpily before settling again.
         if(!active){startGrumpyWalk();return}
         if(level<threshold()){startGrumpyWalk();return}
         return;
@@ -328,12 +386,14 @@
       thresholdInput.value=String(threshold());
       sensitivityInput.value=String(sensitivity());
       delayInput.value=String(quietDelay());
+      goalInput.value=String(sleepGoalMinutes());
       updateSettingLabels();
       notifyBoardChanged('sleepy-monster-settings');
     }
     thresholdInput.addEventListener('input',updateSettings);
     sensitivityInput.addEventListener('input',updateSettings);
     delayInput.addEventListener('input',updateSettings);
+    goalInput.addEventListener('input',updateSettings);
 
     const observer=new IntersectionObserver(entries=>{
       visible=entries[0]?.isIntersecting!==false;
@@ -354,6 +414,9 @@
       threshold:threshold(),
       sensitivity:sensitivity(),
       quietDelay:quietDelay(),
+      sleepGoalMinutes:sleepGoalMinutes(),
+      cycleSleepSeconds,
+      sleepCycleActive,
       state:state==='sleep-stand'||state==='sleep-back'?state:(state==='idle'||state==='walk'?state:'idle'),
       sleepVariant,
       x,
@@ -365,10 +428,14 @@
       thresholdInput.value=String(clamp(Number(s?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(s?.sensitivity)||100,30,200));
       delayInput.value=String(clamp(Number(s?.quietDelay)||4.5,1.5,12));
+      goalInput.value=String(clamp(Number(s?.sleepGoalMinutes)||5,.5,60));
+      cycleSleepSeconds=Math.max(0,Number(s?.cycleSleepSeconds)||0);
       sleepVariant=s?.sleepVariant===2?2:1;
       x=clamp(Number(s?.x)||.28,.16,.84);
       direction=Number(s?.direction)<0?-1:1;
       const restored=STATES.has(s?.state)&&['idle','walk','sleep-stand','sleep-back'].includes(s.state)?s.state:'idle';
+      sleepCycleActive=restored==='sleep-stand'||restored==='sleep-back'?s?.sleepCycleActive!==false:false;
+      goalReached=cycleSleepSeconds>=sleepGoalMinutes()*60;
       stateTimer=random(1.8,3.4);
       quietTime=0;
       loudTime=0;
@@ -402,6 +469,7 @@
       priorCleanup?.();
     };
 
+    goalInput.value=String(sleepGoalMinutes());
     updateSettingLabels();
     setState('idle',{announce:false});
     updateMovement(0);

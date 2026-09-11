@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="tiles/dice/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260908-polish-1" />
-  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-3" />
+  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-4" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/word-of-the-day/styles.css?v=20260908-polish-1">
@@ -2145,6 +2145,10 @@
       </div>
     </div>
     <div class="sleepymonster-footer"><div class="sleepymonster-status" role="status" aria-live="polite">Microphone off · He will doze off after a little quiet time.</div><meter class="sleepymonster-meter" min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="sleepymonster-mic tile-action" type="button" aria-pressed="false">Enable microphone</button></div>
+    <div class="sleepymonster-goal" aria-label="Sleep goal progress">
+      <div class="sleepymonster-goal-head"><strong>Current sleep <span class="sleepymonster-sleep-time">0:00</span></strong><span class="sleepymonster-goal-text">Goal 5:00</span></div>
+      <div class="sleepymonster-goal-track" role="progressbar" aria-label="Sleep goal" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"><div class="sleepymonster-goal-fill"></div></div>
+    </div>
     <div class="sleepymonster-controls customization-bar">
       <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
       <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -2154,6 +2158,8 @@
           <label class="tile-setting"><span>Noise threshold <output class="sleepymonster-threshold-value">45%</output></span><input class="sleepymonster-threshold" aria-label="Noise threshold" type="range" min="15" max="85" value="45"></label>
           <label class="tile-setting"><span>Microphone sensitivity <output class="sleepymonster-sensitivity-value">100%</output></span><input class="sleepymonster-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
           <label class="tile-setting"><span>Quiet time before sleep <output class="sleepymonster-delay-value">4.5s</output></span><input class="sleepymonster-delay" aria-label="Quiet time before sleep" type="range" min="1.5" max="12" step="0.5" value="4.5"></label>
+          <label class="tile-setting"><span>Sleep goal <output class="sleepymonster-goal-value">5 min</output></span><input class="sleepymonster-goal-input" aria-label="Sleep goal" type="range" min="0.5" max="60" step="0.5" value="5"></label>
+          <small>The counter tracks only time actually asleep. Brief wake-ups pause the same sleep cycle; a new sleep cycle starts after he fully wakes up.</small>
           <small>Microphone audio stays on this device and is never recorded or uploaded.</small>
         </div>
       </div>
@@ -3591,7 +3597,7 @@
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
   <script src="tiles/fish-tank/index.js?v=20260905-integration-2"></script>
-  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-2"></script>
+  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-4"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
   <script src="tiles/word-of-the-day/words.js?v=20260908-reviewed-2"></script>
