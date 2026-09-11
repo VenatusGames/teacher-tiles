@@ -2792,13 +2792,14 @@ function setupModuleByType(m,type){
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
   if(type==='sleepymonster')window.TeacherTilesSleepyMonster.setup(m);
+  if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
   if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
   if(type==='quoteoftheday')window.TeacherTilesQuoteOfTheDay.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='timestables')window.TeacherTilesTimesTables.setup(m);
   if(type==='google')window.TeacherTilesGoogle.setup(m);
   if(type==='link')window.TeacherTilesLink.setup(m);
-  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster'].includes(type))setupClassroomTileControls(m);
+  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);
@@ -8184,7 +8185,6 @@ const EDITABLE_TILE_HEADINGS={
   link:'.widget-title',
   dice:'.dice-module h2',
   fishtank:'.fish-heading h2',
-  sleepymonster:'.sleepymonster-heading h2',
   seatingchart:'.seating-title',
   imagesearch:'.image-search-header h2',
   noise:'.noise-heading strong',
