@@ -3686,6 +3686,10 @@ function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m
 function setupTimerSync(m){
   const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.setAttribute('role','switch');
   toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9a4 4 0 0 0-4 4v1M17 4l3 3-3 3M4 17h9a4 4 0 0 0 4-4v-1M7 20l-3-3 3-3"/></svg>';
+  if(timerSyncType(m)==='visual'){
+    toggle.classList.add('timer-sync-toggle--labeled');
+    toggle.innerHTML='<span>Sync Timers</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
+  }
   const refresh=()=>{const enabled=m.dataset.timerSync==='true';toggle.setAttribute('aria-checked',String(enabled));toggle.setAttribute('aria-label',`Sync all ${timerSyncType(m)==='visual'?'Visual':'Interactive'} Timers`);toggle.title=`Sync timers: ${enabled?'On':'Off'}`};
   m._refreshTimerSync=refresh;m.appendChild(toggle);refresh();
   const publish=()=>{

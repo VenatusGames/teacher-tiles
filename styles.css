@@ -16028,3 +16028,10 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__holiday-children{margin-left:7px;border-left:1px solid var(--border);padding-left:7px}
 #context-menu .context-menu__holiday-child{display:block;width:100%;padding:7px 2px;text-align:left;border:0;background:transparent;color:var(--muted);font-size:10px;line-height:1.3;cursor:default}
 #context-menu .context-menu__holiday-child small{display:block;margin-top:2px;font-size:9px;opacity:.75}
+
+.timer-sync-toggle--labeled{width:auto;display:flex;align-items:center;gap:7px;padding:4px 7px;font-size:11px;font-weight:650;white-space:nowrap}
+.timer-sync-switch{display:block;width:28px;height:16px;padding:2px;border-radius:999px;background:#8a929e;transition:background .18s ease}
+.timer-sync-switch i{display:block;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .18s ease}
+.timer-sync-toggle[aria-checked="true"] .timer-sync-switch{background:#2585d8}
+.timer-sync-toggle[aria-checked="true"] .timer-sync-switch i{transform:translateX(12px)}
+@media(prefers-reduced-motion:reduce){.timer-sync-switch,.timer-sync-switch i{transition:none}}
