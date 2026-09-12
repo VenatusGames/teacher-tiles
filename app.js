@@ -2560,6 +2560,32 @@ menu.insertBefore(menuCategoryDrawer,menu.querySelector('.context-menu__list'));
 menuCategoryDrawer.setAttribute('aria-hidden','false');
 menuCategoryDrawer.setAttribute('aria-label','Tile categories');
 menu.querySelector('.context-menu__close')?.addEventListener('click',closeMenu);
+const menuDragHeader=menu.querySelector('.context-menu__title-row');
+menuDragHeader.addEventListener('pointerdown',event=>{
+  if(event.button!==0||event.target.closest('button,input'))return;
+  event.preventDefault();event.stopPropagation();
+  const rect=menu.getBoundingClientRect(),startX=event.clientX,startY=event.clientY;
+  menuDragHeader.setPointerCapture(event.pointerId);menu.classList.add('is-menu-dragging');
+  const move=e=>{
+    if(e.pointerId!==event.pointerId)return;
+    menu.style.left=`${Math.max(8,Math.min(rect.left+e.clientX-startX,innerWidth-menu.offsetWidth-8))}px`;
+    menu.style.top=`${Math.max(8,Math.min(rect.top+e.clientY-startY,innerHeight-menu.offsetHeight-8))}px`;
+  };
+  const end=e=>{
+    if(e.pointerId!==event.pointerId)return;
+    menu.classList.remove('is-menu-dragging');
+    menuDragHeader.removeEventListener('pointermove',move);
+    menuDragHeader.removeEventListener('pointerup',end);
+    menuDragHeader.removeEventListener('pointercancel',end);
+    menuDragHeader.removeEventListener('lostpointercapture',end);
+    if(menuDragHeader.hasPointerCapture(event.pointerId))menuDragHeader.releasePointerCapture(event.pointerId);
+  };
+  menuDragHeader.addEventListener('pointermove',move);
+  menuDragHeader.addEventListener('pointerup',end);
+  menuDragHeader.addEventListener('pointercancel',end);
+  menuDragHeader.addEventListener('lostpointercapture',end);
+});
+
 menu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeMenu()}});
 
 function applyMenuView(){

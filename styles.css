@@ -15966,3 +15966,6 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__favorite{left:auto;right:4px;top:4px}
 #context-menu .context-menu__tracking-badge,#context-menu .context-menu__connect-badge{top:auto;right:5px;bottom:5px}
 #context-menu .context-menu__item:has(.context-menu__tracking-badge),#context-menu .context-menu__item:has(.context-menu__connect-badge){padding-top:12px;padding-bottom:24px}
+
+#context-menu .context-menu__title-row{cursor:grab;touch-action:none;user-select:none}
+#context-menu.is-menu-dragging .context-menu__title-row{cursor:grabbing}
