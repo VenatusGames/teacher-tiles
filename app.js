@@ -3660,9 +3660,42 @@ const shapePaths={
 
 function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!layer)return;layer.innerHTML='';const colors=['#ff6b7a','#ffd34e','#69c6ff','#7edc8b','#9d7cff','#ff9c5a'];for(let i=0;i<54;i++){const p=document.createElement('i');p.className='confetti-piece';const a=Math.random()*Math.PI*2,d=90+Math.random()*230;p.style.setProperty('--x',`${Math.cos(a)*d}px`);p.style.setProperty('--y',`${Math.sin(a)*d-50}px`);p.style.setProperty('--r',`${Math.round(Math.random()*760-380)}deg`);p.style.setProperty('--confetti',colors[i%colors.length]);p.style.width=`${6+Math.random()*5}px`;p.style.height=`${8+Math.random()*10}px`;p.style.animationDelay=`${Math.random()*.12}s`;layer.appendChild(p)}setTimeout(()=>layer.innerHTML='',1700)}
 
+const timerSyncSoundEnds=new Map();
+function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
+function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
+function setupTimerSync(m){
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.setAttribute('role','switch');
+  toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9a4 4 0 0 0-4 4v1M17 4l3 3-3 3M4 17h9a4 4 0 0 0 4-4v-1M7 20l-3-3 3-3"/></svg>';
+  const refresh=()=>{const enabled=m.dataset.timerSync==='true';toggle.setAttribute('aria-checked',String(enabled));toggle.setAttribute('aria-label',`Sync all ${timerSyncType(m)==='visual'?'Visual':'Interactive'} Timers`);toggle.title=`Sync timers: ${enabled?'On':'Off'}`};
+  m._refreshTimerSync=refresh;m.appendChild(toggle);refresh();
+  const publish=()=>{
+    if(m.dataset.timerSync!=='true')return;
+    const state=m._boardTimerGetState();
+    for(const peer of timerSyncPeers(m))if(peer!==m&&peer.dataset.timerSync==='true')peer._boardTimerSetState(state);
+  };
+  toggle.addEventListener('click',()=>{
+    const enabled=m.dataset.timerSync!=='true';
+    for(const peer of timerSyncPeers(m)){peer.dataset.timerSync=String(enabled);peer._refreshTimerSync?.()}
+    if(enabled)publish();notifyBoardChanged('timer-sync');
+  });
+  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-set,[data-minutes]')){publish();notifyBoardChanged('timer-controls')}});
+  queueMicrotask(()=>{
+    if(!m.isConnected)return;
+    const peer=timerSyncPeers(m).find(tile=>tile!==m&&tile.dataset.timerSync==='true');
+    if(peer){m.dataset.timerSync='true';m._boardTimerSetState(peer._boardTimerGetState())}
+    else if(m.dataset.timerSync==='true'){for(const tile of timerSyncPeers(m)){tile.dataset.timerSync='true';tile._refreshTimerSync?.()}publish()}
+    refresh();
+  });
+}
+
 function celebrateTimerFinish(m){
   if(!m.isConnected)return;
   launchConfetti(m);
+  if(m.dataset.timerSync==='true'){
+    const key=timerSyncType(m),end=m._boardTimerGetState?.().endAt;
+    if(end&&timerSyncSoundEnds.get(key)===end)return;
+    if(end)timerSyncSoundEnds.set(key,end);
+  }
   playUiSfx('confetti',1,m);
   playUiSfx('timer-tada',1,m);
 }
@@ -3734,7 +3767,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     running=false;finished=false;stop();left=total;m.classList.remove('is-running','candle-finished');start.textContent='Start';render();
   });
 
-  m._boardTimerGetState=()=>({total,left:running?Math.max(0,(end-Date.now())/1000):left,running,finished});
+  m._boardTimerGetState=()=>({total,left:running?Math.max(0,(end-Date.now())/1000):left,running,finished,endAt:end});
   m._boardTimerSetState=state=>{
     if(!state)return;
     stop();
@@ -3745,12 +3778,13 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     m.classList.toggle('is-running',running);
     start.textContent=running?'Pause':left<total&&left>0?'Resume':'Start';
     if(running){
-      end=Date.now()+left*1000;
+      end=Number.isFinite(state.endAt)&&state.endAt>0?state.endAt:Date.now()+left*1000;
       interval=setInterval(tick,80);
     }else end=0;
     render();
   };
 
+  setupTimerSync(m);
   const priorDeactivate=m._deactivate;
   const pauseDeletedTimer=()=>{
     if(running)left=Math.max(0,(end-Date.now())/1000);

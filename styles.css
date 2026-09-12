@@ -16001,3 +16001,8 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .lesson-block-delete:hover,.lesson-block-delete:focus-visible{opacity:1}
 
 .timer-shape-setting{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;font-weight:650}.timer-shape-select{min-height:34px;min-width:140px;padding:5px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:inherit;font:inherit}.timer-shape-select:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+
+.timer-sync-toggle{position:absolute;top:7px;right:39px;z-index:90;width:29px;height:27px;display:grid;place-items:center;padding:5px;border:1px solid var(--border);border-radius:8px;background:var(--surface-solid,var(--surface));color:var(--muted);cursor:pointer}
+.timer-sync-toggle svg{width:19px;height:19px}
+.timer-sync-toggle[aria-checked="true"]{color:#1673c9;background:#e4f2ff;border-color:#7dbcf1}
+.timer-sync-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
