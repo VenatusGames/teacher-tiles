@@ -1737,7 +1737,7 @@ function beginBoardFrameRename(frame,button){
     if(finished)return;
     finished=true;
     const next=input.value.replace(/\s+/g,' ').trim().slice(0,40)||frame.name;
-    if(next!==frame.name){frame.name=next;notifyBoardChanged('board-frame-rename')}
+    if(next!==frame.name){frame.name=next;persistBoardFrameChange('board-frame-rename')}
     renderBoardFrames();
   };
   input.addEventListener('keydown',event=>{
@@ -1748,6 +1748,14 @@ function beginBoardFrameRename(frame,button){
   input.addEventListener('blur',commit,{once:true});
   input.focus({preventScroll:true});
   input.select();
+}
+
+function persistBoardFrameChange(reason){
+  notifyBoardChanged(reason);
+  const save=window.TeacherTilesCloudBoards?.save;
+  if(typeof save==='function'){
+    Promise.resolve(save()).catch(error=>console.warn('TeacherTiles could not save board frames immediately',error));
+  }
 }
 
 function renderBoardFrames(){
@@ -1782,7 +1790,7 @@ function renderBoardFrames(){
     remove.addEventListener('click',()=>{
       boardFrames=boardFrames.filter(item=>item.id!==frame.id);
       renderBoardFrames();
-      notifyBoardChanged('board-frame-delete');
+      persistBoardFrameChange('board-frame-delete');
     });
     row.append(button,remove);
     boardFrameList.appendChild(row);
@@ -1810,7 +1818,7 @@ boardFrameCapture?.addEventListener('click',()=>{
     scale:boardCamera.scale
   });
   renderBoardFrames();
-  notifyBoardChanged('board-frame-capture');
+  persistBoardFrameChange('board-frame-capture');
 });
 
 boardFrameMenu?.addEventListener('pointerenter',()=>clearTimeout(boardFrameCloseTimer));
@@ -18215,6 +18223,80 @@ if(document.readyState==='loading'){
   topRightTray.addEventListener('pointerleave', () => requestAnimationFrame(update));
   bottomLeftTray.addEventListener('pointerleave', () => requestAnimationFrame(update));
   topLeftButton.addEventListener('pointerleave', () => requestAnimationFrame(update));
+})();
+
+(() => {
+  const IDLE_DELAY=25000;
+  let idleTimer=0;
+  let pointerX=-1;
+  let pointerY=-1;
+  let idleModule=null;
+
+  const clearIdleTimer=()=>{
+    if(idleTimer)clearTimeout(idleTimer);
+    idleTimer=0;
+  };
+  const boardHasTiles=()=>Boolean(workspace.querySelector('.module'));
+  const moduleUnderPointer=()=>{
+    if(pointerX<0||pointerY<0)return null;
+    const target=document.elementFromPoint(pointerX,pointerY);
+    return target instanceof Element?target.closest('.module'):null;
+  };
+  const wake=()=>{
+    clearIdleTimer();
+    document.body.classList.remove('is-board-idle');
+    idleModule?.classList.remove('is-idle-unhovered');
+    idleModule=null;
+  };
+  const arm=()=>{
+    clearIdleTimer();
+    if(!boardHasTiles()){
+      wake();
+      return;
+    }
+    if(!moduleUnderPointer())return;
+    idleTimer=setTimeout(()=>{
+      idleTimer=0;
+      if(!boardHasTiles()){
+        wake();
+        return;
+      }
+      const hovered=moduleUnderPointer();
+      if(!hovered)return;
+      clearSelection();
+      workspace.querySelectorAll('.module.is-idle-unhovered').forEach(module=>module.classList.remove('is-idle-unhovered'));
+      hovered.classList.remove('is-pointer-over','has-keyboard-focus','is-settings-open');
+      hovered.classList.add('is-idle-unhovered');
+      idleModule=hovered;
+      document.body.classList.add('is-board-idle');
+    },IDLE_DELAY);
+  };
+  const activity=event=>{
+    if('clientX' in event&&Number.isFinite(event.clientX)&&Number.isFinite(event.clientY)){
+      pointerX=event.clientX;
+      pointerY=event.clientY;
+    }
+    wake();
+    arm();
+  };
+
+  document.addEventListener('pointermove',activity,{capture:true,passive:true});
+  document.addEventListener('pointerdown',activity,{capture:true,passive:true});
+  document.addEventListener('wheel',activity,{capture:true,passive:true});
+  document.addEventListener('keydown',activity,true);
+  document.addEventListener('touchstart',activity,{capture:true,passive:true});
+  document.addEventListener('focusin',activity,true);
+  document.addEventListener('input',activity,true);
+  window.addEventListener('blur',()=>{
+    pointerX=-1;
+    pointerY=-1;
+    wake();
+  });
+
+  new MutationObserver(()=>{
+    if(!boardHasTiles())wake();
+    else arm();
+  }).observe(workspace,{childList:true});
 })();
 
 
