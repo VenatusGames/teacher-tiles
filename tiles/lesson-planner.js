@@ -222,8 +222,8 @@
       const sourceColumn=button.closest('.lesson-planner-day-column');
       const sourceRect=sourceColumn?.getBoundingClientRect();
       const offset=sourceRect?DAY_START+(originY-sourceRect.top)/sourceRect.height*(DAY_END-DAY_START)-minutes(block.start):0;
-      let x=originX,y=originY,dragging=false,ghost=null,target=null,placement=null,raf=0;
-      const clearTarget=()=>{target?.classList.remove('is-lesson-drop-target');target=null;placement=null};
+      let x=originX,y=originY,dragging=false,ghost=null,target=null,placement=null,placeholder=null,raf=0;
+      const clearTarget=()=>{target?.classList.remove('is-lesson-drop-target');target=null;placement=null;placeholder?.remove();placeholder=null};
       const update=()=>{
         if(!dragging)return;
         const bounds=canvas.getBoundingClientRect();
@@ -244,6 +244,16 @@
           }
           const exactTime=total=>`${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
           placement={date:hit.dataset.lessonDropDate,start:exactTime(start),end:exactTime(start+duration)};
+          placeholder=make('div','lesson-planner-drop-placeholder');
+          placeholder.setAttribute('aria-hidden','true');
+          placeholder.textContent=`${block.label} · ${timeLabel(placement.start)}–${timeLabel(placement.end)}`;
+          if(hit.classList.contains('lesson-planner-day-column')){
+            const visibleStart=Math.max(DAY_START,start),visibleEnd=Math.min(DAY_END,start+duration);
+            placeholder.style.top=`${(visibleStart-DAY_START)/(DAY_END-DAY_START)*100}%`;
+            placeholder.style.height=`${Math.max(0,visibleEnd-visibleStart)/(DAY_END-DAY_START)*100}%`;
+            placeholder.style.minHeight='52px';
+          }
+          hit.appendChild(placeholder);
           ghost.textContent=`${block.label} · ${monthDay.format(fromDateKey(placement.date))} · ${timeLabel(placement.start)}–${timeLabel(placement.end)}`;
         }else ghost.textContent=`${block.label} · Drop on a day or time`;
         raf=requestAnimationFrame(update);
@@ -333,7 +343,7 @@
       const startAtPointer=event=>{
         const rect=column.getBoundingClientRect();
         const total=DAY_START+((event.clientY-rect.top)/Math.max(1,rect.height))*(DAY_END-DAY_START);
-        return Math.max(DAY_START,Math.min(DAY_END-60,Math.round(total/15)*15));
+        return Math.max(DAY_START,Math.min(DAY_END-60,Math.round(total)));
       };
       column.addEventListener('pointermove',event=>{
         const show=event.target===column&&!event.buttons&&event.pointerType!=='touch'&&!cancelLessonDrag;

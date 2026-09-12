@@ -15978,3 +15978,10 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .lesson-planner-add-preview{position:absolute;left:4px;right:4px;z-index:1;box-sizing:border-box;pointer-events:none;opacity:0;padding:9px 7px;border:1.5px dashed #60a5fa;border-radius:10px;background:color-mix(in srgb,#93c5fd 20%,transparent);color:var(--text);font-size:11px;line-height:1.4;font-weight:650;overflow:hidden;transition:top .09s ease-out,opacity .12s ease,background .12s ease}
 .lesson-planner-add-preview.is-visible{opacity:1}
 @media(prefers-reduced-motion:reduce){.lesson-planner-add-preview{transition:none}}
+
+.module[data-font="lexend"]{--module-font:Lexend,system-ui,sans-serif}
+.module[data-font="pacifico"]{--module-font:Pacifico,cursive}
+.module[data-font="calibri"]{--module-font:Calibri,Carlito,"Segoe UI",sans-serif}
+.lesson-planner-add-preview{transition:opacity .12s ease,background .12s ease}
+.lesson-planner-drop-placeholder{position:absolute;left:4px;right:4px;z-index:5;box-sizing:border-box;pointer-events:none;border:2px solid #60a5fa;border-radius:10px;background:color-mix(in srgb,#93c5fd 35%,var(--surface));box-shadow:0 0 0 3px #93c5fd30;padding:8px;color:var(--text);font-size:11px;font-weight:650;overflow:hidden}
+.lesson-planner-month-day .lesson-planner-drop-placeholder{position:relative;left:auto;right:auto;margin:4px}
