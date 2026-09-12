@@ -147,15 +147,22 @@
 
     function elementCenterWithinStage(element,stageRect){
       const rect=element.getBoundingClientRect();
+      // getBoundingClientRect() is in rendered/screen pixels, while connector
+      // left/top/width are written in the stage's local CSS pixels. Convert the
+      // rendered point back into local stage coordinates so board zoom and tile
+      // scaling cannot pull the connector away from its bubble.
+      const scaleX=stageRect.width>0?stage.clientWidth/stageRect.width:1;
+      const scaleY=stageRect.height>0?stage.clientHeight/stageRect.height:1;
       return{
-        x:rect.left+rect.width/2-stageRect.left,
-        y:rect.top+rect.height/2-stageRect.top
+        x:(rect.left+rect.width/2-stageRect.left)*scaleX,
+        y:(rect.top+rect.height/2-stageRect.top)*scaleY
       };
     }
 
     function syncConnectorsToRenderedBubbles(){
       if(disposed||!m.isConnected)return;
       const stageRect=stage.getBoundingClientRect();
+      if(stageRect.width<=0||stageRect.height<=0)return;
       const origin=elementCenterWithinStage(center,stageRect);
       nodes.forEach(item=>{
         if(!item?.element?.isConnected||!item?.connector?.isConnected)return;
