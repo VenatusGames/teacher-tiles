@@ -124,7 +124,7 @@
     const sensitivityInput=moduleElement.querySelector('.quietcritters-sensitivity');
     const sensitivityValue=moduleElement.querySelector('.quietcritters-sensitivity-value');
     const resetButton=moduleElement.querySelector('.quietcritters-reset');
-    const disableSfxInput=moduleElement.querySelector('.quietcritters-disable-sfx');
+    const sfxButtons=Array.from(moduleElement.querySelectorAll('[data-quietcritters-sfx]'));
 
     const cricketAudio=new Audio(AUDIO.crickets);
     cricketAudio.loop=true;
@@ -157,6 +157,8 @@
     let mode='ambient';
     let nextInvite=random(14,22);
     let soundDisabled=false;
+    let stumpSpots=[];
+    let groundProps=[];
 
     function notify(reason){window.notifyBoardChanged?.(`quiet-critters-${reason}`)}
     function threshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
@@ -190,10 +192,19 @@
 
     function setSoundDisabled(disabled,{notifyChange=true}={}){
       soundDisabled=Boolean(disabled);
-      if(disableSfxInput)disableSfxInput.checked=soundDisabled;
+      sfxButtons.forEach(button=>{
+        const selected=(button.dataset.quietcrittersSfx==='off')===soundDisabled;
+        button.classList.toggle('is-active',selected);
+        button.setAttribute('aria-pressed',String(selected));
+      });
       if(soundDisabled)pauseAmbience(false);
       else startAmbience();
       if(notifyChange)notify('sfx');
+    }
+
+    function hillGroundBottom(x){
+      const edge=clamp(Math.abs(Number(x)-50)/50,0,1);
+      return clamp(35.5-19.5*Math.pow(edge,1.55),15.5,35.5);
     }
 
     function randomizeForest(){
@@ -201,9 +212,10 @@
       propLayer.replaceChildren();
       fairyLayer.replaceChildren();
       foregroundLayer.replaceChildren();
+      stumpSpots=[];
+      groundProps=[];
 
-      // Rear trees sit behind the hill, but are raised enough for a section of
-      // trunk to stay visible above the ridge before the hill hides their base.
+      // Distant trees build the darker forest wall behind the hill.
       const treeCount=4+Math.floor(Math.random()*2);
       const slots=Array.from({length:treeCount},(_,index)=>(index+.5)/treeCount);
       slots.forEach((slot,index)=>{
@@ -214,36 +226,58 @@
         image.draggable=false;
         const x=clamp((slot+random(-.065,.065))*100,6,94);
         image.style.left=`${x.toFixed(2)}%`;
-        image.style.setProperty('--tree-bottom',`${random(13,21).toFixed(2)}%`);
-        image.style.setProperty('--scale',random(.72,1.02).toFixed(3));
-        image.style.setProperty('--opacity',random(.30,.48).toFixed(3));
+        image.style.setProperty('--tree-bottom',`${random(10,17).toFixed(2)}%`);
+        image.style.setProperty('--tree-width',`${random(31,39).toFixed(2)}%`);
+        image.style.setProperty('--scale',random(.72,1.00).toFixed(3));
+        image.style.setProperty('--opacity',random(.28,.44).toFixed(3));
         image.style.zIndex=String(index%2);
         treeLayer.appendChild(image);
       });
 
-      // Props use reserved footprints and a shared hill-depth range. Their base
-      // is always anchored to the hill, with a small contact shadow underneath.
+      // A few much closer trees begin directly behind the hill ridge. Their
+      // bases stay hidden by the hill while solid trunks remain visible above it.
+      const ridgeTreeXs=[random(15,26),random(43,57),random(74,85)];
+      if(Math.random()<.42)ridgeTreeXs.splice(1,1);
+      ridgeTreeXs.forEach((x,index)=>{
+        const image=document.createElement('img');
+        image.className='quietcritters-tree quietcritters-tree--ridge';
+        image.src=SCENERY.tree;
+        image.alt='';
+        image.draggable=false;
+        image.style.left=`${x.toFixed(2)}%`;
+        image.style.setProperty('--tree-bottom',`${random(-2.5,3.5).toFixed(2)}%`);
+        image.style.setProperty('--tree-width',`${random(45,53).toFixed(2)}%`);
+        image.style.setProperty('--scale',random(.96,1.12).toFixed(3));
+        image.style.setProperty('--opacity',random(.80,.94).toFixed(3));
+        image.style.zIndex=String(2-index%2);
+        treeLayer.appendChild(image);
+      });
+
+      // Ground props reserve horizontal footprints and derive their vertical
+      // position from the hill surface so their bases cannot float above it.
       const occupiedProps=[];
-      function choosePropSpot(width,minBottom,maxBottom){
-        for(let attempt=0;attempt<240;attempt+=1){
-          const candidate={x:random(7,93),bottom:random(minBottom,maxBottom),width};
+      function choosePropSpot(width){
+        for(let attempt=0;attempt<260;attempt+=1){
+          const x=random(8,92);
+          const candidate={x,bottom:hillGroundBottom(x)-random(.25,.75),width};
           const overlaps=occupiedProps.some(existing=>{
             const xGap=Math.abs(candidate.x-existing.x);
             const yGap=Math.abs(candidate.bottom-existing.bottom);
-            const horizontal=(candidate.width+existing.width)*.60;
-            const vertical=(candidate.width+existing.width)*.34;
+            const horizontal=(candidate.width+existing.width)*.57;
+            const vertical=(candidate.width+existing.width)*.22;
             return xGap<horizontal&&yGap<vertical;
           });
           if(!overlaps){occupiedProps.push(candidate);return candidate;}
         }
-        const fallback={x:random(8,92),bottom:random(minBottom,maxBottom),width};
+        const x=random(9,91);
+        const fallback={x,bottom:hillGroundBottom(x)-.5,width};
         occupiedProps.push(fallback);
         return fallback;
       }
 
-      function addGroundShadow(spot,width,kind){
+      function addMushroomShadow(spot,width){
         const shadow=document.createElement('span');
-        shadow.className=`quietcritters-ground-shadow quietcritters-ground-shadow--${kind}`;
+        shadow.className='quietcritters-ground-shadow quietcritters-ground-shadow--mushroom';
         shadow.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
         shadow.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
         shadow.style.setProperty('--shadow-width',`${(width*.66).toFixed(2)}%`);
@@ -252,8 +286,9 @@
 
       for(let index=0;index<3;index+=1){
         const width=random(12.5,16.5);
-        const spot=choosePropSpot(width,7,31);
-        addGroundShadow(spot,width,'stump');
+        const spot=choosePropSpot(width);
+        stumpSpots.push({...spot,id:`stump-${index}`});
+        groundProps.push({...spot,kind:'stump'});
         const stump=document.createElement('img');
         stump.className='quietcritters-prop quietcritters-prop--stump';
         stump.src=SCENERY.stump;
@@ -262,15 +297,16 @@
         stump.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
         stump.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
         stump.style.setProperty('--width',`${width.toFixed(2)}%`);
-        stump.style.zIndex=String(4+Math.round((31-spot.bottom)/5));
+        stump.style.zIndex=String(4+Math.round((36-spot.bottom)/4));
         propLayer.appendChild(stump);
       }
 
       const mushroomCount=5+Math.floor(Math.random()*3);
       for(let index=0;index<mushroomCount;index+=1){
         const width=random(8.0,11.5);
-        const spot=choosePropSpot(width,8,34);
-        addGroundShadow(spot,width,'mushroom');
+        const spot=choosePropSpot(width);
+        groundProps.push({...spot,kind:'mushroom'});
+        addMushroomShadow(spot,width);
         const image=document.createElement('img');
         image.className='quietcritters-prop quietcritters-prop--mushroom';
         image.src=pick(SCENERY.mushrooms);
@@ -279,7 +315,7 @@
         image.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
         image.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
         image.style.setProperty('--width',`${width.toFixed(2)}%`);
-        image.style.zIndex=String(4+Math.round((34-spot.bottom)/5));
+        image.style.zIndex=String(4+Math.round((36-spot.bottom)/4));
         propLayer.appendChild(image);
       }
 
@@ -323,14 +359,39 @@
     }
 
     function choosePosition(){
-      for(let attempt=0;attempt<100;attempt+=1){
-        const candidate={x:random(7,93),bottom:random(7,34)};
-        const separated=critters.every(critter=>Math.hypot(candidate.x-critter.x,(candidate.bottom-critter.bottom)*1.25)>7.0);
-        if(separated){candidate.y=clamp(100-candidate.bottom-4.7,8,90);return candidate;}
+      const usedStumps=new Set(critters.filter(critter=>critter.anchor?.kind==='stump').map(critter=>critter.anchor.id));
+      const availableStumps=stumpSpots.filter(stump=>!usedStumps.has(stump.id));
+      if(availableStumps.length&&Math.random()<.30){
+        const stump=pick(availableStumps);
+        const rect=stage.getBoundingClientRect();
+        const aspect=rect.height>0?rect.width/rect.height:1.7;
+        // The stump artwork occupies roughly the lower 52% of its square image.
+        const top=stump.bottom+stump.width*aspect*.52;
+        return{x:stump.x,bottom:top-.5,anchor:{kind:'stump',id:stump.id}};
       }
-      const candidate={x:random(8,92),bottom:random(8,32)};
-      candidate.y=clamp(100-candidate.bottom-4.7,8,90);
-      return candidate;
+
+      for(let attempt=0;attempt<180;attempt+=1){
+        const x=random(7,93);
+        const bottom=hillGroundBottom(x)-.5;
+        const blockedByProp=groundProps.some(prop=>Math.abs(x-prop.x)<prop.width*.56+2.2);
+        const separated=critters.every(critter=>Math.hypot(x-critter.x,(bottom-critter.bottom)*1.4)>6.4);
+        if(!blockedByProp&&separated)return{x,bottom,anchor:{kind:'ground'}};
+      }
+      for(let attempt=0;attempt<100;attempt+=1){
+        const x=random(7,93);
+        const bottom=hillGroundBottom(x)-.5;
+        const separated=critters.every(critter=>Math.abs(x-critter.x)>4.8);
+        if(separated)return{x,bottom,anchor:{kind:'ground'}};
+      }
+      const x=random(8,92);
+      return{x,bottom:hillGroundBottom(x)-.5,anchor:{kind:'ground'}};
+    }
+
+    function actorCenterY(bottom,sizePx){
+      const rect=stage.getBoundingClientRect();
+      if(!rect.height)return clamp(100-bottom-5,4,96);
+      const centerFromBottom=(bottom/100)*rect.height+sizePx*.47;
+      return clamp(100-(centerFromBottom/rect.height)*100,4,96);
     }
 
     function burst(x,y,color,large=false){
@@ -420,12 +481,15 @@
       if(critters.length>=MAX_CRITTERS)return;
       const position=choosePosition();
       const color=chooseColor();
+      const size=random(25,38);
+      const y=actorCenterY(position.bottom,size);
       const element=document.createElement('div');
       element.className='quietcritters-actor is-entering';
+      if(position.anchor?.kind==='stump')element.classList.add('is-on-stump');
       element.style.setProperty('--x',`${position.x.toFixed(2)}%`);
       element.style.setProperty('--bottom',`${position.bottom.toFixed(2)}%`);
-      element.style.setProperty('--size',`${random(25,38).toFixed(1)}px`);
-      element.style.zIndex=String(10+Math.round((34-position.bottom)/3));
+      element.style.setProperty('--size',`${size.toFixed(1)}px`);
+      element.style.zIndex=String(10+Math.round((38-position.bottom)/3));
       const canvas=document.createElement('canvas');
       canvas.width=RENDER_SIZE;
       canvas.height=RENDER_SIZE;
@@ -434,12 +498,12 @@
       critterLayer.appendChild(element);
       const critter={
         element,canvas,context:canvas.getContext('2d'),color,
-        x:position.x,y:position.y,bottom:position.bottom,behavior:'idle',frames:[FRAMES.arms[0]],frameStep:99,frameIndex:0,nextFrame:0,behaviorEnds:0,followUp:'',lastFrame:'',
+        x:position.x,y,bottom:position.bottom,anchor:position.anchor,size,behavior:'idle',frames:[FRAMES.arms[0]],frameStep:99,frameIndex:0,nextFrame:0,behaviorEnds:0,followUp:'',lastFrame:'',
         nextBlink:performance.now()/1000+random(2.0,4.5),blinkRestoreAt:0,blinkRestoreSrc:'',blinkActive:false
       };
       critters.push(critter);
       setBehavior(critter,Math.random()<.13?'sleep':'idle');
-      burst(position.x,position.y,color,true);
+      burst(position.x,y,color,true);
       playSparkle();
       setTimeout(()=>element.classList.remove('is-entering'),520);
       say(`${critters.length} quiet ${critters.length===1?'critter is':'critters are'} visiting the forest.`);
@@ -449,7 +513,8 @@
       if(!critter||critter.leaving)return;
       critter.leaving=true;
       critter.element.classList.add('is-leaving');
-      burst(critter.x,critter.y,critter.color,true);
+      const y=actorCenterY(critter.bottom,critter.size||31);
+      burst(critter.x,y,critter.color,true);
       setTimeout(()=>{
         critter.element.remove();
         critters=critters.filter(item=>item!==critter);
@@ -748,7 +813,7 @@
     });
     thresholdInput.addEventListener('input',()=>updateSettings(true));
     sensitivityInput.addEventListener('input',()=>updateSettings(true));
-    disableSfxInput?.addEventListener('change',()=>setSoundDisabled(disableSfxInput.checked));
+    sfxButtons.forEach(button=>button.addEventListener('click',()=>setSoundDisabled(button.dataset.quietcrittersSfx==='off')));
     const retryAmbience=()=>startAmbience();
     moduleElement.addEventListener('pointerdown',retryAmbience,{passive:true});
     moduleElement.addEventListener('keydown',retryAmbience);

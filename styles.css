@@ -471,9 +471,9 @@ body.dark .boombox-module{background:linear-gradient(145deg,#dfe1e4,#b7bbc1);col
 .context-menu__header{flex:0 0 auto;background:var(--surface);padding-bottom:7px}
 .context-menu__title{position:static!important;padding:7px 8px 8px!important}
 .context-menu__filters{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 3px}
-.context-menu__filter{height:28px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.045em;padding:0 3px}
+.context-menu__filter{height:28px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.045em;padding:0 3px;transition:background .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease,transform .14s ease}
 .context-menu__filter:hover{background:var(--surface-soft);color:var(--text)}
-.context-menu__filter.is-active{background:var(--text);border-color:var(--text);color:var(--surface)}
+.context-menu__filter.is-active{background:color-mix(in srgb,var(--surface-soft) 86%,var(--text) 8%);border-color:color-mix(in srgb,var(--border) 62%,var(--text) 38%);color:var(--text);box-shadow:inset 0 2px 5px color-mix(in srgb,var(--text) 18%,transparent),inset 0 0 0 1px color-mix(in srgb,var(--surface) 62%,transparent);transform:translateY(1px)}
 .context-menu__list{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:2px;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 22%,transparent) transparent}
 .context-menu__list::-webkit-scrollbar{width:5px}.context-menu__list::-webkit-scrollbar-track{background:transparent;margin:3px 0}.context-menu__list::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text) 22%,transparent);border-radius:99px}.context-menu__list::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--text) 34%,transparent)}
 .context-menu__item[hidden]{display:none!important}
@@ -15673,97 +15673,3 @@ body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-st
 body.boards-screen-open .board-frame-menu{display:none!important}
 @media(max-width:700px){.board-frame-menu{top:64px;right:10px;width:min(300px,calc(100vw - 20px))}}
 @media(prefers-reduced-motion:reduce){.board-frame-menu,.board-frame-row,.workspace.is-frame-jump{animation:none}.board-frame-capture,.board-frame-button{transition:none}}
-
-/* Presentation idle: hide chrome and hover affordances after 10 seconds on any non-empty board. */
-/*
-  The full-viewport idle shield is intentional. Native form controls, custom
-  cursor URLs, and embedded frames can retain their own cursor while stationary
-  even after an ancestor switches to cursor:none. Putting a transparent hit
-  surface above the app forces the browser to resolve the idle cursor to none.
-  The existing capture-phase activity listeners remove it on the first input.
-*/
-body.is-board-idle::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:2147483646;
-  background:transparent;
-  pointer-events:auto;
-  cursor:none!important;
-}
-body.is-board-idle,
-body.is-board-idle *,
-body.is-board-idle.has-custom-cursor,
-body.is-board-idle.has-custom-cursor *{
-  cursor:none!important;
-}
-body.is-board-idle.has-custom-cursor .workspace .module.is-idle-unhovered,
-body.is-board-idle.has-custom-cursor .workspace .module.is-idle-unhovered *{
-  cursor:none!important;
-}
-body.is-board-idle input,
-body.is-board-idle textarea,
-body.is-board-idle select,
-body.is-board-idle [contenteditable]:not([contenteditable="false"]),
-body.is-board-idle .module-text-edit-target{
-  cursor:none!important;
-}
-body.is-board-idle .workspace-controls,
-body.is-board-idle .workspace-upcoming-controls,
-body.is-board-idle .boards-launch-button{
-  opacity:0!important;
-  filter:none!important;
-  pointer-events:none!important;
-  transition:opacity .55s ease,filter .55s ease!important;
-}
-body.is-board-idle .module.is-idle-unhovered::after,
-body.is-board-idle .module.is-idle-unhovered .module-delete,
-body.is-board-idle .module.is-idle-unhovered .sticky-toolbar,
-body.is-board-idle .module.is-idle-unhovered .customization-bar,
-body.is-board-idle .module.is-idle-unhovered [class*="-customization"],
-body.is-board-idle .module.is-idle-unhovered .stoplight-controls,
-body.is-board-idle .module.is-idle-unhovered .youtube-controls,
-body.is-board-idle .module.is-idle-unhovered .windowshare-controls,
-body.is-board-idle .module.is-idle-unhovered .visual-schedule-toolbar,
-body.is-board-idle .module.is-idle-unhovered .visual-schedule-scale-dock,
-body.is-board-idle .module.is-idle-unhovered .progress-bar-controls,
-body.is-board-idle .module.is-idle-unhovered .progress-bar-icon-slot,
-body.is-board-idle .module.is-idle-unhovered .progress-bar-icon-plus,
-body.is-board-idle .module.is-idle-unhovered .date-options,
-body.is-board-idle .module.is-idle-unhovered .calendar-footer,
-body.is-board-idle .module.is-idle-unhovered .groupmaker-footer,
-body.is-board-idle .module.is-idle-unhovered .boombox-style-button,
-body.is-board-idle .module.is-idle-unhovered .noise-settings-panel,
-body.is-board-idle .module.is-idle-unhovered .lunchcount-inline-actions,
-body.is-board-idle .module.is-idle-unhovered .voting-inline-actions,
-body.is-board-idle .module.is-idle-unhovered .weather-add-panel,
-body.is-board-idle .module.is-idle-unhovered .weather-unit-toggle,
-body.is-board-idle .module.is-idle-unhovered .temperature-controls,
-body.is-board-idle .module.is-idle-unhovered .temperature-unit-toggle,
-body.is-board-idle .module.is-idle-unhovered .choicewheel-hint,
-body.is-board-idle .module.is-idle-unhovered [class*="change-class"],
-body.is-board-idle .module.is-idle-unhovered .classmeter-hover-tools,
-body.is-board-idle .module.is-idle-unhovered .collection-controls,
-body.is-board-idle .module.is-idle-unhovered .collection-fill-line-handle,
-body.is-board-idle .module.is-idle-unhovered .prizeboard-add,
-body.is-board-idle .module.is-idle-unhovered .punchcard-reset,
-body.is-board-idle .module.is-idle-unhovered .racer-controls,
-body.is-board-idle .module.is-idle-unhovered .table-maker-chart-types,
-body.is-board-idle .module.is-idle-unhovered .table-maker-toolbar,
-body.is-board-idle .module.is-idle-unhovered .attendance-class-strip .tile-class-loader,
-body.is-board-idle .module.is-idle-unhovered .sticker-rotate-handle,
-body.is-board-idle .module.is-idle-unhovered .sticker-resize-handle,
-body.is-board-idle .module.is-idle-unhovered .weather-card header button{
-  opacity:0!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-}
-body.is-board-idle .attendance-module.is-idle-unhovered .attendance-class-strip{
-  grid-template-columns:minmax(135px,1fr) 0 auto!important;
-}
-body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!important}
-@media(prefers-reduced-motion:reduce){
-  body.is-board-idle .workspace-controls,
-  body.is-board-idle .workspace-upcoming-controls,
-  body.is-board-idle .boards-launch-button{transition:none!important}
-}

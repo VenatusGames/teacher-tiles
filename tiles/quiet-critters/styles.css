@@ -128,13 +128,17 @@
 .quietcritters-tree{
   position:absolute;
   bottom:var(--tree-bottom,9%);
-  width:36%;
+  width:var(--tree-width,36%);
   max-width:none;
   transform:translateX(-50%) scale(var(--scale,1));
   transform-origin:center bottom;
   opacity:var(--opacity,.42);
   filter:brightness(.46) saturate(.82) hue-rotate(-8deg) drop-shadow(0 16px 22px rgba(0,0,0,.16));
   user-select:none;
+}
+.quietcritters-tree--ridge{
+  opacity:var(--opacity,.88);
+  filter:brightness(.60) saturate(.90) hue-rotate(-6deg) drop-shadow(0 13px 18px rgba(0,0,0,.18));
 }
 
 .quietcritters-foreground-tree{
@@ -162,7 +166,6 @@
   pointer-events:none;
 }
 .quietcritters-ground-shadow--mushroom{height:4px;opacity:.54}
-.quietcritters-ground-shadow--stump{height:6px;opacity:.72}
 .quietcritters-prop{
   position:absolute;
   bottom:var(--bottom,2%);
@@ -177,7 +180,7 @@
 .quietcritters-prop--mushroom{
   filter:brightness(.82) saturate(.94) drop-shadow(0 0 8px rgba(165,214,183,.08)) drop-shadow(0 6px 8px rgba(0,0,0,.18));
 }
-.quietcritters-prop--stump{filter:brightness(.68) saturate(.8) drop-shadow(0 8px 10px rgba(0,0,0,.23))}
+.quietcritters-prop--stump{filter:brightness(.68) saturate(.8)}
 .quietcritters-fairy{
   position:absolute;
   left:var(--x);
@@ -222,6 +225,7 @@
   filter:blur(1.7px);
   opacity:.7;
 }
+.quietcritters-actor.is-on-stump::after{display:none}
 .quietcritters-actor canvas{
   position:relative;
   z-index:1;
