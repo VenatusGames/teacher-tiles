@@ -142,6 +142,7 @@
     let active=false;
     let pending=false;
     let disposed=false;
+    let suspended=false;
     let stream=null;
     let audioContext=null;
     let analyser=null;
@@ -157,6 +158,7 @@
     let mode='ambient';
     let nextInvite=random(14,22);
     let soundDisabled=false;
+    const activeSparkles=new Set();
     let stumpSpots=[];
     let groundProps=[];
 
@@ -177,17 +179,28 @@
       });
     }
 
+    function stopSparkles(reset=true){
+      for(const sound of activeSparkles){
+        sound.pause();
+        if(reset){try{sound.currentTime=0}catch{}}
+      }
+      activeSparkles.clear();
+    }
+
     function startAmbience(){
-      if(soundDisabled||disposed||document.hidden)return;
+      if(soundDisabled||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
       cricketAudio.play().catch(()=>{});
       twinkleAudio.play().catch(()=>{});
     }
 
     function playSparkle(){
-      if(soundDisabled||disposed)return;
+      if(soundDisabled||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
       const sound=sparklePrototype.cloneNode();
       sound.volume=.055;
-      sound.play().catch(()=>{});
+      activeSparkles.add(sound);
+      const release=()=>activeSparkles.delete(sound);
+      sound.addEventListener('ended',release,{once:true});
+      sound.play().catch(release);
     }
 
     function setSoundDisabled(disabled,{notifyChange=true}={}){
@@ -197,8 +210,10 @@
         button.classList.toggle('is-active',selected);
         button.setAttribute('aria-pressed',String(selected));
       });
-      if(soundDisabled)pauseAmbience(false);
-      else startAmbience();
+      if(soundDisabled){
+        pauseAmbience(false);
+        stopSparkles(false);
+      }else startAmbience();
       if(notifyChange)notify('sfx');
     }
 
@@ -226,9 +241,10 @@
         image.draggable=false;
         const x=clamp((slot+random(-.065,.065))*100,6,94);
         image.style.left=`${x.toFixed(2)}%`;
-        image.style.setProperty('--tree-bottom',`${random(10,17).toFixed(2)}%`);
-        image.style.setProperty('--tree-width',`${random(31,39).toFixed(2)}%`);
-        image.style.setProperty('--scale',random(.72,1.00).toFixed(3));
+        const treeBottom=hillGroundBottom(x)-random(10.5,14.5);
+        image.style.setProperty('--tree-bottom',`${treeBottom.toFixed(2)}%`);
+        image.style.setProperty('--tree-height',`${random(62,78).toFixed(2)}%`);
+        image.style.setProperty('--scale',random(.88,1.04).toFixed(3));
         image.style.setProperty('--opacity',random(.28,.44).toFixed(3));
         image.style.zIndex=String(index%2);
         treeLayer.appendChild(image);
@@ -245,9 +261,10 @@
         image.alt='';
         image.draggable=false;
         image.style.left=`${x.toFixed(2)}%`;
-        image.style.setProperty('--tree-bottom',`${random(-2.5,3.5).toFixed(2)}%`);
-        image.style.setProperty('--tree-width',`${random(45,53).toFixed(2)}%`);
-        image.style.setProperty('--scale',random(.96,1.12).toFixed(3));
+        const treeBottom=hillGroundBottom(x)-random(6.5,9.5);
+        image.style.setProperty('--tree-bottom',`${treeBottom.toFixed(2)}%`);
+        image.style.setProperty('--tree-height',`${random(88,106).toFixed(2)}%`);
+        image.style.setProperty('--scale',random(.98,1.10).toFixed(3));
         image.style.setProperty('--opacity',random(.80,.94).toFixed(3));
         image.style.zIndex=String(2-index%2);
         treeLayer.appendChild(image);
@@ -801,7 +818,7 @@
     }
 
     function wake(){
-      if(!disposed&&!animationFrame){lastFrameTime=0;animationFrame=requestAnimationFrame(tick)}
+      if(!disposed&&!suspended&&moduleElement.isConnected&&!animationFrame){lastFrameTime=0;animationFrame=requestAnimationFrame(tick)}
     }
 
     moduleElement.querySelectorAll('[data-quietcritters-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.quietcrittersMode)));
@@ -821,8 +838,9 @@
     function onVisibility(){
       if(document.hidden){
         pauseAmbience(false);
+        stopSparkles(false);
         if(active||pending)stopMicrophone('Microphone paused while the tab is hidden. Enable it again when you return.');
-      }else{
+      }else if(!suspended&&moduleElement.isConnected){
         startAmbience();
         wake();
       }
@@ -851,13 +869,20 @@
     const priorReactivate=moduleElement._reactivate;
     moduleElement._deactivate=()=>{
       priorDeactivate?.();
+      suspended=true;
       cancelAnimationFrame(animationFrame);
       animationFrame=0;
       lastFrameTime=0;
       pauseAmbience(false);
+      stopSparkles(true);
       if(active||pending)stopMicrophone('Microphone off · Enable it again when the tile is restored.');
     };
-    moduleElement._reactivate=()=>{priorReactivate?.();startAmbience();wake()};
+    moduleElement._reactivate=()=>{
+      priorReactivate?.();
+      suspended=false;
+      startAmbience();
+      wake();
+    };
 
     const priorCleanup=moduleElement._cleanup;
     moduleElement._cleanup=()=>{
@@ -875,6 +900,7 @@
       moduleElement.removeEventListener('pointerdown',retryAmbience);
       moduleElement.removeEventListener('keydown',retryAmbience);
       pauseAmbience(true);
+      stopSparkles(true);
       sparklePrototype.pause();
       poofLayer.replaceChildren();
       critters=[];
