@@ -2480,7 +2480,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','pbis','planning','science','sel','text','time','tools'];
+const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','music','pbis','planning','science','sel','text','time','tools'];
 
 const menuFavoritesStorageKey='teacherTiles.tileFavorites.v1';
 const menuFavorites=new Set();
@@ -2507,13 +2507,14 @@ function menuFavoriteCategory(item){
 function menuCategoryLabel(category){
   if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAYS';
   if(category.startsWith('favorite:'))return menuCategoryLabel(category.slice(9));
+  if(category==='music')return 'MUSIC';
   if(category==='art')return 'ART';
   if(category==='holidays')return 'HOLIDAYS';
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
 }
 
 function normalizeMenuSearch(value=''){
-  return value.toLowerCase().trim().replace(/\s+/g,' ');
+  return value.toLowerCase().replace(/[-‐‑–—]/g,' ').trim().replace(/\s+/g,' ');
 }
 
 // Categories retain their buttons; pins only change their visual order.
@@ -2662,7 +2663,7 @@ function applyMenuView(){
     let collectionCount=0;
     for(const category of categories){
       const matches=menuItems.filter(item=>{
-        const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
+        const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase().replace(/[-‐‑–—]/g,' ');
         return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
       });
       const basicsOrder=['sticky','draw','textbubble','timer','clock','image','calculator'];
@@ -3010,6 +3011,9 @@ function setupModuleByType(m,type){
   if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
   if(type==='quoteoftheday')window.TeacherTilesQuoteOfTheDay.setup(m);
   if(type==='visualdirections')window.TeacherTilesVisualDirections.setup(m);
+  if(type==='colorpicker')window.TeacherTilesColorpicker.setup(m);
+  if(type==='rainbow')window.TeacherTilesRainbow.setup(m);
+  if(type==='musicscore')window.TeacherTilesMusicscore.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);
   if(type==='venndiagram')window.TeacherTilesVennDiagrams.setup(m);
@@ -8487,6 +8491,9 @@ function bindEditableModuleTitle(m,selectorOrElement,fallback){
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
+  colorpicker:'.widget-title',
+  rainbow:'.widget-title',
+  musicscore:'.widget-title',
   vocabulary:'.widget-title',
   visualdirections:'.widget-title',
   timestables:'.widget-title',
