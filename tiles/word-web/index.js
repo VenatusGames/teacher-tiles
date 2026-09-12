@@ -23,6 +23,9 @@
     const form=m.querySelector('.wordweb-entry');
     const input=m.querySelector('.wordweb-input');
     const clearButton=m.querySelector('.wordweb-clear');
+    const backgroundButton=m.querySelector('.tile-bg');
+    const fontButton=m.querySelector('.tile-font');
+    const textButton=m.querySelector('.tile-text');
 
     let nodes=[];
     let serial=0;
@@ -32,6 +35,17 @@
     let connectorFollowUntil=0;
 
     const changed=reason=>notifyBoardChanged(`word-web-${reason}`);
+    const BACKGROUNDS=['white','cream','blue','pink','green','lavender','charcoal'];
+    const FONTS=['inter','poppins','nunito','quicksand','oswald','lora','merriweather','playfair','caveat','phantom'];
+    const TEXT_COLORS=['dark','soft','blue','rose','white'];
+
+    function cycleStyle(key,values){
+      const current=m.dataset[key]||values[0];
+      const index=values.indexOf(current);
+      m.dataset[key]=values[(index+1+values.length)%values.length];
+      changed(`style-${key}`);
+      if(key==='font')scheduleLayout();
+    }
 
     function centerText(){
       return clean(center.textContent,CENTER_MAX)||'Main Idea';
@@ -301,6 +315,22 @@
       event.preventDefault();
       event.stopPropagation();
       clearConnectedWords();
+    });
+
+    backgroundButton?.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      cycleStyle('bg',BACKGROUNDS);
+    });
+    fontButton?.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      cycleStyle('font',FONTS);
+    });
+    textButton?.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      cycleStyle('text',TEXT_COLORS);
     });
 
     input.addEventListener('keydown',event=>{
