@@ -1826,10 +1826,29 @@ boardFrameMenu?.addEventListener('pointerleave',()=>scheduleBoardFrameMenuClose(
 boardFrameMenu?.addEventListener('focusin',()=>clearTimeout(boardFrameCloseTimer));
 boardFrameMenu?.addEventListener('focusout',()=>scheduleBoardFrameMenuClose(120));
 
+function isVisibleTypingTarget(target){
+  if(!isTypingTarget(target)||!(target instanceof HTMLElement)||!target.isConnected)return false;
+  if(target.closest('[hidden],[aria-hidden="true"]'))return false;
+  const style=getComputedStyle(target);
+  if(style.display==='none'||style.visibility==='hidden'||style.visibility==='collapse')return false;
+  return target.getClientRects().length>0;
+}
+
+function resetBoardFrameHotkey({blurStaleFocus=false}={}){
+  boardFrameKeyHeld=false;
+  clearTimeout(boardFrameCloseTimer);
+  closeBoardFrameMenu({force:true});
+  if(!blurStaleFocus)return;
+  const active=document.activeElement;
+  if(active instanceof HTMLElement&&isTypingTarget(active)&&!isVisibleTypingTarget(active))active.blur();
+}
+
 window.addEventListener('keydown',event=>{
-  if(event.key.toLowerCase()!=='f'||event.ctrlKey||event.metaKey||event.altKey)return;
+  const isFrameKey=event.code==='KeyF'||String(event.key||'').toLowerCase()==='f';
+  if(!isFrameKey||event.ctrlKey||event.metaKey||event.altKey)return;
+  if(document.body.classList.contains('boards-screen-open'))return;
   const target=event.target instanceof Element?event.target:null;
-  if(isTypingTarget(target)||isTypingTarget(document.activeElement))return;
+  if(isVisibleTypingTarget(target)||isVisibleTypingTarget(document.activeElement))return;
   event.preventDefault();
   event.stopPropagation();
   if(event.repeat)return;
@@ -1838,14 +1857,17 @@ window.addEventListener('keydown',event=>{
 },{capture:true});
 
 window.addEventListener('keyup',event=>{
-  if(event.key.toLowerCase()!=='f')return;
+  const isFrameKey=event.code==='KeyF'||String(event.key||'').toLowerCase()==='f';
+  if(!isFrameKey)return;
   boardFrameKeyHeld=false;
   scheduleBoardFrameMenuClose(120);
 },{capture:true});
 
-window.addEventListener('blur',()=>{
-  boardFrameKeyHeld=false;
-  closeBoardFrameMenu({force:true});
+window.addEventListener('blur',()=>resetBoardFrameHotkey());
+window.addEventListener('pageshow',()=>resetBoardFrameHotkey({blurStaleFocus:true}));
+window.addEventListener('teachertiles:boardloaded',()=>{
+  resetBoardFrameHotkey();
+  requestAnimationFrame(()=>resetBoardFrameHotkey({blurStaleFocus:true}));
 });
 
 document.addEventListener('keydown',event=>{
@@ -18228,25 +18250,32 @@ if(document.readyState==='loading'){
 (() => {
   const IDLE_DELAY=10000;
   let idleTimer=0;
-  let pointerX=-1;
-  let pointerY=-1;
-  let idleModule=null;
 
   const clearIdleTimer=()=>{
     if(idleTimer)clearTimeout(idleTimer);
     idleTimer=0;
   };
   const boardHasTiles=()=>Boolean(workspace.querySelector('.module'));
-  const moduleUnderPointer=()=>{
-    if(pointerX<0||pointerY<0)return null;
-    const target=document.elementFromPoint(pointerX,pointerY);
-    return target instanceof Element?target.closest('.module'):null;
+  const clearIdleModuleState=()=>{
+    workspace.querySelectorAll('.module.is-idle-unhovered').forEach(module=>module.classList.remove('is-idle-unhovered'));
   };
   const wake=()=>{
     clearIdleTimer();
     document.body.classList.remove('is-board-idle');
-    idleModule?.classList.remove('is-idle-unhovered');
-    idleModule=null;
+    clearIdleModuleState();
+  };
+  const enterIdle=()=>{
+    idleTimer=0;
+    if(!boardHasTiles()){
+      wake();
+      return;
+    }
+    clearSelection();
+    for(const module of workspace.querySelectorAll('.module')){
+      module.classList.remove('is-pointer-over','has-keyboard-focus');
+      module.classList.add('is-idle-unhovered');
+    }
+    document.body.classList.add('is-board-idle');
   };
   const arm=()=>{
     clearIdleTimer();
@@ -18254,28 +18283,9 @@ if(document.readyState==='loading'){
       wake();
       return;
     }
-    if(!moduleUnderPointer())return;
-    idleTimer=setTimeout(()=>{
-      idleTimer=0;
-      if(!boardHasTiles()){
-        wake();
-        return;
-      }
-      const hovered=moduleUnderPointer();
-      if(!hovered)return;
-      clearSelection();
-      workspace.querySelectorAll('.module.is-idle-unhovered').forEach(module=>module.classList.remove('is-idle-unhovered'));
-      hovered.classList.remove('is-pointer-over','has-keyboard-focus','is-settings-open');
-      hovered.classList.add('is-idle-unhovered');
-      idleModule=hovered;
-      document.body.classList.add('is-board-idle');
-    },IDLE_DELAY);
+    idleTimer=setTimeout(enterIdle,IDLE_DELAY);
   };
-  const activity=event=>{
-    if('clientX' in event&&Number.isFinite(event.clientX)&&Number.isFinite(event.clientY)){
-      pointerX=event.clientX;
-      pointerY=event.clientY;
-    }
+  const activity=()=>{
     wake();
     arm();
   };
@@ -18287,15 +18297,12 @@ if(document.readyState==='loading'){
   document.addEventListener('touchstart',activity,{capture:true,passive:true});
   document.addEventListener('focusin',activity,true);
   document.addEventListener('input',activity,true);
-  window.addEventListener('blur',()=>{
-    pointerX=-1;
-    pointerY=-1;
-    wake();
-  });
+  window.addEventListener('focus',activity);
+  window.addEventListener('blur',wake);
 
   new MutationObserver(()=>{
     if(!boardHasTiles())wake();
-    else arm();
+    else if(!document.body.classList.contains('is-board-idle'))arm();
   }).observe(workspace,{childList:true});
 })();
 

@@ -15674,7 +15674,7 @@ body.boards-screen-open .board-frame-menu{display:none!important}
 @media(max-width:700px){.board-frame-menu{top:64px;right:10px;width:min(300px,calc(100vw - 20px))}}
 @media(prefers-reduced-motion:reduce){.board-frame-menu,.board-frame-row,.workspace.is-frame-jump{animation:none}.board-frame-capture,.board-frame-button{transition:none}}
 
-/* Presentation idle: hide chrome and hover affordances after 10 seconds over a tile. */
+/* Presentation idle: hide chrome and hover affordances after 10 seconds on any non-empty board. */
 body.is-board-idle,
 body.is-board-idle *,
 body.is-board-idle.has-custom-cursor,
