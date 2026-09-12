@@ -2692,14 +2692,14 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   Object.freeze({id:'letters-lowercase',productId:'sticker-letters-lowercase',category:'learning',name:'Lowercase Letters',description:'All twenty-six lowercase letter stickers from a to z.',tags:'letter letters lowercase alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(97+index);return Object.freeze({emoji:letter,name:`Lowercase ${letter}`,tags:'letter letters lowercase alphabet phonics'})}))}),
   Object.freeze({id:'letters-uppercase',productId:'sticker-letters-uppercase',category:'learning',name:'Uppercase Letters',description:'All twenty-six uppercase letter stickers from A to Z.',tags:'letter letters uppercase capital capitals alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(65+index);return Object.freeze({emoji:letter,name:`Uppercase ${letter}`,tags:'letter letters uppercase capital alphabet phonics'})}))}),
   Object.freeze({id:'quiet-critters',productId:'sticker-quiet-critters',category:'characters',name:'Quiet Critters',description:'Eight colorful Quiet Critter poses for praise, routines, and classroom fun.',tags:'quiet critter critters character characters monster monsters classroom cute reward',price:180,items:Object.freeze([
-    Object.freeze({src:'assets/stickers/quiet-critters/jump-lavender.png',name:'Lavender jumping Quiet Critter',tags:'lavender purple jump jumping'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/jump-blue.png',name:'Blue jumping Quiet Critter',tags:'blue jump jumping'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sleep-mint.png',name:'Mint sleeping Quiet Critter',tags:'mint green sleep sleeping calm'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sway-rose.png',name:'Rose swaying Quiet Critter',tags:'rose pink sway swaying'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/blink-amber.png',name:'Amber blinking Quiet Critter',tags:'amber orange blink blinking happy'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/dance-moss.png',name:'Moss dancing Quiet Critter',tags:'moss green dance dancing'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/dance-sky.png',name:'Sky dancing Quiet Critter',tags:'sky teal blue dance dancing'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sway-lavender.png',name:'Lavender swaying Quiet Critter',tags:'lavender purple sway swaying'})
+    Object.freeze({src:'assets/stickers/quiet-critters/jump-lavender.png?v=2',name:'Lavender jumping Quiet Critter',tags:'lavender purple jump jumping'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/jump-blue.png?v=2',name:'Blue jumping Quiet Critter',tags:'blue jump jumping'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sleep-mint.png?v=2',name:'Mint sleeping Quiet Critter',tags:'mint green sleep sleeping calm'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sway-rose.png?v=2',name:'Rose swaying Quiet Critter',tags:'rose pink sway swaying'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/blink-amber.png?v=2',name:'Amber blinking Quiet Critter',tags:'amber orange blink blinking happy'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/dance-moss.png?v=2',name:'Moss dancing Quiet Critter',tags:'moss green dance dancing'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/dance-sky.png?v=2',name:'Sky dancing Quiet Critter',tags:'sky teal blue dance dancing'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sway-lavender.png?v=2',name:'Lavender swaying Quiet Critter',tags:'lavender purple sway swaying'})
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
@@ -17232,6 +17232,7 @@ function setupSpinner(m){
   const winner=m.querySelector('.spinner-winner');
   const resultOverlay=m.querySelector('.spinner-result-overlay');
   const resultName=m.querySelector('.spinner-result-name');
+  const spinAgainButton=m.querySelector('.spinner-spin-again');
   const confettiLayer=m.querySelector('.spinner-confetti-layer');
   const spinAudio=m.querySelector('.spinner-spin-audio');
   const input=m.querySelector('.spinner-name-input');
@@ -17572,6 +17573,13 @@ function setupSpinner(m){
 
   spinButton.addEventListener('click',e=>{
     e.stopPropagation();
+    spin();
+  });
+
+  spinAgainButton?.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    dismissWinner();
     spin();
   });
 
@@ -18350,6 +18358,11 @@ function setupTeacherTilesShop(){
   const coinMenu=document.getElementById('shop-coin-menu');
   const coinMenuClose=document.getElementById('shop-coin-menu-close');
   const toast=document.getElementById('shop-toast');
+  const coinCelebration=document.getElementById('shop-coin-celebration');
+  const coinCelebrationCoins=coinCelebration?.querySelector('.shop-coin-celebration__coins');
+  const coinCelebrationAmount=document.getElementById('shop-coin-celebration-amount');
+  const coinCelebrationBalance=document.getElementById('shop-coin-celebration-balance');
+  const coinCelebrationClose=document.getElementById('shop-coin-celebration-close');
   const banners=[...modal.querySelectorAll('[data-shop-banner]')];
   const dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
   const prev=modal.querySelector('[data-shop-banner-prev]');
@@ -18361,7 +18374,8 @@ function setupTeacherTilesShop(){
   const subscribePreview=document.getElementById('shop-subscribe-preview');
   const coinPacks=[...modal.querySelectorAll('[data-coin-pack]')];
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,lastFocus=null,checkoutHandled=false;
+  const coinCheckoutStorageKey='teacherTilesPendingCoinCheckout';
+  let activePage='home',bannerIndex=0,bannerTimer=0,toastTimer=0,coinCelebrationTimer=0,coinCelebrationFrame=0,lastFocus=null,checkoutHandled=false,pendingCoinCelebration=null;
 
   const shopBrowserClean=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
   const setupShopSelect=select=>{
@@ -18563,6 +18577,79 @@ function setupTeacherTilesShop(){
     clearTimeout(toastTimer);
     toastTimer=setTimeout(()=>toast.classList.remove('is-visible'),2300);
   }
+  function closeCoinCelebration(){
+    if(!coinCelebration||coinCelebration.hidden)return;
+    coinCelebration.classList.remove('is-visible');
+    coinButton?.classList.remove('is-celebrating');
+    clearTimeout(coinCelebrationTimer);
+    cancelAnimationFrame(coinCelebrationFrame);
+    setTimeout(()=>{if(!coinCelebration.classList.contains('is-visible'))coinCelebration.hidden=true},reduceMotion?0:260);
+  }
+  function showCoinCelebration(previousBalance,currentBalance){
+    if(!coinCelebration||!coinCelebrationAmount||!coinCelebrationBalance)return;
+    const from=Math.max(0,Number(previousBalance)||0);
+    const to=Math.max(from,Number(currentBalance)||0);
+    const added=to-from;
+    if(added<1)return;
+
+    clearTimeout(coinCelebrationTimer);
+    cancelAnimationFrame(coinCelebrationFrame);
+    coinCelebrationAmount.textContent=`+${added.toLocaleString()}`;
+    coinCelebrationBalance.textContent=from.toLocaleString();
+    coinCelebrationCoins?.replaceChildren();
+    for(let index=0;index<22;index++){
+      const particle=document.createElement('i');
+      const image=document.createElement('img');
+      const angle=Math.PI*2*index/22+(index%3)*.08;
+      const distance=145+(index%5)*19;
+      particle.style.setProperty('--coin-x',`${Math.cos(angle)*distance}px`);
+      particle.style.setProperty('--coin-y',`${Math.sin(angle)*distance}px`);
+      particle.style.setProperty('--coin-r',`${(index%2?-1:1)*(150+index*29)}deg`);
+      particle.style.setProperty('--coin-delay',`${(index%7)*18}ms`);
+      particle.style.setProperty('--coin-size',`${22+(index%4)*5}px`);
+      image.src='assets/shop/coin.png';image.alt='';image.draggable=false;
+      particle.appendChild(image);coinCelebrationCoins?.appendChild(particle);
+    }
+
+    coinCelebration.hidden=false;
+    coinCelebration.classList.remove('is-visible');
+    void coinCelebration.offsetWidth;
+    coinCelebration.classList.add('is-visible');
+    coinButton?.classList.add('is-celebrating');
+    playUiSfx('money');
+    setTimeout(()=>playUiSfx('confetti'),120);
+
+    if(reduceMotion){coinCelebrationBalance.textContent=to.toLocaleString()}
+    else{
+      const started=performance.now();
+      const duration=1250;
+      const tick=now=>{
+        const progress=Math.min(1,(now-started)/duration);
+        const eased=1-Math.pow(1-progress,4);
+        coinCelebrationBalance.textContent=Math.round(from+added*eased).toLocaleString();
+        if(progress<1)coinCelebrationFrame=requestAnimationFrame(tick);
+        else coinCelebrationBalance.textContent=to.toLocaleString();
+      };
+      coinCelebrationFrame=requestAnimationFrame(tick);
+    }
+    coinCelebrationTimer=setTimeout(closeCoinCelebration,4600);
+  }
+  function readPendingCoinCheckout(){
+    try{
+      const value=JSON.parse(sessionStorage.getItem(coinCheckoutStorageKey)||'null');
+      if(!value||Date.now()-Number(value.startedAt||0)>2*60*60*1000)return null;
+      return value;
+    }catch{return null}
+  }
+  function maybeCelebrateCoinCheckout(){
+    if(!pendingCoinCelebration)return;
+    const current=Number(accountState().coinBalance)||0;
+    const previous=Number(pendingCoinCelebration.balance)||0;
+    if(current<=previous)return;
+    showCoinCelebration(previous,current);
+    pendingCoinCelebration=null;
+    try{sessionStorage.removeItem(coinCheckoutStorageKey)}catch{}
+  }
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
@@ -18625,6 +18712,7 @@ function setupTeacherTilesShop(){
   }
   function closeShop(){
     closeCoins(false);
+    closeCoinCelebration();
     stopBannerTimer();
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden','true');
@@ -18654,6 +18742,7 @@ function setupTeacherTilesShop(){
     button.dataset.checkoutBusy='true';button.disabled=true;button.textContent='Opening…';
     try{
       const {url}=await window.TeacherTilesAccount.createCoinCheckout(button.dataset.coinPack);
+      try{sessionStorage.setItem(coinCheckoutStorageKey,JSON.stringify({balance:Number(accountState().coinBalance)||0,packId:button.dataset.coinPack,startedAt:Date.now()}))}catch{}
       window.location.assign(url);
     }catch(error){
       showToast(errorMessage(error,'Stripe Checkout could not be opened.'));
@@ -18670,9 +18759,14 @@ function setupTeacherTilesShop(){
     if(!status||!accountState().signedIn)return;
     checkoutHandled=true;openShop();openCoins();
     if(status==='success'){
+      pendingCoinCelebration=readPendingCoinCheckout()||{balance:Number(accountState().coinBalance)||0,startedAt:Date.now()};
       showToast('Payment complete. Your coin balance will update momentarily.');
+      maybeCelebrateCoinCheckout();
       [500,1600,3600,7000].forEach(delay=>setTimeout(()=>window.TeacherTilesAccount?.refresh?.().catch(()=>{}),delay));
-    }else showToast('Checkout cancelled — you were not charged.');
+    }else{
+      try{sessionStorage.removeItem(coinCheckoutStorageKey)}catch{}
+      showToast('Checkout cancelled — you were not charged.');
+    }
     cleanCheckoutQuery();
   }
 
@@ -18687,6 +18781,7 @@ function setupTeacherTilesShop(){
     openCoins();
   });
   coinMenuClose?.addEventListener('click',()=>closeCoins());
+  coinCelebrationClose?.addEventListener('click',closeCoinCelebration);
   prev?.addEventListener('click',()=>showBanner(bannerIndex-1));
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
@@ -18707,9 +18802,11 @@ function setupTeacherTilesShop(){
     redeemStatus.classList.remove('is-error');redeemStatus.textContent='Checking code…';
     if(button)button.disabled=true;
     try{
+      const previousBalance=Number(accountState().coinBalance)||0;
       const result=await window.TeacherTilesAccount.redeem(code);
       redeemInput.value='';redeemStatus.textContent=`Added ${Number(result.grantedCoins||0).toLocaleString()} coins to your account.`;
       showToast('Code redeemed successfully.');syncShop();
+      showCoinCelebration(previousBalance,Number(result.coinBalance)||Number(accountState().coinBalance)||previousBalance+Number(result.grantedCoins||0));
     }catch(error){
       redeemStatus.classList.add('is-error');redeemStatus.textContent=errorMessage(error,'That code could not be redeemed.');
     }finally{if(button)button.disabled=false}
@@ -18733,7 +18830,7 @@ function setupTeacherTilesShop(){
     if(coinMenu&&!coinMenu.hidden){closeCoins();return}
     closeShop();
   });
-  window.addEventListener('teachertiles:accountchange',()=>{syncShop();handleCheckoutReturn()});
+  window.addEventListener('teachertiles:accountchange',()=>{syncShop();handleCheckoutReturn();maybeCelebrateCoinCheckout()});
   window.addEventListener('teachertiles:shoprequest',event=>{
     const productId=event.detail?.productId;
     if(!accountState().signedIn){window.TeacherTilesAuth?.openProfile?.();return}

@@ -134,6 +134,6 @@ $stickers = @(
 foreach ($sticker in $stickers) {
     $sourcePath = Join-Path $SourceRoot $sticker.Source
     $outputPath = Join-Path $outputRoot $sticker.Output
-    [QuietCritterStickerRenderer]::Render($sourcePath, $outputPath, $sticker.Color, 22)
+    [QuietCritterStickerRenderer]::Render($sourcePath, $outputPath, $sticker.Color, 36)
     Write-Output $outputPath
 }
