@@ -14943,7 +14943,7 @@ body>.profile-organizations-panel{position:fixed;inset:0;z-index:57700;padding:2
 .magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-glare,.magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-handle{display:block}
 .magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-glare{left:11%;top:6%;width:28%;height:10%;border-top-width:clamp(3px,2cqw,6px)}
 .magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-handle{left:54%;top:61%;width:27%;height:37%;border-radius:clamp(13px,5cqw,22px);font-size:clamp(7px,3cqw,11px)}
-.magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-zoom-controls{left:6%;bottom:1%;transform:none}
+.magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-zoom-controls{left:6%;bottom:50px;transform:none}
 .magnifier-module[data-tile-skin="magnifier-classic"] .module-delete{right:4px!important;top:3px!important}
 .magnifier-module[data-tile-skin="magnifier-classic"] .module-drag-handle{border-radius:50%!important}
 

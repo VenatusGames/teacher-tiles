@@ -8,20 +8,21 @@
     const rocketStage=m.querySelector('.rocket-stage'),plantStage=m.querySelector('.sunflower-stage');
     const stories=window.TeacherTilesGardenRocket.create(rocketStage,plantStage);
     let mode='hourglass';
+    const symbols={hourglass:'⌛',candle:'🕯️',rocket:'🚀',sunflower:'🌻'};
     const typeButton=document.createElement('button');typeButton.type='button';typeButton.className='tile-action interactive-type-toggle';typeButton.setAttribute('aria-label','Choose timer type');typeButton.setAttribute('aria-expanded','false');
-    const originalPicker=m.querySelector('.interactive-picker');originalPicker.replaceWith(typeButton);
+    const originalPicker=m.querySelector('.interactive-picker');const typeRow=document.createElement('div');typeRow.className='interactive-type-row';originalPicker.replaceWith(typeRow);typeRow.append(typeButton,m.querySelector('.interactive-customization'));
     const drawer=document.createElement('div');drawer.className='timer-shape-shelf interactive-type-shelf';drawer.hidden=true;drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Timer type');document.body.appendChild(drawer);
     let drawerFrame=0;
     const closeDrawer=()=>{drawer.hidden=true;typeButton.setAttribute('aria-expanded','false');m.classList.remove('has-shape-shelf-open');cancelAnimationFrame(drawerFrame)};
     const positionDrawer=()=>{if(!m.isConnected){closeDrawer();return}const r=typeButton.getBoundingClientRect();drawer.style.left=`${Math.max(8,Math.min(r.left,innerWidth-drawer.offsetWidth-8))}px`;drawer.style.top=`${Math.max(8,Math.min(r.top-drawer.offsetHeight-8,innerHeight-drawer.offsetHeight-8))}px`;drawerFrame=requestAnimationFrame(positionDrawer)};
-    modeButtons.forEach(button=>{button.setAttribute('aria-label',button.title);drawer.appendChild(button)});
+    modeButtons.forEach(button=>{button.setAttribute('aria-label',button.title);button.textContent=symbols[button.dataset.interactive];drawer.appendChild(button)});
     typeButton.addEventListener('click',()=>{if(!drawer.hidden){closeDrawer();return}drawer.hidden=false;typeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionDrawer()});
     const outside=event=>{if(!drawer.contains(event.target)&&!typeButton.contains(event.target))closeDrawer()};
     const escape=event=>{if(event.key==='Escape'&&!drawer.hidden){event.stopPropagation();closeDrawer();typeButton.focus({preventScroll:true})}};
     document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape,true);drawer.addEventListener('pointerdown',event=>event.stopPropagation());
 
     const setMode=next=>{
-      mode=['hourglass','candle','rocket','sunflower'].includes(next)?next:'hourglass';m.dataset.interactiveMode=mode;typeButton.textContent=mode[0].toUpperCase()+mode.slice(1)+' ▾';
+      mode=['hourglass','candle','rocket','sunflower'].includes(next)?next:'hourglass';m.dataset.interactiveMode=mode;typeButton.textContent=symbols[mode];typeButton.title='Choose timer type: '+mode;typeButton.setAttribute('aria-label','Choose timer type: '+mode);
       hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';
       rocketStage.hidden=mode!=='rocket';plantStage.hidden=mode!=='sunflower';stories.setMode(mode);
       hourglass.setActive(mode==='hourglass');
