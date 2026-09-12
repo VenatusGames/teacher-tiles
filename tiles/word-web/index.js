@@ -22,11 +22,14 @@
     const connectorLayer=m.querySelector('.wordweb-connectors');
     const form=m.querySelector('.wordweb-entry');
     const input=m.querySelector('.wordweb-input');
+    const clearButton=m.querySelector('.wordweb-clear');
 
     let nodes=[];
     let serial=0;
     let disposed=false;
     let resizeFrame=0;
+    let connectorFollowFrame=0;
+    let connectorFollowUntil=0;
 
     const changed=reason=>notifyBoardChanged(`word-web-${reason}`);
 
@@ -37,6 +40,7 @@
     function updateInputState(){
       input.disabled=nodes.length>=MAX_NODES;
       input.placeholder=nodes.length>=MAX_NODES?'Word web is full':'Add a connected word…';
+      if(clearButton)clearButton.disabled=!nodes.length;
     }
 
     function getLayout(){
@@ -117,14 +121,45 @@
       return{x:layout.cx+Math.cos(angle)*rx,y:layout.cy+Math.sin(angle)*ry};
     }
 
-    function placeConnector(connector,layout,position){
-      const dx=position.x-layout.cx;
-      const dy=position.y-layout.cy;
+    function placeConnector(connector,origin,position){
+      const dx=position.x-origin.x;
+      const dy=position.y-origin.y;
       const distance=Math.hypot(dx,dy);
-      connector.style.left=`${layout.cx}px`;
-      connector.style.top=`${layout.cy}px`;
+      connector.style.left=`${origin.x}px`;
+      connector.style.top=`${origin.y}px`;
       connector.style.width=`${distance}px`;
       connector.style.setProperty('--wordweb-angle',`${Math.atan2(dy,dx)}rad`);
+    }
+
+    function elementCenterWithinStage(element,stageRect){
+      const rect=element.getBoundingClientRect();
+      return{
+        x:rect.left+rect.width/2-stageRect.left,
+        y:rect.top+rect.height/2-stageRect.top
+      };
+    }
+
+    function syncConnectorsToRenderedBubbles(){
+      if(disposed||!m.isConnected)return;
+      const stageRect=stage.getBoundingClientRect();
+      const origin=elementCenterWithinStage(center,stageRect);
+      nodes.forEach(item=>{
+        if(!item?.element?.isConnected||!item?.connector?.isConnected)return;
+        placeConnector(item.connector,origin,elementCenterWithinStage(item.element,stageRect));
+      });
+    }
+
+    function followConnectors(duration=760){
+      cancelAnimationFrame(connectorFollowFrame);
+      connectorFollowUntil=performance.now()+duration;
+      const follow=now=>{
+        connectorFollowFrame=0;
+        if(disposed||!m.isConnected)return;
+        syncConnectorsToRenderedBubbles();
+        if(now<connectorFollowUntil)connectorFollowFrame=requestAnimationFrame(follow);
+      };
+      syncConnectorsToRenderedBubbles();
+      connectorFollowFrame=requestAnimationFrame(follow);
     }
 
     function layoutWeb(){
@@ -139,8 +174,8 @@
         if(!position)return;
         item.element.style.left=`${position.x}px`;
         item.element.style.top=`${position.y}px`;
-        placeConnector(item.connector,layout,position);
       });
+      followConnectors();
     }
 
     function scheduleLayout(){
@@ -203,7 +238,6 @@
       if(animate){
         const layout=getLayout();
         bubble.classList.add('is-entering');
-        connector.classList.add('is-growing');
         bubble.style.left=`${layout.cx}px`;
         bubble.style.top=`${layout.cy}px`;
         connector.style.left=`${layout.cx}px`;
@@ -211,14 +245,13 @@
         connector.style.width='0px';
         connector.style.setProperty('--wordweb-angle','-1.5708rad');
 
-        // Commit the center-origin start state first. On the next frame every bubble
-        // receives its new position while the new connector stays collapsed at its
-        // center origin; one frame later the line grows outward to meet the bubble.
+        // The new bubble begins at the center. As it floats outward, the connector
+        // follows its rendered center every frame, so the line literally grows out
+        // from the center and remains attached throughout the entire reflow.
         void bubble.offsetWidth;
         requestAnimationFrame(()=>{
           bubble.classList.remove('is-entering');
           layoutWeb();
-          requestAnimationFrame(()=>connector.classList.remove('is-growing'));
         });
       }
       return item;
@@ -227,6 +260,23 @@
     function clearNodes(){
       for(const item of nodes){item.element.remove();item.connector.remove();}
       nodes=[];
+      updateInputState();
+    }
+
+    function clearConnectedWords(){
+      if(!nodes.length)return;
+      const departing=nodes;
+      nodes=[];
+      input.value='';
+      departing.forEach(item=>{
+        item.removing=true;
+        item.element.classList.add('is-removing');
+        item.connector.classList.add('is-removing');
+      });
+      changed('clear');
+      updateInputState();
+      clearButton?.blur();
+      setTimeout(()=>departing.forEach(item=>{item.element.remove();item.connector.remove();}),220);
     }
 
     function addFromInput(){
@@ -245,6 +295,12 @@
     form.addEventListener('submit',event=>{
       event.preventDefault();
       addFromInput();
+    });
+
+    clearButton?.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      clearConnectedWords();
     });
 
     input.addEventListener('keydown',event=>{
@@ -306,6 +362,7 @@
     m._cleanup=()=>{
       disposed=true;
       cancelAnimationFrame(resizeFrame);
+      cancelAnimationFrame(connectorFollowFrame);
       resizeObserver.disconnect();
       priorCleanup?.();
     };
