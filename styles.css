@@ -15960,3 +15960,9 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .profile-badge--locked .profile-badge__shine{display:none;animation:none}
 /* These floating tiles use native hover instead of the timer pointer tracker. */
 :is(.link-module,.stoplight-module[data-tile-skin="stoplight-freestanding"]):is(:hover,:has(:focus-visible))>.resize-handle::before{opacity:1;transform:scale(1.04)}
+
+/* Pinned categories stay visible; card actions occupy opposite right corners. */
+#context-menu .context-menu__category-row .context-menu__pin[aria-pressed="true"]{opacity:1}
+#context-menu .context-menu__favorite{left:auto;right:4px;top:4px}
+#context-menu .context-menu__tracking-badge,#context-menu .context-menu__connect-badge{top:auto;right:5px;bottom:5px}
+#context-menu .context-menu__item:has(.context-menu__tracking-badge),#context-menu .context-menu__item:has(.context-menu__connect-badge){padding-top:12px;padding-bottom:24px}

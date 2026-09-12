@@ -2493,21 +2493,21 @@ function normalizeMenuSearch(value=''){
 
 // Categories retain their buttons; pins only change their visual order.
 const menuPinnedCategories=new Set();
-try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>menuCategoryOrder.includes(id)&&!['all','favorites'].includes(id)).forEach(id=>menuPinnedCategories.add(id))}catch{}
+try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>menuCategoryOrder.includes(id)&&id!=='all').forEach(id=>menuPinnedCategories.add(id))}catch{}
 function renderMenuCategoryPins(){
   const rail=menu.querySelector('.context-menu__category-drawer-grid');
-  const ordered=['favorites',...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),'all',...menuCategoryOrder.filter(id=>!['all','favorites'].includes(id)&&!menuPinnedCategories.has(id))];
+  const ordered=[...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),'all',...menuCategoryOrder.filter(id=>id!=='all'&&!menuPinnedCategories.has(id))];
   const fragment=document.createDocumentFragment();
   for(const id of ordered){
     const button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);if(!button)continue;
     const row=document.createElement('div');row.className='context-menu__category-row';row.appendChild(button);
-    if(!['all','favorites'].includes(id)){
+    if(id!=='all'){
       const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=id;
       pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';
       const pinned=menuPinnedCategories.has(id);pin.setAttribute('aria-pressed',String(pinned));pin.setAttribute('aria-label',`${pinned?'Unpin':'Pin'} ${menuCategoryLabel(id)}`);pin.title=pin.getAttribute('aria-label');row.appendChild(pin);
     }
+    if(id==='all'&&menuPinnedCategories.size){const divider=document.createElement('div');divider.className='context-menu__favorites-divider';divider.setAttribute('role','separator');fragment.appendChild(divider)}
     fragment.appendChild(row);
-    if(id==='favorites'){const divider=document.createElement('div');divider.className='context-menu__favorites-divider';divider.setAttribute('role','separator');fragment.appendChild(divider)}
   }
   rail.replaceChildren(fragment);
 }
