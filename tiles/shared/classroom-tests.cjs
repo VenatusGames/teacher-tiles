@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..'),context={window:{},URL,Date};
-for(const file of ['shared/daily','word-of-the-day/words','quote-of-the-day/quotes','vocabulary/index','times-tables/index','google/index','link/index'])vm.runInNewContext(fs.readFileSync(path.join(root,'tiles',file+'.js'),'utf8'),context);
-const {TeacherTilesDaily:daily,TeacherTilesWords:words,TeacherTilesQuotes:quotes,TeacherTilesVocabulary:vocab,TeacherTilesTimesTables:tables,TeacherTilesGoogle:google,TeacherTilesLink:link}=context.window;
+for(const file of ['shared/daily','word-of-the-day/words','quote-of-the-day/quotes','vocabulary/index','word-web/index','times-tables/index','google/index','link/index'])vm.runInNewContext(fs.readFileSync(path.join(root,'tiles',file+'.js'),'utf8'),context);
+const {TeacherTilesDaily:daily,TeacherTilesWords:words,TeacherTilesQuotes:quotes,TeacherTilesVocabulary:vocab,TeacherTilesWordWeb:wordWeb,TeacherTilesTimesTables:tables,TeacherTilesGoogle:google,TeacherTilesLink:link}=context.window;
 for(const date of [new Date(2026,2,8),new Date(2026,10,1),new Date(2026,11,31)]){
   const next=new Date(date.getFullYear(),date.getMonth(),date.getDate()+1);
   assert.equal(daily.dayNumber(next)-daily.dayNumber(date),1);
@@ -15,6 +15,8 @@ assert.equal(quotes.length,365);for(const q of quotes){assert(q.text&&q.author&&
 assert.equal(vocab.normalize(Array.from({length:100},()=>({word:'word',definition:'x'.repeat(500)}))).length,80);
 assert.equal(vocab.normalize([{word:' ',definition:'ignored'},null,{word:' term ',definition:'meaning'}]).length,1);
 assert.equal(vocab.normalize([{word:'w',definition:'x'.repeat(500)}])[0].definition.length,240);
+assert.equal(wordWeb.normalizeNodes(Array.from({length:30},(_,i)=>({text:` word ${i} `}))).length,18);
+assert.equal(wordWeb.normalizeNodes([{text:' '},{text:' connected idea '}])[0].text,'connected idea');
 const t=tables.normalize({families:[2,2,4,-1,99,'5'],start:20,end:0,practice:true});
 assert.deepEqual(Array.from(t.families),[2,4]);assert.equal(t.start,20);assert.equal(t.end,20);
 const search=new URL(google.searchUrl('earth & space + planets'));assert.equal(search.searchParams.get('q'),'earth & space + planets');assert.equal(search.searchParams.get('safe'),'active');assert.equal(search.origin,'https://www.google.com');
@@ -27,6 +29,7 @@ for(const [type,category,folder] of [['wordoftheday','literacy','word-of-the-day
  assert(html.includes(`data-module="${type}" data-category="${category}"`));assert(html.includes(`id="${type}-template"`));assert(app.includes(`${type}:'.widget-title'`));
  assert(html.includes(`src="tiles/${folder}/index.js`));assert(html.includes(`href="tiles/${folder}/styles.css`));
 }
+assert(html.includes('data-module="wordweb" data-category="literacy"'));assert(html.includes('id="wordweb-template"'));assert(app.includes("if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);"));assert(html.includes('src="tiles/word-web/index.js'));assert(html.includes('href="tiles/word-web/styles.css'));
 for(const match of html.matchAll(/(?:href|src)="([^"?:]+\.(?:js|css))(?:\?[^" ]*)?"/g))assert(fs.existsSync(path.join(root,match[1])),`Missing asset ${match[1]}`);
-const literacy=[...html.matchAll(/data-module="([^"]+)" data-category="literacy"/g)].map(m=>m[1]);assert.deepEqual(literacy.slice(-2),['wordoftheday','quoteoftheday']);
-console.log('Six classroom tiles: daily rotation, content, bounded state, safe links, search encoding, categories, headings, and local assets passed.');
+const literacy=[...html.matchAll(/data-module="([^"]+)" data-category="literacy"/g)].map(m=>m[1]);assert.deepEqual(literacy.slice(-3),['wordoftheday','quoteoftheday','wordweb']);
+console.log('Classroom tiles: daily rotation, Word Web state, bounded content, safe links, categories, and local assets passed.');
