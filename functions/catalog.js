@@ -16,6 +16,13 @@ const SUBSCRIPTION_PRICES = Object.freeze({
 });
 
 const COSMETIC_PRODUCTS = Object.freeze({
+  "tile-skin-sticky-taped": Object.freeze({ price: 250, name: "Sticky Note \u2014 Taped Up" }),
+  "tile-skin-sticky-ripped": Object.freeze({ price: 250, name: "Sticky Note \u2014 Ripped-Edge" }),
+  "tile-skin-sticky-pinned": Object.freeze({ price: 250, name: "Sticky Note \u2014 Pinned" }),
+  "tile-skin-textbubble-clear": Object.freeze({ price: 250, name: "Text Bubble \u2014 No Background" }),
+  "tile-skin-clock-digital": Object.freeze({ price: 250, name: "Clock \u2014 Digital Clock" }),
+  "tile-skin-clock-analog-clear": Object.freeze({ price: 250, name: "Clock \u2014 No Background Analog" }),
+
   "tile-skin-dice-clear": Object.freeze({ price: 250, name: "No Background Dice" }),
   "theme-pastel": Object.freeze({ price: 250, name: "Pastel Theme Pack" }),
   "theme-polka-dot": Object.freeze({ price: 250, name: "Polka Dot Theme Pack" }),
@@ -44,10 +51,10 @@ const COSMETIC_PRODUCTS = Object.freeze({
   "tile-skin-attendance-monkeys": Object.freeze({ price: 300, name: "Monkeys Attendance" }),
   "tile-skin-attendance-froggies": Object.freeze({ price: 300, name: "Froggies Attendance" }),
   "tile-skin-attendance-bubble-tea": Object.freeze({ price: 300, name: "Bubble Tea Attendance" }),
-  "tile-skin-stoplight-freestanding": Object.freeze({ price: 250, name: "Freestanding Stoplight" }),
+  "tile-skin-stoplight-freestanding": Object.freeze({ price: 250, name: "Stoplight — No Background" }),
   "tile-skin-stoplight-simplistic": Object.freeze({ price: 250, name: "Simplistic Stoplight" }),
-  "tile-skin-progressbar-capsule": Object.freeze({ price: 250, name: "Floating Progress Capsule" }),
-  "tile-skin-timer-freestanding": Object.freeze({ price: 250, name: "Freestanding Visual Timer" })
+  "tile-skin-progressbar-capsule": Object.freeze({ price: 250, name: "Progress Bar — No Background" }),
+  "tile-skin-timer-freestanding": Object.freeze({ price: 250, name: "Visual Timer — No Background" })
 });
 
 module.exports = { COIN_PACKS, COSMETIC_PRODUCTS, SUBSCRIPTION_PRICES };

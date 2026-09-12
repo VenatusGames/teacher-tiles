@@ -2772,6 +2772,12 @@ function closeMenu(){
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b||b.disabled||b.dataset.comingSoon==='true')return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
+  Object.freeze({"id": "sticky-taped", "productId": "tile-skin-sticky-taped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Taped Up", "description": "A softly textured strip of tape holds your note on the board.", "tags": "Sticky Note Taped Up", "released": 21}),
+  Object.freeze({"id": "sticky-ripped", "productId": "tile-skin-sticky-ripped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Ripped-Edge", "description": "A paper note with a naturally torn bottom edge.", "tags": "Sticky Note Ripped-Edge", "released": 22}),
+  Object.freeze({"id": "sticky-pinned", "productId": "tile-skin-sticky-pinned", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Pinned", "description": "A glossy red thumbtack pins your note in place.", "tags": "Sticky Note Pinned", "released": 23}),
+  Object.freeze({"id": "textbubble-clear", "productId": "tile-skin-textbubble-clear", "tileType": "textbubble", "tileLabel": "Text Bubble", "name": "No Background", "description": "Your text floats directly on the board.", "tags": "Text Bubble No Background", "released": 24}),
+  Object.freeze({"id": "clock-digital", "productId": "tile-skin-clock-digital", "tileType": "clock", "tileLabel": "Clock", "name": "Digital Clock", "description": "A bedside clock with a dark casing and glowing digital display.", "tags": "Clock Digital Clock", "released": 25}),
+  Object.freeze({"id": "clock-analog-clear", "productId": "tile-skin-clock-analog-clear", "tileType": "clock", "tileLabel": "Clock", "name": "No Background Analog", "description": "A classic round analog clock floating directly on the board.", "tags": "Clock No Background Analog", "released": 26}),
   Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',released:20}),
   Object.freeze({
     id:'magnifier-classic',
@@ -2820,7 +2826,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   }),
   Object.freeze({
     id:'stoplight-freestanding',productId:'tile-skin-stoplight-freestanding',tileType:'stoplight',tileLabel:'Stoplight',
-    name:'Freestanding Stoplight',description:'The stoplight itself becomes the tile, floating cleanly on the board.',
+    name:'No Background',description:'The stoplight itself becomes the tile, floating cleanly on the board.',
     tags:'stoplight traffic light freestanding floating object sel',released:9
   }),
   Object.freeze({
@@ -2830,12 +2836,12 @@ const TILE_SKIN_CATALOG=Object.freeze([
   }),
   Object.freeze({
     id:'progressbar-capsule',productId:'tile-skin-progressbar-capsule',tileType:'progressbar',tileLabel:'Progress Bar',
-    name:'Floating Progress Capsule',description:'A large pill-shaped progress bar without a rectangular tile shell.',
+    name:'No Background',description:'A large pill-shaped progress bar without a rectangular tile shell.',
     tags:'progress bar capsule pill floating freestanding timer',released:11
   }),
   Object.freeze({
     id:'timer-freestanding',productId:'tile-skin-timer-freestanding',tileType:'timer',tileLabel:'Visual Timer',
-    name:'Freestanding Visual Timer',description:'The animated timer shape becomes the tile and floats directly on the board.',
+    name:'No Background',description:'The animated timer shape becomes the tile and floats directly on the board.',
     tags:'visual timer floating freestanding object clock countdown',released:12
   })
 ]);
@@ -3694,7 +3700,7 @@ function setupStickerTransformControls(m){
   updateStickerVisualSize(m);
 }
 
-function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=m._appearanceChoice?.key==='color'&&colors.includes(m._appearanceChoice.value)?colors.indexOf(m._appearanceChoice.value):(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
+function setupSticky(m){if(['sticky-taped','sticky-pinned'].includes(m.dataset.tileSkin)){const fastener=document.createElement('span');fastener.className='sticky-fastener';fastener.setAttribute('aria-hidden','true');m.appendChild(fastener)}const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=m._appearanceChoice?.key==='color'&&colors.includes(m._appearanceChoice.value)?colors.indexOf(m._appearanceChoice.value):(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
 
 const shapePaths={
   circle:'M50 4 A46 46 0 1 1 49.999 4 Z',
@@ -3983,6 +3989,8 @@ function setupHourglass(m){window.TeacherTilesInteractiveTimers.setup(m)}
 
 function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='font'&&['dm','space','mono'].includes(choice.value))||(key==='text'&&['red','orange','gold','green','teal','purple','brown'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
+  const skinMode=m.dataset.tileSkin==='clock-analog-clear'?'analog':m.dataset.tileSkin==='clock-digital'?'digital':null;
+  const isAnalog=()=>skinMode?skinMode==='analog':m.dataset.clockMode==='analog';
   const display=m.querySelector('.clock-display');
   const content=m.querySelector('.clock-content');
   const main=m.querySelector('.clock-main');
@@ -3996,7 +4004,7 @@ function setupClock(m){
   const secondHand=m.querySelector('.analog-second');
 
   const fit=()=>{
-    if(m.dataset.clockMode==='analog')return;
+    if(isAnalog())return;
     const aw=Math.max(30,display.clientWidth-12),ah=Math.max(30,display.clientHeight-12);
     let lo=12,hi=1200,best=12;
     for(let n=0;n<18;n++){
@@ -4014,7 +4022,8 @@ function setupClock(m){
   m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
 
   const syncModeControls=()=>{
-    const analog=m.dataset.clockMode==='analog';
+    const analog=isAnalog();
+    modeBtn.hidden=Boolean(skinMode);
     modeBtn.classList.toggle('is-active',analog);
     modeBtn.querySelector('span').textContent=analog?'◴':'◷';
     secondsBtn.hidden=analog;
