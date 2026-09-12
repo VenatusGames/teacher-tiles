@@ -16006,3 +16006,17 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .timer-sync-toggle svg{width:19px;height:19px}
 .timer-sync-toggle[aria-checked="true"]{color:#1673c9;background:#e4f2ff;border-color:#7dbcf1}
 .timer-sync-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+
+.timer-shape-setting[hidden]{display:none!important}
+.timer-shape-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round}
+.timer-shape-toggle[aria-expanded="true"]{border-color:#60a5fa;background:#e4f2ff;color:#1673c9}
+.timer-shape-shelf{position:fixed;z-index:100000;width:min(280px,calc(100vw - 16px));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px;border:1px solid var(--border);border-radius:16px;background:var(--surface-solid,var(--surface));box-shadow:0 12px 36px #0f172a30;animation:timerShapeShelfIn .2s cubic-bezier(.2,.8,.2,1);font:11px/1.3 Inter,system-ui,sans-serif;color:var(--text)}
+.timer-shape-shelf[hidden]{display:none}
+.timer-shape-shelf button{display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 3px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:inherit;transition:transform .15s,background .15s}
+.timer-shape-shelf svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:7;stroke-linejoin:round}
+.timer-shape-shelf button:hover{transform:translateY(-2px);background:color-mix(in srgb,#93c5fd 20%,var(--surface))}
+.timer-shape-shelf button[aria-pressed="true"]{border-color:#60a5fa;background:color-mix(in srgb,#93c5fd 25%,var(--surface));color:var(--text)}
+.timer-shape-shelf button:focus-visible{outline:2px solid #60a5fa;outline-offset:1px}
+.timer-module.has-shape-shelf-open .timer-controls{opacity:1!important;max-height:240px!important;pointer-events:auto!important}
+@keyframes timerShapeShelfIn{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.timer-shape-shelf,.timer-shape-shelf button{animation:none;transition:none}}

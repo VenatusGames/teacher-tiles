@@ -3823,6 +3823,32 @@ function setupTimer(m){
   };
 
   shapeSelect.addEventListener('change',()=>{setShape(shapeSelect.value,true);notifyBoardChanged('timer-shape')});
+  const shapeButton=document.createElement('button');shapeButton.type='button';shapeButton.className='custom-icon timer-shape-toggle';shapeButton.setAttribute('aria-label','Choose timer shape');shapeButton.setAttribute('aria-expanded','false');shapeButton.title='Choose timer shape';
+  m.querySelector('.timer-shape-color').after(shapeButton);
+  shapeSelect.closest('.timer-shape-setting').hidden=true;
+  const shapeShelf=document.createElement('div');shapeShelf.className='timer-shape-shelf';shapeShelf.hidden=true;shapeShelf.setAttribute('role','group');shapeShelf.setAttribute('aria-label','Timer shape');document.body.appendChild(shapeShelf);
+  const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
+  const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
+  let shapeFrame=0;
+  const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
+  const positionShapes=()=>{
+    if(!m.isConnected){closeShapes();return}
+    const r=shapeButton.getBoundingClientRect(),w=shapeShelf.offsetWidth,h=shapeShelf.offsetHeight;
+    shapeShelf.style.left=`${Math.max(8,Math.min(r.left+r.width/2-w/2,innerWidth-w-8))}px`;
+    shapeShelf.style.top=`${Math.max(8,Math.min(r.top-h-8,innerHeight-h-8))}px`;
+    shapeFrame=requestAnimationFrame(positionShapes);
+  };
+  for(const option of shapeSelect.options){
+    const button=document.createElement('button');button.type='button';button.dataset.shape=option.value;button.innerHTML=shapeIcon(option.value);const label=document.createElement('span');label.textContent=option.textContent;button.appendChild(label);
+    button.addEventListener('click',()=>{shapeSelect.value=option.value;shapeSelect.dispatchEvent(new Event('change',{bubbles:true}));refreshShape();closeShapes();shapeButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
+  }
+  shapeButton.addEventListener('click',()=>{if(!shapeShelf.hidden){closeShapes();return}refreshShape();shapeShelf.hidden=false;shapeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes()});
+  const outsideShapes=event=>{if(!shapeShelf.contains(event.target)&&!shapeButton.contains(event.target))closeShapes()};
+  const escapeShapes=event=>{if(event.key==='Escape'&&!shapeShelf.hidden){event.stopPropagation();closeShapes();shapeButton.focus({preventScroll:true})}};
+  document.addEventListener('pointerdown',outsideShapes);document.addEventListener('keydown',escapeShapes,true);
+  shapeShelf.addEventListener('pointerdown',event=>event.stopPropagation());
+  shapeSelect.addEventListener('change',refreshShape);
+
 
   m.querySelector('.timer-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -3869,7 +3895,7 @@ function setupTimer(m){
   controls?.addEventListener('pointerleave',releaseSettings);
 
   const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
-  shapeSelect.value=initialShape;
+  shapeSelect.value=initialShape;refreshShape();
   setShape(initialShape);
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
@@ -3883,6 +3909,7 @@ function setupTimer(m){
 
   m._cleanup=()=>{
     clearTimeout(settingsHideTimer);
+    closeShapes();shapeShelf.remove();document.removeEventListener('pointerdown',outsideShapes);document.removeEventListener('keydown',escapeShapes,true);
     stopTimer();
     sizeObserver.disconnect();
   };
