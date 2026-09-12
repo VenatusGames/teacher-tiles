@@ -159,6 +159,7 @@
       if(settings.classList.contains('highfrequency-settings-button')){settings.textContent='⚙';settings.setAttribute('aria-label','Open settings');settings.title='Settings'}
       const anchor=settings.closest('.tile-settings-wrap,.collection-settings-wrap,.classmeter-settings-wrap')||settings;
       anchor.classList.add('tile-settings-beside-brush');m.appendChild(anchor);
+      window.TeacherTilesSettings.setup(m,settings);
     }
 
     const state={module:m,button,controls,onChange,defaults};button.addEventListener('click',()=>open(state));

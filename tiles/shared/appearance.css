@@ -34,3 +34,13 @@ body.is-board-idle .module:not(.is-appearance-open)>.tile-appearance-toggle{opac
 .module:has(>.tile-settings-beside-brush) .customization-bar{padding-left:80px}
 
 .module>.tile-settings-beside-brush>.collection-settings,.module>.tile-settings-beside-brush>.classmeter-settings{left:0;right:auto}
+
+.module .tile-settings-floating{position:fixed!important;inset:auto!important;margin:0!important;box-sizing:border-box!important;width:min(270px,calc(100vw - 16px))!important;min-width:0!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;height:auto!important;overflow:auto!important;overscroll-behavior:contain;transform:none!important;padding:16px!important;border:1px solid var(--border)!important;border-radius:15px!important;background:var(--surface-solid,var(--surface))!important;color:var(--text)!important;box-shadow:0 16px 44px #0f172a30!important;font-family:Inter,system-ui,sans-serif!important;text-align:left}
+.module .tile-settings-floating:popover-open{display:grid!important;gap:12px;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.module .tile-settings-floating[hidden]{display:none!important}
+.module .tile-settings-floating::backdrop{background:transparent;pointer-events:none}
+.module .tile-settings-floating .tile-setting{min-width:0;font-size:12px}
+.module .tile-settings-floating :is(input,select,textarea){max-width:100%;box-sizing:border-box}
+.module .tile-settings-floating>strong{font-size:14px}.module .tile-settings-floating>small{font-size:11px;line-height:1.5}
+.module>.tile-settings-beside-brush svg{display:block;width:20px;height:20px;fill:none}
+.module:has(.tile-settings-floating:popover-open)>.tile-settings-beside-brush{opacity:1!important;pointer-events:auto!important}
