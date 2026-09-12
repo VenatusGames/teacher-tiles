@@ -10,9 +10,28 @@
   color:var(--module-text,#17191d);
   font-family:var(--module-font,Inter,system-ui,sans-serif);
 }
+.venn-title{
+  position:absolute;
+  z-index:18;
+  top:11px;
+  left:16px;
+  max-width:calc(100% - 64px);
+  padding:2px 4px;
+  border-radius:6px;
+  outline:none;
+  color:var(--module-text,#17191d);
+  font-size:var(--venn-title-font,19px);
+  font-weight:850;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  user-select:none;
+}
+.venn-title.module-text-edit-active{user-select:text;cursor:text;overflow:visible;background:color-mix(in srgb,var(--module-bg,#fff) 84%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,#6f8fb7 16%,transparent)}
 .venn-stage{
   position:absolute;
-  inset:30px 12px 66px;
+  inset:44px 12px 78px;
   overflow:hidden;
   border-radius:15px;
   background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--module-text,#17191d) 3%,transparent),transparent 62%);
@@ -34,13 +53,13 @@
   position:absolute;
   z-index:7;
   max-width:34%;
-  padding:5px 10px;
+  padding:4px 9px;
   border-radius:999px;
   outline:none;
   transform:translate(-50%,-50%);
-  background:color-mix(in srgb,var(--module-bg,#fff) 78%,transparent);
+  background:color-mix(in srgb,var(--module-bg,#fff) 92%,transparent);
   color:var(--module-text,#17191d);
-  box-shadow:0 3px 12px color-mix(in srgb,var(--module-text,#17191d) 7%,transparent);
+  box-shadow:0 2px 8px color-mix(in srgb,var(--module-text,#17191d) 5%,transparent);
   font-size:var(--venn-heading-font,15px);
   font-weight:850;
   line-height:1.1;
@@ -67,7 +86,7 @@
   padding:var(--venn-item-pad-y,7px) var(--venn-item-pad-x,13px);
   border:1px solid color-mix(in srgb,var(--module-text,#17191d) 14%,transparent);
   border-radius:999px;
-  background:color-mix(in srgb,var(--module-bg,#fff) 88%,var(--module-text,#17191d) 5%);
+  background:color-mix(in srgb,var(--module-bg,#fff) 90%,var(--module-text,#17191d) 5%);
   color:var(--module-text,#17191d);
   box-shadow:0 5px 14px color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);
   transform:translate(-50%,-50%) scale(1);
@@ -89,7 +108,24 @@
 .venn-item-text.module-text-edit-active{user-select:text;cursor:text}
 .venn-item-delete{position:absolute;top:-8px;right:-7px;width:22px;height:22px;display:grid;place-items:center;padding:0;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:50%;background:var(--module-bg,#fff);color:var(--module-text,#17191d);box-shadow:0 3px 10px rgba(0,0,0,.12);font-size:16px;line-height:1;opacity:0;transform:scale(.76);transition:opacity .12s ease,transform .12s ease}
 .venn-item:hover .venn-item-delete,.venn-item:focus-within .venn-item-delete{opacity:1;transform:scale(1)}
-.venn-hint{position:absolute;z-index:4;left:50%;bottom:4px;transform:translateX(-50%);width:max-content;max-width:88%;font-size:9px;font-weight:650;letter-spacing:.01em;opacity:.42;white-space:nowrap}
+.venn-hint{
+  position:absolute;
+  z-index:22;
+  left:50%;
+  bottom:104px;
+  transform:translate(-50%,4px);
+  width:max-content;
+  max-width:88%;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.01em;
+  opacity:0;
+  visibility:hidden;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .14s ease,transform .16s ease,visibility .14s ease;
+}
+.venn-module:hover .venn-hint{opacity:.42;visibility:visible;transform:translate(-50%,0)}
 .venn-entry{
   position:absolute;
   z-index:35;
@@ -123,5 +159,5 @@
 .venn-customization .custom-icon{background:color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 10%);color:var(--module-text,#17191d);border-color:color-mix(in srgb,var(--module-text,#17191d) 16%,transparent)}
 .venn-customization .tile-settings-panel{right:0;left:auto}
 @container (max-width:520px){.venn-region-picker{max-width:155px}.venn-region-button{min-width:27px;padding:0 5px}.venn-hint{font-size:8px}}
-@container (max-height:380px){.venn-stage{bottom:58px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
-@media(prefers-reduced-motion:reduce){.venn-circle,.venn-heading,.venn-item,.venn-entry{transition:none}}
+@container (max-height:380px){.venn-stage{top:42px;bottom:76px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
+@media(prefers-reduced-motion:reduce){.venn-circle,.venn-heading,.venn-item,.venn-entry,.venn-hint{transition:none}}

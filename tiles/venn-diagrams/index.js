@@ -4,6 +4,7 @@
   const MAX_ITEMS=48;
   const ITEM_MAX=72;
   const HEADING_MAX=40;
+  const TITLE_MAX=60;
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
   const clean=(value,max)=>String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
 
@@ -33,6 +34,7 @@
   }
 
   function setup(m){
+    const title=m.querySelector('.venn-title');
     const stage=m.querySelector('.venn-stage');
     const circleA=m.querySelector('.venn-circle--a');
     const circleB=m.querySelector('.venn-circle--b');
@@ -58,6 +60,8 @@
     let geometry=null;
 
     const changed=reason=>notifyBoardChanged(`venn-diagram-${reason}`);
+
+    function titleText(){return clean(title?.textContent,TITLE_MAX)||'Venn Diagram'}
 
     function headingText(key){
       const fallback=key==='a'?'Set A':key==='b'?'Set B':'Set C';
@@ -97,28 +101,70 @@
       });
     }
 
+    function membershipArea(bit){
+      let area=0;
+      items.forEach(item=>{
+        if(!(item.region&bit)||!item.element)return;
+        const width=Math.max(52,item.element.offsetWidth||72);
+        const height=Math.max(28,item.element.offsetHeight||32);
+        area+=(width+10)*(height+8);
+      });
+      return area;
+    }
+
+    function applyVisualScale(metrics){
+      const density=clamp(1-Math.max(0,items.length-12)*.012,.7,1);
+      const itemFont=clamp(13*metrics.scale*density,9.5,22);
+      const itemPadX=clamp(13*metrics.scale*density,7,24);
+      const itemPadY=clamp(7*metrics.scale*density,4.5,14);
+      const headingFont=clamp(15*metrics.scale,11,25);
+      const titleFont=clamp(19*metrics.scale,15,27);
+      stage.style.setProperty('--venn-item-font',`${itemFont}px`);
+      stage.style.setProperty('--venn-item-pad-x',`${itemPadX}px`);
+      stage.style.setProperty('--venn-item-pad-y',`${itemPadY}px`);
+      stage.style.setProperty('--venn-heading-font',`${headingFont}px`);
+      m.style.setProperty('--venn-title-font',`${titleFont}px`);
+      stage.style.setProperty('--venn-line-size',`${clamp(2*metrics.scale,1.4,3.2)}px`);
+    }
+
     function stageMetrics(){
       const width=Math.max(1,stage.clientWidth);
       const height=Math.max(1,stage.clientHeight);
-      const usableHeight=Math.max(190,height-58);
-      const scale=clamp(Math.min(width/650,usableHeight/390),.64,1.75);
+      const scale=clamp(Math.min(width/650,height/365),.62,1.75);
+      const pre={width,height,scale};
+      applyVisualScale(pre);
+
+      const areaA=membershipArea(1);
+      const areaB=membershipArea(2);
+      const areaC=mode==='3'?membershipArea(4):0;
+      const maxArea=Math.max(areaA,areaB,areaC,0);
+      const areaNeed=Math.sqrt(maxArea/(Math.PI*.42))+28*scale;
       let circles;
+
       if(mode==='3'){
-        const r=Math.min(width*.225,usableHeight*.285);
+        const base=Math.min(width*.205,height*.285);
+        const maxRadius=Math.max(base,Math.min((width-42)/3.18,(height-50)/3.02));
+        const r=clamp(Math.max(base,areaNeed),base,maxRadius);
+        const dx=r*.575;
+        const dy=r*.48;
+        const centerY=height*.505;
         circles={
-          a:{x:width*.405,y:usableHeight*.405,r},
-          b:{x:width*.595,y:usableHeight*.405,r},
-          c:{x:width*.5,y:usableHeight*.595,r}
+          a:{x:width/2-dx,y:centerY-dy,r},
+          b:{x:width/2+dx,y:centerY-dy,r},
+          c:{x:width/2,y:centerY+dy*.94,r}
         };
       }else{
-        const r=Math.min(width*.255,usableHeight*.34);
+        const base=Math.min(width*.235,height*.34);
+        const maxRadius=Math.max(base,Math.min((width-44)/3.22,(height-36)/2.08));
+        const r=clamp(Math.max(base,areaNeed),base,maxRadius);
+        const distance=r*1.23;
         circles={
-          a:{x:width*.405,y:usableHeight*.49,r},
-          b:{x:width*.595,y:usableHeight*.49,r},
-          c:{x:width*.5,y:usableHeight*.62,r}
+          a:{x:width/2-distance/2,y:height*.52,r},
+          b:{x:width/2+distance/2,y:height*.52,r},
+          c:{x:width/2,y:height*.62,r}
         };
       }
-      return{width,height,usableHeight,scale,circles};
+      return{width,height,scale,circles};
     }
 
     function setCircleGeometry(element,circle,visible=true){
@@ -135,26 +181,15 @@
       element.classList.toggle('is-hidden',!visible);
     }
 
-    function applyVisualScale(metrics){
-      const itemFont=clamp(13*metrics.scale,10,22);
-      const itemPadX=clamp(13*metrics.scale,8,24);
-      const itemPadY=clamp(7*metrics.scale,5,14);
-      const headingFont=clamp(15*metrics.scale,11,25);
-      stage.style.setProperty('--venn-item-font',`${itemFont}px`);
-      stage.style.setProperty('--venn-item-pad-x',`${itemPadX}px`);
-      stage.style.setProperty('--venn-item-pad-y',`${itemPadY}px`);
-      stage.style.setProperty('--venn-heading-font',`${headingFont}px`);
-      stage.style.setProperty('--venn-line-size',`${clamp(2*metrics.scale,1.4,3.2)}px`);
-    }
-
     function applyDiagramGeometry(metrics){
       const {a,b,c}=metrics.circles;
       setCircleGeometry(circleA,a,true);
       setCircleGeometry(circleB,b,true);
       setCircleGeometry(circleC,c,mode==='3');
-      setHeadingGeometry(headings.a,a.x-a.r*.34,a.y-a.r*.78,true);
-      setHeadingGeometry(headings.b,b.x+b.r*.34,b.y-b.r*.78,true);
-      setHeadingGeometry(headings.c,c.x,c.y+c.r*.76,mode==='3');
+      const gap=clamp(17*metrics.scale,12,28);
+      setHeadingGeometry(headings.a,a.x,a.y-a.r-gap,true);
+      setHeadingGeometry(headings.b,b.x,b.y-b.r-gap,true);
+      setHeadingGeometry(headings.c,c.x,c.y+c.r+gap,mode==='3');
       applyVisualScale(metrics);
     }
 
@@ -162,39 +197,110 @@
       const {a,b,c}=metrics.circles;
       const mid=(p,q)=>({x:(p.x+q.x)/2,y:(p.y+q.y)/2});
       if(mode==='2'){
-        if(region===1)return{x:a.x-a.r*.36,y:a.y+a.r*.05};
-        if(region===2)return{x:b.x+b.r*.36,y:b.y+b.r*.05};
-        return{x:(a.x+b.x)/2,y:(a.y+b.y)/2+a.r*.09};
+        if(region===1)return{x:a.x-a.r*.38,y:a.y+a.r*.03};
+        if(region===2)return{x:b.x+b.r*.38,y:b.y+b.r*.03};
+        return{x:(a.x+b.x)/2,y:(a.y+b.y)/2+a.r*.02};
       }
-      if(region===1)return{x:a.x-a.r*.3,y:a.y-a.r*.02};
-      if(region===2)return{x:b.x+b.r*.3,y:b.y-b.r*.02};
+      if(region===1)return{x:a.x-a.r*.34,y:a.y-a.r*.06};
+      if(region===2)return{x:b.x+b.r*.34,y:b.y-b.r*.06};
       if(region===4)return{x:c.x,y:c.y+c.r*.34};
-      if(region===3){const p=mid(a,b);return{x:p.x,y:p.y-a.r*.08}}
-      if(region===5){const p=mid(a,c);return{x:p.x-a.r*.1,y:p.y+a.r*.1}}
-      if(region===6){const p=mid(b,c);return{x:p.x+b.r*.1,y:p.y+b.r*.1}}
-      return{x:(a.x+b.x+c.x)/3,y:(a.y+b.y+c.y)/3+a.r*.05};
+      if(region===3){const p=mid(a,b);return{x:p.x,y:p.y-a.r*.18}}
+      if(region===5){const p=mid(a,c);return{x:p.x-a.r*.13,y:p.y+a.r*.1}}
+      if(region===6){const p=mid(b,c);return{x:p.x+b.r*.13,y:p.y+a.r*.1}}
+      return{x:(a.x+b.x+c.x)/3,y:(a.y+b.y+c.y)/3+a.r*.04};
     }
 
-    function clusterPositions(count,anchor,metrics){
-      if(!count)return[];
-      const result=[];
-      const spacingX=clamp(82*metrics.scale,55,130);
-      const spacingY=clamp(38*metrics.scale,28,62);
-      const cols=count<=2?1:count<=6?2:count<=12?3:4;
-      const rows=Math.ceil(count/cols);
-      for(let index=0;index<count;index++){
-        const col=index%cols;
-        const row=Math.floor(index/cols);
-        const colsInRow=Math.min(cols,count-row*cols);
-        const xOffset=(col-(colsInRow-1)/2)*spacingX;
-        const yOffset=(row-(rows-1)/2)*spacingY;
-        const stagger=(row%2&&colsInRow>1?spacingX*.14:0);
-        result.push({
-          x:clamp(anchor.x+xOffset+stagger,42,metrics.width-42),
-          y:clamp(anchor.y+yOffset,42,metrics.usableHeight-28)
-        });
+    function exactRegionAtPoint(point,metrics){
+      let region=0;
+      const inside=circle=>Math.hypot(point.x-circle.x,point.y-circle.y)<=circle.r;
+      if(inside(metrics.circles.a))region|=1;
+      if(inside(metrics.circles.b))region|=2;
+      if(mode==='3'&&inside(metrics.circles.c))region|=4;
+      return region;
+    }
+
+    function candidatePoints(region,metrics){
+      const anchor=regionAnchor(region,metrics);
+      const step=clamp(12*metrics.scale,8,18);
+      const points=[];
+      for(let y=14;y<=metrics.height-14;y+=step){
+        for(let x=14;x<=metrics.width-14;x+=step){
+          const point={x,y};
+          if(exactRegionAtPoint(point,metrics)!==region)continue;
+          const distance=Math.hypot(x-anchor.x,y-anchor.y);
+          points.push({x,y,score:distance+Math.abs(y-anchor.y)*.08});
+        }
       }
-      return result;
+      points.sort((a,b)=>a.score-b.score);
+      return points;
+    }
+
+    function boxesOverlap(a,b,gap){
+      return !(a.right+gap<=b.left||a.left>=b.right+gap||a.bottom+gap<=b.top||a.top>=b.bottom+gap);
+    }
+
+    function boxFor(point,item){
+      const width=Math.max(44,item.element?.offsetWidth||72);
+      const height=Math.max(26,item.element?.offsetHeight||32);
+      return{
+        left:point.x-width/2,
+        right:point.x+width/2,
+        top:point.y-height/2,
+        bottom:point.y+height/2,
+        width,
+        height
+      };
+    }
+
+    function pointFits(point,item,metrics,placed){
+      const box=boxFor(point,item);
+      const edge=6;
+      if(box.left<edge||box.right>metrics.width-edge||box.top<edge||box.bottom>metrics.height-edge)return false;
+      const gap=clamp(7*metrics.scale,5,12);
+      return !placed.some(other=>boxesOverlap(box,other.box,gap));
+    }
+
+    function fallbackPoint(item,region,metrics,placed){
+      const candidates=candidatePoints(region,metrics);
+      let best=null;
+      let bestPenalty=Infinity;
+      candidates.forEach(point=>{
+        const box=boxFor(point,item);
+        if(box.left<4||box.right>metrics.width-4||box.top<4||box.bottom>metrics.height-4)return;
+        let penalty=0;
+        placed.forEach(other=>{
+          const overlapX=Math.max(0,Math.min(box.right,other.box.right)-Math.max(box.left,other.box.left));
+          const overlapY=Math.max(0,Math.min(box.bottom,other.box.bottom)-Math.max(box.top,other.box.top));
+          penalty+=overlapX*overlapY;
+        });
+        if(penalty<bestPenalty){bestPenalty=penalty;best=point}
+      });
+      return best||regionAnchor(region,metrics);
+    }
+
+    function calculatePlacements(metrics){
+      const placed=[];
+      const groups=new Map();
+      items.forEach(item=>{
+        if(!groups.has(item.region))groups.set(item.region,[]);
+        groups.get(item.region).push(item);
+      });
+      const regions=[...groups.keys()].sort((a,b)=>{
+        const bits=n=>((n&1)?1:0)+((n&2)?1:0)+((n&4)?1:0);
+        return bits(b)-bits(a)||(groups.get(b).length-groups.get(a).length);
+      });
+      const cache=new Map();
+      regions.forEach(region=>{
+        const candidates=cache.get(region)||candidatePoints(region,metrics);
+        cache.set(region,candidates);
+        groups.get(region).forEach(item=>{
+          let point=candidates.find(candidate=>pointFits(candidate,item,metrics,placed));
+          if(!point)point=fallbackPoint(item,region,metrics,placed);
+          const box=boxFor(point,item);
+          placed.push({item,point,box});
+        });
+      });
+      return placed;
     }
 
     function layoutItems(){
@@ -202,19 +308,11 @@
       if(disposed||!m.isConnected)return;
       geometry=stageMetrics();
       applyDiagramGeometry(geometry);
-      const groups=new Map();
-      items.forEach(item=>{
-        if(!groups.has(item.region))groups.set(item.region,[]);
-        groups.get(item.region).push(item);
-      });
-      groups.forEach((group,region)=>{
-        const positions=clusterPositions(group.length,regionAnchor(region,geometry),geometry);
-        group.forEach((item,index)=>{
-          const point=positions[index];
-          if(!point||item.dragging)return;
-          item.element.style.left=`${point.x}px`;
-          item.element.style.top=`${point.y}px`;
-        });
+      const placements=calculatePlacements(geometry);
+      placements.forEach(({item,point})=>{
+        if(item.dragging)return;
+        item.element.style.left=`${point.x}px`;
+        item.element.style.top=`${point.y}px`;
       });
     }
 
@@ -268,6 +366,8 @@
       if(event.button!==0||item.removing)return;
       if(event.target.closest('.venn-item-delete'))return;
       if(event.target.closest('.module-text-edit-active'))return;
+      event.preventDefault();
+      event.stopPropagation();
       const start=pointerToStage(event);
       const startLeft=parseFloat(item.element.style.left)||start.x;
       const startTop=parseFloat(item.element.style.top)||start.y;
@@ -275,6 +375,8 @@
       item.element.setPointerCapture?.(event.pointerId);
 
       const move=moveEvent=>{
+        moveEvent.preventDefault();
+        moveEvent.stopPropagation();
         const point=pointerToStage(moveEvent);
         if(!moved&&Math.hypot(moveEvent.clientX-event.clientX,moveEvent.clientY-event.clientY)>4){
           moved=true;
@@ -282,11 +384,15 @@
           item.element.classList.add('is-dragging');
         }
         if(!moved)return;
-        item.element.style.left=`${clamp(startLeft+(point.x-start.x),22,stage.clientWidth-22)}px`;
-        item.element.style.top=`${clamp(startTop+(point.y-start.y),22,Math.max(22,(geometry||stageMetrics()).usableHeight-12))}px`;
+        const halfW=Math.max(22,item.element.offsetWidth/2);
+        const halfH=Math.max(16,item.element.offsetHeight/2);
+        item.element.style.left=`${clamp(startLeft+(point.x-start.x),halfW+4,stage.clientWidth-halfW-4)}px`;
+        item.element.style.top=`${clamp(startTop+(point.y-start.y),halfH+4,stage.clientHeight-halfH-4)}px`;
       };
 
       const end=endEvent=>{
+        endEvent.preventDefault();
+        endEvent.stopPropagation();
         item.element.removeEventListener('pointermove',move);
         item.element.removeEventListener('pointerup',end);
         item.element.removeEventListener('pointercancel',end);
@@ -337,6 +443,7 @@
       remove.className='venn-item-delete';
       remove.setAttribute('aria-label',`Delete ${text}`);
       remove.textContent='×';
+      remove.addEventListener('pointerdown',event=>event.stopPropagation());
       remove.addEventListener('click',event=>{event.stopPropagation();removeItem(item)});
 
       label.addEventListener('keydown',event=>{
@@ -364,7 +471,7 @@
         const metrics=geometry||stageMetrics();
         const anchor=regionAnchor(item.region,metrics);
         bubble.style.left=`${metrics.width/2}px`;
-        bubble.style.top=`${Math.min(metrics.usableHeight*.55,anchor.y)}px`;
+        bubble.style.top=`${Math.min(metrics.height*.55,anchor.y)}px`;
         bubble.classList.add('is-entering');
         requestAnimationFrame(()=>requestAnimationFrame(()=>bubble.classList.remove('is-entering')));
       }
@@ -410,6 +517,17 @@
       if(notify)changed('mode');
     }
 
+    function commitTitle(){
+      const value=titleText();
+      if(title.textContent!==value)title.textContent=value;
+      changed('title');
+    }
+
+    title.addEventListener('keydown',event=>{
+      if(event.key==='Enter'){event.preventDefault();title.blur()}
+    });
+    title.addEventListener('blur',commitTitle);
+
     function commitHeading(key){
       const value=headingText(key);
       if(headings[key].textContent!==value)headings[key].textContent=value;
@@ -445,6 +563,7 @@
     resizeObserver.observe(stage);
 
     m._boardGetState=()=>({
+      title:titleText(),
       mode,
       headings:{a:headingText('a'),b:headingText('b'),c:headingText('c')},
       selectedRegion,
@@ -453,6 +572,7 @@
 
     m._boardSetState=state=>{
       clearItems({notify:false,animate:false});
+      title.textContent=clean(state?.title,TITLE_MAX)||'Venn Diagram';
       mode=state?.mode==='3'?'3':'2';
       m.dataset.vennMode=mode;
       headings.a.textContent=clean(state?.headings?.a,HEADING_MAX)||'Set A';
