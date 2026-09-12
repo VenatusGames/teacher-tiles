@@ -16020,3 +16020,11 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .timer-module.has-shape-shelf-open .timer-controls{opacity:1!important;max-height:240px!important;pointer-events:auto!important}
 @keyframes timerShapeShelfIn{from{opacity:0;transform:translateY(7px) scale(.97)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.timer-shape-shelf,.timer-shape-shelf button{animation:none;transition:none}}
+
+#context-menu .context-menu__category-row[hidden],#context-menu .context-menu__holiday-children[hidden]{display:none!important}
+#context-menu .context-menu__category-row--nested{margin-left:7px;border-left:1px solid var(--border)}
+#context-menu .context-menu__disclosure{flex:none;margin-left:auto;width:22px;height:28px;border:0;border-radius:6px;background:transparent;color:var(--text);font-size:20px;line-height:1}
+#context-menu .context-menu__disclosure:hover{background:var(--surface-soft)}
+#context-menu .context-menu__holiday-children{margin-left:7px;border-left:1px solid var(--border);padding-left:7px}
+#context-menu .context-menu__holiday-child{display:block;width:100%;padding:7px 2px;text-align:left;border:0;background:transparent;color:var(--muted);font-size:10px;line-height:1.3;cursor:default}
+#context-menu .context-menu__holiday-child small{display:block;margin-top:2px;font-size:9px;opacity:.75}
