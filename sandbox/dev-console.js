@@ -10,7 +10,9 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
 
   const stylesheet=document.createElement('link');
   stylesheet.rel='stylesheet';
-  stylesheet.href=new URL('./dev-console.css',import.meta.url).href;
+  const stylesheetUrl=new URL('./dev-console.css',import.meta.url);
+  stylesheetUrl.searchParams.set('v','20260912-coin-animation-1');
+  stylesheet.href=stylesheetUrl.href;
   document.head.appendChild(stylesheet);
   document.body.classList.add('sandbox-mode');
 
@@ -56,6 +58,10 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
           <span><strong>Testing coins</strong><small>Keep the balance at 999,999 while this is on.</small></span>
           <span class="sandbox-switch"><input id="sandbox-unlimited-coins" type="checkbox"><i aria-hidden="true"></i></span>
         </label>
+        <div class="sandbox-dev-setting sandbox-dev-setting--action sandbox-dev-setting--celebration">
+          <span><strong>Coin add animation</strong><small>Preview a +500 coin celebration without changing your balance.</small></span>
+          <button id="sandbox-play-coin-animation" type="button">Play animation</button>
+        </div>
         <div class="sandbox-dev-setting sandbox-dev-setting--action">
           <span><strong>Owned shop items</strong><small>Remove every purchased theme, sticker pack, and Tile Skin.</small></span>
           <button id="sandbox-reset-owned-items" type="button">Reset owned items</button>
@@ -66,6 +72,7 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   document.body.appendChild(consoleRoot);
 
   const coinsToggle=consoleRoot.querySelector('#sandbox-unlimited-coins');
+  const coinAnimationButton=consoleRoot.querySelector('#sandbox-play-coin-animation');
   const resetButton=consoleRoot.querySelector('#sandbox-reset-owned-items');
   const status=consoleRoot.querySelector('#sandbox-dev-console-status');
   const closeButton=consoleRoot.querySelector('.sandbox-dev-console__close');
@@ -171,6 +178,16 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   closeButton.addEventListener('click',closeConsole);
   backdrop.addEventListener('click',closeConsole);
   coinsToggle.addEventListener('change',()=>setTestingCoins(coinsToggle.checked));
+  coinAnimationButton.addEventListener('click',()=>{
+    const preview=window.TeacherTilesShop?.previewCoinCelebration;
+    if(typeof preview!=='function'){
+      setStatus('The coin animation is still loading. Try again in a moment.');
+      return;
+    }
+    setStatus('Playing the +500 coin animation. Your balance will not change.');
+    closeConsole();
+    window.setTimeout(()=>preview(500),190);
+  });
   window.addEventListener('teachertiles:shopownershipchange',()=>{
     if(coinsEnabled())writeCoins(SANDBOX_COIN_BALANCE);
   });

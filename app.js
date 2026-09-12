@@ -18841,7 +18841,18 @@ function setupTeacherTilesShop(){
     showToast('Purchase this pack to unlock it in your shelf.');
   });
   syncStickerShopPackCounts();
-  window.TeacherTilesShop={open:openShop,openCoins:()=>{openShop();openCoins()},openPage:name=>{openShop();showPage(name)},sync:()=>{syncShop();syncStickerShopPackCounts();refreshShopBrowsers.forEach(render=>render())}};
+  window.TeacherTilesShop={
+    open:openShop,
+    openCoins:()=>{openShop();openCoins()},
+    openPage:name=>{openShop();showPage(name)},
+    previewCoinCelebration:(amount=500)=>{
+      const added=Math.max(1,Math.floor(Number(amount)||500));
+      const current=Number(accountState().coinBalance)||0;
+      openShop();
+      requestAnimationFrame(()=>showCoinCelebration(current,current+added));
+    },
+    sync:()=>{syncShop();syncStickerShopPackCounts();refreshShopBrowsers.forEach(render=>render())}
+  };
   syncShop();handleCheckoutReturn();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();

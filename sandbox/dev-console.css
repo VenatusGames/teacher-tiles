@@ -45,6 +45,9 @@
 .sandbox-switch input:checked+i::after{transform:translateX(19px)}
 .sandbox-switch input:focus-visible+i{outline:3px solid color-mix(in srgb,#7c3aed 30%,transparent);outline-offset:2px}
 .sandbox-dev-setting--action button{flex:0 0 auto;padding:9px 12px;border:1px solid color-mix(in srgb,#dc2626 24%,var(--border));border-radius:10px;background:color-mix(in srgb,#dc2626 8%,var(--surface-solid));color:#b91c1c;font-size:10px;font-weight:800}
+.sandbox-dev-setting--celebration button{border-color:color-mix(in srgb,#f59e0b 42%,var(--border));background:linear-gradient(135deg,#fff7d6,#ffe49a);color:#8a5500;box-shadow:0 5px 14px rgba(245,158,11,.14);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+.sandbox-dev-setting--celebration button:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(245,158,11,.24);filter:saturate(1.08)}
+.sandbox-dev-setting--celebration button:active{transform:translateY(0)}
 .sandbox-dev-console__status{min-height:28px;margin:5px 14px 7px;padding:8px 10px;border-radius:9px;background:var(--surface-soft);color:var(--muted);font-size:10px}
 body.boards-screen-open .sandbox-dev-toggle{opacity:0;visibility:hidden;pointer-events:none}
 @media(max-width:620px){.sandbox-dev-toggle{top:10px;left:56px;width:38px;height:38px}.sandbox-dev-setting{align-items:flex-start}.sandbox-dev-setting--action{flex-direction:column}.sandbox-dev-setting--action button{width:100%}}
