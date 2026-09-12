@@ -157,32 +157,59 @@
       const areaC=mode==='3'?membershipArea(4):0;
       const maxArea=Math.max(areaA,areaB,areaC,0);
       const areaNeed=Math.sqrt(maxArea/(Math.PI*.42))+28*scale;
+      const sideMargin=clamp(4*scale,3,8);
+      const headingGap=clamp(12*scale,9,19);
+      const headingReserve=clamp(31*scale,27,48);
       let circles;
 
       if(mode==='3'){
-        const base=Math.min(width*.205,height*.285);
-        const maxRadius=Math.max(base,Math.min((width-42)/3.18,(height-50)/3.02));
-        const r=clamp(Math.max(base,areaNeed),base,maxRadius);
-        const dx=r*.575;
-        const dy=r*.48;
-        const centerY=height*.505;
+        const dxFactor=.50;
+        const dyFactor=.33;
+        const cYOffset=.92;
+        const widthFactor=2+2*dxFactor;
+        const heightFactor=2+dyFactor*(1+cYOffset);
+        const compactHeadingReserve=clamp(22*scale,18,32);
+        const topReserve=compactHeadingReserve;
+        const bottomReserve=compactHeadingReserve;
+        const maxRadius=Math.max(18,Math.min(
+          (width-sideMargin*2)/widthFactor,
+          (height-topReserve-bottomReserve)/heightFactor
+        ));
+        const minimumRadius=Math.max(18,maxRadius*.95);
+        const r=clamp(Math.max(minimumRadius,areaNeed),minimumRadius,maxRadius);
+        const dx=r*dxFactor;
+        const dy=r*dyFactor;
+        const usedHeight=heightFactor*r;
+        const spare=Math.max(0,height-topReserve-bottomReserve-usedHeight);
+        const top=topReserve+spare*.46;
+        const centerY=top+r+dy;
         circles={
           a:{x:width/2-dx,y:centerY-dy,r},
           b:{x:width/2+dx,y:centerY-dy,r},
-          c:{x:width/2,y:centerY+dy*.94,r}
+          c:{x:width/2,y:centerY+dy*cYOffset,r}
         };
       }else{
-        const base=Math.min(width*.235,height*.34);
-        const maxRadius=Math.max(base,Math.min((width-44)/3.22,(height-36)/2.08));
-        const r=clamp(Math.max(base,areaNeed),base,maxRadius);
-        const distance=r*1.23;
+        const aspect=height/Math.max(1,width);
+        const distanceFactor=clamp(1.04-Math.max(0,aspect-.56)*.62,.78,1.04);
+        const widthFactor=2+distanceFactor;
+        const topReserve=headingReserve;
+        const bottomReserve=clamp(5*scale,3,9);
+        const maxRadius=Math.max(18,Math.min(
+          (width-sideMargin*2)/widthFactor,
+          (height-topReserve-bottomReserve)/2
+        ));
+        const minimumRadius=Math.max(18,maxRadius*.97);
+        const r=clamp(Math.max(minimumRadius,areaNeed),minimumRadius,maxRadius);
+        const distance=r*distanceFactor;
+        const spare=Math.max(0,height-topReserve-bottomReserve-r*2);
+        const centerY=topReserve+r+spare*.48;
         circles={
-          a:{x:width/2-distance/2,y:height*.52,r},
-          b:{x:width/2+distance/2,y:height*.52,r},
-          c:{x:width/2,y:height*.62,r}
+          a:{x:width/2-distance/2,y:centerY,r},
+          b:{x:width/2+distance/2,y:centerY,r},
+          c:{x:width/2,y:centerY,r}
         };
       }
-      return{width,height,scale,circles};
+      return{width,height,scale,circles,headingGap};
     }
 
     function setCircleGeometry(element,circle,visible=true){
@@ -204,7 +231,7 @@
       setCircleGeometry(circleA,a,true);
       setCircleGeometry(circleB,b,true);
       setCircleGeometry(circleC,c,mode==='3');
-      const gap=clamp(17*metrics.scale,12,28);
+      const gap=metrics.headingGap||clamp(12*metrics.scale,9,19);
       setHeadingGeometry(headings.a,a.x,a.y-a.r-gap,true);
       setHeadingGeometry(headings.b,b.x,b.y-b.r-gap,true);
       setHeadingGeometry(headings.c,c.x,c.y+c.r+gap,mode==='3');
