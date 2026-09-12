@@ -5,3 +5,7 @@
 
 .musicscore-module .tile-settings-panel>strong{grid-row:1}.musicscore-module .tile-settings-panel>.tile-setting{grid-row:2}.score-label-setting{grid-row:3;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:650}
 .score-label-setting .score-labels{position:static;flex:none;width:34px;height:20px;padding:2px;border:0;border-radius:999px;background:#8a929e;cursor:pointer;transition:background .15s}.score-labels i{display:block;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .15s}.score-labels[aria-checked=true]{background:#2885d4}.score-labels[aria-checked=true] i{transform:translateX(14px)}.score-labels:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
+
+.music-staff-lines path{stroke-width:1.8;opacity:.6}
+.score-note-glyph{display:block;paint-order:stroke fill;-webkit-text-stroke:4px white;filter:drop-shadow(0 2px 1px #17203326)}
+.music-staff-note .score-letter{left:50%;bottom:28%;font-size:clamp(11px,calc(var(--staff-note-size)*.24),19px);line-height:1.1;background:#fff;color:inherit;padding:2px 5px;border-radius:999px;box-shadow:0 1px 3px #17203326;z-index:1;text-shadow:none}

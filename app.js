@@ -12122,6 +12122,7 @@ function setupTallyChart(m){
 
 function setupTodo(m){
   const list=m.querySelector('.todo-list'),add=m.querySelector('.todo-add');
+  add.textContent='+';add.setAttribute('aria-label','Add step');list.appendChild(add);
   m.querySelector('.todo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.todo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.todo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   const addRow=(value='New step',checked=false,focus=true,afterRow=null)=>{
     const row=document.createElement('div');
@@ -12140,7 +12141,7 @@ function setupTodo(m){
     });
     row.querySelector('.todo-remove').addEventListener('click',()=>row.remove());
     if(afterRow?.parentElement===list)afterRow.after(row);
-    else list.appendChild(row);
+    else list.insertBefore(row,add);
     if(focus)requestAnimationFrame(()=>{
       enterModuleTextEdit(text);
       if(value)text.select();
@@ -12149,7 +12150,7 @@ function setupTodo(m){
   add.addEventListener('click',()=>addRow());
   addRow('First step',false,false);
   m._boardGetState=()=>({rows:[...list.querySelectorAll('.todo-row')].map(row=>({text:row.querySelector('.todo-item-text')?.value||'',checked:Boolean(row.querySelector('.todo-check')?.checked)}))});
-  m._boardSetState=state=>{list.replaceChildren();const rows=Array.isArray(state?.rows)?state.rows:[];if(rows.length)rows.forEach(row=>addRow(row.text||'',Boolean(row.checked),false));};
+  m._boardSetState=state=>{list.replaceChildren(add);const rows=Array.isArray(state?.rows)?state.rows:[];if(rows.length)rows.forEach(row=>addRow(row.text||'',Boolean(row.checked),false));};
 }
 
 workspace.addEventListener('dragover',e=>{const types=[...e.dataTransfer.types];if(types.includes('Files')||types.includes('text/uri-list')||types.includes('text/html')||types.includes('text/plain'))e.preventDefault()});

@@ -14334,7 +14334,7 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 
 /* Expandable customization launcher. */
 .customize-launcher{position:relative;width:40px;height:40px;flex:0 0 40px;overflow:visible;transition:width .28s cubic-bezier(.2,.85,.25,1),flex-basis .28s cubic-bezier(.2,.85,.25,1)}
-.customize-launcher.is-open{width:232px;flex-basis:232px}
+.customize-launcher.is-open{width:184px;flex-basis:184px}
 .customize-toggle{position:relative;z-index:3;transition:transform .22s cubic-bezier(.2,.85,.25,1),background .16s ease,box-shadow .16s ease}
 .customize-paintbrush-icon{fill:currentColor;stroke-linecap:round}
 .customize-launcher.is-open .customize-toggle{transform:rotate(-5deg);background:var(--surface-solid);box-shadow:0 9px 25px rgba(15,23,42,.16),0 0 0 2px color-mix(in srgb,var(--text) 8%,transparent)}
@@ -16033,3 +16033,13 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__item--coming-soon>.holiday-badge,#context-menu .context-menu__item--coming-soon>.holiday-subscriber-crown,#context-menu .context-menu__item--coming-soon>.context-menu__connect-badge,#context-menu .context-menu__item--coming-soon>.context-menu__tracking-badge{z-index:5}
 :is(.timer-module,.interactive-module):not(.is-pointer-over):not(.has-keyboard-focus):not(:has(:focus-visible)):not(.has-shape-shelf-open) .timer-controls{max-height:0!important;opacity:0!important;padding:0!important;visibility:hidden!important;pointer-events:none!important;overflow:hidden!important}
 :is(.timer-module,.interactive-module).has-shape-shelf-open .timer-controls{visibility:visible!important;opacity:1!important;max-height:260px!important;pointer-events:auto!important}
+
+/* Keep the classic lens and handle on a single proportional geometry. */
+.magnifier-module[data-tile-skin="magnifier-classic"]{--glass-size:min(74cqw,65cqh)}
+.magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-lens{left:calc(50% - var(--glass-size)*.1);top:2%;width:var(--glass-size);height:var(--glass-size);box-sizing:border-box;border-width:calc(var(--glass-size)*.065)}
+.magnifier-module[data-tile-skin="magnifier-classic"] .magnifier-handle{left:calc(50% + var(--glass-size)*.12);top:calc(2% + var(--glass-size)*.82);width:calc(var(--glass-size)*.28);height:calc(var(--glass-size)*.5);border-radius:calc(var(--glass-size)*.08)}
+.magnifier-module[data-tile-skin="magnifier-classic"]:hover>.resize-handle::before{opacity:1;transform:scale(1.04)}
+.todo-module .todo-list>.todo-add{align-self:center;flex:none;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent!important;color:inherit!important;font:400 28px/1 Inter,sans-serif;box-shadow:none;cursor:pointer}
+.todo-module .todo-list>.todo-add:hover{background:color-mix(in srgb,var(--module-text) 10%,transparent)!important}
+.interactive-module:not([data-interactive-mode="candle"]) .interactive-customization{display:none!important}
+.interactive-type-shelf button{font-size:36px;min-height:64px;padding:8px}

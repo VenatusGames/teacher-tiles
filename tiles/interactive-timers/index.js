@@ -10,11 +10,11 @@
     let mode='hourglass';
     const typeButton=document.createElement('button');typeButton.type='button';typeButton.className='tile-action interactive-type-toggle';typeButton.setAttribute('aria-label','Choose timer type');typeButton.setAttribute('aria-expanded','false');
     const originalPicker=m.querySelector('.interactive-picker');originalPicker.replaceWith(typeButton);
-    const drawer=document.createElement('div');drawer.className='timer-shape-shelf';drawer.hidden=true;drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Timer type');document.body.appendChild(drawer);
+    const drawer=document.createElement('div');drawer.className='timer-shape-shelf interactive-type-shelf';drawer.hidden=true;drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Timer type');document.body.appendChild(drawer);
     let drawerFrame=0;
     const closeDrawer=()=>{drawer.hidden=true;typeButton.setAttribute('aria-expanded','false');m.classList.remove('has-shape-shelf-open');cancelAnimationFrame(drawerFrame)};
     const positionDrawer=()=>{if(!m.isConnected){closeDrawer();return}const r=typeButton.getBoundingClientRect();drawer.style.left=`${Math.max(8,Math.min(r.left,innerWidth-drawer.offsetWidth-8))}px`;drawer.style.top=`${Math.max(8,Math.min(r.top-drawer.offsetHeight-8,innerHeight-drawer.offsetHeight-8))}px`;drawerFrame=requestAnimationFrame(positionDrawer)};
-    modeButtons.forEach(button=>{const text=document.createElement('span');text.textContent=button.title;button.appendChild(text);drawer.appendChild(button)});
+    modeButtons.forEach(button=>{button.setAttribute('aria-label',button.title);drawer.appendChild(button)});
     typeButton.addEventListener('click',()=>{if(!drawer.hidden){closeDrawer();return}drawer.hidden=false;typeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionDrawer()});
     const outside=event=>{if(!drawer.contains(event.target)&&!typeButton.contains(event.target))closeDrawer()};
     const escape=event=>{if(event.key==='Escape'&&!drawer.hidden){event.stopPropagation();closeDrawer();typeButton.focus({preventScroll:true})}};
