@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const backgrounds={white:'#ffffff',cream:'#fff5dc',blue:'#dfeeff',pink:'#ffe0ea',green:'#e1f5e5',lavender:'#eee3ff',charcoal:'#25282e'};
-  const texts={dark:'#17191d',soft:'#5d6470',blue:'#244d78',rose:'#8b4055',white:'#f7f8fa'};
+  const texts={dark:'#17191d',soft:'#5d6470',blue:'#244d78',rose:'#8b4055',white:'#f7f8fa',red:'#b42332',orange:'#b54708',gold:'#92700c',green:'#287442',teal:'#087e8b',purple:'#7543a8',brown:'#79523b'};
   const notes={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};
   const fontNames={lexend:'Lexend',pacifico:'Pacifico',calibri:'Calibri',inter:'Inter',poppins:'Poppins',nunito:'Nunito',quicksand:'Quicksand',oswald:'Oswald',lora:'Lora',merriweather:'Merriweather',playfair:'Playfair Display',caveat:'Caveat',phantom:'Phantom Guardians',dm:'DM Sans',space:'Space Grotesk',mono:'Roboto Mono'};
   let active=null,frame=0,hideTimer=0,keyboard=false;
