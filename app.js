@@ -2548,31 +2548,45 @@ function applyMenuView(){
   menuSearchClear?.classList.toggle('is-visible',searching);
   const list=menu.querySelector('.context-menu__list');
   // Search continues to cover the entire catalog, as in the original menu.
-  const categories=searching||activeMenuCategory==='all'?menuCategoryOrder.filter(category=>category!=='all'&&category!=='favorites'):[activeMenuCategory];
+  const regularCategories=menuCategoryOrder.filter(category=>!['all','favorites'].includes(category));
+  const categories=searching||['all','favorites'].includes(activeMenuCategory)?regularCategories:[activeMenuCategory];
   const fragment=document.createDocumentFragment();
   const included=new Set();
   let visibleCount=0;
   menuItems.forEach(item=>{item.hidden=true});
-  for(const category of categories){
-    const matches=menuItems.filter(item=>{
-      const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
-      return (!included.has(item)||(!searching&&activeMenuCategory==='all'))&&(category==='favorites'?menuFavorites.has(menuItemKey(item)):(item.dataset.category||'').split(/\s+/).includes(category))&&(!searching||searchable.includes(query));
-    });
-    matches.sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true}));
-    if(!matches.length)continue;
-    const section=document.createElement('section');section.className='context-menu__section';
-    const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);
-    const grid=document.createElement('div');grid.className='context-menu__tile-grid';
-    matches.forEach(item=>{
-      const card=included.has(item)?item.cloneNode(true):item;included.add(item);card.hidden=false;
-      const wrap=document.createElement('div');wrap.className='context-menu__card-wrap';
-      const star=document.createElement('button');star.type='button';star.className='context-menu__favorite';
-      const id=menuItemKey(item),favorite=menuFavorites.has(id),name=item.querySelector('strong')?.textContent;
-      star.dataset.tileFavorite=id;star.textContent=favorite?'★':'☆';
-      star.setAttribute('aria-pressed',String(favorite));star.setAttribute('aria-label',`${favorite?'Remove':'Add'} ${name} ${favorite?'from':'to'} favorites`);
-      star.title=star.getAttribute('aria-label');wrap.append(card,star);grid.appendChild(wrap);visibleCount++;
-    });
-    section.append(heading,grid);fragment.appendChild(section);
+  const passes=!searching&&activeMenuCategory==='all'?[true,false]:[!searching&&activeMenuCategory==='favorites'];
+  for(const favoritesOnly of passes){
+    const collection=document.createElement('div');collection.className='context-menu__collection';
+    if(favoritesOnly)collection.classList.add('context-menu__collection--favorites');
+    if(favoritesOnly&&activeMenuCategory==='all'){
+      const title=document.createElement('h2');title.textContent=menuCategoryLabel('favorites');collection.appendChild(title);
+    }
+    let collectionCount=0;
+    for(const category of categories){
+      const matches=menuItems.filter(item=>{
+        const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
+        return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||menuFavorites.has(menuItemKey(item)))&&(!searching||searchable.includes(query));
+      });
+      matches.sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true}));
+      if(!matches.length)continue;
+      const section=document.createElement('section');section.className='context-menu__section';
+      const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);
+      const grid=document.createElement('div');grid.className='context-menu__tile-grid';
+      matches.forEach(item=>{
+        const card=included.has(item)?item.cloneNode(true):item;included.add(item);card.hidden=false;
+        const wrap=document.createElement('div');wrap.className='context-menu__card-wrap';
+        const star=document.createElement('button');star.type='button';star.className='context-menu__favorite';
+        const id=menuItemKey(item),favorite=menuFavorites.has(id),name=item.querySelector('strong')?.textContent;
+        star.dataset.tileFavorite=id;star.textContent=favorite?'★':'☆';
+        star.setAttribute('aria-pressed',String(favorite));star.setAttribute('aria-label',`${favorite?'Remove':'Add'} ${name} ${favorite?'from':'to'} favorites`);
+        star.title=star.getAttribute('aria-label');wrap.append(card,star);grid.appendChild(wrap);visibleCount++;collectionCount++;
+      });
+      section.append(heading,grid);collection.appendChild(section);
+    }
+    if(favoritesOnly&&activeMenuCategory==='all'&&!collectionCount){
+      const hint=document.createElement('p');hint.className='context-menu__favorites-hint';hint.textContent='Star a tile to keep it here.';collection.appendChild(hint);
+    }
+    fragment.appendChild(collection);
   }
   // Retain hidden buttons in the DOM for localization and catalog integrations.
   const hidden=document.createElement('div');hidden.hidden=true;
