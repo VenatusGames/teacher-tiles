@@ -23,6 +23,10 @@ const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
 const profileBetaBadge = document.getElementById("profile-beta-badge");
 const profileBadgeCount = document.getElementById("profile-badge-count");
+const profileSubscriberBadge = document.getElementById("profile-subscriber-badge");
+const subscriberPatchRequirement = document.getElementById("subscriber-patch-requirement");
+const subscriberPatchEarned = document.getElementById("subscriber-patch-earned");
+const subscriberPatchCheck = profileSubscriberBadge?.querySelector(".profile-badge__check");
 const profileCoinBalance = document.getElementById("profile-coin-balance");
 const profileCoinCard = document.getElementById("profile-coin-card");
 const status = document.getElementById("profile-auth-status");
@@ -598,11 +602,27 @@ function closeClassSyncPanel() {
   setClassSyncFeedback();
 }
 
+function syncProfileBadgeCount() {
+  if (!profileBadgeCount) return;
+  const earned = document.querySelectorAll(".profile-badge-grid .profile-badge:not(.profile-badge--locked):not([hidden])").length;
+  profileBadgeCount.textContent = `${earned} earned`;
+}
+
 function syncSubscriberMarks(state = shopAccountState) {
   const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesSandbox?.subscriptionEnabled));
   if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
   if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
   toggle?.classList.toggle("is-subscriber", active);
+  if (profileSubscriberBadge) {
+    profileSubscriberBadge.classList.toggle("profile-badge--locked", !active);
+    profileSubscriberBadge.setAttribute("aria-disabled", String(!active));
+    profileSubscriberBadge.setAttribute("aria-describedby", active ? "subscriber-patch-earned" : "subscriber-patch-requirement");
+    profileSubscriberBadge.setAttribute("aria-label", active ? "Subscriber patch. Earned with an active subscription." : "Subscriber patch. Locked. Pay for a monthly subscription to unlock.");
+  }
+  if (subscriberPatchRequirement) subscriberPatchRequirement.hidden = active;
+  if (subscriberPatchEarned) subscriberPatchEarned.hidden = !active;
+  if (subscriberPatchCheck) subscriberPatchCheck.hidden = !active;
+  syncProfileBadgeCount();
 }
 
 window.addEventListener("teachertiles:accountchange", event => syncSubscriberMarks(event.detail));
@@ -3818,7 +3838,7 @@ async function renderUser(user) {
     const createdAt = Date.parse(user.metadata?.creationTime || "");
     const isBetaTester = !Number.isFinite(createdAt) || createdAt <= betaCutoff;
     if (profileBetaBadge) profileBetaBadge.hidden = !isBetaTester;
-    if (profileBadgeCount) profileBadgeCount.textContent = isBetaTester ? "1 earned" : "0 earned";
+    syncProfileBadgeCount();
     profileDisplayName.textContent = name;
     profileEmail.textContent = user.email || "Google account";
     profileAvatar.src = photo;
