@@ -2680,10 +2680,17 @@ function applyMenuView(){
     }
     fragment.appendChild(collection);
   }
-  if(!searching&&activeMenuCategory==='holidays'){
-    const section=document.createElement('section');section.className='context-menu__section';const heading=document.createElement('h3');heading.textContent='HOLIDAYS';const grid=document.createElement('div');grid.className='context-menu__tile-grid';
-    for(const [index,name] of menuHolidays.entries()){const card=document.createElement('button');card.type='button';card.addEventListener('click',event=>{event.stopPropagation();setMenuCategory(`holiday:${index}`);renderMenuCategoryPins()});card.className='context-menu__item';const title=document.createElement('strong');title.textContent=name;const hint=document.createElement('small');hint.textContent='Explore category';card.append(title,hint);grid.appendChild(card);visibleCount++}
-    section.append(heading,grid);fragment.appendChild(section);
+  if(!searching&&(activeMenuCategory==='holidays'||activeMenuCategory.startsWith('holiday:'))){
+    const collection=document.createElement('div');collection.className='context-menu__collection';
+    for(const [index,name] of menuHolidays.entries()){
+      if(activeMenuCategory!=='holidays'&&activeMenuCategory!==`holiday:${index}`)continue;
+      const section=document.createElement('section');section.className='context-menu__section';
+      const heading=document.createElement('h3');heading.textContent=name.toUpperCase();
+      const grid=document.createElement('div');grid.className='context-menu__tile-grid';
+      const placeholder=document.createElement('div');placeholder.className='context-menu__holiday-placeholder';placeholder.textContent='Coming soon';
+      grid.appendChild(placeholder);section.append(heading,grid);collection.appendChild(section);visibleCount++;
+    }
+    fragment.appendChild(collection);
   }
   // Retain hidden buttons in the DOM for localization and catalog integrations.
   const hidden=document.createElement('div');hidden.hidden=true;
@@ -2704,6 +2711,7 @@ function setMenuCategory(category='all'){
     menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
   }
   menuDrawerFilters.forEach(b=>{const active=b.dataset.categoryDrawerFilter===activeMenuCategory;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',String(active))});
+  renderMenuCategoryPins();
   applyMenuView();
 }
 
@@ -3698,10 +3706,8 @@ function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m
 function setupTimerSync(m){
   const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.setAttribute('role','switch');
   toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9a4 4 0 0 0-4 4v1M17 4l3 3-3 3M4 17h9a4 4 0 0 0 4-4v-1M7 20l-3-3 3-3"/></svg>';
-  if(timerSyncType(m)==='visual'){
-    toggle.classList.add('timer-sync-toggle--labeled');
-    toggle.innerHTML='<span>Sync Timers</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
-  }
+  toggle.classList.add('timer-sync-toggle--labeled');
+  toggle.innerHTML='<span>Sync Timers</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
   const refresh=()=>{const enabled=m.dataset.timerSync==='true';toggle.setAttribute('aria-checked',String(enabled));toggle.setAttribute('aria-label',`Sync all ${timerSyncType(m)==='visual'?'Visual':'Interactive'} Timers`);toggle.title=`Sync timers: ${enabled?'On':'Off'}`};
   m._refreshTimerSync=refresh;m.appendChild(toggle);refresh();
   const publish=()=>{
