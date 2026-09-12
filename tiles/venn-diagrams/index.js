@@ -113,18 +113,36 @@
     }
 
     function applyVisualScale(metrics){
-      const density=clamp(1-Math.max(0,items.length-12)*.012,.7,1);
+      const density=clamp(1-Math.max(0,items.length-12)*.008,.78,1);
       const itemFont=clamp(13*metrics.scale*density,9.5,22);
       const itemPadX=clamp(13*metrics.scale*density,7,24);
       const itemPadY=clamp(7*metrics.scale*density,4.5,14);
       const headingFont=clamp(15*metrics.scale,11,25);
       const titleFont=clamp(19*metrics.scale,15,27);
+      metrics.itemBase={font:itemFont,padX:itemPadX,padY:itemPadY};
       stage.style.setProperty('--venn-item-font',`${itemFont}px`);
       stage.style.setProperty('--venn-item-pad-x',`${itemPadX}px`);
       stage.style.setProperty('--venn-item-pad-y',`${itemPadY}px`);
       stage.style.setProperty('--venn-heading-font',`${headingFont}px`);
       m.style.setProperty('--venn-title-font',`${titleFont}px`);
       stage.style.setProperty('--venn-line-size',`${clamp(2*metrics.scale,1.4,3.2)}px`);
+    }
+
+    function applyItemScale(item,factor,metrics){
+      const base=metrics.itemBase||{font:13,padX:13,padY:7};
+      const scale=clamp(factor,.12,1);
+      item.visualScale=scale;
+      item.element.style.fontSize=`${Math.max(4.8,base.font*scale)}px`;
+      item.element.style.padding=`${Math.max(1,base.padY*scale)}px ${Math.max(1.8,base.padX*scale)}px`;
+      item.element.style.minHeight=`${Math.max(9,30*scale)}px`;
+      item.element.style.maxWidth=`${Math.max(28,170*scale)}px`;
+    }
+
+    function preferredRegionScale(region,count){
+      const membership=((region&1)?1:0)+((region&2)?1:0)+((region&4)?1:0);
+      const pressure=Math.max(0,count-(membership===1?4:membership===2?3:2));
+      const rate=membership===1?.055:membership===2?.07:.085;
+      return clamp(1-pressure*rate,.34,1);
     }
 
     function stageMetrics(){
@@ -221,7 +239,7 @@
 
     function candidatePoints(region,metrics){
       const anchor=regionAnchor(region,metrics);
-      const step=clamp(12*metrics.scale,8,18);
+      const step=clamp(9*metrics.scale,5,14);
       const points=[];
       for(let y=14;y<=metrics.height-14;y+=step){
         for(let x=14;x<=metrics.width-14;x+=step){
@@ -252,30 +270,51 @@
       };
     }
 
-    function pointFits(point,item,metrics,placed){
+    function boxFitsCircle(box,circle,inset=2){
+      const points=[
+        [box.left+inset,box.top+inset],[box.right-inset,box.top+inset],
+        [box.left+inset,box.bottom-inset],[box.right-inset,box.bottom-inset],
+        [(box.left+box.right)/2,box.top+inset],[(box.left+box.right)/2,box.bottom-inset],
+        [box.left+inset,(box.top+box.bottom)/2],[box.right-inset,(box.top+box.bottom)/2]
+      ];
+      const radius=Math.max(0,circle.r-2);
+      return points.every(([x,y])=>Math.hypot(x-circle.x,y-circle.y)<=radius);
+    }
+
+    function boxFitsRegion(box,region,metrics){
+      if((region&1)&&!boxFitsCircle(box,metrics.circles.a))return false;
+      if((region&2)&&!boxFitsCircle(box,metrics.circles.b))return false;
+      if(mode==='3'&&(region&4)&&!boxFitsCircle(box,metrics.circles.c))return false;
+      return true;
+    }
+
+    function pointFits(point,item,region,metrics,placed){
       const box=boxFor(point,item);
-      const edge=6;
+      const edge=5;
       if(box.left<edge||box.right>metrics.width-edge||box.top<edge||box.bottom>metrics.height-edge)return false;
-      const gap=clamp(7*metrics.scale,5,12);
+      if(!boxFitsRegion(box,region,metrics))return false;
+      const gap=clamp(6*metrics.scale*(item.visualScale||1),3.5,10);
       return !placed.some(other=>boxesOverlap(box,other.box,gap));
     }
 
-    function fallbackPoint(item,region,metrics,placed){
-      const candidates=candidatePoints(region,metrics);
-      let best=null;
-      let bestPenalty=Infinity;
-      candidates.forEach(point=>{
-        const box=boxFor(point,item);
-        if(box.left<4||box.right>metrics.width-4||box.top<4||box.bottom>metrics.height-4)return;
-        let penalty=0;
-        placed.forEach(other=>{
-          const overlapX=Math.max(0,Math.min(box.right,other.box.right)-Math.max(box.left,other.box.left));
-          const overlapY=Math.max(0,Math.min(box.bottom,other.box.bottom)-Math.max(box.top,other.box.top));
-          penalty+=overlapX*overlapY;
-        });
-        if(penalty<bestPenalty){bestPenalty=penalty;best=point}
-      });
-      return best||regionAnchor(region,metrics);
+    function placeRegionGroup(group,region,metrics,placed,candidates){
+      const preferred=preferredRegionScale(region,group.length);
+      const attempts=[];
+      for(let factor=preferred;factor>=.12-.001;factor-=.045)attempts.push(Math.max(.12,factor));
+      if(attempts.at(-1)!==.12)attempts.push(.12);
+
+      for(const factor of attempts){
+        group.forEach(item=>applyItemScale(item,factor,metrics));
+        const tentative=[];
+        let complete=true;
+        for(const item of group){
+          const point=candidates.find(candidate=>pointFits(candidate,item,region,metrics,[...placed,...tentative]));
+          if(!point){complete=false;break}
+          tentative.push({item,point,box:boxFor(point,item)});
+        }
+        if(complete)return tentative;
+      }
+      return[];
     }
 
     function calculatePlacements(metrics){
@@ -293,11 +332,20 @@
       regions.forEach(region=>{
         const candidates=cache.get(region)||candidatePoints(region,metrics);
         cache.set(region,candidates);
-        groups.get(region).forEach(item=>{
-          let point=candidates.find(candidate=>pointFits(candidate,item,metrics,placed));
-          if(!point)point=fallbackPoint(item,region,metrics,placed);
-          const box=boxFor(point,item);
-          placed.push({item,point,box});
+        const group=groups.get(region);
+        const fitted=placeRegionGroup(group,region,metrics,placed,candidates);
+        if(fitted.length){placed.push(...fitted);return}
+
+        group.forEach(item=>applyItemScale(item,.12,metrics));
+        group.forEach(item=>{
+          const point=candidates.find(candidate=>pointFits(candidate,item,region,metrics,placed));
+          if(point){placed.push({item,point,box:boxFor(point,item)});return}
+          const legal=candidates.filter(candidate=>boxFitsRegion(boxFor(candidate,item),region,metrics));
+          const fallback=legal.find(candidate=>{
+            const box=boxFor(candidate,item);
+            return !placed.some(other=>boxesOverlap(box,other.box,1));
+          })||legal[0]||regionAnchor(region,metrics);
+          placed.push({item,point:fallback,box:boxFor(fallback,item)});
         });
       });
       return placed;
