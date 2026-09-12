@@ -2502,7 +2502,7 @@ const menuHolidays=['Christmas','Hannukah','Halloween',"Valentine’s Day","St. 
 let menuAllExpanded=true,menuHolidaysExpanded=true,menuFavoritesExpanded=true;
 function menuFavoriteCategory(item){
   const categories=(item.dataset.category||'').split(/\s+/);
-  return menuCategoryOrder.find(category=>!['all','favorites','holidays'].includes(category)&&categories.includes(category));
+  return [...menuCategoryOrder,...menuHolidays.map((_,i)=>`holiday:${i}`)].find(category=>!['all','favorites','holidays'].includes(category)&&categories.includes(category));
 }
 function menuCategoryLabel(category){
   if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAYS';
@@ -2542,7 +2542,7 @@ function renderMenuCategoryPins(){
     fragment.appendChild(row);
     if(id==='favorites'){
       const children=document.createElement('div');children.className='context-menu__holiday-children';children.hidden=!menuFavoritesExpanded;
-      for(const category of menuCategoryOrder.filter(c=>!['all','favorites','holidays'].includes(c))){
+      for(const category of [...menuCategoryOrder,...menuHolidays.map((_,i)=>`holiday:${i}`)].filter(c=>!['all','favorites','holidays'].includes(c))){
         if(!menuItems.some(item=>menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))continue;
         const child=document.createElement('button');child.type='button';child.className='context-menu__holiday-child';child.textContent=menuCategoryLabel(category);child.classList.toggle('is-active',activeMenuCategory===`favorite:${category}`);
         child.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(`favorite:${category}`);renderMenuCategoryPins()});children.appendChild(child);
@@ -2642,7 +2642,8 @@ function applyMenuView(){
   const list=menu.querySelector('.context-menu__list');
   // Search continues to cover the entire catalog, as in the original menu.
   const regularCategories=menuCategoryOrder.filter(category=>!['all','favorites','holidays'].includes(category));
-  const categories=searching||['all','favorites'].includes(activeMenuCategory)?regularCategories:[activeMenuCategory.startsWith('favorite:')?activeMenuCategory.slice(9):activeMenuCategory];
+  const holidayCategories=menuHolidays.map((_,i)=>`holiday:${i}`);
+  const categories=searching||activeMenuCategory==='favorites'?[...regularCategories,...holidayCategories]:activeMenuCategory==='all'?regularCategories:activeMenuCategory==='holidays'?holidayCategories:[activeMenuCategory.startsWith('favorite:')?activeMenuCategory.slice(9):activeMenuCategory];
   const fragment=document.createDocumentFragment();
   const included=new Set();
   let visibleCount=0;
@@ -2684,18 +2685,6 @@ function applyMenuView(){
     }
     fragment.appendChild(collection);
   }
-  if(!searching&&(activeMenuCategory==='holidays'||activeMenuCategory.startsWith('holiday:'))){
-    const collection=document.createElement('div');collection.className='context-menu__collection';
-    for(const [index,name] of menuHolidays.entries()){
-      if(activeMenuCategory!=='holidays'&&activeMenuCategory!==`holiday:${index}`)continue;
-      const section=document.createElement('section');section.className='context-menu__section';
-      const heading=document.createElement('h3');heading.textContent=name.toUpperCase();
-      const grid=document.createElement('div');grid.className='context-menu__tile-grid';
-      const placeholder=document.createElement('div');placeholder.className='context-menu__holiday-placeholder';placeholder.textContent='Coming soon';
-      grid.appendChild(placeholder);section.append(heading,grid);collection.appendChild(section);visibleCount++;
-    }
-    fragment.appendChild(collection);
-  }
   // Retain hidden buttons in the DOM for localization and catalog integrations.
   const hidden=document.createElement('div');hidden.hidden=true;
   menuItems.filter(item=>!included.has(item)).forEach(item=>hidden.appendChild(item));
@@ -2708,7 +2697,7 @@ function applyMenuView(){
 }
 
 function setMenuCategory(category='all'){
-  activeMenuCategory=menuCategoryOrder.includes(category)||(category.startsWith('favorite:')&&menuCategoryOrder.includes(category.slice(9)))||/^holiday:[0-5]$/.test(category)?category:'all';
+  activeMenuCategory=menuCategoryOrder.includes(category)||(category.startsWith('favorite:')&&(menuCategoryOrder.includes(category.slice(9))||/^holiday:[0-5]$/.test(category.slice(9))))||/^holiday:[0-5]$/.test(category)?category:'all';
   const label=menuCategoryLabel(activeMenuCategory);
   if(menuCategoryCycleLabel)menuCategoryCycleLabel.textContent=label;
   if(menuCategoryCycle){
