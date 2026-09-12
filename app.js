@@ -3767,7 +3767,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
 }
 
 function setupTimer(m){
-  const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeButtons=[...m.querySelectorAll('.timer-shapes [data-shape]')];
+  const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
   const clipId=`shape-clip-${++uid}`;
   clip.id=clipId;
   foreign.setAttribute('clip-path',`url(#${clipId})`);
@@ -3788,11 +3788,7 @@ function setupTimer(m){
     ],{duration:330,easing:'cubic-bezier(.2,.8,.2,1)'});
   };
 
-  shapeButtons.forEach(b=>b.addEventListener('click',()=>{
-    shapeButtons.forEach(x=>x.classList.remove('is-active'));
-    b.classList.add('is-active');
-    setShape(b.dataset.shape,true);
-  }));
+  shapeSelect.addEventListener('change',()=>{setShape(shapeSelect.value,true);notifyBoardChanged('timer-shape')});
 
   m.querySelector('.timer-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
@@ -3839,7 +3835,7 @@ function setupTimer(m){
   controls?.addEventListener('pointerleave',releaseSettings);
 
   const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
-  shapeButtons.forEach(button=>button.classList.toggle('is-active',button.dataset.shape===initialShape));
+  shapeSelect.value=initialShape;
   setShape(initialShape);
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);

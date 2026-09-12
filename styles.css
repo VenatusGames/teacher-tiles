@@ -15999,3 +15999,5 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 :is(.lesson-schedule-block,.lesson-planner-agenda-item,.lesson-calendar-chip):hover>.lesson-block-delete,
 :is(.lesson-schedule-block,.lesson-planner-agenda-item,.lesson-calendar-chip):focus-within>.lesson-block-delete{opacity:.65;pointer-events:auto}
 .lesson-block-delete:hover,.lesson-block-delete:focus-visible{opacity:1}
+
+.timer-shape-setting{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;font-weight:650}.timer-shape-select{min-height:34px;min-width:140px;padding:5px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:inherit;font:inherit}.timer-shape-select:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}

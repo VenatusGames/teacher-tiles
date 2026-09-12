@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260912-lesson-delete-hover-1" />
+  <link rel="stylesheet" href="styles.css?v=20260912-timer-shape-dropdown-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="tiles/google/styles.css?v=20260908-reviewed-2">
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
-  <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-border-reset-1">
+  <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-reset-red-1">
   <link rel="icon" href="T.png" type="image/x-icon">
 </head>
 <body>
@@ -2137,7 +2137,7 @@
         </div>
       </div>
       <div class="timer-controls">
-        <div class="timer-shapes"><button data-shape="circle" class="is-active" title="Circle" aria-label="Circle">●</button><button data-shape="triangle" title="Triangle" aria-label="Triangle">▲</button><button data-shape="square" title="Square" aria-label="Square">■</button><button data-shape="diamond" title="Diamond" aria-label="Diamond">◆</button><button data-shape="hexagon" title="Hexagon" aria-label="Hexagon">⬢</button><button data-shape="star" title="Star" aria-label="Star">★</button><button data-shape="heart" title="Heart" aria-label="Heart">♥</button></div>
+        <label class="timer-shape-setting"><span>Shape</span><select class="timer-shape-select" aria-label="Timer shape"><option value="circle">Circle</option><option value="triangle">Triangle</option><option value="square">Square</option><option value="diamond">Diamond</option><option value="hexagon">Hexagon</option><option value="star">Star</option><option value="heart">Heart</option></select></label>
         <div class="timer-customization" aria-label="Visual timer customization">
           <button class="custom-icon timer-bg" type="button" title="Change module background" aria-label="Change module background"><span class="icon-palette" aria-hidden="true"></span></button>
           <button class="custom-icon timer-font" type="button" title="Change timer font" aria-label="Change timer font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -3811,7 +3811,7 @@
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="tiles/shared/appearance.js?v=20260912-border-reset-1"></script>
-  <script src="app.js?v=20260912-menu-size-revert-1"></script>
+  <script src="app.js?v=20260912-timer-shape-dropdown-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260912-subscriber-patch-2"></script>
 
