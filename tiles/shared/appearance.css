@@ -23,3 +23,5 @@ body.is-board-idle .module:not(.is-appearance-open)>.tile-appearance-toggle{opac
 @media(hover:none){.module>.tile-appearance-toggle{opacity:1;pointer-events:auto}}
 
 .module.has-appearance-controls .customization-bar{padding-left:42px}
+
+.tile-appearance-field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:13px;font-weight:600}.tile-appearance-field input,.tile-appearance-field select{width:110px;min-height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);padding:5px 8px}.tile-appearance-field input[type=color]{padding:3px;cursor:pointer}

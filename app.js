@@ -2541,8 +2541,8 @@ const menuResizeGrip=document.createElement('button');menuResizeGrip.type='butto
 const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
 menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
 function syncMenuResetSize(){
-  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||580,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||560;
-  menuResetSize.hidden=Math.abs(width-580)<1&&Math.abs(height-560)<1;
+  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||580,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||500;
+  menuResetSize.hidden=Math.abs(width-580)<1&&Math.abs(height-500)<1;
 }
 menuResetSize.addEventListener('click',event=>{
   event.stopPropagation();menu.style.removeProperty('--tile-menu-width');menu.style.removeProperty('--tile-menu-height');

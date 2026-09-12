@@ -57,6 +57,49 @@
     rail.querySelectorAll('button').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.appearanceKey===control.key)));
     picker.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
   }
+  function borderPicker(){
+    const m=active.module;picker.replaceChildren();picker.hidden=false;
+    const heading=document.createElement('strong');heading.className='tile-appearance-heading';heading.textContent='Border';picker.appendChild(heading);
+    const legacy=m.querySelector('.image-border-style');
+    const legacyStyle=legacy?.value||'none';
+    const current={style:m.dataset.appearanceBorderStyle||(legacyStyle==='double'?'double':legacyStyle==='none'?'none':'solid'),size:m.dataset.appearanceBorderSize||({thin:2,medium:4,thick:8,double:6}[legacyStyle]||2),color:m.dataset.appearanceBorderColor||m.querySelector('.image-border-color')?.value||'#17191d'};
+    const fields={};
+    for(const [key,label] of [['style','Style'],['size','Size (px)'],['color','Color']]){
+      const row=document.createElement('label');row.className='tile-appearance-field';row.textContent=label;
+      const input=document.createElement(key==='style'?'select':'input');input.setAttribute('aria-label',`Border ${label}`);
+      if(key==='style')for(const value of ['none','solid','dashed','dotted','double']){const option=document.createElement('option');option.value=value;option.textContent=titleCase(value);input.appendChild(option)}
+      else input.type=key==='size'?'number':'color';
+      if(key==='size'){input.min='1';input.max='20';input.step='1'}
+      input.value=current[key];fields[key]=input;row.appendChild(input);picker.appendChild(row);
+      input.addEventListener('input',()=>{
+        const size=Math.max(1,Math.min(20,Number(fields.size.value)||2));
+        m.dataset.appearanceBorderStyle=fields.style.value;m.dataset.appearanceBorderSize=String(size);m.dataset.appearanceBorderColor=fields.color.value;
+        if(legacy){legacy.value='none';legacy.dispatchEvent(new Event('change'))}
+        applyBorder(m);active?.onChange('tile-border');
+      });
+    }
+  }
+  function applyBorder(m){
+    const style=m.dataset.appearanceBorderStyle;
+    if(!style||style==='none'){m.style.removeProperty('outline');m.style.removeProperty('outline-offset');return}
+    const size=Math.max(1,Math.min(20,Number(m.dataset.appearanceBorderSize)||2));
+    const color=/^#[0-9a-f]{6}$/i.test(m.dataset.appearanceBorderColor||'')?m.dataset.appearanceBorderColor:'#17191d';
+    if(!['solid','dashed','dotted','double'].includes(style))return;
+    m.style.setProperty('outline',`${size}px ${style} ${color}`,'important');m.style.setProperty('outline-offset','0px');
+  }
+  function resetAppearance(){
+    const state=active,m=state.module;
+    for(const control of state.controls){
+      const value=state.defaults[control.key]||control.values[0];
+      m._appearanceChoice={key:control.key,value};
+      try{control.original.click()}finally{delete m._appearanceChoice}
+    }
+    for(const key of ['appearanceBorderStyle','appearanceBorderSize','appearanceBorderColor'])delete m.dataset[key];
+    const legacy=m.querySelector('.image-border-style');if(legacy){legacy.value='none';legacy.dispatchEvent(new Event('change'))}
+    const color=m.querySelector('.image-border-color');if(color){color.value='#17191d';color.dispatchEvent(new Event('change'))}
+    applyBorder(m);state.onChange('tile-appearance-reset');picker.hidden=true;
+    rail.querySelectorAll('button').forEach(button=>button.setAttribute('aria-expanded','false'));
+  }
   function open(state){
     if(active===state){close();return}
     close();active=state;state.button.setAttribute('aria-expanded','true');state.module.classList.add('is-appearance-open');flyout.hidden=false;
@@ -67,6 +110,14 @@
       if(icon)button.appendChild(icon.cloneNode(true));else button.textContent=control.key==='font'?'Aa':'◉';
       button.addEventListener('click',()=>showPicker(control));rail.appendChild(button);
     });
+    for(const [key,label,path,action] of [
+      ['border','Border','M4 4h16v16H4z',borderPicker],
+      ['reset','Reset appearance','M4 10a8 8 0 1 1 1 8M4 4v6h6',resetAppearance]
+    ]){
+      const button=document.createElement('button');button.type='button';button.className='tile-appearance-tool';button.dataset.appearanceKey=key;button.title=label;button.setAttribute('aria-label',label);
+      button.innerHTML=`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
+      button.addEventListener('click',action);rail.appendChild(button);
+    }
     position();
   }
   flyout.addEventListener('pointerenter',()=>clearTimeout(hideTimer));flyout.addEventListener('pointerleave',deferClose);flyout.addEventListener('focusout',deferClose);
@@ -95,12 +146,15 @@
       controls.push({key,original,values,colors,label:key==='font'?'Font':key==='text'?'Text color':'Tile color'});
       original.classList.add('tile-appearance-original');original.setAttribute('aria-hidden','true');original.tabIndex=-1;
     }
-    if(!controls.length)return;
+    m.querySelector('.image-customization')?.classList.add('tile-appearance-original');
+    applyBorder(m);
+    const template=[...document.querySelectorAll('template')].map(t=>t.content.querySelector('.module')).find(el=>el&&[...el.classList].some(c=>c!=='module'&&c.endsWith('-module')&&m.classList.contains(c)));
+    const defaults=template?{...template.dataset}:{};
     controls.sort((a,b)=>['font','bg','color','text'].indexOf(a.key)-['font','bg','color','text'].indexOf(b.key));
     const button=document.createElement('button');button.type='button';button.className='tile-appearance-toggle';button.setAttribute('aria-label','Customize tile');button.title='Customize tile';button.setAttribute('aria-expanded','false');
     const brush=document.querySelector('#customize-toggle svg');if(brush)button.appendChild(brush.cloneNode(true));
     m.classList.add('has-appearance-controls');m.appendChild(button);
-    const state={module:m,button,controls,onChange};button.addEventListener('click',()=>open(state));
+    const state={module:m,button,controls,onChange,defaults};button.addEventListener('click',()=>open(state));
     m.addEventListener('pointerenter',()=>{if(active===state)clearTimeout(hideTimer)});m.addEventListener('pointerleave',deferClose);
     m.addEventListener('keydown',event=>{if(event.key==='Escape'&&active===state){event.stopPropagation();close();button.focus()}});
     const deactivate=m._deactivate;m._deactivate=()=>{if(active===state)close();deactivate?.()};
