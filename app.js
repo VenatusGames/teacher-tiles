@@ -2443,7 +2443,7 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('resize',applyBoardCamera);
 
 
-workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r=menu.getBoundingClientRect();menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false')});
+workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r={width:menu.offsetWidth,height:menu.offsetHeight};menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false');keepTileMenuOnScreen()});
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
 
 document.addEventListener('pointerdown',e=>{
@@ -2453,6 +2453,21 @@ document.addEventListener('pointerdown',e=>{
   if(module&&selectedModules.has(module))return;
   clearSelection();
 },true);
+
+function keepTileMenuOnScreen(){
+  const viewport=window.visualViewport;
+  const left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0,width=viewport?.width||innerWidth,height=viewport?.height||innerHeight;
+  menu.style.setProperty('--tile-menu-available-width',`${Math.max(0,width-16)}px`);
+  menu.style.setProperty('--tile-menu-available-height',`${Math.max(0,height-16)}px`);
+  if(!menu.classList.contains('is-open'))return;
+  menu.style.left=`${Math.max(left+8,Math.min(parseFloat(menu.style.left)||left+8,left+width-menu.offsetWidth-8))}px`;
+  menu.style.top=`${Math.max(top+8,Math.min(parseFloat(menu.style.top)||top+8,top+height-menu.offsetHeight-8))}px`;
+}
+new ResizeObserver(keepTileMenuOnScreen).observe(menu);
+window.addEventListener('resize',keepTileMenuOnScreen);
+window.visualViewport?.addEventListener('resize',keepTileMenuOnScreen);
+window.visualViewport?.addEventListener('scroll',keepTileMenuOnScreen);
+keepTileMenuOnScreen();
 
 const menuSearch=menu.querySelector('#context-menu-search');
 const menuSearchClear=menu.querySelector('.context-menu__search-clear');
@@ -2526,8 +2541,8 @@ const menuResizeGrip=document.createElement('button');menuResizeGrip.type='butto
 const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
 menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
 function syncMenuResetSize(){
-  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||520,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||450;
-  menuResetSize.hidden=Math.abs(width-520)<1&&Math.abs(height-450)<1;
+  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||580,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||500;
+  menuResetSize.hidden=Math.abs(width-580)<1&&Math.abs(height-500)<1;
 }
 menuResetSize.addEventListener('click',event=>{
   event.stopPropagation();menu.style.removeProperty('--tile-menu-width');menu.style.removeProperty('--tile-menu-height');

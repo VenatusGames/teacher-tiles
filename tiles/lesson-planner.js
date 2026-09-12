@@ -329,11 +329,25 @@
       const column = make('div', 'lesson-planner-day-column');
       column.dataset.lessonDropDate=dateKey(date);
       column.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
+      const preview=make('div','lesson-planner-add-preview');preview.setAttribute('aria-hidden','true');column.appendChild(preview);
+      const startAtPointer=event=>{
+        const rect=column.getBoundingClientRect();
+        const total=DAY_START+((event.clientY-rect.top)/Math.max(1,rect.height))*(DAY_END-DAY_START);
+        return Math.max(DAY_START,Math.min(DAY_END-60,Math.round(total/15)*15));
+      };
+      column.addEventListener('pointermove',event=>{
+        const show=event.target===column&&!event.buttons&&event.pointerType!=='touch'&&!cancelLessonDrag;
+        preview.classList.toggle('is-visible',show);if(!show)return;
+        const start=startAtPointer(event);
+        preview.style.top=`${(start-DAY_START)/(DAY_END-DAY_START)*100}%`;
+        preview.style.height=`${60/(DAY_END-DAY_START)*100}%`;
+        preview.textContent=`+ Add lesson · ${timeLabel(timeValue(start))}`;
+      });
+      column.addEventListener('pointerleave',()=>preview.classList.remove('is-visible'));
+      column.addEventListener('pointerdown',()=>preview.classList.remove('is-visible'));
       column.addEventListener('click', event => {
         if (event.target !== column) return;
-        const rect = column.getBoundingClientRect();
-        const total = DAY_START + ((event.clientY - rect.top) / Math.max(1, rect.height)) * (DAY_END - DAY_START);
-        const start = Math.max(DAY_START, Math.min(DAY_END - 30, Math.round(total / 15) * 15));
+        const start = startAtPointer(event);
         selectedDate = atNoon(date);
         openEditor(null, { date: dateKey(date), start: timeValue(start), end: timeValue(start + 60) });
       });
