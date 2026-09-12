@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="tiles/quote-of-the-day/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/vocabulary/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/word-web/styles.css?v=20260912-word-web-4">
+  <link rel="stylesheet" href="tiles/venn-diagrams/styles.css?v=20260912-venn-1">
   <link rel="stylesheet" href="tiles/times-tables/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/google/styles.css?v=20260908-reviewed-2">
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
@@ -1886,6 +1887,7 @@
 <button class="context-menu__item" data-module="wordoftheday" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6M7 8h4M7 12h4"/></svg></span><span><strong>Word of the Day</strong><small>Discover a daily word and its meaning</small></span></button>
 <button class="context-menu__item" data-module="quoteoftheday" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6v7H6l-2 4M14 7h6v7h-4l-2 4"/></svg></span><span><strong>Quote of the Day</strong><small>A daily thought to inspire learning</small></span></button>
 <button class="context-menu__item" data-module="wordweb" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><circle cx="4.5" cy="5" r="2"/><circle cx="19.5" cy="5.5" r="2"/><circle cx="4.5" cy="18.5" r="2"/><circle cx="19.5" cy="18" r="2"/><path d="m9.6 9.9-3.5-3.5m8.4 3.3 3.5-3m-8.2 7.2-3.6 3.2m8.4-3 3.3 2.7"/></svg></span><span><strong>Word Web</strong><small>Connect related words around a central idea</small></span></button>
+<button class="context-menu__item" data-module="venndiagram" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="12" r="6.2"/><circle cx="15" cy="12" r="6.2"/></svg></span><span><strong>Venn Diagrams</strong><small>Compare ideas with editable, draggable sets</small></span></button>
       <button class="context-menu__item" data-module="customflashcards" data-category="tools">
         <span class="context-menu__icon context-menu__icon--customflashcards" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -2170,6 +2172,49 @@
       <button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
       <button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
       <button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+    </div>
+    <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
+    <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
+    <div class="resize-handle resize-handle--bl" data-resize="bl"></div>
+    <div class="resize-handle resize-handle--br" data-resize="br"></div>
+    <div class="resize-handle resize-handle--t" data-resize="t"></div>
+    <div class="resize-handle resize-handle--b" data-resize="b"></div>
+    <div class="resize-handle resize-handle--l" data-resize="l"></div>
+    <div class="resize-handle resize-handle--r" data-resize="r"></div>
+  </section>
+</template>
+
+<template id="venndiagram-template">
+  <section class="module classroom-widget venn-module" data-type="venndiagram" data-bg="white" data-font="inter" data-text="dark" data-venn-mode="2">
+    <button class="module-delete" aria-label="Delete Venn Diagrams">×</button>
+    <div class="module-drag-handle"></div>
+    <div class="venn-stage" aria-label="Editable Venn diagram">
+      <div class="venn-circle venn-circle--a" aria-hidden="true"></div>
+      <div class="venn-circle venn-circle--b" aria-hidden="true"></div>
+      <div class="venn-circle venn-circle--c" aria-hidden="true"></div>
+      <div class="venn-heading venn-heading--a" contenteditable="true" data-text-edit-mode="double" role="textbox" aria-label="Set A heading. Double-click to edit." title="Double-click to edit">Set A</div>
+      <div class="venn-heading venn-heading--b" contenteditable="true" data-text-edit-mode="double" role="textbox" aria-label="Set B heading. Double-click to edit." title="Double-click to edit">Set B</div>
+      <div class="venn-heading venn-heading--c" contenteditable="true" data-text-edit-mode="double" role="textbox" aria-label="Set C heading. Double-click to edit." title="Double-click to edit">Set C</div>
+      <div class="venn-items"></div>
+      <div class="venn-hint">Double-click headings or cards to edit · Drag cards between sections</div>
+    </div>
+    <form class="venn-entry" data-skip-board-save autocomplete="off">
+      <input class="venn-input" type="text" maxlength="72" placeholder="Add a word or phrase…" aria-label="Add an item to the Venn diagram">
+      <div class="venn-region-picker" role="group" aria-label="Choose where to add the item"></div>
+      <button class="venn-clear" type="button" aria-label="Clear all Venn diagram items">Clear</button>
+    </form>
+    <div class="venn-customization customization-bar" aria-label="Venn Diagrams customization">
+      <button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+      <button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+      <button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      <div class="tile-settings-wrap">
+        <button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open Venn Diagrams settings" title="Venn Diagrams settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button>
+        <div class="tile-settings-panel" hidden>
+          <strong>Venn Diagrams settings</strong>
+          <div class="tile-setting"><span>Diagram type</span><div class="tile-mode-switch" role="group" aria-label="Venn diagram type"><button type="button" data-venn-mode="2" aria-pressed="true" class="is-active">2 sets</button><button type="button" data-venn-mode="3" aria-pressed="false">3 sets</button></div></div>
+          <small>Add cards with the hover controls, then drag them into a different section. Double-click a heading or card to edit it.</small>
+        </div>
+      </div>
     </div>
     <div class="resize-handle resize-handle--tl" data-resize="tl"></div>
     <div class="resize-handle resize-handle--tr" data-resize="tr"></div>
@@ -3759,11 +3804,12 @@
   <script src="tiles/quote-of-the-day/index.js?v=20260908-reviewed-2"></script>
   <script src="tiles/vocabulary/index.js?v=20260905-1"></script>
   <script src="tiles/word-web/index.js?v=20260912-word-web-5"></script>
+  <script src="tiles/venn-diagrams/index.js?v=20260912-venn-1"></script>
   <script src="tiles/times-tables/index.js?v=20260905-1"></script>
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
-  <script src="app.js?v=20260912-word-web-2"></script>
+  <script src="app.js?v=20260912-venn-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260911-frame-hotkey-3"></script>
 

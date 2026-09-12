@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..'),context={window:{},URL,Date};
-for(const file of ['shared/daily','word-of-the-day/words','quote-of-the-day/quotes','vocabulary/index','word-web/index','times-tables/index','google/index','link/index'])vm.runInNewContext(fs.readFileSync(path.join(root,'tiles',file+'.js'),'utf8'),context);
-const {TeacherTilesDaily:daily,TeacherTilesWords:words,TeacherTilesQuotes:quotes,TeacherTilesVocabulary:vocab,TeacherTilesWordWeb:wordWeb,TeacherTilesTimesTables:tables,TeacherTilesGoogle:google,TeacherTilesLink:link}=context.window;
+for(const file of ['shared/daily','word-of-the-day/words','quote-of-the-day/quotes','vocabulary/index','word-web/index','venn-diagrams/index','times-tables/index','google/index','link/index'])vm.runInNewContext(fs.readFileSync(path.join(root,'tiles',file+'.js'),'utf8'),context);
+const {TeacherTilesDaily:daily,TeacherTilesWords:words,TeacherTilesQuotes:quotes,TeacherTilesVocabulary:vocab,TeacherTilesWordWeb:wordWeb,TeacherTilesVennDiagrams:venn,TeacherTilesTimesTables:tables,TeacherTilesGoogle:google,TeacherTilesLink:link}=context.window;
 for(const date of [new Date(2026,2,8),new Date(2026,10,1),new Date(2026,11,31)]){
   const next=new Date(date.getFullYear(),date.getMonth(),date.getDate()+1);
   assert.equal(daily.dayNumber(next)-daily.dayNumber(date),1);
@@ -17,6 +17,8 @@ assert.equal(vocab.normalize([{word:' ',definition:'ignored'},null,{word:' term 
 assert.equal(vocab.normalize([{word:'w',definition:'x'.repeat(500)}])[0].definition.length,240);
 assert.equal(wordWeb.normalizeNodes(Array.from({length:100},(_,i)=>({text:` word ${i} `}))).length,60);
 assert.equal(wordWeb.normalizeNodes([{text:' '},{text:' connected idea '}])[0].text,'connected idea');
+assert.equal(venn.normalizeItems(Array.from({length:80},(_,i)=>({text:` item ${i} `,region:7})),'3').length,48);
+assert.deepEqual(Array.from(venn.normalizeItems([{text:' left ',region:1},{text:' overlap ',region:3},{text:' c ',region:4}],'2')).map(item=>item.region),[1,3,1]);
 const t=tables.normalize({families:[2,2,4,-1,99,'5'],start:20,end:0,practice:true});
 assert.deepEqual(Array.from(t.families),[2,4]);assert.equal(t.start,20);assert.equal(t.end,20);
 const search=new URL(google.searchUrl('earth & space + planets'));assert.equal(search.searchParams.get('q'),'earth & space + planets');assert.equal(search.searchParams.get('safe'),'active');assert.equal(search.origin,'https://www.google.com');
@@ -30,6 +32,7 @@ for(const [type,category,folder] of [['wordoftheday','literacy','word-of-the-day
  assert(html.includes(`src="tiles/${folder}/index.js`));assert(html.includes(`href="tiles/${folder}/styles.css`));
 }
 assert(html.includes('data-module="wordweb" data-category="literacy"'));assert(html.includes('id="wordweb-template"'));assert(app.includes("if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);"));assert(html.includes('src="tiles/word-web/index.js'));assert(html.includes('href="tiles/word-web/styles.css'));
+assert(html.includes('data-module="venndiagram" data-category="literacy"'));assert(html.includes('id="venndiagram-template"'));assert(app.includes("if(type==='venndiagram')window.TeacherTilesVennDiagrams.setup(m);"));assert(html.includes('src="tiles/venn-diagrams/index.js'));assert(html.includes('href="tiles/venn-diagrams/styles.css'));
 for(const match of html.matchAll(/(?:href|src)="([^"?:]+\.(?:js|css))(?:\?[^" ]*)?"/g))assert(fs.existsSync(path.join(root,match[1])),`Missing asset ${match[1]}`);
-const literacy=[...html.matchAll(/data-module="([^"]+)" data-category="literacy"/g)].map(m=>m[1]);assert.deepEqual(literacy.slice(-3),['wordoftheday','quoteoftheday','wordweb']);
-console.log('Classroom tiles: daily rotation, Word Web state, bounded content, safe links, categories, and local assets passed.');
+const literacy=[...html.matchAll(/data-module="([^"]+)" data-category="literacy"/g)].map(m=>m[1]);assert.deepEqual(literacy.slice(-4),['wordoftheday','quoteoftheday','wordweb','venndiagram']);
+console.log('Classroom tiles: daily rotation, Word Web and Venn Diagram state, bounded content, safe links, categories, and local assets passed.');
