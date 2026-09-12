@@ -141,6 +141,20 @@ function logFunctionError(functionName, context, error) {
   });
 }
 
+function getTransactionTypeFromMetadata(stripeObject) {
+  const purpose = stripeObject?.metadata?.purpose;
+
+  if (purpose === "teachertiles_coin_pack") {
+    return "coin_checkout";
+  }
+
+  if (purpose === "teachertiles_subscription") {
+    return "membership_subscription";
+  }
+
+  throw new Error("Stripe object is not a recognized TeacherTiles transaction.");
+}
+
 exports.getShopAccount = onCall({ region: REGION }, async request => {
   const uid = requireUser(request);
   const context = await createContext({
@@ -168,7 +182,7 @@ exports.getSubscriptionStatus = onCall({ region: REGION }, async request => {
   });
   logFunctionStart("getSubscriptionStatus", context);
   const data = context.account?.data || {};
-  
+
   logFunctionSuccess("getSubscriptionStatus", context);
   return {
     isActive: isSubscriptionActive(data),
@@ -188,11 +202,12 @@ exports.createCoinCheckoutSession = onCall(
       db,
       uid,
       source: "createCoinCheckoutSession",
+      transactionType: "coin_checkout",
       request,
       publicAccount,
       ensureUserAccount: true
     });
-  logFunctionStart("createCoinCheckoutSession", context);
+    logFunctionStart("createCoinCheckoutSession", context);
     const packId = String(request.data?.packId || "");
     const pack = COIN_PACKS[packId];
     if (!pack) throw new HttpsError("invalid-argument", "Choose a valid coin pack.");
@@ -253,6 +268,7 @@ exports.createSubscriptionCheckoutSession = onCall(
       db,
       uid,
       source: "createSubscriptionCheckoutSession",
+      transactionType: "membership_subscription",
       request,
       publicAccount,
       ensureUserAccount: true
@@ -444,10 +460,13 @@ exports.stripeWebhook = onRequest(
         db,
         stripeObject
       });
+      const transactionType = getTransactionTypeFromMetadata(stripeObject);
+
       context = await createContext({
         db,
         uid: resolvedUid,
         source: "stripeWebhook",
+        transactionType,
         event,
         stripeObject,
         publicAccount
@@ -461,19 +480,39 @@ exports.stripeWebhook = onRequest(
 
       logFunctionStart("stripeWebhook", context);
 
-      // Handle coin checkout events
-      if (["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type)) {
-        context = await fulfillCoinCheckout(context, stripeObject, event.id);
+      // Reject Stripe events we do not explicitly support.
+      if (
+        event.type !== "checkout.session.completed" &&
+        event.type !== "checkout.session.async_payment_succeeded" &&
+        event.type !== "customer.subscription.created" &&
+        event.type !== "customer.subscription.updated" &&
+        event.type !== "customer.subscription.deleted"
+      ) {
+        throw new Error(`Unsupported Stripe event type: ${event.type}`);
       }
 
-      // Handle subscription events
-      if (event.type === "customer.subscription.created") {
+      // Subscription events must come from a subscription transaction.
+      if (
+        event.type.startsWith("customer.subscription.") &&
+        context.transactionType !== "membership_subscription"
+      ) {
+        throw new Error(
+          `Subscription event has invalid transaction type: ${context.transactionType}`
+        );
+      }
+
+      if (event.type !== "checkout.session.completed" && event.type !== "checkout.session.async_payment_succeeded") {
+        throw new Error(`Unsuccessful checkout event type: ${event.type}`);
+      }
+
+      // Successful checkout events.
+      if (context.transactionType === "coin_checkout") {
+        context = await fulfillCoinCheckout(context, stripeObject, event.id);
+      } else if (event.type === "customer.subscription.created") {
         context = await handleSubscriptionCreated(context, stripeObject);
-      }
-      if (event.type === "customer.subscription.updated") {
+      } else if (event.type === "customer.subscription.updated") {
         context = await handleSubscriptionUpdated(context, stripeObject);
-      }
-      if (event.type === "customer.subscription.deleted") {
+      } else if (event.type === "customer.subscription.deleted") {
         context = await handleSubscriptionCancelled(context, stripeObject);
       }
 
@@ -659,7 +698,7 @@ exports.createBillingPortalSession = onCall(
       publicAccount,
       ensureUserAccount: true
     });
-  logFunctionStart("createBillingPortalSession", context);
+    logFunctionStart("createBillingPortalSession", context);
     const returnUrl = validatedReturnUrl(request.data?.returnUrl);
 
     try {
