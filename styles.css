@@ -14092,6 +14092,26 @@ body.theme-corkboard-red .workspace,body.theme-corkboard-blue .workspace,body.th
 .shop-product__preview--corkboard{background-color:#b98550;background-image:radial-gradient(circle at 12px 11px,rgba(76,43,20,.2) 0 1px,transparent 1.5px);background-size:23px 19px}.shop-product__preview--corkboard i,.shop-product__preview--corkboard b,.shop-product__preview--corkboard em{position:absolute;width:22px;height:22px;border-radius:50%;box-shadow:0 5px 7px rgba(63,35,17,.26)}.shop-product__preview--corkboard i{left:22%;top:28%;background:#d84b4b}.shop-product__preview--corkboard b{left:48%;top:52%;background:#3f79c8}.shop-product__preview--corkboard em{right:19%;top:24%;background:#43a266}
 .shop-product__preview--emoji-colored-hearts{background:linear-gradient(145deg,#fff0f1,#eef6ff)}.shop-product__preview--emoji-decorative-hearts{background:linear-gradient(145deg,#fff0f8,#fff5e8)}.shop-product__preview--flags{display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(145deg,#edf5ff,#fff7e9)}.shop-product__preview--flags img{width:68px;height:51px;object-fit:cover;border:3px solid #fff;border-radius:8px;box-shadow:0 7px 14px rgba(15,23,42,.17)}.shop-product__preview--flags img:nth-child(1){transform:translateY(8px) rotate(-8deg)}.shop-product__preview--flags img:nth-child(2){transform:translateY(-10px) rotate(4deg)}.shop-product__preview--flags img:nth-child(3){transform:translateY(8px) rotate(8deg)}.shop-product__preview--flags img:nth-child(4){transform:translateY(-8px) rotate(-4deg)}
 
+/* Quiet Critters keep their original pose artwork while using the tile's color palette. */
+.sticker-pack--image-collection .theme-pack__meta strong{font-size:10.5px;line-height:1.05;letter-spacing:-.025em}
+.sticker-pack__stack--image{height:64px}
+.sticker-pack__image-sample{position:absolute;left:50%;top:50%;width:49px;height:49px;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(15,23,42,.16));transform-origin:center;transition:transform .28s cubic-bezier(.2,.88,.2,1);pointer-events:none}
+.sticker-pack__image-sample--one{transform:translate(-42px,-23px) rotate(-12deg)}
+.sticker-pack__image-sample--two{transform:translate(-9px,-30px) rotate(5deg)}
+.sticker-pack__image-sample--three{transform:translate(8px,-8px) rotate(13deg)}
+.sticker-pack__image-sample--four{transform:translate(-31px,1px) rotate(-3deg)}
+.sticker-pack.is-open .sticker-pack__image-sample--one{transform:translate(-45px,-25px) rotate(-15deg)}
+.sticker-pack.is-open .sticker-pack__image-sample--two{transform:translate(-9px,-33px) rotate(2deg)}
+.sticker-pack.is-open .sticker-pack__image-sample--three{transform:translate(11px,-7px) rotate(16deg)}
+.sticker-pack.is-open .sticker-pack__image-sample--four{transform:translate(-32px,4px) rotate(-4deg)}
+.sticker-shelf-item--image{padding:3px}.sticker-shelf-item--image img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 4px 4px rgba(15,23,42,.13))}
+.shop-product__preview--image-stickers{display:flex;align-items:center;justify-content:center;gap:1px;padding:18px;background:radial-gradient(circle at 50% 42%,#f6efff,#edf9f5 72%)}
+.shop-product__preview--image-stickers>img{width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 7px 7px rgba(15,23,42,.14))}
+.shop-product__preview--image-stickers>img:nth-child(1){transform:translateY(13px) rotate(-10deg)}
+.shop-product__preview--image-stickers>img:nth-child(2){transform:translateY(-15px) rotate(5deg)}
+.shop-product__preview--image-stickers>img:nth-child(3){transform:translateY(10px) rotate(10deg)}
+.shop-product__preview--image-stickers>img:nth-child(4){transform:translateY(-10px) rotate(-4deg)}
+
 /* Theme artwork stays neutral in the shelf instead of inheriting the active board palette. */
 #theme-shelf-content .theme-pack{--text:#17191d;--muted:#69717b;--border:rgba(15,23,42,.13);--surface-solid:#fff;--surface-soft:#edf0f3;color:#17191d;border-color:rgba(15,23,42,.12);box-shadow:0 9px 24px rgba(15,23,42,.09),inset 0 1px 0 rgba(255,255,255,.58)}
 #theme-shelf-content .theme-pack__meta small,#theme-shelf-content .theme-pack__chevron{color:#69717b}
@@ -15769,3 +15789,13 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
   body.is-board-idle .workspace-upcoming-controls,
   body.is-board-idle .boards-launch-button{transition:none!important}
 }
+
+/* Clear, screen-scale snap feedback. Overlay never intercepts tile controls. */
+.workspace .snap-guide{z-index:19000;background:#5eead4;box-shadow:0 0 0 calc(1 * var(--snap-unit,1px)) #083344,0 0 calc(12 * var(--snap-unit,1px)) #2dd4bf!important;opacity:0}
+.workspace .snap-guide.is-visible{opacity:1}
+.workspace .snap-guide-x{width:calc(4 * var(--snap-unit,1px));margin-left:calc(-2 * var(--snap-unit,1px))}
+.workspace .snap-guide-y{height:calc(4 * var(--snap-unit,1px));margin-top:calc(-2 * var(--snap-unit,1px))}
+.workspace .module.is-snap-target{animation:none!important;outline:calc(2 * var(--snap-unit,1px)) solid #2dd4bf!important;outline-offset:calc(3 * var(--snap-unit,1px));box-shadow:var(--shadow),0 0 calc(18 * var(--snap-unit,1px)) #2dd4bf80!important}
+.snap-landing{position:absolute;box-sizing:border-box;pointer-events:none;z-index:18999;display:none;border:calc(2 * var(--snap-unit,1px)) dashed #5eead4;border-radius:12px;background:#2dd4bf12;box-shadow:0 0 0 calc(1 * var(--snap-unit,1px)) #083344}
+.snap-landing.is-visible{display:block}
+.snap-landing::before{content:'Release to snap · Shift to skip';position:absolute;left:50%;top:calc(10 * var(--snap-unit,1px));transform:translateX(-50%);white-space:nowrap;background:#083344;color:#ecfeff;border:calc(1 * var(--snap-unit,1px)) solid #5eead4;border-radius:calc(16 * var(--snap-unit,1px));padding:calc(6 * var(--snap-unit,1px)) calc(12 * var(--snap-unit,1px));font:600 calc(12 * var(--snap-unit,1px))/1.3 system-ui,sans-serif}

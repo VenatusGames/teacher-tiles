@@ -2690,7 +2690,17 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   Object.freeze({id:'food-sweet-treats',productId:'sticker-food-sweet-treats',category:'food',name:'Sweet Treats',description:'Eight desserts, candies, and celebration treats.',tags:'food foods sweet sweets treat treats dessert desserts candy celebration',price:180,items:stickerCatalogItems([['🍦','Soft ice cream'],['🍧','Shaved ice'],['🍨','Ice cream'],['🍰','Shortcake'],['🎂','Birthday cake'],['🍫','Chocolate bar'],['🍬','Candy'],['🍭','Lollipop']])}),
   Object.freeze({id:'numbers-1-25',productId:'sticker-numbers-1-25',category:'learning',name:'Numbers 1–25',description:'Twenty-five bold number stickers for counting and labeling.',tags:'number numbers counting count math mathematics classroom label labels',price:180,items:Object.freeze(Array.from({length:25},(_,index)=>Object.freeze({emoji:String(index+1),name:`Number ${index+1}`,tags:'number numbers counting math'})))}),
   Object.freeze({id:'letters-lowercase',productId:'sticker-letters-lowercase',category:'learning',name:'Lowercase Letters',description:'All twenty-six lowercase letter stickers from a to z.',tags:'letter letters lowercase alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(97+index);return Object.freeze({emoji:letter,name:`Lowercase ${letter}`,tags:'letter letters lowercase alphabet phonics'})}))}),
-  Object.freeze({id:'letters-uppercase',productId:'sticker-letters-uppercase',category:'learning',name:'Uppercase Letters',description:'All twenty-six uppercase letter stickers from A to Z.',tags:'letter letters uppercase capital capitals alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(65+index);return Object.freeze({emoji:letter,name:`Uppercase ${letter}`,tags:'letter letters uppercase capital alphabet phonics'})}))})
+  Object.freeze({id:'letters-uppercase',productId:'sticker-letters-uppercase',category:'learning',name:'Uppercase Letters',description:'All twenty-six uppercase letter stickers from A to Z.',tags:'letter letters uppercase capital capitals alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(65+index);return Object.freeze({emoji:letter,name:`Uppercase ${letter}`,tags:'letter letters uppercase capital alphabet phonics'})}))}),
+  Object.freeze({id:'quiet-critters',productId:'sticker-quiet-critters',category:'characters',name:'Quiet Critters',description:'Eight colorful Quiet Critter poses for praise, routines, and classroom fun.',tags:'quiet critter critters character characters monster monsters classroom cute reward',price:180,items:Object.freeze([
+    Object.freeze({src:'assets/stickers/quiet-critters/jump-lavender.png',name:'Lavender jumping Quiet Critter',tags:'lavender purple jump jumping'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/jump-blue.png',name:'Blue jumping Quiet Critter',tags:'blue jump jumping'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sleep-mint.png',name:'Mint sleeping Quiet Critter',tags:'mint green sleep sleeping calm'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sway-rose.png',name:'Rose swaying Quiet Critter',tags:'rose pink sway swaying'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/blink-amber.png',name:'Amber blinking Quiet Critter',tags:'amber orange blink blinking happy'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/dance-moss.png',name:'Moss dancing Quiet Critter',tags:'moss green dance dancing'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/dance-sky.png',name:'Sky dancing Quiet Critter',tags:'sky teal blue dance dancing'}),
+    Object.freeze({src:'assets/stickers/quiet-critters/sway-lavender.png',name:'Lavender swaying Quiet Critter',tags:'lavender purple sway swaying'})
+  ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
   'pastel-theme-pack':'theme-pastel',
@@ -3198,15 +3208,15 @@ document.addEventListener('keydown',event=>{
 function setupDrag(m){
   const h=m,guideX=workspace.querySelector('.snap-guide-x'),guideY=workspace.querySelector('.snap-guide-y');
   const pulse=mods=>{const unique=[...new Set(mods.filter(Boolean))];for(const el of unique){el.classList.remove('snap-pop');void el.offsetWidth;el.classList.add('snap-pop');setTimeout(()=>el.classList.remove('snap-pop'),240)}};
-  const touching=(a,b)=>{const al=a.offsetLeft,at=a.offsetTop,ar=al+a.offsetWidth,ab=at+a.offsetHeight,bl=b.offsetLeft,bt=b.offsetTop,br=bl+b.offsetWidth,bb=bt+b.offsetHeight;const vo=Math.min(ab,bb)-Math.max(at,bt),ho=Math.min(ar,br)-Math.max(al,bl);return (vo>24&&(Math.abs(ar-bl)<=2.5||Math.abs(br-al)<=2.5))||(ho>24&&(Math.abs(ab-bt)<=2.5||Math.abs(bb-at)<=2.5))};
-  const snappedGroup=start=>{const all=[...workspace.querySelectorAll('.module')],seen=new Set([start]),queue=[start];while(queue.length){const a=queue.shift();for(const b of all){if(seen.has(b)||b===a)continue;if(touching(a,b)){seen.add(b);queue.push(b)}}}return [...seen]};
-  const clearPreview=()=>{guideX.classList.remove('is-visible');guideY.classList.remove('is-visible');document.querySelectorAll('.module.is-snap-target').forEach(x=>x.classList.remove('is-snap-target'))};
+  let landing=workspace.querySelector('.snap-landing');
+  if(!landing){landing=document.createElement('div');landing.className='snap-landing';landing.setAttribute('aria-hidden','true');workspace.appendChild(landing)}
+  const clearPreview=()=>{landing.classList.remove('is-visible');guideX.classList.remove('is-visible');guideY.classList.remove('is-visible');workspace.querySelectorAll('.module.is-snap-target').forEach(x=>x.classList.remove('is-snap-target'))};
   const findSnap=(left,top)=>{
-    const SNAP=15/boardCamera.scale,EDGE_SNAP=20/boardCamera.scale;
+    const SNAP=6/boardCamera.scale,EDGE_SNAP=4/boardCamera.scale;
     const w=m.offsetWidth,hh=m.offsetHeight,right=left+w,bottom=top+hh;
-    let sx=null,sy=null,bestX=SNAP+1,bestY=SNAP+1,targetX=null,targetY=null,seamX=0,seamY=0,xStart=0,xLength=0,yStart=0,yLength=0;
+    let sx=null,sy=null,bestX=SNAP,bestY=SNAP,targetX=null,targetY=null,seamX=0,seamY=0,xStart=0,xLength=0,yStart=0,yLength=0;
     for(const o of workspace.querySelectorAll('.module')){
-      if(o===m||selectedModules.has(o))continue;
+      if(o===m||selectedModules.has(o)||o.dataset.type==='sticker')continue;
       const ol=o.offsetLeft,ot=o.offsetTop,ow=o.offsetWidth,oh=o.offsetHeight,or=ol+ow,ob=ot+oh;
       const vStart=Math.max(top,ot),vEnd=Math.min(bottom,ob),vOverlap=vEnd-vStart,hStart=Math.max(left,ol),hEnd=Math.min(right,or),hOverlap=hEnd-hStart;
       if(vOverlap>28){
@@ -3234,6 +3244,10 @@ function setupDrag(m){
     ];
     for(const edge of edgeCandidatesY)if(edge.distance<=EDGE_SNAP&&edge.distance<bestY){
       bestY=edge.distance;sy=edge.value;targetY=null;seamY=edge.seam;yStart=Math.max(left,view.left);yLength=Math.max(32,Math.min(w,view.right-view.left));
+    }
+    // Commit to one seam: never pull a tile into two unrelated groups at once.
+    if(sx!==null&&sy!==null){
+      if(bestX<=bestY){sy=null;targetY=null}else{sx=null;targetX=null}
     }
     return{left:sx,top:sy,targetX,targetY,seamX,seamY,xStart,xLength,yStart,yLength};
   };
@@ -3318,16 +3332,21 @@ function setupDrag(m){
       clearPreview();
       overTrash=trashHit(ev);
       setTrash(true,overTrash);
-      if(overTrash||multi||snappingDisabled){pending=null;return}
+      if(overTrash||multi||snappingDisabled||!dragMoved){pending=null;return}
       pending=findSnap(m.offsetLeft,m.offsetTop);
+      workspace.style.setProperty('--snap-unit',`${1/boardCamera.scale}px`);
+      if(pending.left!==null||pending.top!==null){
+        Object.assign(landing.style,{left:`${pending.left??m.offsetLeft}px`,top:`${pending.top??m.offsetTop}px`,width:`${m.offsetWidth}px`,height:`${m.offsetHeight}px`});
+        landing.classList.add('is-visible');
+      }
       if(pending.targetX)pending.targetX.classList.add('is-snap-target');
       if(pending.targetY)pending.targetY.classList.add('is-snap-target');
       if(pending.left!==null){
-        const len=Math.max(12/boardCamera.scale,Math.min(46/boardCamera.scale,pending.xLength*.48)),st=pending.xStart+(pending.xLength-len)/2;
+        const len=pending.xLength,st=pending.xStart+(pending.xLength-len)/2;
         Object.assign(guideX.style,{left:`${pending.seamX}px`,top:`${st}px`,height:`${len}px`});guideX.classList.add('is-visible')
       }
       if(pending.top!==null){
-        const len=Math.max(12/boardCamera.scale,Math.min(46/boardCamera.scale,pending.yLength*.48)),st=pending.yStart+(pending.yLength-len)/2;
+        const len=pending.yLength,st=pending.yStart+(pending.yLength-len)/2;
         Object.assign(guideY.style,{top:`${pending.seamY}px`,left:`${st}px`,width:`${len}px`});guideY.classList.add('is-visible')
       }
     };
@@ -3351,13 +3370,13 @@ function setupDrag(m){
       }
       let joined=group;
       if(willSnap){
-        const snapMembers=snappedGroup(m);
+        const snapMembers=[m,...snapGroupMembers(pending.targetX||pending.targetY)].filter(Boolean);
         for(const member of snapMembers)if(!origins.has(member))origins.set(member,captureModuleTransform(member));
         joined=assignSnapGroup(snapMembers);
       }
       recordTransformHistory([...origins.keys()],origins);
       cleanup();
-      pulse(multi?group:(willSnap?joined:[m]));
+      if(willSnap)pulse(joined);
     };
     const cancel=()=>{for(const [g,origin] of origins)applyModuleTransform(g,origin);if(tugged)assignSnapGroup(connectedToAnchor);cleanup()};
     dragEventTarget.addEventListener('pointermove',move);
@@ -12812,23 +12831,24 @@ function createAdditionalStickerPackUi(){
   const shopGrid=document.querySelector('[data-shop-page="stickers"] .shop-product-grid');
   const sampleClasses=['one','two','three','four'];
   ADDITIONAL_STICKER_PACKS.forEach(pack=>{
+    const isImagePack=pack.items.some(item=>Boolean(item.src));
     if(shelfRow&&!document.getElementById(`${pack.id}-sticker-pack`)){
       const wrap=document.createElement('div');
       wrap.className='sticker-pack-wrap';
       const button=document.createElement('button');
       button.id=`${pack.id}-sticker-pack`;
-      button.className=`theme-pack sticker-pack sticker-pack--emoji sticker-pack--emoji-collection${pack.category==='learning'?' sticker-pack--text':''}`;
+      button.className=`theme-pack sticker-pack ${isImagePack?'sticker-pack--image-collection':'sticker-pack--emoji sticker-pack--emoji-collection'}${pack.category==='learning'?' sticker-pack--text':''}`;
       button.type='button';
       button.dataset.stickerPack='';
       button.setAttribute('aria-expanded','false');
       button.setAttribute('aria-controls',`${pack.id}-sticker-drawer`);
       const stack=document.createElement('span');
-      stack.className='sticker-pack__stack sticker-pack__stack--emoji';
+      stack.className=`sticker-pack__stack ${isImagePack?'sticker-pack__stack--image':'sticker-pack__stack--emoji'}`;
       stack.setAttribute('aria-hidden','true');
       pack.items.slice(0,4).forEach((item,index)=>{
-        const sample=document.createElement('span');
-        sample.className=`sticker-pack__emoji-sample sticker-pack__emoji-sample--${sampleClasses[index]}`;
-        sample.textContent=item.emoji;
+        const sample=document.createElement(isImagePack?'img':'span');
+        sample.className=`${isImagePack?'sticker-pack__image-sample':'sticker-pack__emoji-sample'} ${isImagePack?'sticker-pack__image-sample':'sticker-pack__emoji-sample'}--${sampleClasses[index]}`;
+        if(isImagePack){sample.src=item.src;sample.alt='';sample.draggable=false}else sample.textContent=item.emoji;
         stack.appendChild(sample);
       });
       const meta=document.createElement('span');
@@ -12868,11 +12888,11 @@ function createAdditionalStickerPackUi(){
       article.dataset.shopProduct=pack.productId;
       article.dataset.shopPrice=String(pack.price);
       const preview=document.createElement('div');
-      preview.className=`shop-product__preview shop-product__preview--emoji${pack.category==='learning'?' shop-product__preview--text-stickers':''}`;
+      preview.className=`shop-product__preview ${isImagePack?'shop-product__preview--image-stickers':'shop-product__preview--emoji'}${pack.category==='learning'?' shop-product__preview--text-stickers':''}`;
       preview.setAttribute('aria-hidden','true');
       pack.items.slice(0,4).forEach(item=>{
-        const sample=document.createElement('span');
-        sample.textContent=item.emoji;
+        const sample=document.createElement(isImagePack?'img':'span');
+        if(isImagePack){sample.src=item.src;sample.alt='';sample.draggable=false}else sample.textContent=item.emoji;
         preview.appendChild(sample);
       });
       const body=document.createElement('div');
@@ -12930,7 +12950,8 @@ function populateGeneratedStickerPacks(){
   const makeStickerButton=({emoji='',src='',name,tags=''})=>{
     const button=document.createElement('button');
     const isText=!src&&/^[A-Za-z0-9]+$/.test(emoji);
-    button.className=`sticker-shelf-item ${src?'sticker-shelf-item--flag':'sticker-shelf-item--emoji'}${isText?' sticker-shelf-item--text':''}`;
+    const isFlag=/flagcdn\.io\/flags\//i.test(src);
+    button.className=`sticker-shelf-item ${src?(isFlag?'sticker-shelf-item--flag':'sticker-shelf-item--image'):'sticker-shelf-item--emoji'}${isText?' sticker-shelf-item--text':''}`;
     button.type='button';
     if(src)button.dataset.stickerSrc=src;
     else button.dataset.stickerEmoji=emoji;

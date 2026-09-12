@@ -35,6 +35,7 @@ const COSMETIC_PRODUCTS = Object.freeze({
   "sticker-colored-hearts": Object.freeze({ price: 180, name: "Colored Hearts Sticker Pack" }),
   "sticker-decorative-hearts": Object.freeze({ price: 180, name: "Decorative Hearts Sticker Pack" }),
   "sticker-country-flags": Object.freeze({ price: 250, name: "Country Flags Sticker Pack" }),
+  "sticker-quiet-critters": Object.freeze({ price: 180, name: "Quiet Critters Sticker Pack" }),
   "tile-skin-magnifier-classic": Object.freeze({ price: 250, name: "Classic Magnifying Glass" }),
   "tile-skin-youtube-retro-tv": Object.freeze({ price: 300, name: "Vintage Television" }),
   "tile-skin-todo-clipboard": Object.freeze({ price: 250, name: "Classroom Clipboard" }),
