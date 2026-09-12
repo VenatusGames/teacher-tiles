@@ -14,8 +14,9 @@
   position:absolute;
   z-index:18;
   top:11px;
-  left:16px;
-  max-width:calc(100% - 64px);
+  left:50%;
+  width:max-content;
+  max-width:calc(100% - 96px);
   padding:2px 4px;
   border-radius:6px;
   outline:none;
@@ -26,15 +27,27 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+  text-align:center;
+  transform:translateX(-50%);
   user-select:none;
 }
 .venn-title.module-text-edit-active{user-select:text;cursor:text;overflow:visible;background:color-mix(in srgb,var(--module-bg,#fff) 84%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,#6f8fb7 16%,transparent)}
 .venn-stage{
   position:absolute;
-  inset:44px 12px 78px;
+  inset:44px 12px 14px;
   overflow:hidden;
+  transition:bottom .34s cubic-bezier(.2,.78,.25,1);
   border-radius:15px;
   background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--module-text,#17191d) 3%,transparent),transparent 62%);
+}
+
+/* The diagram uses the full tile while hover controls are hidden, then gives
+   those controls room only while they are actually in use. */
+.venn-module:hover .venn-stage,
+.venn-module:has(.venn-entry:focus-within) .venn-stage,
+.venn-module:has(.venn-customization:focus-within) .venn-stage,
+.venn-module.has-tile-settings-open .venn-stage{
+  bottom:116px;
 }
 .venn-circle{
   position:absolute;
@@ -159,5 +172,5 @@
 .venn-customization .custom-icon{background:color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 10%);color:var(--module-text,#17191d);border-color:color-mix(in srgb,var(--module-text,#17191d) 16%,transparent)}
 .venn-customization .tile-settings-panel{right:0;left:auto}
 @container (max-width:520px){.venn-region-picker{max-width:155px}.venn-region-button{min-width:27px;padding:0 5px}.venn-hint{font-size:8px}}
-@container (max-height:380px){.venn-stage{top:42px;bottom:76px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
-@media(prefers-reduced-motion:reduce){.venn-circle,.venn-heading,.venn-item,.venn-entry,.venn-hint{transition:none}}
+@container (max-height:380px){.venn-stage{top:42px;bottom:10px}.venn-module:hover .venn-stage,.venn-module:has(.venn-entry:focus-within) .venn-stage,.venn-module:has(.venn-customization:focus-within) .venn-stage,.venn-module.has-tile-settings-open .venn-stage{bottom:82px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
+@media(prefers-reduced-motion:reduce){.venn-stage,.venn-circle,.venn-heading,.venn-item,.venn-entry,.venn-hint{transition:none}}
