@@ -1147,13 +1147,13 @@ function boardPreferenceSnapshot(){
   };
 }
 
-function playUiSfx(kind='click'){
+function playUiSfx(kind='click',volumeScale=1){
   if(appPreferences.uiMuted)return;
   try{
     const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
     const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
-    sound.volume=clamp(base*(appPreferences.uiVolume/100),0,1);
+    sound.volume=clamp(base*(appPreferences.uiVolume/100)*Math.max(0,Number(volumeScale)||0),0,1);
     sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     sound.play().catch(()=>{});
@@ -18616,8 +18616,8 @@ function setupTeacherTilesShop(){
     void coinCelebration.offsetWidth;
     coinCelebration.classList.add('is-visible');
     coinButton?.classList.add('is-celebrating');
-    playUiSfx('money');
-    setTimeout(()=>playUiSfx('confetti'),120);
+    playUiSfx('money',.72);
+    setTimeout(()=>playUiSfx('confetti',.68),120);
 
     if(reduceMotion){coinCelebrationBalance.textContent=to.toLocaleString()}
     else{
