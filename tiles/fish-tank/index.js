@@ -19,16 +19,49 @@
   }
   function setup(m){
     const canvas=m.querySelector('canvas'),ctx=canvas.getContext('2d'),button=m.querySelector('.fish-mic'),status=m.querySelector('.fish-status'),meter=m.querySelector('meter'),threshold=m.querySelector('.fish-threshold'),sensitivity=m.querySelector('.fish-sensitivity'),collection=m.querySelector('.fish-collection');
-    let fishes=[],food=[],frame=0,last=0,time=0,active=false,pending=false,disposed=false,visible=true,stream=null,audio=null,analyser=null,samples=null,request=0,level=0,nextArrival=8,lastFeed=0,lastStatus='',lastNotify=0,mode='ambient';
+    let fishes=[],food=[],frame=0,last=0,time=0,active=false,pending=false,disposed=false,visible=true,stream=null,audio=null,analyser=null,samples=null,request=0,level=0,nextArrival=8,nextSwap=24+Math.random()*14,lastFeed=0,lastStatus='',lastNotify=0,mode='ambient';
     const environment={quiet:0,loud:0,scared:0};
     const images=species.map(s=>{const img=new Image();img.src=`tiles/fish-tank/assets/${s[0]}.png`;img.onload=()=>{if(!disposed)draw();};return img;});
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-    function addFish(index,inside=false){const s=species[index],direction=Math.random()<.5?1:-1;fishes.push({index,x:inside?.15+Math.random()*.7:direction>0?-.14:1.14,y:.2+Math.random()*.52,dir:direction,speed:.022+Math.random()*.025,size:s[0]==='shark'?.22:s[2]>0?.17:.12,phase:Math.random()*6.28});}
+    function addFish(index,inside=false){
+      const s=species[index],direction=Math.random()<.5?1:-1;
+      const fish={index,x:inside?.15+Math.random()*.7:direction>0?-.14:1.14,y:.2+Math.random()*.52,dir:direction,speed:.022+Math.random()*.025,size:s[0]==='shark'?.22:s[2]>0?.17:.12,phase:Math.random()*6.28,age:0,leaving:false,replacementIndex:null,meal:null};
+      fishes.push(fish);return fish;
+    }
+    function chooseReplacement(excludedIndex=-1){
+      const pool=eligible(environment.quiet).map(s=>species.indexOf(s)).filter(index=>index!==excludedIndex);
+      if(!pool.length)return excludedIndex>=0?excludedIndex:0;
+      const counts=new Map();
+      fishes.forEach(f=>{if(!f.leaving)counts.set(f.index,(counts.get(f.index)||0)+1);});
+      const minimum=Math.min(...pool.map(index=>counts.get(index)||0));
+      const choices=pool.filter(index=>(counts.get(index)||0)===minimum);
+      return choices[Math.floor(Math.random()*choices.length)];
+    }
+    function beginDeparture(fish,replacementIndex=chooseReplacement(fish?.index??-1)){
+      if(!fish||fish.leaving)return false;
+      fish.leaving=true;fish.replacementIndex=replacementIndex;fish.meal=null;fish.dir=fish.x<.5?-1:1;return true;
+    }
+    function scheduleSwap(delay=18+Math.random()*18){nextSwap=time+delay;}
+    function maybeSwapFish(){
+      if(time<nextSwap||environment.scared>0||fishes.length<4||fishes.some(f=>f.leaving))return;
+      const candidates=fishes.filter(f=>!f.leaving&&f.age>12);
+      if(!candidates.length){scheduleSwap(6);return;}
+      beginDeparture(candidates[Math.floor(Math.random()*candidates.length)]);scheduleSwap();
+    }
+    function nearestMeal(fish){
+      if(fish.meal&&food.includes(fish.meal))return fish.meal;
+      let best=null,bestScore=Infinity;
+      for(const pellet of food){
+        const dx=Math.abs(pellet.x-fish.x);if(dx>.38)continue;
+        const score=dx+Math.abs(pellet.y-fish.y)*.18;if(score<bestScore){best=pellet;bestScore=score;}
+      }
+      fish.meal=best;return best;
+    }
     [0,3,5,6].forEach(i=>addFish(i,true));
     function say(text){if(text!==lastStatus){status.textContent=text;lastStatus=text;}}
     function stop(message='Microphone off · Enable it or choose No mic mode'){
       ++request;active=false;pending=false;stream?.getTracks().forEach(t=>t.stop());stream=null;
-      if(audio&&audio.state!=='closed')audio.close().catch(()=>{});audio=analyser=samples=null;level=0;environment.quiet=environment.loud=environment.scared=0;nextArrival=8;
+      if(audio&&audio.state!=='closed')audio.close().catch(()=>{});audio=analyser=samples=null;level=0;environment.quiet=environment.loud=environment.scared=0;nextArrival=8;scheduleSwap(20+Math.random()*14);
       button.disabled=false;button.textContent='Enable microphone';button.setAttribute('aria-pressed','false');meter.value=0;say(message);
     }
     function setMode(next,{notify=true}={}){
@@ -70,22 +103,42 @@
       if(advance(environment,{mode,listening:active,level,threshold:Number(threshold.value)},dt)){
         if(environment.quiet>=nextArrival){
           nextArrival=environment.quiet+8;
-          const unlocked=eligible(environment.quiet);const visitor=[...unlocked].reverse().find(s=>s[2]>0&&!fishes.some(f=>species[f.index]===s));
-          if(visitor&&fishes.length>=18){const common=fishes.findIndex(f=>species[f.index][2]===0);if(common>=0)fishes.splice(common,1);}
-          if(fishes.length<18){addFish(species.indexOf(visitor||unlocked[Math.floor(Math.random()*Math.min(7,unlocked.length))]));notifyBoardChanged('fish-visitor');}
+          const unlocked=eligible(environment.quiet);const visitor=[...unlocked].reverse().find(s=>s[2]>0&&!fishes.some(f=>!f.leaving&&species[f.index]===s));
+          const departureInProgress=fishes.some(f=>f.leaving),activeFish=fishes.filter(f=>!f.leaving);
+          if(visitor&&fishes.length>=18&&!departureInProgress){const common=activeFish.find(f=>species[f.index][2]===0);if(common)beginDeparture(common,species.indexOf(visitor));}
+          else if(fishes.length<18&&!departureInProgress){addFish(species.indexOf(visitor||unlocked[Math.floor(Math.random()*Math.min(7,unlocked.length))]));notifyBoardChanged('fish-visitor');}
         }
         if(environment.quiet===0)nextArrival=8;
         say(mode==='ambient'?`No mic · ${Math.floor(environment.quiet)}s · ${environment.quiet<30?'Visitors on their way':'Rare visitors are exploring'}`:environment.scared>0?'A little loud — the fish are finding shelter.':`Quiet for ${Math.floor(environment.quiet)}s · ${environment.quiet<30?'More fish are on their way':environment.quiet<180?'Keep it calm for rare visitors':'Rare visitors feel at home'}`);
       }
-      for(const f of fishes){
-        if(environment.scared>0){f.dir=f.x<.5?-1:1;f.x+=f.dir*.45*dt;f.x=clamp(f.x,-.3,1.3);continue;}
+      maybeSwapFish();
+      const motionScale=reduced.matches?.35:1;
+      for(const f of fishes.slice()){
+        f.age+=dt;
+        if(f.leaving){
+          f.meal=null;f.x+=f.dir*Math.max(.08,f.speed*2.6)*dt*motionScale;
+          if(f.x<-.24||f.x>1.24){
+            const replacementIndex=f.replacementIndex,index=fishes.indexOf(f);if(index>=0)fishes.splice(index,1);
+            if(Number.isInteger(replacementIndex)&&fishes.filter(other=>!other.leaving).length<18)addFish(replacementIndex);
+          }
+          continue;
+        }
+        if(environment.scared>0){f.meal=null;f.dir=f.x<.5?-1:1;f.x+=f.dir*.45*dt;f.x=clamp(f.x,-.3,1.3);continue;}
         if(f.x<-.2||f.x>1.2){if(active&&environment.quiet<5)continue;f.dir=f.x<0?1:-1;}
         let speed=f.speed;
-        const meal=food.find(p=>Math.abs(p.x-f.x)<.35);
-        if(meal){f.dir=meal.x>f.x?1:-1;speed*=2;f.y+=Math.sign(meal.y-f.y)*dt*.06;if(Math.hypot(meal.x-f.x,meal.y-f.y)<.035)food.splice(food.indexOf(meal),1);}
-        f.x+=f.dir*speed*dt*(reduced.matches?.35:1);
-        if(f.x>1.08)f.dir=-1;if(f.x<-.08)f.dir=1;
-        f.y=clamp(f.y+Math.sin(time*.4+f.phase)*dt*.005,.1,.8);
+        const meal=nearestMeal(f);
+        if(meal){
+          const dx=meal.x-f.x,dy=meal.y-f.y;
+          if(Math.abs(dx)>.025)f.dir=dx>0?1:-1;
+          speed*=1.7;
+          if(Math.abs(dx)>.006)f.x+=Math.sign(dx)*Math.min(Math.abs(dx),speed*dt*motionScale);
+          f.y=clamp(f.y+clamp(dy,-.08,.08)*Math.min(1,dt*2.6),.1,.8);
+          if(Math.hypot(meal.x-f.x,meal.y-f.y)<.035){const mealIndex=food.indexOf(meal);if(mealIndex>=0)food.splice(mealIndex,1);f.meal=null;}
+        }else{
+          f.x+=f.dir*speed*dt*motionScale;
+          if(f.x>1.08)f.dir=-1;if(f.x<-.08)f.dir=1;
+          f.y=clamp(f.y+Math.sin(time*.4+f.phase)*dt*.005,.1,.8);
+        }
       }
       for(const p of food){p.y+=dt*.055;p.life+=dt;}food=food.filter(p=>p.life<10&&p.y<.91);
       if(time-lastNotify>1){lastNotify=time;collection.textContent=`${fishes.length} fish · ${new Set(fishes.map(f=>f.index)).size} species`;} 
@@ -109,8 +162,8 @@
     const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(!visible){cancelAnimationFrame(frame);frame=0;last=0;}else wake();});observer.observe(canvas);
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;last=0;if(active||pending)stop('Microphone paused while the tab is hidden.');}else wake();}
     document.addEventListener('visibilitychange',visibility);
-    m._boardGetState=()=>({mode,threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.map(f=>f.index)});
-    m._boardSetState=s=>{stop();setMode(s?.mode,{notify:false});food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);(stock.length?stock:[0,3,5,6]).forEach(i=>addFish(i,true));draw();};
+    m._boardGetState=()=>({mode,threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.map(f=>f.leaving&&Number.isInteger(f.replacementIndex)?f.replacementIndex:f.index)});
+    m._boardSetState=s=>{stop();setMode(s?.mode,{notify:false});food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);(stock.length?stock:[0,3,5,6]).forEach(i=>addFish(i,true));scheduleSwap(22+Math.random()*14);draw();};
     const prior=m._cleanup;m._cleanup=()=>{disposed=true;stop();cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);images.forEach(img=>img.onload=null);prior?.();};setMode('ambient',{notify:false});wake();
   }
   window.TeacherTilesFishTank=Object.freeze({setup,eligible,ecology,advance});

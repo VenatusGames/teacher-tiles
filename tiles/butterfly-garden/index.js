@@ -68,7 +68,8 @@
     let ambientRun=0;
     let growthCharge=0;
     let goldenCooldown=45;
-    let nextButterflyArrival=0;
+    let nextButterflyArrival=randomBetween(2.2,3.8);
+    let lastButterflyGoal=0;
     let loudRun=0;
     let returnQuietRun=0;
     let butterflyEvictionActive=false;
@@ -318,6 +319,8 @@
 
     function ensureButterflyPopulation(){
       const goal=regularButterflyTarget();
+      if(goal>lastButterflyGoal)nextButterflyArrival=Math.max(nextButterflyArrival,elapsed+randomBetween(2.2,3.8));
+      lastButterflyGoal=goal;
       const regular=butterflies.filter(butterfly=>!butterfly.isGolden&&!butterfly.exiting);
       const arrivalInProgress=butterflies.some(butterfly=>butterfly.entering&&!butterfly.exiting);
       const canInvite=!butterflyEvictionActive&&(mode!=='microphone'||!active||level<getThreshold());
@@ -415,7 +418,7 @@
         if(butterfly.entering&&drawX>10&&drawX<width-10){
           butterfly.entering=false;
           butterfly.leaveAt=elapsed+butterfly.visitDuration;
-          nextButterflyArrival=elapsed+randomBetween(5.8,8.4);
+          nextButterflyArrival=elapsed+randomBetween(7.2,10.0);
         }
         butterfly.element.style.left=`${drawX.toFixed(2)}px`;
         butterfly.element.style.top=`${drawY.toFixed(2)}px`;
@@ -564,7 +567,7 @@
         if(butterflyEvictionActive){
           butterflyEvictionActive=false;
           returnQuietRun=0;
-          nextButterflyArrival=Math.min(nextButterflyArrival,elapsed+3);
+          nextButterflyArrival=Math.min(nextButterflyArrival,elapsed+4.2);
         }
         return;
       }
@@ -582,7 +585,7 @@
         if(returnQuietRun>=2.4){
           butterflyEvictionActive=false;
           returnQuietRun=0;
-          nextButterflyArrival=elapsed+randomBetween(2.2,3.6);
+          nextButterflyArrival=elapsed+randomBetween(3.4,4.8);
         }
       }else returnQuietRun=0;
     }
@@ -711,7 +714,8 @@
       ambientRun=Math.max(0,Number(state?.ambientRun)||0);
       growthCharge=Math.max(0,Number(state?.growthCharge)||0);
       goldenCooldown=Math.max(20,Number(state?.goldenCooldown)||45);
-      nextButterflyArrival=0;
+      nextButterflyArrival=elapsed+randomBetween(2.2,3.8);
+      lastButterflyGoal=0;
       thresholdInput.value=String(clamp(Number(state?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(state?.sensitivity)||100,30,200));
       applySettings(false);
