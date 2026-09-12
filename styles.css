@@ -15953,3 +15953,5 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__category-row:has(.context-menu__pin)>.context-menu__filter{white-space:nowrap;overflow-wrap:normal;word-break:normal;flex:0 0 auto;padding-left:6px;padding-right:4px}
 #context-menu .context-menu__filter{white-space:nowrap;overflow-wrap:normal;word-break:normal}
 @media(max-width:420px){#context-menu{grid-template-columns:152px minmax(0,1fr)}#context-menu .context-menu__filter{font-size:10px}}
+/* Keep the hover pin before its category label. */
+#context-menu .context-menu__category-row .context-menu__pin{order:-1}
