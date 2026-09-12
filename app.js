@@ -2500,6 +2500,10 @@ menu.addEventListener('click',event=>{
 
 const menuHolidays=['Christmas','Hannukah','Halloween',"Valentine’s Day","St. Patrick’s Day",'Thanksgiving'];
 let menuAllExpanded=true,menuHolidaysExpanded=true,menuFavoritesExpanded=true;
+function menuFavoriteCategory(item){
+  const categories=(item.dataset.category||'').split(/\s+/);
+  return menuCategoryOrder.find(category=>!['all','favorites','holidays'].includes(category)&&categories.includes(category));
+}
 function menuCategoryLabel(category){
   if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAYS';
   if(category.startsWith('favorite:'))return menuCategoryLabel(category.slice(9));
@@ -2539,7 +2543,7 @@ function renderMenuCategoryPins(){
     if(id==='favorites'){
       const children=document.createElement('div');children.className='context-menu__holiday-children';children.hidden=!menuFavoritesExpanded;
       for(const category of menuCategoryOrder.filter(c=>!['all','favorites','holidays'].includes(c))){
-        if(!menuItems.some(item=>menuFavorites.has(menuItemKey(item))&&(item.dataset.category||'').split(/\s+/).includes(category)))continue;
+        if(!menuItems.some(item=>menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))continue;
         const child=document.createElement('button');child.type='button';child.className='context-menu__holiday-child';child.textContent=menuCategoryLabel(category);child.classList.toggle('is-active',activeMenuCategory===`favorite:${category}`);
         child.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(`favorite:${category}`);renderMenuCategoryPins()});children.appendChild(child);
       }
@@ -2654,7 +2658,7 @@ function applyMenuView(){
     for(const category of categories){
       const matches=menuItems.filter(item=>{
         const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
-        return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||menuFavorites.has(menuItemKey(item)))&&(!searching||searchable.includes(query));
+        return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
       });
       const basicsOrder=['sticky','draw','textbubble','timer','clock','image','calculator'];
       matches.sort((a,b)=>category==='basics'
