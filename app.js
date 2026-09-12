@@ -2516,13 +2516,27 @@ renderMenuCategoryPins();
 
 // A keyboard-accessible corner grip resizes the catalog without changing board zoom.
 const menuResizeGrip=document.createElement('button');menuResizeGrip.type='button';menuResizeGrip.className='context-menu__resize';menuResizeGrip.setAttribute('aria-label','Resize Add tile menu');menuResizeGrip.title='Drag to resize. Arrow keys adjust size.';menu.appendChild(menuResizeGrip);
+const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
+menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
+function syncMenuResetSize(){
+  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||520,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||450;
+  menuResetSize.hidden=Math.abs(width-520)<1&&Math.abs(height-450)<1;
+}
+menuResetSize.addEventListener('click',event=>{
+  event.stopPropagation();menu.style.removeProperty('--tile-menu-width');menu.style.removeProperty('--tile-menu-height');
+  try{localStorage.removeItem('teacherTiles.menuSize.v1')}catch{}
+  syncMenuResetSize();
+  const rect=menu.getBoundingClientRect();menu.style.left=`${Math.max(8,Math.min(rect.left,innerWidth-rect.width-8))}px`;menu.style.top=`${Math.max(8,Math.min(rect.top,innerHeight-rect.height-8))}px`;
+  menu.querySelector('.context-menu__close')?.focus({preventScroll:true});
+});
 function sizeTileMenu(width,height){
   const rect=menu.getBoundingClientRect();
   const w=Math.max(0,Math.min(width,Math.max(0,innerWidth-rect.left-8))),h=Math.max(0,Math.min(height,Math.max(0,innerHeight-rect.top-8)));
-  menu.style.setProperty('--tile-menu-width',`${w}px`);menu.style.setProperty('--tile-menu-height',`${h}px`);
+  menu.style.setProperty('--tile-menu-width',`${w}px`);menu.style.setProperty('--tile-menu-height',`${h}px`);syncMenuResetSize();
 }
 function saveTileMenuSize(){try{const rect=menu.getBoundingClientRect();localStorage.setItem('teacherTiles.menuSize.v1',JSON.stringify({width:rect.width,height:rect.height}))}catch{}}
 try{const saved=JSON.parse(localStorage.getItem('teacherTiles.menuSize.v1')||'null');if(saved&&Number.isFinite(saved.width)&&Number.isFinite(saved.height)){menu.style.setProperty('--tile-menu-width',`${Math.max(360,saved.width)}px`);menu.style.setProperty('--tile-menu-height',`${Math.max(280,saved.height)}px`)}}catch{}
+syncMenuResetSize();
 menuResizeGrip.addEventListener('pointerdown',event=>{
   if(event.button!==0)return;event.preventDefault();event.stopPropagation();
   const rect=menu.getBoundingClientRect(),x=event.clientX,y=event.clientY;menuResizeGrip.setPointerCapture(event.pointerId);
