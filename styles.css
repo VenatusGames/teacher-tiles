@@ -15969,3 +15969,8 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 
 #context-menu .context-menu__title-row{cursor:grab;touch-action:none;user-select:none}
 #context-menu.is-menu-dragging .context-menu__title-row{cursor:grabbing}
+
+.lesson-schedule-block,.lesson-calendar-chip,.lesson-planner-agenda-item{cursor:grab;touch-action:none}
+.is-lesson-dragging{opacity:.4;cursor:grabbing!important}
+.lesson-planner-day-column.is-lesson-drop-target,.lesson-planner-month-day.is-lesson-drop-target{box-shadow:inset 0 0 0 3px #60a5fa;background:color-mix(in srgb,#93c5fd 20%,var(--surface))}
+.lesson-planner-drag-preview{position:fixed;z-index:100000;pointer-events:none;max-width:340px;padding:10px 14px;border:1px solid #93c5fd;border-radius:12px;background:#eff6ff;color:#172554;font:600 13px/1.4 Inter,system-ui,sans-serif;box-shadow:0 10px 30px #0f172a30}

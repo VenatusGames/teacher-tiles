@@ -1,4 +1,64 @@
-(() => {
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="styles.css"><button id="profile-lesson-planner-button">Open planner</button><section id="lesson-planner-panel" class="lesson-planner-panel" hidden aria-hidden="true" aria-labelledby="lesson-planner-title">
+            <div class="lesson-planner-backdrop" aria-hidden="true"></div>
+            <div class="lesson-planner-window" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-title">
+              <header class="lesson-planner-header">
+                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
+                <div class="lesson-planner-brand">
+                  <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span>
+                  <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
+                </div>
+                <div class="lesson-planner-header__actions">
+                  <button id="lesson-planner-today" type="button">Today</button>
+                  <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
+                </div>
+              </header>
+              <section class="lesson-planner-toolbar" aria-label="Calendar controls">
+                <div class="lesson-planner-date-nav">
+                  <button id="lesson-planner-prev" type="button" aria-label="Previous date range">‹</button>
+                  <button id="lesson-planner-next" type="button" aria-label="Next date range">›</button>
+                  <div><small id="lesson-planner-range-kicker">THIS WEEK</small><strong id="lesson-planner-range-title">Calendar</strong></div>
+                </div>
+                <div id="lesson-planner-view-tabs" class="lesson-planner-view-tabs" role="tablist" aria-label="Planner view">
+                  <button type="button" data-planner-view="day" role="tab">Day</button>
+                  <button type="button" data-planner-view="week" role="tab" aria-selected="true">Week</button>
+                  <button type="button" data-planner-view="month" role="tab">Month</button>
+                  <button type="button" data-planner-view="year" role="tab">Year</button>
+                </div>
+                <label class="lesson-planner-zoom"><span>Zoom</span><input id="lesson-planner-zoom" type="range" min="0" max="3" step="1" value="1" aria-label="Calendar zoom from day to year"><i aria-hidden="true">−</i></label>
+              </section>
+              <div class="lesson-planner-layout">
+                <aside class="lesson-planner-sidebar">
+                  <button id="lesson-planner-new" class="lesson-planner-new" type="button"><span aria-hidden="true">＋</span><strong>New lesson block</strong></button>
+                  <section class="lesson-planner-focus-card">
+                    <span id="lesson-planner-focus-weekday">TODAY</span>
+                    <strong id="lesson-planner-focus-day">1</strong>
+                    <small id="lesson-planner-focus-month">September 2026</small>
+                  </section>
+                  <section class="lesson-planner-agenda" aria-labelledby="lesson-planner-agenda-title">
+                    <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
+                    <div id="lesson-planner-agenda-list"></div>
+                  </section>
+                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Quick plan</strong> Click an open time to add a block. Drag blocks to another time or day; click a block to edit.</p></div>
+                </aside>
+                <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
+              </div>
+              <aside id="lesson-planner-editor" class="lesson-planner-editor" hidden aria-hidden="true" aria-labelledby="lesson-planner-editor-title">
+                <button class="lesson-planner-editor__backdrop" type="button" aria-label="Close lesson editor"></button>
+                <form id="lesson-planner-form" class="lesson-planner-editor__card">
+                  <header><div><span>LESSON BLOCK</span><h3 id="lesson-planner-editor-title">Plan a lesson</h3></div><button id="lesson-planner-editor-close" type="button" aria-label="Close lesson editor">×</button></header>
+                  <label class="lesson-planner-field"><span>Lesson label</span><input id="lesson-planner-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
+                  <div class="lesson-planner-field-row">
+                    <label class="lesson-planner-field"><span>Date</span><input id="lesson-planner-date" type="date" required></label>
+                    <label class="lesson-planner-field"><span>Starts</span><input id="lesson-planner-start" type="time" step="900" required></label>
+                    <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-end" type="time" step="900" required></label>
+                  </div>
+                  <fieldset class="lesson-planner-colors"><legend>Block color</legend><div id="lesson-planner-colors"></div></fieldset>
+                  <label class="lesson-planner-field lesson-planner-field--description"><span>Plans and notes</span><textarea id="lesson-planner-description" maxlength="4000" placeholder="Learning goal, materials, activities, differentiation, assessment notes…"></textarea><small><span id="lesson-planner-description-count">0</span>/4000</small></label>
+                  <div class="lesson-planner-editor__actions"><button id="lesson-planner-delete" class="lesson-planner-delete" type="button" hidden>Delete</button><span></span><button id="lesson-planner-duplicate" type="button" hidden>Duplicate</button><button class="lesson-planner-save" type="submit">Save lesson</button></div>
+                </form>
+              </aside>
+            </div>
+          </section><script>const reviewStorage={getItem:()=>null,setItem(){}};</script><script>(() => {
   const openButton = document.getElementById('profile-lesson-planner-button');
   const panel = document.getElementById('lesson-planner-panel');
   if (!openButton || !panel) return;
@@ -128,7 +188,7 @@
 
   function readBlocks() {
     try {
-      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const parsed = JSON.parse(reviewStorage.getItem(STORAGE_KEY) || '[]');
       return Array.isArray(parsed) ? parsed.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
     } catch {
       return [];
@@ -137,7 +197,7 @@
 
   function saveBlocks() {
     blocks.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks)); } catch {}
+    try { reviewStorage.setItem(STORAGE_KEY, JSON.stringify(blocks)); } catch {}
     const snapshot = blocks.map(block => ({ ...block }));
     window.TeacherTilesRefreshLessonPlannerTiles?.(snapshot);
     window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', { detail: { blocks: snapshot } }));
@@ -587,3 +647,4 @@
   });
   renderColors();
 })();
+</script>
