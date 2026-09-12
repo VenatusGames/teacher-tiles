@@ -18226,7 +18226,7 @@ if(document.readyState==='loading'){
 })();
 
 (() => {
-  const IDLE_DELAY=25000;
+  const IDLE_DELAY=10000;
   let idleTimer=0;
   let pointerX=-1;
   let pointerY=-1;

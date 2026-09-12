@@ -139,9 +139,9 @@ let boardLoading = false;
 let boardDeleting = false;
 let boardRenaming = false;
 let boardSaving = false;
+let boardSavePromise = null;
 let localBoardSaveTimer = 0;
-let cloudBoardSaveTimer = 0;
-let queuedSave = false;
+const cloudBoardSaveTimers = new Map();
 let boardListLoadedFromNetwork = false;
 let pendingBoardChangeReason = "";
 const boardLocalHashes = new Map();
@@ -2184,7 +2184,6 @@ async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = fals
       dirty: true
     });
     boardLocalHashes.set(boardId, localHashForSnapshot(latestLocal.snapshot));
-    queuedSave = true;
   } else {
     board.localDirty = false;
     board.previewObjects = plan.format === "inline-v2" ? plan.objects.slice(0, 48) : buildCompactPreviewObjects(plan.objects);
@@ -2208,72 +2207,140 @@ async function flushCurrentBoardLocal() {
   if (!currentUser || !activeBoardId || boardLoading) return null;
   const api = boardApi();
   if (!api) return null;
-  const result = await cacheSnapshotLocally(activeBoardId, api.capture());
-  if (result?.dirty) setBoardStatus("Unsaved");
+
+  // Capture the board id and its snapshot together before the first await. A board
+  // switch must never be able to pair one board's state with another board's id.
+  const savingBoardId = activeBoardId;
+  const savingSnapshot = cleanBoardSnapshot(api.capture());
+  const result = await cacheSnapshotLocally(savingBoardId, savingSnapshot);
+  if (result?.dirty && activeBoardId === savingBoardId) setBoardStatus("Unsaved");
   if (!boardsView?.hidden) renderBoards();
-  return result;
+  return result ? { ...result, boardId: savingBoardId } : null;
 }
 
-function scheduleCloudBoardSave(delay = CLOUD_SAVE_DELAY) {
-  if (!currentUser || !activeBoardId || boardLoading) return;
-  clearTimeout(cloudBoardSaveTimer);
-  cloudBoardSaveTimer = window.setTimeout(() => saveCurrentBoard({ immediate: true }), delay);
+function clearCloudBoardSaveTimer(boardId) {
+  const id = String(boardId || "");
+  if (!id) return;
+  const timer = cloudBoardSaveTimers.get(id);
+  if (timer) clearTimeout(timer);
+  cloudBoardSaveTimers.delete(id);
+}
+
+function clearAllCloudBoardSaveTimers() {
+  for (const timer of cloudBoardSaveTimers.values()) clearTimeout(timer);
+  cloudBoardSaveTimers.clear();
+}
+
+function scheduleCloudBoardSave(delay = CLOUD_SAVE_DELAY, boardId = activeBoardId) {
+  const targetBoardId = String(boardId || "");
+  if (!currentUser || !targetBoardId) return;
+  clearCloudBoardSaveTimer(targetBoardId);
+  const timer = window.setTimeout(() => {
+    cloudBoardSaveTimers.delete(targetBoardId);
+    saveCachedBoardToCloud(targetBoardId);
+  }, delay);
+  cloudBoardSaveTimers.set(targetBoardId, timer);
+}
+
+async function saveCachedBoardToCloud(boardId) {
+  const targetBoardId = String(boardId || "");
+  if (!currentUser || !targetBoardId || !db || !firestoreSdk) return false;
+  const userId = currentUser.uid;
+  clearCloudBoardSaveTimer(targetBoardId);
+
+  // Serialize cloud writes, but keep every write tied to the board id that
+  // produced it. This prevents an in-flight save from following activeBoardId
+  // after the user switches boards.
+  const previous = boardSavePromise;
+  const task = (previous ? previous.catch(() => {}) : Promise.resolve()).then(async () => {
+    if (!currentUser || currentUser.uid !== userId) return false;
+    boardSaving = true;
+    const showStatus = activeBoardId === targetBoardId;
+    if (showStatus) setBoardStatus("Saving…");
+    let wrote = false;
+
+    try {
+      // A write can finish after a newer local snapshot has been captured. The
+      // cloud writer deliberately leaves that newer snapshot dirty; loop until
+      // this specific board is truly clean instead of queueing a save against
+      // whichever board happens to be active later.
+      while (currentUser?.uid === userId) {
+        const local = await readLocalBoardSnapshot(userId, targetBoardId);
+        if (!local?.snapshot || !local.dirty) break;
+        const board = boardList.find(item => item.id === targetBoardId);
+        if (!board) break;
+        await writeBoardSnapshotToCloud(targetBoardId, getBoardName(targetBoardId), cleanBoardSnapshot(local.snapshot), {
+          forceMigration: Boolean(board.needsMigration)
+        });
+        wrote = true;
+      }
+
+      if (showStatus && activeBoardId === targetBoardId) {
+        setBoardStatus("Saved");
+        window.setTimeout(() => {
+          if (activeBoardId === targetBoardId && boardsSaveStatus?.textContent === "Saved") setBoardStatus("");
+        }, 1400);
+      }
+      if (!boardsView?.hidden) renderBoards();
+      return wrote;
+    } catch (error) {
+      console.error("TeacherTiles board save failed", error);
+      if (activeBoardId === targetBoardId) setBoardStatus("Saved locally — cloud sync failed", true);
+      return false;
+    } finally {
+      boardSaving = false;
+    }
+  });
+
+  boardSavePromise = task;
+  try {
+    return await task;
+  } finally {
+    if (boardSavePromise === task) boardSavePromise = null;
+  }
 }
 
 async function saveCurrentBoard({ immediate = false } = {}) {
   clearTimeout(localBoardSaveTimer);
-  if (!currentUser || !activeBoardId || !db || !firestoreSdk || boardLoading) return;
-  if (boardSaving) {
-    queuedSave = true;
-    return;
-  }
+  if (!currentUser || !activeBoardId || !db || !firestoreSdk || boardLoading) return false;
+  const api = boardApi();
+  if (!api) return false;
 
-  const local = await flushCurrentBoardLocal();
+  // Capture synchronously so asynchronous IndexedDB/Firestore work can never
+  // change which board this snapshot belongs to.
+  const savingBoardId = activeBoardId;
+  const savingSnapshot = cleanBoardSnapshot(api.capture());
+  const local = await cacheSnapshotLocally(savingBoardId, savingSnapshot);
+
   if (!local?.dirty) {
-    clearTimeout(cloudBoardSaveTimer);
-    if (boardsSaveStatus?.textContent === "Unsaved") setBoardStatus("");
-    return;
+    clearCloudBoardSaveTimer(savingBoardId);
+    if (activeBoardId === savingBoardId && boardsSaveStatus?.textContent === "Unsaved") setBoardStatus("");
+    return false;
   }
 
   if (!immediate) {
-    scheduleCloudBoardSave();
-    return;
+    scheduleCloudBoardSave(CLOUD_SAVE_DELAY, savingBoardId);
+    return true;
   }
 
-  clearTimeout(cloudBoardSaveTimer);
-  boardSaving = true;
-  setBoardStatus("Saving…");
-  const savingBoardId = activeBoardId;
-  const savingSnapshot = local.snapshot;
-  try {
-    const board = boardList.find(item => item.id === savingBoardId);
-    await writeBoardSnapshotToCloud(savingBoardId, getBoardName(savingBoardId), savingSnapshot, {
-      forceMigration: Boolean(board?.needsMigration)
-    });
-    setBoardStatus("Saved");
-    if (!boardsView?.hidden) renderBoards();
-    window.setTimeout(() => {
-      if (boardsSaveStatus?.textContent === "Saved") setBoardStatus("");
-    }, 1400);
-  } catch (error) {
-    console.error("TeacherTiles board save failed", error);
-    setBoardStatus("Saved locally — cloud sync failed", true);
-  } finally {
-    boardSaving = false;
-    if (queuedSave) {
-      queuedSave = false;
-      scheduleCloudBoardSave(1200);
-    }
-  }
+  return saveCachedBoardToCloud(savingBoardId);
 }
 
 function scheduleBoardSave(reason = "change") {
   if (!currentUser || !activeBoardId || boardLoading) return;
   pendingBoardChangeReason = reason || "change";
+  const scheduledBoardId = activeBoardId;
   clearTimeout(localBoardSaveTimer);
   localBoardSaveTimer = window.setTimeout(async () => {
+    // loadBoard() flushes the outgoing board before changing activeBoardId. If
+    // some other path changed it, do not capture the new board under the old
+    // change event.
+    if (activeBoardId !== scheduledBoardId) {
+      pendingBoardChangeReason = "";
+      return;
+    }
     const local = await flushCurrentBoardLocal();
-    if (local?.dirty) scheduleCloudBoardSave();
+    if (local?.dirty) scheduleCloudBoardSave(CLOUD_SAVE_DELAY, local.boardId);
     pendingBoardChangeReason = "";
   }, LOCAL_SAVE_DELAY);
 }
@@ -2388,6 +2455,13 @@ async function loadBoard(boardId, { closeView = true } = {}) {
   const api = boardApi();
   if (!api) return;
 
+  // Do not let a board switch discard or redirect the outgoing board's last
+  // changes. This also waits for any frame save already in flight.
+  if (activeBoardId && activeBoardId !== boardId) {
+    clearTimeout(localBoardSaveTimer);
+    await saveCurrentBoard({ immediate: true });
+  }
+
   boardLoading = true;
   setBoardStatus("Loading…");
 
@@ -2407,9 +2481,9 @@ async function loadBoard(boardId, { closeView = true } = {}) {
     if (result?.removedObjectIds?.length) {
       const compatibleSnapshot = cleanBoardSnapshot(api.capture());
       await cacheSnapshotLocally(boardId, compatibleSnapshot, { dirty: true });
-      scheduleCloudBoardSave(1800);
+      scheduleCloudBoardSave(1800, boardId);
     } else if (resolved.dirty || resolved.legacy) {
-      scheduleCloudBoardSave(resolved.legacy ? 2200 : CLOUD_SAVE_DELAY);
+      scheduleCloudBoardSave(resolved.legacy ? 2200 : CLOUD_SAVE_DELAY, boardId);
     }
 
     if (closeView) closeBoardsView();
@@ -3762,7 +3836,7 @@ async function renderUser(user) {
   } else {
     publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [] });
     clearTimeout(localBoardSaveTimer);
-    clearTimeout(cloudBoardSaveTimer);
+    clearAllCloudBoardSaveTimers();
     activeBoardId = "";
     boardList = [];
     boardLocalHashes.clear();
