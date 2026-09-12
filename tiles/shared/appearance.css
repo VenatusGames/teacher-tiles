@@ -1,0 +1,25 @@
+.module .tile-appearance-original{display:none!important}
+.module>.tile-appearance-toggle{position:absolute;left:9px;bottom:9px;z-index:85;width:32px;height:32px;display:grid;place-items:center;padding:6px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 3px 10px #0f172a18;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
+.module:is(:hover,:has(:focus-visible),.is-appearance-open)>.tile-appearance-toggle{opacity:1;pointer-events:auto}
+body.is-board-idle .module:not(.is-appearance-open)>.tile-appearance-toggle{opacity:0;pointer-events:none}
+.tile-appearance-toggle svg{width:21px;height:21px;fill:currentColor}
+.tile-appearance-toggle:hover{transform:translateY(-1px)}
+.tile-appearance-flyout{position:fixed;z-index:100000;overflow:visible;color:var(--text);font-family:Inter,system-ui,sans-serif}
+.tile-appearance-flyout[hidden],.tile-appearance-picker[hidden]{display:none!important}
+.tile-appearance-rail{display:grid;gap:5px;padding:5px;border:1px solid var(--border);border-radius:13px;background:var(--surface-solid,var(--surface));box-shadow:0 6px 24px #0f172a26;animation:tileAppearanceIn .15s ease-out}
+.tile-appearance-tool{position:relative;width:30px;height:30px;display:grid;place-items:center;padding:4px;border:0;border-radius:8px;background:var(--surface-soft);color:var(--text);cursor:pointer;font-size:16px}
+.tile-appearance-tool[aria-expanded="true"]{background:color-mix(in srgb,#93c5fd 30%,var(--surface));box-shadow:inset 0 0 0 1px #60a5fa}
+.tile-appearance-picker{position:absolute;width:min(242px,calc(100vw - 16px));max-height:min(390px,calc(100dvh - 16px));overflow:auto;overscroll-behavior:contain;padding:12px;border:1px solid var(--border);border-radius:15px;background:var(--surface-solid,var(--surface));box-shadow:0 10px 36px #0f172a30;animation:tileAppearanceIn .15s ease-out}
+.tile-appearance-heading{display:block;margin-bottom:10px;font-size:13px}
+.tile-appearance-fonts{display:grid;gap:4px}
+.tile-appearance-colors{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tile-appearance-option{min-height:36px;display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;text-align:left;cursor:pointer}
+.tile-appearance-option i{width:19px;height:19px;flex:none;border-radius:50%;border:1px solid #64748b66}
+.tile-appearance-option:hover{background:var(--surface-soft)}
+.tile-appearance-option[aria-pressed="true"]{border-color:#60a5fa;box-shadow:inset 0 0 0 1px #60a5fa;background:color-mix(in srgb,#93c5fd 18%,var(--surface))}
+.tile-appearance-flyout button:focus-visible,.tile-appearance-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+@keyframes tileAppearanceIn{from{opacity:0;transform:translateX(5px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.tile-appearance-flyout *,.tile-appearance-toggle{animation:none!important;transition:none!important}}
+@media(hover:none){.module>.tile-appearance-toggle{opacity:1;pointer-events:auto}}
+
+.module.has-appearance-controls .customization-bar{padding-left:42px}

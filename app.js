@@ -3045,6 +3045,7 @@ function setupModuleByType(m,type){
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
   setupEditableTileHeading(m,type);
+  window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
 }
 
 function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
@@ -3642,7 +3643,7 @@ function setupStickerTransformControls(m){
   updateStickerVisualSize(m);
 }
 
-function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
+function setupSticky(m){const ed=m.querySelector('.sticky-editor'),bar=m.querySelector('.sticky-toolbar'),size=m.querySelector('.sticky-font-size'),cycle=m.querySelector('.sticky-color-cycle'),font=m.querySelector('.sticky-font-cycle'),dot=cycle.querySelector('span'),colors=['yellow','pink','blue','green','lavender'],hex={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};let i=Math.max(0,colors.indexOf(m.dataset.color));m.dataset.color=colors[i];dot.style.background=hex[colors[i]];bar.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});bar.addEventListener('click',e=>{const b=e.target.closest('[data-command]');if(!b)return;ed.focus();document.execCommand(b.dataset.command,false,null)});size.addEventListener('change',()=>{ed.focus();document.execCommand('fontSize',false,'7');ed.querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=`${size.value}px`})});font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));cycle.addEventListener('click',()=>{i=m._appearanceChoice?.key==='color'&&colors.includes(m._appearanceChoice.value)?colors.indexOf(m._appearanceChoice.value):(i+1)%colors.length;m.dataset.color=colors[i];dot.style.background=hex[colors[i]]})}
 
 const shapePaths={
   circle:'M50 4 A46 46 0 1 1 49.999 4 Z',
@@ -3857,7 +3858,7 @@ function setupTimer(m){
 
 function setupHourglass(m){window.TeacherTilesInteractiveTimers.setup(m)}
 
-function cycleData(m,key,values){const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
+function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='font'&&['dm','space','mono'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
   const display=m.querySelector('.clock-display');
   const content=m.querySelector('.clock-content');
@@ -17797,7 +17798,7 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus'
+  'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus'
 ]);
 let activeTeacherTilesBoardId='';
 

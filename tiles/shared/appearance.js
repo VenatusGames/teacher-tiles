@@ -1,0 +1,110 @@
+(() => {
+  'use strict';
+  const backgrounds={white:'#ffffff',cream:'#fff5dc',blue:'#dfeeff',pink:'#ffe0ea',green:'#e1f5e5',lavender:'#eee3ff',charcoal:'#25282e'};
+  const texts={dark:'#17191d',soft:'#5d6470',blue:'#244d78',rose:'#8b4055',white:'#f7f8fa'};
+  const notes={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};
+  const fontNames={inter:'Inter',poppins:'Poppins',nunito:'Nunito',quicksand:'Quicksand',oswald:'Oswald',lora:'Lora',merriweather:'Merriweather',playfair:'Playfair Display',caveat:'Caveat',phantom:'Phantom Guardians',dm:'DM Sans',space:'Space Grotesk',mono:'Roboto Mono'};
+  let active=null,frame=0,hideTimer=0,keyboard=false;
+  const flyout=document.createElement('div');flyout.className='tile-appearance-flyout';flyout.hidden=true;flyout.setAttribute('role','group');flyout.setAttribute('aria-label','Tile appearance');
+  const rail=document.createElement('div');rail.className='tile-appearance-rail';
+  const picker=document.createElement('div');picker.className='tile-appearance-picker';picker.hidden=true;
+  flyout.append(rail,picker);document.body.appendChild(flyout);
+  const titleCase=value=>value[0].toUpperCase()+value.slice(1);
+  function close(){
+    clearTimeout(hideTimer);cancelAnimationFrame(frame);
+    if(active){active.button.setAttribute('aria-expanded','false');active.module.classList.remove('is-appearance-open')}
+    active=null;flyout.hidden=true;picker.hidden=true;rail.replaceChildren();picker.replaceChildren();
+  }
+  function deferClose(){clearTimeout(hideTimer);hideTimer=setTimeout(()=>{if(!flyout.matches(':hover')&&!active?.module.matches(':hover')&&!(keyboard&&(flyout.matches(':focus-within')||active?.module.matches(':has(:focus-visible)'))))close()},240)}
+  function position(){
+    if(!active)return;
+    if(!active.module.isConnected){close();return}
+    const rect=active.module.getBoundingClientRect(),anchor=active.button.getBoundingClientRect();
+    const left=Math.max(8,Math.min(rect.left-48,innerWidth-48)),top=Math.max(8,Math.min(anchor.bottom-rail.offsetHeight,innerHeight-rail.offsetHeight-8));
+    flyout.style.left=`${left}px`;flyout.style.top=`${top}px`;
+    if(!picker.hidden){
+      const w=picker.offsetWidth,h=picker.offsetHeight;
+      const desired=left-w-8;
+      picker.style.left=`${Math.max(8,Math.min(desired>=8?desired:left+48,innerWidth-w-8))-left}px`;
+      picker.style.top=`${Math.max(8,Math.min(top+rail.offsetHeight-h,innerHeight-h-8))-top}px`;
+    }
+    frame=requestAnimationFrame(position);
+  }
+  function showPicker(control){
+    if(!active)return;
+    picker.replaceChildren();picker.hidden=false;
+    const heading=document.createElement('strong');heading.className='tile-appearance-heading';heading.textContent=control.label;picker.appendChild(heading);
+    const choices=document.createElement('div');choices.className=control.key==='font'?'tile-appearance-fonts':'tile-appearance-colors';
+    const m=active.module;
+    for(const value of control.values){
+      const option=document.createElement('button');option.type='button';option.className='tile-appearance-option';
+      const name=control.key==='font'?(fontNames[value]||titleCase(value)):titleCase(value);
+      option.setAttribute('aria-label',name);option.setAttribute('aria-pressed',String((m.dataset[control.key]||control.values[0])===value));
+      if(control.key==='font')option.style.fontFamily=`"${fontNames[value]||value}",sans-serif`;
+      else{const swatch=document.createElement('i');swatch.style.background=control.colors[value];swatch.setAttribute('aria-hidden','true');option.appendChild(swatch)}
+      const label=document.createElement('span');label.textContent=name;option.appendChild(label);
+      option.addEventListener('click',()=>{
+        if(!active||!m.isConnected)return;
+        // Keep tile-specific redraw and text-fitting callbacks, choosing instead of cycling.
+        m._appearanceChoice={key:control.key,value};
+        try{control.original.click()}finally{delete m._appearanceChoice}
+        active.onChange('tile-appearance');
+        choices.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===option)));
+      });
+      choices.appendChild(option);
+    }
+    picker.appendChild(choices);
+    rail.querySelectorAll('button').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.appearanceKey===control.key)));
+    picker.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
+  }
+  function open(state){
+    if(active===state){close();return}
+    close();active=state;state.button.setAttribute('aria-expanded','true');state.module.classList.add('is-appearance-open');flyout.hidden=false;
+    state.controls.forEach(control=>{
+      const button=document.createElement('button');button.type='button';button.className='tile-appearance-tool';button.dataset.appearanceKey=control.key;
+      button.setAttribute('aria-label',control.label);button.title=control.label;button.setAttribute('aria-expanded','false');
+      const icon=control.original.querySelector('.icon-font,.icon-palette,.icon-text-color');
+      if(icon)button.appendChild(icon.cloneNode(true));else button.textContent=control.key==='font'?'Aa':'◉';
+      button.addEventListener('click',()=>showPicker(control));rail.appendChild(button);
+    });
+    position();
+  }
+  flyout.addEventListener('pointerenter',()=>clearTimeout(hideTimer));flyout.addEventListener('pointerleave',deferClose);flyout.addEventListener('focusout',deferClose);
+  flyout.addEventListener('pointerdown',event=>event.stopPropagation());
+  flyout.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+  flyout.addEventListener('keydown',event=>{event.stopPropagation();if(event.key==='Escape'){const button=active?.button;close();button?.focus()}});
+  document.addEventListener('keydown',event=>{if(event.key==='Tab')keyboard=true},true);
+  document.addEventListener('pointerdown',()=>{keyboard=false},true);
+  document.addEventListener('pointerdown',event=>{if(active&&!flyout.contains(event.target)&&!active.button.contains(event.target))close()});
+  window.addEventListener('blur',close);
+  document.addEventListener('fullscreenchange',close);
+  function setup(m,{fonts,onChange}){
+    if(m.querySelector('.tile-appearance-toggle'))return;
+    const controls=[];
+    for(const original of m.querySelectorAll('button')){
+      const classes=[...original.classList];let key=null;
+      if(original.classList.contains('sticky-color-cycle'))key='color';
+      else if(original.querySelector('.icon-font'))key='font';
+      else if(original.querySelector('.icon-text-color'))key='text';
+      else if(classes.some(c=>/(?:-|__)bg$/.test(c))&&original.querySelector('.icon-palette'))key='bg';
+      if(!key||controls.some(control=>control.key===key))continue;
+      const colors=key==='bg'?backgrounds:key==='text'?texts:notes;
+      const values=key==='font'?[...fonts]:Object.keys(colors);
+      // Keep legacy saved font values selectable as well.
+      if(m.dataset[key]&&fontNames[m.dataset[key]]&&!values.includes(m.dataset[key])&&key==='font')values.push(m.dataset[key]);
+      controls.push({key,original,values,colors,label:key==='font'?'Font':key==='text'?'Text color':'Tile color'});
+      original.classList.add('tile-appearance-original');original.setAttribute('aria-hidden','true');original.tabIndex=-1;
+    }
+    if(!controls.length)return;
+    controls.sort((a,b)=>['font','bg','color','text'].indexOf(a.key)-['font','bg','color','text'].indexOf(b.key));
+    const button=document.createElement('button');button.type='button';button.className='tile-appearance-toggle';button.setAttribute('aria-label','Customize tile');button.title='Customize tile';button.setAttribute('aria-expanded','false');
+    const brush=document.querySelector('#customize-toggle svg');if(brush)button.appendChild(brush.cloneNode(true));
+    m.classList.add('has-appearance-controls');m.appendChild(button);
+    const state={module:m,button,controls,onChange};button.addEventListener('click',()=>open(state));
+    m.addEventListener('pointerenter',()=>{if(active===state)clearTimeout(hideTimer)});m.addEventListener('pointerleave',deferClose);
+    m.addEventListener('keydown',event=>{if(event.key==='Escape'&&active===state){event.stopPropagation();close();button.focus()}});
+    const deactivate=m._deactivate;m._deactivate=()=>{if(active===state)close();deactivate?.()};
+    const cleanup=m._cleanup;m._cleanup=()=>{if(active===state)close();cleanup?.()};
+  }
+  window.TeacherTilesAppearance=Object.freeze({setup});
+})();
