@@ -2473,6 +2473,7 @@ const menuSearch=menu.querySelector('#context-menu-search');
 const menuSearchClear=menu.querySelector('.context-menu__search-clear');
 const menuNoResults=menu.querySelector('.context-menu__no-results');
 const menuItems=[...menu.querySelectorAll('.context-menu__item[data-category]')];
+menuItems.forEach(item=>{if(item.dataset.comingSoon==='true'||item.classList.contains('context-menu__item--coming-soon')||/coming soon/i.test(item.querySelector('small')?.textContent||'')){item.classList.add('context-menu__item--coming-soon');item.dataset.comingSoon='true';item.disabled=true;item.setAttribute('aria-disabled','true');item.setAttribute('aria-label',`${item.querySelector('strong')?.textContent}: Coming soon`)}});
 const menuCategoryCycle=menu.querySelector('.context-menu__category-cycle');
 const menuCategoryCycleLabel=menu.querySelector('.context-menu__category-cycle-label');
 const menuDrawerFilters=[...menu.querySelectorAll('[data-category-drawer-filter]')];
@@ -3013,6 +3014,7 @@ function setupModuleByType(m,type){
   if(type==='visualdirections')window.TeacherTilesVisualDirections.setup(m);
   if(type==='colorpicker')window.TeacherTilesColorpicker.setup(m);
   if(type==='rainbow')window.TeacherTilesRainbow.setup(m);
+  if(type==='piano')window.TeacherTilesPiano.setup(m);
   if(type==='musicscore')window.TeacherTilesMusicscore.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);
@@ -8493,6 +8495,7 @@ const EDITABLE_TILE_HEADINGS={
   quoteoftheday:'.widget-title',
   colorpicker:'.widget-title',
   rainbow:'.widget-title',
+  piano:'.widget-title',
   musicscore:'.widget-title',
   vocabulary:'.widget-title',
   visualdirections:'.widget-title',

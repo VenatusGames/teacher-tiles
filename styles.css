@@ -16094,3 +16094,8 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__category-row--nested{margin-left:7px}
 #context-menu .context-menu__holiday-children{margin-left:7px}
 #context-menu .context-menu__holiday-children .context-menu__holiday-child{min-width:0;flex:1;padding-left:4px}
+
+#context-menu .context-menu__item--coming-soon{filter:grayscale(1);opacity:.55;position:relative}
+#context-menu .context-menu__item--coming-soon small{display:none!important}
+#context-menu .context-menu__item--coming-soon::after{content:'COMING SOON';position:absolute;inset:0;display:grid;place-items:center;padding:12px;border-radius:inherit;background:color-mix(in srgb,var(--surface-solid,var(--surface)) 94%,transparent);color:var(--text);font-size:12px;font-weight:850;letter-spacing:.04em;opacity:0;transition:opacity .16s;pointer-events:none;z-index:4}
+#context-menu .context-menu__card-wrap:hover>.context-menu__item--coming-soon::after,#context-menu .context-menu__card-wrap:focus-within>.context-menu__item--coming-soon::after{opacity:1}

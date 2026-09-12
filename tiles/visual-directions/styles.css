@@ -19,3 +19,6 @@
 .visualdirections-module .directions-form{inset:auto 12px 54px auto;width:min(340px,calc(100% - 24px));max-height:calc(100% - 80px);padding:16px;gap:12px;border-radius:18px;box-shadow:0 14px 40px #17203633;animation:directionsDrawerIn .2s ease-out}
 .directions-library{gap:8px}.directions-library button{padding:8px 4px;transition:transform .15s,background .15s}.directions-library button:hover{transform:translateY(-2px);background:#e9f3ff}.directions-library img{height:55px;margin-bottom:5px}.directions-preview{display:none}.directions-form .tile-toolbar{justify-content:flex-end}.directions-form .directions-upload{font-size:11px}
 @keyframes directionsDrawerIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.directions-form,.directions-library button{animation:none;transition:none}}
+
+.directions-wall .direction-actions{left:auto;right:3px;top:3px}.directions-wall .direction-step{margin-left:0}.direction-drag-indicator{left:50%;right:auto;transform:translateX(-50%)}
+.visualdirections-module .directions-form{padding-top:20px}.directions-form>strong{padding-right:28px}.directions-form .directions-cancel{position:absolute;right:8px;top:8px;width:27px;height:27px;padding:0;border-radius:8px;font-size:22px;line-height:1}.directions-form .tile-toolbar{min-height:0;height:0;margin:0}
