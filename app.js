@@ -1279,7 +1279,7 @@ const APP_TRANSLATIONS={
     'top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
     'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
-    'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
+    'context.addTile':'Add tile','context.all':'TILES','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
@@ -1314,7 +1314,7 @@ const APP_TRANSLATIONS={
     'top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
     'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
-    'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
+    'context.addTile':'Añadir tile','context.all':'TILES','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
@@ -2506,11 +2506,11 @@ function menuFavoriteCategory(item){
   return [...menuCategoryOrder,...menuHolidays.map((_,i)=>`holiday:${i}`)].find(category=>!['all','favorites','holidays'].includes(category)&&categories.includes(category));
 }
 function menuCategoryLabel(category){
-  if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAYS';
+  if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAY TILES';
   if(category.startsWith('favorite:'))return menuCategoryLabel(category.slice(9));
   if(category==='music')return 'MUSIC';
   if(category==='art')return 'ART';
-  if(category==='holidays')return 'HOLIDAYS';
+  if(category==='holidays')return 'HOLIDAY TILES';
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
 }
 
