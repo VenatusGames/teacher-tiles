@@ -8,6 +8,10 @@ function normalizeString(value) {
   return String(value);
 }
 
+function isSubscriptionActive(data = {}) {
+  return data.subscriptionStatus === "active" || data.subscriptionStatus === "trialing";
+}
+
 function accountRef(db, uid) {
   return db.collection("users").doc(uid);
 }
@@ -217,5 +221,6 @@ module.exports = {
   normalizeAccount,
   refreshContext,
   resolveFirebaseUidForStripeObject,
-  updateContextAccount
+  updateContextAccount,
+  isSubscriptionActive
 };
