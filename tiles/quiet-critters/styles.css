@@ -8,8 +8,8 @@
   flex-direction:column;
   gap:9px;
   overflow:visible;
-  background:var(--module-bg,#242a2d);
-  color:var(--module-text,#f5f7f5);
+  background:var(--module-bg,#ffffff);
+  color:var(--module-text,#1f2937);
   container-type:size;
 }
 .quietcritters-heading,
@@ -52,15 +52,15 @@
   opacity:.78;
 }
 .quietcritters-state[data-tone="quiet"]{
-  background:rgba(144,234,189,.14);
-  border-color:rgba(145,239,192,.30);
-  color:#c4ffdc;
+  background:rgba(77,177,117,.12);
+  border-color:rgba(54,143,91,.24);
+  color:#247347;
   opacity:1;
 }
 .quietcritters-state[data-tone="loud"]{
-  background:rgba(255,145,140,.13);
-  border-color:rgba(255,152,146,.28);
-  color:#ffd1ce;
+  background:rgba(221,89,80,.10);
+  border-color:rgba(190,63,54,.22);
+  color:#a9362f;
   opacity:1;
 }
 .quietcritters-stage{
@@ -113,6 +113,7 @@
 .quietcritters-props,
 .quietcritters-fairies,
 .quietcritters-critters,
+.quietcritters-foreground,
 .quietcritters-poofs{
   position:absolute;
   inset:0;
@@ -122,6 +123,7 @@
 .quietcritters-props{z-index:5;overflow:hidden}
 .quietcritters-fairies{z-index:7;overflow:hidden}
 .quietcritters-critters{z-index:10;overflow:hidden}
+.quietcritters-foreground{z-index:14;overflow:hidden}
 .quietcritters-poofs{z-index:18;overflow:hidden}
 .quietcritters-tree{
   position:absolute;
@@ -132,6 +134,18 @@
   transform-origin:center bottom;
   opacity:var(--opacity,.42);
   filter:brightness(.48) saturate(.82) hue-rotate(-8deg) drop-shadow(0 16px 22px rgba(0,0,0,.16));
+  user-select:none;
+}
+
+.quietcritters-foreground-tree{
+  position:absolute;
+  bottom:-32%;
+  width:40%;
+  max-width:none;
+  transform:translateX(-50%) scale(var(--scale,1));
+  transform-origin:center bottom;
+  opacity:var(--opacity,.78);
+  filter:brightness(.54) saturate(.88) hue-rotate(-7deg) drop-shadow(0 16px 22px rgba(0,0,0,.22));
   user-select:none;
 }
 .quietcritters-prop{
@@ -172,7 +186,7 @@
   position:absolute;
   left:var(--x,50%);
   top:var(--y,74%);
-  width:var(--size,118px);
+  width:var(--size,56px);
   aspect-ratio:1;
   transform:translate(-50%,-50%) scale(var(--actor-scale,1));
   transform-origin:center center;

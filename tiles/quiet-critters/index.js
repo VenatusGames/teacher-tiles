@@ -105,10 +105,12 @@
     const propLayer=moduleElement.querySelector('.quietcritters-props');
     const fairyLayer=moduleElement.querySelector('.quietcritters-fairies');
     const critterLayer=moduleElement.querySelector('.quietcritters-critters');
+    const foregroundLayer=moduleElement.querySelector('.quietcritters-foreground');
     const poofLayer=moduleElement.querySelector('.quietcritters-poofs');
     const stateBadge=moduleElement.querySelector('.quietcritters-state');
     const status=moduleElement.querySelector('.quietcritters-status');
     const stageMessage=moduleElement.querySelector('.quietcritters-stage-message');
+    const levelWrap=moduleElement.querySelector('.quietcritters-level');
     const levelFill=moduleElement.querySelector('.quietcritters-level-fill');
     const thresholdMarker=moduleElement.querySelector('.quietcritters-threshold-marker');
     const micButton=moduleElement.querySelector('.quietcritters-mic');
@@ -133,7 +135,8 @@
     let quietCharge=0;
     let calmTime=0;
     let returnCooldown=0;
-    let nextInvite=random(2.4,4.2);
+    let mode='ambient';
+    let nextInvite=random(14,22);
 
     function notify(reason){window.notifyBoardChanged?.(`quiet-critters-${reason}`)}
     function threshold(){return clamp(Number(thresholdInput.value)||45,15,85)}
@@ -149,6 +152,7 @@
       treeLayer.replaceChildren();
       propLayer.replaceChildren();
       fairyLayer.replaceChildren();
+      foregroundLayer.replaceChildren();
 
       const treeCount=3+Math.floor(Math.random()*2);
       const slots=Array.from({length:treeCount},(_,index)=>(index+.5)/treeCount);
@@ -158,39 +162,68 @@
         image.src=SCENERY.tree;
         image.alt='';
         image.draggable=false;
-        const x=clamp((slot+random(-.11,.11))*100,5,95);
+        const x=clamp((slot+random(-.08,.08))*100,8,92);
         image.style.left=`${x.toFixed(2)}%`;
-        image.style.setProperty('--scale',random(.72,1.15).toFixed(3));
-        image.style.setProperty('--opacity',random(.24,.46).toFixed(3));
+        image.style.setProperty('--scale',random(.70,1.08).toFixed(3));
+        image.style.setProperty('--opacity',random(.22,.40).toFixed(3));
         image.style.zIndex=String(index%2);
         treeLayer.appendChild(image);
       });
 
-      const stump=document.createElement('img');
-      stump.className='quietcritters-prop quietcritters-prop--stump';
-      stump.src=SCENERY.stump;
-      stump.alt='';
-      stump.draggable=false;
-      stump.style.setProperty('--left',`${random(24,76).toFixed(2)}%`);
-      stump.style.setProperty('--bottom',`${random(-5,2).toFixed(2)}%`);
-      stump.style.setProperty('--width',`${random(76,106).toFixed(1)}px`);
-      stump.style.setProperty('--scale',random(.86,1.12).toFixed(3));
-      propLayer.appendChild(stump);
+      // Use shuffled ground slots so every stump/mushroom gets its own
+      // footprint instead of stacking on top of another prop.
+      const groundSlots=Array.from({length:10},(_,index)=>7+(86/9)*index)
+        .sort(()=>Math.random()-.5);
+      const nextGroundX=()=>groundSlots.pop()??50;
 
-      const mushroomCount=4+Math.floor(Math.random()*4);
+      for(let index=0;index<3;index+=1){
+        const width=random(8.0,9.0);
+        const x=nextGroundX();
+        const stump=document.createElement('img');
+        stump.className='quietcritters-prop quietcritters-prop--stump';
+        stump.src=SCENERY.stump;
+        stump.alt='';
+        stump.draggable=false;
+        stump.style.setProperty('--left',`${x.toFixed(2)}%`);
+        stump.style.setProperty('--bottom',`${random(-6,1).toFixed(2)}%`);
+        stump.style.setProperty('--width',`${width.toFixed(2)}%`);
+        stump.style.zIndex=String(3+index%2);
+        propLayer.appendChild(stump);
+      }
+
+      const mushroomCount=5+Math.floor(Math.random()*3);
       for(let index=0;index<mushroomCount;index+=1){
+        const width=random(4.5,5.8);
+        const x=nextGroundX();
         const image=document.createElement('img');
         image.className='quietcritters-prop quietcritters-prop--mushroom';
         image.src=pick(SCENERY.mushrooms);
         image.alt='';
         image.draggable=false;
-        image.style.setProperty('--left',`${random(5,95).toFixed(2)}%`);
-        image.style.setProperty('--bottom',`${random(-7,7).toFixed(2)}%`);
-        image.style.setProperty('--width',`${random(46,76).toFixed(1)}px`);
-        image.style.setProperty('--scale',random(.66,1.02).toFixed(3));
-        image.style.zIndex=String(2+Math.floor(random(0,3)));
+        image.style.setProperty('--left',`${x.toFixed(2)}%`);
+        image.style.setProperty('--bottom',`${random(-5,5).toFixed(2)}%`);
+        image.style.setProperty('--width',`${width.toFixed(2)}%`);
+        image.style.zIndex=String(2+index%3);
         propLayer.appendChild(image);
       }
+
+      const foregroundPositions=[
+        {x:random(-1,8),scale:random(.80,1.02)},
+        {x:random(92,101),scale:random(.80,1.02)}
+      ];
+      if(Math.random()<.42)foregroundPositions.push({x:Math.random()<.5?random(7,15):random(85,93),scale:random(.62,.78)});
+      foregroundPositions.forEach((position,index)=>{
+        const image=document.createElement('img');
+        image.className='quietcritters-foreground-tree';
+        image.src=SCENERY.tree;
+        image.alt='';
+        image.draggable=false;
+        image.style.left=`${position.x.toFixed(2)}%`;
+        image.style.setProperty('--scale',position.scale.toFixed(3));
+        image.style.setProperty('--opacity',random(.66,.84).toFixed(3));
+        image.style.zIndex=String(index);
+        foregroundLayer.appendChild(image);
+      });
 
       const fairyCount=16+Math.floor(Math.random()*8);
       for(let index=0;index<fairyCount;index+=1){
@@ -214,11 +247,11 @@
     }
 
     function choosePosition(){
-      for(let attempt=0;attempt<40;attempt+=1){
-        const candidate={x:random(15,85),y:random(66,82)};
-        if(critters.every(critter=>Math.hypot(candidate.x-critter.x,(candidate.y-critter.y)*1.35)>19))return candidate;
+      for(let attempt=0;attempt<50;attempt+=1){
+        const candidate={x:random(17,83),y:random(69,84)};
+        if(critters.every(critter=>Math.hypot(candidate.x-critter.x,(candidate.y-critter.y)*1.4)>11.5))return candidate;
       }
-      return{x:random(16,84),y:random(67,82)};
+      return{x:random(18,82),y:random(70,83)};
     }
 
     function burst(x,y,color,large=false){
@@ -249,14 +282,14 @@
 
     function sequenceFor(name){
       switch(name){
-        case 'blink':return{frames:[FRAMES.happy,FRAMES.blink[0],FRAMES.blink[1],FRAMES.blink[0],FRAMES.happy],step:.105,duration:.58};
-        case 'sway':return{frames:[FRAMES.arms[0],FRAMES.arms[1],FRAMES.arms[2],FRAMES.arms[3],FRAMES.arms[2],FRAMES.arms[1]],step:.24,duration:2.9};
-        case 'dance':return{frames:[FRAMES.dance[0],FRAMES.dance[1],FRAMES.dance[2],FRAMES.dance[1]],step:.17,duration:2.45};
-        case 'jump':return{frames:[FRAMES.jump[0],FRAMES.jump[1],FRAMES.jump[2],FRAMES.jump[1],FRAMES.jump[0]],step:.14,duration:1.55};
-        case 'drowsy':return{frames:[FRAMES.drowsy],step:.7,duration:1.45,next:'sleep'};
-        case 'sleep':return{frames:[FRAMES.sleep[0],FRAMES.sleep[1]],step:.68,duration:random(4.2,7.4)};
-        case 'happy':return{frames:[FRAMES.happy,FRAMES.happy2,FRAMES.happy],step:.46,duration:random(1.5,2.6)};
-        default:return{frames:[FRAMES.happy],step:.7,duration:random(1.7,3.0)};
+        case 'blink':return{frames:[FRAMES.blink[0],FRAMES.blink[1],FRAMES.happy],step:.10,duration:.38};
+        case 'sway':return{frames:[FRAMES.arms[0],FRAMES.arms[1],FRAMES.arms[2],FRAMES.arms[3],FRAMES.arms[2],FRAMES.arms[1]],step:.28,duration:1.9};
+        case 'dance':return{frames:[FRAMES.dance[0],FRAMES.dance[1],FRAMES.dance[2],FRAMES.dance[1]],step:.20,duration:1.55};
+        case 'jump':return{frames:[FRAMES.jump[0],FRAMES.jump[1],FRAMES.jump[2],FRAMES.jump[1],FRAMES.jump[0]],step:.16,duration:1.2};
+        case 'drowsy':return{frames:[FRAMES.drowsy],step:.8,duration:1.7,next:'sleep'};
+        case 'sleep':return{frames:[FRAMES.sleep[0],FRAMES.sleep[1]],step:.78,duration:random(5.5,9.5)};
+        case 'happy':return{frames:[FRAMES.happy,FRAMES.happy2,FRAMES.happy],step:.52,duration:random(1.45,2.15)};
+        default:return{frames:[FRAMES.happy],step:.8,duration:random(4.5,8.5)};
       }
     }
 
@@ -269,12 +302,13 @@
       }
       const roll=Math.random();
       let behavior='idle';
-      if(calmTime>22&&roll<.11)behavior='drowsy';
-      else if(roll<.28)behavior='sway';
-      else if(roll<.49)behavior='dance';
-      else if(roll<.65)behavior='jump';
-      else if(roll<.82)behavior='blink';
-      else behavior='happy';
+      if(calmTime>35&&roll<.025)behavior='drowsy';
+      else if(roll<.70)behavior='idle';
+      else if(roll<.80)behavior='happy';
+      else if(roll<.88)behavior='sway';
+      else if(roll<.93)behavior='blink';
+      else if(roll<.97)behavior='dance';
+      else behavior='jump';
       setBehavior(critter,behavior,now);
     }
 
@@ -284,10 +318,11 @@
       critter.frames=sequence.frames;
       critter.frameStep=sequence.step;
       critter.frameIndex=0;
-      critter.nextFrame=now;
+      critter.nextFrame=now+sequence.step;
       critter.behaviorEnds=now+sequence.duration;
       critter.followUp=sequence.next||'';
       critter.element.dataset.behavior=name;
+      if(name==='idle'&&!Number.isFinite(critter.nextBlink))critter.nextBlink=now+random(1.6,3.8);
       drawCritter(critter,critter.frames[0]);
     }
 
@@ -311,7 +346,7 @@
       element.className='quietcritters-actor is-entering';
       element.style.setProperty('--x',`${position.x.toFixed(2)}%`);
       element.style.setProperty('--y',`${position.y.toFixed(2)}%`);
-      element.style.setProperty('--size',`${random(102,132).toFixed(1)}px`);
+      element.style.setProperty('--size',`${random(46,62).toFixed(1)}px`);
       const canvas=document.createElement('canvas');
       canvas.width=RENDER_SIZE;
       canvas.height=RENDER_SIZE;
@@ -320,10 +355,11 @@
       critterLayer.appendChild(element);
       const critter={
         element,canvas,context:canvas.getContext('2d'),color,
-        x:position.x,y:position.y,behavior:'idle',frames:[FRAMES.happy],frameStep:.7,frameIndex:0,nextFrame:0,behaviorEnds:0,followUp:'',lastFrame:''
+        x:position.x,y:position.y,behavior:'idle',frames:[FRAMES.happy],frameStep:.8,frameIndex:0,nextFrame:0,behaviorEnds:0,followUp:'',lastFrame:'',
+        nextBlink:performance.now()/1000+random(1.4,3.4),blinkRestoreAt:0,blinkActive:false
       };
       critters.push(critter);
-      setBehavior(critter,Math.random()<.58?'happy':'sway');
+      setBehavior(critter,'idle');
       burst(position.x,position.y,color,true);
       setTimeout(()=>element.classList.remove('is-entering'),520);
       say(`${critters.length} quiet ${critters.length===1?'critter is':'critters are'} visiting the forest.`);
@@ -347,10 +383,22 @@
     function updateCritters(now){
       for(const critter of critters){
         if(critter.leaving)continue;
+
+        if(critter.blinkActive&&now>=critter.blinkRestoreAt){
+          critter.blinkActive=false;
+          drawCritter(critter,critter.frames[critter.frameIndex]||FRAMES.happy);
+          critter.nextBlink=now+random(1.8,4.6);
+        }else if(!critter.blinkActive&&critter.behavior==='idle'&&now>=critter.nextBlink){
+          critter.blinkActive=true;
+          critter.blinkRestoreAt=now+random(.09,.16);
+          drawCritter(critter,Math.random()<.55?FRAMES.blink[0]:FRAMES.blink[1]);
+        }
+
         if(now>=critter.behaviorEnds){
           chooseBehavior(critter,now);
           continue;
         }
+        if(critter.blinkActive)continue;
         if(now>=critter.nextFrame){
           const frames=critter.frames;
           critter.frameIndex=(critter.frameIndex+1)%frames.length;
@@ -371,7 +419,7 @@
       if(notifyChange)notify('settings');
     }
 
-    function stopMicrophone(message='Microphone off · Enable it to invite quiet critters.'){
+    function stopMicrophone(message='Microphone off · Enable it to listen for quiet voices.'){
       requestToken+=1;
       active=false;
       pending=false;
@@ -387,23 +435,59 @@
       calmTime=0;
       returnCooldown=0;
       levelFill.style.width='0%';
+      levelWrap.hidden=true;
       micButton.disabled=false;
       micButton.textContent='Enable microphone';
       micButton.setAttribute('aria-pressed','false');
-      stageMessage.hidden=false;
-      stageMessage.textContent='Enable the microphone to invite quiet critters.';
-      setBadge('MIC OFF');
-      say(message);
-      dismissAll();
-      if(!critters.length&&animationFrame){cancelAnimationFrame(animationFrame);animationFrame=0;lastFrameTime=0}
+      if(mode==='microphone'){
+        stageMessage.hidden=false;
+        stageMessage.textContent='Enable the microphone to let room noise guide the forest.';
+        setBadge('MIC OFF');
+        if(message)say(message);
+      }
+    }
+
+    function setMode(nextMode,{notifyChange=true}={}){
+      const normalized=nextMode==='microphone'?'microphone':'ambient';
+      if(mode!==normalized){
+        if(active||pending)stopMicrophone();
+        mode=normalized;
+      }
+      moduleElement.dataset.quietcrittersMode=mode;
+      moduleElement.querySelectorAll('[data-quietcritters-mode]').forEach(button=>{
+        const selected=button.dataset.quietcrittersMode===mode;
+        button.classList.toggle('is-active',selected);
+        button.setAttribute('aria-pressed',String(selected));
+      });
+      moduleElement.querySelectorAll('.quietcritters-mic-setting').forEach(element=>{element.hidden=mode!=='microphone'});
+      micButton.hidden=mode!=='microphone';
+      levelWrap.hidden=mode!=='microphone'||!active;
+      quietCharge=0;
+      loudRun=0;
+      calmTime=0;
+      returnCooldown=0;
+      nextInvite=mode==='ambient'?random(14,22):random(10,16);
+      if(mode==='ambient'){
+        stageMessage.hidden=true;
+        setBadge('NO MIC');
+        say(critters.length?`${critters.length} quiet ${critters.length===1?'critter is':'critters are'} visiting in No mic mode.`:'No mic mode · Quiet critters will visit slowly over time.');
+      }else if(!active){
+        stageMessage.hidden=false;
+        stageMessage.textContent='Enable the microphone to let room noise guide the forest.';
+        setBadge('MIC OFF');
+        say('Microphone mode · Enable it so quiet voices can invite critters.');
+      }
+      if(notifyChange)notify('mode');
+      wake();
     }
 
     async function startMicrophone(){
+      if(mode!=='microphone')return;
       if(active||pending){stopMicrophone();return}
       if(!navigator.mediaDevices?.getUserMedia){
         stageMessage.hidden=false;
         stageMessage.textContent='Microphone access is not available in this browser.';
-        say('Microphone unavailable in this browser.');
+        say('Microphone unavailable in this browser. You can still use No mic mode.');
         return;
       }
       pending=true;
@@ -435,9 +519,10 @@
         quietCharge=0;
         calmTime=0;
         loudRun=0;
-        nextInvite=random(2.4,4.2);
+        nextInvite=random(10,16);
         micButton.textContent='Turn microphone off';
         micButton.setAttribute('aria-pressed','true');
+        levelWrap.hidden=false;
         stageMessage.hidden=true;
         setBadge('LISTENING');
         say('Listening for a quiet classroom...');
@@ -447,12 +532,12 @@
         wake();
       }catch(error){
         if(disposed||token!==requestToken)return;
-        stopMicrophone(error?.name==='NotAllowedError'?'Microphone permission was declined.':'Could not start the microphone. Check your device and try again.');
+        stopMicrophone(error?.name==='NotAllowedError'?'Microphone permission was declined. You can still use No mic mode.':'Could not start the microphone. Check your device and try again.');
       }
     }
 
     function updateAudio(dt){
-      if(active&&analyser&&samples){
+      if(mode==='microphone'&&active&&analyser&&samples){
         analyser.getByteTimeDomainData(samples);
         let sum=0;
         for(const value of samples)sum+=((value-128)/128)**2;
@@ -466,7 +551,26 @@
     }
 
     function updateQuietLogic(dt){
-      if(!active)return;
+      if(mode==='ambient'){
+        quietCharge+=dt;
+        calmTime+=dt;
+        setBadge('NO MIC');
+        if(critters.length)say(`${critters.length} quiet ${critters.length===1?'critter is':'critters are'} visiting in No mic mode.`);
+        else say('No mic mode · Quiet critters will visit slowly over time.');
+        if(quietCharge>=nextInvite&&critters.length<MAX_CRITTERS){
+          spawnCritter();
+          quietCharge=0;
+          nextInvite=random(22,36);
+        }
+        return;
+      }
+
+      if(!active){
+        quietCharge=0;
+        loudRun=0;
+        calmTime=0;
+        return;
+      }
       returnCooldown=Math.max(0,returnCooldown-dt);
       const low=threshold()-4;
       const high=threshold()+4;
@@ -496,14 +600,14 @@
         loudRun=0;
         quietCharge=0;
         calmTime=0;
-        returnCooldown=1.4;
-        nextInvite=random(3.4,6.2);
+        returnCooldown=2.2;
+        nextInvite=random(12,18);
       }
 
       if(returnCooldown<=0&&level<=low&&quietCharge>=nextInvite&&critters.length<MAX_CRITTERS){
         spawnCritter();
         quietCharge=0;
-        nextInvite=random(4.8,8.4);
+        nextInvite=random(16,26);
       }
     }
 
@@ -516,7 +620,7 @@
       updateAudio(dt);
       updateQuietLogic(dt);
       updateCritters(now);
-      if(active||critters.length)animationFrame=requestAnimationFrame(tick);
+      if(mode==='ambient'||active||pending||critters.length)animationFrame=requestAnimationFrame(tick);
       else lastFrameTime=0;
     }
 
@@ -524,34 +628,47 @@
       if(!disposed&&!animationFrame){lastFrameTime=0;animationFrame=requestAnimationFrame(tick)}
     }
 
-    micButton.addEventListener('click',startMicrophone);
+    moduleElement.querySelectorAll('[data-quietcritters-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.quietcrittersMode)));
+    micButton.addEventListener('click',()=>{
+      if(mode!=='microphone')return;
+      if(active||pending)stopMicrophone();
+      else startMicrophone();
+    });
     thresholdInput.addEventListener('input',()=>updateSettings(true));
     sensitivityInput.addEventListener('input',()=>updateSettings(true));
 
     function onVisibility(){
       if(document.hidden&&(active||pending))stopMicrophone('Microphone paused while the tab is hidden. Enable it again when you return.');
+      else if(!document.hidden)wake();
     }
     document.addEventListener('visibilitychange',onVisibility);
 
-    moduleElement._boardGetState=()=>({
-      threshold:threshold(),
-      sensitivity:sensitivity()
-    });
+    moduleElement._boardGetState=()=>(
+      {
+        mode,
+        threshold:threshold(),
+        sensitivity:sensitivity()
+      }
+    );
 
     moduleElement._boardSetState=state=>{
-      stopMicrophone();
+      if(active||pending)stopMicrophone();
       thresholdInput.value=String(clamp(Number(state?.threshold)||45,15,85));
       sensitivityInput.value=String(clamp(Number(state?.sensitivity)||100,30,200));
       updateSettings(false);
+      setMode(state?.mode,{notifyChange:false});
     };
 
     const priorDeactivate=moduleElement._deactivate;
     const priorReactivate=moduleElement._reactivate;
     moduleElement._deactivate=()=>{
       priorDeactivate?.();
+      cancelAnimationFrame(animationFrame);
+      animationFrame=0;
+      lastFrameTime=0;
       if(active||pending)stopMicrophone('Microphone off · Enable it again when the tile is restored.');
     };
-    moduleElement._reactivate=()=>{priorReactivate?.()};
+    moduleElement._reactivate=()=>{priorReactivate?.();wake()};
 
     const priorCleanup=moduleElement._cleanup;
     moduleElement._cleanup=()=>{
@@ -573,10 +690,7 @@
 
     randomizeForest();
     updateSettings(false);
-    setBadge('MIC OFF');
-    stageMessage.hidden=false;
-    stageMessage.textContent='Enable the microphone to invite quiet critters.';
-    say('Microphone off · Enable it to invite quiet critters.');
+    setMode('ambient',{notifyChange:false});
   }
 
   window.TeacherTilesQuietCritters=Object.freeze({setup});
