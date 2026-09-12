@@ -8,14 +8,26 @@
     const rocketStage=m.querySelector('.rocket-stage'),plantStage=m.querySelector('.sunflower-stage');
     const stories=window.TeacherTilesGardenRocket.create(rocketStage,plantStage);
     let mode='hourglass';
+    const typeButton=document.createElement('button');typeButton.type='button';typeButton.className='tile-action interactive-type-toggle';typeButton.setAttribute('aria-label','Choose timer type');typeButton.setAttribute('aria-expanded','false');
+    const originalPicker=m.querySelector('.interactive-picker');originalPicker.replaceWith(typeButton);
+    const drawer=document.createElement('div');drawer.className='timer-shape-shelf';drawer.hidden=true;drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Timer type');document.body.appendChild(drawer);
+    let drawerFrame=0;
+    const closeDrawer=()=>{drawer.hidden=true;typeButton.setAttribute('aria-expanded','false');m.classList.remove('has-shape-shelf-open');cancelAnimationFrame(drawerFrame)};
+    const positionDrawer=()=>{if(!m.isConnected){closeDrawer();return}const r=typeButton.getBoundingClientRect();drawer.style.left=`${Math.max(8,Math.min(r.left,innerWidth-drawer.offsetWidth-8))}px`;drawer.style.top=`${Math.max(8,Math.min(r.top-drawer.offsetHeight-8,innerHeight-drawer.offsetHeight-8))}px`;drawerFrame=requestAnimationFrame(positionDrawer)};
+    modeButtons.forEach(button=>{const text=document.createElement('span');text.textContent=button.title;button.appendChild(text);drawer.appendChild(button)});
+    typeButton.addEventListener('click',()=>{if(!drawer.hidden){closeDrawer();return}drawer.hidden=false;typeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionDrawer()});
+    const outside=event=>{if(!drawer.contains(event.target)&&!typeButton.contains(event.target))closeDrawer()};
+    const escape=event=>{if(event.key==='Escape'&&!drawer.hidden){event.stopPropagation();closeDrawer();typeButton.focus({preventScroll:true})}};
+    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape,true);drawer.addEventListener('pointerdown',event=>event.stopPropagation());
+
     const setMode=next=>{
-      mode=['hourglass','candle','rocket','sunflower'].includes(next)?next:'hourglass';m.dataset.interactiveMode=mode;
+      mode=['hourglass','candle','rocket','sunflower'].includes(next)?next:'hourglass';m.dataset.interactiveMode=mode;typeButton.textContent=mode[0].toUpperCase()+mode.slice(1)+' ▾';
       hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';
       rocketStage.hidden=mode!=='rocket';plantStage.hidden=mode!=='sunflower';stories.setMode(mode);
       hourglass.setActive(mode==='hourglass');
       modeButtons.forEach(b=>{b.classList.toggle('is-active',b.dataset.interactive===mode);b.setAttribute('aria-pressed',String(b.dataset.interactive===mode));});
     };
-    modeButtons.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.interactive)));
+    modeButtons.forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.interactive);closeDrawer();notifyBoardChanged('timer-type')}));
     m.querySelector('.interactive-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
     m.querySelector('.candle-color-control').addEventListener('click',()=>cycleData(m,'candleColor',['cream','blush','sage','sky','lavender','charcoal']));
     const cleanup=bindTimerControls(m,state=>{
@@ -30,7 +42,8 @@
     setMode(m.dataset.interactiveMode);
     m._boardGetState=()=>({mode});
     m._boardSetState=state=>setMode(state?.mode||m.dataset.interactiveMode);
-    m._cleanup=()=>{hourglass.destroy();stories.destroy();cleanup();};
+    const priorDeactivate=m._deactivate;m._deactivate=()=>{closeDrawer();priorDeactivate?.()};
+    m._cleanup=()=>{closeDrawer();drawer.remove();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape,true);hourglass.destroy();stories.destroy();cleanup();};
     window.TeacherTilesTimerPointer.attach(m);
   }
   window.TeacherTilesInteractiveTimers=Object.freeze({setup});

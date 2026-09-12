@@ -16099,3 +16099,10 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__item--coming-soon small{display:none!important}
 #context-menu .context-menu__item--coming-soon::after{content:'COMING SOON';position:absolute;inset:0;display:grid;place-items:center;padding:12px;border-radius:inherit;background:color-mix(in srgb,var(--surface-solid,var(--surface)) 94%,transparent);color:var(--text);font-size:12px;font-weight:850;letter-spacing:.04em;opacity:0;transition:opacity .16s;pointer-events:none;z-index:4}
 #context-menu .context-menu__card-wrap:hover>.context-menu__item--coming-soon::after,#context-menu .context-menu__card-wrap:focus-within>.context-menu__item--coming-soon::after{opacity:1}
+
+/* Keep category badges colored while dimming unreleased tile content. */
+#context-menu .context-menu__item--coming-soon{filter:none;opacity:1;background:color-mix(in srgb,var(--surface) 65%,#a1a7af 35%)}
+#context-menu .context-menu__item--coming-soon>.context-menu__icon,#context-menu .context-menu__item--coming-soon>span:not(.holiday-badge):not(.holiday-subscriber-crown):not(.context-menu__connect-badge):not(.context-menu__tracking-badge):not(.context-menu__icon){filter:grayscale(1);opacity:.5}
+#context-menu .context-menu__item--coming-soon>.holiday-badge,#context-menu .context-menu__item--coming-soon>.holiday-subscriber-crown,#context-menu .context-menu__item--coming-soon>.context-menu__connect-badge,#context-menu .context-menu__item--coming-soon>.context-menu__tracking-badge{z-index:5}
+:is(.timer-module,.interactive-module):not(.is-pointer-over):not(.has-keyboard-focus):not(:has(:focus-visible)):not(.has-shape-shelf-open) .timer-controls{max-height:0!important;opacity:0!important;padding:0!important;visibility:hidden!important;pointer-events:none!important;overflow:hidden!important}
+:is(.timer-module,.interactive-module).has-shape-shelf-open .timer-controls{visibility:visible!important;opacity:1!important;max-height:260px!important;pointer-events:auto!important}

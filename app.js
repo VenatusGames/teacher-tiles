@@ -1212,7 +1212,7 @@ document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole'))return;
+  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click');
 },true);
