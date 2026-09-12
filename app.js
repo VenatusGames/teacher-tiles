@@ -1273,7 +1273,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'Class Connect',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -1308,7 +1308,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'Class Connect',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -2458,7 +2458,23 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['all','text','media','tools','time','audio','games','planning','pbis','accessibility','language','literacy','math','science','geography','sel','classconnect'];
+const menuCategoryOrder=['favorites','all','accessibility','audio','classconnect','games','geography','language','literacy','math','media','pbis','planning','science','sel','text','time','tools'];
+
+const menuFavoritesStorageKey='teacherTiles.tileFavorites.v1';
+const menuFavorites=new Set();
+try{const saved=JSON.parse(localStorage.getItem(menuFavoritesStorageKey)||'[]');if(Array.isArray(saved))saved.filter(id=>typeof id==='string').forEach(id=>menuFavorites.add(id))}catch{}
+const menuItemKey=item=>item.dataset.module||`coming-soon:${item.querySelector('strong')?.textContent.trim()}`;
+menu.addEventListener('click',event=>{
+  const star=event.target.closest('[data-tile-favorite]');if(!star)return;
+  event.preventDefault();event.stopPropagation();
+  const id=star.dataset.tileFavorite;
+  if(menuFavorites.has(id))menuFavorites.delete(id);else menuFavorites.add(id);
+  try{localStorage.setItem(menuFavoritesStorageKey,JSON.stringify([...menuFavorites]))}catch{}
+  const list=menu.querySelector('.context-menu__list'),scroll=list.scrollTop;
+  applyMenuView();list.scrollTop=scroll;
+  const next=[...menu.querySelectorAll('[data-tile-favorite]')].find(button=>button.dataset.tileFavorite===id);
+  (next||menuDrawerFilters.find(button=>button.dataset.categoryDrawerFilter==='favorites'))?.focus({preventScroll:true});
+});
 
 function menuCategoryLabel(category){
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -2469,6 +2485,10 @@ function normalizeMenuSearch(value=''){
 }
 
 // Keep the original buttons and their metadata; only rearrange the catalog view.
+for(const category of menuCategoryOrder){
+  const button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===category);
+  if(button)button.parentElement.appendChild(button);
+}
 menu.insertBefore(menuCategoryDrawer,menu.querySelector('.context-menu__list'));
 menuCategoryDrawer.setAttribute('aria-hidden','false');
 menuCategoryDrawer.setAttribute('aria-label','Tile categories');
@@ -2482,7 +2502,7 @@ function applyMenuView(){
   menuSearchClear?.classList.toggle('is-visible',searching);
   const list=menu.querySelector('.context-menu__list');
   // Search continues to cover the entire catalog, as in the original menu.
-  const categories=searching||activeMenuCategory==='all'?menuCategoryOrder.slice(1):[activeMenuCategory];
+  const categories=searching||activeMenuCategory==='all'?menuCategoryOrder.filter(category=>category!=='all'&&category!=='favorites'):[activeMenuCategory];
   const fragment=document.createDocumentFragment();
   const included=new Set();
   let visibleCount=0;
@@ -2490,13 +2510,21 @@ function applyMenuView(){
   for(const category of categories){
     const matches=menuItems.filter(item=>{
       const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
-      return (!included.has(item)||(!searching&&activeMenuCategory==='all'))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!searching||searchable.includes(query));
+      return (!included.has(item)||(!searching&&activeMenuCategory==='all'))&&(category==='favorites'?menuFavorites.has(menuItemKey(item)):(item.dataset.category||'').split(/\s+/).includes(category))&&(!searching||searchable.includes(query));
     });
     if(!matches.length)continue;
     const section=document.createElement('section');section.className='context-menu__section';
     const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);
     const grid=document.createElement('div');grid.className='context-menu__tile-grid';
-    matches.forEach(item=>{const card=included.has(item)?item.cloneNode(true):item;included.add(item);card.hidden=false;grid.appendChild(card);visibleCount++});
+    matches.forEach(item=>{
+      const card=included.has(item)?item.cloneNode(true):item;included.add(item);card.hidden=false;
+      const wrap=document.createElement('div');wrap.className='context-menu__card-wrap';
+      const star=document.createElement('button');star.type='button';star.className='context-menu__favorite';
+      const id=menuItemKey(item),favorite=menuFavorites.has(id),name=item.querySelector('strong')?.textContent;
+      star.dataset.tileFavorite=id;star.textContent=favorite?'★':'☆';
+      star.setAttribute('aria-pressed',String(favorite));star.setAttribute('aria-label',`${favorite?'Remove':'Add'} ${name} ${favorite?'from':'to'} favorites`);
+      star.title=star.getAttribute('aria-label');wrap.append(card,star);grid.appendChild(wrap);visibleCount++;
+    });
     section.append(heading,grid);fragment.appendChild(section);
   }
   // Retain hidden buttons in the DOM for localization and catalog integrations.
@@ -2505,7 +2533,7 @@ function applyMenuView(){
   fragment.appendChild(hidden);
   menuNoResults.hidden=visibleCount>0;
   menuNoResults.querySelector('strong').textContent=searching?translateAppText('context.none'):menuCategoryLabel(activeMenuCategory);
-  menuNoResults.querySelector('small').textContent=searching?translateAppText('context.try'):'No tiles here yet. Explore another category.';
+  menuNoResults.querySelector('small').textContent=searching?translateAppText('context.try'):activeMenuCategory==='favorites'?'Star a tile to keep it here.':'No tiles here yet. Explore another category.';
   fragment.appendChild(menuNoResults);
   list.replaceChildren(fragment);list.scrollTop=0;
 }
@@ -2574,7 +2602,7 @@ function closeMenu(){
   menu.classList.remove('is-open');
   menu.setAttribute('aria-hidden','true');
 }
-menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b)return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
+menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b||b.disabled||b.dataset.comingSoon==='true')return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',released:20}),
