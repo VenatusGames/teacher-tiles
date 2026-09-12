@@ -3005,6 +3005,7 @@ function setupModuleByType(m,type){
   if(type==='backgroundremover'){setupBoardPhotoDrop();window.TeacherTilesBackgroundRemover.setup(m);}
   if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
   if(type==='quoteoftheday')window.TeacherTilesQuoteOfTheDay.setup(m);
+  if(type==='visualdirections')window.TeacherTilesVisualDirections.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);
   if(type==='venndiagram')window.TeacherTilesVennDiagrams.setup(m);
@@ -8483,6 +8484,7 @@ const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
   vocabulary:'.widget-title',
+  visualdirections:'.widget-title',
   timestables:'.widget-title',
   google:'.widget-title',
   link:'.widget-title',

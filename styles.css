@@ -16086,3 +16086,7 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__item>.holiday-subscriber-crown{position:absolute;right:5px;top:5px;width:21px;height:20px;border-radius:6px;display:grid}
 #context-menu .context-menu__card-wrap:has([data-holiday])>.context-menu__favorite{right:29px}
 @media(prefers-reduced-motion:reduce){.holiday-badge::after{animation:none}}
+
+.holiday-badge{border-color:#83bd8d66;background:linear-gradient(110deg,#efffe9,#b7e5ae 48%,#e7f9df);color:#315c35;box-shadow:0 2px 6px #47774422}
+#context-menu .context-menu__item>.holiday-subscriber-crown{left:5px;right:auto}
+#context-menu .context-menu__card-wrap:has([data-holiday])>.context-menu__favorite{right:4px}
