@@ -1,0 +1,122 @@
+{
+  "cardboard-blue.svg": {
+    "file": "cardboard-blue.webp",
+    "sourceSha256": "626a467804e5a17acbc4ba80530bfc55db14937a9d98830b284c63e6e3593462",
+    "bytes": 54688
+  },
+  "cardboard-kraft.svg": {
+    "file": "cardboard-kraft.webp",
+    "sourceSha256": "3784900da22120decf2db0196b8946e3c351301bed5a6eea9f4c74a87594d9fe",
+    "bytes": 55512
+  },
+  "cardboard-rose.svg": {
+    "file": "cardboard-rose.webp",
+    "sourceSha256": "5e5bfe8948bdc16865ca0fbf4e759fce77939eee4e324f4eb10fce309f0567a4",
+    "bytes": 53458
+  },
+  "cardboard-white.svg": {
+    "file": "cardboard-white.webp",
+    "sourceSha256": "e53f0873268ed41765a4cc471ef562b168010837a1073d5e648fa36e778d353d",
+    "bytes": 15472
+  },
+  "corkboard-blue.svg": {
+    "file": "corkboard-blue.webp",
+    "sourceSha256": "44a607b39dcf76a3625978d159b68053922be070afe5959434c4e2798c9f0276",
+    "bytes": 58592
+  },
+  "corkboard-gold.svg": {
+    "file": "corkboard-gold.webp",
+    "sourceSha256": "c297e2d32a5daf3ad4fa13a7e80a1b98a60b4c494ec220385f12343a0282f8d5",
+    "bytes": 59116
+  },
+  "corkboard-green.svg": {
+    "file": "corkboard-green.webp",
+    "sourceSha256": "b73d067dd1f24608b1c8733030df57385438277fe21ec6e4287766b2a384dcc8",
+    "bytes": 57458
+  },
+  "corkboard-red.svg": {
+    "file": "corkboard-red.webp",
+    "sourceSha256": "d86b0934736704e42d83da0f10a286309779ed623e152b86cb88be30af38c96e",
+    "bytes": 59010
+  },
+  "cosmos-milky-way-board.svg": {
+    "file": "cosmos-milky-way-board.webp",
+    "sourceSha256": "a3e6efb5003539bb9ef3648aa354c3ddd4aff2fcda3361d52e5dc69c96c18e60",
+    "bytes": 14378
+  },
+  "cosmos-milky-way.svg": {
+    "file": "cosmos-milky-way.webp",
+    "sourceSha256": "0f2637cf38b9e0cb43cd17a736963868059857be8da7af263899a3e1d947570c",
+    "bytes": 14678
+  },
+  "cosmos-nebula-board.svg": {
+    "file": "cosmos-nebula-board.webp",
+    "sourceSha256": "5903487e6295c367e3dc232a5401613d2a52468579e26eb58d19f584360ec66e",
+    "bytes": 14220
+  },
+  "cosmos-nebula.svg": {
+    "file": "cosmos-nebula.webp",
+    "sourceSha256": "3b9c8926aea1a469ccfe49aab82e8555b92a8b5c089f875c44c6e83399997cda",
+    "bytes": 13008
+  },
+  "cosmos-pulsar-board.svg": {
+    "file": "cosmos-pulsar-board.webp",
+    "sourceSha256": "2a2e9b837feabdf347b880ea3869c89c324230f4e300a99b5f08bd8cd5d85c0d",
+    "bytes": 12802
+  },
+  "cosmos-pulsar.svg": {
+    "file": "cosmos-pulsar.webp",
+    "sourceSha256": "b7abe050d9754637143b4b755a367d96c4d1e96a51717fb0e38acddb901cc408",
+    "bytes": 12192
+  },
+  "cosmos-red-dwarf-board.svg": {
+    "file": "cosmos-red-dwarf-board.webp",
+    "sourceSha256": "e2d7998f095ea484c6fde72d5c16e505356251e15ce2c1b139260c7a6130f20d",
+    "bytes": 9060
+  },
+  "cosmos-red-dwarf.svg": {
+    "file": "cosmos-red-dwarf.webp",
+    "sourceSha256": "8821a381e56592865f6ef8542d52a24ac4b416c8965c103b2a5640f7cbe31182",
+    "bytes": 10450
+  },
+  "metal-cobalt.svg": {
+    "file": "metal-cobalt.webp",
+    "sourceSha256": "8c67400b63c70c65cbf9fad76d8d4b17f575958d6d8b626e3fa055e0185b2895",
+    "bytes": 51616
+  },
+  "metal-copper.svg": {
+    "file": "metal-copper.webp",
+    "sourceSha256": "3cc66e15b1c13aaf513de2d698bc6bd5fa0a71006d8570522d697a8830c26a56",
+    "bytes": 35428
+  },
+  "metal-dark-steel.svg": {
+    "file": "metal-dark-steel.webp",
+    "sourceSha256": "9ba88e3a2b9a0b2703b4b293d7255e85dd420111d47dfb8e2027083484752a54",
+    "bytes": 54990
+  },
+  "metal-iron.svg": {
+    "file": "metal-iron.webp",
+    "sourceSha256": "2806e3b89484c2c5e8968a346c47271b88714b4b0956481ebefac21d5a34f85f",
+    "bytes": 28128
+  },
+  "wood-cherry.svg": {
+    "file": "wood-cherry.webp",
+    "sourceSha256": "d32000984b6c6ef653bc2cc93be974c36fadf6d02f9ca5b6ca434ef65243888c",
+    "bytes": 33096
+  },
+  "wood-oak.svg": {
+    "file": "wood-oak.webp",
+    "sourceSha256": "83f507c2c689015785020b54e61cef2beff9640f4e3a2a740e156eb1c36d741a",
+    "bytes": 32980
+  },
+  "wood-redwood.svg": {
+    "file": "wood-redwood.webp",
+    "sourceSha256": "a322a20f7370582d1d3d697cf3c437f4ea270d77d67c1fe3f09c99a3697deda4",
+    "bytes": 40052
+  },
+  "wood-spruce.svg": {
+    "file": "wood-spruce.webp",
+    "sourceSha256": "f52339ba94d09fc3b53123df9cf9d8e515b57c486f156ebb4b3677af4f7bb4b0",
+    "bytes": 44428
+  }
+}
