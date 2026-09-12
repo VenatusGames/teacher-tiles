@@ -32,7 +32,8 @@ function publicAccount(data = {}) {
   const owned = Array.isArray(data.ownedProductIds) ? data.ownedProductIds : [];
   return {
     coinBalance: Number.isSafeInteger(balance) ? balance : 0,
-    ownedProductIds: [...new Set(owned.filter(id => typeof id === "string" && COSMETIC_PRODUCTS[id]))]
+    ownedProductIds: [...new Set(owned.filter(id => typeof id === "string" && COSMETIC_PRODUCTS[id]))],
+    subscriptionActive: isSubscriptionActive(data)
   };
 }
 
@@ -109,7 +110,7 @@ exports.getSubscriptionStatus = onCall({ region: REGION }, async request => {
   const data = snapshot.data() || {};
   
   return {
-    isActive: data.subscriptionStatus === "active",
+    isActive: isSubscriptionActive(data),
     status: data.subscriptionStatus || "inactive",
     subscriptionId: data.subscriptionId || null,
     currentPeriodEnd: data.subscriptionCurrentPeriodEnd ? data.subscriptionCurrentPeriodEnd.toDate?.() : null,

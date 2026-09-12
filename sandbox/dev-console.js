@@ -1,6 +1,7 @@
 const SANDBOX_COIN_KEY='teacherTilesCoins';
 const SANDBOX_COIN_TOGGLE_KEY='teacherTilesSandboxCoinsEnabled';
 const SANDBOX_PREVIOUS_COINS_KEY='teacherTilesSandboxPreviousCoins';
+const SANDBOX_SUBSCRIPTION_TOGGLE_KEY='teacherTilesSandboxSubscriptionEnabled';
 const OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const DEFAULT_TILE_SKINS_KEY='teacherTilesDefaultTileSkins';
 const SANDBOX_COIN_BALANCE=999999;
@@ -58,6 +59,10 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
           <span><strong>Testing coins</strong><small>Keep the balance at 999,999 while this is on.</small></span>
           <span class="sandbox-switch"><input id="sandbox-unlimited-coins" type="checkbox"><i aria-hidden="true"></i></span>
         </label>
+        <label class="sandbox-dev-setting" for="sandbox-active-subscription">
+          <span><strong>Active subscription</strong><small>Show subscriber features and crowns for testing.</small></span>
+          <span class="sandbox-switch"><input id="sandbox-active-subscription" type="checkbox"><i aria-hidden="true"></i></span>
+        </label>
         <div class="sandbox-dev-setting sandbox-dev-setting--action sandbox-dev-setting--celebration">
           <span><strong>Coin add animation</strong><small>Preview a +500 coin celebration without changing your balance.</small></span>
           <button id="sandbox-play-coin-animation" type="button">Play animation</button>
@@ -72,6 +77,7 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   document.body.appendChild(consoleRoot);
 
   const coinsToggle=consoleRoot.querySelector('#sandbox-unlimited-coins');
+  const subscriptionToggle=consoleRoot.querySelector('#sandbox-active-subscription');
   const coinAnimationButton=consoleRoot.querySelector('#sandbox-play-coin-animation');
   const resetButton=consoleRoot.querySelector('#sandbox-reset-owned-items');
   const status=consoleRoot.querySelector('#sandbox-dev-console-status');
@@ -88,7 +94,8 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   };
   const setStatus=message=>{status.textContent=message};
   const coinsEnabled=()=>localStorage.getItem(SANDBOX_COIN_TOGGLE_KEY)==='true';
-  window.TeacherTilesSandbox={get coinsEnabled(){return coinsEnabled()}};
+  const subscriptionEnabled=()=>localStorage.getItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY)==='true';
+  window.TeacherTilesSandbox={get coinsEnabled(){return coinsEnabled()},get subscriptionEnabled(){return subscriptionEnabled()}};
 
   const syncSandboxAccount=()=>{
     const state=window.TeacherTilesAccount?.state;
@@ -121,8 +128,12 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
     if(!realState||!realOwns||!realPurchase)return false;
     Object.defineProperty(account,'state',{configurable:true,get(){
       const state=realState();
-      if(!coinsEnabled())return state;
-      return{...state,ready:true,loading:false,signedIn:true,coinBalance:SANDBOX_COIN_BALANCE,ownedProductIds:readOwned()};
+      if(!coinsEnabled()&&!subscriptionEnabled())return state;
+      return{
+        ...state,
+        ...(coinsEnabled()?{ready:true,loading:false,signedIn:true,coinBalance:SANDBOX_COIN_BALANCE,ownedProductIds:readOwned()}:{}),
+        subscriptionActive:subscriptionEnabled()?true:Boolean(state.subscriptionActive)
+      };
     }});
     account.owns=productId=>coinsEnabled()?readOwned().includes(String(productId||'')):realOwns(productId);
     account.purchase=async productId=>{
@@ -161,6 +172,15 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
     syncSandboxAccount();
   };
 
+  const setTestingSubscription=enabled=>{
+    if(enabled)localStorage.setItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY,'true');
+    else localStorage.removeItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY);
+    subscriptionToggle.checked=enabled;
+    installAccountBridge();
+    syncSandboxAccount();
+    setStatus(enabled?'Testing subscription enabled. Subscriber crowns are active.':'Testing subscription disabled. Restored your real subscription state.');
+  };
+
   const openConsole=()=>{
     consoleRoot.hidden=false;
     devButton.setAttribute('aria-expanded','true');
@@ -178,6 +198,7 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   closeButton.addEventListener('click',closeConsole);
   backdrop.addEventListener('click',closeConsole);
   coinsToggle.addEventListener('change',()=>setTestingCoins(coinsToggle.checked));
+  subscriptionToggle.addEventListener('change',()=>setTestingSubscription(subscriptionToggle.checked));
   coinAnimationButton.addEventListener('click',()=>{
     const preview=window.TeacherTilesShop?.previewCoinCelebration;
     if(typeof preview!=='function'){
@@ -213,5 +234,7 @@ if(!window.__teacherTilesSandboxConsoleLoaded){
   }
 
   coinsToggle.checked=coinsEnabled();
+  subscriptionToggle.checked=subscriptionEnabled();
   if(coinsToggle.checked)writeCoins(SANDBOX_COIN_BALANCE);
+  if(subscriptionToggle.checked){installAccountBridge();syncSandboxAccount()}
 }

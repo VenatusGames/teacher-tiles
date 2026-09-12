@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260912-spinner-coins-trash-1" />
+  <link rel="stylesheet" href="styles.css?v=20260912-subscriber-crowns-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -146,6 +146,7 @@
         <path d="M5.75 18.6c.75-3.25 3.1-5.1 6.25-5.1s5.5 1.85 6.25 5.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
       <img id="profile-launch-avatar" class="profile-launch-avatar" alt="" hidden>
+      <span id="profile-launch-subscriber-crown" class="subscriber-crown subscriber-crown--launch" title="TeacherTiles subscriber" aria-hidden="true" hidden><svg viewBox="0 0 48 48"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg></span>
       <span class="upcoming-control__tooltip"><strong data-i18n="top.profile">Profile</strong></span>
     </button>
     <div id="customize-launcher" class="customize-launcher">
@@ -284,7 +285,10 @@
 
         <div id="profile-signed-in" class="profile-state" hidden>
           <div class="profile-account-card">
-            <img id="profile-avatar" class="profile-avatar" alt="Google profile picture">
+            <span class="profile-avatar-wrap">
+              <img id="profile-avatar" class="profile-avatar" alt="Google profile picture">
+              <span id="profile-avatar-subscriber-crown" class="subscriber-crown subscriber-crown--profile" title="TeacherTiles subscriber" aria-hidden="true" hidden><svg viewBox="0 0 48 48"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg></span>
+            </span>
             <div class="profile-account-copy">
               <span class="profile-state__kicker" data-i18n="profile.signedIn">SIGNED IN</span>
               <h2 id="profile-display-name">Teacher</h2>
@@ -3828,7 +3832,7 @@
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="app.js?v=20260912-coin-sfx-volume-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
-  <script type="module" src="firebase-auth.js?v=20260911-frame-hotkey-3"></script>
+  <script type="module" src="firebase-auth.js?v=20260912-subscriber-crowns-1"></script>
 
 
   <template id="ruler-template">

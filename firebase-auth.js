@@ -11,12 +11,14 @@ const firebaseConfig = {
 const modal = document.getElementById("profile-modal");
 const toggle = document.getElementById("profile-toggle");
 const launchAvatar = document.getElementById("profile-launch-avatar");
+const launchSubscriberCrown = document.getElementById("profile-launch-subscriber-crown");
 const loadingState = document.getElementById("profile-auth-loading");
 const signedOutState = document.getElementById("profile-signed-out");
 const signedInState = document.getElementById("profile-signed-in");
 const signInButton = document.getElementById("profile-google-signin");
 const signOutButton = document.getElementById("profile-signout");
 const profileAvatar = document.getElementById("profile-avatar");
+const profileSubscriberCrown = document.getElementById("profile-avatar-subscriber-crown");
 const profileDisplayName = document.getElementById("profile-display-name");
 const profileEmail = document.getElementById("profile-email");
 const profileBetaBadge = document.getElementById("profile-beta-badge");
@@ -163,7 +165,8 @@ const shopAccountState = {
   loading: false,
   signedIn: false,
   coinBalance: 0,
-  ownedProductIds: []
+  ownedProductIds: [],
+  subscriptionActive: false
 };
 
 const boardApi = () => window.TeacherTilesBoard || null;
@@ -595,6 +598,15 @@ function closeClassSyncPanel() {
   setClassSyncFeedback();
 }
 
+function syncSubscriberMarks(state = shopAccountState) {
+  const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesSandbox?.subscriptionEnabled));
+  if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
+  if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
+  toggle?.classList.toggle("is-subscriber", active);
+}
+
+window.addEventListener("teachertiles:accountchange", event => syncSubscriberMarks(event.detail));
+
 function publishShopAccount(patch = {}) {
   Object.assign(shopAccountState, patch);
   shopAccountState.coinBalance = Number.isSafeInteger(Number(shopAccountState.coinBalance))
@@ -612,13 +624,15 @@ function publishShopAccount(patch = {}) {
     profileCoinCard.classList.toggle("is-extra-wide-balance", formattedCoinBalance.length > 13);
     profileCoinCard.setAttribute("aria-label", `Open the coin shop. Balance: ${formattedCoinBalance} coins.`);
   }
+  syncSubscriberMarks(shopAccountState);
   window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
     detail: {
       ready: shopAccountState.ready,
       loading: shopAccountState.loading,
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
-      ownedProductIds: [...shopAccountState.ownedProductIds]
+      ownedProductIds: [...shopAccountState.ownedProductIds],
+      subscriptionActive: Boolean(shopAccountState.subscriptionActive)
     }
   }));
 }
@@ -632,7 +646,7 @@ async function callShopFunction(name, data = {}) {
 
 async function refreshShopAccount() {
   if (!currentUser) {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [] });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false });
     return { ...shopAccountState };
   }
 
@@ -646,7 +660,8 @@ async function refreshShopAccount() {
         loading: false,
         signedIn: true,
         coinBalance: account.coinBalance,
-        ownedProductIds: account.ownedProductIds
+        ownedProductIds: account.ownedProductIds,
+        subscriptionActive: Boolean(account.subscriptionActive)
       });
     }
     return account;
@@ -657,13 +672,14 @@ async function refreshShopAccount() {
 }
 
 function applyReturnedShopAccount(result) {
-  if (result && ("coinBalance" in result || "ownedProductIds" in result)) {
+  if (result && ("coinBalance" in result || "ownedProductIds" in result || "subscriptionActive" in result)) {
     publishShopAccount({
       ready: true,
       loading: false,
       signedIn: Boolean(currentUser),
       coinBalance: result.coinBalance,
-      ownedProductIds: result.ownedProductIds
+      ownedProductIds: result.ownedProductIds,
+      subscriptionActive: "subscriptionActive" in result ? Boolean(result.subscriptionActive) : shopAccountState.subscriptionActive
     });
   }
   return result;
@@ -3846,7 +3862,7 @@ async function renderUser(user) {
       await initializeBoardsForUser(user);
     }
   } else {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [] });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false });
     clearTimeout(localBoardSaveTimer);
     clearAllCloudBoardSaveTimers();
     activeBoardId = "";
@@ -4188,7 +4204,8 @@ window.TeacherTilesAccount = {
       loading: shopAccountState.loading,
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
-      ownedProductIds: [...shopAccountState.ownedProductIds]
+      ownedProductIds: [...shopAccountState.ownedProductIds],
+      subscriptionActive: Boolean(shopAccountState.subscriptionActive)
     };
   },
   owns(productId) {

@@ -13337,11 +13337,20 @@ body.is-board-selecting .workspace{cursor:crosshair!important}
 
 
 /* Firebase profile */
-.profile-launch-control{cursor:pointer;overflow:visible}
+.profile-launch-control{position:relative;cursor:pointer;overflow:visible}
 .profile-launch-avatar{width:30px;height:30px;border-radius:9px;object-fit:cover;display:block;border:1px solid color-mix(in srgb,var(--text) 10%,transparent);box-shadow:0 2px 7px rgba(15,23,42,.10)}
 .profile-launch-avatar[hidden]{display:none!important}
 .profile-launch-control.is-signed-in .profile-launch-icon{display:none}
 .profile-launch-control.is-signed-in{padding:4px}
+.profile-avatar-wrap{position:relative;display:block;width:max-content;line-height:0}
+.subscriber-crown{z-index:3;place-items:center;border:2px solid #fff;background:linear-gradient(145deg,#ffe884,#f2ae22);color:#765000;box-shadow:0 4px 10px rgba(108,68,0,.28);pointer-events:none}
+.subscriber-crown:not([hidden]){display:grid}
+.subscriber-crown[hidden]{display:none!important}
+.subscriber-crown svg{width:72%;height:72%;overflow:visible}
+.subscriber-crown svg path:first-child{fill:currentColor;stroke:none}
+.subscriber-crown svg path:last-child{fill:none;stroke:#fff3bb;stroke-width:2.4;stroke-linecap:round}
+.subscriber-crown--launch{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:7px;transform:rotate(7deg)}
+.subscriber-crown--profile{position:absolute;top:-10px;right:-10px;width:32px;height:32px;border-radius:10px;transform:rotate(7deg)}
 .profile-modal{position:fixed;inset:0;z-index:56000;display:grid;place-items:center;padding:24px}
 .profile-modal[hidden]{display:none!important}
 .profile-modal__backdrop{position:absolute;inset:0;border:0;background:rgba(13,17,23,.38);backdrop-filter:blur(8px);cursor:default}
