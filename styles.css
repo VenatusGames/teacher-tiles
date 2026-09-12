@@ -16070,3 +16070,11 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__holiday-placeholder{grid-column:1/-1;padding:20px 12px;border:1px dashed var(--border);border-radius:11px;background:var(--surface-soft);color:var(--muted);font-size:12px;text-align:center}
 
 #context-menu .context-menu__category-parent>.context-menu__disclosure{order:0;margin-left:2px}
+
+/* Keep the category rail within its column; only vertical scrolling is needed. */
+#context-menu .context-menu__category-drawer{min-width:0;overflow-x:hidden;overflow-y:auto}
+#context-menu .context-menu__category-drawer-grid{min-width:0;max-width:100%}
+#context-menu .context-menu__category-row{min-width:0;max-width:100%}
+#context-menu .context-menu__category-row:not(.context-menu__category-parent):has(.context-menu__pin)>.context-menu__filter{min-width:0;flex:1 1 auto;padding-left:4px;padding-right:2px;overflow:hidden;text-overflow:ellipsis}
+#context-menu .context-menu__category-row:not(.context-menu__category-parent) .context-menu__pin{flex-basis:18px;width:18px;padding:2px}
+#context-menu .context-menu__holiday-child{min-width:0;max-width:100%;padding-inline:5px;overflow:hidden;text-overflow:ellipsis}
