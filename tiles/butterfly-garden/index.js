@@ -45,6 +45,7 @@
     const status=moduleElement.querySelector('.butterflygarden-status');
     const meter=moduleElement.querySelector('.butterflygarden-meter');
     const micButton=moduleElement.querySelector('.butterflygarden-mic');
+    const resetButton=moduleElement.querySelector('.butterflygarden-reset');
     const rareBadge=moduleElement.querySelector('.butterflygarden-rare');
     const thresholdInput=moduleElement.querySelector('.butterflygarden-threshold');
     const thresholdValue=moduleElement.querySelector('.butterflygarden-threshold-value');
@@ -618,6 +619,32 @@
       if(flowers.length>=maxFlowers())growthCharge=Math.min(growthCharge,1.15);
     }
 
+    function resetGarden(){
+      particles=[];
+      clearFlowers();
+      clearButterflies();
+      quietRun=0;
+      veryQuietRun=0;
+      ambientRun=0;
+      growthCharge=0;
+      goldenCooldown=45;
+      nextButterflyArrival=elapsed+randomBetween(2.2,3.8);
+      lastButterflyGoal=0;
+      loudRun=0;
+      returnQuietRun=0;
+      butterflyEvictionActive=false;
+      lastDepartedVariant='';
+      rareBadge.hidden=true;
+      particlesContext.clearRect(0,0,particlesCanvas.width,particlesCanvas.height);
+      refreshCounts();
+      if(mode==='ambient')say('Garden reset · Flowers will begin growing again over time.');
+      else if(active)say('Garden reset · Keep the room calm to begin growing again.');
+      else say('Garden reset · Enable the microphone when you are ready to grow again.');
+      notify('reset');
+      drawParticles();
+      wake();
+    }
+
     function updateStatus(){
       if(butterflies.some(butterfly=>butterfly.isGolden&&!butterfly.exiting)){
         say('Golden butterfly visiting · A very calm room brought a rare guest to the garden!');
@@ -666,6 +693,7 @@
     thresholdInput.addEventListener('input',()=>{applySettings();wake()});
     sensitivityInput.addEventListener('input',()=>{applySettings();wake()});
     moduleElement.querySelectorAll('[data-butterfly-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.butterflyMode)));
+    resetButton?.addEventListener('click',()=>{resetGarden();resetButton.blur();});
     micButton.addEventListener('click',()=>{
       if(mode!=='microphone')return;
       if(active||pending)stopMicrophone('Microphone off · Flowers will pause until the room gets quieter again.');

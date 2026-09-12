@@ -42,6 +42,7 @@
     const goalInput=m.querySelector('.sleepymonster-goal-input');
     const goalEnabledInput=m.querySelector('.sleepymonster-goal-enabled');
     const goalWrap=m.querySelector('.sleepymonster-goal');
+    const resetButton=m.querySelector('.sleepymonster-reset');
 
     let state='idle';
     let sleepVariant=1;
@@ -446,6 +447,17 @@
       notifyBoardChanged('sleepy-monster-settings');
     }
 
+    function resetGoalProgress(){
+      cycleSleepSeconds=0;
+      goalReached=false;
+      sleepCycleActive=state==='sleep-stand'||state==='sleep-back';
+      goalWrap.classList.remove('sleepymonster-goal-pop');
+      updateGoalUI();
+      say('Sleep goal reset to 0:00.');
+      notifyBoardChanged('sleepy-monster-goal-reset');
+      wake();
+    }
+
     function commitGoalTime(){
       const parsed=parseGoalTime(goalInput.value);
       if(parsed===null){
@@ -461,6 +473,7 @@
       notifyBoardChanged('sleepy-monster-goal-time');
     }
 
+    resetButton?.addEventListener('click',()=>{resetGoalProgress();resetButton.blur();});
     thresholdInput.addEventListener('input',updateSettings);
     sensitivityInput.addEventListener('input',updateSettings);
     delayInput.addEventListener('input',updateSettings);

@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260910-fishtank-deadspace-1" />
   <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-6" />
-  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=20260912-quiet-critters-2" />
+  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=20260912-quiet-critters-3" />
   <link rel="stylesheet" href="tiles/butterfly-garden/styles.css?v=20260910-butterfly-garden-3" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260908-polish-1" />
@@ -2171,7 +2171,7 @@
 <template id="fishtank-template">
   <section class="module fish-tank-module" data-type="fishtank" data-bg="white" data-font="inter" data-text="dark">
     <button class="module-delete" aria-label="Delete Fish Tank">×</button><div class="module-drag-handle"></div>
-    <header class="fish-heading"><h2>Fish Tank</h2><span class="fish-collection">4 fish · 4 species</span></header><div class="fish-water"><canvas width="1000" height="560" role="img" aria-label="Fish swimming in a tank. Use Feed fish to add food."></canvas></div><div class="fish-footer"><div class="fish-status" role="status" aria-live="polite">No mic mode · Visitors arrive over time</div><meter min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="fish-mic tile-action" aria-pressed="false" hidden>Enable microphone</button></div><div class="fish-controls customization-bar"><button class="fish-feed tile-action tile-action--primary">Feed fish</button><button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open Fish Tank settings" title="Fish Tank settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button><div class="tile-settings-panel" hidden><strong>Fish Tank settings</strong><div class="tile-setting"><span>Visitor mode</span><div class="tile-mode-switch" role="group" aria-label="Fish visitor mode"><button type="button" data-fish-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-fish-mode="microphone" aria-pressed="false">Microphone</button></div></div><small>In No mic mode, new fish and rare visitors arrive as time passes.</small><label class="tile-setting fish-mic-setting" hidden><span>Quiet level <output class="fish-threshold-value">45%</output></span><input class="fish-threshold" aria-label="Quiet level" type="range" min="15" max="85" value="45"></label><label class="tile-setting fish-mic-setting" hidden><span>Sensitivity</span><input class="fish-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label><small class="fish-mic-setting" hidden>Microphone audio stays on your device and is never recorded.</small></div></div></div>
+    <header class="fish-heading"><h2>Fish Tank</h2><span class="fish-collection">4 fish · 4 species</span></header><div class="fish-water"><canvas width="1000" height="560" role="img" aria-label="Fish swimming in a tank. Use Feed fish to add food."></canvas></div><div class="fish-footer"><div class="fish-status" role="status" aria-live="polite">No mic mode · Visitors arrive over time</div><meter min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="fish-mic tile-action" aria-pressed="false" hidden>Enable microphone</button></div><div class="fish-controls customization-bar"><button class="fish-feed tile-action tile-action--primary">Feed fish</button><button class="fish-reset tile-action" type="button">Reset</button><button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open Fish Tank settings" title="Fish Tank settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button><div class="tile-settings-panel" hidden><strong>Fish Tank settings</strong><div class="tile-setting"><span>Visitor mode</span><div class="tile-mode-switch" role="group" aria-label="Fish visitor mode"><button type="button" data-fish-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-fish-mode="microphone" aria-pressed="false">Microphone</button></div></div><small>In No mic mode, new fish and rare visitors arrive as time passes.</small><label class="tile-setting fish-mic-setting" hidden><span>Quiet level <output class="fish-threshold-value">45%</output></span><input class="fish-threshold" aria-label="Quiet level" type="range" min="15" max="85" value="45"></label><label class="tile-setting fish-mic-setting" hidden><span>Sensitivity</span><input class="fish-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label><small class="fish-mic-setting" hidden>Microphone audio stays on your device and is never recorded.</small></div></div></div>
     <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
   </section>
 </template>
@@ -2192,6 +2192,7 @@
       <div class="sleepymonster-goal-track" role="progressbar" aria-label="Sleep goal" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"><div class="sleepymonster-goal-fill"></div></div>
     </div>
     <div class="sleepymonster-controls customization-bar">
+      <button class="sleepymonster-reset tile-action" type="button">Reset</button>
       <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
       <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
       <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
@@ -2236,6 +2237,7 @@
       <button class="quietcritters-mic tile-action tile-action--primary" type="button" aria-pressed="false" hidden>Enable microphone</button>
     </div>
     <div class="quietcritters-controls customization-bar">
+      <button class="quietcritters-reset tile-action" type="button">Reset</button>
       <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
       <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
       <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
@@ -2267,6 +2269,7 @@
     </div>
     <div class="butterflygarden-footer"><div class="butterflygarden-status" role="status" aria-live="polite">No mic mode · Flowers grow over time and butterflies visit later.</div><meter class="butterflygarden-meter" min="0" max="100" value="0" aria-label="Room sound level" hidden></meter><button class="butterflygarden-mic tile-action" type="button" aria-pressed="false" hidden>Enable microphone</button></div>
     <div class="butterflygarden-controls customization-bar">
+      <button class="butterflygarden-reset tile-action" type="button">Reset</button>
       <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
       <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
       <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
@@ -3711,10 +3714,10 @@
   <script src="tiles/interactive-timers/index.js?v=20260908-polish-1"></script>
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
-  <script src="tiles/fish-tank/index.js?v=20260912-fish-visitors-1"></script>
-  <script src="tiles/sleepy-monster/index.js?v=20260910-sleepy-monster-7"></script>
-  <script src="tiles/quiet-critters/index.js?v=20260912-quiet-critters-2"></script>
-  <script src="tiles/butterfly-garden/index.js?v=20260912-butterfly-arrival-1"></script>
+  <script src="tiles/fish-tank/index.js?v=20260912-reset-1"></script>
+  <script src="tiles/sleepy-monster/index.js?v=20260912-reset-1"></script>
+  <script src="tiles/quiet-critters/index.js?v=20260912-quiet-critters-3"></script>
+  <script src="tiles/butterfly-garden/index.js?v=20260912-reset-1"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
   <script src="tiles/word-of-the-day/words.js?v=20260908-reviewed-2"></script>

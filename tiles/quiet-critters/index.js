@@ -118,6 +118,7 @@
     const thresholdValue=moduleElement.querySelector('.quietcritters-threshold-value');
     const sensitivityInput=moduleElement.querySelector('.quietcritters-sensitivity');
     const sensitivityValue=moduleElement.querySelector('.quietcritters-sensitivity-value');
+    const resetButton=moduleElement.querySelector('.quietcritters-reset');
 
     let critters=[];
     let active=false;
@@ -170,40 +171,55 @@
         treeLayer.appendChild(image);
       });
 
-      // Use shuffled ground slots so every stump/mushroom gets its own
-      // footprint instead of stacking on top of another prop.
-      const groundSlots=Array.from({length:10},(_,index)=>7+(86/9)*index)
-        .sort(()=>Math.random()-.5);
-      const nextGroundX=()=>groundSlots.pop()??50;
+      // Reserve footprints across several levels of the grassy hill so
+      // mushrooms and stumps feel scattered through the scene instead of
+      // clustering along the bottom edge or overlapping one another.
+      const occupiedProps=[];
+      function choosePropSpot(width,minBottom,maxBottom){
+        for(let attempt=0;attempt<200;attempt+=1){
+          const candidate={x:random(7,93),bottom:random(minBottom,maxBottom),width};
+          const overlaps=occupiedProps.some(existing=>{
+            const xGap=Math.abs(candidate.x-existing.x);
+            const yGap=Math.abs(candidate.bottom-existing.bottom);
+            const horizontal=(candidate.width+existing.width)*.55;
+            const vertical=(candidate.width+existing.width)*.32;
+            return xGap<horizontal&&yGap<vertical;
+          });
+          if(!overlaps){occupiedProps.push(candidate);return candidate;}
+        }
+        const fallback={x:random(8,92),bottom:random(minBottom,maxBottom),width};
+        occupiedProps.push(fallback);
+        return fallback;
+      }
 
       for(let index=0;index<3;index+=1){
-        const width=random(8.0,9.0);
-        const x=nextGroundX();
+        const width=random(11.5,15.0);
+        const spot=choosePropSpot(width,7,25);
         const stump=document.createElement('img');
         stump.className='quietcritters-prop quietcritters-prop--stump';
         stump.src=SCENERY.stump;
         stump.alt='';
         stump.draggable=false;
-        stump.style.setProperty('--left',`${x.toFixed(2)}%`);
-        stump.style.setProperty('--bottom',`${random(-6,1).toFixed(2)}%`);
+        stump.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
+        stump.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
         stump.style.setProperty('--width',`${width.toFixed(2)}%`);
-        stump.style.zIndex=String(3+index%2);
+        stump.style.zIndex=String(3+Math.round((24-spot.bottom)/6));
         propLayer.appendChild(stump);
       }
 
       const mushroomCount=5+Math.floor(Math.random()*3);
       for(let index=0;index<mushroomCount;index+=1){
-        const width=random(4.5,5.8);
-        const x=nextGroundX();
+        const width=random(7.0,10.2);
+        const spot=choosePropSpot(width,8,28);
         const image=document.createElement('img');
         image.className='quietcritters-prop quietcritters-prop--mushroom';
         image.src=pick(SCENERY.mushrooms);
         image.alt='';
         image.draggable=false;
-        image.style.setProperty('--left',`${x.toFixed(2)}%`);
-        image.style.setProperty('--bottom',`${random(-5,5).toFixed(2)}%`);
+        image.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
+        image.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
         image.style.setProperty('--width',`${width.toFixed(2)}%`);
-        image.style.zIndex=String(2+index%3);
+        image.style.zIndex=String(3+Math.round((27-spot.bottom)/6));
         propLayer.appendChild(image);
       }
 
@@ -247,11 +263,11 @@
     }
 
     function choosePosition(){
-      for(let attempt=0;attempt<50;attempt+=1){
-        const candidate={x:random(17,83),y:random(69,84)};
-        if(critters.every(critter=>Math.hypot(candidate.x-critter.x,(candidate.y-critter.y)*1.4)>11.5))return candidate;
+      for(let attempt=0;attempt<70;attempt+=1){
+        const candidate={x:random(7,93),y:random(20,87)};
+        if(critters.every(critter=>Math.hypot(candidate.x-critter.x,(candidate.y-critter.y)*1.15)>7.5))return candidate;
       }
-      return{x:random(18,82),y:random(70,83)};
+      return{x:random(8,92),y:random(22,86)};
     }
 
     function burst(x,y,color,large=false){
@@ -282,14 +298,13 @@
 
     function sequenceFor(name){
       switch(name){
-        case 'blink':return{frames:[FRAMES.blink[0],FRAMES.blink[1],FRAMES.happy],step:.10,duration:.38};
-        case 'sway':return{frames:[FRAMES.arms[0],FRAMES.arms[1],FRAMES.arms[2],FRAMES.arms[3],FRAMES.arms[2],FRAMES.arms[1]],step:.28,duration:1.9};
-        case 'dance':return{frames:[FRAMES.dance[0],FRAMES.dance[1],FRAMES.dance[2],FRAMES.dance[1]],step:.20,duration:1.55};
-        case 'jump':return{frames:[FRAMES.jump[0],FRAMES.jump[1],FRAMES.jump[2],FRAMES.jump[1],FRAMES.jump[0]],step:.16,duration:1.2};
-        case 'drowsy':return{frames:[FRAMES.drowsy],step:.8,duration:1.7,next:'sleep'};
-        case 'sleep':return{frames:[FRAMES.sleep[0],FRAMES.sleep[1]],step:.78,duration:random(5.5,9.5)};
-        case 'happy':return{frames:[FRAMES.happy,FRAMES.happy2,FRAMES.happy],step:.52,duration:random(1.45,2.15)};
-        default:return{frames:[FRAMES.happy],step:.8,duration:random(4.5,8.5)};
+        case 'sway':return{frames:[FRAMES.arms[0],FRAMES.arms[1],FRAMES.arms[2],FRAMES.arms[3],FRAMES.arms[2],FRAMES.arms[1]],step:.30,duration:1.75};
+        case 'dance':return{frames:[FRAMES.dance[0],FRAMES.dance[1],FRAMES.dance[2],FRAMES.dance[1]],step:.22,duration:1.35};
+        case 'jump':return{frames:[FRAMES.jump[0],FRAMES.jump[1],FRAMES.jump[2],FRAMES.jump[1],FRAMES.jump[0]],step:.17,duration:1.05};
+        case 'drowsy':return{frames:[FRAMES.drowsy],step:.8,duration:1.55,next:'sleep'};
+        case 'sleep':return{frames:[FRAMES.sleep[0],FRAMES.sleep[1]],step:.82,duration:random(5.5,8.5)};
+        case 'happy':return{frames:[FRAMES.happy,FRAMES.happy2,FRAMES.happy],step:.56,duration:random(1.25,1.75)};
+        default:return{frames:[FRAMES.happy],step:.8,duration:random(6.0,11.0)};
       }
     }
 
@@ -302,12 +317,11 @@
       }
       const roll=Math.random();
       let behavior='idle';
-      if(calmTime>35&&roll<.025)behavior='drowsy';
-      else if(roll<.70)behavior='idle';
-      else if(roll<.80)behavior='happy';
-      else if(roll<.88)behavior='sway';
-      else if(roll<.93)behavior='blink';
-      else if(roll<.97)behavior='dance';
+      if(calmTime>42&&roll<.02)behavior='drowsy';
+      else if(roll<.82)behavior='idle';
+      else if(roll<.90)behavior='happy';
+      else if(roll<.95)behavior='sway';
+      else if(roll<.98)behavior='dance';
       else behavior='jump';
       setBehavior(critter,behavior,now);
     }
@@ -322,7 +336,7 @@
       critter.behaviorEnds=now+sequence.duration;
       critter.followUp=sequence.next||'';
       critter.element.dataset.behavior=name;
-      if(name==='idle'&&!Number.isFinite(critter.nextBlink))critter.nextBlink=now+random(1.6,3.8);
+      if(!Number.isFinite(critter.nextBlink))critter.nextBlink=now+random(1.4,3.2);
       drawCritter(critter,critter.frames[0]);
     }
 
@@ -346,7 +360,7 @@
       element.className='quietcritters-actor is-entering';
       element.style.setProperty('--x',`${position.x.toFixed(2)}%`);
       element.style.setProperty('--y',`${position.y.toFixed(2)}%`);
-      element.style.setProperty('--size',`${random(46,62).toFixed(1)}px`);
+      element.style.setProperty('--size',`${random(22,34).toFixed(1)}px`);
       const canvas=document.createElement('canvas');
       canvas.width=RENDER_SIZE;
       canvas.height=RENDER_SIZE;
@@ -356,7 +370,7 @@
       const critter={
         element,canvas,context:canvas.getContext('2d'),color,
         x:position.x,y:position.y,behavior:'idle',frames:[FRAMES.happy],frameStep:.8,frameIndex:0,nextFrame:0,behaviorEnds:0,followUp:'',lastFrame:'',
-        nextBlink:performance.now()/1000+random(1.4,3.4),blinkRestoreAt:0,blinkActive:false
+        nextBlink:performance.now()/1000+random(1.2,3.0),blinkRestoreAt:0,blinkRestoreSrc:'',blinkActive:false
       };
       critters.push(critter);
       setBehavior(critter,'idle');
@@ -384,21 +398,31 @@
       for(const critter of critters){
         if(critter.leaving)continue;
 
-        if(critter.blinkActive&&now>=critter.blinkRestoreAt){
+        // A blink is only a very short visual interruption. Remember the exact
+        // frame the critter was on, flash one blink sprite, then immediately
+        // restore the prior idle/dance/sway/jump frame.
+        if(critter.blinkActive){
+          if(now<critter.blinkRestoreAt)continue;
           critter.blinkActive=false;
-          drawCritter(critter,critter.frames[critter.frameIndex]||FRAMES.happy);
-          critter.nextBlink=now+random(1.8,4.6);
-        }else if(!critter.blinkActive&&critter.behavior==='idle'&&now>=critter.nextBlink){
-          critter.blinkActive=true;
-          critter.blinkRestoreAt=now+random(.09,.16);
-          drawCritter(critter,Math.random()<.55?FRAMES.blink[0]:FRAMES.blink[1]);
+          const restore=critter.blinkRestoreSrc||critter.frames[critter.frameIndex]||FRAMES.happy;
+          critter.blinkRestoreSrc='';
+          drawCritter(critter,restore);
+          critter.nextBlink=now+random(1.4,3.4);
         }
 
         if(now>=critter.behaviorEnds){
           chooseBehavior(critter,now);
           continue;
         }
-        if(critter.blinkActive)continue;
+
+        if(now>=critter.nextBlink&&!['sleep','drowsy'].includes(critter.behavior)){
+          critter.blinkActive=true;
+          critter.blinkRestoreSrc=critter.lastFrame||critter.frames[critter.frameIndex]||FRAMES.happy;
+          critter.blinkRestoreAt=now+random(.07,.11);
+          drawCritter(critter,Math.random()<.5?FRAMES.blink[0]:FRAMES.blink[1]);
+          continue;
+        }
+
         if(now>=critter.nextFrame){
           const frames=critter.frames;
           critter.frameIndex=(critter.frameIndex+1)%frames.length;
@@ -408,6 +432,27 @@
           drawCritter(critter,critter.frames[critter.frameIndex]||FRAMES.happy);
         }
       }
+    }
+
+    function resetVisitors(){
+      dismissAll();
+      quietCharge=0;
+      calmTime=0;
+      loudRun=0;
+      returnCooldown=0;
+      nextInvite=mode==='ambient'?random(14,22):random(10,16);
+      if(mode==='ambient'){
+        setBadge('NO MIC');
+        say('No mic mode · The forest is starting fresh. Quiet critters will visit slowly over time.');
+      }else if(active){
+        setBadge(level<=threshold()-4?'QUIET':'LISTENING',level<=threshold()-4?'quiet':'neutral');
+        say('Quiet Critters reset · Keep the room calm to invite new visitors.');
+      }else{
+        setBadge('MIC OFF');
+        say('Quiet Critters reset · Enable the microphone when you are ready to listen again.');
+      }
+      notify('reset');
+      wake();
     }
 
     function updateSettings(notifyChange=true){
@@ -629,6 +674,7 @@
     }
 
     moduleElement.querySelectorAll('[data-quietcritters-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.quietcrittersMode)));
+    resetButton?.addEventListener('click',()=>{resetVisitors();resetButton.blur();});
     micButton.addEventListener('click',()=>{
       if(mode!=='microphone')return;
       if(active||pending)stopMicrophone();

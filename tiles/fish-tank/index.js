@@ -18,7 +18,7 @@
     return mode==='ambient'||listening;
   }
   function setup(m){
-    const canvas=m.querySelector('canvas'),ctx=canvas.getContext('2d'),button=m.querySelector('.fish-mic'),status=m.querySelector('.fish-status'),meter=m.querySelector('meter'),threshold=m.querySelector('.fish-threshold'),sensitivity=m.querySelector('.fish-sensitivity'),collection=m.querySelector('.fish-collection');
+    const canvas=m.querySelector('canvas'),ctx=canvas.getContext('2d'),button=m.querySelector('.fish-mic'),resetButton=m.querySelector('.fish-reset'),status=m.querySelector('.fish-status'),meter=m.querySelector('meter'),threshold=m.querySelector('.fish-threshold'),sensitivity=m.querySelector('.fish-sensitivity'),collection=m.querySelector('.fish-collection');
     let fishes=[],food=[],frame=0,last=0,time=0,active=false,pending=false,disposed=false,visible=true,stream=null,audio=null,analyser=null,samples=null,request=0,level=0,nextArrival=8,nextSwap=24+Math.random()*14,lastFeed=0,lastStatus='',lastNotify=0,mode='ambient';
     const environment={quiet:0,loud:0,scared:0};
     const images=species.map(s=>{const img=new Image();img.src=`tiles/fish-tank/assets/${s[0]}.png`;img.onload=()=>{if(!disposed)draw();};return img;});
@@ -89,8 +89,28 @@
         stream.getAudioTracks().forEach(t=>t.addEventListener('ended',()=>{if(active)stop('Microphone disconnected. Enable it to try again.');},{once:true}));wake();
       }catch(error){if(token!==request||disposed)return;stop(error?.name==='NotAllowedError'?'Microphone permission was declined. You can still feed the fish.':'Could not start microphone. Check your device and try again.');}
     });
+    function resetTank(){
+      food=[];
+      fishes=[];
+      [0,3,5,6].forEach(index=>addFish(index,true));
+      environment.quiet=0;
+      environment.loud=0;
+      environment.scared=0;
+      nextArrival=8;
+      scheduleSwap(24+Math.random()*14);
+      lastNotify=time;
+      collection.textContent='4 fish · 4 species';
+      lastStatus='';
+      if(mode==='ambient')say('No mic mode · Tank reset. Visitors will arrive over time.');
+      else if(active)say('Tank reset · Keep the room quiet to invite new fish.');
+      else say('Tank reset · Enable the microphone when you are ready to listen.');
+      notifyBoardChanged('fish-reset');
+      draw();
+      wake();
+    }
     function feed(x=.2+Math.random()*.6){const now=performance.now();if(now-lastFeed<200)return;lastFeed=now;for(let i=0;i<8&&food.length<48;i++)food.push({x:clamp(x+(Math.random()-.5)*.1,.04,.96),y:.04,life:0});wake();}
     m.querySelector('.fish-feed').addEventListener('click',()=>feed());
+    resetButton?.addEventListener('click',()=>{resetTank();resetButton.blur();});
     canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.stopPropagation();const r=canvas.getBoundingClientRect();feed((e.clientX-r.left)/r.width);});
     function settings(){threshold.value=String(clamp(Number(threshold.value)||45,15,85));sensitivity.value=String(clamp(Number(sensitivity.value)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;notifyBoardChanged('fish-settings');}
     threshold.addEventListener('input',settings);sensitivity.addEventListener('input',settings);

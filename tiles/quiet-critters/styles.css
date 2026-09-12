@@ -186,7 +186,7 @@
   position:absolute;
   left:var(--x,50%);
   top:var(--y,74%);
-  width:var(--size,56px);
+  width:var(--size,28px);
   aspect-ratio:1;
   transform:translate(-50%,-50%) scale(var(--actor-scale,1));
   transform-origin:center center;
@@ -349,7 +349,7 @@
 }
 @keyframes quietcritters-critter-hop{
   from{margin-top:0}
-  to{margin-top:-8px}
+  to{margin-top:-4px}
 }
 @keyframes quietcritters-poof-ring{
   0%{opacity:.9;transform:translate(-50%,-50%) scale(.2)}
