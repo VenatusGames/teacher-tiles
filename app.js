@@ -4023,9 +4023,13 @@ function setupClock(m){
 
   const syncModeControls=()=>{
     const analog=isAnalog();
-    modeBtn.hidden=Boolean(skinMode);
-    modeBtn.classList.toggle('is-active',analog);
-    modeBtn.querySelector('span').textContent=analog?'◴':'◷';
+    modeBtn.hidden=Boolean(m.dataset.tileSkin);
+    modeBtn.classList.remove('is-active');
+    modeBtn.dataset.mode=analog?'analog':'digital';
+    modeBtn.innerHTML='<span data-clock-choice="digital">Digital</span><span data-clock-choice="analog">Analog</span>';
+    modeBtn.title=analog?'Switch to digital clock':'Switch to analog clock';
+    modeBtn.setAttribute('aria-label',modeBtn.title);
+    modeBtn.setAttribute('aria-pressed',String(analog));
     secondsBtn.hidden=analog;
     periodBtn.hidden=analog;
   };

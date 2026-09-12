@@ -23,3 +23,10 @@
 :is([data-tile-skin="textbubble-clear"],[data-tile-skin="clock-analog-clear"],[data-tile-skin="dice-clear"],[data-tile-skin="timer-freestanding"],[data-tile-skin="progressbar-capsule"],[data-tile-skin="stoplight-freestanding"],[data-tile-skin="stoplight-simplistic"],[data-tile-skin="magnifier-classic"])>.resize-handle--tr::before{right:3px;top:3px;border-right-width:3px;border-top-width:3px}
 :is([data-tile-skin="textbubble-clear"],[data-tile-skin="clock-analog-clear"],[data-tile-skin="dice-clear"],[data-tile-skin="timer-freestanding"],[data-tile-skin="progressbar-capsule"],[data-tile-skin="stoplight-freestanding"],[data-tile-skin="stoplight-simplistic"],[data-tile-skin="magnifier-classic"])>.resize-handle--bl::before{left:3px;bottom:3px;border-left-width:3px;border-bottom-width:3px}
 :is([data-tile-skin="textbubble-clear"],[data-tile-skin="clock-analog-clear"],[data-tile-skin="dice-clear"],[data-tile-skin="timer-freestanding"],[data-tile-skin="progressbar-capsule"],[data-tile-skin="stoplight-freestanding"],[data-tile-skin="stoplight-simplistic"],[data-tile-skin="magnifier-classic"])>.resize-handle--br::before{right:3px;bottom:3px;border-right-width:3px;border-bottom-width:3px}
+
+.clock-module .clock-toggle-mode{display:flex!important;align-items:center;gap:2px;width:auto!important;min-width:124px;padding:3px!important;border-radius:10px;background:var(--surface-soft)!important;color:var(--text)!important}
+.clock-toggle-mode>span{padding:5px 8px;border-radius:7px;font:650 11px/1 Inter,system-ui,sans-serif;opacity:.65;transition:background .15s,box-shadow .15s,opacity .15s}
+.clock-toggle-mode[data-mode=digital]>[data-clock-choice=digital],.clock-toggle-mode[data-mode=analog]>[data-clock-choice=analog]{opacity:1;background:var(--surface-solid,#fff);box-shadow:0 1px 4px #17203326;color:var(--text)}
+.clock-module .clock-toggle-mode[hidden],.clock-module[data-tile-skin] .clock-toggle-mode{display:none!important}
+
+.clock-module .clock-toggle-seconds[hidden],.clock-module .clock-toggle-period[hidden]{display:none!important}
