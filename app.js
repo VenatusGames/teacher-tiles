@@ -1344,7 +1344,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
   en:{
     sticky:['Sticky Note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
-    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],
+    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],
     interactive:['Interactive Timers','Hourglass, candle, rocket, and sunflower'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
@@ -1359,7 +1359,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
-    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],
+    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],
     interactive:['Temporizadores interactivos','Reloj de arena, vela, cohete y girasol'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],imagesearch:['Buscar imágenes','Busca imágenes y arrástralas al tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
@@ -2825,6 +2825,7 @@ function setupModuleByType(m,type){
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
   if(type==='sleepymonster')window.TeacherTilesSleepyMonster.setup(m);
+  if(type==='quietcritters')window.TeacherTilesQuietCritters.setup(m);
   if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
   if(type==='backgroundremover'){setupBoardPhotoDrop();window.TeacherTilesBackgroundRemover.setup(m);}
   if(type==='wordoftheday')window.TeacherTilesWordOfTheDay.setup(m);
@@ -2833,7 +2834,7 @@ function setupModuleByType(m,type){
   if(type==='timestables')window.TeacherTilesTimesTables.setup(m);
   if(type==='google')window.TeacherTilesGoogle.setup(m);
   if(type==='link')window.TeacherTilesLink.setup(m);
-  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','butterflygarden','backgroundremover'].includes(type))setupClassroomTileControls(m);
+  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);
@@ -8220,6 +8221,7 @@ const EDITABLE_TILE_HEADINGS={
   dice:'.dice-module h2',
   fishtank:'.fish-heading h2',
   sleepymonster:'.sleepymonster-heading h2',
+  quietcritters:'.quietcritters-heading h2',
   butterflygarden:'.butterflygarden-heading h2',
   seatingchart:'.seating-title',
   imagesearch:'.image-search-header h2',
