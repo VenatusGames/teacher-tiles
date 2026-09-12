@@ -16035,3 +16035,9 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .timer-sync-toggle[aria-checked="true"] .timer-sync-switch{background:#2585d8}
 .timer-sync-toggle[aria-checked="true"] .timer-sync-switch i{transform:translateX(12px)}
 @media(prefers-reduced-motion:reduce){.timer-sync-switch,.timer-sync-switch i{transition:none}}
+
+.timer-shelf-swatch{display:block;width:25px;height:25px;border:1px solid #64748b55;border-radius:50%;box-shadow:inset 0 1px 3px #fff6}.timer-shape-color[aria-expanded="true"]{border-color:#60a5fa;background:#e4f2ff}
+
+.timer-sync-toggle{opacity:0;pointer-events:none;transition:opacity .15s ease}
+:is(.timer-module,.interactive-module):is(:hover,:has(:focus-visible))>.timer-sync-toggle{opacity:1;pointer-events:auto}
+@media(prefers-reduced-motion:reduce){.timer-sync-toggle{transition:none}}

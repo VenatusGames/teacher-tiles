@@ -3853,11 +3853,13 @@ function setupTimer(m){
   const shapeShelf=document.createElement('div');shapeShelf.className='timer-shape-shelf';shapeShelf.hidden=true;shapeShelf.setAttribute('role','group');shapeShelf.setAttribute('aria-label','Timer shape');document.body.appendChild(shapeShelf);
   const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
+  const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
+  let shelfAnchor=shapeButton;
   let shapeFrame=0;
-  const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
+  const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
   const positionShapes=()=>{
     if(!m.isConnected){closeShapes();return}
-    const r=shapeButton.getBoundingClientRect(),w=shapeShelf.offsetWidth,h=shapeShelf.offsetHeight;
+    const r=shelfAnchor.getBoundingClientRect(),w=shapeShelf.offsetWidth,h=shapeShelf.offsetHeight;
     shapeShelf.style.left=`${Math.max(8,Math.min(r.left+r.width/2-w/2,innerWidth-w-8))}px`;
     shapeShelf.style.top=`${Math.max(8,Math.min(r.top-h-8,innerHeight-h-8))}px`;
     shapeFrame=requestAnimationFrame(positionShapes);
@@ -3866,9 +3868,10 @@ function setupTimer(m){
     const button=document.createElement('button');button.type='button';button.dataset.shape=option.value;button.innerHTML=shapeIcon(option.value);const label=document.createElement('span');label.textContent=option.textContent;button.appendChild(label);
     button.addEventListener('click',()=>{shapeSelect.value=option.value;shapeSelect.dispatchEvent(new Event('change',{bubbles:true}));refreshShape();closeShapes();shapeButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
   }
-  shapeButton.addEventListener('click',()=>{if(!shapeShelf.hidden){closeShapes();return}refreshShape();shapeShelf.hidden=false;shapeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes()});
-  const outsideShapes=event=>{if(!shapeShelf.contains(event.target)&&!shapeButton.contains(event.target))closeShapes()};
-  const escapeShapes=event=>{if(event.key==='Escape'&&!shapeShelf.hidden){event.stopPropagation();closeShapes();shapeButton.focus({preventScroll:true})}};
+  const shapeChoices=[...shapeShelf.children];
+  shapeButton.addEventListener('click',()=>{if(!shapeShelf.hidden&&shelfAnchor===shapeButton){closeShapes();return}closeShapes();shelfAnchor=shapeButton;shapeShelf.replaceChildren(...shapeChoices);shapeShelf.setAttribute('aria-label','Timer shape');refreshShape();shapeShelf.hidden=false;shapeButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes()});
+  const outsideShapes=event=>{if(!shapeShelf.contains(event.target)&&!shapeButton.contains(event.target)&&!colorButton.contains(event.target))closeShapes()};
+  const escapeShapes=event=>{if(event.key==='Escape'&&!shapeShelf.hidden){event.stopPropagation();closeShapes();shelfAnchor.focus({preventScroll:true})}};
   document.addEventListener('pointerdown',outsideShapes);document.addEventListener('keydown',escapeShapes,true);
   shapeShelf.addEventListener('pointerdown',event=>event.stopPropagation());
   shapeSelect.addEventListener('change',refreshShape);
@@ -3877,7 +3880,17 @@ function setupTimer(m){
   m.querySelector('.timer-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
   m.querySelector('.timer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.timer-shape-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));
+  colorButton.addEventListener('click',()=>{
+    if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
+    closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
+    for(const [value,color] of Object.entries({blue:'#6f8fb7',green:'#6ea67d',amber:'#d49d45',rose:'#c8798d',purple:'#8c7bc3',teal:'#58a3a0'})){
+      const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String((m.dataset.shapeColor||'blue')===value));
+      const swatch=document.createElement('i');swatch.className='timer-shelf-swatch';swatch.style.background=color;swatch.setAttribute('aria-hidden','true');
+      const label=document.createElement('span');label.textContent=value[0].toUpperCase()+value.slice(1);button.append(swatch,label);
+      button.addEventListener('click',()=>{m.dataset.shapeColor=value;notifyBoardChanged('timer-color');closeShapes();colorButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
+    }
+    shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();
+  });
 
   const sizeVisual=()=>{
     if(!stage)return;
