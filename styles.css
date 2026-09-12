@@ -3688,7 +3688,7 @@ body.dark .draw-tool.is-active{
 
 .analog-clock-face{
   position:relative;
-  width:min(88cqw,88cqh,290px);
+  width:min(88cqw,88cqh);
   aspect-ratio:1;
   border-radius:50%;
   border:clamp(2px,1cqw,4px) solid color-mix(in srgb,var(--module-text,#17191d) 70%,transparent);
@@ -16043,3 +16043,12 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .todo-module .todo-list>.todo-add:hover{background:color-mix(in srgb,var(--module-text) 10%,transparent)!important}
 .interactive-module:not([data-interactive-mode="candle"]) .interactive-customization{display:none!important}
 .interactive-type-shelf button{font-size:36px;min-height:64px;padding:8px}
+
+/* Scale default analog details with the circular face, including wide tiles. */
+.clock-module:not([data-tile-skin]) .analog-clock-face{border-width:max(2px,min(1cqw,1cqh))}
+.clock-module:not([data-tile-skin]) .analog-mark{font-size:max(10px,min(6cqw,6cqh))}
+.clock-module:not([data-tile-skin]) .analog-hour{width:max(3px,min(1.7cqw,1.7cqh))}
+.clock-module:not([data-tile-skin]) .analog-minute{width:max(2px,min(1cqw,1cqh))}
+.clock-module:not([data-tile-skin]) .analog-second{width:max(1px,min(.6cqw,.6cqh))}
+.clock-module:not([data-tile-skin]) .analog-pin{width:max(7px,min(3.6cqw,3.6cqh));height:max(7px,min(3.6cqw,3.6cqh))}
+.clock-module:not([data-tile-skin]) .analog-tick::before{width:max(1px,min(.6cqw,.6cqh));height:max(4px,min(2.3cqw,2.3cqh))}
