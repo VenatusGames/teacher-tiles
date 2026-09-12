@@ -2629,7 +2629,10 @@ function applyMenuView(){
         const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
         return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||menuFavorites.has(menuItemKey(item)))&&(!searching||searchable.includes(query));
       });
-      matches.sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true}));
+      const basicsOrder=['sticky','draw','textbubble','timer','clock','image','calculator'];
+      matches.sort((a,b)=>category==='basics'
+        ? basicsOrder.indexOf(a.dataset.module)-basicsOrder.indexOf(b.dataset.module)
+        : (a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true}));
       if(!matches.length)continue;
       const section=document.createElement('section');section.className='context-menu__section';
       const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);

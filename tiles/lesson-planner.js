@@ -198,7 +198,7 @@
     }
     dayBlocks.forEach(block => {
       const color = blockColor(block.color);
-      const button = make('button', 'lesson-planner-agenda-item');
+      const button = make('div', 'lesson-planner-agenda-item');
       button.type = 'button';
       button.style.setProperty('--lesson-color', color.value);
       button.style.setProperty('--lesson-ink', color.ink);
@@ -215,6 +215,25 @@
   panel.addEventListener('click',event=>{if(performance.now()<suppressLessonClickUntil){event.preventDefault();event.stopImmediatePropagation()}},true);
   function attachLessonDrag(button,block){
     button.dataset.lessonBlock=block.id;
+    button.setAttribute('role','button');button.tabIndex=0;
+    button.setAttribute('aria-label',`Edit ${block.label}`);
+    button.addEventListener('keydown',event=>{
+      if(event.target===button&&(event.key==='Enter'||event.key===' ')){
+        event.preventDefault();button.click();
+      }
+    });
+    const remove=make('button','lesson-block-delete','×');remove.type='button';
+    remove.title=`Delete ${block.label}`;remove.setAttribute('aria-label',remove.title);
+    remove.addEventListener('pointerdown',event=>event.stopPropagation());
+    remove.addEventListener('dblclick',event=>event.stopPropagation());
+    remove.addEventListener('click',event=>{
+      event.preventDefault();event.stopPropagation();
+      cancelLessonDrag?.();
+      const scrollTop=canvas.scrollTop,scrollLeft=canvas.scrollLeft;
+      blocks=blocks.filter(item=>item.id!==block.id);
+      saveBlocks();renderAll();canvas.scrollTop=scrollTop;canvas.scrollLeft=scrollLeft;
+    });
+    button.appendChild(remove);
     button.addEventListener('pointerdown',event=>{
       if(event.button!==0)return;
       cancelLessonDrag?.();
@@ -291,7 +310,7 @@
 
   function lessonBlockButton(block, compact = false) {
     const color = blockColor(block.color);
-    const button = make('button', compact ? 'lesson-calendar-chip' : 'lesson-schedule-block');
+    const button = make('div', compact ? 'lesson-calendar-chip' : 'lesson-schedule-block');
     button.type = 'button';
     button.style.setProperty('--lesson-color', color.value);
     button.style.setProperty('--lesson-ink', color.ink);
