@@ -270,26 +270,37 @@
         treeLayer.appendChild(image);
       });
 
-      // Ground props reserve horizontal footprints and derive their vertical
-      // position from the hill surface so their bases cannot float above it.
-      const occupiedProps=[];
-      function choosePropSpot(width){
-        for(let attempt=0;attempt<260;attempt+=1){
-          const x=random(8,92);
-          const candidate={x,bottom:hillGroundBottom(x)-random(.25,.75),width};
-          const overlaps=occupiedProps.some(existing=>{
-            const xGap=Math.abs(candidate.x-existing.x);
-            const yGap=Math.abs(candidate.bottom-existing.bottom);
-            const horizontal=(candidate.width+existing.width)*.57;
-            const vertical=(candidate.width+existing.width)*.22;
-            return xGap<horizontal&&yGap<vertical;
+      // Mushrooms and stumps are laid out together in one packed row of
+      // visible footprints. This guarantees that the artwork itself cannot be
+      // placed through another prop, regardless of which prop type was created
+      // first. The gaps are randomized, but never allowed to collapse.
+      const PROP_EDGE_MARGIN=4.5;
+      const PROP_MIN_GAP=.9;
+      const visibleWidthFactor={stump:.83,mushroom:.95};
+      const propPatterns=[
+        ['mushroom','stump','mushroom','mushroom','stump','mushroom','stump','mushroom'],
+        ['stump','mushroom','mushroom','stump','mushroom','mushroom','stump','mushroom'],
+        ['mushroom','stump','mushroom','stump','mushroom','mushroom','stump','mushroom'],
+        ['mushroom','mushroom','stump','mushroom','stump','mushroom','mushroom','stump']
+      ];
+
+      function makePropSpecs(){
+        for(let attempt=0;attempt<120;attempt+=1){
+          const pattern=pick(propPatterns);
+          const specs=pattern.map(kind=>{
+            const width=kind==='stump'?random(12.5,16.5):random(8,11.5);
+            return{kind,width,visibleWidth:width*visibleWidthFactor[kind]};
           });
-          if(!overlaps){occupiedProps.push(candidate);return candidate;}
+          const usableWidth=100-PROP_EDGE_MARGIN*2;
+          const minimumNeeded=specs.reduce((sum,spec)=>sum+spec.visibleWidth,0)+PROP_MIN_GAP*(specs.length-1);
+          if(minimumNeeded<=usableWidth)return specs;
         }
-        const x=random(9,91);
-        const fallback={x,bottom:hillGroundBottom(x)-.5,width};
-        occupiedProps.push(fallback);
-        return fallback;
+        // Extremely wide random rolls are rare, but use the low end of the
+        // normal size ranges rather than relaxing collision protection.
+        return pick(propPatterns).map(kind=>{
+          const width=kind==='stump'?12.5:8;
+          return{kind,width,visibleWidth:width*visibleWidthFactor[kind]};
+        });
       }
 
       function addMushroomShadow(spot,width){
@@ -301,29 +312,46 @@
         propLayer.appendChild(shadow);
       }
 
-      for(let index=0;index<3;index+=1){
-        const width=random(12.5,16.5);
-        const spot=choosePropSpot(width);
-        stumpSpots.push({...spot,id:`stump-${index}`});
-        groundProps.push({...spot,kind:'stump'});
-        const stump=document.createElement('img');
-        stump.className='quietcritters-prop quietcritters-prop--stump';
-        stump.src=SCENERY.stump;
-        stump.alt='';
-        stump.draggable=false;
-        stump.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
-        stump.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
-        stump.style.setProperty('--width',`${width.toFixed(2)}%`);
-        stump.style.zIndex=String(4+Math.round((36-spot.bottom)/4));
-        propLayer.appendChild(stump);
-      }
+      const propSpecs=makePropSpecs();
+      const usableWidth=100-PROP_EDGE_MARGIN*2;
+      const visibleTotal=propSpecs.reduce((sum,spec)=>sum+spec.visibleWidth,0);
+      const minimumGapTotal=PROP_MIN_GAP*(propSpecs.length-1);
+      const extraSpace=Math.max(0,usableWidth-visibleTotal-minimumGapTotal);
+      const gapWeights=Array.from({length:propSpecs.length-1},()=>random(.55,1.45));
+      const weightTotal=gapWeights.reduce((sum,value)=>sum+value,0)||1;
+      const gaps=gapWeights.map(weight=>PROP_MIN_GAP+extraSpace*weight/weightTotal);
 
-      const mushroomCount=5+Math.floor(Math.random()*3);
-      for(let index=0;index<mushroomCount;index+=1){
-        const width=random(8.0,11.5);
-        const spot=choosePropSpot(width);
-        groundProps.push({...spot,kind:'mushroom'});
-        addMushroomShadow(spot,width);
+      let cursor=PROP_EDGE_MARGIN;
+      let stumpIndex=0;
+      propSpecs.forEach((spec,index)=>{
+        const visibleHalf=spec.visibleWidth/2;
+        const x=cursor+visibleHalf;
+        const spot={
+          x,
+          bottom:hillGroundBottom(x)-random(.25,.75),
+          width:spec.width,
+          kind:spec.kind,
+          half:visibleHalf
+        };
+        cursor+=spec.visibleWidth+(gaps[index]||0);
+        groundProps.push({...spot,kind:spec.kind});
+
+        if(spec.kind==='stump'){
+          stumpSpots.push({...spot,id:`stump-${stumpIndex++}`});
+          const stump=document.createElement('img');
+          stump.className='quietcritters-prop quietcritters-prop--stump';
+          stump.src=SCENERY.stump;
+          stump.alt='';
+          stump.draggable=false;
+          stump.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
+          stump.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
+          stump.style.setProperty('--width',`${spec.width.toFixed(2)}%`);
+          stump.style.zIndex=String(4+Math.round((36-spot.bottom)/4));
+          propLayer.appendChild(stump);
+          return;
+        }
+
+        addMushroomShadow(spot,spec.width);
         const image=document.createElement('img');
         image.className='quietcritters-prop quietcritters-prop--mushroom';
         image.src=pick(SCENERY.mushrooms);
@@ -331,10 +359,10 @@
         image.draggable=false;
         image.style.setProperty('--left',`${spot.x.toFixed(2)}%`);
         image.style.setProperty('--bottom',`${spot.bottom.toFixed(2)}%`);
-        image.style.setProperty('--width',`${width.toFixed(2)}%`);
+        image.style.setProperty('--width',`${spec.width.toFixed(2)}%`);
         image.style.zIndex=String(4+Math.round((36-spot.bottom)/4));
         propLayer.appendChild(image);
-      }
+      });
 
       const foregroundPositions=[
         {x:random(-1,7),scale:random(.80,1.02)},
