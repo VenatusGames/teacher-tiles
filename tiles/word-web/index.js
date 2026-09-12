@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const MAX_NODES=18;
+  const MAX_NODES=60;
   const CENTER_MAX=64;
   const NODE_MAX=72;
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -42,39 +42,79 @@
     function getLayout(){
       const width=Math.max(1,stage.clientWidth);
       const height=Math.max(1,stage.clientHeight);
-      const inputReserve=clamp(height*.17,54,72);
+      const inputReserve=clamp(height*.15,48,78);
       const usableHeight=Math.max(170,height-inputReserve);
       const cx=width/2;
-      const cy=clamp(usableHeight*.52,88,usableHeight-78);
-      const outerRx=Math.max(108,Math.min(width*.38,width/2-72));
-      const outerRy=Math.max(72,Math.min(usableHeight*.37,usableHeight/2-58));
-      const innerRx=Math.max(88,outerRx*.58);
-      const innerRy=Math.max(60,outerRy*.57);
-      return{width,height,cx,cy,outerRx,outerRy,innerRx,innerRy};
+      const cy=clamp(usableHeight*.5,76,usableHeight-66);
+
+      // Scale the visual language with the tile itself. As a web gets very dense,
+      // connected bubbles gently compact so larger webs remain readable.
+      const tileScale=clamp(Math.min(width/596,usableHeight/372),.66,1.8);
+      const densityScale=clamp(1-Math.max(0,nodes.length-16)*.0095,.6,1);
+      const nodeScale=tileScale*densityScale;
+      const centerSize=clamp(144*tileScale,94,248);
+      const nodeMinWidth=clamp(86*nodeScale,48,152);
+      const nodeMaxWidth=clamp(154*nodeScale,76,270);
+      const nodeMinHeight=clamp(46*nodeScale,28,82);
+      const nodeFont=clamp(15*nodeScale,10,27);
+      const nodePadX=clamp(17*nodeScale,8,30);
+      const nodePadY=clamp(10*nodeScale,5,18);
+      const centerFont=clamp(27*tileScale,17,46);
+      const centerPad=clamp(18*tileScale,11,32);
+      const lineSize=clamp(2*tileScale,1.4,3.4);
+
+      stage.style.setProperty('--wordweb-center-size',`${centerSize}px`);
+      stage.style.setProperty('--wordweb-center-font',`${centerFont}px`);
+      stage.style.setProperty('--wordweb-center-pad',`${centerPad}px`);
+      stage.style.setProperty('--wordweb-node-min-width',`${nodeMinWidth}px`);
+      stage.style.setProperty('--wordweb-node-max-width',`${nodeMaxWidth}px`);
+      stage.style.setProperty('--wordweb-node-min-height',`${nodeMinHeight}px`);
+      stage.style.setProperty('--wordweb-node-font',`${nodeFont}px`);
+      stage.style.setProperty('--wordweb-node-pad-x',`${nodePadX}px`);
+      stage.style.setProperty('--wordweb-node-pad-y',`${nodePadY}px`);
+      stage.style.setProperty('--wordweb-line-size',`${lineSize}px`);
+
+      const outerRx=Math.max(58,width/2-nodeMaxWidth*.5-12);
+      const outerRy=Math.max(48,usableHeight/2-nodeMinHeight*.58-13);
+      const innerRx=Math.min(outerRx,centerSize*.5+nodeMaxWidth*.48+12);
+      const innerRy=Math.min(outerRy,centerSize*.46+nodeMinHeight*.62+10);
+      return{width,height,cx,cy,outerRx,outerRy,innerRx,innerRy,centerSize,nodeMinHeight,nodeMaxWidth};
+    }
+
+    function distributeAcrossRings(count,ringCount){
+      const weights=Array.from({length:ringCount},(_,index)=>index+1);
+      const weightTotal=weights.reduce((sum,value)=>sum+value,0);
+      const counts=weights.map(weight=>Math.floor(count*weight/weightTotal));
+      let assigned=counts.reduce((sum,value)=>sum+value,0);
+      for(let index=ringCount-1;assigned<count;index=(index-1+ringCount)%ringCount){
+        counts[index]+=1;
+        assigned+=1;
+      }
+      return counts;
     }
 
     function positionsFor(count,layout){
       if(!count)return[];
       const result=[];
-      const makeRing=(amount,startIndex,rx,ry,phase)=>{
+      const ringCount=count<=10?1:count<=22?2:count<=38?3:count<=52?4:5;
+      const ringCounts=distributeAcrossRings(count,ringCount);
+      let cursor=0;
+      ringCounts.forEach((amount,ringIndex)=>{
+        if(!amount)return;
+        const t=ringCount===1?1:ringIndex/(ringCount-1);
+        const rx=ringCount===1?layout.outerRx:layout.innerRx+(layout.outerRx-layout.innerRx)*t;
+        const ry=ringCount===1?layout.outerRy:layout.innerRy+(layout.outerRy-layout.innerRy)*t;
+        const phase=-Math.PI/2+(ringIndex%2?Math.PI/Math.max(2,amount):0)+(amount%2===0?Math.PI/Math.max(2,amount):0);
         for(let i=0;i<amount;i++){
           const angle=phase+(Math.PI*2*i/amount);
-          result[startIndex+i]={
-            x:layout.cx+Math.cos(angle)*rx,
-            y:layout.cy+Math.sin(angle)*ry
-          };
+          result[cursor++]=xY(layout,rx,ry,angle);
         }
-      };
-      if(count<=10){
-        const phase=-Math.PI/2+(count%2===0?Math.PI/count:0);
-        makeRing(count,0,layout.outerRx,layout.outerRy,phase);
-      }else{
-        const outerCount=Math.ceil(count*.62);
-        const innerCount=count-outerCount;
-        makeRing(outerCount,0,layout.outerRx,layout.outerRy,-Math.PI/2+(outerCount%2===0?Math.PI/outerCount:0));
-        makeRing(innerCount,outerCount,layout.innerRx,layout.innerRy,-Math.PI/2+Math.PI/Math.max(2,innerCount));
-      }
+      });
       return result;
+    }
+
+    function xY(layout,rx,ry,angle){
+      return{x:layout.cx+Math.cos(angle)*rx,y:layout.cy+Math.sin(angle)*ry};
     }
 
     function placeConnector(connector,layout,position){
@@ -84,7 +124,7 @@
       connector.style.left=`${layout.cx}px`;
       connector.style.top=`${layout.cy}px`;
       connector.style.width=`${distance}px`;
-      connector.style.transform=`translateY(-50%) rotate(${Math.atan2(dy,dx)}rad)`;
+      connector.style.setProperty('--wordweb-angle',`${Math.atan2(dy,dx)}rad`);
     }
 
     function layoutWeb(){
@@ -163,18 +203,23 @@
       if(animate){
         const layout=getLayout();
         bubble.classList.add('is-entering');
-        connector.classList.add('is-entering');
+        connector.classList.add('is-growing');
         bubble.style.left=`${layout.cx}px`;
         bubble.style.top=`${layout.cy}px`;
         connector.style.left=`${layout.cx}px`;
         connector.style.top=`${layout.cy}px`;
         connector.style.width='0px';
-        connector.style.transform='translateY(-50%) rotate(-90deg)';
-        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        connector.style.setProperty('--wordweb-angle','-1.5708rad');
+
+        // Commit the center-origin start state first. On the next frame every bubble
+        // receives its new position while the new connector stays collapsed at its
+        // center origin; one frame later the line grows outward to meet the bubble.
+        void bubble.offsetWidth;
+        requestAnimationFrame(()=>{
           bubble.classList.remove('is-entering');
-          connector.classList.remove('is-entering');
           layoutWeb();
-        }));
+          requestAnimationFrame(()=>connector.classList.remove('is-growing'));
+        });
       }
       return item;
     }

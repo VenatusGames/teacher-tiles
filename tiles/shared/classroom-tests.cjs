@@ -15,7 +15,7 @@ assert.equal(quotes.length,365);for(const q of quotes){assert(q.text&&q.author&&
 assert.equal(vocab.normalize(Array.from({length:100},()=>({word:'word',definition:'x'.repeat(500)}))).length,80);
 assert.equal(vocab.normalize([{word:' ',definition:'ignored'},null,{word:' term ',definition:'meaning'}]).length,1);
 assert.equal(vocab.normalize([{word:'w',definition:'x'.repeat(500)}])[0].definition.length,240);
-assert.equal(wordWeb.normalizeNodes(Array.from({length:30},(_,i)=>({text:` word ${i} `}))).length,18);
+assert.equal(wordWeb.normalizeNodes(Array.from({length:100},(_,i)=>({text:` word ${i} `}))).length,60);
 assert.equal(wordWeb.normalizeNodes([{text:' '},{text:' connected idea '}])[0].text,'connected idea');
 const t=tables.normalize({families:[2,2,4,-1,99,'5'],start:20,end:0,practice:true});
 assert.deepEqual(Array.from(t.families),[2,4]);assert.equal(t.start,20);assert.equal(t.end,20);
