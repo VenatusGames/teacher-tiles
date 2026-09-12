@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260910-fishtank-deadspace-1" />
   <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-6" />
-  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=20260912-quiet-critters-3" />
+  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=20260912-quiet-critters-4" />
   <link rel="stylesheet" href="tiles/butterfly-garden/styles.css?v=20260910-butterfly-garden-3" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260908-polish-1" />
@@ -2245,6 +2245,8 @@
         <div class="tile-settings-panel" hidden><strong>Quiet Critters settings</strong>
           <div class="tile-setting"><span>Visitor mode</span><div class="tile-mode-switch" role="group" aria-label="Quiet Critters visitor mode"><button type="button" data-quietcritters-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-quietcritters-mode="microphone" aria-pressed="false">Microphone</button></div></div>
           <small class="quietcritters-note">In No mic mode, quiet critters visit slowly over time without using the microphone.</small>
+          <label class="tile-setting tile-check"><input class="quietcritters-disable-sfx" type="checkbox"> Disable SFX</label>
+          <small class="quietcritters-note">Disables the quiet cricket ambience, forest twinkles, and critter sparkle sounds.</small>
           <label class="tile-setting quietcritters-mic-setting" hidden><span>Quiet level <output class="quietcritters-threshold-value">45%</output></span><input class="quietcritters-threshold" aria-label="Quiet level" type="range" min="15" max="85" value="45"></label>
           <label class="tile-setting quietcritters-mic-setting" hidden><span>Microphone sensitivity <output class="quietcritters-sensitivity-value">100%</output></span><input class="quietcritters-sensitivity" aria-label="Microphone sensitivity" type="range" min="30" max="200" value="100"></label>
           <small class="quietcritters-note quietcritters-mic-setting" hidden>In Microphone mode, staying below the quiet level invites visitors. A burst of noise sends them poofing back into the forest.</small>
@@ -3716,7 +3718,7 @@
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
   <script src="tiles/fish-tank/index.js?v=20260912-reset-1"></script>
   <script src="tiles/sleepy-monster/index.js?v=20260912-reset-1"></script>
-  <script src="tiles/quiet-critters/index.js?v=20260912-quiet-critters-3"></script>
+  <script src="tiles/quiet-critters/index.js?v=20260912-quiet-critters-4"></script>
   <script src="tiles/butterfly-garden/index.js?v=20260912-reset-1"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
