@@ -16090,3 +16090,7 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .holiday-badge{border-color:#83bd8d66;background:linear-gradient(110deg,#efffe9,#b7e5ae 48%,#e7f9df);color:#315c35;box-shadow:0 2px 6px #47774422}
 #context-menu .context-menu__item>.holiday-subscriber-crown{left:5px;right:auto}
 #context-menu .context-menu__card-wrap:has([data-holiday])>.context-menu__favorite{right:4px}
+
+#context-menu .context-menu__category-row--nested{margin-left:7px}
+#context-menu .context-menu__holiday-children{margin-left:7px}
+#context-menu .context-menu__holiday-children .context-menu__holiday-child{min-width:0;flex:1;padding-left:4px}

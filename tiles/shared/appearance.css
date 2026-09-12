@@ -27,3 +27,10 @@ body.is-board-idle .module:not(.is-appearance-open)>.tile-appearance-toggle{opac
 .tile-appearance-field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:13px;font-weight:600}.tile-appearance-field input,.tile-appearance-field select{width:110px;min-height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);padding:5px 8px}.tile-appearance-field input[type=color]{padding:3px;cursor:pointer}
 
 .tile-appearance-tool[data-appearance-key="reset"]{color:#dc3545}
+
+.module>.tile-settings-beside-brush{position:absolute!important;left:47px!important;bottom:9px!important;right:auto!important;top:auto!important;z-index:86!important;width:32px!important;height:32px!important;margin:0!important;opacity:0;pointer-events:none;transition:opacity .15s}
+.module:is(:hover,:has(:focus-visible),.has-tile-settings-open)>.tile-settings-beside-brush{opacity:1;pointer-events:auto}
+.module>.tile-settings-beside-brush:is(button),.module>.tile-settings-beside-brush>button{width:32px!important;height:32px!important;min-height:0;padding:6px!important;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 3px 10px #0f172a18}
+.module:has(>.tile-settings-beside-brush) .customization-bar{padding-left:80px}
+
+.module>.tile-settings-beside-brush>.collection-settings,.module>.tile-settings-beside-brush>.classmeter-settings{left:0;right:auto}

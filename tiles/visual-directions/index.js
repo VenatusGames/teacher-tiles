@@ -55,10 +55,10 @@
         name.addEventListener('dblclick',event=>{event.stopPropagation();editTitle()});name.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();editTitle()}});
         content.append(imageButton,name);
         const tools=document.createElement('div');tools.className='direction-actions';
-        for(const [text,description,action] of [['←','Move earlier',()=>move(i,i-1)],['→','Move later',()=>move(i,i+1)],['×','Delete step',()=>{cards.splice(i,1);close();render();changed()}]]){
+        for(const [text,description,action] of [['×','Delete step',()=>{cards.splice(i,1);close();render();changed()}]]){
           const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',`${description}: ${card.title}`);b.title=description;if(action)b.addEventListener('click',action);else{b.className='direction-grip';drag(b,i)}if(text==='←')b.disabled=i===0;if(text==='→')b.disabled=i===cards.length-1;tools.appendChild(b);
         }
-        article.append(label,content,tools);drag(article,i);wall.appendChild(article);
+        const grip=document.createElement('span');grip.className='direction-drag-indicator';grip.textContent='⠿';grip.title='Drag to reorder';grip.setAttribute('aria-hidden','true');article.append(label,grip,content,tools);drag(article,i);wall.appendChild(article);
       });
       const add=document.createElement('button');add.type='button';add.className='direction-add-card';add.textContent='+';add.setAttribute('aria-label','Add step');add.title='Add step';add.disabled=cards.length>=20;
       add.addEventListener('click',()=>{cards.push({title:'New step',image:presets[0].image});render();changed();fitCards()});wall.appendChild(add);

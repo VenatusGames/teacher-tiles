@@ -12,3 +12,5 @@
 .directions-wall .direction-actions{position:absolute;bottom:3px;right:3px;z-index:2;border-radius:6px;background:var(--surface-solid);gap:2px}
 .directions-wall .direction-actions button{width:20px;height:20px;font-size:12px}
 .directions-wall .direction-add-card{min-height:0;font-size:clamp(20px,5cqw,42px)}
+
+.direction-drag-indicator{position:absolute;right:7px;top:5px;font-size:19px;line-height:1;color:var(--module-text);opacity:.4;cursor:grab}

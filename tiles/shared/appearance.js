@@ -154,6 +154,13 @@
     const button=document.createElement('button');button.type='button';button.className='tile-appearance-toggle';button.setAttribute('aria-label','Customize tile');button.title='Customize tile';button.setAttribute('aria-expanded','false');
     const brush=document.querySelector('#customize-toggle svg');if(brush)button.appendChild(brush.cloneNode(true));
     m.classList.add('has-appearance-controls');m.appendChild(button);
+    const settings=m.querySelector('.tile-settings-toggle,.collection-settings-toggle,.classmeter-settings-toggle,.highfrequency-settings-button');
+    if(settings){
+      if(settings.classList.contains('highfrequency-settings-button')){settings.textContent='⚙';settings.setAttribute('aria-label','Open settings');settings.title='Settings'}
+      const anchor=settings.closest('.tile-settings-wrap,.collection-settings-wrap,.classmeter-settings-wrap')||settings;
+      anchor.classList.add('tile-settings-beside-brush');m.appendChild(anchor);
+    }
+
     const state={module:m,button,controls,onChange,defaults};button.addEventListener('click',()=>open(state));
     m.addEventListener('pointerenter',()=>{if(active===state)clearTimeout(hideTimer)});m.addEventListener('pointerleave',deferClose);
     m.addEventListener('keydown',event=>{if(event.key==='Escape'&&active===state){event.stopPropagation();close();button.focus()}});
