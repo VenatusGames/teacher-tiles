@@ -15675,6 +15675,22 @@ body.boards-screen-open .board-frame-menu{display:none!important}
 @media(prefers-reduced-motion:reduce){.board-frame-menu,.board-frame-row,.workspace.is-frame-jump{animation:none}.board-frame-capture,.board-frame-button{transition:none}}
 
 /* Presentation idle: hide chrome and hover affordances after 10 seconds on any non-empty board. */
+/*
+  The full-viewport idle shield is intentional. Native form controls, custom
+  cursor URLs, and embedded frames can retain their own cursor while stationary
+  even after an ancestor switches to cursor:none. Putting a transparent hit
+  surface above the app forces the browser to resolve the idle cursor to none.
+  The existing capture-phase activity listeners remove it on the first input.
+*/
+body.is-board-idle::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  background:transparent;
+  pointer-events:auto;
+  cursor:none!important;
+}
 body.is-board-idle,
 body.is-board-idle *,
 body.is-board-idle.has-custom-cursor,
@@ -15683,6 +15699,13 @@ body.is-board-idle.has-custom-cursor *{
 }
 body.is-board-idle.has-custom-cursor .workspace .module.is-idle-unhovered,
 body.is-board-idle.has-custom-cursor .workspace .module.is-idle-unhovered *{
+  cursor:none!important;
+}
+body.is-board-idle input,
+body.is-board-idle textarea,
+body.is-board-idle select,
+body.is-board-idle [contenteditable]:not([contenteditable="false"]),
+body.is-board-idle .module-text-edit-target{
   cursor:none!important;
 }
 body.is-board-idle .workspace-controls,

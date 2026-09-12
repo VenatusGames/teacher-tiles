@@ -1476,7 +1476,9 @@ async function inviteToOrganization(event) {
 }
 
 function closeBoardsView() {
-  if (!boardsView || boardsView.hidden) return;
+  if (!boardsView) return;
+  // Always synchronize the DOM and body state. A stale boards-screen-open class
+  // must never survive just because the view was already marked hidden.
   boardsView.hidden = true;
   boardsView.setAttribute("aria-hidden", "true");
   document.body.classList.remove("boards-screen-open");
@@ -2487,6 +2489,13 @@ async function loadBoard(boardId, { closeView = true } = {}) {
     }
 
     if (closeView) closeBoardsView();
+
+    // Tile setup may schedule focus() during restore. Dispatch after those queued
+    // callbacks have had a chance to run so app.js can normalize frame-hotkey
+    // state and clear restore-created input focus.
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent("teachertiles:boardloaded", { detail: { boardId } }));
+    });
   } catch (error) {
     console.error("TeacherTiles board load failed", error);
     setBoardStatus("Could not load board", true);
@@ -3717,6 +3726,9 @@ async function initializeBoardsForUser(user) {
         }
         if (local.dirty) scheduleCloudBoardSave(CLOUD_SAVE_DELAY);
         setBoardStatus("");
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent("teachertiles:boardloaded", { detail: { boardId: activeBoardId } }));
+        });
         return;
       }
     }

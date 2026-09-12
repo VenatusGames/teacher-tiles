@@ -1834,19 +1834,20 @@ function isVisibleTypingTarget(target){
   return target.getClientRects().length>0;
 }
 
-function resetBoardFrameHotkey({blurStaleFocus=false}={}){
+function resetBoardFrameHotkey({blurTypingFocus=false}={}){
   boardFrameKeyHeld=false;
   clearTimeout(boardFrameCloseTimer);
   closeBoardFrameMenu({force:true});
-  if(!blurStaleFocus)return;
+  if(!blurTypingFocus)return;
   const active=document.activeElement;
-  if(active instanceof HTMLElement&&isTypingTarget(active)&&!isVisibleTypingTarget(active))active.blur();
+  if(active instanceof HTMLElement&&isTypingTarget(active))active.blur();
 }
 
 window.addEventListener('keydown',event=>{
   const isFrameKey=event.code==='KeyF'||String(event.key||'').toLowerCase()==='f';
   if(!isFrameKey||event.ctrlKey||event.metaKey||event.altKey)return;
-  if(document.body.classList.contains('boards-screen-open'))return;
+  const boardsView=document.getElementById('boards-view');
+  if(boardsView&&!boardsView.hidden)return;
   const target=event.target instanceof Element?event.target:null;
   if(isVisibleTypingTarget(target)||isVisibleTypingTarget(document.activeElement))return;
   event.preventDefault();
@@ -1864,10 +1865,12 @@ window.addEventListener('keyup',event=>{
 },{capture:true});
 
 window.addEventListener('blur',()=>resetBoardFrameHotkey());
-window.addEventListener('pageshow',()=>resetBoardFrameHotkey({blurStaleFocus:true}));
+window.addEventListener('pageshow',()=>resetBoardFrameHotkey({blurTypingFocus:true}));
 window.addEventListener('teachertiles:boardloaded',()=>{
-  resetBoardFrameHotkey();
-  requestAnimationFrame(()=>resetBoardFrameHotkey({blurStaleFocus:true}));
+  // Board setup can queue focus() calls while restoring tiles. The boardloaded
+  // event is dispatched on the next animation frame after restore, so clearing
+  // typing focus here removes restore-created focus without affecting normal use.
+  resetBoardFrameHotkey({blurTypingFocus:true});
 });
 
 document.addEventListener('keydown',event=>{
