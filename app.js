@@ -127,6 +127,9 @@ function detachHistoryElements(elements){
     selectedModules.delete(el);
     el.classList.remove('is-selected','is-over-trash','is-dragging');
     el._deactivate?.();
+    for(const media of el.querySelectorAll('audio,video'))media.pause();
+    for(const sound of el._activeTileSounds||[])sound.pause();
+    el._activeTileSounds?.clear();
     if(el.isConnected)el.remove();
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
@@ -1147,8 +1150,8 @@ function boardPreferenceSnapshot(){
   };
 }
 
-function playUiSfx(kind='click',volumeScale=1){
-  if(appPreferences.uiMuted)return;
+function playUiSfx(kind='click',volumeScale=1,owner=null){
+  if(appPreferences.uiMuted||(owner&&!owner.isConnected))return;
   try{
     const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
@@ -1156,7 +1159,11 @@ function playUiSfx(kind='click',volumeScale=1){
     sound.volume=clamp(base*(appPreferences.uiVolume/100)*Math.max(0,Number(volumeScale)||0),0,1);
     sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
-    sound.play().catch(()=>{});
+    if(owner){
+      const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());sounds.add(sound);
+      const release=()=>sounds.delete(sound);sound.addEventListener('ended',release,{once:true});sound.addEventListener('error',release,{once:true});
+      sound.play().catch(release);
+    }else sound.play().catch(()=>{});
   }catch{}
 }
 
@@ -3609,9 +3616,10 @@ const shapePaths={
 function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!layer)return;layer.innerHTML='';const colors=['#ff6b7a','#ffd34e','#69c6ff','#7edc8b','#9d7cff','#ff9c5a'];for(let i=0;i<54;i++){const p=document.createElement('i');p.className='confetti-piece';const a=Math.random()*Math.PI*2,d=90+Math.random()*230;p.style.setProperty('--x',`${Math.cos(a)*d}px`);p.style.setProperty('--y',`${Math.sin(a)*d-50}px`);p.style.setProperty('--r',`${Math.round(Math.random()*760-380)}deg`);p.style.setProperty('--confetti',colors[i%colors.length]);p.style.width=`${6+Math.random()*5}px`;p.style.height=`${8+Math.random()*10}px`;p.style.animationDelay=`${Math.random()*.12}s`;layer.appendChild(p)}setTimeout(()=>layer.innerHTML='',1700)}
 
 function celebrateTimerFinish(m){
+  if(!m.isConnected)return;
   launchConfetti(m);
-  playUiSfx('confetti');
-  playUiSfx('timer-tada');
+  playUiSfx('confetti',1,m);
+  playUiSfx('timer-tada',1,m);
 }
 
 function bindTimerControls(m,onRender,{onFinish}={}){
@@ -3653,6 +3661,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   input.addEventListener('keydown',e=>{if(e.key==='Enter')set.click()});
 
   const tick=()=>{
+    if(!m.isConnected){pauseDeletedTimer();return}
     if(!running)return;
     left=Math.max(0,(end-Date.now())/1000);
     render();
@@ -3697,6 +3706,13 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     render();
   };
 
+  const priorDeactivate=m._deactivate;
+  const pauseDeletedTimer=()=>{
+    if(running)left=Math.max(0,(end-Date.now())/1000);
+    running=false;stop();end=0;m.classList.remove('is-running');
+    start.textContent=left<total?'Resume':'Start';render();
+  };
+  m._deactivate=()=>{pauseDeletedTimer();priorDeactivate?.()};
   render();
   return()=>{
     stop();
@@ -11229,6 +11245,9 @@ function setupProgressBar(m){
     render();
   };
 
+  const priorDeactivate=m._deactivate,priorReactivate=m._reactivate;
+  m._deactivate=()=>{running=false;window.clearInterval(interval);interval=null;priorDeactivate?.()};
+  m._reactivate=()=>{priorReactivate?.();if(!interval)interval=window.setInterval(render,200);render()};
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
@@ -17327,6 +17346,7 @@ function setupSpinner(m){
   let spinning=false;
   let raf=0;
   let winnerVisible=false;
+  let spinGeneration=0,cancelMetadata=null;
 
   const palette=[
     ['#ffb8a7','#ed806e'],['#ffe09a','#eebf50'],['#c8eaa9','#81bd67'],['#a9e7dc','#55bbaa'],
@@ -17531,6 +17551,7 @@ function setupSpinner(m){
   }
 
   function showWinner(name){
+    if(!m.isConnected)return;
     winnerVisible=true;
     winner.textContent=name;
     resultName.textContent=name;
@@ -17544,12 +17565,13 @@ function setupSpinner(m){
     m.classList.add('spinner-pop');
 
     fireSpinnerConfetti();
-    playUiSfx('confetti');
-    playUiSfx('timer-tada');
+    playUiSfx('confetti',1,m);
+    playUiSfx('timer-tada',1,m);
   }
 
   async function spin(){
-    if(spinning||winnerVisible||names.length<1)return;
+    if(!m.isConnected||spinning||winnerVisible||names.length<1)return;
+    const generation=++spinGeneration;
 
     spinning=true;
     m.classList.add('is-spinning');
@@ -17589,12 +17611,15 @@ function setupSpinner(m){
 
     if(!Number.isFinite(spinAudio.duration)||spinAudio.duration<=0){
       await new Promise(resolve=>{
-        const done=()=>resolve();
+        const done=()=>{clearTimeout(timeout);spinAudio.removeEventListener('loadedmetadata',done);spinAudio.removeEventListener('error',done);cancelMetadata=null;resolve()};
+        const timeout=setTimeout(done,2000);cancelMetadata=done;
+        spinAudio.addEventListener('error',done,{once:true});
         spinAudio.addEventListener('loadedmetadata',done,{once:true});
         spinAudio.load();
       });
     }
 
+    if(generation!==spinGeneration||!m.isConnected)return;
     const duration=Math.max(600,(Number.isFinite(spinAudio.duration)?spinAudio.duration:3.683)*1000);
     const start=performance.now();
     const ease=t=>1-Math.pow(1-t,4);
@@ -17603,6 +17628,7 @@ function setupSpinner(m){
 
     cancelAnimationFrame(raf);
     const tick=now=>{
+      if(generation!==spinGeneration||!m.isConnected)return;
       const t=Math.min(1,(now-start)/duration);
       rotation=startRotation+total*ease(t);
       drawWheel();
@@ -17705,9 +17731,15 @@ function setupSpinner(m){
     winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';
   };
 
+  const priorDeactivate=m._deactivate;
+  m._deactivate=()=>{
+    spinGeneration++;cancelMetadata?.();cancelAnimationFrame(raf);spinning=false;
+    spinAudio.pause();spinAudio.currentTime=0;spinButton.disabled=false;m.classList.remove('is-spinning');
+    dismissWinner();winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';priorDeactivate?.();
+  };
   const prior=m._cleanup;
   m._cleanup=()=>{
-    prior?.();
+    m._deactivate();prior?.();
     detachRosterLoader();
     cancelAnimationFrame(raf);
     ro.disconnect();

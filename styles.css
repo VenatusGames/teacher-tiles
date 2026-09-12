@@ -15955,3 +15955,8 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 @media(max-width:420px){#context-menu{grid-template-columns:152px minmax(0,1fr)}#context-menu .context-menu__filter{font-size:10px}}
 /* Keep the hover pin before its category label. */
 #context-menu .context-menu__category-row .context-menu__pin{order:-1}
+
+/* Every earned patch shares Beta Tester's shine; locked patches stay matte. */
+.profile-badge--locked .profile-badge__shine{display:none;animation:none}
+/* These floating tiles use native hover instead of the timer pointer tracker. */
+:is(.link-module,.stoplight-module[data-tile-skin="stoplight-freestanding"]):is(:hover,:has(:focus-visible))>.resize-handle::before{opacity:1;transform:scale(1.04)}
