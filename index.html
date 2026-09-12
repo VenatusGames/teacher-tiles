@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260912-subscriber-patch-2" />
+  <link rel="stylesheet" href="styles.css?v=20260912-tile-library-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -1727,10 +1727,10 @@
 
 
 
-  <div id="context-menu" class="context-menu" role="menu" aria-hidden="true">
+  <div id="context-menu" class="context-menu" role="dialog" aria-label="Add tile" aria-hidden="true">
     <div class="context-menu__header">
       <div class="context-menu__title-row">
-        <div class="context-menu__title" data-i18n="context.addTile">Add tile</div>
+        <div class="context-menu__title" data-i18n="context.addTile">Add tile</div><button type="button" class="context-menu__close" aria-label="Close Add tile">×</button>
       </div>
       <div class="context-menu__search-wrap">
         <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -1747,7 +1747,7 @@
         </button>
         <div id="context-menu-category-drawer" class="context-menu__category-drawer" aria-hidden="true">
           <div class="context-menu__category-drawer-head"><strong>Choose a category</strong><button type="button" class="context-menu__category-drawer-close" aria-label="Close categories">×</button></div>
-          <div class="context-menu__category-drawer-grid" role="tablist" aria-label="All module categories">
+          <div class="context-menu__category-drawer-grid" role="group" aria-label="Tile categories">
             <button type="button" class="context-menu__filter context-menu__category-drawer-all" data-category-drawer-filter="all" data-i18n="context.all">ALL</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="text" data-i18n="context.cat.text">TEXT</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="media" data-i18n="context.cat.media">MEDIA</button>
@@ -1764,6 +1764,7 @@
             <button type="button" class="context-menu__filter" data-category-drawer-filter="science" data-i18n="context.cat.science">SCIENCE</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="geography" data-i18n="context.cat.geography">GEOGRAPHY</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="sel" data-i18n="context.cat.sel">SEL</button>
+            <button type="button" class="context-menu__filter" data-category-drawer-filter="classconnect" data-i18n="context.cat.classconnect">Class Connect</button>
           </div>
         </div>
       </div>
@@ -3832,7 +3833,7 @@
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
-  <script src="app.js?v=20260912-coin-sfx-volume-1"></script>
+  <script src="app.js?v=20260912-tile-library-1"></script>
   <script src="tiles/lesson-planner.js?v=2"></script>
   <script type="module" src="firebase-auth.js?v=20260912-subscriber-patch-2"></script>
 

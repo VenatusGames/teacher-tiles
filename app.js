@@ -1273,7 +1273,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add tile','context.all':'ALL','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
-    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'Class Connect',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
@@ -1308,7 +1308,7 @@ const APP_TRANSLATIONS={
     'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TODO','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
-    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL',
+    'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'Class Connect',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
@@ -2458,7 +2458,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['all','text','media','tools','time','audio','games','planning','pbis','accessibility','language','literacy','math','science','geography','sel'];
+const menuCategoryOrder=['all','text','media','tools','time','audio','games','planning','pbis','accessibility','language','literacy','math','science','geography','sel','classconnect'];
 
 function menuCategoryLabel(category){
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -2468,33 +2468,46 @@ function normalizeMenuSearch(value=''){
   return value.toLowerCase().trim().replace(/\s+/g,' ');
 }
 
+// Keep the original buttons and their metadata; only rearrange the catalog view.
+menu.insertBefore(menuCategoryDrawer,menu.querySelector('.context-menu__list'));
+menuCategoryDrawer.setAttribute('aria-hidden','false');
+menuCategoryDrawer.setAttribute('aria-label','Tile categories');
+menu.querySelector('.context-menu__close')?.addEventListener('click',closeMenu);
+menu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeMenu()}});
+
 function applyMenuView(){
   const query=normalizeMenuSearch(menuSearch?.value);
   const searching=Boolean(query);
   menu.classList.toggle('is-searching',searching);
-  if(searching)setMenuCategoryDrawer(false);
   menuSearchClear?.classList.toggle('is-visible',searching);
-
-  let visibleCount=0;
-  menuItems.forEach(item=>{
-    const searchable=[
-      item.querySelector('strong')?.textContent||'',
-      item.querySelector('small')?.textContent||'',
-      item.dataset.module||'',
-      item.dataset.category||''
-    ].join(' ').toLowerCase();
-
-    const matchesSearch=!searching||searchable.includes(query);
-    const categories=(item.dataset.category||'').split(/\s+/).filter(Boolean);
-    const matchesCategory=activeMenuCategory==='all'||categories.includes(activeMenuCategory);
-    const visible=searching?matchesSearch:matchesCategory;
-    item.hidden=!visible;
-    if(visible)visibleCount++;
-  });
-
-  if(menuNoResults)menuNoResults.hidden=!searching||visibleCount>0;
   const list=menu.querySelector('.context-menu__list');
-  if(list)list.scrollTop=0;
+  // Search continues to cover the entire catalog, as in the original menu.
+  const categories=searching||activeMenuCategory==='all'?menuCategoryOrder.slice(1):[activeMenuCategory];
+  const fragment=document.createDocumentFragment();
+  const included=new Set();
+  let visibleCount=0;
+  menuItems.forEach(item=>{item.hidden=true});
+  for(const category of categories){
+    const matches=menuItems.filter(item=>{
+      const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
+      return (!included.has(item)||(!searching&&activeMenuCategory==='all'))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!searching||searchable.includes(query));
+    });
+    if(!matches.length)continue;
+    const section=document.createElement('section');section.className='context-menu__section';
+    const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);
+    const grid=document.createElement('div');grid.className='context-menu__tile-grid';
+    matches.forEach(item=>{const card=included.has(item)?item.cloneNode(true):item;included.add(item);card.hidden=false;grid.appendChild(card);visibleCount++});
+    section.append(heading,grid);fragment.appendChild(section);
+  }
+  // Retain hidden buttons in the DOM for localization and catalog integrations.
+  const hidden=document.createElement('div');hidden.hidden=true;
+  menuItems.filter(item=>!included.has(item)).forEach(item=>hidden.appendChild(item));
+  fragment.appendChild(hidden);
+  menuNoResults.hidden=visibleCount>0;
+  menuNoResults.querySelector('strong').textContent=searching?translateAppText('context.none'):menuCategoryLabel(activeMenuCategory);
+  menuNoResults.querySelector('small').textContent=searching?translateAppText('context.try'):'No tiles here yet. Explore another category.';
+  fragment.appendChild(menuNoResults);
+  list.replaceChildren(fragment);list.scrollTop=0;
 }
 
 function setMenuCategory(category='all'){
@@ -2504,50 +2517,14 @@ function setMenuCategory(category='all'){
   if(menuCategoryCycle){
     menuCategoryCycle.setAttribute('aria-label',`Current category: ${label}. Open category menu.`);
   }
-  menuDrawerFilters.forEach(b=>b.classList.toggle('is-active',b.dataset.categoryDrawerFilter===activeMenuCategory));
+  menuDrawerFilters.forEach(b=>{const active=b.dataset.categoryDrawerFilter===activeMenuCategory;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',String(active))});
   applyMenuView();
 }
 
-function syncMenuCategoryDrawerLayout(){
-  if(!menuCategoryDrawer||!menuDrawerFilters.length)return;
-  const categoryButtons=menuDrawerFilters.filter(button=>button.dataset.categoryDrawerFilter!=='all');
-  const sample=categoryButtons[0];
-  if(!sample)return;
-
-  const style=getComputedStyle(sample);
-  const canvas=syncMenuCategoryDrawerLayout.canvas||(syncMenuCategoryDrawerLayout.canvas=document.createElement('canvas'));
-  const context=canvas.getContext('2d');
-  let longestLabel=0;
-  if(context){
-    context.font=`${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    const letterSpacing=Number.parseFloat(style.letterSpacing)||0;
-    categoryButtons.forEach(button=>{
-      const label=(button.textContent||'').trim();
-      longestLabel=Math.max(longestLabel,context.measureText(label).width+Math.max(0,label.length-1)*letterSpacing);
-    });
-  }
-
-  const viewportWidth=Math.max(0,window.innerWidth-16);
-  const menuWidth=menu.getBoundingClientRect().width||268;
-  const columnWidth=Math.max(72,Math.ceil(longestLabel+22));
-  const desiredWidth=Math.max(menuWidth,columnWidth*3+30);
-  const drawerWidth=Math.min(viewportWidth,400,desiredWidth);
-  menu.style.setProperty('--category-drawer-width',`${drawerWidth}px`);
-
-  const menuRect=menu.getBoundingClientRect();
-  const railRect=menuCategoryDrawer.parentElement?.getBoundingClientRect()||menuRect;
-  const centeredLeft=menuRect.left+(menuRect.width-drawerWidth)/2;
-  const viewportLeft=clamp(centeredLeft,8,Math.max(8,window.innerWidth-drawerWidth-8));
-  menu.style.setProperty('--category-drawer-offset',`${Math.round(viewportLeft-railRect.left)}px`);
-}
-
-function setMenuCategoryDrawer(open){
-  const show=Boolean(open);
-  if(show)syncMenuCategoryDrawerLayout();
-  menu.classList.toggle('has-category-drawer',show);
-  menuCategoryDrawerToggle?.setAttribute('aria-expanded',String(show));
-  menuCategoryDrawer?.setAttribute('aria-hidden',String(!show));
-  menu.classList.remove('category-drawer-left');
+function syncMenuCategoryDrawerLayout(){} // Sidebar uses responsive CSS layout.
+function setMenuCategoryDrawer(){
+  menu.classList.remove('has-category-drawer');
+  menuCategoryDrawer?.setAttribute('aria-hidden','false');
 }
 
 function clearMenuSearch(){
@@ -2562,6 +2539,7 @@ menuCategoryCycle?.addEventListener('click',event=>{
 });
 menuDrawerFilters.forEach(b=>b.addEventListener('click',e=>{
   e.stopPropagation();
+  if(menuSearch)menuSearch.value='';
   setMenuCategory(b.dataset.categoryDrawerFilter);
   setMenuCategoryDrawer(false);
 }));
@@ -2589,7 +2567,7 @@ menuSearchClear?.addEventListener('click',e=>{
 
 setMenuCategory('all');
 window.addEventListener('resize',()=>{if(menu.classList.contains('has-category-drawer'))syncMenuCategoryDrawerLayout()});
-window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(syncMenuCategoryDrawerLayout));
+window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(applyMenuView));
 
 function closeMenu(){
   setMenuCategoryDrawer(false);
