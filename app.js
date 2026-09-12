@@ -91,7 +91,7 @@ function transformsDiffer(a,b){
 function historyElements(action){
   if(action.type==='transform')return action.entries.map(entry=>entry.el);
   if(action.type==='delete')return action.entries.map(entry=>entry.el);
-  if(action.type==='drawing')return action.el?[action.el]:[];
+  if(action.type==='drawing'||action.type==='skin')return action.el?[action.el]:[];
   return action.elements||[];
 }
 
@@ -159,6 +159,8 @@ function applyHistoryAction(action,direction){
       else detachHistoryElements(action.entries.map(entry=>entry.el));
     }else if(action.type==='transform'){
       for(const entry of action.entries)applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
+    }else if(action.type==='skin'){
+      action.el=applyTileSkinToModule(action.el,direction==='undo'?action.before:action.after,{record:false});
     }else if(action.type==='drawing'){
       action.el?._setDrawHistoryCursor?.(direction==='undo'?action.before:action.after);
     }
@@ -2846,7 +2848,6 @@ const CURSOR_CATALOG=Object.freeze([
   Object.freeze({id:'purple',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Violet',description:'Rich violet purple.',color:'#8b5cf6'}),
   Object.freeze({id:'gold',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'})
 ]);
-const TILE_SKIN_DEFAULTS_KEY='teacherTilesDefaultTileSkins';
 const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const stickerCatalogItems=(entries,tags='')=>Object.freeze(entries.map(([emoji,name])=>Object.freeze({emoji,name,tags})));
@@ -2917,13 +2918,6 @@ function migrateLegacyCursorOwnership(){
   try{localStorage.setItem(SHOP_OWNED_PRODUCTS_KEY,JSON.stringify([...owned]))}catch{}
 }
 
-function getDefaultTileSkins(){
-  try{
-    const value=JSON.parse(localStorage.getItem(TILE_SKIN_DEFAULTS_KEY)||'{}');
-    return value&&typeof value==='object'&&!Array.isArray(value)?value:{};
-  }catch{return{}}
-}
-
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 function tileSkinIsOwned(skin){return Boolean(skin&&(skin.free===true||getOwnedShopProducts().has(skin.productId)))}
 function cursorById(id){return CURSOR_CATALOG.find(cursor=>cursor.id===id)||CURSOR_CATALOG[0]}
@@ -2959,23 +2953,32 @@ function applyAppCursor(id,{persist=true}={}){
 migrateLegacyCursorOwnership();
 applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false});
 
-function activeTileSkinForType(type){
-  const skin=tileSkinById(getDefaultTileSkins()[type]);
-  return skin?.tileType===type&&tileSkinIsOwned(skin)?skin:null;
-}
-
-function setDefaultTileSkin(type,id=''){
-  const defaults=getDefaultTileSkins();
-  const skin=tileSkinById(id);
-  if(skin&&skin.tileType===type&&tileSkinIsOwned(skin))defaults[type]=skin.id;
-  else delete defaults[type];
-  try{localStorage.setItem(TILE_SKIN_DEFAULTS_KEY,JSON.stringify(defaults))}catch{}
-  window.dispatchEvent(new CustomEvent('teachertiles:tileskinchange',{detail:{type,skinId:defaults[type]||''}}));
+function applyTileSkinToModule(m,id,{record=true}={}){
+  const type=m.dataset.type,skin=id?tileSkinById(id):null;
+  if(!m.isConnected||(id&&(!skin||skin.tileType!==type||!tileSkinIsOwned(skin))))return m;
+  const before=m.dataset.tileSkin||'';if(before===id)return m;
+  const snapshot=serializeBoardModule(m);if(!snapshot)return m;
+  if(id)snapshot.dataset.tileSkin=id;else delete snapshot.dataset.tileSkin;
+  const wasSelected=selectedModules.has(m),nextSibling=m.nextSibling;
+  m._deactivate?.();m.remove();
+  let next;
+  try{next=restoreTeacherTilesBoardObject(snapshot);if(!next)throw Error('Could not restore tile skin')}
+  catch(error){workspace.appendChild(m);m._boardTimerSetState?.(snapshot.timer);console.error(error);return m}
+  if(nextSibling?.parentNode===workspace)workspace.insertBefore(next,nextSibling);
+  for(const action of [...undoStack,...redoStack]){
+    if(action.el===m)action.el=next;
+    if(action.elements)action.elements=action.elements.map(el=>el===m?next:el);
+    for(const entry of action.entries||[]){if(entry.el===m)entry.el=next;if(entry.nextSibling===m)entry.nextSibling=next}
+  }
+  selectedModules.delete(m);if(wasSelected)selectModules([next],{add:true});
+  m._cleanup?.();
+  if(record)recordHistory({type:'skin',el:next,before,after:id});
+  notifyBoardChanged('tile-skin');return next;
 }
 
 function applyNewModuleTileSkin(m,type,requestedSkinId=''){
   const requested=tileSkinById(requestedSkinId);
-  const skin=requested?.tileType===type&&tileSkinIsOwned(requested)?requested:activeTileSkinForType(type);
+  const skin=requested?.tileType===type&&tileSkinIsOwned(requested)?requested:null;
   if(skin)m.dataset.tileSkin=skin.id;
 }
 
@@ -3093,6 +3096,7 @@ function setupModuleByType(m,type){
   if(type==='calendar')setupCalendar(m);
   setupEditableTileHeading(m,type);
   window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
+  window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
 }
 
 function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
@@ -12428,18 +12432,9 @@ function setupCollectionShelf(){
   const closeButton=document.getElementById('asset-shelf-close');
   const themeButton=document.getElementById('theme-shelf-toggle');
   const stickerButton=document.getElementById('sticker-shelf-toggle');
-  const tileSkinsButton=document.getElementById('tile-skins-shelf-toggle');
   const cursorsButton=document.getElementById('cursors-shelf-toggle');
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
-  const tileSkinsPanel=document.getElementById('tile-skins-shelf-content');
-  const tileSkinsSearch=document.getElementById('tile-skins-search');
-  const tileSkinsSearchClear=document.getElementById('tile-skins-search-clear');
-  const tileSkinsFilter=document.getElementById('tile-skins-filter');
-  const tileSkinsSort=document.getElementById('tile-skins-sort');
-  const tileSkinsStatus=document.getElementById('tile-skins-search-status');
-  const tileSkinsTypeNav=document.getElementById('tile-skins-type-nav');
-  const tileSkinsGroups=document.getElementById('tile-skins-groups');
   const cursorsPanel=document.getElementById('cursors-shelf-content');
   const cursorsGrid=document.getElementById('cursors-shelf-grid');
   const cursorsStatus=document.getElementById('cursors-shelf-status');
@@ -12471,77 +12466,13 @@ function setupCollectionShelf(){
   const stickerScroll=stickerPanel?.querySelector('.asset-shelf__scroll');
   stickerPanel?.querySelectorAll('.sticker-pack-drawer').forEach(drawer=>drawer.style.setProperty('--sticker-count',String(drawer.querySelectorAll('.sticker-shelf-item').length)));
   const shelfShell=shelf.querySelector('.asset-shelf__shell');
-  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!tileSkinsButton||!cursorsButton||!themePanel||!stickerPanel||!tileSkinsPanel||!cursorsPanel||!shelfShell||!packs.length)return;
-
-  const setupTileSkinSelect=select=>{
-    if(!select||select.dataset.customized==='true')return;
-    const host=select.closest('.tile-skins-sort');
-    if(!host)return;
-    select.dataset.customized='true';
-    select.hidden=true;
-    select.tabIndex=-1;
-    select.setAttribute('aria-hidden','true');
-    const trigger=document.createElement('button');
-    trigger.type='button';
-    trigger.className='tile-skins-select-button';
-    trigger.setAttribute('aria-haspopup','listbox');
-    trigger.setAttribute('aria-expanded','false');
-    trigger.setAttribute('aria-label',select.getAttribute('aria-label')||'Choose an option');
-    const value=document.createElement('b');
-    const chevron=document.createElement('i');
-    chevron.setAttribute('aria-hidden','true');
-    chevron.textContent='⌄';
-    trigger.append(value,chevron);
-    const menu=document.createElement('div');
-    menu.className='tile-skins-select-menu';
-    menu.setAttribute('role','listbox');
-    menu.hidden=true;
-    const close=()=>{menu.hidden=true;trigger.setAttribute('aria-expanded','false');host.classList.remove('is-select-open')};
-    const sync=()=>{
-      value.textContent=select.selectedOptions[0]?.textContent||'';
-      menu.querySelectorAll('button').forEach(option=>{
-        const selected=option.dataset.value===select.value;
-        option.classList.toggle('is-selected',selected);
-        option.setAttribute('aria-selected',String(selected));
-      });
-    };
-    [...select.options].forEach(nativeOption=>{
-      const option=document.createElement('button');
-      option.type='button';
-      option.dataset.value=nativeOption.value;
-      option.setAttribute('role','option');
-      option.innerHTML=`<span>${nativeOption.textContent}</span><i aria-hidden="true">✓</i>`;
-      option.addEventListener('click',event=>{
-        event.stopPropagation();
-        select.value=nativeOption.value;
-        select.dispatchEvent(new Event('change',{bubbles:true}));
-        sync();close();trigger.focus();
-      });
-      menu.appendChild(option);
-    });
-    trigger.addEventListener('click',event=>{
-      event.stopPropagation();
-      const open=menu.hidden;
-      document.querySelectorAll('.tile-skins-select-menu:not([hidden])').forEach(other=>{if(other!==menu){other.hidden=true;other.previousElementSibling?.setAttribute('aria-expanded','false');other.closest('.tile-skins-sort')?.classList.remove('is-select-open')}});
-      menu.hidden=!open;
-      trigger.setAttribute('aria-expanded',String(open));
-      host.classList.toggle('is-select-open',open);
-      if(open)menu.querySelector('.is-selected')?.focus();
-    });
-    trigger.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();close()}});
-    document.addEventListener('click',event=>{if(!host.contains(event.target))close()});
-    host.append(trigger,menu);
-    sync();
-  };
-  setupTileSkinSelect(tileSkinsFilter);
-  setupTileSkinSelect(tileSkinsSort);
+  if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!cursorsButton||!themePanel||!stickerPanel||!cursorsPanel||!shelfShell||!packs.length)return;
 
   let activeShelf=null;
   let activePack=null;
   let activeFan=null;
   let activeStickerPack=null;
   let activeStickerDrawer=null;
-  let activeTileSkinType='';
 
   const syncCollectionOwnership=()=>{
     [...packs,...stickerPacks].forEach(pack=>{
@@ -12564,239 +12495,6 @@ function setupCollectionShelf(){
   const openLockedCollection=pack=>{
     closeShelf();
     window.TeacherTilesShop?.openPage(pack.matches('[data-theme-pack]')?'themes':'stickers');
-  };
-
-  const makeClassicMagnifierArtwork=()=>{
-    const art=document.createElement('span');
-    art.className='classic-magnifier-art';
-    const lens=document.createElement('i');
-    const handle=document.createElement('b');
-    const value=document.createElement('em');
-    value.textContent='2×';
-    handle.appendChild(value);
-    art.append(lens,handle);
-    return art;
-  };
-
-  const makeTileSkinArtwork=skin=>{
-    if(skin.id==='magnifier-classic')return makeClassicMagnifierArtwork();
-    if(skin.id==='dice-clear'){const art=document.createElement('span');art.className='tile-skin-art tile-skin-art--dice-clear';art.innerHTML="<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\"/><g fill=\"currentColor\"><circle cx=\"8\" cy=\"8\" r=\"1.6\"/><circle cx=\"16\" cy=\"8\" r=\"1.6\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\"/><circle cx=\"8\" cy=\"16\" r=\"1.6\"/><circle cx=\"16\" cy=\"16\" r=\"1.6\"/></g></svg>";return art;}
-    const art=document.createElement('span');
-    art.className=`tile-skin-art tile-skin-art--${skin.id}`;
-    if(skin.id==='youtube-retro-tv'){
-      const image=document.createElement('img');
-      image.src='assets/tile-skins/vintage-tv-frame.png';
-      image.alt='';
-      image.draggable=false;
-      art.appendChild(image);
-    }
-    else if(skin.id==='todo-clipboard')art.innerHTML='<i><em></em><em></em><em></em></i><b></b>';
-    else if(skin.id==='calendar-paper-stack')art.innerHTML='<i></i><b><em></em><em></em><em></em><em></em><em></em><em></em></b>';
-    else if(skin.tileType==='attendance'&&skin.magnetSrc){const image=document.createElement('img');image.src=skin.magnetSrc;image.alt='';image.draggable=false;art.appendChild(image)}
-    else if(skin.id==='stoplight-freestanding'){const image=document.createElement('img');image.src='assets/stoplight-green.png';image.alt='';image.draggable=false;art.appendChild(image)}
-    else if(skin.id==='stoplight-simplistic'){const image=document.createElement('img');image.src='assets/stoplight-simplistic-green.svg';image.alt='';image.draggable=false;art.appendChild(image)}
-    else if(skin.id==='progressbar-capsule')art.innerHTML='<i><em></em></i>';
-    else if(skin.id==='timer-freestanding'){const image=document.createElement('img');image.src='assets/tile-skins/freestanding-visual-timer.svg';image.alt='';image.draggable=false;art.appendChild(image)}
-    return art;
-  };
-
-  const setupTileSkinDrag=(button,skin)=>{
-    button.addEventListener('pointerdown',event=>{
-      if(event.button!==0||!tileSkinIsOwned(skin))return;
-      event.preventDefault();
-      event.stopPropagation();
-      button.setPointerCapture(event.pointerId);
-      const startX=event.clientX,startY=event.clientY;
-      let dragging=false,canDrop=false,ghost=null;
-      const ensureGhost=()=>{
-        if(ghost)return;
-        ghost=document.createElement('div');
-        ghost.className='tile-skin-drag-ghost';
-        ghost.appendChild(makeTileSkinArtwork(skin));
-        document.body.appendChild(ghost);
-      };
-      const updateGhost=ev=>{
-        ensureGhost();
-        ghost.style.left=`${ev.clientX}px`;
-        ghost.style.top=`${ev.clientY}px`;
-        const shellRect=shelfShell.getBoundingClientRect();
-        const insideShelf=ev.clientX>=shellRect.left&&ev.clientX<=shellRect.right&&ev.clientY>=shellRect.top&&ev.clientY<=shellRect.bottom;
-        const blocked=document.elementsFromPoint(ev.clientX,ev.clientY).some(el=>el.closest?.('.workspace-controls,.workspace-upcoming-controls,.context-menu,.shop-modal'));
-        canDrop=!insideShelf&&!blocked&&ev.clientX>=0&&ev.clientX<=innerWidth&&ev.clientY>=0&&ev.clientY<=innerHeight;
-        ghost.classList.toggle('can-drop',canDrop);
-      };
-      const move=ev=>{
-        if(!dragging&&Math.hypot(ev.clientX-startX,ev.clientY-startY)<5)return;
-        if(!dragging){dragging=true;button.classList.add('is-dragging');document.body.classList.add('is-dragging-tile-skin')}
-        updateGhost(ev);
-      };
-      const cleanup=()=>{
-        button.classList.remove('is-dragging');
-        document.body.classList.remove('is-dragging-tile-skin');
-        ghost?.remove();
-        button.removeEventListener('pointermove',move);
-        button.removeEventListener('pointerup',end);
-        button.removeEventListener('pointercancel',cancel);
-      };
-      const end=ev=>{
-        if(dragging&&canDrop){
-          const point=screenToBoard(ev.clientX,ev.clientY);
-          createModule(skin.tileType,point.x,point.y,{tileSkin:skin.id});
-          closeShelf();
-        }
-        cleanup();
-      };
-      const cancel=()=>cleanup();
-      button.addEventListener('pointermove',move);
-      button.addEventListener('pointerup',end);
-      button.addEventListener('pointercancel',cancel);
-    });
-  };
-
-  const tileSkinTypeIdentity=(type,skins=[])=>{
-    const source=menu?.querySelector(`[data-module="${CSS.escape(type)}"]`);
-    const sourceName=source?.querySelector('strong')?.textContent?.trim();
-    const sourceIcon=source?.querySelector('.context-menu__icon');
-    let icon=null;
-    if(sourceIcon){
-      icon=document.createElement('span');
-      icon.className='tile-skins-type-button__source-icon';
-      const graphic=sourceIcon.querySelector('svg,img');
-      if(graphic){
-        const copy=graphic.cloneNode(true);
-        copy.querySelectorAll?.('[id]').forEach(node=>node.removeAttribute('id'));
-        icon.appendChild(copy);
-      }else icon.textContent=sourceIcon.textContent?.trim()||'';
-      icon.setAttribute('aria-hidden','true');
-    }
-    return{name:sourceName||skins[0]?.tileLabel||type,icon};
-  };
-  const normalizeTileSkinSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
-  const renderTileSkinShelf=(options={})=>{
-    if(!tileSkinsGroups||!tileSkinsTypeNav)return;
-    const ensureSelection=Boolean(options?.ensureSelection);
-    const query=normalizeTileSkinSearch(tileSkinsSearch?.value);
-    const terms=query.split(/\s+/).filter(Boolean);
-    const filter=tileSkinsFilter?.value||'all';
-    const sort=tileSkinsSort?.value||'tile';
-    const matching=TILE_SKIN_CATALOG.filter(skin=>{
-      const haystack=normalizeTileSkinSearch(`${skin.name} ${skin.tileLabel} ${skin.description} ${skin.tags}`);
-      const owned=tileSkinIsOwned(skin);
-      return terms.every(term=>haystack.includes(term))&&(filter==='owned'?owned:filter==='shop'?!owned:true);
-    }).sort((a,b)=>sort==='newest'?(b.released-a.released)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
-    const grouped=new Map();
-    matching.forEach(skin=>{if(!grouped.has(skin.tileType))grouped.set(skin.tileType,[]);grouped.get(skin.tileType).push(skin)});
-    const groups=[...grouped.entries()].sort((a,b)=>sort==='newest'?(Math.max(...b[1].map(skin=>skin.released))-Math.max(...a[1].map(skin=>skin.released)))||a[1][0].tileLabel.localeCompare(b[1][0].tileLabel):a[1][0].tileLabel.localeCompare(b[1][0].tileLabel));
-    if(activeTileSkinType&&!grouped.has(activeTileSkinType))activeTileSkinType='';
-    if(!activeTileSkinType&&groups.length&&(ensureSelection||query||filter!=='all'))activeTileSkinType=groups[0][0];
-
-    const navHeading=document.createElement('div');navHeading.className='tile-skins-type-nav__heading';
-    const navTitle=document.createElement('strong');navTitle.textContent='Tile types';
-    const navHint=document.createElement('small');navHint.textContent='Open one collection at a time';
-    navHeading.append(navTitle,navHint);
-    tileSkinsTypeNav.replaceChildren(navHeading);
-    groups.forEach(([type,skins])=>{
-      const ownedCount=skins.filter(tileSkinIsOwned).length;
-      const open=activeTileSkinType===type;
-      const identity=tileSkinTypeIdentity(type,skins);
-      const button=document.createElement('button');button.type='button';button.className=`tile-skins-type-button${open?' is-open':''}`;
-      button.dataset.tileSkinType=type;
-      button.setAttribute('aria-expanded',String(open));
-      button.setAttribute('aria-controls',`tile-skin-group-${type}`);
-      const mark=document.createElement('span');mark.className='tile-skins-type-button__mark';mark.setAttribute('aria-hidden','true');
-      if(identity.icon)mark.appendChild(identity.icon);else mark.textContent=identity.name.slice(0,2).toLocaleUpperCase();
-      const copy=document.createElement('span');copy.className='tile-skins-type-button__copy';
-      const label=document.createElement('strong');label.textContent=identity.name;
-      const detail=document.createElement('small');detail.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${ownedCount} owned`;
-      const chevron=document.createElement('span');chevron.className='tile-skins-type-button__chevron';chevron.textContent=open?'−':'+';chevron.setAttribute('aria-hidden','true');
-      copy.append(label,detail);button.append(mark,copy,chevron);
-      button.addEventListener('click',()=>{
-        activeTileSkinType=open?'':type;renderTileSkinShelf();
-        requestAnimationFrame(()=>tileSkinsTypeNav.querySelector(`[data-tile-skin-type="${CSS.escape(type)}"]`)?.focus());
-      });
-      button.addEventListener('keydown',event=>{
-        if(!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
-        event.preventDefault();
-        const buttons=[...tileSkinsTypeNav.querySelectorAll('.tile-skins-type-button')];
-        const index=buttons.indexOf(event.currentTarget);
-        const next=event.key==='Home'?buttons[0]:event.key==='End'?buttons.at(-1):buttons[(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length];
-        next?.focus();
-      });
-      tileSkinsTypeNav.appendChild(button);
-    });
-
-    tileSkinsGroups.replaceChildren();
-    const selected=groups.find(([type])=>type===activeTileSkinType);
-    if(selected){
-      const [type,skins]=selected;
-      const identity=tileSkinTypeIdentity(type,skins);
-      const section=document.createElement('section');section.className='tile-skin-group is-open';section.dataset.tileSkinGroup=type;section.id=`tile-skin-group-${type}`;
-      const heading=document.createElement('header');heading.className='tile-skin-group__header';
-      const headingCopy=document.createElement('div');
-      const eyebrow=document.createElement('span');eyebrow.textContent='TILE TYPE';
-      const title=document.createElement('strong');title.textContent=identity.name;
-      const count=document.createElement('small');
-      const selectedOwned=skins.filter(tileSkinIsOwned).length;
-      count.textContent=`${skins.length} ${skins.length===1?'skin':'skins'} · ${selectedOwned} owned`;
-      headingCopy.append(eyebrow,title,count);
-      const collapse=document.createElement('button');collapse.type='button';collapse.className='tile-skin-group__close';collapse.textContent='−';collapse.setAttribute('aria-label',`Close ${identity.name} Tile Skins`);
-      collapse.addEventListener('click',()=>{activeTileSkinType='';renderTileSkinShelf();requestAnimationFrame(()=>tileSkinsTypeNav.querySelector(`[data-tile-skin-type="${CSS.escape(type)}"]`)?.focus())});
-      heading.append(headingCopy,collapse);
-      const grid=document.createElement('div');grid.className='tile-skin-grid';
-      skins.forEach(skin=>{
-        const owned=tileSkinIsOwned(skin);
-        const active=getDefaultTileSkins()[skin.tileType]===skin.id&&owned;
-        const card=document.createElement('article');
-        card.className=`tile-skin-card${owned?' is-owned':' is-locked'}${active?' is-default':''}`;
-        card.dataset.tileSkin=skin.id;
-        const drag=document.createElement('button');
-        drag.type='button';drag.className='tile-skin-card__drag';drag.disabled=!owned;
-        drag.setAttribute('aria-label',owned?`Drag ${skin.name} ${skin.tileLabel} skin onto the board`:`${skin.name} is available in the Shop`);
-        const preview=document.createElement('span');preview.className='tile-skin-card__preview';preview.appendChild(makeTileSkinArtwork(skin));
-        if(!owned){const lock=document.createElement('span');lock.className='collection-pack-lock';lock.textContent='🔒 Shop';lock.setAttribute('aria-hidden','true');preview.appendChild(lock)}
-        const copy=document.createElement('span');copy.className='tile-skin-card__copy';
-        const name=document.createElement('strong');name.textContent=skin.name;
-        const hint=document.createElement('small');hint.textContent=owned?'Drag onto the board':`For the ${skin.tileLabel} tile`;
-        copy.append(name,hint);drag.append(preview,copy);
-        const actions=document.createElement('div');actions.className='tile-skin-card__actions';
-        const badge=document.createElement('span');badge.className='tile-skin-owned-badge';badge.textContent='Owned';
-        const action=document.createElement('button');action.type='button';
-        if(owned){
-          action.className='tile-skin-default-toggle';
-          action.setAttribute('aria-pressed',String(active));
-          action.setAttribute('aria-label',`${active?'Stop using':'Use'} ${skin.name} for all new ${skin.tileLabel} tiles`);
-          const track=document.createElement('i');const label=document.createElement('b');label.textContent='All Tiles';
-          action.append(track,label);
-          action.addEventListener('click',event=>{event.stopPropagation();setDefaultTileSkin(skin.tileType,active?'':skin.id)});
-        }else{
-          action.className='tile-skin-shop-link';action.textContent='View in Shop';
-          action.addEventListener('click',()=>{closeShelf();window.TeacherTilesShop?.openPage('tile-skins')});
-        }
-        if(owned)actions.append(badge,action);else actions.append(action);
-        card.append(drag,actions);
-        grid.appendChild(card);
-        setupTileSkinDrag(drag,skin);
-        drag.addEventListener('keydown',event=>{
-          if(!owned||(event.key!=='Enter'&&event.key!==' '))return;
-          event.preventDefault();
-          const view=visibleBoardBounds();
-          createModule(skin.tileType,(view.left+view.right)/2,(view.top+view.bottom)/2,{tileSkin:skin.id});
-          closeShelf();
-        });
-      });
-      section.append(heading,grid);tileSkinsGroups.appendChild(section);
-    }else if(!matching.length){
-      const empty=document.createElement('div');empty.className='tile-skins-no-results';
-      empty.innerHTML='<span aria-hidden="true">⌕</span><strong>No Tile Skins found</strong><small>Try another search or filter.</small>';
-      tileSkinsGroups.appendChild(empty);
-    }else{
-      const closed=document.createElement('div');closed.className='tile-skins-closed-state';
-      closed.innerHTML='<span aria-hidden="true"><i></i><i></i><i></i></span><strong>Choose a tile type</strong><small>Open a collection on the left to see its skins. Select it again to close it.</small>';
-      tileSkinsGroups.appendChild(closed);
-    }
-    const ownedCount=matching.filter(tileSkinIsOwned).length;
-    if(tileSkinsStatus)tileSkinsStatus.textContent=`${matching.length} ${matching.length===1?'skin':'skins'} · ${groups.length} ${groups.length===1?'type':'types'} · ${ownedCount} owned`;
-    if(tileSkinsSearchClear)tileSkinsSearchClear.hidden=!query;
   };
 
   const renderCursorShelf=()=>{
@@ -12970,11 +12668,9 @@ function setupCollectionShelf(){
   const syncShelfButtons=()=>{
     themeButton.classList.toggle('is-active',activeShelf==='themes');
     stickerButton.classList.toggle('is-active',activeShelf==='stickers');
-    tileSkinsButton.classList.toggle('is-active',activeShelf==='tile-skins');
     cursorsButton.classList.toggle('is-active',activeShelf==='cursors');
     themeButton.setAttribute('aria-expanded',String(activeShelf==='themes'));
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
-    tileSkinsButton.setAttribute('aria-expanded',String(activeShelf==='tile-skins'));
     cursorsButton.setAttribute('aria-expanded',String(activeShelf==='cursors'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
   };
@@ -12985,8 +12681,7 @@ function setupCollectionShelf(){
     closeThemeFan();
     closeStickerPack();
     clearStickerSearch();
-    if(tileSkinsSearch)tileSkinsSearch.value='';
-    shelf.classList.remove('is-open','is-sticker-mode','is-tile-skins-mode','is-cursors-mode');
+    shelf.classList.remove('is-open','is-sticker-mode','is-cursors-mode');
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -12998,22 +12693,17 @@ function setupCollectionShelf(){
     if(type!=='stickers')closeStickerPack();
     const themes=type==='themes';
     const stickers=type==='stickers';
-    const tileSkins=type==='tile-skins';
     const cursors=type==='cursors';
     themePanel.hidden=!themes;
     stickerPanel.hidden=!stickers;
-    tileSkinsPanel.hidden=!tileSkins;
     cursorsPanel.hidden=!cursors;
     themePanel.classList.toggle('is-active',themes);
     stickerPanel.classList.toggle('is-active',stickers);
-    tileSkinsPanel.classList.toggle('is-active',tileSkins);
     cursorsPanel.classList.toggle('is-active',cursors);
     shelf.classList.toggle('is-sticker-mode',stickers);
-    shelf.classList.toggle('is-tile-skins-mode',tileSkins);
     shelf.classList.toggle('is-cursors-mode',cursors);
-    if(tileSkins)renderTileSkinShelf({ensureSelection:true});
     if(cursors)renderCursorShelf();
-    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):tileSkins?'Tile Skins':'Cursors';
+    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Cursors';
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
     syncShelfButtons();
@@ -13021,7 +12711,6 @@ function setupCollectionShelf(){
 
   themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
   stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
-  tileSkinsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('tile-skins')});
   cursorsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('cursors')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleThemeFan(pack)}));
@@ -13030,31 +12719,18 @@ function setupCollectionShelf(){
   stickerSearch?.addEventListener('input',updateStickerSearch);
   stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
   stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
-  tileSkinsSearch?.addEventListener('input',()=>renderTileSkinShelf({ensureSelection:true}));
-  tileSkinsSearch?.addEventListener('keydown',event=>{
-    if(event.key!=='Escape')return;
-    event.stopPropagation();
-    tileSkinsSearch.value='';renderTileSkinShelf({ensureSelection:true});tileSkinsSearch.focus();
-  });
-  tileSkinsSearchClear?.addEventListener('click',()=>{if(tileSkinsSearch)tileSkinsSearch.value='';renderTileSkinShelf({ensureSelection:true});tileSkinsSearch?.focus()});
-  tileSkinsFilter?.addEventListener('change',()=>renderTileSkinShelf({ensureSelection:true}));
-  tileSkinsSort?.addEventListener('change',()=>renderTileSkinShelf({ensureSelection:true}));
   window.addEventListener('teachertiles:shopownershipchange',()=>{
     syncCollectionOwnership();
-    renderTileSkinShelf();
     if(!cursorIsOwned(cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default')))applyAppCursor('default');
     renderCursorShelf();
   });
   window.addEventListener('teachertiles:accountchange',()=>{
     syncCollectionOwnership();
     syncCosmeticEntitlements();
-    renderTileSkinShelf();
     if(!cursorIsOwned(cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default')))applyAppCursor('default');
     renderCursorShelf();
   });
-  window.addEventListener('teachertiles:tileskinchange',renderTileSkinShelf);
   window.addEventListener('teachertiles:cursorchange',renderCursorShelf);
-  window.addEventListener('teachertiles:languagechange',()=>renderTileSkinShelf());
 
   document.querySelectorAll('.theme-fan [data-theme-choice]').forEach(card=>{
     card.addEventListener('click',()=>{if(requireCosmetic(card))applyTeacherTheme(card.dataset.themeChoice)});
@@ -13088,7 +12764,6 @@ function setupCollectionShelf(){
   updateThemeControls(document.body.dataset.theme||'light');
   syncCollectionOwnership();
   syncCosmeticEntitlements();
-  renderTileSkinShelf();
   renderCursorShelf();
 }
 

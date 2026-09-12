@@ -35,6 +35,7 @@
 <link rel="stylesheet" href="tiles/rainbow/styles.css?v=20260912-music-staff-piano-1">
 <link rel="stylesheet" href="tiles/music-score/styles.css?v=20260912-live-note-labels-1">
 <link rel="stylesheet" href="tiles/piano/styles.css?v=20260912-1">
+<link rel="stylesheet" href="tiles/shared/skins.css?v=20260912-1">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -135,10 +136,6 @@
         <button id="sticker-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open sticker shelf" data-feature-label="Stickers" aria-expanded="false">
           <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.25 4.75h9.2l4.3 4.3v9.7H5.25v-14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.45 4.75v4.3h4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.6 13.2c.75.9 1.9 1.45 3.15 1.45 1.25 0 2.4-.55 3.15-1.45" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="9.3" cy="10.6" r=".75" fill="currentColor"/><circle cx="14.2" cy="10.6" r=".75" fill="currentColor"/></svg>
           <span class="upcoming-control__tooltip"><strong data-i18n="top.stickers">Stickers</strong></span>
-        </button>
-        <button id="tile-skins-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Tile Skins shelf" data-feature-label="Tile Skins" aria-expanded="false">
-          <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19h8a2 2 0 0 0 2-2V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-          <span class="upcoming-control__tooltip"><strong>Tile Skins</strong></span>
         </button>
         <button id="cursors-shelf-toggle" class="workspace-control upcoming-control shelf-launch-control" type="button" aria-label="Open Cursors shelf" data-feature-label="Cursors" aria-expanded="false">
           <svg class="upcoming-control__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.8 18.2 14l-6.1 1.1-3.3 5.1L6 3.8Z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m12 14.9 3.2 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -1231,18 +1228,7 @@
             </div>
           </div>
         </div>
-        <div id="tile-skins-shelf-content" class="asset-shelf__content tile-skins-shelf-content" data-shelf-panel="tile-skins" hidden>
-          <div class="tile-skins-toolbar">
-            <label class="tile-skins-search" for="tile-skins-search"><span aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></span><input id="tile-skins-search" type="search" autocomplete="off" placeholder="Search skins or tile types"><button id="tile-skins-search-clear" type="button" aria-label="Clear Tile Skin search" hidden>×</button></label>
-            <div class="tile-skins-sort tile-skins-filter"><span>Show</span><select id="tile-skins-filter" aria-label="Filter Tile Skins"><option value="all">All skins</option><option value="owned">Owned</option><option value="shop">In Shop</option></select></div>
-            <div class="tile-skins-sort"><span>Sort</span><select id="tile-skins-sort" aria-label="Sort Tile Skins"><option value="tile">Tile type</option><option value="name">Skin name</option><option value="newest">Newest</option></select></div>
-            <output id="tile-skins-search-status" class="tile-skins-search-status" aria-live="polite">Browse by tile type</output>
-          </div>
-          <div class="tile-skins-browser">
-            <nav id="tile-skins-type-nav" class="tile-skins-type-nav" aria-label="Tile Skin types"></nav>
-            <div id="tile-skins-groups" class="tile-skins-groups" aria-live="polite"></div>
-          </div>
-        </div>
+
         <div id="cursors-shelf-content" class="asset-shelf__content cursors-shelf-content" data-shelf-panel="cursors" hidden>
           <div class="cursors-shelf-heading"><div><strong>Choose your cursor</strong><small>Cursor colors apply everywhere inside TeacherTiles.</small></div><span id="cursors-shelf-status" aria-live="polite"></span></div>
           <div id="cursors-shelf-grid" class="cursors-shelf-grid"></div>
@@ -3854,6 +3840,7 @@
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="tiles/shared/settings.js?v=20260912-1"></script>
+<script src="tiles/shared/skins.js?v=20260912-1"></script>
 <script src="tiles/shared/appearance.js?v=20260912-settings-popovers-1"></script>
   <script src="tiles/visual-directions/index.js?v=20260912-sidebar-settings-1"></script>
   <script src="tiles/color-picker/index.js?v=20260912-1"></script>
@@ -3862,7 +3849,7 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-1"></script>
 <script src="tiles/music-score/index.js?v=20260912-live-note-labels-1"></script>
-<script src="app.js?v=20260912-category-labels-1"></script>
+<script src="app.js?v=20260912-per-tile-skins-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260912-subscriber-patch-2"></script>
 
