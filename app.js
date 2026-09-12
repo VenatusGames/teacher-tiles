@@ -2484,11 +2484,57 @@ function normalizeMenuSearch(value=''){
   return value.toLowerCase().trim().replace(/\s+/g,' ');
 }
 
-// Keep the original buttons and their metadata; only rearrange the catalog view.
-for(const category of menuCategoryOrder){
-  const button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===category);
-  if(button)button.parentElement.appendChild(button);
+// Categories retain their buttons; pins only change their visual order.
+const menuPinnedCategories=new Set();
+try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>menuCategoryOrder.includes(id)&&!['all','favorites'].includes(id)).forEach(id=>menuPinnedCategories.add(id))}catch{}
+function renderMenuCategoryPins(){
+  const rail=menu.querySelector('.context-menu__category-drawer-grid');
+  const ordered=['favorites',...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),'all',...menuCategoryOrder.filter(id=>!['all','favorites'].includes(id)&&!menuPinnedCategories.has(id))];
+  const fragment=document.createDocumentFragment();
+  for(const id of ordered){
+    const button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);if(!button)continue;
+    const row=document.createElement('div');row.className='context-menu__category-row';row.appendChild(button);
+    if(!['all','favorites'].includes(id)){
+      const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=id;
+      pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';
+      const pinned=menuPinnedCategories.has(id);pin.setAttribute('aria-pressed',String(pinned));pin.setAttribute('aria-label',`${pinned?'Unpin':'Pin'} ${menuCategoryLabel(id)}`);pin.title=pin.getAttribute('aria-label');row.appendChild(pin);
+    }
+    fragment.appendChild(row);
+    if(id==='favorites'){const divider=document.createElement('div');divider.className='context-menu__favorites-divider';divider.setAttribute('role','separator');fragment.appendChild(divider)}
+  }
+  rail.replaceChildren(fragment);
 }
+menu.addEventListener('click',event=>{
+  const pin=event.target.closest('[data-category-pin]');if(!pin)return;
+  event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;
+  if(menuPinnedCategories.has(id))menuPinnedCategories.delete(id);else menuPinnedCategories.add(id);
+  try{localStorage.setItem('teacherTiles.categoryPins.v1',JSON.stringify([...menuPinnedCategories]))}catch{}
+  renderMenuCategoryPins();
+  [...menu.querySelectorAll('[data-category-pin]')].find(button=>button.dataset.categoryPin===id)?.focus({preventScroll:true});
+});
+renderMenuCategoryPins();
+
+// A keyboard-accessible corner grip resizes the catalog without changing board zoom.
+const menuResizeGrip=document.createElement('button');menuResizeGrip.type='button';menuResizeGrip.className='context-menu__resize';menuResizeGrip.setAttribute('aria-label','Resize Add tile menu');menuResizeGrip.title='Drag to resize. Arrow keys adjust size.';menu.appendChild(menuResizeGrip);
+function sizeTileMenu(width,height){
+  const rect=menu.getBoundingClientRect();
+  const w=Math.max(0,Math.min(width,Math.max(0,innerWidth-rect.left-8))),h=Math.max(0,Math.min(height,Math.max(0,innerHeight-rect.top-8)));
+  menu.style.setProperty('--tile-menu-width',`${w}px`);menu.style.setProperty('--tile-menu-height',`${h}px`);
+}
+function saveTileMenuSize(){try{const rect=menu.getBoundingClientRect();localStorage.setItem('teacherTiles.menuSize.v1',JSON.stringify({width:rect.width,height:rect.height}))}catch{}}
+try{const saved=JSON.parse(localStorage.getItem('teacherTiles.menuSize.v1')||'null');if(saved&&Number.isFinite(saved.width)&&Number.isFinite(saved.height)){menu.style.setProperty('--tile-menu-width',`${Math.max(360,saved.width)}px`);menu.style.setProperty('--tile-menu-height',`${Math.max(280,saved.height)}px`)}}catch{}
+menuResizeGrip.addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;event.preventDefault();event.stopPropagation();
+  const rect=menu.getBoundingClientRect(),x=event.clientX,y=event.clientY;menuResizeGrip.setPointerCapture(event.pointerId);
+  const move=e=>sizeTileMenu(Math.max(360,rect.width+e.clientX-x),Math.max(280,rect.height+e.clientY-y));
+  const end=e=>{menuResizeGrip.removeEventListener('pointermove',move);menuResizeGrip.removeEventListener('pointerup',end);menuResizeGrip.removeEventListener('pointercancel',cancel);try{menuResizeGrip.releasePointerCapture(e.pointerId)}catch{}saveTileMenuSize()};
+  const cancel=e=>{sizeTileMenu(rect.width,rect.height);end(e)};
+  menuResizeGrip.addEventListener('pointermove',move);menuResizeGrip.addEventListener('pointerup',end);menuResizeGrip.addEventListener('pointercancel',cancel);
+});
+menuResizeGrip.addEventListener('keydown',event=>{
+  const steps={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]},step=steps[event.key];if(!step)return;
+  event.preventDefault();event.stopPropagation();const rect=menu.getBoundingClientRect();sizeTileMenu(Math.max(360,rect.width+step[0]),Math.max(280,rect.height+step[1]));saveTileMenuSize();
+});
 menu.insertBefore(menuCategoryDrawer,menu.querySelector('.context-menu__list'));
 menuCategoryDrawer.setAttribute('aria-hidden','false');
 menuCategoryDrawer.setAttribute('aria-label','Tile categories');
@@ -2512,6 +2558,7 @@ function applyMenuView(){
       const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase();
       return (!included.has(item)||(!searching&&activeMenuCategory==='all'))&&(category==='favorites'?menuFavorites.has(menuItemKey(item)):(item.dataset.category||'').split(/\s+/).includes(category))&&(!searching||searchable.includes(query));
     });
+    matches.sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true}));
     if(!matches.length)continue;
     const section=document.createElement('section');section.className='context-menu__section';
     const heading=document.createElement('h3');heading.textContent=menuCategoryLabel(category);
