@@ -30,13 +30,15 @@
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-settings-popovers-1">
   <link rel="icon" href="T.png" type="image/x-icon">
-<link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260912-music-staff-piano-1">
+<link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-layout-history-membership-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
 <link rel="stylesheet" href="tiles/rainbow/styles.css?v=20260912-music-staff-piano-1">
 <link rel="stylesheet" href="tiles/music-score/styles.css?v=20260912-tile-refinements-2">
 <link rel="stylesheet" href="tiles/piano/styles.css?v=20260912-1">
 <link rel="stylesheet" href="tiles/shared/skins.css?v=20260912-fit-previews-1">
 <link rel="stylesheet" href="tiles/shared/object-skins.css?v=20260912-analog-controls-1">
+<link rel="stylesheet" href="tiles/visual-schedule/layout.css?v=20260913-1">
+<link rel="stylesheet" href="tiles/shared/shop-refresh.css?v=20260913-1">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -1304,17 +1306,16 @@
                 <div class="shop-membership-price"><strong>$5.99</strong><span>/ month</span></div>
               </div>
               <ul class="shop-membership-perks">
-                <li>Early access to new updates and testing when available</li>
-                <li>Custom profile patch and golden name</li>
-                <li>Direct input on new features</li>
-                <li>Support the developers</li>
-                <li>Save more than 2 boards at a time</li>
-                <li><strong>600 Coins</strong> each month</li>
-                <li>Custom subscriber themes, stickers, and cosmetic TileSets</li>
-                <li>Access <span class="holiday-badge">Holiday</span> tiles <small>(coming soon)</small></li>
-              </ul>
+<li>Access <strong><u>all</u></strong> Paid Cosmetics &amp; Features for the duration of the membership</li>
+<li>Access <span class="holiday-badge">Holiday</span> Tiles <small>(coming soon)</small></li>
+<li>Save more than two boards (up to 20!)</li>
+<li>Custom Subscriber Themes, Stickers, and Tile Skins</li>
+<li>Subscriber Profile Patch &amp; Golden Username</li>
+<li>Support TeacherTiles and help keep the lights on</li>
+<li>500 coins for each month you are subscribed! Use coins to permanently unlock things!</li>
+</ul>
               <div class="shop-membership-card__foot">
-                <span>UI preview · billing is not active</span>
+
                 <button id="shop-subscribe-preview" type="button">Subscribe · $5.99/mo</button>
               </div>
             </article>
@@ -1332,7 +1333,7 @@
             </article>
           </div>
 
-          <div class="shop-category-grid">
+          <div class="shop-category-grid"><button class="shop-category shop-category--featured" type="button" data-shop-open-page="featured"><span class="shop-category__copy"><small>HANDPICKED FOR YOUR BOARD</small><strong>Featured</strong><span>Discover favorites from across the Shop</span></span></button>
             <button class="shop-category shop-category--themes" type="button" data-shop-open-page="themes">
               <span class="shop-category__art" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="shop-category__copy"><small data-i18n="shop.collection">COLLECTION</small><strong data-i18n="top.themes">Themes</strong><em data-i18n="shop.themeCopy">Color & board styles</em></span>
@@ -1428,7 +1429,8 @@
           </div>
         </section>
 
-        <section class="shop-page" data-shop-page="tile-skins" hidden>
+        <section class="shop-page" data-shop-page="featured" hidden><div class="shop-page-heading"><button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to Shop">‹</button><div><span>EXPLORE THE COLLECTION</span><h2>Featured</h2><p>Fresh looks and classroom favorites from across the Shop.</p></div></div><div class="shop-product-grid shop-featured-grid"></div></section>
+<section class="shop-page" data-shop-page="tile-skins" hidden>
           <div class="shop-page-heading">
             <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
             <div><span>TILE SKIN COLLECTION</span><h2>Tile Skins</h2><p>Give individual tiles a completely different silhouette and style.</p></div>
@@ -1936,7 +1938,7 @@
         </span>
         <span><strong>Shapes</strong><small>Explore sides, vertices, and shape facts</small></span>
       </button>
-      
+
       <button class="context-menu__item" data-module="numberline" data-category="math">
         <span class="context-menu__icon context-menu__icon--numberline" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -2096,7 +2098,7 @@
         </span>
         <span><strong>Ambience Video</strong><small>Campfire, fireplace, and aquarium scenes</small></span>
       </button>
-      
+
       <button class="context-menu__item" data-module="hangman" data-category="games">
         <span class="context-menu__icon context-menu__icon--hangman" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -3856,18 +3858,18 @@
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="tiles/shared/settings.js?v=20260912-1"></script>
-<script src="tiles/shared/skins.js?v=20260912-fit-previews-1"></script>
+<script src="tiles/shared/skins.js?v=20260913-layout-history-membership-1"></script>
 <script src="tiles/shared/appearance.js?v=20260912-settings-popovers-1"></script>
-  <script src="tiles/visual-directions/index.js?v=20260912-sidebar-settings-1"></script>
+  <script src="tiles/visual-directions/index.js?v=20260913-layout-history-membership-1"></script>
   <script src="tiles/color-picker/index.js?v=20260912-1"></script>
 <script src="tiles/rainbow/index.js?v=20260912-1"></script>
 <script src="tiles/music-score/notes.js?v=20260912-1"></script>
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
-<script src="app.js?v=20260912-clock-switch-1"></script>
+<script src="app.js?v=20260913-layout-history-membership-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
-  <script type="module" src="firebase-auth.js?v=20260912-subscriber-patch-2"></script>
+  <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 
   <template id="ruler-template">
@@ -5054,5 +5056,6 @@
     </section>
   </template>
 
+<script src="tiles/shared/history.js?v=20260913-1"></script>
 </body>
 </html>

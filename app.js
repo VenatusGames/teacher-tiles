@@ -89,7 +89,7 @@ function transformsDiffer(a,b){
 }
 
 function historyElements(action){
-  if(action.type==='transform')return action.entries.map(entry=>entry.el);
+  if(action.type==='transform'||action.type==='tile-edit')return action.entries.map(entry=>entry.el);
   if(action.type==='delete')return action.entries.map(entry=>entry.el);
   if(action.type==='drawing'||action.type==='skin')return action.el?[action.el]:[];
   return action.elements||[];
@@ -159,6 +159,8 @@ function applyHistoryAction(action,direction){
       else detachHistoryElements(action.entries.map(entry=>entry.el));
     }else if(action.type==='transform'){
       for(const entry of action.entries)applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
+    }else if(action.type==='tile-edit'){
+      for(const entry of action.entries)entry.el=restoreTileEdit(entry.el,direction==='undo'?entry.before:entry.after);
     }else if(action.type==='skin'){
       action.el=applyTileSkinToModule(action.el,direction==='undo'?action.before:action.after,{record:false});
     }else if(action.type==='drawing'){
@@ -172,6 +174,7 @@ function applyHistoryAction(action,direction){
 }
 
 function undoBoardAction(){
+  window.TeacherTilesEditHistory?.flush();
   const action=undoStack.pop();
   if(!action)return;
   applyHistoryAction(action,'undo');
@@ -180,6 +183,7 @@ function undoBoardAction(){
 }
 
 function redoBoardAction(){
+  window.TeacherTilesEditHistory?.flush();
   const action=redoStack.pop();
   if(!action)return;
   applyHistoryAction(action,'redo');
@@ -2925,12 +2929,19 @@ function migrateLegacyCursorOwnership(){
 }
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
-function tileSkinIsOwned(skin){return Boolean(skin&&(skin.free===true||getOwnedShopProducts().has(skin.productId)))}
+function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive||window.TeacherTilesSandbox?.subscriptionEnabled)}
+function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().has(product)||hasCosmeticSubscription()}
+function markSubscriptionAccess(element,product){
+  element.querySelector(':scope > .subscription-access-crown')?.remove();
+  if(!product||!hasCosmeticSubscription()||getOwnedShopProducts().has(product))return;
+  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6"/></svg>';element.append(crown);
+}
+function tileSkinIsOwned(skin){return Boolean(skin&&(skin.free===true||cosmeticIsAccessible(skin.productId)))}
 function cursorById(id){return CURSOR_CATALOG.find(cursor=>cursor.id===id)||CURSOR_CATALOG[0]}
-function cursorIsOwned(cursor){return Boolean(cursor&&(!cursor.productId||getOwnedShopProducts().has(cursor.productId)))}
-function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack?.id];return !product||getOwnedShopProducts().has(product)}
+function cursorIsOwned(cursor){return Boolean(cursor&&(!cursor.productId||cosmeticIsAccessible(cursor.productId)))}
+function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack?.id];return cosmeticIsAccessible(product)}
 function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>String(theme||'').startsWith(`${name}-`));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
-function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return !product||getOwnedShopProducts().has(product)}
+function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return cosmeticIsAccessible(product)}
 
 function applyAppCursor(id,{persist=true}={}){
   const requested=cursorById(id);
@@ -2958,6 +2969,22 @@ function applyAppCursor(id,{persist=true}={}){
 
 migrateLegacyCursorOwnership();
 applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false});
+
+function restoreTileEdit(m,snapshot){
+  if(!m?.isConnected)return m;
+  const sibling=m.nextSibling;m._deactivate?.();m.remove();
+  let next;
+  try{next=withBoardChangesSuspended(()=>restoreTeacherTilesBoardObject(snapshot));}
+  catch(error){console.error('Could not restore tile edit',error);}
+  if(!next){if(sibling?.parentNode===workspace)workspace.insertBefore(m,sibling);else workspace.append(m);m._reactivate?.();if(snapshot.timer)m._boardTimerSetState?.(snapshot.timer);return m;}
+  if(sibling?.parentNode===workspace)workspace.insertBefore(next,sibling);
+  for(const action of [...undoStack,...redoStack]){
+    if(action.el===m)action.el=next;
+    if(action.elements)action.elements=action.elements.map(el=>el===m?next:el);
+    for(const entry of action.entries||[]){if(entry.el===m)entry.el=next;if(entry.nextSibling===m)entry.nextSibling=next;}
+  }
+  selectedModules.delete(m);m._cleanup?.();return next;
+}
 
 function applyTileSkinToModule(m,id,{record=true}={}){
   const type=m.dataset.type,skin=id?tileSkinById(id):null;
@@ -11439,6 +11466,10 @@ function setupProgressBar(m){
 }
 
 function setupVisualSchedule(m){
+  const settings=document.createElement('div');settings.className='tile-settings-wrap';settings.innerHTML='<button type="button" class="custom-icon tile-settings-toggle" aria-label="Visual Schedule settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>Visual Schedule settings</strong></div>';
+  const dock=m.querySelector('.visual-schedule-scale-dock');settings.querySelector('.tile-settings-panel').append(dock);m.querySelector('.visual-schedule-customization').append(settings);
+  m.querySelector('.visual-schedule-row-size-input').value='56';
+
   const list=m.querySelector('.visual-schedule-list');
   const add=m.querySelector('.visual-schedule-add');
   const reset=m.querySelector('.visual-schedule-reset');
@@ -11474,7 +11505,7 @@ function setupVisualSchedule(m){
       m.style.height='auto';
       const desired=Math.ceil(m.scrollHeight);
       m.classList.remove('is-measuring-rest');
-      const minHeight=parseFloat(getComputedStyle(m).minHeight)||280;
+      const minHeight=parseFloat(getComputedStyle(m).minHeight)||160;
       const viewportHeight=Math.max(minHeight,(innerHeight-96)/boardCamera.scale);
       const maxHeight=Math.max(minHeight,Math.min(720,viewportHeight,BOARD_HEIGHT-top));
       m.style.height=`${clamp(desired,minHeight,maxHeight)}px`;
@@ -11590,14 +11621,14 @@ function setupVisualSchedule(m){
   },{passive:false});
 
   const setSegmentSize=(row,value)=>{
-    const size=clamp(Math.round(Number(value)||72),56,220);
+    const size=clamp(Math.round(Number(value)||56),56,220);
     row.dataset.segmentSize=String(size);
     row.style.setProperty('--visual-segment-size',`${size}px`);
   };
   const syncRowSizeControl=()=>{
-    const sizes=[...list.querySelectorAll('.visual-schedule-segment')].map(row=>Number(row.dataset.segmentSize)||72);
+    const sizes=[...list.querySelectorAll('.visual-schedule-segment')].map(row=>Number(row.dataset.segmentSize)||56);
     const unique=[...new Set(sizes)];
-    const representative=unique.length===1?unique[0]:Math.round((sizes.reduce((sum,size)=>sum+size,0)/(sizes.length||1))/4)*4||72;
+    const representative=unique.length===1?unique[0]:Math.round((sizes.reduce((sum,size)=>sum+size,0)/(sizes.length||1))/4)*4||56;
     rowSizeInput.value=String(clamp(representative,56,220));
     rowSizeOutput.value=unique.length>1?'Mixed':`${representative} px`;
     rowSizeOutput.textContent=rowSizeOutput.value;
@@ -11623,7 +11654,7 @@ function setupVisualSchedule(m){
       </div>
       <button class="visual-schedule-resize" type="button" aria-label="Resize this schedule segment" title="Drag to resize segment"></button>
     `;
-    setSegmentSize(row,data.size??(Number(rowSizeInput.value)||72));
+    setSegmentSize(row,data.size??(Number(rowSizeInput.value)||56));
     const title=row.querySelector('.visual-schedule-segment-title');
     const time=row.querySelector('.visual-schedule-segment-time');
     title.value=data.title??'New Activity';
@@ -11659,7 +11690,7 @@ function setupVisualSchedule(m){
     resizeHandle.addEventListener('keydown',event=>{
       if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
       event.preventDefault();
-      setSegmentSize(row,(Number(row.dataset.segmentSize)||72)+(event.key==='ArrowDown'?8:-8));
+      setSegmentSize(row,(Number(row.dataset.segmentSize)||56)+(event.key==='ArrowDown'?8:-8));
       syncRowSizeControl();
       autoSize();
       notifyBoardChanged('visual-schedule-resize');
@@ -11669,7 +11700,7 @@ function setupVisualSchedule(m){
       event.preventDefault();
       event.stopPropagation();
       const startY=event.clientY;
-      const startSize=Number(row.dataset.segmentSize)||72;
+      const startSize=Number(row.dataset.segmentSize)||56;
       resizeHandle.setPointerCapture(event.pointerId);
 
       const move=moveEvent=>{
@@ -11708,13 +11739,13 @@ function setupVisualSchedule(m){
     rows.forEach(row=>setSegmentSize(row,value));
     syncRowSizeControl();
   };
-  rowSizeInput.addEventListener('input',()=>setAllSegmentSizes(Number(rowSizeInput.value)||72));
+  rowSizeInput.addEventListener('input',()=>setAllSegmentSizes(Number(rowSizeInput.value)||56));
   rowSizeInput.addEventListener('change',()=>{
     autoSize();
     notifyBoardChanged('visual-schedule-resize-all');
   });
   rowSizeSync.addEventListener('click',()=>{
-    setAllSegmentSizes(Number(rowSizeInput.value)||72);
+    setAllSegmentSizes(Number(rowSizeInput.value)||56);
     autoSize();
     notifyBoardChanged('visual-schedule-resize-all');
   });
@@ -11738,7 +11769,7 @@ function setupVisualSchedule(m){
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
     iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
     complete:row.classList.contains('is-complete'),
-    size:Number(row.dataset.segmentSize)||72
+    size:Number(row.dataset.segmentSize)||56
   }))});
   m._boardSetState=state=>{
     closePicker();
@@ -12239,7 +12270,7 @@ function shelfEntitlement(element){
   const owner=element.closest?.('[data-entitlement],.theme-fan,.sticker-pack-drawer,[data-theme-pack],[data-sticker-pack]');
   return owner?.dataset?.entitlement||SHELF_ENTITLEMENTS[owner?.id]||SHELF_ENTITLEMENTS[element.id]||'';
 }
-function ownsCosmetic(productId){return !productId||Boolean(window.TeacherTilesAccount?.owns?.(productId))}
+function ownsCosmetic(productId){return cosmeticIsAccessible(productId)}
 function requestCosmeticPurchase(productId){
   if(productId)window.dispatchEvent(new CustomEvent('teachertiles:shoprequest',{detail:{productId}}));
 }
@@ -12254,6 +12285,7 @@ function syncCosmeticEntitlements(){
     const element=document.getElementById(id);
     if(!element)return;
     element.dataset.entitlement=productId;
+    markSubscriptionAccess(element,productId);
     const locked=!ownsCosmetic(productId);
     element.classList.toggle('is-cosmetic-locked',locked);
     if(element.matches('button')){
@@ -12491,6 +12523,7 @@ function setupCollectionShelf(){
   const syncCollectionOwnership=()=>{
     [...packs,...stickerPacks].forEach(pack=>{
       const owned=collectionPackIsOwned(pack);
+      markSubscriptionAccess(pack,COLLECTION_PACK_PRODUCTS[pack.id]);
       const wrapper=pack.closest('.theme-pack-wrap,.sticker-pack-wrap');
       pack.dataset.shopLocked=String(!owned);
       pack.setAttribute('aria-disabled',String(!owned));
@@ -12542,7 +12575,7 @@ function setupCollectionShelf(){
     cursorsGrid.appendChild(defaultPack.wrapper);
 
     const colors=CURSOR_CATALOG.slice(1);
-    const packOwned=getOwnedShopProducts().has(CURSOR_COLOR_PACK_PRODUCT_ID);
+    const packOwned=cosmeticIsAccessible(CURSOR_COLOR_PACK_PRODUCT_ID);
     let drawer=null;
     const colorPack=makePack('Colored Cursors',packOwned?'5 cursor colors':'Available in Shop',colors,{locked:!packOwned,onClick:()=>{
       if(!packOwned){closeShelf();window.TeacherTilesShop?.openPage('cursors');return}
@@ -18318,6 +18351,9 @@ function setupTeacherTilesShop(){
   const close=document.getElementById('shop-close');
   if(!modal||!toggle||!close)return;
 
+  const featured=modal.querySelector('.shop-featured-grid');
+  for(const product of ['theme-cosmos','theme-wood','tile-skin-sticky-taped','tile-skin-clock-digital','cursor-color-pack']){const source=modal.querySelector(`[data-shop-product="${product}"]`);if(source)featured?.append(source.cloneNode(true))}
+  const sticker=modal.querySelector('[data-shop-page="stickers"] [data-shop-product]');if(sticker)featured?.append(sticker.cloneNode(true));
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
@@ -18529,6 +18565,7 @@ function setupTeacherTilesShop(){
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
       const isOwned=owned.has(card.dataset.shopProduct);
+      markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
       const button=card.querySelector('[data-shop-buy]');
       if(!button)return;

@@ -7,6 +7,7 @@ const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https")
 const { defineSecret } = require("firebase-functions/params");
 const { logger } = require("firebase-functions");
 const Stripe = require("stripe");
+const {grantSubscriptionCoins}=require("./subscription-rewards");
 const { COIN_PACKS, COSMETIC_PRODUCTS, SUBSCRIPTION_PRICES } = require("./catalog");
 const {
   accountRef,
@@ -457,6 +458,10 @@ exports.stripeWebhook = onRequest(
     let context = null;
     try {
       const stripeObject = event.data.object;
+      if(event.type==="invoice.paid"){
+        await grantSubscriptionCoins({invoice:stripeObject,stripe:stripeClient(),db,prices:SUBSCRIPTION_PRICES,resolveUid:subscription=>resolveFirebaseUidForStripeObject({db,stripeObject:subscription}),stamp:()=>FieldValue.serverTimestamp()});
+        response.status(200).json({received:true});return;
+      }
       const resolvedUid = await resolveFirebaseUidForStripeObject({
         db,
         stripeObject

@@ -2613,14 +2613,17 @@ function showBoardLimitPopup() {
       });
     });
   }
+  popup.querySelector("#board-limit-popup-title").textContent=membershipBoardLimit()===20?"You have reached the 20-board limit.":"Subscribe to save more than two boards.";
   popup.hidden = false;
   requestAnimationFrame(() => popup.classList.add("is-open"));
   popup.querySelector(".board-limit-popup__close")?.focus({ preventScroll: true });
 }
 
+function membershipBoardLimit(){return shopAccountState.subscriptionActive||window.TeacherTilesSandbox?.subscriptionEnabled?20:2}
+
 async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
-  if (boardList.length >= 2) {
+  if (boardList.length >= membershipBoardLimit()) {
     showBoardLimitPopup();
     return;
   }
@@ -3669,11 +3672,11 @@ function createBoardCard(board) {
 }
 
 function createNewBoardCard() {
-  const isAtFreeLimit = boardList.length >= 2;
+  const isAtFreeLimit = boardList.length >= membershipBoardLimit();
   const button = document.createElement("button");
   button.type = "button";
   button.className = `board-new-card${isAtFreeLimit ? " is-subscriber-gated" : ""}`;
-  button.setAttribute("aria-label", isAtFreeLimit ? "Subscribe to save more than two boards" : boardUiText("boards.create", "Create new blank board"));
+  button.setAttribute("aria-label", isAtFreeLimit ? (membershipBoardLimit()===20?"20-board limit reached":"Subscribe to save more than two boards") : boardUiText("boards.create", "Create new blank board"));
 
   const preview = document.createElement("div");
   preview.className = "board-new-card__preview";
@@ -3683,7 +3686,7 @@ function createNewBoardCard() {
   plus.textContent = "+";
 
   preview.appendChild(plus);
-  if (isAtFreeLimit) {
+  if (isAtFreeLimit && membershipBoardLimit()===2) {
     const crown = document.createElement("span");
     crown.className = "board-new-card__crown";
     crown.innerHTML = subscriberMarkSvg;
