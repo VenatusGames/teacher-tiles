@@ -18351,9 +18351,12 @@ function setupTeacherTilesShop(){
   const close=document.getElementById('shop-close');
   if(!modal||!toggle||!close)return;
 
-  const featured=modal.querySelector('.shop-featured-grid');
-  for(const product of ['theme-cosmos','theme-wood','tile-skin-sticky-taped','tile-skin-clock-digital','cursor-color-pack']){const source=modal.querySelector(`[data-shop-product="${product}"]`);if(source)featured?.append(source.cloneNode(true))}
-  const sticker=modal.querySelector('[data-shop-page="stickers"] [data-shop-product]');if(sticker)featured?.append(sticker.cloneNode(true));
+  const featuredGroups={themes:['theme-cosmos','theme-wood','theme-pastel'],skins:['tile-skin-sticky-taped','tile-skin-clock-digital','tile-skin-todo-clipboard'],extras:['cursor-color-pack']};
+  for(const [group,ids] of Object.entries(featuredGroups)){
+    const container=modal.querySelector(`[data-featured-section="${group}"]`);
+    for(const id of ids){const source=modal.querySelector(`[data-shop-page]:not([data-shop-page="home"]) [data-shop-product="${id}"]`);if(source)container?.append(source.cloneNode(true));}
+  }
+  for(const source of [...modal.querySelectorAll('[data-shop-page="stickers"] [data-shop-product]')].slice(0,2))modal.querySelector('[data-featured-section="extras"]')?.append(source.cloneNode(true));
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
