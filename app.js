@@ -18377,8 +18377,17 @@ function setupTeacherTilesShop(){
   if(!modal||!toggle||!close)return;
 
   const shopHome=modal.querySelector('[data-shop-page="home"]');
-  shopHome.prepend(shopHome.querySelector('.shop-membership-grid'));
+  shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
   shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
+  for(const name of ['themes','stickers']){
+    const page=modal.querySelector('[data-shop-page="'+name+'"]');
+    if(page.querySelector('[data-shop-browser]'))continue;
+    const toolbar=shopHome.querySelector('[data-shop-browser]').cloneNode(true);
+    toolbar.dataset.shopBrowser=name;
+    const input=toolbar.querySelector('[data-shop-search]');
+    input.placeholder='Search '+name;input.setAttribute('aria-label','Search '+name);
+    page.querySelector('.shop-page-heading').after(toolbar);
+  }
   const previousFeatured=new Map();
   function refreshFeatured(){
     const owned=getOwnedShopProducts();
@@ -18751,6 +18760,7 @@ function setupTeacherTilesShop(){
     modal.setAttribute('aria-hidden','false');
     toggle.setAttribute('aria-expanded','true');
     showPage('home');
+    modal.querySelector('.shop-content').scrollTop=0;
     refreshFeatured();
     syncShop();
     syncStickerShopPackCounts();

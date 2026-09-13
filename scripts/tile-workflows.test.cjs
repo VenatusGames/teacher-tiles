@@ -34,5 +34,18 @@ const skin=TILE_SKIN_CATALOG[0];TeacherTilesAccount.state.ownedProductIds=[skin.
   document.querySelector('.shop-product-popup__close').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   return {opened,tooltip,direct,requested,escape:!document.querySelector('.shop-product-popup'),changed:initial.join()!==refreshed.join(),unowned:refreshed.every(id=>!TeacherTilesAccount.state.ownedProductIds.includes(id)),first:home.firstElementChild.className};
 });
-assert(shop.opened);assert(shop.tooltip);assert(shop.direct);assert(shop.escape);assert(shop.changed);assert(shop.unowned);assert.equal(shop.requested,'theme-cosmos');assert.equal(shop.first,'shop-membership-grid');
+assert(shop.opened);assert(shop.tooltip);assert(shop.direct);assert(shop.escape);assert(shop.changed);assert(shop.unowned);assert.equal(shop.requested,'theme-cosmos');assert.equal(shop.first,'shop-banner');
+await p.setViewportSize({width:1280,height:768});
+const opening=await p.evaluate(()=>{
+ TeacherTilesShop.openPage('home');
+ const content=document.querySelector('.shop-content').getBoundingClientRect();
+ const member=document.querySelector('.shop-membership-grid').getBoundingClientRect();
+ const banners=document.querySelectorAll('[data-shop-banner]').length;
+ TeacherTilesShop.openPage('themes');
+ const search=document.querySelector('[data-shop-browser="themes"] [data-shop-search]');
+ search.value='cosmos';search.dispatchEvent(new Event('input',{bubbles:true}));
+ const visible=[...document.querySelectorAll('[data-shop-page="themes"] .shop-product')].filter(x=>!x.hidden).map(x=>x.dataset.shopProduct);
+ return {fits:member.bottom<=content.bottom,banners,visible,stickers:!!document.querySelector('[data-shop-browser="stickers"] [data-shop-search]')};
+});
+assert(opening.fits);assert.equal(opening.banners,4);assert.deepEqual(opening.visible,['theme-cosmos']);assert(opening.stickers);
 assert.deepEqual(errors,[]);console.log('Tile layouts, undo/redo, and subscription access checks passed.');await b.close();process.exit(0)})();

@@ -21,12 +21,14 @@
     const layoutControl=document.createElement('div');layoutControl.className='directions-layout-switch';layoutControl.setAttribute('role','group');layoutControl.setAttribute('aria-label','Direction layout');
     for(const value of ['vertical','horizontal','grid']){const b=document.createElement('button');b.type='button';b.textContent=value[0].toUpperCase()+value.slice(1);b.dataset.layout=value;b.onclick=()=>{layout=value;reshape();render();changed()};layoutControl.append(b)}
     m.querySelector('.tile-settings-panel').append(layoutControl);
-    const crayonLabel=document.createElement('label');crayonLabel.className='tile-setting directions-crayon-color';crayonLabel.textContent='Crayon color';const crayonColor=document.createElement('input');crayonColor.type='color';crayonColor.value='#4285d4';crayonLabel.append(crayonColor);form.insertBefore(crayonLabel,form.querySelector('.directions-library'));
+    const crayonLabel=document.createElement('div');crayonLabel.className='tile-setting directions-crayon-color';crayonLabel.textContent='Crayon color';const crayonColor=document.createElement('input');crayonColor.type='color';crayonColor.hidden=true;crayonColor.setAttribute('aria-label','Custom crayon color');crayonColor.value='#4285d4';crayonLabel.append(crayonColor);form.insertBefore(crayonLabel,form.querySelector('.directions-library'));
     const swatches=document.createElement('div');swatches.className='directions-crayon-swatches';crayonLabel.append(swatches);
     for(const color of ['#ef4444','#f97316','#facc15','#22c55e','#3b82f6','#a855f7','#ec4899','#8b5e3c']){
       const button=document.createElement('button');button.type='button';button.style.background=color;button.setAttribute('aria-label','Use crayon color '+color);
       button.onclick=()=>{crayonColor.value=color;crayonColor.dispatchEvent(new Event('input',{bubbles:true}))};swatches.append(button);
     }
+    const customColor=document.createElement('button');customColor.type='button';customColor.className='directions-crayon-custom';customColor.textContent='+';customColor.title='Choose a custom color';customColor.setAttribute('aria-label','Choose a custom crayon color');
+    customColor.onclick=()=>{if(typeof crayonColor.showPicker==='function')crayonColor.showPicker();else crayonColor.click()};swatches.append(customColor);
     crayonColor.addEventListener('input',()=>{if(editing===null)return;cards[editing].color=crayonColor.value;selectImage(image);render();changed()});
     let cards=[],mode='numbers',editing=null,image=presets[0].image,revision=0,cancelDrag=null;
     const changed=()=>notifyBoardChanged('visual-directions');

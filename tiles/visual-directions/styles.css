@@ -41,3 +41,5 @@
 .directions-crayon-swatches button{width:28px;height:28px;border:2px solid white;border-radius:50%;box-shadow:0 0 0 1px #c9d5e3;cursor:pointer}
 .directions-form:has(.directions-crayon-color:not([hidden])) .directions-preview{display:block;width:90px;height:90px;position:absolute;right:30px;top:68px;pointer-events:none}
 .directions-form .directions-crayon-color{padding-right:100px;min-height:94px}
+
+.directions-crayon-swatches .directions-crayon-custom{display:grid;place-items:center;flex:0 0 28px;padding:0;background:white;color:#2875b7;font:500 22px/1 Inter,sans-serif}.directions-crayon-swatches button:focus-visible{outline:2px solid #2875b7;outline-offset:3px}
