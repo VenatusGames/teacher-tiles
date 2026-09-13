@@ -15,7 +15,7 @@
     let layout='grid';
     function reshape(){
       const count=cards.length+1,cols=layout==='vertical'?1:layout==='horizontal'?count:Math.ceil(Math.sqrt(count));
-      const rows=Math.ceil(count/cols),size=160;
+      const rows=Math.ceil(count/cols),size=layout==='vertical'?100:160;
       m.style.width=(cols*(size+8)+28)+'px';m.style.height=(rows*(size+8)+100)+'px';
     }
     const layoutControl=document.createElement('div');layoutControl.className='directions-layout-switch';layoutControl.setAttribute('role','group');layoutControl.setAttribute('aria-label','Direction layout');
@@ -34,6 +34,13 @@
     const changed=()=>notifyBoardChanged('visual-directions');
     const selectImage=src=>{image=src;preview.src=src;crayonLabel.hidden=!src.endsWith('/67.png');crayonColor.value=cards[editing]?.color||'#4285d4';if(src.endsWith('/67.png'))colorCrayon(crayonColor.value).then(data=>{if(image===src)preview.src=data}).catch(()=>{});form.querySelectorAll('[data-image]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.image===src)))};
     function close(){revision++;if(form.matches(':popover-open'))form.hidePopover();form.hidden=true;upload.value='';editing=null;save.disabled=false;error.textContent=''}
+    const dismissOutside=event=>{
+      if(form.hidden||!form.matches(':popover-open'))return;
+      const rect=form.getBoundingClientRect();
+      const outside=event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;
+      if(!form.contains(event.target)||outside)close();
+    };
+    document.addEventListener('pointerdown',dismissOutside,true);
     function edit(index=null){revision++;editing=index;title.value=index===null?'':cards[index].title;selectImage(index===null?presets[0].image:cards[index].image);upload.value='';error.textContent='';save.disabled=false;form.hidden=false;form.showPopover();form.querySelector('[data-image]')?.focus({preventScroll:true})}
     const move=(from,to)=>{if(from===to||to<0||to>=cards.length)return;const [card]=cards.splice(from,1);cards.splice(to,0,card);render();changed()};
     function drag(handle,index){
@@ -48,6 +55,17 @@
         cancelDrag=cancel;handle.addEventListener('pointermove',moving);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',cancel);window.addEventListener('keydown',escape);window.addEventListener('blur',cancel);
       });
     }
+    function updateReadableMinimum(){
+      const count=cards.length+1;
+      const columns=layout==='vertical'?1:layout==='horizontal'?count:Math.ceil(Math.sqrt(count));
+      const rows=Math.ceil(count/columns),size=layout==='vertical'?100:120;
+      const style=getComputedStyle(m);
+      const horizontal=(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0)+4;
+      // Reserve space for the heading, status and controls outside the cards.
+      const chrome=Math.max(100,m.clientHeight-wall.clientHeight);
+      m.style.minWidth=Math.max(200,columns*size+(columns-1)*8+horizontal)+'px';
+      m.style.minHeight=(rows*size+(rows-1)*8+chrome)+'px';
+    }
     function fitCards(){
       const width=wall.clientWidth,height=wall.clientHeight,count=cards.length+1;
       if(!width||!height)return;
@@ -59,12 +77,12 @@
       }
       wall.style.setProperty('--direction-card-size',`${Math.max(1,score)}px`);
       wall.style.setProperty('--direction-columns',best);wall.style.setProperty('--direction-rows',Math.ceil(count/best));
-      wall.style.setProperty('--direction-text',`${Math.max(7,Math.min(25,score*.13))}px`);
-      wall.style.setProperty('--direction-label',`${Math.max(7,Math.min(14,score*.09))}px`);
+      wall.style.setProperty('--direction-text',`${Math.max(14,Math.min(25,score*.13))}px`);
+      wall.style.setProperty('--direction-label',`${Math.max(11,Math.min(14,score*.09))}px`);
     }
     const observer=new ResizeObserver(fitCards);observer.observe(wall);
     function render(){
-      wall.replaceChildren();modeInput.value=mode;layoutControl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layout===layout)));
+      wall.replaceChildren();updateReadableMinimum();modeInput.value=mode;layoutControl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layout===layout)));
       cards.forEach((card,i)=>{
         const article=document.createElement('article');article.className='direction-card';article.dataset.stepIndex=String(i);
         const label=document.createElement('span');label.className='direction-step';label.textContent=stepLabel(mode,i,cards.length);
@@ -99,7 +117,7 @@
     modeInput.addEventListener('change',()=>{mode=modeInput.value;render();changed()});
     m._boardGetState=()=>({cards:cards.map(c=>({...c})),mode,layout});
     m._boardSetState=state=>{cancelDrag?.();close();cards=(Array.isArray(state?.cards)?state.cards:[]).slice(0,20).filter(c=>c&&typeof c==='object').map(c=>({title:String(c.title||'Step').slice(0,80),image:safeImage(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#4285d4'}));mode=['numbers','ordinals','sequence'].includes(state?.mode)?state.mode:'numbers';layout=['vertical','horizontal','grid'].includes(state?.layout)?state.layout:'grid';render()};
-    m._deactivate=()=>{cancelDrag?.();close()};m._cleanup=()=>{cancelDrag?.();observer.disconnect();revision++};render();
+    m._deactivate=()=>{cancelDrag?.();close()};m._cleanup=()=>{cancelDrag?.();close();observer.disconnect();document.removeEventListener('pointerdown',dismissOutside,true)};render();
   }
   window.TeacherTilesVisualDirections=Object.freeze({setup,stepLabel,safeImage});
 })();
