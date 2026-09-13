@@ -2936,6 +2936,29 @@ function markSubscriptionAccess(element,product){
   if(!product||!hasCosmeticSubscription()||getOwnedShopProducts().has(product))return;
   const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6"/></svg>';element.append(crown);
 }
+// Render crown hints outside cards and drawers so overflow cannot clip them.
+(()=>{
+  let hint=null,anchor=null;
+  function hide(){hint?.remove();hint=null;anchor=null}
+  function show(target){
+    if(anchor===target)return;
+    hide();anchor=target;
+    hint=document.createElement('div');hint.className='subscription-access-tooltip';
+    hint.setAttribute('role','tooltip');hint.textContent=target.getAttribute('aria-label');
+    (document.fullscreenElement||document.body).append(hint);
+    const rect=target.getBoundingClientRect(),box=hint.getBoundingClientRect();
+    hint.style.left=Math.max(8,Math.min(rect.left,innerWidth-box.width-8))+'px';
+    hint.style.top=Math.max(8,rect.bottom+8+box.height<=innerHeight-8?rect.bottom+8:rect.top-box.height-8)+'px';
+  }
+  document.addEventListener('pointerover',event=>{const target=event.target.closest?.('.subscription-access-crown');if(target)show(target)});
+  document.addEventListener('pointerout',event=>{if(anchor?.contains(event.target)&&!anchor.contains(event.relatedTarget))hide()});
+  document.addEventListener('focusin',event=>{if(event.target.matches('.subscription-access-crown'))show(event.target)});
+  document.addEventListener('focusout',event=>{if(event.target===anchor)hide()});
+  document.addEventListener('scroll',hide,true);window.addEventListener('resize',hide);
+  document.addEventListener('pointerdown',hide,true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')hide()});
+  new MutationObserver(()=>{if(anchor&&!anchor.isConnected)hide()}).observe(document.documentElement,{childList:true,subtree:true});
+})();
 function tileSkinIsOwned(skin){return Boolean(skin&&(skin.free===true||cosmeticIsAccessible(skin.productId)))}
 function cursorById(id){return CURSOR_CATALOG.find(cursor=>cursor.id===id)||CURSOR_CATALOG[0]}
 function cursorIsOwned(cursor){return Boolean(cursor&&(!cursor.productId||cosmeticIsAccessible(cursor.productId)))}
@@ -12541,7 +12564,7 @@ function setupCollectionShelf(){
 
   const openLockedCollection=pack=>{
     closeShelf();
-    window.TeacherTilesShop?.openPage(pack.matches('[data-theme-pack]')?'themes':'stickers');
+    window.TeacherTilesShop?.openProduct(COLLECTION_PACK_PRODUCTS[pack.id]||shelfEntitlement(pack));
   };
 
   const renderCursorShelf=()=>{
@@ -12578,7 +12601,7 @@ function setupCollectionShelf(){
     const packOwned=cosmeticIsAccessible(CURSOR_COLOR_PACK_PRODUCT_ID);
     let drawer=null;
     const colorPack=makePack('Colored Cursors',packOwned?'5 cursor colors':'Available in Shop',colors,{locked:!packOwned,onClick:()=>{
-      if(!packOwned){closeShelf();window.TeacherTilesShop?.openPage('cursors');return}
+      if(!packOwned){closeShelf();window.TeacherTilesShop?.openProduct(CURSOR_COLOR_PACK_PRODUCT_ID);return}
       const open=!drawer.classList.contains('is-open');
       drawer.classList.toggle('is-open',open);colorPack.pack.classList.toggle('is-open',open);colorPack.pack.setAttribute('aria-expanded',String(open));
     }});
@@ -18351,12 +18374,27 @@ function setupTeacherTilesShop(){
   const close=document.getElementById('shop-close');
   if(!modal||!toggle||!close)return;
 
-  const featuredGroups={themes:['theme-cosmos','theme-wood','theme-pastel'],skins:['tile-skin-sticky-taped','tile-skin-clock-digital','tile-skin-todo-clipboard'],extras:['cursor-color-pack']};
-  for(const [group,ids] of Object.entries(featuredGroups)){
-    const container=modal.querySelector(`[data-featured-section="${group}"]`);
-    for(const id of ids){const source=modal.querySelector(`[data-shop-page]:not([data-shop-page="home"]) [data-shop-product="${id}"]`);if(source)container?.append(source.cloneNode(true));}
+  const shopHome=modal.querySelector('[data-shop-page="home"]');
+  shopHome.prepend(shopHome.querySelector('.shop-membership-grid'));
+  shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
+  const previousFeatured=new Map();
+  function refreshFeatured(){
+    const owned=getOwnedShopProducts();
+    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors']})){
+      const container=modal.querySelector('[data-featured-section="'+group+'"]');
+      for(const card of [...container.children]){const index=products.indexOf(card);if(index>=0)products.splice(index,1)}
+      container.replaceChildren();
+      const previous=previousFeatured.get(group)||new Set();
+      const pool=pages.flatMap(page=>[...modal.querySelectorAll('[data-shop-page="'+page+'"] [data-shop-product]')]).filter(card=>!owned.has(card.dataset.shopProduct));
+      // Shuffle, then prefer products absent from the last opening.
+      for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+      pool.sort((a,b)=>Number(previous.has(a.dataset.shopProduct))-Number(previous.has(b.dataset.shopProduct)));
+      const selected=pool.slice(0,3);
+      previousFeatured.set(group,new Set(selected.map(card=>card.dataset.shopProduct)));
+      container.closest('.shop-featured-section').hidden=!selected.length;
+      for(const source of selected){const card=source.cloneNode(true);bindProduct(card);products.push(card);container.append(card)}
+    }
   }
-  for(const source of [...modal.querySelectorAll('[data-shop-page="stickers"] [data-shop-product]')].slice(0,2))modal.querySelector('[data-featured-section="extras"]')?.append(source.cloneNode(true));
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
@@ -18711,6 +18749,7 @@ function setupTeacherTilesShop(){
     modal.setAttribute('aria-hidden','false');
     toggle.setAttribute('aria-expanded','true');
     showPage('home');
+    refreshFeatured();
     syncShop();
     syncStickerShopPackCounts();
     showBanner(bannerIndex,false);
@@ -18719,6 +18758,7 @@ function setupTeacherTilesShop(){
     close.focus({preventScroll:true});
   }
   function closeShop(){
+    closeProduct();
     closeCoins(false);
     closeCoinCelebration();
     stopBannerTimer();
@@ -18727,6 +18767,26 @@ function setupTeacherTilesShop(){
     toggle.setAttribute('aria-expanded','false');
     setTimeout(()=>{modal.hidden=true},reduceMotion?0:220);
     if(lastFocus&&typeof lastFocus.focus==='function')lastFocus.focus({preventScroll:true});else toggle.focus({preventScroll:true});
+  }
+  let productPopup=null,productPopupCard=null,productPopupFocus=null;
+  function closeProduct(){
+    if(!productPopup)return;
+    const index=products.indexOf(productPopupCard);if(index>=0)products.splice(index,1);
+    productPopup.remove();productPopup=null;productPopupCard=null;
+    if(productPopupFocus?.isConnected)productPopupFocus.focus({preventScroll:true});
+  }
+  function openProduct(id){
+    const source=products.find(card=>card.dataset.shopProduct===id);if(!source)return;
+    if(modal.hidden)openShop();closeProduct();productPopupFocus=document.activeElement;
+    productPopup=document.createElement('div');productPopup.className='shop-product-popup';
+    const panel=document.createElement('section');panel.className='shop-product-popup__panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',source.querySelector('h3')?.textContent||'Product details');
+    const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='shop-product-popup__close';dismiss.textContent='×';dismiss.setAttribute('aria-label','Close product details');dismiss.onclick=closeProduct;
+    productPopupCard=source.cloneNode(true);productPopupCard.removeAttribute('tabindex');productPopupCard.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));productPopupCard.classList.remove('is-shop-highlighted');
+    const card=productPopupCard;card.querySelector('[data-shop-buy]')?.addEventListener('click',()=>tryBuy(card));products.push(card);
+    panel.append(dismiss,card);productPopup.append(panel);modal.querySelector('.shop-panel').append(productPopup);
+    productPopup.addEventListener('click',event=>{if(event.target===productPopup)closeProduct()});
+    productPopup.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeProduct()}if(event.key==='Tab'){const controls=[...panel.querySelectorAll('button:not(:disabled),[tabindex="0"]')];const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus()}}});
+    syncProducts();dismiss.focus({preventScroll:true});
   }
   async function tryBuy(card){
     const id=card.dataset.shopProduct;
@@ -18793,7 +18853,13 @@ function setupTeacherTilesShop(){
   prev?.addEventListener('click',()=>showBanner(bannerIndex-1));
   next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
-  products.forEach(card=>card.querySelector('[data-shop-buy]')?.addEventListener('click',()=>tryBuy(card)));
+  function bindProduct(card){
+    card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);
+    card.querySelector('[data-shop-buy]')?.addEventListener('click',event=>{event.stopPropagation();tryBuy(card)});
+    card.addEventListener('click',event=>{if(!event.target.closest('button,.subscription-access-crown'))openProduct(card.dataset.shopProduct)});
+    card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();openProduct(card.dataset.shopProduct)}});
+  }
+  products.forEach(bindProduct);
   coinPacks.forEach(button=>button.addEventListener('click',()=>startCoinCheckout(button)));
   redeemInput?.addEventListener('input',()=>{
     const start=redeemInput.selectionStart;
@@ -18841,16 +18907,12 @@ function setupTeacherTilesShop(){
   window.addEventListener('teachertiles:accountchange',()=>{syncShop();handleCheckoutReturn();maybeCelebrateCoinCheckout()});
   window.addEventListener('teachertiles:shoprequest',event=>{
     const productId=event.detail?.productId;
-    if(!accountState().signedIn){window.TeacherTilesAuth?.openProfile?.();return}
-    const productPage=String(productId).startsWith('sticker-')?'stickers':String(productId).startsWith('tile-skin-')?'tile-skins':String(productId).startsWith('cursor-')?'cursors':'themes';
-    openShop();showPage(productPage);
-    const card=products.find(item=>item.dataset.shopProduct===productId);
-    if(card){card.classList.add('is-shop-highlighted');card.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});setTimeout(()=>card.classList.remove('is-shop-highlighted'),1300)}
-    showToast('Purchase this pack to unlock it in your shelf.');
+    openProduct(productId);
   });
   syncStickerShopPackCounts();
   window.TeacherTilesShop={
     open:openShop,
+    openProduct,
     openCoins:()=>{openShop();openCoins()},
     openPage:name=>{openShop();showPage(name)},
     previewCoinCelebration:(amount=500)=>{
