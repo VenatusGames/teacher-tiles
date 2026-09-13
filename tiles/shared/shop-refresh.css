@@ -17,8 +17,8 @@
 .shop-product[tabindex]{cursor:pointer}.shop-product[tabindex]:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
 .shop-product-popup{position:absolute;inset:0;z-index:15;display:grid;place-items:center;padding:24px;background:#17203377;backdrop-filter:blur(5px)}.shop-product-popup__panel{position:relative;width:min(620px,100%);max-height:100%;overflow:auto;border-radius:22px;background:var(--surface-solid);box-shadow:0 20px 70px #0004}.shop-product-popup__close{position:absolute;z-index:9;top:12px;right:12px;width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font-size:24px;cursor:pointer}.shop-product-popup .shop-product{border:0;border-radius:0;transform:none!important;box-shadow:none!important;cursor:default}.shop-product-popup .shop-product__preview{height:260px}.shop-product-popup .shop-product__body{padding:24px;gap:20px}.shop-product-popup .shop-product__body>div{flex:1;min-width:200px}.shop-product-popup .shop-product h3{font-size:28px}.shop-product-popup .shop-product p{font-size:15px}.shop-product-popup .shop-buy{height:44px;font-size:16px}@media(max-width:600px){.shop-product-popup{padding:12px}.shop-product-popup .shop-product__preview{height:190px}}
 
-/* Keep the complete banner and membership actions together on the opening screen. */
-.shop-modal .shop-banner{height:clamp(130px,24dvh,220px);aspect-ratio:auto;margin-bottom:14px;background:#eee7fa}
+/* Give the complete banner artwork its natural proportions. */
+.shop-modal .shop-banner{height:auto;aspect-ratio:1200 / 420;margin-bottom:18px;background:#eee7fa}
 .shop-modal .shop-membership-grid{margin:0 0 18px;gap:14px}
 .shop-modal .shop-membership-card,.shop-modal .shop-redeem-card{padding:16px}
 .shop-modal .shop-membership-perks{font-size:12px;line-height:1.35;gap:7px;margin:12px 0}

@@ -18380,7 +18380,7 @@ function setupTeacherTilesShop(){
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
   shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
-  for(const name of ['themes','stickers']){
+  for(const name of ['themes','stickers','cursors']){
     const page=modal.querySelector('[data-shop-page="'+name+'"]');
     if(page.querySelector('[data-shop-browser]'))continue;
     const toolbar=shopHome.querySelector('[data-shop-browser]').cloneNode(true);

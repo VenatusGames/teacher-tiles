@@ -9,7 +9,7 @@
 .visual-schedule-module .visual-schedule-row-size{display:grid;grid-template-columns:1fr auto;gap:8px;width:100%;padding:0;border:0;background:none}.visual-schedule-row-size-input{grid-column:1/-1;width:100%}
 
 .visual-schedule-module{width:380px;min-height:130px;padding:26px 10px 40px}
-.visual-schedule-module .visual-schedule-list{flex:0 0 auto}
+.visual-schedule-module .visual-schedule-list{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
 .visual-schedule-module .visual-schedule-segment{--visual-image-size:32px;min-height:44px;grid-template-columns:32px minmax(70px,1fr) 72px auto;grid-template-rows:1fr;padding:4px 6px;gap:6px}
 .visual-schedule-module .visual-schedule-image{grid-column:1;grid-row:1;width:32px;height:32px}
 .visual-schedule-module .visual-schedule-segment-title{grid-column:2;grid-row:1;align-self:center;font-size:14px}
@@ -23,7 +23,7 @@
 .visual-schedule-module .visual-schedule-segment:hover{background:color-mix(in srgb,var(--module-bg,#fff) 94%,#93c5fd);box-shadow:0 4px 14px #17203309}
 .visual-schedule-module .visual-schedule-image{width:var(--visual-image-size);height:var(--visual-image-size);padding:0;border:0;background:transparent;box-shadow:none;border-radius:10px}
 .visual-schedule-module .visual-schedule-image img{filter:drop-shadow(0 2px 2px #17203312)}
-.visual-schedule-segment-copy{grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;min-width:0}
+.visual-schedule-segment-copy{grid-column:2;grid-row:1;display:flex;align-items:center;gap:5px;min-width:0}
 .visual-schedule-module .visual-schedule-segment-title,.visual-schedule-module .visual-schedule-segment-time{flex:0 1 auto;min-width:0;max-width:100%;padding:3px 0;background:transparent;border:0;line-height:1.3;text-overflow:ellipsis}
 .visual-schedule-module .visual-schedule-segment-title{font-size:15px;font-weight:650}
 .visual-schedule-module .visual-schedule-segment-time{font-size:13px;font-weight:500;opacity:.7}
@@ -32,3 +32,8 @@
 .visual-schedule-module .visual-schedule-add,.visual-schedule-module .visual-schedule-resize{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
 .visual-schedule-module:hover .visual-schedule-add,.visual-schedule-module:hover .visual-schedule-resize,.visual-schedule-module .visual-schedule-add:focus-visible,.visual-schedule-module .visual-schedule-resize:focus-visible{opacity:1;visibility:visible;pointer-events:auto}
 @media(hover:none){.visual-schedule-module .visual-schedule-add,.visual-schedule-module .visual-schedule-resize{opacity:1;visibility:visible;pointer-events:auto}}
+
+.visual-schedule-module .visual-schedule-segment-title,.visual-schedule-module .visual-schedule-segment-time{field-sizing:content;width:auto!important}
+.visual-schedule-module .visual-schedule-resize,.visual-schedule-module .visual-schedule-resize:hover{background:transparent}
+.visual-schedule-module .visual-schedule-resize::before{content:"";width:24px;height:3px;left:50%;right:auto;bottom:3px;transform:translateX(-50%);border:0;border-radius:999px;background:#d1d5db}
+.visual-schedule-module .visual-schedule-resize::after{content:none}
