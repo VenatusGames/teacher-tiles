@@ -11,17 +11,28 @@
   }
   function setup(m){
     const wall=m.querySelector('.directions-wall'),form=m.querySelector('.directions-form'),title=m.querySelector('.directions-title'),upload=m.querySelector('.directions-upload'),preview=m.querySelector('.directions-preview'),modeInput=m.querySelector('.directions-mode'),status=m.querySelector('.directions-status'),error=m.querySelector('.directions-error'),save=form.querySelector('[type=submit]');
+    form.setAttribute('popover','manual');
     let layout='grid';
+    function reshape(){
+      const count=cards.length+1,cols=layout==='vertical'?1:layout==='horizontal'?count:Math.ceil(Math.sqrt(count));
+      const rows=Math.ceil(count/cols),size=160;
+      m.style.width=(cols*(size+8)+28)+'px';m.style.height=(rows*(size+8)+100)+'px';
+    }
     const layoutControl=document.createElement('div');layoutControl.className='directions-layout-switch';layoutControl.setAttribute('role','group');layoutControl.setAttribute('aria-label','Direction layout');
-    for(const value of ['vertical','horizontal','grid']){const b=document.createElement('button');b.type='button';b.textContent=value[0].toUpperCase()+value.slice(1);b.dataset.layout=value;b.onclick=()=>{layout=value;render();changed()};layoutControl.append(b)}
+    for(const value of ['vertical','horizontal','grid']){const b=document.createElement('button');b.type='button';b.textContent=value[0].toUpperCase()+value.slice(1);b.dataset.layout=value;b.onclick=()=>{layout=value;reshape();render();changed()};layoutControl.append(b)}
     m.querySelector('.tile-settings-panel').append(layoutControl);
-    const crayonLabel=document.createElement('label');crayonLabel.className='tile-setting directions-crayon-color';crayonLabel.textContent='Crayon color';const crayonColor=document.createElement('input');crayonColor.type='color';crayonColor.value='#4285d4';crayonLabel.append(crayonColor);form.append(crayonLabel);
-    crayonColor.addEventListener('input',()=>{if(editing===null)return;cards[editing].color=crayonColor.value;render();changed()});
+    const crayonLabel=document.createElement('label');crayonLabel.className='tile-setting directions-crayon-color';crayonLabel.textContent='Crayon color';const crayonColor=document.createElement('input');crayonColor.type='color';crayonColor.value='#4285d4';crayonLabel.append(crayonColor);form.insertBefore(crayonLabel,form.querySelector('.directions-library'));
+    const swatches=document.createElement('div');swatches.className='directions-crayon-swatches';crayonLabel.append(swatches);
+    for(const color of ['#ef4444','#f97316','#facc15','#22c55e','#3b82f6','#a855f7','#ec4899','#8b5e3c']){
+      const button=document.createElement('button');button.type='button';button.style.background=color;button.setAttribute('aria-label','Use crayon color '+color);
+      button.onclick=()=>{crayonColor.value=color;crayonColor.dispatchEvent(new Event('input',{bubbles:true}))};swatches.append(button);
+    }
+    crayonColor.addEventListener('input',()=>{if(editing===null)return;cards[editing].color=crayonColor.value;selectImage(image);render();changed()});
     let cards=[],mode='numbers',editing=null,image=presets[0].image,revision=0,cancelDrag=null;
     const changed=()=>notifyBoardChanged('visual-directions');
-    const selectImage=src=>{image=src;preview.src=src;crayonLabel.hidden=!src.endsWith('/67.png');crayonColor.value=cards[editing]?.color||'#4285d4';form.querySelectorAll('[data-image]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.image===src)))};
-    function close(){revision++;form.hidden=true;upload.value='';editing=null;save.disabled=false;error.textContent=''}
-    function edit(index=null){revision++;editing=index;title.value=index===null?'':cards[index].title;selectImage(index===null?presets[0].image:cards[index].image);upload.value='';error.textContent='';save.disabled=false;form.hidden=false;form.querySelector('[data-image]')?.focus({preventScroll:true})}
+    const selectImage=src=>{image=src;preview.src=src;crayonLabel.hidden=!src.endsWith('/67.png');crayonColor.value=cards[editing]?.color||'#4285d4';if(src.endsWith('/67.png'))colorCrayon(crayonColor.value).then(data=>{if(image===src)preview.src=data}).catch(()=>{});form.querySelectorAll('[data-image]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.image===src)))};
+    function close(){revision++;if(form.matches(':popover-open'))form.hidePopover();form.hidden=true;upload.value='';editing=null;save.disabled=false;error.textContent=''}
+    function edit(index=null){revision++;editing=index;title.value=index===null?'':cards[index].title;selectImage(index===null?presets[0].image:cards[index].image);upload.value='';error.textContent='';save.disabled=false;form.hidden=false;form.showPopover();form.querySelector('[data-image]')?.focus({preventScroll:true})}
     const move=(from,to)=>{if(from===to||to<0||to>=cards.length)return;const [card]=cards.splice(from,1);cards.splice(to,0,card);render();changed()};
     function drag(handle,index){
       handle.addEventListener('pointerdown',e=>{
@@ -68,17 +79,17 @@
         name.addEventListener('dblclick',event=>{event.stopPropagation();editTitle()});name.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();editTitle()}});
         content.append(imageButton,name);
         const tools=document.createElement('div');tools.className='direction-actions';
-        for(const [text,description,action] of [['×','Delete step',()=>{cards.splice(i,1);close();render();changed()}]]){
+        for(const [text,description,action] of [['×','Delete step',()=>{cards.splice(i,1);close();reshape();render();changed()}]]){
           const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',`${description}: ${card.title}`);b.title=description;if(action)b.addEventListener('click',action);else{b.className='direction-grip';drag(b,i)}if(text==='←')b.disabled=i===0;if(text==='→')b.disabled=i===cards.length-1;tools.appendChild(b);
         }
         const grip=document.createElement('span');grip.className='direction-drag-indicator';grip.textContent='⠿';grip.title='Drag to reorder';grip.setAttribute('aria-hidden','true');article.append(label,grip,content,tools);drag(article,i);wall.appendChild(article);
       });
       const add=document.createElement('button');add.type='button';add.className='direction-add-card';add.textContent='+';add.setAttribute('aria-label','Add step');add.title='Add step';add.disabled=cards.length>=20;
-      add.addEventListener('click',()=>{cards.push({title:'New step',image:presets[0].image});render();changed();fitCards()});wall.appendChild(add);
+      add.addEventListener('click',()=>{cards.push({title:'New step',image:presets[0].image});reshape();render();changed();fitCards()});wall.appendChild(add);
       requestAnimationFrame(fitCards);
       status.textContent=`${cards.length} steps · Drag to reorder · Double-click a title to edit`;
     }
-    for(const preset of presets){const b=document.createElement('button');b.type='button';b.dataset.image=preset.image;b.setAttribute('aria-label',preset.title);const img=document.createElement('img');img.src=preset.image;img.alt='';const text=document.createElement('span');text.textContent=preset.title;b.append(img,text);b.addEventListener('click',()=>{revision++;save.disabled=false;error.textContent='';selectImage(preset.image);if(editing!==null){cards[editing].image=preset.image;if(!preset.image.endsWith('/67.png'))close();render();changed()}});m.querySelector('.directions-library').appendChild(b)}
+    for(const preset of presets){const b=document.createElement('button');b.type='button';b.dataset.image=preset.image;b.setAttribute('aria-label',preset.title);const img=document.createElement('img');img.src=preset.image;img.alt='';const text=document.createElement('span');text.textContent=preset.image.endsWith('/67.png')?'Crayon · Pick a color':preset.title;b.append(img,text);b.addEventListener('click',()=>{revision++;save.disabled=false;error.textContent='';selectImage(preset.image);if(editing!==null){cards[editing].image=preset.image;if(!preset.image.endsWith('/67.png'))close();render();changed()}});m.querySelector('.directions-library').appendChild(b)}
     m.querySelector('.directions-add')?.remove();m.querySelector('.directions-cancel').addEventListener('click',close);
     upload.addEventListener('change',async()=>{const file=upload.files[0];if(!file)return;const token=++revision;save.disabled=true;error.textContent='Loading image…';try{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type))throw Error('Choose a PNG, JPEG, WebP, or GIF image.');const src=await fileToBoardImageData(file,{maxSide:640,maxLength:240000,minSide:160});if(token!==revision||!m.isConnected)return;selectImage(safeImage(src));if(editing!==null){cards[editing].image=image;close();render();changed()}}catch(e){if(token===revision)error.textContent=e.message||'Could not load this image.'}finally{if(token===revision)save.disabled=false}});
     form.addEventListener('submit',e=>{e.preventDefault();if(save.disabled)return;const name=title.value.trim().slice(0,80);if(!name)return;const card={title:name,image};if(editing===null){if(cards.length>=20)return;cards.push(card)}else cards[editing]=card;close();render();changed()});

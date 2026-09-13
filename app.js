@@ -11491,10 +11491,12 @@ function setupProgressBar(m){
 function setupVisualSchedule(m){
   const settings=document.createElement('div');settings.className='tile-settings-wrap';settings.innerHTML='<button type="button" class="custom-icon tile-settings-toggle" aria-label="Visual Schedule settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>Visual Schedule settings</strong></div>';
   const dock=m.querySelector('.visual-schedule-scale-dock');settings.querySelector('.tile-settings-panel').append(dock);m.querySelector('.visual-schedule-customization').append(settings);
-  m.querySelector('.visual-schedule-row-size-input').value='56';
+  m.querySelector('.visual-schedule-row-size-input').value='44';
 
+  setupClassroomTileControls(m);
   const list=m.querySelector('.visual-schedule-list');
   const add=m.querySelector('.visual-schedule-add');
+  add.textContent='+';
   const reset=m.querySelector('.visual-schedule-reset');
   const count=m.querySelector('.visual-schedule-count');
   const rowSizeInput=m.querySelector('.visual-schedule-row-size-input');
@@ -11644,15 +11646,15 @@ function setupVisualSchedule(m){
   },{passive:false});
 
   const setSegmentSize=(row,value)=>{
-    const size=clamp(Math.round(Number(value)||56),56,220);
+    const size=clamp(Math.round(Number(value)||44),44,220);
     row.dataset.segmentSize=String(size);
     row.style.setProperty('--visual-segment-size',`${size}px`);
   };
   const syncRowSizeControl=()=>{
-    const sizes=[...list.querySelectorAll('.visual-schedule-segment')].map(row=>Number(row.dataset.segmentSize)||56);
+    const sizes=[...list.querySelectorAll('.visual-schedule-segment')].map(row=>Number(row.dataset.segmentSize)||44);
     const unique=[...new Set(sizes)];
-    const representative=unique.length===1?unique[0]:Math.round((sizes.reduce((sum,size)=>sum+size,0)/(sizes.length||1))/4)*4||56;
-    rowSizeInput.value=String(clamp(representative,56,220));
+    const representative=unique.length===1?unique[0]:Math.round((sizes.reduce((sum,size)=>sum+size,0)/(sizes.length||1))/4)*4||44;
+    rowSizeInput.value=String(clamp(representative,44,220));
     rowSizeOutput.value=unique.length>1?'Mixed':`${representative} px`;
     rowSizeOutput.textContent=rowSizeOutput.value;
     rowSizeSync.hidden=unique.length<=1;
@@ -11677,7 +11679,7 @@ function setupVisualSchedule(m){
       </div>
       <button class="visual-schedule-resize" type="button" aria-label="Resize this schedule segment" title="Drag to resize segment"></button>
     `;
-    setSegmentSize(row,data.size??(Number(rowSizeInput.value)||56));
+    setSegmentSize(row,data.size??(Number(rowSizeInput.value)||44));
     const title=row.querySelector('.visual-schedule-segment-title');
     const time=row.querySelector('.visual-schedule-segment-time');
     title.value=data.title??'New Activity';
@@ -11713,7 +11715,7 @@ function setupVisualSchedule(m){
     resizeHandle.addEventListener('keydown',event=>{
       if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
       event.preventDefault();
-      setSegmentSize(row,(Number(row.dataset.segmentSize)||56)+(event.key==='ArrowDown'?8:-8));
+      setSegmentSize(row,(Number(row.dataset.segmentSize)||44)+(event.key==='ArrowDown'?8:-8));
       syncRowSizeControl();
       autoSize();
       notifyBoardChanged('visual-schedule-resize');
@@ -11723,7 +11725,7 @@ function setupVisualSchedule(m){
       event.preventDefault();
       event.stopPropagation();
       const startY=event.clientY;
-      const startSize=Number(row.dataset.segmentSize)||56;
+      const startSize=Number(row.dataset.segmentSize)||44;
       resizeHandle.setPointerCapture(event.pointerId);
 
       const move=moveEvent=>{
@@ -11762,13 +11764,13 @@ function setupVisualSchedule(m){
     rows.forEach(row=>setSegmentSize(row,value));
     syncRowSizeControl();
   };
-  rowSizeInput.addEventListener('input',()=>setAllSegmentSizes(Number(rowSizeInput.value)||56));
+  rowSizeInput.addEventListener('input',()=>setAllSegmentSizes(Number(rowSizeInput.value)||44));
   rowSizeInput.addEventListener('change',()=>{
     autoSize();
     notifyBoardChanged('visual-schedule-resize-all');
   });
   rowSizeSync.addEventListener('click',()=>{
-    setAllSegmentSizes(Number(rowSizeInput.value)||56);
+    setAllSegmentSizes(Number(rowSizeInput.value)||44);
     autoSize();
     notifyBoardChanged('visual-schedule-resize-all');
   });
@@ -11792,7 +11794,7 @@ function setupVisualSchedule(m){
     time:row.querySelector('.visual-schedule-segment-time')?.value||'',
     iconSrc:row.dataset.iconSrc||row.querySelector('.visual-schedule-image img')?.getAttribute('src')||'',
     complete:row.classList.contains('is-complete'),
-    size:Number(row.dataset.segmentSize)||56
+    size:Number(row.dataset.segmentSize)||44
   }))});
   m._boardSetState=state=>{
     closePicker();

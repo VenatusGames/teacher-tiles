@@ -7,3 +7,12 @@
 .visual-schedule-module .visual-schedule-segment{min-height:56px;margin:0;border-radius:10px;box-shadow:0 2px 5px #1720330c}
 .visual-schedule-module .tile-settings-panel .visual-schedule-scale-dock{display:block;position:static;opacity:1;visibility:visible;pointer-events:auto;height:auto;padding:0;margin:0;transform:none}
 .visual-schedule-module .visual-schedule-row-size{display:grid;grid-template-columns:1fr auto;gap:8px;width:100%;padding:0;border:0;background:none}.visual-schedule-row-size-input{grid-column:1/-1;width:100%}
+
+.visual-schedule-module{width:380px;min-height:130px;padding:26px 10px 40px}
+.visual-schedule-module .visual-schedule-list{flex:0 0 auto}
+.visual-schedule-module .visual-schedule-segment{--visual-image-size:32px;min-height:44px;grid-template-columns:32px minmax(70px,1fr) 72px auto;grid-template-rows:1fr;padding:4px 6px;gap:6px}
+.visual-schedule-module .visual-schedule-image{grid-column:1;grid-row:1;width:32px;height:32px}
+.visual-schedule-module .visual-schedule-segment-title{grid-column:2;grid-row:1;align-self:center;font-size:14px}
+.visual-schedule-module .visual-schedule-segment-time{grid-column:3;grid-row:1;align-self:center;font-size:12px;padding:0}
+.visual-schedule-module .visual-schedule-segment-actions{grid-column:4;grid-row:1;gap:2px}
+.visual-schedule-module .visual-schedule-add,.visual-schedule-module.is-measuring-rest .visual-schedule-add{display:flex!important;opacity:1;visibility:visible;pointer-events:auto;width:28px;height:28px;min-height:28px;flex:0 0 28px;justify-content:center;padding:0!important;background:transparent!important;color:var(--module-text)!important;font-size:26px;transform:none}
