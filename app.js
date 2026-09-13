@@ -11671,8 +11671,7 @@ function setupVisualSchedule(m){
       <button class="visual-schedule-image" type="button" aria-label="Change segment image" title="Change image">
         <img src="${icon.src}" alt="${icon.label}" draggable="false">
       </button>
-      <input class="visual-schedule-segment-title" type="text" aria-label="Activity title">
-      <input class="visual-schedule-segment-time" type="text" aria-label="Activity time">
+      <div class="visual-schedule-segment-copy"><input class="visual-schedule-segment-title" type="text" aria-label="Activity title"><span class="visual-schedule-divider" aria-hidden="true"></span><input class="visual-schedule-segment-time" type="text" aria-label="Activity time"></div>
       <div class="visual-schedule-segment-actions">
         <button class="visual-schedule-complete" type="button" aria-pressed="false" aria-label="Mark segment complete"><span aria-hidden="true">✓</span></button>
         <button class="visual-schedule-remove" type="button" aria-label="Remove segment" title="Remove segment">×</button>
@@ -11684,6 +11683,8 @@ function setupVisualSchedule(m){
     const time=row.querySelector('.visual-schedule-segment-time');
     title.value=data.title??'New Activity';
     time.value=data.time??'';
+    const fitCopy=()=>{title.style.width=Math.max(4,title.value.length+.5)+'ch';time.style.width=Math.max(5,time.value.length+.5)+'ch'};
+    title.addEventListener('input',fitCopy);time.addEventListener('input',fitCopy);fitCopy();
     row.classList.toggle('is-complete',Boolean(data.complete));
     const completeButton=row.querySelector('.visual-schedule-complete');
     const syncCompleteButton=()=>{
