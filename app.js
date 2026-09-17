@@ -18335,6 +18335,9 @@ if(document.readyState==='loading'){
       wake();
       return;
     }
+    if(activeModuleTextEditor)exitModuleTextEdit(activeModuleTextEditor);
+    const active=document.activeElement;
+    if(active instanceof HTMLElement&&workspace.contains(active))active.blur();
     clearSelection();
     for(const module of workspace.querySelectorAll('.module')){
       module.classList.remove('is-pointer-over','has-keyboard-focus');

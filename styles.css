@@ -15694,29 +15694,49 @@ body.is-board-idle .boards-launch-button{
   pointer-events:none!important;
   transition:opacity .55s ease,filter .55s ease!important;
 }
+/*
+  Idle tiles must behave as genuinely unhovered. This lets each tile's normal
+  hover/focus CSS collapse its own transient controls instead of maintaining a
+  fragile global list that can accidentally hide persistent tile content.
+*/
+body.is-board-idle .workspace .module.is-idle-unhovered{
+  pointer-events:none!important;
+}
 body.is-board-idle .module.is-idle-unhovered::after,
 body.is-board-idle .module.is-idle-unhovered .module-delete,
 body.is-board-idle .module.is-idle-unhovered .sticky-toolbar,
 body.is-board-idle .module.is-idle-unhovered .customization-bar,
 body.is-board-idle .module.is-idle-unhovered [class*="-customization"],
+body.is-board-idle .module.is-idle-unhovered .widget-controls,
+body.is-board-idle .module.is-idle-unhovered .timer-controls,
+body.is-board-idle .module.is-idle-unhovered .timer-sync-toggle,
 body.is-board-idle .module.is-idle-unhovered .wordweb-entry,
-body.is-board-idle .module.is-idle-unhovered .venn-composer,
-body.is-board-idle .module.is-idle-unhovered .venn-flavor,
+body.is-board-idle .module.is-idle-unhovered .venn-entry,
+body.is-board-idle .module.is-idle-unhovered .venn-hint,
 body.is-board-idle .module.is-idle-unhovered .quietcritters-controls,
+body.is-board-idle .module.is-idle-unhovered .fish-controls,
+body.is-board-idle .module.is-idle-unhovered .butterflygarden-controls,
+body.is-board-idle .module.is-idle-unhovered .sleepymonster-controls,
 body.is-board-idle .module.is-idle-unhovered .stoplight-controls,
 body.is-board-idle .module.is-idle-unhovered .youtube-controls,
 body.is-board-idle .module.is-idle-unhovered .windowshare-controls,
+body.is-board-idle .module.is-idle-unhovered .seating-controls,
 body.is-board-idle .module.is-idle-unhovered .visual-schedule-toolbar,
 body.is-board-idle .module.is-idle-unhovered .visual-schedule-scale-dock,
+body.is-board-idle .module.is-idle-unhovered .visual-schedule-add,
+body.is-board-idle .module.is-idle-unhovered .visual-schedule-resize,
 body.is-board-idle .module.is-idle-unhovered .progress-bar-controls,
-body.is-board-idle .module.is-idle-unhovered .progress-bar-icon-slot,
 body.is-board-idle .module.is-idle-unhovered .progress-bar-icon-plus,
 body.is-board-idle .module.is-idle-unhovered .date-options,
 body.is-board-idle .module.is-idle-unhovered .calendar-footer,
+body.is-board-idle .module.is-idle-unhovered .calendar-day-event-remove,
 body.is-board-idle .module.is-idle-unhovered .groupmaker-footer,
+body.is-board-idle .module.is-idle-unhovered .groupmaker-edit-names,
 body.is-board-idle .module.is-idle-unhovered .boombox-style-button,
 body.is-board-idle .module.is-idle-unhovered .noise-settings-panel,
+body.is-board-idle .module.is-idle-unhovered .lunchcount-category-controls,
 body.is-board-idle .module.is-idle-unhovered .lunchcount-inline-actions,
+body.is-board-idle .module.is-idle-unhovered .voting-choice-controls,
 body.is-board-idle .module.is-idle-unhovered .voting-inline-actions,
 body.is-board-idle .module.is-idle-unhovered .weather-add-panel,
 body.is-board-idle .module.is-idle-unhovered .weather-unit-toggle,
@@ -15728,6 +15748,7 @@ body.is-board-idle .module.is-idle-unhovered .classmeter-hover-tools,
 body.is-board-idle .module.is-idle-unhovered .collection-controls,
 body.is-board-idle .module.is-idle-unhovered .collection-fill-line-handle,
 body.is-board-idle .module.is-idle-unhovered .prizeboard-add,
+body.is-board-idle .module.is-idle-unhovered .prize-card-delete,
 body.is-board-idle .module.is-idle-unhovered .punchcard-reset,
 body.is-board-idle .module.is-idle-unhovered .racer-controls,
 body.is-board-idle .module.is-idle-unhovered .table-maker-chart-types,
@@ -15735,7 +15756,46 @@ body.is-board-idle .module.is-idle-unhovered .table-maker-toolbar,
 body.is-board-idle .module.is-idle-unhovered .attendance-class-strip .tile-class-loader,
 body.is-board-idle .module.is-idle-unhovered .sticker-rotate-handle,
 body.is-board-idle .module.is-idle-unhovered .sticker-resize-handle,
-body.is-board-idle .module.is-idle-unhovered .weather-card header button{
+body.is-board-idle .module.is-idle-unhovered .weather-card header button,
+body.is-board-idle .module.is-idle-unhovered .todo-remove,
+body.is-board-idle .module.is-idle-unhovered .wordweb-node-delete,
+body.is-board-idle .module.is-idle-unhovered .venn-item-delete,
+body.is-board-idle .module.is-idle-unhovered .vocabulary-remove,
+body.is-board-idle .module.is-idle-unhovered .image-replace,
+body.is-board-idle .module.is-idle-unhovered .photobooth-photo-actions,
+body.is-board-idle .module.is-idle-unhovered .backgroundremover-result-actions,
+body.is-board-idle .module.is-idle-unhovered .direction-actions,
+body.is-board-idle .module.is-idle-unhovered .spinner-spin-again,
+body.is-board-idle .module.is-idle-unhovered>.tile-appearance-toggle,
+body.is-board-idle .module.is-idle-unhovered>.tile-settings-beside-brush,
+body.is-board-idle .module.is-idle-unhovered>.tile-skins-toggle{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.is-board-idle .module.is-idle-unhovered>.resize-handle::before{
+  opacity:0!important;
+}
+/* A chosen Progress Bar image is presentation content; only its picker chrome fades. */
+body.is-board-idle .progress-bar-module.is-idle-unhovered .progress-bar-icon-slot.has-icon{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.is-board-idle .progress-bar-module.is-idle-unhovered .progress-bar-icon-slot:not(.has-icon){
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+/* Portaled tile chrome sits outside .module, so suppress it explicitly while idle. */
+body.is-board-idle :is(.tile-appearance-flyout,.tile-skins-drawer,.timer-shape-shelf){
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.is-board-idle .module .tile-settings-floating:popover-open{
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;
