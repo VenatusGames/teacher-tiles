@@ -3368,6 +3368,8 @@ function prepareModuleTextEditors(m){
 function isInteractiveModuleTarget(target,m){
   if(!(target instanceof Element)||!m)return false;
   if(target.closest('.module-drag-handle'))return false;
+  if(m.dataset.type==='timer'&&target.closest('.timer-stage'))return false;
+  if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
   if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
