@@ -16115,8 +16115,10 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 
 /* Match the universal tile delete control to the shared tile chrome buttons. */
 body .module>.module-delete{
-  width:32px;
-  height:32px;
+  right:9px;
+  top:9px;
+  width:28px;
+  height:28px;
   display:grid;
   place-items:center;
   padding:0;
@@ -16125,12 +16127,23 @@ body .module>.module-delete{
   background:var(--surface-solid,var(--surface))!important;
   color:var(--text)!important;
   box-shadow:0 3px 10px #0f172a18;
-  font-size:20px;
-  font-weight:500;
+  font-size:0;
   line-height:1;
   cursor:pointer;
-  transition:opacity .15s,transform .15s,background .15s,border-color .15s;
+  transition:opacity .15s,transform .15s;
 }
+body .module>.module-delete::before,
+body .module>.module-delete::after{
+  content:"";
+  position:absolute;
+  width:13px;
+  height:1.7px;
+  border-radius:999px;
+  background:currentColor;
+  pointer-events:none;
+}
+body .module>.module-delete::before{transform:rotate(45deg)}
+body .module>.module-delete::after{transform:rotate(-45deg)}
 body .module>.module-delete:hover{transform:translateY(-1px)}
 body .module>.module-delete:active{transform:translateY(0)}
 body .module>.module-delete:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
