@@ -208,7 +208,8 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
   uiVolume:100,
   scrollSpeed:100,
   defaultViewSize:100,
-  language:'en'
+  language:'en',
+  alwaysShowTileDeleteButtons:false
 });
 
 const CLASS_ROSTERS_KEY='teachertiles-class-rosters-v1';
@@ -1114,7 +1115,8 @@ function normalizeAppPreferences(value={}){
     uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
     scrollSpeed:prefClamp(Number.isFinite(rawScroll)?rawScroll:100,50,175),
     defaultViewSize:[75,100,125,150].includes(Number(source.defaultViewSize))?Number(source.defaultViewSize):100,
-    language:APP_LANGUAGE_CODES.has(source.language)?source.language:'en'
+    language:APP_LANGUAGE_CODES.has(source.language)?source.language:'en',
+    alwaysShowTileDeleteButtons:Boolean(source.alwaysShowTileDeleteButtons)
   };
 }
 
@@ -1127,6 +1129,10 @@ function readStoredAppPreferences(){
 }
 
 let appPreferences=readStoredAppPreferences();
+function applyTileDeleteVisibilityPreference(){
+  document.body?.classList.toggle('tile-delete-always-visible',Boolean(appPreferences.alwaysShowTileDeleteButtons));
+}
+applyTileDeleteVisibilityPreference();
 let uiSfxMuted=appPreferences.uiMuted;
 const uiSfxPrototype=new Audio('assets/ui/pop.mp3');
 uiSfxPrototype.preload='auto';
@@ -1152,7 +1158,8 @@ function boardPreferenceSnapshot(){
     uiVolume:Number.isFinite(Number(appPreferences.uiVolume))?Number(appPreferences.uiVolume):100,
     scrollSpeed:Number(appPreferences.scrollSpeed)||100,
     defaultViewSize:Number(appPreferences.defaultViewSize)||100,
-    language:APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en'
+    language:APP_LANGUAGE_CODES.has(appPreferences.language)?appPreferences.language:'en',
+    alwaysShowTileDeleteButtons:Boolean(appPreferences.alwaysShowTileDeleteButtons)
   };
 }
 
@@ -1293,6 +1300,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
+    'settings.deleteButtons.title':'Always show tile delete buttons','settings.deleteButtons.copy':'Keep the corner X visible on every tile instead of revealing it near the corner.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
@@ -1328,6 +1336,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
     'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
     'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
+    'settings.deleteButtons.title':'Mostrar siempre los botones de eliminar','settings.deleteButtons.copy':'Mantiene visible la X de la esquina en todos los tiles en vez de mostrarla solo cerca de la esquina.',
     'settings.language.title':'Idioma','settings.language.copy':'Elige el idioma de los menús y controles de TeacherTiles.','settings.language.interface':'Idioma de la interfaz','settings.language.note':'El contenido de tus tiles nunca se traduce ni se modifica.',
     'settings.save.note':'Los cambios de preferencias se incluyen en el autoguardado normal del tablero; no usan un sistema adicional de Firestore.',
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
@@ -1510,6 +1519,7 @@ function updateSettingsControls(){
   const scrollOut=document.getElementById('settings-scroll-speed-value');
   const view=document.getElementById('settings-default-view');
   const language=document.getElementById('settings-language');
+  const deleteButtons=document.getElementById('settings-tile-delete-toggle');
   if(mute){
     mute.setAttribute('aria-checked',String(Boolean(appPreferences.uiMuted)));
     mute.setAttribute('aria-label',appPreferences.uiMuted?'Turn UI sounds on':'Mute UI sounds');
@@ -1520,6 +1530,11 @@ function updateSettingsControls(){
   if(scrollOut)scrollOut.textContent=`${Math.round(appPreferences.scrollSpeed)}%`;
   if(view)view.value=String(appPreferences.defaultViewSize);
   if(language)language.value=appPreferences.language;
+  if(deleteButtons){
+    deleteButtons.setAttribute('aria-checked',String(Boolean(appPreferences.alwaysShowTileDeleteButtons)));
+    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Hide persistent tile delete buttons':'Always show tile delete buttons');
+  }
+  applyTileDeleteVisibilityPreference();
   const volumeRow=volume?.closest('.settings-row');
   if(volumeRow)volumeRow.classList.toggle('is-disabled',Boolean(appPreferences.uiMuted));
 }
@@ -1540,6 +1555,7 @@ function applyAppPreferences(value,{persist=true,notify=false,applyView=false}={
   uiSfxMuted=appPreferences.uiMuted;
   if(persist)persistAppPreferences();
   updateSettingsControls();
+  applyTileDeleteVisibilityPreference();
   applyAppLanguage();
   if(applyView)setCurrentBoardViewSize(appPreferences.defaultViewSize);
   if(notify)notifyBoardChanged('preferences');
@@ -1554,6 +1570,13 @@ window.TeacherTilesPreferences={
 window.TeacherTilesI18n={t:translateAppText,get language(){return appPreferences.language},apply:applyAppLanguage};
 
 function setupSettingsHub(){
+  const boardSettingsCard=document.getElementById('settings-scroll-speed')?.closest('.settings-card');
+  if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
+    const row=document.createElement('div');
+    row.className='settings-row settings-row--switch';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Always show tile delete buttons</strong><small data-i18n="settings.deleteButtons.copy">Keep the corner X visible on every tile instead of revealing it near the corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Always show tile delete buttons"><span></span></button>';
+    boardSettingsCard.appendChild(row);
+  }
   const modal=document.getElementById('settings-modal');
   const closeButtons=[...document.querySelectorAll('[data-settings-close]')];
   const tabs=[...document.querySelectorAll('[data-settings-tab]')];
@@ -1564,6 +1587,7 @@ function setupSettingsHub(){
   const scroll=document.getElementById('settings-scroll-speed');
   const view=document.getElementById('settings-default-view');
   const language=document.getElementById('settings-language');
+  const deleteButtons=document.getElementById('settings-tile-delete-toggle');
   if(!modal||!settingsToggle)return;
   let lastFocus=null;
   let currentTab='settings';
@@ -1634,6 +1658,7 @@ function setupSettingsHub(){
   scroll?.addEventListener('change',()=>notifyBoardChanged('preferences'));
   view?.addEventListener('change',()=>applyAppPreferences({defaultViewSize:Number(view.value)},{notify:true,applyView:true}));
   language?.addEventListener('change',()=>{applyAppPreferences({language:language.value},{notify:true});updateTitle();setMenuCategory(activeMenuCategory)});
+  deleteButtons?.addEventListener('click',()=>applyAppPreferences({alwaysShowTileDeleteButtons:!appPreferences.alwaysShowTileDeleteButtons},{notify:true}));
 
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&!modal.hidden){event.preventDefault();close()}
@@ -3414,7 +3439,8 @@ function setupCommon(m){
   prepareModuleTextEditors(m);
   const updateDeleteHotzone=e=>{
     const rect=m.getBoundingClientRect();
-    const inside=e.clientX>=rect.left+rect.width/2&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+rect.height/2;
+    const proximity=Math.max(46,Math.min(64,rect.width*.22,rect.height*.22));
+    const inside=e.clientX>=rect.right-proximity&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximity;
     m.classList.toggle('is-delete-hotzone',inside);
   };
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
