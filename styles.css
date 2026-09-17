@@ -16112,3 +16112,25 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .clock-module:not([data-tile-skin]) .analog-second{width:max(1px,min(.6cqw,.6cqh))}
 .clock-module:not([data-tile-skin]) .analog-pin{width:max(7px,min(3.6cqw,3.6cqh));height:max(7px,min(3.6cqw,3.6cqh))}
 .clock-module:not([data-tile-skin]) .analog-tick::before{width:max(1px,min(.6cqw,.6cqh));height:max(4px,min(2.3cqw,2.3cqh))}
+
+/* Match the universal tile delete control to the shared tile chrome buttons. */
+body .module>.module-delete{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid var(--border)!important;
+  border-radius:10px;
+  background:var(--surface-solid,var(--surface))!important;
+  color:var(--text)!important;
+  box-shadow:0 3px 10px #0f172a18;
+  font-size:20px;
+  font-weight:500;
+  line-height:1;
+  cursor:pointer;
+  transition:opacity .15s,transform .15s,background .15s,border-color .15s;
+}
+body .module>.module-delete:hover{transform:translateY(-1px)}
+body .module>.module-delete:active{transform:translateY(0)}
+body .module>.module-delete:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
