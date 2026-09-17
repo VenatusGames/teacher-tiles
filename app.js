@@ -1300,7 +1300,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
-    'settings.deleteButtons.title':'Always show tile delete buttons','settings.deleteButtons.copy':'Keep the corner X visible on every tile instead of revealing it near the corner.',
+    'settings.deleteButtons.title':'Show delete button on tile hover','settings.deleteButtons.copy':'Show a tile’s corner X whenever you hover over that tile instead of only near its top-right corner.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
@@ -1336,7 +1336,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
     'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
     'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
-    'settings.deleteButtons.title':'Mostrar siempre los botones de eliminar','settings.deleteButtons.copy':'Mantiene visible la X de la esquina en todos los tiles en vez de mostrarla solo cerca de la esquina.',
+    'settings.deleteButtons.title':'Mostrar el botón de eliminar al pasar el cursor','settings.deleteButtons.copy':'Muestra la X de la esquina al pasar el cursor sobre un tile en vez de solo cerca de su esquina superior derecha.',
     'settings.language.title':'Idioma','settings.language.copy':'Elige el idioma de los menús y controles de TeacherTiles.','settings.language.interface':'Idioma de la interfaz','settings.language.note':'El contenido de tus tiles nunca se traduce ni se modifica.',
     'settings.save.note':'Los cambios de preferencias se incluyen en el autoguardado normal del tablero; no usan un sistema adicional de Firestore.',
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
@@ -1532,7 +1532,7 @@ function updateSettingsControls(){
   if(language)language.value=appPreferences.language;
   if(deleteButtons){
     deleteButtons.setAttribute('aria-checked',String(Boolean(appPreferences.alwaysShowTileDeleteButtons)));
-    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Hide persistent tile delete buttons':'Always show tile delete buttons');
+    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile delete buttons near the corner':'Show tile delete button on tile hover');
   }
   applyTileDeleteVisibilityPreference();
   const volumeRow=volume?.closest('.settings-row');
@@ -1574,7 +1574,7 @@ function setupSettingsHub(){
   if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
     const row=document.createElement('div');
     row.className='settings-row settings-row--switch';
-    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Always show tile delete buttons</strong><small data-i18n="settings.deleteButtons.copy">Keep the corner X visible on every tile instead of revealing it near the corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Always show tile delete buttons"><span></span></button>';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show delete button on tile hover</strong><small data-i18n="settings.deleteButtons.copy">Show a tile’s corner X whenever you hover over that tile instead of only near its top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile delete button on tile hover"><span></span></button>';
     boardSettingsCard.appendChild(row);
   }
   const modal=document.getElementById('settings-modal');

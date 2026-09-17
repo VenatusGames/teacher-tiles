@@ -16141,8 +16141,7 @@ body .module>.module-delete:focus-visible{
   opacity:1!important;
   pointer-events:auto;
 }
-body.tile-delete-always-visible .workspace .module>.module-delete,
-body.tile-delete-always-visible.is-board-idle .workspace .module.is-idle-unhovered>.module-delete{
+body.tile-delete-always-visible .workspace .module:hover>.module-delete{
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
