@@ -107,7 +107,9 @@
       const button=document.createElement('button');button.type='button';button.className='tile-appearance-tool';button.dataset.appearanceKey=control.key;
       button.setAttribute('aria-label',control.label);button.title=control.label;button.setAttribute('aria-expanded','false');
       const icon=control.original.querySelector('.icon-font,.icon-palette,.icon-text-color');
-      if(icon)button.appendChild(icon.cloneNode(true));else button.textContent=control.key==='font'?'Aa':'◉';
+      if(icon)button.appendChild(icon.cloneNode(true));
+      else if(control.key==='color'){const palette=document.createElement('span');palette.className='icon-palette';palette.setAttribute('aria-hidden','true');button.appendChild(palette)}
+      else button.textContent=control.key==='font'?'Aa':'◉';
       button.addEventListener('click',()=>showPicker(control));rail.appendChild(button);
     });
     for(const [key,label,path,action] of [
