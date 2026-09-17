@@ -3122,6 +3122,7 @@ function setupModuleByType(m,type){
   if(type==='rainbow')window.TeacherTilesRainbow.setup(m);
   if(type==='piano')window.TeacherTilesPiano.setup(m);
   if(type==='musicscore')window.TeacherTilesMusicscore.setup(m);
+  if(type==='richtext')window.TeacherTilesRichText.setup(m);
   if(type==='vocabulary')window.TeacherTilesVocabulary.setup(m);
   if(type==='wordweb')window.TeacherTilesWordWeb.setup(m);
   if(type==='venndiagram')window.TeacherTilesVennDiagrams.setup(m);

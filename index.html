@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-settings-popovers-1">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260917-1">
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
@@ -1790,6 +1791,7 @@
         <small data-i18n="context.try">Try another search.</small>
       </div>
       <button class="context-menu__item" data-module="sticky" data-category="basics text planning"><span class="context-menu__icon context-menu__icon--sticky" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 6.5h14v13H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 6.5V4.2h6v2.3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 11h8M8 14.5h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Sticky Note</strong><small>Write and format notes</small></span></button>
+      <button class="context-menu__item" data-module="richtext" data-category="text"><span class="context-menu__icon context-menu__icon--rich-text" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14M8 5v14M5.5 19h5M13 10h6M13 14h6M13 18h4"/><path d="M15.5 3.5v3M14 5h3"/></svg></span><span><strong>Rich Text</strong><small>Write long, fully formatted text</small></span></button>
       <button class="context-menu__item" data-module="textbubble" data-category="basics text"><span class="context-menu__icon" aria-hidden="true">Aa</span><span><strong>Text Bubble</strong><small>Simple scalable text display</small></span></button>
       <button class="context-menu__item" data-module="todo" data-category="text planning"><span class="context-menu__icon context-menu__icon--todo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m7 12.2 3.2 3.3L17.5 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>To-Do</strong><small>Build a customizable checklist</small></span></button>
       <button class="context-menu__item" data-module="visualschedule" data-category="time planning accessibility"><span class="context-menu__icon context-menu__icon--visual-schedule" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="7" width="3" height="3" rx=".6" fill="currentColor"/><rect x="7" y="12" width="3" height="3" rx=".6" fill="currentColor"/><path d="M12.5 8.5H17M12.5 13.5H17M7 18h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span><strong>Visual Schedule</strong><small>Build a picture-based daily schedule</small></span></button>
@@ -2154,6 +2156,54 @@
       </div>
       <div class="sticky-editor" contenteditable="true" spellcheck="true" data-placeholder="Start typing..."></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
+
+  <template id="richtext-template">
+    <section class="module classroom-widget richtext-module" data-type="richtext" data-bg="white" data-font="inter" data-text="dark">
+      <button class="module-delete" aria-label="Delete Rich Text">×</button>
+      <div class="module-drag-handle"></div>
+      <div class="richtext-toolbar" role="toolbar" aria-label="Rich Text formatting">
+        <div class="richtext-toolbar-group">
+          <select class="richtext-block" aria-label="Text style">
+            <option value="p">Body</option>
+            <option value="h1">Heading</option>
+            <option value="h2">Subheading</option>
+            <option value="h3">Section heading</option>
+            <option value="blockquote">Quote</option>
+          </select>
+          <select class="richtext-font" aria-label="Font family"></select>
+          <select class="richtext-size" aria-label="Font size"></select>
+          <button class="richtext-color" type="button" aria-label="Text color" title="Text color"><span class="richtext-color-letter" aria-hidden="true">A</span><span class="richtext-color-swatch" aria-hidden="true"></span></button>
+          <input class="richtext-color-input" type="color" value="#17191d" aria-label="Choose text color">
+        </div>
+        <span class="richtext-toolbar-divider" aria-hidden="true"></span>
+        <div class="richtext-toolbar-group">
+          <button class="richtext-format-bold" type="button" data-rich-command="bold" aria-label="Bold" title="Bold" aria-pressed="false">B</button>
+          <button class="richtext-format-italic" type="button" data-rich-command="italic" aria-label="Italic" title="Italic" aria-pressed="false">I</button>
+          <button class="richtext-format-underline" type="button" data-rich-command="underline" aria-label="Underline" title="Underline" aria-pressed="false">U</button>
+          <button class="richtext-format-strike" type="button" data-rich-command="strikeThrough" aria-label="Strikethrough" title="Strikethrough" aria-pressed="false">S</button>
+        </div>
+        <span class="richtext-toolbar-divider" aria-hidden="true"></span>
+        <div class="richtext-toolbar-group">
+          <button type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list" aria-pressed="false">•≡</button>
+          <button type="button" data-rich-command="insertOrderedList" aria-label="Numbered list" title="Numbered list" aria-pressed="false">1≡</button>
+          <button type="button" data-rich-command="justifyLeft" aria-label="Align left" title="Align left" aria-pressed="false"><span class="richtext-align-icon richtext-align-icon--left" aria-hidden="true"><i></i><i></i><i></i></span></button>
+          <button type="button" data-rich-command="justifyCenter" aria-label="Align center" title="Align center" aria-pressed="false"><span class="richtext-align-icon richtext-align-icon--center" aria-hidden="true"><i></i><i></i><i></i></span></button>
+          <button type="button" data-rich-command="justifyRight" aria-label="Align right" title="Align right" aria-pressed="false"><span class="richtext-align-icon richtext-align-icon--right" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        </div>
+        <span class="richtext-toolbar-divider" aria-hidden="true"></span>
+        <div class="richtext-toolbar-group">
+          <button type="button" data-rich-command="undo" aria-label="Undo text edit" title="Undo">↶</button>
+          <button type="button" data-rich-command="redo" aria-label="Redo text edit" title="Redo">↷</button>
+          <button type="button" data-rich-command="removeFormat" aria-label="Clear formatting" title="Clear formatting">Tx</button>
+        </div>
+      </div>
+      <div class="richtext-editor widget-scroll" contenteditable="true" spellcheck="true" aria-label="Rich text editor" data-placeholder="Start typing…"></div>
+      <div class="customization-bar widget-controls richtext-customization" aria-label="Rich Text tile customization">
+        <button class="custom-icon tile-bg" type="button" aria-label="Change tile background color" title="Change tile background color"><span class="icon-palette" aria-hidden="true"></span></button>
+      </div>
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div>
     </section>
   </template>
 <template id="piano-template"><section class="module classroom-widget piano-module" data-type="piano" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Piano">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Piano</h2></header><div class="piano-keys" aria-label="Piano keyboard"></div><div class="piano-status widget-status" role="status">Click or hold a key to play</div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
@@ -3871,7 +3921,8 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
-<script src="app.js?v=20260913-cursor-search-1"></script>
+<script src="tiles/rich-text/index.js?v=20260917-1"></script>
+<script src="app.js?v=20260917-rich-text-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
