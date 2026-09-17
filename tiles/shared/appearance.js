@@ -58,7 +58,9 @@
     picker.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
   }
   function borderPicker(){
+    if(!active)return;
     const m=active.module;picker.replaceChildren();picker.hidden=false;
+    rail.querySelectorAll('button').forEach(button=>button.setAttribute('aria-expanded',String(button.dataset.appearanceKey==='border')));
     const heading=document.createElement('strong');heading.className='tile-appearance-heading';heading.textContent='Border';picker.appendChild(heading);
     const legacy=m.querySelector('.image-border-style');
     const legacyStyle=legacy?.value||'none';
@@ -117,6 +119,7 @@
       ['reset','Reset appearance','M4 10a8 8 0 1 1 1 8M4 4v6h6',resetAppearance]
     ]){
       const button=document.createElement('button');button.type='button';button.className='tile-appearance-tool';button.dataset.appearanceKey=key;button.title=label;button.setAttribute('aria-label',label);
+      if(key==='border')button.setAttribute('aria-expanded','false');
       button.innerHTML=`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
       button.addEventListener('click',action);rail.appendChild(button);
     }
