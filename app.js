@@ -3412,6 +3412,13 @@ function isFloatingTileSkinDragSurface(target,m){
 function setupCommon(m){
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
+  const updateDeleteHotzone=e=>{
+    const rect=m.getBoundingClientRect();
+    const inside=e.clientX>=rect.left+rect.width/2&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+rect.height/2;
+    m.classList.toggle('is-delete-hotzone',inside);
+  };
+  m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
+  m.addEventListener('pointerleave',()=>m.classList.remove('is-delete-hotzone'));
   let grabCursorTarget=null;
   const clearGrabCursor=()=>{grabCursorTarget?.classList.remove('module-grab-cursor');grabCursorTarget=null};
   m.addEventListener('pointerover',e=>{
