@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-timer-presets-grid-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-library-fullscreen-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -300,11 +300,32 @@
               <i aria-hidden="true">›</i>
             </button>
           </section>
-          <section id="lesson-planner-panel" class="lesson-planner-panel" hidden aria-hidden="true" aria-labelledby="lesson-planner-title">
+          <section id="lesson-planner-panel" class="lesson-planner-panel" hidden aria-hidden="true" aria-label="Lesson Planner">
             <div class="lesson-planner-backdrop" aria-hidden="true"></div>
-            <div class="lesson-planner-window" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-title">
+            <section id="lesson-planner-library" class="lesson-planner-library" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-library-title">
+              <header class="planner-library-header">
+                <button id="lesson-planner-library-back" class="planner-library-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
+                <div class="planner-library-brand">
+                  <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h11.5a2.5 2.5 0 0 1 2.5 2.5v12H7.5A2.5 2.5 0 0 1 5 16.5v-12Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 19c-1.4 0-2.5-1.1-2.5-2.5S6.1 14 7.5 14H19M8 7.5h7M8 10.5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+                  <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-library-title">Your Planners</h2></div>
+                </div>
+                <div class="planner-library-header__actions">
+                  <span id="lesson-planner-library-limit" class="planner-library-limit" aria-live="polite"></span>
+                  <button id="lesson-planner-create" class="planner-library-create" type="button" aria-label="Create a new planner" title="Create planner"><span aria-hidden="true">+</span></button>
+                  <button id="lesson-planner-library-close" class="planner-library-close" type="button" aria-label="Close Lesson Planner">×</button>
+                </div>
+              </header>
+              <main class="planner-library-body">
+                <section class="planner-library-intro">
+                  <div><span>PLANNER LIBRARY</span><h3>Choose a planner</h3><p>Keep separate lesson plans for different classes, subjects, or school years.</p></div>
+                  <span id="lesson-planner-library-plan" class="planner-library-plan-badge"></span>
+                </section>
+                <div id="lesson-planner-library-grid" class="planner-library-grid" aria-live="polite"></div>
+              </main>
+            </section>
+            <div class="lesson-planner-window" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-title" hidden aria-hidden="true">
               <header class="lesson-planner-header">
-                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
+                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><span aria-hidden="true">←</span><strong>Planners</strong></button>
                 <div class="lesson-planner-brand">
                   <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span>
                   <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
@@ -1318,6 +1339,7 @@
 <li>Access <strong><u>all</u></strong> Paid Cosmetics &amp; Features for the duration of the membership</li>
 <li>Access <span class="holiday-badge">Holiday</span> Tiles <small>(coming soon)</small></li>
 <li>Save more than two boards (up to 20!)</li>
+<li>Create up to <strong>10 Lesson Planners</strong> <small>(free accounts can create 2)</small></li>
 <li>Custom Subscriber Themes, Stickers, and Tile Skins</li>
 <li>Subscriber Profile Patch &amp; Golden Username</li>
 <li>Support TeacherTiles and help keep the lights on</li>
@@ -4030,7 +4052,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-bell-space-until-set-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

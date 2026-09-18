@@ -3,6 +3,13 @@
   const panel = document.getElementById('lesson-planner-panel');
   if (!openButton || !panel) return;
 
+  const library = document.getElementById('lesson-planner-library');
+  const libraryGrid = document.getElementById('lesson-planner-library-grid');
+  const libraryLimit = document.getElementById('lesson-planner-library-limit');
+  const libraryPlan = document.getElementById('lesson-planner-library-plan');
+  const createPlannerButton = document.getElementById('lesson-planner-create');
+  const plannerWindow = panel.querySelector('.lesson-planner-window');
+  const plannerTitle = document.getElementById('lesson-planner-title');
   const canvas = document.getElementById('lesson-planner-canvas');
   const editor = document.getElementById('lesson-planner-editor');
   const form = document.getElementById('lesson-planner-form');
@@ -24,7 +31,11 @@
   const agendaCount = document.getElementById('lesson-planner-agenda-count');
   const zoomInput = document.getElementById('lesson-planner-zoom');
   const viewTabs = [...document.querySelectorAll('[data-planner-view]')];
-  const STORAGE_KEY = 'teachertiles-lesson-planner-v1';
+  const LEGACY_STORAGE_KEY = 'teachertiles-lesson-planner-v1';
+  const PLANNERS_STORAGE_KEY = 'teachertiles-lesson-planners-v2';
+  const ACTIVE_PLANNER_KEY = 'teachertiles-active-lesson-planner-v2';
+  const FREE_PLANNER_LIMIT = 2;
+  const PAID_PLANNER_LIMIT = 10;
   const VIEWS = ['day', 'week', 'month', 'year'];
   const DAY_START = 6 * 60;
   const DAY_END = 20 * 60;
@@ -43,7 +54,12 @@
   const weekdayLong = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
   const monthDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
   const fullDate = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  let planners = readPlanners();
+  let activePlannerId = readActivePlannerId();
+  if (activePlannerId && !planners.some(planner => planner.id === activePlannerId)) activePlannerId = '';
+  if (!activePlannerId && planners.length) activePlannerId = planners[0].id;
   let blocks = readBlocks();
+  if (!localStorage.getItem(PLANNERS_STORAGE_KEY) && planners.length) savePlanners();
   let currentDate = atNoon(new Date());
   let selectedDate = atNoon(new Date());
   let view = 'week';
@@ -126,21 +142,89 @@
     };
   }
 
-  function readBlocks() {
+  function cleanPlannerName(value, fallback = 'Untitled Planner') {
+    return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 60) || fallback;
+  }
+
+  function plannerId() {
+    return `planner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function normalizePlanner(planner, index = 0) {
+    if (!planner || typeof planner !== 'object') return null;
+    const plannerBlocks = Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
+    return {
+      id: String(planner.id || plannerId()),
+      name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
+      color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
+      blocks: plannerBlocks
+    };
+  }
+
+  function readLegacyBlocks() {
     try {
-      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const parsed = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
       return Array.isArray(parsed) ? parsed.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
     } catch {
       return [];
     }
   }
 
+  function readPlanners() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLANNERS_STORAGE_KEY) || 'null');
+      if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
+    } catch {}
+    const legacy = readLegacyBlocks();
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy }] : [];
+  }
+
+  function readActivePlannerId() {
+    try { return String(localStorage.getItem(ACTIVE_PLANNER_KEY) || ''); } catch { return ''; }
+  }
+
+  function activePlanner() {
+    return planners.find(planner => planner.id === activePlannerId) || null;
+  }
+
+  function hasPlannerSubscription() {
+    const accountState = window.TeacherTilesAccount?.state;
+    return Boolean(accountState?.subscriptionActive || window.TeacherTilesSandbox?.subscriptionEnabled);
+  }
+
+  function plannerLimit() {
+    return hasPlannerSubscription() ? PAID_PLANNER_LIMIT : FREE_PLANNER_LIMIT;
+  }
+
+  function savePlanners() {
+    try {
+      localStorage.setItem(PLANNERS_STORAGE_KEY, JSON.stringify(planners));
+      if (activePlannerId) localStorage.setItem(ACTIVE_PLANNER_KEY, activePlannerId);
+      else localStorage.removeItem(ACTIVE_PLANNER_KEY);
+    } catch {}
+  }
+
+  function readBlocks() {
+    const planner = activePlanner();
+    return planner ? planner.blocks.map(block => ({ ...block })) : [];
+  }
+
+  function publishPlannerChange() {
+    const snapshot = blocks.map(block => ({ ...block }));
+    const planner = activePlanner();
+    window.TeacherTilesRefreshLessonPlannerTiles?.(snapshot);
+    window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', {
+      detail: { blocks: snapshot, plannerId: planner?.id || '', plannerName: planner?.name || '' }
+    }));
+  }
+
   function saveBlocks() {
     blocks.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks)); } catch {}
-    const snapshot = blocks.map(block => ({ ...block }));
-    window.TeacherTilesRefreshLessonPlannerTiles?.(snapshot);
-    window.dispatchEvent(new CustomEvent('teachertiles:lessonplannerchange', { detail: { blocks: snapshot } }));
+    const planner = activePlanner();
+    if (planner) planner.blocks = blocks.map(block => ({ ...block }));
+    savePlanners();
+    try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
+    publishPlannerChange();
   }
 
   function blocksForDate(date) {
@@ -153,6 +237,172 @@
     if (className) element.className = className;
     if (text !== undefined) element.textContent = text;
     return element;
+  }
+
+
+  function plannerColor(planner) {
+    return COLORS.find(color => color.id === planner?.color) || COLORS[0];
+  }
+
+  function renderLibrary() {
+    if (!libraryGrid) return;
+    const limit = plannerLimit();
+    const paid = hasPlannerSubscription();
+    libraryLimit.textContent = `${planners.length} / ${limit}`;
+    libraryLimit.title = `${planners.length} of ${limit} planners used`;
+    libraryPlan.textContent = paid ? 'SUPPORTER · UP TO 10 PLANNERS' : 'FREE · UP TO 2 PLANNERS';
+    libraryPlan.classList.toggle('is-subscriber', paid);
+    createPlannerButton.disabled = planners.length >= limit;
+    createPlannerButton.setAttribute('aria-disabled', String(createPlannerButton.disabled));
+    createPlannerButton.title = createPlannerButton.disabled ? `Planner limit reached (${limit})` : 'Create planner';
+    libraryGrid.replaceChildren();
+
+    if (!planners.length) {
+      const empty = make('section', 'planner-library-empty');
+      empty.innerHTML = '<span aria-hidden="true">＋</span><h3>Create your first planner</h3><p>Make a separate lesson-planning book for a class, subject, or school year.</p>';
+      const add = make('button', 'planner-library-empty__create', 'Create planner');
+      add.type = 'button';
+      add.addEventListener('click', () => createPlannerButton.click());
+      empty.append(add);
+      libraryGrid.append(empty);
+      return;
+    }
+
+    planners.forEach(planner => {
+      const color = plannerColor(planner);
+      const card = make('article', 'planner-book-card');
+      card.dataset.plannerId = planner.id;
+      card.style.setProperty('--planner-book-color', color.value);
+      card.style.setProperty('--planner-book-ink', color.ink);
+
+      const open = make('button', 'planner-book-open');
+      open.type = 'button';
+      open.setAttribute('aria-label', `Open ${planner.name}`);
+      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><i></i><b></b><em></em></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong></strong><em></em></span>';
+      open.querySelector('strong').textContent = planner.name;
+      const count = planner.blocks.length;
+      open.querySelector('.planner-book-copy>em').textContent = `${count} ${count === 1 ? 'lesson block' : 'lesson blocks'}`;
+      open.addEventListener('click', () => openPlannerBook(planner.id));
+
+      const tools = make('div', 'planner-book-tools');
+      const colors = make('div', 'planner-book-colors');
+      colors.setAttribute('aria-label', `${planner.name} color`);
+      COLORS.forEach(option => {
+        const swatch = make('button', 'planner-book-color');
+        swatch.type = 'button';
+        swatch.title = option.name;
+        swatch.setAttribute('aria-label', `Use ${option.name} for ${planner.name}`);
+        swatch.setAttribute('aria-pressed', String(option.id === planner.color));
+        swatch.classList.toggle('is-selected', option.id === planner.color);
+        swatch.style.setProperty('--planner-swatch', option.value);
+        swatch.addEventListener('click', () => {
+          planner.color = option.id;
+          savePlanners();
+          renderLibrary();
+        });
+        colors.append(swatch);
+      });
+
+      const actions = make('div', 'planner-book-actions');
+      const rename = make('button', 'planner-library-rename', 'Rename');
+      rename.type = 'button';
+      rename.addEventListener('click', () => beginPlannerRename(card, planner));
+      const collaborate = make('button', 'planner-library-collaborate', 'Collaborate');
+      collaborate.type = 'button';
+      collaborate.dataset.comingSoon = 'Coming soon';
+      collaborate.setAttribute('aria-label', 'Collaborate — coming soon');
+      collaborate.addEventListener('click', event => event.preventDefault());
+      const remove = make('button', 'planner-library-delete', 'Delete');
+      remove.type = 'button';
+      remove.addEventListener('click', () => {
+        if (!confirm(`Delete “${planner.name}” and all of its lesson blocks?`)) return;
+        planners = planners.filter(item => item.id !== planner.id);
+        if (activePlannerId === planner.id) activePlannerId = planners[0]?.id || '';
+        blocks = readBlocks();
+        savePlanners();
+        try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
+        publishPlannerChange();
+        renderLibrary();
+      });
+      actions.append(rename, collaborate, remove);
+      tools.append(colors, actions);
+      card.append(open, tools);
+      libraryGrid.append(card);
+    });
+  }
+
+  function beginPlannerRename(card, planner) {
+    const title = card.querySelector('.planner-book-copy strong');
+    if (!title || card.querySelector('.planner-book-name-input')) return;
+    const input = make('input', 'planner-book-name-input');
+    input.type = 'text';
+    input.maxLength = 60;
+    input.value = planner.name;
+    title.replaceWith(input);
+    input.focus({ preventScroll: true });
+    input.select();
+    let done = false;
+    const finish = cancel => {
+      if (done) return;
+      done = true;
+      if (!cancel) planner.name = cleanPlannerName(input.value, planner.name);
+      savePlanners();
+      renderLibrary();
+    };
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); finish(false); }
+      if (event.key === 'Escape') { event.preventDefault(); finish(true); }
+    });
+    input.addEventListener('blur', () => finish(false), { once: true });
+  }
+
+  function createPlanner() {
+    const limit = plannerLimit();
+    if (planners.length >= limit) { renderLibrary(); return; }
+    const planner = {
+      id: plannerId(),
+      name: `Planner ${planners.length + 1}`,
+      color: COLORS[planners.length % COLORS.length].id,
+      blocks: []
+    };
+    planners.push(planner);
+    activePlannerId = planner.id;
+    savePlanners();
+    renderLibrary();
+    requestAnimationFrame(() => {
+      const card = libraryGrid.querySelector(`[data-planner-id="${CSS.escape(planner.id)}"]`);
+      if (card) beginPlannerRename(card, planner);
+    });
+  }
+
+  function showPlannerLibrary({ focus = true } = {}) {
+    cancelLessonDrag?.();
+    closeEditor();
+    plannerWindow.hidden = true;
+    plannerWindow.setAttribute('aria-hidden', 'true');
+    library.hidden = false;
+    library.setAttribute('aria-hidden', 'false');
+    renderLibrary();
+    if (focus) requestAnimationFrame(() => (libraryGrid.querySelector('.planner-book-open') || createPlannerButton)?.focus({ preventScroll: true }));
+  }
+
+  function openPlannerBook(id) {
+    const planner = planners.find(item => item.id === id);
+    if (!planner) { showPlannerLibrary(); return; }
+    activePlannerId = planner.id;
+    blocks = planner.blocks.map(block => ({ ...block }));
+    savePlanners();
+    try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
+    plannerTitle.textContent = planner.name;
+    library.hidden = true;
+    library.setAttribute('aria-hidden', 'true');
+    plannerWindow.hidden = false;
+    plannerWindow.setAttribute('aria-hidden', 'false');
+    currentDate = atNoon(new Date());
+    selectedDate = atNoon(new Date());
+    renderAll();
+    publishPlannerChange();
+    requestAnimationFrame(() => document.getElementById('lesson-planner-new')?.focus({ preventScroll: true }));
   }
 
   function updateHeader() {
@@ -534,13 +784,14 @@
     panel.setAttribute('aria-hidden', 'false');
     openButton.setAttribute('aria-expanded', 'true');
     document.body.classList.add('lesson-planner-open');
-    renderAll();
-    requestAnimationFrame(() => document.getElementById('lesson-planner-new')?.focus({ preventScroll: true }));
+    showPlannerLibrary();
   }
 
   function closePlanner(reopenProfile = false) {
     cancelLessonDrag?.();
     closeEditor();
+    library.hidden = false;
+    plannerWindow.hidden = true;
     panel.hidden = true;
     panel.setAttribute('aria-hidden', 'true');
     openButton.setAttribute('aria-expanded', 'false');
@@ -559,9 +810,13 @@
   }
 
   openButton.addEventListener('click', openPlanner);
+  createPlannerButton.addEventListener('click', createPlanner);
+  document.getElementById('lesson-planner-library-close').addEventListener('click', () => closePlanner(false));
+  document.getElementById('lesson-planner-library-back').addEventListener('click', () => closePlanner(true));
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
-  document.getElementById('lesson-planner-back').addEventListener('click', () => closePlanner(true));
+  document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
+  window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
   document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); renderAll(); });
@@ -620,11 +875,15 @@
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || panel.hidden) return;
     event.preventDefault();
-    if (!editor.hidden) closeEditor(); else closePlanner(false);
+    if (!editor.hidden) closeEditor();
+    else if (!plannerWindow.hidden) showPlannerLibrary();
+    else closePlanner(false);
   });
 
   window.TeacherTilesLessonPlanner = Object.freeze({
     getBlocks: () => blocks.map(block => ({ ...block })),
+    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })) })),
+    getActivePlannerId: () => activePlannerId,
     open: openPlanner,
     close: () => closePlanner(false)
   });
