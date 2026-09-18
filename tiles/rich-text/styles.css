@@ -5,25 +5,25 @@
 .richtext-toolbar{
   position:relative;z-index:60;flex:0 0 auto;box-sizing:border-box;
   display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;gap:6px;
-  width:auto;min-width:0;max-width:none;height:0;min-height:0;margin:0 46px 0 10px;padding:0 7px;
+  width:auto;min-width:0;max-width:none;height:auto;min-height:0;max-height:0;margin:0 46px 0 10px;padding:0 7px;
   border:1px solid transparent;border-radius:12px;
   background:transparent;box-shadow:none;overflow:hidden;
   opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
-  transition:height .2s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1),padding .2s cubic-bezier(.2,.8,.2,1),opacity .14s ease,transform .14s ease,visibility 0s linear .2s,background .14s ease,border-color .14s ease,box-shadow .14s ease;
+  transition:max-height .22s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1),padding .2s cubic-bezier(.2,.8,.2,1),opacity .14s ease,transform .14s ease,visibility 0s linear .22s,background .14s ease,border-color .14s ease,box-shadow .14s ease;
 }
 .richtext-module:hover .richtext-toolbar,
 .richtext-module:has(.richtext-editor.module-text-edit-active) .richtext-toolbar,
 .richtext-module:has(.richtext-toolbar:focus-within) .richtext-toolbar,
 .richtext-module:has(.richtext-export-button[aria-expanded="true"]) .richtext-toolbar,
 .richtext-module.is-richtext-popover-open .richtext-toolbar{
-  height:var(--richtext-toolbar-height,96px);margin-top:10px;padding:7px;
+  max-height:320px;margin-top:10px;padding:7px;
   border-color:var(--border);
   background:color-mix(in srgb,var(--surface-solid,#fff) 96%,transparent);
   box-shadow:0 7px 22px #17203320,0 1px 3px #17203312;overflow:visible;
   opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);
-  transition:height .2s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1),padding .2s cubic-bezier(.2,.8,.2,1),opacity .14s ease,transform .14s ease,visibility 0s,background .14s ease,border-color .14s ease,box-shadow .14s ease;
+  transition:max-height .22s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1),padding .2s cubic-bezier(.2,.8,.2,1),opacity .14s ease,transform .14s ease,visibility 0s,background .14s ease,border-color .14s ease,box-shadow .14s ease;
 }
-body.is-board-idle .richtext-module:not(:has(.richtext-editor.module-text-edit-active)):not(.is-richtext-popover-open):not(:has(.richtext-export-button[aria-expanded="true"])) .richtext-toolbar{height:0;margin-top:0;padding-top:0;padding-bottom:0;border-color:transparent;background:transparent;box-shadow:none;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px)}
+body.is-board-idle .richtext-module:not(:has(.richtext-editor.module-text-edit-active)):not(.is-richtext-popover-open):not(:has(.richtext-export-button[aria-expanded="true"])) .richtext-toolbar{max-height:0;margin-top:0;padding-top:0;padding-bottom:0;border-color:transparent;background:transparent;box-shadow:none;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px)}
 .richtext-toolbar-group{display:contents}
 .richtext-toolbar-divider{width:1px;height:24px;background:var(--border);margin:0 2px;flex:0 0 1px}
 .richtext-toolbar button,.richtext-toolbar select{
