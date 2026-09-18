@@ -377,7 +377,11 @@
               </section>
               <div class="lesson-planner-layout">
                 <aside class="lesson-planner-sidebar">
-                  <button id="lesson-planner-new" class="lesson-planner-new" type="button" aria-label="Drag Lesson Block onto Board" title="Drag Lesson Block onto Board"><span aria-hidden="true">↗</span><strong>Drag Lesson Block onto Board</strong></button>
+                  <button id="lesson-planner-new" class="lesson-planner-new" type="button"><span aria-hidden="true">＋</span><strong>Add Lesson Block</strong></button>
+                  <button id="lesson-planner-drag-source" class="lesson-planner-drag-source" type="button" aria-label="Drag a lesson block onto the planner" title="Drag this lesson block onto the planner">
+                    <span class="lesson-planner-drag-source__grip" aria-hidden="true">⠿</span>
+                    <span class="lesson-planner-drag-source__copy"><small>DRAG ONTO BOARD</small><strong>Lesson Block</strong><em>Drop on a day and time</em></span>
+                  </button>
                   <section class="lesson-planner-focus-card">
                     <span id="lesson-planner-focus-weekday">TODAY</span>
                     <strong id="lesson-planner-focus-day">1</strong>
@@ -387,7 +391,7 @@
                     <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
                     <div id="lesson-planner-agenda-list"></div>
                   </section>
-                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Planner controls</strong> Drag to pan. Double-click for a planner block. Right-click for a lesson block.</p></div>
+                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Planner controls</strong> Drag to pan. Double-click or right-click to add a lesson block.</p></div>
                 </aside>
                 <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
               </div>
@@ -4140,7 +4144,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-addtile-category-scroll-reset-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-schedule-context-color-popover-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-recovered-shared-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 
