@@ -494,39 +494,9 @@
       downloadBlob(new Blob([editor.innerText||''],{type:'text/plain;charset=utf-8'}),`${documentName()}.txt`);
       showToast('Text exported');
     };
-    const exportPNG=async()=>{
-      try{
-        const content=sanitizeHTML(editor.innerHTML);
-        const sourceWidth=Math.max(320,Math.min(1800,editor.clientWidth||680));
-        const naturalHeight=Math.max(editor.clientHeight||280,editor.scrollHeight||280);
-        const maxHeight=12000;
-        const scaleDown=Math.min(1,maxHeight/naturalHeight);
-        const width=Math.max(1,Math.round(sourceWidth*scaleDown));
-        const height=Math.max(1,Math.round(naturalHeight*scaleDown));
-        const root=document.createElementNS(XHTML_NS,'div');root.setAttribute('xmlns',XHTML_NS);root.setAttribute('class','richtext-export-root');
-        const style=document.createElementNS(XHTML_NS,'style');style.textContent=exportBaseCSS({background:exportBackground()});
-        const body=document.createElementNS(XHTML_NS,'div');body.setAttribute('class','richtext-export-document');body.innerHTML=content;
-        root.append(style,body);
-        const serialized=new XMLSerializer().serializeToString(root);
-        const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${naturalHeight}"><foreignObject x="0" y="0" width="${sourceWidth}" height="${naturalHeight}">${serialized}</foreignObject></svg>`;
-        const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
-        try{
-          const image=await loadImage(url);
-          const renderScale=Math.min(2,8192/width,12000/height);
-          const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.floor(width*renderScale));canvas.height=Math.max(1,Math.floor(height*renderScale));
-          const context=canvas.getContext('2d',{alpha:true});
-          context.drawImage(image,0,0,canvas.width,canvas.height);
-          const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-          if(!blob)throw new Error('PNG export failed.');
-          downloadBlob(blob,`${documentName()}.png`);showToast('PNG exported');
-        }finally{URL.revokeObjectURL(url)}
-      }catch(error){showToast(error?.message||'PNG export failed.',{error:true})}
-    };
-
     const exportMenu=document.createElement('div');exportMenu.className='richtext-export-menu';exportMenu.hidden=true;exportMenu.setAttribute('role','menu');exportMenu.setAttribute('aria-label','Export Rich Text');
     const exportOptions=[
       ['pdf','PDF','Print or save as PDF',exportPDF],
-      ['png','PNG','Full document image',exportPNG],
       ['doc','Word','Editable .doc file',exportWord],
       ['html','HTML','Formatted web document',exportHTML],
       ['txt','Text','Plain .txt file',exportText]
