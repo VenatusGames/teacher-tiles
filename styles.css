@@ -16105,7 +16105,7 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .magnifier-module[data-tile-skin="magnifier-classic"]:hover>.resize-handle::before{opacity:1;transform:scale(1.04)}
 .todo-module .todo-list>.todo-add{align-self:center;flex:none;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent!important;color:inherit!important;font:400 28px/1 Inter,sans-serif;box-shadow:none;cursor:pointer}
 .todo-module .todo-list>.todo-add:hover{background:color-mix(in srgb,var(--module-text) 10%,transparent)!important}
-.interactive-module:not([data-interactive-mode="candle"]) .interactive-customization{display:none!important}
+/* Keep shared Interactive Timer customization controls visible in every mode. */
 .interactive-type-shelf button{font-size:36px;min-height:64px;padding:8px}
 
 /* Scale default analog details with the circular face, including wide tiles. */
