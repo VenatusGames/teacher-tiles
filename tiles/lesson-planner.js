@@ -46,6 +46,9 @@
   const endInput = document.getElementById('lesson-planner-end');
   const descriptionInput = document.getElementById('lesson-planner-description');
   const descriptionCount = document.getElementById('lesson-planner-description-count');
+  const editorContext = document.getElementById('lesson-planner-editor-context');
+  const editorContextLabel = document.getElementById('lesson-planner-editor-context-label');
+  const editorContextTime = document.getElementById('lesson-planner-editor-context-time');
   const deleteButton = document.getElementById('lesson-planner-delete');
   const duplicateButton = document.getElementById('lesson-planner-duplicate');
   const colorsElement = document.getElementById('lesson-planner-colors');
@@ -776,6 +779,31 @@
     return element;
   }
 
+  function scheduleVisualMinimum(durationMinutes) {
+    if (durationMinutes <= 5) return 34;
+    if (durationMinutes <= 10) return 38;
+    if (durationMinutes <= 15) return 42;
+    return SCHEDULE_HEADING_HEIGHT + 4;
+  }
+
+  function scheduleSectionForRange(dateValue, startValue, endValue = '') {
+    const date = typeof dateValue === 'string' ? fromDateKey(dateValue) : dateValue;
+    const start = minutes(startValue);
+    const end = endValue ? minutes(endValue) : start + 5;
+    return scheduleForDate(date)
+      .filter(item => start >= minutes(item.start) && end <= minutes(item.end))
+      .sort((a,b) => (minutes(a.end)-minutes(a.start)) - (minutes(b.end)-minutes(b.start)))[0] || null;
+  }
+
+  function renderEditorScheduleContext(section) {
+    if (!editorContext) return;
+    editorContext.hidden = !section;
+    if (!section) return;
+    editorContext.style.setProperty('--lesson-color', blockColor(section.color).value);
+    editorContextLabel.textContent = section.label;
+    editorContextTime.textContent = `${timeLabel(section.start)}–${timeLabel(section.end)}`;
+  }
+
   function updateHeader() {
     const selectedKey = dateKey(selectedDate);
     focusWeekday.textContent = dateKey(new Date()) === selectedKey ? 'TODAY' : weekdayLong.format(selectedDate).toUpperCase();
@@ -1007,7 +1035,8 @@
 
       scheduleGeometry.forEach(section => {
         const available = baseMinuteTop(section.end) - baseMinuteTop(section.start);
-        requestExpansion(section.end, SCHEDULE_HEADING_HEIGHT + 4 - available);
+        const duration = Math.max(5, section.end - section.start);
+        requestExpansion(section.end, scheduleVisualMinimum(duration) - available);
       });
 
       const preview = make('div', 'lesson-planner-add-preview');
@@ -1103,23 +1132,39 @@
         return minuteAtLocalY(Math.max(0, Math.min(rect.height, clientY - rect.top)));
       };
 
-      const startAtPointer = event => Math.max(DAY_START, Math.min(DAY_END - 60, column._minuteFromClientY(event.clientY)));
+      const lessonRangeAtPointer = event => {
+        const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(event.clientY)));
+        const section = scheduleGeometry.find(item => start >= item.start && start < item.end) || null;
+        if (!section) return { start, end: Math.min(DAY_END, start + 60), section: null };
+        const boundedStart = Math.max(section.start, start);
+        const boundedEnd = Math.max(boundedStart + 5, Math.min(section.end, boundedStart + 60));
+        return { start: boundedStart, end: boundedEnd, section };
+      };
       column.addEventListener('pointermove', event => {
         const show = event.target === column && !event.buttons && event.pointerType !== 'touch' && !cancelLessonDrag;
         preview.classList.toggle('is-visible', show);
         if (!show) return;
-        const start = startAtPointer(event);
-        preview.style.top = `${timelineY(start)}px`;
-        preview.style.height = `${Math.max(22, timelineY(start + 60) - timelineY(start))}px`;
-        preview.textContent = `+ Add lesson · ${timeLabel(timeValue(start))}`;
+        const range = lessonRangeAtPointer(event);
+        preview.style.top = `${timelineY(range.start)}px`;
+        preview.style.height = `${Math.max(range.section ? 34 : 30, timelineY(range.end) - timelineY(range.start))}px`;
+        preview.classList.toggle('is-in-schedule', Boolean(range.section));
+        preview.textContent = range.section
+          ? `+ Lesson in ${range.section.item.label}`
+          : `+ Add lesson · ${timeLabel(timeValue(range.start))}`;
       });
       column.addEventListener('pointerleave', () => preview.classList.remove('is-visible'));
       column.addEventListener('pointerdown', () => preview.classList.remove('is-visible'));
       column.addEventListener('click', event => {
         if (event.target !== column) return;
-        const start = startAtPointer(event);
+        const range = lessonRangeAtPointer(event);
         selectedDate = atNoon(date);
-        openEditor(null, { date: dateKey(date), start: timeValue(start), end: timeValue(start + 60) });
+        openEditor(null, {
+          date: dateKey(date),
+          start: timeValue(range.start),
+          end: timeValue(range.end),
+          scheduleId: range.section?.item.id || '',
+          color: range.section?.item.color || COLORS[0].id
+        });
       });
 
       scheduleGeometry.forEach(section => {
@@ -1177,18 +1222,6 @@
       dayButton.addEventListener('click', () => { selectedDate = atNoon(date); currentDate = atNoon(date); renderAll(); });
       cell.append(dayButton);
       const dayBlocks = blocksForDate(date);
-      const backgrounds = scheduleForDate(date);
-      if (backgrounds.length) {
-        const scheduleLayer = make('div', 'lesson-planner-month-schedule-layer');
-        backgrounds.slice(0, 4).forEach(item => {
-          const color = blockColor(item.color);
-          const band = make('span', 'lesson-planner-month-schedule-band');
-          band.style.setProperty('--lesson-color', color.value);
-          band.title = `${item.label} · ${timeLabel(item.start)}–${timeLabel(item.end)}`;
-          scheduleLayer.append(band);
-        });
-        cell.append(scheduleLayer);
-      }
       dayBlocks.slice(0, 3).forEach(block => cell.append(lessonBlockButton(block, true)));
       if (dayBlocks.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${dayBlocks.length - 3} more`));
       cell.addEventListener('dblclick', event => { if (event.target.closest('.lesson-calendar-chip')) return; selectedDate = atNoon(date); currentDate = atNoon(date); setView('day'); });
@@ -1216,9 +1249,9 @@
         const date = atNoon(new Date(year, month, day));
         const button = make('button', 'lesson-planner-year-day', String(day));
         button.type = 'button';
-        button.classList.toggle('has-lessons', blocksForDate(date).length > 0 || scheduleForDate(date).length > 0);
+        button.classList.toggle('has-lessons', blocksForDate(date).length > 0);
         button.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
-        {const count=blocksForDate(date).length,scheduleCount=scheduleForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}${scheduleCount?`, ${scheduleCount} schedule sections`:''}`);}
+        {const count=blocksForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}`);}
         button.addEventListener('click', () => { currentDate = date; selectedDate = date; setView('day'); });
         days.append(button);
       }
@@ -1318,12 +1351,17 @@
 
   function openEditor(block = null, prefill = {}) {
     editingId = block?.id || '';
-    editingScheduleId = block?.scheduleId || prefill.scheduleId || '';
     const date = block?.date || prefill.date || dateKey(selectedDate);
+    const start = block?.start || prefill.start || '08:00';
+    const end = block?.end || prefill.end || '09:00';
+    const section = (block?.scheduleId || prefill.scheduleId)
+      ? scheduleForDate(fromDateKey(date)).find(item => item.id === (block?.scheduleId || prefill.scheduleId)) || null
+      : scheduleSectionForRange(date, start, end);
+    editingScheduleId = section?.id || block?.scheduleId || prefill.scheduleId || '';
     labelInput.value = block?.label || prefill.label || '';
     dateInput.value = date;
-    startInput.value = block?.start || prefill.start || '08:00';
-    endInput.value = block?.end || prefill.end || '09:00';
+    startInput.value = start;
+    endInput.value = end;
     descriptionInput.value = block?.description || '';
     descriptionCount.textContent = String(descriptionInput.value.length);
     renderTemplatePicker();
@@ -1333,6 +1371,7 @@
     deleteButton.hidden = !block;
     duplicateButton.hidden = !block;
     document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit lesson' : 'Plan a lesson';
+    renderEditorScheduleContext(section);
     renderColors();
     editor.hidden = false;
     editor.setAttribute('aria-hidden', 'false');
@@ -1460,9 +1499,18 @@
   document.getElementById('lesson-planner-editor-close').addEventListener('click', closeEditor);
   editor.querySelector('.lesson-planner-editor__backdrop').addEventListener('click', closeEditor);
   descriptionInput.addEventListener('input', () => descriptionCount.textContent = String(descriptionInput.value.length));
+  const refreshEditorScheduleContext = () => {
+    if (editor.hidden) return;
+    const section = scheduleSectionForRange(dateInput.value, startInput.value, endInput.value);
+    editingScheduleId = section?.id || '';
+    renderEditorScheduleContext(section);
+  };
   startInput.addEventListener('change', () => {
     if (minutes(endInput.value) <= minutes(startInput.value)) endInput.value = timeValue(minutes(startInput.value) + 60);
+    refreshEditorScheduleContext();
   });
+  endInput.addEventListener('change', refreshEditorScheduleContext);
+  dateInput.addEventListener('change', refreshEditorScheduleContext);
   form.addEventListener('submit', event => {
     event.preventDefault();
     const start = startInput.value;
