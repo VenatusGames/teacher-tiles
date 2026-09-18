@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-planner-library-shortcuts-right-compact-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-schedule-context-color-popover-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -395,13 +395,13 @@
                 <button class="lesson-planner-scheduling__backdrop" type="button" aria-label="Close Scheduling"></button>
                 <section class="lesson-planner-scheduling__panel">
                   <header>
-                    <div><span>PLANNING LIBRARY</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Save up to 4 shared schedules and choose which one this planner displays. Saved schedules stay even if a planner book is deleted.</p></div>
+                    <div><span>PLANNING LIBRARY</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p id="lesson-planner-scheduling-help">Save up to 4 shared schedules and choose which one this planner displays. Saved schedules stay even if a planner book is deleted.</p></div>
                     <button id="lesson-planner-scheduling-close" type="button" aria-label="Close Scheduling">×</button>
                   </header>
                   <div class="lesson-planner-schedule-library">
                     <div class="lesson-planner-schedule-library__copy"><span>SAVED SCHEDULES</span><strong>Shared schedule library</strong><small>Available to every planner · 4 maximum</small></div>
                     <div class="lesson-planner-schedule-library__controls">
-                      <label><span>Schedule used by this planner</span><select id="lesson-planner-schedule-library-select" aria-label="Schedule used by this planner"></select></label>
+                      <label><span id="lesson-planner-schedule-library-label">Schedule used by this planner</span><select id="lesson-planner-schedule-library-select" aria-label="Saved schedule"></select></label>
                       <div class="lesson-planner-schedule-library__actions"><button id="lesson-planner-schedule-library-new" type="button">＋ New</button><button id="lesson-planner-schedule-library-rename" type="button">Rename</button><button id="lesson-planner-schedule-library-delete" type="button">Delete</button><small id="lesson-planner-schedule-library-count">0 / 4</small></div>
                     </div>
                   </div>
@@ -4140,7 +4140,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-addtile-category-scroll-reset-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-library-shortcuts-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-schedule-context-color-popover-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

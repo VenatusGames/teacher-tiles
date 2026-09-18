@@ -30,6 +30,8 @@
   const scheduleLibraryRename = document.getElementById('lesson-planner-schedule-library-rename');
   const scheduleLibraryDelete = document.getElementById('lesson-planner-schedule-library-delete');
   const scheduleLibraryCount = document.getElementById('lesson-planner-schedule-library-count');
+  const schedulingHelp = document.getElementById('lesson-planner-scheduling-help');
+  const scheduleLibraryLabel = document.getElementById('lesson-planner-schedule-library-label');
   const templatesButton = document.getElementById('lesson-planner-templates-button');
   const settingsButton = document.getElementById('lesson-planner-settings-button');
   const settingsMenu = document.getElementById('lesson-planner-settings-menu');
@@ -919,6 +921,10 @@
   function openScheduling(preset = null, options = {}) {
     schedulingLibraryMode = options.fromLibrary === true;
     if (!schedulingLibraryMode && !activePlanner()) return;
+    if (scheduleLibraryLabel) scheduleLibraryLabel.textContent = schedulingLibraryMode ? 'Saved schedule to edit' : 'Schedule used by this planner';
+    if (schedulingHelp) schedulingHelp.textContent = schedulingLibraryMode
+      ? 'Save up to 4 shared schedules. Any planner can use them, and they stay saved if a planner book is deleted.'
+      : 'Save up to 4 shared schedules and choose which one this planner displays. Saved schedules stay even if a planner book is deleted.';
     if (schedulingLibraryMode && !planningLibrary.schedules.some(schedule => schedule.id === libraryScheduleId)) {
       libraryScheduleId = planningLibrary.schedules[0]?.id || '';
     }

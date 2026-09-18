@@ -16819,8 +16819,27 @@ body>.lesson-planner-panel{
   box-shadow:0 14px 34px rgba(15,23,42,.18);
 }
 .planner-book-popover[hidden]{display:none!important}
-.planner-book-color-panel{width:max-content;max-width:calc(100% - 8px)}
-.planner-book-color-panel .planner-book-colors{padding:0;border:0;justify-content:flex-start}
+.planner-book-color-panel{
+  width:224px;
+  max-width:calc(100vw - 24px);
+  overflow:visible;
+}
+.planner-book-color-panel .planner-book-colors{
+  display:grid;
+  grid-template-columns:repeat(4,28px);
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  padding:2px;
+  border:0;
+}
+.planner-book-color-panel .planner-book-color{
+  width:28px;
+  height:28px;
+  min-width:28px;
+  min-height:28px;
+  flex:0 0 28px;
+}
 .planner-book-settings-panel{width:180px}
 .planner-book-settings-panel .planner-book-actions{display:grid;grid-template-columns:1fr;gap:6px;padding:0}
 .planner-book-settings-panel .planner-book-actions button{height:34px}
