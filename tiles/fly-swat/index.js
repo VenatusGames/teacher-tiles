@@ -43,20 +43,45 @@
   }
 
   function crawlPath() {
-    const point = () => ({x: random(-14, 14), y: random(-11, 11), r: random(-15, 15)});
-    const p1 = point();
-    const p2 = point();
-    const p3 = point();
-    const p4 = point();
-    const p5 = point();
+    const headingFor = (dx, dy) => Math.atan2(dx, -dy) * 180 / Math.PI;
+    const points = [];
+    let x = 0;
+    let y = 0;
+    let heading = random(-180, 180);
+
+    for (let i = 0; i < 5; i += 1) {
+      const distanceFromHome = Math.hypot(x, y);
+      if (distanceFromHome > 7.2) heading = headingFor(-x, -y) + random(-32, 32);
+      else heading += random(-82, 82);
+
+      let distance = random(3.2, 6.1);
+      let radians = heading * Math.PI / 180;
+      let nextX = x + Math.sin(radians) * distance;
+      let nextY = y - Math.cos(radians) * distance;
+
+      if (Math.hypot(nextX, nextY) > 9.8) {
+        heading = headingFor(-x, -y) + random(-26, 26);
+        distance = random(3, 5.5);
+        radians = heading * Math.PI / 180;
+        nextX = x + Math.sin(radians) * distance;
+        nextY = y - Math.cos(radians) * distance;
+      }
+
+      x = clamp(nextX, -9, 9);
+      y = clamp(nextY, -9, 9);
+      points.push({x, y, r: heading});
+    }
+
+    const homeHeading = headingFor(-x, -y);
     return {
-      mx1: p1.x, my1: p1.y, mr1: p1.r,
-      mx2: p2.x, my2: p2.y, mr2: p2.r,
-      mx3: p3.x, my3: p3.y, mr3: p3.r,
-      mx4: p4.x, my4: p4.y, mr4: p4.r,
-      mx5: p5.x, my5: p5.y, mr5: p5.r,
-      duration: random(5.4, 8.6),
-      delay: random(-8, 0)
+      mx1: points[0].x, my1: points[0].y, mr1: points[0].r,
+      mx2: points[1].x, my2: points[1].y, mr2: points[1].r,
+      mx3: points[2].x, my3: points[2].y, mr3: points[2].r,
+      mx4: points[3].x, my4: points[3].y, mr4: points[3].r,
+      mx5: points[4].x, my5: points[4].y, mr5: points[4].r,
+      mr6: homeHeading,
+      duration: random(8.2, 11.8),
+      delay: random(-11, 0)
     };
   }
 
@@ -69,7 +94,8 @@
       mx3: num('mx3', fallback.mx3), my3: num('my3', fallback.my3), mr3: num('mr3', fallback.mr3),
       mx4: num('mx4', fallback.mx4), my4: num('my4', fallback.my4), mr4: num('mr4', fallback.mr4),
       mx5: num('mx5', fallback.mx5), my5: num('my5', fallback.my5), mr5: num('mr5', fallback.mr5),
-      duration: Math.max(4.5, num('duration', fallback.duration)),
+      mr6: num('mr6', fallback.mr6),
+      duration: Math.max(7.2, num('duration', fallback.duration)),
       delay: num('delay', fallback.delay)
     };
   }
@@ -178,6 +204,7 @@
         button.style.setProperty(`--fly-my${index}`, `${fly[`my${index}`]}px`);
         button.style.setProperty(`--fly-mr${index}`, `${fly[`mr${index}`]}deg`);
       });
+      button.style.setProperty('--fly-mr6', `${fly.mr6}deg`);
       button.style.setProperty('--fly-duration', `${fly.duration}s`);
       button.style.setProperty('--fly-delay', `${fly.delay}s`);
     }
@@ -223,18 +250,19 @@
       core.style.setProperty('--splat-color', color);
       board.append(core);
 
-      for (let i = 0; i < 12; i += 1) {
+      for (let i = 0; i < 20; i += 1) {
         const angle = random(0, Math.PI * 2);
-        const distance = random(18, 50);
+        const distance = random(30, 78);
         const particle = document.createElement('span');
         particle.className = 'flyswat-splat-particle';
         particle.style.left = `${x}px`;
         particle.style.top = `${y}px`;
-        particle.style.setProperty('--splat-color', i % 4 === 0 ? 'rgba(40,40,45,.62)' : color);
+        particle.style.setProperty('--splat-color', i % 5 === 0 ? 'rgba(36,36,42,.68)' : color);
         particle.style.setProperty('--splat-x', `${Math.cos(angle) * distance}px`);
         particle.style.setProperty('--splat-y', `${Math.sin(angle) * distance}px`);
-        particle.style.setProperty('--splat-rot', `${random(-160, 160)}deg`);
-        particle.style.setProperty('--splat-size', `${random(4, 9)}px`);
+        particle.style.setProperty('--splat-rot', `${random(-240, 240)}deg`);
+        particle.style.setProperty('--splat-w', `${random(9, 20)}px`);
+        particle.style.setProperty('--splat-h', `${random(7, 17)}px`);
         board.append(particle);
       }
 
@@ -244,7 +272,7 @@
         board.querySelectorAll('.flyswat-splat-particle').forEach(particle => {
           if (particle.style.left === `${x}px` && particle.style.top === `${y}px`) particle.remove();
         });
-      }, 720);
+      }, 920);
       timers.add(timeout);
     }
 

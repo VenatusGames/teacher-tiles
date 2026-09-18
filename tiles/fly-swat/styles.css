@@ -94,19 +94,25 @@
 .flyswat-splat-core,
 .flyswat-splat-particle{position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-50%)}
 .flyswat-splat-core{
-  width:22px;
-  height:16px;
+  width:42px;
+  height:30px;
   border-radius:56% 44% 61% 39%;
   background:var(--splat-color,#bbb);
-  box-shadow:-9px 4px 0 -5px var(--splat-color,#bbb),8px -5px 0 -6px rgba(45,45,50,.55),5px 7px 0 -6px var(--splat-color,#bbb);
-  animation:flySwatSplatCore .68s ease-out forwards;
+  box-shadow:
+    -18px 8px 0 -8px var(--splat-color,#bbb),
+    17px -9px 0 -9px rgba(45,45,50,.62),
+    12px 15px 0 -10px var(--splat-color,#bbb),
+    -10px -14px 0 -11px var(--splat-color,#bbb);
+  filter:drop-shadow(0 2px 1px rgba(0,0,0,.12));
+  animation:flySwatSplatCore .86s cubic-bezier(.14,.82,.23,1) forwards;
 }
 .flyswat-splat-particle{
-  width:var(--splat-size,6px);
-  height:var(--splat-size,6px);
-  border-radius:50% 44% 55% 48%;
+  width:var(--splat-w,12px);
+  height:var(--splat-h,10px);
+  border-radius:62% 38% 56% 44% / 47% 58% 42% 53%;
   background:var(--splat-color,#bbb);
-  animation:flySwatParticle .66s cubic-bezier(.16,.7,.3,1) forwards;
+  box-shadow:inset -2px -2px 0 rgba(0,0,0,.08);
+  animation:flySwatParticle .84s cubic-bezier(.12,.78,.24,1) forwards;
 }
 
 .flyswat-team{
@@ -188,13 +194,19 @@
 .flyswat-settings-note{display:block;margin-top:7px;line-height:1.35;opacity:.68}
 
 @keyframes flySwatCrawl{
-  0%,8%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg)}
-  17%,28%{transform:translate(-50%,-50%) translate(var(--fly-mx1),var(--fly-my1)) rotate(var(--fly-mr1))}
-  37%,47%{transform:translate(-50%,-50%) translate(var(--fly-mx2),var(--fly-my2)) rotate(var(--fly-mr2))}
-  56%,65%{transform:translate(-50%,-50%) translate(var(--fly-mx3),var(--fly-my3)) rotate(var(--fly-mr3))}
-  74%,83%{transform:translate(-50%,-50%) translate(var(--fly-mx4),var(--fly-my4)) rotate(var(--fly-mr4))}
-  91%{transform:translate(-50%,-50%) translate(var(--fly-mx5),var(--fly-my5)) rotate(var(--fly-mr5))}
-  100%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg)}
+  0%,6%{transform:translate(-50%,-50%) translate(0,0) rotate(var(--fly-mr1))}
+  14%{transform:translate(-50%,-50%) translate(var(--fly-mx1),var(--fly-my1)) rotate(var(--fly-mr1))}
+  18%,24%{transform:translate(-50%,-50%) translate(var(--fly-mx1),var(--fly-my1)) rotate(var(--fly-mr2))}
+  32%{transform:translate(-50%,-50%) translate(var(--fly-mx2),var(--fly-my2)) rotate(var(--fly-mr2))}
+  36%,42%{transform:translate(-50%,-50%) translate(var(--fly-mx2),var(--fly-my2)) rotate(var(--fly-mr3))}
+  50%{transform:translate(-50%,-50%) translate(var(--fly-mx3),var(--fly-my3)) rotate(var(--fly-mr3))}
+  54%,60%{transform:translate(-50%,-50%) translate(var(--fly-mx3),var(--fly-my3)) rotate(var(--fly-mr4))}
+  68%{transform:translate(-50%,-50%) translate(var(--fly-mx4),var(--fly-my4)) rotate(var(--fly-mr4))}
+  72%,78%{transform:translate(-50%,-50%) translate(var(--fly-mx4),var(--fly-my4)) rotate(var(--fly-mr5))}
+  86%{transform:translate(-50%,-50%) translate(var(--fly-mx5),var(--fly-my5)) rotate(var(--fly-mr5))}
+  90%,94%{transform:translate(-50%,-50%) translate(var(--fly-mx5),var(--fly-my5)) rotate(var(--fly-mr6))}
+  99%{transform:translate(-50%,-50%) translate(0,0) rotate(var(--fly-mr6))}
+  100%{transform:translate(-50%,-50%) translate(0,0) rotate(var(--fly-mr1))}
 }
 @keyframes flySwatSplatPop{
   0%{transform:scale(1);opacity:1}
@@ -202,13 +214,15 @@
   100%{transform:scale(.42);opacity:0}
 }
 @keyframes flySwatSplatCore{
-  0%{transform:translate(-50%,-50%) scale(.45);opacity:0}
-  22%{transform:translate(-50%,-50%) scale(1.12);opacity:.95}
-  100%{transform:translate(-50%,-50%) scale(.92);opacity:0}
+  0%{transform:translate(-50%,-50%) scale(.3);opacity:0}
+  18%{transform:translate(-50%,-50%) scale(1.45);opacity:1}
+  38%{transform:translate(-50%,-50%) scale(1.12);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(.96);opacity:0}
 }
 @keyframes flySwatParticle{
-  0%{transform:translate(-50%,-50%) translate(0,0) scale(.7);opacity:1}
-  100%{transform:translate(-50%,-50%) translate(var(--splat-x),var(--splat-y)) rotate(var(--splat-rot)) scale(.2);opacity:0}
+  0%{transform:translate(-50%,-50%) translate(0,0) rotate(0deg) scale(.35);opacity:1}
+  28%{transform:translate(-50%,-50%) translate(calc(var(--splat-x) * .58),calc(var(--splat-y) * .58)) rotate(calc(var(--splat-rot) * .55)) scale(1.25);opacity:1}
+  100%{transform:translate(-50%,-50%) translate(var(--splat-x),var(--splat-y)) rotate(var(--splat-rot)) scale(.25);opacity:0}
 }
 
 @media (max-width:760px){
