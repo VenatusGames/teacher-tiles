@@ -17875,3 +17875,242 @@ body>.lesson-planner-panel{
   .planner-library-shortcut__icon{width:30px;height:30px;flex-basis:30px}
   .planner-library-shortcut small{display:none}
 }
+
+
+/* Planner library shared-tool buttons + stable Scheduling panel layout. */
+.planner-library-shortcuts{
+  width:100%;
+  margin:0 0 clamp(16px,1.6vw,22px);
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:9px;
+}
+.planner-library-shortcut{
+  flex:0 0 auto;
+  width:auto;
+  min-width:96px;
+  min-height:42px;
+  padding:0 13px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface-soft);
+  color:var(--text);
+  box-shadow:none;
+  font:850 clamp(12px,.72vw,14px)/1 Inter,system-ui,sans-serif;
+  text-align:center;
+  cursor:pointer;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease,box-shadow .14s ease;
+}
+.planner-library-shortcut:hover{
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb,#d9a12b 43%,var(--border));
+  background:color-mix(in srgb,#efbd45 10%,var(--surface-soft));
+  box-shadow:0 6px 15px rgba(15,23,42,.08);
+}
+.planner-library-shortcut:focus-visible{outline:3px solid #60a5fa55;outline-offset:2px}
+.planner-library-shortcut__icon,.planner-library-shortcut small{display:none!important}
+.planner-library-shortcut strong{font:inherit}
+
+.lesson-planner-scheduling{
+  padding:clamp(12px,2.2vw,28px);
+}
+.lesson-planner-scheduling__panel{
+  width:min(1120px,calc(100vw - clamp(24px,4.4vw,56px)));
+  height:min(790px,calc(100dvh - clamp(24px,4.4vw,56px)));
+  min-height:0;
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr);
+  overflow:hidden;
+}
+.lesson-planner-scheduling__panel>header{
+  min-width:0;
+  padding:18px 20px;
+}
+.lesson-planner-scheduling__panel>header>div{min-width:0}
+.lesson-planner-scheduling__panel>header p{max-width:760px;line-height:1.45}
+
+.lesson-planner-schedule-library{
+  min-width:0;
+  margin:0;
+  padding:14px 18px;
+  display:grid;
+  grid-template-columns:minmax(180px,240px) minmax(0,1fr);
+  align-items:center;
+  gap:18px;
+  border:0;
+  border-bottom:1px solid var(--border);
+  border-radius:0;
+  background:color-mix(in srgb,var(--surface-soft) 58%,var(--surface-solid));
+  box-shadow:none;
+}
+.lesson-planner-schedule-library__copy{
+  min-width:0;
+  padding:0;
+}
+.lesson-planner-schedule-library__copy>small{max-width:220px}
+.lesson-planner-schedule-library__controls{
+  min-width:0;
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(210px,1fr) auto;
+  align-items:end;
+  gap:10px;
+}
+.lesson-planner-schedule-library__controls>label{
+  min-width:0;
+  width:100%;
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-areas:none;
+  gap:5px;
+}
+.lesson-planner-schedule-library__controls>label>span{
+  grid-area:auto;
+  font-size:11px;
+  line-height:1.2;
+}
+.lesson-planner-schedule-library__controls select{
+  grid-area:auto;
+  width:100%;
+  height:40px;
+  min-width:0;
+  padding:0 34px 0 11px;
+  border-radius:11px;
+  font-size:12px;
+}
+.lesson-planner-schedule-library__actions{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  flex-wrap:nowrap;
+}
+.lesson-planner-schedule-library__actions button{
+  flex:0 0 auto;
+  min-width:0;
+  height:40px;
+  padding:0 11px;
+  border-radius:11px;
+  font-size:11px;
+}
+.lesson-planner-schedule-library__actions>small{
+  flex:0 0 auto;
+  justify-self:auto;
+  min-width:48px;
+  padding:6px 8px;
+  font-size:10px;
+}
+
+.lesson-planner-scheduling__content{
+  min-width:0;
+  min-height:0;
+  height:100%;
+  display:grid;
+  grid-template-columns:minmax(310px,380px) minmax(0,1fr);
+  overflow:hidden;
+}
+.lesson-planner-schedule-form,
+.lesson-planner-schedule-list-wrap{
+  min-width:0;
+  min-height:0;
+  box-sizing:border-box;
+}
+.lesson-planner-schedule-form{
+  padding:18px;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.lesson-planner-schedule-list-wrap{
+  padding:18px;
+  overflow:hidden;
+}
+.lesson-planner-schedule-list{
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:2px;
+}
+.lesson-planner-schedule-time-row,
+.lesson-planner-schedule-repeat-row{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+}
+.lesson-planner-schedule-form .lesson-planner-field,
+.lesson-planner-schedule-form .lesson-planner-field input,
+.lesson-planner-schedule-form .lesson-planner-field select{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.lesson-planner-schedule-item{
+  min-width:0;
+}
+.lesson-planner-schedule-item>div:nth-child(2){overflow:hidden}
+.lesson-planner-schedule-item strong,
+.lesson-planner-schedule-item span,
+.lesson-planner-schedule-item small{
+  overflow-wrap:anywhere;
+}
+
+@media(max-width:860px){
+  .lesson-planner-scheduling__panel{
+    width:calc(100vw - 20px);
+    height:calc(100dvh - 20px);
+    border-radius:18px;
+  }
+  .lesson-planner-schedule-library{
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:12px 14px;
+  }
+  .lesson-planner-schedule-library__copy>small{max-width:none}
+  .lesson-planner-schedule-library__controls{
+    grid-template-columns:minmax(0,1fr) auto;
+  }
+  .lesson-planner-scheduling__content{
+    grid-template-columns:minmax(280px,340px) minmax(0,1fr);
+  }
+}
+@media(max-width:680px){
+  .planner-library-shortcuts{gap:7px}
+  .planner-library-shortcut{min-width:0;min-height:38px;padding:0 11px;font-size:11px}
+  .lesson-planner-scheduling{padding:0}
+  .lesson-planner-scheduling__panel{
+    width:100%;
+    height:100dvh;
+    border:0;
+    border-radius:0;
+  }
+  .lesson-planner-scheduling__panel>header{padding:14px}
+  .lesson-planner-schedule-library{padding:11px 12px}
+  .lesson-planner-schedule-library__controls{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .lesson-planner-schedule-library__actions{
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+  .lesson-planner-schedule-library__actions button{flex:1 1 auto}
+  .lesson-planner-schedule-library__actions>small{margin-left:auto}
+  .lesson-planner-scheduling__content{
+    min-height:0;
+    display:block;
+    overflow-y:auto;
+  }
+  .lesson-planner-schedule-form{
+    overflow:visible;
+    border-right:0;
+    border-bottom:1px solid var(--border);
+  }
+  .lesson-planner-schedule-list-wrap{
+    min-height:360px;
+    overflow:visible;
+  }
+  .lesson-planner-schedule-list{overflow:visible}
+}
