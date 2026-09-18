@@ -16423,3 +16423,88 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 .essential-question-controls{flex:0 0 auto;min-height:34px}
 .context-menu__icon--essential-question{font:800 23px/1 Inter,system-ui,sans-serif}
 .text-fit-measure--essential-question{position:absolute;visibility:hidden;pointer-events:none;left:-9999px;top:0;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+
+
+/* Chime / Transition Bell use the same default customization surface as other tiles. */
+.chime-module{
+  background:var(--module-bg,var(--surface));
+  color:var(--module-text,var(--text));
+  font-family:var(--module-font,Inter,system-ui,sans-serif);
+}
+.chime-module .widget-heading{font-family:var(--module-font,Inter,system-ui,sans-serif);color:var(--module-text,var(--text))}
+.chime-controls,.transition-bell-controls{padding:0 10px 10px;min-height:42px}
+.chime-module:hover .chime-controls,.transitionbell-module:hover .transition-bell-controls,
+.chime-controls:focus-within,.transition-bell-controls:focus-within{opacity:1}
+.transitionbell-module{
+  flex-direction:column;
+  background:var(--module-bg,var(--surface));
+  color:var(--module-text,var(--text));
+}
+.transition-bell-stage{min-height:0}
+
+/* Visual + Interactive timer control chrome: one consistent tile-button language. */
+:is(.timer-module,.interactive-module) .timer-controls button,
+.timer-shape-shelf button,
+.interactive-type-shelf button{
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid var(--border)!important;
+  border-radius:10px!important;
+  background:var(--surface-solid,var(--surface))!important;
+  color:var(--text)!important;
+  box-shadow:0 3px 10px #0f172a18!important;
+  font-weight:700;
+  transition:transform .15s ease,background .15s ease,border-color .15s ease,color .15s ease!important;
+}
+:is(.timer-module,.interactive-module) .timer-controls button:hover,
+.timer-shape-shelf button:hover,
+.interactive-type-shelf button:hover{
+  transform:translateY(-1px)!important;
+  background:var(--surface-soft)!important;
+}
+:is(.timer-module,.interactive-module) .timer-controls button:active,
+.timer-shape-shelf button:active,
+.interactive-type-shelf button:active{transform:translateY(0)!important}
+:is(.timer-module,.interactive-module) .timer-controls button:focus-visible,
+.timer-shape-shelf button:focus-visible,
+.interactive-type-shelf button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+:is(.timer-module,.interactive-module) .timer-controls :is(button.is-active,button[aria-pressed="true"],.timer-sync-toggle[aria-checked="true"]),
+.timer-shape-shelf button[aria-pressed="true"],
+.interactive-type-shelf button[aria-pressed="true"]{
+  background:#e5f1ff!important;
+  border-color:#7fb0df!important;
+  color:#185f9f!important;
+  box-shadow:inset 0 0 0 1px #9bc3e8,0 3px 10px #0f172a18!important;
+}
+:is(.timer-module,.interactive-module) .timer-start.primary{
+  background:var(--surface-solid,var(--surface))!important;
+  color:var(--text)!important;
+}
+.timer-presets{gap:6px}
+.timer-presets button{font-size:11px;white-space:nowrap}
+.timer-custom-row{align-items:flex-end;gap:6px}
+.timer-custom-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--module-text,var(--text));font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
+.timer-custom-field input{
+  height:32px;
+  min-height:32px;
+  padding:0 8px;
+  border:1px solid var(--border)!important;
+  border-radius:10px!important;
+  background:var(--surface-solid,var(--surface))!important;
+  color:var(--text)!important;
+  box-shadow:0 3px 10px #0f172a12;
+  outline:none;
+}
+.timer-custom-field input:focus{outline:2px solid #60a5fa;outline-offset:1px}
+.timer-custom{width:78px}
+.timer-until{width:108px}
+.timer-set{height:32px;margin-top:12px}
+.timer-actions{gap:6px}
+.timer-actions button{min-width:76px}
+.timer-shape-shelf,.interactive-type-shelf{gap:7px}
+.timer-shape-shelf button,.interactive-type-shelf button{padding:8px 6px!important}
+.timer-shape-shelf button svg{width:25px;height:25px}
+@media(prefers-reduced-motion:reduce){
+  :is(.timer-module,.interactive-module) .timer-controls button,
+  .timer-shape-shelf button,.interactive-type-shelf button{transition:none!important}
+}

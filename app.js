@@ -1373,13 +1373,13 @@ const CONTEXT_MODULE_TRANSLATIONS={
   en:{
     sticky:['Sticky Note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
-    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],chime:['Chime','Tap the classroom chime'],transitionbell:['Transition Bell','Ring a classroom transition bell'],
+    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],chime:['Chime','Ring a meditation chime'],transitionbell:['Transition Bell','Ring a classroom transition bell'],
     interactive:['Interactive Timers','Hourglass, candle, rocket, and sunflower'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],wordweb:['Word Web','Connect related words around a central idea'],venndiagram:['Venn Diagrams','Compare ideas with editable, draggable sets'],essentialquestion:['Essential Question','Display a quoted essential question with an optional subheading'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Detector','Live microphone sound level'],
-    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','GO, LISTEN, and STOP visual cue'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
+    collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','Use a stoplight for various visual cues'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Boom Box','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],backgroundremover:['Background Remover','Remove image backgrounds and save transparent cutouts'],mirror:['Mirror','Use the camera as a classroom mirror'],
@@ -1388,7 +1388,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
-    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],chime:['Campanilla','Toca la campanilla del aula'],transitionbell:['Campana de transición','Haz sonar una campana de transición del aula'],
+    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],chime:['Campanilla','Haz sonar una campanilla de meditación'],transitionbell:['Campana de transición','Haz sonar una campana de transición del aula'],
     interactive:['Temporizadores interactivos','Reloj de arena, vela, cohete y girasol'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],imagesearch:['Buscar imágenes','Busca imágenes y arrástralas al tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],wordweb:['Red de palabras','Conecta palabras relacionadas alrededor de una idea central'],venndiagram:['Diagramas de Venn','Compara ideas con conjuntos editables y arrastrables'],essentialquestion:['Pregunta esencial','Muestra una pregunta esencial entre comillas con un subtítulo opcional'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
@@ -4182,7 +4182,8 @@ function setupTimerSync(m){
     for(const peer of timerSyncPeers(m)){peer.dataset.timerSync=String(enabled);peer._refreshTimerSync?.()}
     if(enabled)publish();notifyBoardChanged('timer-sync');
   });
-  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-set,[data-minutes]')){publish();notifyBoardChanged('timer-controls')}});
+  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-set,[data-add-seconds]')){publish();notifyBoardChanged('timer-controls')}});
+  m.addEventListener('change',event=>{if(event.target instanceof Element&&event.target.closest('.timer-until')){publish();notifyBoardChanged('timer-controls')}});
   queueMicrotask(()=>{
     if(!m.isConnected)return;
     const peer=timerSyncPeers(m).find(tile=>tile!==m&&tile.dataset.timerSync==='true');
@@ -4206,8 +4207,9 @@ function celebrateTimerFinish(m){
 
 function bindTimerControls(m,onRender,{onFinish}={}){
   const remain=m.querySelector('.timer-remaining, .hourglass-countdown, .candle-countdown');
-  const presets=[...m.querySelectorAll('[data-minutes]')];
+  const addButtons=[...m.querySelectorAll('[data-add-seconds]')];
   const input=m.querySelector('.timer-custom');
+  const untilInput=m.querySelector('.timer-until');
   const set=m.querySelector('.timer-set');
   const start=m.querySelector('.timer-start');
   const reset=m.querySelector('.timer-reset');
@@ -4218,29 +4220,64 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     onRender({progress:1-clamp(left/total,0,1),running,left,total});
   };
   const stop=()=>{if(interval){clearInterval(interval);interval=null}};
-  const setDuration=min=>{
-    const n=Number(min);
-    if(!Number.isFinite(n)||n<=0)return;
+  const clearUntil=()=>{if(untilInput)untilInput.value=''};
+  const setDurationSeconds=seconds=>{
+    const n=Number(seconds);
+    if(!Number.isFinite(n)||n<=0)return false;
     running=false;finished=false;stop();
     m.classList.remove('is-running','candle-finished');
-    total=Math.round(n*60);left=total;end=0;
+    total=Math.max(1,Math.round(n));left=total;end=0;
     start.textContent='Start';
     render();
+    return true;
+  };
+  const setDuration=min=>{
+    const n=Number(min);
+    if(!Number.isFinite(n)||n<=0)return false;
+    clearUntil();
+    return setDurationSeconds(n*60);
+  };
+  const addTime=seconds=>{
+    const n=Math.max(1,Math.round(Number(seconds)||0));
+    if(!n)return;
+    clearUntil();
+    finished=false;m.classList.remove('candle-finished');
+    if(left<=.05&&!running){
+      total=n;left=n;end=0;start.textContent='Start';
+    }else{
+      total=Math.max(1,total+n);
+      left=Math.max(0,left+n);
+      if(running&&end>0)end+=n*1000;
+    }
+    render();
+  };
+  const secondsUntil=value=>{
+    const match=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));
+    if(!match)return 0;
+    const hours=Number(match[1]),minutes=Number(match[2]);
+    if(hours>23||minutes>59)return 0;
+    const now=new Date();
+    const target=new Date(now);
+    target.setHours(hours,minutes,0,0);
+    if(target.getTime()<=now.getTime())target.setDate(target.getDate()+1);
+    return Math.max(1,Math.round((target.getTime()-now.getTime())/1000));
+  };
+  const applyUntil=()=>{
+    const seconds=secondsUntil(untilInput?.value);
+    if(!seconds)return false;
+    if(input)input.value='';
+    return setDurationSeconds(seconds);
   };
 
-  presets.forEach(b=>b.addEventListener('click',()=>{
-    presets.forEach(x=>x.classList.remove('is-active'));
-    b.classList.add('is-active');
-    input.value='';
-    setDuration(b.dataset.minutes);
-  }));
-  set.addEventListener('click',()=>{
-    if(input.value){
-      presets.forEach(x=>x.classList.remove('is-active'));
-      setDuration(input.value);
-    }
+  addButtons.forEach(button=>button.addEventListener('click',()=>addTime(button.dataset.addSeconds)));
+  set.addEventListener('click',()=>{if(input.value)setDuration(input.value)});
+  input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();set.click()}});
+  untilInput?.addEventListener('change',applyUntil);
+  untilInput?.addEventListener('keydown',event=>{
+    if(event.key!=='Enter')return;
+    event.preventDefault();
+    untilInput.dispatchEvent(new Event('change',{bubbles:true}));
   });
-  input.addEventListener('keydown',e=>{if(e.key==='Enter')set.click()});
 
   const tick=()=>{
     if(!m.isConnected){pauseDeletedTimer();return}
@@ -4268,7 +4305,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     interval=setInterval(tick,80);tick();
   });
   reset.addEventListener('click',()=>{
-    running=false;finished=false;stop();left=total;m.classList.remove('is-running','candle-finished');start.textContent='Start';render();
+    running=false;finished=false;stop();left=total;end=0;clearUntil();m.classList.remove('is-running','candle-finished');start.textContent='Start';render();
   });
 
   m._boardTimerGetState=()=>({total,left:running?Math.max(0,(end-Date.now())/1000):left,running,finished,endAt:end});
@@ -4276,7 +4313,8 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     if(!state)return;
     stop();
     total=Math.max(1,Number(state.total)||300);
-    left=Math.max(0,Math.min(total,Number(state.left)??total));
+    const restoredLeft=Number(state.left);
+    left=Math.max(0,Math.min(total,Number.isFinite(restoredLeft)?restoredLeft:total));
     finished=Boolean(state.finished);
     running=Boolean(state.running)&&left>0;
     m.classList.toggle('is-running',running);
@@ -4285,6 +4323,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
       end=Number.isFinite(state.endAt)&&state.endAt>0?state.endAt:Date.now()+left*1000;
       interval=setInterval(tick,80);
     }else end=0;
+    clearUntil();
     render();
   };
 

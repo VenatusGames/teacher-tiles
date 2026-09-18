@@ -40,13 +40,19 @@
 
     strikeButton.addEventListener('click',strike);
 
+    const stopAudio=()=>{
+      clearStrike();
+      audio.pause();
+      try{audio.currentTime=0}catch{}
+    };
+    const priorDeactivate=moduleElement._deactivate;
+    moduleElement._deactivate=()=>{stopAudio();priorDeactivate?.()};
+
     const priorCleanup=moduleElement._cleanup;
     moduleElement._cleanup=()=>{
       disposed=true;
-      clearStrike();
+      stopAudio();
       strikeButton.removeEventListener('click',strike);
-      audio.pause();
-      try{audio.currentTime=0}catch{}
       priorCleanup?.();
     };
   }

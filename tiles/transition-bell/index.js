@@ -34,13 +34,19 @@
 
     button.addEventListener('click',ring);
 
+    const stopAudio=()=>{
+      clearRing();
+      audio.pause();
+      try{audio.currentTime=0}catch{}
+    };
+    const priorDeactivate=moduleElement._deactivate;
+    moduleElement._deactivate=()=>{stopAudio();priorDeactivate?.()};
+
     const priorCleanup=moduleElement._cleanup;
     moduleElement._cleanup=()=>{
       disposed=true;
-      clearRing();
+      stopAudio();
       button.removeEventListener('click',ring);
-      audio.pause();
-      try{audio.currentTime=0}catch{}
       priorCleanup?.();
     };
   }
