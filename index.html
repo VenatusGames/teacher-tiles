@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-planner-background-templates-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-weekend-settings-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -333,6 +333,17 @@
                 <div class="lesson-planner-header__actions">
                   <button id="lesson-planner-scheduling-button" type="button">Scheduling</button>
                   <button id="lesson-planner-templates-button" type="button">Templates</button>
+                  <div class="lesson-planner-settings-wrap">
+                    <button id="lesson-planner-settings-button" type="button" aria-expanded="false" aria-controls="lesson-planner-settings-menu">Settings</button>
+                    <div id="lesson-planner-settings-menu" class="lesson-planner-settings-menu" hidden>
+                      <div class="lesson-planner-settings-menu__heading"><span>PLANNER SETTINGS</span><strong>Week View</strong></div>
+                      <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
+                        <span><strong>Show Weekends in Week View</strong><small>Include Saturday and Sunday columns.</small></span>
+                        <input id="lesson-planner-show-weekends" type="checkbox">
+                        <i aria-hidden="true"><b></b></i>
+                      </label>
+                    </div>
+                  </div>
                   <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
                 </div>
               </header>
@@ -4110,7 +4121,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-planner-picker-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-background-templates-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-weekend-settings-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

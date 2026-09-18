@@ -24,6 +24,9 @@
   const schedulingCount = document.getElementById('lesson-planner-schedule-count');
   const schedulingCancel = document.getElementById('lesson-planner-schedule-cancel');
   const templatesButton = document.getElementById('lesson-planner-templates-button');
+  const settingsButton = document.getElementById('lesson-planner-settings-button');
+  const settingsMenu = document.getElementById('lesson-planner-settings-menu');
+  const showWeekendsToggle = document.getElementById('lesson-planner-show-weekends');
   const templatesPanel = document.getElementById('lesson-planner-templates');
   const templateForm = document.getElementById('lesson-planner-template-form');
   const templateName = document.getElementById('lesson-planner-template-name');
@@ -132,6 +135,37 @@
     return addDays(date, day === 0 ? -6 : 1 - day);
   }
 
+  function plannerShowsWeekends() {
+    return activePlanner()?.settings?.showWeekends === true;
+  }
+
+  function weekDates(date = currentDate) {
+    const first = startOfWeek(date);
+    const count = plannerShowsWeekends() ? 7 : 5;
+    return Array.from({ length: count }, (_, index) => addDays(first, index));
+  }
+
+  function syncPlannerSettingsUi() {
+    if (!showWeekendsToggle) return;
+    showWeekendsToggle.checked = plannerShowsWeekends();
+  }
+
+  function closeSettingsMenu() {
+    if (!settingsMenu || !settingsButton) return;
+    settingsMenu.hidden = true;
+    settingsButton.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleSettingsMenu() {
+    if (!settingsMenu || !settingsButton) return;
+    const opening = settingsMenu.hidden;
+    closeSettingsMenu();
+    if (!opening) return;
+    syncPlannerSettingsUi();
+    settingsMenu.hidden = false;
+    settingsButton.setAttribute('aria-expanded', 'true');
+  }
+
   function minutes(value) {
     const [hours, mins] = String(value || '00:00').split(':').map(Number);
     return (hours || 0) * 60 + (mins || 0);
@@ -227,7 +261,8 @@
       color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
       blocks: plannerBlocks,
       schedule: plannerSchedule,
-      templates: plannerTemplates
+      templates: plannerTemplates,
+      settings: { showWeekends: planner.settings?.showWeekends === true }
     };
   }
 
@@ -246,7 +281,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [], templates: [] }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [], templates: [], settings: { showWeekends: false } }] : [];
   }
 
   function readActivePlannerId() {
@@ -505,7 +540,8 @@
       color: COLORS[planners.length % COLORS.length].id,
       blocks: [],
       schedule: [],
-      templates: []
+      templates: [],
+      settings: { showWeekends: false }
     };
     planners.push(planner);
     activePlannerId = planner.id;
@@ -522,6 +558,7 @@
     closeEditor();
     closeScheduling();
     closeTemplates();
+    closeSettingsMenu();
     plannerWindow.hidden = true;
     plannerWindow.setAttribute('aria-hidden', 'true');
     library.hidden = false;
@@ -536,10 +573,12 @@
     activePlannerId = planner.id;
     closeScheduling();
     closeTemplates();
+    closeSettingsMenu();
     blocks = planner.blocks.map(block => ({ ...block }));
     savePlanners();
     try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
     plannerTitle.textContent = planner.name;
+    syncPlannerSettingsUi();
     library.hidden = true;
     library.setAttribute('aria-hidden', 'true');
     plannerWindow.hidden = false;
@@ -750,9 +789,10 @@
       rangeKicker.textContent = weekdayLong.format(currentDate).toUpperCase();
       rangeTitle.textContent = dayTitle.format(currentDate);
     } else if (view === 'week') {
-      const first = startOfWeek(currentDate);
-      const last = addDays(first, 6);
-      rangeKicker.textContent = 'WEEK VIEW';
+      const dates = weekDates(currentDate);
+      const first = dates[0];
+      const last = dates[dates.length - 1];
+      rangeKicker.textContent = plannerShowsWeekends() ? 'WEEK VIEW · 7 DAYS' : 'WEEK VIEW · MON–FRI';
       rangeTitle.textContent = first.getMonth() === last.getMonth()
         ? `${monthDay.format(first)}–${last.getDate()}, ${last.getFullYear()}`
         : `${monthDay.format(first)} – ${monthDay.format(last)}, ${last.getFullYear()}`;
@@ -1071,8 +1111,7 @@
     canvas.replaceChildren();
     if (view === 'day') renderSchedule([atNoon(currentDate)]);
     else if (view === 'week') {
-      const first = startOfWeek(currentDate);
-      renderSchedule(Array.from({ length: 7 }, (_, index) => addDays(first, index)));
+      renderSchedule(weekDates(currentDate));
     } else if (view === 'month') renderMonth();
     else renderYear();
   }
@@ -1150,6 +1189,7 @@
     closeEditor();
     closeScheduling();
     closeTemplates();
+    closeSettingsMenu();
     library.hidden = false;
     plannerWindow.hidden = true;
     panel.hidden = true;
@@ -1175,8 +1215,21 @@
   document.getElementById('lesson-planner-library-back').addEventListener('click', () => closePlanner(true));
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
   document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
-  schedulingButton.addEventListener('click', openScheduling);
-  templatesButton.addEventListener('click', openTemplates);
+  schedulingButton.addEventListener('click', () => { closeSettingsMenu(); openScheduling(); });
+  templatesButton.addEventListener('click', () => { closeSettingsMenu(); openTemplates(); });
+  settingsButton?.addEventListener('click', event => { event.stopPropagation(); toggleSettingsMenu(); });
+  settingsMenu?.addEventListener('click', event => event.stopPropagation());
+  showWeekendsToggle?.addEventListener('change', () => {
+    const planner = activePlanner();
+    if (!planner) return;
+    planner.settings ||= { showWeekends: false };
+    planner.settings.showWeekends = showWeekendsToggle.checked;
+    savePlanners();
+    if (view === 'week') renderAll();
+  });
+  document.addEventListener('pointerdown', event => {
+    if (!settingsMenu?.hidden && !event.target.closest('.lesson-planner-settings-wrap')) closeSettingsMenu();
+  });
   document.getElementById('lesson-planner-scheduling-close').addEventListener('click', closeScheduling);
   document.getElementById('lesson-planner-templates-close').addEventListener('click', closeTemplates);
   templatesPanel.querySelector('.lesson-planner-templates__backdrop').addEventListener('click', closeTemplates);
@@ -1216,6 +1269,14 @@
     descriptionInput.focus({ preventScroll: true });
   });
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
+  panel.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && settingsMenu && !settingsMenu.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeSettingsMenu();
+      settingsButton?.focus({ preventScroll: true });
+    }
+  });
   window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
