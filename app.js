@@ -1130,7 +1130,8 @@ function readStoredAppPreferences(){
 
 let appPreferences=readStoredAppPreferences();
 function applyTileDeleteVisibilityPreference(){
-  document.body?.classList.toggle('tile-delete-always-visible',Boolean(appPreferences.alwaysShowTileDeleteButtons));
+  document.body?.classList.remove('tile-delete-always-visible');
+  document.body?.classList.toggle('tile-options-always-visible',Boolean(appPreferences.alwaysShowTileDeleteButtons));
 }
 applyTileDeleteVisibilityPreference();
 let uiSfxMuted=appPreferences.uiMuted;
@@ -1300,7 +1301,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
-    'settings.deleteButtons.title':'Show delete button on tile hover','settings.deleteButtons.copy':'Show a tile’s corner X whenever you hover over that tile instead of only near its top-right corner.',
+    'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Keep the fullscreen and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
@@ -1336,7 +1337,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
     'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
     'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
-    'settings.deleteButtons.title':'Mostrar el botón de eliminar al pasar el cursor','settings.deleteButtons.copy':'Muestra la X de la esquina al pasar el cursor sobre un tile en vez de solo cerca de su esquina superior derecha.',
+    'settings.deleteButtons.title':'Mostrar siempre las opciones del tile','settings.deleteButtons.copy':'Mantiene visibles los controles de pantalla completa y eliminar en cada tile en vez de mostrarlos solo cerca de la esquina superior derecha.',
     'settings.language.title':'Idioma','settings.language.copy':'Elige el idioma de los menús y controles de TeacherTiles.','settings.language.interface':'Idioma de la interfaz','settings.language.note':'El contenido de tus tiles nunca se traduce ni se modifica.',
     'settings.save.note':'Los cambios de preferencias se incluyen en el autoguardado normal del tablero; no usan un sistema adicional de Firestore.',
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
@@ -1532,7 +1533,7 @@ function updateSettingsControls(){
   if(language)language.value=appPreferences.language;
   if(deleteButtons){
     deleteButtons.setAttribute('aria-checked',String(Boolean(appPreferences.alwaysShowTileDeleteButtons)));
-    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile delete buttons near the corner':'Show tile delete button on tile hover');
+    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile options near the top-right corner':'Show tile options always');
   }
   applyTileDeleteVisibilityPreference();
   const volumeRow=volume?.closest('.settings-row');
@@ -1574,7 +1575,7 @@ function setupSettingsHub(){
   if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
     const row=document.createElement('div');
     row.className='settings-row settings-row--switch';
-    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show delete button on tile hover</strong><small data-i18n="settings.deleteButtons.copy">Show a tile’s corner X whenever you hover over that tile instead of only near its top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile delete button on tile hover"><span></span></button>';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Keep the fullscreen and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
     boardSettingsCard.appendChild(row);
   }
   const modal=document.getElementById('settings-modal');
@@ -3422,7 +3423,7 @@ function isInteractiveModuleTarget(target,m){
   if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
-  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return true;
+  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
     if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='grab'||cursor==='grabbing'||cursor==='not-allowed'||cursor.includes('resize'))return true;
@@ -3433,21 +3434,68 @@ function isInteractiveModuleTarget(target,m){
 const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','magnifier-classic']);
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
-  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.ruler-handle'))return false;
+  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.ruler-handle'))return false;
   const action=target.closest('button,[role="button"]');
   return !action||(m.dataset.tileSkin==='stoplight-freestanding'&&action.classList.contains('stoplight-stage'));
 }
+const TILE_FULLSCREEN_ENTER_ICON='<svg class="module-fullscreen-icon module-fullscreen-icon--enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg>';
+const TILE_FULLSCREEN_EXIT_ICON='<svg class="module-fullscreen-icon module-fullscreen-icon--exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M15 20v-5h5M9 20v-5H4"/></svg>';
+
+function syncTileFullscreenControls(){
+  const active=document.fullscreenElement?.classList?.contains('module')?document.fullscreenElement:null;
+  document.querySelectorAll('.module').forEach(module=>{
+    const button=module.querySelector(':scope>.module-fullscreen');
+    const isActive=module===active;
+    module.classList.toggle('is-tile-fullscreen',isActive);
+    if(!button)return;
+    button.setAttribute('aria-pressed',String(isActive));
+    button.setAttribute('aria-label',isActive?'Exit tile fullscreen':'View tile fullscreen');
+    button.title=isActive?'Exit fullscreen':'Fullscreen';
+  });
+}
+
+function ensureTileFullscreenControl(m){
+  let button=m.querySelector(':scope>.module-fullscreen');
+  if(button)return button;
+  const del=m.querySelector(':scope>.module-delete');
+  if(!del)return null;
+  button=document.createElement('button');
+  button.className='module-fullscreen';
+  button.type='button';
+  button.setAttribute('aria-label','View tile fullscreen');
+  button.setAttribute('aria-pressed','false');
+  button.title='Fullscreen';
+  button.innerHTML=`${TILE_FULLSCREEN_ENTER_ICON}${TILE_FULLSCREEN_EXIT_ICON}`;
+  del.before(button);
+  button.addEventListener('pointerdown',event=>{event.stopPropagation()});
+  button.addEventListener('click',async event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    try{
+      if(document.fullscreenElement===m){
+        await document.exitFullscreen();
+      }else{
+        await m.requestFullscreen({navigationUI:'hide'});
+      }
+    }catch{}
+  });
+  return button;
+}
+
 function setupCommon(m){
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
+  ensureTileFullscreenControl(m);
   const updateDeleteHotzone=e=>{
     const rect=m.getBoundingClientRect();
-    const proximity=Math.max(46,Math.min(64,rect.width*.22,rect.height*.22));
-    const inside=e.clientX>=rect.right-proximity&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximity;
+    const proximityX=Math.max(82,Math.min(104,rect.width*.34));
+    const proximityY=Math.max(46,Math.min(64,rect.height*.22));
+    const inside=e.clientX>=rect.right-proximityX&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximityY;
     m.classList.toggle('is-delete-hotzone',inside);
+    m.classList.toggle('is-tile-options-hotzone',inside);
   };
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
-  m.addEventListener('pointerleave',()=>m.classList.remove('is-delete-hotzone'));
+  m.addEventListener('pointerleave',()=>m.classList.remove('is-delete-hotzone','is-tile-options-hotzone'));
   let grabCursorTarget=null;
   const clearGrabCursor=()=>{grabCursorTarget?.classList.remove('module-grab-cursor');grabCursorTarget=null};
   m.addEventListener('pointerover',e=>{
@@ -12428,8 +12476,8 @@ const savedTheme=localStorage.getItem(THEME_STORAGE_KEY);
 applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persist:false});
 
 fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
-document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶'});
-window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
+document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶';syncTileFullscreenControls()});
+window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement)return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
   if(!src&&!emoji)return null;

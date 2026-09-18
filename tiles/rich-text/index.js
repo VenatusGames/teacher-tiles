@@ -525,13 +525,18 @@
       });
       colorPicker.appendChild(grid);
       const custom=document.createElement('form');custom.className='richtext-color-custom';
+      const preview=document.createElement('span');preview.className='richtext-spectrum-preview';preview.setAttribute('aria-hidden','true');preview.style.background=highlightColor;
       const label=document.createElement('label');label.textContent='Custom';
       const fieldWrap=document.createElement('span');fieldWrap.className='richtext-color-hex-wrap';fieldWrap.textContent='#';
       const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.value=highlightColor.replace('#','').toUpperCase();input.setAttribute('aria-label','Custom highlight hex color');
       fieldWrap.appendChild(input);label.appendChild(fieldWrap);
-      const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';custom.append(label,apply);
+      const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';custom.append(preview,label,apply);
       custom.addEventListener('submit',event=>{event.preventDefault();const raw=`#${input.value.trim().replace(/^#/,'')}`;if(!/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw)){input.classList.add('is-invalid');input.focus();return}applyPickerColor(raw)});
-      input.addEventListener('input',()=>input.classList.remove('is-invalid'));colorPicker.appendChild(custom);
+      input.addEventListener('input',()=>{
+        input.classList.remove('is-invalid');
+        const raw=`#${input.value.trim().replace(/^#/,'')}`;
+        if(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw))preview.style.background=raw;
+      });colorPicker.appendChild(custom);
     };
     const openColorPicker=(mode,anchorButton)=>{
       rememberSelection();closeRichSelect();if(!exportMenu?.hidden)closeExportMenu();
