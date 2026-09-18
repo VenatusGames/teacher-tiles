@@ -17350,3 +17350,300 @@ body>.lesson-planner-panel{
   .planner-library-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 9px}
   .planner-library-create--shelf{min-height:220px;width:100%}
 }
+
+/* Lesson Planner — readability pass: larger type, cleaner spacing, stronger hierarchy. */
+.lesson-planner-window{
+  font-size:14px;
+}
+.lesson-planner-header{
+  padding-inline:clamp(16px,1.5vw,26px);
+  gap:clamp(12px,1.2vw,20px);
+}
+.lesson-planner-back,
+.lesson-planner-header__actions>button,
+.lesson-planner-header__actions .lesson-planner-settings-button{
+  min-height:42px;
+  border-radius:12px;
+  font-size:clamp(12px,.72vw,14px);
+  font-weight:850;
+}
+.lesson-planner-back{padding-inline:14px}
+.lesson-planner-brand>div>span{
+  font-size:clamp(9px,.55vw,11px);
+  letter-spacing:.11em;
+  color:color-mix(in srgb,var(--text) 58%,var(--muted));
+}
+.lesson-planner-brand h2{
+  margin-top:3px;
+  font-size:clamp(22px,1.55vw,27px);
+  letter-spacing:-.03em;
+}
+.lesson-planner-header__actions{gap:9px}
+.lesson-planner-header__actions .lesson-planner-settings-button{
+  width:42px;
+  min-width:42px;
+  height:42px;
+}
+.lesson-planner-settings-button .settings-gear-icon{width:20px;height:20px}
+
+.lesson-planner-toolbar{
+  padding:11px clamp(16px,1.5vw,26px);
+  gap:clamp(14px,1.4vw,24px);
+}
+.lesson-planner-date-nav{gap:8px}
+.lesson-planner-date-nav>button{
+  width:40px;
+  height:40px;
+  font-size:24px;
+}
+.lesson-planner-date-nav>div{margin-left:4px}
+.lesson-planner-date-nav small{
+  margin-bottom:3px;
+  font-size:clamp(9px,.55vw,11px);
+  letter-spacing:.11em;
+  color:color-mix(in srgb,var(--text) 58%,var(--muted));
+}
+.lesson-planner-date-nav strong{
+  font-size:clamp(17px,1.15vw,21px);
+  line-height:1.08;
+}
+.lesson-planner-today{
+  min-width:66px;
+  height:40px!important;
+  padding-inline:13px!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+.lesson-planner-view-tabs{
+  height:44px;
+  padding:4px;
+  gap:4px;
+}
+.lesson-planner-view-tabs button{
+  min-width:68px;
+  height:34px;
+  padding-inline:13px;
+  font-size:clamp(11px,.68vw,13px);
+  font-weight:850;
+}
+.lesson-planner-zoom{
+  font-size:clamp(10px,.6vw,12px);
+  letter-spacing:.06em;
+}
+.lesson-planner-zoom i{width:26px;height:26px;font-size:17px}
+
+@media(min-width:821px){
+  .lesson-planner-layout{grid-template-columns:clamp(270px,18vw,315px) minmax(0,1fr)}
+}
+.lesson-planner-sidebar{
+  padding:clamp(16px,1.35vw,22px);
+  gap:15px;
+}
+.lesson-planner-new{
+  min-height:54px;
+  padding:0 16px;
+  border-radius:14px;
+  gap:9px;
+}
+.lesson-planner-new span{font-size:21px}
+.lesson-planner-new strong{
+  font-size:clamp(12px,.72vw,14px);
+  line-height:1.2;
+}
+.lesson-planner-focus-card{min-height:132px;padding:18px}
+.lesson-planner-focus-card span{
+  font-size:10px;
+  letter-spacing:.13em;
+}
+.lesson-planner-focus-card strong{font-size:50px}
+.lesson-planner-focus-card small{font-size:13px}
+.lesson-planner-agenda>header{margin-bottom:10px}
+.lesson-planner-agenda>header span{
+  font-size:10px;
+  letter-spacing:.11em;
+  color:color-mix(in srgb,var(--text) 58%,var(--muted));
+}
+.lesson-planner-agenda h3{font-size:17px;line-height:1.2}
+.lesson-planner-agenda>header>small{font-size:11px}
+.lesson-planner-agenda-list,#lesson-planner-agenda-list{gap:8px}
+.lesson-planner-agenda-item{
+  min-height:60px;
+  padding:10px 11px;
+  gap:10px;
+  border-radius:13px;
+}
+.lesson-planner-agenda-item strong{font-size:13px;line-height:1.25}
+.lesson-planner-agenda-item small{margin-top:4px;font-size:11px;line-height:1.25}
+.lesson-planner-agenda__empty{padding:18px 10px}
+.lesson-planner-agenda__empty strong{font-size:13px}
+.lesson-planner-agenda__empty small{font-size:11px;line-height:1.35}
+.lesson-planner-tip{
+  padding:12px;
+  grid-template-columns:26px minmax(0,1fr);
+  gap:10px;
+}
+.lesson-planner-tip>span{width:26px;height:26px}
+.lesson-planner-tip p{font-size:11px;line-height:1.5}
+
+/* Make the time board itself easier to scan without sacrificing the responsive fit. */
+.lesson-planner-schedule{padding-inline:clamp(8px,1.25vw,22px)}
+.lesson-planner-schedule__head{
+  height:78px;
+  grid-template-columns:clamp(64px,5vw,82px) repeat(var(--planner-days),minmax(0,1fr))!important;
+}
+.lesson-planner-schedule__body{
+  grid-template-columns:clamp(64px,5vw,82px) repeat(var(--planner-days),minmax(0,1fr))!important;
+}
+.lesson-planner-time-corner{
+  padding:0 10px 12px;
+  font-size:10px;
+  letter-spacing:.1em;
+}
+.lesson-planner-day-heading{padding-inline:5px}
+.lesson-planner-day-heading span{
+  font-size:clamp(10px,.66vw,12px);
+  letter-spacing:.08em;
+  color:color-mix(in srgb,var(--text) 62%,var(--muted));
+}
+.lesson-planner-day-heading strong{
+  width:clamp(36px,2.6vw,42px);
+  height:clamp(36px,2.6vw,42px);
+  margin-top:5px;
+  font-size:clamp(16px,1.1vw,19px);
+}
+.lesson-planner-times span{
+  right:clamp(10px,.9vw,18px);
+  padding:2px 4px;
+  font-size:clamp(11px,.66vw,13px);
+  font-weight:800;
+  color:color-mix(in srgb,var(--text) 62%,var(--muted));
+}
+.lesson-schedule-background__heading{
+  min-height:25px;
+  padding:5px 9px 4px 10px;
+}
+.lesson-schedule-background__heading strong{
+  font-size:clamp(11px,.72vw,13px);
+  line-height:1.15;
+}
+.lesson-schedule-background__heading small{
+  margin-top:2px;
+  font-size:clamp(9px,.58vw,11px);
+  line-height:1.1;
+}
+.lesson-schedule-background.is-compact .lesson-schedule-background__heading{
+  min-height:22px;
+  padding:4px 8px 3px 9px;
+}
+.lesson-schedule-background.is-compact .lesson-schedule-background__heading strong{font-size:11px}
+.lesson-schedule-background.is-compact .lesson-schedule-background__heading small{font-size:9px}
+.lesson-schedule-block{
+  padding:10px 12px;
+  border-radius:12px;
+}
+.lesson-schedule-block strong{
+  font-size:clamp(13px,.82vw,15px);
+  line-height:1.25;
+}
+.lesson-schedule-block small{
+  margin-top:4px;
+  font-size:clamp(10px,.64vw,12px);
+  line-height:1.3;
+}
+.lesson-schedule-block p,
+.lesson-schedule-block.is-tight p{
+  margin-top:7px;
+  font-size:clamp(11px,.68vw,13px);
+  line-height:1.42;
+}
+.lesson-schedule-block.is-tight{padding:7px 9px}
+.lesson-schedule-block.is-tight strong{font-size:12px}
+.lesson-schedule-block.is-tight small{font-size:10px}
+
+/* Month/year still fit the viewport, but no longer use tiny calendar copy. */
+.lesson-planner-month__weekdays span{font-size:11px;font-weight:850}
+.lesson-planner-month-day__number{font-size:14px}
+.lesson-calendar-chip span{font-size:11px;font-weight:800}
+.lesson-planner-month-day__more{font-size:10px}
+.lesson-planner-year-month__title{font-size:16px}
+.lesson-planner-year-month__weekdays span{font-size:10px}
+.lesson-planner-year-day,.lesson-planner-year-month__days>span{font-size:11px}
+
+/* Scheduling, templates, settings and lesson editor use the same readable scale. */
+.lesson-planner-scheduling__panel>header span,
+.lesson-planner-templates__panel>header span,
+.lesson-planner-settings-menu__heading>div>span{
+  font-size:10px;
+  letter-spacing:.11em;
+}
+.lesson-planner-scheduling__panel>header h3,
+.lesson-planner-templates__panel>header h3{font-size:clamp(22px,1.7vw,28px)}
+.lesson-planner-scheduling__panel>header p,
+.lesson-planner-templates__panel>header p{font-size:12px;line-height:1.45}
+.lesson-planner-field>span,.lesson-planner-colors legend{
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:.035em;
+}
+.lesson-planner-field input,
+.lesson-planner-field textarea,
+.lesson-planner-field select{
+  font-size:14px;
+}
+.lesson-planner-field input,.lesson-planner-field select{height:44px}
+.lesson-planner-schedule-form__actions button,
+.lesson-planner-template-form__actions button{height:42px;font-size:12px}
+.lesson-planner-schedule-item strong,.lesson-planner-template-item strong{font-size:14px}
+.lesson-planner-schedule-item span{font-size:12px}
+.lesson-planner-schedule-item small,.lesson-planner-template-item p{font-size:11px;line-height:1.45}
+.lesson-planner-schedule-item__actions button,.lesson-planner-template-item__actions button{height:34px;font-size:11px}
+.lesson-planner-settings-menu__heading strong{font-size:17px}
+.lesson-planner-settings-menu__heading small{font-size:11px}
+.lesson-planner-settings-toggle{min-height:76px;padding:15px}
+.lesson-planner-settings-toggle strong{font-size:13px}
+.lesson-planner-settings-toggle small{font-size:11px;line-height:1.45}
+.lesson-planner-editor__card>header span{font-size:10px}
+.lesson-planner-editor__card>header h3{font-size:clamp(22px,1.7vw,28px)}
+.lesson-planner-editor-context>span{font-size:9px}
+.lesson-planner-editor-context strong{font-size:13px}
+.lesson-planner-editor-context small{font-size:11px}
+.lesson-planner-template-picker>small,.lesson-planner-field--description>small{font-size:11px;line-height:1.4}
+.lesson-planner-editor__actions button{height:42px;font-size:12px}
+
+@media(max-width:1050px){
+  .lesson-planner-back,.lesson-planner-header__actions>button{font-size:11px}
+  .lesson-planner-layout{grid-template-columns:clamp(205px,22vw,250px) minmax(0,1fr)}
+  .lesson-planner-sidebar{padding:12px;gap:10px}
+  .lesson-planner-agenda-item{min-height:54px}
+}
+@media(max-width:820px){
+  .lesson-planner-window{font-size:13px}
+  .lesson-planner-date-nav strong{font-size:17px}
+  .lesson-planner-view-tabs button{font-size:11px}
+  .lesson-planner-layout{grid-template-columns:1fr}
+  .lesson-planner-sidebar{padding:9px}
+  .lesson-planner-new{min-height:44px}
+  .lesson-planner-schedule__head,.lesson-planner-schedule__body{
+    grid-template-columns:56px repeat(var(--planner-days),minmax(0,1fr))!important;
+  }
+  .lesson-planner-times span{font-size:10px;right:7px}
+}
+@media(max-width:560px){
+  .lesson-planner-header__actions>button:not(#lesson-planner-close){font-size:0}
+  #lesson-planner-scheduling-button::before,#lesson-planner-templates-button::before{font-size:12px}
+  .lesson-planner-toolbar{padding:8px}
+  .lesson-planner-date-nav small{font-size:9px}
+  .lesson-planner-date-nav strong{font-size:16px}
+  .lesson-planner-view-tabs button{font-size:10px;padding-inline:5px}
+  .lesson-planner-schedule__head,.lesson-planner-schedule__body{
+    grid-template-columns:48px repeat(var(--planner-days),minmax(0,1fr))!important;
+  }
+  .lesson-planner-day-heading span{font-size:9px}
+  .lesson-planner-day-heading strong{width:30px;height:30px;font-size:13px}
+  .lesson-planner-times span{font-size:9px;right:5px}
+  .lesson-schedule-background__heading strong{font-size:10px}
+  .lesson-schedule-background__heading small{font-size:8px}
+  .lesson-schedule-block strong{font-size:11px}
+  .lesson-schedule-block small{font-size:9px}
+  .lesson-schedule-block p,.lesson-schedule-block.is-tight p{font-size:10px}
+}
