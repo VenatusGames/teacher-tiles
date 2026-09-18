@@ -16303,35 +16303,66 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 #fullscreen-toggle.is-fullscreen-active .workspace-fullscreen-icon--exit{display:block}
 
 
-/* Reserve the universal top-right tile-options corner without moving headings or static tile chrome. */
+/* Listed floating controls stay in their normal location until the universal corner options are actually visible. */
 .module{--tile-topright-reserve:clamp(56px,15%,82px)}
 
-.translation-mark,
-.voicememo-count,
-.wordy-guess-count,
-.worldmap-zoom-controls,
-.grapher-clear-points,
-.hundreds-controls,
-.money-total-wrap,
-.weather-unit-toggle,
-.temperature-unit-toggle{
-  margin-right:var(--tile-topright-reserve);
+.module :is(
+  .translation-mark,
+  .voicememo-count,
+  .wordy-guess-count,
+  .worldmap-zoom-controls,
+  .grapher-clear-points,
+  .hundreds-controls,
+  .money-total-wrap,
+  .weather-unit-toggle,
+  .temperature-unit-toggle,
+  .collection-change-class,
+  .starchart-change-class,
+  .classmeter-change-class,
+  .prizeboard-change-class,
+  .pbisconsole-change-class,
+  .punchcard-change-class,
+  .racer-change-class,
+  .calendar-prev,
+  .calendar-next
+){
+  transition:translate .16s ease;
 }
 
-/* PBIS tiles keep their class/action buttons clear of the X / fullscreen / pin cluster. */
-.collection-change-class,
-.starchart-change-class,
-.classmeter-change-class,
-.prizeboard-change-class,
-.pbisconsole-change-class,
-.punchcard-change-class,
-.racer-change-class{
-  transform:translateX(calc(-1 * var(--tile-topright-reserve)));
+.module.is-tile-options-active :is(
+  .translation-mark,
+  .voicememo-count,
+  .wordy-guess-count,
+  .worldmap-zoom-controls,
+  .grapher-clear-points,
+  .hundreds-controls,
+  .money-total-wrap,
+  .weather-unit-toggle,
+  .temperature-unit-toggle,
+  .collection-change-class,
+  .starchart-change-class,
+  .classmeter-change-class,
+  .prizeboard-change-class,
+  .pbisconsole-change-class,
+  .punchcard-change-class,
+  .racer-change-class
+){
+  translate:calc(-1 * var(--tile-topright-reserve)) 0;
 }
 
-/* Calendar navigation stays symmetrical while the next-month button clears the corner cluster. */
-.calendar-prev{margin-left:clamp(12px,4%,24px)}
-.calendar-next{margin-right:var(--tile-topright-reserve)}
+/* Calendar arrows only move inward while the corner options are showing. */
+.module.is-tile-options-active .calendar-prev{translate:16px 0}
+.module.is-tile-options-active .calendar-next{translate:calc(-1 * var(--tile-topright-reserve)) 0}
+
+@media(prefers-reduced-motion:reduce){
+  .module :is(
+    .translation-mark,.voicememo-count,.wordy-guess-count,.worldmap-zoom-controls,
+    .grapher-clear-points,.hundreds-controls,.money-total-wrap,.weather-unit-toggle,
+    .temperature-unit-toggle,.collection-change-class,.starchart-change-class,
+    .classmeter-change-class,.prizeboard-change-class,.pbisconsole-change-class,
+    .punchcard-change-class,.racer-change-class,.calendar-prev,.calendar-next
+  ){transition:none}
+}
 
 /* Visual Schedule Reset now lives at the bottom-right in normal document flow. */
 .visual-schedule-toolbar{

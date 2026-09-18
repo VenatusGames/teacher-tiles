@@ -139,3 +139,10 @@ body.is-board-idle .richtext-module:not(:has(.richtext-editor.module-text-edit-a
   .richtext-select-trigger--block{width:104px}
   .richtext-select-trigger--font{width:110px}
 }
+
+.richtext-toolbar[hidden]{display:none!important}
+
+.richtext-color-grid--text .richtext-color-choice.is-active{
+  outline:2px solid #60a5fa;
+  outline-offset:2px;
+}

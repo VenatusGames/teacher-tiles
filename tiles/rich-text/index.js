@@ -222,14 +222,29 @@
     let imageOverlayFrame=0;
     let selectedImage=null;
     let textColor='#17191d';
+    let pendingTextColor='';
     let highlightColor='#fff2a8';
     let spellcheckEnabled=m.dataset.richSpellcheck!=='false';
 
     toolbar.dataset.preserveTextEdit='true';
 
-    const activateRichTextHover=()=>m.classList.add('is-richtext-hovered');
+    const revealRichTextToolbar=()=>{
+      if(toolbar.hidden)toolbar.hidden=false;
+    };
+    const activateRichTextHover=event=>{
+      if(!event.isTrusted)return;
+      const moved=Math.abs(Number(event.movementX)||0)+Math.abs(Number(event.movementY)||0);
+      if(moved<=0)return;
+      revealRichTextToolbar();
+      m.classList.add('is-richtext-hovered');
+    };
+    const revealRichTextToolbarFromPointer=event=>{
+      if(!event.isTrusted)return;
+      revealRichTextToolbar();
+    };
     const clearRichTextHover=()=>m.classList.remove('is-richtext-hovered');
     m.addEventListener('pointermove',activateRichTextHover);
+    m.addEventListener('pointerdown',revealRichTextToolbarFromPointer,true);
     m.addEventListener('pointerleave',clearRichTextHover);
 
     FONT_CHOICES.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;fontSelect.appendChild(option)});
@@ -455,7 +470,12 @@
     };
     const applyPickerColor=value=>{
       if(colorPickerMode==='text'){
-        textColor=normalizeHexColor(value,textColor);colorSwatch.style.background=textColor;colorSwatch.classList.remove('is-clear');runCommand('foreColor',textColor);
+        const chosen=normalizeHexColor(value,textColor);
+        pendingTextColor=chosen;
+        runCommand('foreColor',chosen);
+        textColor=chosen;
+        colorSwatch.style.background=chosen;
+        colorSwatch.classList.remove('is-clear');
       }else if(colorPickerMode==='highlight'){
         if(value==='transparent'){
           runHighlight('transparent');highlightSwatch.classList.add('is-clear');highlightSwatch.style.background='transparent';
@@ -466,8 +486,8 @@
       closeColorPicker();
     };
     const bindPickerChoice=(button,value)=>{
+      button.dataset.richPickerColor=value;
       button.addEventListener('pointerdown',event=>{
-        rememberSelection();
         event.preventDefault();
         event.stopPropagation();
         applyPickerColor(value);
@@ -564,6 +584,7 @@
         const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--text';
         TEXT_COLOR_CHOICES.forEach(value=>{
           const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
+          button.classList.toggle('is-active',normalizeHexColor(value,value).toLowerCase()===normalizeHexColor(textColor,textColor).toLowerCase());
           const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
         });
         colorPicker.appendChild(grid);
@@ -669,7 +690,15 @@
       const px=parseFloat(computed.fontSize)||16;
       const nearest=FONT_SIZES.reduce((best,size)=>Math.abs(size-px)<Math.abs(best-px)?size:best,FONT_SIZES[0]);
       sizeSelect.value=String(nearest);
-      textColor=rgbToHex(computed.color,textColor);colorSwatch.style.background=textColor;colorSwatch.classList.remove('is-clear');
+      if(pendingTextColor){
+        textColor=pendingTextColor;
+        pendingTextColor='';
+      }else{
+        let commandColor='';
+        try{commandColor=String(document.queryCommandValue('foreColor')||'')}catch{}
+        textColor=rgbToHex(commandColor,rgbToHex(computed.color,textColor));
+      }
+      colorSwatch.style.background=textColor;colorSwatch.classList.remove('is-clear');
       const highlight=activeBackground(element);
       if(highlight){highlightColor=highlight;highlightSwatch.style.background=highlightColor;highlightSwatch.classList.remove('is-clear')}
       else{highlightSwatch.style.background='transparent';highlightSwatch.classList.add('is-clear')}
@@ -912,7 +941,7 @@
     m._cleanup=()=>{
       cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);clearTimeout(toastTimer);
       document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);document.removeEventListener('pointerdown',outsideRichSelect,true);document.removeEventListener('keydown',richTextHistoryHotkey,true);document.removeEventListener('fullscreenchange',syncColorPickerHost);window.removeEventListener('resize',closeRichSelect);
-      m.removeEventListener('pointermove',activateRichTextHover);m.removeEventListener('pointerleave',clearRichTextHover);m.classList.remove('is-richtext-hovered');
+      m.removeEventListener('pointermove',activateRichTextHover);m.removeEventListener('pointerdown',revealRichTextToolbarFromPointer,true);m.removeEventListener('pointerleave',clearRichTextHover);m.classList.remove('is-richtext-hovered');
       richSelectControls.forEach(control=>control.menu.remove());exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
     };
 

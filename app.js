@@ -3557,8 +3557,10 @@ function tileOptionsAreVisible(m){
   );
 }
 function shiftTileControlsAwayFromOptions(m){
+  const optionsActive=Boolean(m?.isConnected&&tileOptionsAreVisible(m));
+  m?.classList.toggle('is-tile-options-active',optionsActive);
   clearTileOptionObstructionShift(m);
-  if(!m?.isConnected||!tileOptionsAreVisible(m)||document.fullscreenElement===m)return;
+  if(!optionsActive||document.fullscreenElement===m)return;
 
   const options=[
     m.querySelector(':scope>.module-delete'),
@@ -3731,7 +3733,7 @@ function setupCommon(m){
   m.addEventListener('pointerenter',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   m.addEventListener('focusin',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   m.addEventListener('focusout',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
-  const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();clearTileOptionObstructionShift(m);priorOptionCleanup?.()};
+  const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();clearTileOptionObstructionShift(m);m.classList.remove('is-tile-options-active');priorOptionCleanup?.()};
   const updateDeleteHotzone=e=>{
     const rect=m.getBoundingClientRect();
     const proximityX=Math.max(88,Math.min(126,rect.width*.4));
@@ -3751,7 +3753,7 @@ function setupCommon(m){
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
   m.addEventListener('pointerleave',()=>{
     m.classList.remove('is-delete-hotzone','is-tile-options-hotzone');
-    if(!document.body?.classList.contains('tile-options-always-visible'))clearTileOptionObstructionShift(m);
+    requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
   });
   let grabCursorTarget=null;
   const clearGrabCursor=()=>{grabCursorTarget?.classList.remove('module-grab-cursor');grabCursorTarget=null};
