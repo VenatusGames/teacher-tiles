@@ -30,3 +30,11 @@
 .clock-module .clock-toggle-mode[hidden],.clock-module[data-tile-skin] .clock-toggle-mode{display:none!important}
 
 .clock-module .clock-toggle-seconds[hidden],.clock-module .clock-toggle-period[hidden]{display:none!important}
+
+.chime-module[data-tile-skin=chime-clear]{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible}
+.chime-module[data-tile-skin=chime-clear]>.resize-handle::before{content:"";position:absolute;width:12px;height:12px;border:0 solid white;opacity:0;filter:drop-shadow(0 0 1px #1f3348) drop-shadow(0 2px 3px #0f172a66);pointer-events:none;transition:opacity .15s}
+.chime-module[data-tile-skin=chime-clear]:is(:hover,.is-pointer-over,:has(:focus-visible))>.resize-handle::before{opacity:1}
+.chime-module[data-tile-skin=chime-clear]>.resize-handle--tl::before{left:3px;top:3px;border-left-width:3px;border-top-width:3px}
+.chime-module[data-tile-skin=chime-clear]>.resize-handle--tr::before{right:3px;top:3px;border-right-width:3px;border-top-width:3px}
+.chime-module[data-tile-skin=chime-clear]>.resize-handle--bl::before{left:3px;bottom:3px;border-left-width:3px;border-bottom-width:3px}
+.chime-module[data-tile-skin=chime-clear]>.resize-handle--br::before{right:3px;bottom:3px;border-right-width:3px;border-bottom-width:3px}

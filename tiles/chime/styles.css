@@ -6,20 +6,25 @@
   display:flex;
   flex-direction:column;
   overflow:hidden;
+  container-type:size;
 }
 
 .chime-module .widget-heading{
   flex:0 0 auto;
   padding-right:102px;
+  margin-bottom:-4px;
+  position:relative;
+  z-index:3;
 }
 
 .chime-stage{
   position:relative;
   flex:1 1 auto;
   min-height:0;
-  margin:2px 18px 20px;
-  display:grid;
-  place-items:center;
+  margin:0 8px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   overflow:visible;
   isolation:isolate;
 }
@@ -27,7 +32,8 @@
 .chime-strike{
   position:relative;
   z-index:2;
-  width:min(92%,510px);
+  width:100%;
+  height:100%;
   margin:0;
   padding:0;
   border:0;
@@ -37,6 +43,9 @@
   appearance:none;
   -webkit-appearance:none;
   touch-action:manipulation;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .chime-strike:focus-visible{
@@ -48,7 +57,10 @@
 .chime-art{
   display:block;
   width:100%;
-  height:auto;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
   user-select:none;
   -webkit-user-drag:none;
   filter:drop-shadow(0 8px 11px rgba(35,28,20,.10));
@@ -59,33 +71,18 @@
 .chime-mallet{
   position:absolute;
   z-index:4;
-  width:31%;
-  max-width:175px;
-  right:12%;
-  top:2%;
+  width:33%;
+  max-width:190px;
+  left:2%;
+  top:17%;
   opacity:0;
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
-  transform-origin:13% 88%;
-  transform:translate(18px,-18px) rotate(19deg);
+  transform-origin:86% 18%;
+  transform:translate(-42px,-14px) rotate(-36deg);
   filter:drop-shadow(0 7px 8px rgba(20,16,12,.18));
   will-change:transform,opacity;
-}
-
-.chime-hint{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  translate:-50% 0;
-  margin:0;
-  color:color-mix(in srgb,var(--module-text,#17191d) 58%,transparent);
-  font:700 11px/1.2 Inter,system-ui,sans-serif;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  white-space:nowrap;
-  pointer-events:none;
-  opacity:.72;
 }
 
 .chime-stage.is-striking .chime-mallet{
@@ -99,26 +96,26 @@
 @keyframes chimeMalletStrike{
   0%{
     opacity:0;
-    transform:translate(22px,-22px) rotate(21deg);
+    transform:translate(-42px,-14px) rotate(-36deg);
   }
   12%{
     opacity:1;
   }
-  43%{
+  44%{
     opacity:1;
-    transform:translate(-2px,11px) rotate(-11deg);
+    transform:translate(74px,12px) rotate(-8deg);
   }
-  53%{
+  54%{
     opacity:1;
-    transform:translate(1px,7px) rotate(-7deg);
+    transform:translate(68px,8px) rotate(-11deg);
   }
   72%{
     opacity:1;
-    transform:translate(12px,-8px) rotate(10deg);
+    transform:translate(20px,-4px) rotate(-24deg);
   }
   100%{
     opacity:0;
-    transform:translate(22px,-22px) rotate(19deg);
+    transform:translate(-42px,-14px) rotate(-36deg);
   }
 }
 
@@ -133,9 +130,8 @@
 }
 
 @container (max-width:430px){
-  .chime-stage{margin-left:12px;margin-right:12px}
-  .chime-mallet{width:34%;right:9%;top:5%}
-  .chime-hint{font-size:10px}
+  .chime-stage{margin-left:4px;margin-right:4px;margin-bottom:6px}
+  .chime-mallet{width:37%;left:-1%;top:20%}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -150,3 +146,7 @@
     25%,70%{opacity:1}
   }
 }
+
+.chime-module[data-tile-skin=chime-clear]{overflow:visible}
+.chime-module[data-tile-skin=chime-clear] .widget-heading{display:none}
+.chime-module[data-tile-skin=chime-clear] .chime-stage{margin:0}
