@@ -225,6 +225,20 @@
 
     toolbar.dataset.preserveTextEdit='true';
 
+    let toolbarMeasureFrame=0;
+    const syncToolbarSpace=()=>{
+      cancelAnimationFrame(toolbarMeasureFrame);
+      toolbarMeasureFrame=requestAnimationFrame(()=>{
+        if(!m.isConnected)return;
+        const openHeight=Math.max(44,Math.ceil(toolbar.scrollHeight+14));
+        m.style.setProperty('--richtext-toolbar-height',`${openHeight}px`);
+      });
+    };
+    const toolbarResizeObserver=new ResizeObserver(syncToolbarSpace);
+    toolbarResizeObserver.observe(toolbar);
+    requestAnimationFrame(syncToolbarSpace);
+    document.fonts?.ready?.then(syncToolbarSpace);
+
     FONT_CHOICES.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;fontSelect.appendChild(option)});
     FONT_SIZES.forEach(size=>{const option=document.createElement('option');option.value=String(size);option.textContent=`${size}px`;sizeSelect.appendChild(option)});
     fontSelect.value='Inter';sizeSelect.value='16';
@@ -696,7 +710,8 @@
 
     const priorCleanup=m._cleanup;
     m._cleanup=()=>{
-      cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);clearTimeout(toastTimer);
+      cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);cancelAnimationFrame(toolbarMeasureFrame);clearTimeout(toastTimer);
+      toolbarResizeObserver.disconnect();
       document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);
       exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
     };
