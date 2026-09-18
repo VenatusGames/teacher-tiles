@@ -3483,6 +3483,7 @@ function setupCommon(m){
 }
 document.addEventListener('pointerdown',event=>{
   if(!activeModuleTextEditor||!(event.target instanceof Node))return;
+  if(event.target instanceof Element&&event.target.closest('[data-preserve-text-edit="true"]'))return;
   if(event.target===activeModuleTextEditor||activeModuleTextEditor.contains(event.target))return;
   exitModuleTextEdit(activeModuleTextEditor);
 },true);
