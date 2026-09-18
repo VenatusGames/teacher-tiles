@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-planner-readability-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-shared-library-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -391,9 +391,16 @@
                 <button class="lesson-planner-scheduling__backdrop" type="button" aria-label="Close Scheduling"></button>
                 <section class="lesson-planner-scheduling__panel">
                   <header>
-                    <div><span>PLANNER SETUP</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Create recurring background sections that sit behind your lesson blocks.</p></div>
+                    <div><span>PLANNING LIBRARY</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Save up to 4 shared schedules and choose which one this planner displays. Saved schedules stay even if a planner book is deleted.</p></div>
                     <button id="lesson-planner-scheduling-close" type="button" aria-label="Close Scheduling">×</button>
                   </header>
+                  <div class="lesson-planner-schedule-library">
+                    <div class="lesson-planner-schedule-library__copy"><span>SAVED SCHEDULES</span><strong>Shared schedule library</strong><small>Available to every planner · 4 maximum</small></div>
+                    <div class="lesson-planner-schedule-library__controls">
+                      <label><span>Schedule used by this planner</span><select id="lesson-planner-schedule-library-select" aria-label="Schedule used by this planner"></select></label>
+                      <div class="lesson-planner-schedule-library__actions"><button id="lesson-planner-schedule-library-new" type="button">＋ New</button><button id="lesson-planner-schedule-library-rename" type="button">Rename</button><button id="lesson-planner-schedule-library-delete" type="button">Delete</button><small id="lesson-planner-schedule-library-count">0 / 4</small></div>
+                    </div>
+                  </div>
                   <div class="lesson-planner-scheduling__content">
                     <form id="lesson-planner-schedule-form" class="lesson-planner-schedule-form">
                       <label class="lesson-planner-field"><span>Schedule label</span><input id="lesson-planner-schedule-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
@@ -409,7 +416,7 @@
                       <div class="lesson-planner-schedule-form__actions"><button id="lesson-planner-schedule-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-schedule-save" type="submit">Add schedule block</button></div>
                     </form>
                     <section class="lesson-planner-schedule-list-wrap">
-                      <div class="lesson-planner-schedule-list__heading"><div><span>YOUR SCHEDULE</span><h4>Background sections</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
+                      <div class="lesson-planner-schedule-list__heading"><div><span>SELECTED SCHEDULE</span><h4>Background sections</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
                       <div id="lesson-planner-schedule-list" class="lesson-planner-schedule-list"></div>
                     </section>
                   </div>
@@ -420,7 +427,7 @@
                 <button class="lesson-planner-templates__backdrop" type="button" aria-label="Close Templates"></button>
                 <section class="lesson-planner-templates__panel">
                   <header>
-                    <div><span>QUICK-START CONTENT</span><h3 id="lesson-planner-templates-title">Lesson Templates</h3><p>Save reusable text for the Plans and notes area of a lesson block.</p></div>
+                    <div><span>SHARED PLANNING LIBRARY</span><h3 id="lesson-planner-templates-title">Lesson Templates</h3><p>Save reusable Plans and notes text once and use it in every planner. Templates are kept when planner books are deleted.</p></div>
                     <button id="lesson-planner-templates-close" type="button" aria-label="Close Templates">×</button>
                   </header>
                   <div class="lesson-planner-templates__content">
@@ -430,7 +437,7 @@
                       <div class="lesson-planner-template-form__actions"><button id="lesson-planner-template-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-template-save" type="submit">Add template</button></div>
                     </form>
                     <section class="lesson-planner-template-list-wrap">
-                      <div class="lesson-planner-template-list__heading"><div><span>YOUR TEMPLATES</span><h4>Reusable lesson text</h4></div><small id="lesson-planner-template-count">0 templates</small></div>
+                      <div class="lesson-planner-template-list__heading"><div><span>SHARED TEMPLATES</span><h4>Reusable lesson text</h4></div><small id="lesson-planner-template-count">0 templates</small></div>
                       <div id="lesson-planner-template-list" class="lesson-planner-template-list"></div>
                     </section>
                   </div>
@@ -4129,7 +4136,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-addtile-category-scroll-reset-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-drag-10min-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-shared-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

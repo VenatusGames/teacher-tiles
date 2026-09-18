@@ -23,6 +23,11 @@
   const schedulingList = document.getElementById('lesson-planner-schedule-list');
   const schedulingCount = document.getElementById('lesson-planner-schedule-count');
   const schedulingCancel = document.getElementById('lesson-planner-schedule-cancel');
+  const scheduleLibrarySelect = document.getElementById('lesson-planner-schedule-library-select');
+  const scheduleLibraryNew = document.getElementById('lesson-planner-schedule-library-new');
+  const scheduleLibraryRename = document.getElementById('lesson-planner-schedule-library-rename');
+  const scheduleLibraryDelete = document.getElementById('lesson-planner-schedule-library-delete');
+  const scheduleLibraryCount = document.getElementById('lesson-planner-schedule-library-count');
   const templatesButton = document.getElementById('lesson-planner-templates-button');
   const settingsButton = document.getElementById('lesson-planner-settings-button');
   const settingsMenu = document.getElementById('lesson-planner-settings-menu');
@@ -64,6 +69,8 @@
   const LEGACY_STORAGE_KEY = 'teachertiles-lesson-planner-v1';
   const PLANNERS_STORAGE_KEY = 'teachertiles-lesson-planners-v2';
   const ACTIVE_PLANNER_KEY = 'teachertiles-active-lesson-planner-v2';
+  const PLANNING_LIBRARY_KEY = 'teachertiles-lesson-planning-library-v1';
+  const MAX_SAVED_SCHEDULES = 4;
   const FREE_PLANNER_LIMIT = 2;
   const PAID_PLANNER_LIMIT = 10;
   const VIEWS = ['day', 'week', 'month', 'year'];
@@ -88,9 +95,11 @@
   const monthDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
   const fullDate = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   let planners = readPlanners();
+  let planningLibrary = readPlanningLibrary();
   let activePlannerId = readActivePlannerId();
   if (activePlannerId && !planners.some(planner => planner.id === activePlannerId)) activePlannerId = '';
   if (!activePlannerId && planners.length) activePlannerId = planners[0].id;
+  migrateLegacyPlanningData();
   let blocks = readBlocks();
   if (!localStorage.getItem(PLANNERS_STORAGE_KEY) && planners.length) savePlanners();
   let currentDate = atNoon(new Date());
@@ -256,20 +265,107 @@
     };
   }
 
+  function savedScheduleId() {
+    return `saved-schedule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function normalizeSavedSchedule(item, index = 0) {
+    if (!item || typeof item !== 'object') return null;
+    const sourceBlocks = Array.isArray(item.blocks) ? item.blocks : (Array.isArray(item.schedule) ? item.schedule : []);
+    return {
+      id: String(item.id || savedScheduleId()),
+      name: String(item.name || `Schedule ${index + 1}`).replace(/\s+/g, ' ').trim().slice(0, 60) || `Schedule ${index + 1}`,
+      blocks: sourceBlocks.map(normalizeScheduleItem).filter(Boolean).slice(0, 120)
+    };
+  }
+
+  function readPlanningLibrary() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLANNING_LIBRARY_KEY) || 'null');
+      if (parsed && typeof parsed === 'object') {
+        return {
+          schedules: Array.isArray(parsed.schedules) ? parsed.schedules.map(normalizeSavedSchedule).filter(Boolean).slice(0, MAX_SAVED_SCHEDULES) : [],
+          templates: Array.isArray(parsed.templates) ? parsed.templates.map(normalizeTemplate).filter(Boolean).slice(0, 100) : []
+        };
+      }
+    } catch {}
+    return { schedules: [], templates: [] };
+  }
+
+  function savePlanningLibrary() {
+    try { localStorage.setItem(PLANNING_LIBRARY_KEY, JSON.stringify(planningLibrary)); } catch {}
+  }
+
+  function activeSavedSchedule(planner = activePlanner()) {
+    if (!planner?.scheduleId) return null;
+    return planningLibrary.schedules.find(schedule => schedule.id === planner.scheduleId) || null;
+  }
+
+  function uniqueScheduleName(base = 'Schedule') {
+    const used = new Set(planningLibrary.schedules.map(schedule => schedule.name.toLowerCase()));
+    let candidate = String(base || 'Schedule').trim().slice(0, 60) || 'Schedule';
+    if (!used.has(candidate.toLowerCase())) return candidate;
+    let index = 2;
+    while (used.has(`${candidate} ${index}`.toLowerCase())) index += 1;
+    return `${candidate} ${index}`.slice(0, 60);
+  }
+
+  function migrateLegacyPlanningData() {
+    let plannerChanged = false;
+    let libraryChanged = false;
+    const templateKeys = new Set(planningLibrary.templates.map(item => `${item.name.toLowerCase()}\n${item.description}`));
+    planners.forEach((planner, index) => {
+      const legacyTemplates = Array.isArray(planner.templates) ? planner.templates : [];
+      legacyTemplates.forEach((item, templateIndex) => {
+        const normalized = normalizeTemplate(item, templateIndex);
+        if (!normalized) return;
+        const key = `${normalized.name.toLowerCase()}\n${normalized.description}`;
+        if (!templateKeys.has(key)) {
+          planningLibrary.templates.push(normalized);
+          templateKeys.add(key);
+          libraryChanged = true;
+        }
+      });
+
+      const legacySchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean) : [];
+      const currentSelectionIsValid = planningLibrary.schedules.some(schedule => schedule.id === planner.scheduleId);
+      if (legacySchedule.length && !currentSelectionIsValid) {
+        const signature = JSON.stringify(legacySchedule.map(({ label,start,end,repeat,weekday,color }) => ({ label,start,end,repeat,weekday,color })));
+        let saved = planningLibrary.schedules.find(schedule => JSON.stringify(schedule.blocks.map(({ label,start,end,repeat,weekday,color }) => ({ label,start,end,repeat,weekday,color }))) === signature);
+        if (!saved && planningLibrary.schedules.length < MAX_SAVED_SCHEDULES) {
+          saved = normalizeSavedSchedule({ name: uniqueScheduleName(`${planner.name} Schedule`), blocks: legacySchedule }, planningLibrary.schedules.length);
+          planningLibrary.schedules.push(saved);
+          libraryChanged = true;
+        }
+        planner.scheduleId = saved?.id || planningLibrary.schedules[0]?.id || '';
+        plannerChanged = true;
+      } else if (!currentSelectionIsValid && planner.scheduleId) {
+        planner.scheduleId = planningLibrary.schedules[0]?.id || '';
+        plannerChanged = true;
+      }
+      if ('schedule' in planner) { delete planner.schedule; plannerChanged = true; }
+      if ('templates' in planner) { delete planner.templates; plannerChanged = true; }
+    });
+    if (planningLibrary.templates.length > 100) planningLibrary.templates = planningLibrary.templates.slice(0, 100);
+    if (libraryChanged) savePlanningLibrary();
+    if (plannerChanged) savePlanners();
+  }
+
   function normalizePlanner(planner, index = 0) {
     if (!planner || typeof planner !== 'object') return null;
-    const plannerBlocks = Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
-    const plannerSchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
-    const plannerTemplates = Array.isArray(planner.templates) ? planner.templates.map(normalizeTemplate).filter(Boolean).slice(0, 100) : [];
-    return {
+    const result = {
       id: String(planner.id || plannerId()),
       name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
       color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
-      blocks: plannerBlocks,
-      schedule: plannerSchedule,
-      templates: plannerTemplates,
+      blocks: Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [],
+      scheduleId: String(planner.scheduleId || ''),
       settings: { showWeekends: planner.settings?.showWeekends === true }
     };
+    const legacySchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
+    const legacyTemplates = Array.isArray(planner.templates) ? planner.templates.map(normalizeTemplate).filter(Boolean).slice(0, 100) : [];
+    if (legacySchedule.length) result.schedule = legacySchedule;
+    if (legacyTemplates.length) result.templates = legacyTemplates;
+    return result;
   }
 
   function readLegacyBlocks() {
@@ -287,7 +383,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [], templates: [], settings: { showWeekends: false } }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, scheduleId: '', settings: { showWeekends: false } }] : [];
   }
 
   function readActivePlannerId() {
@@ -345,8 +441,7 @@
 
   function scheduleForDate(date) {
     const target = typeof date === 'string' ? fromDateKey(date) : atNoon(date);
-    const planner = activePlanner();
-    const schedule = Array.isArray(planner?.schedule) ? planner.schedule : [];
+    const schedule = activeSavedSchedule()?.blocks || [];
     const weekday = target.getDay();
     return schedule.filter(item => item.repeat === 'weekly' ? item.weekday === weekday : weekday >= 1 && weekday <= 5)
       .slice().sort((a, b) => a.start.localeCompare(b.start));
@@ -465,7 +560,7 @@
       remove.type = 'button';
       remove.addEventListener('click', event => {
         event.stopPropagation();
-        if (!confirm(`Delete “${planner.name}” and all of its lesson blocks?`)) return;
+        if (!confirm(`Delete “${planner.name}” and its lesson blocks? Shared schedules and templates will be kept.`)) return;
         planners = planners.filter(item => item.id !== planner.id);
         if (activePlannerId === planner.id) activePlannerId = planners[0]?.id || '';
         blocks = readBlocks();
@@ -537,8 +632,7 @@
       name: `Planner ${planners.length + 1}`,
       color: COLORS[planners.length % COLORS.length].id,
       blocks: [],
-      schedule: [],
-      templates: [],
+      scheduleId: planningLibrary.schedules[0]?.id || '',
       settings: { showWeekends: false }
     };
     planners.push(planner);
@@ -569,6 +663,7 @@
     const planner = planners.find(item => item.id === id);
     if (!planner) { showPlannerLibrary(); return; }
     activePlannerId = planner.id;
+    if (!activeSavedSchedule(planner) && planningLibrary.schedules.length) { planner.scheduleId = planningLibrary.schedules[0].id; savePlanners(); }
     closeScheduling();
     closeTemplates();
     closeSettingsMenu();
@@ -621,10 +716,75 @@
     renderScheduleColors();
   }
 
+  function syncScheduleLibraryUi() {
+    if (!scheduleLibrarySelect) return;
+    const planner = activePlanner();
+    const selected = activeSavedSchedule(planner);
+    scheduleLibrarySelect.replaceChildren();
+    if (!planningLibrary.schedules.length) scheduleLibrarySelect.append(new Option('No saved schedules', ''));
+    planningLibrary.schedules.forEach(schedule => scheduleLibrarySelect.append(new Option(schedule.name, schedule.id)));
+    scheduleLibrarySelect.value = selected?.id || '';
+    scheduleLibraryCount.textContent = `${planningLibrary.schedules.length} / ${MAX_SAVED_SCHEDULES}`;
+    scheduleLibraryNew.disabled = planningLibrary.schedules.length >= MAX_SAVED_SCHEDULES;
+    scheduleLibraryNew.title = scheduleLibraryNew.disabled ? 'Saved schedule limit reached' : 'Create a new saved schedule';
+    scheduleLibraryRename.disabled = !selected;
+    scheduleLibraryDelete.disabled = !selected;
+    [...schedulingForm.elements].forEach(element => { element.disabled = !selected; });
+    schedulingForm.classList.toggle('is-disabled', !selected);
+  }
+
+  function createSavedSchedule() {
+    if (planningLibrary.schedules.length >= MAX_SAVED_SCHEDULES) return;
+    const planner = activePlanner();
+    if (!planner) return;
+    const schedule = normalizeSavedSchedule({ name: uniqueScheduleName(`Schedule ${planningLibrary.schedules.length + 1}`), blocks: [] }, planningLibrary.schedules.length);
+    planningLibrary.schedules.push(schedule);
+    planner.scheduleId = schedule.id;
+    savePlanningLibrary();
+    savePlanners();
+    resetScheduleForm();
+    syncScheduleLibraryUi();
+    renderSchedulingList();
+    renderAll();
+  }
+
+  function renameSavedSchedule() {
+    const schedule = activeSavedSchedule();
+    if (!schedule) return;
+    const value = prompt('Rename saved schedule', schedule.name);
+    if (value == null) return;
+    const cleaned = String(value).replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (!cleaned) return;
+    schedule.name = cleaned;
+    savePlanningLibrary();
+    syncScheduleLibraryUi();
+  }
+
+  function deleteSavedSchedule() {
+    const schedule = activeSavedSchedule();
+    if (!schedule || !confirm(`Delete saved schedule “${schedule.name}”? This removes the shared schedule, but does not delete any planners or lesson blocks.`)) return;
+    planningLibrary.schedules = planningLibrary.schedules.filter(item => item.id !== schedule.id);
+    const fallback = planningLibrary.schedules[0]?.id || '';
+    planners.forEach(planner => { if (planner.scheduleId === schedule.id) planner.scheduleId = fallback; });
+    savePlanningLibrary();
+    savePlanners();
+    resetScheduleForm();
+    syncScheduleLibraryUi();
+    renderSchedulingList();
+    renderAll();
+  }
+
   function renderSchedulingList() {
-    const schedule = activePlanner()?.schedule || [];
-    schedulingCount.textContent = `${schedule.length} ${schedule.length === 1 ? 'block' : 'blocks'}`;
+    const savedSchedule = activeSavedSchedule();
+    const schedule = savedSchedule?.blocks || [];
+    schedulingCount.textContent = savedSchedule ? `${schedule.length} ${schedule.length === 1 ? 'block' : 'blocks'}` : 'No schedule selected';
     schedulingList.replaceChildren();
+    if (!savedSchedule) {
+      const empty = make('div', 'lesson-planner-schedule-list__empty');
+      empty.innerHTML = '<span aria-hidden="true">＋</span><strong>No saved schedule selected</strong><small>Create a saved schedule above, then add recurring background sections.</small>';
+      schedulingList.append(empty);
+      return;
+    }
     if (!schedule.length) {
       const empty = make('div', 'lesson-planner-schedule-list__empty');
       empty.innerHTML = '<span aria-hidden="true">＋</span><strong>No schedule blocks yet</strong><small>Add a recurring time block on the left.</small>';
@@ -655,10 +815,10 @@
         syncScheduleRepeatUi(); renderScheduleColors(); schedulingLabel.focus({preventScroll:true}); schedulingLabel.select();
       });
       remove.addEventListener('click', () => {
-        const planner = activePlanner(); if (!planner) return;
-        planner.schedule = planner.schedule.filter(scheduleItem => scheduleItem.id !== item.id);
+        const savedSchedule = activeSavedSchedule(); if (!savedSchedule) return;
+        savedSchedule.blocks = savedSchedule.blocks.filter(scheduleItem => scheduleItem.id !== item.id);
         if (editingScheduleId === item.id) resetScheduleForm();
-        savePlanners(); publishPlannerChange(); renderSchedulingList(); renderAll();
+        savePlanningLibrary(); publishPlannerChange(); renderSchedulingList(); renderAll();
       });
       actions.append(edit, remove); row.append(actions); schedulingList.append(row);
     });
@@ -673,7 +833,7 @@
   }
 
   function renderTemplateList() {
-    const plannerTemplates = activePlanner()?.templates || [];
+    const plannerTemplates = planningLibrary.templates || [];
     templateCount.textContent = `${plannerTemplates.length} ${plannerTemplates.length === 1 ? 'template' : 'templates'}`;
     templateList.replaceChildren();
     if (!plannerTemplates.length) {
@@ -701,11 +861,9 @@
         templateName.select();
       });
       remove.addEventListener('click', () => {
-        const planner = activePlanner();
-        if (!planner) return;
-        planner.templates = (planner.templates || []).filter(template => template.id !== item.id);
+        planningLibrary.templates = planningLibrary.templates.filter(template => template.id !== item.id);
         if (editingTemplateId === item.id) resetTemplateForm();
-        savePlanners();
+        savePlanningLibrary();
         renderTemplateList();
         renderTemplatePicker();
       });
@@ -717,7 +875,7 @@
 
   function renderTemplatePicker() {
     if (!templatePicker) return;
-    const plannerTemplates = activePlanner()?.templates || [];
+    const plannerTemplates = planningLibrary.templates || [];
     const current = templatePicker.value;
     templatePicker.replaceChildren(new Option('Choose a template…', ''));
     plannerTemplates.forEach(item => templatePicker.append(new Option(item.name, item.id)));
@@ -754,6 +912,7 @@
       schedulingWeekday.value = String(preset.weekday ?? 1);
       syncScheduleRepeatUi();
     }
+    syncScheduleLibraryUi();
     renderSchedulingList();
     schedulingPanel.hidden = false;
     schedulingPanel.setAttribute('aria-hidden', 'false');
@@ -1483,35 +1642,45 @@
   document.getElementById('lesson-planner-templates-close').addEventListener('click', closeTemplates);
   templatesPanel.querySelector('.lesson-planner-templates__backdrop').addEventListener('click', closeTemplates);
   schedulingPanel.querySelector('.lesson-planner-scheduling__backdrop').addEventListener('click', closeScheduling);
+  scheduleLibraryNew?.addEventListener('click', createSavedSchedule);
+  scheduleLibraryRename?.addEventListener('click', renameSavedSchedule);
+  scheduleLibraryDelete?.addEventListener('click', deleteSavedSchedule);
+  scheduleLibrarySelect?.addEventListener('change', () => {
+    const planner = activePlanner();
+    if (!planner) return;
+    planner.scheduleId = planningLibrary.schedules.some(schedule => schedule.id === scheduleLibrarySelect.value) ? scheduleLibrarySelect.value : '';
+    savePlanners();
+    resetScheduleForm();
+    syncScheduleLibraryUi();
+    renderSchedulingList();
+    renderAll();
+  });
   schedulingRepeat.addEventListener('change', syncScheduleRepeatUi);
   schedulingStart.addEventListener('change',()=>{if(minutes(schedulingEnd.value)<=minutes(schedulingStart.value))schedulingEnd.value=timeValue(minutes(schedulingStart.value)+60)});
   schedulingCancel.addEventListener('click', resetScheduleForm);
   schedulingForm.addEventListener('submit',event=>{
     event.preventDefault();
-    const planner=activePlanner();if(!planner)return;
+    const savedSchedule=activeSavedSchedule();if(!savedSchedule)return;
     const item=normalizeScheduleItem({id:editingScheduleId||scheduleId(),label:schedulingLabel.value,start:schedulingStart.value,end:schedulingEnd.value,repeat:schedulingRepeat.value,weekday:Number(schedulingWeekday.value),color:scheduleEditorColor});
     if(!item)return;
-    const existing=planner.schedule.findIndex(value=>value.id===item.id);if(existing>=0)planner.schedule[existing]=item;else planner.schedule.push(item);
-    savePlanners();publishPlannerChange();resetScheduleForm();renderSchedulingList();renderAll();
+    const existing=savedSchedule.blocks.findIndex(value=>value.id===item.id);if(existing>=0)savedSchedule.blocks[existing]=item;else savedSchedule.blocks.push(item);
+    savePlanningLibrary();publishPlannerChange();resetScheduleForm();renderSchedulingList();renderAll();
   });
   templateDescription.addEventListener('input', () => templateDescriptionCount.textContent = String(templateDescription.value.length));
   templateCancel.addEventListener('click', resetTemplateForm);
   templateForm.addEventListener('submit', event => {
     event.preventDefault();
-    const planner = activePlanner();
-    if (!planner) return;
-    const item = normalizeTemplate({ id: editingTemplateId || templateId(), name: templateName.value, description: templateDescription.value }, (planner.templates || []).length);
+    const item = normalizeTemplate({ id: editingTemplateId || templateId(), name: templateName.value, description: templateDescription.value }, planningLibrary.templates.length);
     if (!item) return;
-    planner.templates ||= [];
-    const existing = planner.templates.findIndex(value => value.id === item.id);
-    if (existing >= 0) planner.templates[existing] = item; else planner.templates.push(item);
-    savePlanners();
+    const existing = planningLibrary.templates.findIndex(value => value.id === item.id);
+    if (existing >= 0) planningLibrary.templates[existing] = item; else planningLibrary.templates.push(item);
+    savePlanningLibrary();
     resetTemplateForm();
     renderTemplateList();
     renderTemplatePicker();
   });
   templatePicker.addEventListener('change', () => {
-    const template = (activePlanner()?.templates || []).find(item => item.id === templatePicker.value);
+    const template = planningLibrary.templates.find(item => item.id === templatePicker.value);
     if (!template) return;
     descriptionInput.value = template.description;
     descriptionCount.textContent = String(descriptionInput.value.length);
@@ -1719,8 +1888,10 @@
 
   window.TeacherTilesLessonPlanner = Object.freeze({
     getBlocks: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?planner.blocks.map(block=>({...block})):[]},
-    getSchedules: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?(planner.schedule||[]).map(item=>({...item})):[]},
-    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(planner.schedule||[]).map(item=>({...item})), templates:(planner.templates||[]).map(item=>({...item})) })),
+    getSchedules: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));const schedule=planner?planningLibrary.schedules.find(item=>item.id===planner.scheduleId):null;return schedule?schedule.blocks.map(item=>({...item})):[]},
+    getSavedSchedules: () => planningLibrary.schedules.map(schedule => ({...schedule,blocks:schedule.blocks.map(item=>({...item}))})),
+    getTemplates: () => planningLibrary.templates.map(item => ({...item})),
+    getPlanners: () => planners.map(planner => {const schedule=planningLibrary.schedules.find(item=>item.id===planner.scheduleId);return { ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(schedule?.blocks||[]).map(item=>({...item})), templates:planningLibrary.templates.map(item=>({...item})) }}),
     getActivePlannerId: () => activePlannerId,
     open: openPlanner,
     close: () => closePlanner(false)
