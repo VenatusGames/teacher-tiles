@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
   <link rel="stylesheet" href="tiles/dice/styles.css?v=20260908-polish-1" />
-  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=20260918-fly-swat-1" />
+  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=20260918-fly-swat-2" />
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260910-fishtank-deadspace-1" />
   <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-6" />
@@ -378,7 +378,11 @@
               </section>
               <div class="lesson-planner-layout">
                 <aside class="lesson-planner-sidebar">
-                  <button id="lesson-planner-new" class="lesson-planner-new" type="button" aria-label="Drag Lesson Block onto Board" title="Drag Lesson Block onto Board"><span aria-hidden="true">↗</span><strong>Drag Lesson Block onto Board</strong></button>
+                  <button id="lesson-planner-new" class="lesson-planner-new" type="button"><span aria-hidden="true">＋</span><strong>Add Lesson Block</strong></button>
+                  <button id="lesson-planner-drag-source" class="lesson-planner-drag-source" type="button" aria-label="Drag a lesson block onto the planner" title="Drag this lesson block onto the planner">
+                    <span class="lesson-planner-drag-source__grip" aria-hidden="true">⠿</span>
+                    <span class="lesson-planner-drag-source__copy"><small>DRAG ONTO BOARD</small><strong>Lesson Block</strong><em>Drop on a day and time</em></span>
+                  </button>
                   <section class="lesson-planner-focus-card">
                     <span id="lesson-planner-focus-weekday">TODAY</span>
                     <strong id="lesson-planner-focus-day">1</strong>
@@ -388,7 +392,7 @@
                     <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
                     <div id="lesson-planner-agenda-list"></div>
                   </section>
-                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Planner controls</strong> Drag to pan. Double-click for a planner block. Right-click for a lesson block.</p></div>
+                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Planner controls</strong> Drag to pan. Double-click or right-click to add a lesson block.</p></div>
                 </aside>
                 <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
               </div>
@@ -2221,8 +2225,14 @@
         <span><strong>Ambience Video</strong><small>Campfire, fireplace, and aquarium scenes</small></span>
       </button>
 
-      <button class="context-menu__item" data-module="flyswat" data-category="games" data-search-aliases="fly swat letters numbers team game">
-        <span class="context-menu__icon context-menu__icon--flyswat" aria-hidden="true"><img src="tiles/fly-swat/assets/fly.png" alt=""></span>
+      <button class="context-menu__item" data-module="flyswat" data-category="games" data-search-aliases="fly swat letters uppercase lowercase mixed numbers team game">
+        <span class="context-menu__icon context-menu__icon--flyswat" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="12" cy="12.8" rx="3.2" ry="5.2" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="7.1" r="2.1" fill="currentColor" stroke="none"/>
+            <path d="M9.6 8.6C6.4 5.2 3.4 6 4.4 9.2c.8 2.4 2.9 3.4 5.2 3M14.4 8.6c3.2-3.4 6.2-2.6 5.2.6-.8 2.4-2.9 3.4-5.2 3M9.1 11.4 5.6 9.8M9 14l-4 1.5M9.7 16.2l-3 3M14.9 11.4l3.5-1.6M15 14l4 1.5M14.3 16.2l3 3"/>
+          </svg>
+        </span>
         <span><strong>Fly Swat</strong><small>Swat letters or numbers for your team</small></span>
       </button>
       <button class="context-menu__item" data-module="hangman" data-category="games">
@@ -4144,9 +4154,9 @@
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
-<script src="tiles/fly-swat/index.js?v=20260918-fly-swat-1"></script>
-<script src="app.js?v=20260918-fly-swat-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-schedule-context-color-popover-1"></script>
+<script src="tiles/fly-swat/index.js?v=20260918-fly-swat-2"></script>
+<script src="app.js?v=20260918-fly-swat-2"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-recovered-shared-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 
@@ -5138,11 +5148,11 @@
         <div class="flyswat-gameover" role="status" aria-live="polite" hidden>
           <strong>Board cleared!</strong>
           <span class="flyswat-gameover-result"></span>
-          <button class="tile-action tile-action--primary flyswat-new-round" type="button">New round</button>
+          <button class="tile-action tile-action--primary flyswat-reset" type="button">Reset</button>
         </div>
       </div>
       <div class="customization-bar flyswat-controls" aria-label="Fly Swat controls">
-        <button class="tile-action flyswat-new-round" type="button">New round</button>
+        <button class="tile-action flyswat-reset" type="button">Reset</button>
         <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
@@ -5153,18 +5163,19 @@
           <div class="tile-settings-panel" hidden>
             <strong>Fly Swat settings</strong>
             <div class="tile-setting"><span>Targets</span></div>
-            <div class="tile-mode-switch" role="group" aria-label="Fly Swat target type">
+            <div class="tile-mode-switch flyswat-target-modes" role="group" aria-label="Fly Swat target type">
               <button type="button" data-flyswat-mode="upper" aria-pressed="true" class="is-active">Uppercase</button>
               <button type="button" data-flyswat-mode="lower" aria-pressed="false">Lowercase</button>
+              <button type="button" data-flyswat-mode="mixed" aria-pressed="false">Mixed case</button>
               <button type="button" data-flyswat-mode="numbers" aria-pressed="false">1–25</button>
             </div>
             <div class="tile-setting"><span>Flies on board</span></div>
-            <div class="tile-mode-switch" role="group" aria-label="Number of flies">
+            <div class="tile-mode-switch flyswat-count-modes" role="group" aria-label="Number of flies">
               <button type="button" data-flyswat-count="10" aria-pressed="false">10</button>
               <button type="button" data-flyswat-count="20" aria-pressed="true" class="is-active">20</button>
               <button type="button" data-flyswat-count="30" aria-pressed="false">30</button>
             </div>
-            <small class="flyswat-settings-note">Changing a setting starts a fresh round and resets both team scores.</small>
+            <small class="flyswat-settings-note">Changing a setting resets the board and both team scores.</small>
           </div>
         </div>
       </div>

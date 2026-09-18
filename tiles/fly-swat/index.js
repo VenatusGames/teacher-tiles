@@ -4,12 +4,14 @@
   const MODES = Object.freeze({
     upper: 'Uppercase Letters',
     lower: 'Lowercase Letters',
+    mixed: 'Mixed Uppercase + Lowercase',
     numbers: 'Numbers 1–25'
   });
   const COUNTS = new Set([10, 20, 30]);
   const TEAM_LABEL = Object.freeze({blue: 'Blue', red: 'Red'});
 
   const random = (min, max) => min + Math.random() * (max - min);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const shuffle = values => {
     const items = [...values];
     for (let i = items.length - 1; i > 0; i -= 1) {
@@ -21,8 +23,10 @@
 
   function labelPool(mode) {
     if (mode === 'numbers') return Array.from({length: 25}, (_, i) => String(i + 1));
-    const letters = Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i));
-    return mode === 'lower' ? letters.map(letter => letter.toLowerCase()) : letters;
+    const upper = Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i));
+    if (mode === 'lower') return upper.map(letter => letter.toLowerCase());
+    if (mode === 'mixed') return [...upper, ...upper.map(letter => letter.toLowerCase())];
+    return upper;
   }
 
   function labelsForRound(mode, count) {
@@ -33,9 +37,41 @@
   }
 
   function layoutForCount(count) {
-    if (count <= 10) return {cols: 5, rows: 2, xMin: 12, xMax: 88, yMin: 18, yMax: 61};
-    if (count <= 20) return {cols: 5, rows: 4, xMin: 11, xMax: 89, yMin: 12, yMax: 70};
-    return {cols: 6, rows: 5, xMin: 9, xMax: 91, yMin: 9, yMax: 72};
+    if (count <= 10) return {cols: 5, rows: 2, xMin: 12, xMax: 88, yMin: 17, yMax: 54};
+    if (count <= 20) return {cols: 5, rows: 4, xMin: 11, xMax: 89, yMin: 12, yMax: 63};
+    return {cols: 6, rows: 5, xMin: 9, xMax: 91, yMin: 9, yMax: 65};
+  }
+
+  function crawlPath() {
+    const point = () => ({x: random(-14, 14), y: random(-11, 11), r: random(-15, 15)});
+    const p1 = point();
+    const p2 = point();
+    const p3 = point();
+    const p4 = point();
+    const p5 = point();
+    return {
+      mx1: p1.x, my1: p1.y, mr1: p1.r,
+      mx2: p2.x, my2: p2.y, mr2: p2.r,
+      mx3: p3.x, my3: p3.y, mr3: p3.r,
+      mx4: p4.x, my4: p4.y, mr4: p4.r,
+      mx5: p5.x, my5: p5.y, mr5: p5.r,
+      duration: random(5.4, 8.6),
+      delay: random(-8, 0)
+    };
+  }
+
+  function normalizeCrawl(fly = {}) {
+    const fallback = crawlPath();
+    const num = (key, fallbackValue) => Number.isFinite(Number(fly[key])) ? Number(fly[key]) : fallbackValue;
+    return {
+      mx1: num('mx1', fallback.mx1), my1: num('my1', fallback.my1), mr1: num('mr1', fallback.mr1),
+      mx2: num('mx2', fallback.mx2), my2: num('my2', fallback.my2), mr2: num('mr2', fallback.mr2),
+      mx3: num('mx3', fallback.mx3), my3: num('my3', fallback.my3), mr3: num('mr3', fallback.mr3),
+      mx4: num('mx4', fallback.mx4), my4: num('my4', fallback.my4), mr4: num('mr4', fallback.mr4),
+      mx5: num('mx5', fallback.mx5), my5: num('my5', fallback.my5), mr5: num('mr5', fallback.mr5),
+      duration: Math.max(4.5, num('duration', fallback.duration)),
+      delay: num('delay', fallback.delay)
+    };
   }
 
   function makeFlies(mode, count) {
@@ -45,27 +81,17 @@
     for (let row = 0; row < layout.rows; row += 1) {
       for (let col = 0; col < layout.cols; col += 1) {
         const xBase = layout.cols === 1 ? 50 : layout.xMin + ((layout.xMax - layout.xMin) * col) / (layout.cols - 1);
-        const yBase = layout.rows === 1 ? 42 : layout.yMin + ((layout.yMax - layout.yMin) * row) / (layout.rows - 1);
-        cells.push({
-          x: xBase + random(-2.5, 2.5),
-          y: yBase + random(-2.2, 2.2)
-        });
+        const yBase = layout.rows === 1 ? 40 : layout.yMin + ((layout.yMax - layout.yMin) * row) / (layout.rows - 1);
+        cells.push({x: xBase + random(-2.5, 2.5), y: yBase + random(-2.2, 2.2)});
       }
     }
     return shuffle(cells).slice(0, count).map((cell, index) => ({
       id: `${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 7)}`,
       label: labels[index],
-      x: Math.max(6, Math.min(94, cell.x)),
-      y: Math.max(6, Math.min(76, cell.y)),
+      x: clamp(cell.x, 6, 94),
+      y: clamp(cell.y, 6, 68),
       hue: Math.round(random(0, 360)),
-      dx1: random(-4.5, -1.8),
-      dy1: random(-3.5, 1.5),
-      dx2: random(1.8, 4.5),
-      dy2: random(-1.5, 3.5),
-      tilt1: random(-4, -1),
-      tilt2: random(1, 4),
-      duration: random(2.4, 4.2),
-      delay: random(-3.5, 0),
+      ...crawlPath(),
       swatted: false
     }));
   }
@@ -80,7 +106,7 @@
     const redScore = moduleElement.querySelector('.flyswat-red-score');
     const gameOver = moduleElement.querySelector('.flyswat-gameover');
     const gameOverResult = moduleElement.querySelector('.flyswat-gameover-result');
-    const newRoundButtons = moduleElement.querySelectorAll('.flyswat-new-round');
+    const resetButtons = moduleElement.querySelectorAll('.flyswat-reset');
     const modeButtons = [...moduleElement.querySelectorAll('[data-flyswat-mode]')];
     const countButtons = [...moduleElement.querySelectorAll('[data-flyswat-count]')];
     const abortController = new AbortController();
@@ -141,9 +167,19 @@
       if (!rect.width || !rect.height) return;
       const {cols, rows} = layoutForCount(state.count);
       const usableWidth = rect.width * .84;
-      const usableHeight = rect.height * .66;
-      const size = Math.max(36, Math.min(94, usableWidth / cols * .72, usableHeight / rows * .82));
+      const usableHeight = rect.height * .72;
+      const size = Math.max(34, Math.min(92, usableWidth / cols * .72, usableHeight / rows * .78));
       moduleElement.style.setProperty('--flyswat-fly-size', `${size}px`);
+    }
+
+    function applyCrawlVars(button, fly) {
+      ['1','2','3','4','5'].forEach(index => {
+        button.style.setProperty(`--fly-mx${index}`, `${fly[`mx${index}`]}px`);
+        button.style.setProperty(`--fly-my${index}`, `${fly[`my${index}`]}px`);
+        button.style.setProperty(`--fly-mr${index}`, `${fly[`mr${index}`]}deg`);
+      });
+      button.style.setProperty('--fly-duration', `${fly.duration}s`);
+      button.style.setProperty('--fly-delay', `${fly.delay}s`);
     }
 
     function createFlyElement(fly) {
@@ -155,14 +191,7 @@
       button.style.left = `${fly.x}%`;
       button.style.top = `${fly.y}%`;
       button.style.setProperty('--fly-hue', `${fly.hue}deg`);
-      button.style.setProperty('--fly-dx1', `${fly.dx1}px`);
-      button.style.setProperty('--fly-dy1', `${fly.dy1}px`);
-      button.style.setProperty('--fly-dx2', `${fly.dx2}px`);
-      button.style.setProperty('--fly-dy2', `${fly.dy2}px`);
-      button.style.setProperty('--fly-tilt1', `${fly.tilt1}deg`);
-      button.style.setProperty('--fly-tilt2', `${fly.tilt2}deg`);
-      button.style.setProperty('--fly-duration', `${fly.duration}s`);
-      button.style.setProperty('--fly-delay', `${fly.delay}s`);
+      applyCrawlVars(button, fly);
       button.innerHTML = `
         <span class="flyswat-fly-inner">
           <img src="tiles/fly-swat/assets/fly.png" alt="" draggable="false">
@@ -179,6 +208,46 @@
       requestAnimationFrame(fitFlies);
     }
 
+    function makeSplat(button, fly) {
+      const boardRect = board.getBoundingClientRect();
+      const flyRect = button.getBoundingClientRect();
+      if (!boardRect.width || !boardRect.height) return;
+      const x = flyRect.left + flyRect.width / 2 - boardRect.left;
+      const y = flyRect.top + flyRect.height / 2 - boardRect.top;
+      const color = `hsl(${fly.hue} 72% 72%)`;
+
+      const core = document.createElement('span');
+      core.className = 'flyswat-splat-core';
+      core.style.left = `${x}px`;
+      core.style.top = `${y}px`;
+      core.style.setProperty('--splat-color', color);
+      board.append(core);
+
+      for (let i = 0; i < 12; i += 1) {
+        const angle = random(0, Math.PI * 2);
+        const distance = random(18, 50);
+        const particle = document.createElement('span');
+        particle.className = 'flyswat-splat-particle';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.setProperty('--splat-color', i % 4 === 0 ? 'rgba(40,40,45,.62)' : color);
+        particle.style.setProperty('--splat-x', `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty('--splat-y', `${Math.sin(angle) * distance}px`);
+        particle.style.setProperty('--splat-rot', `${random(-160, 160)}deg`);
+        particle.style.setProperty('--splat-size', `${random(4, 9)}px`);
+        board.append(particle);
+      }
+
+      const timeout = window.setTimeout(() => {
+        timers.delete(timeout);
+        core.remove();
+        board.querySelectorAll('.flyswat-splat-particle').forEach(particle => {
+          if (particle.style.left === `${x}px` && particle.style.top === `${y}px`) particle.remove();
+        });
+      }, 720);
+      timers.add(timeout);
+    }
+
     function finishIfCleared() {
       if (remainingFlies() !== 0) return;
       state.ended = true;
@@ -192,6 +261,7 @@
       if (!fly || fly.swatted) return;
       fly.swatted = true;
       state[`${state.activeTeam}Score`] += 1;
+      makeSplat(button, fly);
       button.disabled = true;
       button.classList.add('is-swatted');
       updateHud();
@@ -200,21 +270,19 @@
         timers.delete(timeout);
         button.remove();
         finishIfCleared();
-      }, 360);
+      }, 230);
       timers.add(timeout);
     }
 
-    function newRound({resetScores = true, notify = true} = {}) {
+    function resetRound({notify = true} = {}) {
       timers.forEach(clearTimeout);
       timers.clear();
-      if (resetScores) {
-        state.blueScore = 0;
-        state.redScore = 0;
-      }
+      state.blueScore = 0;
+      state.redScore = 0;
       state.ended = false;
       state.flies = makeFlies(state.mode, state.count);
       renderBoard();
-      if (notify) markChanged('flyswat-new-round');
+      if (notify) markChanged('flyswat-reset');
     }
 
     function setTeam(team) {
@@ -226,20 +294,20 @@
 
     blueButton.addEventListener('click', () => setTeam('blue'), {signal});
     redButton.addEventListener('click', () => setTeam('red'), {signal});
-    newRoundButtons.forEach(button => button.addEventListener('click', () => newRound(), {signal}));
+    resetButtons.forEach(button => button.addEventListener('click', () => resetRound(), {signal}));
 
     modeButtons.forEach(button => button.addEventListener('click', () => {
       const next = button.dataset.flyswatMode;
       if (!MODES[next] || next === state.mode) return;
       state.mode = next;
-      newRound();
+      resetRound();
     }, {signal}));
 
     countButtons.forEach(button => button.addEventListener('click', () => {
       const next = Number(button.dataset.flyswatCount);
       if (!COUNTS.has(next) || next === state.count) return;
       state.count = next;
-      newRound();
+      resetRound();
     }, {signal}));
 
     const resizeObserver = new ResizeObserver(fitFlies);
@@ -270,17 +338,10 @@
           ? savedFlies.map((fly, index) => ({
               id: String(fly.id || `restored-${index}`),
               label: String(fly.label ?? '?'),
-              x: Math.max(6, Math.min(94, Number(fly.x) || 50)),
-              y: Math.max(6, Math.min(76, Number(fly.y) || 40)),
+              x: clamp(Number(fly.x) || 50, 6, 94),
+              y: clamp(Number(fly.y) || 40, 6, 68),
               hue: Number.isFinite(Number(fly.hue)) ? Number(fly.hue) : Math.round(random(0, 360)),
-              dx1: Number(fly.dx1) || -3,
-              dy1: Number(fly.dy1) || -2,
-              dx2: Number(fly.dx2) || 3,
-              dy2: Number(fly.dy2) || 2,
-              tilt1: Number(fly.tilt1) || -2,
-              tilt2: Number(fly.tilt2) || 2,
-              duration: Math.max(1.8, Number(fly.duration) || 3.2),
-              delay: Number(fly.delay) || 0,
+              ...normalizeCrawl(fly),
               swatted: Boolean(fly.swatted)
             }))
           : makeFlies(mode, count)
