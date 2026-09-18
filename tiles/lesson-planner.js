@@ -1178,14 +1178,14 @@
         if (event.target !== column) return;
         event.preventDefault();
         event.stopPropagation();
-        const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(event.clientY)));
-        const end = Math.min(DAY_END, start + 60);
+        const range = lessonRangeAtPointer(event);
         selectedDate = atNoon(date);
-        openScheduling({
-          start: timeValue(start),
-          end: timeValue(end),
-          repeat: 'weekly',
-          weekday: date.getDay()
+        openEditor(null, {
+          date: dateKey(date),
+          start: timeValue(range.start),
+          end: timeValue(range.end),
+          scheduleId: range.section?.item.id || '',
+          color: range.section?.item.color || COLORS[0].id
         });
       });
 
@@ -1530,7 +1530,22 @@
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
   document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); view = 'day'; renderAll({ autoScrollTimeline: true }); });
-  const lessonDragSource = document.getElementById('lesson-planner-new');
+  const addLessonButton = document.getElementById('lesson-planner-new');
+  const lessonDragSource = document.getElementById('lesson-planner-drag-source');
+  addLessonButton.addEventListener('click', () => {
+    const date = atNoon(selectedDate || currentDate || new Date());
+    const firstSection = scheduleForDate(date)[0] || null;
+    const start = firstSection ? Math.max(DAY_START, minutes(firstSection.start)) : 8 * 60;
+    const end = firstSection ? Math.max(start + 5, Math.min(DAY_END, minutes(firstSection.end), start + 60)) : 9 * 60;
+    selectedDate = date;
+    openEditor(null, {
+      date: dateKey(date),
+      start: timeValue(start),
+      end: timeValue(end),
+      scheduleId: firstSection?.id || '',
+      color: firstSection?.color || COLORS[0].id
+    });
+  });
   lessonDragSource.addEventListener('click', event => event.preventDefault());
   lessonDragSource.addEventListener('pointerdown', event => {
     if (event.button !== 0 || (view !== 'day' && view !== 'week')) return;
@@ -1540,6 +1555,39 @@
     let y = originY;
     let dragging = false;
     let ghost = null;
+    let target = null;
+    let placeholder = null;
+    let placement = null;
+    const clearDropPreview = () => {
+      target?.classList.remove('is-lesson-drop-target');
+      target = null;
+      placeholder?.remove();
+      placeholder = null;
+      placement = null;
+    };
+    const updateDropPreview = () => {
+      clearDropPreview();
+      const column = document.elementFromPoint(x, y)?.closest('.lesson-planner-day-column');
+      if (!column || !canvas.contains(column)) return;
+      const dropDate = column.dataset.lessonDropDate;
+      const date = fromDateKey(dropDate);
+      const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(y)));
+      const section = scheduleForDate(date)
+        .map(item => ({ item, start: minutes(item.start), end: minutes(item.end) }))
+        .find(item => start >= item.start && start < item.end) || null;
+      const end = section ? Math.max(start + 5, Math.min(section.end, start + 60)) : Math.min(DAY_END, start + 60);
+      target = column;
+      target.classList.add('is-lesson-drop-target');
+      placement = { column, date, dropDate, start, end, section };
+      placeholder = make('div', 'lesson-planner-drop-placeholder lesson-planner-new-drop-placeholder');
+      placeholder.setAttribute('aria-hidden', 'true');
+      placeholder.textContent = `New lesson · ${timeLabel(timeValue(start))}–${timeLabel(timeValue(end))}`;
+      const top = column._timelineYForMinute ? column._timelineYForMinute(start) : 0;
+      const bottom = column._timelineYForMinute ? column._timelineYForMinute(end) : top + 60;
+      placeholder.style.top = `${top}px`;
+      placeholder.style.height = `${Math.max(46, bottom - top)}px`;
+      column.append(placeholder);
+    };
     const move = moveEvent => {
       if (moveEvent.pointerId !== event.pointerId) return;
       x = moveEvent.clientX;
@@ -1558,6 +1606,7 @@
       else if (y > bounds.bottom - 36 && y <= bounds.bottom) canvas.scrollTop += 12;
       ghost.style.left = `${x + 14}px`;
       ghost.style.top = `${y + 14}px`;
+      updateDropPreview();
     };
     const finish = finishEvent => {
       if (finishEvent.pointerId !== event.pointerId) return;
@@ -1566,23 +1615,18 @@
       window.removeEventListener('pointercancel', cancel);
       lessonDragSource.classList.remove('is-dragging');
       ghost?.remove();
-      if (!dragging) return;
-      const column = document.elementFromPoint(finishEvent.clientX, finishEvent.clientY)?.closest('.lesson-planner-day-column');
-      if (!column || !canvas.contains(column)) return;
-      const dropDate = column.dataset.lessonDropDate;
-      const date = fromDateKey(dropDate);
-      const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(finishEvent.clientY)));
-      const section = scheduleForDate(date)
-        .map(item => ({ item, start: minutes(item.start), end: minutes(item.end) }))
-        .find(item => start >= item.start && start < item.end) || null;
-      const end = section ? Math.max(start + 5, Math.min(section.end, start + 60)) : Math.min(DAY_END, start + 60);
-      selectedDate = atNoon(date);
+      if (!dragging) { clearDropPreview(); return; }
+      updateDropPreview();
+      const drop = placement;
+      clearDropPreview();
+      if (!drop) return;
+      selectedDate = atNoon(drop.date);
       openEditor(null, {
-        date: dropDate,
-        start: timeValue(start),
-        end: timeValue(end),
-        scheduleId: section?.item.id || '',
-        color: section?.item.color || COLORS[0].id
+        date: drop.dropDate,
+        start: timeValue(drop.start),
+        end: timeValue(drop.end),
+        scheduleId: drop.section?.item.id || '',
+        color: drop.section?.item.color || COLORS[0].id
       });
     };
     const cancel = cancelEvent => {
@@ -1592,6 +1636,7 @@
       window.removeEventListener('pointercancel', cancel);
       lessonDragSource.classList.remove('is-dragging');
       ghost?.remove();
+      clearDropPreview();
     };
     window.addEventListener('pointermove', move, { passive: false });
     window.addEventListener('pointerup', finish);

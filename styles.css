@@ -17647,3 +17647,88 @@ body>.lesson-planner-panel{
   .lesson-schedule-block small{font-size:9px}
   .lesson-schedule-block p,.lesson-schedule-block.is-tight p{font-size:10px}
 }
+
+
+/* Planner shelf alignment: books and the New Planner book stay adjacent from the left. */
+.planner-library-grid{
+  display:flex!important;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:flex-start;
+  align-content:flex-start;
+  gap:clamp(16px,1.25vw,24px)!important;
+}
+.planner-library-grid>.planner-book-card,
+.planner-library-grid>.planner-library-create--shelf{
+  flex:0 0 clamp(185px,12vw,225px);
+  width:clamp(185px,12vw,225px)!important;
+  max-width:none!important;
+  justify-self:auto!important;
+}
+@media(max-width:560px){
+  .planner-library-grid{gap:12px!important}
+  .planner-library-grid>.planner-book-card,
+  .planner-library-grid>.planner-library-create--shelf{flex:0 0 calc(50% - 6px);width:calc(50% - 6px)!important}
+}
+
+/* Sidebar lesson creation: explicit add action plus a real draggable lesson-card. */
+.lesson-planner-sidebar .lesson-planner-new{
+  cursor:pointer;
+  background:linear-gradient(145deg,#f7cf69,#e5aa2e);
+  color:#4f3400;
+  border-color:color-mix(in srgb,#d99c20 62%,var(--border));
+  box-shadow:0 7px 16px rgba(107,72,4,.13);
+}
+.lesson-planner-sidebar .lesson-planner-new:active{cursor:pointer}
+.lesson-planner-drag-source{
+  position:relative;
+  width:100%;
+  min-height:76px;
+  padding:11px 12px 11px 16px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,#d99c20 45%,var(--border));
+  border-radius:14px;
+  background:color-mix(in srgb,#f3bd3d 28%,var(--surface-solid));
+  color:var(--text);
+  box-shadow:0 6px 14px rgba(15,23,42,.07);
+  text-align:left;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+}
+.lesson-planner-drag-source::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:6px;
+  background:#f3bd3d;
+}
+.lesson-planner-drag-source:hover{transform:translateY(-1px);border-color:#d7a428;box-shadow:0 9px 20px rgba(15,23,42,.1)}
+.lesson-planner-drag-source:active,.lesson-planner-drag-source.is-dragging{cursor:grabbing}
+.lesson-planner-drag-source.is-dragging{opacity:.52;transform:none}
+.lesson-planner-drag-source__grip{
+  width:28px;height:36px;display:grid;place-items:center;
+  color:color-mix(in srgb,var(--text) 56%,transparent);
+  font-size:21px;line-height:1;letter-spacing:-2px;
+}
+.lesson-planner-drag-source__copy{min-width:0;display:grid;gap:2px}
+.lesson-planner-drag-source__copy small{font-size:9px;font-weight:950;letter-spacing:.11em;color:#9a6b08}
+.lesson-planner-drag-source__copy strong{font-size:14px;line-height:1.15;font-weight:950;color:var(--text)}
+.lesson-planner-drag-source__copy em{font-size:10px;line-height:1.25;font-style:normal;font-weight:700;color:var(--muted)}
+.lesson-planner-new-drag-ghost{min-width:150px;text-align:left}
+.lesson-planner-new-drop-placeholder{
+  display:flex;
+  align-items:flex-start;
+  border-color:#d7a428;
+  background:color-mix(in srgb,#f3bd3d 30%,var(--surface-solid));
+  box-shadow:0 0 0 3px color-mix(in srgb,#f3bd3d 20%,transparent);
+  color:var(--text);
+}
+.lesson-planner-day-column.is-lesson-drop-target{
+  box-shadow:inset 0 0 0 2px color-mix(in srgb,#d7a428 76%,transparent)!important;
+  background-color:color-mix(in srgb,#f3bd3d 6%,transparent)!important;
+}
