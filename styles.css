@@ -18114,3 +18114,38 @@ body>.lesson-planner-panel{
   }
   .lesson-planner-schedule-list{overflow:visible}
 }
+
+
+/* Planner library shared tools: compact, right-aligned, and out of the shelf flow. */
+.planner-library-body{position:relative}
+.planner-library-shortcuts{
+  position:absolute;
+  top:clamp(10px,1.1vw,16px);
+  right:clamp(14px,2vw,32px);
+  z-index:4;
+  width:auto;
+  margin:0;
+  justify-content:flex-end;
+  gap:8px;
+}
+.planner-library-shortcut{
+  min-width:0;
+  min-height:36px;
+  height:36px;
+  padding:0 12px;
+  border-radius:10px;
+  font-size:12px;
+}
+.planner-library-intro{
+  padding-right:clamp(205px,18vw,260px);
+  margin-bottom:clamp(10px,1vw,16px);
+}
+@media(max-width:760px){
+  .planner-library-shortcuts{
+    position:static;
+    width:100%;
+    justify-content:flex-end;
+    margin:0 0 8px;
+  }
+  .planner-library-intro{padding-right:0;margin-bottom:12px}
+}
