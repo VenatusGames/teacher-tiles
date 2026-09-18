@@ -2718,7 +2718,7 @@ function applyMenuView(){
         const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase().replace(/[-‐‑–—]/g,' ');
         return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
       });
-      const basicsOrder=['sticky','draw','textbubble','timer','clock','image','calculator'];
+      const basicsOrder=['sticky','draw','textbubble','richtext','timer','clock','image','calculator'];
       matches.sort((a,b)=>searching
         ? menuSearchRank(a,query)-menuSearchRank(b,query)||(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'',undefined,{sensitivity:'base',numeric:true})
         : category==='basics'
@@ -2827,6 +2827,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({"id": "sticky-ripped", "productId": "tile-skin-sticky-ripped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Ripped-Edge", "description": "A paper note with a naturally torn bottom edge.", "tags": "Sticky Note Ripped-Edge", "released": 22}),
   Object.freeze({"id": "sticky-pinned", "productId": "tile-skin-sticky-pinned", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Pinned", "description": "A glossy red thumbtack pins your note in place.", "tags": "Sticky Note Pinned", "released": 23}),
   Object.freeze({"id": "textbubble-clear", "productId": "tile-skin-textbubble-clear", "tileType": "textbubble", "tileLabel": "Text Bubble", "name": "No Background", "description": "Your text floats directly on the board.", "tags": "Text Bubble No Background", "released": 24}),
+  Object.freeze({"id": "richtext-clear", "productId": "tile-skin-richtext-clear", "tileType": "richtext", "tileLabel": "Rich Text", "name": "No Background", "description": "Your formatted document floats directly on the board with no tile shell.", "tags": "Rich Text No Background transparent clear floating text document", "released": 27}),
   Object.freeze({"id": "clock-digital", "productId": "tile-skin-clock-digital", "tileType": "clock", "tileLabel": "Clock", "name": "Digital Clock", "description": "A bedside clock with a dark casing and glowing digital display.", "tags": "Clock Digital Clock", "released": 25}),
   Object.freeze({"id": "clock-analog-clear", "productId": "tile-skin-clock-analog-clear", "tileType": "clock", "tileLabel": "Clock", "name": "No Background Analog", "description": "A classic round analog clock floating directly on the board.", "tags": "Clock No Background Analog", "released": 26}),
   Object.freeze({id:'dice-clear',productId:'tile-skin-dice-clear',tileType:'dice',tileLabel:'Dice',name:'No Background',description:'Loose dice on the board, with no tile background.',tags:'dice clear transparent floating math tools',released:20}),
