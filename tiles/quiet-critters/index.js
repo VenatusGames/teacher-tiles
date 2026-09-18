@@ -487,11 +487,11 @@
       }
       const roll=Math.random();
       let behavior='idle';
-      if(roll<.70)behavior='idle';
-      else if(roll<.81)behavior='sleep';
-      else if(roll<.89)behavior='sway';
-      else if(roll<.94)behavior='happy';
-      else if(roll<.98)behavior='dance';
+      if(roll<.67)behavior='idle';
+      else if(roll<.78)behavior='sleep';
+      else if(roll<.86)behavior='sway';
+      else if(roll<.91)behavior='happy';
+      else if(roll<.97)behavior='dance';
       else behavior='jump';
       setBehavior(critter,behavior,now);
     }
