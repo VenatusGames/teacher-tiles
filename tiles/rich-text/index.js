@@ -390,16 +390,31 @@
         font.replaceWith(span);
       });
     };
+    const richToggleCommands=new Set(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList']);
     const runCommand=(command,value=null)=>{
       restoreSelection();
-      try{document.execCommand('styleWithCSS',false,true)}catch{}
-      if(command==='fontSizePx'){
+      const isToggle=richToggleCommands.has(command);
+      const expected=isToggle?!commandIsActive(command):null;
+      if(isToggle){
         try{document.execCommand('styleWithCSS',false,false)}catch{}
-        document.execCommand('fontSize',false,'7');
-        convertSizeFonts(Number(value)||16);
+        document.execCommand(command,false,value);
         try{document.execCommand('styleWithCSS',false,true)}catch{}
-      }else document.execCommand(command,false,value);
-      rememberSelection();syncToolbar();markChanged();
+      }else{
+        try{document.execCommand('styleWithCSS',false,true)}catch{}
+        if(command==='fontSizePx'){
+          try{document.execCommand('styleWithCSS',false,false)}catch{}
+          document.execCommand('fontSize',false,'7');
+          convertSizeFonts(Number(value)||16);
+          try{document.execCommand('styleWithCSS',false,true)}catch{}
+        }else document.execCommand(command,false,value);
+      }
+      rememberSelection();
+      if(expected!==null){
+        const button=buttons.find(item=>item.dataset.richCommand===command);
+        button?.classList.toggle('is-active',expected);
+        button?.setAttribute('aria-pressed',String(expected));
+      }
+      markChanged();queueSync();
     };
     const runHighlight=value=>{
       restoreSelection();
@@ -584,6 +599,34 @@
       }
       return '';
     };
+    const hasTextDecoration=(element,kind)=>{
+      for(let node=element;node&&node!==editor;node=node.parentElement){
+        const line=getComputedStyle(node).textDecorationLine||'';
+        if(line.split(/\s+/).includes(kind))return true;
+      }
+      return false;
+    };
+    const commandIsActive=command=>{
+      const element=selectionElement();
+      if(!element)return false;
+      const computed=getComputedStyle(element);
+      if(command==='bold'){
+        const weight=computed.fontWeight;
+        return weight==='bold'||Number.parseInt(weight,10)>=600;
+      }
+      if(command==='italic')return /italic|oblique/.test(computed.fontStyle);
+      if(command==='underline')return hasTextDecoration(element,'underline');
+      if(command==='strikeThrough')return hasTextDecoration(element,'line-through');
+      if(command==='insertUnorderedList')return Boolean(element.closest('ul'));
+      if(command==='insertOrderedList')return Boolean(element.closest('ol'));
+      if(command==='justifyLeft'){
+        const align=(element.closest('h1,h2,h3,blockquote,p,div,li')?getComputedStyle(element.closest('h1,h2,h3,blockquote,p,div,li')).textAlign:computed.textAlign)||'left';
+        return align==='left'||align==='start'||align==='-webkit-auto';
+      }
+      if(command==='justifyCenter')return computed.textAlign==='center';
+      if(command==='justifyRight')return computed.textAlign==='right'||computed.textAlign==='end';
+      try{return document.queryCommandState(command)}catch{return false}
+    };
     const syncToolbar=()=>{
       if(!selectionInEditor())return;
       const element=selectionElement();
@@ -591,7 +634,7 @@
       for(const button of buttons){
         const command=button.dataset.richCommand;
         if(!['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyLeft','justifyCenter','justifyRight'].includes(command))continue;
-        let active=false;try{active=document.queryCommandState(command)}catch{}
+        const active=commandIsActive(command);
         button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));
       }
       const block=blockName(element);blockSelect.value=[...blockSelect.options].some(option=>option.value===block)?block:'p';

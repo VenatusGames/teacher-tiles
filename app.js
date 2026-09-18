@@ -2562,7 +2562,10 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('resize',applyBoardCamera);
 
 
-workspace.addEventListener('contextmenu',e=>{e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r={width:menu.offsetWidth,height:menu.offsetHeight};menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false');keepTileMenuOnScreen()});
+workspace.addEventListener('contextmenu',e=>{
+  if(e.target instanceof Element&&e.target.closest('.richtext-editor.module-text-edit-active'))return;
+  e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r={width:menu.offsetWidth,height:menu.offsetHeight};menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false');keepTileMenuOnScreen();
+});
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
 
 document.addEventListener('pointerdown',e=>{
@@ -3184,7 +3187,7 @@ function setupClassroomTileControls(m){
   });
   m.querySelector('.tile-bg')?.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.tile-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.tile-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.tile-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const toggle=m.querySelector('.tile-settings-toggle'),panel=m.querySelector('.tile-settings-panel');
   if(!toggle||!panel)return;
   const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));m.classList.toggle('has-tile-settings-open',open);if(open)m._positionTileSettings?.();};
@@ -4305,7 +4308,7 @@ function setupTimer(m){
 
 
   m.querySelector('.timer-font')?.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.timer-text')?.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m.querySelector('.timer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
@@ -4382,7 +4385,7 @@ function setupTimer(m){
 
 function setupHourglass(m){window.TeacherTilesInteractiveTimers.setup(m)}
 
-function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='font'&&['dm','space','mono'].includes(choice.value))||(key==='text'&&['red','orange','gold','green','teal','purple','brown'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
+function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='font'&&['dm','space','mono'].includes(choice.value))||(key==='text'&&['cream','red','orange','gold','green','teal','purple','brown'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
 function setupClock(m){
   const skinMode=m.dataset.tileSkin==='clock-analog-clear'?'analog':m.dataset.tileSkin==='clock-digital'?'digital':null;
   const isAnalog=()=>skinMode?skinMode==='analog':m.dataset.clockMode==='analog';
@@ -4415,7 +4418,7 @@ function setupClock(m){
 
   m.querySelector('.clock-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
-  m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const syncModeControls=()=>{
     const analog=isAnalog();
@@ -4607,7 +4610,7 @@ function setupWritingLines(m){
   });
 
   m.querySelector('.writinglines-text').addEventListener('click',()=>{
-    cycleData(m,'text',['dark','soft','blue','rose','white']);
+    cycleData(m,'text',['dark','soft','blue','rose','white','cream']);
   });
 
   resizeHandles.forEach(handle=>{
@@ -4733,7 +4736,7 @@ function setupStopwatch(m){
   });
 
   textBtn?.addEventListener('click',()=>{
-    cycleData(m,'text',['dark','soft','blue','rose','white']);
+    cycleData(m,'text',['dark','soft','blue','rose','white','cream']);
   });
 
   const syncModeControl=()=>{
@@ -5255,7 +5258,7 @@ function setupNoise(m){
 
   m.querySelector('.noise-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.noise-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.noise-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.noise-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const meterBtn=m.querySelector('.noise-meter-color');
   meterBtn.addEventListener('click',()=>{
@@ -5827,7 +5830,7 @@ function setupStarChart(m){
 
   m.querySelector('.starchart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.starchart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.starchart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.starchart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const detachRosterLoader=attachClassRosterLoader(m.querySelector('.starchart-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
   const handleClassesChange=()=>{
@@ -6052,7 +6055,7 @@ function setupClassMeter(m){
 
   m.querySelector('.classmeter-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.classmeter-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.classmeter-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.classmeter-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const detachRosterLoader=attachClassRosterLoader(m.querySelector('.classmeter-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
   const handleClassesChange=()=>{
@@ -6251,7 +6254,7 @@ function setupPrizeBoard(m){
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.prizeScope;render();notify('tab')}));add.addEventListener('click',()=>openEditor());changeClass.addEventListener('click',()=>{activeClassId='';importView.hidden=false;dashboard.hidden=true;render();notify('class')});
   const detach=attachClassRosterLoader(loaderAnchor,(_,roster)=>{setClass(roster.id);notify('class')});
-  m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.prizeboard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.prizeboard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.prizeboard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const ro=new ResizeObserver(syncModuleSize);ro.observe(m);
   const refresh=()=>{if(activeClassId&&!currentRoster())setClass('');else render()};window.addEventListener('teachertiles:classeschange',refresh);window.addEventListener('teachertiles:starchartchange',refresh);window.addEventListener('teachertiles:classmeterchange',refresh);window.addEventListener('teachertiles:collectionchange',refresh);window.addEventListener('teachertiles:punchcardchange',refresh);window.addEventListener('teachertiles:racerchange',refresh);
   m._boardGetState=()=>({activeClassId,scope,prizes:prizes.map(normalizePrize)});m._boardSetState=state=>{if(!state)return;scope=state.scope==='class'?'class':'student';prizes=Array.isArray(state.prizes)?state.prizes.map(normalizePrize):[];setClass(String(state.activeClassId||''));render()};
@@ -6304,7 +6307,7 @@ function setupPbisConsole(m){
   const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('pbis-console-class')});
   m.querySelector('.pbisconsole-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.pbisconsole-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.pbisconsole-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
   ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
   m._boardGetState=()=>({activeClassId,student,view});
@@ -6402,7 +6405,7 @@ function setupRacer(m){
   const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('racer-class')});
   m.querySelector('.racer-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.racer-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.racer-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.racer-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
   ['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
   const ro=new ResizeObserver(renderTrack);ro.observe(stage);
@@ -6495,7 +6498,7 @@ function setupPunchcards(m){
   const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('punchcard-class')});
   m.querySelector('.punchcard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.punchcard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.punchcard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.punchcard-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
   ['teachertiles:classeschange','teachertiles:punchcardchange'].forEach(name=>window.addEventListener(name,refresh));
   m._boardGetState=()=>({activeClassId,scope,student});
@@ -7201,7 +7204,7 @@ function setupLunchCount(m){
 
   m.querySelector('.lunchcount-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.lunchcount-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.lunchcount-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.lunchcount-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.lunchcount-name-entry'),rosterNames=>{
     students=normalizeRosterNames(rosterNames);
@@ -7618,7 +7621,7 @@ function setupVoting(m){
 
   m.querySelector('.voting-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.voting-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.voting-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.voting-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.voting-name-entry'),rosterNames=>{
     students=normalizeRosterNames(rosterNames);
@@ -7870,7 +7873,7 @@ function setupGroupMaker(m){
 
   bg.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  textColor.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  textColor.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   renderNameList();
   updateCount();
@@ -8554,7 +8557,7 @@ function setupBoombox(m){
 }
 
 function setupTextBubble(m){
-  const text=m.querySelector('.textbubble-text');m.querySelector('.textbubble-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.textbubble-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);requestAnimationFrame(()=>text.dispatchEvent(new Event('input')))});m.querySelector('.textbubble-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));const cleanup=fitEditableText(text,m,'--bubble-size');m._cleanup=cleanup
+  const text=m.querySelector('.textbubble-text');m.querySelector('.textbubble-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.textbubble-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);requestAnimationFrame(()=>text.dispatchEvent(new Event('input')))});m.querySelector('.textbubble-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));const cleanup=fitEditableText(text,m,'--bubble-size');m._cleanup=cleanup
 }
 
 function setupDictionary(m){
@@ -8853,7 +8856,7 @@ function setupDictionary(m){
   });
   m.querySelector('.dictionary-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.dictionary-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.dictionary-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.dictionary-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({query:input.value,entries});
   m._boardSetState=state=>{
@@ -9177,7 +9180,7 @@ function setupTranslation(m){
   });
   m.querySelector('.translation-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.translation-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.translation-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.translation-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   renderOutput('');
   updateCount();
@@ -9439,7 +9442,7 @@ function setupAttendance(m){
   });
   m.querySelector('.attendance-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.attendance-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.attendance-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.attendance-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const sceneSource=sceneArt[m.dataset.tileSkin||'']||'';
   if(worldImage){worldImage.src=sceneSource;worldImage.hidden=!sceneSource}
@@ -9703,7 +9706,7 @@ function setupLiveCaption(m){
   captionResizeObserver.observe(m.querySelector('.livecaption-current'));
   m.querySelector('.livecaption-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.livecaption-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.livecaption-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   renderHistory();
   setListeningUI(false);
   m._boardGetState=()=>({title:tileTitle.get(),history:[...history]});
@@ -9837,7 +9840,7 @@ function setupVoiceMemo(m){
   list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   m.querySelector('.voicememo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.voicememo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.voicememo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.voicememo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   render();
   m._boardGetState=()=>({title:tileTitle.get(),memos:memos.map(memo=>({...memo}))});
   m._boardSetState=state=>{tileTitle.set(state?.title);memos=Array.isArray(state?.memos)?state.memos.filter(memo=>typeof memo?.dataUrl==='string'&&memo.dataUrl.startsWith('data:audio/')).slice(0,5):[];render()};
@@ -10137,7 +10140,7 @@ function setupPhotobooth(m){
   list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   m.querySelector('.photobooth-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.photobooth-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.photobooth-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.photobooth-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   setFilter(filter);renderPhotos();
   m._boardGetState=()=>({title:tileTitle.get(),filter,photos:[...photos]});
   m._boardSetState=saved=>{tileTitle.set(saved?.title);photos=Array.isArray(saved?.photos)?saved.photos.filter(src=>typeof src==='string'&&src.startsWith('data:image/')).slice(0,8):[];setFilter(saved?.filter);renderPhotos()};
@@ -10186,7 +10189,7 @@ function setupMirror(m){
   placeholder?.addEventListener('click',start);
   m.querySelector('.mirror-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.mirror-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.mirror-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.mirror-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m._boardGetState=()=>({title:tileTitle.get()});
   m._boardSetState=saved=>tileTitle.set(saved?.title);
   m._deactivate=stop;
@@ -10448,7 +10451,7 @@ function setupWeather(m){
   segments.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   m.querySelector('.weather-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.weather-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.weather-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.weather-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   render();
   m._boardGetState=()=>({title:tileTitle.get(),unit,locations:locations.map(location=>location.isLocal?{name:location.name,isLocal:true}:{name:location.name,lat:location.lat,lon:location.lon,isLocal:false})});
   m._boardSetState=saved=>{
@@ -10586,7 +10589,7 @@ function setupChoiceWheel(m,{items}){
   });
   m.querySelector('.choicewheel-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.choicewheel-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.choicewheel-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   renderSelection(0);
   const prior=m._cleanup;
   m._cleanup=()=>{wheelResizeObserver?.disconnect();if(resizeFrame)cancelAnimationFrame(resizeFrame);prior?.()};
@@ -10667,7 +10670,7 @@ function setupTemperature(m){
   m.querySelectorAll('[data-temperature-mode-choice]').forEach(button=>button.addEventListener('click',()=>{mode=['number','vertical','horizontal'].includes(button.dataset.temperatureModeChoice)?button.dataset.temperatureModeChoice:'number';render();notifyBoardChanged('temperature-mode')}));
   m.querySelector('.temperature-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.temperature-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.temperature-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.temperature-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   render();
   m._boardGetState=()=>({title:tileTitle.get(),unit,mode,location:location?.isLocal?{name:location.name,isLocal:true}:location?{name:location.name,lat:location.lat,lon:location.lon,isLocal:false}:null});
   m._boardSetState=saved=>{
@@ -10873,7 +10876,7 @@ function setupWorldMap(m){
   });
   m.querySelector('.worldmap-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   applyZoom();
   name.textContent='Loading world map…';
   fetch('assets/world-countries-110m.json',{signal:controller.signal}).then(response=>{if(!response.ok)throw new Error('map-data');return response.json()}).then(topology=>{
@@ -10946,7 +10949,7 @@ function setupCompass(m){
   });
   m.querySelector('.compass-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.compass-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.compass-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.compass-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   setHeading(0,{notify:false});setPart('needle',{notify:false});
   m._boardGetState=()=>({title:tileTitle.get(),heading,part});
   m._boardSetState=state=>{tileTitle.set(state?.title);setHeading(state?.heading||0,{notify:false});setPart(state?.part||'needle',{notify:false})};
@@ -11024,7 +11027,7 @@ function setupShapes(m){
 
   m.querySelector('.shapes-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.shapes-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.shapes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.shapes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m.querySelector('.shapes-color').addEventListener('click',()=>cycleData(m,'shapeColor',['blue','green','amber','rose','purple','teal']));
 
   setShape(m.dataset.shape,{animate:false});
@@ -11158,7 +11161,7 @@ function setupDate(m){
     cycleData(m,'font',FONT_OPTIONS);
     fit();
   });
-  m.querySelector('.date-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.date-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const observer=new ResizeObserver(fit);
   observer.observe(m);
@@ -11505,7 +11508,7 @@ function setupCalendar(m){
 
   m.querySelector('.calendar-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.calendar-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.calendar-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.calendar-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   render();
 }
@@ -11760,7 +11763,7 @@ function setupProgressBar(m){
 
   m.querySelector('.progress-bar-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.progress-bar-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m.querySelector('.progress-bar-color').addEventListener('click',()=>cycleData(m,'barColor',colors));
 
   setEndButton.addEventListener('click',start);
@@ -11858,7 +11861,7 @@ function setupVisualSchedule(m){
 
   m.querySelector('.visual-schedule-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.visual-schedule-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.visual-schedule-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.visual-schedule-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const updateSummary=()=>{
     const rows=[...list.querySelectorAll('.visual-schedule-segment')];
@@ -12228,7 +12231,7 @@ function setupLessonPlannerTile(m){
   m.querySelector('.lesson-plan-tile__edit').addEventListener('click',()=>{if(window.TeacherTilesLessonPlanner?.open)window.TeacherTilesLessonPlanner.open();else document.getElementById('profile-lesson-planner-button')?.click()});
   m.querySelector('.lesson-plan-tile__bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.lesson-plan-tile__font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.lesson-plan-tile__text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.lesson-plan-tile__text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const handleChange=()=>render();window.addEventListener('teachertiles:lessonplannerchange',handleChange);
   m._refreshLessonPlans=render;
   const dateTimer=setInterval(render,60000);
@@ -12450,7 +12453,7 @@ function setupTableMaker(m){
   });
   m.querySelector('.table-maker-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.table-maker-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.table-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.table-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m._boardGetState=()=>({chartType,editorOpen,expandedWidth:Math.round(Number(expandedWidth)||m.offsetWidth),expandedHeight:Math.round(Number(expandedHeight)||m.offsetHeight),rows:rows.map(row=>({...row}))});
   m._boardSetState=state=>{
     rows=normalizeRows(state?.rows);if(!rows.length&&Array.isArray(state?.rows))rows=[];
@@ -12530,7 +12533,7 @@ function setupTallyChart(m){
   resetButton.addEventListener('click',()=>{rows.forEach(row=>row.count=0);renderRows({animate:false});notifyBoardChanged('tally-reset')});
   m.querySelector('.tally-chart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.tally-chart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.tally-chart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.tally-chart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   m._boardGetState=()=>({view,sort,rows:rows.map(row=>({...row}))});
   m._boardSetState=state=>{rows=normalizeRows(state?.rows);view=state?.view==='bars'?'bars':'tallies';sort=state?.sort==='highest'?'highest':'added';m.dataset.tallyView=view;m.dataset.tallySort=sort;viewButtons.forEach(button=>{const active=button.dataset.tallyView===view;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active))});sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows()};
   viewButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tallyView===view)));sortButton.setAttribute('aria-pressed','false');renderRows();
@@ -12539,7 +12542,7 @@ function setupTallyChart(m){
 function setupTodo(m){
   const list=m.querySelector('.todo-list'),add=m.querySelector('.todo-add');
   add.textContent='+';add.setAttribute('aria-label','Add step');list.appendChild(add);
-  m.querySelector('.todo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.todo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.todo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.todo-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));m.querySelector('.todo-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));m.querySelector('.todo-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const addRow=(value='New step',checked=false,focus=true,afterRow=null)=>{
     const row=document.createElement('div');
     row.className='todo-row';
@@ -12712,7 +12715,12 @@ const savedTheme=localStorage.getItem(THEME_STORAGE_KEY);
 applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persist:false});
 
 fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
-document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶';syncTileFullscreenControls();syncPinnedTilesToCamera()});
+document.addEventListener('fullscreenchange',()=>{
+  const active=Boolean(document.fullscreenElement);
+  fullscreenToggle.classList.toggle('is-fullscreen-active',active);
+  fullscreenToggle.setAttribute('aria-label',active?'Exit fullscreen':'Enter fullscreen');
+  syncTileFullscreenControls();syncPinnedTilesToCamera();
+});
 window.addEventListener('resize',()=>{document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement||isTilePinned(m))return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`});syncPinnedTilesToCamera()});
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
@@ -13581,7 +13589,7 @@ function setupCVCWord(m){
     cycleData(m,'font',FONT_OPTIONS);
     fitCurrentWord();
   });
-  m.querySelector('.cvcword-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.cvcword-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{
     if(!currentWord)return;
@@ -13826,7 +13834,7 @@ function setupHighFrequencyWords(m){
     cycleData(m,'font',FONT_OPTIONS);
     fitCurrentWord();
   });
-  m.querySelector('.highfrequency-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.highfrequency-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{
     if(currentWord)fitCurrentWord();
@@ -13984,7 +13992,7 @@ function setupABC(m){
   modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
 
   m.querySelector('.abc-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.abc-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.abc-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{
     if(current)fitCurrent();
@@ -14101,7 +14109,7 @@ function setupNumberFlashcards(m){
   nextButton.addEventListener('click',showNext);
   modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
   m.querySelector('.number-flashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.number-flashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.number-flashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{if(current)fitCurrent()});
   ro.observe(card);
@@ -14510,7 +14518,7 @@ function setupCustomFlashcards(m){
     cycleData(m,'font',FONT_OPTIONS);
     if(currentCard())applyCardContent(currentCard());
   });
-  m.querySelector('.customflashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.customflashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{
     cancelAnimationFrame(resizeFrame);
@@ -14818,7 +14826,7 @@ function setupRuler(m){
 
   m.querySelector('.ruler-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.ruler-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.ruler-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.ruler-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const rulerResizeObserver=new ResizeObserver(renderScale);
   rulerResizeObserver.observe(face);
@@ -14993,7 +15001,7 @@ function setupCalculator(m){
 
   m.querySelector('.calculator-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.calculator-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.calculator-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.calculator-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({expression,justEvaluated});
   m._boardSetState=state=>{
@@ -15193,7 +15201,7 @@ function setupGrapher(m){
 
   m.querySelector('.grapher-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.grapher-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.grapher-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.grapher-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({range:{...range},points:points.map(point=>({...point})),equation});
   m._boardSetState=state=>{
@@ -15526,7 +15534,7 @@ function setupMoney(m){
 
   m.querySelector('.money-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.money-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.money-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.money-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const ro=new ResizeObserver(()=>{
     pieces.forEach(piece=>{
@@ -15693,7 +15701,7 @@ function setupPatternMaker(m){
   clearButton.addEventListener('click',()=>{rows=rows.map(()=>Array(length).fill(''));renderBoard();notify('clear')});
   m.querySelector('.pattern-maker-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.pattern-maker-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.pattern-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.pattern-maker-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({length,rows:rows.map(row=>[...row]),selectedColor,patternType:typeSelect.value});
   m._boardSetState=state=>{
@@ -15935,7 +15943,7 @@ function setupShapeManipulatives(m){
   clearButton.addEventListener('click',()=>{pieces=[];selectedId=0;renderPieces();notify('clear')});
   m.querySelector('.shape-manipulatives-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.shape-manipulatives-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.shape-manipulatives-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.shape-manipulatives-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const ro=new ResizeObserver(()=>{pieces.forEach(clampPiece);renderPieces()});ro.observe(workspaceEl);
   m._boardGetState=()=>({pieces:pieces.map(piece=>({...piece}))});
   m._boardSetState=state=>{
@@ -16283,7 +16291,7 @@ function setupNumberLine(m){
 
   m.querySelector('.numberline-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.numberline-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.numberline-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.numberline-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({start,end,valueA,valueB,activePoint});
   m._boardSetState=state=>{
@@ -16370,7 +16378,7 @@ function setupHundredsChart(m){
 
   m.querySelector('.hundreds-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.hundreds-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.hundreds-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.hundreds-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({hidden:[...hidden],highlight});
   m._boardSetState=state=>{
@@ -16566,7 +16574,7 @@ function setupTenFrames(m){
 
   m.querySelector('.tenframes-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.tenframes-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.tenframes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white']));
+  m.querySelector('.tenframes-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   m._boardGetState=()=>({frameCount,placements:[...placements]});
   m._boardSetState=state=>{

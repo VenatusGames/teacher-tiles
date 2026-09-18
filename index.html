@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-pin-focus-stack-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-richtext-toggle-context-icons-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-settings-popovers-1">
-  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260918-pin-focus-stack-1">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260918-richtext-toggle-context-icons-1">
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
@@ -111,7 +111,7 @@
       <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.5" r="3.25"/><path d="M3 20v-1.5a6 6 0 0 1 12 0V20M19 7v6m-3-3h6"/></svg>
       <span class="upcoming-control__tooltip"><strong>Collaborate</strong><small>Coming soon</small></span>
     </button>
-    <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Toggle fullscreen">⛶<span class="upcoming-control__tooltip"><strong data-i18n="top.fullscreen">Fullscreen</strong></span></button>
+    <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Enter fullscreen"><svg class="workspace-fullscreen-icon workspace-fullscreen-icon--enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg><svg class="workspace-fullscreen-icon workspace-fullscreen-icon--exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M15 20v-5h5M9 20v-5H4"/></svg><span class="upcoming-control__tooltip"><strong data-i18n="top.fullscreen">Fullscreen</strong></span></button>
     <button id="settings-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open settings" aria-expanded="false">
       <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
@@ -3922,7 +3922,7 @@
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
   <script src="tiles/shared/settings.js?v=20260912-1"></script>
 <script src="tiles/shared/skins.js?v=20260913-product-details-1"></script>
-<script src="tiles/shared/appearance.js?v=20260917-sticky-color-icon-1"></script>
+<script src="tiles/shared/appearance.js?v=20260918-cream-text-1"></script>
   <script src="tiles/visual-directions/index.js?v=20260913-readable-directions-1"></script>
   <script src="tiles/color-picker/index.js?v=20260912-1"></script>
 <script src="tiles/rainbow/index.js?v=20260912-1"></script>
@@ -3930,8 +3930,8 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
-<script src="tiles/rich-text/index.js?v=20260918-spell-pin-1"></script>
-<script src="app.js?v=20260918-pin-focus-stack-1"></script>
+<script src="tiles/rich-text/index.js?v=20260918-toggle-context-1"></script>
+<script src="app.js?v=20260918-richtext-toggle-context-icons-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
