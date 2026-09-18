@@ -1571,11 +1571,12 @@
       if (!column || !canvas.contains(column)) return;
       const dropDate = column.dataset.lessonDropDate;
       const date = fromDateKey(dropDate);
-      const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(y)));
+      const dragLessonDuration = 10;
+      const start = Math.max(DAY_START, Math.min(DAY_END - dragLessonDuration, column._minuteFromClientY(y)));
       const section = scheduleForDate(date)
         .map(item => ({ item, start: minutes(item.start), end: minutes(item.end) }))
         .find(item => start >= item.start && start < item.end) || null;
-      const end = section ? Math.max(start + 5, Math.min(section.end, start + 60)) : Math.min(DAY_END, start + 60);
+      const end = start + dragLessonDuration;
       target = column;
       target.classList.add('is-lesson-drop-target');
       placement = { column, date, dropDate, start, end, section };
