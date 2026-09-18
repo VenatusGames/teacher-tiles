@@ -381,17 +381,8 @@
     createPlannerButton.setAttribute('aria-disabled', String(createPlannerButton.disabled));
     createPlannerButton.title = createPlannerButton.disabled ? `Planner limit reached (${limit})` : 'Create planner';
     libraryGrid.replaceChildren();
-
-    if (!planners.length) {
-      const empty = make('section', 'planner-library-empty');
-      empty.innerHTML = '<span aria-hidden="true">＋</span><h3>Create your first planner</h3><p>Make a separate lesson-planning book for a class, subject, or school year.</p>';
-      const add = make('button', 'planner-library-empty__create', 'Create planner');
-      add.type = 'button';
-      add.addEventListener('click', () => createPlannerButton.click());
-      empty.append(add);
-      libraryGrid.append(empty);
-      return;
-    }
+    createPlannerButton.classList.add('planner-library-create--shelf');
+    createPlannerButton.innerHTML = '<span aria-hidden="true">＋</span><strong>New planner</strong>';
 
     planners.forEach(planner => {
       const color = plannerColor(planner);
@@ -505,6 +496,7 @@
       card.append(open, customize, settings, colorPanel, settingsPanel);
       libraryGrid.append(card);
     });
+    libraryGrid.append(createPlannerButton);
   }
 
   function beginPlannerRename(card, planner) {
@@ -751,10 +743,17 @@
     editingTemplateId = '';
   }
 
-  function openScheduling() {
+  function openScheduling(preset = null) {
     if (!activePlanner()) return;
     closeTemplates();
     resetScheduleForm();
+    if (preset) {
+      schedulingStart.value = preset.start || schedulingStart.value;
+      schedulingEnd.value = preset.end || schedulingEnd.value;
+      schedulingRepeat.value = preset.repeat || 'weekly';
+      schedulingWeekday.value = String(preset.weekday ?? 1);
+      syncScheduleRepeatUi();
+    }
     renderSchedulingList();
     schedulingPanel.hidden = false;
     schedulingPanel.setAttribute('aria-hidden', 'false');
@@ -1015,15 +1014,18 @@
     body.addEventListener('pointerdown', event => {
       if (event.button !== 0) return;
       if (event.target.closest('.lesson-schedule-block,.lesson-block-delete,button,input,textarea,select,[contenteditable="true"]')) return;
-      event.preventDefault();
       const startY = event.clientY;
       const startScrollTop = canvas.scrollTop;
       let moved = false;
-      body.classList.add('is-panning');
       const move = moveEvent => {
         if (moveEvent.pointerId !== event.pointerId) return;
         const delta = moveEvent.clientY - startY;
-        if (Math.abs(delta) > 2) moved = true;
+        if (!moved && Math.abs(delta) > 3) {
+          moved = true;
+          body.classList.add('is-panning');
+        }
+        if (!moved) return;
+        moveEvent.preventDefault();
         canvas.scrollTop = startScrollTop - delta;
       };
       const finish = finishEvent => {
@@ -1042,7 +1044,7 @@
           canvas.addEventListener('click', swallow, { capture: true, once: true });
         }
       };
-      window.addEventListener('pointermove', move, { passive: true });
+      window.addEventListener('pointermove', move, { passive: false });
       window.addEventListener('pointerup', finish);
       window.addEventListener('pointercancel', finish);
     });
@@ -1074,9 +1076,6 @@
         requestExpansion(section.end, scheduleVisualMinimum(duration) - available);
       });
 
-      const preview = make('div', 'lesson-planner-add-preview');
-      preview.setAttribute('aria-hidden', 'true');
-      column.append(preview);
       body.append(column);
 
       scheduleGeometry.forEach(section => {
@@ -1109,7 +1108,7 @@
         lessonRecords.push({ element, block, start, end, containingSchedule, provisionalTop });
       });
 
-      dayRecords.push({ date, column, scheduleGeometry, preview, nowLine: null });
+      dayRecords.push({ date, column, scheduleGeometry, nowLine: null });
     });
 
     /* Measure every lesson at its real rendered width. If a short lesson needs more
@@ -1160,7 +1159,7 @@
     }
 
     dayRecords.forEach(record => {
-      const { date, column, scheduleGeometry, preview } = record;
+      const { date, column, scheduleGeometry } = record;
       column._timelineYForMinute = timelineY;
       column._minuteFromClientY = clientY => {
         const rect = column.getBoundingClientRect();
@@ -1175,20 +1174,21 @@
         const boundedEnd = Math.max(boundedStart + 5, Math.min(section.end, boundedStart + 60));
         return { start: boundedStart, end: boundedEnd, section };
       };
-      column.addEventListener('pointermove', event => {
-        const show = event.target === column && !event.buttons && event.pointerType !== 'touch' && !cancelLessonDrag;
-        preview.classList.toggle('is-visible', show);
-        if (!show) return;
-        const range = lessonRangeAtPointer(event);
-        preview.style.top = `${timelineY(range.start)}px`;
-        preview.style.height = `${Math.max(range.section ? 34 : 30, timelineY(range.end) - timelineY(range.start))}px`;
-        preview.classList.toggle('is-in-schedule', Boolean(range.section));
-        preview.textContent = range.section
-          ? `Right-click · ${range.section.item.label}`
-          : `Right-click · Add lesson · ${timeLabel(timeValue(range.start))}`;
+      column.addEventListener('dblclick', event => {
+        if (event.target !== column) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(event.clientY)));
+        const end = Math.min(DAY_END, start + 60);
+        selectedDate = atNoon(date);
+        openScheduling({
+          start: timeValue(start),
+          end: timeValue(end),
+          repeat: 'weekly',
+          weekday: date.getDay()
+        });
       });
-      column.addEventListener('pointerleave', () => preview.classList.remove('is-visible'));
-      column.addEventListener('pointerdown', () => preview.classList.remove('is-visible'));
+
       column.addEventListener('contextmenu', event => {
         if (event.target !== column) return;
         event.preventDefault();
@@ -1530,7 +1530,73 @@
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
   document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); view = 'day'; renderAll({ autoScrollTimeline: true }); });
-  document.getElementById('lesson-planner-new').addEventListener('click', () => openEditor());
+  const lessonDragSource = document.getElementById('lesson-planner-new');
+  lessonDragSource.addEventListener('click', event => event.preventDefault());
+  lessonDragSource.addEventListener('pointerdown', event => {
+    if (event.button !== 0 || (view !== 'day' && view !== 'week')) return;
+    const originX = event.clientX;
+    const originY = event.clientY;
+    let x = originX;
+    let y = originY;
+    let dragging = false;
+    let ghost = null;
+    const move = moveEvent => {
+      if (moveEvent.pointerId !== event.pointerId) return;
+      x = moveEvent.clientX;
+      y = moveEvent.clientY;
+      if (!dragging && Math.hypot(x - originX, y - originY) >= 5) {
+        dragging = true;
+        lessonDragSource.classList.add('is-dragging');
+        ghost = make('div', 'lesson-planner-new-drag-ghost', 'Lesson block');
+        ghost.setAttribute('aria-hidden', 'true');
+        document.body.append(ghost);
+      }
+      if (!dragging) return;
+      moveEvent.preventDefault();
+      const bounds = canvas.getBoundingClientRect();
+      if (y < bounds.top + 36 && y >= bounds.top) canvas.scrollTop -= 12;
+      else if (y > bounds.bottom - 36 && y <= bounds.bottom) canvas.scrollTop += 12;
+      ghost.style.left = `${x + 14}px`;
+      ghost.style.top = `${y + 14}px`;
+    };
+    const finish = finishEvent => {
+      if (finishEvent.pointerId !== event.pointerId) return;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', cancel);
+      lessonDragSource.classList.remove('is-dragging');
+      ghost?.remove();
+      if (!dragging) return;
+      const column = document.elementFromPoint(finishEvent.clientX, finishEvent.clientY)?.closest('.lesson-planner-day-column');
+      if (!column || !canvas.contains(column)) return;
+      const dropDate = column.dataset.lessonDropDate;
+      const date = fromDateKey(dropDate);
+      const start = Math.max(DAY_START, Math.min(DAY_END - 5, column._minuteFromClientY(finishEvent.clientY)));
+      const section = scheduleForDate(date)
+        .map(item => ({ item, start: minutes(item.start), end: minutes(item.end) }))
+        .find(item => start >= item.start && start < item.end) || null;
+      const end = section ? Math.max(start + 5, Math.min(section.end, start + 60)) : Math.min(DAY_END, start + 60);
+      selectedDate = atNoon(date);
+      openEditor(null, {
+        date: dropDate,
+        start: timeValue(start),
+        end: timeValue(end),
+        scheduleId: section?.item.id || '',
+        color: section?.item.color || COLORS[0].id
+      });
+    };
+    const cancel = cancelEvent => {
+      if (cancelEvent.pointerId != null && cancelEvent.pointerId !== event.pointerId) return;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', cancel);
+      lessonDragSource.classList.remove('is-dragging');
+      ghost?.remove();
+    };
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', finish);
+    window.addEventListener('pointercancel', cancel);
+  });
   viewTabs.forEach(button => button.addEventListener('click', () => setView(button.dataset.plannerView)));
   zoomInput.addEventListener('input', () => setView(VIEWS[Number(zoomInput.value)] || 'week'));
   document.getElementById('lesson-planner-editor-close').addEventListener('click', closeEditor);
