@@ -16279,3 +16279,17 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   visibility:hidden!important;
   pointer-events:none!important;
 }
+
+
+/* The universal top-right option cluster keeps its position; overlapping tile-specific controls yield to it. */
+.module .is-shifted-for-tile-options{
+  translate:var(--tile-option-shift-x,0px) var(--tile-option-shift-y,0px)!important;
+  transition:translate .15s ease,opacity .15s ease,transform .15s ease;
+}
+.module.is-tile-pinned{
+  transform-origin:center center!important;
+  backface-visibility:hidden;
+}
+@media(prefers-reduced-motion:reduce){
+  .module .is-shifted-for-tile-options{transition:none}
+}

@@ -1136,6 +1136,7 @@ let appPreferences=readStoredAppPreferences();
 function applyTileDeleteVisibilityPreference(){
   document.body?.classList.remove('tile-delete-always-visible');
   document.body?.classList.toggle('tile-options-always-visible',Boolean(appPreferences.alwaysShowTileDeleteButtons));
+  requestAnimationFrame(()=>document.querySelectorAll('.workspace .module').forEach(module=>layoutTileOptionControls(module)));
 }
 applyTileDeleteVisibilityPreference();
 let uiSfxMuted=appPreferences.uiMuted;
@@ -2076,12 +2077,20 @@ function syncTilePinControl(m){
   button.setAttribute('aria-label',pinned?'Unpin tile from camera':'Pin tile to camera');
   button.title=pinned?'Unpin tile':'Pin tile';
 }
-function capturePinnedTileScreenAnchor(m,{baseScale=boardCamera.scale}={}){
+function snapScreenCoordinate(value){
+  const pixelRatio=window.devicePixelRatio||1;
+  return Math.round(Number(value)*pixelRatio)/pixelRatio;
+}
+function capturePinnedTileScreenAnchor(m){
   if(!m?.isConnected)return;
   const rect=m.getBoundingClientRect();
-  m.dataset.pinScreenX=String(rect.left+rect.width/2);
-  m.dataset.pinScreenY=String(rect.top+rect.height/2);
-  m.dataset.pinBaseScale=String(Math.max(.05,Number(baseScale)||boardCamera.scale||1));
+  m.dataset.pinScreenX=String(snapScreenCoordinate(rect.left+rect.width/2));
+  m.dataset.pinScreenY=String(snapScreenCoordinate(rect.top+rect.height/2));
+}
+function moduleViewportScale(m){
+  if(!m)return Math.max(.05,boardCamera.scale||1);
+  if(document.fullscreenElement===m||isTilePinned(m))return 1;
+  return Math.max(.05,boardCamera.scale||1);
 }
 function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
   if(!m?.isConnected)return;
@@ -2096,10 +2105,9 @@ function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
     screenX=Number(m.dataset.pinScreenX);screenY=Number(m.dataset.pinScreenY);
   }
   const currentScale=Math.max(.05,boardCamera.scale||1);
-  const baseScale=Math.max(.05,Number(m.dataset.pinBaseScale)||currentScale);
   m.style.left=`${(screenX-rendered.x)/currentScale-m.offsetWidth/2}px`;
   m.style.top=`${(screenY-rendered.y)/currentScale-m.offsetHeight/2}px`;
-  m.style.scale=String(baseScale/currentScale);
+  m.style.scale=String(1/currentScale);
   syncTilePinControl(m);
 }
 function syncPinnedTilesToCamera(rendered=renderedBoardCameraOffset()){
@@ -2117,9 +2125,9 @@ function setTilePinned(m,pinned){
   if(next){
     clearSnapGroupMember(m,{notify:false});
     m.dataset.tilePinned='true';
-    m.dataset.pinScreenX=String(screenX);
-    m.dataset.pinScreenY=String(screenY);
-    m.dataset.pinBaseScale=String(Math.max(.05,boardCamera.scale||1));
+    m.dataset.pinScreenX=String(snapScreenCoordinate(screenX));
+    m.dataset.pinScreenY=String(snapScreenCoordinate(screenY));
+    delete m.dataset.pinBaseScale;
     bringToFront(m);
     syncPinnedTileToCamera(m,rendered);
   }else{
@@ -3505,7 +3513,7 @@ function isInteractiveModuleTarget(target,m){
   if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
-    if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='grab'||cursor==='grabbing'||cursor==='not-allowed'||cursor.includes('resize'))return true;
+    if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='not-allowed'||cursor.includes('resize'))return true;
   }
   return false;
 }
@@ -3522,51 +3530,109 @@ const TILE_FULLSCREEN_EXIT_ICON='<svg class="module-fullscreen-icon module-fulls
 const TILE_PIN_OFF_ICON='<svg class="module-pin-icon module-pin-icon--off" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l-1 5 3 3v2H6v-2l3-3-1-5Z"/><path d="M12 14v6"/></svg>';
 const TILE_PIN_ON_ICON='<svg class="module-pin-icon module-pin-icon--on" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l-1 5 3 3v2H6v-2l3-3-1-5Z" fill="currentColor"/><path d="M12 14v6"/></svg>';
 
-function tileOptionImportantRects(m){
+function tileOptionImportantElements(m){
   const selector='button,input,select,textarea,[contenteditable],[role="button"],[role="slider"],[role="textbox"],iframe,audio,video,canvas,a';
   return[...m.querySelectorAll(selector)].filter(el=>{
     if(el.matches('.module-delete,.module-fullscreen,.module-pin,.resize-handle,.module-drag-handle')||el.closest('.module-delete,.module-fullscreen,.module-pin'))return false;
-    const style=getComputedStyle(el);if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
-    const rect=el.getBoundingClientRect();return rect.width>2&&rect.height>2;
-  }).map(el=>el.getBoundingClientRect());
+    const style=getComputedStyle(el);
+    if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+    const rect=el.getBoundingClientRect();
+    return rect.width>2&&rect.height>2;
+  });
 }
 function rectsOverlap(a,b,pad=4){return a.left<b.right+pad&&a.right>b.left-pad&&a.top<b.bottom+pad&&a.bottom>b.top-pad}
+function clearTileOptionObstructionShift(m){
+  m?.querySelectorAll('.is-shifted-for-tile-options').forEach(el=>{
+    el.classList.remove('is-shifted-for-tile-options');
+    el.style.removeProperty('--tile-option-shift-x');
+    el.style.removeProperty('--tile-option-shift-y');
+  });
+}
+function tileOptionsAreVisible(m){
+  return Boolean(
+    document.body?.classList.contains('tile-options-always-visible')||
+    m?.classList.contains('is-tile-options-hotzone')||
+    m?.querySelector(':scope>.module-delete:focus-visible,:scope>.module-fullscreen:focus-visible,:scope>.module-pin:focus-visible')
+  );
+}
+function shiftTileControlsAwayFromOptions(m){
+  clearTileOptionObstructionShift(m);
+  if(!m?.isConnected||!tileOptionsAreVisible(m)||document.fullscreenElement===m)return;
+
+  const options=[
+    m.querySelector(':scope>.module-delete'),
+    m.querySelector(':scope>.module-fullscreen'),
+    m.querySelector(':scope>.module-pin')
+  ].filter(Boolean);
+  if(options.length<3)return;
+
+  const optionRects=options.map(button=>button.getBoundingClientRect());
+  const cluster={
+    left:Math.min(...optionRects.map(rect=>rect.left))-5,
+    top:Math.min(...optionRects.map(rect=>rect.top))-5,
+    right:Math.max(...optionRects.map(rect=>rect.right))+5,
+    bottom:Math.max(...optionRects.map(rect=>rect.bottom))+5
+  };
+  const candidates=tileOptionImportantElements(m);
+  const overlapping=candidates.filter(el=>rectsOverlap(el.getBoundingClientRect(),cluster,2));
+  if(!overlapping.length)return;
+
+  const moduleRect=m.getBoundingClientRect();
+  const gap=7;
+  const rects=overlapping.map(el=>el.getBoundingClientRect());
+  const groupLeft=Math.min(...rects.map(rect=>rect.left));
+  const groupRight=Math.max(...rects.map(rect=>rect.right));
+  const groupTop=Math.min(...rects.map(rect=>rect.top));
+  const groupBottom=Math.max(...rects.map(rect=>rect.bottom));
+
+  // First choice: move the tile's own controls left as a group, preserving their spacing.
+  let dx=cluster.left-gap-groupRight;
+  let dy=0;
+  if(groupLeft+dx<moduleRect.left+5){
+    // Very wide controls that cannot fit to the left move below the fixed corner cluster instead.
+    dx=0;
+    dy=cluster.bottom+gap-groupTop;
+    if(groupBottom+dy>moduleRect.bottom-5){
+      // Last-resort clamp: keep the corner cluster fixed and move the controls as far left as possible.
+      dy=0;
+      dx=(moduleRect.left+5)-groupLeft;
+    }
+  }
+
+  for(const el of overlapping){
+    el.classList.add('is-shifted-for-tile-options');
+    el.style.setProperty('--tile-option-shift-x',`${dx}px`);
+    el.style.setProperty('--tile-option-shift-y',`${dy}px`);
+  }
+}
 function layoutTileOptionControls(m){
   if(!m?.isConnected)return;
   const del=m.querySelector(':scope>.module-delete'),full=m.querySelector(':scope>.module-fullscreen'),pin=m.querySelector(':scope>.module-pin');
   if(!del||!full||!pin)return;
+
+  // The universal corner cluster is always authoritative. Other tile controls move around it.
   if(document.fullscreenElement===m){
-    m.style.setProperty('--tile-fullscreen-right','48px');m.style.setProperty('--tile-fullscreen-top','12px');
-    m.style.setProperty('--tile-pin-right','12px');m.style.setProperty('--tile-pin-top','48px');return;
+    m.style.setProperty('--tile-fullscreen-right','48px');
+    m.style.setProperty('--tile-fullscreen-top','12px');
+    m.style.setProperty('--tile-pin-right','12px');
+    m.style.setProperty('--tile-pin-top','48px');
+    clearTileOptionObstructionShift(m);
+    return;
   }
-  const delStyle=getComputedStyle(del),delRight=parseFloat(delStyle.right)||0,delTop=parseFloat(delStyle.top)||0;
-  const delWidth=del.offsetWidth||28,delHeight=del.offsetHeight||28,gap=6;
-  const important=tileOptionImportantRects(m),placed=[del.getBoundingClientRect()];
-  const fits=(button,right,top)=>{
-    m.style.setProperty(button===full?'--tile-fullscreen-right':'--tile-pin-right',`${right}px`);
-    m.style.setProperty(button===full?'--tile-fullscreen-top':'--tile-pin-top',`${top}px`);
-    const rect=button.getBoundingClientRect(),moduleRect=m.getBoundingClientRect();
-    if(rect.left<moduleRect.left-1||rect.right>moduleRect.right+1||rect.top<moduleRect.top-1||rect.bottom>moduleRect.bottom+1)return false;
-    return !important.some(other=>rectsOverlap(rect,other))&&!placed.some(other=>rectsOverlap(rect,other,2));
-  };
-  const stepX=(full.offsetWidth||28)+gap,stepY=(full.offsetHeight||28)+gap;
-  const fullCandidates=[
-    [delRight+delWidth+gap,delTop],[delRight+delWidth+gap+stepX,delTop],
-    [delRight+delWidth+gap,delTop+stepY],[delRight+delWidth+gap+stepX,delTop+stepY],
-    [delRight+delWidth+gap+stepX*2,delTop],[delRight+delWidth+gap+stepX*2,delTop+stepY]
-  ];
-  let fullPlaced=false;
-  for(const [right,top] of fullCandidates)if(fits(full,right,top)){fullPlaced=true;break}
-  if(!fullPlaced){m.style.setProperty('--tile-fullscreen-right',`${delRight+delWidth+gap}px`);m.style.setProperty('--tile-fullscreen-top',`${delTop}px`)}
-  placed.push(full.getBoundingClientRect());
-  const pinCandidates=[
-    [delRight,delTop+delHeight+gap],[delRight,delTop+delHeight+gap+stepY],
-    [delRight+stepX,delTop+delHeight+gap],[delRight+stepX,delTop+delHeight+gap+stepY],
-    [delRight+stepX*2,delTop+delHeight+gap]
-  ];
-  let pinPlaced=false;
-  for(const [right,top] of pinCandidates)if(fits(pin,right,top)){pinPlaced=true;break}
-  if(!pinPlaced){m.style.setProperty('--tile-pin-right',`${delRight}px`);m.style.setProperty('--tile-pin-top',`${delTop+delHeight+gap}px`)}
+
+  const delStyle=getComputedStyle(del);
+  const delRight=parseFloat(delStyle.right)||0;
+  const delTop=parseFloat(delStyle.top)||0;
+  const delWidth=del.offsetWidth||28;
+  const delHeight=del.offsetHeight||28;
+  const gap=6;
+
+  m.style.setProperty('--tile-fullscreen-right',`${delRight+delWidth+gap}px`);
+  m.style.setProperty('--tile-fullscreen-top',`${delTop}px`);
+  m.style.setProperty('--tile-pin-right',`${delRight}px`);
+  m.style.setProperty('--tile-pin-top',`${delTop+delHeight+gap}px`);
+
+  requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
 }
 
 function ensureTilePinControl(m){
@@ -3632,7 +3698,9 @@ function setupCommon(m){
   const optionResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   optionResizeObserver.observe(m);
   m.addEventListener('pointerenter',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
-  const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();priorOptionCleanup?.()};
+  m.addEventListener('focusin',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
+  m.addEventListener('focusout',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
+  const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();clearTileOptionObstructionShift(m);priorOptionCleanup?.()};
   const updateDeleteHotzone=e=>{
     const rect=m.getBoundingClientRect();
     const proximityX=Math.max(88,Math.min(126,rect.width*.4));
@@ -3644,11 +3712,16 @@ function setupCommon(m){
       return e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad;
     });
     const inside=nearCorner||nearOption;
+    const changed=m.classList.contains('is-tile-options-hotzone')!==inside;
     m.classList.toggle('is-delete-hotzone',inside);
     m.classList.toggle('is-tile-options-hotzone',inside);
+    if(changed)requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
   };
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
-  m.addEventListener('pointerleave',()=>m.classList.remove('is-delete-hotzone','is-tile-options-hotzone'));
+  m.addEventListener('pointerleave',()=>{
+    m.classList.remove('is-delete-hotzone','is-tile-options-hotzone');
+    if(!document.body?.classList.contains('tile-options-always-visible'))clearTileOptionObstructionShift(m);
+  });
   let grabCursorTarget=null;
   const clearGrabCursor=()=>{grabCursorTarget?.classList.remove('module-grab-cursor');grabCursorTarget=null};
   m.addEventListener('pointerover',e=>{
@@ -3877,7 +3950,7 @@ function setupDrag(m){
         joined=assignSnapGroup(snapMembers);
       }
       recordTransformHistory([...origins.keys()],origins);
-      if(pinnedDrag)capturePinnedTileScreenAnchor(m,{baseScale:Number(m.dataset.pinBaseScale)||boardCamera.scale});
+      if(pinnedDrag)capturePinnedTileScreenAnchor(m);
       cleanup();
       if(willSnap)pulse(joined);
     };
@@ -3898,7 +3971,8 @@ function setupResize(m){
     clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight,cs=getComputedStyle(m),mw=parseFloat(cs.minWidth)||220,mh=parseFloat(cs.minHeight)||180;
     const move=ev=>{
-      const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
+      const resizeScale=moduleViewportScale(m);
+      const dx=(ev.clientX-sx)/resizeScale,dy=(ev.clientY-sy)/resizeScale;
       let l=sl,t=st,w=sw,hh=sh;
       if(d.includes('r'))w=clamp(sw+dx,mw,BOARD_WIDTH-sl);
       if(d.includes('b'))hh=clamp(sh+dy,mh,BOARD_HEIGHT-st);
@@ -4327,7 +4401,8 @@ function setupClock(m){
       const mid=(lo+hi)/2;
       m.style.setProperty('--clock-size',`${mid}px`);
       const r=content.getBoundingClientRect();
-      if(r.width/boardCamera.scale<=aw&&r.height/boardCamera.scale<=ah){best=mid;lo=mid}else hi=mid;
+      const renderedScale=moduleViewportScale(m);
+      if(r.width/renderedScale<=aw&&r.height/renderedScale<=ah){best=mid;lo=mid}else hi=mid;
     }
     m.style.setProperty('--clock-size',`${Math.max(12,best*.975)}px`);
   };
@@ -18077,7 +18152,10 @@ function applyBoardPostSetupState(m,state){
   }
   disableModuleSpellcheck(m);
   syncTilePinControl(m);
-  if(isTilePinned(m))syncPinnedTileToCamera(m);
+  if(isTilePinned(m)){
+    delete m.dataset.pinBaseScale;
+    syncPinnedTileToCamera(m);
+  }
   layoutTileOptionControls(m);
 }
 
