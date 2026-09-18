@@ -23,6 +23,17 @@
   const schedulingList = document.getElementById('lesson-planner-schedule-list');
   const schedulingCount = document.getElementById('lesson-planner-schedule-count');
   const schedulingCancel = document.getElementById('lesson-planner-schedule-cancel');
+  const templatesButton = document.getElementById('lesson-planner-templates-button');
+  const templatesPanel = document.getElementById('lesson-planner-templates');
+  const templateForm = document.getElementById('lesson-planner-template-form');
+  const templateName = document.getElementById('lesson-planner-template-name');
+  const templateDescription = document.getElementById('lesson-planner-template-description');
+  const templateDescriptionCount = document.getElementById('lesson-planner-template-description-count');
+  const templateList = document.getElementById('lesson-planner-template-list');
+  const templateCount = document.getElementById('lesson-planner-template-count');
+  const templateCancel = document.getElementById('lesson-planner-template-cancel');
+  const templatePicker = document.getElementById('lesson-planner-template-picker');
+  const templatePickerWrap = document.getElementById('lesson-planner-template-picker-wrap');
   const canvas = document.getElementById('lesson-planner-canvas');
   const editor = document.getElementById('lesson-planner-editor');
   const form = document.getElementById('lesson-planner-form');
@@ -80,6 +91,7 @@
   let editorColor = COLORS[0].id;
   let editingScheduleId = '';
   let scheduleEditorColor = COLORS[0].id;
+  let editingTemplateId = '';
 
   panel.remove();
   document.body.appendChild(panel);
@@ -189,16 +201,33 @@
     };
   }
 
+  function templateId() {
+    return `template-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function normalizeTemplate(item, index = 0) {
+    if (!item || typeof item !== 'object') return null;
+    const description = String(item.description || '').slice(0, 4000);
+    if (!description.trim()) return null;
+    return {
+      id: String(item.id || templateId()),
+      name: String(item.name || `Template ${index + 1}`).replace(/\s+/g, ' ').trim().slice(0, 80) || `Template ${index + 1}`,
+      description
+    };
+  }
+
   function normalizePlanner(planner, index = 0) {
     if (!planner || typeof planner !== 'object') return null;
     const plannerBlocks = Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
     const plannerSchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
+    const plannerTemplates = Array.isArray(planner.templates) ? planner.templates.map(normalizeTemplate).filter(Boolean).slice(0, 100) : [];
     return {
       id: String(planner.id || plannerId()),
       name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
       color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
       blocks: plannerBlocks,
-      schedule: plannerSchedule
+      schedule: plannerSchedule,
+      templates: plannerTemplates
     };
   }
 
@@ -217,7 +246,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [] }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [], templates: [] }] : [];
   }
 
   function readActivePlannerId() {
@@ -280,15 +309,6 @@
     const weekday = target.getDay();
     return schedule.filter(item => item.repeat === 'weekly' ? item.weekday === weekday : weekday >= 1 && weekday <= 5)
       .slice().sort((a, b) => a.start.localeCompare(b.start));
-  }
-
-  function scheduleIsPlanned(item, date) {
-    const key = typeof date === 'string' ? date : dateKey(date);
-    return blocks.some(block => block.date === key && block.scheduleId === item.id);
-  }
-
-  function unplannedScheduleForDate(date) {
-    return scheduleForDate(date).filter(item => !scheduleIsPlanned(item, date));
   }
 
   function scheduleRepeatLabel(item) {
@@ -484,7 +504,8 @@
       name: `Planner ${planners.length + 1}`,
       color: COLORS[planners.length % COLORS.length].id,
       blocks: [],
-      schedule: []
+      schedule: [],
+      templates: []
     };
     planners.push(planner);
     activePlannerId = planner.id;
@@ -500,6 +521,7 @@
     cancelLessonDrag?.();
     closeEditor();
     closeScheduling();
+    closeTemplates();
     plannerWindow.hidden = true;
     plannerWindow.setAttribute('aria-hidden', 'true');
     library.hidden = false;
@@ -513,6 +535,7 @@
     if (!planner) { showPlannerLibrary(); return; }
     activePlannerId = planner.id;
     closeScheduling();
+    closeTemplates();
     blocks = planner.blocks.map(block => ({ ...block }));
     savePlanners();
     try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
@@ -604,8 +627,88 @@
     });
   }
 
+  function resetTemplateForm() {
+    editingTemplateId = '';
+    templateForm.reset();
+    templateDescriptionCount.textContent = '0';
+    templateCancel.hidden = true;
+    templateForm.querySelector('.lesson-planner-template-save').textContent = 'Add template';
+  }
+
+  function renderTemplateList() {
+    const plannerTemplates = activePlanner()?.templates || [];
+    templateCount.textContent = `${plannerTemplates.length} ${plannerTemplates.length === 1 ? 'template' : 'templates'}`;
+    templateList.replaceChildren();
+    if (!plannerTemplates.length) {
+      const empty = make('div', 'lesson-planner-template-list__empty');
+      empty.innerHTML = '<span aria-hidden="true">T</span><strong>No lesson templates yet</strong><small>Create reusable Plans and notes text on the left.</small>';
+      templateList.append(empty);
+      return;
+    }
+    plannerTemplates.forEach(item => {
+      const row = make('article', 'lesson-planner-template-item');
+      row.innerHTML = '<div><strong></strong><p></p></div><div class="lesson-planner-template-item__actions"></div>';
+      row.querySelector('strong').textContent = item.name;
+      row.querySelector('p').textContent = item.description;
+      const actions = row.querySelector('.lesson-planner-template-item__actions');
+      const edit = make('button', '', 'Edit'); edit.type = 'button';
+      const remove = make('button', 'is-delete', 'Delete'); remove.type = 'button';
+      edit.addEventListener('click', () => {
+        editingTemplateId = item.id;
+        templateName.value = item.name;
+        templateDescription.value = item.description;
+        templateDescriptionCount.textContent = String(item.description.length);
+        templateCancel.hidden = false;
+        templateForm.querySelector('.lesson-planner-template-save').textContent = 'Save changes';
+        templateName.focus({ preventScroll: true });
+        templateName.select();
+      });
+      remove.addEventListener('click', () => {
+        const planner = activePlanner();
+        if (!planner) return;
+        planner.templates = (planner.templates || []).filter(template => template.id !== item.id);
+        if (editingTemplateId === item.id) resetTemplateForm();
+        savePlanners();
+        renderTemplateList();
+        renderTemplatePicker();
+      });
+      actions.append(edit, remove);
+      row.append(actions);
+      templateList.append(row);
+    });
+  }
+
+  function renderTemplatePicker() {
+    if (!templatePicker) return;
+    const plannerTemplates = activePlanner()?.templates || [];
+    const current = templatePicker.value;
+    templatePicker.replaceChildren(new Option('Choose a template…', ''));
+    plannerTemplates.forEach(item => templatePicker.append(new Option(item.name, item.id)));
+    templatePicker.value = plannerTemplates.some(item => item.id === current) ? current : '';
+    templatePicker.disabled = !plannerTemplates.length;
+    templatePickerWrap?.classList.toggle('is-empty', !plannerTemplates.length);
+  }
+
+  function openTemplates() {
+    if (!activePlanner()) return;
+    closeScheduling();
+    resetTemplateForm();
+    renderTemplateList();
+    templatesPanel.hidden = false;
+    templatesPanel.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => templateName.focus({ preventScroll: true }));
+  }
+
+  function closeTemplates() {
+    if (!templatesPanel) return;
+    templatesPanel.hidden = true;
+    templatesPanel.setAttribute('aria-hidden', 'true');
+    editingTemplateId = '';
+  }
+
   function openScheduling() {
     if (!activePlanner()) return;
+    closeTemplates();
     resetScheduleForm();
     renderSchedulingList();
     schedulingPanel.hidden = false;
@@ -619,26 +722,15 @@
     editingScheduleId = '';
   }
 
-  function schedulePlaceholder(item, date, compact = false) {
+  function scheduleBackground(item) {
     const color = blockColor(item.color);
-    const element = make('button', compact ? 'lesson-calendar-chip lesson-calendar-chip--schedule' : 'lesson-schedule-template');
-    element.type = 'button';
+    const element = make('div', 'lesson-schedule-background');
     element.style.setProperty('--lesson-color', color.value);
     element.style.setProperty('--lesson-ink', color.ink);
-    element.title = `${item.label} · ${timeLabel(item.start)}–${timeLabel(item.end)} · Add plans`;
-    if (compact) {
-      element.innerHTML = '<i aria-hidden="true"></i><span></span>';
-      element.querySelector('span').textContent = item.label;
-    } else {
-      element.innerHTML = '<strong></strong><small></small><em>Add plans</em>';
-      element.querySelector('strong').textContent = item.label;
-      element.querySelector('small').textContent = `${timeLabel(item.start)}–${timeLabel(item.end)}`;
-    }
-    element.addEventListener('click', event => {
-      event.stopPropagation();
-      selectedDate = typeof date === 'string' ? fromDateKey(date) : atNoon(date);
-      openEditor(null, { date: dateKey(selectedDate), start: item.start, end: item.end, label: item.label, color: item.color, scheduleId: item.id });
-    });
+    element.setAttribute('aria-hidden', 'true');
+    element.innerHTML = '<strong></strong><small></small>';
+    element.querySelector('strong').textContent = item.label;
+    element.querySelector('small').textContent = `${timeLabel(item.start)}–${timeLabel(item.end)}`;
     return element;
   }
 
@@ -675,28 +767,26 @@
 
   function renderAgenda() {
     const dayBlocks = blocksForDate(selectedDate);
-    const scheduleSlots = unplannedScheduleForDate(selectedDate);
-    const total = dayBlocks.length + scheduleSlots.length;
-    agendaCount.textContent = `${total} ${total === 1 ? 'block' : 'blocks'}`;
+    agendaCount.textContent = `${dayBlocks.length} ${dayBlocks.length === 1 ? 'block' : 'blocks'}`;
     agendaList.replaceChildren();
-    if (!total) {
+    if (!dayBlocks.length) {
       const empty = make('div', 'lesson-planner-agenda__empty');
       empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open space</strong><small>Add a lesson block for this day.</small>';
       agendaList.append(empty);
       return;
     }
-    const entries=[...dayBlocks.map(block=>({type:'block',start:block.start,value:block})),...scheduleSlots.map(item=>({type:'schedule',start:item.start,value:item}))].sort((a,b)=>a.start.localeCompare(b.start));
-    entries.forEach(entry=>{
-      if(entry.type==='schedule'){
-        const item=entry.value,color=blockColor(item.color),button=make('button','lesson-planner-agenda-item lesson-planner-agenda-item--schedule');
-        button.type='button';button.style.setProperty('--lesson-color',color.value);button.style.setProperty('--lesson-ink',color.ink);
-        button.innerHTML='<i aria-hidden="true"></i><span><strong></strong><small></small></span><em>Add plans</em>';
-        button.querySelector('strong').textContent=item.label;button.querySelector('small').textContent=`${timeLabel(item.start)}–${timeLabel(item.end)}`;
-        button.addEventListener('click',()=>openEditor(null,{date:dateKey(selectedDate),start:item.start,end:item.end,label:item.label,color:item.color,scheduleId:item.id}));agendaList.append(button);return;
-      }
-      const block=entry.value,color=blockColor(block.color),button=make('div','lesson-planner-agenda-item');
-      button.type='button';button.style.setProperty('--lesson-color',color.value);button.style.setProperty('--lesson-ink',color.ink);button.innerHTML='<i aria-hidden="true"></i><span><strong></strong><small></small></span>';
-      button.querySelector('strong').textContent=block.label;button.querySelector('small').textContent=`${timeLabel(block.start)}–${timeLabel(block.end)}`;attachLessonDrag(button,block);button.addEventListener('click',()=>openEditor(block));agendaList.append(button);
+    dayBlocks.forEach(block => {
+      const color = blockColor(block.color);
+      const button = make('div', 'lesson-planner-agenda-item');
+      button.type = 'button';
+      button.style.setProperty('--lesson-color', color.value);
+      button.style.setProperty('--lesson-ink', color.ink);
+      button.innerHTML = '<i aria-hidden="true"></i><span><strong></strong><small></small></span>';
+      button.querySelector('strong').textContent = block.label;
+      button.querySelector('small').textContent = `${timeLabel(block.start)}–${timeLabel(block.end)}`;
+      attachLessonDrag(button, block);
+      button.addEventListener('click', () => openEditor(block));
+      agendaList.append(button);
     });
   }
 
@@ -869,15 +959,15 @@
         selectedDate = atNoon(date);
         openEditor(null, { date: dateKey(date), start: timeValue(start), end: timeValue(start + 60) });
       });
-      unplannedScheduleForDate(date).forEach(item => {
+      scheduleForDate(date).forEach(item => {
         const start = Math.max(DAY_START, minutes(item.start));
         const end = Math.min(DAY_END, Math.max(start + 5, minutes(item.end)));
         if (end <= DAY_START || start >= DAY_END) return;
-        const slot = schedulePlaceholder(item, date);
-        slot.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
-        slot.style.minHeight = `${Math.max(52, ((end - start) / (DAY_END - DAY_START)) * 980)}px`;
-        slot.style.height = 'auto';
-        column.append(slot);
+        const background = scheduleBackground(item);
+        background.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
+        background.style.height = `${((end - start) / (DAY_END - DAY_START)) * 100}%`;
+        background.classList.toggle('is-compact', end - start < 30);
+        column.append(background);
       });
       blocksForDate(date).forEach(block => {
         const start = Math.max(DAY_START, minutes(block.start));
@@ -885,8 +975,8 @@
         if (end <= DAY_START || start >= DAY_END) return;
         const eventButton = lessonBlockButton(block);
         eventButton.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
-        eventButton.style.minHeight = `${Math.max(52, ((end - start) / (DAY_END - DAY_START)) * 980)}px`;
-        eventButton.style.height = 'auto';
+        eventButton.style.height = `${((end - start) / (DAY_END - DAY_START)) * 100}%`;
+        eventButton.style.minHeight = '34px';
         column.append(eventButton);
       });
       if (dateKey(date) === dateKey(new Date())) {
@@ -926,10 +1016,20 @@
       dayButton.addEventListener('click', () => { selectedDate = atNoon(date); currentDate = atNoon(date); renderAll(); });
       cell.append(dayButton);
       const dayBlocks = blocksForDate(date);
-      const scheduleSlots = unplannedScheduleForDate(date);
-      const monthEntries=[...dayBlocks.map(block=>({type:'block',start:block.start,value:block})),...scheduleSlots.map(item=>({type:'schedule',start:item.start,value:item}))].sort((a,b)=>a.start.localeCompare(b.start));
-      monthEntries.slice(0, 3).forEach(entry => cell.append(entry.type==='block'?lessonBlockButton(entry.value,true):schedulePlaceholder(entry.value,date,true)));
-      if (monthEntries.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${monthEntries.length - 3} more`));
+      const backgrounds = scheduleForDate(date);
+      if (backgrounds.length) {
+        const scheduleLayer = make('div', 'lesson-planner-month-schedule-layer');
+        backgrounds.slice(0, 4).forEach(item => {
+          const color = blockColor(item.color);
+          const band = make('span', 'lesson-planner-month-schedule-band');
+          band.style.setProperty('--lesson-color', color.value);
+          band.title = `${item.label} · ${timeLabel(item.start)}–${timeLabel(item.end)}`;
+          scheduleLayer.append(band);
+        });
+        cell.append(scheduleLayer);
+      }
+      dayBlocks.slice(0, 3).forEach(block => cell.append(lessonBlockButton(block, true)));
+      if (dayBlocks.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${dayBlocks.length - 3} more`));
       cell.addEventListener('dblclick', event => { if (event.target.closest('.lesson-calendar-chip')) return; selectedDate = atNoon(date); currentDate = atNoon(date); setView('day'); });
       grid.append(cell);
     }
@@ -957,7 +1057,7 @@
         button.type = 'button';
         button.classList.toggle('has-lessons', blocksForDate(date).length > 0 || scheduleForDate(date).length > 0);
         button.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
-        {const count=blocksForDate(date).length,scheduleCount=unplannedScheduleForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}${scheduleCount?`, ${scheduleCount} scheduled slots`:''}`);}
+        {const count=blocksForDate(date).length,scheduleCount=scheduleForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}${scheduleCount?`, ${scheduleCount} schedule sections`:''}`);}
         button.addEventListener('click', () => { currentDate = date; selectedDate = date; setView('day'); });
         days.append(button);
       }
@@ -1014,6 +1114,9 @@
     endInput.value = block?.end || prefill.end || '09:00';
     descriptionInput.value = block?.description || '';
     descriptionCount.textContent = String(descriptionInput.value.length);
+    renderTemplatePicker();
+    templatePicker.value = '';
+    templatePickerWrap.hidden = Boolean(block);
     editorColor = block?.color || prefill.color || COLORS[0].id;
     deleteButton.hidden = !block;
     duplicateButton.hidden = !block;
@@ -1038,6 +1141,7 @@
     openButton.setAttribute('aria-expanded', 'true');
     document.body.classList.add('lesson-planner-open');
     closeScheduling();
+    closeTemplates();
     if(requestedPlannerId&&planners.some(planner=>planner.id===requestedPlannerId))openPlannerBook(requestedPlannerId);else showPlannerLibrary();
   }
 
@@ -1045,6 +1149,7 @@
     cancelLessonDrag?.();
     closeEditor();
     closeScheduling();
+    closeTemplates();
     library.hidden = false;
     plannerWindow.hidden = true;
     panel.hidden = true;
@@ -1071,7 +1176,10 @@
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
   document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
   schedulingButton.addEventListener('click', openScheduling);
+  templatesButton.addEventListener('click', openTemplates);
   document.getElementById('lesson-planner-scheduling-close').addEventListener('click', closeScheduling);
+  document.getElementById('lesson-planner-templates-close').addEventListener('click', closeTemplates);
+  templatesPanel.querySelector('.lesson-planner-templates__backdrop').addEventListener('click', closeTemplates);
   schedulingPanel.querySelector('.lesson-planner-scheduling__backdrop').addEventListener('click', closeScheduling);
   schedulingRepeat.addEventListener('change', syncScheduleRepeatUi);
   schedulingStart.addEventListener('change',()=>{if(minutes(schedulingEnd.value)<=minutes(schedulingStart.value))schedulingEnd.value=timeValue(minutes(schedulingStart.value)+60)});
@@ -1083,6 +1191,29 @@
     if(!item)return;
     const existing=planner.schedule.findIndex(value=>value.id===item.id);if(existing>=0)planner.schedule[existing]=item;else planner.schedule.push(item);
     savePlanners();publishPlannerChange();resetScheduleForm();renderSchedulingList();renderAll();
+  });
+  templateDescription.addEventListener('input', () => templateDescriptionCount.textContent = String(templateDescription.value.length));
+  templateCancel.addEventListener('click', resetTemplateForm);
+  templateForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const planner = activePlanner();
+    if (!planner) return;
+    const item = normalizeTemplate({ id: editingTemplateId || templateId(), name: templateName.value, description: templateDescription.value }, (planner.templates || []).length);
+    if (!item) return;
+    planner.templates ||= [];
+    const existing = planner.templates.findIndex(value => value.id === item.id);
+    if (existing >= 0) planner.templates[existing] = item; else planner.templates.push(item);
+    savePlanners();
+    resetTemplateForm();
+    renderTemplateList();
+    renderTemplatePicker();
+  });
+  templatePicker.addEventListener('change', () => {
+    const template = (activePlanner()?.templates || []).find(item => item.id === templatePicker.value);
+    if (!template) return;
+    descriptionInput.value = template.description;
+    descriptionCount.textContent = String(descriptionInput.value.length);
+    descriptionInput.focus({ preventScroll: true });
   });
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
   window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
@@ -1139,13 +1270,17 @@
     document.getElementById('lesson-planner-editor-title').textContent = 'Duplicate lesson';
     deleteButton.hidden = true;
     duplicateButton.hidden = true;
+    templatePickerWrap.hidden = false;
+    renderTemplatePicker();
+    templatePicker.value = '';
     labelInput.focus({ preventScroll: true });
     labelInput.select();
   });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || panel.hidden) return;
     event.preventDefault();
-    if (!schedulingPanel.hidden) closeScheduling();
+    if (!templatesPanel.hidden) closeTemplates();
+    else if (!schedulingPanel.hidden) closeScheduling();
     else if (!editor.hidden) closeEditor();
     else if (!plannerWindow.hidden) showPlannerLibrary();
     else closePlanner(false);
@@ -1154,12 +1289,13 @@
   window.TeacherTilesLessonPlanner = Object.freeze({
     getBlocks: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?planner.blocks.map(block=>({...block})):[]},
     getSchedules: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?(planner.schedule||[]).map(item=>({...item})):[]},
-    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(planner.schedule||[]).map(item=>({...item})) })),
+    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(planner.schedule||[]).map(item=>({...item})), templates:(planner.templates||[]).map(item=>({...item})) })),
     getActivePlannerId: () => activePlannerId,
     open: openPlanner,
     close: () => closePlanner(false)
   });
   renderColors();
   renderScheduleColors();
+  renderTemplatePicker();
   syncScheduleRepeatUi();
 })();

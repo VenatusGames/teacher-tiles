@@ -16829,3 +16829,56 @@ body>.lesson-planner-panel{
   .planner-book-settings{left:42px;right:auto;top:2px;bottom:auto}
   .planner-book-popover{left:2px;top:42px;bottom:auto}
 }
+
+/* Lesson Planner: background scheduling + reusable lesson templates. */
+.lesson-planner-header{grid-template-columns:130px minmax(0,1fr) 342px}
+.lesson-planner-view-controls{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.lesson-planner-today{height:40px;padding:0 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface-solid);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.04)}
+.lesson-planner-today:hover{border-color:color-mix(in srgb,#d9a12b 43%,var(--border));background:color-mix(in srgb,#efbd45 10%,var(--surface-soft))}
+#lesson-planner-scheduling-button,#lesson-planner-templates-button{min-width:96px}
+
+/* Give the day/week canvas enough vertical and horizontal room to show complete schedule sections. */
+.lesson-planner-schedule{min-width:1180px;padding-inline:20px}
+.lesson-planner-schedule--day{min-width:900px;max-width:none;margin:0}
+.lesson-planner-schedule__head,
+.lesson-planner-schedule__body{grid-template-columns:72px repeat(var(--planner-days),minmax(140px,1fr))}
+.lesson-planner-schedule__body{height:1400px}
+.lesson-planner-time-corner{padding-right:12px}
+.lesson-planner-times span{right:12px}
+
+/* Scheduling is a persistent visual layer behind real lesson blocks. */
+.lesson-planner-day-column{isolation:isolate}
+.lesson-schedule-background{position:absolute;z-index:0;left:3px;right:3px;box-sizing:border-box;min-height:8px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--lesson-color) 42%,var(--border));border-left:5px solid var(--lesson-color);border-radius:11px;background:color-mix(in srgb,var(--lesson-color) 12%,var(--surface-solid));color:color-mix(in srgb,var(--lesson-color) 56%,var(--text));overflow:hidden;pointer-events:none;box-shadow:inset 0 1px rgba(255,255,255,.28)}
+.lesson-schedule-background strong,.lesson-schedule-background small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lesson-schedule-background strong{font-size:12px;font-weight:950;letter-spacing:-.01em}
+.lesson-schedule-background small{margin-top:2px;font-size:10px;font-weight:800;opacity:.72}
+.lesson-schedule-background.is-compact{padding-top:2px;padding-bottom:2px}
+.lesson-schedule-background.is-compact strong{font-size:9px}
+.lesson-schedule-background.is-compact small{display:none}
+.lesson-schedule-block{z-index:3;left:12px;right:12px}
+.lesson-planner-add-preview{z-index:2}
+.lesson-planner-now-line{z-index:5}
+
+/* Month view keeps schedule colors as subtle background bands while lessons remain on top. */
+.lesson-planner-month-schedule-layer{position:absolute;z-index:0;left:7px;right:7px;top:42px;height:12px;display:flex;gap:2px;pointer-events:none;opacity:.58}
+.lesson-planner-month-schedule-band{flex:1 1 0;min-width:0;border-radius:999px;background:color-mix(in srgb,var(--lesson-color) 34%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--lesson-color) 46%,transparent)}
+.lesson-planner-month-day__number,.lesson-planner-month-day>.lesson-calendar-chip,.lesson-planner-month-day__more{position:relative;z-index:2}
+
+/* Templates modal mirrors Scheduling while keeping its own data/actions. */
+.lesson-planner-templates{position:absolute;inset:0;z-index:31;display:grid;place-items:center;padding:28px}
+.lesson-planner-templates[hidden]{display:none!important}
+.lesson-planner-templates__backdrop{position:absolute;inset:0;border:0;background:rgba(9,14,23,.48);backdrop-filter:blur(8px);cursor:default}
+.lesson-planner-templates__panel{position:relative;width:min(1040px,calc(100vw - 56px));height:min(720px,calc(100vh - 56px));display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;border:1px solid var(--border);border-radius:24px;background:var(--surface-solid);box-shadow:0 34px 100px rgba(5,10,18,.34)}
+.lesson-planner-templates__panel>header{padding:20px 22px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--border);background:linear-gradient(120deg,color-mix(in srgb,#5ca7e8 8%,var(--surface-solid)),var(--surface-solid) 52%,color-mix(in srgb,#a883dc 7%,var(--surface-solid)))}
+.lesson-planner-templates__panel>header span{display:block;color:var(--muted);font-size:10px;font-weight:950;letter-spacing:.14em}.lesson-planner-templates__panel>header h3{margin:3px 0 0;font-size:26px;line-height:1;font-weight:950;letter-spacing:-.04em}.lesson-planner-templates__panel>header p{margin:7px 0 0;color:var(--muted);font-size:12px}.lesson-planner-templates__panel>header>button{width:40px;height:40px;padding:0;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);color:var(--text);font-size:22px;cursor:pointer}
+.lesson-planner-templates__content{min-height:0;display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr)}
+.lesson-planner-template-form{padding:22px;border-right:1px solid var(--border);overflow:auto;background:color-mix(in srgb,var(--surface-soft) 62%,var(--surface-solid))}
+.lesson-planner-template-form textarea{min-height:320px;resize:vertical}
+.lesson-planner-template-form__actions{margin-top:18px;display:flex;justify-content:flex-end;gap:8px}.lesson-planner-template-form__actions button{height:40px;padding:0 14px;border:1px solid var(--border);border-radius:11px;background:var(--surface-solid);color:var(--text);font-size:12px;font-weight:900;cursor:pointer}.lesson-planner-template-form__actions .lesson-planner-template-save{border:0;background:linear-gradient(145deg,#8fc2ee,#5ca7e8);color:#123956}
+.lesson-planner-template-list-wrap{min-width:0;min-height:0;padding:22px;display:flex;flex-direction:column;overflow:hidden}.lesson-planner-template-list__heading{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;padding-bottom:14px;border-bottom:1px solid var(--border)}.lesson-planner-template-list__heading span{display:block;color:var(--muted);font-size:10px;font-weight:950;letter-spacing:.13em}.lesson-planner-template-list__heading h4{margin:2px 0 0;font-size:20px}.lesson-planner-template-list__heading small{color:var(--muted);font-size:11px;font-weight:800}.lesson-planner-template-list{min-height:0;padding-top:12px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.lesson-planner-template-list__empty{flex:1;min-height:240px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;border:1px dashed var(--border);border-radius:18px;color:var(--muted)}.lesson-planner-template-list__empty>span{font-size:30px;font-weight:950}.lesson-planner-template-list__empty strong{margin-top:8px;color:var(--text);font-size:14px}.lesson-planner-template-list__empty small{margin-top:4px;font-size:11px}
+.lesson-planner-template-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-soft)}.lesson-planner-template-item strong{display:block;font-size:13px}.lesson-planner-template-item p{display:-webkit-box;margin:5px 0 0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3;color:var(--muted);font-size:11px;line-height:1.4;white-space:pre-wrap}.lesson-planner-template-item__actions{display:flex;gap:6px}.lesson-planner-template-item__actions button{height:32px;padding:0 9px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid);color:var(--text);font-size:10px;font-weight:850;cursor:pointer}.lesson-planner-template-item__actions .is-delete{color:#b44545}
+.lesson-planner-template-picker select{width:100%;height:42px;padding:0 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface-solid);color:var(--text);font:inherit}.lesson-planner-template-picker>small{display:block;margin-top:5px;color:var(--muted);font-size:10px}.lesson-planner-template-picker.is-empty{opacity:.62}
+
+@media(max-width:900px){.lesson-planner-header{grid-template-columns:110px minmax(0,1fr) 300px}.lesson-planner-schedule{min-width:1080px}.lesson-planner-view-controls{gap:5px}.lesson-planner-today{padding-inline:10px}}
+@media(max-width:680px){.lesson-planner-header{grid-template-columns:42px minmax(0,1fr) auto}.lesson-planner-header__actions{max-width:180px}.lesson-planner-header__actions button{min-width:0!important;padding-inline:7px!important}.lesson-planner-view-controls{order:2;width:100%}.lesson-planner-view-tabs{order:0!important;width:auto!important;flex:1}.lesson-planner-today{height:37px;flex:0 0 58px;padding:0}.lesson-planner-templates{padding:0}.lesson-planner-templates__panel{width:100%;height:100%;border:0;border-radius:0}.lesson-planner-templates__content{grid-template-columns:1fr;overflow:auto}.lesson-planner-template-form{border-right:0;border-bottom:1px solid var(--border)}.lesson-planner-template-list-wrap{min-height:360px}.lesson-planner-schedule{min-width:980px}}

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-planner-book-top-left-hover-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-background-templates-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -332,7 +332,7 @@
                 </div>
                 <div class="lesson-planner-header__actions">
                   <button id="lesson-planner-scheduling-button" type="button">Scheduling</button>
-                  <button id="lesson-planner-today" type="button">Today</button>
+                  <button id="lesson-planner-templates-button" type="button">Templates</button>
                   <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
                 </div>
               </header>
@@ -342,11 +342,14 @@
                   <button id="lesson-planner-next" type="button" aria-label="Next date range">›</button>
                   <div><small id="lesson-planner-range-kicker">THIS WEEK</small><strong id="lesson-planner-range-title">Calendar</strong></div>
                 </div>
-                <div id="lesson-planner-view-tabs" class="lesson-planner-view-tabs" role="tablist" aria-label="Planner view">
-                  <button type="button" data-planner-view="day" role="tab">Day</button>
-                  <button type="button" data-planner-view="week" role="tab" aria-selected="true">Week</button>
-                  <button type="button" data-planner-view="month" role="tab">Month</button>
-                  <button type="button" data-planner-view="year" role="tab">Year</button>
+                <div class="lesson-planner-view-controls">
+                  <div id="lesson-planner-view-tabs" class="lesson-planner-view-tabs" role="tablist" aria-label="Planner view">
+                    <button type="button" data-planner-view="day" role="tab">Day</button>
+                    <button type="button" data-planner-view="week" role="tab" aria-selected="true">Week</button>
+                    <button type="button" data-planner-view="month" role="tab">Month</button>
+                    <button type="button" data-planner-view="year" role="tab">Year</button>
+                  </div>
+                  <button id="lesson-planner-today" class="lesson-planner-today" type="button">Today</button>
                 </div>
                 <label class="lesson-planner-zoom"><span>Zoom</span><input id="lesson-planner-zoom" type="range" min="0" max="3" step="1" value="1" aria-label="Calendar zoom from day to year"><i aria-hidden="true">−</i></label>
               </section>
@@ -370,7 +373,7 @@
                 <button class="lesson-planner-scheduling__backdrop" type="button" aria-label="Close Scheduling"></button>
                 <section class="lesson-planner-scheduling__panel">
                   <header>
-                    <div><span>PLANNER SETUP</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Create reusable time blocks that appear pre-labeled in your planner.</p></div>
+                    <div><span>PLANNER SETUP</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Create recurring background sections that sit behind your lesson blocks.</p></div>
                     <button id="lesson-planner-scheduling-close" type="button" aria-label="Close Scheduling">×</button>
                   </header>
                   <div class="lesson-planner-scheduling__content">
@@ -388,8 +391,29 @@
                       <div class="lesson-planner-schedule-form__actions"><button id="lesson-planner-schedule-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-schedule-save" type="submit">Add schedule block</button></div>
                     </form>
                     <section class="lesson-planner-schedule-list-wrap">
-                      <div class="lesson-planner-schedule-list__heading"><div><span>YOUR SCHEDULE</span><h4>Reusable blocks</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
+                      <div class="lesson-planner-schedule-list__heading"><div><span>YOUR SCHEDULE</span><h4>Background sections</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
                       <div id="lesson-planner-schedule-list" class="lesson-planner-schedule-list"></div>
+                    </section>
+                  </div>
+                </section>
+              </aside>
+
+              <aside id="lesson-planner-templates" class="lesson-planner-templates" hidden aria-hidden="true" aria-labelledby="lesson-planner-templates-title">
+                <button class="lesson-planner-templates__backdrop" type="button" aria-label="Close Templates"></button>
+                <section class="lesson-planner-templates__panel">
+                  <header>
+                    <div><span>QUICK-START CONTENT</span><h3 id="lesson-planner-templates-title">Lesson Templates</h3><p>Save reusable text for the Plans and notes area of a lesson block.</p></div>
+                    <button id="lesson-planner-templates-close" type="button" aria-label="Close Templates">×</button>
+                  </header>
+                  <div class="lesson-planner-templates__content">
+                    <form id="lesson-planner-template-form" class="lesson-planner-template-form">
+                      <label class="lesson-planner-field"><span>Template name</span><input id="lesson-planner-template-name" type="text" maxlength="80" placeholder="e.g. Guided reading routine" required></label>
+                      <label class="lesson-planner-field lesson-planner-field--description"><span>Preset Plans and notes text</span><textarea id="lesson-planner-template-description" maxlength="4000" placeholder="Add the reusable text you want inserted into new lesson blocks…" required></textarea><small><span id="lesson-planner-template-description-count">0</span>/4000</small></label>
+                      <div class="lesson-planner-template-form__actions"><button id="lesson-planner-template-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-template-save" type="submit">Add template</button></div>
+                    </form>
+                    <section class="lesson-planner-template-list-wrap">
+                      <div class="lesson-planner-template-list__heading"><div><span>YOUR TEMPLATES</span><h4>Reusable lesson text</h4></div><small id="lesson-planner-template-count">0 templates</small></div>
+                      <div id="lesson-planner-template-list" class="lesson-planner-template-list"></div>
                     </section>
                   </div>
                 </section>
@@ -406,6 +430,7 @@
                     <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-end" type="time" step="300" required></label>
                   </div>
                   <fieldset class="lesson-planner-colors"><legend>Block color</legend><div id="lesson-planner-colors"></div></fieldset>
+                  <label id="lesson-planner-template-picker-wrap" class="lesson-planner-field lesson-planner-template-picker"><span>Template</span><select id="lesson-planner-template-picker" aria-label="Apply a lesson template"><option value="">Choose a template…</option></select><small>Select a saved template to fill Plans and notes.</small></label>
                   <label class="lesson-planner-field lesson-planner-field--description"><span>Plans and notes</span><textarea id="lesson-planner-description" maxlength="4000" placeholder="Learning goal, materials, activities, differentiation, assessment notes…"></textarea><small><span id="lesson-planner-description-count">0</span>/4000</small></label>
                   <div class="lesson-planner-editor__actions"><button id="lesson-planner-delete" class="lesson-planner-delete" type="button" hidden>Delete</button><span></span><button id="lesson-planner-duplicate" type="button" hidden>Duplicate</button><button class="lesson-planner-save" type="submit">Save lesson</button></div>
                 </form>
@@ -4085,7 +4110,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-planner-picker-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-5min-times-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-background-templates-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 
