@@ -1265,22 +1265,27 @@
       canvas.scrollTop = 0;
       return;
     }
-    const dates = timelineDatesForCurrentView();
-    const earliest = earliestTimelineMinute(dates);
-    requestAnimationFrame(() => {
-      const body = canvas.querySelector('.lesson-planner-schedule__body');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       const head = canvas.querySelector('.lesson-planner-schedule__head');
-      if (!body || !head) return;
-      if (earliest == null) {
+      if (!head) return;
+      const candidates = [...canvas.querySelectorAll('.lesson-schedule-background,.lesson-schedule-block')]
+        .filter(element => element.getClientRects().length);
+      if (!candidates.length) {
         canvas.scrollTop = 0;
         return;
       }
-      const timelineColumn = canvas.querySelector('.lesson-planner-day-column');
-      const top = timelineColumn?._timelineYForMinute
-        ? timelineColumn._timelineYForMinute(earliest)
-        : ((earliest - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
-      canvas.scrollTop = Math.max(0, body.offsetTop + top - head.offsetHeight);
-    });
+      const canvasRect = canvas.getBoundingClientRect();
+      const positioned = candidates.map(element => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top - canvasRect.top + canvas.scrollTop,
+          bottom: rect.bottom - canvasRect.top + canvas.scrollTop
+        };
+      }).sort((a,b) => a.top - b.top || a.bottom - b.bottom);
+      const first = positioned[0];
+      const margin = 12;
+      canvas.scrollTop = Math.max(0, first.top - head.offsetHeight - margin);
+    }));
   }
 
   function renderAll({ autoScrollTimeline = false } = {}) {
