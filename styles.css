@@ -16766,3 +16766,65 @@ body>.lesson-planner-panel{
   #lesson-planner-scheduling-button{min-width:76px}
   #lesson-planner-today{min-width:52px}
 }
+
+
+/* Planner library: hover-only color + settings controls */
+.planner-book-tool-button{
+  position:absolute;
+  bottom:6px;
+  z-index:14;
+  width:34px;
+  height:34px;
+  padding:6px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface-solid);
+  color:var(--text);
+  box-shadow:0 3px 10px #0f172a18;
+  cursor:pointer;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translateY(4px);
+  transition:opacity .14s ease,visibility .14s ease,transform .14s ease,background .12s ease;
+}
+.planner-book-customize{left:6px;right:auto}
+.planner-book-settings{left:46px;right:auto}
+.planner-book-tool-button svg{width:21px;height:21px;display:block}
+.planner-book-customize svg{fill:currentColor}
+.planner-book-settings svg{fill:none;stroke:currentColor}
+.planner-book-card:hover .planner-book-tool-button,
+.planner-book-card:focus-within .planner-book-tool-button,
+.planner-book-tool-button[aria-expanded="true"]{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:none;
+}
+.planner-book-tool-button:hover,
+.planner-book-tool-button[aria-expanded="true"]{background:var(--surface-soft)}
+.planner-book-popover{
+  position:absolute;
+  left:4px;
+  bottom:46px;
+  z-index:20;
+  box-sizing:border-box;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:var(--surface-solid);
+  box-shadow:0 14px 34px rgba(15,23,42,.18);
+}
+.planner-book-popover[hidden]{display:none!important}
+.planner-book-color-panel{width:max-content;max-width:calc(100% - 8px)}
+.planner-book-color-panel .planner-book-colors{padding:0;border:0;justify-content:flex-start}
+.planner-book-settings-panel{width:180px}
+.planner-book-settings-panel .planner-book-actions{display:grid;grid-template-columns:1fr;gap:6px;padding:0}
+.planner-book-settings-panel .planner-book-actions button{height:34px}
+@media(max-width:760px){
+  .planner-book-customize{left:2px;right:auto;bottom:2px}
+  .planner-book-settings{left:42px;right:auto;bottom:2px}
+  .planner-book-popover{left:2px;bottom:42px}
+}

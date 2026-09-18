@@ -363,17 +363,17 @@
         beginPlannerRename(card, planner);
       });
 
-      const customize = make('button', 'planner-book-customize');
+      const customize = make('button', 'planner-book-tool-button planner-book-customize');
       customize.type = 'button';
-      customize.title = 'Customize planner';
-      customize.setAttribute('aria-label', `Customize ${planner.name}`);
+      customize.title = 'Planner color';
+      customize.setAttribute('aria-label', `Change ${planner.name} color`);
       customize.setAttribute('aria-expanded', 'false');
       const brush = document.querySelector('#customize-toggle svg');
       if (brush) customize.appendChild(brush.cloneNode(true));
-      else customize.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5 15.5 7l1.5 1.5L5.5 20H4v-1.5ZM14 5.5 16.5 3 21 7.5 18.5 10 14 5.5Z"/></svg>';
+      else customize.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.7 3.9a1.5 1.5 0 0 1 2.1 2.1l-8.2 8.2-2.8-2.8 8.9-7.5Z"/><path d="M8.8 12.4c-1.9 0-3.4 1.5-3.4 3.4 0 1.4-.7 2.6-2.1 3.5 1.2.7 2.7 1.1 4.2 1.1 3.2 0 5.4-1.8 5.4-4.4 0-1.9-1.8-3.6-4.1-3.6Z"/></svg>';
 
-      const tools = make('div', 'planner-book-tools');
-      tools.hidden = true;
+      const colorPanel = make('div', 'planner-book-popover planner-book-color-panel');
+      colorPanel.hidden = true;
       const colors = make('div', 'planner-book-colors');
       colors.setAttribute('aria-label', `${planner.name} color`);
       COLORS.forEach(option => {
@@ -392,7 +392,17 @@
         });
         colors.append(swatch);
       });
+      colorPanel.append(colors);
 
+      const settings = make('button', 'planner-book-tool-button planner-book-settings');
+      settings.type = 'button';
+      settings.title = 'Planner settings';
+      settings.setAttribute('aria-label', `Open ${planner.name} settings`);
+      settings.setAttribute('aria-expanded', 'false');
+      settings.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg>';
+
+      const settingsPanel = make('div', 'planner-book-popover planner-book-settings-panel');
+      settingsPanel.hidden = true;
       const actions = make('div', 'planner-book-actions');
       const collaborate = make('button', 'planner-library-collaborate', 'Collaborate');
       collaborate.type = 'button';
@@ -413,15 +423,25 @@
         renderLibrary();
       });
       actions.append(collaborate, remove);
-      tools.append(colors, actions);
-      customize.addEventListener('click', event => {
+      settingsPanel.append(actions);
+
+      const closeBookPopovers = () => {
+        libraryGrid.querySelectorAll('.planner-book-popover:not([hidden])').forEach(panel => { panel.hidden = true; });
+        libraryGrid.querySelectorAll('.planner-book-tool-button[aria-expanded="true"]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+      };
+      const toggleBookPopover = (event, button, popover) => {
+        event.preventDefault();
         event.stopPropagation();
-        const next = tools.hidden;
-        libraryGrid.querySelectorAll('.planner-book-tools:not([hidden])').forEach(panel => { panel.hidden = true; panel.closest('.planner-book-card')?.querySelector('.planner-book-customize')?.setAttribute('aria-expanded', 'false'); });
-        tools.hidden = !next;
-        customize.setAttribute('aria-expanded', String(next));
-      });
-      card.append(open, customize, tools);
+        const shouldOpen = popover.hidden;
+        closeBookPopovers();
+        if (shouldOpen) {
+          popover.hidden = false;
+          button.setAttribute('aria-expanded', 'true');
+        }
+      };
+      customize.addEventListener('click', event => toggleBookPopover(event, customize, colorPanel));
+      settings.addEventListener('click', event => toggleBookPopover(event, settings, settingsPanel));
+      card.append(open, customize, settings, colorPanel, settingsPanel);
       libraryGrid.append(card);
     });
   }
