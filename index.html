@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-settings-popovers-1">
-  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260917-2">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260918-export-image-highlight-1">
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
@@ -2177,6 +2177,8 @@
           <select class="richtext-size" aria-label="Font size"></select>
           <button class="richtext-color" type="button" aria-label="Text color" title="Text color"><span class="richtext-color-letter" aria-hidden="true">A</span><span class="richtext-color-swatch" aria-hidden="true"></span></button>
           <input class="richtext-color-input" type="color" value="#17191d" aria-label="Choose text color">
+          <button class="richtext-highlight" type="button" aria-label="Highlight text" title="Highlight text"><span class="richtext-highlight-letter" aria-hidden="true">H</span><span class="richtext-highlight-swatch" aria-hidden="true"></span></button>
+          <input class="richtext-highlight-input" type="color" value="#fff2a8" aria-label="Choose highlight color">
         </div>
         <span class="richtext-toolbar-divider" aria-hidden="true"></span>
         <div class="richtext-toolbar-group">
@@ -2199,8 +2201,15 @@
           <button type="button" data-rich-command="redo" aria-label="Redo text edit" title="Redo">↷</button>
           <button type="button" data-rich-command="removeFormat" aria-label="Clear formatting" title="Clear formatting">Tx</button>
         </div>
+        <span class="richtext-toolbar-divider" aria-hidden="true"></span>
+        <div class="richtext-toolbar-group">
+          <button class="richtext-image" type="button" aria-label="Insert image" title="Insert image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><circle cx="9" cy="9" r="1.5"/><path d="m5.5 17 4.2-4.2 3.1 3 2.3-2.3 3.4 3.5"/></svg><span class="richtext-toolbar-action-label">Image</span></button>
+          <input class="richtext-image-input" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose image to insert">
+          <button class="richtext-export-button" type="button" aria-label="Export Rich Text" title="Export" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg><span class="richtext-toolbar-action-label">Export</span></button>
+        </div>
       </div>
       <div class="richtext-editor widget-scroll" contenteditable="true" spellcheck="true" aria-label="Rich text editor" data-placeholder="Start typing…"></div>
+      <div class="richtext-toast" role="status" aria-live="polite" hidden></div>
       <div class="customization-bar widget-controls richtext-customization" aria-label="Rich Text tile customization">
         <button class="custom-icon tile-bg" type="button" aria-label="Change tile background color" title="Change tile background color"><span class="icon-palette" aria-hidden="true"></span></button>
       </div>
@@ -3922,7 +3931,7 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
-<script src="tiles/rich-text/index.js?v=20260917-1"></script>
+<script src="tiles/rich-text/index.js?v=20260918-export-image-highlight-1"></script>
 <script src="app.js?v=20260917-rich-text-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
