@@ -16000,7 +16000,7 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 .timer-sync-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 
 .timer-shape-setting[hidden]{display:none!important}
-.timer-shape-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round}
+.timer-shape-toggle svg{display:block;width:20px;height:20px;margin:auto;place-self:center;fill:none;stroke:currentColor;stroke-width:8;stroke-linejoin:round;transform:none}
 .timer-shape-toggle[aria-expanded="true"]{border-color:#60a5fa;background:#e4f2ff;color:#1673c9}
 .timer-shape-shelf{position:fixed;z-index:100000;width:min(280px,calc(100vw - 16px));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px;border:1px solid var(--border);border-radius:16px;background:var(--surface-solid,var(--surface));box-shadow:0 12px 36px #0f172a30;animation:timerShapeShelfIn .2s cubic-bezier(.2,.8,.2,1);font:11px/1.3 Inter,system-ui,sans-serif;color:var(--text)}
 .timer-shape-shelf[hidden]{display:none}
@@ -16400,8 +16400,8 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 
 
 /* Transition Bell */
-.transitionbell-module{width:340px;height:320px;min-width:240px;min-height:220px;display:flex;overflow:hidden;container-type:size}
-.transition-bell-stage{position:relative;flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:8px 10px 10px;min-height:0}
+.transitionbell-module{width:320px;height:300px;min-width:220px;min-height:200px;display:flex;overflow:hidden;container-type:size}
+.transition-bell-stage{position:relative;flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:2px 4px 4px;min-height:0}
 .transition-bell-button{width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .transition-bell-art{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 12px 18px rgba(42,28,8,.18));transform-origin:50% 7%;will-change:transform}
 .transition-bell-stage.is-ringing .transition-bell-art{animation:transitionBellRing 1s cubic-bezier(.32,.8,.18,1)}
@@ -16480,8 +16480,19 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   background:var(--surface-solid,var(--surface))!important;
   color:var(--text)!important;
 }
-.timer-presets{gap:6px}
-.timer-presets button{font-size:11px;white-space:nowrap}
+.timer-presets{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  width:min(100%,300px);
+  align-self:center;
+}
+.timer-presets button{
+  width:100%;
+  min-width:0;
+  font-size:11px;
+  white-space:nowrap;
+}
 .timer-custom-row{align-items:flex-end;gap:6px}
 .timer-custom-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--module-text,var(--text));font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
 .timer-custom-field input{
@@ -16538,4 +16549,31 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 @media(prefers-reduced-motion:reduce){
   .timer-module[data-tile-skin="timer-freestanding"] .timer-stage,
   .timer-module[data-tile-skin="timer-freestanding"] .timer-visual{transition:none}
+}
+
+/* Transition Bell controls overlay instead of reserving empty layout space. */
+.transitionbell-module .transition-bell-controls{
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:8px;
+  z-index:8;
+  margin:0;
+}
+
+/* The visual-timer shape picker symbol is optically centered in its square control. */
+.timer-customization .timer-shape-toggle{
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+}
+.timer-customization .timer-shape-toggle>svg{
+  position:static!important;
+  inset:auto!important;
+  translate:none!important;
+}
+
+/* Keep the paired Minutes/Until controls compact with their own Set buttons. */
+.timer-custom-row .timer-until-set{
+  flex:0 0 auto;
 }

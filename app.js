@@ -4211,6 +4211,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   const input=m.querySelector('.timer-custom');
   const untilInput=m.querySelector('.timer-until');
   const set=m.querySelector('.timer-set');
+  const untilSet=m.querySelector('.timer-until-set');
   const clear=m.querySelector('.timer-clear');
   const start=m.querySelector('.timer-start');
   const reset=m.querySelector('.timer-reset');
@@ -4281,11 +4282,11 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   });
   set.addEventListener('click',()=>{if(input.value)setDuration(input.value)});
   input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();set.click()}});
-  untilInput?.addEventListener('change',applyUntil);
+  untilSet?.addEventListener('click',applyUntil);
   untilInput?.addEventListener('keydown',event=>{
     if(event.key!=='Enter')return;
     event.preventDefault();
-    untilInput.dispatchEvent(new Event('change',{bubbles:true}));
+    untilSet?.click();
   });
 
   let pointerFocusedField=null;
