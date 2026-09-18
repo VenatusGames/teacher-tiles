@@ -16226,7 +16226,6 @@ body .module>.module-fullscreen:active{transform:translateY(0)}
 body .module>.module-fullscreen:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 body .module>.module-pin:hover{transform:translateY(-1px)}
 body .module>.module-pin:active{transform:translateY(0)}
-body .module>.module-pin:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 
 /* Keep the option pair aligned on object-style tiles that offset their delete button. */
 .sticker-module>:is(.module-fullscreen,.module-pin){
@@ -16287,6 +16286,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   transition:translate .15s ease,opacity .15s ease,transform .15s ease;
 }
 .module.is-tile-pinned{
+  z-index:2000000000!important;
   transform-origin:center center!important;
   backface-visibility:hidden;
 }

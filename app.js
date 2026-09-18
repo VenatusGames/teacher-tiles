@@ -3637,11 +3637,16 @@ function layoutTileOptionControls(m){
 
 function ensureTilePinControl(m){
   let button=m.querySelector(':scope>.module-pin');
-  if(button){syncTilePinControl(m);return button}
+  if(button){
+    button.tabIndex=-1;
+    syncTilePinControl(m);
+    return button;
+  }
   const del=m.querySelector(':scope>.module-delete');if(!del)return null;
-  button=document.createElement('button');button.className='module-pin';button.type='button';button.setAttribute('aria-pressed','false');button.innerHTML=`${TILE_PIN_OFF_ICON}${TILE_PIN_ON_ICON}`;
+  button=document.createElement('button');button.className='module-pin';button.type='button';button.tabIndex=-1;button.setAttribute('aria-pressed','false');button.innerHTML=`${TILE_PIN_OFF_ICON}${TILE_PIN_ON_ICON}`;
   del.after(button);
-  button.addEventListener('pointerdown',event=>event.stopPropagation());
+  button.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation()});
+  button.addEventListener('focus',()=>button.blur());
   button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();setTilePinned(m,!isTilePinned(m))});
   syncTilePinControl(m);return button;
 }
