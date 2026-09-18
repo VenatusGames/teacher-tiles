@@ -229,6 +229,110 @@
     FONT_SIZES.forEach(size=>{const option=document.createElement('option');option.value=String(size);option.textContent=`${size}px`;sizeSelect.appendChild(option)});
     fontSelect.value='Inter';sizeSelect.value='16';
 
+    const richSelectControls=[];
+    let activeRichSelect=null;
+    const closeRichSelect=()=>{
+      if(!activeRichSelect)return;
+      activeRichSelect.menu.hidden=true;
+      activeRichSelect.trigger.setAttribute('aria-expanded','false');
+      activeRichSelect=null;
+      if(!m.classList.contains('is-richtext-color-open')&&!m.classList.contains('is-richtext-export-open'))m.classList.remove('is-richtext-popover-open');
+    };
+    const positionRichSelect=control=>{
+      if(!control||control.menu.hidden||!control.trigger.isConnected){closeRichSelect();return}
+      const rect=control.trigger.getBoundingClientRect(),width=control.menu.offsetWidth,height=control.menu.offsetHeight;
+      const left=Math.max(8,Math.min(rect.left,innerWidth-width-8));
+      const below=rect.bottom+6;
+      const top=below+height<=innerHeight-8?below:Math.max(8,rect.top-height-6);
+      control.menu.style.left=`${left}px`;control.menu.style.top=`${top}px`;
+    };
+    const syncRichSelect=control=>{
+      const option=control.select.selectedOptions?.[0]||control.select.options?.[control.select.selectedIndex];
+      control.label.textContent=option?.textContent||'';
+      control.menu.querySelectorAll('[data-rich-select-value]').forEach(button=>{
+        const selected=button.dataset.richSelectValue===control.select.value;
+        button.classList.toggle('is-selected',selected);
+        button.setAttribute('aria-selected',String(selected));
+      });
+    };
+    const buildRichSelect=(select,kind)=>{
+      select.style.display='none';
+      const trigger=document.createElement('button');
+      trigger.type='button';
+      trigger.className=`richtext-select-trigger richtext-select-trigger--${kind}`;
+      trigger.setAttribute('aria-haspopup','listbox');
+      trigger.setAttribute('aria-expanded','false');
+      trigger.dataset.preserveTextEdit='true';
+      const label=document.createElement('span');
+      label.className='richtext-select-trigger-label';
+      const chevron=document.createElement('svg');
+      chevron.setAttribute('viewBox','0 0 12 8');
+      chevron.setAttribute('aria-hidden','true');
+      chevron.innerHTML='<path d="M1.5 1.5 6 6l4.5-4.5"/>';
+      trigger.append(label,chevron);
+      select.after(trigger);
+
+      const menu=document.createElement('div');
+      menu.className=`richtext-select-menu richtext-select-menu--${kind}`;
+      menu.hidden=true;
+      menu.setAttribute('role','listbox');
+      menu.setAttribute('aria-label',select.getAttribute('aria-label')||'Rich Text options');
+      menu.dataset.preserveTextEdit='true';
+      for(const option of select.options){
+        const choice=document.createElement('button');
+        choice.type='button';
+        choice.dataset.richSelectValue=option.value;
+        choice.setAttribute('role','option');
+        choice.textContent=option.textContent;
+        choice.addEventListener('pointerdown',event=>{
+          rememberSelection();
+          event.preventDefault();
+          event.stopPropagation();
+        });
+        choice.addEventListener('click',()=>{
+          select.value=option.value;
+          select.dispatchEvent(new Event('change',{bubbles:true}));
+          syncRichSelect(control);
+          closeRichSelect();
+        });
+        menu.appendChild(choice);
+      }
+      document.body.appendChild(menu);
+
+      const control={select,trigger,label,menu,kind};
+      richSelectControls.push(control);
+      syncRichSelect(control);
+
+      trigger.addEventListener('pointerdown',event=>{
+        rememberSelection();
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      trigger.addEventListener('click',()=>{
+        rememberSelection();
+        if(activeRichSelect===control){closeRichSelect();return}
+        closeRichSelect();
+        activeRichSelect=control;
+        menu.hidden=false;
+        trigger.setAttribute('aria-expanded','true');
+        m.classList.add('is-richtext-popover-open');
+        syncRichSelect(control);
+        positionRichSelect(control);
+      });
+      return control;
+    };
+    const blockControl=buildRichSelect(blockSelect,'block');
+    const fontControl=buildRichSelect(fontSelect,'font');
+    const sizeControl=buildRichSelect(sizeSelect,'size');
+    const syncRichSelects=()=>richSelectControls.forEach(syncRichSelect);
+    const outsideRichSelect=event=>{
+      if(!activeRichSelect)return;
+      if(activeRichSelect.menu.contains(event.target)||activeRichSelect.trigger.contains(event.target))return;
+      closeRichSelect();
+    };
+    document.addEventListener('pointerdown',outsideRichSelect,true);
+    window.addEventListener('resize',closeRichSelect);
+
     const showToast=(message,{error=false}={})=>{
       if(!toast)return;
       clearTimeout(toastTimer);toast.textContent=message;toast.hidden=false;toast.classList.toggle('is-error',error);
@@ -295,7 +399,7 @@
     const colorPicker=document.createElement('div');colorPicker.className='richtext-color-picker';colorPicker.hidden=true;colorPicker.setAttribute('role','dialog');colorPicker.setAttribute('aria-label','Rich Text color picker');colorPicker.dataset.preserveTextEdit='true';document.body.appendChild(colorPicker);
     let colorPickerMode='',colorPickerAnchor=null;
     const closeColorPicker=()=>{
-      colorPicker.hidden=true;colorPickerMode='';colorPickerAnchor?.setAttribute('aria-expanded','false');colorPickerAnchor=null;m.classList.remove('is-richtext-popover-open');cancelAnimationFrame(colorPickerFrame);colorPickerFrame=0;
+      colorPicker.hidden=true;colorPickerMode='';colorPickerAnchor?.setAttribute('aria-expanded','false');colorPickerAnchor=null;m.classList.remove('is-richtext-color-open');if(!activeRichSelect&&!m.classList.contains('is-richtext-export-open'))m.classList.remove('is-richtext-popover-open');cancelAnimationFrame(colorPickerFrame);colorPickerFrame=0;
     };
     const positionColorPicker=()=>{
       if(colorPicker.hidden||!colorPickerAnchor?.isConnected){closeColorPicker();return}
@@ -430,12 +534,18 @@
       input.addEventListener('input',()=>input.classList.remove('is-invalid'));colorPicker.appendChild(custom);
     };
     const openColorPicker=(mode,anchorButton)=>{
-      rememberSelection();if(!exportMenu?.hidden)closeExportMenu();
+      rememberSelection();closeRichSelect();if(!exportMenu?.hidden)closeExportMenu();
       if(!colorPicker.hidden&&colorPickerMode===mode){closeColorPicker();return}
-      closeColorPicker();colorPickerMode=mode;colorPickerAnchor=anchorButton;buildColorPicker(mode);colorPicker.hidden=false;anchorButton.setAttribute('aria-expanded','true');m.classList.add('is-richtext-popover-open');positionColorPicker();
+      closeColorPicker();colorPickerMode=mode;colorPickerAnchor=anchorButton;buildColorPicker(mode);colorPicker.hidden=false;anchorButton.setAttribute('aria-expanded','true');m.classList.add('is-richtext-popover-open','is-richtext-color-open');positionColorPicker();
     };
     const outsideColorPicker=event=>{if(!colorPicker.hidden&&!colorPicker.contains(event.target)&&!colorPickerAnchor?.contains(event.target))closeColorPicker()};
-    document.addEventListener('pointerdown',outsideColorPicker,true);colorPicker.addEventListener('pointerdown',event=>event.stopPropagation());colorPicker.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();const anchor=colorPickerAnchor;closeColorPicker();anchor?.focus({preventScroll:true})}});
+    colorPicker.addEventListener('pointerdown',event=>{
+      rememberSelection();
+      const editableField=event.target.closest('input,textarea');
+      if(!editableField&&event.target.closest('button'))event.preventDefault();
+      event.stopPropagation();
+    });
+    document.addEventListener('pointerdown',outsideColorPicker,true);colorPicker.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();const anchor=colorPickerAnchor;closeColorPicker();anchor?.focus({preventScroll:true})}});
     const selectionElement=()=>{
       const selection=getSelection();
       if(!selection?.rangeCount||!selection.anchorNode||!editor.contains(selection.anchorNode))return null;
@@ -476,6 +586,7 @@
       const highlight=activeBackground(element);
       if(highlight){highlightColor=highlight;highlightSwatch.style.background=highlightColor;highlightSwatch.classList.remove('is-clear')}
       else{highlightSwatch.style.background='transparent';highlightSwatch.classList.add('is-clear')}
+      syncRichSelects();
     };
     const queueSync=()=>{cancelAnimationFrame(selectionFrame);selectionFrame=requestAnimationFrame(()=>{selectionFrame=0;rememberSelection();syncToolbar()})};
 
@@ -493,6 +604,7 @@
     const deleteImage=document.createElement('button');deleteImage.type='button';deleteImage.className='richtext-image-delete';deleteImage.title='Delete image';deleteImage.setAttribute('aria-label','Delete image');deleteImage.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>';
     imageControls.append(resetImage,deleteImage);imageOverlay.appendChild(imageControls);
     ['tl','tr','bl','br'].forEach(corner=>{const handle=document.createElement('button');handle.type='button';handle.className=`richtext-image-resize richtext-image-resize--${corner}`;handle.dataset.imageResize=corner;handle.setAttribute('aria-label',`Resize image from ${corner}`);imageOverlay.appendChild(handle)});m.appendChild(imageOverlay);
+    imageOverlay.addEventListener('pointerdown',event=>{rememberSelection();event.preventDefault();event.stopPropagation()});
 
     const moduleScale=()=>{const rect=m.getBoundingClientRect();return{x:rect.width/Math.max(1,m.offsetWidth),y:rect.height/Math.max(1,m.offsetHeight)}};
     const clearImageSelection=()=>{selectedImage=null;imageOverlay.hidden=true;imageOverlay.setAttribute('aria-hidden','true');cancelAnimationFrame(imageOverlayFrame);imageOverlayFrame=0;m.classList.remove('has-richtext-image-selected')};
@@ -636,19 +748,21 @@
       exportFrame=requestAnimationFrame(positionExportMenu);
     };
     const closeExportMenu=()=>{
-      exportMenu.hidden=true;exportButton.setAttribute('aria-expanded','false');cancelAnimationFrame(exportFrame);exportFrame=0;
+      exportMenu.hidden=true;exportButton.setAttribute('aria-expanded','false');m.classList.remove('is-richtext-export-open');if(!activeRichSelect&&!m.classList.contains('is-richtext-color-open'))m.classList.remove('is-richtext-popover-open');cancelAnimationFrame(exportFrame);exportFrame=0;
     };
     const openExportMenu=()=>{
-      exportMenu.hidden=false;exportButton.setAttribute('aria-expanded','true');positionExportMenu();
+      closeRichSelect();exportMenu.hidden=false;exportButton.setAttribute('aria-expanded','true');m.classList.add('is-richtext-popover-open','is-richtext-export-open');positionExportMenu();
     };
     const outsideExport=event=>{if(!exportMenu.hidden&&!exportMenu.contains(event.target)&&!exportButton.contains(event.target))closeExportMenu()};
     document.addEventListener('pointerdown',outsideExport,true);
-    exportMenu.addEventListener('pointerdown',event=>event.stopPropagation());
+    exportMenu.addEventListener('pointerdown',event=>{rememberSelection();event.preventDefault();event.stopPropagation()});
     exportMenu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeExportMenu();exportButton.focus({preventScroll:true})}});
 
     toolbar.addEventListener('pointerdown',event=>{
-      if(event.target.closest('button,select,input'))rememberSelection();
-      if(event.target.closest('button'))event.preventDefault();
+      rememberSelection();
+      event.stopPropagation();
+      const field=event.target.closest('input,textarea');
+      if(!field)event.preventDefault();
     });
     toolbar.addEventListener('click',event=>{
       const button=event.target.closest('[data-rich-command]');if(!button)return;
@@ -697,8 +811,8 @@
     const priorCleanup=m._cleanup;
     m._cleanup=()=>{
       cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);clearTimeout(toastTimer);
-      document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);
-      exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
+      document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);document.removeEventListener('pointerdown',outsideRichSelect,true);window.removeEventListener('resize',closeRichSelect);
+      richSelectControls.forEach(control=>control.menu.remove());exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
     };
 
     editor.querySelectorAll('img').forEach(applyImagePresentation);

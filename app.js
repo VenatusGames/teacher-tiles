@@ -3416,6 +3416,7 @@ function prepareModuleTextEditors(m){
 
 function isInteractiveModuleTarget(target,m){
   if(!(target instanceof Element)||!m)return false;
+  if(target.closest('[data-preserve-text-edit="true"]'))return true;
   if(target.closest('.module-drag-handle'))return false;
   if(m.dataset.type==='timer'&&target.closest('.timer-stage'))return false;
   if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
@@ -3491,6 +3492,7 @@ document.addEventListener('pointerdown',event=>{
 document.addEventListener('pointerdown',event=>{
   const field=document.activeElement;
   if(!(field instanceof HTMLElement)||!field.matches(TEXT_ENTRY_SELECTOR)||!(event.target instanceof Node))return;
+  if(event.target instanceof Element&&event.target.closest('[data-preserve-text-edit="true"]'))return;
   if(event.target===field||field.contains(event.target))return;
   collapseTextEntrySelection(field);
 },true);

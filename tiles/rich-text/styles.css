@@ -108,3 +108,34 @@ body.is-board-idle .richtext-module:not(:has(.richtext-editor.module-text-edit-a
 .richtext-customization{pointer-events:none}.richtext-customization .tile-bg{pointer-events:auto}
 @media(max-width:700px){.richtext-toolbar{gap:5px}.richtext-toolbar-divider{margin:0 1px}.richtext-toolbar-group{gap:3px}.richtext-block{width:104px}.richtext-font{width:110px}}
 @media(prefers-reduced-motion:reduce){.richtext-toolbar,.richtext-color-picker,.richtext-color-choice{transition:none;animation:none}}
+
+
+.richtext-select-trigger{
+  justify-content:space-between!important;gap:8px!important;text-align:left;
+  padding:0 8px 0 9px!important;
+}
+.richtext-select-trigger-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.richtext-select-trigger svg{width:11px;height:7px;flex:none;fill:none;stroke:#5d6470;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.richtext-select-trigger--block{width:112px}
+.richtext-select-trigger--font{width:118px}
+.richtext-select-trigger--size{width:68px}
+.richtext-select-trigger[aria-expanded="true"]{background:#e5f1ff!important;border-color:#7fb0df!important;color:#185f9f!important;box-shadow:inset 0 0 0 1px #9bc3e8!important}
+.richtext-select-menu{
+  position:fixed;z-index:100009;box-sizing:border-box;min-width:112px;max-height:min(310px,calc(100dvh - 16px));overflow:auto;overscroll-behavior:contain;
+  padding:6px;border:1px solid var(--border,#dbe2ec);border-radius:12px;
+  background:var(--surface-solid,#fff);color:var(--text,#172033);
+  box-shadow:0 14px 34px #0f172a30;font:12px/1.2 Inter,system-ui,sans-serif;
+}
+.richtext-select-menu[hidden]{display:none!important}
+.richtext-select-menu--block{width:168px}.richtext-select-menu--font{width:190px}.richtext-select-menu--size{width:112px}
+.richtext-select-menu button{
+  display:flex;width:100%;align-items:center;min-height:32px;padding:7px 9px;border:0;border-radius:8px;
+  background:transparent;color:inherit;text-align:left;font:600 12px/1.2 Inter,system-ui,sans-serif;cursor:pointer;
+}
+.richtext-select-menu button:hover{background:var(--surface-soft,#f1f5f9)}
+.richtext-select-menu button.is-selected{background:#e5f1ff;color:#185f9f;box-shadow:inset 0 0 0 1px #9bc3e8}
+.richtext-select-menu button:focus-visible{outline:2px solid #60a5fa;outline-offset:-1px}
+@media(max-width:700px){
+  .richtext-select-trigger--block{width:104px}
+  .richtext-select-trigger--font{width:110px}
+}
