@@ -13333,6 +13333,7 @@ body.dark .shop-coins-button{background:linear-gradient(135deg,#493c19,var(--sur
 body.is-board-selecting{cursor:crosshair!important}
 body.is-board-selecting .workspace{cursor:crosshair!important}
 .workspace{cursor:default}
+.workspace.has-pinned-tiles{overflow:visible}
 .workspace.is-panning{cursor:grabbing!important}
 
 
@@ -13720,6 +13721,7 @@ body.dark .signed-out-save-warning{
 }
 .board-mini-object.is-real-tile .module-delete,
 .board-mini-object.is-real-tile .module-fullscreen,
+.board-mini-object.is-real-tile .module-pin,
 .board-mini-object.is-real-tile .resize-handle,
 .board-mini-object.is-real-tile .sticker-transform-control{display:none!important}
 .board-card__meta{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 4px 0}
@@ -14923,7 +14925,7 @@ body>.profile-organizations-panel{position:fixed;inset:0;z-index:57700;padding:2
 .magnifier-live-view{position:absolute;inset:0;overflow:hidden;border-radius:12px;background:transparent;isolation:isolate}
 .magnifier-source-clone{position:absolute!important;margin:0!important;pointer-events:none!important;user-select:none!important;transition:none!important;animation-play-state:paused!important}
 .magnifier-source-clone *{pointer-events:none!important;animation-play-state:paused!important;caret-color:transparent!important}
-.magnifier-source-clone .module-delete,.magnifier-source-clone .module-fullscreen,.magnifier-source-clone .module-drag-handle,.magnifier-source-clone .resize-handle,.magnifier-source-clone .sticker-transform-control,.magnifier-source-clone .sticker-rotate-handle,.magnifier-source-clone .sticker-resize-handle{display:none!important}
+.magnifier-source-clone .module-delete,.magnifier-source-clone .module-fullscreen,.magnifier-source-clone .module-pin,.magnifier-source-clone .module-drag-handle,.magnifier-source-clone .resize-handle,.magnifier-source-clone .sticker-transform-control,.magnifier-source-clone .sticker-rotate-handle,.magnifier-source-clone .sticker-resize-handle{display:none!important}
 .magnifier-glare,.magnifier-handle{display:none}
 .magnifier-glare{position:absolute;z-index:5;left:26px;top:19px;width:66px;height:30px;border-radius:50%;border-top:5px solid rgba(255,255,255,.68);transform:rotate(-28deg);filter:blur(.3px);pointer-events:none}
 .magnifier-handle{position:absolute;z-index:2;left:127px;top:187px;width:63px;height:112px;border:2px solid rgba(16,25,36,.25);border-radius:17px 17px 25px 25px;background:linear-gradient(90deg,#29384c,#52647a 48%,#263548);box-shadow:8px 12px 22px rgba(22,31,43,.18),inset 7px 0 10px rgba(255,255,255,.1);transform:rotate(-34deg);transform-origin:50% 8%;pointer-events:none}
@@ -15706,6 +15708,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered{
 body.is-board-idle .module.is-idle-unhovered::after,
 body.is-board-idle .module.is-idle-unhovered .module-delete,
 body.is-board-idle .module.is-idle-unhovered .module-fullscreen,
+body.is-board-idle .module.is-idle-unhovered .module-pin,
 body.is-board-idle .module.is-idle-unhovered .sticky-toolbar,
 body.is-board-idle .module.is-idle-unhovered .customization-bar,
 body.is-board-idle .module.is-idle-unhovered [class*="-customization"],
@@ -16157,8 +16160,8 @@ body .module>.module-delete:focus-visible{outline:2px solid #60a5fa;outline-offs
 body .module>.module-fullscreen{
   position:absolute;
   z-index:10000!important;
-  right:43px;
-  top:9px;
+  right:var(--tile-fullscreen-right,43px)!important;
+  top:var(--tile-fullscreen-top,9px)!important;
   width:28px;
   height:28px;
   display:grid;
@@ -16189,13 +16192,31 @@ body .module>.module-fullscreen .module-fullscreen-icon--exit{display:none}
 body .module>.module-fullscreen[aria-pressed="true"] .module-fullscreen-icon--enter{display:none}
 body .module>.module-fullscreen[aria-pressed="true"] .module-fullscreen-icon--exit{display:block}
 
-body .module.is-tile-options-hotzone:hover>:is(.module-fullscreen,.module-delete),
-body .module>:is(.module-fullscreen,.module-delete):focus-visible{
+body .module>.module-pin{
+  position:absolute;
+  z-index:10000!important;
+  right:var(--tile-pin-right,9px)!important;
+  top:var(--tile-pin-top,43px)!important;
+  width:28px;height:28px;display:grid;place-items:center;padding:0;
+  border:1px solid var(--border)!important;border-radius:10px;
+  background:var(--surface-solid,var(--surface))!important;color:var(--text)!important;
+  box-shadow:0 3px 10px #0f172a18;cursor:pointer;
+  opacity:0!important;visibility:visible;pointer-events:none;
+  transition:opacity .15s,transform .15s,background .15s,border-color .15s;
+}
+body .module>.module-pin svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:transform .15s}
+body .module>.module-pin .module-pin-icon--on{display:none}
+body .module>.module-pin[aria-pressed="true"] .module-pin-icon--off{display:none}
+body .module>.module-pin[aria-pressed="true"] .module-pin-icon--on{display:block;transform:rotate(-24deg)}
+body .module>.module-pin[aria-pressed="true"]{background:#e5f1ff!important;border-color:#7fb0df!important;color:#185f9f!important;box-shadow:inset 0 0 0 1px #9bc3e8,0 3px 10px #0f172a18}
+
+body .module.is-tile-options-hotzone:hover>:is(.module-fullscreen,.module-pin,.module-delete),
+body .module>:is(.module-fullscreen,.module-pin,.module-delete):focus-visible{
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
 }
-body.tile-options-always-visible .workspace .module>:is(.module-fullscreen,.module-delete){
+body.tile-options-always-visible .workspace .module>:is(.module-fullscreen,.module-pin,.module-delete){
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
@@ -16203,12 +16224,13 @@ body.tile-options-always-visible .workspace .module>:is(.module-fullscreen,.modu
 body .module>.module-fullscreen:hover{transform:translateY(-1px)}
 body .module>.module-fullscreen:active{transform:translateY(0)}
 body .module>.module-fullscreen:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+body .module>.module-pin:hover{transform:translateY(-1px)}
+body .module>.module-pin:active{transform:translateY(0)}
+body .module>.module-pin:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
 
 /* Keep the option pair aligned on object-style tiles that offset their delete button. */
-.sticker-module>.module-fullscreen{
+.sticker-module>:is(.module-fullscreen,.module-pin){
   z-index:12!important;
-  right:33px!important;
-  top:-2px!important;
   width:29px!important;
   height:29px!important;
   border:1px solid color-mix(in srgb,var(--border) 78%,transparent)!important;
@@ -16218,8 +16240,6 @@ body .module>.module-fullscreen:focus-visible{outline:2px solid #60a5fa;outline-
   box-shadow:0 5px 14px rgba(15,23,42,.13)!important;
   backdrop-filter:blur(8px);
 }
-.magnifier-module>.module-fullscreen{right:34px!important;top:1px!important}
-.magnifier-module[data-tile-skin="magnifier-classic"]>.module-fullscreen{right:39px!important;top:3px!important}
 
 /* A tile uses the browser Fullscreen API, then this pseudo-class makes its own box fill the display. */
 .module:fullscreen{
@@ -16237,6 +16257,7 @@ body .module>.module-fullscreen:focus-visible{outline:2px solid #60a5fa;outline-
   max-height:none!important;
   margin:0!important;
   transform:none!important;
+  scale:1!important;
   box-sizing:border-box!important;
   border-radius:0!important;
 }
@@ -16249,10 +16270,11 @@ body .module>.module-fullscreen:focus-visible{outline:2px solid #60a5fa;outline-
 }
 .module:fullscreen>.module-delete{right:12px!important;top:12px!important}
 .module:fullscreen>.module-fullscreen{right:48px!important;top:12px!important}
+.module:fullscreen>.module-pin{right:12px!important;top:48px!important}
 .module:fullscreen::backdrop{background:#0f172a}
 
 /* Idle mode still wins over the preference so the existing presentation fade remains intact. */
-body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.module-delete){
+body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.module-pin,.module-delete){
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;

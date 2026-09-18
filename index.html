@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-tile-fullscreen-options-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-spell-pin-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="tiles/link/styles.css?v=20260908-polish-1">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20260910-background-remover-3">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260912-settings-popovers-1">
-  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260918-selection-toolbar-1">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20260918-spell-pin-1">
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
@@ -2204,9 +2204,10 @@
           <button class="richtext-image" type="button" aria-label="Insert image" title="Insert image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><circle cx="9" cy="9" r="1.5"/><path d="m5.5 17 4.2-4.2 3.1 3 2.3-2.3 3.4 3.5"/></svg><span class="richtext-toolbar-action-label">Image</span></button>
           <input class="richtext-image-input" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose image to insert">
           <button class="richtext-export-button" type="button" aria-label="Export Rich Text" title="Export" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg><span class="richtext-toolbar-action-label">Export</span></button>
+          <button class="richtext-spellcheck" type="button" aria-label="Turn spellcheck off" title="Spellcheck on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h8M4 10.5h6M4 14.5h5"/><path class="richtext-spellcheck-on" d="m14 15.5 2.2 2.2 4.3-5.2"/><path class="richtext-spellcheck-off" d="m15 13 5 5M20 13l-5 5"/></svg><span class="richtext-toolbar-action-label">Spell</span></button>
         </div>
       </div>
-      <div class="richtext-editor widget-scroll" contenteditable="true" spellcheck="true" aria-label="Rich text editor" data-text-edit-mode="double" data-placeholder="Double-click to edit…"></div>
+      <div class="richtext-editor widget-scroll" contenteditable="true" spellcheck="true" data-spellcheck-managed="true" aria-label="Rich text editor" data-text-edit-mode="double" data-placeholder="Double-click to edit…"></div>
       <div class="richtext-toast" role="status" aria-live="polite" hidden></div>
       <div class="customization-bar widget-controls richtext-customization" aria-label="Rich Text tile customization">
         <button class="custom-icon tile-bg" type="button" aria-label="Change tile background color" title="Change tile background color"><span class="icon-palette" aria-hidden="true"></span></button>
@@ -3929,8 +3930,8 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
-<script src="tiles/rich-text/index.js?v=20260918-highlight-preview-1"></script>
-<script src="app.js?v=20260918-tile-fullscreen-options-1"></script>
+<script src="tiles/rich-text/index.js?v=20260918-spell-pin-1"></script>
+<script src="app.js?v=20260918-spell-pin-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 

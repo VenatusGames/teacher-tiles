@@ -43,6 +43,7 @@ function disableModuleSpellcheck(root){
   if(root.matches('input,textarea,[contenteditable]'))fields.push(root);
   fields.push(...root.querySelectorAll('input,textarea,[contenteditable]'));
   for(const field of fields){
+    if(field.dataset.spellcheckManaged==='true')continue;
     field.spellcheck=false;
     field.setAttribute('spellcheck','false');
   }
@@ -158,7 +159,10 @@ function applyHistoryAction(action,direction){
       if(direction==='undo')restoreDeletedEntries(action.entries);
       else detachHistoryElements(action.entries.map(entry=>entry.el));
     }else if(action.type==='transform'){
-      for(const entry of action.entries)applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
+      for(const entry of action.entries){
+        applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
+        if(isTilePinned(entry.el))capturePinnedTileScreenAnchor(entry.el,{baseScale:Number(entry.el.dataset.pinBaseScale)||boardCamera.scale});
+      }
     }else if(action.type==='tile-edit'){
       for(const entry of action.entries)entry.el=restoreTileEdit(entry.el,direction==='undo'?entry.before:entry.after);
     }else if(action.type==='skin'){
@@ -1301,7 +1305,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
-    'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Keep the fullscreen and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.',
+    'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Keep the fullscreen, pin, and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
@@ -1337,7 +1341,7 @@ const APP_TRANSLATIONS={
     'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
     'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
     'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
-    'settings.deleteButtons.title':'Mostrar siempre las opciones del tile','settings.deleteButtons.copy':'Mantiene visibles los controles de pantalla completa y eliminar en cada tile en vez de mostrarlos solo cerca de la esquina superior derecha.',
+    'settings.deleteButtons.title':'Mostrar siempre las opciones del tile','settings.deleteButtons.copy':'Mantiene visibles los controles de pantalla completa, fijar y eliminar en cada tile en vez de mostrarlos solo cerca de la esquina superior derecha.',
     'settings.language.title':'Idioma','settings.language.copy':'Elige el idioma de los menús y controles de TeacherTiles.','settings.language.interface':'Idioma de la interfaz','settings.language.note':'El contenido de tus tiles nunca se traduce ni se modifica.',
     'settings.save.note':'Los cambios de preferencias se incluyen en el autoguardado normal del tablero; no usan un sistema adicional de Firestore.',
     'help.kicker':'CENTRO DE AYUDA','help.title':'Controles de TeacherTiles de un vistazo.','help.copy':'Atajos de teclado y controles del ratón para moverte rápidamente por tu tablero.',
@@ -1575,7 +1579,7 @@ function setupSettingsHub(){
   if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
     const row=document.createElement('div');
     row.className='settings-row settings-row--switch';
-    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Keep the fullscreen and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Keep the fullscreen, pin, and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
     boardSettingsCard.appendChild(row);
   }
   const modal=document.getElementById('settings-modal');
@@ -2054,14 +2058,89 @@ function clampBoardCamera(){
   boardCamera.x=clamp(boardCamera.x,minX,BOARD_OVERSCROLL);
   boardCamera.y=clamp(boardCamera.y,minY,BOARD_OVERSCROLL);
 }
+function renderedBoardCameraOffset(){
+  const pixelRatio=window.devicePixelRatio||1;
+  return{
+    x:Math.round(boardCamera.x*pixelRatio)/pixelRatio,
+    y:Math.round(boardCamera.y*pixelRatio)/pixelRatio
+  };
+}
+function isTilePinned(m){return Boolean(m&&m.dataset.tilePinned==='true')}
+function syncTilePinControl(m){
+  if(!m)return;
+  const button=m.querySelector(':scope>.module-pin');
+  const pinned=isTilePinned(m);
+  m.classList.toggle('is-tile-pinned',pinned);
+  if(!button)return;
+  button.setAttribute('aria-pressed',String(pinned));
+  button.setAttribute('aria-label',pinned?'Unpin tile from camera':'Pin tile to camera');
+  button.title=pinned?'Unpin tile':'Pin tile';
+}
+function capturePinnedTileScreenAnchor(m,{baseScale=boardCamera.scale}={}){
+  if(!m?.isConnected)return;
+  const rect=m.getBoundingClientRect();
+  m.dataset.pinScreenX=String(rect.left+rect.width/2);
+  m.dataset.pinScreenY=String(rect.top+rect.height/2);
+  m.dataset.pinBaseScale=String(Math.max(.05,Number(baseScale)||boardCamera.scale||1));
+}
+function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
+  if(!m?.isConnected)return;
+  if(!isTilePinned(m)){
+    m.style.removeProperty('scale');
+    syncTilePinControl(m);
+    return;
+  }
+  let screenX=Number(m.dataset.pinScreenX),screenY=Number(m.dataset.pinScreenY);
+  if(!Number.isFinite(screenX)||!Number.isFinite(screenY)){
+    capturePinnedTileScreenAnchor(m);
+    screenX=Number(m.dataset.pinScreenX);screenY=Number(m.dataset.pinScreenY);
+  }
+  const currentScale=Math.max(.05,boardCamera.scale||1);
+  const baseScale=Math.max(.05,Number(m.dataset.pinBaseScale)||currentScale);
+  m.style.left=`${(screenX-rendered.x)/currentScale-m.offsetWidth/2}px`;
+  m.style.top=`${(screenY-rendered.y)/currentScale-m.offsetHeight/2}px`;
+  m.style.scale=String(baseScale/currentScale);
+  syncTilePinControl(m);
+}
+function syncPinnedTilesToCamera(rendered=renderedBoardCameraOffset()){
+  const pinned=[...workspace.querySelectorAll('.module[data-tile-pinned="true"]')];
+  workspace.classList.toggle('has-pinned-tiles',pinned.length>0);
+  pinned.forEach(m=>syncPinnedTileToCamera(m,rendered));
+}
+function setTilePinned(m,pinned){
+  if(!m?.isConnected)return;
+  const next=Boolean(pinned);
+  if(next===isTilePinned(m)){syncTilePinControl(m);return}
+  const rect=m.getBoundingClientRect();
+  const screenX=rect.left+rect.width/2,screenY=rect.top+rect.height/2;
+  const rendered=renderedBoardCameraOffset();
+  if(next){
+    clearSnapGroupMember(m,{notify:false});
+    m.dataset.tilePinned='true';
+    m.dataset.pinScreenX=String(screenX);
+    m.dataset.pinScreenY=String(screenY);
+    m.dataset.pinBaseScale=String(Math.max(.05,boardCamera.scale||1));
+    bringToFront(m);
+    syncPinnedTileToCamera(m,rendered);
+  }else{
+    delete m.dataset.tilePinned;delete m.dataset.pinScreenX;delete m.dataset.pinScreenY;delete m.dataset.pinBaseScale;
+    m.style.removeProperty('scale');
+    const scale=Math.max(.05,boardCamera.scale||1);
+    m.style.left=`${(screenX-rendered.x)/scale-m.offsetWidth/2}px`;
+    m.style.top=`${(screenY-rendered.y)/scale-m.offsetHeight/2}px`;
+    syncTilePinControl(m);
+  }
+  syncPinnedTilesToCamera(rendered);
+  layoutTileOptionControls(m);
+  notifyBoardChanged(next?'pin':'unpin');
+}
 function applyBoardCamera(){
   clampBoardCamera();
-  const pixelRatio=window.devicePixelRatio||1;
-  const renderedX=Math.round(boardCamera.x*pixelRatio)/pixelRatio;
-  const renderedY=Math.round(boardCamera.y*pixelRatio)/pixelRatio;
-  workspace.style.transform=`translate(${renderedX}px,${renderedY}px) scale(${boardCamera.scale})`;
+  const rendered=renderedBoardCameraOffset();
+  workspace.style.transform=`translate(${rendered.x}px,${rendered.y}px) scale(${boardCamera.scale})`;
   workspace.style.setProperty('--board-zoom',boardCamera.scale);
   workspace.style.setProperty('--board-edge-width',`${2.5/boardCamera.scale}px`);
+  syncPinnedTilesToCamera(rendered);
   requestAnimationFrame(()=>updateWorkspaceEmptyState());
   requestBoardMinimapDraw();
   notifyBoardChanged('camera');
@@ -3423,7 +3502,7 @@ function isInteractiveModuleTarget(target,m){
   if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
-  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.ruler-handle'))return true;
+  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
     if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='grab'||cursor==='grabbing'||cursor==='not-allowed'||cursor.includes('resize'))return true;
@@ -3434,12 +3513,72 @@ function isInteractiveModuleTarget(target,m){
 const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','magnifier-classic']);
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
-  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.ruler-handle'))return false;
+  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
   const action=target.closest('button,[role="button"]');
   return !action||(m.dataset.tileSkin==='stoplight-freestanding'&&action.classList.contains('stoplight-stage'));
 }
 const TILE_FULLSCREEN_ENTER_ICON='<svg class="module-fullscreen-icon module-fullscreen-icon--enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg>';
 const TILE_FULLSCREEN_EXIT_ICON='<svg class="module-fullscreen-icon module-fullscreen-icon--exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M15 20v-5h5M9 20v-5H4"/></svg>';
+const TILE_PIN_OFF_ICON='<svg class="module-pin-icon module-pin-icon--off" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l-1 5 3 3v2H6v-2l3-3-1-5Z"/><path d="M12 14v6"/></svg>';
+const TILE_PIN_ON_ICON='<svg class="module-pin-icon module-pin-icon--on" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l-1 5 3 3v2H6v-2l3-3-1-5Z" fill="currentColor"/><path d="M12 14v6"/></svg>';
+
+function tileOptionImportantRects(m){
+  const selector='button,input,select,textarea,[contenteditable],[role="button"],[role="slider"],[role="textbox"],iframe,audio,video,canvas,a';
+  return[...m.querySelectorAll(selector)].filter(el=>{
+    if(el.matches('.module-delete,.module-fullscreen,.module-pin,.resize-handle,.module-drag-handle')||el.closest('.module-delete,.module-fullscreen,.module-pin'))return false;
+    const style=getComputedStyle(el);if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+    const rect=el.getBoundingClientRect();return rect.width>2&&rect.height>2;
+  }).map(el=>el.getBoundingClientRect());
+}
+function rectsOverlap(a,b,pad=4){return a.left<b.right+pad&&a.right>b.left-pad&&a.top<b.bottom+pad&&a.bottom>b.top-pad}
+function layoutTileOptionControls(m){
+  if(!m?.isConnected)return;
+  const del=m.querySelector(':scope>.module-delete'),full=m.querySelector(':scope>.module-fullscreen'),pin=m.querySelector(':scope>.module-pin');
+  if(!del||!full||!pin)return;
+  if(document.fullscreenElement===m){
+    m.style.setProperty('--tile-fullscreen-right','48px');m.style.setProperty('--tile-fullscreen-top','12px');
+    m.style.setProperty('--tile-pin-right','12px');m.style.setProperty('--tile-pin-top','48px');return;
+  }
+  const delStyle=getComputedStyle(del),delRight=parseFloat(delStyle.right)||0,delTop=parseFloat(delStyle.top)||0;
+  const delWidth=del.offsetWidth||28,delHeight=del.offsetHeight||28,gap=6;
+  const important=tileOptionImportantRects(m),placed=[del.getBoundingClientRect()];
+  const fits=(button,right,top)=>{
+    m.style.setProperty(button===full?'--tile-fullscreen-right':'--tile-pin-right',`${right}px`);
+    m.style.setProperty(button===full?'--tile-fullscreen-top':'--tile-pin-top',`${top}px`);
+    const rect=button.getBoundingClientRect(),moduleRect=m.getBoundingClientRect();
+    if(rect.left<moduleRect.left-1||rect.right>moduleRect.right+1||rect.top<moduleRect.top-1||rect.bottom>moduleRect.bottom+1)return false;
+    return !important.some(other=>rectsOverlap(rect,other))&&!placed.some(other=>rectsOverlap(rect,other,2));
+  };
+  const stepX=(full.offsetWidth||28)+gap,stepY=(full.offsetHeight||28)+gap;
+  const fullCandidates=[
+    [delRight+delWidth+gap,delTop],[delRight+delWidth+gap+stepX,delTop],
+    [delRight+delWidth+gap,delTop+stepY],[delRight+delWidth+gap+stepX,delTop+stepY],
+    [delRight+delWidth+gap+stepX*2,delTop],[delRight+delWidth+gap+stepX*2,delTop+stepY]
+  ];
+  let fullPlaced=false;
+  for(const [right,top] of fullCandidates)if(fits(full,right,top)){fullPlaced=true;break}
+  if(!fullPlaced){m.style.setProperty('--tile-fullscreen-right',`${delRight+delWidth+gap}px`);m.style.setProperty('--tile-fullscreen-top',`${delTop}px`)}
+  placed.push(full.getBoundingClientRect());
+  const pinCandidates=[
+    [delRight,delTop+delHeight+gap],[delRight,delTop+delHeight+gap+stepY],
+    [delRight+stepX,delTop+delHeight+gap],[delRight+stepX,delTop+delHeight+gap+stepY],
+    [delRight+stepX*2,delTop+delHeight+gap]
+  ];
+  let pinPlaced=false;
+  for(const [right,top] of pinCandidates)if(fits(pin,right,top)){pinPlaced=true;break}
+  if(!pinPlaced){m.style.setProperty('--tile-pin-right',`${delRight}px`);m.style.setProperty('--tile-pin-top',`${delTop+delHeight+gap}px`)}
+}
+
+function ensureTilePinControl(m){
+  let button=m.querySelector(':scope>.module-pin');
+  if(button){syncTilePinControl(m);return button}
+  const del=m.querySelector(':scope>.module-delete');if(!del)return null;
+  button=document.createElement('button');button.className='module-pin';button.type='button';button.setAttribute('aria-pressed','false');button.innerHTML=`${TILE_PIN_OFF_ICON}${TILE_PIN_ON_ICON}`;
+  del.after(button);
+  button.addEventListener('pointerdown',event=>event.stopPropagation());
+  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();setTilePinned(m,!isTilePinned(m))});
+  syncTilePinControl(m);return button;
+}
 
 function syncTileFullscreenControls(){
   const active=document.fullscreenElement?.classList?.contains('module')?document.fullscreenElement:null;
@@ -3451,6 +3590,8 @@ function syncTileFullscreenControls(){
     button.setAttribute('aria-pressed',String(isActive));
     button.setAttribute('aria-label',isActive?'Exit tile fullscreen':'View tile fullscreen');
     button.title=isActive?'Exit fullscreen':'Fullscreen';
+    if(!isActive&&isTilePinned(module))syncPinnedTileToCamera(module);
+    layoutTileOptionControls(module);
   });
 }
 
@@ -3486,11 +3627,23 @@ function setupCommon(m){
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
   ensureTileFullscreenControl(m);
+  ensureTilePinControl(m);
+  layoutTileOptionControls(m);
+  const optionResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
+  optionResizeObserver.observe(m);
+  m.addEventListener('pointerenter',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
+  const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();priorOptionCleanup?.()};
   const updateDeleteHotzone=e=>{
     const rect=m.getBoundingClientRect();
-    const proximityX=Math.max(82,Math.min(104,rect.width*.34));
-    const proximityY=Math.max(46,Math.min(64,rect.height*.22));
-    const inside=e.clientX>=rect.right-proximityX&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximityY;
+    const proximityX=Math.max(88,Math.min(126,rect.width*.4));
+    const proximityY=Math.max(90,Math.min(124,rect.height*.38));
+    const nearCorner=e.clientX>=rect.right-proximityX&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximityY;
+    if(nearCorner&&!m.classList.contains('is-tile-options-hotzone'))layoutTileOptionControls(m);
+    const nearOption=[m.querySelector(':scope>.module-delete'),m.querySelector(':scope>.module-fullscreen'),m.querySelector(':scope>.module-pin')].filter(Boolean).some(button=>{
+      const r=button.getBoundingClientRect(),pad=12;
+      return e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad;
+    });
+    const inside=nearCorner||nearOption;
     m.classList.toggle('is-delete-hotzone',inside);
     m.classList.toggle('is-tile-options-hotzone',inside);
   };
@@ -3606,8 +3759,10 @@ function setupDrag(m){
     m.classList.add('is-dragging');
     document.body.classList.add('is-module-dragging');
     bringToFront(m);
-    if(!selectedModules.has(m)){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
-    const selected=[...selectedModules];
+    const pinnedDrag=isTilePinned(m);
+    if(pinnedDrag){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
+    else if(!selectedModules.has(m)){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
+    const selected=pinnedDrag?[m]:[...selectedModules];
     const connectedToAnchor=snapGroupMembers(m);
     const expanded=new Set();
     for(const selectedModule of selected){
@@ -3679,7 +3834,7 @@ function setupDrag(m){
       clearPreview();
       overTrash=trashHit(ev);
       setTrash(true,overTrash);
-      if(overTrash||multi||snappingDisabled||!dragMoved){pending=null;return}
+      if(overTrash||multi||snappingDisabled||!dragMoved||pinnedDrag){pending=null;return}
       pending=findSnap(m.offsetLeft,m.offsetTop);
       workspace.style.setProperty('--snap-unit',`${1/boardCamera.scale}px`);
       if(pending.left!==null||pending.top!==null){
@@ -3722,6 +3877,7 @@ function setupDrag(m){
         joined=assignSnapGroup(snapMembers);
       }
       recordTransformHistory([...origins.keys()],origins);
+      if(pinnedDrag)capturePinnedTileScreenAnchor(m,{baseScale:Number(m.dataset.pinBaseScale)||boardCamera.scale});
       cleanup();
       if(willSnap)pulse(joined);
     };
@@ -12476,8 +12632,8 @@ const savedTheme=localStorage.getItem(THEME_STORAGE_KEY);
 applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persist:false});
 
 fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
-document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶';syncTileFullscreenControls()});
-window.addEventListener('resize',()=>document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement)return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`}));
+document.addEventListener('fullscreenchange',()=>{fullscreenToggle.childNodes[0].nodeValue=document.fullscreenElement?'↙':'⛶';syncTileFullscreenControls();syncPinnedTilesToCamera()});
+window.addEventListener('resize',()=>{document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement||isTilePinned(m))return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`});syncPinnedTilesToCamera()});
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
   if(!src&&!emoji)return null;
@@ -17780,7 +17936,8 @@ const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
-  'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus'
+  'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus',
+  'is-delete-hotzone','is-tile-options-hotzone','is-tile-fullscreen','is-tile-pinned'
 ]);
 let activeTeacherTilesBoardId='';
 
@@ -17919,6 +18076,9 @@ function applyBoardPostSetupState(m,state){
     requestAnimationFrame(()=>m.querySelector('.youtube-load')?.click());
   }
   disableModuleSpellcheck(m);
+  syncTilePinControl(m);
+  if(isTilePinned(m))syncPinnedTileToCamera(m);
+  layoutTileOptionControls(m);
 }
 
 function serializeBoardModule(m){

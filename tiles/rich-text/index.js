@@ -210,6 +210,7 @@
     const imageButton=m.querySelector('.richtext-image');
     const imageInput=m.querySelector('.richtext-image-input');
     const exportButton=m.querySelector('.richtext-export-button');
+    const spellcheckButton=m.querySelector('.richtext-spellcheck');
     const toast=m.querySelector('.richtext-toast');
     const buttons=[...toolbar.querySelectorAll('[data-rich-command]')];
     let savedRange=null;
@@ -222,6 +223,7 @@
     let selectedImage=null;
     let textColor='#17191d';
     let highlightColor='#fff2a8';
+    let spellcheckEnabled=m.dataset.richSpellcheck!=='false';
 
     toolbar.dataset.preserveTextEdit='true';
 
@@ -364,6 +366,18 @@
     const markChanged=()=>{
       cancelAnimationFrame(changeFrame);
       changeFrame=requestAnimationFrame(()=>{changeFrame=0;notifyBoardChanged('rich-text')});
+    };
+    const syncSpellcheck=()=>{
+      spellcheckEnabled=Boolean(spellcheckEnabled);
+      m.dataset.richSpellcheck=String(spellcheckEnabled);
+      editor.dataset.spellcheckManaged='true';
+      editor.spellcheck=spellcheckEnabled;
+      editor.setAttribute('spellcheck',String(spellcheckEnabled));
+      if(spellcheckButton){
+        spellcheckButton.setAttribute('aria-pressed',String(spellcheckEnabled));
+        spellcheckButton.setAttribute('aria-label',spellcheckEnabled?'Turn spellcheck off':'Turn spellcheck on');
+        spellcheckButton.title=spellcheckEnabled?'Spellcheck on':'Spellcheck off';
+      }
     };
     const convertSizeFonts=size=>{
       editor.querySelectorAll('font[size="7"]').forEach(font=>{
@@ -784,6 +798,7 @@
     imageButton.addEventListener('click',()=>{rememberSelection();imageInput.click()});
     imageInput.addEventListener('change',async()=>{const file=imageInput.files?.[0];imageInput.value='';if(file)await addImageFile(file)});
     exportButton.addEventListener('click',()=>{if(exportMenu.hidden)openExportMenu();else closeExportMenu()});
+    spellcheckButton?.addEventListener('click',()=>{spellcheckEnabled=!spellcheckEnabled;syncSpellcheck();markChanged()});
 
     editor.addEventListener('input',()=>{rememberSelection();editor.querySelectorAll('img').forEach(applyImagePresentation);markChanged()});
     editor.addEventListener('keyup',queueSync);
@@ -821,6 +836,7 @@
     };
 
     editor.querySelectorAll('img').forEach(applyImagePresentation);
+    syncSpellcheck();
     colorSwatch.style.background=textColor;colorSwatch.classList.remove('is-clear');
     highlightSwatch.style.background='transparent';highlightSwatch.classList.add('is-clear');
   }
