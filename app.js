@@ -2565,7 +2565,7 @@ window.addEventListener('resize',applyBoardCamera);
 
 workspace.addEventListener('contextmenu',e=>{
   if(e.target instanceof Element&&e.target.closest('.richtext-editor.module-text-edit-active'))return;
-  e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r={width:menu.offsetWidth,height:menu.offsetHeight};menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false');keepTileMenuOnScreen();
+  e.preventDefault();spawn=screenToBoard(e.clientX,e.clientY);if(menuSearch)menuSearch.value='';setMenuCategoryDrawer(false);setMenuCategory('all');if(menuCategoryDrawer)menuCategoryDrawer.scrollTop=0;menu.classList.remove('is-open');void menu.offsetWidth;menu.style.left=`${e.clientX}px`;menu.style.top=`${e.clientY}px`;menu.classList.add('is-open');const r={width:menu.offsetWidth,height:menu.offsetHeight};menu.style.left=`${clamp(e.clientX,8,innerWidth-r.width-8)}px`;menu.style.top=`${clamp(e.clientY,8,innerHeight-r.height-8)}px`;menu.setAttribute('aria-hidden','false');keepTileMenuOnScreen();requestAnimationFrame(()=>{if(menuCategoryDrawer)menuCategoryDrawer.scrollTop=0});
 });
 document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))closeMenu()});
 
@@ -2910,6 +2910,7 @@ window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(
 
 function closeMenu(){
   setMenuCategoryDrawer(false);
+  if(menuCategoryDrawer)menuCategoryDrawer.scrollTop=0;
   menu.classList.remove('is-open');
   menu.setAttribute('aria-hidden','true');
 }
