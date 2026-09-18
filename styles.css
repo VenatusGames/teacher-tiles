@@ -16481,18 +16481,28 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   color:var(--text)!important;
 }
 .timer-presets{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:6px;
-  width:min(100%,300px);
+  display:flex;
+  flex-wrap:nowrap;
+  justify-content:center;
+  align-items:center;
+  gap:4px;
+  width:100%;
   align-self:center;
 }
 .timer-presets button{
-  width:100%;
-  min-width:0;
-  font-size:11px;
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+  min-width:36px;
+  min-height:36px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  font-size:10px;
+  line-height:1;
   white-space:nowrap;
 }
+.timer-presets .timer-clear{font-size:9px}
 .timer-custom-row{align-items:flex-end;gap:6px}
 .timer-custom-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--module-text,var(--text));font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
 .timer-custom-field input{
