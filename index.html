@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-planner-schedule-layout-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-short-lessons-settings-today-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -334,14 +334,21 @@
                   <button id="lesson-planner-scheduling-button" type="button">Scheduling</button>
                   <button id="lesson-planner-templates-button" type="button">Templates</button>
                   <div class="lesson-planner-settings-wrap">
-                    <button id="lesson-planner-settings-button" type="button" aria-expanded="false" aria-controls="lesson-planner-settings-menu">Settings</button>
+                    <button id="lesson-planner-settings-button" class="lesson-planner-settings-button" type="button" aria-label="Planner settings" title="Planner settings" aria-expanded="false" aria-controls="lesson-planner-settings-menu">
+                      <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/></svg>
+                    </button>
                     <div id="lesson-planner-settings-menu" class="lesson-planner-settings-menu" hidden>
-                      <div class="lesson-planner-settings-menu__heading"><span>PLANNER SETTINGS</span><strong>Week View</strong></div>
-                      <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
-                        <span><strong>Show Weekends in Week View</strong><small>Include Saturday and Sunday columns.</small></span>
-                        <input id="lesson-planner-show-weekends" type="checkbox">
-                        <i aria-hidden="true"><b></b></i>
-                      </label>
+                      <div class="lesson-planner-settings-menu__heading">
+                        <span class="lesson-planner-settings-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/></svg></span>
+                        <div><span>PLANNER SETTINGS</span><strong>Calendar display</strong><small>Customize how this planner appears.</small></div>
+                      </div>
+                      <div class="lesson-planner-settings-menu__body">
+                        <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
+                          <span><strong>Show Weekends in Week View</strong><small>Include Saturday and Sunday columns when using Week view.</small></span>
+                          <input id="lesson-planner-show-weekends" type="checkbox">
+                          <i aria-hidden="true"><b></b></i>
+                        </label>
+                      </div>
                     </div>
                   </div>
                   <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
@@ -352,6 +359,7 @@
                   <button id="lesson-planner-prev" type="button" aria-label="Previous date range">‹</button>
                   <button id="lesson-planner-next" type="button" aria-label="Next date range">›</button>
                   <div><small id="lesson-planner-range-kicker">THIS WEEK</small><strong id="lesson-planner-range-title">Calendar</strong></div>
+                  <button id="lesson-planner-today" class="lesson-planner-today" type="button">Today</button>
                 </div>
                 <div class="lesson-planner-view-controls">
                   <div id="lesson-planner-view-tabs" class="lesson-planner-view-tabs" role="tablist" aria-label="Planner view">
@@ -360,7 +368,6 @@
                     <button type="button" data-planner-view="month" role="tab">Month</button>
                     <button type="button" data-planner-view="year" role="tab">Year</button>
                   </div>
-                  <button id="lesson-planner-today" class="lesson-planner-today" type="button">Today</button>
                 </div>
                 <label class="lesson-planner-zoom"><span>Zoom</span><input id="lesson-planner-zoom" type="range" min="0" max="3" step="1" value="1" aria-label="Calendar zoom from day to year"><i aria-hidden="true">−</i></label>
               </section>
@@ -4121,7 +4128,7 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="app.js?v=20260918-planner-picker-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-autoscroll-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-short-lessons-settings-today-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

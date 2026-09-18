@@ -862,7 +862,8 @@
       const originX=event.clientX,originY=event.clientY,duration=minutes(block.end)-minutes(block.start);
       const sourceColumn=button.closest('.lesson-planner-day-column');
       const sourceRect=sourceColumn?.getBoundingClientRect();
-      const offset=sourceRect?DAY_START+(originY-sourceRect.top)/sourceRect.height*(DAY_END-DAY_START)-minutes(block.start):0;
+      const sourceMinute=sourceColumn?._minuteFromClientY?sourceColumn._minuteFromClientY(originY):(sourceRect?DAY_START+(originY-sourceRect.top)/sourceRect.height*(DAY_END-DAY_START):minutes(block.start));
+      const offset=sourceMinute-minutes(block.start);
       let x=originX,y=originY,dragging=false,ghost=null,target=null,placement=null,placeholder=null,raf=0;
       const clearTarget=()=>{target?.classList.remove('is-lesson-drop-target');target=null;placement=null;placeholder?.remove();placeholder=null};
       const update=()=>{
@@ -880,7 +881,8 @@
           let start=minutes(block.start);
           if(hit.classList.contains('lesson-planner-day-column')){
             const rect=hit.getBoundingClientRect();
-            start=Math.round((DAY_START+(y-rect.top)/rect.height*(DAY_END-DAY_START)-offset)/5)*5;
+            const pointerMinute=hit._minuteFromClientY?hit._minuteFromClientY(y):DAY_START+(y-rect.top)/rect.height*(DAY_END-DAY_START);
+            start=Math.round((pointerMinute-offset)/5)*5;
             start=Math.max(0,Math.min(1439-duration,start));
           }
           const exactTime=total=>`${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
@@ -890,9 +892,15 @@
           placeholder.textContent=`${block.label} · ${timeLabel(placement.start)}–${timeLabel(placement.end)}`;
           if(hit.classList.contains('lesson-planner-day-column')){
             const visibleStart=Math.max(DAY_START,start),visibleEnd=Math.min(DAY_END,start+duration);
-            placeholder.style.top=`${(visibleStart-DAY_START)/(DAY_END-DAY_START)*100}%`;
-            placeholder.style.height=`${Math.max(0,visibleEnd-visibleStart)/(DAY_END-DAY_START)*100}%`;
-            placeholder.style.minHeight='52px';
+            if(hit._timelineYForMinute){
+              const top=hit._timelineYForMinute(visibleStart),bottom=hit._timelineYForMinute(visibleEnd);
+              placeholder.style.top=`${top}px`;
+              placeholder.style.height=`${Math.max(38,bottom-top)}px`;
+            }else{
+              placeholder.style.top=`${(visibleStart-DAY_START)/(DAY_END-DAY_START)*100}%`;
+              placeholder.style.height=`${Math.max(0,visibleEnd-visibleStart)/(DAY_END-DAY_START)*100}%`;
+              placeholder.style.minHeight='52px';
+            }
           }
           hit.appendChild(placeholder);
           ghost.textContent=`${block.label} · ${monthDay.format(fromDateKey(placement.date))} · ${timeLabel(placement.start)}–${timeLabel(placement.end)}`;
@@ -967,104 +975,184 @@
       button.addEventListener('click', () => { selectedDate = atNoon(date); renderAll(); });
       head.append(button);
     });
+
     const body = make('div', 'lesson-planner-schedule__body');
     body.style.setProperty('--planner-days', dates.length);
-    body.style.setProperty('--planner-timeline-height', `${TIMELINE_HEIGHT}px`);
-    const minuteTop = total => ((total - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
+    const baseMinuteTop = total => ((total - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
     const times = make('div', 'lesson-planner-times');
-    for (let total = DAY_START; total <= DAY_END; total += 5) {
-      const notch = make('i', 'lesson-planner-minute-notch');
-      notch.style.top = `${minuteTop(total)}px`;
-      if (total % 60 === 0) notch.classList.add('is-hour');
-      else if (total % 30 === 0) notch.classList.add('is-half-hour');
-      else if (total % 15 === 0) notch.classList.add('is-quarter-hour');
-      times.append(notch);
-      if (total % 60 === 0) {
-        const label = make('span', '', timeLabel(timeValue(total)).replace(':00', ''));
-        label.style.top = `${minuteTop(total)}px`;
-        times.append(label);
-      }
-    }
     body.append(times);
+    schedule.append(head, body);
+    canvas.append(schedule);
+
+    const dayRecords = [];
+    const lessonRecords = [];
+    const expansionByMinute = new Map();
+    const requestExpansion = (minute, amount) => {
+      const rounded = Math.max(0, Math.ceil(amount));
+      if (!rounded) return;
+      expansionByMinute.set(minute, Math.max(expansionByMinute.get(minute) || 0, rounded));
+    };
+
     dates.forEach(date => {
       const column = make('div', 'lesson-planner-day-column');
-      column.dataset.lessonDropDate=dateKey(date);
+      column.dataset.lessonDropDate = dateKey(date);
       column.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
       const daySchedule = scheduleForDate(date).slice().sort((a,b) => minutes(a.start) - minutes(b.start) || minutes(a.end) - minutes(b.end));
       const scheduleGeometry = daySchedule.map(item => {
         const start = Math.max(DAY_START, minutes(item.start));
         const end = Math.min(DAY_END, Math.max(start + 5, minutes(item.end)));
         if (end <= DAY_START || start >= DAY_END) return null;
-        return { item, start, end, top: minuteTop(start), bottom: minuteTop(end) };
+        return { item, start, end, element: null };
       }).filter(Boolean);
-      const preview=make('div','lesson-planner-add-preview');preview.setAttribute('aria-hidden','true');column.appendChild(preview);
-      const startAtPointer=event=>{
-        const rect=column.getBoundingClientRect();
-        const total=DAY_START+((event.clientY-rect.top)/Math.max(1,rect.height))*(DAY_END-DAY_START);
-        return Math.max(DAY_START,Math.min(DAY_END-60,Math.round(total/5)*5));
-      };
-      column.addEventListener('pointermove',event=>{
-        const show=event.target===column&&!event.buttons&&event.pointerType!=='touch'&&!cancelLessonDrag;
-        preview.classList.toggle('is-visible',show);if(!show)return;
-        const start=startAtPointer(event);
-        preview.style.top=`${minuteTop(start)}px`;
-        preview.style.height=`${minuteTop(start+60)-minuteTop(start)}px`;
-        preview.textContent=`+ Add lesson · ${timeLabel(timeValue(start))}`;
+
+      scheduleGeometry.forEach(section => {
+        const available = baseMinuteTop(section.end) - baseMinuteTop(section.start);
+        requestExpansion(section.end, SCHEDULE_HEADING_HEIGHT + 4 - available);
       });
-      column.addEventListener('pointerleave',()=>preview.classList.remove('is-visible'));
-      column.addEventListener('pointerdown',()=>preview.classList.remove('is-visible'));
+
+      const preview = make('div', 'lesson-planner-add-preview');
+      preview.setAttribute('aria-hidden', 'true');
+      column.append(preview);
+      body.append(column);
+
+      scheduleGeometry.forEach(section => {
+        const background = scheduleBackground(section.item);
+        section.element = background;
+        background.style.top = `${baseMinuteTop(section.start)}px`;
+        background.style.height = `${Math.max(15, baseMinuteTop(section.end) - baseMinuteTop(section.start))}px`;
+        background.classList.toggle('is-compact', section.end - section.start < 30);
+        column.append(background);
+      });
+
+      blocksForDate(date).forEach(block => {
+        const start = Math.max(DAY_START, minutes(block.start));
+        const end = Math.min(DAY_END, Math.max(start + 5, minutes(block.end)));
+        if (end <= DAY_START || start >= DAY_END) return;
+        const element = lessonBlockButton(block);
+        const containingSchedule = scheduleGeometry
+          .filter(section => start >= section.start && end <= section.end)
+          .sort((a,b) => (a.end-a.start) - (b.end-b.start))[0] || null;
+        let provisionalTop = baseMinuteTop(start);
+        if (containingSchedule) {
+          provisionalTop = Math.max(provisionalTop, baseMinuteTop(containingSchedule.start) + SCHEDULE_HEADING_HEIGHT + SCHEDULE_LESSON_GAP);
+          element.classList.add('is-inside-schedule');
+          element.dataset.scheduleSection = containingSchedule.item.id;
+        }
+        const provisionalBottom = baseMinuteTop(end);
+        element.style.top = `${provisionalTop}px`;
+        element.style.height = `${Math.max(22, provisionalBottom - provisionalTop)}px`;
+        column.append(element);
+        lessonRecords.push({ element, block, start, end, containingSchedule, provisionalTop });
+      });
+
+      dayRecords.push({ date, column, scheduleGeometry, preview, nowLine: null });
+    });
+
+    /* Measure every lesson at its real rendered width. If a short lesson needs more
+       room for its title/time/description, insert vertical space at its end time.
+       Because the same expansion map is used by every day column, week rows remain
+       aligned while later schedule sections are pushed down cleanly. */
+    lessonRecords.forEach(record => {
+      const naturalHeight = Math.max(38, Math.ceil(record.element.scrollHeight + 2));
+      const available = Math.max(1, baseMinuteTop(record.end) - record.provisionalTop);
+      requestExpansion(record.end, naturalHeight + 5 - available);
+      record.naturalHeight = naturalHeight;
+    });
+
+    const expansions = [...expansionByMinute.entries()].sort((a,b) => a[0] - b[0]);
+    const extraThrough = minute => expansions.reduce((sum, [at, amount]) => sum + (at <= minute ? amount : 0), 0);
+    const timelineY = minute => baseMinuteTop(minute) + extraThrough(minute);
+    const finalHeight = TIMELINE_HEIGHT + expansions.reduce((sum, [,amount]) => sum + amount, 0);
+    body.style.setProperty('--planner-timeline-height', `${finalHeight}px`);
+    body.style.height = `${finalHeight}px`;
+
+    const minutePoints = [];
+    for (let total = DAY_START; total <= DAY_END; total += 5) minutePoints.push({ minute: total, y: timelineY(total) });
+    const minuteAtLocalY = y => {
+      let best = minutePoints[0];
+      let bestDistance = Math.abs(y - best.y);
+      for (let index = 1; index < minutePoints.length; index += 1) {
+        const point = minutePoints[index];
+        const distance = Math.abs(y - point.y);
+        if (distance < bestDistance) { best = point; bestDistance = distance; }
+        else if (point.y > y && distance > bestDistance) break;
+      }
+      return best.minute;
+    };
+
+    times.replaceChildren();
+    for (let total = DAY_START; total <= DAY_END; total += 5) {
+      const notch = make('i', 'lesson-planner-minute-notch');
+      notch.style.top = `${timelineY(total)}px`;
+      if (total % 60 === 0) notch.classList.add('is-hour');
+      else if (total % 30 === 0) notch.classList.add('is-half-hour');
+      else if (total % 15 === 0) notch.classList.add('is-quarter-hour');
+      times.append(notch);
+      if (total % 60 === 0) {
+        const label = make('span', '', timeLabel(timeValue(total)).replace(':00', ''));
+        label.style.top = `${timelineY(total)}px`;
+        times.append(label);
+      }
+    }
+
+    dayRecords.forEach(record => {
+      const { date, column, scheduleGeometry, preview } = record;
+      column._timelineYForMinute = timelineY;
+      column._minuteFromClientY = clientY => {
+        const rect = column.getBoundingClientRect();
+        return minuteAtLocalY(Math.max(0, Math.min(rect.height, clientY - rect.top)));
+      };
+
+      const startAtPointer = event => Math.max(DAY_START, Math.min(DAY_END - 60, column._minuteFromClientY(event.clientY)));
+      column.addEventListener('pointermove', event => {
+        const show = event.target === column && !event.buttons && event.pointerType !== 'touch' && !cancelLessonDrag;
+        preview.classList.toggle('is-visible', show);
+        if (!show) return;
+        const start = startAtPointer(event);
+        preview.style.top = `${timelineY(start)}px`;
+        preview.style.height = `${Math.max(22, timelineY(start + 60) - timelineY(start))}px`;
+        preview.textContent = `+ Add lesson · ${timeLabel(timeValue(start))}`;
+      });
+      column.addEventListener('pointerleave', () => preview.classList.remove('is-visible'));
+      column.addEventListener('pointerdown', () => preview.classList.remove('is-visible'));
       column.addEventListener('click', event => {
         if (event.target !== column) return;
         const start = startAtPointer(event);
         selectedDate = atNoon(date);
         openEditor(null, { date: dateKey(date), start: timeValue(start), end: timeValue(start + 60) });
       });
-      scheduleGeometry.forEach(({ item, start, end, top, bottom }) => {
-        const background = scheduleBackground(item);
-        background.style.top = `${top}px`;
-        background.style.height = `${Math.max(15, bottom - top)}px`;
-        background.classList.toggle('is-compact', end - start < 30);
-        column.append(background);
+
+      scheduleGeometry.forEach(section => {
+        const top = timelineY(section.start);
+        const bottom = timelineY(section.end);
+        section.element.style.top = `${top}px`;
+        section.element.style.height = `${Math.max(SCHEDULE_HEADING_HEIGHT + 4, bottom - top)}px`;
       });
-      blocksForDate(date).forEach(block => {
-        const start = Math.max(DAY_START, minutes(block.start));
-        const end = Math.min(DAY_END, Math.max(start + 5, minutes(block.end)));
-        if (end <= DAY_START || start >= DAY_END) return;
-        const eventButton = lessonBlockButton(block);
-        const normalTop = minuteTop(start);
-        const normalBottom = minuteTop(end);
-        const containingSchedule = scheduleGeometry
-          .filter(section => start >= section.start && end <= section.end)
-          .sort((a,b) => (a.end-a.start) - (b.end-b.start))[0] || null;
-        let renderedTop = normalTop;
-        let renderedBottom = normalBottom;
-        if (containingSchedule) {
-          const headingBottom = containingSchedule.top + SCHEDULE_HEADING_HEIGHT + SCHEDULE_LESSON_GAP;
-          renderedTop = Math.max(renderedTop, headingBottom);
-          renderedBottom = Math.max(renderedTop + 22, renderedBottom - 4);
-          renderedBottom = Math.min(containingSchedule.bottom - 4, renderedBottom);
-          if (renderedBottom <= renderedTop) renderedBottom = renderedTop + 22;
-          eventButton.classList.add('is-inside-schedule');
-          eventButton.dataset.scheduleSection = containingSchedule.item.id;
+
+      lessonRecords.filter(item => item.element.closest('.lesson-planner-day-column') === column).forEach(item => {
+        let top = timelineY(item.start);
+        if (item.containingSchedule) {
+          const headingBottom = timelineY(item.containingSchedule.start) + SCHEDULE_HEADING_HEIGHT + SCHEDULE_LESSON_GAP;
+          top = Math.max(top, headingBottom);
         }
-        eventButton.style.top = `${renderedTop}px`;
-        eventButton.style.height = `${Math.max(22, renderedBottom - renderedTop)}px`;
-        eventButton.classList.toggle('is-tight', renderedBottom - renderedTop < 46);
-        column.append(eventButton);
+        let bottom = timelineY(item.end);
+        if (bottom - top < item.naturalHeight) bottom = top + item.naturalHeight;
+        const height = Math.max(38, bottom - top);
+        item.element.style.top = `${top}px`;
+        item.element.style.height = `${height}px`;
+        item.element.classList.toggle('is-tight', height < 70);
       });
+
       if (dateKey(date) === dateKey(new Date())) {
         const now = new Date();
         const nowMinutes = now.getHours() * 60 + now.getMinutes();
         if (nowMinutes >= DAY_START && nowMinutes <= DAY_END) {
           const line = make('span', 'lesson-planner-now-line');
-          line.style.top = `${minuteTop(nowMinutes)}px`;
+          line.style.top = `${timelineY(nowMinutes)}px`;
           column.append(line);
         }
       }
-      body.append(column);
     });
-    schedule.append(head, body);
-    canvas.append(schedule);
   }
 
   function renderMonth() {
@@ -1187,7 +1275,10 @@
         canvas.scrollTop = 0;
         return;
       }
-      const top = ((earliest - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
+      const timelineColumn = canvas.querySelector('.lesson-planner-day-column');
+      const top = timelineColumn?._timelineYForMinute
+        ? timelineColumn._timelineYForMinute(earliest)
+        : ((earliest - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
       canvas.scrollTop = Math.max(0, body.offsetTop + top - head.offsetHeight);
     });
   }
@@ -1357,7 +1448,7 @@
   window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
-  document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); renderAll({ autoScrollTimeline: true }); });
+  document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); view = 'day'; renderAll({ autoScrollTimeline: true }); });
   document.getElementById('lesson-planner-new').addEventListener('click', () => openEditor());
   viewTabs.forEach(button => button.addEventListener('click', () => setView(button.dataset.plannerView)));
   zoomInput.addEventListener('input', () => setView(VIEWS[Number(zoomInput.value)] || 'week'));
