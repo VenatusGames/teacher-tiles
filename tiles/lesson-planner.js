@@ -588,7 +588,7 @@
     plannerWindow.setAttribute('aria-hidden', 'false');
     currentDate = atNoon(new Date());
     selectedDate = atNoon(new Date());
-    renderAll();
+    renderAll({ autoScrollTimeline: true });
     publishPlannerChange();
     requestAnimationFrame(() => document.getElementById('lesson-planner-new')?.focus({ preventScroll: true }));
   }
@@ -1149,16 +1149,60 @@
     else renderYear();
   }
 
-  function renderAll() {
+  function timelineDatesForCurrentView() {
+    if (view === 'day') return [atNoon(currentDate)];
+    if (view === 'week') return weekDates(currentDate);
+    return [];
+  }
+
+  function earliestTimelineMinute(dates) {
+    let earliest = Infinity;
+    dates.forEach(date => {
+      scheduleForDate(date).forEach(item => {
+        const start = minutes(item.start);
+        const end = minutes(item.end);
+        if (end > DAY_START && start < DAY_END) earliest = Math.min(earliest, Math.max(DAY_START, start));
+      });
+      blocksForDate(date).forEach(block => {
+        const start = minutes(block.start);
+        const end = minutes(block.end);
+        if (end > DAY_START && start < DAY_END) earliest = Math.min(earliest, Math.max(DAY_START, start));
+      });
+    });
+    return Number.isFinite(earliest) ? earliest : null;
+  }
+
+  function scrollTimelineToEarliest() {
+    if (view !== 'day' && view !== 'week') {
+      canvas.scrollTop = 0;
+      return;
+    }
+    const dates = timelineDatesForCurrentView();
+    const earliest = earliestTimelineMinute(dates);
+    requestAnimationFrame(() => {
+      const body = canvas.querySelector('.lesson-planner-schedule__body');
+      const head = canvas.querySelector('.lesson-planner-schedule__head');
+      if (!body || !head) return;
+      if (earliest == null) {
+        canvas.scrollTop = 0;
+        return;
+      }
+      const top = ((earliest - DAY_START) / (DAY_END - DAY_START)) * TIMELINE_HEIGHT;
+      canvas.scrollTop = Math.max(0, body.offsetTop + top - head.offsetHeight);
+    });
+  }
+
+  function renderAll({ autoScrollTimeline = false } = {}) {
     updateHeader();
     renderAgenda();
     renderCanvas();
+    if (autoScrollTimeline) scrollTimelineToEarliest();
   }
 
   function setView(next) {
     if (!VIEWS.includes(next)) return;
     view = next;
-    renderAll();
+    renderAll({ autoScrollTimeline: true });
   }
 
   function renderColors() {
@@ -1239,7 +1283,7 @@
     else if (view === 'month') currentDate = addMonths(currentDate, direction);
     else currentDate = atNoon(new Date(currentDate.getFullYear() + direction, currentDate.getMonth(), 1));
     selectedDate = atNoon(currentDate);
-    renderAll();
+    renderAll({ autoScrollTimeline: true });
   }
 
   openButton.addEventListener('click', openPlanner);
@@ -1258,7 +1302,7 @@
     planner.settings ||= { showWeekends: false };
     planner.settings.showWeekends = showWeekendsToggle.checked;
     savePlanners();
-    if (view === 'week') renderAll();
+    if (view === 'week') renderAll({ autoScrollTimeline: true });
   });
   document.addEventListener('pointerdown', event => {
     if (!settingsMenu?.hidden && !event.target.closest('.lesson-planner-settings-wrap')) closeSettingsMenu();
@@ -1313,7 +1357,7 @@
   window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
   document.getElementById('lesson-planner-next').addEventListener('click', () => navigate(1));
-  document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); renderAll(); });
+  document.getElementById('lesson-planner-today').addEventListener('click', () => { currentDate = atNoon(new Date()); selectedDate = atNoon(new Date()); renderAll({ autoScrollTimeline: true }); });
   document.getElementById('lesson-planner-new').addEventListener('click', () => openEditor());
   viewTabs.forEach(button => button.addEventListener('click', () => setView(button.dataset.plannerView)));
   zoomInput.addEventListener('input', () => setView(VIEWS[Number(zoomInput.value)] || 'week'));
