@@ -11,7 +11,7 @@
   opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);
   transition:max-height .22s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1),padding .2s cubic-bezier(.2,.8,.2,1),opacity .14s ease,transform .14s ease,visibility 0s linear .22s,background .14s ease,border-color .14s ease,box-shadow .14s ease;
 }
-.richtext-module:hover .richtext-toolbar,
+.richtext-module.is-richtext-hovered .richtext-toolbar,
 .richtext-module:has(.richtext-editor.module-text-edit-active) .richtext-toolbar,
 .richtext-module:has(.richtext-toolbar:focus-within) .richtext-toolbar,
 .richtext-module:has(.richtext-export-button[aria-expanded="true"]) .richtext-toolbar,

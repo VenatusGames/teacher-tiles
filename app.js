@@ -3667,6 +3667,30 @@ function syncTileFullscreenControls(){
   });
 }
 
+function rememberTileFullscreenGeometry(m){
+  if(!m?.isConnected)return;
+  m._tileFullscreenGeometry={
+    left:m.style.left,
+    top:m.style.top,
+    width:m.style.width,
+    height:m.style.height
+  };
+}
+function restoreTileFullscreenGeometry(m){
+  const state=m?._tileFullscreenGeometry;
+  if(!m||!state)return;
+  delete m._tileFullscreenGeometry;
+  if(isTilePinned(m)){syncPinnedTileToCamera(m);return}
+  const apply=()=>{
+    if(!m.isConnected)return;
+    m.style.left=state.left;
+    m.style.top=state.top;
+    m.style.width=state.width;
+    m.style.height=state.height;
+  };
+  requestAnimationFrame(()=>requestAnimationFrame(apply));
+}
+
 function ensureTileFullscreenControl(m){
   let button=m.querySelector(':scope>.module-fullscreen');
   if(button)return button;
@@ -3688,6 +3712,7 @@ function ensureTileFullscreenControl(m){
       if(document.fullscreenElement===m){
         await document.exitFullscreen();
       }else{
+        rememberTileFullscreenGeometry(m);
         await m.requestFullscreen({navigationUI:'hide'});
       }
     }catch{}
@@ -12714,10 +12739,16 @@ applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persis
 
 fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
 document.addEventListener('fullscreenchange',()=>{
-  const active=Boolean(document.fullscreenElement);
+  const fullscreenElement=document.fullscreenElement;
+  const active=Boolean(fullscreenElement);
   fullscreenToggle.classList.toggle('is-fullscreen-active',active);
   fullscreenToggle.setAttribute('aria-label',active?'Exit fullscreen':'Enter fullscreen');
   syncTileFullscreenControls();syncPinnedTilesToCamera();
+  if(!active){
+    document.querySelectorAll('.module').forEach(module=>{
+      if(module._tileFullscreenGeometry)restoreTileFullscreenGeometry(module);
+    });
+  }
 });
 window.addEventListener('resize',()=>{document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement||isTilePinned(m))return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`});syncPinnedTilesToCamera()});
 

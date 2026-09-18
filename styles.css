@@ -16301,3 +16301,61 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 #fullscreen-toggle .workspace-fullscreen-icon--exit{display:none}
 #fullscreen-toggle.is-fullscreen-active .workspace-fullscreen-icon--enter{display:none}
 #fullscreen-toggle.is-fullscreen-active .workspace-fullscreen-icon--exit{display:block}
+
+
+/* Reserve the universal top-right tile-options corner without moving headings or static tile chrome. */
+.module{--tile-topright-reserve:clamp(56px,15%,82px)}
+
+.translation-mark,
+.voicememo-count,
+.wordy-guess-count,
+.worldmap-zoom-controls,
+.grapher-clear-points,
+.hundreds-controls,
+.money-total-wrap,
+.weather-unit-toggle,
+.temperature-unit-toggle{
+  margin-right:var(--tile-topright-reserve);
+}
+
+/* PBIS tiles keep their class/action buttons clear of the X / fullscreen / pin cluster. */
+.collection-change-class,
+.starchart-change-class,
+.classmeter-change-class,
+.prizeboard-change-class,
+.pbisconsole-change-class,
+.punchcard-change-class,
+.racer-change-class{
+  transform:translateX(calc(-1 * var(--tile-topright-reserve)));
+}
+
+/* Calendar navigation stays symmetrical while the next-month button clears the corner cluster. */
+.calendar-prev{margin-left:clamp(12px,4%,24px)}
+.calendar-next{margin-right:var(--tile-topright-reserve)}
+
+/* Visual Schedule Reset now lives at the bottom-right in normal document flow. */
+.visual-schedule-toolbar{
+  align-self:flex-end;
+  margin:0 2px 0 0;
+}
+
+/* Ten-frame count controls now share the lower control shelf under the chart. */
+.tenframes-controls{
+  flex-wrap:wrap;
+  align-items:center;
+}
+.tenframes-controls .tenframes-frame-controls{
+  margin-left:4px;
+  padding-left:10px;
+  border-left:1px solid color-mix(in srgb,var(--module-text,#17191d) 12%,transparent);
+}
+@container (max-width:560px){
+  .tenframes-controls .tenframes-frame-controls{
+    width:100%;
+    justify-content:center;
+    margin:2px 0 0;
+    padding:8px 0 0;
+    border-left:0;
+    border-top:1px solid color-mix(in srgb,var(--module-text,#17191d) 12%,transparent);
+  }
+}

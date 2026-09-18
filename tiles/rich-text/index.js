@@ -227,6 +227,11 @@
 
     toolbar.dataset.preserveTextEdit='true';
 
+    const activateRichTextHover=()=>m.classList.add('is-richtext-hovered');
+    const clearRichTextHover=()=>m.classList.remove('is-richtext-hovered');
+    m.addEventListener('pointermove',activateRichTextHover);
+    m.addEventListener('pointerleave',clearRichTextHover);
+
     FONT_CHOICES.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;fontSelect.appendChild(option)});
     FONT_SIZES.forEach(size=>{const option=document.createElement('option');option.value=String(size);option.textContent=`${size}px`;sizeSelect.appendChild(option)});
     fontSelect.value='Inter';sizeSelect.value='16';
@@ -907,6 +912,7 @@
     m._cleanup=()=>{
       cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);clearTimeout(toastTimer);
       document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);document.removeEventListener('pointerdown',outsideRichSelect,true);document.removeEventListener('keydown',richTextHistoryHotkey,true);document.removeEventListener('fullscreenchange',syncColorPickerHost);window.removeEventListener('resize',closeRichSelect);
+      m.removeEventListener('pointermove',activateRichTextHover);m.removeEventListener('pointerleave',clearRichTextHover);m.classList.remove('is-richtext-hovered');
       richSelectControls.forEach(control=>control.menu.remove());exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
     };
 
