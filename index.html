@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-timer-presets-centered-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-planner-scheduling-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -331,6 +331,7 @@
                   <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
                 </div>
                 <div class="lesson-planner-header__actions">
+                  <button id="lesson-planner-scheduling-button" type="button">Scheduling</button>
                   <button id="lesson-planner-today" type="button">Today</button>
                   <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner">×</button>
                 </div>
@@ -365,6 +366,35 @@
                 </aside>
                 <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
               </div>
+              <aside id="lesson-planner-scheduling" class="lesson-planner-scheduling" hidden aria-hidden="true" aria-labelledby="lesson-planner-scheduling-title">
+                <button class="lesson-planner-scheduling__backdrop" type="button" aria-label="Close Scheduling"></button>
+                <section class="lesson-planner-scheduling__panel">
+                  <header>
+                    <div><span>PLANNER SETUP</span><h3 id="lesson-planner-scheduling-title">Scheduling</h3><p>Create reusable time blocks that appear pre-labeled in your planner.</p></div>
+                    <button id="lesson-planner-scheduling-close" type="button" aria-label="Close Scheduling">×</button>
+                  </header>
+                  <div class="lesson-planner-scheduling__content">
+                    <form id="lesson-planner-schedule-form" class="lesson-planner-schedule-form">
+                      <label class="lesson-planner-field"><span>Schedule label</span><input id="lesson-planner-schedule-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
+                      <div class="lesson-planner-field-row lesson-planner-schedule-time-row">
+                        <label class="lesson-planner-field"><span>Starts</span><input id="lesson-planner-schedule-start" type="time" step="900" value="08:00" required></label>
+                        <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-schedule-end" type="time" step="900" value="09:00" required></label>
+                      </div>
+                      <div class="lesson-planner-field-row lesson-planner-schedule-repeat-row">
+                        <label class="lesson-planner-field"><span>Repeats</span><select id="lesson-planner-schedule-repeat"><option value="daily">Daily · Mon–Fri</option><option value="weekly">Weekly</option></select></label>
+                        <label id="lesson-planner-schedule-weekday-wrap" class="lesson-planner-field" hidden><span>Day</span><select id="lesson-planner-schedule-weekday"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></label>
+                      </div>
+                      <fieldset class="lesson-planner-colors lesson-planner-schedule-colors"><legend>Block color</legend><div id="lesson-planner-schedule-colors"></div></fieldset>
+                      <div class="lesson-planner-schedule-form__actions"><button id="lesson-planner-schedule-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-schedule-save" type="submit">Add schedule block</button></div>
+                    </form>
+                    <section class="lesson-planner-schedule-list-wrap">
+                      <div class="lesson-planner-schedule-list__heading"><div><span>YOUR SCHEDULE</span><h4>Reusable blocks</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
+                      <div id="lesson-planner-schedule-list" class="lesson-planner-schedule-list"></div>
+                    </section>
+                  </div>
+                </section>
+              </aside>
+
               <aside id="lesson-planner-editor" class="lesson-planner-editor" hidden aria-hidden="true" aria-labelledby="lesson-planner-editor-title">
                 <button class="lesson-planner-editor__backdrop" type="button" aria-label="Close lesson editor"></button>
                 <form id="lesson-planner-form" class="lesson-planner-editor__card">
@@ -3708,9 +3738,12 @@
         <div><small>LESSON PLANNER</small><strong class="lesson-plan-tile__title">Today’s Plans</strong><span class="lesson-plan-tile__range"></span></div>
         <button class="lesson-plan-tile__edit" type="button">Edit plans</button>
       </header>
-      <div class="lesson-plan-tile__toolbar" role="group" aria-label="Lesson planner tile view">
-        <button type="button" data-lesson-plan-tile-view="day" class="is-active">Day</button>
-        <button type="button" data-lesson-plan-tile-view="week">Week</button>
+      <div class="lesson-plan-tile__toolbar" aria-label="Lesson planner tile controls">
+        <label class="lesson-plan-tile__planner-wrap"><span>Planner</span><select class="lesson-plan-tile__planner" aria-label="Planner to display"></select></label>
+        <div class="lesson-plan-tile__view-buttons" role="group" aria-label="Lesson planner tile view">
+          <button type="button" data-lesson-plan-tile-view="day" class="is-active">Day</button>
+          <button type="button" data-lesson-plan-tile-view="week">Week</button>
+        </div>
       </div>
       <div class="lesson-plan-tile__body" aria-live="polite"></div>
       <div class="customization-bar lesson-plan-tile__customization" aria-label="Lesson planner tile customization">
@@ -4051,8 +4084,8 @@
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
-<script src="app.js?v=20260918-bell-space-until-set-1"></script>
-  <script src="tiles/lesson-planner.js?v=20260918-planner-library-1"></script>
+<script src="app.js?v=20260918-planner-picker-1"></script>
+  <script src="tiles/lesson-planner.js?v=20260918-planner-scheduling-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 
 

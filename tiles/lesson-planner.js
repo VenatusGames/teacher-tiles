@@ -10,6 +10,19 @@
   const createPlannerButton = document.getElementById('lesson-planner-create');
   const plannerWindow = panel.querySelector('.lesson-planner-window');
   const plannerTitle = document.getElementById('lesson-planner-title');
+  const schedulingButton = document.getElementById('lesson-planner-scheduling-button');
+  const schedulingPanel = document.getElementById('lesson-planner-scheduling');
+  const schedulingForm = document.getElementById('lesson-planner-schedule-form');
+  const schedulingLabel = document.getElementById('lesson-planner-schedule-label');
+  const schedulingStart = document.getElementById('lesson-planner-schedule-start');
+  const schedulingEnd = document.getElementById('lesson-planner-schedule-end');
+  const schedulingRepeat = document.getElementById('lesson-planner-schedule-repeat');
+  const schedulingWeekdayWrap = document.getElementById('lesson-planner-schedule-weekday-wrap');
+  const schedulingWeekday = document.getElementById('lesson-planner-schedule-weekday');
+  const schedulingColors = document.getElementById('lesson-planner-schedule-colors');
+  const schedulingList = document.getElementById('lesson-planner-schedule-list');
+  const schedulingCount = document.getElementById('lesson-planner-schedule-count');
+  const schedulingCancel = document.getElementById('lesson-planner-schedule-cancel');
   const canvas = document.getElementById('lesson-planner-canvas');
   const editor = document.getElementById('lesson-planner-editor');
   const form = document.getElementById('lesson-planner-form');
@@ -65,6 +78,8 @@
   let view = 'week';
   let editingId = '';
   let editorColor = COLORS[0].id;
+  let editingScheduleId = '';
+  let scheduleEditorColor = COLORS[0].id;
 
   panel.remove();
   document.body.appendChild(panel);
@@ -138,7 +153,8 @@
       start,
       end,
       color: COLORS.some(color => color.id === block.color) ? block.color : COLORS[0].id,
-      description: String(block.description || '').slice(0, 4000)
+      description: String(block.description || '').slice(0, 4000),
+      scheduleId: String(block.scheduleId || '').slice(0, 80)
     };
   }
 
@@ -150,14 +166,39 @@
     return `planner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
+  function scheduleId() {
+    return `schedule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function normalizeScheduleItem(item, index = 0) {
+    if (!item || typeof item !== 'object') return null;
+    const start = /^\d{2}:\d{2}$/.test(item.start || '') ? item.start : '08:00';
+    let end = /^\d{2}:\d{2}$/.test(item.end || '') ? item.end : '09:00';
+    if (minutes(end) <= minutes(start)) end = timeValue(minutes(start) + 60);
+    const repeat = item.repeat === 'weekly' ? 'weekly' : 'daily';
+    const rawWeekday = Number(item.weekday);
+    const weekday = Number.isInteger(rawWeekday) ? Math.max(0, Math.min(6, rawWeekday)) : 1;
+    return {
+      id: String(item.id || scheduleId()),
+      label: String(item.label || `Schedule block ${index + 1}`).replace(/\s+/g, ' ').trim().slice(0, 80),
+      start,
+      end,
+      repeat,
+      weekday,
+      color: COLORS.some(color => color.id === item.color) ? item.color : COLORS[index % COLORS.length].id
+    };
+  }
+
   function normalizePlanner(planner, index = 0) {
     if (!planner || typeof planner !== 'object') return null;
     const plannerBlocks = Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [];
+    const plannerSchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
     return {
       id: String(planner.id || plannerId()),
       name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
       color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
-      blocks: plannerBlocks
+      blocks: plannerBlocks,
+      schedule: plannerSchedule
     };
   }
 
@@ -176,7 +217,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, schedule: [] }] : [];
   }
 
   function readActivePlannerId() {
@@ -232,6 +273,29 @@
     return blocks.filter(block => block.date === key).sort((a, b) => a.start.localeCompare(b.start));
   }
 
+  function scheduleForDate(date) {
+    const target = typeof date === 'string' ? fromDateKey(date) : atNoon(date);
+    const planner = activePlanner();
+    const schedule = Array.isArray(planner?.schedule) ? planner.schedule : [];
+    const weekday = target.getDay();
+    return schedule.filter(item => item.repeat === 'weekly' ? item.weekday === weekday : weekday >= 1 && weekday <= 5)
+      .slice().sort((a, b) => a.start.localeCompare(b.start));
+  }
+
+  function scheduleIsPlanned(item, date) {
+    const key = typeof date === 'string' ? date : dateKey(date);
+    return blocks.some(block => block.date === key && block.scheduleId === item.id);
+  }
+
+  function unplannedScheduleForDate(date) {
+    return scheduleForDate(date).filter(item => !scheduleIsPlanned(item, date));
+  }
+
+  function scheduleRepeatLabel(item) {
+    if (item.repeat === 'weekly') return `Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][item.weekday]}`;
+    return 'Every weekday';
+  }
+
   function make(tag, className, text) {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -275,16 +339,41 @@
       card.style.setProperty('--planner-book-color', color.value);
       card.style.setProperty('--planner-book-ink', color.ink);
 
-      const open = make('button', 'planner-book-open');
-      open.type = 'button';
+      const open = make('div', 'planner-book-open');
+      open.setAttribute('role', 'button');
+      open.tabIndex = 0;
       open.setAttribute('aria-label', `Open ${planner.name}`);
-      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><i></i><b></b><em></em></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong></strong><em></em></span>';
-      open.querySelector('strong').textContent = planner.name;
+      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><i></i><b></b><em></em></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      const name = open.querySelector('strong');
+      name.textContent = planner.name;
       const count = planner.blocks.length;
       open.querySelector('.planner-book-copy>em').textContent = `${count} ${count === 1 ? 'lesson block' : 'lesson blocks'}`;
-      open.addEventListener('click', () => openPlannerBook(planner.id));
+      open.addEventListener('click', event => {
+        if (event.target.closest('.planner-book-copy strong,.planner-book-name-input')) return;
+        openPlannerBook(planner.id);
+      });
+      open.addEventListener('keydown', event => {
+        if (event.target !== open || !['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        openPlannerBook(planner.id);
+      });
+      name.addEventListener('dblclick', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        beginPlannerRename(card, planner);
+      });
+
+      const customize = make('button', 'planner-book-customize');
+      customize.type = 'button';
+      customize.title = 'Customize planner';
+      customize.setAttribute('aria-label', `Customize ${planner.name}`);
+      customize.setAttribute('aria-expanded', 'false');
+      const brush = document.querySelector('#customize-toggle svg');
+      if (brush) customize.appendChild(brush.cloneNode(true));
+      else customize.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5 15.5 7l1.5 1.5L5.5 20H4v-1.5ZM14 5.5 16.5 3 21 7.5 18.5 10 14 5.5Z"/></svg>';
 
       const tools = make('div', 'planner-book-tools');
+      tools.hidden = true;
       const colors = make('div', 'planner-book-colors');
       colors.setAttribute('aria-label', `${planner.name} color`);
       COLORS.forEach(option => {
@@ -295,7 +384,8 @@
         swatch.setAttribute('aria-pressed', String(option.id === planner.color));
         swatch.classList.toggle('is-selected', option.id === planner.color);
         swatch.style.setProperty('--planner-swatch', option.value);
-        swatch.addEventListener('click', () => {
+        swatch.addEventListener('click', event => {
+          event.stopPropagation();
           planner.color = option.id;
           savePlanners();
           renderLibrary();
@@ -304,17 +394,15 @@
       });
 
       const actions = make('div', 'planner-book-actions');
-      const rename = make('button', 'planner-library-rename', 'Rename');
-      rename.type = 'button';
-      rename.addEventListener('click', () => beginPlannerRename(card, planner));
       const collaborate = make('button', 'planner-library-collaborate', 'Collaborate');
       collaborate.type = 'button';
       collaborate.dataset.comingSoon = 'Coming soon';
       collaborate.setAttribute('aria-label', 'Collaborate — coming soon');
-      collaborate.addEventListener('click', event => event.preventDefault());
+      collaborate.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); });
       const remove = make('button', 'planner-library-delete', 'Delete');
       remove.type = 'button';
-      remove.addEventListener('click', () => {
+      remove.addEventListener('click', event => {
+        event.stopPropagation();
         if (!confirm(`Delete “${planner.name}” and all of its lesson blocks?`)) return;
         planners = planners.filter(item => item.id !== planner.id);
         if (activePlannerId === planner.id) activePlannerId = planners[0]?.id || '';
@@ -324,9 +412,16 @@
         publishPlannerChange();
         renderLibrary();
       });
-      actions.append(rename, collaborate, remove);
+      actions.append(collaborate, remove);
       tools.append(colors, actions);
-      card.append(open, tools);
+      customize.addEventListener('click', event => {
+        event.stopPropagation();
+        const next = tools.hidden;
+        libraryGrid.querySelectorAll('.planner-book-tools:not([hidden])').forEach(panel => { panel.hidden = true; panel.closest('.planner-book-card')?.querySelector('.planner-book-customize')?.setAttribute('aria-expanded', 'false'); });
+        tools.hidden = !next;
+        customize.setAttribute('aria-expanded', String(next));
+      });
+      card.append(open, customize, tools);
       libraryGrid.append(card);
     });
   }
@@ -339,6 +434,9 @@
     input.maxLength = 60;
     input.value = planner.name;
     title.replaceWith(input);
+    input.addEventListener('pointerdown', event => event.stopPropagation());
+    input.addEventListener('click', event => event.stopPropagation());
+    input.addEventListener('dblclick', event => event.stopPropagation());
     input.focus({ preventScroll: true });
     input.select();
     let done = false;
@@ -347,9 +445,11 @@
       done = true;
       if (!cancel) planner.name = cleanPlannerName(input.value, planner.name);
       savePlanners();
+      publishPlannerChange();
       renderLibrary();
     };
     input.addEventListener('keydown', event => {
+      event.stopPropagation();
       if (event.key === 'Enter') { event.preventDefault(); finish(false); }
       if (event.key === 'Escape') { event.preventDefault(); finish(true); }
     });
@@ -363,7 +463,8 @@
       id: plannerId(),
       name: `Planner ${planners.length + 1}`,
       color: COLORS[planners.length % COLORS.length].id,
-      blocks: []
+      blocks: [],
+      schedule: []
     };
     planners.push(planner);
     activePlannerId = planner.id;
@@ -378,6 +479,7 @@
   function showPlannerLibrary({ focus = true } = {}) {
     cancelLessonDrag?.();
     closeEditor();
+    closeScheduling();
     plannerWindow.hidden = true;
     plannerWindow.setAttribute('aria-hidden', 'true');
     library.hidden = false;
@@ -390,6 +492,7 @@
     const planner = planners.find(item => item.id === id);
     if (!planner) { showPlannerLibrary(); return; }
     activePlannerId = planner.id;
+    closeScheduling();
     blocks = planner.blocks.map(block => ({ ...block }));
     savePlanners();
     try { localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(blocks)); } catch {}
@@ -403,6 +506,120 @@
     renderAll();
     publishPlannerChange();
     requestAnimationFrame(() => document.getElementById('lesson-planner-new')?.focus({ preventScroll: true }));
+  }
+
+  function renderScheduleColors() {
+    schedulingColors.replaceChildren();
+    COLORS.forEach(color => {
+      const button = make('button', 'lesson-planner-color');
+      button.type = 'button';
+      button.style.setProperty('--lesson-color', color.value);
+      button.title = color.name;
+      button.setAttribute('aria-label', `${color.name} schedule color`);
+      button.setAttribute('aria-pressed', String(color.id === scheduleEditorColor));
+      button.classList.toggle('is-selected', color.id === scheduleEditorColor);
+      button.addEventListener('click', () => { scheduleEditorColor = color.id; renderScheduleColors(); });
+      schedulingColors.append(button);
+    });
+  }
+
+  function syncScheduleRepeatUi() {
+    schedulingWeekdayWrap.hidden = schedulingRepeat.value !== 'weekly';
+  }
+
+  function resetScheduleForm() {
+    editingScheduleId = '';
+    schedulingForm.reset();
+    schedulingStart.value = '08:00';
+    schedulingEnd.value = '09:00';
+    schedulingRepeat.value = 'daily';
+    schedulingWeekday.value = '1';
+    scheduleEditorColor = COLORS[0].id;
+    schedulingCancel.hidden = true;
+    schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Add schedule block';
+    syncScheduleRepeatUi();
+    renderScheduleColors();
+  }
+
+  function renderSchedulingList() {
+    const schedule = activePlanner()?.schedule || [];
+    schedulingCount.textContent = `${schedule.length} ${schedule.length === 1 ? 'block' : 'blocks'}`;
+    schedulingList.replaceChildren();
+    if (!schedule.length) {
+      const empty = make('div', 'lesson-planner-schedule-list__empty');
+      empty.innerHTML = '<span aria-hidden="true">＋</span><strong>No schedule blocks yet</strong><small>Add a recurring time block on the left.</small>';
+      schedulingList.append(empty);
+      return;
+    }
+    schedule.slice().sort((a,b)=>a.start.localeCompare(b.start)).forEach(item => {
+      const color = blockColor(item.color);
+      const row = make('article', 'lesson-planner-schedule-item');
+      row.style.setProperty('--lesson-color', color.value);
+      row.innerHTML = '<i aria-hidden="true"></i><div><strong></strong><span></span><small></small></div><div class="lesson-planner-schedule-item__actions"></div>';
+      row.querySelector('strong').textContent = item.label;
+      row.querySelector('span').textContent = `${timeLabel(item.start)}–${timeLabel(item.end)}`;
+      row.querySelector('small').textContent = scheduleRepeatLabel(item);
+      const actions = row.querySelector('.lesson-planner-schedule-item__actions');
+      const edit = make('button', '', 'Edit'); edit.type='button';
+      const remove = make('button', 'is-delete', 'Delete'); remove.type='button';
+      edit.addEventListener('click', () => {
+        editingScheduleId = item.id;
+        schedulingLabel.value = item.label;
+        schedulingStart.value = item.start;
+        schedulingEnd.value = item.end;
+        schedulingRepeat.value = item.repeat;
+        schedulingWeekday.value = String(item.weekday);
+        scheduleEditorColor = item.color;
+        schedulingCancel.hidden = false;
+        schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Save changes';
+        syncScheduleRepeatUi(); renderScheduleColors(); schedulingLabel.focus({preventScroll:true}); schedulingLabel.select();
+      });
+      remove.addEventListener('click', () => {
+        const planner = activePlanner(); if (!planner) return;
+        planner.schedule = planner.schedule.filter(scheduleItem => scheduleItem.id !== item.id);
+        if (editingScheduleId === item.id) resetScheduleForm();
+        savePlanners(); publishPlannerChange(); renderSchedulingList(); renderAll();
+      });
+      actions.append(edit, remove); row.append(actions); schedulingList.append(row);
+    });
+  }
+
+  function openScheduling() {
+    if (!activePlanner()) return;
+    resetScheduleForm();
+    renderSchedulingList();
+    schedulingPanel.hidden = false;
+    schedulingPanel.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => schedulingLabel.focus({ preventScroll: true }));
+  }
+
+  function closeScheduling() {
+    schedulingPanel.hidden = true;
+    schedulingPanel.setAttribute('aria-hidden', 'true');
+    editingScheduleId = '';
+  }
+
+  function schedulePlaceholder(item, date, compact = false) {
+    const color = blockColor(item.color);
+    const element = make('button', compact ? 'lesson-calendar-chip lesson-calendar-chip--schedule' : 'lesson-schedule-template');
+    element.type = 'button';
+    element.style.setProperty('--lesson-color', color.value);
+    element.style.setProperty('--lesson-ink', color.ink);
+    element.title = `${item.label} · ${timeLabel(item.start)}–${timeLabel(item.end)} · Add plans`;
+    if (compact) {
+      element.innerHTML = '<i aria-hidden="true"></i><span></span>';
+      element.querySelector('span').textContent = item.label;
+    } else {
+      element.innerHTML = '<strong></strong><small></small><em>Add plans</em>';
+      element.querySelector('strong').textContent = item.label;
+      element.querySelector('small').textContent = `${timeLabel(item.start)}–${timeLabel(item.end)}`;
+    }
+    element.addEventListener('click', event => {
+      event.stopPropagation();
+      selectedDate = typeof date === 'string' ? fromDateKey(date) : atNoon(date);
+      openEditor(null, { date: dateKey(selectedDate), start: item.start, end: item.end, label: item.label, color: item.color, scheduleId: item.id });
+    });
+    return element;
   }
 
   function updateHeader() {
@@ -438,26 +655,28 @@
 
   function renderAgenda() {
     const dayBlocks = blocksForDate(selectedDate);
-    agendaCount.textContent = `${dayBlocks.length} ${dayBlocks.length === 1 ? 'block' : 'blocks'}`;
+    const scheduleSlots = unplannedScheduleForDate(selectedDate);
+    const total = dayBlocks.length + scheduleSlots.length;
+    agendaCount.textContent = `${total} ${total === 1 ? 'block' : 'blocks'}`;
     agendaList.replaceChildren();
-    if (!dayBlocks.length) {
+    if (!total) {
       const empty = make('div', 'lesson-planner-agenda__empty');
       empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open space</strong><small>Add a lesson block for this day.</small>';
       agendaList.append(empty);
       return;
     }
-    dayBlocks.forEach(block => {
-      const color = blockColor(block.color);
-      const button = make('div', 'lesson-planner-agenda-item');
-      button.type = 'button';
-      button.style.setProperty('--lesson-color', color.value);
-      button.style.setProperty('--lesson-ink', color.ink);
-      button.innerHTML = `<i aria-hidden="true"></i><span><strong></strong><small></small></span>`;
-      button.querySelector('strong').textContent = block.label;
-      button.querySelector('small').textContent = `${timeLabel(block.start)}–${timeLabel(block.end)}`;
-      attachLessonDrag(button,block);
-      button.addEventListener('click', () => openEditor(block));
-      agendaList.append(button);
+    const entries=[...dayBlocks.map(block=>({type:'block',start:block.start,value:block})),...scheduleSlots.map(item=>({type:'schedule',start:item.start,value:item}))].sort((a,b)=>a.start.localeCompare(b.start));
+    entries.forEach(entry=>{
+      if(entry.type==='schedule'){
+        const item=entry.value,color=blockColor(item.color),button=make('button','lesson-planner-agenda-item lesson-planner-agenda-item--schedule');
+        button.type='button';button.style.setProperty('--lesson-color',color.value);button.style.setProperty('--lesson-ink',color.ink);
+        button.innerHTML='<i aria-hidden="true"></i><span><strong></strong><small></small></span><em>Add plans</em>';
+        button.querySelector('strong').textContent=item.label;button.querySelector('small').textContent=`${timeLabel(item.start)}–${timeLabel(item.end)}`;
+        button.addEventListener('click',()=>openEditor(null,{date:dateKey(selectedDate),start:item.start,end:item.end,label:item.label,color:item.color,scheduleId:item.id}));agendaList.append(button);return;
+      }
+      const block=entry.value,color=blockColor(block.color),button=make('div','lesson-planner-agenda-item');
+      button.type='button';button.style.setProperty('--lesson-color',color.value);button.style.setProperty('--lesson-ink',color.ink);button.innerHTML='<i aria-hidden="true"></i><span><strong></strong><small></small></span>';
+      button.querySelector('strong').textContent=block.label;button.querySelector('small').textContent=`${timeLabel(block.start)}–${timeLabel(block.end)}`;attachLessonDrag(button,block);button.addEventListener('click',()=>openEditor(block));agendaList.append(button);
     });
   }
 
@@ -630,6 +849,16 @@
         selectedDate = atNoon(date);
         openEditor(null, { date: dateKey(date), start: timeValue(start), end: timeValue(start + 60) });
       });
+      unplannedScheduleForDate(date).forEach(item => {
+        const start = Math.max(DAY_START, minutes(item.start));
+        const end = Math.min(DAY_END, Math.max(start + 15, minutes(item.end)));
+        if (end <= DAY_START || start >= DAY_END) return;
+        const slot = schedulePlaceholder(item, date);
+        slot.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
+        slot.style.minHeight = `${Math.max(52, ((end - start) / (DAY_END - DAY_START)) * 980)}px`;
+        slot.style.height = 'auto';
+        column.append(slot);
+      });
       blocksForDate(date).forEach(block => {
         const start = Math.max(DAY_START, minutes(block.start));
         const end = Math.min(DAY_END, Math.max(start + 15, minutes(block.end)));
@@ -677,8 +906,10 @@
       dayButton.addEventListener('click', () => { selectedDate = atNoon(date); currentDate = atNoon(date); renderAll(); });
       cell.append(dayButton);
       const dayBlocks = blocksForDate(date);
-      dayBlocks.slice(0, 3).forEach(block => cell.append(lessonBlockButton(block, true)));
-      if (dayBlocks.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${dayBlocks.length - 3} more`));
+      const scheduleSlots = unplannedScheduleForDate(date);
+      const monthEntries=[...dayBlocks.map(block=>({type:'block',start:block.start,value:block})),...scheduleSlots.map(item=>({type:'schedule',start:item.start,value:item}))].sort((a,b)=>a.start.localeCompare(b.start));
+      monthEntries.slice(0, 3).forEach(entry => cell.append(entry.type==='block'?lessonBlockButton(entry.value,true):schedulePlaceholder(entry.value,date,true)));
+      if (monthEntries.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${monthEntries.length - 3} more`));
       cell.addEventListener('dblclick', event => { if (event.target.closest('.lesson-calendar-chip')) return; selectedDate = atNoon(date); currentDate = atNoon(date); setView('day'); });
       grid.append(cell);
     }
@@ -704,9 +935,9 @@
         const date = atNoon(new Date(year, month, day));
         const button = make('button', 'lesson-planner-year-day', String(day));
         button.type = 'button';
-        button.classList.toggle('has-lessons', blocksForDate(date).length > 0);
+        button.classList.toggle('has-lessons', blocksForDate(date).length > 0 || scheduleForDate(date).length > 0);
         button.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
-        button.setAttribute('aria-label', `${fullDate.format(date)}${blocksForDate(date).length ? `, ${blocksForDate(date).length} lesson blocks` : ''}`);
+        {const count=blocksForDate(date).length,scheduleCount=unplannedScheduleForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}${scheduleCount?`, ${scheduleCount} scheduled slots`:''}`);}
         button.addEventListener('click', () => { currentDate = date; selectedDate = date; setView('day'); });
         days.append(button);
       }
@@ -755,14 +986,15 @@
 
   function openEditor(block = null, prefill = {}) {
     editingId = block?.id || '';
+    editingScheduleId = block?.scheduleId || prefill.scheduleId || '';
     const date = block?.date || prefill.date || dateKey(selectedDate);
-    labelInput.value = block?.label || '';
+    labelInput.value = block?.label || prefill.label || '';
     dateInput.value = date;
     startInput.value = block?.start || prefill.start || '08:00';
     endInput.value = block?.end || prefill.end || '09:00';
     descriptionInput.value = block?.description || '';
     descriptionCount.textContent = String(descriptionInput.value.length);
-    editorColor = block?.color || COLORS[0].id;
+    editorColor = block?.color || prefill.color || COLORS[0].id;
     deleteButton.hidden = !block;
     duplicateButton.hidden = !block;
     document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit lesson' : 'Plan a lesson';
@@ -776,20 +1008,23 @@
     editor.hidden = true;
     editor.setAttribute('aria-hidden', 'true');
     editingId = '';
+    editingScheduleId = '';
   }
 
-  function openPlanner() {
+  function openPlanner(requestedPlannerId = '') {
     document.querySelector('[data-profile-close]')?.click();
     panel.hidden = false;
     panel.setAttribute('aria-hidden', 'false');
     openButton.setAttribute('aria-expanded', 'true');
     document.body.classList.add('lesson-planner-open');
-    showPlannerLibrary();
+    closeScheduling();
+    if(requestedPlannerId&&planners.some(planner=>planner.id===requestedPlannerId))openPlannerBook(requestedPlannerId);else showPlannerLibrary();
   }
 
   function closePlanner(reopenProfile = false) {
     cancelLessonDrag?.();
     closeEditor();
+    closeScheduling();
     library.hidden = false;
     plannerWindow.hidden = true;
     panel.hidden = true;
@@ -815,6 +1050,20 @@
   document.getElementById('lesson-planner-library-back').addEventListener('click', () => closePlanner(true));
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
   document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
+  schedulingButton.addEventListener('click', openScheduling);
+  document.getElementById('lesson-planner-scheduling-close').addEventListener('click', closeScheduling);
+  schedulingPanel.querySelector('.lesson-planner-scheduling__backdrop').addEventListener('click', closeScheduling);
+  schedulingRepeat.addEventListener('change', syncScheduleRepeatUi);
+  schedulingStart.addEventListener('change',()=>{if(minutes(schedulingEnd.value)<=minutes(schedulingStart.value))schedulingEnd.value=timeValue(minutes(schedulingStart.value)+60)});
+  schedulingCancel.addEventListener('click', resetScheduleForm);
+  schedulingForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const planner=activePlanner();if(!planner)return;
+    const item=normalizeScheduleItem({id:editingScheduleId||scheduleId(),label:schedulingLabel.value,start:schedulingStart.value,end:schedulingEnd.value,repeat:schedulingRepeat.value,weekday:Number(schedulingWeekday.value),color:scheduleEditorColor});
+    if(!item)return;
+    const existing=planner.schedule.findIndex(value=>value.id===item.id);if(existing>=0)planner.schedule[existing]=item;else planner.schedule.push(item);
+    savePlanners();publishPlannerChange();resetScheduleForm();renderSchedulingList();renderAll();
+  });
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
   window.addEventListener('teachertiles:accountchange', () => { if (!panel.hidden && !library.hidden) renderLibrary(); });
   document.getElementById('lesson-planner-prev').addEventListener('click', () => navigate(-1));
@@ -842,7 +1091,7 @@
     const saved = normalizeBlock({
       id: editingId || `lesson-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       label: labelInput.value.trim(), date: dateInput.value, start, end,
-      color: editorColor, description: descriptionInput.value.trim()
+      color: editorColor, description: descriptionInput.value.trim(), scheduleId: editingScheduleId
     });
     if (!saved) return;
     const existing = blocks.findIndex(block => block.id === saved.id);
@@ -865,6 +1114,7 @@
     const block = blocks.find(item => item.id === editingId);
     if (!block) return;
     editingId = '';
+    editingScheduleId = '';
     labelInput.value = `${block.label} copy`.slice(0, 80);
     document.getElementById('lesson-planner-editor-title').textContent = 'Duplicate lesson';
     deleteButton.hidden = true;
@@ -875,17 +1125,21 @@
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || panel.hidden) return;
     event.preventDefault();
-    if (!editor.hidden) closeEditor();
+    if (!schedulingPanel.hidden) closeScheduling();
+    else if (!editor.hidden) closeEditor();
     else if (!plannerWindow.hidden) showPlannerLibrary();
     else closePlanner(false);
   });
 
   window.TeacherTilesLessonPlanner = Object.freeze({
-    getBlocks: () => blocks.map(block => ({ ...block })),
-    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })) })),
+    getBlocks: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?planner.blocks.map(block=>({...block})):[]},
+    getSchedules: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));return planner?(planner.schedule||[]).map(item=>({...item})):[]},
+    getPlanners: () => planners.map(planner => ({ ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(planner.schedule||[]).map(item=>({...item})) })),
     getActivePlannerId: () => activePlannerId,
     open: openPlanner,
     close: () => closePlanner(false)
   });
   renderColors();
+  renderScheduleColors();
+  syncScheduleRepeatUi();
 })();
