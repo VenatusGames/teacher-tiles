@@ -391,7 +391,13 @@
       });
     };
     const richToggleCommands=new Set(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList']);
+    const runEditorHistory=direction=>{
+      restoreSelection();
+      try{document.execCommand(direction,false,null)}catch{}
+      rememberSelection();markChanged();queueSync();
+    };
     const runCommand=(command,value=null)=>{
+      if(command==='undo'||command==='redo'){runEditorHistory(command);return}
       restoreSelection();
       const isToggle=richToggleCommands.has(command);
       const expected=isToggle?!commandIsActive(command):null;
@@ -427,6 +433,11 @@
 
     const colorPicker=document.createElement('div');colorPicker.className='richtext-color-picker';colorPicker.hidden=true;colorPicker.setAttribute('role','dialog');colorPicker.setAttribute('aria-label','Rich Text color picker');colorPicker.dataset.preserveTextEdit='true';document.body.appendChild(colorPicker);
     let colorPickerMode='',colorPickerAnchor=null;
+    const syncColorPickerHost=()=>{
+      const host=document.fullscreenElement===m?m:document.body;
+      if(colorPicker.parentElement!==host)host.appendChild(colorPicker);
+      if(!colorPicker.hidden)requestAnimationFrame(positionColorPicker);
+    };
     const closeColorPicker=()=>{
       colorPicker.hidden=true;colorPickerMode='';colorPickerAnchor?.setAttribute('aria-expanded','false');colorPickerAnchor=null;m.classList.remove('is-richtext-color-open');if(!activeRichSelect&&!m.classList.contains('is-richtext-export-open'))m.classList.remove('is-richtext-popover-open');cancelAnimationFrame(colorPickerFrame);colorPickerFrame=0;
     };
@@ -448,6 +459,14 @@
         }
       }
       closeColorPicker();
+    };
+    const bindPickerChoice=(button,value)=>{
+      button.addEventListener('pointerdown',event=>{
+        rememberSelection();
+        event.preventDefault();
+        event.stopPropagation();
+        applyPickerColor(value);
+      });
     };
     const buildColorPicker=mode=>{
       colorPicker.replaceChildren();colorPicker.dataset.mode=mode;
@@ -540,17 +559,17 @@
         const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--text';
         TEXT_COLOR_CHOICES.forEach(value=>{
           const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-          const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);button.addEventListener('click',()=>applyPickerColor(value));grid.appendChild(button);
+          const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
         });
         colorPicker.appendChild(grid);
         return;
       }
 
       const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--highlight';
-      const none=document.createElement('button');none.type='button';none.className='richtext-color-choice richtext-color-choice--clear';none.setAttribute('aria-label','No highlight');none.title='No highlight';none.innerHTML='<span aria-hidden="true"></span>';none.addEventListener('click',()=>applyPickerColor('transparent'));grid.appendChild(none);
+      const none=document.createElement('button');none.type='button';none.className='richtext-color-choice richtext-color-choice--clear';none.setAttribute('aria-label','No highlight');none.title='No highlight';none.innerHTML='<span aria-hidden="true"></span>';bindPickerChoice(none,'transparent');grid.appendChild(none);
       HIGHLIGHT_COLOR_CHOICES.forEach(value=>{
         const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-        const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);button.addEventListener('click',()=>applyPickerColor(value));grid.appendChild(button);
+        const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
       });
       colorPicker.appendChild(grid);
       const custom=document.createElement('form');custom.className='richtext-color-custom';
@@ -568,7 +587,7 @@
       });colorPicker.appendChild(custom);
     };
     const openColorPicker=(mode,anchorButton)=>{
-      rememberSelection();closeRichSelect();if(!exportMenu?.hidden)closeExportMenu();
+      rememberSelection();closeRichSelect();if(!exportMenu?.hidden)closeExportMenu();syncColorPickerHost();
       if(!colorPicker.hidden&&colorPickerMode===mode){closeColorPicker();return}
       closeColorPicker();colorPickerMode=mode;colorPickerAnchor=anchorButton;buildColorPicker(mode);colorPicker.hidden=false;anchorButton.setAttribute('aria-expanded','true');m.classList.add('is-richtext-popover-open','is-richtext-color-open');positionColorPicker();
     };
@@ -580,6 +599,7 @@
       event.stopPropagation();
     });
     document.addEventListener('pointerdown',outsideColorPicker,true);colorPicker.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();const anchor=colorPickerAnchor;closeColorPicker();anchor?.focus({preventScroll:true})}});
+    document.addEventListener('fullscreenchange',syncColorPickerHost);
     const selectionElement=()=>{
       const selection=getSelection();
       if(!selection?.rangeCount||!selection.anchorNode||!editor.contains(selection.anchorNode))return null;
@@ -820,6 +840,18 @@
     exportMenu.addEventListener('pointerdown',event=>{rememberSelection();event.preventDefault();event.stopPropagation()});
     exportMenu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeExportMenu();exportButton.focus({preventScroll:true})}});
 
+    const richTextHistoryHotkey=event=>{
+      if(!editor.classList.contains('module-text-edit-active'))return;
+      if(!(event.ctrlKey||event.metaKey)||event.altKey)return;
+      const key=String(event.key||'').toLowerCase();
+      const redo=key==='y'||(key==='z'&&event.shiftKey);
+      if(key!=='z'&&key!=='y')return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      runEditorHistory(redo?'redo':'undo');
+    };
+    document.addEventListener('keydown',richTextHistoryHotkey,true);
+
     toolbar.addEventListener('pointerdown',event=>{
       rememberSelection();
       event.stopPropagation();
@@ -874,7 +906,7 @@
     const priorCleanup=m._cleanup;
     m._cleanup=()=>{
       cancelAnimationFrame(selectionFrame);cancelAnimationFrame(changeFrame);cancelAnimationFrame(exportFrame);cancelAnimationFrame(colorPickerFrame);cancelAnimationFrame(imageOverlayFrame);clearTimeout(toastTimer);
-      document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);document.removeEventListener('pointerdown',outsideRichSelect,true);window.removeEventListener('resize',closeRichSelect);
+      document.removeEventListener('selectionchange',queueSync);document.removeEventListener('pointerdown',outsideExport,true);document.removeEventListener('pointerdown',outsideColorPicker,true);document.removeEventListener('pointerdown',outsideRichSelect,true);document.removeEventListener('keydown',richTextHistoryHotkey,true);document.removeEventListener('fullscreenchange',syncColorPickerHost);window.removeEventListener('resize',closeRichSelect);
       richSelectControls.forEach(control=>control.menu.remove());exportMenu.remove();colorPicker.remove();imageOverlay.remove();priorCleanup?.();
     };
 

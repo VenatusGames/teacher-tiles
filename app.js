@@ -3534,9 +3534,7 @@ const TILE_PIN_OFF_ICON='<svg class="module-pin-icon module-pin-icon--off" viewB
 const TILE_PIN_ON_ICON='<svg class="module-pin-icon module-pin-icon--on" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l-1 5 3 3v2H6v-2l3-3-1-5Z" fill="currentColor"/><path d="M12 14v6"/></svg>';
 
 function tileOptionImportantElements(m){
-  const selector='button,input,select,textarea,[contenteditable],[role="button"],[role="slider"],[role="textbox"],iframe,audio,video,canvas,a';
-  return[...m.querySelectorAll(selector)].filter(el=>{
-    if(el.matches('.module-delete,.module-fullscreen,.module-pin,.resize-handle,.module-drag-handle')||el.closest('.module-delete,.module-fullscreen,.module-pin'))return false;
+  return[...m.querySelectorAll(':scope>[data-yield-to-tile-options="true"]')].filter(el=>{
     const style=getComputedStyle(el);
     if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
     const rect=el.getBoundingClientRect();
@@ -4116,7 +4114,7 @@ const timerSyncSoundEnds=new Map();
 function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
 function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
 function setupTimerSync(m){
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.setAttribute('role','switch');
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.dataset.yieldToTileOptions='true';toggle.setAttribute('role','switch');
   toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9a4 4 0 0 0-4 4v1M17 4l3 3-3 3M4 17h9a4 4 0 0 0 4-4v-1M7 20l-3-3 3-3"/></svg>';
   toggle.classList.add('timer-sync-toggle--labeled');
   toggle.innerHTML='<span>Sync Timers</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
