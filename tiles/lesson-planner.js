@@ -1012,6 +1012,41 @@
     schedule.append(head, body);
     canvas.append(schedule);
 
+    body.addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      if (event.target.closest('.lesson-schedule-block,.lesson-block-delete,button,input,textarea,select,[contenteditable="true"]')) return;
+      event.preventDefault();
+      const startY = event.clientY;
+      const startScrollTop = canvas.scrollTop;
+      let moved = false;
+      body.classList.add('is-panning');
+      const move = moveEvent => {
+        if (moveEvent.pointerId !== event.pointerId) return;
+        const delta = moveEvent.clientY - startY;
+        if (Math.abs(delta) > 2) moved = true;
+        canvas.scrollTop = startScrollTop - delta;
+      };
+      const finish = finishEvent => {
+        if (finishEvent.pointerId !== event.pointerId) return;
+        body.classList.remove('is-panning');
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', finish);
+        window.removeEventListener('pointercancel', finish);
+        if (moved) {
+          const until = performance.now() + 180;
+          const swallow = clickEvent => {
+            if (performance.now() > until) return;
+            clickEvent.preventDefault();
+            clickEvent.stopImmediatePropagation();
+          };
+          canvas.addEventListener('click', swallow, { capture: true, once: true });
+        }
+      };
+      window.addEventListener('pointermove', move, { passive: true });
+      window.addEventListener('pointerup', finish);
+      window.addEventListener('pointercancel', finish);
+    });
+
     const dayRecords = [];
     const lessonRecords = [];
     const expansionByMinute = new Map();
@@ -1149,13 +1184,15 @@
         preview.style.height = `${Math.max(range.section ? 34 : 30, timelineY(range.end) - timelineY(range.start))}px`;
         preview.classList.toggle('is-in-schedule', Boolean(range.section));
         preview.textContent = range.section
-          ? `+ Lesson in ${range.section.item.label}`
-          : `+ Add lesson · ${timeLabel(timeValue(range.start))}`;
+          ? `Right-click · ${range.section.item.label}`
+          : `Right-click · Add lesson · ${timeLabel(timeValue(range.start))}`;
       });
       column.addEventListener('pointerleave', () => preview.classList.remove('is-visible'));
       column.addEventListener('pointerdown', () => preview.classList.remove('is-visible'));
-      column.addEventListener('click', event => {
+      column.addEventListener('contextmenu', event => {
         if (event.target !== column) return;
+        event.preventDefault();
+        event.stopPropagation();
         const range = lessonRangeAtPointer(event);
         selectedDate = atNoon(date);
         openEditor(null, {

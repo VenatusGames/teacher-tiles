@@ -17300,3 +17300,13 @@ body>.lesson-planner-panel{
   .lesson-planner-editor-context{grid-template-columns:1fr}
   .lesson-planner-editor-context>span{grid-row:auto;width:max-content}
 }
+
+
+/* Planner timeline interaction parity: drag with primary mouse button, add with right-click. */
+.lesson-planner-schedule__body,
+.lesson-planner-times,
+.lesson-planner-day-column{cursor:grab}
+.lesson-planner-schedule__body.is-panning,
+.lesson-planner-schedule__body.is-panning .lesson-planner-times,
+.lesson-planner-schedule__body.is-panning .lesson-planner-day-column{cursor:grabbing!important;user-select:none}
+.lesson-schedule-block{cursor:pointer}
