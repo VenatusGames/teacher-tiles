@@ -1,0 +1,152 @@
+.chime-module{
+  width:560px;
+  height:350px;
+  min-width:330px;
+  min-height:235px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.chime-module .widget-heading{
+  flex:0 0 auto;
+  padding-right:102px;
+}
+
+.chime-stage{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;
+  margin:2px 18px 20px;
+  display:grid;
+  place-items:center;
+  overflow:visible;
+  isolation:isolate;
+}
+
+.chime-strike{
+  position:relative;
+  z-index:2;
+  width:min(92%,510px);
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+}
+
+.chime-strike:focus-visible{
+  outline:2px solid #60a5fa;
+  outline-offset:7px;
+  border-radius:16px;
+}
+
+.chime-art{
+  display:block;
+  width:100%;
+  height:auto;
+  user-select:none;
+  -webkit-user-drag:none;
+  filter:drop-shadow(0 8px 11px rgba(35,28,20,.10));
+  transform-origin:50% 58%;
+  will-change:transform;
+}
+
+.chime-mallet{
+  position:absolute;
+  z-index:4;
+  width:31%;
+  max-width:175px;
+  right:12%;
+  top:2%;
+  opacity:0;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+  transform-origin:13% 88%;
+  transform:translate(18px,-18px) rotate(19deg);
+  filter:drop-shadow(0 7px 8px rgba(20,16,12,.18));
+  will-change:transform,opacity;
+}
+
+.chime-hint{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  translate:-50% 0;
+  margin:0;
+  color:color-mix(in srgb,var(--module-text,#17191d) 58%,transparent);
+  font:700 11px/1.2 Inter,system-ui,sans-serif;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:.72;
+}
+
+.chime-stage.is-striking .chime-mallet{
+  animation:chimeMalletStrike 680ms cubic-bezier(.22,.8,.24,1) both;
+}
+
+.chime-stage.is-striking .chime-art{
+  animation:chimeBodyRing 720ms ease-out both;
+}
+
+@keyframes chimeMalletStrike{
+  0%{
+    opacity:0;
+    transform:translate(22px,-22px) rotate(21deg);
+  }
+  12%{
+    opacity:1;
+  }
+  43%{
+    opacity:1;
+    transform:translate(-2px,11px) rotate(-11deg);
+  }
+  53%{
+    opacity:1;
+    transform:translate(1px,7px) rotate(-7deg);
+  }
+  72%{
+    opacity:1;
+    transform:translate(12px,-8px) rotate(10deg);
+  }
+  100%{
+    opacity:0;
+    transform:translate(22px,-22px) rotate(19deg);
+  }
+}
+
+@keyframes chimeBodyRing{
+  0%,34%{transform:translateX(0) rotate(0)}
+  42%{transform:translateX(-1.4px) rotate(-.22deg)}
+  50%{transform:translateX(1.2px) rotate(.18deg)}
+  58%{transform:translateX(-.9px) rotate(-.13deg)}
+  67%{transform:translateX(.65px) rotate(.09deg)}
+  78%{transform:translateX(-.35px) rotate(-.05deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+
+@container (max-width:430px){
+  .chime-stage{margin-left:12px;margin-right:12px}
+  .chime-mallet{width:34%;right:9%;top:5%}
+  .chime-hint{font-size:10px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .chime-stage.is-striking .chime-mallet{
+    animation:chimeMalletStrikeReduced 360ms ease both;
+  }
+  .chime-stage.is-striking .chime-art{
+    animation:none;
+  }
+  @keyframes chimeMalletStrikeReduced{
+    0%,100%{opacity:0}
+    25%,70%{opacity:1}
+  }
+}
