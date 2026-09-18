@@ -126,7 +126,7 @@
   }
 
   function timeValue(total) {
-    const safe = Math.max(0, Math.min(1439, Math.round(total / 15) * 15));
+    const safe = Math.max(0, Math.min(1439, Math.round(total / 5) * 5));
     return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(safe % 60).padStart(2, '0')}`;
   }
 
@@ -747,7 +747,7 @@
           let start=minutes(block.start);
           if(hit.classList.contains('lesson-planner-day-column')){
             const rect=hit.getBoundingClientRect();
-            start=Math.round((DAY_START+(y-rect.top)/rect.height*(DAY_END-DAY_START)-offset)/15)*15;
+            start=Math.round((DAY_START+(y-rect.top)/rect.height*(DAY_END-DAY_START)-offset)/5)*5;
             start=Math.max(0,Math.min(1439-duration,start));
           }
           const exactTime=total=>`${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
@@ -871,7 +871,7 @@
       });
       unplannedScheduleForDate(date).forEach(item => {
         const start = Math.max(DAY_START, minutes(item.start));
-        const end = Math.min(DAY_END, Math.max(start + 15, minutes(item.end)));
+        const end = Math.min(DAY_END, Math.max(start + 5, minutes(item.end)));
         if (end <= DAY_START || start >= DAY_END) return;
         const slot = schedulePlaceholder(item, date);
         slot.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
@@ -881,7 +881,7 @@
       });
       blocksForDate(date).forEach(block => {
         const start = Math.max(DAY_START, minutes(block.start));
-        const end = Math.min(DAY_END, Math.max(start + 15, minutes(block.end)));
+        const end = Math.min(DAY_END, Math.max(start + 5, minutes(block.end)));
         if (end <= DAY_START || start >= DAY_END) return;
         const eventButton = lessonBlockButton(block);
         eventButton.style.top = `${((start - DAY_START) / (DAY_END - DAY_START)) * 100}%`;
