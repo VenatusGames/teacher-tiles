@@ -3205,6 +3205,7 @@ function setupClassroomTileControls(m){
 function setupModuleByType(m,type){
   setupCommon(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
+  if(type==='flyswat')window.TeacherTilesFlySwat.setup(m);
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
   if(type==='fishtank')window.TeacherTilesFishTank.setup(m);
   if(type==='sleepymonster')window.TeacherTilesSleepyMonster.setup(m);

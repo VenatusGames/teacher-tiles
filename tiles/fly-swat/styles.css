@@ -1,0 +1,197 @@
+.context-menu__icon--flyswat{overflow:hidden;background:linear-gradient(145deg,#edf8ff,#f8f4ff)}
+.context-menu__icon--flyswat img{width:27px;height:27px;object-fit:contain;transform:scale(1.2);filter:sepia(.35) saturate(1.15) hue-rotate(175deg)}
+
+.flyswat-module{
+  width:620px;
+  height:470px;
+  min-width:390px;
+  min-height:330px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  container-type:size;
+}
+.flyswat-stage{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;
+  border-radius:18px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 16% 14%,rgba(255,255,255,.9),transparent 26%),
+    linear-gradient(145deg,color-mix(in srgb,var(--module-bg,#fff) 88%,#e7f7ed 12%),color-mix(in srgb,var(--module-bg,#fff) 88%,#e8eefb 12%));
+  border:1px solid color-mix(in srgb,var(--module-text,#222) 10%,transparent);
+}
+.flyswat-board{position:absolute;inset:0;z-index:1}
+.flyswat-status{
+  position:absolute;
+  z-index:7;
+  top:8px;
+  left:50%;
+  transform:translateX(-50%);
+  max-width:54%;
+  padding:6px 11px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--module-bg,#fff) 86%,transparent);
+  border:1px solid color-mix(in srgb,var(--module-text,#222) 12%,transparent);
+  box-shadow:0 5px 16px rgba(17,24,39,.08);
+  backdrop-filter:blur(9px);
+  color:var(--module-text,#20242d);
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  pointer-events:none;
+}
+.flyswat-fly{
+  position:absolute;
+  width:var(--flyswat-fly-size,62px);
+  height:var(--flyswat-fly-size,62px);
+  padding:0;
+  border:0;
+  background:transparent;
+  transform:translate(-50%,-50%);
+  cursor:pointer;
+  z-index:2;
+  touch-action:manipulation;
+}
+.flyswat-fly:hover{z-index:4}
+.flyswat-fly-inner{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  animation:flySwatDrift var(--fly-duration,3s) ease-in-out var(--fly-delay,0s) infinite alternate;
+  transform-origin:50% 55%;
+  will-change:transform;
+}
+.flyswat-fly img{
+  position:absolute;
+  inset:-12%;
+  width:124%;
+  height:124%;
+  object-fit:contain;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+  filter:sepia(.88) saturate(1.45) hue-rotate(var(--fly-hue,0deg)) brightness(1.08) contrast(.9) drop-shadow(0 3px 2px rgba(25,31,44,.18));
+}
+.flyswat-fly-label{
+  position:relative;
+  z-index:2;
+  display:grid;
+  place-items:center;
+  min-width:35%;
+  height:33%;
+  padding:0 2px;
+  margin-top:-3%;
+  border-radius:999px;
+  color:#fff;
+  font:900 clamp(13px,3.4cqw,25px)/1 var(--module-font,Inter,system-ui,sans-serif);
+  letter-spacing:-.04em;
+  text-shadow:0 1px 2px rgba(0,0,0,.75),0 0 5px rgba(0,0,0,.35);
+  pointer-events:none;
+}
+.flyswat-fly:hover .flyswat-fly-inner{filter:brightness(1.05);scale:1.05}
+.flyswat-fly.is-swatted{pointer-events:none;z-index:6}
+.flyswat-fly.is-swatted .flyswat-fly-inner{animation:flySwatSquish .34s cubic-bezier(.2,.85,.25,1) forwards}
+
+.flyswat-team{
+  position:absolute;
+  z-index:8;
+  bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:2px;
+  width:118px;
+  height:91px;
+  padding:0 4px;
+  border:0;
+  border-radius:16px;
+  background:transparent;
+  cursor:pointer;
+  opacity:.82;
+  transition:opacity .15s ease,transform .15s ease,background .15s ease,box-shadow .15s ease;
+  touch-action:manipulation;
+}
+.flyswat-team--blue{left:9px;justify-content:flex-start}
+.flyswat-team--red{right:9px;justify-content:flex-end;flex-direction:row-reverse}
+.flyswat-team img{width:76px;height:88px;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none;transform:scale(1.24)}
+.flyswat-team-score{
+  min-width:32px;
+  padding:4px 6px;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--module-bg,#fff) 88%,transparent);
+  border:1px solid color-mix(in srgb,var(--module-text,#222) 13%,transparent);
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+  color:var(--module-text,#20242d);
+  font:900 19px/1 var(--module-font,Inter,system-ui,sans-serif);
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+}
+.flyswat-team:hover{opacity:1;transform:translateY(-2px)}
+.flyswat-team.is-active{opacity:1;background:rgba(255,255,255,.58);box-shadow:0 0 0 3px color-mix(in srgb,currentColor 35%,transparent),0 7px 18px rgba(0,0,0,.08)}
+.flyswat-team--blue.is-active{color:#315b9a}
+.flyswat-team--red.is-active{color:#e11d1d}
+
+.flyswat-gameover{
+  position:absolute;
+  z-index:12;
+  inset:50% auto auto 50%;
+  transform:translate(-50%,-50%);
+  min-width:210px;
+  padding:18px 20px;
+  display:grid;
+  justify-items:center;
+  gap:7px;
+  border-radius:18px;
+  background:color-mix(in srgb,var(--module-bg,#fff) 92%,transparent);
+  border:1px solid color-mix(in srgb,var(--module-text,#222) 13%,transparent);
+  box-shadow:0 18px 50px rgba(15,23,42,.2);
+  backdrop-filter:blur(12px);
+  color:var(--module-text,#20242d);
+  text-align:center;
+}
+.flyswat-gameover[hidden]{display:none}
+.flyswat-gameover strong{font-size:23px;letter-spacing:-.03em}
+.flyswat-gameover-result{font-size:13px;font-weight:700;opacity:.72}
+
+.flyswat-controls{
+  position:absolute;
+  z-index:15;
+  left:50%;
+  bottom:9px;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  max-width:calc(100% - 250px);
+}
+.flyswat-controls .tile-settings-panel{min-width:246px}
+.flyswat-controls .tile-mode-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+.flyswat-controls .tile-mode-switch button{min-width:0;padding-inline:8px;white-space:nowrap}
+.flyswat-settings-note{display:block;margin-top:7px;line-height:1.35;opacity:.68}
+
+@keyframes flySwatDrift{
+  from{transform:translate(var(--fly-dx1),var(--fly-dy1)) rotate(var(--fly-tilt1))}
+  to{transform:translate(var(--fly-dx2),var(--fly-dy2)) rotate(var(--fly-tilt2))}
+}
+@keyframes flySwatSquish{
+  0%{transform:scale(1) rotate(0);opacity:1}
+  45%{transform:scaleX(1.34) scaleY(.42) rotate(-7deg);opacity:1}
+  100%{transform:scaleX(1.5) scaleY(.18) rotate(5deg);opacity:0}
+}
+
+@media (max-width:760px){
+  .flyswat-module{min-width:330px}
+  .flyswat-team{width:98px;height:78px}
+  .flyswat-team img{width:63px;height:75px}
+  .flyswat-controls{max-width:calc(100% - 208px)}
+  .flyswat-controls>.tile-action{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .flyswat-fly-inner{animation:none}
+  .flyswat-fly.is-swatted .flyswat-fly-inner{animation:flySwatSquish .16s ease-out forwards}
+}
