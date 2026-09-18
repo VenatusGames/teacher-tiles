@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260918-bell-essential-sync-1" />
+  <link rel="stylesheet" href="styles.css?v=20260918-sync-essential-polish-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260905-daily-fixes-2" />
@@ -16,9 +16,9 @@
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260910-fishtank-deadspace-1" />
   <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20260910-sleepy-monster-6" />
   <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=20260912-quiet-critters-6" />
-  <link rel="stylesheet" href="tiles/chime/styles.css?v=20260918-2
+  <link rel="stylesheet" href="tiles/chime/styles.css?v=20260918-2" />
   <link rel="stylesheet" href="tiles/transition-bell/styles.css?v=20260918-transition-bell-1" />
-  <link rel="stylesheet" href="tiles/essential-question/styles.css?v=20260918-essential-question-1" />" />
+  <link rel="stylesheet" href="tiles/essential-question/styles.css?v=20260918-essential-question-2" />
   <link rel="stylesheet" href="tiles/butterfly-garden/styles.css?v=20260910-butterfly-garden-3" />
   <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=20260912-symbol-controls-1" />
   <link rel="stylesheet" href="tiles/image-search/styles.css?v=20260908-polish-1" />
@@ -1818,7 +1818,7 @@
 
 
 <button class="context-menu__item" data-module="vocabulary" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h20M7 3v5M17 3v5M4 8h16v13H4zM8 12h8M8 16h5"/></svg></span><span><strong>Vocabulary</strong><small>Hang your class words on a word wall</small></span></button>
-<button class="context-menu__item" data-module="essentialquestion" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10M7 12h10M7 17h6"/><path d="M4.4 4.5h1.8v15H4.4M17.8 4.5h1.8v15h-1.8"/></svg></span><span><strong>Essential Question</strong><small>Display a quoted question with an optional subheading</small></span></button>
+<button class="context-menu__item" data-module="essentialquestion" data-category="literacy"><span class="context-menu__icon context-menu__icon--essential-question" aria-hidden="true">?</span><span><strong>Essential Question</strong><small>Display a quoted question with an optional subheading</small></span></button>
 <button class="context-menu__item" data-module="timestables" data-category="math"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 9h16M9 4v16M9 14h11M14 9v11"/></svg></span><span><strong>Times Tables</strong><small>Choose fact families and practice multiplication</small></span></button>
 <button class="context-menu__item" data-module="google" data-category="tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></span><span><strong>Google</strong><small>Search Google from your board</small></span></button>
 <button class="context-menu__item" data-module="link" data-category="tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M14 8l1-1a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"/></svg></span><span><strong>Link</strong><small>Turn an image or text into a website link</small></span></button>
@@ -2319,7 +2319,9 @@
       </header>
       <div class="essential-question-body">
         <div class="essential-question-shell" aria-label="Essential question in quotation marks">
+          <span class="essential-question-quote essential-question-quote--open" aria-hidden="true">“</span>
           <div class="essential-question-question" contenteditable="true" role="textbox" aria-label="Essential question" data-text-edit-mode="double" data-placeholder="Type the essential question"></div>
+          <span class="essential-question-quote essential-question-quote--close" aria-hidden="true">”</span>
         </div>
         <div class="essential-question-subheading" contenteditable="true" role="textbox" aria-label="Optional subheading" data-text-edit-mode="double" data-placeholder="Optional subheading"></div>
       </div>
@@ -3983,7 +3985,7 @@
   <script src="tiles/quiet-critters/index.js?v=20260912-quiet-critters-9"></script>
   <script src="tiles/chime/index.js?v=20260918-1"></script>
   <script src="tiles/transition-bell/index.js?v=20260918-transition-bell-1"></script>
-  <script src="tiles/essential-question/index.js?v=20260918-essential-question-1"></script>
+  <script src="tiles/essential-question/index.js?v=20260918-essential-question-2"></script>
   <script src="tiles/butterfly-garden/index.js?v=20260912-reset-1"></script>
   <script src="tiles/shared/live.js?v=20260908-reviewed-2"></script>
   <script src="tiles/shared/daily.js?v=20260908-reviewed-2"></script>
@@ -4009,7 +4011,7 @@
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
-<script src="app.js?v=20260918-bell-essential-sync-1"></script>
+<script src="app.js?v=20260918-sync-essential-polish-1"></script>
   <script src="tiles/lesson-planner.js?v=20260912-direct-delete-1"></script>
   <script type="module" src="firebase-auth.js?v=20260913-layout-history-membership-1"></script>
 

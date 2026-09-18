@@ -4,9 +4,11 @@
   const QUESTION_MAX=280;
   const SUBHEADING_MAX=220;
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-  const clean=(value,max,{stripQuotes=false}={})=>{
-    let text=String(value??'').replace(/\s+/g,' ').trim();
-    if(stripQuotes)text=text.replace(/^["'“”‘’]+|["'“”‘’]+$/g,'').trim();
+
+  const clean=(value,max,{stripQuotes=false,trim=true}={})=>{
+    let text=String(value??'').replace(/[\r\n\t]+/g,' ').replace(/ {2,}/g,' ');
+    if(stripQuotes)text=text.replace(/^["'“”‘’]+/g,'').replace(/["'“”‘’]+$/g,'');
+    text=trim?text.trim():text.replace(/^ +/,'');
     return text.slice(0,max);
   };
 
@@ -29,39 +31,6 @@
     });
   }
 
-  function fitField(field,measure,cssVar,{min,max,emptySize,maxChars,stripQuotes=false}){
-    const apply=()=>{
-      const text=clean(field.textContent,maxChars,{stripQuotes});
-      if(field.textContent!==text&&document.activeElement!==field){
-        field.textContent=text;
-      }
-      if(!text){
-        field.style.setProperty(cssVar,`${emptySize}px`);
-        return;
-      }
-      const computed=getComputedStyle(field);
-      const width=Math.max(24,field.clientWidth-6);
-      const height=Math.max(22,field.clientHeight-6);
-      measure.style.width=`${width}px`;
-      measure.style.fontFamily=computed.fontFamily;
-      measure.style.fontWeight=computed.fontWeight;
-      measure.style.lineHeight=computed.lineHeight;
-      measure.style.letterSpacing=computed.letterSpacing;
-      measure.textContent=text;
-      let low=min,high=max,best=min;
-      for(let i=0;i<18;i+=1){
-        const mid=(low+high)/2;
-        measure.style.fontSize=`${mid}px`;
-        if(measure.scrollWidth<=width+1&&measure.scrollHeight<=height+1){
-          best=mid;
-          low=mid;
-        }else high=mid;
-      }
-      field.style.setProperty(cssVar,`${clamp(best,min,max)}px`);
-    };
-    return apply;
-  }
-
   function setup(moduleElement){
     const question=moduleElement.querySelector('.essential-question-question');
     const subheading=moduleElement.querySelector('.essential-question-subheading');
@@ -72,67 +41,68 @@
     installPlainTextPaste(question);
     installPlainTextPaste(subheading);
 
-    question.style.fontSize='var(--essential-question-size,42px)';
-    subheading.style.fontSize='var(--essential-subheading-size,18px)';
-
     let frame=0;
-    const questionFit=fitField(question,measure,'--essential-question-size',{min:18,max:60,emptySize:40,maxChars:QUESTION_MAX,stripQuotes:true});
-    const subheadingFit=fitField(subheading,measure,'--essential-subheading-size',{min:12,max:24,emptySize:16,maxChars:SUBHEADING_MAX});
+    const fit=(field,cssVar,{min,max,emptySize,maxChars,stripQuotes=false})=>{
+      const text=clean(field.textContent,maxChars,{stripQuotes,trim:false});
+      const computed=getComputedStyle(field);
+      const width=Math.max(24,field.clientWidth-4);
+      const height=Math.max(22,field.clientHeight-4);
+      if(!text){moduleElement.style.setProperty(cssVar,`${emptySize}px`);return}
+      measure.style.width=`${width}px`;
+      measure.style.fontFamily=computed.fontFamily;
+      measure.style.fontWeight=computed.fontWeight;
+      measure.style.lineHeight=computed.lineHeight;
+      measure.style.letterSpacing=computed.letterSpacing;
+      measure.textContent=text;
+      let low=min,high=max,best=min;
+      for(let i=0;i<18;i+=1){
+        const mid=(low+high)/2;
+        measure.style.fontSize=`${mid}px`;
+        if(measure.scrollWidth<=width+1&&measure.scrollHeight<=height+1){best=mid;low=mid}else high=mid;
+      }
+      moduleElement.style.setProperty(cssVar,`${clamp(best,min,max)}px`);
+    };
+
     const scheduleFit=()=>{
       cancelAnimationFrame(frame);
       frame=requestAnimationFrame(()=>{
-        questionFit();
-        subheadingFit();
+        fit(question,'--essential-question-size',{min:18,max:64,emptySize:40,maxChars:QUESTION_MAX,stripQuotes:true});
+        fit(subheading,'--essential-subheading-size',{min:12,max:22,emptySize:17,maxChars:SUBHEADING_MAX});
       });
     };
 
-    const syncQuestion=(preserveCaret=false)=>{
-      const next=clean(question.textContent,QUESTION_MAX,{stripQuotes:true});
-      if(question.textContent!==next){
-        question.textContent=next;
-        if(preserveCaret&&document.activeElement===question)placeCaretAtEnd(question);
-      }
+    const syncLive=(field,max,{stripQuotes=false}={})=>{
+      const next=clean(field.textContent,max,{stripQuotes,trim:false});
+      if(field.textContent!==next){field.textContent=next;placeCaretAtEnd(field)}
       scheduleFit();
     };
-    const syncSubheading=(preserveCaret=false)=>{
-      const next=clean(subheading.textContent,SUBHEADING_MAX);
-      if(subheading.textContent!==next){
-        subheading.textContent=next;
-        if(preserveCaret&&document.activeElement===subheading)placeCaretAtEnd(subheading);
-      }
+    const syncFinal=(field,max,{stripQuotes=false}={})=>{
+      const next=clean(field.textContent,max,{stripQuotes,trim:true});
+      if(field.textContent!==next)field.textContent=next;
       scheduleFit();
     };
 
-    const announceChange=reason=>notifyBoardChanged(`essential-question-${reason}`);
-    question.addEventListener('input',()=>{syncQuestion(true);announceChange('question')});
-    subheading.addEventListener('input',()=>{syncSubheading(true);announceChange('subheading')});
-    question.addEventListener('blur',()=>syncQuestion(false));
-    subheading.addEventListener('blur',()=>syncSubheading(false));
+    question.addEventListener('input',()=>{syncLive(question,QUESTION_MAX,{stripQuotes:true});notifyBoardChanged('essential-question-question')});
+    subheading.addEventListener('input',()=>{syncLive(subheading,SUBHEADING_MAX);notifyBoardChanged('essential-question-subheading')});
+    question.addEventListener('blur',()=>syncFinal(question,QUESTION_MAX,{stripQuotes:true}));
+    subheading.addEventListener('blur',()=>syncFinal(subheading,SUBHEADING_MAX));
 
     const ro=new ResizeObserver(scheduleFit);
-    ro.observe(moduleElement);
-    ro.observe(question);
-    ro.observe(subheading);
+    ro.observe(moduleElement);ro.observe(question);ro.observe(subheading);
 
     moduleElement._boardGetState=()=>({
-      question:clean(question.textContent,QUESTION_MAX,{stripQuotes:true}),
-      subheading:clean(subheading.textContent,SUBHEADING_MAX)
+      question:clean(question.textContent,QUESTION_MAX,{stripQuotes:true,trim:true}),
+      subheading:clean(subheading.textContent,SUBHEADING_MAX,{trim:true})
     });
     moduleElement._boardSetState=state=>{
-      question.textContent=clean(state?.question,QUESTION_MAX,{stripQuotes:true});
-      subheading.textContent=clean(state?.subheading,SUBHEADING_MAX);
+      question.textContent=clean(state?.question,QUESTION_MAX,{stripQuotes:true,trim:true});
+      subheading.textContent=clean(state?.subheading,SUBHEADING_MAX,{trim:true});
       scheduleFit();
     };
 
     scheduleFit();
-
     const priorCleanup=moduleElement._cleanup;
-    moduleElement._cleanup=()=>{
-      cancelAnimationFrame(frame);
-      ro.disconnect();
-      measure.remove();
-      priorCleanup?.();
-    };
+    moduleElement._cleanup=()=>{cancelAnimationFrame(frame);ro.disconnect();measure.remove();priorCleanup?.()};
   }
 
   window.TeacherTilesEssentialQuestion=Object.freeze({setup});

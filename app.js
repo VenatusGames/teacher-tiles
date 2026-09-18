@@ -1254,7 +1254,8 @@ let lastUiInteractionWasKeyboard=false;
 const SPACEBAR_FLASHCARD_SELECTOR='.abc-card,.number-flashcards-card,.cvcword-card,.highfrequency-card,.customflashcards-card';
 let activeSpacebarFlashcard=null;
 document.addEventListener('keydown',event=>{
-  if(event.key==='Tab'||event.key==='Enter'||event.key===' '){
+  const typing=isTypingTarget(event.target)||isTypingTarget(document.activeElement);
+  if(event.key==='Tab'||((event.key==='Enter'||event.key===' ')&&!typing)){
     lastUiInteractionWasKeyboard=true;
     document.body.classList.add('is-keyboard-navigation');
   }
@@ -3755,24 +3756,8 @@ function setupCommon(m){
       return e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad;
     });
 
-    // Timer Sync slides left when the universal corner controls appear. Use a
-    // stationary corridor that spans both its original and shifted positions
-    // so the moving button can never toggle the hotspot off underneath the pointer.
-    const timerSync=m.querySelector(':scope>.timer-sync-toggle');
-    let nearTimerSyncCorridor=false;
-    if(timerSync){
-      const syncStyle=getComputedStyle(timerSync);
-      if(syncStyle.display!=='none'&&syncStyle.visibility!=='hidden'&&Number(syncStyle.opacity)!==0){
-        const syncRect=timerSync.getBoundingClientRect();
-        const corridorLeft=Math.max(rect.left,Math.min(syncRect.left-24,rect.right-Math.min(300,Math.max(190,rect.width*.62))));
-        const corridorTop=Math.max(rect.top,syncRect.top-24);
-        const corridorBottom=Math.min(rect.bottom,Math.max(syncRect.bottom+24,rect.top+proximityY));
-        nearTimerSyncCorridor=e.clientX>=corridorLeft&&e.clientX<=rect.right&&e.clientY>=corridorTop&&e.clientY<=corridorBottom;
-      }
-    }
-
     const interactionHold=Number(m.dataset.tileOptionsHoldUntil||0)>performance.now();
-    const inside=nearCorner||nearOption||nearYieldingControl||nearTimerSyncCorridor||interactionHold;
+    const inside=nearCorner||nearOption||nearYieldingControl||interactionHold;
     const changed=m.classList.contains('is-tile-options-hotzone')!==inside;
     m.classList.toggle('is-delete-hotzone',inside);
     m.classList.toggle('is-tile-options-hotzone',inside);
@@ -4181,8 +4166,9 @@ const timerSyncSoundEnds=new Map();
 function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
 function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
 function setupTimerSync(m){
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='custom-icon timer-sync-toggle timer-sync-toggle--labeled';toggle.setAttribute('role','switch');
-  toggle.innerHTML='<span>Sync</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='timer-sync-toggle';toggle.setAttribute('role','switch');
+  toggle.classList.add('timer-sync-toggle--labeled');
+  toggle.innerHTML='<span>Sync Timers</span><span class="timer-sync-switch" aria-hidden="true"><i></i></span>';
   const refresh=()=>{const enabled=m.dataset.timerSync==='true';toggle.setAttribute('aria-checked',String(enabled));toggle.setAttribute('aria-label',`Sync all ${timerSyncType(m)==='visual'?'Visual':'Interactive'} Timers`);toggle.title=`Sync timers: ${enabled?'On':'Off'}`};
   const syncRow=m.querySelector('.timer-customization,.interactive-customization');
   m._refreshTimerSync=refresh;(syncRow||m).appendChild(toggle);refresh();
