@@ -43,45 +43,41 @@
   }
 
   function crawlPath() {
-    const headingFor = (dx, dy) => Math.atan2(dx, -dy) * 180 / Math.PI;
     const points = [];
     let x = 0;
     let y = 0;
-    let heading = random(-180, 180);
+    let heading = random(-28, 28);
 
     for (let i = 0; i < 5; i += 1) {
-      const distanceFromHome = Math.hypot(x, y);
-      if (distanceFromHome > 7.2) heading = headingFor(-x, -y) + random(-32, 32);
-      else heading += random(-82, 82);
+      heading = clamp(heading + random(-16, 16), -42, 42);
 
-      let distance = random(3.2, 6.1);
+      let distance = random(1.6, 3.2);
       let radians = heading * Math.PI / 180;
       let nextX = x + Math.sin(radians) * distance;
       let nextY = y - Math.cos(radians) * distance;
 
-      if (Math.hypot(nextX, nextY) > 9.8) {
-        heading = headingFor(-x, -y) + random(-26, 26);
-        distance = random(3, 5.5);
+      if (Math.hypot(nextX, nextY) > 5.4) {
+        heading = clamp(-heading + random(-12, 12), -42, 42);
+        distance = random(1.3, 2.7);
         radians = heading * Math.PI / 180;
         nextX = x + Math.sin(radians) * distance;
         nextY = y - Math.cos(radians) * distance;
       }
 
-      x = clamp(nextX, -9, 9);
-      y = clamp(nextY, -9, 9);
+      x = clamp(nextX, -5, 5);
+      y = clamp(nextY, -5, 5);
       points.push({x, y, r: heading});
     }
 
-    const homeHeading = headingFor(-x, -y);
     return {
       mx1: points[0].x, my1: points[0].y, mr1: points[0].r,
       mx2: points[1].x, my2: points[1].y, mr2: points[1].r,
       mx3: points[2].x, my3: points[2].y, mr3: points[2].r,
       mx4: points[3].x, my4: points[3].y, mr4: points[3].r,
       mx5: points[4].x, my5: points[4].y, mr5: points[4].r,
-      mr6: homeHeading,
-      duration: random(8.2, 11.8),
-      delay: random(-11, 0)
+      mr6: points[4].r,
+      duration: random(19, 27),
+      delay: random(-24, 0)
     };
   }
 
@@ -189,22 +185,34 @@
     }
 
     function fitFlies() {
-      const rect = stage.getBoundingClientRect();
+      const rect = board.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       const {cols, rows} = layoutForCount(state.count);
+      const fullscreenElement = document.fullscreenElement;
+      const isFullscreen = Boolean(fullscreenElement && (
+        fullscreenElement === moduleElement ||
+        fullscreenElement.contains(moduleElement) ||
+        moduleElement.contains(fullscreenElement)
+      ));
       const usableWidth = rect.width * .84;
       const usableHeight = rect.height * .72;
-      const size = Math.max(34, Math.min(92, usableWidth / cols * .72, usableHeight / rows * .78));
+      const maxSize = isFullscreen ? 132 : 92;
+      const scale = isFullscreen ? .9 : .72;
+      const verticalScale = isFullscreen ? .92 : .78;
+      const size = Math.max(34, Math.min(maxSize, usableWidth / cols * scale, usableHeight / rows * verticalScale));
       moduleElement.style.setProperty('--flyswat-fly-size', `${size}px`);
     }
 
     function applyCrawlVars(button, fly) {
       ['1','2','3','4','5'].forEach(index => {
+        const rotation = fly[`mr${index}`];
         button.style.setProperty(`--fly-mx${index}`, `${fly[`mx${index}`]}px`);
         button.style.setProperty(`--fly-my${index}`, `${fly[`my${index}`]}px`);
-        button.style.setProperty(`--fly-mr${index}`, `${fly[`mr${index}`]}deg`);
+        button.style.setProperty(`--fly-mr${index}`, `${rotation}deg`);
+        button.style.setProperty(`--fly-lr${index}`, `${-rotation}deg`);
       });
       button.style.setProperty('--fly-mr6', `${fly.mr6}deg`);
+      button.style.setProperty('--fly-lr6', `${-fly.mr6}deg`);
       button.style.setProperty('--fly-duration', `${fly.duration}s`);
       button.style.setProperty('--fly-delay', `${fly.delay}s`);
     }
@@ -340,6 +348,7 @@
 
     const resizeObserver = new ResizeObserver(fitFlies);
     resizeObserver.observe(stage);
+    document.addEventListener('fullscreenchange', () => requestAnimationFrame(fitFlies), {signal});
 
     moduleElement._boardGetState = () => ({
       mode: state.mode,
