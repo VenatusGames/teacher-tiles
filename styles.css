@@ -16508,3 +16508,34 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   :is(.timer-module,.interactive-module) .timer-controls button,
   .timer-shape-shelf button,.interactive-type-shelf button{transition:none!important}
 }
+
+
+/* No Background Visual Timer: settings stay inside the tile hover bounds. */
+.timer-module[data-tile-skin="timer-freestanding"] .timer-controls{
+  left:8px!important;
+  right:8px!important;
+  bottom:8px!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:none!important;
+  max-height:270px;
+  box-sizing:border-box;
+}
+.timer-module[data-tile-skin="timer-freestanding"] .timer-controls::before{display:none!important}
+.timer-module[data-tile-skin="timer-freestanding"]:is(.is-pointer-over,.has-keyboard-focus,:has(.timer-controls:focus-within),.is-settings-open) .timer-stage{
+  padding-bottom:214px;
+}
+.timer-module[data-tile-skin="timer-freestanding"]:is(.is-pointer-over,.has-keyboard-focus,:has(.timer-controls:focus-within),.is-settings-open) .timer-visual{
+  --timer-visual-size:min(72cqw,50cqh,290px);
+}
+.timer-module[data-tile-skin="timer-freestanding"] .timer-stage{
+  transition:padding-bottom .16s ease;
+}
+.timer-module[data-tile-skin="timer-freestanding"] .timer-visual{
+  transition:width .18s,height .18s,filter .18s;
+}
+.timer-presets .timer-clear{min-width:54px}
+@media(prefers-reduced-motion:reduce){
+  .timer-module[data-tile-skin="timer-freestanding"] .timer-stage,
+  .timer-module[data-tile-skin="timer-freestanding"] .timer-visual{transition:none}
+}

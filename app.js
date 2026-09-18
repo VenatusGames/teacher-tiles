@@ -4182,7 +4182,7 @@ function setupTimerSync(m){
     for(const peer of timerSyncPeers(m)){peer.dataset.timerSync=String(enabled);peer._refreshTimerSync?.()}
     if(enabled)publish();notifyBoardChanged('timer-sync');
   });
-  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-set,[data-add-seconds]')){publish();notifyBoardChanged('timer-controls')}});
+  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-clear,.timer-set,[data-add-seconds]')){publish();notifyBoardChanged('timer-controls')}});
   m.addEventListener('change',event=>{if(event.target instanceof Element&&event.target.closest('.timer-until')){publish();notifyBoardChanged('timer-controls')}});
   queueMicrotask(()=>{
     if(!m.isConnected)return;
@@ -4211,13 +4211,15 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   const input=m.querySelector('.timer-custom');
   const untilInput=m.querySelector('.timer-until');
   const set=m.querySelector('.timer-set');
+  const clear=m.querySelector('.timer-clear');
   const start=m.querySelector('.timer-start');
   const reset=m.querySelector('.timer-reset');
   let total=300,left=300,running=false,end=0,interval=null,finished=false;
 
   const render=()=>{
     remain.textContent=formatCountdown(left);
-    onRender({progress:1-clamp(left/total,0,1),running,left,total});
+    const progress=total>0?1-clamp(left/total,0,1):0;
+    onRender({progress,running,left,total});
   };
   const stop=()=>{if(interval){clearInterval(interval);interval=null}};
   const clearUntil=()=>{if(untilInput)untilInput.value=''};
@@ -4270,6 +4272,13 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   };
 
   addButtons.forEach(button=>button.addEventListener('click',()=>addTime(button.dataset.addSeconds)));
+  clear?.addEventListener('click',()=>{
+    running=false;finished=false;stop();total=0;left=0;end=0;clearUntil();
+    if(input)input.value='';
+    m.classList.remove('is-running','candle-finished');
+    start.textContent='Start';
+    render();
+  });
   set.addEventListener('click',()=>{if(input.value)setDuration(input.value)});
   input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();set.click()}});
   untilInput?.addEventListener('change',applyUntil);
@@ -4278,6 +4287,19 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     event.preventDefault();
     untilInput.dispatchEvent(new Event('change',{bubbles:true}));
   });
+
+  let pointerFocusedField=null;
+  const pointerFocus=event=>{pointerFocusedField=event.currentTarget};
+  const clearPointerFocus=event=>{if(pointerFocusedField===event.currentTarget)pointerFocusedField=null};
+  [input,untilInput].filter(Boolean).forEach(field=>{
+    field.addEventListener('pointerdown',pointerFocus);
+    field.addEventListener('blur',clearPointerFocus);
+  });
+  const releasePointerFocusedField=()=>{
+    if(pointerFocusedField&&document.activeElement===pointerFocusedField)pointerFocusedField.blur();
+    pointerFocusedField=null;
+  };
+  m.addEventListener('pointerleave',releasePointerFocusedField);
 
   const tick=()=>{
     if(!m.isConnected){pauseDeletedTimer();return}
@@ -4300,7 +4322,9 @@ function bindTimerControls(m,onRender,{onFinish}={}){
       running=false;stop();m.classList.remove('is-running');start.textContent='Resume';render();
       return;
     }
+    if(total<=0)return;
     if(left<=0){left=total;finished=false;m.classList.remove('candle-finished')}
+    if(left<=0)return;
     running=true;end=Date.now()+left*1000;m.classList.add('is-running');start.textContent='Pause';
     interval=setInterval(tick,80);tick();
   });
@@ -4312,7 +4336,8 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   m._boardTimerSetState=state=>{
     if(!state)return;
     stop();
-    total=Math.max(1,Number(state.total)||300);
+    const restoredTotal=Number(state.total);
+    total=Number.isFinite(restoredTotal)&&restoredTotal>=0?restoredTotal:300;
     const restoredLeft=Number(state.left);
     left=Math.max(0,Math.min(total,Number.isFinite(restoredLeft)?restoredLeft:total));
     finished=Boolean(state.finished);
@@ -4338,6 +4363,11 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   render();
   return()=>{
     stop();
+    m.removeEventListener('pointerleave',releasePointerFocusedField);
+    [input,untilInput].filter(Boolean).forEach(field=>{
+      field.removeEventListener('pointerdown',pointerFocus);
+      field.removeEventListener('blur',clearPointerFocus);
+    });
     delete m._boardTimerGetState;
     delete m._boardTimerSetState;
   };
