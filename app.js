@@ -2765,10 +2765,11 @@ menu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropa
 function menuSearchRank(item,query){
   if(!query)return 0;
   const name=normalizeMenuSearch(item.querySelector('strong')?.textContent||'');
-  if(name===query)return 0;
-  if(name.startsWith(query))return 1;
+  const aliases=normalizeMenuSearch(item.dataset.searchAliases||'').split(/\s+/).filter(Boolean);
+  if(name===query||aliases.includes(query))return 0;
+  if(name.startsWith(query)||aliases.some(alias=>alias.startsWith(query)))return 1;
   if(name.split(' ').some(word=>word.startsWith(query)))return 2;
-  if(name.includes(query))return 3;
+  if(name.includes(query)||aliases.some(alias=>alias.includes(query)))return 3;
   const moduleName=normalizeMenuSearch(item.dataset.module||'');
   if(moduleName===query)return 4;
   if(moduleName.startsWith(query)||moduleName.includes(query))return 5;
@@ -2787,7 +2788,7 @@ function applyMenuView(){
   let categories=searching||activeMenuCategory==='favorites'?[...regularCategories,...holidayCategories]:activeMenuCategory==='all'?regularCategories:activeMenuCategory==='holidays'?holidayCategories:[activeMenuCategory.startsWith('favorite:')?activeMenuCategory.slice(9):activeMenuCategory];
   if(searching){
     const categoryRank=category=>Math.min(...menuItems.filter(item=>(item.dataset.category||'').split(/\s+/).includes(category)).map(item=>{
-      const searchable=normalizeMenuSearch([item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' '));
+      const searchable=normalizeMenuSearch([item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category,item.dataset.searchAliases].join(' '));
       return searchable.includes(query)?menuSearchRank(item,query):Infinity;
     }));
     categories=[...categories].sort((a,b)=>categoryRank(a)-categoryRank(b)||menuCategoryLabel(a).localeCompare(menuCategoryLabel(b),undefined,{sensitivity:'base',numeric:true}));
@@ -2806,7 +2807,7 @@ function applyMenuView(){
     let collectionCount=0;
     for(const category of categories){
       const matches=menuItems.filter(item=>{
-        const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category].join(' ').toLowerCase().replace(/[-‐‑–—]/g,' ');
+        const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category,item.dataset.searchAliases].join(' ').toLowerCase().replace(/[-‐‑–—]/g,' ');
         return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
       });
       const basicsOrder=['sticky','draw','textbubble','richtext','timer','clock','image','calculator'];
@@ -3750,7 +3751,25 @@ function setupCommon(m){
       const r=control.getBoundingClientRect(),pad=14;
       return e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad;
     });
-    const inside=nearCorner||nearOption||nearYieldingControl;
+
+    // Timer Sync slides left when the universal corner controls appear. Use a
+    // stationary corridor that spans both its original and shifted positions
+    // so the moving button can never toggle the hotspot off underneath the pointer.
+    const timerSync=m.querySelector(':scope>.timer-sync-toggle');
+    let nearTimerSyncCorridor=false;
+    if(timerSync){
+      const syncStyle=getComputedStyle(timerSync);
+      if(syncStyle.display!=='none'&&syncStyle.visibility!=='hidden'&&Number(syncStyle.opacity)!==0){
+        const syncRect=timerSync.getBoundingClientRect();
+        const corridorLeft=Math.max(rect.left,Math.min(syncRect.left-24,rect.right-Math.min(300,Math.max(190,rect.width*.62))));
+        const corridorTop=Math.max(rect.top,syncRect.top-24);
+        const corridorBottom=Math.min(rect.bottom,Math.max(syncRect.bottom+24,rect.top+proximityY));
+        nearTimerSyncCorridor=e.clientX>=corridorLeft&&e.clientX<=rect.right&&e.clientY>=corridorTop&&e.clientY<=corridorBottom;
+      }
+    }
+
+    const interactionHold=Number(m.dataset.tileOptionsHoldUntil||0)>performance.now();
+    const inside=nearCorner||nearOption||nearYieldingControl||nearTimerSyncCorridor||interactionHold;
     const changed=m.classList.contains('is-tile-options-hotzone')!==inside;
     m.classList.toggle('is-delete-hotzone',inside);
     m.classList.toggle('is-tile-options-hotzone',inside);
@@ -3762,12 +3781,14 @@ function setupCommon(m){
   },{capture:true,passive:true});
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
   m.addEventListener('pointerdown',event=>{
-    const target=event.target instanceof Element?event.target.closest(':scope>[data-yield-to-tile-options="true"]'):null;
+    const target=event.target instanceof Element?event.target.closest('[data-yield-to-tile-options="true"]'):null;
     if(!target||!m.contains(target))return;
+    m.dataset.tileOptionsHoldUntil=String(performance.now()+900);
     m.classList.add('is-delete-hotzone','is-tile-options-hotzone');
     shiftTileControlsAwayFromOptions(m);
   },true);
   m.addEventListener('pointerleave',()=>{
+    delete m.dataset.tileOptionsHoldUntil;
     m.classList.remove('is-delete-hotzone','is-tile-options-hotzone');
     requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
   });
