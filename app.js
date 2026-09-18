@@ -3730,7 +3730,6 @@ function setupCommon(m){
   layoutTileOptionControls(m);
   const optionResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   optionResizeObserver.observe(m);
-  m.addEventListener('pointerenter',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   m.addEventListener('focusin',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   m.addEventListener('focusout',()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   const priorOptionCleanup=m._cleanup;m._cleanup=()=>{optionResizeObserver.disconnect();clearTileOptionObstructionShift(m);m.classList.remove('is-tile-options-active');priorOptionCleanup?.()};
@@ -3750,6 +3749,10 @@ function setupCommon(m){
     m.classList.toggle('is-tile-options-hotzone',inside);
     if(changed)requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
   };
+  m.addEventListener('pointerenter',event=>{
+    layoutTileOptionControls(m);
+    updateDeleteHotzone(event);
+  },{capture:true,passive:true});
   m.addEventListener('pointermove',updateDeleteHotzone,{capture:true,passive:true});
   m.addEventListener('pointerleave',()=>{
     m.classList.remove('is-delete-hotzone','is-tile-options-hotzone');
@@ -12045,7 +12048,7 @@ function setupVisualSchedule(m){
       <button class="visual-schedule-image" type="button" aria-label="Change segment image" title="Change image">
         <img src="${icon.src}" alt="${icon.label}" draggable="false">
       </button>
-      <div class="visual-schedule-segment-copy"><input class="visual-schedule-segment-title" type="text" aria-label="Activity title"><span class="visual-schedule-divider" aria-hidden="true"></span><input class="visual-schedule-segment-time" type="text" aria-label="Activity time"></div>
+      <div class="visual-schedule-segment-copy"><input class="visual-schedule-segment-title" type="text" aria-label="Activity title" data-text-edit-mode="double"><span class="visual-schedule-divider" aria-hidden="true"></span><input class="visual-schedule-segment-time" type="text" aria-label="Activity time" data-text-edit-mode="double"></div>
       <div class="visual-schedule-segment-actions">
         <button class="visual-schedule-complete" type="button" aria-pressed="false" aria-label="Mark segment complete"><span aria-hidden="true">✓</span></button>
         <button class="visual-schedule-remove" type="button" aria-label="Remove segment" title="Remove segment">×</button>

@@ -16390,3 +16390,11 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
     border-top:1px solid color-mix(in srgb,var(--module-text,#17191d) 12%,transparent);
   }
 }
+
+/* Empty Visual Schedule fields remain double-clickable instead of collapsing into no hit target. */
+.visual-schedule-segment-title{min-width:72px!important}
+.visual-schedule-segment-time{min-width:48px!important}
+.visual-schedule-segment-title[data-text-edit-mode="double"]:not(.module-text-edit-active),
+.visual-schedule-segment-time[data-text-edit-mode="double"]:not(.module-text-edit-active){
+  cursor:pointer!important;
+}
