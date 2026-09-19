@@ -1,10 +1,10 @@
 .context-menu__icon--flyswat svg{width:23px;height:23px;display:block}
 
 .flyswat-module{
-  width:620px;
-  height:470px;
-  min-width:390px;
-  min-height:330px;
+  width:760px;
+  height:620px;
+  min-width:440px;
+  min-height:390px;
   padding:10px;
   display:flex;
   flex-direction:column;
@@ -29,7 +29,7 @@
   left:10px;
   right:10px;
   top:50px;
-  bottom:58px;
+  bottom:116px;
   overflow:hidden;
 }
 .flyswat-status{
@@ -237,7 +237,7 @@
 }
 
 @media (max-width:760px){
-  .flyswat-module{min-width:330px}
+  .flyswat-module{min-width:360px}
   .flyswat-stage{margin-bottom:48px}
   .flyswat-team{width:98px;height:78px}
   .flyswat-team img{width:63px;height:75px}
@@ -251,5 +251,5 @@
 }
 
 @container (max-height:390px){
-  .flyswat-board{top:44px;bottom:52px;left:8px;right:8px}
+  .flyswat-board{top:44px;bottom:96px;left:8px;right:8px}
 }
