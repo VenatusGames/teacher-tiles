@@ -2792,7 +2792,9 @@ function applyMenuView(){
       const searchable=normalizeMenuSearch([item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category,item.dataset.searchAliases].join(' '));
       return searchable.includes(query)?menuSearchRank(item,query):Infinity;
     }));
-    categories=[...categories].sort((a,b)=>categoryRank(a)-categoryRank(b)||menuCategoryLabel(a).localeCompare(menuCategoryLabel(b),undefined,{sensitivity:'base',numeric:true}));
+    const timerSearch=/^timers?$/.test(query);
+    const categorySearchPriority=category=>timerSearch&&category==='time'?-1:0;
+    categories=[...categories].sort((a,b)=>categorySearchPriority(a)-categorySearchPriority(b)||categoryRank(a)-categoryRank(b)||menuCategoryLabel(a).localeCompare(menuCategoryLabel(b),undefined,{sensitivity:'base',numeric:true}));
   }
   const fragment=document.createDocumentFragment();
   const included=new Set();
