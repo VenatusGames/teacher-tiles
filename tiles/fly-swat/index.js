@@ -126,8 +126,8 @@
     return cells.map((cell, index) => ({
       id: `${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 7)}`,
       label: labels[index],
-      x: clamp(cell.x, 10, 90),
-      y: clamp(cell.y, 10, 62),
+      x: cell.x,
+      y: cell.y,
       hue: Math.round(random(0, 360)),
       ...crawlPath(),
       swatted: false
