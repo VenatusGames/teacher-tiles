@@ -4617,7 +4617,13 @@
       </header>
 
       <div class="robothfw-stage" aria-label="Robot HFW play area">
-        <div class="robothfw-status" role="status" aria-live="polite">Tap the robot before it blasts you.</div>
+        <div class="robothfw-sky" aria-hidden="true">
+          <span class="robothfw-cloud robothfw-cloud--1"><i></i><b></b><em></em></span>
+          <span class="robothfw-cloud robothfw-cloud--2"><i></i><b></b><em></em></span>
+          <span class="robothfw-cloud robothfw-cloud--3"><i></i><b></b><em></em></span>
+          <span class="robothfw-cloud robothfw-cloud--4"><i></i><b></b><em></em></span>
+        </div>
+        <div class="robothfw-status" role="status" aria-live="polite">Press Start to begin Robot HFW.</div>
         <button class="robothfw-robot is-hidden" type="button" aria-label="Tap the robot before it blasts you">
           <span class="robothfw-robot-sway">
             <span class="robothfw-thruster robothfw-thruster--left" aria-hidden="true"><i></i><b></b><em></em></span>
@@ -4628,9 +4634,12 @@
           </span>
         </button>
         <div class="robothfw-endcard" hidden>
-          <strong class="robothfw-endcard-title">Pack complete!</strong>
-          <p class="robothfw-endcard-copy">You cleared the whole pack.</p>
-          <button class="tile-action tile-action--primary robothfw-reset" type="button">Reset</button>
+          <strong class="robothfw-endcard-title">Robot HFW</strong>
+          <p class="robothfw-endcard-copy">Press Start to begin.</p>
+          <div class="robothfw-endcard-actions">
+            <button class="tile-action tile-action--primary robothfw-start" type="button">Start</button>
+            <button class="tile-action robothfw-reset" type="button">Reset</button>
+          </div>
         </div>
       </div>
 
@@ -4650,6 +4659,7 @@
           </select>
         </label>
         <button class="robothfw-settings-button" type="button">Settings</button>
+        <button class="robothfw-start" type="button">Start</button>
         <button class="robothfw-reset" type="button">Reset</button>
       </div>
 
@@ -4663,7 +4673,7 @@
             <button class="robothfw-settings-close" type="button" aria-label="Close Robot HFW settings">×</button>
           </div>
 
-          <p>Click words to turn them on or off. Reset the game to battle the current pack.</p>
+          <p>Click words to turn them on or off. Press Reset after changing your word list, then press Start when you are ready.</p>
 
           <div class="robothfw-settings-actions">
             <button class="robothfw-enable-all" type="button">Enable All</button>

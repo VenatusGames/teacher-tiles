@@ -14058,6 +14058,7 @@ function setupRobotHfw(m){
   const endcardTitle=m.querySelector('.robothfw-endcard-title');
   const endcardCopy=m.querySelector('.robothfw-endcard-copy');
   const resetButtons=m.querySelectorAll('.robothfw-reset');
+  const startButtons=m.querySelectorAll('.robothfw-start');
 
   const gradeNames={
     k:'Kindergarten Pack',
@@ -14067,15 +14068,15 @@ function setupRobotHfw(m){
   };
 
   const faceMap={
-    idle:'0% 0%',
-    happy:'33.333% 0%',
-    alert:'66.666% 0%',
-    exclaim:'100% 50%',
-    warn:'33.333% 50%',
-    angry:'33.333% 100%',
-    furious:'66.666% 100%',
-    blast:'100% 100%',
-    dizzy:'66.666% 50%'
+    idle:{pos:'0% 0%',x:'0%',y:'0%',scale:1},
+    happy:{pos:'33.333% 0%',x:'0%',y:'0%',scale:1},
+    alert:{pos:'66.666% 0%',x:'0%',y:'1%',scale:1},
+    exclaim:{pos:'100% 50%',x:'0%',y:'0%',scale:1},
+    warn:{pos:'33.333% 50%',x:'0%',y:'1%',scale:1},
+    angry:{pos:'33.333% 100%',x:'0%',y:'1%',scale:1},
+    furious:{pos:'66.666% 100%',x:'0%',y:'1%',scale:1.02},
+    blast:{pos:'100% 100%',x:'0%',y:'0%',scale:1.03},
+    dizzy:{pos:'66.666% 50%',x:'0%',y:'0%',scale:1}
   };
 
   const enabledByGrade={};
@@ -14085,14 +14086,20 @@ function setupRobotHfw(m){
 
   const timers=new Set();
   const maxHealth=5;
+  const laserPrototype=new Audio('tiles/robot-hfw/assets/laser.mp3');
+  const explodePrototype=new Audio('tiles/robot-hfw/assets/explode.mp3');
+  laserPrototype.preload='auto';
+  explodePrototype.preload='auto';
+
   let health=maxHealth;
   let currentWord='';
   let queue=[];
   let completed=0;
   let totalWords=0;
-  let phase='empty';
+  let phase='ready';
   let wordVisible=false;
   let resizeFrame=0;
+  let started=false;
 
   const measurer=document.createElement('span');
   measurer.className='robothfw-word robothfw-measurer';
@@ -14151,11 +14158,31 @@ function setupRobotHfw(m){
 
   const enabledWords=grade=>HIGH_FREQUENCY_WORD_SETS[grade].filter(word=>enabledByGrade[grade].has(word));
 
-  const setFace=key=>{
-    face.style.backgroundPosition=faceMap[key]||faceMap.idle;
+  const playTileAudio=(prototype,baseVolume=.4,playbackRate=1)=>{
+    if(!m.isConnected||appPreferences.uiMuted)return;
+    try{
+      const sound=prototype.cloneNode();
+      sound.volume=clamp(baseVolume*(Number(appPreferences.uiVolume)||100)/100,0,1);
+      sound.playbackRate=playbackRate;
+      sound.currentTime=0;
+      const sounds=m._activeTileSounds||(m._activeTileSounds=new Set());
+      sounds.add(sound);
+      const release=()=>sounds.delete(sound);
+      sound.addEventListener('ended',release,{once:true});
+      sound.addEventListener('error',release,{once:true});
+      sound.play().catch(release);
+    }catch{}
   };
 
-  const totalRemaining=()=>queue.length+(currentWord&&phase!=='won'&&phase!=='lost'?1:0);
+  const setFace=key=>{
+    const faceState=faceMap[key]||faceMap.idle;
+    face.style.backgroundPosition=faceState.pos;
+    face.style.setProperty('--face-x',faceState.x);
+    face.style.setProperty('--face-y',faceState.y);
+    face.style.setProperty('--face-scale',String(faceState.scale));
+  };
+
+  const totalRemaining=()=>queue.length+(currentWord&&phase!=='won'&&phase!=='lost'&&started?1:0);
 
   const updateHud=()=>{
     leftCount.textContent=String(totalRemaining());
@@ -14177,33 +14204,67 @@ function setupRobotHfw(m){
     statusEl.textContent=message;
   };
 
-  const showEndcard=(title,copy)=>{
+  const showEndcard=(title,copy,{showStart=false,startLabel='Start',showReset=true}={})=>{
     endcardTitle.textContent=title;
     endcardCopy.textContent=copy;
     endcard.hidden=false;
     robot.classList.add('is-hidden');
+    startButtons.forEach(button=>{
+      if(button.closest('.robothfw-endcard-actions'))button.textContent=startLabel;
+    });
+    const endcardStart=endcard.querySelector('.robothfw-start');
+    const endcardReset=endcard.querySelector('.robothfw-reset');
+    if(endcardStart)endcardStart.hidden=!showStart;
+    if(endcardReset)endcardReset.hidden=!showReset;
   };
 
-  const createBurst=(x,y,{count=12,color='rgba(255,188,75,.95)',size=12}={})=>{
+  const hideEndcard=()=>{endcard.hidden=true;};
+
+  const createParticle=(className,x,y,vars={},lifetime=900)=>{
+    const node=document.createElement('span');
+    node.className=className;
+    node.style.left=`${x}px`;
+    node.style.top=`${y}px`;
+    for(const [key,value] of Object.entries(vars))node.style.setProperty(key,String(value));
+    stage.appendChild(node);
+    schedule(()=>node.remove(),lifetime);
+    return node;
+  };
+
+  const createBurst=(x,y,{count=12,color='rgba(255,188,75,.95)',size=12,spread=82,className='robothfw-particle'}={})=>{
     for(let i=0;i<count;i++){
-      const particle=document.createElement('span');
-      particle.className='robothfw-particle';
-      particle.style.left=`${x}px`;
-      particle.style.top=`${y}px`;
-      particle.style.setProperty('--burst-size',`${Math.max(6,size+Math.random()*size)}px`);
-      particle.style.setProperty('--burst-color',i%3===0?'rgba(255,255,255,.96)':color);
-      particle.style.setProperty('--burst-x',`${(Math.random()*2-1)*(36+Math.random()*58)}px`);
-      particle.style.setProperty('--burst-y',`${(Math.random()*2-1)*(26+Math.random()*42)}px`);
-      particle.style.setProperty('--burst-rot',`${(Math.random()*560)-280}deg`);
-      stage.appendChild(particle);
-      schedule(()=>particle.remove(),700);
+      const distance=spread*(.38+Math.random()*.9);
+      const angle=Math.random()*Math.PI*2;
+      createParticle(className,x,y,{
+        '--burst-size':`${Math.max(6,size+Math.random()*size)}px`,
+        '--burst-color':i%4===0?'rgba(255,255,255,.98)':color,
+        '--burst-x':`${Math.cos(angle)*distance}px`,
+        '--burst-y':`${Math.sin(angle)*distance}px`,
+        '--burst-rot':`${(Math.random()*620)-310}deg`
+      },720);
+    }
+  };
+
+  const createExplosion=(x,y,{power='pop'}={})=>{
+    const warmColor=power==='blast'?'rgba(248,113,113,.94)':'rgba(255,194,55,.96)';
+    const coolColor=power==='blast'?'rgba(255,255,255,.95)':'rgba(191,219,254,.95)';
+    createBurst(x,y,{count:power==='blast'?18:24,color:warmColor,size:power==='blast'?10:14,spread:power==='blast'?86:110,className:'robothfw-particle robothfw-particle--spark'});
+    createBurst(x,y,{count:power==='blast'?10:14,color:coolColor,size:power==='blast'?8:10,spread:power==='blast'?58:86,className:'robothfw-particle robothfw-particle--metal'});
+    createParticle('robothfw-shockwave',x,y,{'--ring-color':warmColor,'--ring-scale':power==='blast'?'.9':'1.1'},700);
+    createParticle('robothfw-flash',x,y,{'--flash-color':power==='blast'?'rgba(254,202,202,.9)':'rgba(255,251,235,.96)'},420);
+    for(let i=0;i<(power==='blast'?3:5);i++){
+      createParticle('robothfw-smoke',x+(Math.random()*18-9),y+(Math.random()*18-9),{
+        '--smoke-x':`${(Math.random()*2-1)*(power==='blast'?22:30)}px`,
+        '--smoke-y':`${-(22+Math.random()*34)}px`,
+        '--smoke-scale':`${.75+Math.random()*1.25}`
+      },1080);
     }
   };
 
   const robotCenter=()=>{
     const stageRect=stage.getBoundingClientRect();
     const rect=robot.getBoundingClientRect();
-    return {x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.48};
+    return {x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.5};
   };
 
   const applyWord=word=>{
@@ -14211,6 +14272,10 @@ function setupRobotHfw(m){
     wordEl.textContent=word;
     wordEl.style.fontSize=`${measureWordSize(word)}px`;
     robot.setAttribute('aria-label',`Tap the robot carrying ${word}`);
+  };
+
+  const clearRobotStateClasses=()=>{
+    robot.classList.remove('is-hidden','is-arriving','is-live','is-warning','is-angry','is-popped','is-blasting','is-escaping');
   };
 
   const startWarnings=()=>{
@@ -14226,7 +14291,7 @@ function setupRobotHfw(m){
     schedule(()=>{
       if(phase!=='warn')return;
       phase='angry';
-      setFace('angry');
+      setFace('furious');
       robot.classList.add('is-angry');
       setStatus(`${currentWord} is furious! Tap it before it blasts you!`);
       updateHud();
@@ -14240,32 +14305,34 @@ function setupRobotHfw(m){
 
   const spawnRobot=()=>{
     clearTimers();
-    endcard.hidden=true;
+    hideEndcard();
     robot.disabled=false;
-    robot.className='robothfw-robot is-arriving';
+    clearRobotStateClasses();
+    robot.classList.add('is-arriving');
     wordTag.hidden=true;
     wordVisible=false;
     currentWord='';
     updateHud();
 
     if(health<=0){
+      started=false;
       phase='lost';
-      setStatus('You are out of health. Reset to try again.');
-      showEndcard('Game over','The robots blasted through your health bar.');
+      setStatus('You are out of health. Press Start to try again.');
+      showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
       return;
     }
 
     if(!queue.length){
+      started=false;
       phase='won';
       setStatus('You cleared the whole pack!');
-      showEndcard('Pack complete!','Every robot in this pack has been popped.');
+      showEndcard('Pack complete!','Every robot in this pack has been popped.',{showStart:true,startLabel:'Play Again',showReset:true});
       return;
     }
 
     const next=queue.shift();
     currentWord=next;
     phase='intro';
-    robot.classList.remove('is-hidden');
     setFace('exclaim');
     setStatus('Incoming robot! Get ready…');
     updateHud();
@@ -14295,7 +14362,8 @@ function setupRobotHfw(m){
     setStatus(`Ouch! ${currentWord} blasted you.`);
     updateHud();
     const {x,y}=robotCenter();
-    createBurst(x,y,{count:10,color:'rgba(251,113,133,.92)',size:10});
+    playTileAudio(laserPrototype,.55,1);
+    createExplosion(x,y,{power:'blast'});
     schedule(()=>stage.classList.remove('is-hit'),360);
     schedule(()=>{
       robot.classList.remove('is-blasting');
@@ -14317,8 +14385,9 @@ function setupRobotHfw(m){
     setStatus(`Nice! You popped “${currentWord}”.`);
     updateHud();
     const {x,y}=robotCenter();
-    createBurst(x,y,{count:16,color:'rgba(255,201,72,.96)',size:13});
-    schedule(()=>spawnRobot(),820);
+    playTileAudio(explodePrototype,.62,1);
+    createExplosion(x,y,{power:'pop'});
+    schedule(()=>spawnRobot(),860);
     notifyBoardChanged('robot-hfw-pop');
   };
 
@@ -14351,6 +14420,22 @@ function setupRobotHfw(m){
     });
   };
 
+  const setReadyPanel=(copy='Press Start when you are ready.')=>{
+    started=false;
+    phase='ready';
+    hideEndcard();
+    clearRobotStateClasses();
+    robot.classList.add('is-hidden');
+    robot.disabled=true;
+    wordTag.hidden=true;
+    wordVisible=false;
+    currentWord='';
+    setFace('alert');
+    setStatus('Press Start to begin Robot HFW.');
+    showEndcard('Robot HFW',copy,{showStart:true,startLabel:'Start',showReset:true});
+    updateHud();
+  };
+
   const resetRound=(notify=true)=>{
     clearTimers();
     const grade=m.dataset.hfwGrade||'k';
@@ -14358,26 +14443,31 @@ function setupRobotHfw(m){
     totalWords=queue.length;
     completed=0;
     health=maxHealth;
-    currentWord='';
-    wordVisible=false;
-    robot.className='robothfw-robot is-hidden';
-    wordTag.hidden=true;
-    stage.classList.remove('is-hit');
     renderSettings();
     if(!totalWords){
+      started=false;
       phase='empty';
-      endcard.hidden=false;
-      endcardTitle.textContent='No words enabled';
-      endcardCopy.textContent='Open settings and turn on at least one word for this pack.';
+      clearRobotStateClasses();
+      robot.classList.add('is-hidden');
+      robot.disabled=true;
+      wordTag.hidden=true;
+      wordVisible=false;
+      currentWord='';
       setFace('alert');
       setStatus('No words are enabled for this pack.');
+      showEndcard('No words enabled','Open settings and turn on at least one word for this pack.',{showStart:false,showReset:true});
       updateHud();
-    }else{
-      setStatus('Tap the robot before it blasts you.');
-      updateHud();
-      spawnRobot();
-    }
+    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
     if(notify)notifyBoardChanged('robot-hfw-reset');
+  };
+
+  const startGame=()=>{
+    if(!queue.length||phase==='active'||phase==='warn'||phase==='angry'||phase==='intro'||phase==='blasting'||phase==='popped')return;
+    started=true;
+    setStatus('Launching Robot HFW…');
+    hideEndcard();
+    spawnRobot();
+    notifyBoardChanged('robot-hfw-start');
   };
 
   const setGrade=grade=>{
@@ -14409,6 +14499,7 @@ function setupRobotHfw(m){
     resetRound(true);
   });
   resetButtons.forEach(button=>button.addEventListener('click',()=>resetRound(true)));
+  startButtons.forEach(button=>button.addEventListener('click',startGame));
 
   m.querySelector('.robothfw-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.robothfw-font').addEventListener('click',()=>{
@@ -14435,8 +14526,8 @@ function setupRobotHfw(m){
     currentWord,
     phase,
     wordVisible,
-    endcardHidden:endcard.hidden,
-    status:statusEl.textContent
+    status:statusEl.textContent,
+    started
   });
 
   m._boardSetState=state=>{
@@ -14454,49 +14545,53 @@ function setupRobotHfw(m){
     gradeLabel.textContent=gradeNames[grade];
     queue=Array.isArray(state.queue)?state.queue.filter(word=>enabledByGrade[grade].has(word)):shuffle(enabledWords(grade));
     completed=Math.max(0,Number(state.completed)||0);
-    totalWords=Math.max(completed+queue.length+(currentWord?1:0),Number(state.totalWords)||0);
+    totalWords=Math.max(completed+queue.length+(state.currentWord?1:0),Number(state.totalWords)||0);
     health=Math.max(0,Math.min(maxHealth,Number(state.health)||maxHealth));
     currentWord=String(state.currentWord||'');
-    phase=String(state.phase||'active');
+    phase=String(state.phase||'ready');
     wordVisible=Boolean(state.wordVisible);
-    statusEl.textContent=String(state.status||'Tap the robot before it blasts you.');
+    started=Boolean(state.started);
+    statusEl.textContent=String(state.status||'Press Start to begin Robot HFW.');
     renderSettings();
     clearTimers();
+    clearRobotStateClasses();
+    wordTag.hidden=true;
+    robot.disabled=true;
+
+    if(!enabledWords(grade).length){
+      resetRound(false);
+      return;
+    }
 
     if(phase==='lost'){
-      wordTag.hidden=true;
-      robot.className='robothfw-robot is-hidden';
-      showEndcard('Game over','The robots blasted through your health bar.');
+      showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
     }else if(phase==='won'){
-      wordTag.hidden=true;
-      robot.className='robothfw-robot is-hidden';
-      showEndcard('Pack complete!','Every robot in this pack has been popped.');
-    }else if(!currentWord&&queue.length){
-      updateHud();
-      spawnRobot();
-      return;
+      showEndcard('Pack complete!','Every robot in this pack has been popped.',{showStart:true,startLabel:'Play Again',showReset:true});
+    }else if(!started||phase==='ready'||phase==='empty'){
+      setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
     }else if(currentWord){
-      endcard.hidden=true;
-      robot.className='robothfw-robot is-live';
-      robot.classList.remove('is-hidden');
-      robot.disabled=false;
+      hideEndcard();
       applyWord(currentWord);
       wordTag.hidden=!wordVisible;
       if(wordVisible)updateWordFit();
+      robot.disabled=false;
+      robot.classList.add('is-live');
       if(phase==='warn'){
         setFace('warn');
         robot.classList.add('is-warning');
       }else if(phase==='angry'){
-        setFace('angry');
+        setFace('furious');
         robot.classList.add('is-warning','is-angry');
+      }else if(phase==='intro'){
+        robot.classList.add('is-arriving');
+        setFace('exclaim');
       }else{
         phase='active';
         setFace('idle');
       }
       startWarnings();
     }else{
-      resetRound(false);
-      return;
+      setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
     }
     updateHud();
   };
