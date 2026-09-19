@@ -16483,10 +16483,10 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 .timer-presets{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:5px;
+  justify-content:center;
+  gap:7px;
   width:100%;
-  padding-inline:2px;
+  padding-inline:4px;
   box-sizing:border-box;
   align-self:center;
 }
@@ -16505,8 +16505,8 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   justify-content:center;
   overflow:hidden;
   text-align:center;
-  font:750 clamp(11px,3.15cqw,13px)/1 Inter,system-ui,sans-serif;
-  letter-spacing:-.025em;
+  font:800 13px/1 Inter,system-ui,sans-serif;
+  letter-spacing:-.03em;
   white-space:nowrap;
 }
 :is(.timer-module,.interactive-module):is(.is-pointer-over,.has-keyboard-focus,:has(:focus-visible),.has-shape-shelf-open) .timer-controls{max-height:292px!important}
@@ -16530,6 +16530,10 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 .timer-actions{gap:6px}
 .timer-actions button{min-width:76px}
 .timer-actions .timer-clear{font-size:inherit}
+:is(.timer-module,.interactive-module):hover .timer-controls{
+  padding-bottom:18px;
+  max-height:316px!important;
+}
 .timer-shape-shelf,.interactive-type-shelf{gap:7px}
 .timer-shape-shelf button,.interactive-type-shelf button{padding:8px 6px!important}
 .timer-shape-shelf button svg{width:25px;height:25px}
