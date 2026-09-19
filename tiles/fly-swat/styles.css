@@ -71,9 +71,9 @@
 .flyswat-fly-inner{position:absolute;inset:0;display:grid;place-items:center;transform-origin:50% 55%}
 .flyswat-fly img{
   position:absolute;
-  inset:-12%;
-  width:124%;
-  height:124%;
+  inset:-6%;
+  width:112%;
+  height:112%;
   object-fit:contain;
   pointer-events:none;
   user-select:none;

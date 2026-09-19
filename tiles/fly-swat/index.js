@@ -37,44 +37,57 @@
   }
 
   function layoutForCount(count) {
-    if (count <= 10) return {cols: 5, rows: 2, xMin: 15, xMax: 85, yMin: 18, yMax: 49};
-    if (count <= 20) return {cols: 5, rows: 4, xMin: 14, xMax: 86, yMin: 14, yMax: 57};
-    return {cols: 6, rows: 5, xMin: 12, xMax: 88, yMin: 12, yMax: 59};
+    if (count <= 10) return {cols: 5, rows: 2, xMin: 10, xMax: 90, yMin: 18, yMax: 82};
+    if (count <= 20) return {cols: 5, rows: 4, xMin: 10, xMax: 90, yMin: 12, yMax: 88};
+    return {cols: 6, rows: 5, xMin: 8, xMax: 92, yMin: 10, yMax: 90};
+  }
+
+  function cellsForCount(count) {
+    const layout = layoutForCount(count);
+    const cells = [];
+    for (let row = 0; row < layout.rows; row += 1) {
+      for (let col = 0; col < layout.cols; col += 1) {
+        const xBase = layout.cols === 1 ? 50 : layout.xMin + ((layout.xMax - layout.xMin) * col) / (layout.cols - 1);
+        const yBase = layout.rows === 1 ? 50 : layout.yMin + ((layout.yMax - layout.yMin) * row) / (layout.rows - 1);
+        cells.push({x: xBase + random(-.2, .2), y: yBase + random(-.2, .2)});
+      }
+    }
+    return shuffle(cells).slice(0, count);
   }
 
   function crawlPath() {
     const points = [];
     let x = 0;
     let y = 0;
-    let heading = random(-10, 10);
-    const radius = random(3.4, 4.6);
+    let heading = random(-7, 7);
+    const radius = random(1.35, 1.8);
 
     for (let i = 0; i < 4; i += 1) {
-      heading = clamp(heading + random(-7, 7), -22, 22);
+      heading = clamp(heading + random(-4.5, 4.5), -16, 16);
 
-      let distance = random(.9, 1.9);
+      let distance = random(.42, .82);
       let radians = heading * Math.PI / 180;
-      let nextX = x + Math.sin(radians) * distance + random(-.18, .18);
-      let nextY = y - Math.cos(radians) * distance + random(-.18, .18);
+      let nextX = x + Math.sin(radians) * distance + random(-.08, .08);
+      let nextY = y - Math.cos(radians) * distance + random(-.08, .08);
 
       if (Math.hypot(nextX, nextY) > radius) {
         const inwardHeading = Math.atan2(-x, y) * 180 / Math.PI;
-        heading = clamp(inwardHeading + random(-6, 6), -22, 22);
-        distance = random(.7, 1.45);
+        heading = clamp(inwardHeading * .45 + heading * .55 + random(-3, 3), -16, 16);
+        distance = random(.32, .66);
         radians = heading * Math.PI / 180;
-        nextX = x + Math.sin(radians) * distance + random(-.12, .12);
-        nextY = y - Math.cos(radians) * distance + random(-.12, .12);
+        nextX = x + Math.sin(radians) * distance + random(-.05, .05);
+        nextY = y - Math.cos(radians) * distance + random(-.05, .05);
       }
 
-      x = clamp(nextX, -4.6, 4.6);
-      y = clamp(nextY, -4.6, 4.6);
+      x = clamp(nextX, -1.8, 1.8);
+      y = clamp(nextY, -1.8, 1.8);
       points.push({x, y, r: heading});
     }
 
-    const settleHeading = clamp((Math.atan2(-x, y) * 180 / Math.PI) * .55 + heading * .45 + random(-4, 4), -18, 18);
+    const settleHeading = clamp((Math.atan2(-x, y) * 180 / Math.PI) * .35 + heading * .65 + random(-2.5, 2.5), -14, 14);
     points.push({
-      x: clamp(x * random(.18, .42), -2.2, 2.2),
-      y: clamp(y * random(.18, .42), -2.2, 2.2),
+      x: clamp(x * random(.25, .48), -.9, .9),
+      y: clamp(y * random(.25, .48), -.9, .9),
       r: settleHeading
     });
 
@@ -93,30 +106,24 @@
   function normalizeCrawl(fly = {}) {
     const fallback = crawlPath();
     const num = (key, fallbackValue) => Number.isFinite(Number(fly[key])) ? Number(fly[key]) : fallbackValue;
+    const move = key => clamp(num(key, fallback[key]), -1.8, 1.8);
+    const turn = key => clamp(num(key, fallback[key]), -16, 16);
     return {
-      mx1: num('mx1', fallback.mx1), my1: num('my1', fallback.my1), mr1: num('mr1', fallback.mr1),
-      mx2: num('mx2', fallback.mx2), my2: num('my2', fallback.my2), mr2: num('mr2', fallback.mr2),
-      mx3: num('mx3', fallback.mx3), my3: num('my3', fallback.my3), mr3: num('mr3', fallback.mr3),
-      mx4: num('mx4', fallback.mx4), my4: num('my4', fallback.my4), mr4: num('mr4', fallback.mr4),
-      mx5: num('mx5', fallback.mx5), my5: num('my5', fallback.my5), mr5: num('mr5', fallback.mr5),
-      mr6: num('mr6', fallback.mr6),
-      duration: Math.max(16, num('duration', fallback.duration)),
+      mx1: move('mx1'), my1: move('my1'), mr1: turn('mr1'),
+      mx2: move('mx2'), my2: move('my2'), mr2: turn('mr2'),
+      mx3: move('mx3'), my3: move('my3'), mr3: turn('mr3'),
+      mx4: move('mx4'), my4: move('my4'), mr4: turn('mr4'),
+      mx5: move('mx5'), my5: move('my5'), mr5: turn('mr5'),
+      mr6: turn('mr6'),
+      duration: Math.max(24, num('duration', fallback.duration)),
       delay: num('delay', fallback.delay)
     };
   }
 
   function makeFlies(mode, count) {
-    const layout = layoutForCount(count);
     const labels = labelsForRound(mode, count);
-    const cells = [];
-    for (let row = 0; row < layout.rows; row += 1) {
-      for (let col = 0; col < layout.cols; col += 1) {
-        const xBase = layout.cols === 1 ? 50 : layout.xMin + ((layout.xMax - layout.xMin) * col) / (layout.cols - 1);
-        const yBase = layout.rows === 1 ? 40 : layout.yMin + ((layout.yMax - layout.yMin) * row) / (layout.rows - 1);
-        cells.push({x: xBase + random(-2.5, 2.5), y: yBase + random(-2.2, 2.2)});
-      }
-    }
-    return shuffle(cells).slice(0, count).map((cell, index) => ({
+    const cells = cellsForCount(count);
+    return cells.map((cell, index) => ({
       id: `${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 7)}`,
       label: labels[index],
       x: clamp(cell.x, 10, 90),
@@ -203,12 +210,21 @@
         fullscreenElement.contains(moduleElement) ||
         moduleElement.contains(fullscreenElement)
       ));
-      const usableWidth = rect.width * .85;
-      const usableHeight = rect.height * .74;
+      const layout = layoutForCount(state.count);
       const maxSize = isFullscreen ? 156 : 110;
-      const scale = isFullscreen ? .98 : .84;
-      const verticalScale = isFullscreen ? 1 : .9;
-      const size = Math.max(42, Math.min(maxSize, usableWidth / cols * scale, usableHeight / rows * verticalScale));
+      const desiredScale = isFullscreen ? .98 : .88;
+      const desiredVerticalScale = isFullscreen ? 1 : .94;
+      const desired = Math.min(maxSize, rect.width / cols * desiredScale, rect.height / rows * desiredVerticalScale);
+      const xStep = cols > 1 ? rect.width * ((layout.xMax - layout.xMin) / 100) / (cols - 1) : rect.width;
+      const yStep = rows > 1 ? rect.height * ((layout.yMax - layout.yMin) / 100) / (rows - 1) : rect.height;
+      const movementRoom = 4.5;
+      const visualScale = 1.12;
+      const neighborGap = isFullscreen ? 8 : 6;
+      const spacingLimit = (Math.min(xStep, yStep) - neighborGap - movementRoom) / visualScale;
+      const edgeX = rect.width * (Math.min(layout.xMin, 100 - layout.xMax) / 100);
+      const edgeY = rect.height * (Math.min(layout.yMin, 100 - layout.yMax) / 100);
+      const edgeLimit = Math.min((edgeX * 2 - movementRoom) / visualScale, (edgeY * 2 - movementRoom) / visualScale);
+      const size = Math.max(32, Math.min(desired, spacingLimit, edgeLimit));
       moduleElement.style.setProperty('--flyswat-fly-size', `${size}px`);
     }
 
@@ -253,11 +269,12 @@
     }
 
     function makeSplat(button, fly) {
-      const boardRect = board.getBoundingClientRect();
-      const flyRect = button.getBoundingClientRect();
-      if (!boardRect.width || !boardRect.height) return;
-      const x = flyRect.left + flyRect.width / 2 - boardRect.left;
-      const y = flyRect.top + flyRect.height / 2 - boardRect.top;
+      const stageRect = stage.getBoundingClientRect();
+      const flyVisual = button.querySelector('img');
+      const flyRect = flyVisual?.getBoundingClientRect() || button.getBoundingClientRect();
+      if (!stageRect.width || !stageRect.height) return;
+      const x = flyRect.left + flyRect.width / 2 - stageRect.left;
+      const y = flyRect.top + flyRect.height / 2 - stageRect.top;
       const color = `hsl(${fly.hue} 72% 72%)`;
 
       const core = document.createElement('span');
@@ -265,7 +282,7 @@
       core.style.left = `${x}px`;
       core.style.top = `${y}px`;
       core.style.setProperty('--splat-color', color);
-      board.append(core);
+      stage.append(core);
 
       for (let i = 0; i < 20; i += 1) {
         const angle = random(0, Math.PI * 2);
@@ -280,13 +297,13 @@
         particle.style.setProperty('--splat-rot', `${random(-240, 240)}deg`);
         particle.style.setProperty('--splat-w', `${random(9, 20)}px`);
         particle.style.setProperty('--splat-h', `${random(7, 17)}px`);
-        board.append(particle);
+        stage.append(particle);
       }
 
       const timeout = window.setTimeout(() => {
         timers.delete(timeout);
         core.remove();
-        board.querySelectorAll('.flyswat-splat-particle').forEach(particle => {
+        stage.querySelectorAll('.flyswat-splat-particle').forEach(particle => {
           if (particle.style.left === `${x}px` && particle.style.top === `${y}px`) particle.remove();
         });
       }, 920);
@@ -373,6 +390,7 @@
       const mode = MODES[saved?.mode] ? saved.mode : 'upper';
       const count = COUNTS.has(Number(saved?.count)) ? Number(saved.count) : 20;
       const savedFlies = Array.isArray(saved?.flies) ? saved.flies : null;
+      const restoredCells = savedFlies?.length ? cellsForCount(count) : null;
       state = {
         mode,
         count,
@@ -384,8 +402,8 @@
           ? savedFlies.map((fly, index) => ({
               id: String(fly.id || `restored-${index}`),
               label: String(fly.label ?? '?'),
-              x: clamp(Number(fly.x) || 50, 10, 90),
-              y: clamp(Number(fly.y) || 40, 10, 62),
+              x: restoredCells?.[index]?.x ?? 50,
+              y: restoredCells?.[index]?.y ?? 50,
               hue: Number.isFinite(Number(fly.hue)) ? Number(fly.hue) : Math.round(random(0, 360)),
               ...normalizeCrawl(fly),
               swatted: Boolean(fly.swatted)
