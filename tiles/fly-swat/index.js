@@ -46,28 +46,37 @@
     const points = [];
     let x = 0;
     let y = 0;
-    let heading = random(-28, 28);
+    let heading = random(-10, 10);
+    const radius = random(3.4, 4.6);
 
-    for (let i = 0; i < 5; i += 1) {
-      heading = clamp(heading + random(-16, 16), -42, 42);
+    for (let i = 0; i < 4; i += 1) {
+      heading = clamp(heading + random(-7, 7), -22, 22);
 
-      let distance = random(1.6, 3.2);
+      let distance = random(.9, 1.9);
       let radians = heading * Math.PI / 180;
-      let nextX = x + Math.sin(radians) * distance;
-      let nextY = y - Math.cos(radians) * distance;
+      let nextX = x + Math.sin(radians) * distance + random(-.18, .18);
+      let nextY = y - Math.cos(radians) * distance + random(-.18, .18);
 
-      if (Math.hypot(nextX, nextY) > 5.4) {
-        heading = clamp(-heading + random(-12, 12), -42, 42);
-        distance = random(1.3, 2.7);
+      if (Math.hypot(nextX, nextY) > radius) {
+        const inwardHeading = Math.atan2(-x, y) * 180 / Math.PI;
+        heading = clamp(inwardHeading + random(-6, 6), -22, 22);
+        distance = random(.7, 1.45);
         radians = heading * Math.PI / 180;
-        nextX = x + Math.sin(radians) * distance;
-        nextY = y - Math.cos(radians) * distance;
+        nextX = x + Math.sin(radians) * distance + random(-.12, .12);
+        nextY = y - Math.cos(radians) * distance + random(-.12, .12);
       }
 
-      x = clamp(nextX, -5, 5);
-      y = clamp(nextY, -5, 5);
+      x = clamp(nextX, -4.6, 4.6);
+      y = clamp(nextY, -4.6, 4.6);
       points.push({x, y, r: heading});
     }
+
+    const settleHeading = clamp((Math.atan2(-x, y) * 180 / Math.PI) * .55 + heading * .45 + random(-4, 4), -18, 18);
+    points.push({
+      x: clamp(x * random(.18, .42), -2.2, 2.2),
+      y: clamp(y * random(.18, .42), -2.2, 2.2),
+      r: settleHeading
+    });
 
     return {
       mx1: points[0].x, my1: points[0].y, mr1: points[0].r,
@@ -76,8 +85,8 @@
       mx4: points[3].x, my4: points[3].y, mr4: points[3].r,
       mx5: points[4].x, my5: points[4].y, mr5: points[4].r,
       mr6: points[4].r,
-      duration: random(19, 27),
-      delay: random(-24, 0)
+      duration: random(26, 36),
+      delay: random(-32, 0)
     };
   }
 
@@ -91,7 +100,7 @@
       mx4: num('mx4', fallback.mx4), my4: num('my4', fallback.my4), mr4: num('mr4', fallback.mr4),
       mx5: num('mx5', fallback.mx5), my5: num('my5', fallback.my5), mr5: num('mr5', fallback.mr5),
       mr6: num('mr6', fallback.mr6),
-      duration: Math.max(7.2, num('duration', fallback.duration)),
+      duration: Math.max(16, num('duration', fallback.duration)),
       delay: num('delay', fallback.delay)
     };
   }
@@ -194,12 +203,12 @@
         fullscreenElement.contains(moduleElement) ||
         moduleElement.contains(fullscreenElement)
       ));
-      const usableWidth = rect.width * .84;
-      const usableHeight = rect.height * .72;
-      const maxSize = isFullscreen ? 132 : 92;
-      const scale = isFullscreen ? .9 : .72;
-      const verticalScale = isFullscreen ? .92 : .78;
-      const size = Math.max(34, Math.min(maxSize, usableWidth / cols * scale, usableHeight / rows * verticalScale));
+      const usableWidth = rect.width * .85;
+      const usableHeight = rect.height * .74;
+      const maxSize = isFullscreen ? 156 : 110;
+      const scale = isFullscreen ? .98 : .84;
+      const verticalScale = isFullscreen ? 1 : .9;
+      const size = Math.max(42, Math.min(maxSize, usableWidth / cols * scale, usableHeight / rows * verticalScale));
       moduleElement.style.setProperty('--flyswat-fly-size', `${size}px`);
     }
 
