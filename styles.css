@@ -11856,10 +11856,10 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 /* Games: Robot HFW */
 .robothfw-module{
   width:720px;
-  height:610px;
+  height:630px;
   min-width:470px;
-  min-height:470px;
-  padding:32px 18px 50px;
+  min-height:500px;
+  padding:32px 18px 56px;
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -12068,6 +12068,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   width:100%;
   height:100%;
   transform-origin:50% 48%;
+  isolation:isolate;
 }
 
 .robothfw-robot.is-arriving .robothfw-robot-sway{
@@ -12098,6 +12099,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-robot-body{
   position:absolute;
   inset:0;
+  z-index:3;
   width:100%;
   height:100%;
   object-fit:contain;
@@ -12110,7 +12112,8 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-face{
   position:absolute;
   left:50%;
-  top:49.2%;
+  top:48.5%;
+  z-index:4;
   width:24%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
@@ -12132,14 +12135,15 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-thruster{
   position:absolute;
   top:65%;
+  z-index:2;
   width:6%;
   height:18%;
   transform:translateY(-50%);
   pointer-events:none;
 }
 
-.robothfw-thruster--left{left:18.2%}
-.robothfw-thruster--right{right:18.2%}
+.robothfw-thruster--left{left:19.8%}
+.robothfw-thruster--right{right:19.8%}
 
 .robothfw-thruster i,
 .robothfw-thruster b,
@@ -12153,18 +12157,18 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 }
 
 .robothfw-thruster i{
-  bottom:-13%;
+  bottom:-11%;
   width:34%;
-  height:42%;
+  height:44%;
   background:linear-gradient(180deg,#fde68a,#fb923c 58%,rgba(251,146,60,0));
   filter:blur(.1px) drop-shadow(0 0 10px rgba(251,146,60,.46));
   animation:robotHfwFlame .18s ease-in-out infinite alternate;
 }
 
 .robothfw-thruster b{
-  bottom:-25%;
+  bottom:-22%;
   width:54%;
-  height:58%;
+  height:62%;
   background:linear-gradient(180deg,rgba(255,255,255,.96),#fcd34d 42%,rgba(251,146,60,0));
   opacity:.64;
   filter:blur(1px);
@@ -12205,7 +12209,8 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-word-tag{
   position:absolute;
   left:50%;
-  top:79%;
+  top:77.8%;
+  z-index:1;
   min-width:30%;
   max-width:72%;
   min-height:46px;
@@ -12224,9 +12229,10 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-word-tag::after{
   content:'';
   position:absolute;
-  top:-72px;
+  z-index:-1;
+  top:-102px;
   width:2px;
-  height:72px;
+  height:102px;
   background:linear-gradient(180deg,rgba(100,116,139,.84),rgba(100,116,139,.22));
 }
 
@@ -12258,7 +12264,8 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-particle,
 .robothfw-shockwave,
 .robothfw-smoke,
-.robothfw-flash{
+.robothfw-flash,
+.robothfw-comic-burst{
   position:absolute;
   z-index:6;
   pointer-events:none;
@@ -12311,6 +12318,21 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   background:radial-gradient(circle at 40% 40%,rgba(255,255,255,.5),rgba(148,163,184,.28) 48%,rgba(148,163,184,0) 72%);
   transform:translate(-50%,-50%) scale(.6);
   animation:robotHfwSmoke .96s ease-out forwards;
+}
+
+.robothfw-comic-burst{
+  width:210px;
+  height:210px;
+  background:url('tiles/robot-hfw/assets/explosion-burst.png') center/contain no-repeat;
+  transform:translate(-50%,-50%) rotate(var(--comic-burst-spin,0deg)) scale(.18);
+  transform-origin:center;
+  filter:drop-shadow(0 10px 16px rgba(15,23,42,.12));
+  animation:robotHfwComicBurst .86s cubic-bezier(.16,.8,.24,1) forwards;
+}
+.robothfw-comic-burst--small{
+  width:154px;
+  height:154px;
+  opacity:.9;
 }
 
 .robothfw-endcard{
@@ -12650,6 +12672,13 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   100%{opacity:0;transform:translate(-50%,-50%) translate(var(--burst-x),var(--burst-y)) rotate(var(--burst-rot)) scale(.1)}
 }
 
+@keyframes robotHfwComicBurst{
+  0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--comic-burst-spin,0deg)) scale(.1)}
+  28%{opacity:1;transform:translate(-50%,-50%) rotate(var(--comic-burst-spin,0deg)) scale(1.04)}
+  72%{opacity:1;transform:translate(-50%,-50%) rotate(calc(var(--comic-burst-spin,0deg) * .6)) scale(.82)}
+  100%{opacity:0;transform:translate(-50%,-50%) rotate(calc(var(--comic-burst-spin,0deg) * .4)) scale(.22)}
+}
+
 @keyframes robotHfwRing{
   0%{opacity:.94;transform:translate(-50%,-50%) scale(.1)}
   100%{opacity:0;transform:translate(-50%,-50%) scale(4.8)}
@@ -12701,7 +12730,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 }
 
 @container (max-height:440px){
-  .robothfw-word-tag{top:80%}
+  .robothfw-word-tag{top:79%}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -12718,6 +12747,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   .robothfw-shockwave,
   .robothfw-smoke,
   .robothfw-flash,
+  .robothfw-comic-burst,
   .robothfw-stage.is-hit,
   .robothfw-robot.is-blasting::after{
     animation:none!important;
@@ -17382,6 +17412,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   white-space:nowrap;
 }
 :is(.timer-module,.interactive-module):is(.is-pointer-over,.has-keyboard-focus,:has(:focus-visible),.has-shape-shelf-open) .timer-controls{max-height:292px!important}
+:is(.timer-module,.interactive-module):is(.is-pointer-over,.has-keyboard-focus,:has(:focus-visible),.has-shape-shelf-open) .timer-actions{padding-bottom:12px}
 .timer-custom-row{align-items:flex-end;gap:6px}
 .timer-custom-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--module-text,var(--text));font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
 .timer-custom-field input{
