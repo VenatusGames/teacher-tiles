@@ -13,6 +13,14 @@
     let strikeTimer=0;
     let disposed=false;
 
+    const syncAudioVolume=()=>{
+      const level=window.TeacherTilesTileAudio?.level?.(moduleElement);
+      audio.volume=0.72*(Number.isFinite(Number(level))?Math.max(0,Math.min(1,Number(level))):1);
+    };
+    moduleElement.addEventListener('teachertiles:tileaudiochange',syncAudioVolume);
+    window.addEventListener('teachertiles:audiopreferenceschange',syncAudioVolume);
+    syncAudioVolume();
+
     function clearStrike(){
       clearTimeout(strikeTimer);
       strikeTimer=0;
@@ -35,7 +43,8 @@
         audio.pause();
         audio.currentTime=0;
       }catch{}
-      audio.play().catch(()=>{});
+      syncAudioVolume();
+      if(audio.volume>0)audio.play().catch(()=>{});
     }
 
     strikeButton.addEventListener('click',strike);
@@ -53,6 +62,8 @@
       disposed=true;
       stopAudio();
       strikeButton.removeEventListener('click',strike);
+      moduleElement.removeEventListener('teachertiles:tileaudiochange',syncAudioVolume);
+      window.removeEventListener('teachertiles:audiopreferenceschange',syncAudioVolume);
       priorCleanup?.();
     };
   }

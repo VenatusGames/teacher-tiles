@@ -172,6 +172,12 @@
       stateBadge.dataset.tone=tone;
     }
 
+    function audioLevel(){
+      const shared=window.TeacherTilesTileAudio?.level?.(moduleElement);
+      if(Number.isFinite(Number(shared)))return clamp(Number(shared),0,1);
+      return soundDisabled?0:1;
+    }
+
     function pauseAmbience(reset=false){
       [cricketAudio,twinkleAudio].forEach(sound=>{
         sound.pause();
@@ -188,15 +194,19 @@
     }
 
     function startAmbience(){
-      if(soundDisabled||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
+      const level=audioLevel();
+      if(soundDisabled||level<=0||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
+      cricketAudio.volume=.035*level;
+      twinkleAudio.volume=.012*level;
       cricketAudio.play().catch(()=>{});
       twinkleAudio.play().catch(()=>{});
     }
 
     function playSparkle(){
-      if(soundDisabled||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
+      const level=audioLevel();
+      if(soundDisabled||level<=0||disposed||suspended||document.hidden||!moduleElement.isConnected)return;
       const sound=sparklePrototype.cloneNode();
-      sound.volume=.055;
+      sound.volume=.055*level;
       activeSparkles.add(sound);
       const release=()=>activeSparkles.delete(sound);
       sound.addEventListener('ended',release,{once:true});
@@ -210,11 +220,21 @@
         button.classList.toggle('is-active',selected);
         button.setAttribute('aria-pressed',String(selected));
       });
-      if(soundDisabled){
+      if(soundDisabled||audioLevel()<=0){
         pauseAmbience(false);
         stopSparkles(false);
       }else startAmbience();
       if(notifyChange)notify('sfx');
+    }
+
+    function syncSharedAudio(){
+      const shared=window.TeacherTilesTileAudio?.state?.(moduleElement);
+      if(shared)soundDisabled=!shared.enabled;
+      const level=audioLevel();
+      cricketAudio.volume=.035*level;
+      twinkleAudio.volume=.012*level;
+      if(soundDisabled||level<=0){pauseAmbience(false);stopSparkles(false)}
+      else startAmbience();
     }
 
     function hillGroundBottom(x){
@@ -859,6 +879,9 @@
     thresholdInput.addEventListener('input',()=>updateSettings(true));
     sensitivityInput.addEventListener('input',()=>updateSettings(true));
     sfxButtons.forEach(button=>button.addEventListener('click',()=>setSoundDisabled(button.dataset.quietcrittersSfx==='off')));
+    const onSharedAudioChange=()=>syncSharedAudio();
+    moduleElement.addEventListener('teachertiles:tileaudiochange',onSharedAudioChange);
+    window.addEventListener('teachertiles:audiopreferenceschange',onSharedAudioChange);
     const retryAmbience=()=>startAmbience();
     moduleElement.addEventListener('pointerdown',retryAmbience,{passive:true});
     moduleElement.addEventListener('keydown',retryAmbience);
@@ -925,6 +948,8 @@
       cancelAnimationFrame(animationFrame);
       animationFrame=0;
       document.removeEventListener('visibilitychange',onVisibility);
+      moduleElement.removeEventListener('teachertiles:tileaudiochange',onSharedAudioChange);
+      window.removeEventListener('teachertiles:audiopreferenceschange',onSharedAudioChange);
       moduleElement.removeEventListener('pointerdown',retryAmbience);
       moduleElement.removeEventListener('keydown',retryAmbience);
       pauseAmbience(true);

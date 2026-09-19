@@ -1169,13 +1169,52 @@ function boardPreferenceSnapshot(){
   };
 }
 
+const DEFAULT_TILE_AUDIO_STATE=Object.freeze({enabled:true,volume:100});
+function normalizeTileAudioState(value){
+  const source=value&&typeof value==='object'?value:{};
+  return{
+    enabled:source.enabled===undefined?true:Boolean(source.enabled),
+    volume:clamp(Number.isFinite(Number(source.volume))?Number(source.volume):100,0,100)
+  };
+}
+function tileAudioState(owner){
+  if(!owner)return DEFAULT_TILE_AUDIO_STATE;
+  if(!owner._tileAudioState)owner._tileAudioState=normalizeTileAudioState(null);
+  return owner._tileAudioState;
+}
+function tileAudioLevel(owner){
+  if(appPreferences.uiMuted)return 0;
+  const globalLevel=clamp((Number(appPreferences.uiVolume)||0)/100,0,1);
+  if(!owner)return globalLevel;
+  const state=tileAudioState(owner);
+  return state.enabled?globalLevel*clamp(Number(state.volume)/100,0,1):0;
+}
+function setTileAudioState(owner,value,{notify=true}={}){
+  if(!owner)return normalizeTileAudioState(value);
+  const next=normalizeTileAudioState({...tileAudioState(owner),...(value||{})});
+  owner._tileAudioState=next;
+  owner.dispatchEvent(new CustomEvent('teachertiles:tileaudiochange',{detail:{...next,level:tileAudioLevel(owner)}}));
+  if((!next.enabled||next.volume<=0)&&owner._activeTileSounds){
+    for(const sound of owner._activeTileSounds){try{sound.pause()}catch{}}
+  }
+  if(notify)notifyBoardChanged('tile-audio');
+  return next;
+}
+window.TeacherTilesTileAudio=Object.freeze({
+  level:tileAudioLevel,
+  state:owner=>({...tileAudioState(owner)}),
+  set:(owner,value,options)=>setTileAudioState(owner,value,options)
+});
+
 function playUiSfx(kind='click',volumeScale=1,owner=null){
-  if(appPreferences.uiMuted||(owner&&!owner.isConnected))return;
+  if(owner&&!owner.isConnected)return;
+  const effectiveLevel=tileAudioLevel(owner);
+  if(effectiveLevel<=0)return;
   try{
     const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
     const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
-    sound.volume=clamp(base*(appPreferences.uiVolume/100)*Math.max(0,Number(volumeScale)||0),0,1);
+    sound.volume=clamp(base*effectiveLevel*Math.max(0,Number(volumeScale)||0),0,1);
     sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     if(owner){
@@ -1188,17 +1227,25 @@ function playUiSfx(kind='click',volumeScale=1,owner=null){
 
 const classMeterFillSfxPrototype=new Audio('assets/ui/class-meter-fill.wav');
 classMeterFillSfxPrototype.preload='auto';
-function startClassMeterFillSfx(){
-  if(appPreferences.uiMuted||Number(appPreferences.uiVolume)<=0)return()=>{};
+function startClassMeterFillSfx(owner=null){
+  const effectiveLevel=tileAudioLevel(owner);
+  if(effectiveLevel<=0)return()=>{};
   try{
     const sound=classMeterFillSfxPrototype.cloneNode();
-    const targetVolume=clamp(.34*(Number(appPreferences.uiVolume)/100),0,1);
+    const targetVolume=clamp(.34*effectiveLevel,0,1);
     const fadeDuration=180;
     let fadeFrame=0;
     let stopped=false;
     sound.volume=0;
     sound.currentTime=0;
     sound.loop=false;
+    if(owner){
+      const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());
+      sounds.add(sound);
+      const release=()=>sounds.delete(sound);
+      sound.addEventListener('ended',release,{once:true});
+      sound.addEventListener('error',release,{once:true});
+    }
 
     const fade=(from,to,duration,onDone)=>{
       if(fadeFrame)cancelAnimationFrame(fadeFrame);
@@ -1233,19 +1280,19 @@ document.addEventListener('click',e=>{
   if(!(target instanceof Element))return;
   if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
-  if(interactive&&!interactive.disabled)playUiSfx('click');
+  if(interactive&&!interactive.disabled)playUiSfx('click',1,interactive.closest('.module'));
 },true);
 
 
 document.addEventListener('click',e=>{
   const t=e.target;
   if(!(t instanceof Element))return;
-  if(t.closest('.collection-add,.collection-jar,.collection-canvas'))playUiSfx('collection');
+  if(t.closest('.collection-add,.collection-jar,.collection-canvas'))playUiSfx('collection',1,t.closest('.module'));
 },true);
 
 document.addEventListener('change',e=>{
   const target=e.target;
-  if(target instanceof HTMLInputElement&&target.type==='range')playUiSfx('click');
+  if(target instanceof HTMLInputElement&&target.type==='range')playUiSfx('click',1,target.closest('.module'));
 },true);
 
 // Pointer-clicked module controls should disappear again when the pointer leaves.
@@ -1564,6 +1611,7 @@ function applyAppPreferences(value,{persist=true,notify=false,applyView=false}={
   updateSettingsControls();
   applyTileDeleteVisibilityPreference();
   applyAppLanguage();
+  window.dispatchEvent(new CustomEvent('teachertiles:audiopreferenceschange',{detail:{uiMuted:appPreferences.uiMuted,uiVolume:appPreferences.uiVolume}}));
   if(applyView)setCurrentBoardViewSize(appPreferences.defaultViewSize);
   if(notify)notifyBoardChanged('preferences');
   return boardPreferenceSnapshot();
@@ -3204,6 +3252,134 @@ function setupClassroomTileControls(m){
   const prior=m._cleanup;m._cleanup=()=>{document.removeEventListener('pointerdown',outside);prior?.();};
 }
 
+const TILE_AUDIO_SETTING_TYPES=new Set([
+  'timer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
+  'flyswat','quietcritters','robothfw','chime','transitionbell'
+]);
+const TILE_AUDIO_TITLES=Object.freeze({
+  timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
+  quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
+});
+const TILE_AUDIO_HOSTS=Object.freeze({
+  timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
+  money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
+  robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
+});
+
+function bindGeneratedTileSettings(m,toggle,panel){
+  if(!toggle||!panel||toggle.dataset.tileSettingsBound==='true')return;
+  toggle.dataset.tileSettingsBound='true';
+  const setOpen=open=>{
+    panel.hidden=!open;
+    toggle.setAttribute('aria-expanded',String(open));
+    m.classList.toggle('has-tile-settings-open',open);
+    if(open)m._positionTileSettings?.();
+  };
+  const onToggle=()=>setOpen(panel.hidden);
+  const onOutside=event=>{
+    if(!panel.hidden&&!toggle.parentElement.contains(event.target))setOpen(false);
+  };
+  const onKey=event=>{
+    if(event.key==='Escape'&&!panel.hidden){setOpen(false);toggle.focus();event.stopPropagation();}
+  };
+  toggle.addEventListener('click',onToggle);
+  document.addEventListener('pointerdown',onOutside);
+  m.addEventListener('keydown',onKey);
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    document.removeEventListener('pointerdown',onOutside);
+    toggle.removeEventListener('click',onToggle);
+    m.removeEventListener('keydown',onKey);
+    prior?.();
+  };
+}
+
+function createStandardTileSettingsPanel(m,type){
+  const title=TILE_AUDIO_TITLES[type]||'Tile';
+  const host=m.querySelector(TILE_AUDIO_HOSTS[type]||'.customization-bar');
+  if(!host)return null;
+  const wrap=document.createElement('div');
+  wrap.className='tile-settings-wrap tile-audio-settings-wrap';
+  wrap.innerHTML=`<button class="custom-icon tile-settings-toggle" type="button" aria-expanded="false" aria-label="Open ${title} settings" title="${title} settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg></button><div class="tile-settings-panel" hidden><strong>${title} settings</strong></div>`;
+  host.appendChild(wrap);
+  const toggle=wrap.querySelector('.tile-settings-toggle');
+  const panel=wrap.querySelector('.tile-settings-panel');
+  bindGeneratedTileSettings(m,toggle,panel);
+  return panel;
+}
+
+function setupTileAudioSettings(m,type){
+  if(!TILE_AUDIO_SETTING_TYPES.has(type))return;
+
+  let panel=null;
+  if(type==='classmeter')panel=m.querySelector('.classmeter-settings');
+  else if(type==='collections')panel=m.querySelector('.collection-settings');
+  else panel=m.querySelector('.tile-settings-panel');
+  if(!panel)panel=createStandardTileSettingsPanel(m,type);
+  if(!panel||panel.querySelector('.tile-audio-settings-section'))return;
+
+  const section=document.createElement('div');
+  section.className='tile-audio-settings-section';
+  section.innerHTML='<strong>Audio</strong><div class="tile-audio-toggle-row"><span>Sound effects</span><button class="tile-audio-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn tile audio off"><i aria-hidden="true"></i></button></div><label class="tile-audio-volume-row"><span>Volume <output>100%</output></span><input class="tile-audio-volume" type="range" min="0" max="100" step="5" value="100" aria-label="Tile audio volume"></label><small>Uses the TeacherTiles sound setting as the master volume.</small>';
+  panel.appendChild(section);
+
+  const toggle=section.querySelector('.tile-audio-toggle');
+  const volume=section.querySelector('.tile-audio-volume');
+  const output=section.querySelector('output');
+
+  const refresh=()=>{
+    const state=tileAudioState(m);
+    toggle.setAttribute('aria-checked',String(state.enabled));
+    toggle.setAttribute('aria-label',state.enabled?'Turn tile audio off':'Turn tile audio on');
+    volume.value=String(Math.round(state.volume));
+    volume.disabled=!state.enabled;
+    output.textContent=`${Math.round(state.volume)}%`;
+    section.classList.toggle('is-disabled',!state.enabled);
+  };
+
+  toggle.addEventListener('click',()=>{
+    const state=tileAudioState(m);
+    setTileAudioState(m,{enabled:!state.enabled},{notify:true});
+    refresh();
+  });
+  volume.addEventListener('input',()=>{
+    output.textContent=`${Math.round(Number(volume.value)||0)}%`;
+    setTileAudioState(m,{volume:Number(volume.value)||0},{notify:false});
+  });
+  volume.addEventListener('change',()=>{
+    setTileAudioState(m,{volume:Number(volume.value)||0},{notify:true});
+    refresh();
+  });
+  const onAudioChange=()=>refresh();
+  m.addEventListener('teachertiles:tileaudiochange',onAudioChange);
+
+  const priorGet=m._boardGetState;
+  const priorSet=m._boardSetState;
+  m._boardGetState=()=>{
+    const base=priorGet?.();
+    const audio={...tileAudioState(m)};
+    if(base&&typeof base==='object'&&!Array.isArray(base))return{...base,tileAudio:audio};
+    return{tileAudio:audio};
+  };
+  m._boardSetState=state=>{
+    priorSet?.(state);
+    let saved=state?.tileAudio;
+    if(!saved&&type==='quietcritters'&&state?.soundDisabled!==undefined)saved={enabled:!Boolean(state.soundDisabled),volume:100};
+    setTileAudioState(m,saved||DEFAULT_TILE_AUDIO_STATE,{notify:false});
+    refresh();
+  };
+
+  const priorCleanup=m._cleanup;
+  m._cleanup=()=>{
+    m.removeEventListener('teachertiles:tileaudiochange',onAudioChange);
+    priorCleanup?.();
+  };
+
+  setTileAudioState(m,tileAudioState(m),{notify:false});
+  refresh();
+}
+
 function setupModuleByType(m,type){
   setupCommon(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
@@ -3301,6 +3477,7 @@ function setupModuleByType(m,type){
   if(type==='progressbar')setupProgressBar(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
+  setupTileAudioSettings(m,type);
   setupEditableTileHeading(m,type);
   window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
   window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
@@ -6101,7 +6278,7 @@ function setupClassMeter(m){
     m.classList.add('is-meter-filled');
     popup.hidden=false;
     launchConfetti(m);
-    playUiSfx('confetti');
+    playUiSfx('confetti',1,m);
     clearTimeout(celebrationTimer);
     celebrationTimer=setTimeout(()=>{
       celebrating=false;
@@ -6128,7 +6305,7 @@ function setupClassMeter(m){
     holding=true;
     lastFrameAt=performance.now();
     m.classList.add('is-meter-filling');
-    stopFillSfx=startClassMeterFillSfx();
+    stopFillSfx=startClassMeterFillSfx(m);
     holdFrame=requestAnimationFrame(fillTick);
   };
 
@@ -6504,7 +6681,7 @@ function setupRacer(m){
     renderTrack();
   };
   const showWin=(name,total)=>{
-    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('confetti');requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
+    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('confetti',1,m);requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
   };
   const moveStudent=()=>{
     const r=roster(),name=selectedStudent;if(!r||!name)return;
@@ -6585,7 +6762,7 @@ function setupPunchcards(m){
   const punch=(hole,index,event)=>{
     if(busy||index!==currentProgress())return;
     busy=true;
-    playUiSfx('hole-punch');
+    playUiSfx('hole-punch',1,m);
     const cardRect=card.getBoundingClientRect(),holeRect=hole.getBoundingClientRect();
     const disk=document.createElement('span');
     disk.className='punchcard-punched-disk';
@@ -6736,7 +6913,7 @@ function setupCollections(m){
     persistProgress();
     renderFilledState();
     launchConfetti(m);
-    playUiSfx('confetti');
+    playUiSfx('confetti',1,m);
   }
 
   function starPath(r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.46:r,px=Math.cos(a)*rad,py=Math.sin(a)*rad;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
@@ -14035,6 +14212,7 @@ function setupHighFrequencyWords(m){
 
 function setupRobotHfw(m){
   const stage=m.querySelector('.robothfw-stage');
+  const timebar=m.querySelector('.robothfw-timebar');
   const robot=m.querySelector('.robothfw-robot');
   const face=m.querySelector('.robothfw-face-sprite');
   const wordTag=m.querySelector('.robothfw-word-tag');
@@ -14060,36 +14238,25 @@ function setupRobotHfw(m){
   const resetButtons=m.querySelectorAll('.robothfw-reset');
   const startButtons=m.querySelectorAll('.robothfw-start');
 
-  const gradeNames={
-    k:'Kindergarten Pack',
-    1:'Grade 1 Pack',
-    2:'Grade 2 Pack',
-    '3plus':'Grade 3+ Pack'
-  };
-
+  const gradeNames={k:'Kindergarten Pack',1:'Grade 1 Pack',2:'Grade 2 Pack','3plus':'Grade 3+ Pack'};
   const faceMap={
-    idle:{pos:'0% 0%',x:'0%',y:'0%',scale:1},
-    happy:{pos:'33.333% 0%',x:'0%',y:'0%',scale:1},
-    alert:{pos:'66.666% 0%',x:'0%',y:'1%',scale:1},
-    exclaim:{pos:'100% 50%',x:'0%',y:'0%',scale:1},
-    warn:{pos:'33.333% 50%',x:'0%',y:'1%',scale:1},
-    angry:{pos:'33.333% 100%',x:'0%',y:'1%',scale:1},
-    furious:{pos:'66.666% 100%',x:'0%',y:'1%',scale:1.02},
-    blast:{pos:'100% 100%',x:'0%',y:'0%',scale:1.03},
-    dizzy:{pos:'66.666% 50%',x:'0%',y:'0%',scale:1}
+    idle:'0% 0%',happy:'33.333% 0%',alert:'66.666% 0%',
+    exclaim:'100% 50%',warn:'33.333% 50%',angry:'33.333% 100%',
+    furious:'66.666% 100%',blast:'100% 100%',dizzy:'66.666% 50%'
   };
 
   const enabledByGrade={};
-  Object.entries(HIGH_FREQUENCY_WORD_SETS).forEach(([grade,words])=>{
-    enabledByGrade[grade]=new Set(words);
-  });
+  Object.entries(HIGH_FREQUENCY_WORD_SETS).forEach(([grade,words])=>{enabledByGrade[grade]=new Set(words)});
 
   const timers=new Set();
   const maxHealth=5;
   const laserPrototype=new Audio('tiles/robot-hfw/assets/laser.mp3');
   const explodePrototype=new Audio('tiles/robot-hfw/assets/explode.mp3');
+  const rocketLoop=new Audio('tiles/robot-hfw/assets/rocket-loop.mp3');
   laserPrototype.preload='auto';
   explodePrototype.preload='auto';
+  rocketLoop.preload='auto';
+  rocketLoop.loop=true;
 
   let health=maxHealth;
   let currentWord='';
@@ -14107,62 +14274,44 @@ function setupRobotHfw(m){
   stage.appendChild(measurer);
 
   const schedule=(fn,delay)=>{
-    const timer=window.setTimeout(()=>{
-      timers.delete(timer);
-      fn();
-    },delay);
+    const timer=window.setTimeout(()=>{timers.delete(timer);fn()},delay);
     timers.add(timer);
     return timer;
   };
-
-  const clearTimers=()=>{
-    for(const timer of timers)window.clearTimeout(timer);
-    timers.clear();
-  };
-
+  const clearTimers=()=>{for(const timer of timers)window.clearTimeout(timer);timers.clear()};
   const shuffle=list=>{
     const copy=[...list];
-    for(let i=copy.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [copy[i],copy[j]]=[copy[j],copy[i]];
-    }
+    for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}
     return copy;
   };
+  const enabledWords=grade=>HIGH_FREQUENCY_WORD_SETS[grade].filter(word=>enabledByGrade[grade].has(word));
 
   const measureWordSize=word=>{
     const rect=wordTag.getBoundingClientRect();
     const maxWidth=Math.max(84,rect.width-20);
     const maxHeight=Math.max(28,rect.height-10);
-
     measurer.textContent=word;
     const computed=getComputedStyle(wordEl);
     measurer.style.fontFamily=computed.fontFamily;
     measurer.style.fontWeight=computed.fontWeight;
     measurer.style.letterSpacing=computed.letterSpacing;
-
-    let low=12;
-    let high=Math.max(18,Math.min(42,Math.floor(maxHeight*1.35)));
-    let best=low;
-
+    let low=12,high=Math.max(18,Math.min(42,Math.floor(maxHeight*1.35))),best=low;
     while(low<=high){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
       const measured=measurer.getBoundingClientRect();
-      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
-        best=mid;
-        low=mid+1;
-      }else high=mid-1;
+      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){best=mid;low=mid+1}else high=mid-1;
     }
     return best;
   };
 
-  const enabledWords=grade=>HIGH_FREQUENCY_WORD_SETS[grade].filter(word=>enabledByGrade[grade].has(word));
-
   const playTileAudio=(prototype,baseVolume=.4,playbackRate=1)=>{
-    if(!m.isConnected||appPreferences.uiMuted)return;
+    if(!m.isConnected)return;
+    const level=tileAudioLevel(m);
+    if(level<=0)return;
     try{
       const sound=prototype.cloneNode();
-      sound.volume=clamp(baseVolume*(Number(appPreferences.uiVolume)||100)/100,0,1);
+      sound.volume=clamp(baseVolume*level,0,1);
       sound.playbackRate=playbackRate;
       sound.currentTime=0;
       const sounds=m._activeTileSounds||(m._activeTileSounds=new Set());
@@ -14174,16 +14323,24 @@ function setupRobotHfw(m){
     }catch{}
   };
 
-  const setFace=key=>{
-    const faceState=faceMap[key]||faceMap.idle;
-    face.style.backgroundPosition=faceState.pos;
-    face.style.setProperty('--face-x',faceState.x);
-    face.style.setProperty('--face-y',faceState.y);
-    face.style.setProperty('--face-scale',String(faceState.scale));
+  const robotIsFlying=()=>started&&['intro','active','warn','angry','blasting','escaping'].includes(phase)&&!robot.classList.contains('is-hidden');
+  const syncRocketLoop=()=>{
+    const level=tileAudioLevel(m);
+    rocketLoop.volume=clamp(.055*level,0,.09);
+    if(robotIsFlying()&&rocketLoop.volume>0&&!document.hidden){
+      rocketLoop.play().catch(()=>{});
+    }else{
+      rocketLoop.pause();
+      if(!robotIsFlying()){try{rocketLoop.currentTime=0}catch{}}
+    }
   };
+  const onRobotAudioChange=()=>syncRocketLoop();
+  m.addEventListener('teachertiles:tileaudiochange',onRobotAudioChange);
+  window.addEventListener('teachertiles:audiopreferenceschange',onRobotAudioChange);
+  document.addEventListener('visibilitychange',onRobotAudioChange);
 
+  const setFace=key=>{face.style.backgroundPosition=faceMap[key]||faceMap.idle};
   const totalRemaining=()=>queue.length+(currentWord&&phase!=='won'&&phase!=='lost'&&started?1:0);
-
   const updateHud=()=>{
     leftCount.textContent=String(totalRemaining());
     scoreCount.textContent=String(completed);
@@ -14191,7 +14348,6 @@ function setupRobotHfw(m){
     healthFill.style.width=`${Math.max(0,health/maxHealth)*100}%`;
     gradeLabel.textContent=gradeNames[m.dataset.hfwGrade||'k'];
   };
-
   const updateWordFit=()=>{
     cancelAnimationFrame(resizeFrame);
     resizeFrame=requestAnimationFrame(()=>{
@@ -14199,26 +14355,32 @@ function setupRobotHfw(m){
       wordEl.style.fontSize=`${measureWordSize(currentWord)}px`;
     });
   };
+  const setStatus=message=>{statusEl.textContent=message};
 
-  const setStatus=message=>{
-    statusEl.textContent=message;
+  const stopThreatTimer=()=>{
+    stage.classList.remove('is-counting-down');
+    timebar?.setAttribute('aria-valuenow','100');
+  };
+  const startThreatTimer=()=>{
+    stage.classList.remove('is-counting-down');
+    void timebar?.offsetWidth;
+    stage.classList.add('is-counting-down');
+    timebar?.setAttribute('aria-valuenow','100');
   };
 
   const showEndcard=(title,copy,{showStart=false,startLabel='Start',showReset=true}={})=>{
+    stopThreatTimer();
     endcardTitle.textContent=title;
     endcardCopy.textContent=copy;
     endcard.hidden=false;
     robot.classList.add('is-hidden');
-    startButtons.forEach(button=>{
-      if(button.closest('.robothfw-endcard-actions'))button.textContent=startLabel;
-    });
+    syncRocketLoop();
     const endcardStart=endcard.querySelector('.robothfw-start');
     const endcardReset=endcard.querySelector('.robothfw-reset');
-    if(endcardStart)endcardStart.hidden=!showStart;
+    if(endcardStart){endcardStart.textContent=startLabel;endcardStart.hidden=!showStart}
     if(endcardReset)endcardReset.hidden=!showReset;
   };
-
-  const hideEndcard=()=>{endcard.hidden=true;};
+  const hideEndcard=()=>{endcard.hidden=true};
 
   const createParticle=(className,x,y,vars={},lifetime=900)=>{
     const node=document.createElement('span');
@@ -14230,41 +14392,42 @@ function setupRobotHfw(m){
     schedule(()=>node.remove(),lifetime);
     return node;
   };
-
   const createBurst=(x,y,{count=12,color='rgba(255,188,75,.95)',size=12,spread=82,className='robothfw-particle'}={})=>{
     for(let i=0;i<count;i++){
-      const distance=spread*(.38+Math.random()*.9);
-      const angle=Math.random()*Math.PI*2;
+      const distance=spread*(.38+Math.random()*.9),angle=Math.random()*Math.PI*2;
       createParticle(className,x,y,{
         '--burst-size':`${Math.max(6,size+Math.random()*size)}px`,
         '--burst-color':i%4===0?'rgba(255,255,255,.98)':color,
         '--burst-x':`${Math.cos(angle)*distance}px`,
         '--burst-y':`${Math.sin(angle)*distance}px`,
         '--burst-rot':`${(Math.random()*620)-310}deg`
-      },720);
+      },760);
     }
   };
-
   const createExplosion=(x,y,{power='pop'}={})=>{
-    const warmColor=power==='blast'?'rgba(248,113,113,.94)':'rgba(255,194,55,.96)';
-    const coolColor=power==='blast'?'rgba(255,255,255,.95)':'rgba(191,219,254,.95)';
-    createBurst(x,y,{count:power==='blast'?18:24,color:warmColor,size:power==='blast'?10:14,spread:power==='blast'?86:110,className:'robothfw-particle robothfw-particle--spark'});
-    createBurst(x,y,{count:power==='blast'?10:14,color:coolColor,size:power==='blast'?8:10,spread:power==='blast'?58:86,className:'robothfw-particle robothfw-particle--metal'});
-    createParticle('robothfw-shockwave',x,y,{'--ring-color':warmColor,'--ring-scale':power==='blast'?'.9':'1.1'},700);
-    createParticle('robothfw-flash',x,y,{'--flash-color':power==='blast'?'rgba(254,202,202,.9)':'rgba(255,251,235,.96)'},420);
-    for(let i=0;i<(power==='blast'?3:5);i++){
-      createParticle('robothfw-smoke',x+(Math.random()*18-9),y+(Math.random()*18-9),{
-        '--smoke-x':`${(Math.random()*2-1)*(power==='blast'?22:30)}px`,
-        '--smoke-y':`${-(22+Math.random()*34)}px`,
-        '--smoke-scale':`${.75+Math.random()*1.25}`
-      },1080);
+    const popped=power==='pop';
+    const warmColor=popped?'rgba(255,173,31,.98)':'rgba(248,113,113,.94)';
+    const coolColor=popped?'rgba(191,219,254,.96)':'rgba(255,255,255,.95)';
+    createBurst(x,y,{count:popped?32:18,color:warmColor,size:popped?16:10,spread:popped?138:86,className:'robothfw-particle robothfw-particle--spark'});
+    createBurst(x,y,{count:popped?20:10,color:coolColor,size:popped?11:8,spread:popped?106:58,className:'robothfw-particle robothfw-particle--metal'});
+    createBurst(x,y,{count:popped?12:6,color:'rgba(71,85,105,.86)',size:popped?9:7,spread:popped?126:66,className:'robothfw-particle robothfw-particle--debris'});
+    createParticle('robothfw-shockwave',x,y,{'--ring-color':warmColor},760);
+    createParticle('robothfw-shockwave robothfw-shockwave--late',x,y,{'--ring-color':coolColor},900);
+    createParticle('robothfw-flash',x,y,{'--flash-color':popped?'rgba(255,251,235,.98)':'rgba(254,202,202,.9)'},460);
+    for(let i=0;i<(popped?8:3);i++){
+      createParticle('robothfw-smoke',x+(Math.random()*28-14),y+(Math.random()*24-12),{
+        '--smoke-x':`${(Math.random()*2-1)*(popped?46:22)}px`,
+        '--smoke-y':`${-(28+Math.random()*(popped?70:34))}px`,
+        '--smoke-scale':`${.9+Math.random()*1.65}`
+      },1180);
     }
   };
-
   const robotCenter=()=>{
-    const stageRect=stage.getBoundingClientRect();
-    const rect=robot.getBoundingClientRect();
-    return {x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.5};
+    const stageRect=stage.getBoundingClientRect(),rect=robot.getBoundingClientRect();
+    return{x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.5};
+  };
+  const clearEffects=()=>{
+    stage.querySelectorAll('.robothfw-particle,.robothfw-shockwave,.robothfw-smoke,.robothfw-flash').forEach(node=>node.remove());
   };
 
   const applyWord=word=>{
@@ -14273,45 +14436,44 @@ function setupRobotHfw(m){
     wordEl.style.fontSize=`${measureWordSize(word)}px`;
     robot.setAttribute('aria-label',`Tap the robot carrying ${word}`);
   };
-
-  const clearRobotStateClasses=()=>{
-    robot.classList.remove('is-hidden','is-arriving','is-live','is-warning','is-angry','is-popped','is-blasting','is-escaping');
+  const clearRobotStateClasses=()=>robot.classList.remove('is-hidden','is-arriving','is-live','is-warning','is-angry','is-popped','is-blasting','is-escaping');
+  const clearVisibleWord=()=>{
+    wordTag.hidden=true;
+    wordVisible=false;
+    wordEl.textContent='';
+    wordEl.style.fontSize='';
   };
 
   const startWarnings=()=>{
+    startThreatTimer();
     schedule(()=>{
       if(phase!=='active')return;
       phase='warn';
       setFace('warn');
       robot.classList.add('is-warning');
-      setStatus(`${currentWord} is getting suspicious… tap it now!`);
       updateHud();
     },2200);
-
     schedule(()=>{
       if(phase!=='warn')return;
       phase='angry';
       setFace('furious');
       robot.classList.add('is-angry');
-      setStatus(`${currentWord} is furious! Tap it before it blasts you!`);
       updateHud();
     },4200);
-
-    schedule(()=>{
-      if(!['active','warn','angry'].includes(phase))return;
-      blastPlayer();
-    },6200);
+    schedule(()=>{if(['active','warn','angry'].includes(phase))blastPlayer()},6200);
   };
 
   const spawnRobot=()=>{
     clearTimers();
+    clearEffects();
+    stopThreatTimer();
     hideEndcard();
-    robot.disabled=false;
     clearRobotStateClasses();
-    robot.classList.add('is-arriving');
-    wordTag.hidden=true;
-    wordVisible=false;
+    robot.classList.add('is-hidden');
+    robot.disabled=true;
+    clearVisibleWord();
     currentWord='';
+    syncRocketLoop();
     updateHud();
 
     if(health<=0){
@@ -14321,7 +14483,6 @@ function setupRobotHfw(m){
       showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
       return;
     }
-
     if(!queue.length){
       started=false;
       phase='won';
@@ -14334,33 +14495,43 @@ function setupRobotHfw(m){
     currentWord=next;
     phase='intro';
     setFace('exclaim');
-    setStatus('Incoming robot! Get ready…');
+    setStatus('Incoming robot!');
     updateHud();
 
     schedule(()=>{
+      robot.classList.remove('is-hidden');
+      robot.classList.add('is-arriving');
+      robot.disabled=false;
+      syncRocketLoop();
+    },90);
+
+    schedule(()=>{
+      if(phase!=='intro')return;
       applyWord(next);
       wordTag.hidden=false;
       wordVisible=true;
       robot.classList.add('is-live');
       phase='active';
       setFace(Math.random()>.5?'idle':'happy');
-      setStatus(`Tap the robot carrying “${next}” before it blasts you.`);
       updateWordFit();
       updateHud();
+      syncRocketLoop();
       startWarnings();
-    },700);
+    },790);
   };
 
   function blastPlayer(){
     clearTimers();
+    stopThreatTimer();
     phase='blasting';
     health=Math.max(0,health-1);
     setFace('blast');
     robot.disabled=true;
     robot.classList.add('is-blasting');
     stage.classList.add('is-hit');
-    setStatus(`Ouch! ${currentWord} blasted you.`);
+    setStatus(`${currentWord} blasted you.`);
     updateHud();
+    syncRocketLoop();
     const {x,y}=robotCenter();
     playTileAudio(laserPrototype,.55,1);
     createExplosion(x,y,{power:'blast'});
@@ -14368,38 +14539,43 @@ function setupRobotHfw(m){
     schedule(()=>{
       robot.classList.remove('is-blasting');
       robot.classList.add('is-escaping');
+      phase='escaping';
       setFace('furious');
+      syncRocketLoop();
     },180);
-    schedule(()=>spawnRobot(),1040);
+    schedule(()=>spawnRobot(),1080);
     notifyBoardChanged('robot-hfw-blast');
   }
 
   const popRobot=()=>{
     if(!['intro','active','warn','angry'].includes(phase))return;
     clearTimers();
+    stopThreatTimer();
+    const poppedWord=currentWord;
     phase='popped';
     completed+=1;
     robot.disabled=true;
+    robot.classList.remove('is-live','is-warning','is-angry');
     robot.classList.add('is-popped');
     setFace('dizzy');
-    setStatus(`Nice! You popped “${currentWord}”.`);
+    clearVisibleWord();
+    currentWord='';
+    syncRocketLoop();
+    setStatus(`You popped ${poppedWord}.`);
     updateHud();
     const {x,y}=robotCenter();
-    playTileAudio(explodePrototype,.62,1);
+    playTileAudio(explodePrototype,.64,1);
     createExplosion(x,y,{power:'pop'});
-    schedule(()=>spawnRobot(),860);
+    schedule(()=>robot.classList.add('is-hidden'),700);
+    schedule(()=>spawnRobot(),1080);
     notifyBoardChanged('robot-hfw-pop');
   };
 
   const renderSettings=()=>{
-    const grade=m.dataset.hfwGrade||'k';
-    const words=HIGH_FREQUENCY_WORD_SETS[grade];
-    const enabled=enabledByGrade[grade];
-
+    const grade=m.dataset.hfwGrade||'k',words=HIGH_FREQUENCY_WORD_SETS[grade],enabled=enabledByGrade[grade];
     settingsTitle.textContent=gradeNames[grade];
     enabledCount.textContent=`${enabled.size} of ${words.length} enabled`;
     wordOptions.replaceChildren();
-
     words.forEach(word=>{
       const button=document.createElement('button');
       button.type='button';
@@ -14408,8 +14584,7 @@ function setupRobotHfw(m){
       button.classList.toggle('is-enabled',enabled.has(word));
       button.setAttribute('aria-pressed',String(enabled.has(word)));
       button.addEventListener('click',()=>{
-        if(enabled.has(word))enabled.delete(word);
-        else enabled.add(word);
+        if(enabled.has(word))enabled.delete(word);else enabled.add(word);
         button.classList.toggle('is-enabled',enabled.has(word));
         button.setAttribute('aria-pressed',String(enabled.has(word)));
         enabledCount.textContent=`${enabled.size} of ${words.length} enabled`;
@@ -14421,40 +14596,43 @@ function setupRobotHfw(m){
   };
 
   const setReadyPanel=(copy='Press Start when you are ready.')=>{
+    clearTimers();
+    clearEffects();
+    stopThreatTimer();
     started=false;
     phase='ready';
-    hideEndcard();
     clearRobotStateClasses();
     robot.classList.add('is-hidden');
     robot.disabled=true;
-    wordTag.hidden=true;
-    wordVisible=false;
+    clearVisibleWord();
     currentWord='';
     setFace('alert');
     setStatus('Press Start to begin Robot HFW.');
+    syncRocketLoop();
     showEndcard('Robot HFW',copy,{showStart:true,startLabel:'Start',showReset:true});
     updateHud();
   };
 
   const resetRound=(notify=true)=>{
     clearTimers();
+    stopThreatTimer();
     const grade=m.dataset.hfwGrade||'k';
     queue=shuffle(enabledWords(grade));
     totalWords=queue.length;
     completed=0;
     health=maxHealth;
+    started=false;
     renderSettings();
     if(!totalWords){
-      started=false;
       phase='empty';
       clearRobotStateClasses();
       robot.classList.add('is-hidden');
       robot.disabled=true;
-      wordTag.hidden=true;
-      wordVisible=false;
+      clearVisibleWord();
       currentWord='';
       setFace('alert');
       setStatus('No words are enabled for this pack.');
+      syncRocketLoop();
       showEndcard('No words enabled','Open settings and turn on at least one word for this pack.',{showStart:false,showReset:true});
       updateHud();
     }else setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
@@ -14462,10 +14640,12 @@ function setupRobotHfw(m){
   };
 
   const startGame=()=>{
-    if(!queue.length||phase==='active'||phase==='warn'||phase==='angry'||phase==='intro'||phase==='blasting'||phase==='popped')return;
+    if(['active','warn','angry','intro','blasting','escaping','popped'].includes(phase))return;
+    if(phase==='won'||phase==='lost'||phase==='empty'||!queue.length)resetRound(false);
+    if(!queue.length)return;
     started=true;
-    setStatus('Launching Robot HFW…');
     hideEndcard();
+    setStatus('Launching Robot HFW…');
     spawnRobot();
     notifyBoardChanged('robot-hfw-start');
   };
@@ -14480,129 +14660,73 @@ function setupRobotHfw(m){
 
   robot.addEventListener('click',popRobot);
   gradeSelect.addEventListener('change',()=>setGrade(gradeSelect.value));
-  settingsButton.addEventListener('click',()=>{
-    renderSettings();
-    settings.hidden=false;
-  });
-  settingsClose.addEventListener('click',()=>{settings.hidden=true;});
-  settings.addEventListener('pointerdown',event=>{
-    if(event.target===settings)settings.hidden=true;
-  });
+  settingsButton.addEventListener('click',()=>{renderSettings();settings.hidden=false});
+  settingsClose.addEventListener('click',()=>{settings.hidden=true});
+  settings.addEventListener('pointerdown',event=>{if(event.target===settings)settings.hidden=true});
   enableAll.addEventListener('click',()=>{
-    const grade=m.dataset.hfwGrade||'k';
-    enabledByGrade[grade]=new Set(HIGH_FREQUENCY_WORD_SETS[grade]);
-    resetRound(true);
+    const grade=m.dataset.hfwGrade||'k';enabledByGrade[grade]=new Set(HIGH_FREQUENCY_WORD_SETS[grade]);resetRound(true);
   });
   disableAll.addEventListener('click',()=>{
-    const grade=m.dataset.hfwGrade||'k';
-    enabledByGrade[grade].clear();
-    resetRound(true);
+    const grade=m.dataset.hfwGrade||'k';enabledByGrade[grade].clear();resetRound(true);
   });
   resetButtons.forEach(button=>button.addEventListener('click',()=>resetRound(true)));
   startButtons.forEach(button=>button.addEventListener('click',startGame));
 
   m.querySelector('.robothfw-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.robothfw-font').addEventListener('click',()=>{
-    cycleData(m,'font',FONT_OPTIONS);
-    updateWordFit();
-  });
+  m.querySelector('.robothfw-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);updateWordFit()});
   m.querySelector('.robothfw-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{
-    if(wordVisible)updateWordFit();
-  });
-  ro.observe(stage);
-  ro.observe(wordTag);
+  const ro=new ResizeObserver(()=>{if(wordVisible)updateWordFit()});
+  ro.observe(stage);ro.observe(wordTag);
 
   resetRound(false);
 
   m._boardGetState=()=>({
     grade:m.dataset.hfwGrade||'k',
     enabledByGrade:Object.fromEntries(Object.entries(enabledByGrade).map(([grade,set])=>[grade,[...set]])),
-    queue:[...queue],
-    completed,
-    totalWords,
-    health,
-    currentWord,
-    phase,
-    wordVisible,
-    status:statusEl.textContent,
-    started
+    queue:[...queue],completed,totalWords,health,currentWord,phase,wordVisible,status:statusEl.textContent,started
   });
-
   m._boardSetState=state=>{
     if(!state)return;
     const savedEnabled=state.enabledByGrade&&typeof state.enabledByGrade==='object'?state.enabledByGrade:{};
     for(const [grade,words] of Object.entries(HIGH_FREQUENCY_WORD_SETS)){
-      const allowed=new Set(words);
-      const saved=Array.isArray(savedEnabled[grade])?savedEnabled[grade].filter(word=>allowed.has(word)):words;
+      const allowed=new Set(words),saved=Array.isArray(savedEnabled[grade])?savedEnabled[grade].filter(word=>allowed.has(word)):words;
       enabledByGrade[grade]=new Set(saved);
     }
-
     const grade=state.grade in gradeNames?state.grade:'k';
-    m.dataset.hfwGrade=grade;
-    gradeSelect.value=grade;
-    gradeLabel.textContent=gradeNames[grade];
+    m.dataset.hfwGrade=grade;gradeSelect.value=grade;gradeLabel.textContent=gradeNames[grade];
     queue=Array.isArray(state.queue)?state.queue.filter(word=>enabledByGrade[grade].has(word)):shuffle(enabledWords(grade));
     completed=Math.max(0,Number(state.completed)||0);
     totalWords=Math.max(completed+queue.length+(state.currentWord?1:0),Number(state.totalWords)||0);
     health=Math.max(0,Math.min(maxHealth,Number(state.health)||maxHealth));
-    currentWord=String(state.currentWord||'');
-    phase=String(state.phase||'ready');
-    wordVisible=Boolean(state.wordVisible);
-    started=Boolean(state.started);
+    currentWord=String(state.currentWord||'');phase=String(state.phase||'ready');wordVisible=Boolean(state.wordVisible);started=Boolean(state.started);
     statusEl.textContent=String(state.status||'Press Start to begin Robot HFW.');
-    renderSettings();
-    clearTimers();
-    clearRobotStateClasses();
-    wordTag.hidden=true;
-    robot.disabled=true;
+    renderSettings();clearTimers();stopThreatTimer();clearRobotStateClasses();clearVisibleWord();robot.disabled=true;
 
-    if(!enabledWords(grade).length){
-      resetRound(false);
-      return;
-    }
-
-    if(phase==='lost'){
-      showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
-    }else if(phase==='won'){
-      showEndcard('Pack complete!','Every robot in this pack has been popped.',{showStart:true,startLabel:'Play Again',showReset:true});
-    }else if(!started||phase==='ready'||phase==='empty'){
-      setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
-    }else if(currentWord){
-      hideEndcard();
-      applyWord(currentWord);
-      wordTag.hidden=!wordVisible;
-      if(wordVisible)updateWordFit();
-      robot.disabled=false;
-      robot.classList.add('is-live');
-      if(phase==='warn'){
-        setFace('warn');
-        robot.classList.add('is-warning');
-      }else if(phase==='angry'){
-        setFace('furious');
-        robot.classList.add('is-warning','is-angry');
-      }else if(phase==='intro'){
-        robot.classList.add('is-arriving');
-        setFace('exclaim');
-      }else{
-        phase='active';
-        setFace('idle');
-      }
-      startWarnings();
-    }else{
-      setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
-    }
+    if(!enabledWords(grade).length){resetRound(false);return}
+    if(phase==='lost')showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
+    else if(phase==='won')showEndcard('Pack complete!','Every robot in this pack has been popped.',{showStart:true,startLabel:'Play Again',showReset:true});
+    else if(!started||phase==='ready'||phase==='empty')setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
+    else if(currentWord){
+      hideEndcard();applyWord(currentWord);wordTag.hidden=!wordVisible;if(wordVisible)updateWordFit();robot.disabled=false;robot.classList.add('is-live');
+      if(phase==='warn'){setFace('warn');robot.classList.add('is-warning')}
+      else if(phase==='angry'){setFace('furious');robot.classList.add('is-warning','is-angry')}
+      else if(phase==='intro'){robot.classList.add('is-arriving');setFace('exclaim')}
+      else{phase='active';setFace('idle')}
+      syncRocketLoop();startWarnings();
+    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
     updateHud();
   };
 
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    clearTimers();
-    ro.disconnect();
-    cancelAnimationFrame(resizeFrame);
-    measurer.remove();
+    clearTimers();clearEffects();stopThreatTimer();
+    ro.disconnect();cancelAnimationFrame(resizeFrame);measurer.remove();
+    m.removeEventListener('teachertiles:tileaudiochange',onRobotAudioChange);
+    window.removeEventListener('teachertiles:audiopreferenceschange',onRobotAudioChange);
+    document.removeEventListener('visibilitychange',onRobotAudioChange);
+    rocketLoop.pause();try{rocketLoop.currentTime=0}catch{}
   };
 }
 
@@ -16114,7 +16238,7 @@ function setupMoney(m){
     };
     pieces.push(piece);
     renderPieces();
-    playUiSfx('money');
+    playUiSfx('money',1,m);
   };
 
   const renderPieces=()=>{
@@ -16647,7 +16771,7 @@ function setupShapeManipulatives(m){
   const addPiece=(type,x=null,y=null)=>{
     const def=definition(type);if(!def)return;
     const piece={id:++nextId,type,x:x??Math.max(8,(workspaceEl.clientWidth-def.width)/2+(Math.random()-.5)*70),y:y??Math.max(8,(workspaceEl.clientHeight-def.height)/2+(Math.random()-.5)*45),rotation:0};
-    clampPiece(piece);pieces.push(piece);selectedId=piece.id;renderPieces();playUiSfx('click');notify('add');
+    clampPiece(piece);pieces.push(piece);selectedId=piece.id;renderPieces();playUiSfx('click',1,m);notify('add');
   };
 
   definitions.forEach(def=>{
@@ -18347,6 +18471,14 @@ function setupSpinner(m){
   let winnerVisible=false;
   let spinGeneration=0,cancelMetadata=null;
 
+  const syncSpinnerAudio=()=>{
+    spinAudio.volume=clamp(.62*tileAudioLevel(m),0,1);
+    if(spinAudio.volume<=0&&!spinAudio.paused)spinAudio.pause();
+  };
+  m.addEventListener('teachertiles:tileaudiochange',syncSpinnerAudio);
+  window.addEventListener('teachertiles:audiopreferenceschange',syncSpinnerAudio);
+  syncSpinnerAudio();
+
   const palette=[
     ['#ffb8a7','#ed806e'],['#ffe09a','#eebf50'],['#c8eaa9','#81bd67'],['#a9e7dc','#55bbaa'],
     ['#b7d7ff','#6fa5e9'],['#d5c4fa','#987bd8'],['#f7bed9','#df7dad'],['#ead9b8','#c7a36c'],
@@ -18623,7 +18755,8 @@ function setupSpinner(m){
     const start=performance.now();
     const ease=t=>1-Math.pow(1-t,4);
 
-    spinAudio.play().catch(()=>{});
+    syncSpinnerAudio();
+    if(spinAudio.volume>0)spinAudio.play().catch(()=>{});
 
     cancelAnimationFrame(raf);
     const tick=now=>{
@@ -18744,6 +18877,8 @@ function setupSpinner(m){
     ro.disconnect();
     m.removeEventListener('pointerenter',refreshWheelLayout);
     m.removeEventListener('pointerleave',refreshWheelLayout);
+    m.removeEventListener('teachertiles:tileaudiochange',syncSpinnerAudio);
+    window.removeEventListener('teachertiles:audiopreferenceschange',syncSpinnerAudio);
     spinAudio.pause();
     spinAudio.currentTime=0;
   };

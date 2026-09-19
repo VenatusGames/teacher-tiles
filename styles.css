@@ -11856,9 +11856,9 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 /* Games: Robot HFW */
 .robothfw-module{
   width:720px;
-  height:540px;
+  height:610px;
   min-width:470px;
-  min-height:390px;
+  min-height:470px;
   padding:32px 18px 50px;
   display:flex;
   flex-direction:column;
@@ -11999,22 +11999,38 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-cloud--3{top:10%;left:-42%;--cloud-scale:.92;animation-duration:42s;animation-delay:-16s;opacity:.72}
 .robothfw-cloud--4{top:36%;left:-30%;--cloud-scale:.66;animation-duration:32s;animation-delay:-22s;opacity:.78}
 
-.robothfw-status{
+.robothfw-timebar{
   position:absolute;
   z-index:4;
   top:12px;
   left:50%;
+  width:min(360px,calc(100% - 38px));
+  height:10px;
   transform:translateX(-50%);
-  max-width:calc(100% - 30px);
-  padding:7px 12px;
+  overflow:hidden;
   border-radius:999px;
-  background:color-mix(in srgb,var(--module-bg,#fff) 90%,transparent);
-  border:1px solid color-mix(in srgb,var(--module-text,#17191d) 10%,transparent);
-  box-shadow:0 8px 20px rgba(15,23,42,.08);
-  font-size:11px;
-  font-weight:820;
-  text-align:center;
-  backdrop-filter:blur(8px);
+  background:rgba(255,255,255,.58);
+  border:1px solid rgba(255,255,255,.76);
+  box-shadow:0 5px 14px rgba(15,23,42,.08),inset 0 0 0 1px rgba(15,23,42,.06);
+}
+.robothfw-timebar-fill{
+  display:block;
+  width:100%;
+  height:100%;
+  border-radius:inherit;
+  background:#4ade80;
+}
+.robothfw-stage.is-counting-down .robothfw-timebar-fill{animation:robotHfwTimeDrain 6.2s linear forwards}
+.robothfw-status{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
 }
 
 .robothfw-robot{
@@ -12093,9 +12109,9 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 
 .robothfw-face{
   position:absolute;
-  left:50.1%;
-  top:49.1%;
-  width:22.5%;
+  left:50%;
+  top:49.2%;
+  width:24%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   pointer-events:none;
@@ -12105,25 +12121,25 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   position:absolute;
   inset:0;
   display:block;
-  background:url('tiles/robot-hfw/assets/expressions.png') no-repeat;
+  background:url('tiles/robot-hfw/assets/expressions.png?v=20260918-centered-1') no-repeat;
   background-size:400% 300%;
   background-position:0 0;
-  transform:translate(var(--face-x,0%),var(--face-y,0%)) scale(var(--face-scale,1));
+  transform:none;
   transform-origin:center;
   filter:drop-shadow(0 1px 0 rgba(255,255,255,.25)) drop-shadow(0 1px 5px rgba(17,24,39,.26));
 }
 
 .robothfw-thruster{
   position:absolute;
-  top:49.4%;
-  width:7%;
-  height:24%;
+  top:65%;
+  width:6%;
+  height:18%;
   transform:translateY(-50%);
   pointer-events:none;
 }
 
-.robothfw-thruster--left{left:9.1%}
-.robothfw-thruster--right{right:9.1%}
+.robothfw-thruster--left{left:18.2%}
+.robothfw-thruster--right{right:18.2%}
 
 .robothfw-thruster i,
 .robothfw-thruster b,
@@ -12189,7 +12205,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .robothfw-word-tag{
   position:absolute;
   left:50%;
-  top:82%;
+  top:79%;
   min-width:30%;
   max-width:72%;
   min-height:46px;
@@ -12202,14 +12218,15 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   display:grid;
   place-items:center;
 }
+.robothfw-word-tag[hidden]{display:none!important}
 
 .robothfw-word-tag::before,
 .robothfw-word-tag::after{
   content:'';
   position:absolute;
-  top:-28px;
+  top:-72px;
   width:2px;
-  height:28px;
+  height:72px;
   background:linear-gradient(180deg,rgba(100,116,139,.84),rgba(100,116,139,.22));
 }
 
@@ -12261,6 +12278,11 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   border-radius:26% 74% 62% 38%;
   box-shadow:0 0 10px rgba(148,163,184,.35);
 }
+.robothfw-particle--debris{
+  border-radius:3px;
+  background:linear-gradient(145deg,#dbe4ee,#64748b 62%,#334155);
+  box-shadow:0 1px 2px rgba(15,23,42,.32),0 0 9px rgba(255,255,255,.28);
+}
 
 .robothfw-shockwave{
   width:24px;
@@ -12271,6 +12293,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   opacity:.92;
   animation:robotHfwRing .68s ease-out forwards;
 }
+.robothfw-shockwave--late{animation-delay:.09s;opacity:.7}
 
 .robothfw-flash{
   width:72px;
@@ -12561,6 +12584,13 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 .context-menu__icon--robothfw svg{
   width:22px;
   height:22px;
+}
+
+@keyframes robotHfwTimeDrain{
+  0%{width:100%;background:#4ade80}
+  58%{background:#facc15}
+  82%{background:#fb923c}
+  100%{width:0;background:#ef4444}
 }
 
 @keyframes robotHfwArrive{
