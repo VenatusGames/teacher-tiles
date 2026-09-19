@@ -150,6 +150,9 @@
     const abortController = new AbortController();
     const {signal} = abortController;
     const timers = new Set();
+    const squishPrototype = new Audio('tiles/fly-swat/assets/squish.mp3');
+    squishPrototype.preload = 'auto';
+    const activeSquishes = new Set();
 
     let state = {
       mode: 'upper',
@@ -163,6 +166,33 @@
 
     function markChanged(reason) {
       if (typeof notifyBoardChanged === 'function') notifyBoardChanged(reason);
+    }
+
+    function uiSoundLevel() {
+      try {
+        const muted = localStorage.getItem('teachertiles-ui-sfx-muted') === 'true';
+        const preferences = JSON.parse(localStorage.getItem('teachertiles-app-preferences-v1') || '{}');
+        if (muted || preferences?.uiMuted) return 0;
+        const volume = Number(preferences?.uiVolume);
+        return clamp(Number.isFinite(volume) ? volume / 100 : 1, 0, 1);
+      } catch {
+        return 1;
+      }
+    }
+
+    function playSquish() {
+      const level = uiSoundLevel();
+      if (level <= 0 || !moduleElement.isConnected) return;
+      try {
+        const sound = squishPrototype.cloneNode();
+        sound.volume = clamp(.56 * level, 0, 1);
+        sound.currentTime = 0;
+        activeSquishes.add(sound);
+        const release = () => activeSquishes.delete(sound);
+        sound.addEventListener('ended', release, {once: true});
+        sound.addEventListener('error', release, {once: true});
+        sound.play().catch(release);
+      } catch {}
     }
 
     function remainingFlies() {
@@ -324,6 +354,7 @@
       fly.swatted = true;
       state[`${state.activeTeam}Score`] += 1;
       makeSplat(button, fly);
+      playSquish();
       button.disabled = true;
       button.classList.add('is-swatted');
       updateHud();
@@ -420,6 +451,11 @@
       resizeObserver.disconnect();
       timers.forEach(clearTimeout);
       timers.clear();
+      activeSquishes.forEach(sound => {
+        sound.pause();
+        try { sound.currentTime = 0; } catch {}
+      });
+      activeSquishes.clear();
       priorCleanup?.();
     };
 

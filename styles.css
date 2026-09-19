@@ -16481,22 +16481,23 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   color:var(--text)!important;
 }
 .timer-presets{
-  display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
+  display:flex;
   align-items:center;
+  justify-content:space-between;
   gap:5px;
-  width:calc(100% + 16px);
-  margin-inline:-8px;
+  width:100%;
+  padding-inline:2px;
+  box-sizing:border-box;
   align-self:center;
 }
 .timer-presets button{
-  width:100%;
-  min-width:0;
-  max-width:none;
-  height:auto;
-  min-height:0!important;
-  max-height:none;
-  aspect-ratio:1;
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  min-width:42px;
+  min-height:42px!important;
+  max-width:42px;
+  max-height:42px;
   padding:0!important;
   box-sizing:border-box;
   display:flex;
@@ -16504,11 +16505,10 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   justify-content:center;
   overflow:hidden;
   text-align:center;
-  font:750 clamp(10px,3cqw,12px)/1 Inter,system-ui,sans-serif;
+  font:750 clamp(11px,3.15cqw,13px)/1 Inter,system-ui,sans-serif;
   letter-spacing:-.025em;
   white-space:nowrap;
 }
-.timer-presets .timer-clear{font-size:clamp(9px,2.7cqw,11px)}
 :is(.timer-module,.interactive-module):is(.is-pointer-over,.has-keyboard-focus,:has(:focus-visible),.has-shape-shelf-open) .timer-controls{max-height:292px!important}
 .timer-custom-row{align-items:flex-end;gap:6px}
 .timer-custom-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;color:var(--module-text,var(--text));font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}
@@ -16529,6 +16529,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 .timer-set{height:32px;margin-top:12px}
 .timer-actions{gap:6px}
 .timer-actions button{min-width:76px}
+.timer-actions .timer-clear{font-size:inherit}
 .timer-shape-shelf,.interactive-type-shelf{gap:7px}
 .timer-shape-shelf button,.interactive-type-shelf button{padding:8px 6px!important}
 .timer-shape-shelf button svg{width:25px;height:25px}
