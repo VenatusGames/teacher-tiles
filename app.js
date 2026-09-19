@@ -209,6 +209,7 @@ const UI_SFX_KEY='teachertiles-ui-sfx-muted';
 const APP_PREFERENCES_KEY='teachertiles-app-preferences-v1';
 const DEFAULT_APP_PREFERENCES=Object.freeze({
   uiMuted:false,
+  masterVolume:100,
   uiVolume:100,
   scrollSpeed:100,
   defaultViewSize:100,
@@ -1112,10 +1113,12 @@ const APP_LANGUAGE_CODES=new Set(TRANSLATION_LANGUAGES.map(language=>language.co
 function normalizeAppPreferences(value={}){
   const source=value&&typeof value==='object'?value:{};
   const prefClamp=(number,min,max)=>Math.max(min,Math.min(max,number));
+  const rawMasterVolume=Number(source.masterVolume);
   const rawVolume=Number(source.uiVolume);
   const rawScroll=Number(source.scrollSpeed);
   return{
     uiMuted:Boolean(source.uiMuted),
+    masterVolume:prefClamp(Number.isFinite(rawMasterVolume)?rawMasterVolume:100,0,100),
     uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
     scrollSpeed:prefClamp(Number.isFinite(rawScroll)?rawScroll:100,50,175),
     defaultViewSize:[75,100,125,150].includes(Number(source.defaultViewSize))?Number(source.defaultViewSize):100,
@@ -1161,6 +1164,7 @@ function persistAppPreferences(){
 function boardPreferenceSnapshot(){
   return{
     uiMuted:Boolean(appPreferences.uiMuted),
+    masterVolume:Number.isFinite(Number(appPreferences.masterVolume))?Number(appPreferences.masterVolume):100,
     uiVolume:Number.isFinite(Number(appPreferences.uiVolume))?Number(appPreferences.uiVolume):100,
     scrollSpeed:Number(appPreferences.scrollSpeed)||100,
     defaultViewSize:Number(appPreferences.defaultViewSize)||100,
@@ -1182,15 +1186,18 @@ function tileAudioState(owner){
   if(!owner._tileAudioState)owner._tileAudioState=normalizeTileAudioState(null);
   return owner._tileAudioState;
 }
+function masterAudioLevel(){
+  return clamp((Number(appPreferences.masterVolume)||0)/100,0,1);
+}
 function globalUiAudioLevel(){
   if(appPreferences.uiMuted)return 0;
-  return clamp((Number(appPreferences.uiVolume)||0)/100,0,1);
+  return masterAudioLevel()*clamp((Number(appPreferences.uiVolume)||0)/100,0,1);
 }
 function tileAudioLevel(owner){
-  const globalLevel=globalUiAudioLevel();
-  if(!owner)return globalLevel;
+  const masterLevel=masterAudioLevel();
+  if(!owner)return masterLevel;
   const state=tileAudioState(owner);
-  return state.enabled?globalLevel*clamp(Number(state.volume)/100,0,1):0;
+  return state.enabled?masterLevel*clamp(Number(state.volume)/100,0,1):0;
 }
 function setTileAudioState(owner,value,{notify=true}={}){
   if(!owner)return normalizeTileAudioState(value);
@@ -1203,6 +1210,7 @@ function setTileAudioState(owner,value,{notify=true}={}){
   if(notify)notifyBoardChanged('tile-audio');
   return next;
 }
+window.TeacherTilesMasterAudioLevel=masterAudioLevel;
 window.TeacherTilesTileAudio=Object.freeze({
   level:tileAudioLevel,
   state:owner=>({...tileAudioState(owner)}),
@@ -1353,8 +1361,8 @@ const APP_TRANSLATIONS={
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
-    'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles interface sounds.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
-    'settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
+    'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles audio.','settings.mute.title':'Mute UI sounds','settings.mute.copy':'Silence button clicks and interface effects.',
+    'settings.masterVolume.title':'Master volume','settings.masterVolume.copy':'Controls the overall volume of all TeacherTiles audio.','settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
     'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Keep the fullscreen, pin, and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.',
@@ -1389,8 +1397,8 @@ const APP_TRANSLATIONS={
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
     'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
-    'settings.sound.title':'Sonido','settings.sound.copy':'Controla los sonidos de la interfaz de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
-    'settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
+    'settings.sound.title':'Sonido','settings.sound.copy':'Controla el audio de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
+    'settings.masterVolume.title':'Volumen maestro','settings.masterVolume.copy':'Controla el volumen general de todo el audio de TeacherTiles.','settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
     'settings.board.title':'Tablero','settings.board.copy':'Ajusta cómo se siente el lienzo mientras trabajas.','settings.scroll.title':'Velocidad de desplazamiento','settings.scroll.copy':'Cambia la sensibilidad del zoom con la rueda y del desplazamiento de las estanterías.',
     'settings.view.title':'Tamaño de vista predeterminado','settings.view.copy':'Define el zoom de trabajo y el tamaño inicial de los tableros nuevos.',
     'settings.deleteButtons.title':'Mostrar siempre las opciones del tile','settings.deleteButtons.copy':'Mantiene visibles los controles de pantalla completa, fijar y eliminar en cada tile en vez de mostrarlos solo cerca de la esquina superior derecha.',
@@ -1570,6 +1578,8 @@ function applyAppLanguage({load=true}={}){
 
 function updateSettingsControls(){
   const mute=document.getElementById('settings-ui-sfx-toggle');
+  const masterVolume=document.getElementById('settings-master-volume');
+  const masterVolumeOut=document.getElementById('settings-master-volume-value');
   const volume=document.getElementById('settings-ui-volume');
   const volumeOut=document.getElementById('settings-ui-volume-value');
   const scroll=document.getElementById('settings-scroll-speed');
@@ -1581,6 +1591,8 @@ function updateSettingsControls(){
     mute.setAttribute('aria-checked',String(Boolean(appPreferences.uiMuted)));
     mute.setAttribute('aria-label',appPreferences.uiMuted?'Turn UI sounds on':'Mute UI sounds');
   }
+  if(masterVolume)masterVolume.value=String(appPreferences.masterVolume);
+  if(masterVolumeOut)masterVolumeOut.textContent=`${Math.round(appPreferences.masterVolume)}%`;
   if(volume)volume.value=String(appPreferences.uiVolume);
   if(volumeOut)volumeOut.textContent=`${Math.round(appPreferences.uiVolume)}%`;
   if(scroll)scroll.value=String(appPreferences.scrollSpeed);
@@ -1614,7 +1626,7 @@ function applyAppPreferences(value,{persist=true,notify=false,applyView=false}={
   updateSettingsControls();
   applyTileDeleteVisibilityPreference();
   applyAppLanguage();
-  window.dispatchEvent(new CustomEvent('teachertiles:audiopreferenceschange',{detail:{uiMuted:appPreferences.uiMuted,uiVolume:appPreferences.uiVolume}}));
+  window.dispatchEvent(new CustomEvent('teachertiles:audiopreferenceschange',{detail:{masterVolume:appPreferences.masterVolume,uiMuted:appPreferences.uiMuted,uiVolume:appPreferences.uiVolume}}));
   if(applyView)setCurrentBoardViewSize(appPreferences.defaultViewSize);
   if(notify)notifyBoardChanged('preferences');
   return boardPreferenceSnapshot();
@@ -1641,6 +1653,7 @@ function setupSettingsHub(){
   const panes=[...document.querySelectorAll('[data-settings-pane]')];
   const title=document.getElementById('settings-title');
   const mute=document.getElementById('settings-ui-sfx-toggle');
+  const masterVolume=document.getElementById('settings-master-volume');
   const volume=document.getElementById('settings-ui-volume');
   const scroll=document.getElementById('settings-scroll-speed');
   const view=document.getElementById('settings-default-view');
@@ -1702,10 +1715,18 @@ function setupSettingsHub(){
     applyAppPreferences({uiMuted:!wasMuted},{notify:true});
     if(wasMuted)playUiSfx('click');
   });
+  masterVolume?.addEventListener('input',()=>{
+    appPreferences=normalizeAppPreferences({...appPreferences,masterVolume:Number(masterVolume.value)});
+    persistAppPreferences();
+    updateSettingsControls();
+    window.dispatchEvent(new CustomEvent('teachertiles:audiopreferenceschange',{detail:{masterVolume:appPreferences.masterVolume,uiMuted:appPreferences.uiMuted,uiVolume:appPreferences.uiVolume}}));
+  });
+  masterVolume?.addEventListener('change',()=>notifyBoardChanged('preferences'));
   volume?.addEventListener('input',()=>{
     appPreferences=normalizeAppPreferences({...appPreferences,uiVolume:Number(volume.value)});
     persistAppPreferences();
     updateSettingsControls();
+    window.dispatchEvent(new CustomEvent('teachertiles:audiopreferenceschange',{detail:{masterVolume:appPreferences.masterVolume,uiMuted:appPreferences.uiMuted,uiVolume:appPreferences.uiVolume}}));
   });
   volume?.addEventListener('change',()=>notifyBoardChanged('preferences'));
   scroll?.addEventListener('input',()=>{
@@ -3324,7 +3345,7 @@ function setupTileAudioSettings(m,type){
 
   const section=document.createElement('div');
   section.className='tile-audio-settings-section';
-  section.innerHTML='<strong>Audio</strong><div class="tile-audio-toggle-row"><span>Sound effects</span><button class="tile-audio-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn tile audio off"><i aria-hidden="true"></i></button></div><label class="tile-audio-volume-row"><span>Volume <output>100%</output></span><input class="tile-audio-volume" type="range" min="0" max="100" step="5" value="100" aria-label="Tile audio volume"></label><small>Uses the TeacherTiles sound setting as the master volume.</small>';
+  section.innerHTML='<strong>Audio</strong><div class="tile-audio-toggle-row"><span>Sound effects</span><button class="tile-audio-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn tile audio off"><i aria-hidden="true"></i></button></div><label class="tile-audio-volume-row"><span>Volume <output>100%</output></span><input class="tile-audio-volume" type="range" min="0" max="100" step="5" value="100" aria-label="Tile audio volume"></label><small>Master Volume still controls the overall output.</small>';
   panel.appendChild(section);
 
   const toggle=section.querySelector('.tile-audio-toggle');
@@ -8764,7 +8785,7 @@ function setupBoombox(m){
     {title:'Waterfall',src:'assets/soundscapes/Waterfall.mp3',vinyl:'#4b83b1',deep:'#285375',label:'#d5e8f5',text:'#24445b'},
     {title:'Ocean Waves',src:'assets/soundscapes/ocean-waves.mp3',vinyl:'#315f87',deep:'#173b5b',label:'#cfe2ef',text:'#203d53'}
   ];
-  const audio=m.querySelector('.boombox-audio'),titles=[...m.querySelectorAll('.boombox-title')],plays=[...m.querySelectorAll('.boombox-play')],prevs=[...m.querySelectorAll('.boombox-prev')],nexts=[...m.querySelectorAll('.boombox-next')],skips=[...m.querySelectorAll('.boombox-skip')],volumes=[...m.querySelectorAll('.boombox-volume')],volumeValues=[...m.querySelectorAll('.boombox-volume-value')],progresses=[...m.querySelectorAll('.boombox-progress span')],currents=[...m.querySelectorAll('.boombox-current')],durations=[...m.querySelectorAll('.boombox-duration')],styleButton=m.querySelector('.boombox-style-button'),styleMenu=m.querySelector('.boombox-style-menu');let index=0;
+  const audio=m.querySelector('.boombox-audio'),titles=[...m.querySelectorAll('.boombox-title')],plays=[...m.querySelectorAll('.boombox-play')],prevs=[...m.querySelectorAll('.boombox-prev')],nexts=[...m.querySelectorAll('.boombox-next')],skips=[...m.querySelectorAll('.boombox-skip')],volumes=[...m.querySelectorAll('.boombox-volume')],volumeValues=[...m.querySelectorAll('.boombox-volume-value')],progresses=[...m.querySelectorAll('.boombox-progress span')],currents=[...m.querySelectorAll('.boombox-current')],durations=[...m.querySelectorAll('.boombox-duration')],styleButton=m.querySelector('.boombox-style-button'),styleMenu=m.querySelector('.boombox-style-menu');let index=0,userVolume=55;
   const fmt=n=>{if(!Number.isFinite(n))return'0:00';n=Math.max(0,Math.floor(n));return`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`};
   const each=(arr,fn)=>arr.forEach(fn);
   const renderPlay=()=>{each(plays,b=>{b.textContent=audio.paused?(b.closest('.boombox-view--ipod')?'▶❚❚':'▶'):'❚❚';b.classList.toggle('is-playing',!audio.paused)});m.classList.toggle('is-playing',!audio.paused)};
@@ -8806,7 +8827,10 @@ function setupBoombox(m){
   each(prevs,b=>b.addEventListener('click',()=>load(index-1,!audio.paused)));
   each(nexts,b=>b.addEventListener('click',()=>load(index+1,!audio.paused)));
   each(skips,b=>b.addEventListener('click',()=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+15)}));
-  const setVolume=v=>{v=clamp(Number(v),0,100);audio.volume=v/100;each(volumes,x=>{if(Number(x.value)!==v)x.value=v});each(volumeValues,x=>x.textContent=`${Math.round(v)}%`)};
+  const applyBoomboxVolume=()=>{audio.volume=clamp((userVolume/100)*masterAudioLevel(),0,1)};
+  const setVolume=v=>{userVolume=clamp(Number(v),0,100);applyBoomboxVolume();each(volumes,x=>{if(Number(x.value)!==userVolume)x.value=userVolume});each(volumeValues,x=>x.textContent=`${Math.round(userVolume)}%`)};
+  const onBoomboxAudioPreferences=()=>applyBoomboxVolume();
+  window.addEventListener('teachertiles:audiopreferenceschange',onBoomboxAudioPreferences);
   each(volumes,v=>v.addEventListener('input',()=>setVolume(v.value)));
   const setStyle=style=>{
     m.dataset.playerStyle=style;
@@ -8843,7 +8867,7 @@ function setupBoombox(m){
   setVolume(55);setStyle('compact');load(0,false);
   m._boardGetState=()=>({
     track:index,
-    volume:Math.round(audio.volume*100),
+    volume:Math.round(userVolume),
     playerStyle:m.dataset.playerStyle||'compact',
     currentTime:Number.isFinite(audio.currentTime)?audio.currentTime:0
   });
@@ -8858,7 +8882,7 @@ function setupBoombox(m){
       audio.addEventListener('loadedmetadata',()=>{try{audio.currentTime=Math.min(restoreTime,audio.duration||restoreTime)}catch{}},{once:true});
     }
   };
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();boomboxResizeObserver.disconnect();document.removeEventListener('pointerdown',m._boomboxOutside);audio.pause();audio.removeAttribute('src');audio.load()}
+  const prior=m._cleanup;m._cleanup=()=>{prior?.();boomboxResizeObserver.disconnect();document.removeEventListener('pointerdown',m._boomboxOutside);window.removeEventListener('teachertiles:audiopreferenceschange',onBoomboxAudioPreferences);audio.pause();audio.removeAttribute('src');audio.load()}
 }
 
 function setupTextBubble(m){
@@ -8931,6 +8955,7 @@ function setupDictionary(m){
     if(url){
       const resolved=url.startsWith('//')?`https:${url}`:url;
       const audio=new Audio(resolved);
+      audio.volume=masterAudioLevel();
       activeAudio=audio;
       const finishAudio=()=>{finish();if(activeAudio===audio)activeAudio=null};
       audio.addEventListener('ended',finishAudio,{once:true});
@@ -8942,11 +8967,15 @@ function setupDictionary(m){
       speechSynthesis.cancel();
       const utterance=new SpeechSynthesisUtterance(word);
       utterance.rate=.82;
+      utterance.volume=masterAudioLevel();
       utterance.addEventListener('end',finish,{once:true});
       utterance.addEventListener('error',finish,{once:true});
       speechSynthesis.speak(utterance);
     }else finish();
   };
+
+  const onDictionaryAudioPreferences=()=>{if(activeAudio)activeAudio.volume=masterAudioLevel()};
+  window.addEventListener('teachertiles:audiopreferenceschange',onDictionaryAudioPreferences);
 
   const renderEntries=(animate=true)=>{
     results.replaceChildren();
@@ -9176,6 +9205,7 @@ function setupDictionary(m){
     prior?.();
     requestController?.abort();
     activeAudio?.pause();
+    window.removeEventListener('teachertiles:audiopreferenceschange',onDictionaryAudioPreferences);
     if('speechSynthesis'in window)speechSynthesis.cancel();
   };
 }

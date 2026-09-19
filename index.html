@@ -744,12 +744,16 @@
             <div class="settings-card">
               <div class="settings-card__title">
                 <span class="settings-card__glyph" aria-hidden="true">♪</span>
-                <div><strong data-i18n="settings.sound.title">Sound</strong><small data-i18n="settings.sound.copy">Control TeacherTiles interface sounds.</small></div>
+                <div><strong data-i18n="settings.sound.title">Sound</strong><small data-i18n="settings.sound.copy">Control TeacherTiles audio.</small></div>
               </div>
               <div class="settings-row settings-row--switch">
                 <div><strong data-i18n="settings.mute.title">Mute UI sounds</strong><small data-i18n="settings.mute.copy">Silence button clicks and interface effects.</small></div>
                 <button id="settings-ui-sfx-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Mute UI sounds"><span></span></button>
               </div>
+              <label class="settings-row settings-row--range" for="settings-master-volume">
+                <div><strong data-i18n="settings.masterVolume.title">Master volume</strong><small data-i18n="settings.masterVolume.copy">Controls the overall volume of all TeacherTiles audio.</small></div>
+                <div class="settings-range-control"><input id="settings-master-volume" type="range" min="0" max="100" step="5" value="100"><output id="settings-master-volume-value">100%</output></div>
+              </label>
               <label class="settings-row settings-row--range" for="settings-ui-volume">
                 <div><strong data-i18n="settings.volume.title">UI volume</strong><small data-i18n="settings.volume.copy">Adjust the volume of interface sound effects.</small></div>
                 <div class="settings-range-control"><input id="settings-ui-volume" type="range" min="0" max="100" step="5" value="100"><output id="settings-ui-volume-value">100%</output></div>
