@@ -14448,9 +14448,35 @@ function setupRobotHfw(m){
     const popped=power==='pop';
     const warmColor=popped?'rgba(255,173,31,.98)':'rgba(248,113,113,.94)';
     const coolColor=popped?'rgba(191,219,254,.96)':'rgba(255,255,255,.95)';
-    createParticle(`robothfw-comic-burst${popped?'':' robothfw-comic-burst--small'}`,x,y,{
-      '--comic-burst-spin':`${Math.round(Math.random()*18-9)}deg`
-    },980);
+
+    createParticle('robothfw-comic-burst robothfw-comic-burst--behind',x,y,{
+      '--comic-burst-spin':`${Math.round(Math.random()*12-6)}deg`,
+      '--comic-size':popped?'250px':'180px',
+      '--comic-duration':popped?'.96s':'.76s'
+    },1100);
+    createParticle(`robothfw-comic-burst robothfw-comic-burst--front${popped?'':' robothfw-comic-burst--small'}`,x,y,{
+      '--comic-burst-spin':`${Math.round(Math.random()*18-9)}deg`,
+      '--comic-size':popped?'216px':'154px',
+      '--comic-duration':popped?'.86s':'.72s'
+    },1000);
+
+    const miniCount=popped?6:3;
+    for(let i=0;i<miniCount;i++){
+      const angle=Math.random()*Math.PI*2;
+      const distance=(popped?48:32)+Math.random()*(popped?82:48);
+      const behind=i%2===0;
+      const delay=55+i*42+Math.random()*65;
+      createParticle(`robothfw-comic-burst robothfw-comic-burst--mini ${behind?'robothfw-comic-burst--behind':'robothfw-comic-burst--front'}`,
+        x+Math.cos(angle)*distance,
+        y+Math.sin(angle)*distance*.7,
+        {
+          '--comic-burst-spin':`${Math.round(Math.random()*34-17)}deg`,
+          '--comic-size':`${Math.round((popped?58:42)+Math.random()*(popped?56:38))}px`,
+          '--comic-duration':`${(.46+Math.random()*.24).toFixed(2)}s`,
+          '--comic-delay':`${Math.round(delay)}ms`
+        },1200);
+    }
+
     createBurst(x,y,{count:popped?38:22,color:warmColor,size:popped?16:10,spread:popped?148:92,className:'robothfw-particle robothfw-particle--spark'});
     createBurst(x,y,{count:popped?22:12,color:coolColor,size:popped?11:8,spread:popped?112:62,className:'robothfw-particle robothfw-particle--metal'});
     createBurst(x,y,{count:popped?14:8,color:'rgba(71,85,105,.86)',size:popped?9:7,spread:popped?132:70,className:'robothfw-particle robothfw-particle--debris'});
@@ -14481,6 +14507,7 @@ function setupRobotHfw(m){
   };
   const clearRobotStateClasses=()=>robot.classList.remove('is-hidden','is-arriving','is-live','is-warning','is-angry','is-popped','is-blasting','is-escaping');
   const clearVisibleWord=()=>{
+    wordTag.classList.remove('is-deploying');
     wordTag.hidden=true;
     wordVisible=false;
     wordEl.textContent='';
@@ -14554,7 +14581,10 @@ function setupRobotHfw(m){
       if(phase!=='intro')return;
       applyWord(incomingWord||next);
       incomingWord='';
+      wordTag.classList.remove('is-deploying');
       wordTag.hidden=false;
+      void wordTag.offsetWidth;
+      wordTag.classList.add('is-deploying');
       wordVisible=true;
       robot.classList.add('is-live');
       phase='active';
@@ -14562,6 +14592,7 @@ function setupRobotHfw(m){
       updateWordFit();
       updateHud();
       syncRocketLoop();
+      schedule(()=>wordTag.classList.remove('is-deploying'),720);
       startWarnings();
     },790);
   };

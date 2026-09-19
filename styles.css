@@ -12035,6 +12035,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 
 .robothfw-robot{
   position:absolute;
+  z-index:3;
   left:50%;
   top:56%;
   width:min(58%,410px);
@@ -12142,8 +12143,8 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   pointer-events:none;
 }
 
-.robothfw-thruster--left{left:19.8%}
-.robothfw-thruster--right{right:19.8%}
+.robothfw-thruster--left{left:19.1%}
+.robothfw-thruster--right{right:20.5%}
 
 .robothfw-thruster i,
 .robothfw-thruster b,
@@ -12224,6 +12225,12 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   place-items:center;
 }
 .robothfw-word-tag[hidden]{display:none!important}
+.robothfw-word-tag.is-deploying{
+  animation:robotHfwCardDeploy .64s cubic-bezier(.2,.78,.24,1) both;
+}
+.robothfw-word-tag.is-deploying .robothfw-word{
+  animation:robotHfwWordReveal .3s ease .22s both;
+}
 
 .robothfw-word-tag::before,
 .robothfw-word-tag::after{
@@ -12238,6 +12245,11 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 
 .robothfw-word-tag::before{left:26%}
 .robothfw-word-tag::after{right:26%}
+.robothfw-word-tag.is-deploying::before,
+.robothfw-word-tag.is-deploying::after{
+  transform-origin:50% 0;
+  animation:robotHfwStringDeploy .64s cubic-bezier(.2,.78,.24,1) both;
+}
 
 .robothfw-word{
   display:block;
@@ -12321,19 +12333,18 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
 }
 
 .robothfw-comic-burst{
-  width:210px;
-  height:210px;
+  width:var(--comic-size,210px);
+  height:var(--comic-size,210px);
   background:url('tiles/robot-hfw/assets/explosion-burst.png') center/contain no-repeat;
   transform:translate(-50%,-50%) rotate(var(--comic-burst-spin,0deg)) scale(.18);
   transform-origin:center;
   filter:drop-shadow(0 10px 16px rgba(15,23,42,.12));
-  animation:robotHfwComicBurst .86s cubic-bezier(.16,.8,.24,1) forwards;
+  animation:robotHfwComicBurst var(--comic-duration,.86s) cubic-bezier(.16,.8,.24,1) var(--comic-delay,0ms) forwards;
 }
-.robothfw-comic-burst--small{
-  width:154px;
-  height:154px;
-  opacity:.9;
-}
+.robothfw-comic-burst--front{z-index:7}
+.robothfw-comic-burst--behind{z-index:2}
+.robothfw-comic-burst--small{opacity:.9}
+.robothfw-comic-burst--mini{filter:drop-shadow(0 5px 8px rgba(15,23,42,.1))}
 
 .robothfw-endcard{
   position:absolute;
@@ -12665,6 +12676,24 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   0%{opacity:0;transform:translateX(-50%) scaleY(.2)}
   35%{opacity:1;transform:translateX(-50%) scaleY(1)}
   100%{opacity:0;transform:translateX(-50%) scaleY(1.16)}
+}
+
+@keyframes robotHfwCardDeploy{
+  0%{opacity:0;transform:translate(-50%,-66px) scale(.88)}
+  34%{opacity:1;transform:translate(-50%,-44px) scale(.95)}
+  78%{opacity:1;transform:translate(-50%,5px) scale(1.015)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+
+@keyframes robotHfwStringDeploy{
+  0%{opacity:.18;transform:scaleY(.28)}
+  30%{opacity:.72;transform:scaleY(.52)}
+  100%{opacity:1;transform:scaleY(1)}
+}
+
+@keyframes robotHfwWordReveal{
+  0%{opacity:0;transform:translateY(-4px) scale(.96)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
 }
 
 @keyframes robotHfwBurst{
