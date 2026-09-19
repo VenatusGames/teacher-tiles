@@ -26,10 +26,10 @@
 .flyswat-board{
   position:absolute;
   z-index:1;
-  left:0;
-  right:0;
-  top:48px;
-  bottom:0;
+  left:10px;
+  right:10px;
+  top:50px;
+  bottom:58px;
   overflow:hidden;
 }
 .flyswat-status{
@@ -85,17 +85,16 @@
   z-index:2;
   display:grid;
   place-items:center;
-  min-width:42%;
-  min-height:30%;
-  padding:2px 8px;
-  margin-top:-2%;
+  min-width:36%;
+  min-height:24%;
+  padding:2px 5px;
+  margin-top:0;
   border-radius:999px;
-  background:rgba(255,255,255,.98);
-  border:2px solid rgba(28,34,45,.92);
-  box-shadow:0 2px 0 rgba(255,255,255,.9),0 4px 10px rgba(15,23,42,.2);
+  background:#fff;
+  box-shadow:0 1px 3px #17203326;
   color:#1f2937;
-  font:900 clamp(14px,3.6cqw,27px)/1 var(--module-font,Inter,system-ui,sans-serif);
-  letter-spacing:-.04em;
+  font:700 clamp(13px,3.2cqw,22px)/1.1 var(--module-font,Inter,system-ui,sans-serif);
+  letter-spacing:-.03em;
   text-shadow:none;
   pointer-events:none;
   animation:flySwatLabelUpright var(--fly-duration,30s) ease-in-out var(--fly-delay,0s) infinite;
@@ -252,5 +251,5 @@
 }
 
 @container (max-height:390px){
-  .flyswat-board{top:44px}
+  .flyswat-board{top:44px;bottom:52px;left:8px;right:8px}
 }

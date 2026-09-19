@@ -37,9 +37,9 @@
   }
 
   function layoutForCount(count) {
-    if (count <= 10) return {cols: 5, rows: 2, xMin: 12, xMax: 88, yMin: 17, yMax: 54};
-    if (count <= 20) return {cols: 5, rows: 4, xMin: 11, xMax: 89, yMin: 12, yMax: 63};
-    return {cols: 6, rows: 5, xMin: 9, xMax: 91, yMin: 9, yMax: 65};
+    if (count <= 10) return {cols: 5, rows: 2, xMin: 15, xMax: 85, yMin: 18, yMax: 49};
+    if (count <= 20) return {cols: 5, rows: 4, xMin: 14, xMax: 86, yMin: 14, yMax: 57};
+    return {cols: 6, rows: 5, xMin: 12, xMax: 88, yMin: 12, yMax: 59};
   }
 
   function crawlPath() {
@@ -119,8 +119,8 @@
     return shuffle(cells).slice(0, count).map((cell, index) => ({
       id: `${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 7)}`,
       label: labels[index],
-      x: clamp(cell.x, 6, 94),
-      y: clamp(cell.y, 6, 68),
+      x: clamp(cell.x, 10, 90),
+      y: clamp(cell.y, 10, 62),
       hue: Math.round(random(0, 360)),
       ...crawlPath(),
       swatted: false
@@ -384,8 +384,8 @@
           ? savedFlies.map((fly, index) => ({
               id: String(fly.id || `restored-${index}`),
               label: String(fly.label ?? '?'),
-              x: clamp(Number(fly.x) || 50, 6, 94),
-              y: clamp(Number(fly.y) || 40, 6, 68),
+              x: clamp(Number(fly.x) || 50, 10, 90),
+              y: clamp(Number(fly.y) || 40, 10, 62),
               hue: Number.isFinite(Number(fly.hue)) ? Number(fly.hue) : Math.round(random(0, 360)),
               ...normalizeCrawl(fly),
               swatted: Boolean(fly.swatted)
