@@ -1376,7 +1376,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],chime:['Chime','Ring a meditation chime'],transitionbell:['Transition Bell','Ring a classroom transition bell'],
     interactive:['Interactive Timers','Hourglass, candle, rocket, and sunflower'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
-    abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],wordweb:['Word Web','Connect related words around a central idea'],venndiagram:['Venn Diagrams','Compare ideas with editable, draggable sets'],essentialquestion:['Essential Question','Display a quoted essential question with an optional subheading'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
+    abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],robothfw:['Robot HFW','Blast flying robots carrying sight words'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],wordweb:['Word Web','Connect related words around a central idea'],venndiagram:['Venn Diagrams','Compare ideas with editable, draggable sets'],essentialquestion:['Essential Question','Display a quoted essential question with an optional subheading'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Detector','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','Use a stoplight for various visual cues'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
@@ -1391,7 +1391,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],chime:['Campanilla','Haz sonar una campanilla de meditación'],transitionbell:['Campana de transición','Haz sonar una campana de transición del aula'],
     interactive:['Temporizadores interactivos','Reloj de arena, vela, cohete y girasol'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],imagesearch:['Buscar imágenes','Busca imágenes y arrástralas al tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
-    abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],wordweb:['Red de palabras','Conecta palabras relacionadas alrededor de una idea central'],venndiagram:['Diagramas de Venn','Compara ideas con conjuntos editables y arrastrables'],essentialquestion:['Pregunta esencial','Muestra una pregunta esencial entre comillas con un subtítulo opcional'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
+    abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],robothfw:['Robot HFW','Explota robots voladores con palabras de uso frecuente'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],wordweb:['Red de palabras','Conecta palabras relacionadas alrededor de una idea central'],venndiagram:['Diagramas de Venn','Compara ideas con conjuntos editables y arrastrables'],essentialquestion:['Pregunta esencial','Muestra una pregunta esencial entre comillas con un subtítulo opcional'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
     hundredschart:['Tabla del 100','Oculta, revela y resalta del 1 al 100'],tenframes:['Marcos de diez','Construye cantidades con fichas arrastrables'],ruler:['Regla','Mide con puntos de regla arrastrables'],calculator:['Calculadora','Calculadora básica para el aula'],
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
@@ -3277,6 +3277,7 @@ function setupModuleByType(m,type){
   if(type==='minesweeper')setupMinesweeper(m);
   if(type==='cvcword')setupCVCWord(m);
   if(type==='highfrequency')setupHighFrequencyWords(m);
+  if(type==='robothfw')setupRobotHfw(m);
   if(type==='customflashcards')setupCustomFlashcards(m);
   if(type==='abc')setupABC(m);
   if(type==='numberflashcards')setupNumberFlashcards(m);
@@ -14025,6 +14026,485 @@ function setupHighFrequencyWords(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
+    ro.disconnect();
+    cancelAnimationFrame(resizeFrame);
+    measurer.remove();
+  };
+}
+
+
+function setupRobotHfw(m){
+  const stage=m.querySelector('.robothfw-stage');
+  const robot=m.querySelector('.robothfw-robot');
+  const face=m.querySelector('.robothfw-face-sprite');
+  const wordTag=m.querySelector('.robothfw-word-tag');
+  const wordEl=m.querySelector('.robothfw-word');
+  const statusEl=m.querySelector('.robothfw-status');
+  const gradeLabel=m.querySelector('.robothfw-grade-label');
+  const gradeSelect=m.querySelector('.robothfw-grade');
+  const leftCount=m.querySelector('.robothfw-left-count');
+  const scoreCount=m.querySelector('.robothfw-score-count');
+  const healthText=m.querySelector('.robothfw-health-text');
+  const healthFill=m.querySelector('.robothfw-health-fill');
+  const settingsButton=m.querySelector('.robothfw-settings-button');
+  const settings=m.querySelector('.robothfw-settings');
+  const settingsClose=m.querySelector('.robothfw-settings-close');
+  const settingsTitle=m.querySelector('.robothfw-settings-title');
+  const wordOptions=m.querySelector('.robothfw-word-options');
+  const enableAll=m.querySelector('.robothfw-enable-all');
+  const disableAll=m.querySelector('.robothfw-disable-all');
+  const enabledCount=m.querySelector('.robothfw-enabled-count');
+  const endcard=m.querySelector('.robothfw-endcard');
+  const endcardTitle=m.querySelector('.robothfw-endcard-title');
+  const endcardCopy=m.querySelector('.robothfw-endcard-copy');
+  const resetButtons=m.querySelectorAll('.robothfw-reset');
+
+  const gradeNames={
+    k:'Kindergarten Pack',
+    1:'Grade 1 Pack',
+    2:'Grade 2 Pack',
+    '3plus':'Grade 3+ Pack'
+  };
+
+  const faceMap={
+    idle:'0% 0%',
+    happy:'33.333% 0%',
+    alert:'66.666% 0%',
+    exclaim:'100% 50%',
+    warn:'33.333% 50%',
+    angry:'33.333% 100%',
+    furious:'66.666% 100%',
+    blast:'100% 100%',
+    dizzy:'66.666% 50%'
+  };
+
+  const enabledByGrade={};
+  Object.entries(HIGH_FREQUENCY_WORD_SETS).forEach(([grade,words])=>{
+    enabledByGrade[grade]=new Set(words);
+  });
+
+  const timers=new Set();
+  const maxHealth=5;
+  let health=maxHealth;
+  let currentWord='';
+  let queue=[];
+  let completed=0;
+  let totalWords=0;
+  let phase='empty';
+  let wordVisible=false;
+  let resizeFrame=0;
+
+  const measurer=document.createElement('span');
+  measurer.className='robothfw-word robothfw-measurer';
+  measurer.setAttribute('aria-hidden','true');
+  stage.appendChild(measurer);
+
+  const schedule=(fn,delay)=>{
+    const timer=window.setTimeout(()=>{
+      timers.delete(timer);
+      fn();
+    },delay);
+    timers.add(timer);
+    return timer;
+  };
+
+  const clearTimers=()=>{
+    for(const timer of timers)window.clearTimeout(timer);
+    timers.clear();
+  };
+
+  const shuffle=list=>{
+    const copy=[...list];
+    for(let i=copy.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [copy[i],copy[j]]=[copy[j],copy[i]];
+    }
+    return copy;
+  };
+
+  const measureWordSize=word=>{
+    const rect=wordTag.getBoundingClientRect();
+    const maxWidth=Math.max(84,rect.width-20);
+    const maxHeight=Math.max(28,rect.height-10);
+
+    measurer.textContent=word;
+    const computed=getComputedStyle(wordEl);
+    measurer.style.fontFamily=computed.fontFamily;
+    measurer.style.fontWeight=computed.fontWeight;
+    measurer.style.letterSpacing=computed.letterSpacing;
+
+    let low=12;
+    let high=Math.max(18,Math.min(42,Math.floor(maxHeight*1.35)));
+    let best=low;
+
+    while(low<=high){
+      const mid=Math.floor((low+high)/2);
+      measurer.style.fontSize=`${mid}px`;
+      const measured=measurer.getBoundingClientRect();
+      if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
+        best=mid;
+        low=mid+1;
+      }else high=mid-1;
+    }
+    return best;
+  };
+
+  const enabledWords=grade=>HIGH_FREQUENCY_WORD_SETS[grade].filter(word=>enabledByGrade[grade].has(word));
+
+  const setFace=key=>{
+    face.style.backgroundPosition=faceMap[key]||faceMap.idle;
+  };
+
+  const totalRemaining=()=>queue.length+(currentWord&&phase!=='won'&&phase!=='lost'?1:0);
+
+  const updateHud=()=>{
+    leftCount.textContent=String(totalRemaining());
+    scoreCount.textContent=String(completed);
+    healthText.textContent=`${health} / ${maxHealth}`;
+    healthFill.style.width=`${Math.max(0,health/maxHealth)*100}%`;
+    gradeLabel.textContent=gradeNames[m.dataset.hfwGrade||'k'];
+  };
+
+  const updateWordFit=()=>{
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame=requestAnimationFrame(()=>{
+      if(!currentWord||wordTag.hidden)return;
+      wordEl.style.fontSize=`${measureWordSize(currentWord)}px`;
+    });
+  };
+
+  const setStatus=message=>{
+    statusEl.textContent=message;
+  };
+
+  const showEndcard=(title,copy)=>{
+    endcardTitle.textContent=title;
+    endcardCopy.textContent=copy;
+    endcard.hidden=false;
+    robot.classList.add('is-hidden');
+  };
+
+  const createBurst=(x,y,{count=12,color='rgba(255,188,75,.95)',size=12}={})=>{
+    for(let i=0;i<count;i++){
+      const particle=document.createElement('span');
+      particle.className='robothfw-particle';
+      particle.style.left=`${x}px`;
+      particle.style.top=`${y}px`;
+      particle.style.setProperty('--burst-size',`${Math.max(6,size+Math.random()*size)}px`);
+      particle.style.setProperty('--burst-color',i%3===0?'rgba(255,255,255,.96)':color);
+      particle.style.setProperty('--burst-x',`${(Math.random()*2-1)*(36+Math.random()*58)}px`);
+      particle.style.setProperty('--burst-y',`${(Math.random()*2-1)*(26+Math.random()*42)}px`);
+      particle.style.setProperty('--burst-rot',`${(Math.random()*560)-280}deg`);
+      stage.appendChild(particle);
+      schedule(()=>particle.remove(),700);
+    }
+  };
+
+  const robotCenter=()=>{
+    const stageRect=stage.getBoundingClientRect();
+    const rect=robot.getBoundingClientRect();
+    return {x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.48};
+  };
+
+  const applyWord=word=>{
+    currentWord=word;
+    wordEl.textContent=word;
+    wordEl.style.fontSize=`${measureWordSize(word)}px`;
+    robot.setAttribute('aria-label',`Tap the robot carrying ${word}`);
+  };
+
+  const startWarnings=()=>{
+    schedule(()=>{
+      if(phase!=='active')return;
+      phase='warn';
+      setFace('warn');
+      robot.classList.add('is-warning');
+      setStatus(`${currentWord} is getting suspicious… tap it now!`);
+      updateHud();
+    },2200);
+
+    schedule(()=>{
+      if(phase!=='warn')return;
+      phase='angry';
+      setFace('angry');
+      robot.classList.add('is-angry');
+      setStatus(`${currentWord} is furious! Tap it before it blasts you!`);
+      updateHud();
+    },4200);
+
+    schedule(()=>{
+      if(!['active','warn','angry'].includes(phase))return;
+      blastPlayer();
+    },6200);
+  };
+
+  const spawnRobot=()=>{
+    clearTimers();
+    endcard.hidden=true;
+    robot.disabled=false;
+    robot.className='robothfw-robot is-arriving';
+    wordTag.hidden=true;
+    wordVisible=false;
+    currentWord='';
+    updateHud();
+
+    if(health<=0){
+      phase='lost';
+      setStatus('You are out of health. Reset to try again.');
+      showEndcard('Game over','The robots blasted through your health bar.');
+      return;
+    }
+
+    if(!queue.length){
+      phase='won';
+      setStatus('You cleared the whole pack!');
+      showEndcard('Pack complete!','Every robot in this pack has been popped.');
+      return;
+    }
+
+    const next=queue.shift();
+    currentWord=next;
+    phase='intro';
+    robot.classList.remove('is-hidden');
+    setFace('exclaim');
+    setStatus('Incoming robot! Get ready…');
+    updateHud();
+
+    schedule(()=>{
+      applyWord(next);
+      wordTag.hidden=false;
+      wordVisible=true;
+      robot.classList.add('is-live');
+      phase='active';
+      setFace(Math.random()>.5?'idle':'happy');
+      setStatus(`Tap the robot carrying “${next}” before it blasts you.`);
+      updateWordFit();
+      updateHud();
+      startWarnings();
+    },700);
+  };
+
+  function blastPlayer(){
+    clearTimers();
+    phase='blasting';
+    health=Math.max(0,health-1);
+    setFace('blast');
+    robot.disabled=true;
+    robot.classList.add('is-blasting');
+    stage.classList.add('is-hit');
+    setStatus(`Ouch! ${currentWord} blasted you.`);
+    updateHud();
+    const {x,y}=robotCenter();
+    createBurst(x,y,{count:10,color:'rgba(251,113,133,.92)',size:10});
+    schedule(()=>stage.classList.remove('is-hit'),360);
+    schedule(()=>{
+      robot.classList.remove('is-blasting');
+      robot.classList.add('is-escaping');
+      setFace('furious');
+    },180);
+    schedule(()=>spawnRobot(),1040);
+    notifyBoardChanged('robot-hfw-blast');
+  }
+
+  const popRobot=()=>{
+    if(!['intro','active','warn','angry'].includes(phase))return;
+    clearTimers();
+    phase='popped';
+    completed+=1;
+    robot.disabled=true;
+    robot.classList.add('is-popped');
+    setFace('dizzy');
+    setStatus(`Nice! You popped “${currentWord}”.`);
+    updateHud();
+    const {x,y}=robotCenter();
+    createBurst(x,y,{count:16,color:'rgba(255,201,72,.96)',size:13});
+    schedule(()=>spawnRobot(),820);
+    notifyBoardChanged('robot-hfw-pop');
+  };
+
+  const renderSettings=()=>{
+    const grade=m.dataset.hfwGrade||'k';
+    const words=HIGH_FREQUENCY_WORD_SETS[grade];
+    const enabled=enabledByGrade[grade];
+
+    settingsTitle.textContent=gradeNames[grade];
+    enabledCount.textContent=`${enabled.size} of ${words.length} enabled`;
+    wordOptions.replaceChildren();
+
+    words.forEach(word=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='robothfw-word-option';
+      button.textContent=word;
+      button.classList.toggle('is-enabled',enabled.has(word));
+      button.setAttribute('aria-pressed',String(enabled.has(word)));
+      button.addEventListener('click',()=>{
+        if(enabled.has(word))enabled.delete(word);
+        else enabled.add(word);
+        button.classList.toggle('is-enabled',enabled.has(word));
+        button.setAttribute('aria-pressed',String(enabled.has(word)));
+        enabledCount.textContent=`${enabled.size} of ${words.length} enabled`;
+        resetRound(false);
+        renderSettings();
+      });
+      wordOptions.appendChild(button);
+    });
+  };
+
+  const resetRound=(notify=true)=>{
+    clearTimers();
+    const grade=m.dataset.hfwGrade||'k';
+    queue=shuffle(enabledWords(grade));
+    totalWords=queue.length;
+    completed=0;
+    health=maxHealth;
+    currentWord='';
+    wordVisible=false;
+    robot.className='robothfw-robot is-hidden';
+    wordTag.hidden=true;
+    stage.classList.remove('is-hit');
+    renderSettings();
+    if(!totalWords){
+      phase='empty';
+      endcard.hidden=false;
+      endcardTitle.textContent='No words enabled';
+      endcardCopy.textContent='Open settings and turn on at least one word for this pack.';
+      setFace('alert');
+      setStatus('No words are enabled for this pack.');
+      updateHud();
+    }else{
+      setStatus('Tap the robot before it blasts you.');
+      updateHud();
+      spawnRobot();
+    }
+    if(notify)notifyBoardChanged('robot-hfw-reset');
+  };
+
+  const setGrade=grade=>{
+    const next=grade in gradeNames?grade:'k';
+    m.dataset.hfwGrade=next;
+    gradeSelect.value=next;
+    gradeLabel.textContent=gradeNames[next];
+    resetRound(true);
+  };
+
+  robot.addEventListener('click',popRobot);
+  gradeSelect.addEventListener('change',()=>setGrade(gradeSelect.value));
+  settingsButton.addEventListener('click',()=>{
+    renderSettings();
+    settings.hidden=false;
+  });
+  settingsClose.addEventListener('click',()=>{settings.hidden=true;});
+  settings.addEventListener('pointerdown',event=>{
+    if(event.target===settings)settings.hidden=true;
+  });
+  enableAll.addEventListener('click',()=>{
+    const grade=m.dataset.hfwGrade||'k';
+    enabledByGrade[grade]=new Set(HIGH_FREQUENCY_WORD_SETS[grade]);
+    resetRound(true);
+  });
+  disableAll.addEventListener('click',()=>{
+    const grade=m.dataset.hfwGrade||'k';
+    enabledByGrade[grade].clear();
+    resetRound(true);
+  });
+  resetButtons.forEach(button=>button.addEventListener('click',()=>resetRound(true)));
+
+  m.querySelector('.robothfw-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
+  m.querySelector('.robothfw-font').addEventListener('click',()=>{
+    cycleData(m,'font',FONT_OPTIONS);
+    updateWordFit();
+  });
+  m.querySelector('.robothfw-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
+
+  const ro=new ResizeObserver(()=>{
+    if(wordVisible)updateWordFit();
+  });
+  ro.observe(stage);
+  ro.observe(wordTag);
+
+  resetRound(false);
+
+  m._boardGetState=()=>({
+    grade:m.dataset.hfwGrade||'k',
+    enabledByGrade:Object.fromEntries(Object.entries(enabledByGrade).map(([grade,set])=>[grade,[...set]])),
+    queue:[...queue],
+    completed,
+    totalWords,
+    health,
+    currentWord,
+    phase,
+    wordVisible,
+    endcardHidden:endcard.hidden,
+    status:statusEl.textContent
+  });
+
+  m._boardSetState=state=>{
+    if(!state)return;
+    const savedEnabled=state.enabledByGrade&&typeof state.enabledByGrade==='object'?state.enabledByGrade:{};
+    for(const [grade,words] of Object.entries(HIGH_FREQUENCY_WORD_SETS)){
+      const allowed=new Set(words);
+      const saved=Array.isArray(savedEnabled[grade])?savedEnabled[grade].filter(word=>allowed.has(word)):words;
+      enabledByGrade[grade]=new Set(saved);
+    }
+
+    const grade=state.grade in gradeNames?state.grade:'k';
+    m.dataset.hfwGrade=grade;
+    gradeSelect.value=grade;
+    gradeLabel.textContent=gradeNames[grade];
+    queue=Array.isArray(state.queue)?state.queue.filter(word=>enabledByGrade[grade].has(word)):shuffle(enabledWords(grade));
+    completed=Math.max(0,Number(state.completed)||0);
+    totalWords=Math.max(completed+queue.length+(currentWord?1:0),Number(state.totalWords)||0);
+    health=Math.max(0,Math.min(maxHealth,Number(state.health)||maxHealth));
+    currentWord=String(state.currentWord||'');
+    phase=String(state.phase||'active');
+    wordVisible=Boolean(state.wordVisible);
+    statusEl.textContent=String(state.status||'Tap the robot before it blasts you.');
+    renderSettings();
+    clearTimers();
+
+    if(phase==='lost'){
+      wordTag.hidden=true;
+      robot.className='robothfw-robot is-hidden';
+      showEndcard('Game over','The robots blasted through your health bar.');
+    }else if(phase==='won'){
+      wordTag.hidden=true;
+      robot.className='robothfw-robot is-hidden';
+      showEndcard('Pack complete!','Every robot in this pack has been popped.');
+    }else if(!currentWord&&queue.length){
+      updateHud();
+      spawnRobot();
+      return;
+    }else if(currentWord){
+      endcard.hidden=true;
+      robot.className='robothfw-robot is-live';
+      robot.classList.remove('is-hidden');
+      robot.disabled=false;
+      applyWord(currentWord);
+      wordTag.hidden=!wordVisible;
+      if(wordVisible)updateWordFit();
+      if(phase==='warn'){
+        setFace('warn');
+        robot.classList.add('is-warning');
+      }else if(phase==='angry'){
+        setFace('angry');
+        robot.classList.add('is-warning','is-angry');
+      }else{
+        phase='active';
+        setFace('idle');
+      }
+      startWarnings();
+    }else{
+      resetRound(false);
+      return;
+    }
+    updateHud();
+  };
+
+  const prior=m._cleanup;
+  m._cleanup=()=>{
+    prior?.();
+    clearTimers();
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();

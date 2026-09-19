@@ -2044,6 +2044,17 @@
         </span>
         <span><strong>High Frequency Words</strong><small>Grade-level animated word flashcards</small></span>
       </button>
+      <button class="context-menu__item" data-module="robothfw" data-category="games literacy" data-search-aliases="robot hfw high frequency sight words">
+        <span class="context-menu__icon context-menu__icon--robothfw" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6.2" y="7.2" width="11.6" height="8.6" rx="3.2"/>
+            <path d="M4.8 10.2 2.9 8.6v5.1l1.9-1.5M19.2 10.2l1.9-1.6v5.1l-1.9-1.5"/>
+            <path d="M9.1 10.7h1.1M13.8 10.7h1.1M9.3 13.4c.9.8 4.5.8 5.4 0"/>
+            <path d="M12 4.2v1.8"/>
+          </svg>
+        </span>
+        <span><strong>Robot HFW</strong><small>Blast flying robots carrying sight words</small></span>
+      </button>
 <button class="context-menu__item" data-module="wordoftheday" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6M7 8h4M7 12h4"/></svg></span><span><strong>Word of the Day</strong><small>Discover a daily word and its meaning</small></span></button>
 <button class="context-menu__item" data-module="quoteoftheday" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6v7H6l-2 4M14 7h6v7h-4l-2 4"/></svg></span><span><strong>Quote of the Day</strong><small>A daily thought to inspire learning</small></span></button>
 <button class="context-menu__item" data-module="wordweb" data-category="literacy"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><circle cx="4.5" cy="5" r="2"/><circle cx="19.5" cy="5.5" r="2"/><circle cx="4.5" cy="18.5" r="2"/><circle cx="19.5" cy="18" r="2"/><path d="m9.6 9.9-3.5-3.5m8.4 3.3 3.5-3m-8.2 7.2-3.6 3.2m8.4-3 3.3 2.7"/></svg></span><span><strong>Word Web</strong><small>Connect related words around a central idea</small></span></button>
@@ -4588,6 +4599,91 @@
     </section>
   </template>
 
+
+
+  <template id="robothfw-template">
+    <section class="module robothfw-module" data-type="robothfw" data-bg="white" data-font="inter" data-text="dark" data-hfw-grade="k">
+      <button class="module-delete" aria-label="Delete Robot HFW tile">×</button><div class="module-drag-handle"></div>
+
+      <header class="robothfw-header">
+        <div>
+          <span>ROBOT HFW</span>
+          <strong class="robothfw-grade-label">Kindergarten Pack</strong>
+        </div>
+        <div class="robothfw-counters">
+          <span class="robothfw-counter"><b class="robothfw-left-count">0</b><small>left</small></span>
+          <span class="robothfw-counter"><b class="robothfw-score-count">0</b><small>popped</small></span>
+        </div>
+      </header>
+
+      <div class="robothfw-stage" aria-label="Robot HFW play area">
+        <div class="robothfw-status" role="status" aria-live="polite">Tap the robot before it blasts you.</div>
+        <button class="robothfw-robot is-hidden" type="button" aria-label="Tap the robot before it blasts you">
+          <span class="robothfw-robot-sway">
+            <span class="robothfw-thruster robothfw-thruster--left" aria-hidden="true"><i></i><b></b><em></em></span>
+            <span class="robothfw-thruster robothfw-thruster--right" aria-hidden="true"><i></i><b></b><em></em></span>
+            <img class="robothfw-robot-body" src="tiles/robot-hfw/assets/robot.png" alt="" draggable="false">
+            <span class="robothfw-face"><i class="robothfw-face-sprite" aria-hidden="true"></i></span>
+            <span class="robothfw-word-tag" hidden><b class="robothfw-word"></b></span>
+          </span>
+        </button>
+        <div class="robothfw-endcard" hidden>
+          <strong class="robothfw-endcard-title">Pack complete!</strong>
+          <p class="robothfw-endcard-copy">You cleared the whole pack.</p>
+          <button class="tile-action tile-action--primary robothfw-reset" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="robothfw-health" aria-label="Robot HFW health">
+        <div class="robothfw-health-top"><strong>Health</strong><span class="robothfw-health-text">5 / 5</span></div>
+        <div class="robothfw-health-track"><div class="robothfw-health-fill"></div></div>
+      </div>
+
+      <div class="robothfw-controls">
+        <label class="robothfw-grade-control">
+          <span>Pack</span>
+          <select class="robothfw-grade" aria-label="Choose Robot HFW word pack">
+            <option value="k">Kindergarten</option>
+            <option value="1">Grade 1</option>
+            <option value="2">Grade 2</option>
+            <option value="3plus">Grade 3+</option>
+          </select>
+        </label>
+        <button class="robothfw-settings-button" type="button">Settings</button>
+        <button class="robothfw-reset" type="button">Reset</button>
+      </div>
+
+      <aside class="robothfw-settings" hidden>
+        <div class="robothfw-settings-panel">
+          <div class="robothfw-settings-header">
+            <div>
+              <span>PACK SETTINGS</span>
+              <strong class="robothfw-settings-title">Kindergarten Pack</strong>
+            </div>
+            <button class="robothfw-settings-close" type="button" aria-label="Close Robot HFW settings">×</button>
+          </div>
+
+          <p>Click words to turn them on or off. Reset the game to battle the current pack.</p>
+
+          <div class="robothfw-settings-actions">
+            <button class="robothfw-enable-all" type="button">Enable All</button>
+            <button class="robothfw-disable-all" type="button">Disable All</button>
+            <span class="robothfw-enabled-count"></span>
+          </div>
+
+          <div class="robothfw-word-options" aria-label="Robot HFW word choices"></div>
+        </div>
+      </aside>
+
+      <div class="customization-bar robothfw-customization" aria-label="Robot HFW customization">
+        <button class="custom-icon robothfw-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon robothfw-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon robothfw-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
+
+      <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
+    </section>
+  </template>
 
   <template id="customflashcards-template">
     <section class="module customflashcards-module" data-type="customflashcards" data-bg="white" data-font="inter" data-text="dark">
