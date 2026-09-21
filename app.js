@@ -2177,12 +2177,6 @@ function tileDisplayWidth(m){return m.offsetWidth*tileUniformScale(m);}
 function tileDisplayHeight(m){return m.offsetHeight*tileUniformScale(m);}
 function setTileUniformScale(m,value){
   const scale=Math.max(.5,Math.min(1,Number(value)||1));
-  // Older saves may contain an arbitrary aspect ratio or a much smaller scale.
-  if(scale<1&&!['sticker','draw'].includes(m.dataset.type)){
-    const style=getComputedStyle(m);
-    m.style.width=(Number(m._tileTabs?.minimum?.width)||parseFloat(style.minWidth)||220)+'px';
-    m.style.height=(Number(m._tileTabs?.minimum?.height)||parseFloat(style.minHeight)||180)+'px';
-  }
   if(scale<.999)m.dataset.uniformScale=String(scale);else delete m.dataset.uniformScale;
   m.style.scale=String(scale/(isTilePinned(m)?Math.max(.05,boardCamera.scale):1));
 }
@@ -3977,7 +3971,6 @@ function setupCommon(m){
     event.stopPropagation();
     window.TeacherTilesEditHistory?.flush();
     const before=captureModuleTransform(m),size=m._defaultTileSize;
-    delete m._compactReadyAt;m.classList.remove('is-resize-threshold');
     clearSnapGroupMember(m);
     m.style.width=size.width+'px';m.style.height=size.height+'px';setTileUniformScale(m,1);
     m._syncTransientResize?.();m._afterModuleResize?.();
@@ -4298,34 +4291,36 @@ function setupResize(m){
     const before=captureModuleTransform(m);
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop;
-    const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m),cs=getComputedStyle(m);
+    const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);
     const mw=Number(m._tileTabs?.minimum?.width)||m._resizeMinimum.width,mh=Number(m._tileTabs?.minimum?.height)||m._resizeMinimum.height;
-    let canEnterCompact=initialScale<1||(m._compactReadyAt!==undefined&&performance.now()>=m._compactReadyAt);
     const viewportScale=moduleViewportScale(m)/initialScale;
-    let uniformBase=initialScale<1?{w:mw,h:mh}:null;
+    let uniformBase=initialScale<1?{w:m.offsetWidth,h:m.offsetHeight}:null;
+    const corner=d.length===2;
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
       let wantedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
       let wantedH=d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh;
       wantedW=Math.max(1,wantedW);wantedH=Math.max(1,wantedH);
       if(m._imageRatio){if(d==='t'||d==='b')wantedW=wantedH*m._imageRatio;else wantedH=wantedW/m._imageRatio;}
-      if(!uniformBase&&(wantedW<=mw||wantedH<=mh)){
-        if(canEnterCompact){uniformBase={w:mw,h:mh};m.classList.remove('is-resize-threshold');}
-        else{
-          if(m._compactReadyAt===undefined)m._compactReadyAt=performance.now()+1000;
-          m.classList.add('is-resize-threshold');
-          wantedW=Math.max(mw,wantedW);wantedH=Math.max(mh,wantedH);
-        }
-      }else if(!uniformBase){
-        canEnterCompact=false;delete m._compactReadyAt;m.classList.remove('is-resize-threshold');
+      // Edges reflow one dimension; corners preserve the shape at the boundary.
+      if(!corner){
+        const scale=initialScale;
+        const w=Math.max(mw,wantedW/scale),height=Math.max(mh,wantedH/scale);
+        const visualW=w*scale,visualH=height*scale;
+        Object.assign(m.style,{left:(d==='l'?sl+sw-visualW:sl)+'px',top:(d==='t'?st+sh-visualH:st)+'px',width:w+'px',height:height+'px'});
+        return;
+      }
+      if(!uniformBase&&(wantedW<mw||wantedH<mh)){
+        const tx=wantedW<mw&&wantedW<sw?(sw-mw)/(sw-wantedW):1;
+        const ty=wantedH<mh&&wantedH<sh?(sh-mh)/(sh-wantedH):1;
+        const hit=clamp(Math.min(tx,ty),0,1);
+        uniformBase={w:Math.max(mw,sw+(wantedW-sw)*hit),h:Math.max(mh,sh+(wantedH-sh)*hit)};
       }
       let scale=1,w=wantedW,hh=wantedH;
       if(uniformBase){
-        const ratios=[];
-        if(d.includes('l')||d.includes('r'))ratios.push(wantedW/uniformBase.w);
-        if(d.includes('t')||d.includes('b'))ratios.push(wantedH/uniformBase.h);
-        scale=clamp(Math.min(...ratios),.5,1);
-        if(Math.min(...ratios)>=1){uniformBase=null;scale=1;w=Math.max(mw,wantedW);hh=Math.max(mh,wantedH);}
+        const ratio=Math.min(wantedW/uniformBase.w,wantedH/uniformBase.h);
+        scale=clamp(ratio,.5,1);
+        if(ratio>=1){uniformBase=null;w=Math.max(mw,wantedW);hh=Math.max(mh,wantedH);}
         else{w=uniformBase.w;hh=uniformBase.h;}
       }
       const visualW=w*scale,visualH=hh*scale;
@@ -4335,7 +4330,7 @@ function setupResize(m){
       setTileUniformScale(m,scale);
     };
     const finish=cancelled=>{
-      if(cancelled){applyModuleTransform(m,before);delete m._compactReadyAt;m.classList.remove('is-resize-threshold');}
+      if(cancelled)applyModuleTransform(m,before);
       else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
       m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
       updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);

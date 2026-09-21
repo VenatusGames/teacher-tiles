@@ -22,5 +22,3 @@ body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;out
 .tile-tab-bookmark{pointer-events:auto;transform:translateX(31px);transition:transform .22s ease;}
 .tile-tab-strip.is-expanded .tile-tab-bookmark,.tile-tab-strip:has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
 @media(prefers-reduced-motion:reduce){.tile-tab-bookmark{transition:none;}}
-
-.module.is-resize-threshold{outline:3px solid #f59e0b!important;outline-offset:2px!important;}
