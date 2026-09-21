@@ -3,13 +3,12 @@ import { getDoc, getDocs, runTransaction } from './firestore-activity';
 import { auth, requireDb } from './firebase';
 import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
-import { cachedRead, invalidateReads, patchCachedRead } from './read-cache';
-import { emptyData, localDate, normalizeEmail, personalize, type Access, type AppData, type Student, type Question, type Answer, type HistoryEntry } from './model';
+import { cachedRead, invalidateReads, patchCachedRead, clearReloadCache, readReloadCache, saveReloadCache } from './read-cache';
+import { emptyData, localDate, personalize, type Access, type AppData, type Student, type Question, type Answer, type HistoryEntry } from './model';
 
 const root = (access: Access) => doc(requireDb(), 'classes', access.ownerId);
 const records = (access: Access, name: string) => collection(root(access), name);
 const record = (access: Access, name: string, id: string) => doc(records(access, name), id);
-const link = (hash: string) => doc(requireDb(), 'studentAccess', hash);
 function requireTeacher(access: Access) {
   if (access.role !== 'teacher' || access.ownerId !== auth?.currentUser?.uid) throw new Error('Only your teacher can change the class.');
 }
@@ -35,6 +34,7 @@ function forgetRecord(access: Access, name: string, id: string) {
   else patchCachedRead<{ docs: Row[] }>(access, name, rows => ({ docs: rows.docs.filter(row => row.id !== id) }));
 }
 export function refreshClassData(access: Access) {
+  clearReloadCache();
   for (const name of ['settings', 'students', 'questions', 'answers', 'history:', 'completed:']) invalidateReads(access, name);
 }
 async function read<T>(snapshot: Row, key: CryptoKey): Promise<T> {
@@ -71,18 +71,7 @@ async function prepareClass(access: Access, initial: DocumentSnapshot) {
       const current = await tx.get(student.ref);
       if (!current.exists() || isEncrypted(current.data())) return;
       const data = current.data() as Student;
-      const email = normalizeEmail(data.email ?? '');
-      const hash = await emailLookup(email);
-      const existing = hash ? await tx.get(link(hash)) : null;
-      const legacyRef = email ? doc(requireDb(), 'studentLinks', email) : null;
-      const legacy = legacyRef ? await tx.get(legacyRef) : null;
-      if (existing?.exists() && (existing.data().ownerId !== access.ownerId || existing.data().studentId !== student.id)) throw new Error('A student email assignment conflicts. No assignment was replaced.');
-      if (legacy?.exists() && (legacy.data().ownerId !== access.ownerId || legacy.data().studentId !== student.id)) throw new Error('A legacy student email assignment conflicts. No assignment was replaced.');
-      tx.set(student.ref, { ...await encryptRecord({ ...data, id: student.id, email }, key, student.ref.path), emailHash: hash });
-      if (hash) {
-        tx.set(link(hash), { ownerId: access.ownerId, studentId: student.id });
-        if (legacy?.exists()) tx.delete(legacyRef!);
-      }
+      tx.set(student.ref, await encryptRecord({ ...data, id: student.id }, key, student.ref.path));
     });
   }
   await runTransaction(requireDb(), async tx => {
@@ -102,6 +91,25 @@ async function prepareClass(access: Access, initial: DocumentSnapshot) {
 }
 
 export async function loadClass(access: Access): Promise<AppData> {
+  requireTeacher(access);
+  const path = root(access).path + '/reload-cache/v1';
+  const stored = readReloadCache(access.ownerId);
+  if (stored) {
+    const key = await classKey(access);
+    try { return await decryptRecord<AppData>(stored, key, path); }
+    catch { clearReloadCache(); }
+  }
+  const data = await loadClassFromServer(access);
+  if (auth?.currentUser?.uid === access.ownerId) {
+    try {
+      const payload = await encryptRecord(data, await classKey(access), path);
+      if (auth?.currentUser?.uid === access.ownerId) saveReloadCache(access.ownerId, payload);
+    }
+    catch { clearReloadCache(); } // Oversized classes still work without the reload cache.
+  }
+  return data;
+}
+async function loadClassFromServer(access: Access): Promise<AppData> {
   let settings = await cachedRead(access, 'settings', () => getDoc(root(access)), Infinity);
   if (access.role === 'teacher' && (!settings.exists() || !isEncrypted(settings.data()))) {
     try { await cachedRead(access, 'migration', () => prepareClass(access, settings)); }
@@ -112,10 +120,35 @@ export async function loadClass(access: Access): Promise<AppData> {
   if (!isEncrypted(settings.data())) throw new Error('Your teacher needs to open the updated app once to finish protecting this class.');
   const shared = await classKey(access);
   const [studentRows, questionRows, answerRows] = await Promise.all([
-    cachedRead(access, 'students', () => access.role === 'student' ? getDoc(record(access, 'students', access.studentId)).then(s => [s]) : getDocs(records(access, 'students')).then(s => s.docs), Infinity),
+    cachedRead(access, 'students', () => getDocs(records(access, 'students')).then(s => s.docs), Infinity),
     cachedRead(access, 'questions', () => getDocs(records(access, 'questions')), Infinity), cachedRead(access, 'answers', () => getDocs(records(access, 'answers')), Infinity),
   ]);
-  const students = await Promise.all(studentRows.map(async s => ({ ...await read<Student>(s, await classKey(access, s.id)), id: s.id })));
+  const students = await Promise.all(studentRows.map(async s => {
+    const key = await classKey(access, s.id);
+    let data = await read<Student & { email?: string }>(s, key);
+    // One-time removal of old profile email fields and login directories.
+    if ('email' in data || 'emailHash' in s.data()!) {
+      const payload = await runTransaction(requireDb(), async tx => {
+        const current = await tx.get(s.ref);
+        if (!current.exists()) return;
+        const { email, ...profile } = await read<Student & { email?: string }>(current, key);
+        const hash = current.data()!.emailHash || (email ? await emailLookup(email) : '');
+        const targets = [hash ? doc(requireDb(), 'studentAccess', hash) : null,
+          email ? doc(requireDb(), 'studentLinks', email.trim().toLowerCase()) : null].filter(r => r !== null);
+        const links = await Promise.all(targets.map(r => tx.get(r)));
+        links.forEach(link => { if (link.exists() && link.data().ownerId === access.ownerId && link.data().studentId === s.id) tx.delete(link.ref); });
+        const payload = await encryptRecord(profile, key, s.ref.path);
+        tx.set(s.ref, payload);
+        return payload;
+      });
+      if (payload) {
+        rememberRecord(access, s.ref, payload);
+        data = await decryptRecord<Student>(payload, key, s.ref.path);
+      }
+    }
+    const { email: _email, ...profile } = data;
+    return { ...profile, id: s.id };
+  }));
   return { settings: await read<AppData['settings']>(settings, shared), students: students.sort((a, b) => a.name.localeCompare(b.name)),
     questions: sorted(await Promise.all(questionRows.docs.map(s => read<Question>(s, shared)))),
     answers: sorted(await Promise.all(answerRows.docs.map(s => read<Answer>(s, shared)))) };
@@ -129,19 +162,10 @@ async function saveStudent(access: Access, id: string, values: Partial<Student>,
     if (!creating && !previous.exists()) throw new Error('That student no longer exists.');
     if (creating && previous.exists()) throw new Error('That student already exists.');
     const old = previous.exists() ? await read<Student>(previous, key) : undefined;
-    const next: Student = { id, name: '', email: '', imageKey: null, currentScore: null, goalScore: null, ...old, ...values };
-    next.email = normalizeEmail(next.email);
-    if (next.email === normalizeEmail(auth!.currentUser!.email!)) throw new Error('Use the student’s Google email, not your teacher email.');
-    const hash = await emailLookup(next.email); const oldHash = await emailLookup(old?.email ?? '');
-    if (hash && hash !== oldHash) {
-      const existing = await tx.get(link(hash));
-      const legacy = await tx.get(doc(requireDb(), 'studentLinks', next.email));
-      if (existing.exists() || legacy.exists()) throw new Error('That email is already attached to a student. Ask the current teacher to remove its assignment first.');
-    }
-    if (oldHash && oldHash !== hash) tx.delete(link(oldHash));
-    const payload = { ...await encryptRecord(next, key, ref.path), emailHash: hash };
+    const next: Student = { id, name: '', imageKey: null, currentScore: null, goalScore: null, ...old, ...values };
+    const { email: _email, ...profile } = next as Student & { email?: string };
+    const payload = await encryptRecord(profile, key, ref.path);
     tx.set(ref, payload);
-    if (hash && hash !== oldHash) tx.set(link(hash), { ownerId: access.ownerId, studentId: id });
     return { ref, payload };
   });
   rememberRecord(access, saved.ref, saved.payload);
@@ -157,6 +181,7 @@ async function editRecord(access: Access, ref: DocumentReference, key: CryptoKey
   rememberRecord(access, ref, payload);
 }
 export async function changeClass(access: Access, body: Record<string, unknown>) {
+  clearReloadCache();
   try { return await performChange(access, body); }
   catch (error) {
     const action = String(body.action);
@@ -174,9 +199,8 @@ async function performChange(access: Access, body: Record<string, unknown>) {
   const ref = record(access, 'students', id || 'unused');
   switch (body.action) {
     case 'saveSettings': return editRecord(access, root(access), await classKey(access), { title: text(body.title, 'a title', 160), description: text(body.description, 'a description', 4000) });
-    case 'addStudent': return saveStudent(access, crypto.randomUUID(), { name: text(body.name, 'a student name', 100), email: normalizeEmail(String(body.email ?? '')), imageKey: imageValue(body.imageKey) }, true);
+    case 'addStudent': return saveStudent(access, crypto.randomUUID(), { name: text(body.name, 'a student name', 100), imageKey: imageValue(body.imageKey) }, true);
     case 'updateStudentName': return saveStudent(access, id, { name: text(body.name, 'a student name', 100) }, false);
-    case 'updateStudentEmail': return saveStudent(access, id, { email: normalizeEmail(String(body.email ?? '')) }, false);
     case 'updateStudentImage': return saveStudent(access, id, { imageKey: imageValue(body.imageKey) }, false);
     case 'removeStudentImage': return saveStudent(access, id, { imageKey: null }, false);
     case 'updateStudentScores': {
@@ -186,11 +210,7 @@ async function performChange(access: Access, body: Record<string, unknown>) {
     case 'deleteStudent': {
       const responses = await getDocs(collection(ref, 'responses'));
       for (let i = 0; i < responses.docs.length; i += 400) { const batch = writeBatch(requireDb()); responses.docs.slice(i, i + 400).forEach(d => batch.delete(d.ref)); await batch.commit(); }
-      await runTransaction(requireDb(), async tx => {
-        const student = await tx.get(ref);
-        if (student.data()?.emailHash) tx.delete(link(student.data()!.emailHash));
-        tx.delete(ref);
-      });
+      await deleteDoc(ref);
       forgetRecord(access, 'students', id);
       invalidateReads(access, 'history:' + id + ':');
       invalidateReads(access, 'completed:' + id + ':');
@@ -229,7 +249,7 @@ async function performChange(access: Access, body: Record<string, unknown>) {
   }
 }
 function studentRef(access: Access, id: string) {
-  if (access.role === 'student' && access.studentId !== id) throw new Error('You can only access your own profile.');
+  requireTeacher(access);
   return record(access, 'students', id);
 }
 export async function completedToday(access: Access, id: string) {

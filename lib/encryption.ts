@@ -36,6 +36,7 @@ export async function decryptRecord<T>(value: Record<string, unknown>, key: Cryp
     throw new Error('This record could not be decrypted. No replacement data was saved. Contact your teacher.');
   }
 }
+// Used only to delete retired email assignment records; never for sign-in.
 export async function emailLookup(email: string): Promise<string> {
   if (!email.trim()) return '';
   const digest = await crypto.subtle.digest('SHA-256', encoder.encode(email.trim().toLowerCase()));

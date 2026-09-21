@@ -5,23 +5,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email_verified == true
         && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
-    function email() { return request.auth.token.email.lower(); }
-    function emailHash() { return hashing.sha256(email().toUtf8()).toHexString().lower(); }
-    function linked() {
-      return signedIn() && (exists(/databases/$(database)/documents/studentAccess/$(emailHash()))
-        || exists(/databases/$(database)/documents/studentLinks/$(email())));
-    }
-    function assignment() {
-      // A new hashed assignment cannot override an existing legacy assignment.
-      return exists(/databases/$(database)/documents/studentLinks/$(email()))
-        ? get(/databases/$(database)/documents/studentLinks/$(email())).data
-        : get(/databases/$(database)/documents/studentAccess/$(emailHash())).data;
-    }
-    function teacher(owner) { return signedIn() && request.auth.uid == owner && !linked(); }
-    function student(owner, id) {
-      return linked() && assignment() == { 'ownerId': owner, 'studentId': id };
-    }
-    function member(owner) { return teacher(owner) || (linked() && assignment().ownerId == owner); }
+    function teacher(owner) { return signedIn() && request.auth.uid == owner; }
     function envelope(data, maxSize) {
       return data.version == 1 && data.iv is string && data.iv.matches('^[A-Za-z0-9+/]{16}$')
         && data.ciphertext is string && data.ciphertext.size() >= 24 && data.ciphertext.size() <= maxSize
@@ -30,52 +14,23 @@ service cloud.firestore {
     function cipherOnly(data, maxSize) {
       return data.keys().hasOnly(['version','iv','ciphertext']) && envelope(data,maxSize);
     }
-    function hashValue(value) { return value is string && (value == '' || value.matches('^[a-f0-9]{64}$')); }
-    function assignedAfter(owner, id, hash) {
-      return hash == '' || getAfter(/databases/$(database)/documents/studentAccess/$(hash)).data == { 'ownerId': owner, 'studentId': id };
-    }
-    function oldAssignmentRemoved(data, nextHash) {
-      return ('emailHash' in data)
-        ? (data.emailHash == '' || data.emailHash == nextHash || !existsAfter(/databases/$(database)/documents/studentAccess/$(data.emailHash)))
-        : (data.email == '' || !existsAfter(/databases/$(database)/documents/studentLinks/$(data.email)));
-    }
     function validStudent(owner, id, data) {
-      return data.keys().hasOnly(['version','iv','ciphertext','emailHash']) && envelope(data,60000)
-        && hashValue(data.emailHash) && data.emailHash != emailHash()
-        && assignedAfter(owner,id,data.emailHash)
+      return cipherOnly(data,60000)
         && existsAfter(/databases/$(database)/documents/classes/$(owner)/keys/$('student_' + id));
     }
-    match /studentAccess/{hash} {
-      allow get: if signedIn() && (hash == emailHash() || !exists(/databases/$(database)/documents/studentAccess/$(hash)) || resource.data.ownerId == request.auth.uid);
-      allow list: if false;
-      allow create, update: if teacher(request.resource.data.ownerId)
-        && request.resource.data.keys().hasOnly(['ownerId','studentId'])
-        && request.resource.data.studentId is string && request.resource.data.studentId.size() > 0 && request.resource.data.studentId.size() <= 100
-        && hash.matches('^[a-f0-9]{64}$') && hash != emailHash()
-        && (!exists(/databases/$(database)/documents/studentAccess/$(hash)) || resource.data == request.resource.data)
-        && getAfter(/databases/$(database)/documents/classes/$(request.auth.uid)/students/$(request.resource.data.studentId)).data.emailHash == hash;
-      allow delete: if teacher(resource.data.ownerId)
-        && (!existsAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId))
-          || getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.emailHash != hash);
-    }
-    // Legacy directory is read-only except for atomic migration/removal.
-    // No new readable email document names can be written.
-    match /studentLinks/{address} {
-      allow get: if signedIn() && (address == email() || !exists(/databases/$(database)/documents/studentLinks/$(address)) || resource.data.ownerId == request.auth.uid);
-      allow list: if false;
-      allow delete: if teacher(resource.data.ownerId)
-        && (!existsAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId))
-          || (getAfter(/databases/$(database)/documents/classes/$(resource.data.ownerId)/students/$(resource.data.studentId)).data.emailHash == hashing.sha256(address.toUtf8()).toHexString().lower()
-            && assignedAfter(resource.data.ownerId,resource.data.studentId,hashing.sha256(address.toUtf8()).toHexString().lower())));
+    // Retirement only: old directories cannot authorize access or accept writes.
+    match /{directory}/{id} {
+      allow get: if directory in ['studentAccess', 'studentLinks'] && signedIn()
+        && (!exists(/databases/$(database)/documents/$(directory)/$(id)) || resource.data.ownerId == request.auth.uid);
+      allow delete: if directory in ['studentAccess', 'studentLinks'] && teacher(resource.data.ownerId);
     }
     match /classes/{owner} {
-      allow get: if member(owner);
+      allow get: if teacher(owner);
       allow list: if false;
       allow create, update: if teacher(owner) && cipherOnly(request.resource.data,26000)
         && existsAfter(/databases/$(database)/documents/classes/$(owner)/keys/shared);
       match /keys/{keyId} {
-        allow get: if teacher(owner) || (member(owner) && keyId == 'shared')
-          || (linked() && assignment().ownerId == owner && keyId == 'student_' + assignment().studentId);
+        allow get: if teacher(owner);
         allow list: if false;
         allow create: if teacher(owner)
           && (keyId == 'shared' || keyId.matches('^student_[A-Za-z0-9-]{1,100}$'))
@@ -86,15 +41,14 @@ service cloud.firestore {
         // losing a response if a check-in races with student deletion.
       }
       match /students/{id} {
-        allow get: if teacher(owner) || student(owner,id);
+        allow get: if teacher(owner);
         allow list: if teacher(owner);
         allow create: if teacher(owner) && validStudent(owner,id,request.resource.data);
-        allow update: if teacher(owner) && validStudent(owner,id,request.resource.data)
-          && oldAssignmentRemoved(resource.data,request.resource.data.emailHash);
-        allow delete: if teacher(owner) && oldAssignmentRemoved(resource.data,'');
+        allow update: if teacher(owner) && validStudent(owner,id,request.resource.data);
+        allow delete: if teacher(owner);
         match /responses/{day} {
-          allow read: if teacher(owner) || student(owner,id);
-          allow create: if (teacher(owner) || student(owner,id))
+          allow read: if teacher(owner);
+          allow create: if teacher(owner)
             && exists(/databases/$(database)/documents/classes/$(owner)/students/$(id))
             && exists(/databases/$(database)/documents/classes/$(owner)/keys/$('student_' + id))
             && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && cipherOnly(request.resource.data,950000);
@@ -104,12 +58,12 @@ service cloud.firestore {
         }
       }
       match /questions/{id} {
-        allow read: if member(owner);
+        allow read: if teacher(owner);
         allow create, update: if teacher(owner) && cipherOnly(request.resource.data,16000);
         allow delete: if teacher(owner);
       }
       match /answers/{id} {
-        allow read: if member(owner);
+        allow read: if teacher(owner);
         allow create, update: if teacher(owner) && cipherOnly(request.resource.data,60000);
         allow delete: if teacher(owner);
       }

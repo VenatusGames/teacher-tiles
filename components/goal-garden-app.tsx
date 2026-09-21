@@ -67,14 +67,10 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
     ? data.answers.filter((answer) => answer.questionId === currentQuestion.id)
     : [];
 
-  useEffect(() => {
-    if (access.role === 'student' && data.students[0]) { setSelectedStudent(data.students[0]); setScreen('menu'); }
-  }, [access, data.students]);
-
   const goHome = () => {
     setSurveyStarted(false);
-    setScreen(access.role === 'student' ? 'menu' : 'students');
-    setSelectedStudent(access.role === 'student' ? data.students[0] ?? null : null);
+    setScreen('students');
+    setSelectedStudent(null);
     setSelectedAnswers({});
     setCurrentQuestionIndex(0);
     setAdvancing(false);
@@ -169,7 +165,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
           {access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
       </header>
 
-      {screen !== 'students' && !(access.role === 'student' && screen === 'menu') && (
+      {screen !== 'students' && (
         <button className="back-button" onClick={() => setScreen(screen === 'menu' && access.role === 'teacher' ? 'students' : 'menu')}>
           <ArrowLeft /> <span>Back</span>
         </button>
@@ -441,9 +437,9 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
 }
 
 function StudentsAdmin({ students, busy, upload, action }: { students: Student[]; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
-  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
-  const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, email, imageKey }, `${name} was added.`)) { setName(''); setEmail(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
-  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student name" required maxLength={100} /><Input className="admin-input" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="Student Google email (optional)" maxLength={254} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} busy={busy} upload={upload} action={action} />)}</div></section>;
+  const [name, setName] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
+  const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, imageKey }, `${name} was added.`)) { setName(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
+  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student name" required maxLength={100} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} busy={busy} upload={upload} action={action} />)}</div></section>;
 }
 
 function StudentAdminCard({ student, busy, upload, action }: { student: Student; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
@@ -451,8 +447,6 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
   const [pictureDraft, setPictureDraft] = useState<string | null | undefined>(undefined);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
-  const [emailDraft, setEmailDraft] = useState(student.email);
-  useEffect(() => { setEmailDraft(student.email); }, [student.email]);
   const [currentScore, setCurrentScore] = useState(student.currentScore === null ? '' : String(student.currentScore));
   const [goalScore, setGoalScore] = useState(student.goalScore === null ? '' : String(student.goalScore));
   useEffect(() => { if (!editingName) setNameDraft(student.name); }, [student.name, editingName]);
@@ -519,7 +513,7 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
           if (await action({ action: 'updateStudentImage', id: student.id, imageKey: pictureDraft }, 'Student picture saved.')) setPictureDraft(undefined);
         }}>Save picture</Button><button type="button" disabled={busy || uploading} onClick={() => setPictureDraft(undefined)}>Cancel</button></>}
       </div>
-      <form className="student-email-editor" onSubmit={event => { event.preventDefault(); void action({ action: 'updateStudentEmail', id: student.id, email: emailDraft }, 'Student login updated.'); }}><label>Student Google email<Input className="admin-input" type="email" value={emailDraft} onChange={event => setEmailDraft(event.target.value)} placeholder="No student login assigned" maxLength={254} /></label><Button type="submit" className="admin-secondary" disabled={busy || emailDraft === student.email}>Save login</Button></form><div className="student-score-editor">
+      <div className="student-score-editor">
         <label>Current Score<Input className="admin-input" type="number" step="any" value={currentScore} onChange={(event) => setCurrentScore(event.target.value)} placeholder="0" /></label>
         <label>Goal Score<Input className="admin-input" type="number" step="any" value={goalScore} onChange={(event) => setGoalScore(event.target.value)} placeholder="0" /></label>
         <Button type="button" className="admin-secondary" disabled={busy || currentScore === '' || goalScore === '' || (Number(currentScore) === student.currentScore && Number(goalScore) === student.goalScore)} onClick={saveScores}><Check /> Save scores</Button>

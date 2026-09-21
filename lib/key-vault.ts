@@ -10,7 +10,6 @@ export const keyReference = (access: Access, studentId?: string) => doc(requireD
 // Keys are immutable, loaded only into memory, and protected by Firestore rules.
 // Never regenerate a missing key for records which are already encrypted.
 export async function classKey(access: Access, studentId?: string, allowCreate = false): Promise<CryptoKey> {
-  if (access.role === 'student' && studentId && access.studentId !== studentId) throw new Error('You can only access your own profile.');
   return cachedRead(access, 'key:' + (studentId ?? 'shared'), () => fetchKey(access, studentId, allowCreate), Infinity);
 }
 async function fetchKey(access: Access, studentId?: string, allowCreate = false): Promise<CryptoKey> {

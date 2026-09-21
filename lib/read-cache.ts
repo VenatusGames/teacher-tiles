@@ -5,10 +5,25 @@ import type { Access } from './model';
 const entries = new Map<string, { expires: number; value: Promise<unknown> }>();
 const identity = () => JSON.stringify([auth?.currentUser?.uid, auth?.currentUser?.email, auth?.currentUser?.emailVerified]);
 let account = identity();
-export function clearReadCache() { entries.clear(); account = identity(); }
+const reloadCacheKey = 'wigs:encrypted-class:v1';
+export function clearReloadCache() { try { sessionStorage.removeItem(reloadCacheKey); } catch { /* Storage may be disabled. */ } }
+export function readReloadCache(ownerId: string): Record<string, unknown> | null {
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(reloadCacheKey) ?? 'null');
+    if (stored?.ownerId === ownerId && stored.expires > Date.now()) return stored.payload;
+    if (stored) clearReadCache(false);
+    clearReloadCache();
+  } catch { clearReloadCache(); }
+  return null;
+}
+export function saveReloadCache(ownerId: string, payload: unknown) {
+  try { sessionStorage.setItem(reloadCacheKey, JSON.stringify({ ownerId, expires: Date.now() + 5 * 60 * 1000, payload })); }
+  catch { clearReloadCache(); }
+}
+export function clearReadCache(clearPersisted = true) { entries.clear(); account = identity(); if (clearPersisted) clearReloadCache(); }
 function prefix(access: Access) {
-  if (account !== identity()) clearReadCache();
-  return JSON.stringify([auth?.currentUser?.uid, access.ownerId, access.role, access.role === 'student' ? access.studentId : '']) + ':';
+  if (account !== identity()) clearReadCache(false);
+  return JSON.stringify([auth?.currentUser?.uid, access.ownerId, access.role, '']) + ':';
 }
 export function invalidateReads(access: Access, name: string) {
   const start = prefix(access) + name;

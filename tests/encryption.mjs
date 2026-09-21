@@ -139,7 +139,8 @@ data = await store.loadClass(teacher);
 const child = data.students[0];
 const childPath = classPath + '/students/' + child.id;
 assert(rows.get(childPath).ciphertext);
-assert.equal(rows.get(childPath).emailHash, await emailLookup(address('child')));
+assert(!('emailHash' in rows.get(childPath)));
+assert(!('email' in child));
 assert.notEqual(rows.get(classPath + '/keys/student_' + child.id).keyMaterial, sharedMaterial);
 assert(!rows.has('studentLinks/' + address('child')));
 assert(!JSON.stringify([...rows]).includes(address('child')));
@@ -165,7 +166,7 @@ await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter
 const beforeNameWrites = writeCount;
 const beforeNameReads = reads;
 await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Updated synthetic child' });
-assert.equal(writeCount - beforeNameWrites, 1, 'Profile edits must not rewrite unchanged email assignments');
+assert.equal(writeCount - beforeNameWrites, 1, 'Profile edits write only the profile');
 await store.loadClass(teacher);
 assert.equal(reads - beforeNameReads, 1, 'Student edits must not reread the roster');
 const beforePhotoReads = reads, beforePhotoWrites = writeCount;
@@ -173,11 +174,10 @@ await store.changeClass(teacher, { action: 'updateStudentImage', id: child.id, i
 assert.equal((await store.loadClass(teacher)).students[0].imageKey, syntheticPhoto);
 assert.equal(reads - beforePhotoReads, 1, 'Photo save must read only its transaction record');
 assert.equal(writeCount - beforePhotoWrites, 1);
-const student = { role: 'student', ownerId: teacher.ownerId, studentId: child.id };
-auth.currentUser = { uid: 'child-user', email: address('child') };
-assert.equal((await store.loadClass(student)).students.length, 1);
-await assert.rejects(store.changeClass(student, { action: 'saveSettings', title: 'Forbidden', description: 'Forbidden' }));
-await assert.rejects(store.completedToday(student, 'other-student'));
+const student = teacher;
+const forbidden = { role: 'teacher', ownerId: 'another-owner' };
+await assert.rejects(store.loadClass(forbidden));
+await assert.rejects(store.completedToday(forbidden, child.id));
 const beforePartialReads = reads, beforePartialWrites = writeCount;
 await assert.rejects(store.submitResponse(student, data.students[0], {
   ...data, questions: [...data.questions, { id: 'unfinished', prompt: 'Another required question', position: 2, fridayOnly: false }],
@@ -201,9 +201,6 @@ await store.loadHistory(student);
 assert.equal(reads, historyReads, 'Repeated history opens must reuse memory reads');
 assert(!JSON.stringify([...rows]).includes('On My Way'));
 auth.currentUser = { uid: teacher.ownerId, email: address('teacher') };
-await store.changeClass(teacher, { action: 'updateStudentEmail', id: child.id, email: address('replacement') });
-assert(!rows.has('studentAccess/' + await emailLookup(address('child'))));
-assert(rows.has('studentAccess/' + await emailLookup(address('replacement'))));
 await store.changeClass(teacher, { action: 'addQuestion', prompt: 'Another encrypted question', fridayOnly: true });
 data = await store.loadClass(teacher);
 const question = data.questions.find(q => q.id !== 'starter');
@@ -232,8 +229,8 @@ assert.equal(new Set([...firstPage.entries,...page2.entries,...page3.entries].ma
 assert.equal(page3.entries.length,6); assert(!page3.hasMore);
 const filtered=await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'});
 assert.deepEqual(filtered.entries.map(row=>row.id),['2025-01-05','2025-01-06','2025-01-07']);
-await assert.rejects(store.loadHistoryPage(student,{...filter,studentId:'other-student'}));
-await assert.rejects(store.loadHistoryPage(student,{...filter,studentId:'all'}), /Only your teacher/);
+await assert.rejects(store.loadHistoryPage(forbidden,{...filter,studentId:child.id}));
+await assert.rejects(store.loadHistoryPage(forbidden,{...filter,studentId:'all'}), /Only your teacher/);
 await store.changeClass(teacher, { action: 'addStudent', name: 'Second synthetic child', email: '', imageKey: null });
 const secondChild = (await store.loadClass(teacher)).students.find(row => row.id !== child.id);
 const secondKey = await importKey(rows.get(classPath + '/keys/student_' + secondChild.id).keyMaterial);
@@ -278,9 +275,8 @@ assert.equal((await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',t
 await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
 assert(!rows.has(childPath));
 assert(![...rows.keys()].some(path => path.startsWith(childPath + '/')));
-assert(!rows.has('studentAccess/' + await emailLookup(address('replacement'))));
 
-// Legacy migration preserves names, scores, pictures, email, and response times,
+// Legacy migration preserves names, scores, pictures, and response times,
 // removes all old readable fields/paths, and can safely resume after interruption.
 rows.clear();
 cache.clearReadCache();
@@ -297,15 +293,14 @@ data = await store.loadClass(teacher);
 assert.equal(data.students[0].currentScore, 3);
 assert.equal(data.students[0].goalScore, 7);
 assert.equal(data.students[0].imageKey, 'preset:smile');
-assert.equal(data.students[0].email, address('legacy'));
+assert(!('email' in data.students[0]));
 assert.equal(data.settings.title, 'Legacy class');
 assert.equal((await store.loadHistory(teacher))[0].createdAt, '2026-01-02T15:00:00.000Z');
 assert(!rows.has('studentLinks/' + address('legacy')));
 for (const [path, value] of rows) {
-  if (path.startsWith('studentAccess/')) continue;
   if (path.includes('/keys/')) { assert.deepEqual(Object.keys(value).sort(), ['keyMaterial', 'version']); continue; }
   assert(value.ciphertext, path);
-  assert.deepEqual(Object.keys(value).sort(), path.endsWith('/students/legacy') ? ['ciphertext', 'emailHash', 'iv', 'version'] : ['ciphertext', 'iv', 'version']);
+  assert.deepEqual(Object.keys(value).sort(), ['ciphertext', 'iv', 'version']);
 }
 const before = JSON.stringify([...rows]);
 await store.loadClass(teacher);
@@ -315,5 +310,62 @@ cache.clearReadCache();
 const missingKeyState = JSON.stringify([...rows]);
 await assert.rejects(store.loadClass(teacher), /encryption key is unavailable/);
 assert.equal(JSON.stringify([...rows]), missingKeyState);
+// Existing encrypted profiles are scrubbed without changing scores or responses.
+rows.clear(); cache.clearReadCache();
+await store.loadClass(teacher);
+await store.changeClass(teacher, { action: 'addStudent', name: 'Retired login test', currentScore: 4 });
+const retired = (await store.loadClass(teacher)).students[0];
+const retiredPath = classPath + '/students/' + retired.id;
+const retiredKey = await importKey(rows.get(classPath + '/keys/student_' + retired.id).keyMaterial);
+const retiredHash = await emailLookup(address('retired'));
+rows.set(retiredPath, { ...await encryptRecord({ ...retired, email: address('retired'), currentScore: 4 }, retiredKey, retiredPath), emailHash: retiredHash });
+rows.set('studentAccess/' + retiredHash, { ownerId: teacher.ownerId, studentId: retired.id });
+cache.clearReadCache();
+const scrubbed = (await store.loadClass(teacher)).students[0];
+assert.equal(scrubbed.currentScore, 4);
+assert(!('email' in scrubbed));
+assert(!('emailHash' in rows.get(retiredPath)));
+assert(!rows.has('studentAccess/' + retiredHash));
+assert(!('email' in await decryptRecord(rows.get(retiredPath), retiredKey, retiredPath)));
+await assert.rejects(store.changeClass(teacher, { action: 'updateStudentEmail', id: retired.id, email: address('unused') }), /Unknown class action/);
+// A page reload drops memory and keys, while retaining only an encrypted tab snapshot.
+rows.clear(); cache.clearReadCache();
+const session = new Map();
+globalThis.sessionStorage = { getItem: key => session.get(key) ?? null, setItem: (key, value) => session.set(key, value), removeItem: key => session.delete(key) };
+await store.loadClass(teacher);
+await store.changeClass(teacher, { action: 'addStudent', name: 'Reload test learner' });
+const cachedClass = await store.loadClass(teacher);
+assert(!JSON.stringify([...session]).includes('Reload test learner'));
+assert(!JSON.stringify([...session]).includes(rows.get(classPath + '/keys/shared').keyMaterial));
+cache.clearReadCache(false);
+let beforeReload = reads;
+assert.deepEqual(await store.loadClass(teacher), cachedClass);
+assert.equal(reads - beforeReload, 1, 'Page reload reads only the shared key');
+cache.clearReadCache(false);
+beforeReload = reads;
+await store.loadClass(teacher);
+assert.equal(reads - beforeReload, 1, 'Repeated reload keeps the encrypted cache');
+await store.changeClass(teacher, { action: 'updateStudentName', id: cachedClass.students[0].id, name: 'Changed after reload' });
+assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
+cache.clearReadCache(false);
+assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
+const cacheKey = [...session.keys()][0];
+const expired = JSON.parse(session.get(cacheKey)); expired.expires = Date.now() - 1;
+session.set(cacheKey, JSON.stringify(expired));
+beforeReload = reads;
+await store.loadClass(teacher);
+assert(reads - beforeReload > 1, 'Expired snapshots force fresh server data');
+session.set(cacheKey, '{broken');
+cache.clearReadCache(false);
+assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
+const ownUser = auth.currentUser;
+auth.currentUser = { uid: 'different-account' };
+await assert.rejects(store.loadClass(teacher));
+const otherData = await store.loadClass({ role: 'teacher', ownerId: 'different-account' });
+assert.equal(otherData.students.length, 0, 'Accounts cannot reuse another class snapshot');
+auth.currentUser = ownUser;
+cache.clearReadCache();
+assert.equal(session.size, 0, 'Sign-out/manual refresh removes persisted class data');
+delete globalThis.sessionStorage;
 delete globalThis.encryptionHarness;
 console.log('Encryption, migration, cache isolation/expiry, and read-count regressions passed (warm schedule/profile/photo save: 1 document read and 1 write; repeated warm class/history/completion loads: 0 reads). Counts exclude server rule evaluation.');

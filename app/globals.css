@@ -251,9 +251,6 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .auth-card .auth-error { color: #fecaca !important; }
 .account-controls { display: flex; align-items: center; gap: .65rem; }
 .account-email { max-width: 15rem; overflow: hidden; text-overflow: ellipsis; font-size: .9rem; }
-.student-email-editor { grid-column: 1 / -1; display: grid; gap: .5rem; }
-.student-email-editor label { display: grid; gap: .3rem; font-size: .85rem; }
-.admin-form-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
 @media (max-width: 760px) { .account-email { display: none; } .admin-form-row { grid-template-columns: 1fr; } }
 :root { --font-heading-face: 'Fredoka Variable'; --font-body: 'Nunito Variable'; }
 @font-face { font-family: 'Fredoka Variable'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('@fontsource-variable/fredoka/files/fredoka-latin-wght-normal.woff2') format('woff2-variations'); }
@@ -277,7 +274,7 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .student-photo-actions > button { min-height: 2.5rem; }
 .student-photo-actions .admin-secondary { flex: 1 1 100%; }
 .student-score-editor { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.student-score-editor label, .student-email-editor label { min-width: 0; }
+.student-score-editor label { min-width: 0; }
 .survey-start { display: flex; align-items: center; justify-content: center; gap: .8rem; min-width: 12rem; min-height: 4.5rem; margin: 2rem auto; padding: 1rem 2rem; border: 3px solid white; border-radius: 1.3rem; background: #bef264; color: #123b2e; font-size: 1.8rem; font-weight: 900; box-shadow: 0 6px 0 rgba(2,15,11,.3); cursor: pointer; }
 .survey-start:focus-visible { outline: 3px solid white; outline-offset: 5px; }
 .brand-image { object-fit: contain; }
