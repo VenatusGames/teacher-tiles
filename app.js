@@ -13230,6 +13230,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   setupCommon(m);
   setupStickerTransformControls(m);
   if(record)recordHistory({type:'add',elements:[m]});
+  if(record&&previewSize>0)window.dispatchEvent(new CustomEvent('teachertiles:stickerplaced',{detail:{key:src||emoji}}));
   if(animate){
     playUiSfx('sticker-place');
     setTimeout(()=>m.classList.remove('sticker-placed'),620);

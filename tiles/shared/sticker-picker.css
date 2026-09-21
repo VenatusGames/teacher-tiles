@@ -65,3 +65,16 @@
 .sticker-picker-pack .sticker-picker-grid{padding:3px 10px 12px}
 .sticker-picker-pack .sticker-picker-cell{background:color-mix(in srgb,var(--surface-solid) 80%,transparent)}
 .sticker-picker-pack-toggle:focus-visible{outline-offset:-3px!important}
+
+.asset-shelf.is-sticker-mode .asset-shelf__heading>.sticker-picker-views{margin:2px 0 0;flex-shrink:0}
+.asset-shelf.is-sticker-mode .asset-shelf__heading>.sticker-picker-filters{padding:0 2px;justify-content:space-between;min-height:24px}
+.asset-shelf:not(.is-sticker-mode) .asset-shelf__heading>:is(.sticker-picker-views,.sticker-picker-filters){display:none}
+.asset-shelf__heading .sticker-picker-views button{font:inherit;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
+.sticker-picker-pack{position:relative}
+.sticker-picker-usage-hint{grid-column:1/-1;margin:0;padding:0 2px 6px;font-size:12px;line-height:1.5;color:var(--muted)}
+.sticker-picker-pack-lock{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:44px 12px 4px;border:0;border-radius:inherit;background:color-mix(in srgb,var(--surface-solid) 62%,transparent);backdrop-filter:blur(1px);cursor:pointer}
+.sticker-picker-pack-lock>span{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);font-size:12px;font-weight:700;box-shadow:0 2px 8px #0000000c}
+.sticker-picker-pack.is-pack-locked h3{position:relative;z-index:3}
+.sticker-picker-pack-lock-mark{font-size:10px}
+.sticker-picker-pack.is-collapsed .sticker-picker-pack-lock{padding:0;pointer-events:none}
+.sticker-picker-pack.is-collapsed .sticker-picker-pack-lock>span{display:none}
