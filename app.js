@@ -4278,6 +4278,25 @@ function setupDrag(m){
 }
 
 function setupResize(m){
+  let scaleHint=null,scaleHintTimer=0;
+  const hideScaleHint=()=>{clearTimeout(scaleHintTimer);scaleHint?.remove();scaleHint=null;};
+  const updateScaleHint=()=>{
+    const scale=tileUniformScale(m);
+    if(scale>=1){hideScaleHint();return;}
+    clearTimeout(scaleHintTimer);
+    if(!scaleHint){
+      scaleHint=document.createElement('div');scaleHint.className='tile-scale-hint';
+      scaleHint.setAttribute('role','status');document.body.append(scaleHint);
+    }
+    const label=`Proportional scaling · ${Math.round(scale*100)}%${scale<=.5?' · Minimum':''}`;
+    if(scaleHint.textContent!==label)scaleHint.textContent=label;
+    const rect=m.getBoundingClientRect();
+    scaleHint.style.left=Math.max(8,Math.min(rect.left+(rect.width-scaleHint.offsetWidth)/2,innerWidth-scaleHint.offsetWidth-8))+'px';
+    scaleHint.style.top=Math.max(8,rect.top-scaleHint.offsetHeight-8)+'px';
+  };
+  const priorResizeDeactivate=m._deactivate,priorResizeCleanup=m._cleanup;
+  m._deactivate=()=>{hideScaleHint();priorResizeDeactivate?.();};
+  m._cleanup=()=>{hideScaleHint();priorResizeCleanup?.();};
   const tabbed=m.classList.contains('is-tabbed-tile');m.classList.remove('is-tabbed-tile');
   const minimumStyle=getComputedStyle(m);
   m._resizeMinimum={width:(parseFloat(minimumStyle.minWidth)||220)*.9,height:(parseFloat(minimumStyle.minHeight)||180)*.9};
@@ -4296,6 +4315,7 @@ function setupResize(m){
     const viewportScale=moduleViewportScale(m)/initialScale;
     let uniformBase=initialScale<1?{w:m.offsetWidth,h:m.offsetHeight}:null;
     const corner=d.length===2;
+    if(corner)updateScaleHint();else hideScaleHint();
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
       let wantedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
@@ -4328,8 +4348,11 @@ function setupResize(m){
       const t=d.includes('t')?st+sh-visualH:(!d.includes('b')&&scale<1?st+(sh-visualH)/2:st);
       Object.assign(m.style,{left:clamp(l,0,Math.max(0,BOARD_WIDTH-visualW))+'px',top:clamp(t,0,Math.max(0,BOARD_HEIGHT-visualH))+'px',width:w+'px',height:hh+'px'});
       setTileUniformScale(m,scale);
+      updateScaleHint();
     };
     const finish=cancelled=>{
+      if(cancelled)hideScaleHint();
+      else if(scaleHint)scaleHintTimer=setTimeout(hideScaleHint,1100);
       if(cancelled)applyModuleTransform(m,before);
       else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
       m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
