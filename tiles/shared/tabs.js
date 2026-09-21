@@ -23,7 +23,7 @@
     const current=[...workspace.querySelectorAll('.module')].find(m=>m.dataset.boardObjectId===before.id);
     const style=current?getComputedStyle(current):null;
     const minimum=before.tabs?.minimum||{width:parseFloat(style?.minWidth)||220,height:parseFloat(style?.minHeight)||180};
-    selected.tabs={active,items:clone(items),minimum};
+    selected.tabs={active,items:clone(items),minimum,minimumVersion:2};
     return selected;
   }
   function replace(m,snapshot,{history=true}={}){
@@ -44,6 +44,7 @@
     if(keyboardFocus)strips.get(next)?.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});
   }
   function add(m){
+    if(m.dataset.type==='sticker')return;
     if(document.fullscreenElement===m)return;
     window.TeacherTilesEditHistory?.flush();
     const before=serializeBoardModule(m),items=pages(before);
@@ -55,6 +56,7 @@
     replace(m,compose(before,items,items.length-1));
   }
   function merge(target,source){
+    if(target?.dataset.type==='sticker'||source?.dataset.type==='sticker')return false;
     if(!target?.isConnected||!source?.isConnected||target===source||document.fullscreenElement)return false;
     window.TeacherTilesEditHistory?.flush();
     const before=serializeBoardModule(target),sourceSnapshot=serializeBoardModule(source);
@@ -86,11 +88,23 @@
       const rect=m.getBoundingClientRect(),board=workspace.getBoundingClientRect();
       const scale=rect.width/Math.max(1,m.offsetWidth)/boardCamera.scale;
       const left=(rect.left-board.left)/boardCamera.scale,top=(rect.top-board.top)/boardCamera.scale;
-      const signature=`${left},${top},${scale},${m.style.zIndex},${Boolean(document.fullscreenElement)}`;
+      const height=m.offsetHeight,count=strip.children.length;
+      const signature=`${left},${top},${scale},${height},${count},${m.style.zIndex},${Boolean(document.fullscreenElement)}`;
       if(strip.dataset.position===signature)continue;
       strip.dataset.position=signature;
       strip.hidden=Boolean(document.fullscreenElement);
+      // Compress first, then scroll rather than letting bookmarks leave the tile.
+      const available=Math.max(24,height-55),gap=count*37>available?2:5;
+      const rowHeight=Math.max(24,Math.min(32,(available-4-gap*(count-1))/count));
+      strip.style.maxHeight=`${available}px`;
+      strip.style.setProperty('--tab-gap',`${gap}px`);
+      strip.style.setProperty('--tab-height',`${rowHeight}px`);
       Object.assign(strip.style,{left:`${left}px`,top:`${top+43*scale}px`,transform:`translateX(-100%) scale(${scale})`,transformOrigin:'right top',zIndex:m.style.zIndex});
+      const selected=strip.querySelector('[aria-selected="true"]')?.parentElement;
+      if(selected){
+        if(selected.offsetTop<strip.scrollTop)strip.scrollTop=selected.offsetTop;
+        else if(selected.offsetTop+selected.offsetHeight>strip.scrollTop+strip.clientHeight)strip.scrollTop=selected.offsetTop+selected.offsetHeight-strip.clientHeight;
+      }
     }
     if(strips.size)frame=requestAnimationFrame(position);
   }
@@ -108,13 +122,17 @@
       row.append(button,close);strip.append(row);
     });
     strip.addEventListener('pointerdown',event=>event.stopPropagation());
+    strip.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
     workspace.append(strip);strips.set(m,strip);if(!frame)frame=requestAnimationFrame(position);
   }
   function restore(m,state){
+    if(m.dataset.type==='sticker')return;
     if(!state||!Array.isArray(state.items)||state.items.length<2)return;
     // Inactive pages stay as snapshots: they cannot play audio or run timers.
     const style=getComputedStyle(m);
-    m._tileTabs={active:Math.max(0,Math.min(state.items.length-1,Number(state.active)||0)),items:state.items.map(bare),minimum:state.minimum||{width:parseFloat(style.minWidth)||220,height:parseFloat(style.minHeight)||180}};
+    m._tileTabs={active:Math.max(0,Math.min(state.items.length-1,Number(state.active)||0)),items:state.items.map(bare),minimum:state.minimum?{width:state.minimum.width*(state.minimumVersion===2?1:.9),height:state.minimum.height*(state.minimumVersion===2?1:.9)}:{width:parseFloat(style.minWidth)||220,height:parseFloat(style.minHeight)||180},minimumVersion:2};
+    m.style.setProperty('min-width',m._tileTabs.minimum.width+'px','important');
+    m.style.setProperty('min-height',m._tileTabs.minimum.height+'px','important');
     m.classList.add('is-tabbed-tile');render(m);
     const deactivate=m._deactivate,reactivate=m._reactivate,cleanup=m._cleanup;
     m._deactivate=()=>{release(m);deactivate?.();};
@@ -122,12 +140,14 @@
     m._cleanup=()=>{release(m);cleanup?.();};
   }
   function setup(m){
+    if(m.dataset.type==='sticker')return;
     if(m.querySelector(':scope>.module-tab-add'))return;
     const button=document.createElement('button');button.type='button';button.className='module-tab-add';button.title='Add a tab · Drop another tile here to combine';button.setAttribute('aria-label','Add tile tab');
     button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5V3H3v13h2M7 7h6l2 2h6v12H7Z"/><path d="M14 12v6m-3-3h6"/></svg>';
     button.addEventListener('pointerdown',event=>event.stopPropagation());button.addEventListener('click',event=>{event.stopPropagation();add(m);});m.append(button);
   }
   function dropTarget(source,x,y){
+    if(source.dataset.type==='sticker')return null;
     let target=null;
     for(const m of workspace.querySelectorAll('.module')){
       if(m===source||isTilePinned(m))continue;

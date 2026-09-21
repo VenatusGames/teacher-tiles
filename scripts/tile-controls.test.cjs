@@ -41,7 +41,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.evaluate(()=>{let m=workspace.querySelector('.module');m.id='test-tile';m.style.width='600px';m.style.height='430px';});
     box=await tile.boundingBox();let handle=await page.locator('#test-tile [data-resize=br]').boundingBox();
     await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();await page.mouse.move(handle.x+handle.width/2-550,handle.y+handle.height/2-400,{steps:15});await page.mouse.up();
-    assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[300,430,.5],'compact uses canonical minimum proportions and sensible floor');
+    assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[270,387,1]);
+    assert(await tile.evaluate(m=>m.classList.contains('is-resize-threshold')));
+    const shrink=async()=>{const h=await page.locator('#test-tile [data-resize=br]').boundingBox();await page.mouse.move(h.x+h.width/2,h.y+h.height/2);await page.mouse.down();await page.mouse.move(h.x-200,h.y-250,{steps:5});};
+    await shrink();await page.clock.runFor(1100);await page.mouse.move(280,170);await page.mouse.up();
+    assert.equal(await tile.evaluate(m=>tileUniformScale(m)),1,'holding the same drag cannot bypass the boundary');
+    await shrink();await page.mouse.up();
+    assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[270,387,.5],'compact uses canonical minimum proportions and sensible floor');
     await tile.hover();await page.locator('.tile-settings-toggle').click();await page.locator('.tile-settings-floating .tile-reset-scale').click();
     assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[460,550,1]);
     await page.evaluate(()=>undoBoardAction());assert.equal(await tile.evaluate(m=>tileUniformScale(m)),.5);
@@ -60,6 +66,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
       assert(await module.locator('.tile-settings-floating .tile-reset-scale').isVisible());
       await page.keyboard.press('Escape');assert.equal(await module.locator('.tile-settings-floating .tile-reset-scale').isVisible(),false);await module.evaluate(m=>{m._cleanup?.();m.remove();});
     }
+    const sticker=await page.evaluate(()=>{
+      const m=createStickerModule({emoji:'⭐',name:'Star'},500,250,{record:false,animate:false});
+      const forbidden='.module-tab-add,.module-fullscreen,.module-pin,.tile-settings-toggle,.tile-reset-scale,.tile-appearance-toggle';
+      const before=m.querySelectorAll(forbidden).length;
+      const tile=createModule('clock',900,250,{record:false});const merge=TeacherTilesTabs.merge(tile,m);
+      TeacherTilesTabs.add(m);const saved=serializeBoardModule(m);saved.dataset.tilePinned='true';
+      m._cleanup?.();m.remove();const restored=restoreTeacherTilesBoardObject(saved);
+      return{before,after:restored.querySelectorAll(forbidden).length,merge,pinned:isTilePinned(restored),delete:!!restored.querySelector('.module-delete'),handles:restored.querySelectorAll('[data-sticker-resize]').length};
+    });assert.deepEqual(sticker,{before:0,after:0,merge:false,pinned:false,delete:true,handles:4});
     assert.deepEqual(errors,[]);console.log('Corner visibility, meditation quiet view/cue persistence, tucked tabs, minimum scaling and undoable reset passed.');
   }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

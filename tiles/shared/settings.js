@@ -13,6 +13,7 @@ document.addEventListener('pointerdown',outside);document.addEventListener('keyd
 m._positionTileSettings=sync;sync();const deactivate=m._deactivate;m._deactivate=()=>{close();deactivate?.()};const cleanup=m._cleanup;m._cleanup=()=>{close();observer.disconnect();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);cleanup?.()};
 }
 function ensure(m){
+    if(m.dataset.type==='sticker')return;
     let settings=m.querySelector('.tile-settings-toggle,.collection-settings-toggle,.classmeter-settings-toggle,.highfrequency-settings-button');
     if(!settings){
       const wrap=document.createElement('div');wrap.className='tile-settings-wrap';

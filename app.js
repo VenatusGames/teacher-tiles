@@ -3968,6 +3968,7 @@ function ensureTileFullscreenControl(m){
 
 function setupCommon(m){
   m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
+  if(m.dataset.type!=='sticker'){
   const resetScale=document.createElement('button');
   resetScale.type='button';resetScale.className='tile-reset-scale';
   resetScale.title='Reset Scale';resetScale.setAttribute('aria-label','Reset Scale');
@@ -3976,6 +3977,7 @@ function setupCommon(m){
     event.stopPropagation();
     window.TeacherTilesEditHistory?.flush();
     const before=captureModuleTransform(m),size=m._defaultTileSize;
+    delete m._compactReadyAt;m.classList.remove('is-resize-threshold');
     clearSnapGroupMember(m);
     m.style.width=size.width+'px';m.style.height=size.height+'px';setTileUniformScale(m,1);
     m._syncTransientResize?.();m._afterModuleResize?.();
@@ -3984,11 +3986,14 @@ function setupCommon(m){
     recordTransformHistory([m],new Map([[m,before]]));notifyBoardChanged('reset-scale');
   });
   m.appendChild(resetScale);
+  }
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
-  ensureTileFullscreenControl(m);
-  ensureTilePinControl(m);
-  window.TeacherTilesTabs?.setup(m);
+  if(m.dataset.type!=='sticker'){
+    ensureTileFullscreenControl(m);
+    ensureTilePinControl(m);
+    window.TeacherTilesTabs?.setup(m);
+  }
   layoutTileOptionControls(m);
   const optionResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   optionResizeObserver.observe(m);
@@ -4280,6 +4285,12 @@ function setupDrag(m){
 }
 
 function setupResize(m){
+  const tabbed=m.classList.contains('is-tabbed-tile');m.classList.remove('is-tabbed-tile');
+  const minimumStyle=getComputedStyle(m);
+  m._resizeMinimum={width:(parseFloat(minimumStyle.minWidth)||220)*.9,height:(parseFloat(minimumStyle.minHeight)||180)*.9};
+  if(tabbed)m.classList.add('is-tabbed-tile');
+  m.style.setProperty('min-width',m._resizeMinimum.width+'px','important');
+  m.style.setProperty('min-height',m._resizeMinimum.height+'px','important');
   for(const d of ['t','r','b','l'])if(!m.querySelector(`[data-resize="${d}"]`)){const h=document.createElement('div');h.className=`resize-handle resize-handle--${d}`;h.dataset.resize=d;m.appendChild(h)}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
@@ -4288,7 +4299,8 @@ function setupResize(m){
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop;
     const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m),cs=getComputedStyle(m);
-    const mw=Number(m._tileTabs?.minimum?.width)||parseFloat(cs.minWidth)||220,mh=Number(m._tileTabs?.minimum?.height)||parseFloat(cs.minHeight)||180;
+    const mw=Number(m._tileTabs?.minimum?.width)||m._resizeMinimum.width,mh=Number(m._tileTabs?.minimum?.height)||m._resizeMinimum.height;
+    let canEnterCompact=initialScale<1||(m._compactReadyAt!==undefined&&performance.now()>=m._compactReadyAt);
     const viewportScale=moduleViewportScale(m)/initialScale;
     let uniformBase=initialScale<1?{w:mw,h:mh}:null;
     const move=ev=>{
@@ -4297,8 +4309,15 @@ function setupResize(m){
       let wantedH=d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh;
       wantedW=Math.max(1,wantedW);wantedH=Math.max(1,wantedH);
       if(m._imageRatio){if(d==='t'||d==='b')wantedW=wantedH*m._imageRatio;else wantedH=wantedW/m._imageRatio;}
-      if(!uniformBase&&(wantedW<mw||wantedH<mh)){
-        uniformBase={w:mw,h:mh};
+      if(!uniformBase&&(wantedW<=mw||wantedH<=mh)){
+        if(canEnterCompact){uniformBase={w:mw,h:mh};m.classList.remove('is-resize-threshold');}
+        else{
+          if(m._compactReadyAt===undefined)m._compactReadyAt=performance.now()+1000;
+          m.classList.add('is-resize-threshold');
+          wantedW=Math.max(mw,wantedW);wantedH=Math.max(mh,wantedH);
+        }
+      }else if(!uniformBase){
+        canEnterCompact=false;delete m._compactReadyAt;m.classList.remove('is-resize-threshold');
       }
       let scale=1,w=wantedW,hh=wantedH;
       if(uniformBase){
@@ -4316,7 +4335,7 @@ function setupResize(m){
       setTileUniformScale(m,scale);
     };
     const finish=cancelled=>{
-      if(cancelled)applyModuleTransform(m,before);
+      if(cancelled){applyModuleTransform(m,before);delete m._compactReadyAt;m.classList.remove('is-resize-threshold');}
       else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
       m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
       updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);
@@ -13203,7 +13222,6 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   bringToFront(m);
   setupCommon(m);
   setupStickerTransformControls(m);
-  window.TeacherTilesSettings.ensure(m);
   if(record)recordHistory({type:'add',elements:[m]});
   if(animate){
     playUiSfx('sticker-place');
@@ -19068,6 +19086,7 @@ function setupSpinner(m){
 
 const BOARD_SAVE_SCHEMA_VERSION=2;
 const BOARD_TRANSIENT_CLASSES=new Set([
+  'is-resize-threshold',
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
   'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus',
@@ -19192,7 +19211,10 @@ function applyBoardPostSetupState(m,state){
     try{m._boardTimerSetState(state.timer)}catch(error){console.warn('TeacherTiles could not restore timer state',error)}
   }
 
-  if(state.tabs)window.TeacherTilesTabs?.restore(m,state.tabs);
+  if(m.dataset.type==='sticker'){
+    delete m.dataset.tilePinned;delete m.dataset.pinScreenX;delete m.dataset.pinScreenY;
+    m.classList.remove('is-tile-pinned','is-tabbed-tile');
+  }else if(state.tabs)window.TeacherTilesTabs?.restore(m,state.tabs);
   if(state.transform)applyModuleTransform(m,state.transform);
   if(state.zIndex!==undefined&&Number.isFinite(Number(state.zIndex))){
     const saved=Math.max(1,Math.round(Number(state.zIndex)));
