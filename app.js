@@ -13295,6 +13295,7 @@ function setupShelfStickerDrag(item,shelfShell){
       item.removeEventListener('pointercancel',cancel);
     };
     const end=ev=>{
+      if(dragging)item._stickerDragUntil=performance.now()+500;
       if(dragging&&canDrop)createStickerModule({src,emoji,name,aspect},ev.clientX,ev.clientY);
       cleanup();
     };
@@ -13347,6 +13348,7 @@ function setupCollectionShelf(){
   const shelfShell=shelf.querySelector('.asset-shelf__shell');
   if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!cursorsButton||!themePanel||!stickerPanel||!cursorsPanel||!shelfShell||!packs.length)return;
 
+  let stickerPicker=null;
   let activeShelf=null;
   let activePack=null;
   let activeFan=null;
@@ -13487,6 +13489,7 @@ function setupCollectionShelf(){
 
   const normalizeStickerSearch=value=>String(value||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').trim();
   const updateStickerSearch=()=>{
+    if(stickerPicker){stickerPicker.render();return}
     const query=normalizeStickerSearch(stickerSearch?.value);
     const terms=query.split(/\s+/).filter(Boolean);
     const searching=terms.length>0;
@@ -13561,7 +13564,8 @@ function setupCollectionShelf(){
     closeThemeFan();
     closeStickerPack();
     clearStickerSearch();
-    shelf.classList.remove('is-open','is-sticker-mode','is-cursors-mode');
+    shelf.classList.remove('is-open');
+    shelf.inert=true;
     shelf.setAttribute('aria-hidden','true');
     syncShelfButtons();
   };
@@ -13584,8 +13588,10 @@ function setupCollectionShelf(){
     shelf.classList.toggle('is-cursors-mode',cursors);
     if(cursors)renderCursorShelf();
     title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Cursors';
+    shelf.inert=false;
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
+    if(stickers){stickerPicker?.render();stickerSearch?.focus({preventScroll:true})}
     syncShelfButtons();
   };
 
@@ -13597,7 +13603,7 @@ function setupCollectionShelf(){
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleStickerPack(pack)}));
   stickerItems.forEach(item=>setupShelfStickerDrag(item,shelfShell));
   stickerSearch?.addEventListener('input',updateStickerSearch);
-  stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();clearStickerSearch({focus:true})}});
+  stickerSearch?.addEventListener('keydown',e=>{if(e.key==='Escape'&&stickerSearch.value){e.stopPropagation();clearStickerSearch({focus:true})}});
   stickerSearchClear?.addEventListener('click',()=>clearStickerSearch({focus:true}));
   window.addEventListener('teachertiles:shopownershipchange',()=>{
     syncCollectionOwnership();
@@ -13632,7 +13638,7 @@ function setupCollectionShelf(){
   },{passive:false});
 
   window.addEventListener('resize',positionThemeFan,{passive:true});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf)closeShelf()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){const trigger=activeShelf==='stickers'?stickerButton:activeShelf==='themes'?themeButton:cursorsButton;closeShelf();trigger.focus()}});
   document.addEventListener('pointerdown',e=>{
     if(!activeShelf)return;
     const target=e.target;
@@ -13645,6 +13651,8 @@ function setupCollectionShelf(){
   syncCollectionOwnership();
   syncCosmeticEntitlements();
   renderCursorShelf();
+  stickerPicker=window.createStickerPicker({panel:stickerPanel,packs:stickerPacks,search:stickerSearch,clear:stickerSearchClear,status:stickerSearchStatus,shell:shelfShell,bindDrag:setupShelfStickerDrag,owns:ownsCosmetic,require:requireCosmetic,entitlement:shelfEntitlement,place:createStickerModule});
+  shelf.inert=true;
 }
 
 function createAdditionalStickerPackUi(){
