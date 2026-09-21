@@ -19210,8 +19210,10 @@ function buildBoardPreview(objects){
   }));
 }
 
+let unrestoredBoardObjects=[];
 function captureTeacherTilesBoard(){
   const objects=[...workspace.querySelectorAll('.module')].map(serializeBoardModule).filter(Boolean);
+  objects.push(...unrestoredBoardObjects);
   return{
     schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
     theme:document.body.dataset.theme||'light',
@@ -19226,6 +19228,7 @@ function captureTeacherTilesBoard(){
 
 function clearTeacherTilesBoard(){
   clearSelection();
+  unrestoredBoardObjects=[];
   boardFrames=[];
   renderBoardFrames();
   for(const m of [...workspace.querySelectorAll('.module')]){
@@ -19288,14 +19291,16 @@ function loadTeacherTilesBoard(snapshot){
 
     for(const object of Array.isArray(data.objects)?data.objects:[]){
       if(!boardTypeAvailable(object?.type)){
+        unrestoredBoardObjects.push(object);
         if(object?.id)removedObjectIds.push(object.id);
         continue;
       }
       try{
         const restored=restoreTeacherTilesBoardObject(object);
-        if(!restored&&object?.id)removedObjectIds.push(object.id);
+        if(!restored&&object?.id){removedObjectIds.push(object.id);unrestoredBoardObjects.push(object)}
       }catch(error){
         console.warn('TeacherTiles skipped a saved board object',object?.type,error);
+        unrestoredBoardObjects.push(object);
         if(object?.id)removedObjectIds.push(object.id);
       }
     }

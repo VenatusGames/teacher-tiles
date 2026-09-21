@@ -155,7 +155,7 @@ const localBoardMemory = new Map();
 let localBoardDbPromise = null;
 
 const LOCAL_SAVE_DELAY = 280;
-const CLOUD_SAVE_DELAY = 8000;
+const CLOUD_SAVE_DELAY = 1200;
 const BOARD_LIST_CACHE_TTL = 10 * 60 * 1000;
 const SESSION_CLOUD_RECHECK_TTL = 10 * 60 * 1000;
 const ORGANIZATION_CACHE_TTL = 5 * 60 * 1000;
@@ -1683,9 +1683,16 @@ function cleanBoardSnapshot(snapshot) {
   });
 }
 
+function stableBoardJson(value) {
+  return JSON.stringify(value, (_key, item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return item;
+    return Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]]));
+  });
+}
+
 function contentHashForSnapshot(snapshot) {
   const clean = cleanBoardSnapshot(snapshot);
-  return hashText(JSON.stringify({
+  return hashText(stableBoardJson({
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     frames: clean.frames,
@@ -1697,7 +1704,7 @@ function contentHashForSnapshot(snapshot) {
 
 function localHashForSnapshot(snapshot) {
   const clean = cleanBoardSnapshot(snapshot);
-  return hashText(JSON.stringify({
+  return hashText(stableBoardJson({
     schemaVersion: clean.schemaVersion,
     theme: clean.theme,
     camera: clean.camera,
@@ -2002,6 +2009,14 @@ function openLocalBoardDb() {
 async function readLocalBoardSnapshot(uid, boardId) {
   const key = localBoardKey(uid, boardId);
   if (localBoardMemory.has(key)) return localBoardMemory.get(key);
+  // Each tab owns its pending edits; another window must not replace them.
+  try {
+    const pending = JSON.parse(sessionStorage.getItem(key) || "null");
+    if (pending?.snapshot) {
+      localBoardMemory.set(key, pending);
+      return pending;
+    }
+  } catch {}
   const database = await openLocalBoardDb();
   if (!database) return null;
   return new Promise(resolve => {
@@ -2024,6 +2039,10 @@ async function writeLocalBoardSnapshot(uid, boardId, record) {
   const key = localBoardKey(uid, boardId);
   const value = { key, ...record, savedAt: Date.now() };
   localBoardMemory.set(key, value);
+  try {
+    if (value.dirty) sessionStorage.setItem(key, JSON.stringify(value));
+    else sessionStorage.removeItem(key);
+  } catch (error) { console.warn("TeacherTiles pending save backup failed", error); }
   const database = await openLocalBoardDb();
   if (!database) return;
   await new Promise(resolve => {
@@ -2042,6 +2061,7 @@ async function writeLocalBoardSnapshot(uid, boardId, record) {
 async function deleteLocalBoardSnapshot(uid, boardId) {
   const key = localBoardKey(uid, boardId);
   localBoardMemory.delete(key);
+  try { sessionStorage.removeItem(key); } catch {}
   boardLocalHashes.delete(boardId);
   const database = await openLocalBoardDb();
   if (!database) return;
@@ -2126,6 +2146,7 @@ function getBoardName(boardId) {
 
 async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = false, forceMigration = false } = {}) {
   if (!currentUser || !db || !firestoreSdk || !boardId || !snapshot) return false;
+  const uid = currentUser.uid;
   const board = boardList.find(item => item.id === boardId);
   if (!board) return false;
 
@@ -2159,9 +2180,9 @@ async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = fals
     stateChunkHashes: plan.chunkHashes,
     revision,
     contentHash,
-    legacyCleanupPending,
-    updatedAt: firestoreSdk.serverTimestamp()
+    legacyCleanupPending
   });
+  payload.updatedAt = firestoreSdk.serverTimestamp();
   if (isNew) payload.createdAt = firestoreSdk.serverTimestamp();
 
   if (plan.format === "inline-v2") {
@@ -2183,18 +2204,30 @@ async function writeBoardSnapshotToCloud(boardId, name, snapshot, { isNew = fals
     stateWrites.push({ type: "delete", index });
   }
 
-  // Write chunk data first for very large boards, then atomically point metadata at it.
-  for (let offset = 0; offset < stateWrites.length; offset += 400) {
-    const batch = firestoreSdk.writeBatch(db);
-    for (const operation of stateWrites.slice(offset, offset + 400)) {
-      const ref = boardStateDocument(currentUser.uid, boardId, operation.index);
-      if (operation.type === "delete") batch.delete(ref);
-      else batch.set(ref, operation.data);
-    }
-    await batch.commit();
+  // Never publish partial chunks or overwrite a revision from another device.
+  if (stateWrites.length > 450 || byteLength(clean) > 8 * 1024 * 1024) {
+    throw new Error("This board is too large to sync atomically. Your local copy is retained.");
   }
-
-  await firestoreSdk.setDoc(boardDocument(currentUser.uid, boardId), payload, { merge: true });
+  await firestoreSdk.runTransaction(db, async transaction => {
+    const ref = boardDocument(uid, boardId);
+    const remote = await transaction.get(ref);
+    const data = remote.exists() ? remote.data() : null;
+    if ((isNew && data) || (!isNew && (!data ||
+        (Number(data.revision) || 0) !== revision - 1 ||
+        (data.contentHash && data.contentHash !== (board.cloudContentHash || ""))))) {
+      const error = new Error("This board changed on another device.");
+      error.code = "board-conflict";
+      throw error;
+    }
+    for (const operation of stateWrites) {
+      const chunkRef = boardStateDocument(uid, boardId, operation.index);
+      if (operation.type === "delete") transaction.delete(chunkRef);
+      else transaction.set(chunkRef, operation.data);
+    }
+    // Renaming is independent of board content; a stale tab must not undo it.
+    transaction.set(ref, { ...payload, name: isNew ? name : (data.name || name) }, { merge: true });
+  });
+  if (currentUser?.uid !== uid) return true;
 
   board.revision = revision;
   board.cloudContentHash = contentHash;
@@ -2307,6 +2340,8 @@ async function saveCachedBoardToCloud(boardId) {
         if (!local?.snapshot || !local.dirty) break;
         const board = boardList.find(item => item.id === targetBoardId);
         if (!board) break;
+        board.revision = Number(local.revision) || 0;
+        board.cloudContentHash = local.cloudContentHash || "";
         await writeBoardSnapshotToCloud(targetBoardId, getBoardName(targetBoardId), cleanBoardSnapshot(local.snapshot), {
           forceMigration: Boolean(board.needsMigration)
         });
@@ -2322,8 +2357,15 @@ async function saveCachedBoardToCloud(boardId) {
       if (!boardsView?.hidden) renderBoards();
       return wrote;
     } catch (error) {
+      if (error.code === "board-conflict" && currentUser?.uid === userId) {
+        try {
+          await preserveConflictingBoard(targetBoardId);
+          return true;
+        } catch (recoveryError) { console.error("TeacherTiles recovery save failed", recoveryError); }
+      }
       console.error("TeacherTiles board save failed", error);
       if (activeBoardId === targetBoardId) setBoardStatus("Saved locally — cloud sync failed", true);
+      if (currentUser?.uid === userId) scheduleCloudBoardSave(15000, targetBoardId);
       return false;
     } finally {
       boardSaving = false;
@@ -2336,6 +2378,46 @@ async function saveCachedBoardToCloud(boardId) {
   } finally {
     if (boardSavePromise === task) boardSavePromise = null;
   }
+}
+
+async function preserveConflictingBoard(boardId) {
+  const uid = currentUser.uid;
+  const original = boardList.find(board => board.id === boardId);
+  const local = await readLocalBoardSnapshot(uid, boardId);
+  if (!original || !local?.snapshot) throw new Error("No local recovery snapshot available.");
+  // Use a separate board rather than guessing which teacher's changes to discard.
+  const ref = createBoardReference();
+  const recovered = { ...original, id: ref.id, name: `${original.name} (recovered changes)`,
+    revision: 0, cloudContentHash: "", storageFormat: "inline-v2", stateChunkCount: 0,
+    stateChunkHashes: [], needsMigration: false, legacyCleanupPending: false, localDirty: true };
+  boardList.push(recovered);
+  await cacheSnapshotLocally(ref.id, local.snapshot, { dirty: true });
+  try {
+    await writeBoardSnapshotToCloud(ref.id, recovered.name, local.snapshot, { isNew: true });
+  } catch (error) {
+    boardList = boardList.filter(board => board.id !== ref.id);
+    throw error;
+  }
+  if (currentUser?.uid !== uid) return;
+  // Edits made during recovery belong to the new board too.
+  const latest = localBoardMemory.get(localBoardKey(uid, boardId));
+  const latestSnapshot = activeBoardId === boardId && !boardLoading
+    ? cleanBoardSnapshot(boardApi().capture()) : latest?.snapshot;
+  if (activeBoardId === boardId) {
+    clearTimeout(localBoardSaveTimer);
+    activeBoardId = ref.id;
+    boardApi()?.setActiveBoardId(ref.id);
+    localStorage.setItem(activeBoardStorageKey(uid), ref.id);
+  }
+  if (latestSnapshot && contentHashForSnapshot(latestSnapshot) !== local.contentHash) {
+    await cacheSnapshotLocally(ref.id, latestSnapshot, { dirty: true });
+    scheduleCloudBoardSave(CLOUD_SAVE_DELAY, ref.id);
+  }
+  clearCloudBoardSaveTimer(boardId);
+  await deleteLocalBoardSnapshot(uid, boardId);
+  cacheBoardListMetadata();
+  setBoardStatus("Other device changed this board — your edits were saved as a recovered board.");
+  if (!boardsView?.hidden) renderBoards();
 }
 
 async function saveCurrentBoard({ immediate = false } = {}) {
@@ -2383,10 +2465,47 @@ function scheduleBoardSave(reason = "change") {
   }, LOCAL_SAVE_DELAY);
 }
 
+let boardLibraryRefreshPromise = null;
+function refreshBoardLibrary() {
+  if (!currentUser || !db || !firestoreSdk) return Promise.resolve();
+  if (boardLibraryRefreshPromise) return boardLibraryRefreshPromise;
+  const uid = currentUser.uid;
+  const idsAtStart = new Set(boardList.map(board => board.id));
+  boardLibraryRefreshPromise = (async () => {
+    const result = await firestoreSdk.getDocsFromServer(boardCollection(uid));
+    if (currentUser?.uid !== uid) return;
+    const remote = result.docs.map(normalizeBoardMetadata);
+    // Refresh the library independently of the open workspace. In particular,
+    // never advance the base revision of edits still pending on this device.
+    const preserved = new Map();
+    for (const board of [...boardList]) {
+      const local = await readLocalBoardSnapshot(uid, board.id);
+      if (board.id === activeBoardId || local?.dirty || !idsAtStart.has(board.id)) preserved.set(board.id, board);
+    }
+    if (currentUser?.uid !== uid) return;
+    boardList = sortBoards(remote.map(board => preserved.get(board.id) || board));
+    for (const board of preserved.values()) {
+      if (!boardList.some(item => item.id === board.id)) boardList.push(board);
+    }
+    cacheBoardListMetadata();
+  })().finally(() => { boardLibraryRefreshPromise = null; });
+  return boardLibraryRefreshPromise;
+}
+
 async function fetchBoards() {
   if (!currentUser || !db || !firestoreSdk) return [];
-  const snapshot = await firestoreSdk.getDocs(boardCollection(currentUser.uid));
+  const uid = currentUser.uid;
+  const snapshot = await firestoreSdk.getDocsFromServer(boardCollection(uid));
+  if (currentUser?.uid !== uid) return [];
   boardList = sortBoards(snapshot.docs.map(normalizeBoardMetadata));
+  // A board that has not reached the server yet must not disappear from the
+  // library just because the network result does not contain it.
+  const cached = restoreBoardListMetadata(uid);
+  for (const previous of cached?.boards || []) {
+    if (boardList.some(board => board.id === previous.id)) continue;
+    const local = await readLocalBoardSnapshot(uid, previous.id);
+    if (local?.dirty) boardList.push(previous);
+  }
   boardListLoadedFromNetwork = true;
   markBoardCloudLoadedForSession(currentUser.uid);
 
@@ -2412,8 +2531,15 @@ async function fetchBoards() {
 }
 
 async function refreshSingleBoardMetadata(boardId) {
-  const snapshot = await firestoreSdk.getDoc(boardDocument(currentUser.uid, boardId));
-  if (!snapshot.exists()) throw new Error("Board no longer exists.");
+  const uid = currentUser.uid;
+  const snapshot = await firestoreSdk.getDocFromServer(boardDocument(uid, boardId));
+  if (currentUser?.uid !== uid) throw new Error("Account changed while loading.");
+  if (!snapshot.exists()) {
+    const local = await readLocalBoardSnapshot(uid, boardId);
+    const cached = boardList.find(board => board.id === boardId);
+    if (local?.dirty && cached) return cached;
+    throw new Error("Board no longer exists.");
+  }
   const board = normalizeBoardMetadata(snapshot);
   const index = boardList.findIndex(item => item.id === boardId);
   if (index >= 0) boardList[index] = board;
@@ -2436,12 +2562,22 @@ async function readCloudBoardSnapshot(board) {
   }
 
   if (meta.storageFormat === "chunked-v2") {
-    const chunkSnapshot = await firestoreSdk.getDocs(boardStateCollection(currentUser.uid, meta.id));
+    const chunkSnapshot = await firestoreSdk.getDocsFromServer(boardStateCollection(currentUser.uid, meta.id));
     const docs = [...chunkSnapshot.docs].sort((a, b) => a.id.localeCompare(b.id));
+    if (docs.length !== meta.stateChunkCount || docs.some((doc, index) =>
+      doc.id !== `chunk-${String(index).padStart(3, "0")}` ||
+      !Array.isArray(doc.data().objects))) {
+      throw new Error("Board chunks changed while loading. Please retry; the saved board has been retained.");
+    }
     const objects = docs.flatMap(docSnapshot => {
       const data = docSnapshot.data() || {};
       return Array.isArray(data.objects) ? data.objects : [];
     });
+    const latest = await firestoreSdk.getDocFromServer(boardDocument(currentUser.uid, meta.id));
+    if (!latest.exists() || (Number(latest.data().revision) || 0) !== meta.revision ||
+        (latest.data().contentHash || "") !== meta.cloudContentHash || objects.length !== meta.objectCount) {
+      throw new Error("Board changed while loading. Please retry; the saved board has been retained.");
+    }
     return { snapshot: snapshotFromBoard(meta, objects), legacy: false };
   }
 
@@ -2455,13 +2591,18 @@ async function readCloudBoardSnapshot(board) {
 }
 
 async function resolveBoardSnapshot(boardId) {
-  let board = boardList.find(item => item.id === boardId);
-  if (!board) board = await refreshSingleBoardMetadata(boardId);
+  let board = await refreshSingleBoardMetadata(boardId);
 
   const local = await readLocalBoardSnapshot(currentUser.uid, boardId);
   if (local?.snapshot) {
     const localRevision = Math.max(0, Number(local.revision) || 0);
-    if ((local.dirty && localRevision >= board.revision) || (!local.dirty && localRevision === board.revision)) {
+    if (local.dirty || (localRevision === board.revision && local.contentHash === board.cloudContentHash)) {
+      if (local.dirty) {
+        // Keep the revision these edits were based on, so the transaction can
+        // detect a conflict instead of silently rebasing a stale snapshot.
+        board.revision = localRevision;
+        board.cloudContentHash = local.cloudContentHash || "";
+      }
       board.localDirty = Boolean(local.dirty);
       boardLocalHashes.set(boardId, localHashForSnapshot(local.snapshot));
       return { snapshot: cleanBoardSnapshot(local.snapshot), fromLocal: true, dirty: Boolean(local.dirty), legacy: false };
@@ -2517,10 +2658,9 @@ async function loadBoard(boardId, { closeView = true } = {}) {
     setBoardStatus("");
 
     if (result?.removedObjectIds?.length) {
-      const compatibleSnapshot = cleanBoardSnapshot(api.capture());
-      await cacheSnapshotLocally(boardId, compatibleSnapshot, { dirty: true });
-      scheduleCloudBoardSave(1800, boardId);
-    } else if (resolved.dirty || resolved.legacy) {
+      setBoardStatus("Some tiles could not display. Their saved data has been retained.", true);
+    }
+    if (resolved.dirty || resolved.legacy) {
       scheduleCloudBoardSave(resolved.legacy ? 2200 : CLOUD_SAVE_DELAY, boardId);
     }
 
@@ -3727,10 +3867,17 @@ async function openBoardsView() {
   boardsToggle?.setAttribute("aria-expanded", "true");
   setBoardsMenu("boards");
 
-  // Opening the manager is local-only: no Firestore read and no forced cloud write.
+  // Show local boards immediately, then discover boards saved by other sessions.
   await flushCurrentBoardLocal();
-  boardsLoading.hidden = true;
   renderBoards();
+  boardsLoading.hidden = false;
+  try {
+    await refreshBoardLibrary();
+    renderBoards();
+  } catch (error) {
+    console.warn("TeacherTiles could not refresh the board library", error);
+    setBoardStatus("Showing local boards — could not check for other saved boards. Reopen Boards to retry.", true);
+  } finally { boardsLoading.hidden = true; }
 }
 
 async function initializeBoardsForUser(user) {
@@ -3740,38 +3887,7 @@ async function initializeBoardsForUser(user) {
   setBoardStatus("Loading…");
 
   try {
-    const cached = restoreBoardListMetadata(user.uid);
-    const cachedIsFresh = Boolean(cached && cached.boards.length && (
-      boardCloudAlreadyLoadedThisSession(user.uid) || Date.now() - cached.savedAt < BOARD_LIST_CACHE_TTL
-    ));
-
-    if (cachedIsFresh) {
-      boardList = sortBoards(cached.boards);
-      boardListLoadedFromNetwork = false;
-      activeBoardId = boardList.some(board => board.id === cached.activeBoardId)
-        ? cached.activeBoardId
-        : (boardList.some(board => board.id === localStorage.getItem(activeBoardStorageKey(user.uid)))
-          ? localStorage.getItem(activeBoardStorageKey(user.uid))
-          : boardList[0].id);
-
-      const local = await readLocalBoardSnapshot(user.uid, activeBoardId);
-      if (local?.snapshot) {
-        boardApi().setActiveBoardId(activeBoardId);
-        boardApi().load(cleanBoardSnapshot(local.snapshot));
-        const active = boardList.find(board => board.id === activeBoardId);
-        if (active) {
-          active.localDirty = Boolean(local.dirty);
-          updateBoardMemoryFromSnapshot(active, cleanBoardSnapshot(local.snapshot));
-        }
-        if (local.dirty) scheduleCloudBoardSave(CLOUD_SAVE_DELAY);
-        setBoardStatus("");
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new CustomEvent("teachertiles:boardloaded", { detail: { boardId: activeBoardId } }));
-        });
-        return;
-      }
-    }
-
+    await restoreEmergencyBoardSnapshot(user.uid);
     await fetchBoards();
 
     if (!boardList.length) {
@@ -3785,7 +3901,20 @@ async function initializeBoardsForUser(user) {
     await loadBoard(desired, { closeView: false });
   } catch (error) {
     console.error("TeacherTiles could not initialize cloud boards", error);
-    setBoardStatus("Cloud save unavailable", true);
+    const cached = restoreBoardListMetadata(user.uid);
+    const desired = localStorage.getItem(activeBoardStorageKey(user.uid)) || cached?.activeBoardId;
+    const local = desired ? await readLocalBoardSnapshot(user.uid, desired) : null;
+    if (currentUser?.uid === user.uid && local?.snapshot && cached?.boards.some(board => board.id === desired)) {
+      boardList = cached.boards;
+      activeBoardId = desired;
+      const board = boardList.find(item => item.id === desired);
+      board.revision = Number(local.revision) || 0;
+      board.cloudContentHash = local.cloudContentHash || "";
+      boardApi().setActiveBoardId(desired);
+      boardApi().load(cleanBoardSnapshot(local.snapshot));
+      if (local.dirty) scheduleCloudBoardSave(15000, desired);
+      setBoardStatus("Opened local copy — cloud sync unavailable", true);
+    } else setBoardStatus("Cloud save unavailable", true);
   } finally {
     boardLoading = false;
   }
@@ -4190,18 +4319,81 @@ window.addEventListener("teachertiles:boardchange", event => {
   scheduleBoardSave(event?.detail?.reason || "change");
 });
 
-window.addEventListener("beforeunload", () => {
-  if (currentUser && activeBoardId) {
+function backupCurrentBoard() {
+  if (currentUser && activeBoardId && !boardLoading) {
     const api = boardApi();
     if (api) {
       try {
-        localStorage.setItem(
+        const board = boardList.find(item => item.id === activeBoardId);
+        sessionStorage.setItem(
           `teachertiles-last-local-board-${currentUser.uid}`,
-          JSON.stringify({ boardId: activeBoardId, snapshot: api.capture(), savedAt: Date.now() })
+          JSON.stringify({ boardId: activeBoardId, snapshot: api.capture(), savedAt: Date.now(),
+            revision: board?.revision || 0, cloudContentHash: board?.cloudContentHash || "" })
         );
       } catch {}
     }
   }
+}
+
+async function restoreEmergencyBoardSnapshot(uid) {
+  const key = `teachertiles-last-local-board-${uid}`;
+  for (const storage of [sessionStorage, localStorage]) {
+    let backup;
+    try { backup = JSON.parse(storage.getItem(key) || "null"); } catch { continue; }
+    if (!backup?.boardId || !backup.snapshot) continue;
+    const local = await readLocalBoardSnapshot(uid, backup.boardId);
+    if (!local || backup.savedAt > local.savedAt) {
+      const snapshot = cleanBoardSnapshot(backup.snapshot);
+      const contentHash = contentHashForSnapshot(snapshot);
+      const cloudContentHash = backup.cloudContentHash ?? local?.cloudContentHash ?? "";
+      await writeLocalBoardSnapshot(uid, backup.boardId, { snapshot, contentHash, cloudContentHash,
+        revision: backup.revision ?? local?.revision ?? 0, dirty: contentHash !== cloudContentHash });
+    }
+    try { storage.removeItem(key); } catch {}
+  }
+}
+
+let boardRefreshPromise = null;
+function refreshActiveBoardFromCloud() {
+  if (boardRefreshPromise || !currentUser || !activeBoardId || boardLoading) return boardRefreshPromise;
+  const uid = currentUser.uid;
+  const id = activeBoardId;
+  boardRefreshPromise = (async () => {
+    await saveCurrentBoard({ immediate: true });
+    if (currentUser?.uid !== uid || activeBoardId !== id || boardLoading) return;
+    const local = await readLocalBoardSnapshot(uid, id);
+    if (!local || local.dirty) return;
+    const before = contentHashForSnapshot(boardApi().capture());
+    const remote = await firestoreSdk.getDocFromServer(boardDocument(uid, id));
+    if (!remote.exists()) return;
+    const meta = normalizeBoardMetadata(remote);
+    if (meta.cloudContentHash === local.contentHash) return;
+    const cloud = await readCloudBoardSnapshot(meta);
+    if (currentUser?.uid !== uid || activeBoardId !== id || boardLoading ||
+        contentHashForSnapshot(boardApi().capture()) !== before ||
+        localBoardMemory.get(localBoardKey(uid, id))?.dirty) return;
+    boardLoading = true;
+    try {
+      boardList = boardList.map(board => board.id === id ? meta : board);
+      boardApi().load(cloud.snapshot);
+      await cacheSnapshotLocally(id, cloud.snapshot, { dirty: false });
+    } finally { boardLoading = false; }
+  })().catch(error => console.warn("TeacherTiles could not refresh the active board", error))
+    .finally(() => { boardRefreshPromise = null; });
+  return boardRefreshPromise;
+}
+
+window.addEventListener("beforeunload", backupCurrentBoard);
+window.addEventListener("pagehide", backupCurrentBoard);
+window.addEventListener("focus", refreshActiveBoardFromCloud);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    backupCurrentBoard();
+    void saveCurrentBoard({ immediate: true });
+  } else void refreshActiveBoardFromCloud();
+});
+window.addEventListener("online", () => {
+  for (const board of boardList) scheduleCloudBoardSave(0, board.id);
 });
 
 window.TeacherTilesAuth = {
