@@ -1302,6 +1302,8 @@ document.addEventListener('click',e=>{
 },true);
 
 document.addEventListener('change',e=>{
+  // Restoring saved slider values dispatches synthetic change events too.
+  if(!e.isTrusted)return;
   const target=e.target;
   if(target instanceof HTMLInputElement&&target.type==='range')playUiSfx('click',1,target.closest('.module'));
 },true);
