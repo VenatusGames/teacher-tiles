@@ -19179,18 +19179,24 @@ body .sticker-module>.module-delete{
   right:auto!important;translate:-50% -50%;rotate:calc(-1 * var(--sticker-rotation,0deg));transform:none!important;
 }
 
-/* Keep the YouTube link row in the tile's upper margin, clear of playback. */
+
+/* Reveal a bottom link-entry shelf without covering the video. */
+.youtube-module{padding:8px}
+.youtube-module .youtube-stage{margin-bottom:0;transition:margin-bottom .22s ease}
+.youtube-module:is(:hover,:has(.youtube-controls :focus)) .youtube-stage{margin-bottom:48px}
 .youtube-module .youtube-controls{
-  top:3px;bottom:auto;left:12px;right:108px;z-index:25;
-  grid-template-columns:minmax(0,1fr) auto 22px;gap:4px;padding:0;
-  background:transparent;box-shadow:none;backdrop-filter:none;border-radius:6px;
-  transform:translateY(-3px);
+  top:auto;bottom:8px;left:8px;right:8px;z-index:25;
+  grid-template-columns:minmax(0,1fr) auto 34px;gap:6px;padding:0;
+  background:transparent;box-shadow:none;backdrop-filter:none;border-radius:9px;
+  transition:opacity .18s ease,transform .22s ease,visibility .22s;
 }
-.youtube-module .youtube-controls :is(.youtube-url,.youtube-load,.youtube-bg){height:22px;border-radius:6px;font-size:11px}
-.youtube-module .youtube-url{padding:0 6px}
-.youtube-module .youtube-load{padding:0 7px}
-.youtube-module .youtube-bg{width:22px;grid-column:auto}
-.youtube-module .youtube-bg .icon-palette{scale:.75}
-.youtube-module .youtube-error{top:31px;bottom:auto}
-.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-controls{top:3%;bottom:auto;left:8.5%;right:29%}
-.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-error{top:12%;bottom:auto}
+.youtube-module:not(:hover):not(:has(.youtube-controls :focus)) .youtube-controls{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(48px)}
+.youtube-module:is(:hover,:has(.youtube-controls :focus)) .youtube-controls{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.youtube-module .youtube-bg{grid-column:auto}
+.youtube-module .youtube-error{top:auto;bottom:44px;visibility:hidden}
+.youtube-module:is(:hover,:has(.youtube-controls :focus)) .youtube-error{visibility:visible}
+.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-stage{margin-bottom:0;transition:height .22s ease}
+.youtube-module[data-tile-skin="youtube-retro-tv"]:is(:hover,:has(.youtube-controls :focus)) .youtube-stage{height:calc(74% - 48px)}
+.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-controls{top:auto;bottom:14.5%;left:8.5%;right:29%}
+.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-error{top:auto;bottom:calc(14.5% + 36px)}
+@media(prefers-reduced-motion:reduce){.youtube-module .youtube-stage,.youtube-module .youtube-controls{transition:none}}

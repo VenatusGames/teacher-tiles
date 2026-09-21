@@ -8624,6 +8624,7 @@ function setupImage(m){
 }
 
 function setupYoutube(m){
+  m.addEventListener('pointerleave',()=>{if(m.querySelector('.youtube-controls')?.contains(document.activeElement))document.activeElement.blur()});
   const frame=m.querySelector('.youtube-frame'),empty=m.querySelector('.youtube-empty'),input=m.querySelector('.youtube-url'),load=m.querySelector('.youtube-load'),error=m.querySelector('.youtube-error');
   m.querySelector('.youtube-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   const getId=value=>{
