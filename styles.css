@@ -12143,7 +12143,7 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   pointer-events:none;
 }
 
-.robothfw-thruster--left{left:20.9%}
+.robothfw-thruster--left{left:21.9%}
 .robothfw-thruster--right{right:21.9%}
 
 .robothfw-thruster i,
@@ -12297,6 +12297,12 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   border-radius:26% 74% 62% 38%;
   box-shadow:0 0 10px rgba(148,163,184,.35);
 }
+.robothfw-particle--spark{
+  height:calc(var(--burst-size,8px) * .38);
+  border-radius:999px;
+  background:linear-gradient(90deg,#fffbe6,var(--burst-color,#fbbf24));
+  box-shadow:0 0 8px #ffd86b;
+}
 .robothfw-particle--debris{
   border-radius:3px;
   background:linear-gradient(145deg,#dbe4ee,#64748b 62%,#334155);
@@ -12342,7 +12348,12 @@ body>.profile-classes-panel[hidden]{display:none!important}.classes-window__back
   animation:robotHfwComicBurst var(--comic-duration,.86s) cubic-bezier(.16,.8,.24,1) var(--comic-delay,0ms) forwards;
 }
 .robothfw-comic-burst--front{z-index:7}
-.robothfw-comic-burst--behind{z-index:2}
+.robothfw-comic-burst--behind{
+  z-index:2;
+  background:radial-gradient(circle,#fff9ca 0%,#ffd05c 22%,#ff9d3866 48%,transparent 70%);
+  border-radius:50%;
+  filter:blur(5px);
+}
 .robothfw-comic-burst--small{opacity:.9}
 .robothfw-comic-burst--mini{filter:drop-shadow(0 5px 8px rgba(15,23,42,.1))}
 

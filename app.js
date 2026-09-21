@@ -1431,7 +1431,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
   en:{
     sticky:['Sticky Note','Write and format notes'],textbubble:['Text Bubble','Simple scalable text display'],todo:['To-Do','Build a customizable checklist'],visualschedule:['Visual Schedule','Build a picture-based daily schedule'],lessonplannertile:['Lesson Planner','Show today’s or this week’s lesson plans'],
     image:['Image','Display an image on the board'],youtube:['YouTube','Play a YouTube video'],windowshare:['Window Share','Share a tab, window, or screen'],timer:['Visual Timer','Shape-based progress timer'],
-    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],chime:['Chime','Ring a meditation chime'],transitionbell:['Transition Bell','Ring a classroom transition bell'],
+    dice:['Dice','Roll one to four dice'],seatingchart:['Seating Chart','Arrange your class and randomize seats'],fishtank:['Fish Tank','A quiet classroom brings more fish'],quietcritters:['Quiet Critters','Magical forest visitors appear when the room stays quiet'],chime:['Chime','Ring a meditation chime'],meditation:['Meditation','Follow a calming light as you breathe in and out'],transitionbell:['Transition Bell','Ring a classroom transition bell'],
     interactive:['Interactive Timers','Hourglass, candle, rocket, and sunflower'],clock:['Clock','Current time display'],date:['Date','Today’s date in your chosen style'],calendar:['Calendar','Events, birthdays, holidays, and months'],
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],robothfw:['Robot HFW','Blast flying robots carrying sight words'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],wordweb:['Word Web','Connect related words around a central idea'],venndiagram:['Venn Diagrams','Compare ideas with editable, draggable sets'],essentialquestion:['Essential Question','Display a quoted essential question with an optional subheading'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
@@ -1446,7 +1446,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
   es:{
     sticky:['Nota adhesiva','Escribe y da formato a notas'],textbubble:['Burbuja de texto','Texto simple que se adapta de tamaño'],todo:['Lista de tareas','Crea una lista personalizable'],visualschedule:['Horario visual','Crea un horario diario con imágenes'],lessonplannertile:['Planificador de lecciones','Muestra los planes de hoy o de esta semana'],
     image:['Imagen','Muestra una imagen en el tablero'],youtube:['YouTube','Reproduce un video de YouTube'],windowshare:['Compartir ventana','Comparte una pestaña, ventana o pantalla'],timer:['Temporizador visual','Temporizador de progreso con formas'],
-    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],chime:['Campanilla','Haz sonar una campanilla de meditación'],transitionbell:['Campana de transición','Haz sonar una campana de transición del aula'],
+    dice:['Dados','Lanza de uno a cuatro dados'],seatingchart:['Plano de asientos','Organiza los asientos de tu clase'],fishtank:['Acuario','El silencio atrae más peces'],quietcritters:['Criaturas silenciosas','Visitantes mágicos aparecen cuando el salón está en silencio'],chime:['Campanilla','Haz sonar una campanilla de meditación'],meditation:['Meditación','Sigue una luz relajante al inhalar y exhalar'],transitionbell:['Campana de transición','Haz sonar una campana de transición del aula'],
     interactive:['Temporizadores interactivos','Reloj de arena, vela, cohete y girasol'],clock:['Reloj','Muestra la hora actual'],date:['Fecha','La fecha de hoy en el estilo que elijas'],calendar:['Calendario','Eventos, cumpleaños, días festivos y meses'],
     stopwatch:['Cronómetro','Cuenta el tiempo con vueltas'],progressbar:['Barra de progreso','Avanza hasta una hora final'],draw:['Dibujar','Dibuja libremente por el tablero'],imagesearch:['Buscar imágenes','Busca imágenes y arrástralas al tablero'],dictionary:['Diccionario','Busca entradas completas de palabras'],translation:['Traducción','Traduce texto escrito o hablado'],attendance:['Asistencia','Mueve los imanes de estudiantes de Inicio a Presente'],writinglines:['Líneas de escritura','Plantilla para practicar la escritura'],
     abc:['ABC','Tarjetas animadas del alfabeto'],numberflashcards:['Tarjetas numéricas','Tarjetas animadas del 1 al 100'],cvcword:['Palabra CVC','Tarjetas animadas de palabras CVC'],highfrequency:['Palabras de alta frecuencia','Tarjetas animadas por nivel'],robothfw:['Robot HFW','Explota robots voladores con palabras de uso frecuente'],customflashcards:['Tarjetas personalizadas','Crea colecciones reutilizables con texto e imágenes'],wordweb:['Red de palabras','Conecta palabras relacionadas alrededor de una idea central'],venndiagram:['Diagramas de Venn','Compara ideas con conjuntos editables y arrastrables'],essentialquestion:['Pregunta esencial','Muestra una pregunta esencial entre comillas con un subtítulo opcional'],shapes:['Figuras','Explora lados, vértices y datos geométricos'],numberline:['Recta numérica','Recta numérica interactiva y ampliable'],
@@ -3413,6 +3413,7 @@ function setupModuleByType(m,type){
   if(type==='sleepymonster')window.TeacherTilesSleepyMonster.setup(m);
   if(type==='quietcritters')window.TeacherTilesQuietCritters.setup(m);
   if(type==='chime')window.TeacherTilesChime.setup(m);
+  if(type==='meditation')window.TeacherTilesMeditation.setup(m);
   if(type==='transitionbell')window.TeacherTilesTransitionBell.setup(m);
   if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
   if(type==='backgroundremover'){setupBoardPhotoDrop();window.TeacherTilesBackgroundRemover.setup(m);}
@@ -9246,6 +9247,7 @@ const EDITABLE_TILE_HEADINGS={
   quoteoftheday:'.widget-title',
   colorpicker:'.widget-title',
   rainbow:'.widget-title',
+  meditation:'.meditation-title',
   piano:'.widget-title',
   musicscore:'.widget-title',
   vocabulary:'.widget-title',
@@ -14303,6 +14305,7 @@ function setupRobotHfw(m){
   let wordVisible=false;
   let resizeFrame=0;
   let started=false;
+  let disposed=false;
 
   const measurer=document.createElement('span');
   measurer.className='robothfw-word robothfw-measurer';
@@ -14310,7 +14313,7 @@ function setupRobotHfw(m){
   stage.appendChild(measurer);
 
   const schedule=(fn,delay)=>{
-    const timer=window.setTimeout(()=>{timers.delete(timer);fn()},delay);
+    const timer=window.setTimeout(()=>{timers.delete(timer);if(!disposed&&m.isConnected)fn()},delay);
     timers.add(timer);
     return timer;
   };
@@ -14342,7 +14345,7 @@ function setupRobotHfw(m){
   };
 
   const playTileAudio=(prototype,baseVolume=.4,playbackRate=1)=>{
-    if(!m.isConnected)return;
+    if(disposed||!m.isConnected)return;
     const level=tileAudioLevel(m);
     if(level<=0)return;
     try{
@@ -14359,7 +14362,7 @@ function setupRobotHfw(m){
     }catch{}
   };
 
-  const robotIsFlying=()=>started&&['intro','active','warn','angry','blasting','escaping'].includes(phase)&&!robot.classList.contains('is-hidden');
+  const robotIsFlying=()=>!disposed&&m.isConnected&&started&&['intro','active','warn','angry','blasting','escaping'].includes(phase)&&!robot.classList.contains('is-hidden');
   const syncRocketLoop=()=>{
     const level=tileAudioLevel(m);
     rocketLoop.volume=clamp(.024*level,0,.04);
@@ -14428,7 +14431,7 @@ function setupRobotHfw(m){
     schedule(()=>node.remove(),lifetime);
     return node;
   };
-  const playExplosionMix=(baseVolume=.62)=>{
+  const playExplosionMix=(baseVolume=.52)=>{
     playTileAudio(explodePrototype,baseVolume,1);
     playTileAudio(explodeLayerPrototype,baseVolume*.48,1.02);
   };
@@ -14460,7 +14463,7 @@ function setupRobotHfw(m){
       '--comic-duration':popped?'.86s':'.72s'
     },1000);
 
-    const miniCount=popped?6:3;
+    const miniCount=popped?3:2;
     for(let i=0;i<miniCount;i++){
       const angle=Math.random()*Math.PI*2;
       const distance=(popped?48:32)+Math.random()*(popped?82:48);
@@ -14477,9 +14480,9 @@ function setupRobotHfw(m){
         },1200);
     }
 
-    createBurst(x,y,{count:popped?38:22,color:warmColor,size:popped?16:10,spread:popped?148:92,className:'robothfw-particle robothfw-particle--spark'});
-    createBurst(x,y,{count:popped?22:12,color:coolColor,size:popped?11:8,spread:popped?112:62,className:'robothfw-particle robothfw-particle--metal'});
-    createBurst(x,y,{count:popped?14:8,color:'rgba(71,85,105,.86)',size:popped?9:7,spread:popped?132:70,className:'robothfw-particle robothfw-particle--debris'});
+    createBurst(x,y,{count:popped?22:14,color:warmColor,size:popped?8:6,spread:popped?148:92,className:'robothfw-particle robothfw-particle--spark'});
+    createBurst(x,y,{count:popped?12:8,color:coolColor,size:popped?11:8,spread:popped?112:62,className:'robothfw-particle robothfw-particle--metal'});
+    createBurst(x,y,{count:popped?8:5,color:'rgba(71,85,105,.86)',size:popped?9:7,spread:popped?132:70,className:'robothfw-particle robothfw-particle--debris'});
     createParticle('robothfw-shockwave',x,y,{'--ring-color':warmColor},760);
     createParticle('robothfw-shockwave robothfw-shockwave--late',x,y,{'--ring-color':coolColor},900);
     createParticle('robothfw-flash',x,y,{'--flash-color':popped?'rgba(255,251,235,.98)':'rgba(254,202,202,.9)'},460);
@@ -14493,7 +14496,8 @@ function setupRobotHfw(m){
   };
   const robotCenter=()=>{
     const stageRect=stage.getBoundingClientRect(),rect=robot.getBoundingClientRect();
-    return{x:rect.left-stageRect.left+rect.width*.5,y:rect.top-stageRect.top+rect.height*.5};
+    const scaleX=stageRect.width/stage.offsetWidth||1,scaleY=stageRect.height/stage.offsetHeight||1;
+    return{x:(rect.left-stageRect.left+rect.width*.5)/scaleX-stage.clientLeft,y:(rect.top-stageRect.top+rect.height*.5)/scaleY-stage.clientTop};
   };
   const clearEffects=()=>{
     stage.querySelectorAll('.robothfw-particle,.robothfw-shockwave,.robothfw-smoke,.robothfw-flash,.robothfw-comic-burst').forEach(node=>node.remove());
@@ -14642,7 +14646,7 @@ function setupRobotHfw(m){
     setStatus(`You popped ${poppedWord}.`);
     updateHud();
     const {x,y}=robotCenter();
-    playExplosionMix(.64);
+    playExplosionMix(.52);
     createExplosion(x,y,{power:'pop'});
     schedule(()=>robot.classList.add('is-hidden'),700);
     schedule(()=>spawnRobot(),1080);
@@ -14713,13 +14717,14 @@ function setupRobotHfw(m){
       setFace('alert');
       setStatus('No words are enabled for this pack.');
       syncRocketLoop();
-      showEndcard('No words enabled','Open settings and turn on at least one word for this pack.',{showStart:false,showReset:true});
+      showEndcard('No words enabled','Choose Edit Words and turn on at least one word for this pack.',{showStart:false,showReset:true});
       updateHud();
-    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
+    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade]}.`);
     if(notify)notifyBoardChanged('robot-hfw-reset');
   };
 
   const startGame=()=>{
+    if(disposed||!m.isConnected)return;
     if(['active','warn','angry','intro','blasting','escaping','popped'].includes(phase))return;
     if(phase==='won'||phase==='lost'||phase==='empty'||!queue.length)resetRound(false);
     if(!queue.length)return;
@@ -14788,7 +14793,7 @@ function setupRobotHfw(m){
     if(!enabledWords(grade).length){resetRound(false);return}
     if(phase==='lost')showEndcard('Game over','The robots blasted through your health bar.',{showStart:true,startLabel:'Start Again',showReset:true});
     else if(phase==='won')showEndcard('Pack complete!','Every robot in this pack has been popped.',{showStart:true,startLabel:'Play Again',showReset:true});
-    else if(!started||phase==='ready'||phase==='empty')setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
+    else if(!started||phase==='ready'||phase==='empty')setReadyPanel(`Press Start to battle the ${gradeNames[grade]}.`);
     else if(currentWord||incomingWord){
       hideEndcard();
       robot.classList.remove('is-hidden');
@@ -14808,12 +14813,29 @@ function setupRobotHfw(m){
         setFace('exclaim');
         syncRocketLoop();
       }
-    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade].toLowerCase()}.`);
+    }else setReadyPanel(`Press Start to battle the ${gradeNames[grade]}.`);
     updateHud();
   };
 
+  const stopSounds=()=>{
+    rocketLoop.pause();try{rocketLoop.currentTime=0}catch{}
+    for(const sound of m._activeTileSounds||[]){sound.pause();try{sound.currentTime=0}catch{}}
+    m._activeTileSounds?.clear();
+  };
+  const priorDeactivate=m._deactivate;
+  m._deactivate=()=>{
+    const pending=currentWord||incomingWord;
+    if(pending&&['intro','active','warn','angry'].includes(phase))queue.unshift(pending);
+    setReadyPanel('Press Start to continue your word pack.');
+    stage.classList.remove('is-hit');
+    cancelAnimationFrame(resizeFrame);
+    stopSounds();
+    priorDeactivate?.();
+  };
   const prior=m._cleanup;
   m._cleanup=()=>{
+    disposed=true;started=false;
+    stopSounds();
     prior?.();
     clearTimers();clearEffects();stopThreatTimer();
     ro.disconnect();cancelAnimationFrame(resizeFrame);measurer.remove();
