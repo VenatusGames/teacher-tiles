@@ -19293,7 +19293,5 @@ body .sticker-module>.module-delete{
     font-size:8px!important;
     letter-spacing:-.02em;
   }
-  .clock-module .clock-toggle-seconds{font-size:0!important}
-  .clock-module .clock-toggle-seconds::after{content:"Sec";font:700 8px/1 Inter,system-ui,sans-serif}
 }
 @media(prefers-reduced-motion:reduce){.clock-customization{transition:none!important}}
