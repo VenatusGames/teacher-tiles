@@ -83,9 +83,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     let box=await page.locator('#resize-test').boundingBox();
     let handle=await page.locator('#resize-test [data-resize=br]').boundingBox();await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();await page.mouse.move(handle.x+handle.width/2-box.width*.45,handle.y+handle.height/2-box.height*.45,{steps:10});await page.mouse.up();
     const small=await page.evaluate(()=>{const m=document.getElementById('resize-test'),s=serializeBoardModule(m);return{scale:tileUniformScale(m),width:m.offsetWidth,height:m.offsetHeight,saved:s.transform.uniformScale}});
-    assert(small.scale<.65&&small.scale>.4,JSON.stringify(small));assert.equal(small.width,270);assert.equal(small.height,387);assert.equal(small.scale,small.saved);
+    assert.equal(small.scale,1);assert.equal(small.width,165);assert.equal(small.height,237);assert.equal(small.scale,small.saved);
     await page.evaluate(()=>undoBoardAction());assert.equal(await page.evaluate(()=>tileUniformScale(document.getElementById('resize-test'))),1);
-    await page.evaluate(()=>redoBoardAction());assert(await page.evaluate(()=>tileUniformScale(document.getElementById('resize-test'))<1));
+    await page.evaluate(()=>redoBoardAction());assert(await page.evaluate(()=>document.getElementById('resize-test').offsetWidth<300));
     const pinned=await page.evaluate(()=>{
       const m=document.getElementById('resize-test');setTilePinned(m,true);const before=m.getBoundingClientRect();boardCamera.scale=.7;applyBoardCamera();const after=m.getBoundingClientRect();
       setTilePinned(m,false);boardCamera.scale=1;applyBoardCamera();return{before:[before.x,before.y,before.width,before.height],after:[after.x,after.y,after.width,after.height]};
@@ -117,6 +117,6 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.locator('.tile-tab').nth(1).click();
     assert(await page.evaluate(()=>testSounds.filter(s=>s.src.includes('ambient-meditation')).every(s=>s.paused)),'switching tabs stops hidden music');
     assert.deepEqual(errors,[]);
-    console.log('Meditation styling/timing/music completion/crossfade, tab customization/persistence/merge undo, and uniform resize passed.');
+    console.log('Meditation styling/timing/music completion/crossfade, tab customization/persistence/merge undo, and independent resize passed.');
   }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

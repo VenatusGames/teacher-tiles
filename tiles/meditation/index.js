@@ -11,6 +11,34 @@
     const exhaleInput=m.querySelector('.meditation-exhale');
     const durationInput=m.querySelector('.meditation-duration');
     const remaining=m.querySelector('.meditation-remaining');
+    const paletteButton=m.querySelector('.meditation-palette-toggle'),drawer=m.querySelector('.meditation-palette-drawer');
+    const palettes={lagoon:['Lagoon','#d4fff0','#55c9ba','#087f8c'],ocean:['Ocean','#d6f2ff','#66bdec','#305db6'],dusk:['Dusk','#f1e2ff','#bd9be8','#7852b5'],sunrise:['Sunrise','#fff0ce','#efac86','#be665b']};
+    let palette='lagoon',drawerFrame=0;
+    const setPalette=value=>{
+      palette=palettes[value]?value:'lagoon';m.dataset.medPalette=palette;
+      drawer.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.palette===palette)));
+    };
+    const closeDrawer=()=>{cancelAnimationFrame(drawerFrame);if(drawer.matches(':popover-open'))drawer.hidePopover();paletteButton.setAttribute('aria-expanded','false');m.classList.remove('has-meditation-palette-open');};
+    const positionDrawer=()=>{
+      if(!m.isConnected){closeDrawer();return;}
+      const r=paletteButton.getBoundingClientRect();
+      drawer.style.left=Math.max(8,Math.min(r.left,innerWidth-drawer.offsetWidth-8))+'px';
+      drawer.style.top=Math.max(8,Math.min(r.top-drawer.offsetHeight-8,innerHeight-drawer.offsetHeight-8))+'px';
+      drawerFrame=requestAnimationFrame(positionDrawer);
+    };
+    const heading=document.createElement('strong');heading.textContent='Breathing colors';drawer.append(heading);
+    for(const [key,[name,light,mid,deep]] of Object.entries(palettes)){
+      const button=document.createElement('button');button.type='button';button.dataset.palette=key;
+      const swatch=document.createElement('i');swatch.setAttribute('aria-hidden','true');swatch.style.background=`radial-gradient(circle at 30% 25%,${light},${mid} 55%,${deep})`;
+      const label=document.createElement('span');label.textContent=name;button.append(swatch,label);
+      button.addEventListener('click',()=>{setPalette(key);notifyBoardChanged('meditation-palette');closeDrawer();paletteButton.focus({preventScroll:true});});drawer.append(button);
+    }
+    paletteButton.addEventListener('click',()=>{if(drawer.matches(':popover-open')){closeDrawer();return;}drawer.showPopover();paletteButton.setAttribute('aria-expanded','true');m.classList.add('has-meditation-palette-open');positionDrawer();});
+    const outsideDrawer=event=>{if(!drawer.contains(event.target)&&!paletteButton.contains(event.target))closeDrawer();};
+    const escapeDrawer=event=>{if(event.key==='Escape'&&drawer.matches(':popover-open')){event.stopPropagation();closeDrawer();paletteButton.focus({preventScroll:true});}};
+    document.addEventListener('pointerdown',outsideDrawer);document.addEventListener('keydown',escapeDrawer,true);
+    drawer.addEventListener('pointerdown',event=>event.stopPropagation());drawer.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+    setPalette('lagoon');
     const resizeObserver=new ResizeObserver(()=>m.classList.toggle('meditation-compact',m.clientHeight<490||m.clientWidth<330));
     resizeObserver.observe(m);
     let inhaleSeconds=4,exhaleSeconds=6,durationSeconds=180;
@@ -96,8 +124,9 @@
     const onVisibility=()=>{if(document.hidden)pause();};
     document.addEventListener('visibilitychange',onVisibility);
     // Sessions intentionally reopen at rest, never silently running offscreen.
-    m._boardGetState=()=>({version:3,inhaleSeconds,exhaleSeconds,durationSeconds,showCues:showCues.checked});
+    m._boardGetState=()=>({version:4,inhaleSeconds,exhaleSeconds,durationSeconds,showCues:showCues.checked,palette});
     m._boardSetState=state=>{
+      setPalette(state?.palette);
       showCues.checked=state?.showCues!==false;
       inhaleSeconds=Math.min(20,Math.max(1,Number(state?.inhaleSeconds)||4));
       exhaleSeconds=Math.min(20,Math.max(1,Number(state?.exhaleSeconds)||6));
@@ -106,9 +135,9 @@
       elapsed=0;pause();rewind();
     };
     const priorDeactivate=m._deactivate;
-    m._deactivate=()=>{pause();priorDeactivate?.();};
+    m._deactivate=()=>{closeDrawer();pause();priorDeactivate?.();};
     const priorCleanup=m._cleanup;
-    m._cleanup=()=>{disposed=true;pause();resizeObserver.disconnect();document.removeEventListener('visibilitychange',onVisibility);m.removeEventListener('teachertiles:tileaudiochange',syncMusic);window.removeEventListener('teachertiles:audiopreferenceschange',syncMusic);music.forEach(audio=>{audio.removeAttribute('src');audio.load();});priorCleanup?.();};
+    m._cleanup=()=>{closeDrawer();document.removeEventListener('pointerdown',outsideDrawer);document.removeEventListener('keydown',escapeDrawer,true);disposed=true;pause();resizeObserver.disconnect();document.removeEventListener('visibilitychange',onVisibility);m.removeEventListener('teachertiles:tileaudiochange',syncMusic);window.removeEventListener('teachertiles:audiopreferenceschange',syncMusic);music.forEach(audio=>{audio.removeAttribute('src');audio.load();});priorCleanup?.();};
     render();
   }
   window.TeacherTilesMeditation=Object.freeze({setup});

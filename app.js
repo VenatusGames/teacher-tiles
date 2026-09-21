@@ -66,9 +66,10 @@ function applyModuleTransform(m,state){
   if(!m||!state)return;
   const priorSnapGroup=m.dataset.snapGroup||'';
   const displayHeightOffset=Number(m._resizeDisplayHeightOffset)||0;
-  const stateHeight=Number(state.height)||m.offsetHeight;
+  const legacyScale=Math.max(.5,Math.min(1,Number(state.uniformScale)||1));
+  const stateHeight=(Number(state.height)||m.offsetHeight)*legacyScale;
   if(displayHeightOffset)m._transientRestingHeight=stateHeight;
-  Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width}px`,height:`${stateHeight+displayHeightOffset}px`});
+  Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width*legacyScale}px`,height:`${stateHeight+displayHeightOffset}px`});
   setTileUniformScale(m,state.uniformScale||1);
   if(state.rotation!==null){
     m.dataset.stickerRotation=String(state.rotation);
@@ -2172,13 +2173,12 @@ function capturePinnedTileScreenAnchor(m){
   m.dataset.pinScreenX=String(snapScreenCoordinate(rect.left+rect.width/2));
   m.dataset.pinScreenY=String(snapScreenCoordinate(rect.top+rect.height/2));
 }
-function tileUniformScale(m){return Math.max(.5,Math.min(1,Number(m?.dataset.uniformScale)||1));}
+function tileUniformScale(m){return 1;}
 function tileDisplayWidth(m){return m.offsetWidth*tileUniformScale(m);}
 function tileDisplayHeight(m){return m.offsetHeight*tileUniformScale(m);}
-function setTileUniformScale(m,value){
-  const scale=Math.max(.5,Math.min(1,Number(value)||1));
-  if(scale<.999)m.dataset.uniformScale=String(scale);else delete m.dataset.uniformScale;
-  m.style.scale=String(scale/(isTilePinned(m)?Math.max(.05,boardCamera.scale):1));
+function setTileUniformScale(m){
+  delete m.dataset.uniformScale;
+  m.style.scale=String(isTilePinned(m)?1/Math.max(.05,boardCamera.scale):1);
 }
 function moduleViewportScale(m){
   if(!m)return Math.max(.05,boardCamera.scale||1);
@@ -4278,81 +4278,33 @@ function setupDrag(m){
 }
 
 function setupResize(m){
-  let scaleHint=null,scaleHintTimer=0;
-  const hideScaleHint=()=>{clearTimeout(scaleHintTimer);scaleHint?.remove();scaleHint=null;};
-  const updateScaleHint=()=>{
-    const scale=tileUniformScale(m);
-    if(scale>=1){hideScaleHint();return;}
-    clearTimeout(scaleHintTimer);
-    if(!scaleHint){
-      scaleHint=document.createElement('div');scaleHint.className='tile-scale-hint';
-      scaleHint.setAttribute('role','status');document.body.append(scaleHint);
-    }
-    const label=`Proportional scaling · ${Math.round(scale*100)}%${scale<=.5?' · Minimum':''}`;
-    if(scaleHint.textContent!==label)scaleHint.textContent=label;
-    const rect=m.getBoundingClientRect();
-    scaleHint.style.left=Math.max(8,Math.min(rect.left+(rect.width-scaleHint.offsetWidth)/2,innerWidth-scaleHint.offsetWidth-8))+'px';
-    scaleHint.style.top=Math.max(8,rect.top-scaleHint.offsetHeight-8)+'px';
-  };
-  const priorResizeDeactivate=m._deactivate,priorResizeCleanup=m._cleanup;
-  m._deactivate=()=>{hideScaleHint();priorResizeDeactivate?.();};
-  m._cleanup=()=>{hideScaleHint();priorResizeCleanup?.();};
   const tabbed=m.classList.contains('is-tabbed-tile');m.classList.remove('is-tabbed-tile');
-  const minimumStyle=getComputedStyle(m);
-  m._resizeMinimum={width:(parseFloat(minimumStyle.minWidth)||220)*.9,height:(parseFloat(minimumStyle.minHeight)||180)*.9};
+  const cs=getComputedStyle(m);
+  m._resizeMinimum={width:Math.max(m.dataset.type==='meditation'?160:120,(parseFloat(cs.minWidth)||220)*.45),height:Math.max(100,(parseFloat(cs.minHeight)||180)*.45)};
   if(tabbed)m.classList.add('is-tabbed-tile');
   m.style.setProperty('min-width',m._resizeMinimum.width+'px','important');
   m.style.setProperty('min-height',m._resizeMinimum.height+'px','important');
-  for(const d of ['t','r','b','l'])if(!m.querySelector(`[data-resize="${d}"]`)){const h=document.createElement('div');h.className=`resize-handle resize-handle--${d}`;h.dataset.resize=d;m.appendChild(h)}
+  for(const d of ['t','r','b','l'])if(!m.querySelector('[data-resize="'+d+'"]')){const h=document.createElement('div');h.className='resize-handle resize-handle--'+d;h.dataset.resize=d;m.appendChild(h);}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
-    if(e.button!==0)return;
-    e.preventDefault();e.stopPropagation();
-    const before=captureModuleTransform(m);
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight;
+    const minimum=m._tileTabs?.minimum||m._resizeMinimum,mw=minimum.width,mh=minimum.height,viewportScale=moduleViewportScale(m);
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
-    const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop;
-    const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);
-    const mw=Number(m._tileTabs?.minimum?.width)||m._resizeMinimum.width,mh=Number(m._tileTabs?.minimum?.height)||m._resizeMinimum.height;
-    const viewportScale=moduleViewportScale(m)/initialScale;
-    let uniformBase=initialScale<1?{w:m.offsetWidth,h:m.offsetHeight}:null;
-    const corner=d.length===2;
-    if(corner)updateScaleHint();else hideScaleHint();
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
-      let wantedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
-      let wantedH=d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh;
-      wantedW=Math.max(1,wantedW);wantedH=Math.max(1,wantedH);
-      if(m._imageRatio){if(d==='t'||d==='b')wantedW=wantedH*m._imageRatio;else wantedH=wantedW/m._imageRatio;}
-      // Edges reflow one dimension; corners preserve the shape at the boundary.
-      if(!corner){
-        const scale=initialScale;
-        const w=Math.max(mw,wantedW/scale),height=Math.max(mh,wantedH/scale);
-        const visualW=w*scale,visualH=height*scale;
-        Object.assign(m.style,{left:(d==='l'?sl+sw-visualW:sl)+'px',top:(d==='t'?st+sh-visualH:st)+'px',width:w+'px',height:height+'px'});
-        return;
-      }
-      if(!uniformBase&&(wantedW<mw||wantedH<mh)){
-        const tx=wantedW<mw&&wantedW<sw?(sw-mw)/(sw-wantedW):1;
-        const ty=wantedH<mh&&wantedH<sh?(sh-mh)/(sh-wantedH):1;
-        const hit=clamp(Math.min(tx,ty),0,1);
-        uniformBase={w:Math.max(mw,sw+(wantedW-sw)*hit),h:Math.max(mh,sh+(wantedH-sh)*hit)};
-      }
-      let scale=1,w=wantedW,hh=wantedH;
-      if(uniformBase){
-        const ratio=Math.min(wantedW/uniformBase.w,wantedH/uniformBase.h);
-        scale=clamp(ratio,.5,1);
-        if(ratio>=1){uniformBase=null;w=Math.max(mw,wantedW);hh=Math.max(mh,wantedH);}
-        else{w=uniformBase.w;hh=uniformBase.h;}
-      }
-      const visualW=w*scale,visualH=hh*scale;
-      const l=d.includes('l')?sl+sw-visualW:(!d.includes('r')&&scale<1?sl+(sw-visualW)/2:sl);
-      const t=d.includes('t')?st+sh-visualH:(!d.includes('b')&&scale<1?st+(sh-visualH)/2:st);
-      Object.assign(m.style,{left:clamp(l,0,Math.max(0,BOARD_WIDTH-visualW))+'px',top:clamp(t,0,Math.max(0,BOARD_HEIGHT-visualH))+'px',width:w+'px',height:hh+'px'});
-      setTileUniformScale(m,scale);
-      updateScaleHint();
+      const horizontal=d.includes('l')||d.includes('r'),vertical=d.includes('t')||d.includes('b');
+      let w=Math.max(mw,d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw);
+      let height=Math.max(mh,d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh);
+      // Keep both axes independent, but prevent extreme strips in either direction.
+      if(horizontal&&!vertical)w=clamp(w,Math.max(mw,height/3),Math.max(mw,height*3));
+      else if(vertical&&!horizontal)height=clamp(height,Math.max(mh,w/3),Math.max(mh,w*3));
+      else{w=Math.max(w,height/3);height=Math.max(height,w/3);}
+      if(m._imageRatio){if(!horizontal)w=height*m._imageRatio;else height=w/m._imageRatio;}
+      const left=d.includes('l')?sl+sw-w:sl,top=d.includes('t')?st+sh-height:st;
+      Object.assign(m.style,{left:clamp(left,0,Math.max(0,BOARD_WIDTH-w))+'px',top:clamp(top,0,Math.max(0,BOARD_HEIGHT-height))+'px',width:w+'px',height:height+'px'});
+      setTileUniformScale(m);
     };
     const finish=cancelled=>{
-      if(cancelled)hideScaleHint();
-      else if(scaleHint)scaleHintTimer=setTimeout(hideScaleHint,1100);
       if(cancelled)applyModuleTransform(m,before);
       else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
       m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
