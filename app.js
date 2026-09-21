@@ -13176,7 +13176,7 @@ document.addEventListener('fullscreenchange',()=>{
 });
 window.addEventListener('resize',()=>{document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement||isTilePinned(m))return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`});syncPinnedTilesToCamera()});
 
-function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId=''}={}){
+function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId='',previewSize=0}={}){
   if(!src&&!emoji)return null;
   const isFlag=/flagcdn\.io\/flags\//i.test(src);
   const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
@@ -13184,8 +13184,13 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   const ratio=emoji?1:(Number.isFinite(aspect)&&aspect>0?aspect:1);
   let width=180,height=180;
   if(ratio>=1){width=ratio>2?230:180;height=width/ratio}else{height=180;width=height*ratio}
-  width=Math.max(64,width);
-  height=Math.max(64,height);
+  if(previewSize>0){
+    const extent=previewSize/boardCamera.scale;
+    width=ratio>=1?extent:extent*ratio;
+    height=ratio>=1?extent/ratio:extent;
+  }
+  width=Math.max(60,width);
+  height=Math.max(60,height);
   const m=document.createElement('section');
   m.className=`module sticker-module${isFlag?' sticker-module--flag':''}${isTextSticker?' sticker-module--text':''}${animate?' sticker-placed':''}`;
   m.dataset.type='sticker';
@@ -13296,7 +13301,7 @@ function setupShelfStickerDrag(item,shelfShell){
     };
     const end=ev=>{
       if(dragging)item._stickerDragUntil=performance.now()+500;
-      if(dragging&&canDrop)createStickerModule({src,emoji,name,aspect},ev.clientX,ev.clientY);
+      if(dragging&&canDrop)createStickerModule({src,emoji,name,aspect},ev.clientX,ev.clientY,{previewSize:emoji?132:146});
       cleanup();
     };
     const cancel=()=>cleanup();
@@ -13640,7 +13645,7 @@ function setupCollectionShelf(){
   window.addEventListener('resize',positionThemeFan,{passive:true});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){const trigger=activeShelf==='stickers'?stickerButton:activeShelf==='themes'?themeButton:cursorsButton;closeShelf();trigger.focus()}});
   document.addEventListener('pointerdown',e=>{
-    if(!activeShelf)return;
+    if(!activeShelf||activeShelf==='stickers')return;
     const target=e.target;
     if(!(target instanceof Element))return;
     if(target.closest('#asset-shelf,.theme-fan,.workspace-upcoming-controls'))return;

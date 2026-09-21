@@ -19153,3 +19153,6 @@ body .sticker-module:hover>.module-delete{opacity:1!important;pointer-events:aut
 .tile-skin-art--timer-solid,.tile-skin-art--timer-liquid{width:112px;height:112px;}
 .tile-skin-art--timer-solid img,.tile-skin-art--timer-liquid img{display:block;width:100%;height:100%;object-fit:contain;}
 @media(prefers-reduced-motion:reduce){.timer-liquid-wave{animation:none;}.timer-liquid-fill{transition:none!important;}}
+
+/* Bridge the space between the sticker frame and its raised delete button. */
+body .sticker-module>.module-delete::before{content:"";position:absolute;left:-24px;right:-4px;top:0;bottom:-24px;background:transparent;}
