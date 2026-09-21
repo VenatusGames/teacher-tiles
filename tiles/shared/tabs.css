@@ -23,4 +23,4 @@ body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;out
 .tile-tab-strip.is-expanded .tile-tab-bookmark,.tile-tab-strip:has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
 @media(prefers-reduced-motion:reduce){.tile-tab-bookmark{transition:none;}}
 
-.tile-tab-bookmark:has(.tile-tab[aria-selected="true"]){outline:2px solid color-mix(in srgb,var(--tab-color) 60%,black);outline-offset:-2px;}
+.tile-tab-bookmark:has(.tile-tab[aria-selected="true"])::after{content:"";position:absolute;inset:0;border:2px solid color-mix(in srgb,var(--tab-color) 60%,black);border-right:0;border-radius:inherit;pointer-events:none;}
