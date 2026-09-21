@@ -4500,7 +4500,8 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   const clear=m.querySelector('.timer-clear');
   const start=m.querySelector('.timer-start');
   const reset=m.querySelector('.timer-reset');
-  let total=300,left=300,running=false,end=0,interval=null,finished=false;
+  const initialSeconds=m.dataset.type==='timer'?0:300;
+  let total=initialSeconds,left=initialSeconds,running=false,end=0,interval=null,finished=false;
 
   const render=()=>{
     remain.textContent=formatCountdown(left);
