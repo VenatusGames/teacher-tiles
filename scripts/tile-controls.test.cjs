@@ -57,13 +57,23 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.evaluate(()=>{TeacherTilesBoard.clear();for(const type of ['clock','youtube','progressbar','draw'])createModule(type,500,250,{record:false});});
     const clock=page.locator('.clock-module');
     await clock.evaluate(m=>bringToFront(m));await clock.hover();
-    assert.equal(await clock.locator('.clock-toggle-mode>button').count(),2,'clock has separate Digital and Analog buttons');
-    assert.equal(await clock.locator('[data-clock-choice=digital]').getAttribute('aria-pressed'),'true');
+    assert.equal(await clock.locator('.clock-toggle-mode>button').count(),2,'clock has separate Digital and Analog mode buttons');
+    assert.equal(await clock.locator('[data-clock-choice=digital]').isVisible(),false,'digital mode hides the redundant Digital button');
+    assert.equal(await clock.locator('[data-clock-choice=analog]').isVisible(),true,'digital mode keeps the Analog switch visible');
     await clock.locator('[data-clock-choice=analog]').click();
     assert.equal(await clock.getAttribute('data-clock-mode'),'analog');
-    assert.equal(await clock.locator('[data-clock-choice=analog]').getAttribute('aria-pressed'),'true');
+    assert.equal(await clock.locator('[data-clock-choice=analog]').isVisible(),false,'analog mode hides the redundant Analog button');
+    assert.equal(await clock.locator('[data-clock-choice=digital]').isVisible(),true,'analog mode keeps the Digital switch visible');
     await clock.locator('[data-clock-choice=digital]').click();
     assert.equal(await clock.getAttribute('data-clock-mode'),'digital');
+    await clock.evaluate(m=>{m.style.width='250px';m.dispatchEvent(new PointerEvent('pointerenter',{bubbles:true}))});await page.clock.runFor(100);
+    const clockOverlap=await clock.evaluate(m=>{
+      const bar=m.querySelector('.clock-customization').getBoundingClientRect();
+      return [...m.querySelectorAll(':scope>.tile-appearance-toggle,:scope>.tile-settings-beside-brush,:scope>.tile-skins-toggle')].some(el=>{
+        const r=el.getBoundingClientRect();return bar.left<r.right&&bar.right>r.left&&bar.top<r.bottom&&bar.bottom>r.top;
+      });
+    });
+    assert.equal(clockOverlap,false,'clock controls lift above shared bottom-left controls when they would overlap');
     assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
     assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
     while(await page.locator('.workspace .module').count()){

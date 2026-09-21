@@ -19248,3 +19248,10 @@ body .sticker-module>.module-delete{
 .youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-controls{top:auto;bottom:calc(14.5% + 40px);left:8.5%;right:29%}
 .youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-error{top:auto;bottom:calc(14.5% + 76px)}
 @media(prefers-reduced-motion:reduce){.youtube-module .youtube-stage,.youtube-module .youtube-controls{transition:none}}
+
+/* Keep Clock controls clear of the shared bottom-left tile controls. */
+.clock-customization{
+  bottom:calc(10px + var(--clock-control-lift,0px))!important;
+  transition:bottom .16s ease,opacity .15s!important;
+}
+@media(prefers-reduced-motion:reduce){.clock-customization{transition:none!important}}
