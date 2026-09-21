@@ -2172,11 +2172,17 @@ function capturePinnedTileScreenAnchor(m){
   m.dataset.pinScreenX=String(snapScreenCoordinate(rect.left+rect.width/2));
   m.dataset.pinScreenY=String(snapScreenCoordinate(rect.top+rect.height/2));
 }
-function tileUniformScale(m){return Math.max(.15,Math.min(1,Number(m?.dataset.uniformScale)||1));}
+function tileUniformScale(m){return Math.max(.5,Math.min(1,Number(m?.dataset.uniformScale)||1));}
 function tileDisplayWidth(m){return m.offsetWidth*tileUniformScale(m);}
 function tileDisplayHeight(m){return m.offsetHeight*tileUniformScale(m);}
 function setTileUniformScale(m,value){
-  const scale=Math.max(.15,Math.min(1,Number(value)||1));
+  const scale=Math.max(.5,Math.min(1,Number(value)||1));
+  // Older saves may contain an arbitrary aspect ratio or a much smaller scale.
+  if(scale<1&&!['sticker','draw'].includes(m.dataset.type)){
+    const style=getComputedStyle(m);
+    m.style.width=(Number(m._tileTabs?.minimum?.width)||parseFloat(style.minWidth)||220)+'px';
+    m.style.height=(Number(m._tileTabs?.minimum?.height)||parseFloat(style.minHeight)||180)+'px';
+  }
   if(scale<.999)m.dataset.uniformScale=String(scale);else delete m.dataset.uniformScale;
   m.style.scale=String(scale/(isTilePinned(m)?Math.max(.05,boardCamera.scale):1));
 }
@@ -3553,6 +3559,7 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   bringToFront(m);
   m._isBoardRestore=Boolean(boardState);
   setupModuleByType(m,type);
+  m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
   if(boardState)applyBoardPostSetupState(m,boardState);
   delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
@@ -3960,6 +3967,23 @@ function ensureTileFullscreenControl(m){
 }
 
 function setupCommon(m){
+  m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
+  const resetScale=document.createElement('button');
+  resetScale.type='button';resetScale.className='tile-reset-scale';
+  resetScale.title='Reset Scale';resetScale.setAttribute('aria-label','Reset Scale');
+  resetScale.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M4 4l5 5M20 15v5h-5m5 0-5-5M14 4h6v6M4 14v6h6"/></svg>';
+  resetScale.addEventListener('click',event=>{
+    event.stopPropagation();
+    window.TeacherTilesEditHistory?.flush();
+    const before=captureModuleTransform(m),size=m._defaultTileSize;
+    clearSnapGroupMember(m);
+    m.style.width=size.width+'px';m.style.height=size.height+'px';setTileUniformScale(m,1);
+    m._syncTransientResize?.();m._afterModuleResize?.();
+    if(m.dataset.type==='sticker')updateStickerVisualSize(m);
+    if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
+    recordTransformHistory([m],new Map([[m,before]]));notifyBoardChanged('reset-scale');
+  });
+  m.appendChild(resetScale);
   disableModuleSpellcheck(m);
   prepareModuleTextEditors(m);
   ensureTileFullscreenControl(m);
@@ -3975,6 +3999,7 @@ function setupCommon(m){
     const rect=m.getBoundingClientRect();
     const proximityX=Math.max(88,Math.min(126,rect.width*.4));
     const proximityY=Math.max(90,Math.min(124,rect.height*.38));
+    m.classList.toggle('is-tab-options-hotzone',e.clientX>=rect.left&&e.clientX<=rect.left+proximityX&&e.clientY>=rect.top&&e.clientY<=rect.top+proximityY);
     const nearCorner=e.clientX>=rect.right-proximityX&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.top+proximityY;
     if(nearCorner&&!m.classList.contains('is-tile-options-hotzone'))layoutTileOptionControls(m);
     const nearOption=[m.querySelector(':scope>.module-delete'),m.querySelector(':scope>.module-fullscreen'),m.querySelector(':scope>.module-pin')].filter(Boolean).some(button=>{
@@ -4009,7 +4034,7 @@ function setupCommon(m){
   },true);
   m.addEventListener('pointerleave',()=>{
     delete m.dataset.tileOptionsHoldUntil;
-    m.classList.remove('is-delete-hotzone','is-tile-options-hotzone');
+    m.classList.remove('is-delete-hotzone','is-tile-options-hotzone','is-tab-options-hotzone');
     requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
   });
   let grabCursorTarget=null;
@@ -4265,7 +4290,7 @@ function setupResize(m){
     const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m),cs=getComputedStyle(m);
     const mw=Number(m._tileTabs?.minimum?.width)||parseFloat(cs.minWidth)||220,mh=Number(m._tileTabs?.minimum?.height)||parseFloat(cs.minHeight)||180;
     const viewportScale=moduleViewportScale(m)/initialScale;
-    let uniformBase=initialScale<1?{w:m.offsetWidth,h:m.offsetHeight}:null;
+    let uniformBase=initialScale<1?{w:mw,h:mh}:null;
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
       let wantedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
@@ -4273,17 +4298,14 @@ function setupResize(m){
       wantedW=Math.max(1,wantedW);wantedH=Math.max(1,wantedH);
       if(m._imageRatio){if(d==='t'||d==='b')wantedW=wantedH*m._imageRatio;else wantedH=wantedW/m._imageRatio;}
       if(!uniformBase&&(wantedW<mw||wantedH<mh)){
-        const tx=wantedW<mw&&wantedW<sw?(sw-mw)/(sw-wantedW):1;
-        const ty=wantedH<mh&&wantedH<sh?(sh-mh)/(sh-wantedH):1;
-        const hit=clamp(Math.min(tx,ty),0,1);
-        uniformBase={w:Math.max(mw,sw+(wantedW-sw)*hit),h:Math.max(mh,sh+(wantedH-sh)*hit)};
+        uniformBase={w:mw,h:mh};
       }
       let scale=1,w=wantedW,hh=wantedH;
       if(uniformBase){
         const ratios=[];
         if(d.includes('l')||d.includes('r'))ratios.push(wantedW/uniformBase.w);
         if(d.includes('t')||d.includes('b'))ratios.push(wantedH/uniformBase.h);
-        scale=clamp(Math.min(...ratios),.15,1);
+        scale=clamp(Math.min(...ratios),.5,1);
         if(Math.min(...ratios)>=1){uniformBase=null;scale=1;w=Math.max(mw,wantedW);hh=Math.max(mh,wantedH);}
         else{w=uniformBase.w;hh=uniformBase.h;}
       }
@@ -19048,7 +19070,7 @@ const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
   'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus',
-  'is-delete-hotzone','is-tile-options-hotzone','is-tile-fullscreen','is-tile-pinned'
+  'is-delete-hotzone','is-tile-options-hotzone','is-tab-options-hotzone','is-tile-fullscreen','is-tile-pinned'
 ]);
 let activeTeacherTilesBoardId='';
 

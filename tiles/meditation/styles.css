@@ -39,3 +39,8 @@
 .meditation-compact .meditation-actions button{min-height:30px;padding:6px 12px;}
 .meditation-compact .meditation-rhythm{font-size:9px;gap:6px;margin-top:0;}
 .meditation-compact .meditation-remaining{font-size:16px;}
+
+.meditation-module :is(.meditation-heading,.meditation-count,.meditation-rhythm,.meditation-session,.meditation-actions,.meditation-copy){transition:opacity .18s;}
+.meditation-module:not(:hover):not(:has(:focus-visible)) :is(.meditation-heading,.meditation-count,.meditation-rhythm,.meditation-session,.meditation-actions),.meditation-module[data-breathing="false"]:not(:hover):not(:has(:focus-visible)) .meditation-copy{opacity:0;visibility:hidden;pointer-events:none;}
+.meditation-cue[hidden]{display:none!important;}
+@media(prefers-reduced-motion:reduce){.meditation-module *{transition:none!important;}}

@@ -82,6 +82,7 @@
     frame=0;
     for(const [m,strip] of strips){
       if(!m.isConnected){release(m);continue;}
+      strip.classList.toggle('is-expanded',m.matches(':hover')||strip.matches(':hover')||strip.matches(':has(:focus-visible)'));
       const rect=m.getBoundingClientRect(),board=workspace.getBoundingClientRect();
       const scale=rect.width/Math.max(1,m.offsetWidth)/boardCamera.scale;
       const left=(rect.left-board.left)/boardCamera.scale,top=(rect.top-board.top)/boardCamera.scale;

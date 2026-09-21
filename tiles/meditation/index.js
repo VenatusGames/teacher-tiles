@@ -4,7 +4,7 @@
     const scene=m.querySelector('.meditation-scene');
     const cue=m.querySelector('.meditation-cue');
     const count=m.querySelector('.meditation-count');
-    const detail=m.querySelector('.meditation-detail');
+    const showCues=m.querySelector('.meditation-show-cues');
     const toggle=m.querySelector('.meditation-toggle');
     const reset=m.querySelector('.meditation-reset');
     const inhaleInput=m.querySelector('.meditation-inhale');
@@ -51,8 +51,7 @@
       const phase=complete?'Well done':running?(inhale?'Breathe in':'Breathe out'):(elapsed?'Paused':'Find your calm');
       if(phase!==lastPhase){cue.textContent=phase;lastPhase=phase;}
       count.textContent=running?String(Math.max(1,Math.ceil((inhale?inhaleMs-position:cycle-position)/1000))):'✦';
-      const cycles=Math.floor(elapsed/cycle);
-      detail.textContent=complete?'Take this calm with you':cycles?`${cycles} ${cycles===1?'breath':'breaths'} completed`:'Let your breath follow the light';
+      cue.hidden=!showCues.checked;
       toggle.textContent=complete?'Start again':running?'Pause':elapsed?'Resume':'Start breathing';
       remaining.textContent=format(Math.max(0,Math.ceil(durationSeconds-elapsed/1000)));
       m.querySelector('.meditation-inhale-label').textContent=`Inhale · ${inhaleSeconds} seconds`;
@@ -90,14 +89,16 @@
       elapsed=0;pause();rewind();notifyBoardChanged('meditation-settings');
     }
     [inhaleInput,exhaleInput,durationInput].forEach(input=>input.addEventListener('change',configure));
+    showCues.addEventListener('change',()=>{render();notifyBoardChanged('meditation-cues');});
     durationInput.addEventListener('input',()=>durationInput.setCustomValidity(''));
     m.addEventListener('teachertiles:tileaudiochange',syncMusic);
     window.addEventListener('teachertiles:audiopreferenceschange',syncMusic);
     const onVisibility=()=>{if(document.hidden)pause();};
     document.addEventListener('visibilitychange',onVisibility);
     // Sessions intentionally reopen at rest, never silently running offscreen.
-    m._boardGetState=()=>({version:2,inhaleSeconds,exhaleSeconds,durationSeconds});
+    m._boardGetState=()=>({version:3,inhaleSeconds,exhaleSeconds,durationSeconds,showCues:showCues.checked});
     m._boardSetState=state=>{
+      showCues.checked=state?.showCues!==false;
       inhaleSeconds=Math.min(20,Math.max(1,Number(state?.inhaleSeconds)||4));
       exhaleSeconds=Math.min(20,Math.max(1,Number(state?.exhaleSeconds)||6));
       durationSeconds=Math.min(3600,Math.max(10,Number(state?.durationSeconds)||180));

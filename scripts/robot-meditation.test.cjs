@@ -37,12 +37,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.equal(packs.edit,'Edit Words');assert.equal(packs.sel,'sel');
     await page.locator('#test-robot .robothfw-controls .robothfw-start').click();
     await page.waitForTimeout(850);
+    await page.locator('#test-meditation').hover();
     await page.locator('#test-meditation .meditation-toggle').click();
     await page.waitForTimeout(1500);
     if(process.env.TILE_SCREENSHOT)await page.screenshot({path:process.env.TILE_SCREENSHOT});
     assert.equal(await page.locator('.meditation-cue').textContent(),'Breathe in');
     await page.waitForTimeout(2700);
     assert.equal(await page.locator('.meditation-cue').textContent(),'Breathe out');
+    await page.locator('#test-meditation').hover();
     await page.locator('#test-meditation .meditation-toggle').click();
     assert.equal(await page.locator('.meditation-cue').textContent(),'Paused');
     await page.evaluate(()=>{
