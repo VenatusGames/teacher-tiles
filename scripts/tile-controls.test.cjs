@@ -55,6 +55,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.locator('.workspace .module').hover();await page.clock.runFor(500);
     assert.equal(await page.locator('.tile-tab-bookmark').first().evaluate(el=>getComputedStyle(el).transform),'matrix(1, 0, 0, 1, 0, 0)');
     await page.evaluate(()=>{TeacherTilesBoard.clear();for(const type of ['clock','youtube','progressbar','draw'])createModule(type,500,250,{record:false});});
+    const clock=page.locator('.clock-module');
+    await clock.evaluate(m=>bringToFront(m));await clock.hover();
+    assert.equal(await clock.locator('.clock-toggle-mode>button').count(),2,'clock has separate Digital and Analog buttons');
+    assert.equal(await clock.locator('[data-clock-choice=digital]').getAttribute('aria-pressed'),'true');
+    await clock.locator('[data-clock-choice=analog]').click();
+    assert.equal(await clock.getAttribute('data-clock-mode'),'analog');
+    assert.equal(await clock.locator('[data-clock-choice=analog]').getAttribute('aria-pressed'),'true');
+    await clock.locator('[data-clock-choice=digital]').click();
+    assert.equal(await clock.getAttribute('data-clock-mode'),'digital');
     assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
     assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
     while(await page.locator('.workspace .module').count()){

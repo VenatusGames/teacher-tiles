@@ -4842,28 +4842,40 @@ function setupClock(m){
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
   m.querySelector('.clock-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
+  const modeChoices=[...modeBtn.querySelectorAll('[data-clock-choice]')];
   const syncModeControls=()=>{
     const analog=isAnalog();
     modeBtn.hidden=Boolean(m.dataset.tileSkin);
-    modeBtn.classList.remove('is-active');
     modeBtn.dataset.mode=analog?'analog':'digital';
-    modeBtn.innerHTML='<span data-clock-choice="digital">Digital</span><span data-clock-choice="analog">Analog</span>';
-    modeBtn.title=analog?'Switch to digital clock':'Switch to analog clock';
-    modeBtn.setAttribute('aria-label',modeBtn.title);
-    modeBtn.setAttribute('aria-pressed',String(analog));
+    modeChoices.forEach(button=>{
+      const active=button.dataset.clockChoice===(analog?'analog':'digital');
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
     secondsBtn.hidden=analog;
     periodBtn.hidden=analog;
   };
 
-  modeBtn.addEventListener('click',()=>{
-    const analog=m.dataset.clockMode!=='analog';
-    m.dataset.clockMode=analog?'analog':'digital';
+  modeChoices.forEach(button=>button.addEventListener('click',()=>{
+    m.dataset.clockMode=button.dataset.clockChoice==='analog'?'analog':'digital';
     syncModeControls();
     refit();
-  });
+  }));
 
-  secondsBtn.addEventListener('click',()=>{m.classList.toggle('show-seconds');secondsBtn.classList.toggle('is-active');refit()});
-  periodBtn.addEventListener('click',()=>{m.classList.toggle('hide-period');periodBtn.classList.toggle('is-active',!m.classList.contains('hide-period'));refit()});
+  secondsBtn.addEventListener('click',()=>{
+    m.classList.toggle('show-seconds');
+    const active=m.classList.contains('show-seconds');
+    secondsBtn.classList.toggle('is-active',active);
+    secondsBtn.setAttribute('aria-pressed',String(active));
+    refit();
+  });
+  periodBtn.addEventListener('click',()=>{
+    m.classList.toggle('hide-period');
+    const active=!m.classList.contains('hide-period');
+    periodBtn.classList.toggle('is-active',active);
+    periodBtn.setAttribute('aria-pressed',String(active));
+    refit();
+  });
 
   const update=()=>{
     const d=new Date();
@@ -4888,8 +4900,12 @@ function setupClock(m){
   ro.observe(m);
   ro.observe(display);
   syncModeControls();
-  secondsBtn.classList.toggle('is-active',m.classList.contains('show-seconds'));
-  periodBtn.classList.toggle('is-active',!m.classList.contains('hide-period'));
+  const secondsActive=m.classList.contains('show-seconds');
+  const periodActive=!m.classList.contains('hide-period');
+  secondsBtn.classList.toggle('is-active',secondsActive);
+  secondsBtn.setAttribute('aria-pressed',String(secondsActive));
+  periodBtn.classList.toggle('is-active',periodActive);
+  periodBtn.setAttribute('aria-pressed',String(periodActive));
   const id=setInterval(update,100);
   update();
   m._cleanup=()=>{clearInterval(id);ro.disconnect()};

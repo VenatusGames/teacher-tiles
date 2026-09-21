@@ -17485,6 +17485,54 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   .timer-shape-shelf button,.interactive-type-shelf button{transition:none!important}
 }
 
+/* Clock controls use the same button chrome as Visual Timer controls. */
+.clock-customization{
+  gap:6px!important;
+  padding:5px!important;
+}
+.clock-customization>button,
+.clock-customization .clock-toggle-mode>button{
+  min-height:32px!important;
+  height:32px!important;
+  width:auto!important;
+  padding:0 10px!important;
+  border:1px solid var(--border)!important;
+  border-radius:10px!important;
+  background:var(--surface-solid,var(--surface))!important;
+  color:var(--text)!important;
+  box-shadow:0 1px 3px #0f172a0a!important;
+  font:700 11px/1 Inter,system-ui,sans-serif!important;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:transform .15s ease,background .15s ease,border-color .15s ease,color .15s ease!important;
+}
+.clock-customization>.custom-icon{
+  width:32px!important;
+  min-width:32px!important;
+  padding:0!important;
+}
+.clock-customization>button:hover,
+.clock-customization .clock-toggle-mode>button:hover{
+  transform:translateY(-1px)!important;
+  background:var(--surface-soft)!important;
+}
+.clock-customization>button:active,
+.clock-customization .clock-toggle-mode>button:active{transform:translateY(0)!important}
+.clock-customization>button:focus-visible,
+.clock-customization .clock-toggle-mode>button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.clock-customization>button.is-active,
+.clock-customization .clock-toggle-mode>button.is-active,
+.clock-customization .clock-toggle-mode>button[aria-pressed="true"]{
+  background:#e5f1ff!important;
+  border-color:#7fb0df!important;
+  color:#185f9f!important;
+  box-shadow:inset 0 0 0 1px #9bc3e8,0 1px 3px #0f172a0a!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .clock-customization>button,
+.clock-customization .clock-toggle-mode>button{transition:none!important}
+}
+
 
 /* No Background Visual Timer: settings stay inside the tile hover bounds. */
 .timer-module[data-tile-skin="timer-freestanding"] .timer-controls{
