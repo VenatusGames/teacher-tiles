@@ -19249,9 +19249,26 @@ body .sticker-module>.module-delete{
 .youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-error{top:auto;bottom:calc(14.5% + 76px)}
 @media(prefers-reduced-motion:reduce){.youtube-module .youtube-stage,.youtube-module .youtube-controls{transition:none}}
 
-/* Keep Clock controls clear of the shared bottom-left tile controls. */
-.clock-customization{
-  bottom:calc(10px + var(--clock-control-lift,0px))!important;
-  transition:bottom .16s ease,opacity .15s!important;
+/* Clock controls sit in a stable row immediately to the right of the shared bottom-left controls. */
+.clock-module .clock-customization{
+  left:125px!important;
+  right:auto!important;
+  bottom:9px!important;
+  transform:none!important;
+  width:max-content!important;
+  max-width:calc(100% - 133px)!important;
+  padding:5px!important;
+  padding-left:5px!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  overflow:visible!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  transition:opacity .15s!important;
+}
+@container (max-width:320px){
+  .clock-module .clock-customization{gap:4px!important}
+  .clock-module .clock-customization>button,
+  .clock-module .clock-customization .clock-toggle-mode>button{padding-inline:6px!important;font-size:9px!important}
 }
 @media(prefers-reduced-motion:reduce){.clock-customization{transition:none!important}}

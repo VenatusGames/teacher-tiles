@@ -4857,26 +4857,6 @@ function setupClock(m){
     periodBtn.hidden=analog;
   };
 
-  const controls=m.querySelector('.clock-customization');
-  const sharedBottomControls=()=>[...m.querySelectorAll(':scope>.tile-appearance-toggle,:scope>.tile-settings-beside-brush,:scope>.tile-skins-toggle')];
-  const syncClockControlClearance=()=>{
-    if(!controls)return;
-    const currentLift=parseFloat(getComputedStyle(m).getPropertyValue('--clock-control-lift'))||0;
-    const bar=controls.getBoundingClientRect();
-    const baseTop=bar.top+currentLift,baseBottom=bar.bottom+currentLift;
-    let lift=0;
-    for(const control of sharedBottomControls()){
-      const style=getComputedStyle(control);
-      if(style.display==='none'||style.visibility==='hidden')continue;
-      const rect=control.getBoundingClientRect(),gap=7;
-      const horizontal=bar.left<rect.right+gap&&bar.right>rect.left-gap;
-      const vertical=baseTop<rect.bottom+gap&&baseBottom>rect.top-gap;
-      if(horizontal&&vertical)lift=Math.max(lift,baseBottom-(rect.top-gap));
-    }
-    m.style.setProperty('--clock-control-lift',`${Math.max(0,Math.ceil(lift))}px`);
-  };
-  const queueClockControlClearance=()=>requestAnimationFrame(syncClockControlClearance);
-
   modeChoices.forEach(button=>button.addEventListener('click',()=>{
     m.dataset.clockMode=button.dataset.clockChoice==='analog'?'analog':'digital';
     syncModeControls();
@@ -4917,13 +4897,10 @@ function setupClock(m){
     refit();
   };
 
-  const ro=new ResizeObserver(()=>{refit();queueClockControlClearance()});
+  const ro=new ResizeObserver(refit);
   ro.observe(m);
   ro.observe(display);
-  m.addEventListener('pointerenter',queueClockControlClearance);
-  m.addEventListener('focusin',queueClockControlClearance);
   syncModeControls();
-  requestAnimationFrame(()=>requestAnimationFrame(syncClockControlClearance));
   const secondsActive=m.classList.contains('show-seconds');
   const periodActive=!m.classList.contains('hide-period');
   secondsBtn.classList.toggle('is-active',secondsActive);
@@ -4932,7 +4909,7 @@ function setupClock(m){
   periodBtn.setAttribute('aria-pressed',String(periodActive));
   const id=setInterval(update,100);
   update();
-  m._cleanup=()=>{clearInterval(id);ro.disconnect();m.removeEventListener('pointerenter',queueClockControlClearance);m.removeEventListener('focusin',queueClockControlClearance)};
+  m._cleanup=()=>{clearInterval(id);ro.disconnect()};
 }
 
 

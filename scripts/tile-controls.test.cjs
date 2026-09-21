@@ -66,14 +66,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.equal(await clock.locator('[data-clock-choice=digital]').isVisible(),true,'analog mode keeps the Digital switch visible');
     await clock.locator('[data-clock-choice=digital]').click();
     assert.equal(await clock.getAttribute('data-clock-mode'),'digital');
-    await clock.evaluate(m=>{m.style.width='250px';m.dispatchEvent(new PointerEvent('pointerenter',{bubbles:true}))});await page.clock.runFor(100);
-    const clockOverlap=await clock.evaluate(m=>{
+    const clockControlPlacement=await clock.evaluate(m=>{
       const bar=m.querySelector('.clock-customization').getBoundingClientRect();
-      return [...m.querySelectorAll(':scope>.tile-appearance-toggle,:scope>.tile-settings-beside-brush,:scope>.tile-skins-toggle')].some(el=>{
-        const r=el.getBoundingClientRect();return bar.left<r.right&&bar.right>r.left&&bar.top<r.bottom&&bar.bottom>r.top;
-      });
+      const shared=[...m.querySelectorAll(':scope>.tile-appearance-toggle,:scope>.tile-settings-beside-brush,:scope>.tile-skins-toggle')];
+      const right=Math.max(...shared.map(el=>el.getBoundingClientRect().right));
+      return{clear:bar.left>=right+6,bottom:Math.round(m.getBoundingClientRect().bottom-bar.bottom),lift:getComputedStyle(m).getPropertyValue('--clock-control-lift').trim()};
     });
-    assert.equal(clockOverlap,false,'clock controls lift above shared bottom-left controls when they would overlap');
+    assert.equal(clockControlPlacement.clear,true,'clock controls sit to the right of shared bottom-left controls');
+    assert.equal(clockControlPlacement.bottom,9,'clock controls stay at a stable bottom inset');
+    assert.equal(clockControlPlacement.lift,'','clock controls no longer use collision lift state');
     assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
     assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
     while(await page.locator('.workspace .module').count()){
