@@ -13107,7 +13107,10 @@ function syncCosmeticEntitlements(){
     const element=document.getElementById(id);
     if(!element)return;
     element.dataset.entitlement=productId;
-    markSubscriptionAccess(element,productId);
+    if(element.matches('.theme-fan')){
+      element.querySelector(':scope > .subscription-access-crown')?.remove();
+      element.querySelectorAll('.theme-card').forEach(card=>markSubscriptionAccess(card,productId));
+    }else markSubscriptionAccess(element,productId);
     const locked=!ownsCosmetic(productId);
     element.classList.toggle('is-cosmetic-locked',locked);
     if(element.matches('button')){
@@ -13261,6 +13264,8 @@ function setupShelfStickerDrag(item,shelfShell){
     let dragging=false;
     let ghost=null;
     let canDrop=false;
+    let ghostFrame=0,pendingPointer=null;
+    const shellRect=shelfShell.getBoundingClientRect();
 
     const ensureGhost=()=>{
       if(ghost)return;
@@ -13277,7 +13282,6 @@ function setupShelfStickerDrag(item,shelfShell){
       ensureGhost();
       ghost.style.left=`${ev.clientX}px`;
       ghost.style.top=`${ev.clientY}px`;
-      const shellRect=shelfShell.getBoundingClientRect();
       const insideShelf=ev.clientX>=shellRect.left&&ev.clientX<=shellRect.right&&ev.clientY>=shellRect.top&&ev.clientY<=shellRect.bottom;
       const blocked=document.elementsFromPoint(ev.clientX,ev.clientY).some(el=>el.closest?.('.workspace-controls,.workspace-upcoming-controls,.context-menu'));
       canDrop=!insideShelf&&!blocked&&ev.clientX>=0&&ev.clientX<=innerWidth&&ev.clientY>=0&&ev.clientY<=innerHeight;
@@ -13290,9 +13294,11 @@ function setupShelfStickerDrag(item,shelfShell){
         item.classList.add('is-dragging');
         document.body.classList.add('is-dragging-shelf-sticker');
       }
-      updateGhost(ev);
+      pendingPointer=ev;
+      if(!ghostFrame)ghostFrame=requestAnimationFrame(()=>{ghostFrame=0;updateGhost(pendingPointer)});
     };
     const cleanup=()=>{
+      cancelAnimationFrame(ghostFrame);
       item.classList.remove('is-dragging');
       document.body.classList.remove('is-dragging-shelf-sticker');
       ghost?.remove();
@@ -13301,7 +13307,7 @@ function setupShelfStickerDrag(item,shelfShell){
       item.removeEventListener('pointercancel',cancel);
     };
     const end=ev=>{
-      if(dragging)item._stickerDragUntil=performance.now()+500;
+      if(dragging){updateGhost(ev);item._stickerDragUntil=performance.now()+500}
       if(dragging&&canDrop)createStickerModule({src,emoji,name,aspect},ev.clientX,ev.clientY,{previewSize:emoji?132:146});
       cleanup();
     };

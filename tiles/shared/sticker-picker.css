@@ -78,3 +78,9 @@
 .sticker-picker-pack-lock-mark{font-size:10px}
 .sticker-picker-pack.is-collapsed .sticker-picker-pack-lock{padding:0;pointer-events:none}
 .sticker-picker-pack.is-collapsed .sticker-picker-pack-lock>span{display:none}
+
+/* Skip offscreen pack painting; keep scrolling geometry stable once measured. */
+.sticker-picker-pack{content-visibility:auto;contain-intrinsic-size:auto 180px}
+.sticker-picker-pack.is-collapsed{contain-intrinsic-size:auto 47px}
+.sticker-picker-pack-lock{backdrop-filter:none}
+.asset-shelf.is-sticker-mode .asset-shelf__shell{backdrop-filter:none;-webkit-backdrop-filter:none}
