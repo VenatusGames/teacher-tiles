@@ -4721,7 +4721,7 @@ function setupTimer(m){
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
-    for(const [value,color] of Object.entries({blue:'#6f8fb7',green:'#6ea67d',amber:'#d49d45',rose:'#c8798d',purple:'#8c7bc3',teal:'#58a3a0'})){
+    for(const [value,color] of Object.entries({blue:'#6f8fb7',green:'#6ea67d',amber:'#d49d45',rose:'#c8798d',purple:'#8c7bc3',teal:'#58a3a0',midnight:'#30343b',creme:'#eadfc6'})){
       const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String((m.dataset.shapeColor||'blue')===value));
       const swatch=document.createElement('i');swatch.className='timer-shelf-swatch';swatch.style.background=color;swatch.setAttribute('aria-hidden','true');
       const label=document.createElement('span');label.textContent=value[0].toUpperCase()+value.slice(1);button.append(swatch,label);
