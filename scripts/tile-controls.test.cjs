@@ -75,6 +75,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.equal(clockControlPlacement.clear,true,'clock controls sit to the right of shared bottom-left controls');
     assert.equal(clockControlPlacement.bottom,9,'clock controls stay at a stable bottom inset');
     assert.equal(clockControlPlacement.lift,'','clock controls no longer use collision lift state');
+    await clock.evaluate(m=>{m.style.width='270px'});await page.clock.runFor(100);
+    const compactClockControls=await clock.evaluate(m=>{
+      const tile=m.getBoundingClientRect(),bar=m.querySelector('.clock-customization').getBoundingClientRect();
+      return{inside:bar.right<=tile.right+1,left:Math.round(bar.left-tile.left),right:Math.round(tile.right-bar.right)};
+    });
+    assert.equal(compactClockControls.inside,true,'narrow clock keeps controls inside the tile');
+    await page.mouse.move(1400,900);await page.clock.runFor(250);
+    assert.equal(await clock.locator('.clock-customization').evaluate(el=>getComputedStyle(el).opacity),'0','clock controls hide after pointer leaves');
     assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
     assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
     while(await page.locator('.workspace .module').count()){

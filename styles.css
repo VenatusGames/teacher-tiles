@@ -19252,13 +19252,12 @@ body .sticker-module>.module-delete{
 /* Clock controls sit in a stable row immediately to the right of the shared bottom-left controls. */
 .clock-module .clock-customization{
   left:125px!important;
-  right:auto!important;
+  right:8px!important;
   bottom:9px!important;
   transform:none!important;
-  width:max-content!important;
-  max-width:calc(100% - 133px)!important;
-  padding:5px!important;
-  padding-left:5px!important;
+  width:auto!important;
+  max-width:none!important;
+  padding:5px 0!important;
   justify-content:flex-start!important;
   flex-wrap:nowrap!important;
   overflow:visible!important;
@@ -19266,9 +19265,35 @@ body .sticker-module>.module-delete{
   backdrop-filter:none!important;
   transition:opacity .15s!important;
 }
-@container (max-width:320px){
+.clock-module:not(:hover):not(:has(.clock-customization :focus-visible)) .clock-customization{
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.clock-module:hover .clock-customization,
+.clock-module:has(.clock-customization :focus-visible) .clock-customization{
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+@container (max-width:340px){
   .clock-module .clock-customization{gap:4px!important}
   .clock-module .clock-customization>button,
-  .clock-module .clock-customization .clock-toggle-mode>button{padding-inline:6px!important;font-size:9px!important}
+  .clock-module .clock-customization .clock-toggle-mode>button{
+    min-width:0!important;
+    padding-inline:5px!important;
+    font-size:9px!important;
+  }
+}
+@container (max-width:285px){
+  .clock-module .clock-customization{gap:2px!important}
+  .clock-module .clock-customization>button,
+  .clock-module .clock-customization .clock-toggle-mode>button{
+    min-height:28px!important;
+    height:28px!important;
+    padding-inline:3px!important;
+    font-size:8px!important;
+    letter-spacing:-.02em;
+  }
+  .clock-module .clock-toggle-seconds{font-size:0!important}
+  .clock-module .clock-toggle-seconds::after{content:"Sec";font:700 8px/1 Inter,system-ui,sans-serif}
 }
 @media(prefers-reduced-motion:reduce){.clock-customization{transition:none!important}}
