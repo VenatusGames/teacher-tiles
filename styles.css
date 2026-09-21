@@ -19155,5 +19155,42 @@ body .sticker-module:hover>.module-delete{opacity:1!important;pointer-events:aut
 @media(prefers-reduced-motion:reduce){.timer-liquid-wave{animation:none;}.timer-liquid-fill{transition:none!important;}}
 
 
-/* Stickers always expose delete, independently of tile hover and idle settings. */
-body .workspace .module.sticker-module>.module-delete,body.is-board-idle .workspace .module.sticker-module.is-idle-unhovered>.module-delete{opacity:1!important;pointer-events:auto!important;visibility:visible!important;}
+/* Sticker delete follows whole-sticker hover, independent of tile corner settings. */
+body .workspace .module.sticker-module>.module-delete,
+body.is-board-idle .workspace .module.sticker-module.is-idle-unhovered>.module-delete{opacity:0!important;pointer-events:none!important;visibility:hidden!important;}
+body .workspace .module.sticker-module:is(:hover,.is-sticker-delete-hover,:focus-within)>.module-delete,
+body.is-board-idle .workspace .module.sticker-module.is-idle-unhovered:is(:hover,.is-sticker-delete-hover,:focus-within)>.module-delete{opacity:1!important;pointer-events:auto!important;visibility:visible!important;}
+
+/* Counter-rotate the bottom-center handle around the sticker's center. */
+.sticker-module>.sticker-rotate-handle{
+  left:calc(50% + sin(var(--sticker-rotation,0deg)) * var(--sticker-handle-radius,116px));
+  top:calc(50% + cos(var(--sticker-rotation,0deg)) * var(--sticker-handle-radius,116px));
+  rotate:calc(-1 * var(--sticker-rotation,0deg));
+  translate:-50% -50%;
+  transform:none!important;
+  transform-origin:50% 50%;
+}
+.sticker-module>.sticker-rotate-handle::after{display:none}
+
+body .sticker-module>.module-delete{
+  --delete-y:calc(-1 * var(--sticker-handle-radius,116px));
+  left:calc(50% + cos(var(--sticker-rotation,0deg)) * var(--sticker-delete-x,86px) + sin(var(--sticker-rotation,0deg)) * var(--delete-y))!important;
+  top:calc(50% - sin(var(--sticker-rotation,0deg)) * var(--sticker-delete-x,86px) + cos(var(--sticker-rotation,0deg)) * var(--delete-y))!important;
+  right:auto!important;translate:-50% -50%;rotate:calc(-1 * var(--sticker-rotation,0deg));transform:none!important;
+}
+
+/* Keep the YouTube link row in the tile's upper margin, clear of playback. */
+.youtube-module .youtube-controls{
+  top:3px;bottom:auto;left:12px;right:108px;z-index:25;
+  grid-template-columns:minmax(0,1fr) auto 22px;gap:4px;padding:0;
+  background:transparent;box-shadow:none;backdrop-filter:none;border-radius:6px;
+  transform:translateY(-3px);
+}
+.youtube-module .youtube-controls :is(.youtube-url,.youtube-load,.youtube-bg){height:22px;border-radius:6px;font-size:11px}
+.youtube-module .youtube-url{padding:0 6px}
+.youtube-module .youtube-load{padding:0 7px}
+.youtube-module .youtube-bg{width:22px;grid-column:auto}
+.youtube-module .youtube-bg .icon-palette{scale:.75}
+.youtube-module .youtube-error{top:31px;bottom:auto}
+.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-controls{top:3%;bottom:auto;left:8.5%;right:29%}
+.youtube-module[data-tile-skin="youtube-retro-tv"] .youtube-error{top:12%;bottom:auto}

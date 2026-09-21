@@ -4326,6 +4326,8 @@ function setupResize(m){
 }
 
 function updateStickerVisualSize(m){
+  m.style.setProperty('--sticker-handle-radius',`${m.offsetHeight/2+26}px`);
+  m.style.setProperty('--sticker-delete-x',`${m.offsetWidth/2-4}px`);
   const emoji=m.querySelector('.sticker-emoji');
   if(!emoji)return;
   const size=Math.max(38,Math.min(m.offsetWidth,m.offsetHeight)*.72);
@@ -4334,6 +4336,14 @@ function updateStickerVisualSize(m){
 }
 
 function setupStickerTransformControls(m){
+  // A brief exit grace period bridges the raised X without covering resize handles.
+  if(m&&!m._stickerDeleteHoverReady){
+    m._stickerDeleteHoverReady=true;
+    let exitTimer;
+    m.addEventListener('pointerenter',()=>{clearTimeout(exitTimer);m.classList.add('is-sticker-delete-hover')});
+    m.addEventListener('pointerleave',()=>{clearTimeout(exitTimer);exitTimer=setTimeout(()=>m.classList.remove('is-sticker-delete-hover'),220)});
+  }
+
   if(!m||m.dataset.stickerTransformReady)return;
   m.dataset.stickerTransformReady='true';
   const ratio=m._stickerRatio||Math.max(.12,m.offsetWidth/Math.max(1,m.offsetHeight));
