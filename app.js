@@ -70,7 +70,7 @@ function applyModuleTransform(m,state){
   const stateHeight=(Number(state.height)||m.offsetHeight)*legacyScale;
   if(displayHeightOffset)m._transientRestingHeight=stateHeight;
   Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width*legacyScale}px`,height:`${stateHeight+displayHeightOffset}px`});
-  setTileUniformScale(m,state.uniformScale||1);
+  fitTileDisplaySize(m,state.width*legacyScale,stateHeight+displayHeightOffset);
   if(state.rotation!==null){
     m.dataset.stickerRotation=String(state.rotation);
     m.style.setProperty('--sticker-rotation',`${state.rotation}deg`);
@@ -2173,12 +2173,20 @@ function capturePinnedTileScreenAnchor(m){
   m.dataset.pinScreenX=String(snapScreenCoordinate(rect.left+rect.width/2));
   m.dataset.pinScreenY=String(snapScreenCoordinate(rect.top+rect.height/2));
 }
-function tileUniformScale(m){return 1;}
+function tileUniformScale(m){return clamp(Number(m?.dataset.uniformScale)||1,.85,1);}
 function tileDisplayWidth(m){return m.offsetWidth*tileUniformScale(m);}
 function tileDisplayHeight(m){return m.offsetHeight*tileUniformScale(m);}
-function setTileUniformScale(m){
-  delete m.dataset.uniformScale;
-  m.style.scale=String(isTilePinned(m)?1/Math.max(.05,boardCamera.scale):1);
+function setTileUniformScale(m,value=1){
+  const scale=clamp(Number(value)||1,.85,1);
+  if(scale<.999)m.dataset.uniformScale=String(scale);else delete m.dataset.uniformScale;
+  m.style.scale=String(scale/(isTilePinned(m)?Math.max(.05,boardCamera.scale):1));
+}
+function fitTileDisplaySize(m,width,height){
+  const safe=m._resizeMinimum;
+  if(!safe){m.style.width=width+'px';m.style.height=height+'px';setTileUniformScale(m);return;}
+  width=Math.max(safe.width*.85,width);height=Math.max(safe.height*.85,height);
+  const scale=Math.min(1,width/safe.width,height/safe.height);
+  m.style.width=width/scale+'px';m.style.height=height/scale+'px';setTileUniformScale(m,scale);
 }
 function moduleViewportScale(m){
   if(!m)return Math.max(.05,boardCamera.scale||1);
@@ -4280,15 +4288,15 @@ function setupDrag(m){
 function setupResize(m){
   const tabbed=m.classList.contains('is-tabbed-tile');m.classList.remove('is-tabbed-tile');
   const cs=getComputedStyle(m);
-  m._resizeMinimum={width:Math.max(m.dataset.type==='meditation'?160:120,(parseFloat(cs.minWidth)||220)*.45),height:Math.max(100,(parseFloat(cs.minHeight)||180)*.45)};
+  m._resizeMinimum={width:parseFloat(cs.minWidth)||220,height:parseFloat(cs.minHeight)||180};
   if(tabbed)m.classList.add('is-tabbed-tile');
   m.style.setProperty('min-width',m._resizeMinimum.width+'px','important');
   m.style.setProperty('min-height',m._resizeMinimum.height+'px','important');
   for(const d of ['t','r','b','l'])if(!m.querySelector('[data-resize="'+d+'"]')){const h=document.createElement('div');h.className='resize-handle resize-handle--'+d;h.dataset.resize=d;m.appendChild(h);}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;e.preventDefault();e.stopPropagation();
-    const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight;
-    const minimum=m._tileTabs?.minimum||m._resizeMinimum,mw=minimum.width,mh=minimum.height,viewportScale=moduleViewportScale(m);
+    const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);
+    const minimum=m._resizeMinimum,mw=minimum.width*.85,mh=minimum.height*.85,viewportScale=moduleViewportScale(m)/tileUniformScale(m);
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
@@ -4301,8 +4309,8 @@ function setupResize(m){
       else{w=Math.max(w,height/3);height=Math.max(height,w/3);}
       if(m._imageRatio){if(!horizontal)w=height*m._imageRatio;else height=w/m._imageRatio;}
       const left=d.includes('l')?sl+sw-w:sl,top=d.includes('t')?st+sh-height:st;
-      Object.assign(m.style,{left:clamp(left,0,Math.max(0,BOARD_WIDTH-w))+'px',top:clamp(top,0,Math.max(0,BOARD_HEIGHT-height))+'px',width:w+'px',height:height+'px'});
-      setTileUniformScale(m);
+      Object.assign(m.style,{left:clamp(left,0,Math.max(0,BOARD_WIDTH-w))+'px',top:clamp(top,0,Math.max(0,BOARD_HEIGHT-height))+'px'});
+      fitTileDisplaySize(m,w,height);
     };
     const finish=cancelled=>{
       if(cancelled)applyModuleTransform(m,before);
@@ -4712,7 +4720,7 @@ function setupTimer(m){
     if(stageWidth<20||stageHeight<20)return;
     const shortest=Math.min(stageWidth,stageHeight);
     const breathingRoom=Math.max(10,Math.min(28,shortest*.055));
-    const size=Math.max(118,shortest-(breathingRoom*2));
+    const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
   };
   const sizeObserver=new ResizeObserver(sizeVisual);

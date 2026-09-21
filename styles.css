@@ -19122,3 +19122,15 @@ body>.lesson-planner-panel{
 .sticker-module{rotate:var(--sticker-rotation,0deg);transform-origin:50% 50%!important;}
 body .sticker-module>.module-delete{top:-40px!important;right:-10px!important;}
 body .sticker-module:hover>.module-delete{opacity:1!important;pointer-events:auto!important;}
+
+/* Timer controls keep their complete layout when the tile is fitted smaller. */
+.timer-module .timer-visual{min-width:0!important;min-height:0!important;max-width:100%;max-height:100%;}
+@container(max-height:420px){
+  :is(.timer-controls){gap:5px!important;}
+  .timer-presets{gap:4px!important;}
+  .timer-presets button{flex-basis:32px!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;max-width:32px!important;max-height:32px!important;font-size:11px!important;}
+  .timer-custom-row{gap:4px!important;}
+  .timer-actions button{min-height:30px!important;}
+}
+
+.progress-bar-module{min-height:230px;}

@@ -23,7 +23,7 @@
     const current=[...workspace.querySelectorAll('.module')].find(m=>m.dataset.boardObjectId===before.id);
     const style=current?getComputedStyle(current):null;
     const minimum=before.tabs?.minimum||{width:parseFloat(style?.minWidth)||220,height:parseFloat(style?.minHeight)||180};
-    selected.tabs={active,items:clone(items),minimum,minimumVersion:3};
+    selected.tabs={active,items:clone(items),minimum,minimumVersion:4};
     return selected;
   }
   function replace(m,snapshot,{history=true}={}){
@@ -130,9 +130,7 @@
     if(!state||!Array.isArray(state.items)||state.items.length<2)return;
     // Inactive pages stay as snapshots: they cannot play audio or run timers.
     const style=getComputedStyle(m);
-    m._tileTabs={active:Math.max(0,Math.min(state.items.length-1,Number(state.active)||0)),items:state.items.map(bare),minimum:state.minimum?{width:Math.max(120,state.minimum.width*(state.minimumVersion===3?1:state.minimumVersion===2?.5:.45)),height:Math.max(100,state.minimum.height*(state.minimumVersion===3?1:state.minimumVersion===2?.5:.45))}:{width:parseFloat(style.minWidth)||220,height:parseFloat(style.minHeight)||180},minimumVersion:3};
-    m.style.setProperty('min-width',m._tileTabs.minimum.width+'px','important');
-    m.style.setProperty('min-height',m._tileTabs.minimum.height+'px','important');
+    m._tileTabs={active:Math.max(0,Math.min(state.items.length-1,Number(state.active)||0)),items:state.items.map(bare),minimum:{...m._resizeMinimum},minimumVersion:4};
     m.classList.add('is-tabbed-tile');render(m);
     const deactivate=m._deactivate,reactivate=m._reactivate,cleanup=m._cleanup;
     m._deactivate=()=>{release(m);deactivate?.();};
