@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Freestanding Visual Timer shown in its default five minute ready state">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Solid Visual Timer shown in its default five minute ready state">
   <defs>
     <radialGradient id="timerFace" cx="30%" cy="19%" r="82%">
-      <stop offset="0" stop-color="#edf3fa"/>
-      <stop offset="0.42" stop-color="#dce7f4"/>
-      <stop offset="1" stop-color="#d2dfed"/>
+      <stop offset="0" stop-color="#a9d4ff"/>
+      <stop offset="0.42" stop-color="#63adf6"/>
+      <stop offset="1" stop-color="#3b88db"/>
     </radialGradient>
     <linearGradient id="timerSheen" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity=".36"/>
@@ -19,7 +19,7 @@
     </filter>
   </defs>
   <g filter="url(#timerShadow)">
-    <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#536b86" stroke-width="4"/>
+    <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#285f99" stroke-width="8"/>
     <circle cx="210" cy="210" r="169" fill="url(#timerSheen)" stroke="#ffffff" stroke-opacity=".48" stroke-width="3"/>
   </g>
   <g filter="url(#readoutShadow)">

@@ -3093,7 +3093,9 @@ const TILE_SKIN_CATALOG=Object.freeze([
     id:'timer-freestanding',productId:'tile-skin-timer-freestanding',tileType:'timer',tileLabel:'Visual Timer',
     name:'No Background',description:'The animated timer shape becomes the tile and floats directly on the board.',
     tags:'visual timer floating freestanding object clock countdown',released:12
-  })
+  }),
+  Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A rich, solid-color timer face floating directly on the board.',tags:'visual timer solid vivid bold floating',released:13}),
+  Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave floating',released:14})
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
@@ -3767,7 +3769,7 @@ function isInteractiveModuleTarget(target,m){
   return false;
 }
 
-const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','magnifier-classic']);
+const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','timer-solid','timer-liquid','magnifier-classic']);
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
   if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
@@ -4648,6 +4650,9 @@ function bindTimerControls(m,onRender,{onFinish}={}){
 
 function setupTimer(m){
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
+  const liquid=document.createElement('div');liquid.className='timer-liquid-fill';liquid.setAttribute('aria-hidden','true');
+  liquid.innerHTML='<svg class="timer-liquid-wave" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z"/></svg><i></i><i></i><i></i>';
+  fill.append(liquid);
   const clipId=`shape-clip-${++uid}`;
   clip.id=clipId;
   foreign.setAttribute('clip-path',`url(#${clipId})`);
@@ -4740,7 +4745,7 @@ function setupTimer(m){
     },520);
   };
   const releasePointerSettings=()=>{
-    if(m.dataset.tileSkin==='timer-freestanding'){
+    if(['timer-freestanding','timer-solid','timer-liquid'].includes(m.dataset.tileSkin)){
       const active=document.activeElement;
       if(active instanceof HTMLElement&&controls?.contains(active))active.blur();
     }
@@ -4759,6 +4764,7 @@ function setupTimer(m){
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
     m.style.setProperty('--timer-progress-ratio',progress.toFixed(4));
+    liquid.style.height=(progress*100)+'%';liquid.style.opacity=progress>0?'1':'0';
     const complete=left<=.05;
     const paused=!running&&!complete&&left<total-.05;
     m.classList.toggle('timer-complete',complete);
