@@ -12,6 +12,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
         constructor(src){super();this.src=src;this.paused=true;this.volume=1;this.currentTime=0;window.testSounds.push(this)}
         play(){this.paused=false;return Promise.resolve()}
         pause(){this.paused=true}
+        removeAttribute(){}load(){}
         cloneNode(){return new Audio(this.src)}
       };
     });

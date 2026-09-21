@@ -23,7 +23,7 @@
   function begin(event){
     if(applyingHistory||boardChangeSuspended)return;
     const m=target(event);if(!m)return;
-    if(event.target.closest?.('.module-delete,.resize-handle,.module-drag-handle,.tile-skins-toggle')||m.dataset.type==='draw'&&event.target.closest?.('canvas'))return;
+    if(event.target.closest?.('.module-delete,.module-tab-add,.tile-tab-strip,.resize-handle,.module-drag-handle,.tile-skins-toggle')||m.dataset.type==='draw'&&event.target.closest?.('canvas'))return;
     if(pending?.module===m&&event.type!=='pointerdown'){clearTimeout(timer);return;}
     flush();const peers=m.dataset.timerSync==='true'?timerSyncPeers(m):[m];
     pending={module:m,async:event.target.matches?.('input[type=file]'),expires:Date.now()+60000,states:new Map(peers.map(el=>[el,serializeBoardModule(el)]).filter(([,s])=>s))};

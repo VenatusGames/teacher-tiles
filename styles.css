@@ -17394,7 +17394,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   border-radius:10px!important;
   background:var(--surface-solid,var(--surface))!important;
   color:var(--text)!important;
-  box-shadow:0 3px 10px #0f172a18!important;
+  box-shadow:0 1px 3px #0f172a0a!important;
   font-weight:700;
   transition:transform .15s ease,background .15s ease,border-color .15s ease,color .15s ease!important;
 }
@@ -17416,7 +17416,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   background:#e5f1ff!important;
   border-color:#7fb0df!important;
   color:#185f9f!important;
-  box-shadow:inset 0 0 0 1px #9bc3e8,0 3px 10px #0f172a18!important;
+  box-shadow:inset 0 0 0 1px #9bc3e8,0 1px 3px #0f172a0a!important;
 }
 :is(.timer-module,.interactive-module) .timer-start.primary{
   background:var(--surface-solid,var(--surface))!important;

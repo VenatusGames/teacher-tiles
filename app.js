@@ -57,7 +57,8 @@ function captureModuleTransform(m){
     width:m.offsetWidth,
     height:Number.isFinite(restingHeight)?restingHeight:m.offsetHeight,
     rotation:m.dataset.stickerRotation??null,
-    snapGroup:m.dataset.snapGroup??null
+    snapGroup:m.dataset.snapGroup??null,
+    uniformScale:tileUniformScale(m)
   };
 }
 
@@ -68,6 +69,7 @@ function applyModuleTransform(m,state){
   const stateHeight=Number(state.height)||m.offsetHeight;
   if(displayHeightOffset)m._transientRestingHeight=stateHeight;
   Object.assign(m.style,{left:`${state.left}px`,top:`${state.top}px`,width:`${state.width}px`,height:`${stateHeight+displayHeightOffset}px`});
+  setTileUniformScale(m,state.uniformScale||1);
   if(state.rotation!==null){
     m.dataset.stickerRotation=String(state.rotation);
     m.style.setProperty('--sticker-rotation',`${state.rotation}deg`);
@@ -86,11 +88,12 @@ function applyModuleTransform(m,state){
 
 function transformsDiffer(a,b){
   if(!a||!b)return true;
+  if(Math.abs((a.uniformScale||1)-(b.uniformScale||1))>.001)return true;
   return Math.abs(a.left-b.left)>.1||Math.abs(a.top-b.top)>.1||Math.abs(a.width-b.width)>.1||Math.abs(a.height-b.height)>.1||String(a.rotation)!==String(b.rotation)||String(a.snapGroup)!==String(b.snapGroup);
 }
 
 function historyElements(action){
-  if(action.type==='transform'||action.type==='tile-edit')return action.entries.map(entry=>entry.el);
+  if(action.type==='transform'||action.type==='tile-edit'||action.type==='tab-merge')return action.entries.map(entry=>entry.el);
   if(action.type==='delete')return action.entries.map(entry=>entry.el);
   if(action.type==='drawing'||action.type==='skin')return action.el?[action.el]:[];
   return action.elements||[];
@@ -163,6 +166,13 @@ function applyHistoryAction(action,direction){
         applyModuleTransform(entry.el,direction==='undo'?entry.before:entry.after);
         if(isTilePinned(entry.el))capturePinnedTileScreenAnchor(entry.el,{baseScale:Number(entry.el.dataset.pinBaseScale)||boardCamera.scale});
       }
+     }else if(action.type==='tab-merge'){
+      const [target,source]=action.entries;
+      target.el=restoreTileEdit(target.el,direction==='undo'?target.before:target.after);
+      if(direction==='undo'){
+        restoreDeletedEntries([source]);
+        source.el=restoreTileEdit(source.el,source.before);
+      }else detachHistoryElements([source.el]);
     }else if(action.type==='tile-edit'){
       for(const entry of action.entries)entry.el=restoreTileEdit(entry.el,direction==='undo'?entry.before:entry.after);
     }else if(action.type==='skin'){
@@ -2019,8 +2029,8 @@ function drawBoardMinimap(){
   for(const module of workspace.querySelectorAll('.module')){
     const left=Number.parseFloat(module.style.left)||module.offsetLeft;
     const top=Number.parseFloat(module.style.top)||module.offsetTop;
-    const moduleWidth=Number.parseFloat(module.style.width)||module.offsetWidth;
-    const moduleHeight=Number.parseFloat(module.style.height)||module.offsetHeight;
+    const moduleWidth=tileDisplayWidth(module);
+    const moduleHeight=tileDisplayHeight(module);
     ctx.globalAlpha=module.dataset.type==='sticker'?.62:.82;
     ctx.fillStyle=module.dataset.type==='sticker'?'#f2b84b':accent;
     ctx.fillRect(ox+left*scale,oy+top*scale,Math.max(3,moduleWidth*scale),Math.max(3,moduleHeight*scale));
@@ -2162,15 +2172,24 @@ function capturePinnedTileScreenAnchor(m){
   m.dataset.pinScreenX=String(snapScreenCoordinate(rect.left+rect.width/2));
   m.dataset.pinScreenY=String(snapScreenCoordinate(rect.top+rect.height/2));
 }
+function tileUniformScale(m){return Math.max(.15,Math.min(1,Number(m?.dataset.uniformScale)||1));}
+function tileDisplayWidth(m){return m.offsetWidth*tileUniformScale(m);}
+function tileDisplayHeight(m){return m.offsetHeight*tileUniformScale(m);}
+function setTileUniformScale(m,value){
+  const scale=Math.max(.15,Math.min(1,Number(value)||1));
+  if(scale<.999)m.dataset.uniformScale=String(scale);else delete m.dataset.uniformScale;
+  m.style.scale=String(scale/(isTilePinned(m)?Math.max(.05,boardCamera.scale):1));
+}
 function moduleViewportScale(m){
   if(!m)return Math.max(.05,boardCamera.scale||1);
-  if(document.fullscreenElement===m||isTilePinned(m))return 1;
-  return Math.max(.05,boardCamera.scale||1);
+  if(document.fullscreenElement===m)return 1;
+  if(isTilePinned(m))return tileUniformScale(m);
+  return Math.max(.05,boardCamera.scale||1)*tileUniformScale(m);
 }
 function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
   if(!m?.isConnected)return;
   if(!isTilePinned(m)){
-    m.style.removeProperty('scale');
+    setTileUniformScale(m,tileUniformScale(m));
     syncTilePinControl(m);
     return;
   }
@@ -2182,7 +2201,7 @@ function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
   const currentScale=Math.max(.05,boardCamera.scale||1);
   m.style.left=`${(screenX-rendered.x)/currentScale-m.offsetWidth/2}px`;
   m.style.top=`${(screenY-rendered.y)/currentScale-m.offsetHeight/2}px`;
-  m.style.scale=String(1/currentScale);
+  m.style.scale=String(tileUniformScale(m)/currentScale);
   syncTilePinControl(m);
 }
 function syncPinnedTilesToCamera(rendered=renderedBoardCameraOffset()){
@@ -2207,10 +2226,10 @@ function setTilePinned(m,pinned){
     syncPinnedTileToCamera(m,rendered);
   }else{
     delete m.dataset.tilePinned;delete m.dataset.pinScreenX;delete m.dataset.pinScreenY;delete m.dataset.pinBaseScale;
-    m.style.removeProperty('scale');
+    setTileUniformScale(m,tileUniformScale(m));
     const scale=Math.max(.05,boardCamera.scale||1);
-    m.style.left=`${(screenX-rendered.x)/scale-m.offsetWidth/2}px`;
-    m.style.top=`${(screenY-rendered.y)/scale-m.offsetHeight/2}px`;
+    m.style.left=`${(screenX-rendered.x)/scale-tileDisplayWidth(m)/2}px`;
+    m.style.top=`${(screenY-rendered.y)/scale-tileDisplayHeight(m)/2}px`;
     syncTilePinControl(m);
   }
   syncPinnedTilesToCamera(rendered);
@@ -3214,6 +3233,9 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 
 function restoreTileEdit(m,snapshot){
   if(!m?.isConnected)return m;
+  for(const media of m.querySelectorAll('audio,video'))media.pause();
+  for(const sound of m._activeTileSounds||[])sound.pause();
+  m._activeTileSounds?.clear();
   const sibling=m.nextSibling;m._deactivate?.();m.remove();
   let next;
   try{next=withBoardChangesSuspended(()=>restoreTeacherTilesBoardObject(snapshot));}
@@ -3280,17 +3302,17 @@ function setupClassroomTileControls(m){
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
   'timer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
-  'flyswat','quietcritters','robothfw','chime','transitionbell'
+  'flyswat','quietcritters','robothfw','chime','transitionbell','meditation'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
   timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
-  quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
+  meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
 const TILE_AUDIO_HOSTS=Object.freeze({
   timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
   money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
-  robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
+  meditation:'.meditation-controls',robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
 });
 
 function bindGeneratedTileSettings(m,toggle,panel){
@@ -3942,6 +3964,7 @@ function setupCommon(m){
   prepareModuleTextEditors(m);
   ensureTileFullscreenControl(m);
   ensureTilePinControl(m);
+  window.TeacherTilesTabs?.setup(m);
   layoutTileOptionControls(m);
   const optionResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>layoutTileOptionControls(m)));
   optionResizeObserver.observe(m);
@@ -4053,11 +4076,11 @@ function setupDrag(m){
   const clearPreview=()=>{landing.classList.remove('is-visible');guideX.classList.remove('is-visible');guideY.classList.remove('is-visible');workspace.querySelectorAll('.module.is-snap-target').forEach(x=>x.classList.remove('is-snap-target'))};
   const findSnap=(left,top)=>{
     const SNAP=6/boardCamera.scale,EDGE_SNAP=4/boardCamera.scale;
-    const w=m.offsetWidth,hh=m.offsetHeight,right=left+w,bottom=top+hh;
+    const w=tileDisplayWidth(m),hh=tileDisplayHeight(m),right=left+w,bottom=top+hh;
     let sx=null,sy=null,bestX=SNAP,bestY=SNAP,targetX=null,targetY=null,seamX=0,seamY=0,xStart=0,xLength=0,yStart=0,yLength=0;
     for(const o of workspace.querySelectorAll('.module')){
       if(o===m||selectedModules.has(o)||o.dataset.type==='sticker')continue;
-      const ol=o.offsetLeft,ot=o.offsetTop,ow=o.offsetWidth,oh=o.offsetHeight,or=ol+ow,ob=ot+oh;
+      const ol=o.offsetLeft,ot=o.offsetTop,ow=tileDisplayWidth(o),oh=tileDisplayHeight(o),or=ol+ow,ob=ot+oh;
       const vStart=Math.max(top,ot),vEnd=Math.min(bottom,ob),vOverlap=vEnd-vStart,hStart=Math.max(left,ol),hEnd=Math.min(right,or),hOverlap=hEnd-hStart;
       if(vOverlap>28){
         const a=Math.abs(left-or),b=Math.abs(right-ol);
@@ -4121,7 +4144,7 @@ function setupDrag(m){
     if(!clickableStoplightSurface){h.setPointerCapture(e.pointerId);dragCaptured=true}
     const sx=e.clientX,sy=e.clientY;
     const tugHoldTimer=tugCandidate?setTimeout(()=>{tugArmed=true;m.classList.add('is-tug-armed')},520):null;
-    let pending=null,overTrash=false,dragMoved=false;
+    let pending=null,pendingTab=null,overTrash=false,dragMoved=false;
     let snappingDisabled=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
     const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
@@ -4168,17 +4191,19 @@ function setupDrag(m){
         let moveX=dx,moveY=dy;
         if(tugArmed&&!tugged&&g===m){moveX=dx*.2;moveY=dy*.2}
         else if(tugged&&g===m){moveX=tugBreakVisualDx+(dx-tugBreakDx);moveY=tugBreakVisualDy+(dy-tugBreakDy)}
-        g.style.left=`${clamp(o.left+moveX,0,BOARD_WIDTH-g.offsetWidth)}px`;
-        g.style.top=`${clamp(o.top+moveY,0,BOARD_HEIGHT-g.offsetHeight)}px`;
+        g.style.left=`${clamp(o.left+moveX,0,BOARD_WIDTH-tileDisplayWidth(g))}px`;
+        g.style.top=`${clamp(o.top+moveY,0,BOARD_HEIGHT-tileDisplayHeight(g))}px`;
       }
       clearPreview();
       overTrash=trashHit(ev);
       setTrash(true,overTrash);
-      if(overTrash||multi||snappingDisabled||!dragMoved||pinnedDrag){pending=null;return}
+      if(overTrash||multi||snappingDisabled||!dragMoved||pinnedDrag){pending=null;pendingTab=null;workspace.querySelectorAll('.is-tab-drop-target').forEach(el=>el.classList.remove('is-tab-drop-target'));return}
+      pendingTab=window.TeacherTilesTabs?.dropTarget(m,ev.clientX,ev.clientY)||null;
+      if(pendingTab){pending=null;return;}
       pending=findSnap(m.offsetLeft,m.offsetTop);
       workspace.style.setProperty('--snap-unit',`${1/boardCamera.scale}px`);
       if(pending.left!==null||pending.top!==null){
-        Object.assign(landing.style,{left:`${pending.left??m.offsetLeft}px`,top:`${pending.top??m.offsetTop}px`,width:`${m.offsetWidth}px`,height:`${m.offsetHeight}px`});
+        Object.assign(landing.style,{left:`${pending.left??m.offsetLeft}px`,top:`${pending.top??m.offsetTop}px`,width:`${tileDisplayWidth(m)}px`,height:`${tileDisplayHeight(m)}px`});
         landing.classList.add('is-visible');
       }
       if(pending.targetX)pending.targetX.classList.add('is-snap-target');
@@ -4193,7 +4218,7 @@ function setupDrag(m){
       }
     };
     const dragEventTarget=clickableStoplightSurface?window:h;
-    const cleanup=()=>{clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);dragEventTarget.removeEventListener('pointermove',move);dragEventTarget.removeEventListener('pointerup',end);dragEventTarget.removeEventListener('pointercancel',cancel)};
+    const cleanup=()=>{workspace.querySelectorAll('.is-tab-drop-target').forEach(el=>el.classList.remove('is-tab-drop-target'));clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);dragEventTarget.removeEventListener('pointermove',move);dragEventTarget.removeEventListener('pointerup',end);dragEventTarget.removeEventListener('pointercancel',cancel)};
     const suppressPostDragClick=()=>{
       if(!dragMoved)return;
       const block=event=>{event.preventDefault();event.stopImmediatePropagation()};
@@ -4204,11 +4229,12 @@ function setupDrag(m){
       suppressPostDragClick();
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}
+      if(pendingTab&&dragMoved){const target=pendingTab;cleanup();applyModuleTransform(m,origins.get(m));window.TeacherTilesTabs.merge(target,m);return;}
       let willSnap=false;
       if(!multi&&pending){
         willSnap=pending.left!==null||pending.top!==null;
-        if(pending.left!==null)m.style.left=`${clamp(pending.left,0,BOARD_WIDTH-m.offsetWidth)}px`;
-        if(pending.top!==null)m.style.top=`${clamp(pending.top,0,BOARD_HEIGHT-m.offsetHeight)}px`;
+        if(pending.left!==null)m.style.left=`${clamp(pending.left,0,BOARD_WIDTH-tileDisplayWidth(m))}px`;
+        if(pending.top!==null)m.style.top=`${clamp(pending.top,0,BOARD_HEIGHT-tileDisplayHeight(m))}px`;
       }
       let joined=group;
       if(willSnap){
@@ -4234,34 +4260,47 @@ function setupResize(m){
     if(e.button!==0)return;
     e.preventDefault();e.stopPropagation();
     const before=captureModuleTransform(m);
-    m.classList.add('is-resizing');
-    clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
-    const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight,cs=getComputedStyle(m),mw=parseFloat(cs.minWidth)||220,mh=parseFloat(cs.minHeight)||180;
+    m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
+    const d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop;
+    const initialScale=tileUniformScale(m),sw=tileDisplayWidth(m),sh=tileDisplayHeight(m),cs=getComputedStyle(m);
+    const mw=Number(m._tileTabs?.minimum?.width)||parseFloat(cs.minWidth)||220,mh=Number(m._tileTabs?.minimum?.height)||parseFloat(cs.minHeight)||180;
+    const viewportScale=moduleViewportScale(m)/initialScale;
+    let uniformBase=initialScale<1?{w:m.offsetWidth,h:m.offsetHeight}:null;
     const move=ev=>{
-      const resizeScale=moduleViewportScale(m);
-      const dx=(ev.clientX-sx)/resizeScale,dy=(ev.clientY-sy)/resizeScale;
-      let l=sl,t=st,w=sw,hh=sh;
-      if(d.includes('r'))w=clamp(sw+dx,mw,BOARD_WIDTH-sl);
-      if(d.includes('b'))hh=clamp(sh+dy,mh,BOARD_HEIGHT-st);
-      if(d.includes('l')){w=clamp(sw-dx,mw,sw+sl);l=sl+sw-w}
-      if(d.includes('t')){hh=clamp(sh-dy,mh,sh+st);t=st+sh-hh}
-      if(m._imageRatio){
-        const ratio=m._imageRatio;
-        if(d==='t'||d==='b'){
-          w=Math.max(mw,hh*ratio);
-          if(w>BOARD_WIDTH-l){w=BOARD_WIDTH-l;hh=w/ratio}
-          if(d==='t')t=st+sh-hh;
-        }else{
-          hh=Math.max(mh,w/ratio);
-          if(hh>BOARD_HEIGHT-t){hh=BOARD_HEIGHT-t;w=hh*ratio}
-          if(d.includes('l'))l=sl+sw-w;
-          if(d.includes('t'))t=st+sh-hh;
-        }
+      const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
+      let wantedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
+      let wantedH=d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh;
+      wantedW=Math.max(1,wantedW);wantedH=Math.max(1,wantedH);
+      if(m._imageRatio){if(d==='t'||d==='b')wantedW=wantedH*m._imageRatio;else wantedH=wantedW/m._imageRatio;}
+      if(!uniformBase&&(wantedW<mw||wantedH<mh)){
+        const tx=wantedW<mw&&wantedW<sw?(sw-mw)/(sw-wantedW):1;
+        const ty=wantedH<mh&&wantedH<sh?(sh-mh)/(sh-wantedH):1;
+        const hit=clamp(Math.min(tx,ty),0,1);
+        uniformBase={w:Math.max(mw,sw+(wantedW-sw)*hit),h:Math.max(mh,sh+(wantedH-sh)*hit)};
       }
-      Object.assign(m.style,{left:`${l}px`,top:`${t}px`,width:`${w}px`,height:`${hh}px`});
+      let scale=1,w=wantedW,hh=wantedH;
+      if(uniformBase){
+        const ratios=[];
+        if(d.includes('l')||d.includes('r'))ratios.push(wantedW/uniformBase.w);
+        if(d.includes('t')||d.includes('b'))ratios.push(wantedH/uniformBase.h);
+        scale=clamp(Math.min(...ratios),.15,1);
+        if(Math.min(...ratios)>=1){uniformBase=null;scale=1;w=Math.max(mw,wantedW);hh=Math.max(mh,wantedH);}
+        else{w=uniformBase.w;hh=uniformBase.h;}
+      }
+      const visualW=w*scale,visualH=hh*scale;
+      const l=d.includes('l')?sl+sw-visualW:(!d.includes('r')&&scale<1?sl+(sw-visualW)/2:sl);
+      const t=d.includes('t')?st+sh-visualH:(!d.includes('b')&&scale<1?st+(sh-visualH)/2:st);
+      Object.assign(m.style,{left:clamp(l,0,Math.max(0,BOARD_WIDTH-visualW))+'px',top:clamp(t,0,Math.max(0,BOARD_HEIGHT-visualH))+'px',width:w+'px',height:hh+'px'});
+      setTileUniformScale(m,scale);
     };
-    const end=()=>{m._syncTransientResize?.();m.classList.remove('is-resizing');m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end)};
-    h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+    const finish=cancelled=>{
+      if(cancelled)applyModuleTransform(m,before);
+      else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
+      m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
+      updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);
+    };
+    const end=()=>finish(false),cancel=()=>finish(true);
+    h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',cancel);
   }));
 }
 
@@ -19130,6 +19169,7 @@ function applyBoardPostSetupState(m,state){
     try{m._boardTimerSetState(state.timer)}catch(error){console.warn('TeacherTiles could not restore timer state',error)}
   }
 
+  if(state.tabs)window.TeacherTilesTabs?.restore(m,state.tabs);
   if(state.transform)applyModuleTransform(m,state.transform);
   if(state.zIndex!==undefined&&Number.isFinite(Number(state.zIndex))){
     const saved=Math.max(1,Math.round(Number(state.zIndex)));
@@ -19145,7 +19185,7 @@ function applyBoardPostSetupState(m,state){
   }
 
   if(m.dataset.type==='youtube'&&state.special?.loaded&&m.querySelector('.youtube-load')){
-    requestAnimationFrame(()=>m.querySelector('.youtube-load')?.click());
+    requestAnimationFrame(()=>{if(m.isConnected)m.querySelector('.youtube-load')?.click()});
   }
   disableModuleSpellcheck(m);
   syncTilePinControl(m);
@@ -19188,7 +19228,7 @@ function serializeBoardModule(m){
     try{base.timer=m._boardTimerGetState()}catch(error){console.warn('TeacherTiles could not capture timer state',error)}
   }
 
-  return base;
+  return window.TeacherTilesTabs?.capture(m,base)||base;
 }
 
 function buildBoardPreview(objects){
@@ -19200,8 +19240,8 @@ function buildBoardPreview(objects){
       object,
       left:Number(t.left)||0,
       top:Number(t.top)||0,
-      width:Math.max(24,Number(t.width)||160),
-      height:Math.max(24,Number(t.height)||120)
+      width:Math.max(24,(Number(t.width)||160)*(Number(t.uniformScale)||1)),
+      height:Math.max(24,(Number(t.height)||120)*(Number(t.uniformScale)||1))
     };
   });
   let minX=Math.min(...boxes.map(box=>box.left));

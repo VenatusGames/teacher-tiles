@@ -2837,8 +2837,8 @@ function layoutBoardPreviewObjects(objects) {
       state,
       left: Number(transform.left) || 0,
       top: Number(transform.top) || 0,
-      width: Math.max(24, Number(transform.width) || 160),
-      height: Math.max(24, Number(transform.height) || 120)
+      width: Math.max(24, (Number(transform.width) || 160) * (Number(transform.uniformScale) || 1)),
+      height: Math.max(24, (Number(transform.height) || 120) * (Number(transform.uniformScale) || 1))
     };
   });
 

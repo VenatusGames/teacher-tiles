@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260921-robot-meditation-1" />
+  <link rel="stylesheet" href="styles.css?v=20260921-tabs-meditation-2" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260918-tile-audio-1" />
@@ -37,10 +37,11 @@
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
-<link rel="stylesheet" href="tiles/meditation/styles.css?v=20260921-1">
+<link rel="stylesheet" href="tiles/meditation/styles.css?v=20260921-tabs-meditation-2">
 <link rel="stylesheet" href="tiles/rainbow/styles.css?v=20260912-music-staff-piano-1">
 <link rel="stylesheet" href="tiles/music-score/styles.css?v=20260912-tile-refinements-2">
 <link rel="stylesheet" href="tiles/piano/styles.css?v=20260912-1">
+<link rel="stylesheet" href="tiles/shared/tabs.css?v=20260921-1">
 <link rel="stylesheet" href="tiles/shared/skins.css?v=20260912-fit-previews-1">
 <link rel="stylesheet" href="tiles/shared/object-skins.css?v=20260918-chime-clear-1">
 <link rel="stylesheet" href="tiles/visual-schedule/layout.css?v=20260913-schedule-scroll-1">
@@ -2583,13 +2584,24 @@
   </section>
 </template>
 <template id="meditation-template">
-<section class="module meditation-module" data-type="meditation" data-font="inter">
+<section class="module classroom-widget meditation-module" data-type="meditation" data-bg="white" data-font="inter" data-text="dark">
 <button class="module-delete" aria-label="Delete Meditation">×</button><div class="module-drag-handle"></div>
 <header class="meditation-heading"><span>A MOMENT FOR YOU</span><h2 class="meditation-title">Meditation</h2></header>
 <div class="meditation-scene"><div class="meditation-aura" aria-hidden="true"></div><div class="meditation-bloom" aria-hidden="true"><div class="meditation-petals"><i style="--petal:0"></i><i style="--petal:1"></i><i style="--petal:2"></i></div><div class="meditation-core"></div></div><span class="meditation-count" aria-hidden="true">✦</span></div>
 <div class="meditation-copy"><h3 class="meditation-cue" role="status" aria-live="polite">Find your calm</h3><p class="meditation-detail">Let your breath follow the light</p></div>
-<div class="meditation-rhythm"><span>Inhale · 4 seconds</span><i aria-hidden="true"></i><span>Exhale · 6 seconds</span></div>
+<div class="meditation-rhythm"><span class="meditation-inhale-label">Inhale · 4 seconds</span><i aria-hidden="true"></i><span class="meditation-exhale-label">Exhale · 6 seconds</span></div>
+<div class="meditation-session"><span>Session remaining</span><strong class="meditation-remaining" role="timer">3:00</strong></div>
 <div class="meditation-actions"><button class="meditation-toggle" type="button" aria-pressed="false">Start breathing</button><button class="meditation-reset" type="button">Reset</button></div>
+<div class="customization-bar meditation-controls widget-controls">
+<button class="custom-icon tile-bg" type="button" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+<button class="custom-icon tile-font" type="button" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+<button class="custom-icon tile-text" type="button" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+<div class="tile-settings-wrap"><button class="tile-settings-toggle custom-icon" type="button" aria-label="Meditation settings" aria-expanded="false">⚙</button>
+<div class="tile-settings-panel" hidden><strong>Meditation settings</strong>
+<label class="tile-setting"><span>Breathe in (seconds)</span><input class="meditation-inhale" type="number" min="1" max="20" step="1" value="4"></label>
+<label class="tile-setting"><span>Breathe out (seconds)</span><input class="meditation-exhale" type="number" min="1" max="20" step="1" value="6"></label>
+<label class="tile-setting"><span>Session length (minutes:seconds)</span><input class="meditation-duration" type="text" inputmode="numeric" value="3:00" placeholder="3:00"></label>
+<small>Changing timing restarts the session. Music follows the tile sound controls.</small></div></div></div>
 <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="sleepymonster-template">
   <section class="module sleepymonster-module" data-type="sleepymonster" data-bg="white" data-font="inter" data-text="dark">
@@ -4172,7 +4184,8 @@
 <script src="tiles/shared/appearance.js?v=20260918-cream-text-1"></script>
   <script src="tiles/visual-directions/index.js?v=20260913-readable-directions-1"></script>
   <script src="tiles/color-picker/index.js?v=20260912-1"></script>
-<script src="tiles/meditation/index.js?v=20260921-1"></script>
+<script src="tiles/shared/tabs.js?v=20260921-1"></script>
+<script src="tiles/meditation/index.js?v=20260921-tabs-meditation-2"></script>
 <script src="tiles/rainbow/index.js?v=20260912-1"></script>
 <script src="tiles/music-score/notes.js?v=20260912-1"></script>
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
@@ -4180,9 +4193,9 @@
 <script src="tiles/music-score/index.js?v=20260912-default-labels-1"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
 <script src="tiles/fly-swat/index.js?v=20260918-tile-audio-1"></script>
-<script src="app.js?v=20260921-restore-audio-1"></script>
+<script src="app.js?v=20260921-tabs-meditation-2"></script>
   <script src="tiles/lesson-planner.js?v=20260918-planner-recovered-shared-library-1"></script>
-  <script type="module" src="firebase-auth.js?v=20260920-board-persistence-1"></script>
+  <script type="module" src="firebase-auth.js?v=20260921-tabs-scale-1"></script>
 
 
   <template id="ruler-template">
@@ -5518,6 +5531,6 @@
     </section>
   </template>
 
-<script src="tiles/shared/history.js?v=20260913-1"></script>
+<script src="tiles/shared/history.js?v=20260921-tabs-meditation-2"></script>
 </body>
 </html>
