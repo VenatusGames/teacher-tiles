@@ -2,9 +2,10 @@
 const cog='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg>';
 function setup(m,button){if(!button)return;button.innerHTML=cog;button.setAttribute('aria-label',button.getAttribute('aria-label')||'Tile settings');
 const panel=m.querySelector('.tile-settings-panel,.collection-settings,.classmeter-settings,.highfrequency-settings');if(!panel||panel.dataset.settingsPositioned)return;panel.dataset.settingsPositioned='true';panel.classList.add('tile-settings-floating');panel.setAttribute('popover','manual');let frame=0;
-const resetScale=m.querySelector('.tile-reset-scale');if(resetScale){resetScale.textContent='Reset Scale';panel.append(resetScale);}
+const resetScale=m.querySelector('.tile-reset-scale');if(resetScale){resetScale.innerHTML='<span class="tile-reset-scale-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 21h5v-5m0 5-6-6M21 8V3h-5m5 0-6 6M3 16v5h5m-5 0 6-6"/></svg></span><span>Reset scale</span>';panel.append(resetScale);}
 function hide(){cancelAnimationFrame(frame);if(panel.matches(':popover-open'))panel.hidePopover();}
 function close(){panel.hidden=true;button.setAttribute('aria-expanded','false');m.classList.remove('has-tile-settings-open');hide()}
+if(resetScale)resetScale.addEventListener('click',close);
 function position(){cancelAnimationFrame(frame);if(panel.hidden||!m.isConnected){hide();return}const rect=button.getBoundingClientRect();const width=panel.offsetWidth,height=panel.offsetHeight;panel.style.setProperty('left',`${Math.max(8,Math.min(rect.left,innerWidth-width-8))}px`,'important');panel.style.setProperty('top',`${Math.max(8,Math.min(rect.top-height-8>=8?rect.top-height-8:rect.bottom+8,innerHeight-height-8))}px`,'important');frame=requestAnimationFrame(position)}
 function sync(){if(panel.hidden){hide();return}if(!m.isConnected)return;if(!panel.matches(':popover-open'))panel.showPopover();position()}
 const observer=new MutationObserver(sync);observer.observe(panel,{attributes:true,attributeFilter:['hidden']});

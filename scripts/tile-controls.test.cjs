@@ -46,6 +46,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.equal(compact[0],300);assert.equal(compact[1],430);assert.equal(compact[2],.85);
     await tile.hover();await page.locator('.tile-settings-toggle').click();await page.locator('.tile-settings-floating .tile-reset-scale').click();
     assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[460,550,1]);
+    assert.equal(await page.locator('.tile-settings-floating').isVisible(),false,'reset scale closes tile settings');
+    assert.equal(await page.locator('.tile-settings-floating .tile-reset-scale svg').count(),1,'reset scale keeps a visual icon');
     await page.evaluate(()=>undoBoardAction());assert.equal(await tile.evaluate(m=>m.offsetWidth),300);
     await page.evaluate(()=>redoBoardAction());
     await page.evaluate(()=>TeacherTilesTabs.add(workspace.querySelector('.module')));await page.mouse.move(1400,900);await page.clock.runFor(500);
