@@ -2,9 +2,25 @@
 
 WIGs runs at `/wigs/` and uses only the `wigstracker` Firebase project. It does not use the main Teacher Tiles project's authentication, database, storage, or billing. The web app identifiers in `lib/firebase-config.ts` are intentionally public. Never add service-account credentials.
 
-Student profiles no longer collect email addresses or support separate Google student logins. Teachers use their own Google account and select a student for check-ins. On the first full class load, the app removes old email fields and matching login-directory entries for that class. Old directory access exists only for cleanup; it cannot grant class access or create new assignments.
+Student profiles no longer collect email addresses or support separate Google student logins. Teachers use their own Google account and select a student for check-ins. Conversion removes old email fields and matching login-directory entries. Old directory access exists only for cleanup; it cannot grant class access or create new assignments.
 
-A successful class load saves an AES-GCM encrypted snapshot in sessionStorage for five minutes. No plaintext class data or encryption keys are persisted. Reloads in the same tab during that window fetch only the shared key (one document read); student keys and history load when needed. First loads, expired caches, storage-disabled/oversized caches, and the Refresh from server button perform a full fetch. Sign-out clears the snapshot. Changes from another device appear after cache expiry on the next load or immediately with Refresh from server.
+The authoritative class record packs settings, students, questions, answers, and a completion-date index together. Repeated pictures/text are deduplicated, gzip-compressed, and AES-GCM encrypted. History is packed separately by calendar month. New students do not need separate profile or key documents. No class data or encryption keys are persisted to browser storage, and there is no five-minute refetch cycle.
 
-Deployment must publish firestore.rules before the new frontend; the old rules require student email hashes and will reject the updated profile writes. Cleanup happens as each teacher opens their class, not as a database-wide purge. Run pnpm test, pnpm build, and the local Firestore emulator suite before publishing.
+For records that fit in one part, the tested document-read costs are:
+
+| Operation | Reads |
+| --- | --- |
+| Cold load, including a fresh browser session | 2: class + shared key |
+| Menu visits and today's completion checks | 0 |
+| Settings, student, question, or answer edit | 1 |
+| Submit a check-in | 2: class + month |
+| Open a history page within one month | 1; repeated pages in that month use memory |
+
+Large photo collections split into up to four bounded parts; each extra part costs one extra read when that bundle is needed. Pages spanning months read only the required months. Packed-path rules authorize by UID with no dependent document reads. Transaction retries can increase counts during concurrent edits. Class and history writes are atomic; edits use the current server record rather than overwriting from a stale tab. Changes from another device appear on page reload or Refresh from server.
+
+Existing classes require one conversion that reads their scattered profiles, keys, questions, answers, and check-ins. The source layout is frozen, monthly archives are written, and the packed class is published last. Cleanup removes old source documents only after that commit and resumes if interrupted. Later loads never rescan the old collections. Student deletion similarly resumes archive cleanup after an interrupted purge. Existing keys are retained and never regenerated for encrypted data.
+
+Publish firestore.rules and firestore.indexes.json immediately before the new frontend. The previous rules cannot write packed records; older frontends cannot edit a converted class and must reload. Conversion changes the authoritative storage format, so rolling the frontend back to the old format is not supported. Local tests touch only synthetic emulator data.
+
+Validation: pnpm test, pnpm build, and pnpm dlx firebase-tools emulators:exec --only firestore --project demo-wigs-tests "node tests/firestore-rules.mjs". The emulator suite exercises the actual storage code, encryption, conversion, and transactions under these rules.
 

@@ -1,14 +1,22 @@
-import { collection, doc, writeBatch, deleteDoc, query, orderBy, documentId, where, startAfter, limit, type QueryConstraint, type DocumentReference, type DocumentSnapshot } from 'firebase/firestore';
+import { collection, doc, writeBatch, type Transaction, type DocumentReference } from 'firebase/firestore';
 import { getDoc, getDocs, runTransaction } from './firestore-activity';
 import { auth, requireDb } from './firebase';
-import { decryptRecord, encryptRecord, emailLookup, isEncrypted } from './encryption';
+import { decryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
-import { cachedRead, invalidateReads, patchCachedRead, clearReloadCache, readReloadCache, saveReloadCache } from './read-cache';
-import { emptyData, localDate, personalize, type Access, type AppData, type Student, type Question, type Answer, type HistoryEntry } from './model';
+import { cachedRead, invalidateReads, patchCachedRead } from './read-cache';
+import { decodePacked, encodePacked, readPacked, writePacked, type Row, type PackedRows } from './packed-store';
+import { emptyData, localDate, personalize, type Access, type AppData, type Student, type HistoryEntry } from './model';
 
+type ClassState = {
+  data: AppData;
+  days: Record<string, string[]>;
+  cleanupPaths: string[];
+  purges: Record<string, string[]>;
+};
+type Month = { entries: HistoryEntry[] };
 const root = (access: Access) => doc(requireDb(), 'classes', access.ownerId);
 const records = (access: Access, name: string) => collection(root(access), name);
-const record = (access: Access, name: string, id: string) => doc(records(access, name), id);
+const monthRef = (access: Access, month: string) => doc(records(access, 'historyMonths'), month);
 function requireTeacher(access: Access) {
   if (access.role !== 'teacher' || access.ownerId !== auth?.currentUser?.uid) throw new Error('Only your teacher can change the class.');
 }
@@ -21,323 +29,287 @@ function imageValue(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 33000 || (!/^data:image\/jpeg;base64,/.test(value) && !/^preset:(smile|sad|yes|no)$/.test(value))) throw new Error('Choose a smaller picture.');
   return value;
 }
-type Row = { ref: DocumentReference; id: string; exists: () => boolean; data: () => Record<string, any> | undefined };
-function rememberRecord(access: Access, ref: DocumentReference, payload: Record<string, unknown>) {
-  const snapshot: Row = { ref, id: ref.id, exists: () => true, data: () => payload };
-  const name = ref.path.split('/')[2];
-  if (!name) patchCachedRead<Row>(access, 'settings', () => snapshot);
-  else if (name === 'students') patchCachedRead<Row[]>(access, 'students', rows => [...rows.filter(row => row.id !== ref.id), snapshot]);
-  else patchCachedRead<{ docs: Row[] }>(access, name, rows => ({ docs: [...rows.docs.filter(row => row.id !== ref.id), snapshot] }));
+function starter(): ClassState {
+  return { data: { ...structuredClone(emptyData),
+    questions: [{ id: 'starter', prompt: 'How focused did you feel today?', position: 1, fridayOnly: false }],
+    answers: ['Getting Started', 'On My Way', 'Locked In'].map((label, index) => ({ id: 'starter-' + index, questionId: 'starter', label, imageKey: null, position: index + 1 })),
+  }, days: {}, cleanupPaths: [], purges: {} };
 }
-function forgetRecord(access: Access, name: string, id: string) {
-  if (name === 'students') patchCachedRead<Row[]>(access, name, rows => rows.filter(row => row.id !== id));
-  else patchCachedRead<{ docs: Row[] }>(access, name, rows => ({ docs: rows.docs.filter(row => row.id !== id) }));
+function ordered(data: AppData): AppData {
+  return { ...data, students: [...data.students].sort((a, b) => a.name.localeCompare(b.name)),
+    questions: [...data.questions].sort((a, b) => a.position - b.position), answers: [...data.answers].sort((a, b) => a.position - b.position) };
 }
-export function refreshClassData(access: Access) {
-  clearReloadCache();
-  for (const name of ['settings', 'students', 'questions', 'answers', 'history:', 'completed:']) invalidateReads(access, name);
+async function fetchPacked(ref: DocumentReference) { return runTransaction(requireDb(), tx => readPacked(tx, ref)); }
+async function stateIn(tx: Transaction, access: Access, key: CryptoKey) {
+  const rows = await readPacked(tx, root(access));
+  return { rows, state: await decodePacked<ClassState>(rows, key) };
 }
-async function read<T>(snapshot: Row, key: CryptoKey): Promise<T> {
-  if (!snapshot.exists()) throw new Error('That record is no longer available.');
-  return decryptRecord<T>(snapshot.data()!, key, snapshot.ref.path);
+async function monthIn(tx: Transaction, access: Access, month: string, key: CryptoKey, expected = false) {
+  const rows = await readPacked(tx, monthRef(access, month));
+  if (expected && !rows.head.exists()) throw new Error('A history month is missing. No replacement data was saved.');
+  return { rows, value: rows.head.exists() ? await decodePacked<Month>(rows, key) : { entries: [] } };
 }
-const sorted = <T extends { position: number }>(rows: T[]) => rows.sort((a, b) => a.position - b.position);
+const hasMonth = (state: ClassState, month: string) => Object.keys(state.days).some(day => day.startsWith(month + '-'));
+function remember(access: Access, state: ClassState) {
+  patchCachedRead<ClassState>(access, 'class', () => state);
+}
+export function refreshClassData(access: Access) { invalidateReads(access, 'class'); invalidateReads(access, 'history:'); }
 
-// Full replacements remove plaintext. Transactions re-read their sources.
-// Encrypt the root last so an interrupted migration resumes on the next load.
-async function prepareClass(access: Access, initial: DocumentSnapshot) {
+async function loadState(access: Access): Promise<ClassState> {
   requireTeacher(access);
-  if (initial.exists() && isEncrypted(initial.data())) return;
-  const [questions, answers, students] = await Promise.all([
-    getDocs(records(access, 'questions')), getDocs(records(access, 'answers')), getDocs(records(access, 'students')),
-  ]);
-  const shared = await classKey(access, undefined, ![...questions.docs, ...answers.docs].some(s => isEncrypted(s.data())));
-  const migrate = async (ref: DocumentReference, key: CryptoKey, convert: (data: Record<string, any>) => unknown = data => data) => {
-    await runTransaction(requireDb(), async tx => {
-      const current = await tx.get(ref);
-      if (!current.exists() || isEncrypted(current.data())) return;
-      tx.set(ref, await encryptRecord(convert(current.data()), key, ref.path));
-    });
-  };
-  for (const row of questions.docs) await migrate(row.ref, shared);
-  for (const row of answers.docs) await migrate(row.ref, shared);
-  for (const student of students.docs) {
-    const responses = await getDocs(collection(student.ref, 'responses'));
-    const key = await classKey(access, student.id, !isEncrypted(student.data()) && !responses.docs.some(s => isEncrypted(s.data())));
-    for (const response of responses.docs) await migrate(response.ref, key, data => ({
-      createdAt: data.createdAt?.toDate().toISOString() ?? response.id + 'T12:00:00.000Z', items: data.items,
-    }));
-    await runTransaction(requireDb(), async tx => {
-      const current = await tx.get(student.ref);
-      if (!current.exists() || isEncrypted(current.data())) return;
-      const data = current.data() as Student;
-      tx.set(student.ref, await encryptRecord({ ...data, id: student.id }, key, student.ref.path));
+  return cachedRead(access, 'class', async () => {
+    const rows = await fetchPacked(root(access));
+    const state = rows.head.data()?.storage === 2
+      ? await decodePacked<ClassState>(rows, await classKey(access))
+      : await convertLegacy(access, rows);
+    return finishMaintenance(access, state);
+  }, Infinity);
+}
+export async function loadClass(access: Access): Promise<AppData> { return ordered((await loadState(access)).data); }
+
+// Migration freezes the old layout before reading it. Legacy writes are denied
+// by the rules once storage='packing', including writes from an older open tab.
+// A failed conversion resumes from the frozen source; storage=2 is published last.
+async function convertLegacy(access: Access, initial: PackedRows): Promise<ClassState> {
+  if (!initial.head.exists()) {
+    const key = await classKey(access, undefined, true);
+    return runTransaction(requireDb(), async tx => {
+      const current = await readPacked(tx, root(access));
+      if (current.head.exists()) {
+        if (current.head.data()?.storage === 2) return decodePacked<ClassState>(current, key);
+        throw new Error('The class changed while opening. Please try again.');
+      }
+      const state = starter();
+      writePacked(tx, current, await encodePacked(root(access), state, key));
+      return state;
     });
   }
-  await runTransaction(requireDb(), async tx => {
-    const current = await tx.get(root(access));
-    if (current.exists() && isEncrypted(current.data())) return;
-    const settings = current.exists() ? { title: current.data().title, description: current.data().description } : emptyData.settings;
-    tx.set(root(access), await encryptRecord(settings, shared, root(access).path));
-    if (!current.exists()) {
-      const question = record(access, 'questions', 'starter');
-      tx.set(question, await encryptRecord({ id: 'starter', prompt: 'How focused did you feel today?', position: 1, fridayOnly: false }, shared, question.path));
-      for (const [index, label] of ['Getting Started', 'On My Way', 'Locked In'].entries()) {
-        const answer = record(access, 'answers', 'starter-' + index);
-        tx.set(answer, await encryptRecord({ id: answer.id, questionId: 'starter', label, imageKey: null, position: index + 1 }, shared, answer.path));
-      }
+  const locked = await runTransaction(requireDb(), async tx => {
+    const current = await readPacked(tx, root(access));
+    if (!current.head.exists()) throw new Error('Your class is no longer available.');
+    if (current.head.data()?.storage !== 2 && current.head.data()?.storage !== 'packing') tx.set(root(access), { ...current.head.data(), storage: 'packing' });
+    return current;
+  });
+  if (locked.head.data()?.storage === 2) return decodePacked<ClassState>(locked, await classKey(access));
+  const [questions, answers, students] = await Promise.all(['questions', 'answers', 'students'].map(name => getDocs(records(access, name))));
+  const sharedEncrypted = [locked.head, ...questions.docs, ...answers.docs].some(row => isEncrypted(row.data()!));
+  const shared = await classKey(access, undefined, !sharedEncrypted);
+  const legacy = async <T,>(row: Row, key: CryptoKey | undefined): Promise<T> => isEncrypted(row.data()!)
+    ? decryptRecord<T>(row.data()!, key!, row.ref.path) : row.data() as T;
+  const settings = await legacy<AppData['settings']>(locked.head, shared);
+  const state: ClassState = { data: { settings: { title: settings.title, description: settings.description }, students: [], questions: [], answers: [] }, days: {}, cleanupPaths: [], purges: {} };
+  state.data.questions = await Promise.all(questions.docs.map(async row => ({ ...await legacy<AppData['questions'][number]>(row, shared), id: row.id })));
+  state.data.answers = await Promise.all(answers.docs.map(async row => ({ ...await legacy<AppData['answers'][number]>(row, shared), id: row.id })));
+  const months = new Map<string, Month>();
+  state.cleanupPaths.push(...questions.docs.map(row => row.ref.path), ...answers.docs.map(row => row.ref.path));
+  for (const row of students.docs) {
+    const responses = await getDocs(collection(row.ref, 'responses'));
+    const encrypted = [row, ...responses.docs].some(item => isEncrypted(item.data()!));
+    const key = encrypted ? await classKey(access, row.id) : undefined;
+    const old = await legacy<Student & { email?: string }>(row, key);
+    const student: Student = { id: row.id, name: old.name, imageKey: old.imageKey ?? null, currentScore: old.currentScore ?? null, goalScore: old.goalScore ?? null };
+    state.data.students.push(student);
+    state.cleanupPaths.push(row.ref.path, ...responses.docs.map(item => item.ref.path));
+    const hash = row.data().emailHash || (old.email ? await emailLookup(old.email) : '');
+    const links = [hash ? doc(requireDb(), 'studentAccess', hash) : null, old.email ? doc(requireDb(), 'studentLinks', old.email.trim().toLowerCase()) : null];
+    for (const ref of links) {
+      if (!ref) continue;
+      const link = await getDoc(ref);
+      if (link.exists() && link.data().ownerId === access.ownerId && link.data().studentId === row.id) state.cleanupPaths.push(ref.path);
     }
+    for (const response of responses.docs) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(response.id)) throw new Error('A legacy check-in has an invalid date. No source records were removed.');
+      const oldResponse = await legacy<{ createdAt: any; items: HistoryEntry['items'] }>(response, key);
+      const createdAt = typeof oldResponse.createdAt === 'string' ? oldResponse.createdAt : oldResponse.createdAt?.toDate().toISOString() ?? response.id + 'T12:00:00.000Z';
+      const month = response.id.slice(0, 7);
+      if (!months.has(month)) months.set(month, { entries: [] });
+      months.get(month)!.entries.push({ id: response.id, studentId: row.id, studentName: student.name, createdAt, items: oldResponse.items });
+      (state.days[response.id] ??= []).push(row.id);
+    }
+  }
+  // Another tab may finish conversion first. Reading the class in each month
+  // transaction prevents an unfinished converter from overwriting live history.
+  for (const [month, value] of months) {
+    await runTransaction(requireDb(), async tx => {
+      const currentClass = await tx.get(root(access));
+      if (currentClass.data()?.storage === 2) return;
+      const old = await readPacked(tx, monthRef(access, month));
+      writePacked(tx, old, await encodePacked(monthRef(access, month), value, shared));
+    });
+  }
+  return runTransaction(requireDb(), async tx => {
+    const current = await readPacked(tx, root(access));
+    if (current.head.data()?.storage === 2) return decodePacked<ClassState>(current, shared);
+    writePacked(tx, current, await encodePacked(root(access), state, shared));
+    return state;
   });
 }
 
-export async function loadClass(access: Access): Promise<AppData> {
-  requireTeacher(access);
-  const path = root(access).path + '/reload-cache/v1';
-  const stored = readReloadCache(access.ownerId);
-  if (stored) {
-    const key = await classKey(access);
-    try { return await decryptRecord<AppData>(stored, key, path); }
-    catch { clearReloadCache(); }
-  }
-  const data = await loadClassFromServer(access);
-  if (auth?.currentUser?.uid === access.ownerId) {
-    try {
-      const payload = await encryptRecord(data, await classKey(access), path);
-      if (auth?.currentUser?.uid === access.ownerId) saveReloadCache(access.ownerId, payload);
+// Cleanup is resumable and happens only once, after the replacement is durable.
+async function finishMaintenance(access: Access, initial: ClassState): Promise<ClassState> {
+  let state = initial;
+  if (!state.cleanupPaths.length && !Object.keys(state.purges).length) return state;
+  const key = await classKey(access);
+  if (state.cleanupPaths.length) {
+    const paths = new Set(state.cleanupPaths);
+    for (let start = 0; start < state.cleanupPaths.length; start += 400) {
+      const batch = writeBatch(requireDb());
+      state.cleanupPaths.slice(start, start + 400).forEach(path => batch.delete(doc(requireDb(), path)));
+      await batch.commit();
     }
-    catch { clearReloadCache(); } // Oversized classes still work without the reload cache.
+    state = await runTransaction(requireDb(), async tx => {
+      const current = await stateIn(tx, access, key);
+      current.state.cleanupPaths = current.state.cleanupPaths.filter(path => !paths.has(path));
+      writePacked(tx, current.rows, await encodePacked(root(access), current.state, key));
+      return current.state;
+    });
   }
-  return data;
-}
-async function loadClassFromServer(access: Access): Promise<AppData> {
-  let settings = await cachedRead(access, 'settings', () => getDoc(root(access)), Infinity);
-  if (access.role === 'teacher' && (!settings.exists() || !isEncrypted(settings.data()))) {
-    try { await cachedRead(access, 'migration', () => prepareClass(access, settings)); }
-    finally { invalidateReads(access, 'settings'); invalidateReads(access, 'migration'); }
-    settings = await cachedRead(access, 'settings', () => getDoc(root(access)), Infinity);
-  }
-  if (!settings.exists()) throw new Error('Your class is no longer available. Contact your teacher.');
-  if (!isEncrypted(settings.data())) throw new Error('Your teacher needs to open the updated app once to finish protecting this class.');
-  const shared = await classKey(access);
-  const [studentRows, questionRows, answerRows] = await Promise.all([
-    cachedRead(access, 'students', () => getDocs(records(access, 'students')).then(s => s.docs), Infinity),
-    cachedRead(access, 'questions', () => getDocs(records(access, 'questions')), Infinity), cachedRead(access, 'answers', () => getDocs(records(access, 'answers')), Infinity),
-  ]);
-  const students = await Promise.all(studentRows.map(async s => {
-    const key = await classKey(access, s.id);
-    let data = await read<Student & { email?: string }>(s, key);
-    // One-time removal of old profile email fields and login directories.
-    if ('email' in data || 'emailHash' in s.data()!) {
-      const payload = await runTransaction(requireDb(), async tx => {
-        const current = await tx.get(s.ref);
-        if (!current.exists()) return;
-        const { email, ...profile } = await read<Student & { email?: string }>(current, key);
-        const hash = current.data()!.emailHash || (email ? await emailLookup(email) : '');
-        const targets = [hash ? doc(requireDb(), 'studentAccess', hash) : null,
-          email ? doc(requireDb(), 'studentLinks', email.trim().toLowerCase()) : null].filter(r => r !== null);
-        const links = await Promise.all(targets.map(r => tx.get(r)));
-        links.forEach(link => { if (link.exists() && link.data().ownerId === access.ownerId && link.data().studentId === s.id) tx.delete(link.ref); });
-        const payload = await encryptRecord(profile, key, s.ref.path);
-        tx.set(s.ref, payload);
-        return payload;
+  for (const [studentId, months] of Object.entries(state.purges)) {
+    for (const month of months) {
+      state = await runTransaction(requireDb(), async tx => {
+        const current = await stateIn(tx, access, key);
+        if (!current.state.purges[studentId]?.includes(month)) return current.state;
+        const archive = await monthIn(tx, access, month, key, true);
+        archive.value.entries = archive.value.entries.filter(entry => entry.studentId !== studentId);
+        writePacked(tx, archive.rows, await encodePacked(monthRef(access, month), archive.value, key));
+        current.state.purges[studentId] = current.state.purges[studentId].filter(value => value !== month);
+        if (!current.state.purges[studentId].length) delete current.state.purges[studentId];
+        writePacked(tx, current.rows, await encodePacked(root(access), current.state, key));
+        return current.state;
       });
-      if (payload) {
-        rememberRecord(access, s.ref, payload);
-        data = await decryptRecord<Student>(payload, key, s.ref.path);
-      }
+      invalidateReads(access, 'history:month:' + month);
     }
-    const { email: _email, ...profile } = data;
-    return { ...profile, id: s.id };
-  }));
-  return { settings: await read<AppData['settings']>(settings, shared), students: students.sort((a, b) => a.name.localeCompare(b.name)),
-    questions: sorted(await Promise.all(questionRows.docs.map(s => read<Question>(s, shared)))),
-    answers: sorted(await Promise.all(answerRows.docs.map(s => read<Answer>(s, shared)))) };
+  }
+  return state;
 }
 
-async function saveStudent(access: Access, id: string, values: Partial<Student>, creating: boolean) {
-  requireTeacher(access);
-  const key = await classKey(access, id, creating);
-  const saved = await runTransaction(requireDb(), async tx => {
-    const ref = record(access, 'students', id); const previous = await tx.get(ref);
-    if (!creating && !previous.exists()) throw new Error('That student no longer exists.');
-    if (creating && previous.exists()) throw new Error('That student already exists.');
-    const old = previous.exists() ? await read<Student>(previous, key) : undefined;
-    const next: Student = { id, name: '', imageKey: null, currentScore: null, goalScore: null, ...old, ...values };
-    const { email: _email, ...profile } = next as Student & { email?: string };
-    const payload = await encryptRecord(profile, key, ref.path);
-    tx.set(ref, payload);
-    return { ref, payload };
-  });
-  rememberRecord(access, saved.ref, saved.payload);
-}
-async function editRecord(access: Access, ref: DocumentReference, key: CryptoKey, values: Record<string, unknown>) {
-  const payload = await runTransaction(requireDb(), async tx => {
-    const current = await tx.get(ref);
-    const data = await read<Record<string, unknown>>(current, key);
-    const payload = await encryptRecord({ ...data, ...values }, key, ref.path);
-    tx.set(ref, payload);
-    return payload;
-  });
-  rememberRecord(access, ref, payload);
-}
 export async function changeClass(access: Access, body: Record<string, unknown>) {
-  clearReloadCache();
-  try { return await performChange(access, body); }
-  catch (error) {
-    const action = String(body.action);
-    if (action === 'saveSettings') invalidateReads(access, 'settings');
-    if (action.toLowerCase().includes('student')) invalidateReads(access, 'students');
-    if (action.toLowerCase().includes('question')) invalidateReads(access, 'questions');
-    if (action.toLowerCase().includes('answer') || action === 'deleteQuestion') invalidateReads(access, 'answers');
-    if (action === 'deleteStudent' || action === 'deleteResponse') invalidateReads(access, 'history:' + String(body.studentId ?? body.id) + ':');
-    throw error;
-  }
-}
-async function performChange(access: Access, body: Record<string, unknown>) {
   requireTeacher(access);
+  await loadState(access);
+  const key = await classKey(access);
   const id = String(body.id ?? '');
-  const ref = record(access, 'students', id || 'unused');
-  switch (body.action) {
-    case 'saveSettings': return editRecord(access, root(access), await classKey(access), { title: text(body.title, 'a title', 160), description: text(body.description, 'a description', 4000) });
-    case 'addStudent': return saveStudent(access, crypto.randomUUID(), { name: text(body.name, 'a student name', 100), imageKey: imageValue(body.imageKey) }, true);
-    case 'updateStudentName': return saveStudent(access, id, { name: text(body.name, 'a student name', 100) }, false);
-    case 'updateStudentImage': return saveStudent(access, id, { imageKey: imageValue(body.imageKey) }, false);
-    case 'removeStudentImage': return saveStudent(access, id, { imageKey: null }, false);
-    case 'updateStudentScores': {
-      if (![body.currentScore, body.goalScore].every(n => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1e9)) throw new Error('Enter valid scores.');
-      return saveStudent(access, id, { currentScore: body.currentScore as number, goalScore: body.goalScore as number }, false);
-    }
-    case 'deleteStudent': {
-      const responses = await getDocs(collection(ref, 'responses'));
-      for (let i = 0; i < responses.docs.length; i += 400) { const batch = writeBatch(requireDb()); responses.docs.slice(i, i + 400).forEach(d => batch.delete(d.ref)); await batch.commit(); }
-      await deleteDoc(ref);
-      forgetRecord(access, 'students', id);
-      invalidateReads(access, 'history:' + id + ':');
-      invalidateReads(access, 'completed:' + id + ':');
-      return;
-    }
-    case 'addQuestion': {
-      const ref = record(access, 'questions', crypto.randomUUID());
-      const payload = await encryptRecord({ id: ref.id, prompt: text(body.prompt, 'a question', 2000), position: Date.now(), fridayOnly: Boolean(body.fridayOnly) }, await classKey(access), ref.path);
-      await runTransaction(requireDb(), async tx => { tx.set(ref, payload); });
-      rememberRecord(access, ref, payload); return;
-    }
-    case 'setQuestionFridayOnly': return editRecord(access, record(access, 'questions', id), await classKey(access), { fridayOnly: Boolean(body.fridayOnly) });
-    case 'deleteQuestion': {
-      const key = await classKey(access); const all = await getDocs(records(access, 'answers'));
-      const matching = (await Promise.all(all.docs.map(async row => (await read<Answer>(row, key)).questionId === id ? row : null))).filter(row => row !== null);
-      for (let i = 0; i < matching.length; i += 400) { const batch = writeBatch(requireDb()); matching.slice(i, i + 400).forEach(d => batch.delete(d.ref)); await batch.commit(); }
-      await deleteDoc(record(access, 'questions', id));
-      forgetRecord(access, 'questions', id);
-      matching.forEach(row => forgetRecord(access, 'answers', row.id)); return;
-    }
-    case 'addAnswer': {
-      const ref = record(access, 'answers', crypto.randomUUID()); const questionId = String(body.questionId ?? '');
-      const payload = await encryptRecord({ id: ref.id, questionId, label: text(body.label, 'an answer', 300), imageKey: imageValue(body.imageKey), position: Date.now() }, await classKey(access), ref.path);
-      await runTransaction(requireDb(), async tx => { if (!(await tx.get(record(access, 'questions', questionId))).exists()) throw new Error('That question no longer exists.'); tx.set(ref, payload); });
-      rememberRecord(access, ref, payload); return;
-    }
-    case 'deleteAnswer': await deleteDoc(record(access, 'answers', id)); forgetRecord(access, 'answers', id); return;
-    case 'deleteResponse': {
-      const studentId = String(body.studentId);
-      await deleteDoc(doc(record(access, 'students', studentId), 'responses', id));
-      patchCachedRead<{ docs: Row[] }>(access, 'history:' + studentId + ':rows', rows => ({ docs: rows.docs.filter(row => row.id !== id) }));
-      invalidateReads(access, 'history:' + studentId + ':page:');
-      invalidateReads(access, 'completed:' + studentId + ':'); return;
-    }
-    default: throw new Error('Unknown class action.');
-  }
-}
-function studentRef(access: Access, id: string) {
-  requireTeacher(access);
-  return record(access, 'students', id);
+  // IDs are stable across retries, so transaction retries cannot create duplicates.
+  const newId = crypto.randomUUID();
+  try {
+    let state = await runTransaction(requireDb(), async tx => {
+      const current = await stateIn(tx, access, key);
+      const state = current.state;
+      const data = state.data;
+      const student = () => { const found = data.students.find(row => row.id === id); if (!found) throw new Error('That student no longer exists.'); return found; };
+      switch (body.action) {
+        case 'saveSettings': data.settings = { title: text(body.title, 'a title', 160), description: text(body.description, 'a description', 4000) }; break;
+        case 'addStudent': data.students.push({ id: newId, name: text(body.name, 'a student name', 100), imageKey: imageValue(body.imageKey), currentScore: null, goalScore: null }); break;
+        case 'updateStudentName': student().name = text(body.name, 'a student name', 100); break;
+        case 'updateStudentImage': student().imageKey = imageValue(body.imageKey); break;
+        case 'removeStudentImage': student().imageKey = null; break;
+        case 'updateStudentScores': {
+          if (![body.currentScore, body.goalScore].every(value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 1e9)) throw new Error('Enter valid scores.');
+          Object.assign(student(), { currentScore: body.currentScore, goalScore: body.goalScore }); break;
+        }
+        case 'deleteStudent': {
+          student(); data.students = data.students.filter(row => row.id !== id);
+          const months = [...new Set(Object.keys(state.days).filter(day => state.days[day].includes(id)).map(day => day.slice(0, 7)))];
+          if (months.length) state.purges[id] = months;
+          for (const day of Object.keys(state.days)) { state.days[day] = state.days[day].filter(value => value !== id); if (!state.days[day].length) delete state.days[day]; }
+          break;
+        }
+        case 'addQuestion': data.questions.push({ id: newId, prompt: text(body.prompt, 'a question', 2000), position: Date.now(), fridayOnly: Boolean(body.fridayOnly) }); break;
+        case 'setQuestionFridayOnly': {
+          const question = data.questions.find(row => row.id === id); if (!question) throw new Error('That question no longer exists.'); question.fridayOnly = Boolean(body.fridayOnly); break;
+        }
+        case 'deleteQuestion': data.questions = data.questions.filter(row => row.id !== id); data.answers = data.answers.filter(row => row.questionId !== id); break;
+        case 'addAnswer': {
+          const questionId = String(body.questionId ?? ''); if (!data.questions.some(row => row.id === questionId)) throw new Error('That question no longer exists.');
+          data.answers.push({ id: newId, questionId, label: text(body.label, 'an answer', 300), imageKey: imageValue(body.imageKey), position: Date.now() }); break;
+        }
+        case 'deleteAnswer': data.answers = data.answers.filter(row => row.id !== id); break;
+        case 'deleteResponse': {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(id)) throw new Error('Choose a valid check-in date.');
+          const studentId = String(body.studentId); const month = id.slice(0, 7);
+          const archive = await monthIn(tx, access, month, key, hasMonth(state, month));
+          archive.value.entries = archive.value.entries.filter(entry => entry.id !== id || entry.studentId !== studentId);
+          state.days[id] = (state.days[id] ?? []).filter(value => value !== studentId); if (!state.days[id].length) delete state.days[id];
+          writePacked(tx, archive.rows, await encodePacked(monthRef(access, month), archive.value, key)); break;
+        }
+        default: throw new Error('Unknown class action.');
+      }
+      writePacked(tx, current.rows, await encodePacked(root(access), state, key));
+      return state;
+    });
+    remember(access, state);
+    if (body.action === 'deleteResponse') invalidateReads(access, 'history:month:' + id.slice(0, 7));
+    state = await finishMaintenance(access, state);
+    remember(access, state);
+  } catch (error) { refreshClassData(access); throw error; }
 }
 export async function completedToday(access: Access, id: string) {
-  studentRef(access, id);
-  const day = localDate();
-  return cachedRead(access, 'completed:' + id + ':' + day, async () => (await getDoc(doc(studentRef(access, id), 'responses', day))).exists(), Infinity);
+  const state = await loadState(access);
+  if (!state.data.students.some(student => student.id === id)) throw new Error('That student no longer exists.');
+  return state.days[localDate()]?.includes(id) ?? false;
 }
-export async function loadHistory(access: Access, studentId?: string): Promise<HistoryEntry[]> {
-  if (studentId) studentRef(access, studentId);
-  const students = (await loadClass(access)).students.filter(student => !studentId || student.id === studentId);
-  const history = await Promise.all(students.map(async student => {
-    const key = await classKey(access, student.id);
-    const rows = await cachedRead(access, 'history:' + student.id + ':rows', () => getDocs(collection(studentRef(access, student.id), 'responses')), Infinity);
-    return Promise.all(rows.docs.map(async row => ({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: student.id, studentName: student.name })));
-  }));
-  return history.flat().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-}
-export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };
-export function retryHistory(access: Access) { invalidateReads(access, 'history:'); }
-export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean; nextCursor?: string }> {
-  if (filter.studentId === 'all') return loadAllHistoryPage(access, filter);
-  const ref = studentRef(access, filter.studentId);
-  for (const day of [filter.from, filter.to, filter.after]) if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('Choose valid dates.');
-  if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
-  if (!['asc', 'desc'].includes(filter.order)) throw new Error('Choose a valid sort order.');
-  const profile = (await loadClass(access)).students.find(student => student.id === filter.studentId);
-  if (!profile) throw new Error('That student is no longer available.');
-  const constraints: QueryConstraint[] = [orderBy(documentId(), filter.order)];
-  if (filter.from) constraints.push(where(documentId(), '>=', filter.from));
-  if (filter.to) constraints.push(where(documentId(), '<=', filter.to));
-  if (filter.after) constraints.push(startAfter(filter.after));
-  constraints.push(limit(11));
-  // One look-ahead record enables Next without a count or an unbounded scan.
-  const rows = await cachedRead(access, 'history:' + filter.studentId + ':page:' + JSON.stringify(filter), () => getDocs(query(collection(ref, 'responses'), ...constraints)), Infinity);
-  const key = await classKey(access, filter.studentId);
-  return { hasMore: rows.docs.length > 10, entries: await Promise.all(rows.docs.slice(0, 10).map(async row => ({
-    ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, key), id: row.id, studentId: profile.id, studentName: profile.name,
-  }))) };
-}
-
-// Merge one candidate per student instead of fetching a full page per student.
-// Per-student cursors keep same-day check-ins distinct across page boundaries.
-async function loadAllHistoryPage(access: Access, filter: HistoryFilter) {
-  requireTeacher(access);
-  for (const day of [filter.from, filter.to]) if (day && !/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('Choose valid dates.');
-  if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
-  if (!['asc', 'desc'].includes(filter.order)) throw new Error('Choose a valid sort order.');
-  const positions: Record<string, string> = filter.after ? JSON.parse(filter.after) : {};
-  if (!positions || typeof positions !== 'object' || Array.isArray(positions) || Object.values(positions).some(day => typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day))) throw new Error('Invalid history page. Reset the filters.');
-  const students = (await loadClass(access)).students;
-  const head = async (profile: Student) => {
-    const after = positions[profile.id];
-    const constraints: QueryConstraint[] = [orderBy(documentId(), filter.order)];
-    if (filter.from) constraints.push(where(documentId(), '>=', filter.from));
-    if (filter.to) constraints.push(where(documentId(), '<=', filter.to));
-    if (after) constraints.push(startAfter(after));
-    constraints.push(limit(1));
-    const rows = await cachedRead(access, 'history:' + profile.id + ':page:head:' + JSON.stringify([filter.from, filter.to, filter.order, after]), () => getDocs(query(collection(studentRef(access, profile.id), 'responses'), ...constraints)), Infinity);
-    return { profile, row: rows.docs[0] };
-  };
-  // Discover a missing index once before issuing queries for the whole class.
-  const first = students[0] ? await head(students[0]) : undefined;
-  const candidates = first ? [first, ...await Promise.all(students.slice(1).map(head))] : [];
-  const entries: HistoryEntry[] = [];
-  while (entries.length < 10) {
-    candidates.sort((a, b) => {
-      if (!a.row) return b.row ? 1 : 0;
-      if (!b.row) return -1;
-      return (filter.order === 'asc' ? 1 : -1) * a.row.id.localeCompare(b.row.id) || a.profile.id.localeCompare(b.profile.id);
-    });
-    const candidate = candidates[0];
-    if (!candidate?.row) break;
-    const { profile, row } = candidate;
-    entries.push({ ...await read<Pick<HistoryEntry, 'createdAt' | 'items'>>(row, await classKey(access, profile.id)), id: row.id, studentId: profile.id, studentName: profile.name });
-    positions[profile.id] = row.id;
-    candidates[0] = await head(profile);
-  }
-  return { entries, hasMore: candidates.some(candidate => candidate.row), nextCursor: JSON.stringify(positions) };
+function selectionsFor(student: Student, data: AppData, selections: Record<string, string>) {
+  const active = data.questions.filter(question => !question.fridayOnly || new Date().getDay() === 5);
+  if (!active.length || active.length > 20) throw new Error('The class must have between 1 and 20 questions per check-in.');
+  return active.map(question => {
+    const answer = data.answers.find(row => row.id === selections[question.id] && row.questionId === question.id);
+    if (!answer) throw new Error('Answer every question first.');
+    return { question: personalize(question.prompt, student), answer: answer.label, imageKey: answer.imageKey };
+  });
 }
 export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string, string>) {
-  const active = data.questions.filter(q => !q.fridayOnly || new Date().getDay() === 5);
-  if (!active.length || active.length > 20) throw new Error('The class must have between 1 and 20 questions per check-in.');
-  const items = active.map(q => { const answer = data.answers.find(a => a.id === selections[q.id] && a.questionId === q.id); if (!answer) throw new Error('Answer every question first.'); return { question: personalize(q.prompt, student), answer: answer.label, imageKey: answer.imageKey }; });
-  const ref = doc(studentRef(access, student.id), 'responses', localDate());
-  const payload = await encryptRecord({ createdAt: new Date().toISOString(), items }, await classKey(access, student.id), ref.path);
-  await runTransaction(requireDb(), async tx => { if ((await tx.get(ref)).exists()) throw new Error('You already completed today’s check-in.'); tx.set(ref, payload); });
-  patchCachedRead<{ docs: Row[] }>(access, 'history:' + student.id + ':rows', rows => ({ docs: [...rows.docs, { ref, id: ref.id, exists: () => true, data: () => payload }] }));
-  invalidateReads(access, 'history:' + student.id + ':page:');
-  invalidateReads(access, 'completed:' + student.id + ':');
-  await cachedRead(access, 'completed:' + student.id + ':' + ref.id, async () => true, Infinity);
+  requireTeacher(access);
+  selectionsFor(student, data, selections); // Reject partial check-ins without any reads.
+  await loadState(access);
+  const key = await classKey(access); const day = localDate(); const month = day.slice(0, 7); const createdAt = new Date().toISOString();
+  const state = await runTransaction(requireDb(), async tx => {
+    const current = await stateIn(tx, access, key);
+    const profile = current.state.data.students.find(row => row.id === student.id);
+    if (!profile) throw new Error('That student no longer exists.');
+    if (current.state.days[day]?.includes(student.id)) throw new Error('You already completed today’s check-in.');
+    const items = selectionsFor(profile, current.state.data, selections);
+    const archive = await monthIn(tx, access, month, key, hasMonth(current.state, month));
+    archive.value.entries.push({ id: day, studentId: student.id, studentName: profile.name, createdAt, items });
+    (current.state.days[day] ??= []).push(student.id);
+    const [monthRows, classRows] = await Promise.all([encodePacked(monthRef(access, month), archive.value, key), encodePacked(root(access), current.state, key)]);
+    writePacked(tx, archive.rows, monthRows); writePacked(tx, current.rows, classRows);
+    return current.state;
+  });
+  remember(access, state); invalidateReads(access, 'history:month:' + month);
+}
+
+export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };
+export function retryHistory(access: Access) { invalidateReads(access, 'history:'); }
+async function loadMonth(access: Access, month: string) {
+  return cachedRead(access, 'history:month:' + month, async () => {
+    const rows = await fetchPacked(monthRef(access, month));
+    return decodePacked<Month>(rows, await classKey(access));
+  }, Infinity);
+}
+export async function loadHistoryPage(access: Access, filter: HistoryFilter): Promise<{ entries: HistoryEntry[]; hasMore: boolean; nextCursor?: string }> {
+  const state = await loadState(access);
+  for (const date of [filter.from, filter.to]) if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Choose valid dates.');
+  if (filter.from && filter.to && filter.from > filter.to) throw new Error('The start date must be before the end date.');
+  if (!['asc', 'desc'].includes(filter.order)) throw new Error('Choose a valid sort order.');
+  if (filter.studentId !== 'all' && !state.data.students.some(student => student.id === filter.studentId)) throw new Error('That student is no longer available.');
+  const names = new Map(state.data.students.map(student => [student.id, student.name]));
+  const direction = filter.order === 'asc' ? 1 : -1;
+  const ids = Object.entries(state.days).filter(([day]) => (!filter.from || day >= filter.from) && (!filter.to || day <= filter.to))
+    .flatMap(([day, students]) => students.filter(id => names.has(id) && (filter.studentId === 'all' || id === filter.studentId)).map(id => day + ':' + id))
+    .sort((a, b) => direction * a.localeCompare(b));
+  if (filter.after && !/^\d{4}-\d{2}-\d{2}:[A-Za-z0-9-]+$/.test(filter.after)) throw new Error('Invalid history page. Reset the filters.');
+  const remaining = filter.after ? ids.filter(id => direction * id.localeCompare(filter.after!) > 0) : ids;
+  const page = remaining.slice(0, 10);
+  const months = [...new Set(page.map(id => id.slice(0, 7)))];
+  const archives = await Promise.all(months.map(month => loadMonth(access, month)));
+  const lookup = new Map(archives.flatMap(archive => archive.entries.map(entry => [entry.id + ':' + entry.studentId, entry] as const)));
+  const entries = page.map(id => { const entry = lookup.get(id); if (!entry) throw new Error('History changed. Refresh from server to load the latest check-ins.'); return { ...entry, studentName: names.get(entry.studentId)! }; });
+  return { entries, hasMore: remaining.length > 10, nextCursor: page.at(-1) };
+}
+export async function loadHistory(access: Access, studentId?: string): Promise<HistoryEntry[]> {
+  const entries: HistoryEntry[] = []; let after: string | undefined;
+  do {
+    const page = await loadHistoryPage(access, { studentId: studentId ?? 'all', from: '', to: '', order: 'desc', after });
+    entries.push(...page.entries); after = page.hasMore ? page.nextCursor : undefined;
+  } while (after);
+  return entries;
 }

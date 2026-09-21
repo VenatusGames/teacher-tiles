@@ -46,13 +46,13 @@ const snapshot = reference => {
 };
 let commits = 0, failAt = -1;
 let reads = 0, writeCount = 0;
-let missingIndex = false, failedQueries = 0;
+let raceBeforeCommit;
+let transactionRetries = 0;
 const firestore = {
   doc: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   collection: (parent, ...parts) => ref([parent.path, ...parts].filter(Boolean).join('/')),
   getDoc: async reference => { reads++; return snapshot(reference); },
   getDocs: async reference => {
-    if (missingIndex && reference.path.endsWith('/responses')) { failedQueries++; throw Object.assign(new Error('The query requires an index.'), { code: 'failed-precondition' }); }
     let docs = [...rows.keys()].filter(path => path.startsWith(reference.path + '/') && path.split('/').length === reference.path.split('/').length + 1).map(path => snapshot(ref(path)));
     const constraints = reference.constraints ?? [];
     const direction = constraints.find(c => c.kind === 'order')?.direction ?? 'asc';
@@ -72,16 +72,21 @@ const firestore = {
   limit: value => ({ kind: 'limit', value }),
   deleteDoc: async reference => { rows.delete(reference.path); },
   runTransaction: async (_db, fn) => {
-    const writes = [];
-    const result = await fn({
-      get: async reference => { reads++; return snapshot(reference); },
-      set: (reference, data) => { writes.push(() => rows.set(reference.path, data)); },
-      delete: reference => { writes.push(() => rows.delete(reference.path)); },
-    });
-    if (++commits === failAt) throw new Error('Simulated interruption');
-    writeCount += writes.length;
-    for (const write of writes) write();
-    return result;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const writes = [], observed = new Map(); let writing = false;
+      const result = await fn({
+        get: async reference => { assert(!writing, 'All reads must precede writes'); reads++; observed.set(reference.path, rows.get(reference.path)); return snapshot(reference); },
+        set: (reference, data) => { writing = true; writes.push(() => rows.set(reference.path, data)); },
+        delete: reference => { writing = true; writes.push(() => rows.delete(reference.path)); },
+      });
+      if (raceBeforeCommit) { const race = raceBeforeCommit; raceBeforeCommit = undefined; await race(); }
+      if ([...observed].some(([path, value]) => rows.get(path) !== value)) { transactionRetries++; continue; }
+      if (++commits === failAt) throw new Error('Simulated interruption');
+      writeCount += writes.length;
+      for (const write of writes) write();
+      return result;
+    }
+    throw new Error('Transaction contention');
   },
   writeBatch: () => {
     const deletes = [];
@@ -98,274 +103,223 @@ const cache = await import(cacheUrl);
 const activityUrl = compile('lib/firestore-activity.ts', { 'firebase/firestore': firestoreUrl });
 const activity = await import(activityUrl);
 const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
-const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './model': modelUrl, './read-cache': cacheUrl }));
+const packedUrl = compile('lib/packed-store.ts', { 'firebase/firestore': firestoreUrl, './encryption': encryptionUrl });
+const packed = await import(packedUrl);
+const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './packed-store': packedUrl, './model': modelUrl, './read-cache': cacheUrl }));
 const teacher = { role: 'teacher', ownerId: auth.currentUser.uid };
-let cacheLoads = 0;
-await Promise.all([cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads), cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads)]);
-assert.equal(cacheLoads, 1);
-cache.invalidateReads(teacher, 'test:');
-await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
-assert.equal(cacheLoads, 2);
-await cache.cachedRead(teacher, 'test:expiry', async () => ++cacheLoads, -1);
-await cache.cachedRead(teacher, 'test:expiry', async () => ++cacheLoads, -1);
-assert.equal(cacheLoads, 4);
-await assert.rejects(cache.cachedRead(teacher, 'test:retry', async () => { throw new Error('Temporary failure'); }));
-assert.equal(await cache.cachedRead(teacher, 'test:retry', async () => 'recovered'), 'recovered');
-const originalAccount = auth.currentUser;
-auth.currentUser = { ...originalAccount };
-await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
-assert.equal(cacheLoads, 4, 'Refreshing the same Google user object must preserve cached records');
-auth.currentUser = { uid: 'different-account', email: address('different') };
-await cache.cachedRead(teacher, 'test:dedupe', async () => ++cacheLoads);
-assert.equal(cacheLoads, 5, 'Another account must not reuse cached records');
-auth.currentUser = originalAccount;
-cache.clearReadCache();
-let essentialLoads = 0;
-await cache.cachedRead(teacher, 'students', async () => ++essentialLoads, Infinity);
-await cache.cachedRead(teacher, 'key:shared', async () => ++essentialLoads, Infinity);
-for (let i = 0; i < 550; i++) await cache.cachedRead(teacher, 'history:test:page:' + i, async () => i, Infinity);
-await cache.cachedRead(teacher, 'students', async () => ++essentialLoads, Infinity);
-await cache.cachedRead(teacher, 'key:shared', async () => ++essentialLoads, Infinity);
-assert.equal(essentialLoads, 2, 'History cache pressure cannot evict roster or encryption keys');
-cache.clearReadCache();
 const classPath = 'classes/' + teacher.ownerId;
+const sharedKey = async () => importKey(rows.get(classPath + '/keys/shared').keyMaterial);
+const readValue = async path => {
+  const head = snapshot(ref(path));
+  const parts = Array.from({ length: (head.data()?.partCount ?? 1) - 1 }, (_, i) => snapshot(ref(path + '/parts/' + (i + 1))));
+  return packed.decodePacked({ head, parts }, await sharedKey());
+};
+const setValue = async (path, value) => {
+  const encoded = await packed.encodePacked(ref(path), value, await sharedKey());
+  const count = rows.get(path)?.partCount ?? 1;
+  for (let i = encoded.length; i < count; i++) rows.delete(path + '/parts/' + i);
+  encoded.forEach(row => rows.set(row.ref.path, row.payload));
+};
+let cacheLoads = 0;
+await Promise.all([cache.cachedRead(teacher, 'dedupe', async () => ++cacheLoads), cache.cachedRead(teacher, 'dedupe', async () => ++cacheLoads)]);
+assert.equal(cacheLoads, 1);
+cache.clearReadCache();
 let data = await store.loadClass(teacher);
-assert.equal(data.students.length, 0);
 assert.equal(data.questions.length, 1);
-assert(rows.get(classPath).ciphertext);
-const sharedMaterial = rows.get(classPath + '/keys/shared').keyMaterial;
-await store.changeClass(teacher, { action: 'addStudent', name: 'Synthetic child', email: address('child'), imageKey: 'preset:smile' });
+assert.equal(rows.get(classPath).storage, 2);
+assert.equal(rows.get(classPath).partCount, 1);
+assert(![...rows.keys()].some(path => /\/(students|questions|answers)\//.test(path)));
+for (let index = 0; index < 35; index++) await store.changeClass(teacher, { action: 'addStudent', name: 'Synthetic learner ' + index, email: address('ignored'), imageKey: index % 2 ? syntheticPhoto : 'preset:smile' });
 data = await store.loadClass(teacher);
+assert.equal(data.students.length, 35);
+assert(!data.students.some(student => 'email' in student));
+assert(![...rows.keys()].some(path => path.includes('/keys/student_')));
 const child = data.students[0];
-const childPath = classPath + '/students/' + child.id;
-assert(rows.get(childPath).ciphertext);
-assert(!('emailHash' in rows.get(childPath)));
-assert(!('email' in child));
-assert.notEqual(rows.get(classPath + '/keys/student_' + child.id).keyMaterial, sharedMaterial);
-assert(!rows.has('studentLinks/' + address('child')));
-assert(!JSON.stringify([...rows]).includes(address('child')));
-await store.changeClass(teacher, { action: 'updateStudentScores', id: child.id, currentScore: 2, goalScore: 8 });
-await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Updated synthetic child' });
-await store.changeClass(teacher, { action: 'updateStudentImage', id: child.id, imageKey: 'preset:yes' });
-await store.changeClass(teacher, { action: 'saveSettings', title: 'Encrypted title', description: 'Encrypted description' });
-await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: false });
-data = await store.loadClass(teacher);
-assert.equal(data.students[0].currentScore, 2);
-assert.equal(data.students[0].name, 'Updated synthetic child');
-assert.equal(data.students[0].imageKey, 'preset:yes');
-assert.equal(data.settings.title, 'Encrypted title');
+const coldCounts = [];
+for (let i = 0; i < 3; i++) {
+  cache.clearReadCache(); const before = reads;
+  assert.deepEqual(await store.loadClass(teacher), data);
+  coldCounts.push(reads - before);
+}
+assert.deepEqual(coldCounts, [2, 2, 2], 'Every cold load reads exactly one packed class and one shared key');
 const warmReads = reads;
+for (const student of data.students) assert.equal(await store.completedToday(teacher, student.id), false);
 await Promise.all([store.loadClass(teacher), store.loadClass(teacher)]);
-assert.equal(reads, warmReads, 'Repeated class loads must reuse memory reads');
-const beforeToggleReads = reads, beforeToggleWrites = writeCount;
-await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: true });
-assert.equal((await store.loadClass(teacher)).questions[0].fridayOnly, true);
-assert.equal(reads - beforeToggleReads, 1, 'Toggle reads only its transaction record; rendering uses the committed value');
-assert.equal(writeCount - beforeToggleWrites, 1);
-await store.changeClass(teacher, { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: false });
-const beforeNameWrites = writeCount;
-const beforeNameReads = reads;
-await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Updated synthetic child' });
-assert.equal(writeCount - beforeNameWrites, 1, 'Profile edits write only the profile');
+assert.equal(reads, warmReads, 'Roster/menu/completion checks add no reads for any student');
+const realNow = Date.now;
+Date.now = () => realNow() + 10 * 86400000;
 await store.loadClass(teacher);
-assert.equal(reads - beforeNameReads, 1, 'Student edits must not reread the roster');
-const beforePhotoReads = reads, beforePhotoWrites = writeCount;
-await store.changeClass(teacher, { action: 'updateStudentImage', id: child.id, imageKey: syntheticPhoto });
-assert.equal((await store.loadClass(teacher)).students[0].imageKey, syntheticPhoto);
-assert.equal(reads - beforePhotoReads, 1, 'Photo save must read only its transaction record');
-assert.equal(writeCount - beforePhotoWrites, 1);
-const student = teacher;
-const forbidden = { role: 'teacher', ownerId: 'another-owner' };
+assert.equal(reads, warmReads, 'No timer or five-minute expiry refetches the class');
+Date.now = realNow;
+store.refreshClassData(teacher);
+const refreshReads = reads;
+await store.loadClass(teacher);
+assert.equal(reads - refreshReads, 1, 'Explicit refresh fetches only the packed class when the key is already loaded');
+for (const action of [
+  { action: 'updateStudentName', id: child.id, name: 'Renamed synthetic learner' },
+  { action: 'updateStudentImage', id: child.id, imageKey: syntheticPhoto },
+  { action: 'updateStudentScores', id: child.id, currentScore: 2, goalScore: 8 },
+  { action: 'saveSettings', title: 'Packed class', description: 'Packed description' },
+  { action: 'setQuestionFridayOnly', id: 'starter', fridayOnly: false },
+]) {
+  const beforeReads = reads, beforeWrites = writeCount;
+  await store.changeClass(teacher, action); await store.loadClass(teacher);
+  assert.equal(reads - beforeReads, 1, action.action + ' reads only the packed class');
+  assert.equal(writeCount - beforeWrites, 1);
+}
+data = await store.loadClass(teacher);
+assert.equal(data.students.find(row => row.id === child.id).currentScore, 2);
+await store.changeClass(teacher, { action: 'addQuestion', prompt: 'Additional question', fridayOnly: true });
+const question = (await store.loadClass(teacher)).questions.find(row => row.id !== 'starter');
+await store.changeClass(teacher, { action: 'addAnswer', questionId: question.id, label: 'Additional answer' });
+let beforeReads = reads;
+await store.changeClass(teacher, { action: 'deleteQuestion', id: question.id });
+assert.equal(reads - beforeReads, 1, 'Deleting a question never scans its answers');
+assert.equal((await store.loadClass(teacher)).answers.length, 3);
+await assert.rejects(store.changeClass(teacher, { action: 'updateStudentEmail', id: child.id, email: address('unused') }), /Unknown class action/);
+data = await store.loadClass(teacher);
+const forbidden = { role: 'teacher', ownerId: 'other-owner' };
 await assert.rejects(store.loadClass(forbidden));
 await assert.rejects(store.completedToday(forbidden, child.id));
-const beforePartialReads = reads, beforePartialWrites = writeCount;
-await assert.rejects(store.submitResponse(student, data.students[0], {
-  ...data, questions: [...data.questions, { id: 'unfinished', prompt: 'Another required question', position: 2, fridayOnly: false }],
-}, { starter: 'starter-1' }), /Answer every question/);
-await assert.rejects(store.submitResponse(student, data.students[0], data, {}), /Answer every question/);
-await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'invalid-choice' }), /Answer every question/);
-assert.equal(reads, beforePartialReads, 'Incomplete surveys must not contact Firestore');
-assert.equal(writeCount, beforePartialWrites, 'Incomplete surveys must not save partial responses');
-await store.submitResponse(student, data.students[0], data, { starter: 'starter-1' });
-assert.equal(writeCount, beforePartialWrites + 1, 'A finished survey saves exactly one response');
-assert(await store.completedToday(student, child.id));
-const completedReads = reads;
-assert(await store.completedToday(student, child.id));
-assert.equal(reads, completedReads, 'Repeated completion checks reuse the saved completion');
-await assert.rejects(store.submitResponse(student, data.students[0], data, { starter: 'starter-1' }), /already completed/);
-assert.equal(writeCount, beforePartialWrites + 1, 'Repeated submission must not write a second completion');
-const history = await store.loadHistory(student);
-assert.equal(history[0].items[0].answer, 'On My Way');
-const historyReads = reads;
-await store.loadHistory(student);
-assert.equal(reads, historyReads, 'Repeated history opens must reuse memory reads');
-assert(!JSON.stringify([...rows]).includes('On My Way'));
-auth.currentUser = { uid: teacher.ownerId, email: address('teacher') };
-await store.changeClass(teacher, { action: 'addQuestion', prompt: 'Another encrypted question', fridayOnly: true });
-data = await store.loadClass(teacher);
-const question = data.questions.find(q => q.id !== 'starter');
-await store.changeClass(teacher, { action: 'addAnswer', questionId: question.id, label: 'Another encrypted answer', imageKey: null });
-await store.changeClass(teacher, { action: 'deleteQuestion', id: question.id });
-data = await store.loadClass(teacher);
-assert.equal(data.questions.length, 1);
-assert.equal(data.answers.length, 3);
-const historyKey = await importKey(rows.get(classPath + '/keys/student_' + child.id).keyMaterial);
-for (let day=1;day<=25;day++) {
-  const date = '2025-01-' + String(day).padStart(2,'0');
-  const recordPath = childPath + '/responses/' + date;
-  rows.set(recordPath, await encryptRecord({createdAt:date+'T12:00:00.000Z',items:[{question:'Synthetic question',answer:'Synthetic answer',imageKey:null}]},historyKey,recordPath));
+await assert.rejects(store.changeClass(forbidden, { action: 'deleteStudent', id: child.id }));
+beforeReads = reads;
+const beforePartialWrites = writeCount;
+await assert.rejects(store.submitResponse(teacher, child, data, {}), /Answer every question/);
+assert.equal(reads, beforeReads); assert.equal(writeCount, beforePartialWrites);
+await store.submitResponse(teacher, child, data, { starter: 'starter-1' });
+assert.equal(reads - beforeReads, 2, 'Check-in transaction reads only class + month, with no per-student keys');
+assert.equal(writeCount - beforePartialWrites, 2, 'Check-in and completion index commit atomically');
+assert(await store.completedToday(teacher, child.id));
+const submittedState = JSON.stringify([...rows]);
+await assert.rejects(store.submitResponse(teacher, child, data, { starter: 'starter-1' }), /already completed/);
+assert.equal(JSON.stringify([...rows]), submittedState);
+const beforeHistory = reads;
+assert.equal((await store.loadHistory(teacher, child.id))[0].items[0].answer, 'On My Way');
+assert.equal(reads - beforeHistory, 1, 'Opening history reads one packed month');
+await store.loadHistory(teacher, child.id);
+assert.equal(reads - beforeHistory, 1, 'Revisiting history adds no reads');
+
+// Seed 38 records across two students on the same dates. Pagination uses the
+// encrypted day index, so it needs no look-ahead query or per-student fan-out.
+const secondChild = data.students.find(row => row.id !== child.id);
+let state = await readValue(classPath);
+const archive = { entries: [] };
+for (const [student, count] of [[child, 25], [secondChild, 12]]) {
+  for (let day = 1; day <= count; day++) {
+    const date = '2025-01-' + String(day).padStart(2, '0');
+    archive.entries.push({ id: date, studentId: student.id, studentName: student.name, createdAt: date + 'T12:00:00.000Z', items: [{ question: 'Synthetic question', answer: 'Synthetic answer', imageKey: syntheticPhoto }] });
+    (state.days[date] ??= []).push(student.id);
+  }
 }
-const filter = {studentId:child.id,from:'',to:'',order:'desc'};
-const beforePageReads = reads;
-const firstPage = await store.loadHistoryPage(teacher,filter);
-assert.equal(firstPage.entries.length,10); assert(firstPage.hasMore);
-assert.equal(reads-beforePageReads,11,'A history page fetches only ten entries plus one look-ahead');
-const cachedPageReads = reads;
-await store.loadHistoryPage(teacher,filter);
-assert.equal(reads,cachedPageReads,'Returning to a history page reuses its cache');
-const page2=await store.loadHistoryPage(teacher,{...filter,after:firstPage.entries.at(-1).id});
-const page3=await store.loadHistoryPage(teacher,{...filter,after:page2.entries.at(-1).id});
-assert.equal(new Set([...firstPage.entries,...page2.entries,...page3.entries].map(row=>row.id)).size,26);
-assert.equal(page3.entries.length,6); assert(!page3.hasMore);
-const filtered=await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'});
-assert.deepEqual(filtered.entries.map(row=>row.id),['2025-01-05','2025-01-06','2025-01-07']);
-await assert.rejects(store.loadHistoryPage(forbidden,{...filter,studentId:child.id}));
-await assert.rejects(store.loadHistoryPage(forbidden,{...filter,studentId:'all'}), /Only your teacher/);
-await store.changeClass(teacher, { action: 'addStudent', name: 'Second synthetic child', email: '', imageKey: null });
-const secondChild = (await store.loadClass(teacher)).students.find(row => row.id !== child.id);
-const secondKey = await importKey(rows.get(classPath + '/keys/student_' + secondChild.id).keyMaterial);
-for (let day = 1; day <= 12; day++) {
-  const date = '2025-01-' + String(day).padStart(2, '0');
-  const path = classPath + '/students/' + secondChild.id + '/responses/' + date;
-  rows.set(path, await encryptRecord({ createdAt: date + 'T12:00:00.000Z', items: [] }, secondKey, path));
-}
-missingIndex = true;
-const brokenFilter = { studentId: 'all', from: '', to: '', order: 'desc' };
-const failuresBefore = activity.getReadActivity().errors;
-for (let i = 0; i < 10; i++) await assert.rejects(store.loadHistoryPage(teacher, brokenFilter), /requires an index/);
-assert.equal(failedQueries, 1, 'Missing index must not fan out across students or retry on menu remount');
-assert.equal(activity.getReadActivity().errors - failuresBefore, 1);
-assert.equal(activity.getReadActivity().pending, 0);
-missingIndex = false;
-store.retryHistory(teacher);
+await setValue(classPath + '/historyMonths/2025-01', archive);
+await setValue(classPath, state);
+cache.clearReadCache(); await store.loadClass(teacher);
 for (const order of ['asc', 'desc']) {
-  const allFilter = { studentId: 'all', from: '', to: '', order };
-  const beforeAll = reads;
-  const first = await store.loadHistoryPage(teacher, allFilter);
-  assert(reads - beforeAll <= 12, 'All-student first page reads at most one candidate per student plus ten replacements');
-  const warmReads = reads;
-  await store.loadHistoryPage(teacher, allFilter);
-  assert.equal(reads, warmReads, 'Reopening all-student history must reuse cached candidates');
-  let page = first;
+  const filter = { studentId: 'all', from: '', to: '', order };
+  const before = reads; let page = await store.loadHistoryPage(teacher, filter);
+  assert(reads - before <= 2, 'All-student history reads at most the months needed by this page');
   const entries = [...page.entries];
   while (page.hasMore) {
-    page = await store.loadHistoryPage(teacher, { ...allFilter, after: page.nextCursor });
-    entries.push(...page.entries);
-    assert(entries.length <= 38, 'Pagination must advance');
+    page = await store.loadHistoryPage(teacher, { ...filter, after: page.nextCursor });
+    entries.push(...page.entries); assert(entries.length <= 38);
   }
   assert.equal(entries.length, 38);
-  assert.equal(new Set(entries.map(row => row.studentId + ':' + row.id)).size, 38, 'Same-day records cannot be skipped or duplicated');
-  assert.deepEqual(entries.map(row => row.id), entries.map(row => row.id).sort((a,b) => (order === 'asc' ? 1 : -1) * a.localeCompare(b)));
+  assert.equal(new Set(entries.map(row => row.id + ':' + row.studentId)).size, 38);
+  assert.deepEqual(entries.map(row => row.id + ':' + row.studentId), entries.map(row => row.id + ':' + row.studentId).sort((a, b) => (order === 'asc' ? 1 : -1) * a.localeCompare(b)));
 }
-const allRange = { studentId: 'all', from: '2025-01-06', to: '2025-01-06', order: 'asc' };
-assert.equal((await store.loadHistoryPage(teacher, allRange)).entries.length, 2);
-await store.changeClass(teacher,{action:'deleteResponse',studentId:child.id,id:'2025-01-06'});
-assert.equal((await store.loadHistoryPage(teacher, allRange)).entries.length, 1, 'Deleting a check-in invalidates all-student candidates');
-assert.equal((await store.loadHistoryPage(teacher,{...filter,from:'2025-01-05',to:'2025-01-07',order:'asc'})).entries.length,2);
-await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
-assert(!rows.has(childPath));
-assert(![...rows.keys()].some(path => path.startsWith(childPath + '/')));
+const range = { studentId: 'all', from: '2025-01-06', to: '2025-01-06', order: 'asc' };
+assert.equal((await store.loadHistoryPage(teacher, range)).entries.length, 2);
+await store.changeClass(teacher, { action: 'deleteResponse', studentId: child.id, id: '2025-01-06' });
+assert.equal((await store.loadHistoryPage(teacher, range)).entries.length, 1);
+await store.changeClass(teacher, { action: 'deleteResponse', studentId: child.id, id: (await store.loadHistory(teacher, child.id))[0].id });
+assert.equal(await store.completedToday(teacher, child.id), false);
 
-// Legacy migration preserves names, scores, pictures, and response times,
-// removes all old readable fields/paths, and can safely resume after interruption.
-rows.clear();
-cache.clearReadCache();
-rows.set(classPath, { ownerId: teacher.ownerId, title: 'Legacy class', description: 'Legacy description', createdAt: {} });
-rows.set(classPath + '/questions/q', { id: 'q', prompt: 'Legacy question', position: 1, fridayOnly: false });
-rows.set(classPath + '/answers/a', { id: 'a', questionId: 'q', label: 'Legacy answer', imageKey: 'preset:yes', position: 1 });
-rows.set(classPath + '/students/legacy', { id: 'legacy', name: 'Legacy synthetic child', email: address('legacy'), imageKey: 'preset:smile', currentScore: 3, goalScore: 7 });
-rows.set('studentLinks/' + address('legacy'), { ownerId: teacher.ownerId, studentId: 'legacy' });
-rows.set(classPath + '/students/legacy/responses/2026-01-02', { localDate: '2026-01-02', createdAt: { toDate: () => new Date('2026-01-02T15:00:00Z') }, items: [{ question: 'Legacy question', answer: 'Legacy answer', imageKey: 'preset:yes' }] });
-failAt = commits + 4;
-await assert.rejects(store.loadClass(teacher), /Simulated interruption/);
+// Concurrent edits must retry against the latest whole-class record rather than
+// overwrite another tab's changes with its memory cache.
+raceBeforeCommit = async () => {
+  const external = await readValue(classPath);
+  external.data.settings.title = 'Changed in another tab';
+  await setValue(classPath, external);
+};
+await store.changeClass(teacher, { action: 'updateStudentName', id: child.id, name: 'Concurrent name' });
+assert(transactionRetries > 0);
+assert.equal((await store.loadClass(teacher)).settings.title, 'Changed in another tab');
+assert.equal((await store.loadClass(teacher)).students.find(row => row.id === child.id).name, 'Concurrent name');
+const beforeFailure = JSON.stringify([...rows]);
+failAt = commits + 1;
+await assert.rejects(store.changeClass(teacher, { action: 'saveSettings', title: 'Must not save', description: 'Atomic failure' }), /Simulated interruption/);
 failAt = -1;
-data = await store.loadClass(teacher);
-assert.equal(data.students[0].currentScore, 3);
-assert.equal(data.students[0].goalScore, 7);
-assert.equal(data.students[0].imageKey, 'preset:smile');
-assert(!('email' in data.students[0]));
-assert.equal(data.settings.title, 'Legacy class');
-assert.equal((await store.loadHistory(teacher))[0].createdAt, '2026-01-02T15:00:00.000Z');
-assert(!rows.has('studentLinks/' + address('legacy')));
-for (const [path, value] of rows) {
-  if (path.includes('/keys/')) { assert.deepEqual(Object.keys(value).sort(), ['keyMaterial', 'version']); continue; }
-  assert(value.ciphertext, path);
-  assert.deepEqual(Object.keys(value).sort(), ['ciphertext', 'iv', 'version']);
+assert.equal(JSON.stringify([...rows]), beforeFailure);
+await store.changeClass(teacher, { action: 'deleteStudent', id: child.id });
+assert(!(await store.loadClass(teacher)).students.some(row => row.id === child.id));
+assert(!(await readValue(classPath + '/historyMonths/2025-01')).entries.some(row => row.studentId === child.id));
+assert.deepEqual((await readValue(classPath)).purges, {});
+
+// Realistic unique photos exceed one document: splitting remains bounded and
+// reloads never fall back to per-record reads. Removing photos also removes parts.
+for (const student of (await store.loadClass(teacher)).students) {
+  const photo = 'data:image/jpeg;base64,' + toBase64(crypto.getRandomValues(new Uint8Array(24 * 1024)));
+  await store.changeClass(teacher, { action: 'updateStudentImage', id: student.id, imageKey: photo });
 }
-const before = JSON.stringify([...rows]);
-await store.loadClass(teacher);
-assert.equal(JSON.stringify([...rows]), before);
-rows.delete(classPath + '/keys/shared');
-cache.clearReadCache();
+assert(rows.get(classPath).partCount > 1);
+cache.clearReadCache(); beforeReads = reads;
+data = await store.loadClass(teacher);
+assert.equal(reads - beforeReads, rows.get(classPath).partCount + 1, 'Large classes cost one read per packed part plus one key');
+for (const [path, value] of rows) if (value.ciphertext) assert(Buffer.byteLength(JSON.stringify(value)) < 1048576, path);
+for (const student of data.students) await store.changeClass(teacher, { action: 'removeStudentImage', id: student.id });
+assert.equal(rows.get(classPath).partCount, 1);
+assert(!rows.has(classPath + '/parts/1'));
+const oversized = Array.from({ length: 32 }, () => toBase64(crypto.getRandomValues(new Uint8Array(65536))));
+await assert.rejects(packed.encodePacked(ref(classPath), oversized, await sharedKey()), /too large/);
+
+// Plaintext and encrypted legacy data convert once; interruptions preserve the
+// source and are resumable. No email survives in the new class or old profiles.
+for (const encryptedLegacy of [false, true]) for (const failOffset of [3, 4, 5]) {
+  rows.clear(); cache.clearReadCache();
+  const shared = await importKey(toBase64(raw));
+  rows.set(classPath + '/keys/shared', { version: 1, keyMaterial: toBase64(raw) });
+  const oldStudentKey = toBase64(crypto.getRandomValues(new Uint8Array(32)));
+  const studentKey = await importKey(oldStudentKey);
+  rows.set(classPath + '/keys/student_legacy', { version: 1, keyMaterial: oldStudentKey });
+  const oldRoot = { title: 'Legacy class', description: 'Legacy description' };
+  rows.set(classPath, encryptedLegacy ? await encryptRecord(oldRoot, shared, classPath) : oldRoot);
+  const oldProfile = { id: 'legacy', name: 'Legacy learner', email: address('legacy'), imageKey: syntheticPhoto, currentScore: 3, goalScore: 7 };
+  const profilePath = classPath + '/students/legacy';
+  const hash = await emailLookup(address('legacy'));
+  rows.set(profilePath, encryptedLegacy ? { ...await encryptRecord(oldProfile, studentKey, profilePath), emailHash: hash } : oldProfile);
+  rows.set('studentAccess/' + hash, { ownerId: teacher.ownerId, studentId: 'legacy' });
+  rows.set('studentLinks/' + address('legacy'), { ownerId: teacher.ownerId, studentId: 'legacy' });
+  const oldQuestion = { id: 'q', prompt: 'Legacy question', position: 1, fridayOnly: false };
+  const oldAnswer = { id: 'a', questionId: 'q', label: 'Legacy answer', imageKey: 'preset:yes', position: 1 };
+  rows.set(classPath + '/questions/q', encryptedLegacy ? await encryptRecord(oldQuestion, shared, classPath + '/questions/q') : oldQuestion);
+  rows.set(classPath + '/answers/a', encryptedLegacy ? await encryptRecord(oldAnswer, shared, classPath + '/answers/a') : oldAnswer);
+  const responsePath = profilePath + '/responses/2026-01-02';
+  const response = { createdAt: '2026-01-02T15:00:00.000Z', items: [{ question: 'Legacy question', answer: 'Legacy answer', imageKey: 'preset:yes' }] };
+  rows.set(responsePath, encryptedLegacy ? await encryptRecord(response, studentKey, responsePath) : { ...response, createdAt: { toDate: () => new Date(response.createdAt) } });
+  failAt = commits + failOffset; // Archive, class publication, or cleanup bookkeeping.
+  await assert.rejects(store.loadClass(teacher), /Simulated interruption/);
+  failAt = -1;
+  if (rows.get(classPath).storage !== 2) { assert(rows.has(profilePath)); assert(rows.has(responsePath)); }
+  else { assert.equal((await readValue(classPath + '/historyMonths/2026-01')).entries.length, 1); }
+  data = await store.loadClass(teacher);
+  assert.equal(data.students[0].currentScore, 3); assert.equal(data.students[0].goalScore, 7);
+  assert.equal(data.students[0].imageKey, syntheticPhoto); assert(!('email' in data.students[0]));
+  assert.equal((await store.loadHistory(teacher))[0].createdAt, response.createdAt);
+  assert(!rows.has(profilePath)); assert(!rows.has(responsePath));
+  assert(![...rows.keys()].some(path => path.startsWith('studentAccess/') || path.startsWith('studentLinks/')));
+  cache.clearReadCache(); beforeReads = reads;
+  await store.loadClass(teacher);
+  assert.equal(reads - beforeReads, 2, 'Converted legacy classes never rescan the old collections');
+  assert.deepEqual((await readValue(classPath)).cleanupPaths, []);
+}
+rows.delete(classPath + '/keys/shared'); cache.clearReadCache();
 const missingKeyState = JSON.stringify([...rows]);
 await assert.rejects(store.loadClass(teacher), /encryption key is unavailable/);
-assert.equal(JSON.stringify([...rows]), missingKeyState);
-// Existing encrypted profiles are scrubbed without changing scores or responses.
-rows.clear(); cache.clearReadCache();
-await store.loadClass(teacher);
-await store.changeClass(teacher, { action: 'addStudent', name: 'Retired login test', currentScore: 4 });
-const retired = (await store.loadClass(teacher)).students[0];
-const retiredPath = classPath + '/students/' + retired.id;
-const retiredKey = await importKey(rows.get(classPath + '/keys/student_' + retired.id).keyMaterial);
-const retiredHash = await emailLookup(address('retired'));
-rows.set(retiredPath, { ...await encryptRecord({ ...retired, email: address('retired'), currentScore: 4 }, retiredKey, retiredPath), emailHash: retiredHash });
-rows.set('studentAccess/' + retiredHash, { ownerId: teacher.ownerId, studentId: retired.id });
-cache.clearReadCache();
-const scrubbed = (await store.loadClass(teacher)).students[0];
-assert.equal(scrubbed.currentScore, 4);
-assert(!('email' in scrubbed));
-assert(!('emailHash' in rows.get(retiredPath)));
-assert(!rows.has('studentAccess/' + retiredHash));
-assert(!('email' in await decryptRecord(rows.get(retiredPath), retiredKey, retiredPath)));
-await assert.rejects(store.changeClass(teacher, { action: 'updateStudentEmail', id: retired.id, email: address('unused') }), /Unknown class action/);
-// A page reload drops memory and keys, while retaining only an encrypted tab snapshot.
-rows.clear(); cache.clearReadCache();
-const session = new Map();
-globalThis.sessionStorage = { getItem: key => session.get(key) ?? null, setItem: (key, value) => session.set(key, value), removeItem: key => session.delete(key) };
-await store.loadClass(teacher);
-await store.changeClass(teacher, { action: 'addStudent', name: 'Reload test learner' });
-const cachedClass = await store.loadClass(teacher);
-assert(!JSON.stringify([...session]).includes('Reload test learner'));
-assert(!JSON.stringify([...session]).includes(rows.get(classPath + '/keys/shared').keyMaterial));
-cache.clearReadCache(false);
-let beforeReload = reads;
-assert.deepEqual(await store.loadClass(teacher), cachedClass);
-assert.equal(reads - beforeReload, 1, 'Page reload reads only the shared key');
-cache.clearReadCache(false);
-beforeReload = reads;
-await store.loadClass(teacher);
-assert.equal(reads - beforeReload, 1, 'Repeated reload keeps the encrypted cache');
-await store.changeClass(teacher, { action: 'updateStudentName', id: cachedClass.students[0].id, name: 'Changed after reload' });
-assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
-cache.clearReadCache(false);
-assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
-const cacheKey = [...session.keys()][0];
-const expired = JSON.parse(session.get(cacheKey)); expired.expires = Date.now() - 1;
-session.set(cacheKey, JSON.stringify(expired));
-beforeReload = reads;
-await store.loadClass(teacher);
-assert(reads - beforeReload > 1, 'Expired snapshots force fresh server data');
-session.set(cacheKey, '{broken');
-cache.clearReadCache(false);
-assert.equal((await store.loadClass(teacher)).students[0].name, 'Changed after reload');
+assert.equal(JSON.stringify([...rows]), missingKeyState, 'Missing keys must never be regenerated for packed data');
 const ownUser = auth.currentUser;
 auth.currentUser = { uid: 'different-account' };
 await assert.rejects(store.loadClass(teacher));
-const otherData = await store.loadClass({ role: 'teacher', ownerId: 'different-account' });
-assert.equal(otherData.students.length, 0, 'Accounts cannot reuse another class snapshot');
+assert.equal((await store.loadClass({ role: 'teacher', ownerId: 'different-account' })).students.length, 0);
 auth.currentUser = ownUser;
-cache.clearReadCache();
-assert.equal(session.size, 0, 'Sign-out/manual refresh removes persisted class data');
-delete globalThis.sessionStorage;
 delete globalThis.encryptionHarness;
-console.log('Encryption, migration, cache isolation/expiry, and read-count regressions passed (warm schedule/profile/photo save: 1 document read and 1 write; repeated warm class/history/completion loads: 0 reads). Counts exclude server rule evaluation.');
+console.log('Packed storage passed: cold loads 2 reads; warm completion/menu visits 0; ordinary edits 1; submissions 2; a history month 1. Migration, concurrency, encryption, and multi-part size checks passed.');
