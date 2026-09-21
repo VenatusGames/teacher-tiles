@@ -3448,6 +3448,7 @@ function setupModuleByType(m,type){
   if(type==='quietcritters')window.TeacherTilesQuietCritters.setup(m);
   if(type==='chime')window.TeacherTilesChime.setup(m);
   if(type==='meditation')window.TeacherTilesMeditation.setup(m);
+  if(type==='glitterjar')window.TeacherTilesGlitterJar.setup(m);
   if(type==='transitionbell')window.TeacherTilesTransitionBell.setup(m);
   if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
   if(type==='backgroundremover'){setupBoardPhotoDrop();window.TeacherTilesBackgroundRemover.setup(m);}
@@ -9343,6 +9344,7 @@ const EDITABLE_TILE_HEADINGS={
   colorpicker:'.widget-title',
   rainbow:'.widget-title',
   meditation:'.meditation-title',
+  glitterjar:'.glitter-jar-heading',
   piano:'.widget-title',
   musicscore:'.widget-title',
   vocabulary:'.widget-title',
