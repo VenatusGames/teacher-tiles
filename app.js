@@ -3094,8 +3094,8 @@ const TILE_SKIN_CATALOG=Object.freeze([
     name:'No Background',description:'The animated timer shape becomes the tile and floats directly on the board.',
     tags:'visual timer floating freestanding object clock countdown',released:12
   }),
-  Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A rich, solid-color timer face floating directly on the board.',tags:'visual timer solid vivid bold floating',released:13}),
-  Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave floating',released:14})
+  Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
+  Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14})
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
@@ -3769,7 +3769,7 @@ function isInteractiveModuleTarget(target,m){
   return false;
 }
 
-const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','timer-solid','timer-liquid','magnifier-classic']);
+const FLOATING_TILE_SKIN_IDS=new Set(['stoplight-freestanding','progressbar-capsule','timer-freestanding','magnifier-classic']);
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
   if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
@@ -4745,7 +4745,7 @@ function setupTimer(m){
     },520);
   };
   const releasePointerSettings=()=>{
-    if(['timer-freestanding','timer-solid','timer-liquid'].includes(m.dataset.tileSkin)){
+    if(m.dataset.tileSkin==='timer-freestanding'){
       const active=document.activeElement;
       if(active instanceof HTMLElement&&controls?.contains(active))active.blur();
     }
@@ -4761,10 +4761,23 @@ function setupTimer(m){
   const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
   shapeSelect.value=initialShape;refreshShape();
   setShape(initialShape);
-  const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
+  let visualFrame=0;
+  const paintProgress=progress=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
-    m.style.setProperty('--timer-progress-ratio',progress.toFixed(4));
+    m.style.setProperty('--timer-progress-ratio',progress.toFixed(6));
     liquid.style.height=(progress*100)+'%';liquid.style.opacity=progress>0?'1':'0';
+  };
+  const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
+    cancelAnimationFrame(visualFrame);paintProgress(progress);
+    if(running&&['timer-solid','timer-liquid'].includes(m.dataset.tileSkin)){
+      const started=performance.now();
+      const animate=now=>{
+        if(!m.isConnected)return;
+        paintProgress(total>0?clamp(1-(left-(now-started)/1000)/total,0,1):0);
+        visualFrame=requestAnimationFrame(animate);
+      };
+      visualFrame=requestAnimationFrame(animate);
+    }
     const complete=left<=.05;
     const paused=!running&&!complete&&left<total-.05;
     m.classList.toggle('timer-complete',complete);
@@ -4775,7 +4788,7 @@ function setupTimer(m){
   m._cleanup=()=>{
     clearTimeout(settingsHideTimer);
     closeShapes();shapeShelf.remove();document.removeEventListener('pointerdown',outsideShapes);document.removeEventListener('keydown',escapeShapes,true);
-    stopTimer();
+    cancelAnimationFrame(visualFrame);stopTimer();
     sizeObserver.disconnect();
   };
   window.TeacherTilesTimerPointer.attach(m);

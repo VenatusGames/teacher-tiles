@@ -17,15 +17,15 @@
     <filter id="readoutShadow" x="-20%" y="-45%" width="140%" height="190%">
       <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#192331" flood-opacity=".14"/>
     </filter>
-  </defs>
+  </defs><rect x="3" y="3" width="414" height="414" rx="34" fill="#fff" stroke="#dce2ea" stroke-width="3"/><g transform="translate(46 46) scale(.78)">
   <g filter="url(#timerShadow)">
     <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#536b86" stroke-width="8"/>
     <circle cx="210" cy="210" r="169" fill="url(#timerSheen)" stroke="#ffffff" stroke-opacity=".48" stroke-width="3"/>
   </g>
-  <g clip-path="url(#liquidClip)"><path d="M30 212 Q75 185 120 212 T210 212 T300 212 T390 212 V400 H30Z" fill="#6f8fb7"/><path d="M30 223 Q75 201 120 223 T210 223 T300 223 T390 223 V400 H30Z" fill="#83acd6"/><circle cx="115" cy="300" r="8" fill="none" stroke="#ffffff88" stroke-width="3"/><circle cx="295" cy="330" r="6" fill="none" stroke="#ffffff88" stroke-width="3"/></g>
+  <g clip-path="url(#liquidClip)"><path d="M30 212 Q75 185 120 212 T210 212 T300 212 T390 212 V400 H30Z" fill="#6f8fb7"/><circle cx="115" cy="300" r="8" fill="none" stroke="#ffffff88" stroke-width="3"/><circle cx="295" cy="330" r="6" fill="none" stroke="#ffffff88" stroke-width="3"/></g>
   <g filter="url(#readoutShadow)">
     <rect x="72" y="151" width="276" height="118" rx="59" fill="#ffffff" fill-opacity=".82" stroke="#17314e" stroke-opacity=".12" stroke-width="2"/>
     <text x="210" y="222" text-anchor="middle" fill="#17202a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="820" letter-spacing="-4">02:30</text>
     <text x="210" y="251" text-anchor="middle" fill="#536579" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="900" letter-spacing="4">RUNNING</text>
   </g>
-</svg>
+</g></svg>

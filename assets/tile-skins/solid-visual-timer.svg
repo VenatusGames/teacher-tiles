@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Solid Visual Timer shown in its default five minute ready state">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Solid timer with a tile background and partially filled shape">
   <defs>
     <radialGradient id="timerFace" cx="30%" cy="19%" r="82%">
-      <stop offset="0" stop-color="#a9d4ff"/>
-      <stop offset="0.42" stop-color="#63adf6"/>
-      <stop offset="1" stop-color="#3b88db"/>
+      <stop offset="0" stop-color="#edf3fa"/>
+      <stop offset="0.42" stop-color="#dce7f4"/>
+      <stop offset="1" stop-color="#d2dfed"/>
     </radialGradient>
     <linearGradient id="timerSheen" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity=".36"/>
@@ -17,14 +17,15 @@
     <filter id="readoutShadow" x="-20%" y="-45%" width="140%" height="190%">
       <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#192331" flood-opacity=".14"/>
     </filter>
-  </defs>
+  </defs><rect x="3" y="3" width="414" height="414" rx="34" fill="#fff" stroke="#dce2ea" stroke-width="3"/><g transform="translate(46 46) scale(.78)">
   <g filter="url(#timerShadow)">
-    <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#285f99" stroke-width="8"/>
+    <circle cx="210" cy="210" r="177" fill="url(#timerFace)" stroke="#536b86" stroke-width="4"/>
     <circle cx="210" cy="210" r="169" fill="url(#timerSheen)" stroke="#ffffff" stroke-opacity=".48" stroke-width="3"/>
   </g>
+  <path d="M210 210 H33 A177 177 0 0 1 387 210 Z" fill="#5387bd"/>
   <g filter="url(#readoutShadow)">
     <rect x="72" y="151" width="276" height="118" rx="59" fill="#ffffff" fill-opacity=".82" stroke="#17314e" stroke-opacity=".12" stroke-width="2"/>
-    <text x="210" y="222" text-anchor="middle" fill="#17202a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="820" letter-spacing="-4">05:00</text>
-    <text x="210" y="251" text-anchor="middle" fill="#536579" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="900" letter-spacing="4">READY</text>
+    <text x="210" y="222" text-anchor="middle" fill="#17202a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="820" letter-spacing="-4">02:30</text>
+    <text x="210" y="251" text-anchor="middle" fill="#536579" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="900" letter-spacing="4">RUNNING</text>
   </g>
-</svg>
+</g></svg>
