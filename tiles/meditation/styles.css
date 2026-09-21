@@ -41,6 +41,13 @@
 .meditation-compact .meditation-remaining{font-size:16px;}
 
 .meditation-module :is(.meditation-heading,.meditation-count,.meditation-rhythm,.meditation-session,.meditation-actions,.meditation-copy){transition:opacity .18s;}
-.meditation-module:not(:hover):not(:has(:focus-visible)) :is(.meditation-heading,.meditation-count,.meditation-rhythm,.meditation-session,.meditation-actions),.meditation-module[data-breathing="false"]:not(:hover):not(:has(:focus-visible)) .meditation-copy{opacity:0;visibility:hidden;pointer-events:none;}
+.meditation-module:not(:hover):not(:has(:focus-visible)) :is(.meditation-count,.meditation-rhythm,.meditation-session,.meditation-actions),.meditation-module[data-breathing="false"]:not(:hover):not(:has(:focus-visible)) .meditation-copy{opacity:0;visibility:hidden;pointer-events:none;}
 .meditation-cue[hidden]{display:none!important;}
 @media(prefers-reduced-motion:reduce){.meditation-module *{transition:none!important;}}
+
+.meditation-module:not(:hover):not(:has(:focus-visible)){padding-bottom:24px!important;}
+.meditation-module:not(:hover):not(:has(:focus-visible)) :is(.meditation-rhythm,.meditation-session,.meditation-actions){display:none;}
+.meditation-module:not(:hover):not(:has(:focus-visible)) .meditation-scene{container-type:size;min-height:0;}
+.meditation-module:not(:hover):not(:has(:focus-visible)) .meditation-bloom{width:min(70cqw,70cqh);}
+.meditation-module:not(:hover):not(:has(:focus-visible)) .meditation-aura{width:min(86cqw,86cqh);}
+.meditation-module:not(:hover):not(:has(:focus-visible)) .meditation-copy:has(.meditation-cue[hidden]),.meditation-module[data-breathing="false"]:not(:hover):not(:has(:focus-visible)) .meditation-copy{display:none;}

@@ -1377,7 +1377,7 @@ const APP_TRANSLATIONS={
     'settings.masterVolume.title':'Master volume','settings.masterVolume.copy':'Controls the overall volume of all TeacherTiles audio.','settings.volume.title':'UI volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
     'settings.board.title':'Board','settings.board.copy':'Tune how the canvas feels while you work.','settings.scroll.title':'Scroll speed','settings.scroll.copy':'Changes mouse-wheel zoom and shelf scrolling sensitivity.',
     'settings.view.title':'Default view size','settings.view.copy':'Sets your working zoom and the starting size for new boards.',
-    'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Keep the fullscreen, pin, and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.',
+    'settings.deleteButtons.title':'Show tile options always','settings.deleteButtons.copy':'Show tabbing, fullscreen, pin, and delete controls whenever you hover over a tile, instead of only near its corners.',
     'settings.language.title':'Language','settings.language.copy':'Choose the language used by TeacherTiles menus and controls.','settings.language.interface':'Interface language','settings.language.note':'Your tile content is never translated or changed.',
     'settings.save.note':'Preference changes join the current board’s normal autosave—no extra Firestore save system.',
     'help.kicker':'HELP CENTER','help.title':'TeacherTiles controls at a glance','help.copy':'Keyboard shortcuts and mouse controls for moving quickly around your board.',
@@ -1613,7 +1613,7 @@ function updateSettingsControls(){
   if(language)language.value=appPreferences.language;
   if(deleteButtons){
     deleteButtons.setAttribute('aria-checked',String(Boolean(appPreferences.alwaysShowTileDeleteButtons)));
-    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile options near the top-right corner':'Show tile options always');
+    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile options near their corners':'Show tile options always');
   }
   applyTileDeleteVisibilityPreference();
   const volumeRow=volume?.closest('.settings-row');
@@ -1656,7 +1656,7 @@ function setupSettingsHub(){
   if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
     const row=document.createElement('div');
     row.className='settings-row settings-row--switch';
-    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Keep the fullscreen, pin, and delete controls visible on every tile instead of only revealing them near the tile’s top-right corner.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Show tabbing, fullscreen, pin, and delete controls whenever you hover over a tile, instead of only near its corners.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
     boardSettingsCard.appendChild(row);
   }
   const modal=document.getElementById('settings-modal');
@@ -3789,7 +3789,7 @@ function clearTileOptionObstructionShift(m){
 }
 function tileOptionsAreVisible(m){
   return Boolean(
-    document.body?.classList.contains('tile-options-always-visible')||
+    (document.body?.classList.contains('tile-options-always-visible')&&m?.matches(':hover'))||
     m?.classList.contains('is-tile-options-hotzone')||
     m?.querySelector(':scope>.module-delete:focus-visible,:scope>.module-fullscreen:focus-visible,:scope>.module-pin:focus-visible')
   );
@@ -4375,18 +4375,23 @@ function setupStickerTransformControls(m){
     e.preventDefault();e.stopPropagation();bringToFront(m);h.setPointerCapture(e.pointerId);
     const before=captureModuleTransform(m),d=h.dataset.stickerResize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=m.offsetWidth,sh=m.offsetHeight;
     const right=sl+sw,bottom=st+sh;
+    const angle=(Number(m.dataset.stickerRotation)||0)*Math.PI/180,cos=Math.cos(angle),sin=Math.sin(angle);
+    const signX=d.includes('r')?1:-1,signY=d.includes('b')?1:-1;
+    const anchorX=sl+sw/2-cos*signX*sw/2+sin*signY*sh/2;
+    const anchorY=st+sh/2-sin*signX*sw/2-cos*signY*sh/2;
     const minW=Math.max(52,52*ratio);
     const maxW=Math.max(minW,Math.min(d.includes('r')?BOARD_WIDTH-sl:right,(d.includes('b')?BOARD_HEIGHT-st:bottom)*ratio));
     m.classList.add('is-sticker-resizing');
     const move=ev=>{
-      const dx=(ev.clientX-sx)/boardCamera.scale,dy=(ev.clientY-sy)/boardCamera.scale;
+      const screenDx=(ev.clientX-sx)/boardCamera.scale,screenDy=(ev.clientY-sy)/boardCamera.scale;
+      const dx=cos*screenDx+sin*screenDy,dy=-sin*screenDx+cos*screenDy;
       const fromX=d.includes('r')?sw+dx:sw-dx;
       const fromY=(d.includes('b')?sh+dy:sh-dy)*ratio;
       let w=Math.abs(fromX-sw)>=Math.abs(fromY-sw)?fromX:fromY;
       w=clamp(w,minW,maxW);
       const hh=w/ratio;
-      const l=d.includes('l')?right-w:sl;
-      const t=d.includes('t')?bottom-hh:st;
+      const l=anchorX+cos*signX*w/2-sin*signY*hh/2-w/2;
+      const t=anchorY+sin*signX*w/2+cos*signY*hh/2-hh/2;
       Object.assign(m.style,{left:`${l}px`,top:`${t}px`,width:`${w}px`,height:`${hh}px`});
       updateStickerVisualSize(m);
     };

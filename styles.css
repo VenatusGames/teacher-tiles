@@ -14090,7 +14090,7 @@ body.is-dragging-shelf-sticker{cursor:grabbing!important}
   height:100%;
   display:grid;
   place-items:center;
-  transform:rotate(var(--sticker-rotation,0deg));
+  transform:none;
   transform-origin:50% 50%;
   transition:filter .15s ease;
 }
@@ -17157,7 +17157,7 @@ body .module>:is(.module-fullscreen,.module-pin,.module-delete):focus-visible{
   visibility:visible!important;
   pointer-events:auto!important;
 }
-body.tile-options-always-visible .workspace .module>:is(.module-fullscreen,.module-pin,.module-delete){
+body.tile-options-always-visible .workspace .module:hover>:is(.module-fullscreen,.module-pin,.module-delete){
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
@@ -19117,3 +19117,8 @@ body>.lesson-planner-panel{
   }
   .planner-library-intro{padding-right:0;margin-bottom:12px}
 }
+
+/* Rotate the sticker frame and its handles together; keep delete clear of resize. */
+.sticker-module{rotate:var(--sticker-rotation,0deg);transform-origin:50% 50%!important;}
+body .sticker-module>.module-delete{top:-40px!important;right:-10px!important;}
+body .sticker-module:hover>.module-delete{opacity:1!important;pointer-events:auto!important;}

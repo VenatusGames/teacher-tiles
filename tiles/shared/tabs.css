@@ -1,6 +1,6 @@
 body .module>.module-tab-add{position:absolute;left:9px;top:9px;width:28px;height:28px;display:grid;place-items:center;padding:0;z-index:10000;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 2px 7px #0f172a12;opacity:0;pointer-events:none;cursor:pointer;transition:opacity .15s,background .15s;}
 .module-tab-add svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-body .module.is-tab-options-hotzone:hover>.module-tab-add,body .module>.module-tab-add:focus-visible,body.tile-options-always-visible .module>.module-tab-add{opacity:1;pointer-events:auto;}
+body .module.is-tab-options-hotzone:hover>.module-tab-add,body .module>.module-tab-add:focus-visible,body.tile-options-always-visible .module:hover>.module-tab-add{opacity:1;pointer-events:auto;}
 body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;outline:3px solid #60b994;outline-offset:3px;}
 .module.is-tab-drop-target{outline:2px solid #60b994!important;outline-offset:5px;}
 .tile-tab-strip{position:absolute;display:flex;flex-direction:column;gap:5px;width:37px;pointer-events:auto;}
