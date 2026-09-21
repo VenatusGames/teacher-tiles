@@ -13203,6 +13203,7 @@ function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,c
   bringToFront(m);
   setupCommon(m);
   setupStickerTransformControls(m);
+  window.TeacherTilesSettings.ensure(m);
   if(record)recordHistory({type:'add',elements:[m]});
   if(animate){
     playUiSfx('sticker-place');

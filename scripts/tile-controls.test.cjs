@@ -42,7 +42,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     box=await tile.boundingBox();let handle=await page.locator('#test-tile [data-resize=br]').boundingBox();
     await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();await page.mouse.move(handle.x+handle.width/2-550,handle.y+handle.height/2-400,{steps:15});await page.mouse.up();
     assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[300,430,.5],'compact uses canonical minimum proportions and sensible floor');
-    await tile.hover();await page.locator('.tile-reset-scale').click();
+    await tile.hover();await page.locator('.tile-settings-toggle').click();await page.locator('.tile-settings-floating .tile-reset-scale').click();
     assert.deepEqual(await tile.evaluate(m=>[m.offsetWidth,m.offsetHeight,tileUniformScale(m)]),[460,550,1]);
     await page.evaluate(()=>undoBoardAction());assert.equal(await tile.evaluate(m=>tileUniformScale(m)),.5);
     await page.evaluate(()=>redoBoardAction());
@@ -51,7 +51,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.locator('.workspace .module').hover();await page.clock.runFor(500);
     assert.equal(await page.locator('.tile-tab-bookmark').first().evaluate(el=>getComputedStyle(el).transform),'matrix(1, 0, 0, 1, 0, 0)');
     await page.evaluate(()=>{TeacherTilesBoard.clear();for(const type of ['clock','youtube','progressbar','draw'])createModule(type,500,250,{record:false});});
-    assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module>.tile-reset-scale').count());
+    assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
+    assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
+    while(await page.locator('.workspace .module').count()){
+      const module=page.locator('.workspace .module').first();
+      await module.evaluate(m=>bringToFront(m));await module.hover();
+      await module.locator('.tile-settings-beside-brush button').first().click();
+      assert(await module.locator('.tile-settings-floating .tile-reset-scale').isVisible());
+      await page.keyboard.press('Escape');assert.equal(await module.locator('.tile-settings-floating .tile-reset-scale').isVisible(),false);await module.evaluate(m=>{m._cleanup?.();m.remove();});
+    }
     assert.deepEqual(errors,[]);console.log('Corner visibility, meditation quiet view/cue persistence, tucked tabs, minimum scaling and undoable reset passed.');
   }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
