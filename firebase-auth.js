@@ -1954,6 +1954,7 @@ function serializableBoardMetadata(board) {
     stateChunkCount: Math.max(0, Number(board.stateChunkCount) || 0),
     stateChunkHashes: Array.isArray(board.stateChunkHashes) ? board.stateChunkHashes : [],
     legacyCleanupPending: Boolean(board.legacyCleanupPending),
+    hasConflict: Boolean(board.hasConflict),
     createdAt: timestampValue(board.createdAt),
     updatedAt: timestampValue(board.updatedAt)
   };
@@ -2325,6 +2326,8 @@ async function saveCachedBoardToCloud(boardId) {
   const previous = boardSavePromise;
   const task = (previous ? previous.catch(() => {}) : Promise.resolve()).then(async () => {
     if (!currentUser || currentUser.uid !== userId) return false;
+    const pendingConflict = await readLocalBoardSnapshot(userId, boardConflictKey(targetBoardId));
+    if (pendingConflict?.pending) { setBoardStatus('Save conflict — review this board in Boards. Edits are saved locally.'); return false; }
     boardSaving = true;
     const showStatus = activeBoardId === targetBoardId;
     if (showStatus) setBoardStatus("Saving…");
@@ -2380,44 +2383,135 @@ async function saveCachedBoardToCloud(boardId) {
   }
 }
 
+function boardConflictKey(boardId) { return 'conflict/' + boardId; }
+function boardHasConflict(board) {
+  return Boolean(board?.hasConflict || localBoardMemory.get(localBoardKey(currentUser?.uid, boardConflictKey(board?.id)))?.pending);
+}
 async function preserveConflictingBoard(boardId) {
   const uid = currentUser.uid;
-  const original = boardList.find(board => board.id === boardId);
   const local = await readLocalBoardSnapshot(uid, boardId);
-  if (!original || !local?.snapshot) throw new Error("No local recovery snapshot available.");
-  // Use a separate board rather than guessing which teacher's changes to discard.
-  const ref = createBoardReference();
-  const recovered = { ...original, id: ref.id, name: `${original.name} (recovered changes)`,
-    revision: 0, cloudContentHash: "", storageFormat: "inline-v2", stateChunkCount: 0,
-    stateChunkHashes: [], needsMigration: false, legacyCleanupPending: false, localDirty: true };
-  boardList.push(recovered);
-  await cacheSnapshotLocally(ref.id, local.snapshot, { dirty: true });
-  try {
-    await writeBoardSnapshotToCloud(ref.id, recovered.name, local.snapshot, { isNew: true });
-  } catch (error) {
-    boardList = boardList.filter(board => board.id !== ref.id);
-    throw error;
-  }
+  if (!local?.snapshot) throw new Error('No local recovery snapshot available.');
+  // Recovery belongs to the existing board, never to another board quota slot.
+  await writeLocalBoardSnapshot(uid, boardConflictKey(boardId), { snapshot: local.snapshot, pending: true, dirty: true });
   if (currentUser?.uid !== uid) return;
-  // Edits made during recovery belong to the new board too.
-  const latest = localBoardMemory.get(localBoardKey(uid, boardId));
-  const latestSnapshot = activeBoardId === boardId && !boardLoading
-    ? cleanBoardSnapshot(boardApi().capture()) : latest?.snapshot;
-  if (activeBoardId === boardId) {
-    clearTimeout(localBoardSaveTimer);
-    activeBoardId = ref.id;
-    boardApi()?.setActiveBoardId(ref.id);
-    localStorage.setItem(activeBoardStorageKey(uid), ref.id);
-  }
-  if (latestSnapshot && contentHashForSnapshot(latestSnapshot) !== local.contentHash) {
-    await cacheSnapshotLocally(ref.id, latestSnapshot, { dirty: true });
-    scheduleCloudBoardSave(CLOUD_SAVE_DELAY, ref.id);
-  }
+  const board = boardList.find(item => item.id === boardId);
+  if (board) board.hasConflict = true;
   clearCloudBoardSaveTimer(boardId);
-  await deleteLocalBoardSnapshot(uid, boardId);
   cacheBoardListMetadata();
-  setBoardStatus("Other device changed this board — your edits were saved as a recovered board.");
+  setBoardStatus('Save conflict — review both versions in Boards. Your edits are safe in this browser.');
   if (!boardsView?.hidden) renderBoards();
+}
+
+function mergeBoardConflictSnapshots(local, cloud, settingsSource = 'local') {
+  const primary = settingsSource === 'cloud' ? cloud : local;
+  const secondary = settingsSource === 'cloud' ? local : cloud;
+  const combine = (first, second) => {
+    const result = cleanFirestoreValue(first || []);
+    const byId = new Map(result.map(item => [item.id, item]));
+    for (const item of second || []) {
+      const existing = byId.get(item.id);
+      if (!existing) { result.push(cleanFirestoreValue(item)); byId.set(item.id, item); }
+      else if (stableBoardJson(existing) !== stableBoardJson(item)) {
+        let id = item.id + '-merged', n = 1;
+        while (byId.has(id) || (second || []).some(other => other.id === id)) id = item.id + '-merged-' + n++;
+        const copy = { ...cleanFirestoreValue(item), id };
+        result.push(copy); byId.set(id, copy);
+      }
+    }
+    return result;
+  };
+  return cleanBoardSnapshot({ ...primary, objects: combine(primary.objects, secondary.objects), calendarEvents: combine(primary.calendarEvents, secondary.calendarEvents), preview: [] });
+}
+
+async function readBoardConflictReview(boardId) {
+  const uid = currentUser.uid;
+  if (activeBoardId === boardId) await flushCurrentBoardLocal();
+  const pending = await readLocalBoardSnapshot(uid, boardConflictKey(boardId));
+  if (!pending?.pending) throw new Error('This board no longer has a pending conflict.');
+  const local = await readLocalBoardSnapshot(uid, boardId);
+  const doc = await firestoreSdk.getDocFromServer(boardDocument(uid, boardId));
+  if (!doc.exists()) throw new Error('The cloud board was deleted. Your local copy is retained; review cannot replace a deleted board.');
+  const remote = normalizeBoardMetadata(doc);
+  const cloud = await readCloudBoardSnapshot(remote);
+  if (currentUser?.uid !== uid) throw new Error('Account changed during review.');
+  return { uid, boardId, local: cleanBoardSnapshot(local?.snapshot || pending.snapshot), cloud: cloud.snapshot, remote };
+}
+
+async function resolveBoardConflict(review, choice, settingsSource = 'local') {
+  if (!['local', 'cloud', 'merge'].includes(choice)) throw new Error('Choose a version to keep.');
+  const { uid, boardId } = review;
+  if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+  if (boardSavePromise) await boardSavePromise.catch(() => {});
+  if (activeBoardId === boardId) await flushCurrentBoardLocal();
+  const latest = await readLocalBoardSnapshot(uid, boardId);
+  if (latest?.snapshot && contentHashForSnapshot(latest.snapshot) !== contentHashForSnapshot(review.local)) throw new Error('Your local board changed during review. Close and reopen the review to compare the latest versions.');
+  const doc = await firestoreSdk.getDocFromServer(boardDocument(uid, boardId));
+  if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+  if (!doc.exists() || (Number(doc.data().revision) || 0) !== review.remote.revision || (doc.data().contentHash || '') !== review.remote.cloudContentHash) throw new Error('The cloud board changed again. Close and reopen the review before choosing.');
+  const chosen = choice === 'merge' ? mergeBoardConflictSnapshots(review.local, review.cloud, settingsSource) : review[choice];
+  const oldBoard = boardList.find(board => board.id === boardId);
+  if (!oldBoard) throw new Error('Board not found.');
+  const originalMeta = { ...oldBoard };
+  // Retain both reviewed versions locally even after the chosen result syncs.
+  await writeLocalBoardSnapshot(uid, 'conflict-archive/' + boardId, { snapshot: review.local, cloudSnapshot: review.cloud, dirty: false });
+  if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+  boardLoading = true;
+  clearTimeout(localBoardSaveTimer); clearCloudBoardSaveTimer(boardId);
+  try {
+    Object.assign(oldBoard, review.remote, { hasConflict: true });
+    boardLocalHashes.delete(boardId);
+    await cacheSnapshotLocally(boardId, chosen, { dirty: true });
+    if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+    await writeBoardSnapshotToCloud(boardId, oldBoard.name, chosen);
+    if (currentUser?.uid !== uid) return;
+    await deleteLocalBoardSnapshot(uid, boardConflictKey(boardId));
+    oldBoard.hasConflict = false;
+    if (activeBoardId === boardId) boardApi().load(chosen);
+    cacheBoardListMetadata(); renderBoards(); setBoardStatus('Conflict resolved — saved');
+  } catch (error) {
+    if (currentUser?.uid === uid) {
+      Object.assign(oldBoard, originalMeta, { hasConflict: true });
+      boardLocalHashes.delete(boardId);
+      await cacheSnapshotLocally(boardId, latest?.snapshot || review.local, { dirty: true });
+    }
+    throw error;
+  } finally { boardLoading = false; }
+}
+
+async function openBoardConflictReview(boardId) {
+  const dialog = document.createElement('dialog');dialog.className = 'board-conflict-review';
+  const title = document.createElement('h2');title.textContent = 'Review conflicting versions';
+  const intro = document.createElement('p');intro.textContent = 'Loading both versions…';
+  const content = document.createElement('div');content.className = 'board-conflict-versions';
+  const status = document.createElement('p');status.setAttribute('role','status');
+  const close = document.createElement('button');close.type = 'button';close.textContent = 'Review later';close.className = 'board-conflict-close';
+  close.onclick = () => dialog.close();dialog.addEventListener('close',()=>{dialog.remove();document.querySelector('.board-card[data-board-id="'+CSS.escape(boardId)+'"] .board-card__conflict')?.focus()});
+  dialog.append(title,intro,content,status,close);document.body.append(dialog);dialog.showModal();
+  let busy = false;dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault()});
+  try {
+    const review = await readBoardConflictReview(boardId);
+    if (!dialog.isConnected) return;
+    intro.textContent = 'Choose a version or combine their tiles. This keeps one board and uses no extra board slot. Local edits remain in this browser until you resolve the conflict.';
+    const actions = [];
+    const resolve = async choice => {
+      if (busy) return;busy = true;actions.forEach(button=>button.disabled=true);close.disabled=true;settings.disabled=true;status.textContent='Saving your choice…';
+      try { await resolveBoardConflict(review,choice,settings.value);dialog.close(); }
+      catch(error){status.textContent=error.message;busy=false;actions.forEach(button=>button.disabled=false);close.disabled=false;settings.disabled=false;}
+    };
+    for (const [key,label] of [['local','This browser'],['cloud','Cloud version']]) {
+      const snapshot = review[key],section = document.createElement('section'),heading = document.createElement('h3');heading.textContent=label;
+      const preview = document.createElement('div');preview.className='board-card__preview '+previewThemeClass(snapshot.theme);
+      const objects = document.createElement('div');objects.className='board-card__objects';
+      for(const item of layoutBoardPreviewObjects(snapshot.objects.slice(0,48))) objects.append(createMiniObject(item));preview.append(objects);
+      const details = document.createElement('p');details.textContent=snapshot.objects.length+' '+(snapshot.objects.length===1?'tile':'tiles')+' · '+snapshot.frames.length+' '+(snapshot.frames.length===1?'frame':'frames');
+      const frames = document.createElement('p');frames.className='board-conflict-frames';frames.textContent=snapshot.frames.map(frame=>frame.name||'Untitled frame').join(' · ')||'No frames';
+      const button=document.createElement('button');button.type='button';button.textContent=key==='local'?'Keep this browser’s version':'Keep cloud version';button.onclick=()=>resolve(key);actions.push(button);section.append(heading,preview,details,frames,button);content.append(section);
+    }
+    const merge = document.createElement('div');merge.className='board-conflict-merge';
+    const explanation=document.createElement('p');explanation.textContent='Merge keeps tiles from both versions. Differently edited copies of the same tile are kept separately, in their original positions. Tiles deleted in only one version will return. Choose which frame list, theme, view and settings to keep:';
+    const settings=document.createElement('select');settings.setAttribute('aria-label','Board settings to keep when merging');settings.add(new Option('Keep this browser’s frames and settings','local'));settings.add(new Option('Keep the cloud version’s frames and settings','cloud'));
+    const button=document.createElement('button');button.type='button';button.textContent='Merge tiles into this board';button.onclick=()=>resolve('merge');actions.push(button);merge.append(explanation,settings,button);content.after(merge);
+  } catch(error){intro.textContent=error.message;}
 }
 
 async function saveCurrentBoard({ immediate = false } = {}) {
@@ -2487,6 +2581,7 @@ function refreshBoardLibrary() {
     for (const board of preserved.values()) {
       if (!boardList.some(item => item.id === board.id)) boardList.push(board);
     }
+    for (const board of boardList) board.hasConflict = Boolean((await readLocalBoardSnapshot(uid, boardConflictKey(board.id)))?.pending);
     cacheBoardListMetadata();
   })().finally(() => { boardLibraryRefreshPromise = null; });
   return boardLibraryRefreshPromise;
@@ -2511,6 +2606,7 @@ async function fetchBoards() {
 
   // Inline boards arrive with their full state in the same billed document read.
   for (const board of boardList) {
+    board.hasConflict = Boolean((await readLocalBoardSnapshot(uid, boardConflictKey(board.id)))?.pending);
     if (!Array.isArray(board.inlineObjects)) continue;
     const cloudSnapshot = snapshotFromBoard(board, board.inlineObjects);
     const local = await readLocalBoardSnapshot(currentUser.uid, board.id);
@@ -3808,6 +3904,10 @@ function createBoardCard(board) {
   });
 
   card.append(openButton, meta, renameButton, deleteButton);
+  if (boardHasConflict(board)) {
+    const review = document.createElement('button');review.type='button';review.className='board-card__conflict';review.textContent='! Review conflict';review.setAttribute('aria-label','Review conflicting versions of '+board.name);
+    review.addEventListener('click',event=>{event.stopPropagation();openBoardConflictReview(board.id)});card.append(review);
+  }
   return card;
 }
 

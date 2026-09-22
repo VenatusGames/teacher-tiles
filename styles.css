@@ -19302,3 +19302,22 @@ body .sticker-module>.module-delete{
   }
 }
 @media(prefers-reduced-motion:reduce){.clock-customization{transition:none!important}}
+
+.board-card__conflict{position:absolute;top:10px;right:10px;z-index:8;border:1px solid #dba948;border-radius:10px;padding:7px 10px;background:#fff1ce;color:#68430c;font:700 11px/1.2 Inter,sans-serif;box-shadow:0 2px 8px #0001;cursor:pointer}
+.board-card__conflict:hover{background:#ffe5a5}
+.board-conflict-review{width:min(820px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;box-sizing:border-box;padding:26px;border:1px solid var(--border);border-radius:22px;background:var(--surface-solid,#fff);color:var(--text,#17191d);box-shadow:0 24px 80px #0003;font:14px/1.5 Inter,sans-serif}
+.board-conflict-review::backdrop{background:#17203380}
+.board-conflict-review h2{font-size:23px;margin:0 0 10px}.board-conflict-review h3{font-size:15px;margin:0 0 12px}
+.board-conflict-versions{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.board-conflict-versions section{min-width:0;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface-soft)}
+.board-conflict-versions .board-card__preview{height:150px;position:relative;overflow:hidden;border-radius:10px}
+.board-conflict-review button,.board-conflict-review select{border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:inherit;padding:10px 13px;font:inherit;cursor:pointer}
+.board-conflict-review button:hover{background:var(--surface-soft)}
+.board-conflict-review button:disabled{opacity:.5;cursor:wait}
+.board-conflict-review button:focus-visible,.board-conflict-review select:focus-visible{outline:2px solid #6483d9;outline-offset:2px}
+.board-conflict-frames{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.board-conflict-merge{margin-top:18px;padding:16px;background:var(--surface-soft);border:1px solid var(--border);border-radius:14px}
+.board-conflict-merge p{margin-top:0}.board-conflict-merge select{max-width:100%;margin:0 8px 8px 0}
+.board-conflict-merge button{background:#526fba;color:white;border-color:#526fba}
+.board-conflict-close{display:block;margin-left:auto}
+@media(max-width:560px){.board-conflict-versions{grid-template-columns:1fr}.board-conflict-review{padding:18px}}

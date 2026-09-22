@@ -51,6 +51,26 @@ function harness() {
   return { c: context, docs, base, offline: value => { failCommit = value; } };
 }
 (async () => {
+  for(const choice of ['cloud','merge']){
+    const {c,docs,base}=harness();
+    const local={...base,objects:[{id:'shared',type:'text',special:{text:'local'}},{id:'local-only',type:'text'}]};
+    await c.cacheSnapshotLocally('one',local);
+    Object.assign(docs.get('users/teacher/boards/one'),{revision:2,contentHash:'remote',inlineObjects:[{id:'shared',type:'text',special:{text:'cloud'}},{id:'cloud-only',type:'text'}]});
+    await c.saveCachedBoardToCloud('one');
+    c.localBoardMemory.delete('teacher:conflict/one');assert((await c.readLocalBoardSnapshot('teacher','conflict/one')).pending,'review survives reload');
+    const review=await c.readBoardConflictReview('one');
+    await c.resolveBoardConflict(review,choice);
+    assert.equal(docs.size,1);assert.equal(docs.get('users/teacher/boards/one').inlineObjects.length,choice==='merge'?4:2);
+    assert.equal(c.boardHasConflict(c.boardList[0]),false);
+  }
+  {
+    const {c,docs,base,offline}=harness();await c.cacheSnapshotLocally('one',{...base,frames:[]});docs.get('users/teacher/boards/one').revision=2;
+    await c.saveCachedBoardToCloud('one');const review=await c.readBoardConflictReview('one');
+    docs.get('users/teacher/boards/one').revision=3;await assert.rejects(c.resolveBoardConflict(review,'local'),/cloud board changed/);
+    docs.get('users/teacher/boards/one').revision=2;offline(true);await assert.rejects(c.resolveBoardConflict(review,'local'),/Offline/);
+    assert(c.boardHasConflict(c.boardList[0]));assert.equal((await c.readLocalBoardSnapshot('teacher','one')).snapshot.frames.length,0);assert.equal(docs.size,1);
+  }
+
   {
     const { c, docs, base } = harness();
     await c.cacheSnapshotLocally('one', { ...base, frames: [{ id: 'unsaved-local-frame' }] });
@@ -117,8 +137,11 @@ function harness() {
     docs.get('users/teacher/boards/one').contentHash = 'other-device';
     await c.saveCachedBoardToCloud('one');
     assert.equal(docs.get('users/teacher/boards/one').frames.length, 1, 'stale deletion must not wipe cloud frames');
-    assert.equal(docs.get('users/teacher/boards/recovered-1').frames.length, 0, 'conflicting local intent must also survive');
-    assert.equal(c.activeBoardId, 'recovered-1');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', c.boardConflictKey('one'))).snapshot.frames.length,0);
+    assert.equal(c.activeBoardId,'one');assert.equal(docs.size,1);
+    assert(c.boardHasConflict(c.boardList[0]));
+    const review=await c.readBoardConflictReview('one');await c.resolveBoardConflict(review,'local');
+    assert.equal(docs.get('users/teacher/boards/one').frames.length,0);assert.equal(c.boardHasConflict(c.boardList[0]),false);assert.equal(docs.size,1);
   }
   {
     const { c, docs, base } = harness();
