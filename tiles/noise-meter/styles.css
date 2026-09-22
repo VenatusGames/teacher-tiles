@@ -6,3 +6,7 @@
 .noise-module.noise-modern:hover,.noise-module.noise-modern:has(.nm-drawer-controls :focus-visible),.noise-module.noise-modern:has(.nm-drawer-controls [aria-expanded="true"]){padding-bottom:54px!important}
 .noise-modern:has(.nm-drawer-controls [aria-expanded="true"]) .nm-drawer-controls{opacity:1;pointer-events:auto}
 @media(prefers-reduced-motion:reduce){.noise-module.noise-modern{transition:none}}
+
+.noise-module.noise-modern{height:280px;min-height:220px}.noise-modern .nm-header{padding-right:60px;min-height:25px}.noise-modern .nm-reading{position:absolute;right:22px;top:28px;gap:0}.noise-modern .nm-value{font-size:18px;line-height:1.2;letter-spacing:-.02em}.noise-modern .nm-unit{display:none}
+.noise-modern .nm-drawer-controls{transform:translateY(5px);transition:opacity .18s,transform .18s}.noise-modern:hover .nm-drawer-controls{transform:none}.noise-modern:not(:hover) .nm-drawer-controls{opacity:0;pointer-events:none;transform:translateY(5px)}.noise-modern:not(:hover),.noise-module.noise-modern:not(:hover):has(.nm-drawer-controls [aria-expanded="true"]){padding-bottom:16px!important}
+.noise-modern[data-noise-view=single] .nm-heading{font-size:17px}.noise-modern[data-noise-view=single] .nm-footer{justify-content:center}.noise-modern[data-noise-view=single] .nm-status{width:100%;text-align:center}
