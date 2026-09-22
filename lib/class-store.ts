@@ -5,7 +5,11 @@ import { decryptRecord, emailLookup, isEncrypted } from './encryption';
 import { classKey } from './key-vault';
 import { cachedRead, invalidateReads, patchCachedRead } from './read-cache';
 import { decodePacked, encodePacked, readPacked, writePacked, type Row, type PackedRows } from './packed-store';
-import { emptyData, localDate, personalize, type Access, type AppData, type Student, type HistoryEntry } from './model';
+import { emptyData, localDate, personalize, type Access, type AppData, type Student, type HistoryEntry, type HistoryItem } from './model';
+import {
+  deleteStudentAccessResponse, deleteStudentAccessResponsesForStudent, loadPendingStudentResponses,
+  markStudentResponsesImported, mirrorTeacherResponse, syncStudentAccessChange,
+} from './student-access';
 
 type ClassState = {
   data: AppData;
@@ -50,6 +54,55 @@ async function monthIn(tx: Transaction, access: Access, month: string, key: Cryp
   return { rows, value: rows.head.exists() ? await decodePacked<Month>(rows, key) : { entries: [] } };
 }
 const hasMonth = (state: ClassState, month: string) => Object.keys(state.days).some(day => day.startsWith(month + '-'));
+function validPublicItems(value: unknown): value is HistoryItem[] {
+  return Array.isArray(value) && value.length >= 1 && value.length <= 20 && value.every(item => {
+    if (!item || typeof item !== 'object') return false;
+    const row = item as HistoryItem;
+    return typeof row.question === 'string' && row.question.length <= 2200
+      && typeof row.answer === 'string' && row.answer.length <= 400
+      && (row.imageKey === null || (typeof row.imageKey === 'string'
+        && row.imageKey.length <= 33000
+        && (/^data:image\/jpeg;base64,/.test(row.imageKey) || /^preset:(smile|sad|yes|no)$/.test(row.imageKey))));
+  });
+}
+async function importStudentResponses(access: Access, initial: ClassState): Promise<ClassState> {
+  const pending = await loadPendingStudentResponses(access);
+  if (!pending.entries.length) return initial;
+  const key = await classKey(access);
+  const months = [...new Set(pending.entries.map(entry => entry.id.slice(0, 7)))].filter(month => /^\d{4}-\d{2}$/.test(month));
+  const next = await runTransaction(requireDb(), async tx => {
+    const current = await stateIn(tx, access, key);
+    const archives = new Map<string, Awaited<ReturnType<typeof monthIn>>>();
+    for (const month of months) archives.set(month, await monthIn(tx, access, month, key, hasMonth(current.state, month)));
+    for (const entry of pending.entries) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.id)) continue;
+      const profile = current.state.data.students.find(student => student.id === entry.studentId);
+      if (!profile || !validPublicItems(entry.items)) continue;
+      if (current.state.days[entry.id]?.includes(entry.studentId)) continue;
+      const month = entry.id.slice(0, 7);
+      const archive = archives.get(month);
+      if (!archive) continue;
+      archive.value.entries.push({
+        id: entry.id,
+        studentId: entry.studentId,
+        studentName: profile.name,
+        createdAt: Number.isFinite(Date.parse(entry.createdAt)) ? entry.createdAt : `${entry.id}T12:00:00.000Z`,
+        items: entry.items.map(item => ({ question: item.question, answer: item.answer, imageKey: imageValue(item.imageKey) })),
+      });
+      (current.state.days[entry.id] ??= []).push(entry.studentId);
+    }
+    for (const [month, archive] of archives) {
+      writePacked(tx, archive.rows, await encodePacked(monthRef(access, month), archive.value, key));
+    }
+    writePacked(tx, current.rows, await encodePacked(root(access), current.state, key));
+    return current.state;
+  });
+  remember(access, next);
+  months.forEach(month => invalidateReads(access, 'history:month:' + month));
+  await markStudentResponsesImported(pending.entries.map(entry => entry.refPath));
+  return next;
+}
+
 function remember(access: Access, state: ClassState) {
   patchCachedRead<ClassState>(access, 'class', () => state);
 }
@@ -65,7 +118,11 @@ async function loadState(access: Access): Promise<ClassState> {
     return finishMaintenance(access, state);
   }, Infinity);
 }
-export async function loadClass(access: Access): Promise<AppData> { return ordered((await loadState(access)).data); }
+export async function loadClass(access: Access): Promise<AppData> {
+  let state = await loadState(access);
+  state = await importStudentResponses(access, state);
+  return ordered(state.data);
+}
 
 // Migration freezes the old layout before reading it. Legacy writes are denied
 // by the rules once storage='packing', including writes from an older open tab.
@@ -240,6 +297,9 @@ export async function changeClass(access: Access, body: Record<string, unknown>)
     if (body.action === 'deleteResponse') invalidateReads(access, 'history:month:' + id.slice(0, 7));
     state = await finishMaintenance(access, state);
     remember(access, state);
+    await syncStudentAccessChange(access, state.data, body, newId);
+    if (body.action === 'deleteResponse') await deleteStudentAccessResponse(access, id, String(body.studentId));
+    if (body.action === 'deleteStudent') await deleteStudentAccessResponsesForStudent(access, id);
   } catch (error) { refreshClassData(access); throw error; }
 }
 export async function completedToday(access: Access, id: string) {
@@ -261,6 +321,7 @@ export async function submitResponse(access: Access, student: Student, data: App
   selectionsFor(student, data, selections); // Reject partial check-ins without any reads.
   await loadState(access);
   const key = await classKey(access); const day = localDate(); const month = day.slice(0, 7); const createdAt = new Date().toISOString();
+  let savedEntry: HistoryEntry | null = null;
   const state = await runTransaction(requireDb(), async tx => {
     const current = await stateIn(tx, access, key);
     const profile = current.state.data.students.find(row => row.id === student.id);
@@ -268,13 +329,15 @@ export async function submitResponse(access: Access, student: Student, data: App
     if (current.state.days[day]?.includes(student.id)) throw new Error('You already completed today’s check-in.');
     const items = selectionsFor(profile, current.state.data, selections);
     const archive = await monthIn(tx, access, month, key, hasMonth(current.state, month));
-    archive.value.entries.push({ id: day, studentId: student.id, studentName: profile.name, createdAt, items });
+    savedEntry = { id: day, studentId: student.id, studentName: profile.name, createdAt, items };
+    archive.value.entries.push(savedEntry);
     (current.state.days[day] ??= []).push(student.id);
     const [monthRows, classRows] = await Promise.all([encodePacked(monthRef(access, month), archive.value, key), encodePacked(root(access), current.state, key)]);
     writePacked(tx, archive.rows, monthRows); writePacked(tx, current.rows, classRows);
     return current.state;
   });
   remember(access, state); invalidateReads(access, 'history:month:' + month);
+  if (savedEntry) await mirrorTeacherResponse(access, savedEntry);
 }
 
 export type HistoryFilter = { studentId: string; from: string; to: string; order: 'asc' | 'desc'; after?: string };

@@ -24,3 +24,15 @@ Publish firestore.rules and firestore.indexes.json immediately before the new fr
 
 Validation: pnpm test, pnpm build, and pnpm dlx firebase-tools emulators:exec --only firestore --project demo-wigs-tests "node tests/firestore-rules.mjs". The emulator suite exercises the actual storage code, encryption, conversion, and transactions under these rules.
 
+## Student access
+
+Teachers can create one reusable no-login student link from **Admin > Student Access**. The URL stays the same after it is generated; class changes are republished behind the existing token. Students select their own profile, complete the daily poll once, and can then view that profile's history. A completed profile shows a checkmark for the current day. The student route never renders teacher/admin controls.
+
+The deployed URL uses the existing WIGs path, for example `https://teachertiles.com/wigs/?student=<token>`, so no additional DNS record or Namecheap change is required. Student access does require the matching Firestore rules and indexes in this repository to be deployed to the `wigstracker` Firebase project:
+
+```sh
+firebase deploy --only firestore:rules,firestore:indexes --project wigstracker
+```
+
+Because student access intentionally has no login, possession of the shared class link is the access credential. Anyone with that link can choose any published student profile and view that profile's check-in history.
+

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { randomBytes, createHash } from 'node:crypto';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, getDocs, collection, setDoc, deleteDoc, writeBatch, setLogLevel } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, deleteDoc, writeBatch, setLogLevel, serverTimestamp } from 'firebase/firestore';
 import assert from 'node:assert/strict';
 import ts from 'typescript';
 setLogLevel('silent');
@@ -40,6 +40,35 @@ try {
     await setDoc(doc(db, 'studentLinks', email('child')), { ownerId: 'teacher-a', studentId: 'child-1' });
     await setDoc(doc(db, profile), { ...encrypted(), emailHash: hash });
   });
+  const publicToken = 'student-access-token-1234567890abcdef';
+  const publicRoot = 'studentAccess/' + publicToken;
+  await ok(setDoc(doc(teacher, root + '/studentAccess/config'), { version: 1, token: publicToken }));
+  await ok(setDoc(doc(teacher, publicRoot), {
+    version: 2, ownerId: 'teacher-a', active: true, title: 'Daily WIG Check-In', description: 'Choose honestly.',
+    studentIds: ['child-1'], questionIds: ['q-1'], answerIds: ['a-1'],
+  }));
+  await ok(setDoc(doc(teacher, publicRoot + '/students/child-1'), { name: 'Child', imageKey: null, currentScore: 2, goalScore: 5 }));
+  await ok(setDoc(doc(teacher, publicRoot + '/questions/q-1'), { prompt: 'How did it go?', position: 1, fridayOnly: false }));
+  await ok(setDoc(doc(teacher, publicRoot + '/answers/a-1'), { questionId: 'q-1', label: 'Great', imageKey: 'preset:smile', position: 1 }));
+  await ok(getDoc(doc(anonymous, publicRoot)));
+  await ok(getDocs(collection(anonymous, publicRoot + '/students')));
+  await ok(getDocs(collection(anonymous, publicRoot + '/questions')));
+  await ok(getDocs(collection(anonymous, publicRoot + '/answers')));
+  await no(getDocs(collection(anonymous, 'studentAccess')));
+  await no(getDoc(doc(anonymous, root + '/studentAccess/config')));
+  await no(setDoc(doc(anonymous, publicRoot + '/students/child-2'), { name: 'Nope' }));
+  const responsePath = publicRoot + '/responses/2026-09-21_child-1';
+  const publicResponse = {
+    version: 1, day: '2026-09-21', studentId: 'child-1', studentName: 'Child', createdAt: serverTimestamp(),
+    items: [{ question: 'How did it go?', answer: 'Great', imageKey: 'preset:smile' }], imported: false,
+  };
+  await ok(setDoc(doc(anonymous, responsePath), publicResponse));
+  await no(setDoc(doc(anonymous, responsePath), publicResponse));
+  await no(deleteDoc(doc(anonymous, responsePath)));
+  await no(setDoc(doc(anonymous, publicRoot + '/responses/2026-09-21_missing'), { ...publicResponse, studentId: 'missing' }));
+  await no(setDoc(doc(other, publicRoot), { version: 2, ownerId: 'teacher-b', active: true, title: 'x', description: '', studentIds: [], questionIds: [], answerIds: [] }));
+  await ok(setDoc(doc(teacher, responsePath), { version: 1, day: '2026-09-21', studentId: 'child-1', studentName: 'Child', createdAt: '2026-09-21T12:00:00.000Z', items: publicResponse.items, imported: true }));
+
   const paths = [root, root + '/parts/1', root + '/keys/shared', root + '/historyMonths/2026-01', root + '/historyMonths/2026-01/parts/1', profile];
   for (const db of [other, formerStudent, anonymous, signed('teacher-a', { email_verified: false }), signed('teacher-a', { firebase: { sign_in_provider: 'password' } })]) {
     for (const path of paths) { await no(getDoc(doc(db, path))); await no(setDoc(doc(db, path), packedRecord())); await no(deleteDoc(doc(db, path))); }
@@ -105,7 +134,15 @@ try {
   const activityUrl = compile('lib/firestore-activity.ts', { 'firebase/firestore': firestoreUrl }); const activity = await import(activityUrl);
   const packedUrl = compile('lib/packed-store.ts', { 'firebase/firestore': firestoreUrl, './encryption': encryptionUrl });
   const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
-  const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl, './key-vault': vaultUrl, './packed-store': packedUrl, './model': compile('lib/model.ts') }));
+  const studentAccessUrl = moduleUrl(`
+export async function loadPendingStudentResponses(){ return { token: null, entries: [] }; }
+export async function markStudentResponsesImported(){}
+export async function mirrorTeacherResponse(){}
+export async function syncStudentAccessChange(){}
+export async function deleteStudentAccessResponse(){}
+export async function deleteStudentAccessResponsesForStudent(){}
+`);
+  const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl, './key-vault': vaultUrl, './packed-store': packedUrl, './model': compile('lib/model.ts'), './student-access': studentAccessUrl }));
   const access = { role: 'teacher', ownerId: 'integration-owner' };
   await store.loadClass(access);
   await store.changeClass(access, { action: 'addStudent', name: 'Integration learner', imageKey: 'preset:smile' });

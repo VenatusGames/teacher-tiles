@@ -5,8 +5,14 @@ import { LogIn, LoaderCircle, LogOut } from 'lucide-react';
 import { auth, db, firebaseConfigured, googleSignIn, logOut, friendlyError } from '@/lib/firebase';
 import { type Access } from '@/lib/model';
 import { GoalGardenApp } from './goal-garden-app';
+import { StudentAccessApp } from './student-access-app';
 
 export function AuthGate() {
+  const token = new URLSearchParams(window.location.search).get('student');
+  return token ? <StudentAccessApp token={token} /> : <TeacherAuthGate />;
+}
+
+function TeacherAuthGate() {
   const [user, setUser] = useState<User | null>(null);
   const [access, setAccess] = useState<Access | null>(null);
   const [loading, setLoading] = useState(firebaseConfigured);

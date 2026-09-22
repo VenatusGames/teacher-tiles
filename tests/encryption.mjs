@@ -105,7 +105,15 @@ const activity = await import(activityUrl);
 const vaultUrl = compile('lib/key-vault.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './read-cache': cacheUrl });
 const packedUrl = compile('lib/packed-store.ts', { 'firebase/firestore': firestoreUrl, './encryption': encryptionUrl });
 const packed = await import(packedUrl);
-const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './packed-store': packedUrl, './model': modelUrl, './read-cache': cacheUrl }));
+const studentAccessUrl = moduleUrl(`
+export async function loadPendingStudentResponses(){ return { token: null, entries: [] }; }
+export async function markStudentResponsesImported(){}
+export async function mirrorTeacherResponse(){}
+export async function syncStudentAccessChange(){}
+export async function deleteStudentAccessResponse(){}
+export async function deleteStudentAccessResponsesForStudent(){}
+`);
+const store = await import(compile('lib/class-store.ts', { 'firebase/firestore': firestoreUrl, './firestore-activity': activityUrl, './firebase': firebaseUrl, './encryption': encryptionUrl, './key-vault': vaultUrl, './packed-store': packedUrl, './model': modelUrl, './read-cache': cacheUrl, './student-access': studentAccessUrl }));
 const teacher = { role: 'teacher', ownerId: auth.currentUser.uid };
 const classPath = 'classes/' + teacher.ownerId;
 const sharedKey = async () => importKey(rows.get(classPath + '/keys/shared').keyMaterial);

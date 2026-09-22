@@ -305,3 +305,14 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .history-remove svg { width: 1rem; height: 1rem; }
 .history-browser :focus-visible { outline: 3px solid #65a30d; outline-offset: 3px; }
 @media (max-width: 480px) { .history-filters label { flex-basis: 100%; } .history-filters button { flex: 1 1 auto; } }
+
+.student-photo-wrap { position: relative; display: block; width: 100%; }
+.student-complete-badge { position: absolute; z-index: 4; top: -.55rem; right: -.45rem; display: grid; width: 2.6rem; height: 2.6rem; place-items: center; border: 4px solid white; border-radius: 999px; background: #a3e635; color: #123b2e; box-shadow: 0 5px 0 rgba(2,15,11,.3), 0 10px 24px rgba(2,15,11,.28); }
+.student-complete-badge svg { width: 1.35rem; height: 1.35rem; stroke-width: 4; }
+.student-access-label { padding: .55rem .9rem; border: 2px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(255,255,255,.08); color: #d1fae5; font-size: .82rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.student-access-admin { display: grid; gap: 1rem; }
+.student-access-link-label { display: grid; gap: .45rem; color: #123b2e; font-size: .88rem; font-weight: 900; }
+.student-access-link-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .65rem; align-items: center; }
+.student-access-link-row input { user-select: all; -webkit-user-select: all; }
+.student-access-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+@media (max-width: 620px) { .student-access-link-row { grid-template-columns: 1fr; } .student-access-label { font-size: .72rem; } }

@@ -8,8 +8,8 @@ import { readFileSync, lstatSync, existsSync } from 'node:fs';
 const approved = new Set([
   '.github/workflows/deploy-pages.yml', '.gitignore', 'README.md',
   'app/globals.css', 'index.html', 'main.tsx',
-  'components/auth-gate.tsx', 'lib/firebase.ts', 'lib/firebase-config.ts', 'lib/firestore-activity.ts',
-  'lib/model.ts', 'lib/class-store.ts', 'lib/packed-store.ts', 'lib/encryption.ts', 'lib/key-vault.ts', 'lib/read-cache.ts', 'firestore.rules', 'firebase.json',
+  'components/auth-gate.tsx', 'components/student-access-app.tsx', 'lib/firebase.ts', 'lib/firebase-config.ts', 'lib/firestore-activity.ts',
+  'lib/model.ts', 'lib/class-store.ts', 'lib/student-access.ts', 'lib/packed-store.ts', 'lib/encryption.ts', 'lib/key-vault.ts', 'lib/read-cache.ts', 'firestore.rules', 'firebase.json',
   'firestore.indexes.json', '.firebaserc',
   'components/goal-garden-app.tsx', 'components/ui/button.tsx',
   'components/ui/checkbox.tsx', 'components/ui/dialog.tsx',

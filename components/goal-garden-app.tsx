@@ -4,7 +4,7 @@ import { getReadActivity, subscribeReadActivity } from '@/lib/firestore-activity
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
   ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile,
-  Sprout, Target, Trash2, UserRound, RefreshCw,
+  Sprout, Target, Trash2, UserRound, RefreshCw, Link2, Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
 import { loadClass, changeClass, loadHistoryPage, retryHistory, type HistoryFilter, completedToday, submitResponse } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
+import { ensureStudentAccess, getStudentAccessToken, studentAccessUrl, syncStudentAccess } from '@/lib/student-access';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
 type ImageUploader = (file: File | null) => Promise<string | null>;
@@ -379,7 +380,7 @@ function ReadActivity() {
 }
 
 function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => Promise<void>; access: Access }) {
-  const [tab, setTab] = useState<'students' | 'measures' | 'history'>('students');
+  const [tab, setTab] = useState<'students' | 'measures' | 'history' | 'access'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [successNotice, setSuccessNotice] = useState(false);
@@ -424,6 +425,7 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
         <button className={tab === 'students' ? 'active' : ''} onClick={() => setTab('students')}><UserRound /> Students</button>
         <button className={tab === 'measures' ? 'active' : ''} onClick={() => setTab('measures')}><LeadBars /> Lead Measures</button>
         <button className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}><Database /> History</button>
+        <button className={tab === 'access' ? 'active' : ''} onClick={() => setTab('access')}><Link2 /> Student Access</button>
       </nav>
       {message && <p key={message} className={`form-message${successNotice ? ' form-message-success' : ''}`} role="status">{message}</p>}
       <div className="admin-scroll">
@@ -431,9 +433,70 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
         {tab === 'students' && <StudentsAdmin students={data.students} busy={busy} upload={upload} action={action} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}
         {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} onDelete={deleteCheckIn} /></section>}
+        {tab === 'access' && <StudentAccessAdmin access={access} data={data} />}
       </div>
     </div>
   );
+}
+
+
+function StudentAccessAdmin({ access, data }: { access: Access; data: AppData }) {
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    let live = true;
+    void getStudentAccessToken(access).then(value => { if (live) setToken(value); })
+      .catch(err => { if (live) setMessage(friendlyError(err)); })
+      .finally(() => { if (live) setLoading(false); });
+    return () => { live = false; };
+  }, [access]);
+
+  const create = async () => {
+    setBusy(true); setMessage('');
+    try {
+      const value = await ensureStudentAccess(access, data);
+      setToken(value);
+      setMessage('Student link is ready.');
+    } catch (err) { setMessage(friendlyError(err)); }
+    finally { setBusy(false); }
+  };
+
+  const refresh = async () => {
+    if (!token) return;
+    setBusy(true); setMessage('');
+    try {
+      await syncStudentAccess(access, data, token);
+      setMessage('Student view refreshed.');
+    } catch (err) { setMessage(friendlyError(err)); }
+    finally { setBusy(false); }
+  };
+
+  const copy = async () => {
+    if (!token) return;
+    try {
+      await navigator.clipboard.writeText(studentAccessUrl(token));
+      setMessage('Student link copied.');
+    } catch {
+      setMessage('Copy was blocked by the browser. Select and copy the link below.');
+    }
+  };
+
+  const url = token ? studentAccessUrl(token) : '';
+  return <section className="admin-section student-access-admin">
+    <div className="section-title"><div><p className="eyebrow">No student login</p><h3>Student Access</h3></div></div>
+    <p className="template-help">Create one class link and share the same link with every student. Students choose their own face, complete one check-in per day, and can view their own selected profile&apos;s history. The admin panel is never shown in student mode.</p>
+    {loading ? <p className="history-feedback">Checking for an existing student link…</p> : token ? <>
+      <label className="student-access-link-label">Static student link
+        <div className="student-access-link-row"><Input className="admin-input" value={url} readOnly onFocus={event => event.currentTarget.select()} /><Button type="button" className="admin-primary" onClick={copy}><Copy /> Copy</Button></div>
+      </label>
+      <div className="student-access-actions"><Button type="button" className="admin-secondary" disabled={busy} onClick={refresh}><RefreshCw /> Refresh student view</Button></div>
+      <p className="template-help">This URL stays the same. Changes to students, questions, answer choices, and scores are automatically republished after you save them.</p>
+    </> : <Button type="button" className="admin-primary" disabled={busy} onClick={create}><Link2 /> {busy ? 'Creating…' : 'Generate student link'}</Button>}
+    {message && <p className="form-message" role="status">{message}</p>}
+  </section>;
 }
 
 function StudentsAdmin({ students, busy, upload, action }: { students: Student[]; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
