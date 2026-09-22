@@ -4,7 +4,7 @@ import { getReadActivity, subscribeReadActivity } from '@/lib/firestore-activity
 import {
   ArrowLeft, CalendarDays, Check, ChevronRight, CircleCheckBig, CircleX, Database, Footprints, Frown,
   ImagePlus, LoaderCircle, LogOut, Plus, Rows3, Settings, Smile,
-  Sprout, Target, Trash2, UserRound, RefreshCw, Link2, Copy,
+  Sprout, Target, Trash2, UserRound, RefreshCw, Link2, Copy, PieChart, Bug, Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,9 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { type Access, type Student, type Question, type Answer, type AppData, type HistoryEntry, type HistoryItem, emptyData } from '@/lib/model';
-import { loadClass, changeClass, loadHistoryPage, retryHistory, type HistoryFilter, completedToday, submitResponse } from '@/lib/class-store';
+import { loadClass, changeClass, loadHistoryPage, retryHistory, type HistoryFilter, completedToday, completedTodayStudentIds, loadAllHistory, submitResponse } from '@/lib/class-store';
 import { logOut, friendlyError } from '@/lib/firebase';
-import { ensureStudentAccess, getStudentAccessToken, studentAccessUrl, syncStudentAccess } from '@/lib/student-access';
+import { ensureStudentAccess, getStudentAccessToken, rotateStudentAccess, studentAccessUrl, syncStudentAccess } from '@/lib/student-access';
 
 type Screen = 'students' | 'menu' | 'lead' | 'history';
 type ImageUploader = (file: File | null) => Promise<string | null>;
@@ -44,11 +44,15 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [celebrating, setCelebrating] = useState(false);
   const [error, setError] = useState('');
   const [adminOpen, setAdminOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [surveyStarted, setSurveyStarted] = useState(false);
 
   const refresh = useCallback(async () => {
     const next = await loadClass(access);
+    const completed = await completedTodayStudentIds(access);
     setData(next);
+    setCompletedIds(new Set(completed));
     setReady(true);
     setSelectedStudent((current) => current ? next.students.find((student) => student.id === current.id) ?? null : null);
   }, [access]);
@@ -119,7 +123,10 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
     if (!selectedStudent || activeQuestions.some((question) => !answers[question.id])) return;
     setSaving(true);
     setError('');
-    try { await submitResponse(access, selectedStudent, data, answers); }
+    try {
+      await submitResponse(access, selectedStudent, data, answers);
+      setCompletedIds(current => new Set(current).add(selectedStudent.id));
+    }
     catch (err) { setError(friendlyError(err)); return; }
     finally { setSaving(false); }
     setCelebrating(true);
@@ -163,6 +170,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
         </button>
         <div className="account-controls"><span className="account-email">{email}</span>
           {screen !== 'lead' && <button className="admin-launch" aria-label="Refresh from server" title="Refresh account and changes from another device" onClick={() => window.dispatchEvent(new Event('wigs:refresh'))}><RefreshCw /></button>}
+          {access.role === 'teacher' && <button className="admin-launch" onClick={() => setStatsOpen(true)} aria-label="Open class statistics" title="Class statistics"><PieChart /></button>}
           {access.role === 'teacher' && <button className="admin-launch" onClick={() => setAdminOpen(true)} aria-label="Open admin panel"><Settings /></button>}<button className="admin-launch" onClick={() => void logOut().catch(err => setError(friendlyError(err)))} aria-label="Sign out"><LogOut /></button></div>
       </header>
 
@@ -183,7 +191,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
             <div className="student-grid">
               {data.students.map((student, index) => (
                 <button key={student.id} className="student-sticker" onClick={() => chooseStudent(student)} style={{ animationDelay: `${index * 70}ms` }}>
-                  <ProfileImage student={student} />
+                  <span className="student-photo-wrap"><ProfileImage student={student} />{completedIds.has(student.id) && <span className="student-complete-badge" title="Checked in today" aria-label="Checked in today"><Check /></span>}</span>
                   <span className="student-name">{student.name}</span>
                 </button>
               ))}
@@ -273,7 +281,14 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
           <DialogTitle className="sr-only">WIGs admin panel</DialogTitle>
-          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} />}
+          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} completedIds={completedIds} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={statsOpen} onOpenChange={setStatsOpen}>
+        <DialogContent className="stats-dialog" showCloseButton>
+          <DialogTitle className="sr-only">Class statistics</DialogTitle>
+          {access.role === 'teacher' && <StatisticsPanel access={access} data={data} completedIds={completedIds} open={statsOpen} />}
         </DialogContent>
       </Dialog>
     </main>
@@ -311,20 +326,33 @@ function HistoryAnswer({ item }: { item: HistoryItem | undefined }) {
   return <span className="answer-text-pill">{item.answer}</span>;
 }
 
-function HistoryBrowser({ access, students, onDelete }: { access: Access; students: Student[]; onDelete?: (entry: HistoryEntry) => Promise<boolean> }) {
+function HistoryBrowser({ access, students, onDelete, onEdit, data }: { access: Access; students: Student[]; onDelete?: (entry: HistoryEntry) => Promise<boolean>; onEdit?: (entry: HistoryEntry, items: HistoryItem[]) => Promise<boolean>; data?: AppData }) {
   const initial: HistoryFilter = { studentId: students[0]?.id ?? '', from: '', to: '', order: 'desc' };
-  const [draft, setDraft] = useState(initial);
-  const [filter, setFilter] = useState(initial);
-  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
+  const [draft, setDraft] = useState<HistoryFilter>(initial);
+  const [filter, setFilter] = useState<HistoryFilter>(initial);
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [cursors, setCursors] = useState<Array<string | undefined>>([undefined]);
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | undefined>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editingKey, setEditingKey] = useState('');
+  const [editItems, setEditItems] = useState<HistoryItem[]>([]);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-  const after = cursors[cursors.length - 1];
-  const indexLink = error.match(/https:\/\/console\.firebase\.google\.com\/[^\s]+/)?.[0];
+  const after = cursors.at(-1);
+  const indexLink = /https:\/\/console\.firebase\.google\.com\/[^\s)]+/.exec(error)?.[0]?.replace(/[.,;]+$/, '');
+
+  useEffect(() => {
+    const valid = new Set(students.map(student => student.id));
+    const nextStudent = onDelete ? (filter.studentId === 'all' || valid.has(filter.studentId) ? filter.studentId : 'all') : (valid.has(filter.studentId) ? filter.studentId : students[0]?.id ?? '');
+    if (nextStudent !== filter.studentId) {
+      const next = { ...filter, studentId: nextStudent };
+      setDraft(next); setFilter(next); setCursors([undefined]);
+    }
+  }, [students, onDelete, filter]);
+
   useEffect(() => {
     let active = true;
     setError(''); setLoading(true);
@@ -335,11 +363,19 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [access, filter, after, revision]);
+
   const apply = (event: FormEvent) => {
     event.preventDefault();
     if (draft.from && draft.to && draft.from > draft.to) { setError('Choose an end date on or after the start date.'); return; }
-    setCursors([undefined]); setFilter({ ...draft });
+    setEditingKey(''); setCursors([undefined]); setFilter({ ...draft });
   };
+  const beginEdit = (entry: HistoryEntry) => {
+    setEditingKey(`${entry.id}:${entry.studentId}`);
+    setEditItems(entry.items.map(item => ({ ...item })));
+    setError('');
+  };
+  const changeEditItem = (index: number, next: HistoryItem) => setEditItems(items => items.map((item, itemIndex) => itemIndex === index ? next : item));
+
   return (
     <div className="history-browser">
       <form className="history-filters" onSubmit={apply}>
@@ -347,31 +383,162 @@ function HistoryBrowser({ access, students, onDelete }: { access: Access; studen
         <label>From<input type="date" value={draft.from} onChange={event => setDraft({ ...draft, from: event.target.value })} /></label>
         <label>Through<input type="date" value={draft.to} min={draft.from || undefined} onChange={event => setDraft({ ...draft, to: event.target.value })} /></label>
         <label>Order<select aria-label="Sort order" value={draft.order} onChange={event => setDraft({ ...draft, order: event.target.value as 'asc' | 'desc' })}><option value="desc">Newest first</option><option value="asc">Oldest first</option></select></label>
-        <button type="submit" disabled={loading || deleting || !draft.studentId}>Apply filters</button>
-        <button type="button" disabled={loading || deleting} onClick={() => { const next = { ...draft, from: '', to: '', order: 'desc' as const }; setDraft(next); setFilter(next); setCursors([undefined]); }}>Reset dates</button>
+        <button type="submit" disabled={loading || deleting || savingEdit || !draft.studentId}>Apply filters</button>
+        <button type="button" disabled={loading || deleting || savingEdit} onClick={() => { const next = { ...draft, from: '', to: '', order: 'desc' as const }; setDraft(next); setFilter(next); setCursors([undefined]); }}>Reset dates</button>
       </form>
       {error && <div role="alert" className="history-feedback"><p>{error}</p>{indexLink && <p><a href={indexLink} target="_blank" rel="noopener noreferrer">Create the required Firestore index</a>. Wait for it to finish building, then try again.</p>}<button type="button" onClick={() => { retryHistory(access); setRevision(value => value + 1); }}>Try again</button></div>}
       {loading ? <p role="status" className="history-feedback">Loading check-ins…</p> : <>
         <p className="history-summary" role="status">{filter.studentId === 'all' ? 'All students' : students.find(student => student.id === filter.studentId)?.name ?? 'History'} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
         {!entries.length && !error && <p className="history-feedback">{students.length ? 'No check-ins in this date range. Try different dates or another student.' : 'Add a student to start collecting check-ins.'}</p>}
-        <div className="history-records">{entries.map(entry => <details className="history-record" key={`${entry.studentId}:${entry.id}`}>
-          <summary><span><strong>{filter.studentId === 'all' && <>{entry.studentName} · </>}{formatDate(entry.createdAt)}</strong><small>{entry.items.length} answer{entry.items.length === 1 ? '' : 's'} · Select to view</small></span></summary>
-          <dl>{entry.items.map((item, index) => <div key={index}><dt>{item.question}</dt><dd><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</dd></div>)}</dl>
-          {onDelete && <button type="button" className="history-remove" disabled={deleting} onClick={async () => {
-            setDeleting(true);
-            try { if (await onDelete(entry)) { if (entries.length === 1 && cursors.length > 1) setCursors(previous => previous.slice(0, -1)); else setRevision(value => value + 1); } }
-            catch (err) { setError(friendlyError(err)); }
-            finally { setDeleting(false); }
-          }}><Trash2 /> Delete check-in</button>}
-        </details>)}</div>
+        <div className="history-records">{entries.map(entry => {
+          const key = `${entry.id}:${entry.studentId}`;
+          const editing = editingKey === key;
+          const profile = students.find(student => student.id === entry.studentId);
+          return <details className={`history-record${editing ? ' is-editing' : ''}`} key={key} open={editing ? true : undefined}>
+            <summary><span><strong>{filter.studentId === 'all' && <>{entry.studentName} · </>}{formatDate(entry.createdAt)}</strong><small>{editing ? 'Editing this check-in' : `${entry.items.length} answer${entry.items.length === 1 ? '' : 's'} · Select to view`}</small></span></summary>
+            {editing ? <div className="history-edit-form">{editItems.map((item, index) => {
+              const question = data?.questions.find(row => row.id === item.questionId) ?? (profile ? data?.questions.find(row => personalize(row.prompt, profile) === item.question) : undefined);
+              const choices = question ? data?.answers.filter(answer => answer.questionId === question.id) ?? [] : [];
+              const selected = choices.find(answer => answer.id === item.answerId) ?? choices.find(answer => answer.label === item.answer && answer.imageKey === item.imageKey);
+              return <div className="history-edit-row" key={index}><strong>{item.question}</strong><div>
+                {choices.length ? <select value={selected?.id ?? ''} onChange={event => {
+                  const answer = choices.find(choice => choice.id === event.target.value);
+                  if (answer) changeEditItem(index, { ...item, questionId: question?.id, answerId: answer.id, answer: answer.label, imageKey: answer.imageKey });
+                }}><option value="" disabled>Choose an answer</option>{choices.map(answer => <option key={answer.id} value={answer.id}>{answer.label}</option>)}</select>
+                : <Input className="admin-input" value={item.answer} maxLength={400} onChange={event => changeEditItem(index, { ...item, answer: event.target.value, imageKey: null, answerId: undefined })} />}
+                <span className="history-edit-preview"><HistoryAnswer item={editItems[index]} />{editItems[index].imageKey && <span>{editItems[index].answer}</span>}</span>
+              </div></div>;
+            })}<div className="history-edit-actions"><Button type="button" className="admin-primary" disabled={savingEdit || editItems.some(item => !item.answer.trim())} onClick={async () => {
+              if (!onEdit) return;
+              setSavingEdit(true);
+              try { if (await onEdit(entry, editItems)) { setEditingKey(''); setRevision(value => value + 1); } }
+              catch (err) { setError(friendlyError(err)); }
+              finally { setSavingEdit(false); }
+            }}><Check /> {savingEdit ? 'Saving…' : 'Save changes'}</Button><Button type="button" className="admin-secondary" disabled={savingEdit} onClick={() => setEditingKey('')}>Cancel</Button></div></div>
+            : <dl>{entry.items.map((item, index) => <div key={index}><dt>{item.question}</dt><dd><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</dd></div>)}</dl>}
+            {onEdit && !editing && <button type="button" className="history-edit-button" disabled={deleting || savingEdit} onClick={() => beginEdit(entry)}><Pencil /> Edit responses</button>}
+            {onDelete && !editing && <button type="button" className="history-remove" disabled={deleting || savingEdit} onClick={async () => {
+              setDeleting(true);
+              try { if (await onDelete(entry)) { if (entries.length === 1 && cursors.length > 1) setCursors(previous => previous.slice(0, -1)); else setRevision(value => value + 1); } }
+              catch (err) { setError(friendlyError(err)); }
+              finally { setDeleting(false); }
+            }}><Trash2 /> Delete check-in</button>}
+          </details>;
+        })}</div>
       </>}
       <nav className="history-pagination" aria-label="History pages">
-        <button type="button" disabled={loading || deleting || cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>Previous</button>
+        <button type="button" disabled={loading || deleting || savingEdit || cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>Previous</button>
         <span>Page {cursors.length}</span>
-        <button type="button" disabled={loading || deleting || !hasMore || !entries.length} onClick={() => setCursors(previous => [...previous, nextCursor])}>Next</button>
+        <button type="button" disabled={loading || deleting || savingEdit || !hasMore || !entries.length} onClick={() => setCursors(previous => [...previous, nextCursor])}>Next</button>
       </nav>
     </div>
   );
+}
+
+
+type StatsRange = '7' | '30' | 'all';
+
+function StatisticsPanel({ access, data, completedIds, open }: { access: Access; data: AppData; completedIds: Set<string>; open: boolean }) {
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [range, setRange] = useState<StatsRange>('30');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    setLoading(true); setError('');
+    void loadAllHistory(access).then(rows => { if (active) setEntries(rows); })
+      .catch(err => { if (active) setError(friendlyError(err)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [access, open]);
+
+  const cutoff = useMemo(() => {
+    if (range === 'all') return '';
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - (Number(range) - 1));
+    return statsDateKey(date);
+  }, [range]);
+  const filtered = useMemo(() => cutoff ? entries.filter(entry => entry.id >= cutoff) : entries, [entries, cutoff]);
+  const studentCounts = useMemo(() => data.students.map(student => ({ student, count: filtered.filter(entry => entry.studentId === student.id).length })).sort((a, b) => b.count - a.count || a.student.name.localeCompare(b.student.name)), [data.students, filtered]);
+  const answerCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    filtered.forEach(entry => entry.items.forEach(item => counts.set(item.answer, (counts.get(item.answer) ?? 0) + 1)));
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (sorted.length <= 5) return sorted;
+    const top = sorted.slice(0, 5);
+    top.push(['Other', sorted.slice(5).reduce((sum, [, count]) => sum + count, 0)]);
+    return top;
+  }, [filtered]);
+  const timeline = useMemo(() => buildStatsTimeline(entries, range), [entries, range]);
+  const maxTimeline = Math.max(1, ...timeline.map(row => row.count));
+  const maxStudent = Math.max(1, ...studentCounts.map(row => row.count));
+  const answerTotal = Math.max(1, answerCounts.reduce((sum, [, count]) => sum + count, 0));
+  const palette = ['#65a30d', '#0f766e', '#f59e0b', '#6366f1', '#ec4899', '#38bdf8'];
+  let cursor = 0;
+  const wedges = answerCounts.map(([label, count], index) => {
+    const start = cursor;
+    cursor += (count / answerTotal) * 100;
+    return { label, count, start, end: cursor, color: palette[index % palette.length] };
+  });
+  const donut = wedges.length ? `conic-gradient(${wedges.map(row => `${row.color} ${row.start}% ${row.end}%`).join(', ')})` : '#e7f4eb';
+  const todayRate = data.students.length ? Math.round((completedIds.size / data.students.length) * 100) : 0;
+  const activeStudents = new Set(filtered.map(entry => entry.studentId)).size;
+  const average = data.students.length ? filtered.length / data.students.length : 0;
+
+  return <div className="stats-panel">
+    <div className="stats-topbar"><div><p className="eyebrow">Class pulse</p><h2>Response statistics</h2><p>See participation and response patterns at a glance.</p></div><PieChart /></div>
+    <div className="stats-range-controls" aria-label="Statistics range">
+      <button className={range === '7' ? 'active' : ''} onClick={() => setRange('7')}>7 days</button>
+      <button className={range === '30' ? 'active' : ''} onClick={() => setRange('30')}>30 days</button>
+      <button className={range === 'all' ? 'active' : ''} onClick={() => setRange('all')}>All time</button>
+    </div>
+    <div className="stats-scroll">
+      {error && <p className="history-feedback" role="alert">{error}</p>}
+      {loading ? <div className="stats-loading"><LoaderCircle className="spin" /> Building your class snapshot…</div> : <>
+        <div className="stats-cards">
+          <article><small>Check-ins</small><strong>{filtered.length}</strong><span>{range === 'all' ? 'all time' : `last ${range} days`}</span></article>
+          <article><small>Active students</small><strong>{activeStudents}</strong><span>of {data.students.length}</span></article>
+          <article><small>Average</small><strong>{average.toFixed(1)}</strong><span>check-ins per student</span></article>
+          <article><small>Today</small><strong>{completedIds.size}/{data.students.length}</strong><span>checked in</span></article>
+        </div>
+        <div className="stats-visual-grid">
+          <article className="stats-card stats-today-card"><div className="stats-card-heading"><div><small>Today&apos;s participation</small><h3>{todayRate}% complete</h3></div></div><div className="stats-ring" style={{ background: `conic-gradient(#65a30d 0 ${todayRate}%, #e7f4eb ${todayRate}% 100%)` }}><span><strong>{completedIds.size}</strong><small>of {data.students.length}</small></span></div><p>{data.students.length ? `${Math.max(0, data.students.length - completedIds.size)} student${data.students.length - completedIds.size === 1 ? '' : 's'} still to check in today.` : 'Add students to begin tracking participation.'}</p></article>
+          <article className="stats-card stats-timeline-card"><div className="stats-card-heading"><div><small>{range === 'all' ? 'Monthly activity' : 'Daily activity'}</small><h3>Check-ins over time</h3></div></div><div className="stats-bars">{timeline.map((row, index) => <div className="stats-bar-column" key={row.key} title={`${row.label}: ${row.count}`}><div><i style={{ height: `${Math.max(row.count ? 10 : 2, (row.count / maxTimeline) * 100)}%`, animationDelay: `${index * 35}ms` }} /></div><span>{row.short}</span></div>)}</div></article>
+          <article className="stats-card stats-answer-card"><div className="stats-card-heading"><div><small>Response mix</small><h3>Most selected answers</h3></div></div>{wedges.length ? <div className="stats-donut-wrap"><div className="stats-donut" style={{ background: donut }}><span><strong>{answerCounts.reduce((sum, [, count]) => sum + count, 0)}</strong><small>answers</small></span></div><div className="stats-legend">{wedges.map(row => <div key={row.label}><i style={{ background: row.color }} /><span>{row.label}</span><strong>{row.count}</strong></div>)}</div></div> : <p className="stats-empty">No responses in this range yet.</p>}</article>
+          <article className="stats-card stats-students-card"><div className="stats-card-heading"><div><small>Participation by student</small><h3>Check-in activity</h3></div></div><div className="stats-student-bars">{studentCounts.length ? studentCounts.map((row, index) => <div key={row.student.id}><span>{row.student.name}</span><div><i style={{ width: `${(row.count / maxStudent) * 100}%`, animationDelay: `${index * 45}ms` }} /></div><strong>{row.count}</strong></div>) : <p className="stats-empty">Add students to see participation.</p>}</div></article>
+        </div>
+      </>}
+    </div>
+  </div>;
+}
+
+function statsDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function buildStatsTimeline(entries: HistoryEntry[], range: StatsRange) {
+  if (range === 'all') {
+    const counts = new Map<string, number>();
+    entries.forEach(entry => counts.set(entry.id.slice(0, 7), (counts.get(entry.id.slice(0, 7)) ?? 0) + 1));
+    return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-12).map(([key, count]) => {
+      const [year, month] = key.split('-').map(Number);
+      const date = new Date(year, month - 1, 1);
+      return { key, count, label: new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(date), short: new Intl.DateTimeFormat(undefined, { month: 'short' }).format(date) };
+    });
+  }
+  const days = Number(range);
+  const counts = new Map(entries.map(() => ['', 0] as [string, number]));
+  entries.forEach(entry => counts.set(entry.id, (counts.get(entry.id) ?? 0) + 1));
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - (days - 1 - index));
+    const key = statsDateKey(date);
+    return { key, count: counts.get(key) ?? 0, label: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date), short: days <= 7 ? new Intl.DateTimeFormat(undefined, { weekday: 'narrow' }).format(date) : String(date.getDate()) };
+  });
 }
 
 function ReadActivity() {
@@ -379,11 +546,12 @@ function ReadActivity() {
   return <details className="read-activity"><summary>Database activity in this tab: {activity.requests} read requests</summary><p>{activity.documents} documents returned · {activity.errors} failed requests · {activity.pending} pending</p><p>Last request: {activity.lastRequest ? new Date(activity.lastRequest).toLocaleTimeString() : 'None'}. Counts start when this page loads. Cached menu visits do not increase them. Firebase’s total also includes security-rule reads, minimum query charges, and other tabs/devices.</p></details>;
 }
 
-function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => Promise<void>; access: Access }) {
+function AdminPanel({ data, refresh, access, completedIds }: { data: AppData; refresh: () => Promise<void>; access: Access; completedIds: Set<string> }) {
   const [tab, setTab] = useState<'students' | 'measures' | 'history' | 'access'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [successNotice, setSuccessNotice] = useState(false);
+  const [debugEnabled, setDebugEnabled] = useState(false);
 
   useEffect(() => {
     if (!message || !successNotice) return;
@@ -417,9 +585,17 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
     if (!window.confirm(`Delete ${entry.studentName}'s check-in from ${formatDate(entry.createdAt)}? This cannot be undone.`)) return false;
     return action({ action: 'deleteResponse', id: entry.id, studentId: entry.studentId }, 'Check-in deleted.');
   };
+  const editCheckIn = async (entry: HistoryEntry, items: HistoryItem[]) => action({ action: 'editResponse', id: entry.id, studentId: entry.studentId, items }, 'Student responses updated.');
+  const toggleDebug = () => {
+    if (debugEnabled) { setDebugEnabled(false); return; }
+    const password = window.prompt('Enter the debug password.');
+    if (password === null) return;
+    if (password !== 'admindebug') { window.alert('Incorrect debug password.'); return; }
+    setDebugEnabled(true);
+  };
   return (
     <div className="admin-panel">
-      <div className="admin-topbar"><div><p className="eyebrow">WIGs</p><h2>Admin panel</h2></div></div>
+      <div className="admin-topbar"><div><p className="eyebrow">WIGs</p><h2>Admin panel</h2></div><button type="button" className={`admin-debug-toggle${debugEnabled ? ' active' : ''}`} onClick={toggleDebug}><Bug /> Debug</button></div>
       <p className="template-help">Use Save or Add to keep your changes. Leaving a section discards its unsaved edits.</p>
       <nav className="admin-tabs" aria-label="Admin sections">
         <button className={tab === 'students' ? 'active' : ''} onClick={() => setTab('students')}><UserRound /> Students</button>
@@ -429,18 +605,18 @@ function AdminPanel({ data, refresh, access }: { data: AppData; refresh: () => P
       </nav>
       {message && <p key={message} className={`form-message${successNotice ? ' form-message-success' : ''}`} role="status">{message}</p>}
       <div className="admin-scroll">
-        <ReadActivity />
-        {tab === 'students' && <StudentsAdmin students={data.students} busy={busy} upload={upload} action={action} />}
+        {debugEnabled && <ReadActivity />}
+        {tab === 'students' && <StudentsAdmin students={data.students} completedIds={completedIds} busy={busy} upload={upload} action={action} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}
-        {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} onDelete={deleteCheckIn} /></section>}
-        {tab === 'access' && <StudentAccessAdmin access={access} data={data} />}
+        {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} data={data} onDelete={deleteCheckIn} onEdit={editCheckIn} /></section>}
+        {tab === 'access' && <StudentAccessAdmin access={access} data={data} refreshClass={refresh} />}
       </div>
     </div>
   );
 }
 
 
-function StudentAccessAdmin({ access, data }: { access: Access; data: AppData }) {
+function StudentAccessAdmin({ access, data, refreshClass }: { access: Access; data: AppData; refreshClass: () => Promise<void> }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -484,28 +660,42 @@ function StudentAccessAdmin({ access, data }: { access: Access; data: AppData })
     }
   };
 
+  const replaceLink = async () => {
+    if (!token) return;
+    if (!window.confirm('Kill the current student link and generate a new one? The old link will stop working immediately. This cannot be undone.')) return;
+    setBusy(true); setMessage('');
+    try {
+      await refreshClass();
+      const value = await rotateStudentAccess(access, data);
+      setToken(value);
+      setMessage('The old link was disabled and a new student link was generated.');
+    } catch (err) { setMessage(friendlyError(err)); }
+    finally { setBusy(false); }
+  };
+
   const url = token ? studentAccessUrl(token) : '';
   return <section className="admin-section student-access-admin">
     <div className="section-title"><div><p className="eyebrow">No student login</p><h3>Student Access</h3></div></div>
     <p className="template-help">Create one class link and share the same link with every student. Students choose their own face, complete one check-in per day, and can view their own selected profile&apos;s history. The admin panel is never shown in student mode.</p>
+    <p className="student-access-warning">You are responsible for keeping this link private and secure. Do not give out this link to anyone.</p>
     {loading ? <p className="history-feedback">Checking for an existing student link…</p> : token ? <>
       <label className="student-access-link-label">Static student link
         <div className="student-access-link-row"><Input className="admin-input" value={url} readOnly onFocus={event => event.currentTarget.select()} /><Button type="button" className="admin-primary" onClick={copy}><Copy /> Copy</Button></div>
       </label>
-      <div className="student-access-actions"><Button type="button" className="admin-secondary" disabled={busy} onClick={refresh}><RefreshCw /> Refresh student view</Button></div>
+      <div className="student-access-actions"><Button type="button" className="admin-secondary" disabled={busy} onClick={refresh}><RefreshCw /> Refresh student view</Button><Button type="button" className="student-access-danger" disabled={busy} onClick={replaceLink}><Trash2 /> Kill old link & generate new</Button></div>
       <p className="template-help">This URL stays the same. Changes to students, questions, answer choices, and scores are automatically republished after you save them.</p>
     </> : <Button type="button" className="admin-primary" disabled={busy} onClick={create}><Link2 /> {busy ? 'Creating…' : 'Generate student link'}</Button>}
     {message && <p className="form-message" role="status">{message}</p>}
   </section>;
 }
 
-function StudentsAdmin({ students, busy, upload, action }: { students: Student[]; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
+function StudentsAdmin({ students, completedIds, busy, upload, action }: { students: Student[]; completedIds: Set<string>; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
   const [name, setName] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
   const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, imageKey }, `${name} was added.`)) { setName(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
-  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student name" required maxLength={100} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} busy={busy} upload={upload} action={action} />)}</div></section>;
+  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student initials or first name" required maxLength={100} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} complete={completedIds.has(student.id)} busy={busy} upload={upload} action={action} />)}</div></section>;
 }
 
-function StudentAdminCard({ student, busy, upload, action }: { student: Student; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
+function StudentAdminCard({ student, complete, busy, upload, action }: { student: Student; complete: boolean; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
   const [uploading, setUploading] = useState(false);
   const [pictureDraft, setPictureDraft] = useState<string | null | undefined>(undefined);
   const [editingName, setEditingName] = useState(false);
@@ -543,7 +733,7 @@ function StudentAdminCard({ student, busy, upload, action }: { student: Student;
   const saveScores = () => action({ action: 'updateStudentScores', id: student.id, currentScore: Number(currentScore), goalScore: Number(goalScore) }, `${student.name}'s scores were saved.`);
   return (
     <div className="admin-student">
-      <ProfileImage student={pictureDraft === undefined ? student : { ...student, imageKey: pictureDraft }} />
+      <span className="student-photo-wrap admin-student-photo-wrap"><ProfileImage student={pictureDraft === undefined ? student : { ...student, imageKey: pictureDraft }} />{complete && <span className="student-complete-badge" title="Checked in today" aria-label="Checked in today"><Check /></span>}</span>
       {editingName ? (
         <form onSubmit={event => { event.preventDefault(); void saveName(); }}>
         <Input

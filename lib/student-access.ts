@@ -82,6 +82,45 @@ export async function ensureStudentAccess(access: TeacherAccess, data: AppData) 
   return token;
 }
 
+
+export async function rotateStudentAccess(access: TeacherAccess, data: AppData) {
+  requireTeacher(access);
+  const oldToken = await getStudentAccessToken(access);
+  let responseCopies: Array<{ id: string; data: DocumentData }> = [];
+  if (oldToken) {
+    const rootRef = publicRootRef(oldToken);
+    const [students, questions, answers, responses] = await Promise.all([
+      getDocs(collection(rootRef, 'students')),
+      getDocs(collection(rootRef, 'questions')),
+      getDocs(collection(rootRef, 'answers')),
+      getDocs(collection(rootRef, 'responses')),
+    ]);
+    responseCopies = responses.docs.map(row => ({ id: row.id, data: row.data() }));
+    const refs = [...students.docs, ...questions.docs, ...answers.docs, ...responses.docs].map(row => row.ref);
+    for (let start = 0; start < refs.length; start += 440) {
+      const batch = writeBatch(requireDb());
+      refs.slice(start, start + 440).forEach(ref => batch.delete(ref));
+      await batch.commit();
+    }
+    const batch = writeBatch(requireDb());
+    batch.delete(rootRef);
+    await batch.commit();
+  }
+  const token = randomToken();
+  await setDoc(privateConfigRef(access), { version: 1, token });
+  patchCachedRead<string | null>(access, 'student-access:config', () => token);
+  await syncStudentAccess(access, data, token);
+  if (responseCopies.length) {
+    const rootRef = publicRootRef(token);
+    for (let start = 0; start < responseCopies.length; start += 440) {
+      const batch = writeBatch(requireDb());
+      responseCopies.slice(start, start + 440).forEach(row => batch.set(doc(rootRef, 'responses', row.id), row.data));
+      await batch.commit();
+    }
+  }
+  return token;
+}
+
 export async function syncStudentAccess(access: TeacherAccess, data: AppData, knownToken?: string | null) {
   requireTeacher(access);
   const token = knownToken ?? await getStudentAccessToken(access);
@@ -215,7 +254,7 @@ function selectedItems(student: Student, data: AppData, selections: Record<strin
   return activeQuestions.map(question => {
     const answer = data.answers.find(row => row.questionId === question.id && row.id === selections[question.id]);
     if (!answer) throw new Error('Answer every question first.');
-    return { question: personalize(question.prompt, student), answer: answer.label, imageKey: answer.imageKey } satisfies HistoryItem;
+    return { question: personalize(question.prompt, student), answer: answer.label, imageKey: answer.imageKey, questionId: question.id, answerId: answer.id } satisfies HistoryItem;
   });
 }
 

@@ -33,6 +33,11 @@ function imageValue(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 33000 || (!/^data:image\/jpeg;base64,/.test(value) && !/^preset:(smile|sad|yes|no)$/.test(value))) throw new Error('Choose a smaller picture.');
   return value;
 }
+function historyImageValue(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value !== 'string' || value.length > 33000 || (!/^data:image\/jpeg;base64,/.test(value) && !/^preset:(smile|sad|yes|no)$/.test(value) && !/^images\/[A-Za-z0-9._/-]+$/.test(value))) throw new Error('Choose a valid response image.');
+  return value;
+}
 function starter(): ClassState {
   return { data: { ...structuredClone(emptyData),
     questions: [{ id: 'starter', prompt: 'How focused did you feel today?', position: 1, fridayOnly: false }],
@@ -62,7 +67,7 @@ function validPublicItems(value: unknown): value is HistoryItem[] {
       && typeof row.answer === 'string' && row.answer.length <= 400
       && (row.imageKey === null || (typeof row.imageKey === 'string'
         && row.imageKey.length <= 33000
-        && (/^data:image\/jpeg;base64,/.test(row.imageKey) || /^preset:(smile|sad|yes|no)$/.test(row.imageKey))));
+        && (/^data:image\/jpeg;base64,/.test(row.imageKey) || /^preset:(smile|sad|yes|no)$/.test(row.imageKey) || /^images\/[A-Za-z0-9._/-]+$/.test(row.imageKey))));
   });
 }
 async function importStudentResponses(access: Access, initial: ClassState): Promise<ClassState> {
@@ -87,7 +92,7 @@ async function importStudentResponses(access: Access, initial: ClassState): Prom
         studentId: entry.studentId,
         studentName: profile.name,
         createdAt: Number.isFinite(Date.parse(entry.createdAt)) ? entry.createdAt : `${entry.id}T12:00:00.000Z`,
-        items: entry.items.map(item => ({ question: item.question, answer: item.answer, imageKey: imageValue(item.imageKey) })),
+        items: entry.items.map(item => ({ question: item.question, answer: item.answer, imageKey: historyImageValue(item.imageKey), ...(item.questionId ? { questionId: item.questionId } : {}), ...(item.answerId ? { answerId: item.answerId } : {}) })),
       });
       (current.state.days[entry.id] ??= []).push(entry.studentId);
     }
@@ -120,7 +125,11 @@ async function loadState(access: Access): Promise<ClassState> {
 }
 export async function loadClass(access: Access): Promise<AppData> {
   let state = await loadState(access);
-  state = await importStudentResponses(access, state);
+  while (true) {
+    const next = await importStudentResponses(access, state);
+    if (next === state) break;
+    state = next;
+  }
   return ordered(state.data);
 }
 
@@ -240,6 +249,17 @@ async function finishMaintenance(access: Access, initial: ClassState): Promise<C
   return state;
 }
 
+function editedHistoryItems(value: unknown): HistoryItem[] {
+  if (!validPublicItems(value)) throw new Error('That edited response is invalid.');
+  return value.map(item => ({
+    question: text(item.question, 'a question', 2200),
+    answer: text(item.answer, 'an answer', 400),
+    imageKey: historyImageValue(item.imageKey),
+    ...(typeof item.questionId === 'string' && item.questionId.length <= 100 ? { questionId: item.questionId } : {}),
+    ...(typeof item.answerId === 'string' && item.answerId.length <= 100 ? { answerId: item.answerId } : {}),
+  }));
+}
+
 export async function changeClass(access: Access, body: Record<string, unknown>) {
   requireTeacher(access);
   await loadState(access);
@@ -247,6 +267,7 @@ export async function changeClass(access: Access, body: Record<string, unknown>)
   const id = String(body.id ?? '');
   // IDs are stable across retries, so transaction retries cannot create duplicates.
   const newId = crypto.randomUUID();
+  let editedEntry: HistoryEntry | null = null;
   try {
     let state = await runTransaction(requireDb(), async tx => {
       const current = await stateIn(tx, access, key);
@@ -280,6 +301,20 @@ export async function changeClass(access: Access, body: Record<string, unknown>)
           data.answers.push({ id: newId, questionId, label: text(body.label, 'an answer', 300), imageKey: imageValue(body.imageKey), position: Date.now() }); break;
         }
         case 'deleteAnswer': data.answers = data.answers.filter(row => row.id !== id); break;
+        case 'editResponse': {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(id)) throw new Error('Choose a valid check-in date.');
+          const studentId = String(body.studentId);
+          const profile = data.students.find(row => row.id === studentId);
+          if (!profile) throw new Error('That student no longer exists.');
+          const month = id.slice(0, 7);
+          const archive = await monthIn(tx, access, month, key, hasMonth(state, month));
+          const entry = archive.value.entries.find(row => row.id === id && row.studentId === studentId);
+          if (!entry) throw new Error('That check-in no longer exists.');
+          entry.studentName = profile.name;
+          entry.items = editedHistoryItems(body.items);
+          editedEntry = structuredClone(entry);
+          writePacked(tx, archive.rows, await encodePacked(monthRef(access, month), archive.value, key)); break;
+        }
         case 'deleteResponse': {
           if (!/^\d{4}-\d{2}-\d{2}$/.test(id)) throw new Error('Choose a valid check-in date.');
           const studentId = String(body.studentId); const month = id.slice(0, 7);
@@ -294,11 +329,12 @@ export async function changeClass(access: Access, body: Record<string, unknown>)
       return state;
     });
     remember(access, state);
-    if (body.action === 'deleteResponse') invalidateReads(access, 'history:month:' + id.slice(0, 7));
+    if (body.action === 'deleteResponse' || body.action === 'editResponse') invalidateReads(access, 'history:month:' + id.slice(0, 7));
     state = await finishMaintenance(access, state);
     remember(access, state);
     await syncStudentAccessChange(access, state.data, body, newId);
     if (body.action === 'deleteResponse') await deleteStudentAccessResponse(access, id, String(body.studentId));
+    if (body.action === 'editResponse' && editedEntry) await mirrorTeacherResponse(access, editedEntry);
     if (body.action === 'deleteStudent') await deleteStudentAccessResponsesForStudent(access, id);
   } catch (error) { refreshClassData(access); throw error; }
 }
@@ -307,13 +343,18 @@ export async function completedToday(access: Access, id: string) {
   if (!state.data.students.some(student => student.id === id)) throw new Error('That student no longer exists.');
   return state.days[localDate()]?.includes(id) ?? false;
 }
+export async function completedTodayStudentIds(access: Access) {
+  const state = await loadState(access);
+  const valid = new Set(state.data.students.map(student => student.id));
+  return (state.days[localDate()] ?? []).filter(id => valid.has(id));
+}
 function selectionsFor(student: Student, data: AppData, selections: Record<string, string>) {
   const active = data.questions.filter(question => !question.fridayOnly || new Date().getDay() === 5);
   if (!active.length || active.length > 20) throw new Error('The class must have between 1 and 20 questions per check-in.');
   return active.map(question => {
     const answer = data.answers.find(row => row.id === selections[question.id] && row.questionId === question.id);
     if (!answer) throw new Error('Answer every question first.');
-    return { question: personalize(question.prompt, student), answer: answer.label, imageKey: answer.imageKey };
+    return { question: personalize(question.prompt, student), answer: answer.label, imageKey: answer.imageKey, questionId: question.id, answerId: answer.id };
   });
 }
 export async function submitResponse(access: Access, student: Student, data: AppData, selections: Record<string, string>) {
@@ -375,4 +416,16 @@ export async function loadHistory(access: Access, studentId?: string): Promise<H
     entries.push(...page.entries); after = page.hasMore ? page.nextCursor : undefined;
   } while (after);
   return entries;
+}
+
+export async function loadAllHistory(access: Access): Promise<HistoryEntry[]> {
+  const state = await loadState(access);
+  const valid = new Set(state.data.students.map(student => student.id));
+  const names = new Map(state.data.students.map(student => [student.id, student.name]));
+  const months = [...new Set(Object.keys(state.days).map(day => day.slice(0, 7)))].sort();
+  const archives = await Promise.all(months.map(month => loadMonth(access, month)));
+  return archives.flatMap(archive => archive.entries)
+    .filter(entry => valid.has(entry.studentId))
+    .map(entry => ({ ...entry, studentName: names.get(entry.studentId) ?? entry.studentName }))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
