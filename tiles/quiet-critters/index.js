@@ -174,7 +174,7 @@
 
     function audioLevel(){
       const shared=window.TeacherTilesTileAudio?.level?.(moduleElement);
-      if(Number.isFinite(Number(shared)))return clamp(Number(shared),0,1);
+      if(Number.isFinite(Number(shared)))return clamp(Number(shared),0,1.5);
       return soundDisabled?0:1;
     }
 

@@ -170,7 +170,7 @@
 
     function uiSoundLevel() {
       const shared = window.TeacherTilesTileAudio?.level?.(moduleElement);
-      if (Number.isFinite(Number(shared))) return clamp(Number(shared), 0, 1);
+      if (Number.isFinite(Number(shared))) return clamp(Number(shared),0,1.5);
       try {
         const muted = localStorage.getItem('teachertiles-ui-sfx-muted') === 'true';
         const preferences = JSON.parse(localStorage.getItem('teachertiles-app-preferences-v1') || '{}');

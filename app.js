@@ -134,7 +134,7 @@ function detachHistoryElements(elements){
     el.classList.remove('is-selected','is-over-trash','is-dragging');
     el._deactivate?.();
     for(const media of el.querySelectorAll('audio,video'))media.pause();
-    for(const sound of el._activeTileSounds||[])sound.pause();
+    for(const sound of el._activeTileSounds||[]){sound.pause();releaseBoostedMedia(sound)}
     el._activeTileSounds?.clear();
     if(el.isConnected)el.remove();
   }
@@ -1190,7 +1190,7 @@ function normalizeTileAudioState(value){
   const source=value&&typeof value==='object'?value:{};
   return{
     enabled:source.enabled===undefined?true:Boolean(source.enabled),
-    volume:clamp(Number.isFinite(Number(source.volume))?Number(source.volume):100,0,100)
+    volume:clamp(Number.isFinite(Number(source.volume))?Number(source.volume):100,0,150)
   };
 }
 function tileAudioState(owner){
@@ -1209,7 +1209,7 @@ function tileAudioLevel(owner){
   const masterLevel=masterAudioLevel();
   if(!owner)return masterLevel;
   const state=tileAudioState(owner);
-  return state.enabled?masterLevel*clamp(Number(state.volume)/100,0,1):0;
+  return state.enabled?masterLevel*clamp(Number(state.volume)/100,0,1.5):0;
 }
 function setTileAudioState(owner,value,{notify=true}={}){
   if(!owner)return normalizeTileAudioState(value);
@@ -1223,7 +1223,15 @@ function setTileAudioState(owner,value,{notify=true}={}){
   return next;
 }
 window.TeacherTilesMasterAudioLevel=masterAudioLevel;
+let boostAudioContext=null;const boostedMedia=new WeakMap();
+function setBoostedMediaVolume(audio,volume){
+  const value=Math.max(0,Number(volume)||0);let nodes=boostedMedia.get(audio);
+  if(value>1&&!nodes){try{boostAudioContext||=new (window.AudioContext||window.webkitAudioContext)();const source=boostAudioContext.createMediaElementSource(audio),gain=boostAudioContext.createGain();source.connect(gain);gain.connect(boostAudioContext.destination);nodes={source,gain};boostedMedia.set(audio,nodes)}catch{}}
+  audio.volume=Math.min(1,value);if(nodes){nodes.gain.gain.value=Math.max(1,value);if(boostAudioContext.state==='suspended')boostAudioContext.resume().catch(()=>{})}
+}
+function releaseBoostedMedia(audio){const nodes=boostedMedia.get(audio);if(nodes){nodes.source.disconnect();nodes.gain.disconnect();boostedMedia.delete(audio)}}
 window.TeacherTilesTileAudio=Object.freeze({
+  mediaVolume:setBoostedMediaVolume,release:releaseBoostedMedia,
   level:tileAudioLevel,
   state:owner=>({...tileAudioState(owner)}),
   set:(owner,value,options)=>setTileAudioState(owner,value,options)
@@ -1237,12 +1245,12 @@ function playUiSfx(kind='click',volumeScale=1,owner=null){
     const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
     const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
-    sound.volume=clamp(base*effectiveLevel*Math.max(0,Number(volumeScale)||0),0,1);
+    setBoostedMediaVolume(sound,base*effectiveLevel*Math.max(0,Number(volumeScale)||0));
     sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     if(owner){
       const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());sounds.add(sound);
-      const release=()=>sounds.delete(sound);sound.addEventListener('ended',release,{once:true});sound.addEventListener('error',release,{once:true});
+      const release=()=>{releaseBoostedMedia(sound);sounds.delete(sound)};sound.addEventListener('ended',release,{once:true});sound.addEventListener('error',release,{once:true});
       sound.play().catch(release);
     }else sound.play().catch(()=>{});
   }catch{}
@@ -1265,7 +1273,7 @@ function startClassMeterFillSfx(owner=null){
     if(owner){
       const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());
       sounds.add(sound);
-      const release=()=>sounds.delete(sound);
+      const release=()=>{releaseBoostedMedia(sound);sounds.delete(sound)};
       sound.addEventListener('ended',release,{once:true});
       sound.addEventListener('error',release,{once:true});
     }
@@ -1301,7 +1309,7 @@ document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key'))return;
+  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key,.module-delete'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click',1,interactive.closest('.module'));
 },true);
@@ -1323,8 +1331,6 @@ document.addEventListener('change',e=>{
 // Pointer-clicked module controls should disappear again when the pointer leaves.
 // Keyboard focus is preserved so the same controls remain accessible to tab users.
 let lastUiInteractionWasKeyboard=false;
-const SPACEBAR_FLASHCARD_SELECTOR='.abc-card,.number-flashcards-card,.cvcword-card,.highfrequency-card,.customflashcards-card';
-let activeSpacebarFlashcard=null;
 document.addEventListener('keydown',event=>{
   const typing=isTypingTarget(event.target)||isTypingTarget(document.activeElement);
   if(event.key==='Tab'||((event.key==='Enter'||event.key===' ')&&!typing)){
@@ -1335,8 +1341,6 @@ document.addEventListener('keydown',event=>{
 document.addEventListener('pointerdown',event=>{
   lastUiInteractionWasKeyboard=false;
   document.body.classList.remove('is-keyboard-navigation');
-  const target=event.target instanceof Element?event.target:null;
-  activeSpacebarFlashcard=target?.closest(SPACEBAR_FLASHCARD_SELECTOR)||null;
 },true);
 document.addEventListener('pointerup',event=>{
   if(lastUiInteractionWasKeyboard||!(event.target instanceof Element))return;
@@ -1450,7 +1454,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     stopwatch:['Stopwatch','Count up with lap times'],progressbar:['Progress Bar','Fill toward a set end time'],draw:['Draw','Draw freely across the board'],imagesearch:['Image Search','Find images and drag them onto the board'],dictionary:['Dictionary','Look up complete word entries'],translation:['Translation','Translate typed or spoken language'],attendance:['Attendance','Move student magnets for attendance check-ins'],writinglines:['Writing Lines','Handwriting practice template'],
     abc:['ABC','Animated alphabet flashcards'],numberflashcards:['Number Flashcards','Animated number cards from 1 to 100'],cvcword:['CVC Word','Random animated CVC flashcards'],highfrequency:['High Frequency Words','Grade-level animated word flashcards'],robothfw:['Robot HFW','Blast flying robots carrying sight words'],customflashcards:['Custom Flashcards','Create reusable text and image card sets'],wordweb:['Word Web','Connect related words around a central idea'],venndiagram:['Venn Diagrams','Compare ideas with editable, draggable sets'],essentialquestion:['Essential Question','Display a quoted essential question with an optional subheading'],shapes:['Shapes','Explore sides, vertices, and shape facts'],numberline:['Number Line','Interactive expandable number line'],
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
-    grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Detector','Live microphone sound level'],
+    grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Meter','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','Use a stoplight for various visual cues'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Boom Box','Loop classroom soundscapes'],
@@ -2318,18 +2322,17 @@ window.addEventListener('blur',()=>{
   zoomIndicator?.classList.remove('is-precise','is-visible');
 });
 
+function isSpaceTypingTarget(target){const field=target instanceof Element?target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])'):null;return !!field&&(!(field instanceof HTMLInputElement)||!['button','submit','reset','checkbox','radio','range','color','file','image','hidden'].includes(field.type))}
+window.addEventListener('keyup',event=>{if(event.code==='Space'&&!isSpaceTypingTarget(event.target)&&!isSpaceTypingTarget(document.activeElement)&&!boardKeyboardPanBlocked(true)){event.preventDefault();event.stopImmediatePropagation()}},{capture:true});
 window.addEventListener('keydown',event=>{
-  if(event.code!=='Space'||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
+  if(event.code!=='Space'||event.ctrlKey||event.metaKey||event.altKey)return;
   const target=event.target instanceof Element?event.target:null;
-  if(isTypingTarget(target)||isTypingTarget(document.activeElement))return;
-  const flashcard=target?.closest(SPACEBAR_FLASHCARD_SELECTOR)||null;
-  if(flashcard&&flashcard===activeSpacebarFlashcard)return;
-  if(target?.closest('.module')&&!flashcard)return;
-  const interactive=target?.closest('button,a,[role="button"],[role="slider"],[role="checkbox"],[role="radio"]');
-  if(interactive&&lastUiInteractionWasKeyboard&&!flashcard)return;
-  if(boardKeyboardPanBlocked())return;
+  if(isSpaceTypingTarget(target)||isSpaceTypingTarget(document.activeElement))return;
+
+  if(boardKeyboardPanBlocked(true))return;
   event.preventDefault();
-  event.stopPropagation();
+  event.stopImmediatePropagation();
+  if(event.repeat)return;
   const defaultScale=clamp((Number(appPreferences.defaultViewSize)||100)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
   setCurrentBoardViewSize(appPreferences.defaultViewSize);
   boardZoomIntentPercent=Math.round(defaultScale*100);
@@ -2375,8 +2378,8 @@ const boardPanKeyDirection={
   arrowright:[-1,0]
 };
 
-function boardKeyboardPanBlocked(){
-  if(isTypingTarget(document.activeElement))return true;
+function boardKeyboardPanBlocked(space=false){
+  if(space?isSpaceTypingTarget(document.activeElement):isTypingTarget(document.activeElement))return true;
   const shop=document.getElementById('shop-modal');
   if(shop&&!shop.hidden)return true;
   const profile=document.getElementById('profile-modal');
@@ -3245,7 +3248,7 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 function restoreTileEdit(m,snapshot){
   if(!m?.isConnected)return m;
   for(const media of m.querySelectorAll('audio,video'))media.pause();
-  for(const sound of m._activeTileSounds||[])sound.pause();
+  for(const sound of m._activeTileSounds||[]){sound.pause();releaseBoostedMedia(sound)}
   m._activeTileSounds?.clear();
   const sibling=m.nextSibling;m._deactivate?.();m.remove();
   let next;
@@ -3380,7 +3383,7 @@ function setupTileAudioSettings(m,type){
 
   const section=document.createElement('div');
   section.className='tile-audio-settings-section';
-  section.innerHTML='<strong>Audio</strong><div class="tile-audio-toggle-row"><span>Sound effects</span><button class="tile-audio-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn tile audio off"><i aria-hidden="true"></i></button></div><label class="tile-audio-volume-row"><span>Volume <output>100%</output></span><input class="tile-audio-volume" type="range" min="0" max="100" step="5" value="100" aria-label="Tile audio volume"></label><small>Master Volume still controls the overall output.</small>';
+  section.innerHTML='<strong>Audio</strong><div class="tile-audio-toggle-row"><span>Sound effects</span><button class="tile-audio-toggle" type="button" role="switch" aria-checked="true" aria-label="Turn tile audio off"><i aria-hidden="true"></i></button></div><label class="tile-audio-volume-row"><span>Volume <output>100%</output></span><input class="tile-audio-volume" type="range" min="0" max="150" step="5" value="100" aria-label="Tile audio volume"></label><small>Master Volume still controls the overall output.</small>';
   panel.appendChild(section);
 
   const toggle=section.querySelector('.tile-audio-toggle');
@@ -3492,7 +3495,8 @@ function setupModuleByType(m,type){
   if(type==='worldmap')setupWorldMap(m);
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
-  if(type==='noise')setupNoise(m);
+  if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
+  if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
   if(type==='classmeter')setupClassMeter(m);
   if(type==='collections')setupCollections(m);
@@ -4073,7 +4077,7 @@ function setupCommon(m){
     }
   },true);
   m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=isInteractiveModuleTarget(e.target,m);if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});
-  m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
+  m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();playUiSfx('click');deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
   setupDrag(m);
   if(!['draw','sticker'].includes(m.dataset.type))setupResize(m)
 }
@@ -5668,285 +5672,6 @@ function setupDraw(m){
     imageLoadToken++;
     canvas.remove();
     priorCleanup?.();
-  };
-}
-
-function setupNoise(m){
-  const button=m.querySelector('.noise-start');
-  const db=m.querySelector('.noise-db');
-  const status=m.querySelector('.noise-status');
-  const statusDot=m.querySelector('.noise-status-dot');
-  const range=m.querySelector('.noise-range');
-  const sensitivity=m.querySelector('.noise-sensitivity');
-  const thresholdValue=m.querySelector('.noise-threshold-value');
-  const sensitivityValue=m.querySelector('.noise-sensitivity-value');
-  const viewSelect=m.querySelector('.noise-view-select');
-  const horizontalFill=m.querySelector('.noise-led-fill--horizontal');
-  const verticalFill=m.querySelector('.noise-led-fill--vertical');
-  const horizontalThreshold=m.querySelector('.noise-threshold--horizontal');
-  const verticalThreshold=m.querySelector('.noise-vertical-alert-marker');
-  const waveformThreshold=m.querySelector('.noise-waveform-threshold');
-  const waveform=m.querySelector('.noise-waveform');
-  const waveCtx=waveform.getContext('2d');
-  const alert=m.querySelector('.noise-alert');
-
-  // Start the Noise Detector at a comfortable finished size.
-  if(!m.style.width)m.style.width='500px';
-  if(!m.style.height)m.style.height='380px';
-
-  m.querySelector('.noise-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  m.querySelector('.noise-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
-  m.querySelector('.noise-text').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
-
-  const meterBtn=m.querySelector('.noise-meter-color');
-  meterBtn.addEventListener('click',()=>{
-    cycleData(m,'meter',['blue','green','amber','rose','purple']);
-    meterBtn.dataset.current=m.dataset.meter;
-  });
-  meterBtn.dataset.current=m.dataset.meter;
-
-  let stream=null;
-  let ctx=null;
-  let analyser=null;
-  let raf=0;
-  let active=false;
-  let smoothedLevel=0;
-  let waveW=0;
-  let waveH=0;
-  const data=new Uint8Array(2048);
-
-  const meterColor=()=>getComputedStyle(m).getPropertyValue('--meter-color').trim()||'#6f8fb7';
-  const textColor=()=>getComputedStyle(m).getPropertyValue('--module-text').trim()||'#17191d';
-
-  function resizeWaveform(){
-    const dpr=Math.min(2,window.devicePixelRatio||1);
-    waveW=Math.max(120,waveform.clientWidth);
-    waveH=Math.max(70,waveform.clientHeight);
-    waveform.width=Math.round(waveW*dpr);
-    waveform.height=Math.round(waveH*dpr);
-    waveCtx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  const waveRO=new ResizeObserver(resizeWaveform);
-  waveRO.observe(waveform);
-
-  const moduleRO=new ResizeObserver(()=>{
-    requestAnimationFrame(resizeWaveform);
-  });
-  moduleRO.observe(m);
-
-  // Force the exact same layout calculation that a first drag used to trigger,
-  // but do it immediately without changing the module's size or position.
-  const stabilizeInitialLayout=()=>{
-    void m.offsetWidth;
-    resizeWaveform();
-    requestAnimationFrame(()=>{
-      void m.offsetHeight;
-      resizeWaveform();
-    });
-  };
-
-  resizeWaveform();
-  requestAnimationFrame(stabilizeInitialLayout);
-
-  const updateThreshold=()=>{
-    const value=Number(range.value);
-    thresholdValue.textContent=`${value}%`;
-
-    horizontalThreshold.style.left=`${value}%`;
-
-    // This marker lives outside the clipped fill track, so it stays visible.
-    // 0% = bottom, 100% = top.
-    verticalThreshold.style.bottom=`calc(${value}% - 2px)`;
-    verticalThreshold.dataset.threshold=value;
-
-    waveformThreshold.style.setProperty('--threshold',`${value}%`);
-  };
-
-  const updateSensitivity=()=>{
-    sensitivityValue.textContent=`${sensitivity.value}%`;
-  };
-
-  const updateView=()=>{
-    const mode=viewSelect.value;
-    m.dataset.noiseView=mode;
-
-    if(mode==='vertical'){
-      m.style.width='320px';
-      m.style.height='590px';
-    }else{
-      m.style.width='500px';
-      m.style.height='380px';
-    }
-
-    if(mode==='waveform'){
-      const frame=m.querySelector('.noise-waveform-frame');
-      frame?.classList.remove('is-unfolding');
-      void frame?.offsetWidth;
-      frame?.classList.add('is-unfolding');
-      setTimeout(()=>frame?.classList.remove('is-unfolding'),420);
-    }
-
-    requestAnimationFrame(()=>{
-      void m.offsetWidth;
-      void m.offsetHeight;
-      resizeWaveform();
-
-      if(mode==='vertical'){
-        const settingsPanel=m.querySelector('.noise-settings-panel');
-        const customization=m.querySelector('.noise-customization');
-
-        // Force the vertical grid/flex state to resolve immediately instead of
-        // waiting for the first manual resize.
-        void m.getBoundingClientRect();
-        void settingsPanel?.getBoundingClientRect();
-        void customization?.getBoundingClientRect();
-
-        requestAnimationFrame(()=>{
-          void m.offsetWidth;
-          void m.offsetHeight;
-          void settingsPanel?.offsetHeight;
-          void customization?.offsetHeight;
-        });
-
-        setTimeout(()=>{
-          void m.getBoundingClientRect();
-          void settingsPanel?.getBoundingClientRect();
-          void customization?.getBoundingClientRect();
-        },30);
-      }
-    });
-  };
-
-  range.addEventListener('input',updateThreshold);
-  sensitivity.addEventListener('input',updateSensitivity);
-  viewSelect.addEventListener('change',updateView);
-  updateThreshold();
-  updateSensitivity();
-  updateView();
-
-  function setLevelVisuals(level){
-    horizontalFill.style.width=`${level}%`;
-    verticalFill.style.height=`${level}%`;
-  }
-
-  function drawWaveform(){
-    waveCtx.clearRect(0,0,waveW,waveH);
-
-    const mid=waveH/2;
-    waveCtx.lineWidth=1;
-    waveCtx.strokeStyle='rgba(127,127,127,.18)';
-    waveCtx.beginPath();
-    waveCtx.moveTo(0,mid);
-    waveCtx.lineTo(waveW,mid);
-    waveCtx.stroke();
-
-    if(!active||!analyser){
-      waveCtx.strokeStyle='rgba(127,127,127,.22)';
-      waveCtx.lineWidth=2;
-      waveCtx.beginPath();
-      waveCtx.moveTo(0,mid);
-      waveCtx.lineTo(waveW,mid);
-      waveCtx.stroke();
-      return;
-    }
-
-    analyser.getByteTimeDomainData(data);
-    waveCtx.strokeStyle=meterColor();
-    waveCtx.lineWidth=Math.max(2,Math.min(4,waveH*.035));
-    waveCtx.lineJoin='round';
-    waveCtx.lineCap='round';
-    waveCtx.beginPath();
-
-    const step=waveW/(data.length-1);
-    const sensitivityMultiplier=Number(sensitivity.value)/100;
-    for(let i=0;i<data.length;i++){
-      const centered=(data[i]-128)/128;
-      const amp=clamp(centered*sensitivityMultiplier,-1,1);
-      const x=i*step;
-      const y=mid+amp*(waveH*.42);
-      if(i===0)waveCtx.moveTo(x,y);
-      else waveCtx.lineTo(x,y);
-    }
-    waveCtx.stroke();
-  }
-
-  function stop(){
-    active=false;
-    cancelAnimationFrame(raf);
-    stream?.getTracks().forEach(t=>t.stop());
-    if(ctx&&ctx.state!=='closed')ctx.close();
-    stream=ctx=analyser=null;
-    smoothedLevel=0;
-    setLevelVisuals(0);
-    drawWaveform();
-    db.textContent='—';
-    status.textContent='Microphone is off';
-    statusDot.classList.remove('is-live');
-    button.textContent='Enable microphone';
-    m.classList.remove('is-loud');
-    alert.hidden=true;
-  }
-
-  function loop(){
-    if(!active||!analyser)return;
-
-    analyser.getByteTimeDomainData(data);
-    let sum=0;
-    for(let i=0;i<data.length;i++){
-      const n=(data[i]-128)/128;
-      sum+=n*n;
-    }
-
-    const rms=Math.sqrt(sum/data.length);
-    const rawLevel=clamp((20*Math.log10(rms||0.00001)+60)/60*100,0,100);
-    const adjustedLevel=clamp(rawLevel*(Number(sensitivity.value)/100),0,100);
-    smoothedLevel=smoothedLevel*.68+adjustedLevel*.32;
-
-    setLevelVisuals(smoothedLevel);
-    drawWaveform();
-    db.textContent=`${Math.round(smoothedLevel)}%`;
-
-    const loud=smoothedLevel>=Number(range.value);
-    m.classList.toggle('is-loud',loud);
-    alert.hidden=!loud;
-    status.textContent=loud?'Above alert level':'Listening';
-    statusDot.classList.toggle('is-loud',loud);
-
-    raf=requestAnimationFrame(loop);
-  }
-
-  button.addEventListener('click',async()=>{
-    if(active){
-      stop();
-      return;
-    }
-
-    try{
-      stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      ctx=new (window.AudioContext||window.webkitAudioContext)();
-      analyser=ctx.createAnalyser();
-      analyser.fftSize=4096;
-      analyser.smoothingTimeConstant=.72;
-      ctx.createMediaStreamSource(stream).connect(analyser);
-
-      active=true;
-      button.textContent='Stop microphone';
-      status.textContent='Listening';
-      statusDot.classList.add('is-live');
-      loop();
-    }catch{
-      status.textContent=location.protocol==='file:'?'Microphone needs localhost or HTTPS':'Microphone permission was denied';
-      button.textContent='Try again';
-    }
-  });
-
-  const prior=m._cleanup;
-  m._cleanup=()=>{
-    prior?.();
-    waveRO.disconnect();
-    moduleRO.disconnect();
-    stop();
   };
 }
 
@@ -9360,6 +9085,8 @@ const EDITABLE_TILE_HEADINGS={
   colorpicker:'.widget-title',
   rainbow:'.widget-title',
   meditation:'.meditation-title',
+  noise:'.nm-heading',
+  squishy:'.squishy-heading',
   spreadsheet:'.sheet-heading',
   reminders:'.reminders-heading',
   glitterjar:'.glitter-jar-heading',
@@ -9378,7 +9105,7 @@ const EDITABLE_TILE_HEADINGS={
   butterflygarden:'.butterflygarden-heading h2',
   seatingchart:'.seating-title',
   imagesearch:'.image-search-header h2',
-  noise:'.noise-heading strong',
+
   collections:'.collection-title',
   groupmaker:'.groupmaker-heading strong',
   lunchcount:'.lunchcount-heading strong',
@@ -14494,12 +14221,12 @@ function setupRobotHfw(m){
     if(level<=0)return;
     try{
       const sound=prototype.cloneNode();
-      sound.volume=clamp(baseVolume*level,0,1);
+      setBoostedMediaVolume(sound,baseVolume*level);
       sound.playbackRate=playbackRate;
       sound.currentTime=0;
       const sounds=m._activeTileSounds||(m._activeTileSounds=new Set());
       sounds.add(sound);
-      const release=()=>sounds.delete(sound);
+      const release=()=>{releaseBoostedMedia(sound);sounds.delete(sound)};
       sound.addEventListener('ended',release,{once:true});
       sound.addEventListener('error',release,{once:true});
       sound.play().catch(release);
@@ -14963,7 +14690,7 @@ function setupRobotHfw(m){
 
   const stopSounds=()=>{
     rocketLoop.pause();try{rocketLoop.currentTime=0}catch{}
-    for(const sound of m._activeTileSounds||[]){sound.pause();try{sound.currentTime=0}catch{}}
+    for(const sound of m._activeTileSounds||[]){sound.pause();releaseBoostedMedia(sound);try{sound.currentTime=0}catch{}}
     m._activeTileSounds?.clear();
   };
   const priorDeactivate=m._deactivate;

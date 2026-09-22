@@ -61,7 +61,7 @@
     add.onclick=()=>compose(form.hidden);m.querySelector('.reminders-cancel').onclick=()=>compose(false);form.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();compose(false)}});
     function render(){
       const stored=read();list.replaceChildren();
-      if(!items.length){const empty=document.createElement('p');empty.className='reminders-empty';empty.textContent='A little nudge, right when you need it.';list.append(empty)}
+
       for(const item of [...items].sort((a,b)=>a.dueAt-b.dueAt)){
         const row=document.createElement('article');row.className='reminder-row';const copy=document.createElement('div'),title=document.createElement('strong'),time=document.createElement('small');title.textContent=item.text;time.textContent=(stored.items[item.id]?.firedAt?'Delivered · ':'')+new Date(item.dueAt).toLocaleString();copy.append(title,time);
         const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Delete reminder: '+item.text);remove.onclick=()=>{items=items.filter(other=>other.id!==item.id);cancel(item.id);notifyBoardChanged('reminder-delete');render()};row.append(copy,remove);list.append(row);

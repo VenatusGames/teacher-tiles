@@ -15,7 +15,7 @@
 
     const syncAudioVolume=()=>{
       const level=window.TeacherTilesTileAudio?.level?.(moduleElement);
-      audio.volume=0.9*(Number.isFinite(Number(level))?Math.max(0,Math.min(1,Number(level))):1);
+      window.TeacherTilesTileAudio.mediaVolume(audio,0.9*(Number.isFinite(Number(level))?Math.max(0,Number(level)):1));
     };
     moduleElement.addEventListener('teachertiles:tileaudiochange',syncAudioVolume);
     window.addEventListener('teachertiles:audiopreferenceschange',syncAudioVolume);
@@ -53,7 +53,7 @@
 
     const priorCleanup=moduleElement._cleanup;
     moduleElement._cleanup=()=>{
-      disposed=true;
+      disposed=true;window.TeacherTilesTileAudio.release(audio);
       stopAudio();
       button.removeEventListener('click',ring);
       moduleElement.removeEventListener('teachertiles:tileaudiochange',syncAudioVolume);
