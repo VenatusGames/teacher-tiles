@@ -3454,6 +3454,7 @@ function setupModuleByType(m,type){
   if(type==='quietcritters')window.TeacherTilesQuietCritters.setup(m);
   if(type==='chime')window.TeacherTilesChime.setup(m);
   if(type==='meditation')window.TeacherTilesMeditation.setup(m);
+  if(type==='sentenceexpansion')window.TeacherTilesSentenceExpansion.setup(m);
   if(type==='spreadsheet')window.TeacherTilesSpreadsheet.setup(m);
   if(type==='reminders')window.TeacherTilesReminders.setup(m);
   if(type==='glitterjar')window.TeacherTilesGlitterJar.setup(m);
@@ -9090,6 +9091,7 @@ const EDITABLE_TILE_HEADINGS={
   noise:'.nm-heading',
   squishy:'.squishy-heading',
   spreadsheet:'.sheet-heading',
+  sentenceexpansion:'.sentence-heading',
   reminders:'.reminders-heading',
   glitterjar:'.glitter-jar-heading',
   piano:'.widget-title',
