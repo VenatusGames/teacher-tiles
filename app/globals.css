@@ -6,7 +6,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
+@theme inline {.
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -277,7 +277,14 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .student-score-editor label { min-width: 0; }
 .survey-start { display: flex; align-items: center; justify-content: center; gap: .8rem; min-width: 12rem; min-height: 4.5rem; margin: 2rem auto; padding: 1rem 2rem; border: 3px solid white; border-radius: 1.3rem; background: #bef264; color: #123b2e; font-size: 1.8rem; font-weight: 900; box-shadow: 0 6px 0 rgba(2,15,11,.3); cursor: pointer; }
 .survey-start:focus-visible { outline: 3px solid white; outline-offset: 5px; }
-.lead-heading .lead-start { width: max-content; min-width: 10rem; min-height: 3.75rem; margin: .85rem 0 .95rem auto; padding: .75rem 1.4rem; font-size: 1.45rem; }
+.lead-heading .lead-start {
+  width: max-content;
+  min-width: 10rem;
+  min-height: 3.75rem;
+  margin: .85rem auto .95rem;
+  padding: .75rem 1.4rem;
+  font-size: 1.45rem;
+}
 .brand-image { object-fit: contain; }
 .history-browser { color: #123b2e; min-width: 0; }
 .history-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; padding: 1rem; border-radius: 1rem; background: #eff8f2; }
