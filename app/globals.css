@@ -277,6 +277,7 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .student-score-editor label { min-width: 0; }
 .survey-start { display: flex; align-items: center; justify-content: center; gap: .8rem; min-width: 12rem; min-height: 4.5rem; margin: 2rem auto; padding: 1rem 2rem; border: 3px solid white; border-radius: 1.3rem; background: #bef264; color: #123b2e; font-size: 1.8rem; font-weight: 900; box-shadow: 0 6px 0 rgba(2,15,11,.3); cursor: pointer; }
 .survey-start:focus-visible { outline: 3px solid white; outline-offset: 5px; }
+.lead-heading .lead-start { width: max-content; min-width: 10rem; min-height: 3.75rem; margin: .85rem 0 .95rem auto; padding: .75rem 1.4rem; font-size: 1.45rem; }
 .brand-image { object-fit: contain; }
 .history-browser { color: #123b2e; min-width: 0; }
 .history-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; padding: 1rem; border-radius: 1rem; background: #eff8f2; }
@@ -354,6 +355,7 @@ h1, h2, h3, strong { font-family: var(--font-heading-face), var(--font-body), ui
 .student-history-date { white-space: nowrap; }
 .student-history-answers { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .55rem; }
 .student-history-answer { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.4rem; padding: .3rem .55rem; border-radius: 999px; background: #eff8f2; color: #123b2e; font-weight: 850; }
+.student-history-question { color: #526b62; font-weight: 750; }
 .student-history-answer .history-answer { display: inline-flex; }
 .student-history-answer .history-answer-visual { width: 1.8rem; height: 1.8rem; }
 .student-history-answer .answer-text-pill { padding: .25rem .5rem; }

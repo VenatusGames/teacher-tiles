@@ -150,9 +150,9 @@ export function StudentAccessApp({ token }: { token: string }) {
     </section>}
 
     {screen === 'lead' && student && <section className="page-section lead-page page-enter">
-      {!started && <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{student.name}&apos;s check-in</p><h1>{data.settings.title}</h1><p>{personalize(data.settings.description, student)}</p></div></div>}
+      {!started && <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{student.name}&apos;s check-in</p><h1>{data.settings.title}</h1>{currentQuestion && !alreadyCheckedIn && <button type="button" className="survey-start lead-start" onClick={() => setStarted(true)}>START <ChevronRight /></button>}<p>{personalize(data.settings.description, student)}</p></div></div>}
       {alreadyCheckedIn ? <div className="empty-card already-checked-card"><Check /><h2>You&apos;re checked in for today!</h2><p>Your daily check-in is locked, but you can still view your history.</p><button type="button" className="empty-card-action" onClick={openHistory}><Rows3 /> View my history</button></div>
-      : currentQuestion && !started ? <button type="button" className="survey-start" onClick={() => setStarted(true)}>START <ChevronRight /></button>
+      : currentQuestion && !started ? null
       : currentQuestion ? <div className="question-flow">
         <div className="question-progress" aria-label={`Question ${questionIndex + 1} of ${activeQuestions.length}`}><span>{questionIndex + 1} of {activeQuestions.length}</span><div><i style={{ width: `${((questionIndex + 1) / activeQuestions.length) * 100}%` }} /></div></div>
         <article className={`question-stage ${advancing ? 'is-advancing' : ''}`} key={currentQuestion.id}>
@@ -198,7 +198,7 @@ function StudentHistory({ token, student }: { token: string; student: Student })
     {loading ? <p className="history-feedback">Loading check-ins…</p> : <>
       <p className="history-summary">{student.name} · Page {cursors.length} · {entries.length} check-in{entries.length === 1 ? '' : 's'}</p>
       {!entries.length && !error && <p className="history-feedback">No check-ins yet.</p>}
-      <div className="history-records student-history-records">{entries.map(entry => <article className="student-history-row" key={`${entry.studentId}:${entry.id}`}><strong className="student-history-date">{formatDate(entry.createdAt)}</strong><div className="student-history-answers">{entry.items.map((item, index) => <span className="student-history-answer" key={index} title={item.question}><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</span>)}</div></article>)}</div>
+      <div className="history-records student-history-records">{entries.map(entry => <article className="student-history-row" key={`${entry.studentId}:${entry.id}`}><strong className="student-history-date">{formatDate(entry.createdAt)}</strong><div className="student-history-answers">{entry.items.map((item, index) => <span className="student-history-answer" key={index}><span className="student-history-question">{item.question}:</span><HistoryAnswer item={item} />{item.imageKey && <span>{item.answer}</span>}</span>)}</div></article>)}</div>
     </>}
     <nav className="history-pagination" aria-label="History pages"><button type="button" disabled={loading || cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>Previous</button><span>Page {cursors.length}</span><button type="button" disabled={loading || !hasMore || !nextCursor} onClick={() => setCursors(previous => [...previous, nextCursor])}>Next</button></nav>
   </div>;

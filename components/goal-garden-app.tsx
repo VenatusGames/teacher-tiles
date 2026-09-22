@@ -218,14 +218,12 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
 
       {screen === 'lead' && selectedStudent && (
         <section className="page-section lead-page page-enter">
-          {!surveyStarted && <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{selectedStudent.name}&apos;s check-in</p><h1>{data.settings.title}</h1><p>{personalize(data.settings.description, selectedStudent)}</p></div></div>}
+          {!surveyStarted && <div className="lead-heading"><LeadBars /><div><p className="eyebrow">{selectedStudent.name}&apos;s check-in</p><h1>{data.settings.title}</h1>{currentQuestion && !checkingToday && !alreadyCheckedIn && <button type="button" className="survey-start lead-start" onClick={() => setSurveyStarted(true)}>START <ChevronRight /></button>}<p>{personalize(data.settings.description, selectedStudent)}</p></div></div>}
           {checkingToday ? (
             <div className="loading-inline"><LoaderCircle className="spin" /> Checking today&apos;s progress…</div>
           ) : alreadyCheckedIn ? (
             <div className="empty-card already-checked-card"><Check /><h2>You&apos;re checked in for today!</h2><p>Come back tomorrow to keep growing your WIG.</p><button type="button" className="empty-card-action" onClick={openHistory}><Rows3 /> View my history</button></div>
-          ) : currentQuestion && !surveyStarted ? (
-            <button type="button" className="survey-start" onClick={() => setSurveyStarted(true)}>START <ChevronRight /></button>
-          ) : currentQuestion ? (
+          ) : currentQuestion && !surveyStarted ? null : currentQuestion ? (
             <div className="question-flow">
               <div className="question-progress" aria-label={`Question ${currentQuestionIndex + 1} of ${activeQuestions.length}`}>
                 <span>{currentQuestionIndex + 1} of {activeQuestions.length}</span>
