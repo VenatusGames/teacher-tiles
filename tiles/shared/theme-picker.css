@@ -17,3 +17,24 @@
 .theme-picker .subscription-access-crown{width:20px;height:20px;top:5px;left:5px}.theme-picker .subscription-access-crown svg{width:17px;height:17px}
 .theme-picker-locked::after{content:'🔒';position:absolute;top:7px;right:7px;width:23px;height:23px;display:grid;place-items:center;font-size:11px;background:#ffffffd9;border-radius:8px}.theme-picker-applied{margin:0;padding:13px 20px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
 @media(prefers-reduced-motion:reduce){.asset-shelf.is-theme-mode,.asset-shelf.is-theme-mode *{transition:none!important}}
+/* Packs stay in the left shelf; their cards unfurl beside it. */
+.asset-shelf.is-theme-mode .asset-shelf__shell{width:min(310px,calc(100vw - 24px))}
+.theme-picker-pack{background:transparent;box-shadow:none;border:0;overflow:visible;margin:3px 0 13px}
+.theme-picker-pack-heading{padding:10px 8px;gap:13px;min-height:104px;border-radius:16px;transition:background .2s,transform .3s}
+.theme-picker-pack-heading:hover,.theme-picker-pack-heading[aria-expanded=true]{background:var(--surface-soft)}
+.theme-pack-stack{position:relative;width:82px;height:80px;flex:none;perspective:600px}
+.theme-picker .theme-pack-sample{position:absolute;width:59px;height:73px;left:calc(8px + var(--sample)*7px);top:calc(5px - var(--sample)*2px);padding:3px;transform:rotate(calc(-12deg + var(--sample)*9deg));transition:transform .4s cubic-bezier(.2,.8,.2,1);pointer-events:none;box-shadow:0 3px 8px #101b2426}
+.theme-pack-sample .theme-card__copy{display:none}.theme-picker .theme-pack-sample .theme-card__preview{inset:5px;height:48px}
+.theme-picker-pack-heading:hover .theme-pack-sample,.theme-picker-pack-heading[aria-expanded=true] .theme-pack-sample{transform:translateX(calc(var(--sample)*3px)) rotate(calc(-19deg + var(--sample)*15deg)) translateY(-4px)}
+.theme-pack-label{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:7px}.theme-pack-label strong{font-size:13px;color:var(--text)}.theme-pack-label small{font-size:10px;color:var(--muted)}.theme-pack-arrow{font-size:24px!important;transition:transform .3s}.theme-picker-pack-heading[aria-expanded=true] .theme-pack-arrow{transform:rotate(90deg)}
+.theme-picker.theme-pack-fan{position:fixed;inset:auto;margin:0;height:auto;max-height:calc(100vh - 40px);padding:20px;overflow:auto;border:1px solid var(--border);border-radius:24px;background:var(--surface-solid);color:var(--text);box-shadow:10px 16px 50px #15243a24;display:none}
+.theme-pack-fan:popover-open{display:flex;animation:themeFanEnter .3s cubic-bezier(.2,.8,.2,1)}
+.theme-pack-fan header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px}.theme-pack-fan header small{font-size:9px;letter-spacing:.14em;color:var(--muted)}.theme-pack-fan h3{margin:5px 0 0;font-size:20px}.theme-pack-fan header button{width:30px;height:30px;border:1px solid var(--border);border-radius:50%;color:var(--muted);background:var(--surface-soft);font-size:20px;cursor:pointer}
+.theme-pack-stage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 14px;padding:10px 6px 14px;perspective:900px}
+.theme-pack-fan .theme-card{height:148px;transform:rotate(var(--fan-angle));animation:themeCardUnfold .5s cubic-bezier(.16,.8,.24,1) both;animation-delay:calc(var(--fan-index)*45ms);transform-origin:0 80%;box-shadow:0 7px 15px #18202c20}
+.theme-pack-fan .theme-card:hover,.theme-pack-fan .theme-card:focus-visible{transform:translateY(-7px) rotate(0deg) scale(1.03);z-index:2}.theme-pack-fan .theme-card__preview{height:85px}.theme-pack-fan .theme-card__copy strong{font-size:11px}.theme-pack-fan .theme-card[aria-pressed=true]{outline:2px solid #6786d0;outline-offset:3px}
+@keyframes themeFanEnter{from{opacity:0;transform:translateX(-18px) scale(.97)}to{opacity:1;transform:none}}@keyframes themeCardUnfold{from{opacity:0;translate:-45px 12px;rotate:-14deg;scale:.85}to{opacity:1;translate:0 0;rotate:0deg;scale:1}}
+@media(max-width:760px){.theme-pack-stage{gap:14px 10px}.theme-pack-fan .theme-card{height:126px}.theme-pack-fan .theme-card__preview{height:67px}}
+@media(prefers-reduced-motion:reduce){.theme-pack-fan,.theme-pack-fan *{animation:none!important;transition:none!important}}
+.theme-picker.theme-pack-fan{opacity:0;transform:translateX(-15px) scale(.97);transition:opacity .2s,transform .25s,display .25s allow-discrete,overlay .25s allow-discrete}.theme-pack-fan:popover-open{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.theme-picker.theme-pack-fan{transition:none}}

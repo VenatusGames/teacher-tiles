@@ -70,7 +70,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.evaluate(()=>{createStickerModule({emoji:'⭐'},900,400);document.body.classList.add('is-board-idle');document.querySelectorAll('.sticker-module').forEach(el=>el.classList.add('is-idle-unhovered'))});await page.mouse.move(1400,900);await page.waitForTimeout(450);assert.equal(await page.locator('.sticker-module>.module-delete').last().evaluate(el=>getComputedStyle(el).opacity),'0');
     await page.evaluate(()=>{document.body.classList.remove('is-board-idle');window.dispatchEvent(new CustomEvent('teachertiles:accountchange'));syncCosmeticEntitlements()});
     await page.locator('#theme-shelf-toggle').evaluate(el=>el.click());await page.waitForTimeout(400);
-    assert.equal(await page.locator('#pastel-theme-fan>.subscription-access-crown').count(),0);
+    await page.locator('.theme-picker-pack-heading').filter({hasText:'Pastel'}).click();assert.equal(await page.locator('#pastel-theme-fan>.subscription-access-crown').count(),0);
     assert.equal(await page.locator('.theme-picker [data-theme-choice^=pastel-]>.subscription-access-crown').count(),await page.locator('.theme-picker [data-theme-choice^=pastel-]').count());
     assert.equal(await page.locator('.theme-picker [data-theme-choice^=pastel-] .subscription-access-crown').first().evaluate(el=>el.offsetParent.classList.contains('theme-card')),true);
     assert.deepEqual(errors,[]);console.log('Sticker picker checks passed');

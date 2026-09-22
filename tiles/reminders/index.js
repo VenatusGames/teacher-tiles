@@ -11,7 +11,7 @@
   function popup(item){
     let stack=document.querySelector('.reminder-toasts');if(!stack){stack=document.createElement('div');stack.className='reminder-toasts';stack.setAttribute('aria-label','Reminder alerts');document.body.append(stack)}
     if(stack.querySelector(`[data-reminder-id="${CSS.escape(item.id)}"]`))return;
-    const card=document.createElement('section');card.className='reminder-toast';card.dataset.reminderId=item.id;card.setAttribute('role','alert');const tag=document.createElement('small');tag.textContent='REMINDER';const title=document.createElement('strong');title.textContent=item.text;const time=document.createElement('span');time.textContent=new Date(item.dueAt).toLocaleString();const close=document.createElement('button');close.type='button';close.textContent='Dismiss';close.onclick=()=>card.remove();card.append(tag,title,time,close);stack.append(card);
+    const card=document.createElement('section');card.className='reminder-toast';card.dataset.reminderId=item.id;card.setAttribute('role','alert');const tag=document.createElement('small');tag.textContent='REMINDER';const title=document.createElement('strong');title.textContent=item.text;const time=document.createElement('span');time.textContent=new Date(item.dueAt).toLocaleString();const close=document.createElement('button');close.type='button';close.className='reminder-dismiss';close.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m5 10 3 3 7-7"/></svg><span>Dismiss</span>';close.onclick=()=>card.remove();card.append(tag,title,time,close);stack.append(card);
   }
   let checking=false;
   async function tick(){
@@ -56,6 +56,9 @@
     let items=[];
     const form=m.querySelector('.reminders-form'),text=form.querySelector('[name="text"]'),date=form.querySelector('[name="date"]'),desktop=form.querySelector('[name="desktop"]'),list=m.querySelector('.reminders-list'),status=m.querySelector('.reminders-status');
     const defaultDate=()=>{const d=new Date(Date.now()+3600000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};date.value=defaultDate();
+    const add=m.querySelector('.reminders-add');
+    function compose(open){form.hidden=!open;m.classList.toggle('is-composing-reminder',open);add.setAttribute('aria-expanded',String(open));if(open){status.textContent='';if(new Date(date.value).getTime()<=Date.now())date.value=defaultDate();text.focus()}else add.focus({preventScroll:true})}
+    add.onclick=()=>compose(form.hidden);m.querySelector('.reminders-cancel').onclick=()=>compose(false);form.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();compose(false)}});
     function render(){
       const stored=read();list.replaceChildren();
       if(!items.length){const empty=document.createElement('p');empty.className='reminders-empty';empty.textContent='A little nudge, right when you need it.';list.append(empty)}
@@ -76,7 +79,7 @@
       if(!Object.values(channels).some(Boolean)){status.textContent='Choose at least one notification option.';return}
       if(items.length>=100){status.textContent='This tile holds up to 100 reminders. Remove old reminders to add more.';return}
       const item={id:crypto.randomUUID?.()||('reminder-'+Date.now().toString(36)+'-'+Array.from(crypto.getRandomValues(new Uint32Array(2))).join('-')),text:text.value.trim().slice(0,300),dueAt,...channels};
-      try{register(item,window.TeacherTilesBoard?.activeBoardId);items.push(item);text.value='';status.textContent='Reminder scheduled.';notifyBoardChanged('reminder-add');render()}catch{status.textContent='Could not save this reminder. Browser storage may be full.'}
+      try{register(item,window.TeacherTilesBoard?.activeBoardId);items.push(item);text.value='';status.textContent='Reminder scheduled.';notifyBoardChanged('reminder-add');render();compose(false)}catch{status.textContent='Could not save this reminder. Browser storage may be full.'}
     });
     list.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
     const onChange=()=>render();window.addEventListener('teachertiles:reminderschange',onChange);

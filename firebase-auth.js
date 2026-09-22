@@ -931,7 +931,7 @@ function renderNotificationInbox() {
     const copy=document.createElement('div');copy.className='profile-notification-card__copy';
     const title=document.createElement('strong');title.textContent=item.text;
     const detail=document.createElement('small');detail.textContent='Reminder · '+new Date(item.dueAt).toLocaleString();
-    const dismiss=document.createElement('button');dismiss.type='button';dismiss.textContent='Dismiss';dismiss.onclick=()=>window.TeacherTilesReminders.dismiss(item.id);
+    const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='reminder-dismiss';dismiss.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m5 10 3 3 7-7"/></svg><span>Dismiss</span>';dismiss.onclick=()=>window.TeacherTilesReminders.dismiss(item.id);
     copy.append(title,detail,dismiss);card.append(copy);notificationList.append(card);
   });
   organizationInvites.forEach(invite => {

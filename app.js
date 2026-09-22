@@ -50,6 +50,7 @@ function disableModuleSpellcheck(root){
 }
 
 function captureModuleTransform(m){
+  if(m?._tileFullscreenTransform)return {...m._tileFullscreenTransform};
   const restingHeight=Number(m?._transientRestingHeight);
   return{
     left:m.offsetLeft,
@@ -2195,7 +2196,7 @@ function moduleViewportScale(m){
   return Math.max(.05,boardCamera.scale||1)*tileUniformScale(m);
 }
 function syncPinnedTileToCamera(m,rendered=renderedBoardCameraOffset()){
-  if(!m?.isConnected)return;
+  if(!m?.isConnected||m._tileFullscreenGeometry||document.fullscreenElement===m)return;
   if(!isTilePinned(m)){
     setTileUniformScale(m,tileUniformScale(m));
     syncTilePinControl(m);
@@ -3921,7 +3922,8 @@ function syncTileFullscreenControls(){
 }
 
 function rememberTileFullscreenGeometry(m){
-  if(!m?.isConnected)return;
+  if(!m?.isConnected||m._tileFullscreenGeometry)return;
+  m._tileFullscreenTransform=captureModuleTransform(m);
   m._tileFullscreenGeometry={
     left:m.style.left,
     top:m.style.top,
@@ -3931,17 +3933,10 @@ function rememberTileFullscreenGeometry(m){
 }
 function restoreTileFullscreenGeometry(m){
   const state=m?._tileFullscreenGeometry;
-  if(!m||!state)return;
-  delete m._tileFullscreenGeometry;
-  if(isTilePinned(m)){syncPinnedTileToCamera(m);return}
-  const apply=()=>{
-    if(!m.isConnected)return;
-    m.style.left=state.left;
-    m.style.top=state.top;
-    m.style.width=state.width;
-    m.style.height=state.height;
-  };
-  requestAnimationFrame(()=>requestAnimationFrame(apply));
+  if(!state||document.fullscreenElement===m)return;
+  const apply=()=>{if(!m.isConnected||document.fullscreenElement===m||m._tileFullscreenGeometry!==state)return false;Object.assign(m.style,state);return true};
+  apply();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!apply())return;delete m._tileFullscreenGeometry;delete m._tileFullscreenTransform;if(isTilePinned(m))syncPinnedTileToCamera(m);m._syncTransientResize?.();m._afterModuleResize?.()}));
 }
 
 function ensureTileFullscreenControl(m){
@@ -3966,7 +3961,7 @@ function ensureTileFullscreenControl(m){
         await document.exitFullscreen();
       }else{
         rememberTileFullscreenGeometry(m);
-        await m.requestFullscreen({navigationUI:'hide'});
+        try{await m.requestFullscreen({navigationUI:'hide'})}catch(error){restoreTileFullscreenGeometry(m);throw error}
       }
     }catch{}
   });
@@ -13208,13 +13203,15 @@ document.addEventListener('fullscreenchange',()=>{
   fullscreenToggle.classList.toggle('is-fullscreen-active',active);
   fullscreenToggle.setAttribute('aria-label',active?'Exit fullscreen':'Enter fullscreen');
   syncTileFullscreenControls();syncPinnedTilesToCamera();
-  if(!active){
+  {
     document.querySelectorAll('.module').forEach(module=>{
       if(module._tileFullscreenGeometry)restoreTileFullscreenGeometry(module);
     });
   }
 });
-window.addEventListener('resize',()=>{document.querySelectorAll('.module').forEach(m=>{if(m===document.fullscreenElement||isTilePinned(m))return;m.style.left=`${clamp(m.offsetLeft,0,Math.max(0,BOARD_WIDTH-m.offsetWidth))}px`;m.style.top=`${clamp(m.offsetTop,0,Math.max(0,BOARD_HEIGHT-m.offsetHeight))}px`});syncPinnedTilesToCamera()});
+// Viewport resizing does not change coordinates on the fixed-size board. Fullscreen
+// layout can briefly report offsetLeft/Top as zero; never persist those offsets.
+window.addEventListener('resize',()=>syncPinnedTilesToCamera());
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId='',previewSize=0}={}){
   if(!src&&!emoji)return null;
@@ -13609,6 +13606,7 @@ function setupCollectionShelf(){
   };
 
   const closeShelf=()=>{
+    themePicker?.close();
     if(!activeShelf)return;
     activeShelf=null;
     closeThemeFan();
@@ -13622,6 +13620,7 @@ function setupCollectionShelf(){
 
   const openShelf=type=>{
     if(activeShelf===type){closeShelf();return}
+    themePicker?.close();
     activeShelf=type;
     closeThemeFan();
     if(type!=='stickers')closeStickerPack();
@@ -19153,7 +19152,7 @@ const BOARD_TRANSIENT_CLASSES=new Set([
   'is-selected','is-over-trash','is-dragging','trash-delete','sticker-placed',
   'is-sticker-resizing','is-sticker-rotating','is-snap-grouped','is-tug-armed','stoplight-pop','is-flipping',
   'is-appearance-open','is-fitting','is-shuffling','is-dragover','is-drop-target','is-meter-filling','is-meter-filled','is-collection-filled','has-tile-settings-open','is-pointer-over','has-keyboard-focus',
-  'is-delete-hotzone','is-tile-options-hotzone','is-tab-options-hotzone','is-tile-fullscreen','is-tile-pinned'
+  'is-delete-hotzone','is-tile-options-hotzone','is-tab-options-hotzone','is-tile-fullscreen','is-tile-pinned','is-composing-reminder'
 ]);
 let activeTeacherTilesBoardId='';
 
