@@ -1,0 +1,13 @@
+.reminders-module{width:430px;height:480px;min-width:320px;min-height:370px;display:flex;flex-direction:column;gap:10px;padding:24px 20px 46px;color:var(--module-text,var(--text));font-family:var(--module-font,Inter,sans-serif)}
+.reminders-heading{margin:0;padding-right:80px;font-size:22px;font-weight:600}.reminders-form{display:flex;flex-direction:column;gap:8px}
+.reminders-form>input{width:100%;min-width:0;box-sizing:border-box;padding:9px 10px;font:inherit;font-size:12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid);color:var(--text)}
+.reminders-channels{display:flex;gap:10px;flex-wrap:wrap;font-size:11px}.reminders-channels label{display:flex;align-items:center;gap:4px}
+.reminders-form>button{padding:9px;border:0;border-radius:9px;background:#657ebc;color:#fff;font:600 12px Inter,sans-serif;cursor:pointer}
+.reminders-status{font-size:11px;margin:0;line-height:1.4;min-height:16px}.reminders-note{font-size:10px;opacity:.65;line-height:1.4;margin:0}
+.reminders-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}.reminders-empty{font-size:12px;opacity:.6;text-align:center;padding:16px 0}
+.reminder-row{display:flex;gap:8px;align-items:center;border-top:1px solid var(--border);padding:10px 0;font-size:12px}.reminder-row>div{min-width:0;flex:1}.reminder-row strong{display:block;overflow-wrap:anywhere;font-weight:600}.reminder-row small{display:block;opacity:.65;margin-top:3px;font-size:10px}.reminder-row button{border:0;background:var(--surface-soft);color:inherit;border-radius:6px;width:26px;height:26px;cursor:pointer}
+.reminder-toasts{position:fixed;right:20px;top:70px;z-index:90000;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 100px);overflow:auto;width:min(330px,calc(100vw - 40px));pointer-events:none}
+.reminder-toast{pointer-events:auto;border:1px solid var(--border);border-radius:16px;padding:17px;background:var(--surface-solid,#fff);color:var(--text,#222);box-shadow:0 10px 32px #15244324;display:flex;flex-direction:column;gap:8px;animation:reminderEnter .25s ease-out}
+.reminder-toast small{font-size:9px;letter-spacing:.16em;color:#687db3;font-weight:800}.reminder-toast strong{font-size:15px;overflow-wrap:anywhere}.reminder-toast>span{font-size:11px;opacity:.65}.reminder-toast button{align-self:flex-end;border:0;border-radius:7px;padding:6px 10px;background:var(--surface-soft);color:inherit;cursor:pointer}
+@keyframes reminderEnter{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.reminder-toast{animation:none}}

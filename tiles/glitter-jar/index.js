@@ -5,45 +5,48 @@
     const button=m.querySelector('.glitter-jar-button'),canvas=button.querySelector('canvas'),caption=m.querySelector('.glitter-jar-caption');
     const ctx=canvas.getContext('2d');
     const dpr=Math.min(devicePixelRatio||1,2);canvas.width=300*dpr;canvas.height=380*dpr;ctx.scale(dpr,dpr);
-    const jar=new Path2D('M96 67 L204 67 L204 81 C204 99 233 102 237 126 L237 306 Q237 337 207 337 L93 337 Q63 337 63 306 L63 126 C67 102 96 99 96 81 Z');
-    const glass=ctx.createLinearGradient(63,0,237,0);glass.addColorStop(0,'#d8cbff99');glass.addColorStop(.14,'#ffffff88');glass.addColorStop(.38,'#ffffff0a');glass.addColorStop(.83,'#cbb5ff22');glass.addColorStop(1,'#8e77c466');
-    const liquid=ctx.createLinearGradient(0,112,0,337);liquid.addColorStop(0,'#b781e8');liquid.addColorStop(.4,'#8651c3');liquid.addColorStop(1,'#432876');
-    const lid=ctx.createLinearGradient(0,40,0,72);lid.addColorStop(0,'#e5d4f3');lid.addColorStop(.3,'#c2a7d8');lid.addColorStop(1,'#806096');
-    const colors=['#fff3c2','#f5dcff','#c6a0ff','#e7b4f8','#ffffff'];
-    const particles=Array.from({length:180},()=>({angle:Math.random()*Math.PI*2,radius:10+Math.random()*65,y:132+Math.random()*166,baseX:76+Math.random()*148,baseY:320+Math.random()*10,size:.8+Math.random()*1.6,speed:.6+Math.random(),color:colors[Math.floor(Math.random()*colors.length)]}));
+
+    const jar=new Path2D('M88 68 L212 68 L212 83 C212 101 243 104 245 135 L245 293 Q245 339 202 342 L98 342 Q55 339 55 293 L55 135 C57 104 88 101 88 83 Z');
+    const liquid=ctx.createLinearGradient(60,85,228,340);liquid.addColorStop(0,'#c493ef');liquid.addColorStop(.32,'#9964d1');liquid.addColorStop(.65,'#7744b5');liquid.addColorStop(1,'#482878');
+    const glow=ctx.createRadialGradient(96,140,5,142,202,164);glow.addColorStop(0,'#eed9ff88');glow.addColorStop(.5,'#b889ed16');glow.addColorStop(1,'#28124e55');
+    const glass=ctx.createLinearGradient(55,0,245,0);glass.addColorStop(0,'#ffffff60');glass.addColorStop(.07,'#ffffff05');glass.addColorStop(.85,'#ffffff00');glass.addColorStop(.97,'#27124855');glass.addColorStop(1,'#ffffff70');
+    const lid=ctx.createLinearGradient(0,45,0,78);lid.addColorStop(0,'#d7d9de');lid.addColorStop(.18,'#f4f4f6');lid.addColorStop(.38,'#afb1bc');lid.addColorStop(.65,'#d7d8de');lid.addColorStop(1,'#828391');
+    const colors=['#ffe8b8','#e3c9ff','#b798ed','#f2d5fa','#ffffff'];
+    const particles=Array.from({length:720},()=>({angle:Math.random()*Math.PI*2,radius:8+Math.random()*81,y:100+Math.random()*213,baseX:66+Math.random()*168,baseY:317+Math.random()*20,size:Math.random()<.86?.35+Math.random()*.65:1.2+Math.random()*1.3,speed:.35+Math.random()*.65,color:colors[Math.floor(Math.random()*colors.length)]}));
     let start=0,raf=0,running=false,disposed=false,visible=true;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
     function draw(progress=1){
-      const energy=(1-progress)**2,phase=(1-(1-progress)**3)*(reduced.matches?5:22);
+      const energy=(1-progress)**2,phase=(1-(1-progress)**3)*(reduced.matches?4:15),lift=1-progress**1.8;
       ctx.clearRect(0,0,300,380);
-      ctx.fillStyle='#39275412';ctx.beginPath();ctx.ellipse(150,350,84,9,0,0,Math.PI*2);ctx.fill();
-      ctx.save();ctx.clip(jar);ctx.fillStyle=glass;ctx.fillRect(60,65,180,275);
-      ctx.fillStyle=liquid;ctx.beginPath();ctx.moveTo(60,122);ctx.bezierCurveTo(105,122+energy*Math.sin(phase)*9,190,122-energy*Math.sin(phase)*9,240,122);ctx.lineTo(240,340);ctx.lineTo(60,340);ctx.closePath();ctx.fill();
-      // Broad translucent currents give the purple liquid depth without blur filters.
-      ctx.save();ctx.beginPath();ctx.rect(64,128,172,210);ctx.clip();
-      for(let i=0;i<4;i++){
-        ctx.save();ctx.translate(150,166+i*40);ctx.rotate(Math.sin(phase*.5+i)*energy*.7);
-        ctx.fillStyle=i%2?'#d8a7fa':'#542782';ctx.globalAlpha=.06+energy*.14;
-        ctx.beginPath();ctx.ellipse(Math.sin(phase+i)*energy*20,0,106,12+energy*14,0,0,Math.PI*2);ctx.fill();ctx.restore();
+      ctx.fillStyle='#39275416';ctx.beginPath();ctx.ellipse(150,351,88,8,0,0,Math.PI*2);ctx.fill();
+      ctx.save();ctx.clip(jar);
+      ctx.fillStyle='#d9c8ed';ctx.fillRect(50,65,200,280);
+      ctx.fillStyle=liquid;ctx.beginPath();ctx.moveTo(50,91);ctx.bezierCurveTo(110,91+energy*Math.sin(phase)*5,190,91-energy*Math.sin(phase)*5,250,91);ctx.lineTo(250,350);ctx.lineTo(50,350);ctx.fill();
+      ctx.fillStyle=glow;ctx.fillRect(50,92,200,260);
+      // Soft curved currents, without hard bands through the liquid.
+      for(let i=0;i<3;i++){
+        const y=145+i*62+Math.sin(phase*.4+i)*12*energy;
+        const current=ctx.createRadialGradient(115+Math.sin(phase*.25+i)*35,y,0,150,y,100);
+        current.addColorStop(0,i%2?'#44217b00':'#e5bdff00');current.addColorStop(.45,i%2?'#44217b16':'#e5bdff25');current.addColorStop(1,'#bb92ed00');
+        ctx.globalAlpha=energy;ctx.fillStyle=current;ctx.fillRect(55,93,190,250);
       }
-      ctx.restore();
       for(const p of particles){
-        const a=p.angle+phase*p.speed,w=Math.sqrt(energy);
-        const x=p.baseX*(1-w)+(150+Math.cos(a)*p.radius)*w;
-        const y=p.baseY*(1-w)+(p.y+Math.sin(a)*24*energy)*w;
-        ctx.globalAlpha=.45+.5*(.5+.5*Math.sin(a*2));ctx.fillStyle=p.color;
-        ctx.beginPath();ctx.moveTo(x,y-p.size*1.6);ctx.lineTo(x+p.size,y);ctx.lineTo(x,y+p.size*1.6);ctx.lineTo(x-p.size,y);ctx.closePath();ctx.fill();
+        const a=p.angle+phase*p.speed,depth=.5+.5*Math.sin(a);
+        const x=p.baseX*(1-lift)+(150+Math.cos(a)*p.radius)*lift;
+        const y=p.baseY*(1-lift)+(p.y+Math.sin(a)*12*energy)*lift;
+        ctx.globalAlpha=(.28+.65*depth)*(.7+.3*energy);ctx.fillStyle=p.color;
+        if(p.size<1.1)ctx.fillRect(x,y,p.size,p.size);
+        else{const size=p.size*(.65+.35*depth);ctx.beginPath();ctx.moveTo(x,y-size);ctx.lineTo(x+size*.8,y-size*.25);ctx.lineTo(x+size*.6,y+size);ctx.lineTo(x-size,y+size*.4);ctx.closePath();ctx.fill()}
       }
-      ctx.globalAlpha=1;
-      ctx.fillStyle='#efd9ff45';ctx.beginPath();ctx.ellipse(150,122,85,5,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#ffffff35';ctx.beginPath();ctx.roundRect(75,126,9,170,5);ctx.fill();ctx.fillStyle='#ffffff18';ctx.beginPath();ctx.roundRect(91,113,4,102,2);ctx.fill();
-      ctx.restore();
-      ctx.lineWidth=2;ctx.strokeStyle='#b7a3d9aa';ctx.stroke(jar);
-      ctx.strokeStyle='#ffffffb0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(95,99);ctx.bezierCurveTo(77,106,69,115,69,132);ctx.stroke();
-      ctx.fillStyle=lid;ctx.beginPath();ctx.roundRect(87,44,126,28,8);ctx.fill();
-      ctx.strokeStyle='#71548c50';ctx.lineWidth=1;for(let x=95;x<210;x+=7){ctx.beginPath();ctx.moveTo(x,51);ctx.lineTo(x,65);ctx.stroke()}
-      ctx.fillStyle='#f4eafb';ctx.beginPath();ctx.ellipse(150,45,60,5,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#e5cff580';ctx.beginPath();ctx.roundRect(93,75,114,5,2);ctx.fill();
+      ctx.globalAlpha=1;ctx.fillStyle=glass;ctx.fillRect(50,65,200,280);
+      ctx.strokeStyle='#f5e8ff55';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(150,92,63,3,0,0,Math.PI*2);ctx.stroke();
+      const shine=ctx.createLinearGradient(65,0,85,0);shine.addColorStop(0,'#ffffff00');shine.addColorStop(.5,'#ffffff40');shine.addColorStop(1,'#ffffff00');ctx.fillStyle=shine;ctx.beginPath();ctx.roundRect(65,133,20,170,10);ctx.fill();
+      ctx.strokeStyle='#ffffff65';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(83,115);ctx.bezierCurveTo(66,130,63,147,64,171);ctx.stroke();
+      ctx.strokeStyle='#eadfff50';ctx.beginPath();ctx.ellipse(150,330,78,6,0,0,Math.PI);ctx.stroke();ctx.restore();
+      ctx.lineWidth=1.5;ctx.strokeStyle='#ae98ce88';ctx.stroke(jar);
+      ctx.fillStyle=lid;ctx.beginPath();ctx.roundRect(79,46,142,32,8);ctx.fill();
+      ctx.strokeStyle='#6b6a7955';ctx.lineWidth=1;for(const y of [61,67,73]){ctx.beginPath();ctx.moveTo(82,y);ctx.lineTo(218,y);ctx.stroke()}
+      ctx.fillStyle='#e5e5e9';ctx.beginPath();ctx.ellipse(150,47,69,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffffff99';ctx.stroke();
     }
     function rest(){cancelAnimationFrame(raf);raf=0;running=false;m.classList.remove('is-swirling');button.setAttribute('aria-label','Stir the glitter jar');caption.textContent='Click the jar. Let your thoughts settle.';draw(1)}
     function frame(now){

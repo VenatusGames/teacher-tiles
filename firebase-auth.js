@@ -649,6 +649,7 @@ function publishShopAccount(patch = {}) {
     detail: {
       ready: shopAccountState.ready,
       loading: shopAccountState.loading,
+      userId: currentUser?.uid || "",
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
@@ -910,7 +911,8 @@ function buildInvitationActions(invite, compact = false) {
 function renderNotificationInbox() {
   if (!notificationList) return;
   notificationList.replaceChildren();
-  const count = organizationInvites.length;
+  const reminders = window.TeacherTilesReminders?.inbox() || [];
+  const count = organizationInvites.length + reminders.length;
   if (notificationCount) {
     notificationCount.textContent = count > 99 ? "99+" : String(count);
     notificationCount.hidden = count === 0;
@@ -924,6 +926,14 @@ function renderNotificationInbox() {
     notificationList.appendChild(empty);
     return;
   }
+  reminders.forEach(item => {
+    const card=document.createElement('article');card.className='profile-notification-card';
+    const copy=document.createElement('div');copy.className='profile-notification-card__copy';
+    const title=document.createElement('strong');title.textContent=item.text;
+    const detail=document.createElement('small');detail.textContent='Reminder · '+new Date(item.dueAt).toLocaleString();
+    const dismiss=document.createElement('button');dismiss.type='button';dismiss.textContent='Dismiss';dismiss.onclick=()=>window.TeacherTilesReminders.dismiss(item.id);
+    copy.append(title,detail,dismiss);card.append(copy);notificationList.append(card);
+  });
   organizationInvites.forEach(invite => {
     const card = document.createElement("article");
     card.className = "profile-notification-card";
@@ -941,6 +951,8 @@ function renderNotificationInbox() {
     notificationList.appendChild(card);
   });
 }
+
+window.addEventListener('teachertiles:reminderschange',renderNotificationInbox);
 
 function renderOrganizationInvitations() {
   if (!organizationInvitationList || !organizationInvitations) return;
@@ -3695,6 +3707,7 @@ async function deleteBoard(boardId) {
 
     await firestoreSdk.deleteDoc(boardDocument(currentUser.uid, boardId));
     await deleteLocalBoardSnapshot(currentUser.uid, boardId);
+    window.TeacherTilesReminders?.cancelBoard(boardId);
     boardList = boardList.filter(item => item.id !== boardId);
 
     if (wasActive) {
@@ -4515,6 +4528,7 @@ window.TeacherTilesEncryptedClasses = {
 window.TeacherTilesAccount = {
   get state() {
     return {
+      userId: currentUser?.uid || "",
       ready: shopAccountState.ready,
       loading: shopAccountState.loading,
       signedIn: shopAccountState.signedIn,

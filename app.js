@@ -3448,6 +3448,8 @@ function setupModuleByType(m,type){
   if(type==='quietcritters')window.TeacherTilesQuietCritters.setup(m);
   if(type==='chime')window.TeacherTilesChime.setup(m);
   if(type==='meditation')window.TeacherTilesMeditation.setup(m);
+  if(type==='spreadsheet')window.TeacherTilesSpreadsheet.setup(m);
+  if(type==='reminders')window.TeacherTilesReminders.setup(m);
   if(type==='glitterjar')window.TeacherTilesGlitterJar.setup(m);
   if(type==='transitionbell')window.TeacherTilesTransitionBell.setup(m);
   if(type==='butterflygarden')window.TeacherTilesButterflyGarden.setup(m);
@@ -9363,6 +9365,8 @@ const EDITABLE_TILE_HEADINGS={
   colorpicker:'.widget-title',
   rainbow:'.widget-title',
   meditation:'.meditation-title',
+  spreadsheet:'.sheet-heading',
+  reminders:'.reminders-heading',
   glitterjar:'.glitter-jar-heading',
   piano:'.widget-title',
   musicscore:'.widget-title',
@@ -13190,6 +13194,7 @@ function applyTeacherTheme(theme,{persist=true}={}){
   applyMaterialThemeArtwork(next);
   if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
   updateThemeControls(next);
+  window.dispatchEvent(new CustomEvent('teachertiles:themechange'));
   if(persist)notifyBoardChanged('theme');
 }
 
@@ -13393,6 +13398,7 @@ function setupCollectionShelf(){
   if(!shelf||!title||!closeButton||!themeButton||!stickerButton||!cursorsButton||!themePanel||!stickerPanel||!cursorsPanel||!shelfShell||!packs.length)return;
 
   let stickerPicker=null;
+  let themePicker=null;
   let activeShelf=null;
   let activePack=null;
   let activeFan=null;
@@ -13629,12 +13635,14 @@ function setupCollectionShelf(){
     stickerPanel.classList.toggle('is-active',stickers);
     cursorsPanel.classList.toggle('is-active',cursors);
     shelf.classList.toggle('is-sticker-mode',stickers);
+    shelf.classList.toggle('is-theme-mode',themes);
     shelf.classList.toggle('is-cursors-mode',cursors);
     if(cursors)renderCursorShelf();
     title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Cursors';
     shelf.inert=false;
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
+    if(themes)themePicker?.open();
     if(stickers){stickerPicker?.render();stickerSearch?.focus({preventScroll:true})}
     syncShelfButtons();
   };
@@ -13684,7 +13692,7 @@ function setupCollectionShelf(){
   window.addEventListener('resize',positionThemeFan,{passive:true});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){const trigger=activeShelf==='stickers'?stickerButton:activeShelf==='themes'?themeButton:cursorsButton;closeShelf();trigger.focus()}});
   document.addEventListener('pointerdown',e=>{
-    if(!activeShelf||activeShelf==='stickers')return;
+    if(!activeShelf||activeShelf==='stickers'||activeShelf==='themes')return;
     const target=e.target;
     if(!(target instanceof Element))return;
     if(target.closest('#asset-shelf,.theme-fan,.workspace-upcoming-controls'))return;
@@ -13695,6 +13703,7 @@ function setupCollectionShelf(){
   syncCollectionOwnership();
   syncCosmeticEntitlements();
   renderCursorShelf();
+  themePicker=window.createThemePicker({panel:themePanel,packs,owns:ownsCosmetic,entitlement:shelfEntitlement,requestAccess:requireCosmetic,apply:applyTeacherTheme,crown:markSubscriptionAccess});
   stickerPicker=window.createStickerPicker({panel:stickerPanel,packs:stickerPacks,search:stickerSearch,clear:stickerSearchClear,status:stickerSearchStatus,shell:shelfShell,bindDrag:setupShelfStickerDrag,owns:ownsCosmetic,require:requireCosmetic,entitlement:shelfEntitlement,place:createStickerModule});
   shelf.inert=true;
 }

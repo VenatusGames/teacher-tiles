@@ -1,0 +1,11 @@
+.spreadsheet-module{width:620px;height:420px;min-width:340px;min-height:260px;padding:24px 16px 48px;display:flex;flex-direction:column;gap:9px;color:var(--module-text,var(--text));font-family:var(--module-font,Inter,sans-serif)}
+.sheet-heading{margin:0;padding-right:90px;font-size:21px;font-weight:600}
+.sheet-toolbar{display:flex;gap:6px;flex-wrap:wrap}.sheet-toolbar button{font:inherit;font-size:11px;padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface-soft);color:inherit;cursor:pointer}
+.sheet-formula-row{display:flex;align-items:center;gap:8px;flex:none;font-size:12px}.sheet-cell-name{min-width:32px;text-align:center;font-weight:700}.sheet-formula{flex:1;min-width:0;border:1px solid var(--border);border-radius:7px;padding:6px 8px;background:var(--surface-solid);color:var(--text);font:inherit}
+.sheet-grid{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:9px;scrollbar-width:thin;background:var(--surface-solid);color:var(--text)}
+.sheet-grid table{border-collapse:separate;border-spacing:0;min-width:100%;font-size:12px;table-layout:fixed}
+.sheet-grid th{background:var(--surface-soft);font-weight:600;position:sticky;z-index:2;top:0;height:25px;padding:3px 8px;text-align:center}
+.sheet-grid tbody th{left:0;z-index:1;min-width:26px}.sheet-grid td{padding:0;border-right:1px solid var(--border);border-top:1px solid var(--border)}
+.sheet-grid input{display:block;width:100%;min-width:86px;height:29px;border:0;background:transparent;color:inherit;font:inherit;padding:4px 7px;box-sizing:border-box;border-radius:0}
+.sheet-grid input:focus,.sheet-grid input.is-selected{outline:2px solid #6f8ed6;outline-offset:-2px;background:#7896e010}.sheet-grid input.has-error{color:#bc414e}
+.sheet-status{font-size:10px;opacity:.65;margin:0}.sheet-help{font-size:10px;opacity:.65;margin:0}
