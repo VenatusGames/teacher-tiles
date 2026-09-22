@@ -12,3 +12,5 @@
 .noise-modern[data-noise-view=single] .nm-heading{font-size:17px}.noise-modern[data-noise-view=single] .nm-footer{justify-content:center}.noise-modern[data-noise-view=single] .nm-status{width:100%;text-align:center}
 
 .noise-module.noise-modern[data-noise-view=single]{gap:8px}.noise-modern[data-noise-view=single] .nm-footer{gap:6px}
+
+.noise-module.noise-modern[data-noise-view=horizontal]{gap:8px}

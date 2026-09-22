@@ -12,7 +12,7 @@ function setup(m){
     }else{
 
       const vertical=view.value==='vertical',count=vertical?32:28,gap=Math.min(4,width/(count*3)),barWidth=(width-gap*(count-1))/count;
-      const h=vertical?height*.8:Math.min(70,height*.45),top=vertical?height*.1:height*.27;
+      const top=vertical?height*.1:8,h=vertical?height*.8:Math.max(1,height-38);
       for(let i=0;i<count;i++){const x=i*(barWidth+gap);paint.globalAlpha=.08;paint.fillStyle=quiet;paint.beginPath();paint.roundRect(x,top,barWidth,h,Math.min(3,barWidth/2));paint.fill();paint.globalAlpha=1;paint.fillStyle=color;
         const strength=vertical?level/100:clamp(level/100*count-i,0,1);if(strength>0){const filled=vertical?h*strength:h;paint.beginPath();paint.roundRect(x,vertical?top+h-filled:top,vertical?barWidth:barWidth*strength,filled,Math.min(3,barWidth*strength/2,filled/2));paint.fill()}}
       paint.globalAlpha=1;paint.strokeStyle=color;paint.lineWidth=1.5;paint.setLineDash([4,4]);paint.beginPath();
