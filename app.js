@@ -1333,7 +1333,7 @@ document.addEventListener('change',e=>{
 let lastUiInteractionWasKeyboard=false;
 document.addEventListener('keydown',event=>{
   const typing=isTypingTarget(event.target)||isTypingTarget(document.activeElement);
-  if(event.key==='Tab'||((event.key==='Enter'||event.key===' ')&&!typing)){
+  if(event.key==='Tab'||(event.key==='Enter'&&!typing)){
     lastUiInteractionWasKeyboard=true;
     document.body.classList.add('is-keyboard-navigation');
   }
@@ -2322,7 +2322,7 @@ window.addEventListener('blur',()=>{
   zoomIndicator?.classList.remove('is-precise','is-visible');
 });
 
-function isSpaceTypingTarget(target){const field=target instanceof Element?target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])'):null;return !!field&&(!(field instanceof HTMLInputElement)||!['button','submit','reset','checkbox','radio','range','color','file','image','hidden'].includes(field.type))}
+function isSpaceTypingTarget(target){const field=target instanceof Element?target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])'):null;return !!field&&!(field.dataset.textEditMode==='double'&&!field.classList.contains('module-text-edit-active'))&&(!(field instanceof HTMLInputElement)||!['button','submit','reset','checkbox','radio','range','color','file','image','hidden'].includes(field.type))}
 window.addEventListener('keyup',event=>{if(event.code==='Space'&&!isSpaceTypingTarget(event.target)&&!isSpaceTypingTarget(document.activeElement)&&!boardKeyboardPanBlocked(true)){event.preventDefault();event.stopImmediatePropagation()}},{capture:true});
 window.addEventListener('keydown',event=>{
   if(event.code!=='Space'||event.ctrlKey||event.metaKey||event.altKey)return;
@@ -2332,6 +2332,8 @@ window.addEventListener('keydown',event=>{
   if(boardKeyboardPanBlocked(true))return;
   event.preventDefault();
   event.stopImmediatePropagation();
+  lastUiInteractionWasKeyboard=false;document.body.classList.remove('is-keyboard-navigation');
+  if(document.activeElement instanceof HTMLElement&&!isSpaceTypingTarget(document.activeElement))document.activeElement.blur();
   if(event.repeat)return;
   const defaultScale=clamp((Number(appPreferences.defaultViewSize)||100)/100,BOARD_MIN_ZOOM,BOARD_MAX_ZOOM);
   setCurrentBoardViewSize(appPreferences.defaultViewSize);
