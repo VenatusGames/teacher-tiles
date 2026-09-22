@@ -83,6 +83,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     assert.equal(compactClockControls.inside,true,'narrow clock keeps controls inside the tile');
     await page.mouse.move(1400,900);await page.clock.runFor(250);
     assert.equal(await clock.locator('.clock-customization').evaluate(el=>getComputedStyle(el).opacity),'0','clock controls hide after pointer leaves');
+    await page.evaluate(()=>{TeacherTilesBoard.clear();createModule('timer',500,250,{record:false});});
+    assert.equal(await page.locator('.timer-shape-select option[value="pentagon"]').count(),1,'visual timer includes pentagon shape option');
+    await page.evaluate(()=>{TeacherTilesBoard.clear();for(const type of ['clock','youtube','progressbar','draw'])createModule(type,500,250,{record:false});});
     assert.equal(await page.locator('.workspace .module').count(),await page.locator('.workspace .module .tile-settings-floating .tile-reset-scale').count());
     assert.equal(await page.locator('.workspace .module>.tile-reset-scale').count(),0,'no standalone reset buttons');
     while(await page.locator('.workspace .module').count()){
