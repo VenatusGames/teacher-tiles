@@ -6,3 +6,13 @@
 .sentence-history{position:absolute;bottom:100%;left:0;right:0;max-height:220px;overflow:auto;overscroll-behavior:contain;background:var(--surface-solid);border:1px solid var(--border);box-shadow:0 8px 24px #17203318;border-radius:13px;padding:6px;z-index:5}.sentence-history button{display:flex;align-items:baseline;gap:12px;width:100%;padding:10px;border:0;border-radius:8px;background:transparent;text-align:left;color:var(--text);font:14px var(--module-font);cursor:pointer;overflow-wrap:anywhere}.sentence-history button:hover{background:var(--surface-soft)}.sentence-history small{font-size:10px;opacity:.5}.sentence-notice{font-size:11px;color:#b44545}.sentence-notice:empty{display:none}
 
 .sentence-apply{display:inline-block;vertical-align:middle;margin-left:8px;padding:7px 12px;border:1px solid #8aaacb;border-radius:9px;background:#e9f2fb;color:#34628f;font:600 12px Inter,sans-serif;cursor:pointer}.sentence-apply:hover{background:#dbeafa}
+
+/* Sentence length must not compete with the image for space. */
+.sentence-expansion-module{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(30px,.65fr) minmax(65px,2fr) minmax(90px,1.3fr)}
+.sentence-heading{grid-row:1}.sentence-source{grid-row:2;min-height:0;max-height:none}.sentence-drop{grid-row:3;min-height:0}.sentence-bottom{grid-row:4;min-height:0;max-height:none}.sentence-bottom .sentence-draft{min-height:0;max-height:none;flex:1;overscroll-behavior:contain}.sentence-ghost,.sentence-hint{flex-shrink:0}.sentence-notice{position:absolute;left:24px;right:24px;top:54px;z-index:4}
+
+.sentence-source,.sentence-drop,.sentence-bottom,.sentence-ghost>span{min-width:0}
+
+.sentence-apply{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility .18s}.sentence-expansion-module:hover .sentence-apply{opacity:1;visibility:visible;pointer-events:auto}@media(prefers-reduced-motion:reduce){.sentence-apply{transition:none}}
+
+.sentence-hint{opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s}.sentence-expansion-module:hover .sentence-hint{opacity:.45;visibility:visible}@media(prefers-reduced-motion:reduce){.sentence-hint{transition:none}}
