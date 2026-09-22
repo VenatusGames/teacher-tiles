@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { randomBytes, createHash } from 'node:crypto';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, getDocs, collection, setDoc, deleteDoc, writeBatch, setLogLevel, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where, orderBy, limit, setDoc, deleteDoc, writeBatch, setLogLevel, serverTimestamp } from 'firebase/firestore';
 import assert from 'node:assert/strict';
 import ts from 'typescript';
 setLogLevel('silent');
@@ -43,13 +43,18 @@ try {
   const publicToken = 'student-access-token-1234567890abcdef';
   const publicRoot = 'studentAccess/' + publicToken;
   await ok(setDoc(doc(teacher, root + '/studentAccess/config'), { version: 1, token: publicToken }));
-  await ok(setDoc(doc(teacher, publicRoot), {
+  // The owner must be able to inspect an as-yet-unpublished token and create
+  // the root plus its child records in the same first-publish batch.
+  await ok(getDoc(doc(teacher, publicRoot)));
+  const initialPublish = writeBatch(teacher);
+  initialPublish.set(doc(teacher, publicRoot), {
     version: 2, ownerId: 'teacher-a', active: true, title: 'Daily WIG Check-In', description: 'Choose honestly.',
     studentIds: ['child-1'], questionIds: ['q-1'], answerIds: ['a-1'],
-  }));
-  await ok(setDoc(doc(teacher, publicRoot + '/students/child-1'), { name: 'Child', imageKey: null, currentScore: 2, goalScore: 5 }));
-  await ok(setDoc(doc(teacher, publicRoot + '/questions/q-1'), { prompt: 'How did it go?', position: 1, fridayOnly: false }));
-  await ok(setDoc(doc(teacher, publicRoot + '/answers/a-1'), { questionId: 'q-1', label: 'Great', imageKey: 'preset:smile', position: 1 }));
+  });
+  initialPublish.set(doc(teacher, publicRoot + '/students/child-1'), { name: 'Child', imageKey: null, currentScore: 2, goalScore: 5 });
+  initialPublish.set(doc(teacher, publicRoot + '/questions/q-1'), { prompt: 'How did it go?', position: 1, fridayOnly: false });
+  initialPublish.set(doc(teacher, publicRoot + '/answers/a-1'), { questionId: 'q-1', label: 'Great', imageKey: 'preset:smile', position: 1 });
+  await ok(initialPublish.commit());
   await ok(getDoc(doc(anonymous, publicRoot)));
   await ok(getDocs(collection(anonymous, publicRoot + '/students')));
   await ok(getDocs(collection(anonymous, publicRoot + '/questions')));
@@ -63,6 +68,8 @@ try {
     items: [{ question: 'How did it go?', answer: 'Great', imageKey: 'preset:smile' }], imported: false,
   };
   await ok(setDoc(doc(anonymous, responsePath), publicResponse));
+  await ok(getDocs(query(collection(anonymous, publicRoot + '/responses'), where('day', '==', '2026-09-21'))));
+  await ok(getDocs(query(collection(anonymous, publicRoot + '/responses'), where('studentId', '==', 'child-1'), orderBy('day', 'desc'), limit(10))));
   await no(setDoc(doc(anonymous, responsePath), publicResponse));
   await no(deleteDoc(doc(anonymous, responsePath)));
   await no(setDoc(doc(anonymous, publicRoot + '/responses/2026-09-21_missing'), { ...publicResponse, studentId: 'missing' }));

@@ -30,9 +30,16 @@ service cloud.firestore {
       let path = /databases/$(database)/documents/studentAccess/$(token);
       return exists(path) && get(path).data.version == 2 && get(path).data.active == true;
     }
+    function ownsPublicAccessToken(token) {
+      let configPath = /databases/$(database)/documents/classes/$(request.auth.uid)/studentAccess/config;
+      return signedIn() && exists(configPath)
+        && get(configPath).data.version == 1
+        && get(configPath).data.token == token;
+    }
     function publicAccessOwner(token) {
       let path = /databases/$(database)/documents/studentAccess/$(token);
-      return signedIn() && exists(path) && get(path).data.ownerId == request.auth.uid;
+      return ownsPublicAccessToken(token)
+        && (!exists(path) || get(path).data.ownerId == request.auth.uid);
     }
     function publicRoot(data) {
       return data.keys().hasOnly(['version','ownerId','active','title','description','studentIds','questionIds','answerIds'])
@@ -48,9 +55,9 @@ service cloud.firestore {
     // A token is a capability URL: it can be fetched directly, but the token
     // collection itself cannot be listed by anonymous clients.
     match /studentAccess/{token} {
-      allow get: if (resource.data.version == 2 && resource.data.active == true)
-        || (signedIn() && resource.data.ownerId == request.auth.uid);
-      allow create: if signedIn() && publicRoot(request.resource.data)
+      allow get: if (resource != null && resource.data.version == 2 && resource.data.active == true)
+        || publicAccessOwner(token);
+      allow create: if publicAccessOwner(token) && publicRoot(request.resource.data)
         && request.resource.data.ownerId == request.auth.uid;
       allow update: if publicAccessOwner(token) && publicRoot(request.resource.data)
         && request.resource.data.ownerId == resource.data.ownerId;
