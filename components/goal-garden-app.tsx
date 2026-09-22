@@ -461,29 +461,26 @@ function StatisticsPanel({ access, data, completedIds, open }: { access: Access;
   }, [range]);
   const filtered = useMemo(() => cutoff ? entries.filter(entry => entry.id >= cutoff) : entries, [entries, cutoff]);
   const studentCounts = useMemo(() => data.students.map(student => ({ student, count: filtered.filter(entry => entry.studentId === student.id).length })).sort((a, b) => b.count - a.count || a.student.name.localeCompare(b.student.name)), [data.students, filtered]);
-  const answerCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    filtered.forEach(entry => entry.items.forEach(item => counts.set(item.answer, (counts.get(item.answer) ?? 0) + 1)));
-    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-    if (sorted.length <= 5) return sorted;
-    const top = sorted.slice(0, 5);
-    top.push(['Other', sorted.slice(5).reduce((sum, [, count]) => sum + count, 0)]);
-    return top;
+  const classResponses = useMemo(() => {
+    let affirmative = 0;
+    let negative = 0;
+    filtered.forEach(entry => entry.items.forEach(item => {
+      const imageKey = item.imageKey;
+      const answer = item.answer.trim().toLowerCase();
+      if (imageKey === 'preset:smile' || imageKey === 'preset:yes' || answer === 'smiley face' || answer === 'yes') affirmative += 1;
+      else if (imageKey === 'preset:sad' || imageKey === 'preset:no' || answer === 'sad face' || answer === 'no') negative += 1;
+    }));
+    const total = affirmative + negative;
+    return { affirmative, negative, total, percentage: total ? Math.round((affirmative / total) * 100) : null };
   }, [filtered]);
   const timeline = useMemo(() => buildStatsTimeline(entries, range), [entries, range]);
   const maxTimeline = Math.max(1, ...timeline.map(row => row.count));
   const maxStudent = Math.max(1, ...studentCounts.map(row => row.count));
-  const answerTotal = Math.max(1, answerCounts.reduce((sum, [, count]) => sum + count, 0));
-  const palette = ['#65a30d', '#0f766e', '#f59e0b', '#6366f1', '#ec4899', '#38bdf8'];
-  let cursor = 0;
-  const wedges = answerCounts.map(([label, count], index) => {
-    const start = cursor;
-    cursor += (count / answerTotal) * 100;
-    return { label, count, start, end: cursor, color: palette[index % palette.length] };
-  });
-  const donut = wedges.length ? `conic-gradient(${wedges.map(row => `${row.color} ${row.start}% ${row.end}%`).join(', ')})` : '#e7f4eb';
+  const classPercentage = classResponses.percentage;
+  const classDonut = classPercentage === null
+    ? '#e7f4eb'
+    : `conic-gradient(#65a30d 0 ${classPercentage}%, #dc2626 ${classPercentage}% 100%)`;
   const todayRate = data.students.length ? Math.round((completedIds.size / data.students.length) * 100) : 0;
-  const activeStudents = new Set(filtered.map(entry => entry.studentId)).size;
   const average = data.students.length ? filtered.length / data.students.length : 0;
 
   return <div className="stats-panel">
@@ -498,14 +495,13 @@ function StatisticsPanel({ access, data, completedIds, open }: { access: Access;
       {loading ? <div className="stats-loading"><LoaderCircle className="spin" /> Building your class snapshot…</div> : <>
         <div className="stats-cards">
           <article><small>Check-ins</small><strong>{filtered.length}</strong><span>{range === 'all' ? 'all time' : `last ${range} days`}</span></article>
-          <article><small>Active students</small><strong>{activeStudents}</strong><span>of {data.students.length}</span></article>
           <article><small>Average</small><strong>{average.toFixed(1)}</strong><span>check-ins per student</span></article>
           <article><small>Today</small><strong>{completedIds.size}/{data.students.length}</strong><span>checked in</span></article>
         </div>
         <div className="stats-visual-grid">
           <article className="stats-card stats-today-card"><div className="stats-card-heading"><div><small>Today&apos;s participation</small><h3>{todayRate}% complete</h3></div></div><div className="stats-ring" style={{ background: `conic-gradient(#65a30d 0 ${todayRate}%, #e7f4eb ${todayRate}% 100%)` }}><span><strong>{completedIds.size}</strong><small>of {data.students.length}</small></span></div><p>{data.students.length ? `${Math.max(0, data.students.length - completedIds.size)} student${data.students.length - completedIds.size === 1 ? '' : 's'} still to check in today.` : 'Add students to begin tracking participation.'}</p></article>
           <article className="stats-card stats-timeline-card"><div className="stats-card-heading"><div><small>{range === 'all' ? 'Monthly activity' : 'Daily activity'}</small><h3>Check-ins over time</h3></div></div><div className="stats-bars">{timeline.map((row, index) => <div className="stats-bar-column" key={row.key} title={`${row.label}: ${row.count}`}><div><i style={{ height: `${Math.max(row.count ? 10 : 2, (row.count / maxTimeline) * 100)}%`, animationDelay: `${index * 35}ms` }} /></div><span>{row.short}</span></div>)}</div></article>
-          <article className="stats-card stats-answer-card"><div className="stats-card-heading"><div><small>Response mix</small><h3>Most selected answers</h3></div></div>{wedges.length ? <div className="stats-donut-wrap"><div className="stats-donut" style={{ background: donut }}><span><strong>{answerCounts.reduce((sum, [, count]) => sum + count, 0)}</strong><small>answers</small></span></div><div className="stats-legend">{wedges.map(row => <div key={row.label}><i style={{ background: row.color }} /><span>{row.label}</span><strong>{row.count}</strong></div>)}</div></div> : <p className="stats-empty">No responses in this range yet.</p>}</article>
+          <article className="stats-card stats-answer-card"><div className="stats-card-heading"><div><small>Class Percentage</small><h3>Positive response score</h3></div></div><div className="stats-donut-wrap"><div className="stats-donut" style={{ background: classDonut }}><span><strong>{classPercentage === null ? '—' : `${classPercentage}%`}</strong><small>class score</small></span></div><div className="stats-legend"><div><i style={{ background: '#65a30d' }} /><span>Affirmative · Smiley Face + Yes</span><strong>{classResponses.affirmative}</strong></div><div><i style={{ background: '#dc2626' }} /><span>Negative · Sad Face + No</span><strong>{classResponses.negative}</strong></div><p className="stats-class-note">100% means every scored response in this range was affirmative. Negative responses lower the class percentage.</p></div></div></article>
           <article className="stats-card stats-students-card"><div className="stats-card-heading"><div><small>Participation by student</small><h3>Check-in activity</h3></div></div><div className="stats-student-bars">{studentCounts.length ? studentCounts.map((row, index) => <div key={row.student.id}><span>{row.student.name}</span><div><i style={{ width: `${(row.count / maxStudent) * 100}%`, animationDelay: `${index * 45}ms` }} /></div><strong>{row.count}</strong></div>) : <p className="stats-empty">Add students to see participation.</p>}</div></article>
         </div>
       </>}
