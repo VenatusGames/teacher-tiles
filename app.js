@@ -3158,7 +3158,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
   Object.freeze({id:'soundscapes-vinyl',productId:'tile-skin-soundscapes-vinyl',tileType:'boombox',tileLabel:'Soundscapes',name:'Vinyl',description:'Turn Soundscapes into a spinning record player.',tags:'soundscapes audio vinyl record music ambient sound',released:29}),
   Object.freeze({id:'soundscapes-music-player',productId:'tile-skin-soundscapes-music-player',tileType:'boombox',tileLabel:'Soundscapes',name:'Music Player',description:'A polished modern music-player layout for classroom soundscapes.',tags:'soundscapes audio music player modern ambient sound',released:30}),
-  Object.freeze({id:'soundscapes-ipod',productId:'tile-skin-soundscapes-ipod',tileType:'boombox',tileLabel:'Soundscapes',name:'iPod',description:'A classic click-wheel player look for your classroom soundscapes.',tags:'soundscapes audio ipod click wheel retro music ambient sound',released:31})
+  Object.freeze({id:'soundscapes-ipod',productId:'tile-skin-soundscapes-ipod',tileType:'boombox',tileLabel:'Soundscapes',name:'iPod',description:'A classic click-wheel player look for your classroom soundscapes.',tags:'soundscapes audio ipod click wheel retro music ambient sound',released:31,preferredSize:Object.freeze({width:270,height:430})})
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
@@ -3331,6 +3331,14 @@ function applyTileSkinToModule(m,id,{record=true}={}){
   const before=m.dataset.tileSkin||'';if(before===id)return m;
   const snapshot=serializeBoardModule(m);if(!snapshot)return m;
   if(id)snapshot.dataset.tileSkin=id;else delete snapshot.dataset.tileSkin;
+  if(skin?.preferredSize&&snapshot.transform){
+    const prior=snapshot.transform,priorScale=Math.max(.5,Math.min(1,Number(prior.uniformScale)||1));
+    const width=Math.max(1,Number(skin.preferredSize.width)||Number(prior.width)||m.offsetWidth);
+    const height=Math.max(1,Number(skin.preferredSize.height)||Number(prior.height)||m.offsetHeight);
+    const centerX=(Number(prior.left)||0)+(Number(prior.width)||m.offsetWidth)*priorScale/2;
+    const centerY=(Number(prior.top)||0)+(Number(prior.height)||m.offsetHeight)*priorScale/2;
+    snapshot.transform={...prior,left:clamp(centerX-width/2,0,Math.max(0,BOARD_WIDTH-width)),top:clamp(centerY-height/2,0,Math.max(0,BOARD_HEIGHT-height)),width,height,uniformScale:1};
+  }
   const wasSelected=selectedModules.has(m),nextSibling=m.nextSibling;
   m._deactivate?.();m.remove();
   let next;
