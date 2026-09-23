@@ -464,15 +464,19 @@ function StatisticsPanel({ access, data, completedIds, open }: { access: Access;
   const classResponses = useMemo(() => {
     let affirmative = 0;
     let negative = 0;
+    const answersById = new Map(data.answers.map(answer => [answer.id, answer]));
     filtered.forEach(entry => entry.items.forEach(item => {
-      const imageKey = item.imageKey;
-      const answer = item.answer.trim().toLowerCase();
-      if (imageKey === 'preset:smile' || imageKey === 'preset:yes' || answer === 'smiley face' || answer === 'yes') affirmative += 1;
-      else if (imageKey === 'preset:sad' || imageKey === 'preset:no' || answer === 'sad face' || answer === 'no') negative += 1;
+      const currentAnswer = item.answerId ? answersById.get(item.answerId) : undefined;
+      const imageKey = currentAnswer?.imageKey ?? item.imageKey;
+      const answer = (currentAnswer?.label ?? item.answer).trim().toLowerCase();
+      if (imageKey === 'preset:smile' || imageKey === 'preset:yes') affirmative += 1;
+      else if (imageKey === 'preset:sad' || imageKey === 'preset:no') negative += 1;
+      else if (!item.answerId && (answer === 'smiley face' || answer === 'yes')) affirmative += 1;
+      else if (!item.answerId && (answer === 'sad face' || answer === 'no')) negative += 1;
     }));
     const total = affirmative + negative;
     return { affirmative, negative, total, percentage: total ? Math.round((affirmative / total) * 100) : null };
-  }, [filtered]);
+  }, [data.answers, filtered]);
   const timeline = useMemo(() => buildStatsTimeline(entries, range), [entries, range]);
   const maxTimeline = Math.max(1, ...timeline.map(row => row.count));
   const maxStudent = Math.max(1, ...studentCounts.map(row => row.count));
@@ -517,7 +521,7 @@ function buildStatsTimeline(entries: HistoryEntry[], range: StatsRange) {
   if (range === 'all') {
     const counts = new Map<string, number>();
     entries.forEach(entry => counts.set(entry.id.slice(0, 7), (counts.get(entry.id.slice(0, 7)) ?? 0) + 1));
-    return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-12).map(([key, count]) => {
+    return [...counts.entries()].sort(([a], [b]) => b.localeCompare(a)).slice(0, 12).map(([key, count]) => {
       const [year, month] = key.split('-').map(Number);
       const date = new Date(year, month - 1, 1);
       return { key, count, label: new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(date), short: new Intl.DateTimeFormat(undefined, { month: 'short' }).format(date) };
@@ -529,7 +533,7 @@ function buildStatsTimeline(entries: HistoryEntry[], range: StatsRange) {
   return Array.from({ length: days }, (_, index) => {
     const date = new Date();
     date.setHours(12, 0, 0, 0);
-    date.setDate(date.getDate() - (days - 1 - index));
+    date.setDate(date.getDate() - index);
     const key = statsDateKey(date);
     return { key, count: counts.get(key) ?? 0, label: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date), short: days <= 7 ? new Intl.DateTimeFormat(undefined, { weekday: 'narrow' }).format(date) : String(date.getDate()) };
   });
@@ -849,9 +853,10 @@ function FilePicker({ label, onFile }: { label: string; onFile: (file: File | nu
 }
 
 async function prepareImageForUpload(file: File) {
-  const maxBytes = 24 * 1024;
+  const maxInputBytes = 6 * 1024 * 1024;
+  const maxBytes = 16 * 1024;
   if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
-
+  if (file.size > maxInputBytes) throw new Error('That picture is too large to process safely. Choose a photo under 6 MB.');
 
   let bitmap: ImageBitmap;
   try {
@@ -862,7 +867,8 @@ async function prepareImageForUpload(file: File) {
 
   try {
     let smallest: Blob | null = null;
-    for (const maxEdge of [384, 256, 192, 128]) {
+    if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > 40_000_000) throw new Error('That picture is too large to process safely. Choose a smaller photo.');
+    for (const maxEdge of [320, 256, 192, 160, 128]) {
       const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.round(bitmap.width * scale));
@@ -873,7 +879,7 @@ async function prepareImageForUpload(file: File) {
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
-      for (const quality of [0.82, 0.7, 0.58]) {
+      for (const quality of [0.78, 0.66, 0.54, 0.44]) {
         const blob = await canvasToBlob(canvas, quality);
         smallest = blob;
         if (blob.size <= maxBytes) {

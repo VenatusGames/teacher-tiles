@@ -424,8 +424,14 @@ export async function loadAllHistory(access: Access): Promise<HistoryEntry[]> {
   const names = new Map(state.data.students.map(student => [student.id, student.name]));
   const months = [...new Set(Object.keys(state.days).map(day => day.slice(0, 7)))].sort();
   const archives = await Promise.all(months.map(month => loadMonth(access, month)));
-  return archives.flatMap(archive => archive.entries)
-    .filter(entry => valid.has(entry.studentId))
-    .map(entry => ({ ...entry, studentName: names.get(entry.studentId) ?? entry.studentName }))
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const unique = new Map<string, HistoryEntry>();
+  for (const entry of archives.flatMap(archive => archive.entries)) {
+    if (!valid.has(entry.studentId)) continue;
+    const key = `${entry.id}:${entry.studentId}`;
+    // One check-in per student per day is the app invariant. If an older build
+    // left a duplicate archive row behind, keep the same last row the history
+    // browser displays instead of counting the hidden duplicate in statistics.
+    unique.set(key, { ...entry, studentName: names.get(entry.studentId) ?? entry.studentName });
+  }
+  return [...unique.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
