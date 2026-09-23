@@ -65,7 +65,9 @@
     };
 
     const syncQuestionQuoteState=()=>{
-      question.classList.toggle('has-question-text',Boolean(clean(question.textContent,QUESTION_MAX,{stripQuotes:true,trim:true})));
+      const hasText=Boolean(clean(question.textContent,QUESTION_MAX,{stripQuotes:true,trim:true}));
+      question.classList.toggle('has-question-text',hasText);
+      question.classList.toggle('is-empty-question',!hasText);
     };
 
     const scheduleFit=()=>{
@@ -79,7 +81,7 @@
 
     const syncLive=(field,max,{stripQuotes=false}={})=>{
       const next=clean(field.textContent,max,{stripQuotes,trim:false});
-      if(field.textContent!==next){field.textContent=next;placeCaretAtEnd(field)}
+      if(field.textContent!==next||(!next&&field.innerHTML)){field.textContent=next;placeCaretAtEnd(field)}
       scheduleFit();
     };
     const syncFinal=(field,max,{stripQuotes=false}={})=>{
