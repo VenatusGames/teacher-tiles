@@ -48,13 +48,13 @@
       const width=Math.max(24,field.clientWidth-4);
       const availableHeight=field===question?field.parentElement?.clientHeight:field.clientHeight;
       const height=Math.max(22,(availableHeight||field.clientHeight)-4);
-      if(!text){moduleElement.style.setProperty(cssVar,`${emptySize}px`);return}
+      if(!text&&field!==question){moduleElement.style.setProperty(cssVar,`${emptySize}px`);return}
       measure.style.width=`${width}px`;
       measure.style.fontFamily=computed.fontFamily;
       measure.style.fontWeight=computed.fontWeight;
       measure.style.lineHeight=computed.lineHeight;
       measure.style.letterSpacing=computed.letterSpacing;
-      measure.textContent=field===question?`“${text}”`:text;
+      measure.textContent=field===question?`“${text||(field.dataset.placeholder||'Type the essential question')}”`:text;
       let low=min,high=max,best=min;
       for(let i=0;i<18;i+=1){
         const mid=(low+high)/2;
