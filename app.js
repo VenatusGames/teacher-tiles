@@ -13670,6 +13670,50 @@ const PERIODIC_ELEMENTS=[{"n":1,"symbol":"H","name":"Hydrogen","mass":"1.008","p
 
 const CVC_WORD_SETS={"a":["cab","dab","jab","lab","tab","nab","tad","bad","dad","had","lad","pad","mad","rad","sad","wag","bag","gag","lag","nag","sag","rag","tag","hag","Sam","dam","ham"],"e":["bed","wed","fed","led","red","Ted","zed","Jed","Ned","beg","leg","peg","keg","Meg","neg","Ben","den","men","pen","ten","hen","Zen","Ken","Yen","bet","get","jet"],"i":["bib","fib","rib","jib","sib","bid","did","hid","kid","lid","rid","big","dig","fig","pig","rig","wig","jig","zig","dim","him","Kim","rim","Tim","Jim","Vim","bin"],"o":["cob","gob","job","lob","mob","rob","sob","dog","fog","jog","log","cop","hop","mop","pop","top","cot","dot","hot","not","pot","God","rod","pod","mod","cod","bop"],"u":["cub","hub","rub","pug","sub","tub","nub","rug","pub","dub","bud","tug","dud","mud","cud","gum","bug","dug","hug","hum","jug","lug","mug","mum"]};
 
+
+function shuffleFlashcardDeck(values){
+  const deck=[...values];
+  for(let index=deck.length-1;index>0;index--){
+    const swap=Math.floor(Math.random()*(index+1));
+    [deck[index],deck[swap]]=[deck[swap],deck[index]];
+  }
+  return deck;
+}
+
+function createFlashcardCompletePopup(card,onShuffle){
+  const popup=document.createElement('span');
+  popup.className='flashcard-complete';
+  popup.hidden=true;
+  popup.setAttribute('aria-live','polite');
+  popup.innerHTML='<strong>Complete!</strong><span class="flashcard-shuffle" role="button" tabindex="0">Shuffle</span>';
+  const shuffleButton=popup.querySelector('.flashcard-shuffle');
+  const shuffle=event=>{
+    event?.preventDefault();
+    event?.stopPropagation();
+    onShuffle();
+  };
+  popup.addEventListener('pointerdown',event=>event.stopPropagation());
+  popup.addEventListener('click',event=>event.stopPropagation());
+  shuffleButton.addEventListener('click',shuffle);
+  shuffleButton.addEventListener('keydown',event=>{
+    if(event.key==='Enter'||event.key===' '){
+      shuffle(event);
+    }
+  });
+  card.appendChild(popup);
+  return{
+    show(){
+      popup.hidden=false;
+      card.classList.add('is-complete');
+    },
+    hide(){
+      popup.hidden=true;
+      card.classList.remove('is-complete');
+    },
+    remove(){popup.remove()}
+  };
+}
+
 function setupCVCWord(m){
   const card=m.querySelector('.cvcword-card');
   const wordEl=m.querySelector('.cvcword-word');
@@ -13689,6 +13733,8 @@ function setupCVCWord(m){
 
   let currentWord='';
   let currentCategory='a';
+  let remainingWords=[];
+  let completed=false;
   let animating=false;
   let resizeFrame=0;
 
@@ -13696,6 +13742,8 @@ function setupCVCWord(m){
   measurer.className='cvcword-word cvcword-measurer';
   measurer.setAttribute('aria-hidden','true');
   card.appendChild(measurer);
+
+  const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const getAvailableSpace=()=>{
     const cardRect=card.getBoundingClientRect();
@@ -13758,16 +13806,7 @@ function setupCVCWord(m){
     );
   };
 
-  const chooseWord=()=>{
-    const category=m.dataset.cvcCategory||'all';
-    const pool=getPool(category);
-    if(!pool.length)return null;
-
-    let candidates=pool.filter(item=>item.word!==currentWord);
-    if(!candidates.length)candidates=pool;
-
-    return candidates[Math.floor(Math.random()*candidates.length)];
-  };
+  const itemKey=item=>`${item.category}:${item.word}`;
 
   const prepareWord=item=>{
     if(!item)return null;
@@ -13782,6 +13821,8 @@ function setupCVCWord(m){
 
     currentWord=prepared.word;
     currentCategory=prepared.category;
+    completed=false;
+    completion.hide();
 
     wordEl.classList.add('is-fitting');
     wordEl.textContent=prepared.word;
@@ -13796,15 +13837,28 @@ function setupCVCWord(m){
     });
   };
 
-  const showNext=()=>{
-    if(animating)return;
+  const showComplete=()=>{
+    completed=true;
+    completion.show();
+    card.setAttribute('aria-label','Complete. Shuffle to begin the CVC set again.');
+  };
 
-    const next=chooseWord();
-    if(!next)return;
+  const showNext=({animate=true}={})=>{
+    if(animating||completed)return;
 
+    if(!remainingWords.length){
+      if(currentWord)showComplete();
+      return;
+    }
+
+    const next=remainingWords.shift();
     const prepared=prepareWord(next);
-    animating=true;
+    if(!animate){
+      applyPreparedWord(prepared);
+      return;
+    }
 
+    animating=true;
     card.classList.remove('is-flipping');
     void card.offsetWidth;
     card.classList.add('is-flipping');
@@ -13819,17 +13873,24 @@ function setupCVCWord(m){
     },430);
   };
 
+  function resetDeck({animate=false}={}){
+    completion.hide();
+    completed=false;
+    currentWord='';
+    remainingWords=shuffleFlashcardDeck(getPool(m.dataset.cvcCategory||'all'));
+    showNext({animate});
+  }
+
   const setCategory=category=>{
     const next=category in categoryNames?category:'all';
     m.dataset.cvcCategory=next;
     categorySelect.value=next;
     categoryLabel.textContent=categoryNames[next];
-    currentWord='';
-    showNext();
+    resetDeck({animate:false});
   };
 
-  card.addEventListener('click',showNext);
-  nextButton.addEventListener('click',showNext);
+  card.addEventListener('click',()=>showNext());
+  nextButton.addEventListener('click',()=>showNext());
 
   categorySelect.addEventListener('change',()=>{
     setCategory(categorySelect.value);
@@ -13853,7 +13914,9 @@ function setupCVCWord(m){
   m._boardGetState=()=>({
     category:m.dataset.cvcCategory||'all',
     currentWord,
-    currentCategory
+    currentCategory,
+    remainingWords:remainingWords.map(item=>({word:item.word,category:item.category})),
+    completed
   });
   m._boardSetState=state=>{
     if(!state)return;
@@ -13862,10 +13925,34 @@ function setupCVCWord(m){
     categorySelect.value=category;
     categoryLabel.textContent=categoryNames[category];
     const allowed=getPool(category);
+    const byKey=new Map(allowed.map(item=>[itemKey(item),item]));
     const saved=String(state.currentWord||'');
-    const match=allowed.find(item=>item.word===saved);
-    if(match)applyPreparedWord(prepareWord(match));
-    else{currentWord='';showNext()}
+    const savedCategory=String(state.currentCategory||'');
+    const currentMatch=byKey.get(`${savedCategory}:${saved}`)||allowed.find(item=>item.word===saved);
+    if(currentMatch){
+      applyPreparedWord(prepareWord(currentMatch));
+      const currentKey=itemKey(currentMatch);
+      if(Array.isArray(state.remainingWords)){
+        const seen=new Set([currentKey]);
+        remainingWords=state.remainingWords
+          .map(item=>byKey.get(itemKey(item||{})))
+          .filter(item=>{
+            if(!item)return false;
+            const key=itemKey(item);
+            if(seen.has(key))return false;
+            seen.add(key);
+            return true;
+          });
+      }else{
+        remainingWords=shuffleFlashcardDeck(allowed.filter(item=>itemKey(item)!==currentKey));
+      }
+      if(state.completed){
+        remainingWords=[];
+        showComplete();
+      }
+    }else{
+      resetDeck({animate:false});
+    }
   };
 
   const prior=m._cleanup;
@@ -13874,9 +13961,9 @@ function setupCVCWord(m){
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
+    completion.remove();
   };
 }
-
 
 const HIGH_FREQUENCY_WORD_SETS={"k":["can","I","the","we","see","a","like","to","and","go","you","do","my","are","with","he","is","little","she","was","for","have","of","they","said","want","here","me","this","what","help","too","has","play","where","look","good","who","come","does"],"1":["a","can","do","go","has","the","I","like","to","you","this","is","my","look","little","where","here","play","we","one","me","she","with","for","and","have","said","see","was","does","not","school","what","down","out","up","very","be","come","good","pull","fun","make","they","too","jump","move","run","two","again","help","new","there","use","could","live","then","three","eat","no","of","under","who","all","call","day","her","want","around","by","many","place","walk","away","now","some","today","way","why","green","grow","pretty","should","together","water","any","from","happy","once","so","upon","ago","boy","girl","how","old","people","after","buy","done","every","soon","work","about","animal","carry","eight","give","our","because","blue","into","or","other","small","find","food","more","over","start","warm","caught","flew","know","laugh","listen","were","found","hard","near","woman","would","write","four","large","none","only","put","round","another","climb","full","great","poor","through","began","better","guess","learn","right","sure","color","early","instead","nothing","oh","thought","above","build","fall","knew","money","toward","answer","brought","busy","door","enough","eyes","brother","father","friend","love","mother","picture","been","children","month","question","their","year","before","front","heard","push","tomorrow","your","favorite","few","gone","surprise","wonder","young"],"2":["ball","blue","both","even","for","help","put","there","why","yellow","could","find","funny","green","how","little","one","or","see","sounds","boy","by","girl","he","here","she","small","want","were","what","another","done","into","move","now","show","too","water","year","your","all","any","goes","new","number","other","right","says","understands","work"],"3plus":["a","about","after","again","all","also","always","am","an","and","another","any","are","around","as","ask","at","ate","away","back","be","because","been","before","best","better","big","black","blue","both","think","this","those","three","through","time","today","together","under","upon","very","want","water","went","where","which","would","write","years","yellow","yes","you","your"]};
 
@@ -13908,6 +13995,8 @@ function setupHighFrequencyWords(m){
   });
 
   let currentWord='';
+  let remainingWords=[];
+  let completed=false;
   let animating=false;
   let resizeFrame=0;
 
@@ -13915,6 +14004,8 @@ function setupHighFrequencyWords(m){
   measurer.className='highfrequency-word highfrequency-measurer';
   measurer.setAttribute('aria-hidden','true');
   card.appendChild(measurer);
+
+  const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureWordSize=word=>{
     const cardRect=card.getBoundingClientRect();
@@ -13949,22 +14040,14 @@ function setupHighFrequencyWords(m){
 
   const enabledWords=grade=>HIGH_FREQUENCY_WORD_SETS[grade].filter(word=>enabledByGrade[grade].has(word));
 
-  const chooseWord=()=>{
-    const grade=m.dataset.hfwGrade||'k';
-    const pool=enabledWords(grade);
-    if(!pool.length)return null;
-
-    let candidates=pool.filter(word=>word!==currentWord);
-    if(!candidates.length)candidates=pool;
-
-    return candidates[Math.floor(Math.random()*candidates.length)];
-  };
-
   const applyWord=(word,size)=>{
     currentWord=word;
+    completed=false;
+    completion.hide();
     wordEl.classList.add('is-fitting');
     wordEl.textContent=word;
     wordEl.style.fontSize=`${size}px`;
+    card.classList.remove('is-empty');
     card.setAttribute('aria-label',`${word}. Click for another high frequency word.`);
     requestAnimationFrame(()=>wordEl.classList.remove('is-fitting'));
   };
@@ -13978,20 +14061,46 @@ function setupHighFrequencyWords(m){
     });
   };
 
-  const showNext=()=>{
-    if(animating)return;
+  const showEmpty=()=>{
+    completion.hide();
+    completed=false;
+    remainingWords=[];
+    currentWord='';
+    wordEl.classList.remove('is-fitting');
+    wordEl.style.fontSize='';
+    wordEl.textContent='No words enabled';
+    card.classList.add('is-empty');
+    card.setAttribute('aria-label','No high frequency words enabled.');
+  };
 
-    const next=chooseWord();
-    if(!next){
-      currentWord='';
-      wordEl.classList.remove('is-fitting');
-      wordEl.style.fontSize='';
-      wordEl.textContent='No words enabled';
-      card.classList.add('is-empty');
+  const showComplete=()=>{
+    completed=true;
+    completion.show();
+    card.setAttribute('aria-label','Complete. Shuffle to begin the high frequency word set again.');
+  };
+
+  const showNext=({animate=true}={})=>{
+    if(animating||completed)return;
+    const grade=m.dataset.hfwGrade||'k';
+
+    if(!enabledWords(grade).length){
+      showEmpty();
       return;
     }
 
+    if(!remainingWords.length){
+      if(currentWord)showComplete();
+      else resetDeck({animate});
+      return;
+    }
+
+    const next=remainingWords.shift();
     const size=measureWordSize(next);
+    if(!animate){
+      applyWord(next,size);
+      return;
+    }
+
     animating=true;
     card.classList.remove('is-empty','is-flipping');
     void card.offsetWidth;
@@ -14004,6 +14113,19 @@ function setupHighFrequencyWords(m){
       animating=false;
     },430);
   };
+
+  function resetDeck({animate=false}={}){
+    const grade=m.dataset.hfwGrade||'k';
+    completion.hide();
+    completed=false;
+    currentWord='';
+    remainingWords=shuffleFlashcardDeck(enabledWords(grade));
+    if(!remainingWords.length){
+      showEmpty();
+      return;
+    }
+    showNext({animate});
+  }
 
   const renderSettings=()=>{
     const grade=m.dataset.hfwGrade||'k';
@@ -14026,14 +14148,8 @@ function setupHighFrequencyWords(m){
         if(enabled.has(word))enabled.delete(word);
         else enabled.add(word);
 
-        button.classList.toggle('is-enabled',enabled.has(word));
-        button.setAttribute('aria-pressed',String(enabled.has(word)));
-        enabledCount.textContent=`${enabled.size} of ${words.length} enabled`;
-
-        if(currentWord&&!enabled.has(currentWord)){
-          currentWord='';
-          showNext();
-        }
+        renderSettings();
+        resetDeck({animate:false});
       });
 
       wordOptions.appendChild(button);
@@ -14045,13 +14161,12 @@ function setupHighFrequencyWords(m){
     m.dataset.hfwGrade=next;
     gradeSelect.value=next;
     gradeLabel.textContent=gradeNames[next];
-    currentWord='';
     renderSettings();
-    showNext();
+    resetDeck({animate:false});
   };
 
-  card.addEventListener('click',showNext);
-  nextButton.addEventListener('click',showNext);
+  card.addEventListener('click',()=>showNext());
+  nextButton.addEventListener('click',()=>showNext());
 
   gradeSelect.addEventListener('change',()=>setGrade(gradeSelect.value));
 
@@ -14069,15 +14184,14 @@ function setupHighFrequencyWords(m){
     const grade=m.dataset.hfwGrade||'k';
     enabledByGrade[grade]=new Set(HIGH_FREQUENCY_WORD_SETS[grade]);
     renderSettings();
-    if(!currentWord)showNext();
+    resetDeck({animate:false});
   });
 
   disableAll.addEventListener('click',()=>{
     const grade=m.dataset.hfwGrade||'k';
     enabledByGrade[grade].clear();
-    currentWord='';
     renderSettings();
-    showNext();
+    resetDeck({animate:false});
   });
 
   m.querySelector('.highfrequency-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
@@ -14097,6 +14211,8 @@ function setupHighFrequencyWords(m){
   m._boardGetState=()=>({
     grade:m.dataset.hfwGrade||'k',
     currentWord,
+    remainingWords:[...remainingWords],
+    completed,
     enabledByGrade:Object.fromEntries(Object.entries(enabledByGrade).map(([grade,set])=>[grade,[...set]]))
   });
   m._boardSetState=state=>{
@@ -14112,9 +14228,28 @@ function setupHighFrequencyWords(m){
     gradeSelect.value=grade;
     gradeLabel.textContent=gradeNames[grade];
     renderSettings();
+    const pool=enabledWords(grade);
+    const allowed=new Set(pool);
     const savedWord=String(state.currentWord||'');
-    if(savedWord&&enabledByGrade[grade].has(savedWord))applyWord(savedWord,measureWordSize(savedWord));
-    else{currentWord='';showNext()}
+    if(savedWord&&allowed.has(savedWord)){
+      applyWord(savedWord,measureWordSize(savedWord));
+      if(Array.isArray(state.remainingWords)){
+        const seen=new Set([savedWord]);
+        remainingWords=state.remainingWords.filter(word=>{
+          if(!allowed.has(word)||seen.has(word))return false;
+          seen.add(word);
+          return true;
+        });
+      }else{
+        remainingWords=shuffleFlashcardDeck(pool.filter(word=>word!==savedWord));
+      }
+      if(state.completed){
+        remainingWords=[];
+        showComplete();
+      }
+    }else{
+      resetDeck({animate:false});
+    }
   };
 
   const prior=m._cleanup;
@@ -14123,9 +14258,9 @@ function setupHighFrequencyWords(m){
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
+    completion.remove();
   };
 }
-
 
 function setupRobotHfw(m){
   const stage=m.querySelector('.robothfw-stage');
@@ -14746,6 +14881,8 @@ function setupABC(m){
   };
 
   let current='';
+  let remaining=[];
+  let completed=false;
   let animating=false;
   let resizeFrame=0;
 
@@ -14753,6 +14890,8 @@ function setupABC(m){
   measurer.className='abc-letter abc-measurer';
   measurer.setAttribute('aria-hidden','true');
   card.appendChild(measurer);
+
+  const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureLetterSize=letter=>{
     const rect=card.getBoundingClientRect();
@@ -14787,15 +14926,10 @@ function setupABC(m){
     return uppercase;
   };
 
-  const chooseLetter=()=>{
-    const pool=poolForMode(m.dataset.abcMode||'uppercase');
-    let candidates=pool.filter(letter=>letter!==current);
-    if(!candidates.length)candidates=pool;
-    return candidates[Math.floor(Math.random()*candidates.length)];
-  };
-
   const applyLetter=(letter,size)=>{
     current=letter;
+    completed=false;
+    completion.hide();
     letterEl.classList.add('is-fitting');
     letterEl.classList.toggle('is-vowel',vowels.has(letter.toLowerCase()));
     letterEl.textContent=letter;
@@ -14813,11 +14947,25 @@ function setupABC(m){
     });
   };
 
-  const showNext=()=>{
-    if(animating)return;
+  const showComplete=()=>{
+    completed=true;
+    completion.show();
+    card.setAttribute('aria-label','Complete. Shuffle to begin the alphabet set again.');
+  };
 
-    const next=chooseLetter();
+  const showNext=({animate=true}={})=>{
+    if(animating||completed)return;
+    if(!remaining.length){
+      if(current)showComplete();
+      return;
+    }
+
+    const next=remaining.shift();
     const size=measureLetterSize(next);
+    if(!animate){
+      applyLetter(next,size);
+      return;
+    }
 
     animating=true;
     card.classList.remove('is-flipping');
@@ -14831,17 +14979,24 @@ function setupABC(m){
     },430);
   };
 
+  function resetDeck({animate=false}={}){
+    completion.hide();
+    completed=false;
+    current='';
+    remaining=shuffleFlashcardDeck(poolForMode(m.dataset.abcMode||'uppercase'));
+    showNext({animate});
+  }
+
   const setMode=mode=>{
     const next=mode in modeNames?mode:'uppercase';
     m.dataset.abcMode=next;
     modeSelect.value=next;
     modeLabel.textContent=modeNames[next];
-    current='';
-    showNext();
+    resetDeck({animate:false});
   };
 
-  card.addEventListener('click',showNext);
-  nextButton.addEventListener('click',showNext);
+  card.addEventListener('click',()=>showNext());
+  nextButton.addEventListener('click',()=>showNext());
   modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
 
   m.querySelector('.abc-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
@@ -14854,16 +15009,40 @@ function setupABC(m){
 
   setMode('uppercase');
 
-  m._boardGetState=()=>({mode:m.dataset.abcMode||'uppercase',current});
+  m._boardGetState=()=>({
+    mode:m.dataset.abcMode||'uppercase',
+    current,
+    remaining:[...remaining],
+    completed
+  });
   m._boardSetState=state=>{
     if(!state)return;
     const mode=state.mode in modeNames?state.mode:'uppercase';
     m.dataset.abcMode=mode;
     modeSelect.value=mode;
     modeLabel.textContent=modeNames[mode];
+    const pool=poolForMode(mode);
+    const allowed=new Set(pool);
     const saved=String(state.current||'');
-    if(saved&&poolForMode(mode).includes(saved))applyLetter(saved,measureLetterSize(saved));
-    else{current='';showNext()}
+    if(saved&&allowed.has(saved)){
+      applyLetter(saved,measureLetterSize(saved));
+      if(Array.isArray(state.remaining)){
+        const seen=new Set([saved]);
+        remaining=state.remaining.filter(letter=>{
+          if(!allowed.has(letter)||seen.has(letter))return false;
+          seen.add(letter);
+          return true;
+        });
+      }else{
+        remaining=shuffleFlashcardDeck(pool.filter(letter=>letter!==saved));
+      }
+      if(state.completed){
+        remaining=[];
+        showComplete();
+      }
+    }else{
+      resetDeck({animate:false});
+    }
   };
 
   const prior=m._cleanup;
@@ -14872,6 +15051,7 @@ function setupABC(m){
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
+    completion.remove();
   };
 }
 
@@ -14887,6 +15067,8 @@ function setupNumberFlashcards(m){
     '100':{max:100,label:'Numbers 1–100'}
   };
   let current='';
+  let remaining=[];
+  let completed=false;
   let animating=false;
   let resizeFrame=0;
 
@@ -14894,6 +15076,8 @@ function setupNumberFlashcards(m){
   measurer.className='abc-letter abc-measurer';
   measurer.setAttribute('aria-hidden','true');
   card.appendChild(measurer);
+
+  const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureValueSize=value=>{
     const rect=card.getBoundingClientRect();
@@ -14917,19 +15101,18 @@ function setupNumberFlashcards(m){
     const max=modes[mode]?.max||10;
     return Array.from({length:max},(_,index)=>String(index+1));
   };
-  const chooseValue=()=>{
-    const pool=poolForMode(m.dataset.numberFlashcardsMode||'10');
-    const candidates=pool.filter(value=>value!==current);
-    return (candidates.length?candidates:pool)[Math.floor(Math.random()*(candidates.length||pool.length))];
-  };
+
   const applyValue=(value,size)=>{
     current=value;
+    completed=false;
+    completion.hide();
     valueEl.classList.add('is-fitting');
     valueEl.textContent=value;
     valueEl.style.fontSize=`${size}px`;
     card.setAttribute('aria-label',`${value}. Click for another number.`);
     requestAnimationFrame(()=>valueEl.classList.remove('is-fitting'));
   };
+
   const fitCurrent=()=>{
     cancelAnimationFrame(resizeFrame);
     resizeFrame=requestAnimationFrame(()=>{
@@ -14938,10 +15121,27 @@ function setupNumberFlashcards(m){
       valueEl.classList.remove('is-fitting');
     });
   };
-  const showNext=()=>{
-    if(animating)return;
-    const next=chooseValue();
+
+  const showComplete=()=>{
+    completed=true;
+    completion.show();
+    card.setAttribute('aria-label','Complete. Shuffle to begin the number set again.');
+  };
+
+  const showNext=({animate=true}={})=>{
+    if(animating||completed)return;
+    if(!remaining.length){
+      if(current)showComplete();
+      return;
+    }
+
+    const next=remaining.shift();
     const size=measureValueSize(next);
+    if(!animate){
+      applyValue(next,size);
+      return;
+    }
+
     animating=true;
     card.classList.remove('is-flipping');
     void card.offsetWidth;
@@ -14949,17 +15149,25 @@ function setupNumberFlashcards(m){
     window.setTimeout(()=>applyValue(next,size),180);
     window.setTimeout(()=>{card.classList.remove('is-flipping');animating=false},430);
   };
+
+  function resetDeck({animate=false}={}){
+    completion.hide();
+    completed=false;
+    current='';
+    remaining=shuffleFlashcardDeck(poolForMode(m.dataset.numberFlashcardsMode||'10'));
+    showNext({animate});
+  }
+
   const setMode=mode=>{
     const next=mode in modes?mode:'10';
     m.dataset.numberFlashcardsMode=next;
     modeSelect.value=next;
     modeLabel.textContent=modes[next].label;
-    current='';
-    showNext();
+    resetDeck({animate:false});
   };
 
-  card.addEventListener('click',showNext);
-  nextButton.addEventListener('click',showNext);
+  card.addEventListener('click',()=>showNext());
+  nextButton.addEventListener('click',()=>showNext());
   modeSelect.addEventListener('change',()=>setMode(modeSelect.value));
   m.querySelector('.number-flashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.number-flashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
@@ -14968,16 +15176,40 @@ function setupNumberFlashcards(m){
   ro.observe(card);
   setMode('10');
 
-  m._boardGetState=()=>({mode:m.dataset.numberFlashcardsMode||'10',current});
+  m._boardGetState=()=>({
+    mode:m.dataset.numberFlashcardsMode||'10',
+    current,
+    remaining:[...remaining],
+    completed
+  });
   m._boardSetState=state=>{
     if(!state)return;
     const mode=state.mode in modes?state.mode:'10';
     m.dataset.numberFlashcardsMode=mode;
     modeSelect.value=mode;
     modeLabel.textContent=modes[mode].label;
+    const pool=poolForMode(mode);
+    const allowed=new Set(pool);
     const saved=String(state.current||'');
-    if(poolForMode(mode).includes(saved))applyValue(saved,measureValueSize(saved));
-    else{current='';showNext()}
+    if(allowed.has(saved)){
+      applyValue(saved,measureValueSize(saved));
+      if(Array.isArray(state.remaining)){
+        const seen=new Set([saved]);
+        remaining=state.remaining.map(String).filter(value=>{
+          if(!allowed.has(value)||seen.has(value))return false;
+          seen.add(value);
+          return true;
+        });
+      }else{
+        remaining=shuffleFlashcardDeck(pool.filter(value=>value!==saved));
+      }
+      if(state.completed){
+        remaining=[];
+        showComplete();
+      }
+    }else{
+      resetDeck({animate:false});
+    }
   };
   const prior=m._cleanup;
   m._cleanup=()=>{
@@ -14985,6 +15217,7 @@ function setupNumberFlashcards(m){
     ro.disconnect();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
+    completion.remove();
   };
 }
 
@@ -15015,6 +15248,8 @@ function setupCustomFlashcards(m){
   let sets=[makeSet()];
   let activeSetId=sets[0].id;
   let currentCardId='';
+  let remainingCardIds=[];
+  let completed=false;
   let uploadTargetId='';
   let animating=false;
   let resizeFrame=0;
@@ -15026,6 +15261,8 @@ function setupCustomFlashcards(m){
   measurer.className='customflashcards-text customflashcards-measurer';
   measurer.setAttribute('aria-hidden','true');
   card.appendChild(measurer);
+
+  const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const activeSet=()=>sets.find(set=>set.id===activeSetId)||sets[0];
   const currentCard=()=>activeSet()?.cards.find(item=>item.id===currentCardId)||null;
@@ -15113,16 +15350,66 @@ function setupCustomFlashcards(m){
     },430);
   };
 
+  const showComplete=()=>{
+    completed=true;
+    completion.show();
+    card.setAttribute('aria-label','Complete. Shuffle to begin this flashcard set again.');
+  };
+
   const showNext=({animate=true}={})=>{
+    if(animating||completed)return;
     const pool=activeSet()?.cards||[];
     if(!pool.length){
+      remainingCardIds=[];
+      currentCardId='';
+      completion.hide();
+      completed=false;
       displayCard(null,{animate:false});
       return;
     }
-    let candidates=pool.filter(item=>item.id!==currentCardId);
-    if(!candidates.length)candidates=pool;
-    displayCard(candidates[Math.floor(Math.random()*candidates.length)],{animate});
+
+    const byId=new Map(pool.map(item=>[item.id,item]));
+    const seen=new Set();
+    remainingCardIds=remainingCardIds.filter(id=>{
+      if(!byId.has(id)||id===currentCardId||seen.has(id))return false;
+      seen.add(id);
+      return true;
+    });
+
+    if(!remainingCardIds.length){
+      if(currentCardId&&byId.has(currentCardId))showComplete();
+      else resetDeck({animate});
+      return;
+    }
+
+    completion.hide();
+    completed=false;
+    const next=byId.get(remainingCardIds.shift());
+    if(next)displayCard(next,{animate});
   };
+
+  function resetDeck({animate=false,focusId=''}={}){
+    const pool=activeSet()?.cards||[];
+    completion.hide();
+    completed=false;
+    if(!pool.length){
+      remainingCardIds=[];
+      currentCardId='';
+      displayCard(null,{animate:false});
+      return;
+    }
+
+    const focused=focusId&&pool.find(item=>item.id===focusId);
+    if(focused){
+      remainingCardIds=shuffleFlashcardDeck(pool.filter(item=>item.id!==focusId).map(item=>item.id));
+      displayCard(focused,{animate});
+      return;
+    }
+
+    currentCardId='';
+    remainingCardIds=shuffleFlashcardDeck(pool.map(item=>item.id));
+    showNext({animate});
+  }
 
   const updateSetControls=()=>{
     const selected=activeSet();
@@ -15153,10 +15440,9 @@ function setupCustomFlashcards(m){
       button.addEventListener('click',()=>{
         if(set.id===activeSetId)return;
         activeSetId=set.id;
-        currentCardId='';
         updateSetControls();
         renderEditor();
-        showNext({animate:false});
+        resetDeck({animate:false});
       });
       setList.appendChild(button);
     });
@@ -15235,10 +15521,9 @@ function setupCustomFlashcards(m){
       remove.textContent='Delete';
       remove.addEventListener('click',()=>{
         selected.cards=selected.cards.filter(cardItem=>cardItem.id!==item.id);
-        if(currentCardId===item.id)currentCardId='';
         updateSetControls();
         renderEditor();
-        showNext({animate:false});
+        resetDeck({animate:false});
       });
       actions.appendChild(remove);
 
@@ -15282,18 +15567,16 @@ function setupCustomFlashcards(m){
   setSelect.addEventListener('change',()=>{
     if(!sets.some(set=>set.id===setSelect.value))return;
     activeSetId=setSelect.value;
-    currentCardId='';
     updateSetControls();
-    showNext({animate:true});
+    resetDeck({animate:true});
   });
 
   addSetButton.addEventListener('click',()=>{
     const set=makeSet(`Card Set ${sets.length+1}`);
     sets.push(set);
     activeSetId=set.id;
-    currentCardId='';
     renderEditor();
-    showNext({animate:false});
+    resetDeck({animate:false});
     requestAnimationFrame(()=>{
       setNameInput.focus({preventScroll:true});
       setNameInput.select();
@@ -15321,9 +15604,8 @@ function setupCustomFlashcards(m){
     const index=Math.max(0,sets.findIndex(set=>set.id===activeSetId));
     sets=sets.filter(set=>set.id!==activeSetId);
     activeSetId=sets[Math.min(index,sets.length-1)].id;
-    currentCardId='';
     renderEditor();
-    showNext({animate:false});
+    resetDeck({animate:false});
   });
 
   addCardButton.addEventListener('click',()=>{
@@ -15334,9 +15616,8 @@ function setupCustomFlashcards(m){
     }
     const item=makeCard();
     selected.cards.push(item);
-    currentCardId=item.id;
     renderEditor();
-    applyCardContent(item);
+    resetDeck({animate:false,focusId:item.id});
     requestAnimationFrame(()=>cardList.querySelector(`[data-card-id="${item.id}"] textarea`)?.focus({preventScroll:true}));
   });
 
@@ -15383,12 +15664,14 @@ function setupCustomFlashcards(m){
   ro.observe(card);
 
   updateSetControls();
-  showNext({animate:false});
+  resetDeck({animate:false});
 
   m._boardGetState=()=>(
     {
       activeSetId,
       currentCardId,
+      remainingCardIds:[...remainingCardIds],
+      completed,
       sets:sets.map(set=>({
         id:set.id,
         name:set.name,
@@ -15427,11 +15710,31 @@ function setupCustomFlashcards(m){
     activeSetId=sets.some(set=>set.id===state.activeSetId)?state.activeSetId:sets[0].id;
     const selected=activeSet();
     const savedCurrent=String(state.currentCardId||'');
-    currentCardId=selected.cards.some(item=>item.id===savedCurrent)?savedCurrent:'';
+    const item=selected.cards.find(cardItem=>cardItem.id===savedCurrent)||null;
     renderEditor();
-    const item=currentCard();
-    if(item)displayCard(item,{animate:false});
-    else showNext({animate:false});
+    completion.hide();
+    completed=false;
+    if(item){
+      currentCardId=item.id;
+      const allowed=new Set(selected.cards.map(cardItem=>cardItem.id));
+      if(Array.isArray(state.remainingCardIds)){
+        const seen=new Set([item.id]);
+        remainingCardIds=state.remainingCardIds.filter(id=>{
+          if(!allowed.has(id)||seen.has(id))return false;
+          seen.add(id);
+          return true;
+        });
+      }else{
+        remainingCardIds=shuffleFlashcardDeck(selected.cards.filter(cardItem=>cardItem.id!==item.id).map(cardItem=>cardItem.id));
+      }
+      displayCard(item,{animate:false});
+      if(state.completed){
+        remainingCardIds=[];
+        showComplete();
+      }
+    }else{
+      resetDeck({animate:false});
+    }
   };
 
   const prior=m._cleanup;
@@ -15443,6 +15746,7 @@ function setupCustomFlashcards(m){
     clearTimeout(finishTimer);
     clearTimeout(statusTimer);
     measurer.remove();
+    completion.remove();
   };
 }
 

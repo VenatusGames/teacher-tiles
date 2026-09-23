@@ -19321,3 +19321,51 @@ body .sticker-module>.module-delete{
 .board-conflict-merge button{background:#526fba;color:white;border-color:#526fba}
 .board-conflict-close{display:block;margin-left:auto}
 @media(max-width:560px){.board-conflict-versions{grid-template-columns:1fr}.board-conflict-review{padding:18px}}
+
+/* Shared completion state for flashcard tiles. */
+.flashcard-complete{
+  position:absolute;
+  inset:0;
+  z-index:30;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:20px;
+  border-radius:inherit;
+  background:color-mix(in srgb,var(--module-bg,#fff) 92%,transparent);
+  color:var(--module-text,#17191d);
+  cursor:default;
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+.flashcard-complete[hidden]{display:none!important}
+.flashcard-complete>strong{
+  font:950 clamp(25px,8cqw,44px)/1 Inter,sans-serif;
+  letter-spacing:-.025em;
+}
+.flashcard-shuffle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:104px;
+  min-height:40px;
+  padding:8px 18px;
+  border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);
+  border-radius:12px;
+  background:color-mix(in srgb,var(--module-text,#17191d) 9%,var(--module-bg,#fff));
+  color:inherit;
+  box-shadow:0 5px 14px rgba(15,23,42,.08);
+  font:900 13px/1 Inter,sans-serif;
+  cursor:pointer;
+  transition:transform .12s ease,background .12s ease,box-shadow .12s ease;
+}
+.flashcard-shuffle:hover{
+  transform:translateY(-1px);
+  background:color-mix(in srgb,var(--module-text,#17191d) 14%,var(--module-bg,#fff));
+  box-shadow:0 7px 18px rgba(15,23,42,.11);
+}
+.flashcard-shuffle:active{transform:translateY(0) scale(.98)}
+.flashcard-shuffle:focus-visible{outline:2px solid #438cd2;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.flashcard-shuffle{transition:none}}
