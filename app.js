@@ -12788,7 +12788,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
-  'underwater-ocean','rainy-window',
+  'underwater-ocean','rainy-window','underwater-ocean-light','rainy-window-light',
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
   'polka-berry','polka-sunshine','polka-mint','polka-sky','polka-lavender',
@@ -12801,7 +12801,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
-  'theme-underwater-ocean','theme-rainy-window',
+  'theme-underwater-ocean','theme-rainy-window','theme-underwater-ocean-light','theme-rainy-window-light',
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
   'theme-polka-berry','theme-polka-sunshine','theme-polka-mint','theme-polka-sky','theme-polka-lavender',

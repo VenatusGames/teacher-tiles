@@ -41,6 +41,6 @@
   function draw(){ctx.clearRect(0,0,width,height);ctx.drawImage(background,0,0);if(theme==='underwater-ocean')underwater(time);else rainy(time)}
   function tick(now){frame=0;if(!theme||document.hidden||reduced.matches)return;if(now-last>=32){time+=Math.min((now-last)/1000,.06);last=now;draw()}frame=requestAnimationFrame(tick)}
   function resize(){width=Math.max(1,innerWidth);height=Math.max(1,innerHeight);const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(theme){paintBackground();draw()}}
-  function sync(){cancelAnimationFrame(frame);frame=0;const next=['underwater-ocean','rainy-window'].includes(document.body.dataset.theme)?document.body.dataset.theme:'';if(next!==theme){theme=next;time=0}canvas.hidden=!theme;if(!theme)return;resize();last=performance.now();if(!document.hidden&&!reduced.matches)frame=requestAnimationFrame(tick)}
+  function sync(){cancelAnimationFrame(frame);frame=0;const selected=document.body.dataset.theme,base=selected?.replace(/-light$/,'');const next=['underwater-ocean','rainy-window'].includes(base)?base:'';if(next!==theme){theme=next;time=0}canvas.hidden=!theme;if(!theme)return;resize();last=performance.now();if(!document.hidden&&!reduced.matches)frame=requestAnimationFrame(tick)}
   window.addEventListener('teachertiles:themechange',sync);window.addEventListener('resize',resize);document.addEventListener('visibilitychange',sync);reduced.addEventListener('change',sync);sync();
 })();
