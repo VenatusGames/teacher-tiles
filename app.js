@@ -11038,7 +11038,7 @@ function setupWorldMap(m){
 }
 
 const COMPASS_PARTS={
-  needle:{name:'Direction needle',copy:'The colored end points toward the selected heading. Rotate it to practice finding directions.'},
+  needle:{name:'Direction needle',copy:'The colored end points toward the selected heading. Grab the compass and spin it to practice finding directions.'},
   cardinal:{name:'Cardinal directions',copy:'North, east, south, and west are the four main—or cardinal—directions.'},
   intercardinal:{name:'Intercardinal directions',copy:'Northeast, southeast, southwest, and northwest sit halfway between the cardinal directions.'},
   degrees:{name:'Degree ring',copy:'A full turn is 360°. North is 0°, east is 90°, south is 180°, and west is 270°.'}
@@ -11049,7 +11049,6 @@ function setupCompass(m){
   const svg=m.querySelector('.compass-face');
   const ticks=m.querySelector('.compass-ticks');
   const needle=m.querySelector('.compass-needle');
-  const slider=m.querySelector('.compass-slider input');
   const output=m.querySelector('.compass-heading');
   const partName=m.querySelector('.compass-part-name');
   const partCopy=m.querySelector('.compass-part-copy');
@@ -11064,7 +11063,6 @@ function setupCompass(m){
   const directionFor=value=>['North','Northeast','East','Southeast','South','Southwest','West','Northwest'][Math.round(value/45)%8];
   const setHeading=(value,{notify=true}={})=>{
     heading=(Math.round(Number(value))%360+360)%360;
-    slider.value=String(heading);
     needle.style.transform=`rotate(${heading}deg)`;
     output.textContent=`${heading}° · ${directionFor(heading)}`;
     if(notify)notifyBoardChanged('compass-heading');
@@ -11077,15 +11075,46 @@ function setupCompass(m){
     m.querySelectorAll('[data-compass-part]').forEach(button=>button.classList.toggle('is-active',button.dataset.compassPart===part));
     if(notify)notifyBoardChanged('compass-part');
   };
-  slider.addEventListener('input',()=>setHeading(slider.value));
   m.querySelectorAll('[data-compass-part]').forEach(button=>button.addEventListener('click',()=>setPart(button.dataset.compassPart)));
+  const pointerAngle=event=>{
+    const rect=svg.getBoundingClientRect();
+    const x=event.clientX-(rect.left+rect.width/2);
+    const y=event.clientY-(rect.top+rect.height/2);
+    return Math.atan2(x,-y)*180/Math.PI;
+  };
+  let spin=null;
   svg.addEventListener('pointerdown',event=>{
     if(event.button!==0)return;
+    event.preventDefault();
     event.stopPropagation();
-    const rect=svg.getBoundingClientRect();
-    const x=(event.clientX-rect.left)*420/rect.width-210;
-    const y=(event.clientY-rect.top)*420/rect.height-210;
-    setHeading(Math.atan2(x,-y)*180/Math.PI);
+    spin={pointerId:event.pointerId,lastAngle:pointerAngle(event)};
+    svg.setPointerCapture?.(event.pointerId);
+    svg.classList.add('is-spinning');
+  });
+  svg.addEventListener('pointermove',event=>{
+    if(!spin||event.pointerId!==spin.pointerId)return;
+    event.preventDefault();
+    const angle=pointerAngle(event);
+    let delta=angle-spin.lastAngle;
+    if(delta>180)delta-=360;
+    else if(delta<-180)delta+=360;
+    spin.lastAngle=angle;
+    setHeading(heading+delta);
+  });
+  const endSpin=event=>{
+    if(!spin||event.pointerId!==spin.pointerId)return;
+    try{svg.releasePointerCapture?.(event.pointerId)}catch{}
+    spin=null;
+    svg.classList.remove('is-spinning');
+  };
+  svg.addEventListener('pointerup',endSpin);
+  svg.addEventListener('pointercancel',endSpin);
+  svg.addEventListener('lostpointercapture',()=>{spin=null;svg.classList.remove('is-spinning')});
+  svg.addEventListener('keydown',event=>{
+    const step=event.shiftKey?15:5;
+    if(event.key==='ArrowRight'||event.key==='ArrowUp'){event.preventDefault();setHeading(heading+step)}
+    else if(event.key==='ArrowLeft'||event.key==='ArrowDown'){event.preventDefault();setHeading(heading-step)}
+    else if(event.key==='Home'){event.preventDefault();setHeading(0)}
   });
   m.querySelector('.compass-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.compass-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));

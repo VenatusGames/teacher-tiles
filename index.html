@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260923-frame-reorder-1" />
+  <link rel="stylesheet" href="styles.css?v=20260923-compass-spin-1" />
   <link rel="stylesheet" href="assets/themes/palette.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260918-tile-audio-1" />
@@ -4174,7 +4174,7 @@
 <script src="tiles/sentence-expansion/index.js?v=20260923-history-wheel-1"></script>
 <script src="tiles/soundscapes/index.js?v=20260923-skins-1"></script>
 <script src="tiles/shared/animated-themes.js?v=20260922-light-dark-3"></script>
-<script src="app.js?v=20260923-soundscapes-appearance-1"></script>
+<script src="app.js?v=20260923-compass-spin-1"></script>
   <script src="tiles/lesson-planner.js?v=20260918-planner-recovered-shared-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260922-ui-refinement-2"></script>
 
@@ -5193,16 +5193,15 @@
       <header class="compass-header"><div><span>GEOGRAPHY</span><strong class="compass-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Compass Explorer</strong></div><output class="compass-heading">0° · North</output></header>
       <div class="compass-layout">
         <div class="compass-face-wrap">
-          <svg class="compass-face" viewBox="0 0 420 420" role="img" aria-label="Interactive compass rose">
+          <svg class="compass-face" viewBox="0 0 420 420" role="img" tabindex="0" aria-label="Interactive compass rose. Grab and drag to turn the needle.">
             <circle class="compass-ring" cx="210" cy="210" r="184"/><g class="compass-ticks"></g>
-            <g class="compass-points"><text x="210" y="54">N</text><text x="366" y="219">E</text><text x="210" y="382">S</text><text x="54" y="219">W</text><text x="319" y="103">NE</text><text x="319" y="329">SE</text><text x="101" y="329">SW</text><text x="101" y="103">NW</text></g>
             <g class="compass-needle"><path class="compass-needle-north" d="M210 60 236 210 210 192 184 210Z"/><path class="compass-needle-south" d="M210 360 184 210 210 228 236 210Z"/><circle cx="210" cy="210" r="13"/></g>
             <circle class="compass-pin" cx="210" cy="210" r="5"/>
+            <g class="compass-points"><text x="210" y="54">N</text><text x="366" y="219">E</text><text x="210" y="382">S</text><text x="54" y="219">W</text><text x="319" y="103">NE</text><text x="319" y="329">SE</text><text x="101" y="329">SW</text><text x="101" y="103">NW</text></g>
           </svg>
         </div>
         <aside class="compass-info"><span>EXPLORE A PART</span><strong class="compass-part-name">Direction needle</strong><p class="compass-part-copy">The colored end points toward the selected heading. Rotate it to practice finding directions.</p><div class="compass-part-buttons"><button type="button" data-compass-part="needle">Needle</button><button type="button" data-compass-part="cardinal">Cardinal</button><button type="button" data-compass-part="intercardinal">Intercardinal</button><button type="button" data-compass-part="degrees">Degree ring</button></div></aside>
       </div>
-      <label class="compass-slider"><span>Turn the needle</span><input type="range" min="0" max="359" value="0" step="1" aria-label="Compass heading in degrees"></label>
       <div class="customization-bar compass-customization" aria-label="Compass customization"><button class="custom-icon compass-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon compass-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon compass-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
