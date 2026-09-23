@@ -25,3 +25,10 @@
 /* Give unused sentence space to the image, with a protected image height. */
 .sentence-expansion-module{grid-template-rows:auto minmax(30px,max-content) minmax(0,1fr) minmax(0,max-content);row-gap:12px}
 .sentence-source{max-height:70px}.sentence-drop{min-height:min(180px,34cqh)}.sentence-bottom{justify-content:flex-start;max-height:27cqh}.sentence-bottom .sentence-draft{flex:0 1 auto}.sentence-image{object-position:center bottom}
+
+/* Keep the picture a reference, with more room for the sentence work. */
+.sentence-expansion-module{grid-template-rows:auto minmax(30px,max-content) clamp(80px,26cqh,170px) minmax(0,1fr)}
+.sentence-drop{min-height:0}.sentence-image{object-position:center}.sentence-bottom{max-height:none}.sentence-bottom .sentence-draft{flex:0 1 auto}
+.sentence-expansion-module:fullscreen{padding:30px 5vw 54px;grid-template-rows:auto minmax(0,max-content) clamp(90px,17vh,180px) minmax(0,1fr);row-gap:18px}
+.sentence-expansion-module:fullscreen .sentence-source,.sentence-expansion-module:fullscreen .sentence-draft{font-size:clamp(36px,5vw,84px);line-height:1.25}
+.sentence-expansion-module:fullscreen .sentence-source{max-height:25vh}.sentence-expansion-module:fullscreen .sentence-drop{width:min(320px,45vw);justify-self:center;min-height:0}.sentence-expansion-module:fullscreen .sentence-ghost{font-size:16px}.sentence-expansion-module:fullscreen .sentence-apply{font-size:16px;padding:10px 16px}
