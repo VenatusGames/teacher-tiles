@@ -35,6 +35,7 @@
 .classmeter-settings .tile-audio-settings-section,.collection-settings .tile-audio-settings-section{margin-top:6px;padding-top:10px}
 
 .tile-settings-switch-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;font-size:10px;font-weight:760}
+.tile-heading-visibility-setting{font-size:12px;font-weight:800}
 .tile-settings-switch{position:relative;width:38px;height:22px;padding:2px;border:0;border-radius:999px;background:#8a929e;cursor:pointer;transition:background .15s}
 .tile-settings-switch i{display:block;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .15s}
 .tile-settings-switch[aria-checked="true"]{background:#2885d4}.tile-settings-switch[aria-checked="true"] i{transform:translateX(16px)}

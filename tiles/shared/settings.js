@@ -22,7 +22,9 @@ function addHeadingToggle(m,heading){
     row.className='tile-settings-switch-row tile-heading-visibility-setting';
     const label=document.createElement('span');label.textContent='Show heading';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='tile-settings-switch';toggle.setAttribute('role','switch');
-    const knob=document.createElement('i');knob.setAttribute('aria-hidden','true');toggle.append(knob);row.append(label,toggle);panel.append(row);
+    const knob=document.createElement('i');knob.setAttribute('aria-hidden','true');toggle.append(knob);row.append(label,toggle);
+    const resetScale=panel.querySelector('.tile-reset-scale');
+    if(resetScale)panel.insertBefore(row,resetScale);else panel.append(row);
     const apply=()=>{
       const visible=m.dataset.tileHeadingHidden!=='true';
       heading.classList.toggle('tile-heading-hidden',!visible);
