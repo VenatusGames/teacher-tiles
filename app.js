@@ -3139,6 +3139,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'underwater-theme-pack':'theme-underwater','rainy-window-theme-pack':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel',
   'polka-dot-theme-pack':'theme-polka-dot',
   'programmer-theme-pack':'theme-programmer',
@@ -3161,6 +3162,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  underwater:'theme-underwater',rainy:'theme-rainy-window',
   pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
 });
 
@@ -12786,6 +12788,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  'underwater-ocean','rainy-window',
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
   'polka-berry','polka-sunshine','polka-mint','polka-sky','polka-lavender',
@@ -12798,6 +12801,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  'theme-underwater-ocean','theme-rainy-window',
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
   'theme-polka-berry','theme-polka-sunshine','theme-polka-mint','theme-polka-sky','theme-polka-lavender',
@@ -12820,11 +12824,14 @@ function updateThemeControls(theme){
 }
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['underwater-','theme-underwater'],['rainy-','theme-rainy-window'],
   ['pastel-','theme-pastel'],['polka-','theme-polka-dot'],['programmer-','theme-programmer'],
   ['wood-','theme-wood'],['notebook-','theme-notebook'],['cardboard-','theme-cardboard'],
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'underwater-theme-pack':'theme-underwater','underwater-theme-fan':'theme-underwater',
+  'rainy-window-theme-pack':'theme-rainy-window','rainy-window-theme-fan':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel','pastel-theme-fan':'theme-pastel',
   'polka-dot-theme-pack':'theme-polka-dot','polka-dot-theme-fan':'theme-polka-dot',
   'programmer-theme-pack':'theme-programmer','programmer-theme-fan':'theme-programmer',
@@ -12914,7 +12921,7 @@ function applyTeacherTheme(theme,{persist=true}={}){
   else if(next==='gray')document.body.classList.add('theme-gray');
   else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  const darkTheme=next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
+  const darkTheme=next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   applyMaterialThemeArtwork(next);
