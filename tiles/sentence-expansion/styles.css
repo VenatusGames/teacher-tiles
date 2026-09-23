@@ -32,3 +32,5 @@
 .sentence-expansion-module:fullscreen{padding:30px 5vw 54px;grid-template-rows:auto minmax(0,max-content) clamp(150px,28vh,300px) minmax(0,1fr);row-gap:18px}
 .sentence-expansion-module:fullscreen .sentence-source,.sentence-expansion-module:fullscreen .sentence-draft{font-size:clamp(36px,5vw,84px);line-height:1.25}
 .sentence-expansion-module:fullscreen .sentence-source{max-height:25vh}.sentence-expansion-module:fullscreen .sentence-drop{width:min(560px,60vw);justify-self:center;min-height:0}.sentence-expansion-module:fullscreen .sentence-ghost{font-size:16px}.sentence-expansion-module:fullscreen .sentence-apply{font-size:16px;padding:10px 16px}
+
+.sentence-source,.sentence-draft{overflow:hidden;overflow-wrap:anywhere}.sentence-source [contenteditable],.sentence-draft [contenteditable]{overflow-wrap:anywhere}

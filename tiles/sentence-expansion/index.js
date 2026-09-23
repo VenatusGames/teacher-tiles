@@ -6,7 +6,27 @@ function setup(m){
   const text=value=>String(value??'').replace(/[\r\n]+/g,' ').slice(0,2000);
   const pair=fields=>fields.map(el=>text(el.textContent));
   const write=(fields,values)=>fields.forEach((el,i)=>el.textContent=text(values?.[i]));
-  const changed=()=>notifyBoardChanged('sentence-expansion');
+  let fitFrame=0;
+  const sourceLine=m.querySelector('.sentence-source'),draftLine=m.querySelector('.sentence-draft'),bottom=m.querySelector('.sentence-bottom');
+  function fitLine(line,limit){
+    if(!line.clientWidth||limit<=0)return;
+    line.style.removeProperty('font-size');
+    const maximum=parseFloat(getComputedStyle(line).fontSize);
+    const fits=()=>line.scrollHeight<=limit+1&&line.scrollWidth<=line.clientWidth+1;
+    if(!fits()){let low=1,high=maximum;for(let i=0;i<12;i++){const size=(low+high)/2;line.style.fontSize=size+'px';if(fits())low=size;else high=size}line.style.fontSize=low+'px'}
+    line.scrollTop=line.scrollLeft=0;
+  }
+  function fitText(){fitFrame=0;if(disposed||!m.isConnected)return;
+    fitLine(sourceLine,parseFloat(getComputedStyle(sourceLine).maxHeight)||70);
+    const hint=m.querySelector('.sentence-hint'),shown=[ghost,hint].filter(el=>getComputedStyle(el).display!=='none'),gap=parseFloat(getComputedStyle(bottom).rowGap)||0;
+    const available=Math.max(1,bottom.clientHeight-shown.reduce((sum,el)=>sum+el.offsetHeight+(parseFloat(getComputedStyle(el).marginTop)||0),0)-shown.length*gap);
+    draftLine.style.maxHeight=available+'px';fitLine(draftLine,available);
+  }
+  function queueFit(){if(!fitFrame&&!disposed)fitFrame=requestAnimationFrame(fitText)}
+  const fitObserver=new ResizeObserver(queueFit);fitObserver.observe(m);fitObserver.observe(bottom);
+  const appearanceObserver=new MutationObserver(queueFit);appearanceObserver.observe(m,{attributes:true,attributeFilter:['style','data-font']});
+  m.addEventListener('pointerenter',queueFit);m.addEventListener('pointerleave',queueFit);document.fonts?.addEventListener('loadingdone',queueFit);
+  const changed=()=>{queueFit();notifyBoardChanged('sentence-expansion')};
   function sentenceNode(values){const node=document.createElement('span');for(let i=0;i<2;i++){const part=document.createElement('span');part.className=i?'sentence-predicate':'sentence-subject';part.textContent=values[i];node.append(part,document.createTextNode(i?'.':' '))}return node}
   function closeHistory(){historyPanel.hidden=true;ghost.setAttribute('aria-expanded','false')}
   function renderHistory(){ghost.hidden=!versions.length;ghost.replaceChildren();if(versions.length){ghost.append(sentenceNode(versions.at(-1)));const count=document.createElement('small');count.textContent=versions.length+' saved '+(versions.length===1?'sentence':'sentences');ghost.append(count)}historyPanel.replaceChildren();versions.forEach((value,i)=>{const button=document.createElement('button');button.type='button';button.setAttribute('aria-label','Use sentence '+(i+1)+': '+value.join(' ')+'.');const number=document.createElement('small');number.textContent=String(i+1).padStart(2,'0');button.append(number,sentenceNode(value));button.onclick=()=>{write(draft,value);closeHistory();draft[0].focus();changed()};historyPanel.append(button)})}
@@ -26,6 +46,8 @@ function setup(m){
   m._boardGetState=()=>({version:1,source:pair(source),draft:pair(draft),history:versions.map(v=>[...v]),image:imageData});
   m._boardSetState=state=>{imageTicket++;write(source,Array.isArray(state?.source)?state.source:['subject','predicate']);write(draft,Array.isArray(state?.draft)?state.draft:pair(source));versions=Array.isArray(state?.history)?state.history.filter(v=>Array.isArray(v)&&v.length===2).map(v=>v.map(text)):[];imageData=/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(state?.image||'')&&state.image.length<6000000?state.image:'';closeHistory();renderHistory();paintImage()};
   const deactivate=m._deactivate;m._deactivate=()=>{closeHistory();deactivate?.()};const cleanup=m._cleanup;m._cleanup=()=>{disposed=true;imageTicket++;document.removeEventListener('pointerdown',outside);cleanup?.()};
+  const restore=m._boardSetState;m._boardSetState=state=>{restore(state);queueFit()};
+  const clearFit=m._cleanup;m._cleanup=()=>{cancelAnimationFrame(fitFrame);fitObserver.disconnect();appearanceObserver.disconnect();document.fonts?.removeEventListener('loadingdone',queueFit);clearFit?.()};
   m._boardSetState(null);
 }
 window.TeacherTilesSentenceExpansion=Object.freeze({setup});})();
