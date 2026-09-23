@@ -21,3 +21,7 @@
 
 /* Let the sentence sit at the lower edge instead of stretching an empty text box. */
 .sentence-bottom{justify-content:flex-end}.sentence-bottom .sentence-draft{flex:0 1 auto}.sentence-expansion-module:not(:hover){padding-bottom:16px}.sentence-expansion-module:not(:hover) .sentence-hint{display:none}
+
+/* Give unused sentence space to the image, with a protected image height. */
+.sentence-expansion-module{grid-template-rows:auto minmax(30px,max-content) minmax(0,1fr) minmax(0,max-content);row-gap:12px}
+.sentence-source{max-height:70px}.sentence-drop{min-height:min(180px,34cqh)}.sentence-bottom{justify-content:flex-start;max-height:27cqh}.sentence-bottom .sentence-draft{flex:0 1 auto}.sentence-image{object-position:center bottom}

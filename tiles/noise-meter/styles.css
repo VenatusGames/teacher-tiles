@@ -14,3 +14,5 @@
 .noise-module.noise-modern[data-noise-view=single]{gap:8px}.noise-modern[data-noise-view=single] .nm-footer{gap:6px}
 
 .noise-module.noise-modern[data-noise-view=horizontal]{gap:8px}
+
+.noise-modern .noise-start{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s,visibility .18s}.noise-modern:hover .noise-start{opacity:1;visibility:visible;pointer-events:auto}@media(prefers-reduced-motion:reduce){.noise-modern .noise-start{transition:none}}
