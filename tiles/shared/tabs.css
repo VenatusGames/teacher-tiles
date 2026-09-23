@@ -24,3 +24,18 @@ body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;out
 @media(prefers-reduced-motion:reduce){.tile-tab-bookmark{transition:none;}}
 
 .tile-tab-bookmark:has(.tile-tab[aria-selected="true"])::after{content:"";position:absolute;inset:0;border:2px solid color-mix(in srgb,var(--tab-color) 60%,black);border-right:0;border-radius:inherit;pointer-events:none;}
+/* In single-tile fullscreen the strip must live inside the fullscreen element. */
+.tile-tab-strip.is-tile-fullscreen-strip{overflow-x:hidden;}
+.tile-tab-strip.is-tile-fullscreen-strip .tile-tab-bookmark{
+  transform:translateX(-31px);
+  border-left:0;
+  border-right:1px solid #26324222;
+  border-radius:0 8px 8px 0;
+  box-shadow:2px 2px 5px #26324212;
+}
+.tile-tab-strip.is-tile-fullscreen-strip.is-expanded .tile-tab-bookmark,
+.tile-tab-strip.is-tile-fullscreen-strip:has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
+.tile-tab-strip.is-tile-fullscreen-strip .tile-tab-bookmark:has(.tile-tab[aria-selected="true"])::after{
+  border-left:0;
+  border-right:2px solid color-mix(in srgb,var(--tab-color) 60%,black);
+}

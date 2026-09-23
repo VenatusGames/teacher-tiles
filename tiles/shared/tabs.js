@@ -84,22 +84,34 @@
     frame=0;
     for(const [m,strip] of strips){
       if(!m.isConnected){release(m);continue;}
-      strip.classList.toggle('is-expanded',m.matches(':hover')||strip.matches(':hover')||strip.matches(':has(:focus-visible)'));
+      const tileFullscreen=document.fullscreenElement===m;
+      const stripHot=strip.matches(':hover')||strip.matches(':has(:focus-visible)');
+      strip.classList.toggle('is-expanded',tileFullscreen?stripHot:m.matches(':hover')||stripHot);
+      strip.classList.toggle('is-tile-fullscreen-strip',tileFullscreen);
+      const parent=tileFullscreen?m:workspace;
+      if(strip.parentElement!==parent)parent.append(strip);
+
       const rect=m.getBoundingClientRect(),board=workspace.getBoundingClientRect();
-      const scale=rect.width/Math.max(1,m.offsetWidth)/boardCamera.scale;
-      const left=(rect.left-board.left)/boardCamera.scale,top=(rect.top-board.top)/boardCamera.scale;
+      const scale=tileFullscreen?1:rect.width/Math.max(1,m.offsetWidth)/boardCamera.scale;
+      const left=tileFullscreen?0:(rect.left-board.left)/boardCamera.scale;
+      const top=tileFullscreen?0:(rect.top-board.top)/boardCamera.scale;
       const height=m.offsetHeight,count=strip.children.length;
-      const signature=`${left},${top},${scale},${height},${count},${m.style.zIndex},${Boolean(document.fullscreenElement)}`;
+      const fullscreenMode=tileFullscreen?'tile':document.fullscreenElement?'board':'none';
+      const signature=`${left},${top},${scale},${height},${count},${m.style.zIndex},${fullscreenMode}`;
       if(strip.dataset.position===signature)continue;
       strip.dataset.position=signature;
-      strip.hidden=Boolean(document.fullscreenElement);
+      strip.hidden=false;
       // Compress first, then scroll rather than letting bookmarks leave the tile.
       const available=Math.max(24,height-55),gap=count*37>available?2:5;
       const rowHeight=Math.max(24,Math.min(32,(available-4-gap*(count-1))/count));
       strip.style.maxHeight=`${available}px`;
       strip.style.setProperty('--tab-gap',`${gap}px`);
       strip.style.setProperty('--tab-height',`${rowHeight}px`);
-      Object.assign(strip.style,{left:`${left}px`,top:`${top+43*scale}px`,transform:`translateX(-100%) scale(${scale})`,transformOrigin:'right top',zIndex:m.style.zIndex});
+      if(tileFullscreen){
+        Object.assign(strip.style,{left:'0px',top:'43px',transform:'none',transformOrigin:'left top',zIndex:'10020'});
+      }else{
+        Object.assign(strip.style,{left:`${left}px`,top:`${top+43*scale}px`,transform:`translateX(-100%) scale(${scale})`,transformOrigin:'right top',zIndex:m.style.zIndex});
+      }
       const selected=strip.querySelector('[aria-selected="true"]')?.parentElement;
       if(selected){
         if(selected.offsetTop<strip.scrollTop)strip.scrollTop=selected.offsetTop;
