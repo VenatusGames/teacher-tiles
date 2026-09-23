@@ -3543,7 +3543,7 @@ function setupModuleByType(m,type){
   if(type==='timestables')window.TeacherTilesTimesTables.setup(m);
   if(type==='google')window.TeacherTilesGoogle.setup(m);
   if(type==='link')window.TeacherTilesLink.setup(m);
-  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover'].includes(type))setupClassroomTileControls(m);
+  if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover','boombox'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
   if(type==='timer')setupTimer(m);
   if(type==='interactive')setupHourglass(m);

@@ -149,3 +149,57 @@ body.dark .boombox-module{background:#202124;color:#f4f4f6}.dark .boombox-view--
 .shop-product__preview--tile-art .tile-skin-art--soundscapes-vinyl,
 .shop-product__preview--tile-art .tile-skin-art--soundscapes-music-player,
 .shop-product__preview--tile-art .tile-skin-art--soundscapes-ipod{transform:translate(-50%,-50%) scale(1.25)}
+
+
+/* Shared tile appearance controls */
+.soundscapes-module{
+  background:var(--module-bg,#fff)!important;
+  color:var(--module-text,#17191d)!important;
+  font-family:var(--module-font,Inter,system-ui,sans-serif)!important;
+}
+.soundscapes-module .boombox-view,
+.soundscapes-module :is(button,input,label,.boombox-title,.boombox-time,.boombox-volume-row,.compact-kicker,.music-kicker,.boombox-screen-top){
+  font-family:var(--module-font,Inter,system-ui,sans-serif)!important;
+}
+.soundscapes-module :is(.boombox-title,.boombox-time,.boombox-volume-row,.compact-kicker,.music-kicker,.boombox-screen-top,.boombox-loop),
+.soundscapes-module :is(.compact-boombox-controls,.music-controls,.vinyl-transport) button,
+.soundscapes-module .boombox-wheel-label{
+  color:var(--module-text,#17191d)!important;
+}
+.soundscapes-module :is(.compact-boombox-controls,.music-controls,.vinyl-transport) .boombox-play{
+  background:var(--module-text,#17191d)!important;
+  color:var(--module-bg,#fff)!important;
+}
+.soundscapes-module .boombox-wheel-label:hover,
+.soundscapes-module :is(.compact-boombox-controls,.music-controls,.vinyl-transport) button:hover{
+  background:color-mix(in srgb,var(--module-text,#17191d) 8%,transparent)!important;
+}
+.soundscapes-module .boombox-view--ipod .boombox-shell{
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--module-bg,#fff) 94%,#fff 6%),
+    color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 22%))!important;
+}
+.soundscapes-module .boombox-wheel{
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--module-bg,#fff) 96%,#fff 4%),
+    color-mix(in srgb,var(--module-bg,#fff) 82%,var(--module-text,#17191d) 18%))!important;
+}
+.soundscapes-module .boombox-wheel-center{
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--module-bg,#fff) 82%,var(--module-text,#17191d) 18%),
+    color-mix(in srgb,var(--module-bg,#fff) 96%,#fff 4%))!important;
+}
+.soundscapes-module .boombox-screen{
+  color:var(--module-text,#17191d)!important;
+  font-family:var(--module-font,Inter,system-ui,sans-serif)!important;
+  background:linear-gradient(
+    color-mix(in srgb,#dce6cc 62%,var(--module-bg,#fff) 38%),
+    color-mix(in srgb,#becbab 62%,var(--module-bg,#fff) 38%))!important;
+}
+.soundscapes-module .boombox-progress span{
+  background:color-mix(in srgb,#ff375f 72%,var(--module-text,#17191d) 28%);
+}
+.soundscapes-module .vinyl-label .boombox-title{
+  color:var(--module-text,#17191d)!important;
+}
+.soundscapes-customization{position:absolute;left:8px;bottom:8px;z-index:30}

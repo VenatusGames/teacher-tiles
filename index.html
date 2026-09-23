@@ -54,7 +54,7 @@
 <link rel="stylesheet" href="tiles/noise-meter/styles.css?v=20260922-mic-hover-5">
 <link rel="stylesheet" href="tiles/squishy/styles.css?v=20260922-refine-3">
 <link rel="stylesheet" href="tiles/sentence-expansion/styles.css?v=20260922-fit-text-11">
-<link rel="stylesheet" href="tiles/soundscapes/styles.css?v=20260923-default-spacing-1">
+<link rel="stylesheet" href="tiles/soundscapes/styles.css?v=20260923-appearance-1">
 <link rel="stylesheet" href="tiles/shared/animated-themes.css?v=20260922-light-dark-3">
 </head>
 <body>
@@ -4038,7 +4038,7 @@
   </template>
 
   <template id="boombox-template">
-    <section class="module boombox-module soundscapes-module" data-type="boombox">
+    <section class="module boombox-module soundscapes-module" data-type="boombox" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete Soundscapes">×</button><div class="module-drag-handle"></div>
 
       <div class="boombox-view boombox-view--compact">
@@ -4111,6 +4111,11 @@
           <label class="boombox-volume-row"><span>VOL</span><input class="boombox-volume" type="range" min="0" max="100" value="55" aria-label="Volume"><span class="boombox-volume-value">55%</span></label>
         </div>
       </div>
+      <div class="customization-bar soundscapes-customization" aria-label="Soundscapes customization">
+        <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon tile-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon tile-text" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+      </div>
       <audio class="boombox-audio" preload="metadata" loop></audio>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
@@ -4169,7 +4174,7 @@
 <script src="tiles/sentence-expansion/index.js?v=20260923-history-wheel-1"></script>
 <script src="tiles/soundscapes/index.js?v=20260923-skins-1"></script>
 <script src="tiles/shared/animated-themes.js?v=20260922-light-dark-3"></script>
-<script src="app.js?v=20260923-frame-reorder-1"></script>
+<script src="app.js?v=20260923-soundscapes-appearance-1"></script>
   <script src="tiles/lesson-planner.js?v=20260918-planner-recovered-shared-library-1"></script>
   <script type="module" src="firebase-auth.js?v=20260922-ui-refinement-2"></script>
 
