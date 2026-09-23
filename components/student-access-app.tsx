@@ -209,15 +209,21 @@ function ProfileImage({ student }: { student: Student }) { return <span classNam
 function AnswerVisual({ answer, index }: { answer: Answer; index: number }) {
   const preset = presetChoices.find(choice => choice.key === answer.imageKey);
   const Icon = preset?.icon ?? [Sprout, Footprints, Target][index % 3];
-  return <span className={`answer-visual answer-${index % 3} ${preset ? 'preset-visual' : ''}`}>{answer.imageKey && !preset ? <img src={answer.imageKey} alt="" /> : <Icon />}</span>;
+  return <span className={`answer-visual answer-${index % 3} ${preset ? `preset-visual ${presetToneClass(answer.imageKey)}` : ''}`}>{answer.imageKey && !preset ? <img src={answer.imageKey} alt="" /> : <Icon />}</span>;
 }
 function LeadBars() { return <span className="lead-bars" aria-label="Three increasing bars"><i /><i /><i /></span>; }
 function HistoryAnswer({ item }: { item: HistoryItem }) {
   const preset = presetChoices.find(choice => choice.key === item.imageKey);
-  if (preset) { const Icon = preset.icon; return <span className="history-answer" aria-label={item.answer} title={item.answer}><span className="history-answer-visual preset"><Icon /></span></span>; }
+  if (preset) { const Icon = preset.icon; return <span className="history-answer" aria-label={item.answer} title={item.answer}><span className={`history-answer-visual preset ${presetToneClass(item.imageKey)}`}><Icon /></span></span>; }
   if (item.imageKey) return <span className="history-answer" aria-label={item.answer} title={item.answer}><span className="history-answer-visual"><img src={item.imageKey} alt={item.answer} /></span></span>;
   return <span className="answer-text-pill">{item.answer}</span>;
 }
 function personalize(text: string, student: Student) { return text.replace(/\(name\)/gi, student.name).replace(/\(score-a\)/gi, student.currentScore === null ? '—' : String(student.currentScore)).replace(/\(score-b\)/gi, student.goalScore === null ? '—' : String(student.goalScore)); }
+function presetToneClass(key: string | null | undefined) {
+  if (key === 'preset:smile' || key === 'preset:yes') return 'preset-positive';
+  if (key === 'preset:sad') return 'preset-sad';
+  if (key === 'preset:no') return 'preset-no';
+  return '';
+}
 function isFacePreset(key: string | null) { return key === 'preset:smile' || key === 'preset:sad'; }
 function formatDate(value: string) { return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value)); }
