@@ -35,11 +35,11 @@ YouTube embeds must be tested through localhost or HTTPS; opening index.html dir
 The Phantom Guardians font option is wired to `assets/PhantomGuardiansCoolGamingBold-q2Rlx.otf`. Place your licensed copy of that font file in the assets folder when deploying.
 
 
-## Boom Box soundscapes
+## Soundscapes
 
 
-## Boom Box player styles
-Boom Box defaults to a minimal Apple Music-inspired player. Use the appearance button inside the module to switch between Apple Music, classic iPod, and spinning Vinyl views. The selected soundscape and playback state continue across appearance changes.
+## Soundscapes skins
+Soundscapes uses its compact player as the default appearance. Vinyl, Music Player, and iPod are optional paid Tile Skins selected from the standard Tile Skins menu.
 
 ## Module categories
 The right-click Add Module menu defaults to ALL and can be filtered with TEXT, MEDIA, and TOOLS tabs.

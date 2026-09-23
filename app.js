@@ -1457,7 +1457,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Meter','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','Use a stoplight for various visual cues'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
     lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
-    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Boom Box','Loop classroom soundscapes'],
+    wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Soundscapes','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],backgroundremover:['Background Remover','Remove image backgrounds and save transparent cutouts'],mirror:['Mirror','Use the camera as a classroom mirror'],
     weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
   },
@@ -1472,7 +1472,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     grapher:['Herramienta de gráficas','Traza puntos y grafica ecuaciones'],tablemaker:['Creador de tablas','Convierte tus datos en gráficas animadas'],tallychart:['Tabla de conteo','Cuenta y compara resultados en tiempo real'],periodictable:['Tabla periódica','Explora los 118 elementos'],money:['Dinero','Arrastra manipulativos de dinero y calcula el total'],noise:['Detector de ruido','Nivel de sonido en vivo con micrófono'],
     collections:['Colecciones','Llena en grupo el frasco de recompensas de la clase'],prizeboard:['Tablero de premios','Crea y canjea recompensas individuales o para toda la clase'],pbisconsole:['Consola PBIS','Administra todas las estadísticas PBIS en un solo lugar'],punchcards:['Tarjetas de puntos','Completa tarjetas para estudiantes o toda la clase'],racer:['Carrera','Mueve a los estudiantes hacia la meta'],stoplight:['Semáforo','Señal visual de SIGUE, ESCUCHA y ALTO'],starchart:['Tabla de estrellas','Otorga estrellas a la clase o a estudiantes'],classmeter:['Medidor de clase','Mantén pulsado para llenar una meta de toda la clase'],classvsclass:['Clase contra clase','Próximamente: competencias de incentivos'],spinner:['Ruleta','Gira una ruleta para elegir un nombre'],groupmaker:['Creador de grupos','Mezcla estudiantes en grupos equilibrados'],
     lunchcount:['Conteo de almuerzo','Cuenta almuerzos u organiza nombres'],voting:['Votación','Cuenta votos u organiza nombres'],ambiencevideo:['Video ambiente','Escenas de fogata, chimenea y acuario'],hangman:['Ahorcado','Adivina la palabra oculta'],
-    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],minesweeper:['Buscaminas','Despeja cada casilla segura sin tocar una mina'],boombox:['Boom Box','Repite paisajes sonoros del aula'],
+    wordypuzzle:['Rompecabezas de palabras','Adivina la palabra secreta del docente'],minesweeper:['Buscaminas','Despeja cada casilla segura sin tocar una mina'],boombox:['Paisajes sonoros','Repite paisajes sonoros del aula'],
     livecaption:['Subtítulos en vivo','Muestra el habla como texto claro y legible'],voicememo:['Notas de voz','Graba y reproduce notas de audio cortas'],photobooth:['Fotomatón','Toma fotos con filtros usando tu cámara'],backgroundremover:['Quitar fondo','Elimina fondos de imágenes y guarda recortes transparentes'],mirror:['Espejo','Usa la cámara como espejo del aula'],
     weather:['Clima','Compara el clima actual de varios lugares'],weatherwheel:['Rueda del clima','Señala el clima de hoy'],seasonwheel:['Rueda de estaciones','Explora primavera, verano, otoño e invierno'],temperature:['Temperatura','Muestra la temperatura exterior a tu manera'],worldmap:['Mapa mundial','Explora países, continentes y hemisferios'],compass:['Brújula','Explora direcciones y partes de la brújula']
   }
@@ -3155,7 +3155,10 @@ const TILE_SKIN_CATALOG=Object.freeze([
     tags:'visual timer floating freestanding object clock countdown',released:12
   }),
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
-  Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14})
+  Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
+  Object.freeze({id:'soundscapes-vinyl',productId:'tile-skin-soundscapes-vinyl',tileType:'boombox',tileLabel:'Soundscapes',name:'Vinyl',description:'Turn Soundscapes into a spinning record player.',tags:'soundscapes audio vinyl record music ambient sound',released:29}),
+  Object.freeze({id:'soundscapes-music-player',productId:'tile-skin-soundscapes-music-player',tileType:'boombox',tileLabel:'Soundscapes',name:'Music Player',description:'A polished modern music-player layout for classroom soundscapes.',tags:'soundscapes audio music player modern ambient sound',released:30}),
+  Object.freeze({id:'soundscapes-ipod',productId:'tile-skin-soundscapes-ipod',tileType:'boombox',tileLabel:'Soundscapes',name:'iPod',description:'A classic click-wheel player look for your classroom soundscapes.',tags:'soundscapes audio ipod click wheel retro music ambient sound',released:31})
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
@@ -3572,7 +3575,7 @@ function setupModuleByType(m,type){
   if(type==='youtube')setupYoutube(m);
   if(type==='ambiencevideo')setupAmbienceVideo(m);
   if(type==='windowshare')setupWindowShare(m);
-  if(type==='boombox')setupBoombox(m);
+  if(type==='boombox')window.TeacherTilesSoundscapes.setup(m);
   if(type==='spinner')setupSpinner(m);
   if(type==='hangman')setupHangman(m);
   if(type==='wordypuzzle')setupWordyPuzzle(m);
@@ -8669,117 +8672,6 @@ function setupWindowShare(m){
     video.pause();
     video.srcObject=null;
   };
-}
-
-function setupBoombox(m){
-  const tracks=[
-    {title:'Relaxing Rain',src:'assets/soundscapes/relaxing-rain.mp3',vinyl:'#6d7f91',deep:'#354553',label:'#dce6ee',text:'#273641'},
-    {title:'Thunderstorm',src:'assets/soundscapes/Thunderstorm.mp3',vinyl:'#52596b',deep:'#292e3b',label:'#c8cddd',text:'#282d3a'},
-    {title:'Blizzard',src:'assets/soundscapes/Blizzard.mp3',vinyl:'#b9d9e9',deep:'#6f9db3',label:'#edf8fc',text:'#31566a'},
-    {title:'Flowing Stream',src:'assets/soundscapes/Flowing Stream.mp3',vinyl:'#4b9da0',deep:'#28696d',label:'#d4eeee',text:'#205456'},
-    {title:'Campfire',src:'assets/soundscapes/campfire.mp3',vinyl:'#c96d3b',deep:'#783a24',label:'#f4d4b9',text:'#67321f'},
-    {title:'Crickets',src:'assets/soundscapes/crickets.mp3',vinyl:'#6f8755',deep:'#3f5630',label:'#dce7ce',text:'#334626'},
-    {title:'Waterfall',src:'assets/soundscapes/Waterfall.mp3',vinyl:'#4b83b1',deep:'#285375',label:'#d5e8f5',text:'#24445b'},
-    {title:'Ocean Waves',src:'assets/soundscapes/ocean-waves.mp3',vinyl:'#315f87',deep:'#173b5b',label:'#cfe2ef',text:'#203d53'}
-  ];
-  const audio=m.querySelector('.boombox-audio'),titles=[...m.querySelectorAll('.boombox-title')],plays=[...m.querySelectorAll('.boombox-play')],prevs=[...m.querySelectorAll('.boombox-prev')],nexts=[...m.querySelectorAll('.boombox-next')],skips=[...m.querySelectorAll('.boombox-skip')],volumes=[...m.querySelectorAll('.boombox-volume')],volumeValues=[...m.querySelectorAll('.boombox-volume-value')],progresses=[...m.querySelectorAll('.boombox-progress span')],currents=[...m.querySelectorAll('.boombox-current')],durations=[...m.querySelectorAll('.boombox-duration')],styleButton=m.querySelector('.boombox-style-button'),styleMenu=m.querySelector('.boombox-style-menu');let index=0,userVolume=55;
-  const fmt=n=>{if(!Number.isFinite(n))return'0:00';n=Math.max(0,Math.floor(n));return`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`};
-  const each=(arr,fn)=>arr.forEach(fn);
-  const renderPlay=()=>{each(plays,b=>{b.textContent=audio.paused?(b.closest('.boombox-view--ipod')?'▶❚❚':'▶'):'❚❚';b.classList.toggle('is-playing',!audio.paused)});m.classList.toggle('is-playing',!audio.paused)};
-  const fitVinylTitle=t=>{
-    const label=t.closest('.vinyl-label');
-    if(!label)return;
-    const words=[...t.querySelectorAll('.vinyl-title-word')];
-    if(!words.length)return;
-    let size=Math.min(14,Math.max(7,label.clientWidth*.18));
-    const minSize=6.25;
-    t.style.fontSize=`${size}px`;
-    const fits=()=>words.every(w=>w.scrollWidth<=t.clientWidth+1)&&t.scrollHeight<=t.clientHeight+1;
-    while(size>minSize&&!fits()){
-      size-=.25;
-      t.style.fontSize=`${size}px`;
-    }
-  };
-  const syncTrack=()=>{
-    const track=tracks[index];
-    each(titles,t=>{
-      if(t.closest('.vinyl-label')){
-        t.replaceChildren(...track.title.split(/\s+/).map(word=>{
-          const span=document.createElement('span');
-          span.className='vinyl-title-word';
-          span.textContent=word;
-          return span;
-        }));
-        requestAnimationFrame(()=>fitVinylTitle(t));
-      }else{
-        t.textContent=track.title;
-      }
-    });
-    m.style.setProperty('--vinyl-label',track.label);
-    m.style.setProperty('--vinyl-label-text',track.text);
-  };
-  const syncProgress=()=>{const pct=audio.duration?clamp(audio.currentTime/audio.duration*100,0,100):0;each(progresses,p=>p.style.width=`${pct}%`);each(currents,c=>c.textContent=fmt(audio.currentTime));each(durations,d=>d.textContent=fmt(audio.duration))};
-  const load=(i,autoplay=false)=>{index=(i+tracks.length)%tracks.length;syncTrack();audio.src=tracks[index].src;audio.load();each(progresses,p=>p.style.width='0%');each(currents,c=>c.textContent='0:00');if(autoplay)audio.play().catch(()=>{});renderPlay()};
-  each(plays,b=>b.addEventListener('click',()=>{if(audio.paused)audio.play().catch(()=>{});else audio.pause()}));
-  each(prevs,b=>b.addEventListener('click',()=>load(index-1,!audio.paused)));
-  each(nexts,b=>b.addEventListener('click',()=>load(index+1,!audio.paused)));
-  each(skips,b=>b.addEventListener('click',()=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+15)}));
-  const applyBoomboxVolume=()=>{audio.volume=clamp((userVolume/100)*masterAudioLevel(),0,1)};
-  const setVolume=v=>{userVolume=clamp(Number(v),0,100);applyBoomboxVolume();each(volumes,x=>{if(Number(x.value)!==userVolume)x.value=userVolume});each(volumeValues,x=>x.textContent=`${Math.round(userVolume)}%`)};
-  const onBoomboxAudioPreferences=()=>applyBoomboxVolume();
-  window.addEventListener('teachertiles:audiopreferenceschange',onBoomboxAudioPreferences);
-  each(volumes,v=>v.addEventListener('input',()=>setVolume(v.value)));
-  const setStyle=style=>{
-    m.dataset.playerStyle=style;
-    m.querySelectorAll('.boombox-view').forEach(v=>v.hidden=!v.classList.contains(`boombox-view--${style}`));
-    styleMenu.hidden=true;
-    const needs={
-      compact:{w:330,h:170,defaultW:390,defaultH:190},
-      music:{w:270,h:330,defaultW:330,defaultH:430},
-      ipod:{w:260,h:330,defaultW:300,defaultH:390},
-      vinyl:{w:280,h:380,defaultW:320,defaultH:440}
-    }[style];
-    if(needs){
-      m.style.minWidth=`${needs.w}px`;
-      m.style.minHeight=`${needs.h}px`;
-      const rect={width:m.offsetWidth,height:m.offsetHeight};
-      if(style==='compact'){
-        m.style.width=`${needs.defaultW}px`;
-        m.style.height=`${needs.defaultH}px`;
-      }else{
-        if(rect.width<needs.w)m.style.width=`${needs.defaultW}px`;
-        if(rect.height<needs.h)m.style.height=`${needs.defaultH}px`;
-      }
-    }
-    if(style==='vinyl')requestAnimationFrame(()=>m.querySelectorAll('.vinyl-label .boombox-title').forEach(fitVinylTitle));
-  };
-  styleButton.addEventListener('click',e=>{e.stopPropagation();styleMenu.hidden=!styleMenu.hidden});
-  styleMenu.querySelectorAll('[data-player-style-option]').forEach(b=>b.addEventListener('click',()=>setStyle(b.dataset.playerStyleOption)));
-  document.addEventListener('pointerdown',m._boomboxOutside=e=>{if(!m.contains(e.target))styleMenu.hidden=true});
-  audio.addEventListener('play',renderPlay);audio.addEventListener('pause',renderPlay);audio.addEventListener('loadedmetadata',syncProgress);audio.addEventListener('timeupdate',syncProgress);
-  const boomboxResizeObserver=new ResizeObserver(()=>{
-    if(m.dataset.playerStyle==='vinyl')m.querySelectorAll('.vinyl-label .boombox-title').forEach(fitVinylTitle);
-  });
-  boomboxResizeObserver.observe(m);
-  setVolume(55);setStyle('compact');load(0,false);
-  m._boardGetState=()=>({
-    track:index,
-    volume:Math.round(userVolume),
-    playerStyle:m.dataset.playerStyle||'compact',
-    currentTime:Number.isFinite(audio.currentTime)?audio.currentTime:0
-  });
-  m._boardSetState=state=>{
-    if(!state)return;
-    const track=Math.max(0,Math.min(tracks.length-1,Math.round(Number(state.track)||0)));
-    setStyle(['compact','music','ipod','vinyl'].includes(state.playerStyle)?state.playerStyle:'compact');
-    setVolume(Number.isFinite(Number(state.volume))?Number(state.volume):55);
-    load(track,false);
-    const restoreTime=Math.max(0,Number(state.currentTime)||0);
-    if(restoreTime){
-      audio.addEventListener('loadedmetadata',()=>{try{audio.currentTime=Math.min(restoreTime,audio.duration||restoreTime)}catch{}},{once:true});
-    }
-  };
-  const prior=m._cleanup;m._cleanup=()=>{prior?.();boomboxResizeObserver.disconnect();document.removeEventListener('pointerdown',m._boomboxOutside);window.removeEventListener('teachertiles:audiopreferenceschange',onBoomboxAudioPreferences);audio.pause();audio.removeAttribute('src');audio.load()}
 }
 
 function setupTextBubble(m){
@@ -19372,6 +19264,13 @@ function applyBoardPreSetupState(m,state){
   if(!state)return;
   if(state.id)m.dataset.boardObjectId=state.id;
   restoreBoardDataset(m,state.dataset);
+  if(m.dataset.type==='boombox'&&!m.dataset.tileSkin){
+    const legacyStyle=m.dataset.playerStyle||state.special?.playerStyle||'';
+    const legacySkinId={vinyl:'soundscapes-vinyl',music:'soundscapes-music-player',ipod:'soundscapes-ipod'}[legacyStyle]||'';
+    const legacySkin=legacySkinId?tileSkinById(legacySkinId):null;
+    if(legacySkin&&tileSkinIsOwned(legacySkin))m.dataset.tileSkin=legacySkinId;
+  }
+  if(m.dataset.type==='boombox')delete m.dataset.playerStyle;
   for(const cls of Array.isArray(state.classes)?state.classes:[]){
     if(!BOARD_TRANSIENT_CLASSES.has(cls))m.classList.add(cls);
   }
@@ -19385,6 +19284,7 @@ function applyBoardPostSetupState(m,state){
   // wire controls. Reapply the saved customization after setup so colors,
   // fonts, layouts, styles, and other dataset-backed choices always survive.
   restoreBoardDataset(m,state.dataset);
+  if(m.dataset.type==='boombox')delete m.dataset.playerStyle;
   restoreBoardFields(m,state.fields,{dispatch:true});
   restoreBoardEditables(m,state.editables,{dispatch:true});
 
