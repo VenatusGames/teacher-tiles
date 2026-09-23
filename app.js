@@ -1792,6 +1792,7 @@ let boardFrames=[];
 let boardFrameKeyHeld=false;
 let boardFrameCloseTimer=0;
 let boardFrameJumpTimer=0;
+let boardFrameDragId='';
 let zoomIndicatorTimer=0;
 let boardZoomIntentPercent=100;
 let boardZoomWheelAt=0;
@@ -1818,7 +1819,7 @@ function normalizeBoardFrames(value){
 
 function closeBoardFrameMenu({force=false}={}){
   const isRenaming=Boolean(boardFrameMenu?.querySelector('.board-frame-name-input'));
-  if(!boardFrameMenu||(!force&&(boardFrameKeyHeld||boardFrameMenu.matches(':hover')||isRenaming)))return;
+  if(!boardFrameMenu||(!force&&(boardFrameKeyHeld||boardFrameMenu.matches(':hover')||isRenaming||boardFrameDragId)))return;
   clearTimeout(boardFrameCloseTimer);
   boardFrameMenu.hidden=true;
   boardFrameMenu.setAttribute('aria-hidden','true');
@@ -1899,7 +1900,31 @@ function renderBoardFrames(){
   boardFrames.forEach((frame,index)=>{
     const row=document.createElement('div');
     row.className='board-frame-row';
+    row.dataset.frameId=frame.id;
     row.style.setProperty('animation-delay',`${index*18}ms`);
+    const drag=document.createElement('button');
+    drag.type='button';
+    drag.className='board-frame-drag';
+    drag.draggable=true;
+    drag.title=`Drag to reorder ${frame.name}`;
+    drag.setAttribute('aria-label',drag.title);
+    drag.innerHTML='<span aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>';
+    drag.addEventListener('click',event=>event.preventDefault());
+    drag.addEventListener('dragstart',event=>{
+      boardFrameDragId=frame.id;
+      row.classList.add('is-dragging');
+      boardFrameList.classList.add('is-reordering');
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('text/plain',frame.id);
+      try{event.dataTransfer.setDragImage(row,18,Math.min(20,row.offsetHeight/2))}catch{}
+    });
+    drag.addEventListener('dragend',()=>{
+      row.classList.remove('is-dragging');
+      boardFrameList.classList.remove('is-reordering');
+      boardFrameList.querySelectorAll('.board-frame-row').forEach(item=>item.classList.remove('is-drop-before','is-drop-after'));
+      boardFrameDragId='';
+      scheduleBoardFrameMenuClose(120);
+    });
     const button=document.createElement('button');
     button.type='button';
     button.className='board-frame-button';
@@ -1927,7 +1952,7 @@ function renderBoardFrames(){
       renderBoardFrames();
       persistBoardFrameChange('board-frame-delete');
     });
-    row.append(button,remove);
+    row.append(drag,button,remove);
     boardFrameList.appendChild(row);
   });
   if(boardFrameEmpty)boardFrameEmpty.hidden=boardFrames.length>0;
@@ -1941,6 +1966,35 @@ function renderBoardFrames(){
     if(small)small.textContent=full?'Delete a frame to capture another.':'Save the current board view';
   }
 }
+
+boardFrameList?.addEventListener('dragover',event=>{
+  if(!boardFrameDragId)return;
+  event.preventDefault();
+  if(event.dataTransfer)event.dataTransfer.dropEffect='move';
+  const dragged=boardFrameList.querySelector(`.board-frame-row[data-frame-id="${CSS.escape(boardFrameDragId)}"]`);
+  const target=event.target instanceof Element?event.target.closest('.board-frame-row'):null;
+  boardFrameList.querySelectorAll('.board-frame-row').forEach(item=>item.classList.remove('is-drop-before','is-drop-after'));
+  if(!dragged||!target||target===dragged||!boardFrameList.contains(target))return;
+  const rect=target.getBoundingClientRect();
+  const after=event.clientY>rect.top+rect.height/2;
+  target.classList.add(after?'is-drop-after':'is-drop-before');
+  if(after)target.after(dragged);else target.before(dragged);
+});
+
+boardFrameList?.addEventListener('drop',event=>{
+  if(!boardFrameDragId)return;
+  event.preventDefault();
+  const ids=[...boardFrameList.querySelectorAll('.board-frame-row')].map(row=>row.dataset.frameId).filter(Boolean);
+  const byId=new Map(boardFrames.map(frame=>[frame.id,frame]));
+  const reordered=ids.map(id=>byId.get(id)).filter(Boolean);
+  if(reordered.length===boardFrames.length){
+    const changed=reordered.some((frame,index)=>frame!==boardFrames[index]);
+    boardFrames=reordered;
+    if(changed)persistBoardFrameChange('board-frame-reorder');
+  }
+  boardFrameDragId='';
+  renderBoardFrames();
+});
 
 boardFrameCapture?.addEventListener('click',()=>{
   if(boardFrames.length>=BOARD_FRAME_LIMIT)return;
