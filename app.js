@@ -13680,6 +13680,36 @@ function shuffleFlashcardDeck(values){
   return deck;
 }
 
+function bindFlashcardAutoFit(m,card,fit){
+  let settleFrame=0;
+  let finalFrame=0;
+  const queue=()=>{
+    cancelAnimationFrame(settleFrame);
+    cancelAnimationFrame(finalFrame);
+    settleFrame=requestAnimationFrame(()=>{
+      finalFrame=requestAnimationFrame(()=>{
+        settleFrame=0;
+        finalFrame=0;
+        if(m.isConnected)fit();
+      });
+    });
+  };
+  const ro=new ResizeObserver(queue);
+  ro.observe(card);
+  const onFontsLoaded=()=>queue();
+  document.fonts?.addEventListener?.('loadingdone',onFontsLoaded);
+  document.fonts?.ready?.then(()=>{if(m.isConnected)queue()});
+  const priorAfterResize=m._afterModuleResize;
+  m._afterModuleResize=()=>{priorAfterResize?.();queue()};
+  queue();
+  return()=>{
+    ro.disconnect();
+    cancelAnimationFrame(settleFrame);
+    cancelAnimationFrame(finalFrame);
+    document.fonts?.removeEventListener?.('loadingdone',onFontsLoaded);
+  };
+}
+
 function createFlashcardCompletePopup(card,onShuffle){
   const popup=document.createElement('span');
   popup.className='flashcard-complete';
@@ -13903,11 +13933,9 @@ function setupCVCWord(m){
   });
   m.querySelector('.cvcword-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{
-    if(!currentWord)return;
-    fitCurrentWord();
+  const detachAutoFit=bindFlashcardAutoFit(m,card,()=>{
+    if(currentWord)fitCurrentWord();
   });
-  ro.observe(card);
 
   setCategory('all');
 
@@ -13958,7 +13986,7 @@ function setupCVCWord(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    ro.disconnect();
+    detachAutoFit();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
     completion.remove();
@@ -14201,10 +14229,9 @@ function setupHighFrequencyWords(m){
   });
   m.querySelector('.highfrequency-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{
+  const detachAutoFit=bindFlashcardAutoFit(m,card,()=>{
     if(currentWord)fitCurrentWord();
   });
-  ro.observe(card);
 
   setGrade('k');
 
@@ -14255,7 +14282,7 @@ function setupHighFrequencyWords(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    ro.disconnect();
+    detachAutoFit();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
     completion.remove();
@@ -15002,10 +15029,9 @@ function setupABC(m){
   m.querySelector('.abc-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.abc-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{
+  const detachAutoFit=bindFlashcardAutoFit(m,card,()=>{
     if(current)fitCurrent();
   });
-  ro.observe(card);
 
   setMode('uppercase');
 
@@ -15048,7 +15074,7 @@ function setupABC(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    ro.disconnect();
+    detachAutoFit();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
     completion.remove();
@@ -15172,8 +15198,9 @@ function setupNumberFlashcards(m){
   m.querySelector('.number-flashcards-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.number-flashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{if(current)fitCurrent()});
-  ro.observe(card);
+  const detachAutoFit=bindFlashcardAutoFit(m,card,()=>{
+    if(current)fitCurrent();
+  });
   setMode('10');
 
   m._boardGetState=()=>({
@@ -15214,7 +15241,7 @@ function setupNumberFlashcards(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    ro.disconnect();
+    detachAutoFit();
     cancelAnimationFrame(resizeFrame);
     measurer.remove();
     completion.remove();
@@ -15654,14 +15681,13 @@ function setupCustomFlashcards(m){
   });
   m.querySelector('.customflashcards-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
-  const ro=new ResizeObserver(()=>{
+  const detachAutoFit=bindFlashcardAutoFit(m,card,()=>{
     cancelAnimationFrame(resizeFrame);
     resizeFrame=requestAnimationFrame(()=>{
       const item=currentCard();
       if(item)applyCardContent(item);
     });
   });
-  ro.observe(card);
 
   updateSetControls();
   resetDeck({animate:false});
@@ -15740,7 +15766,7 @@ function setupCustomFlashcards(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();
-    ro.disconnect();
+    detachAutoFit();
     cancelAnimationFrame(resizeFrame);
     clearTimeout(flipTimer);
     clearTimeout(finishTimer);
