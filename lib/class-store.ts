@@ -424,15 +424,15 @@ export async function loadAllHistory(access: Access): Promise<HistoryEntry[]> {
   const names = new Map(state.data.students.map(student => [student.id, student.name]));
   const months = [...new Set(Object.keys(state.days).map(day => day.slice(0, 7)))].sort();
   const archives = await Promise.all(months.map(month => loadMonth(access, month)));
-  const unique = new Map<string, HistoryEntry>();
+  const newestByStudentDay = new Map<string, HistoryEntry>();
   archives.flatMap(archive => archive.entries)
     .filter(entry => valid.has(entry.studentId))
     .forEach(entry => {
       const key = `${entry.id}:${entry.studentId}`;
-      const previous = unique.get(key);
-      if (!previous || entry.createdAt > previous.createdAt) unique.set(key, entry);
+      const current = newestByStudentDay.get(key);
+      if (!current || entry.createdAt > current.createdAt) newestByStudentDay.set(key, entry);
     });
-  return [...unique.values()]
+  return [...newestByStudentDay.values()]
     .map(entry => ({ ...entry, studentName: names.get(entry.studentId) ?? entry.studentName }))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
