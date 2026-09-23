@@ -46,14 +46,15 @@
       const text=clean(field.textContent,maxChars,{stripQuotes,trim:false});
       const computed=getComputedStyle(field);
       const width=Math.max(24,field.clientWidth-4);
-      const height=Math.max(22,field.clientHeight-4);
+      const availableHeight=field===question?field.parentElement?.clientHeight:field.clientHeight;
+      const height=Math.max(22,(availableHeight||field.clientHeight)-4);
       if(!text){moduleElement.style.setProperty(cssVar,`${emptySize}px`);return}
       measure.style.width=`${width}px`;
       measure.style.fontFamily=computed.fontFamily;
       measure.style.fontWeight=computed.fontWeight;
       measure.style.lineHeight=computed.lineHeight;
       measure.style.letterSpacing=computed.letterSpacing;
-      measure.textContent=text;
+      measure.textContent=field===question?`“${text}”`:text;
       let low=min,high=max,best=min;
       for(let i=0;i<18;i+=1){
         const mid=(low+high)/2;
@@ -63,7 +64,12 @@
       moduleElement.style.setProperty(cssVar,`${clamp(best,min,max)}px`);
     };
 
+    const syncQuestionQuoteState=()=>{
+      question.classList.toggle('has-question-text',Boolean(clean(question.textContent,QUESTION_MAX,{stripQuotes:true,trim:true})));
+    };
+
     const scheduleFit=()=>{
+      syncQuestionQuoteState();
       cancelAnimationFrame(frame);
       frame=requestAnimationFrame(()=>{
         fit(question,'--essential-question-size',{min:18,max:64,emptySize:40,maxChars:QUESTION_MAX,stripQuotes:true});
