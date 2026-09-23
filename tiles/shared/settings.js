@@ -13,6 +13,32 @@ const outside=e=>{if(!panel.hidden&&!panel.contains(e.target)&&!button.contains(
 document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);panel.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
 m._positionTileSettings=sync;sync();const deactivate=m._deactivate;m._deactivate=()=>{close();deactivate?.()};const cleanup=m._cleanup;m._cleanup=()=>{close();observer.disconnect();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);cleanup?.()};
 }
+function addHeadingToggle(m,heading){
+    if(!m||!heading||m.dataset.type==='sticker')return;
+    ensure(m);
+    const panel=m.querySelector('.tile-settings-panel,.collection-settings,.classmeter-settings,.highfrequency-settings');
+    if(!panel||panel.querySelector('.tile-heading-visibility-setting'))return;
+    const row=document.createElement('div');
+    row.className='tile-settings-switch-row tile-heading-visibility-setting';
+    const label=document.createElement('span');label.textContent='Show heading';
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='tile-settings-switch';toggle.setAttribute('role','switch');
+    const knob=document.createElement('i');knob.setAttribute('aria-hidden','true');toggle.append(knob);row.append(label,toggle);panel.append(row);
+    const apply=()=>{
+      const visible=m.dataset.tileHeadingHidden!=='true';
+      heading.classList.toggle('tile-heading-hidden',!visible);
+      heading.setAttribute('aria-hidden',String(!visible));
+      toggle.setAttribute('aria-checked',String(visible));
+      toggle.setAttribute('aria-label',visible?'Hide tile heading':'Show tile heading');
+    };
+    toggle.addEventListener('click',()=>{
+      const visible=m.dataset.tileHeadingHidden!=='true';
+      if(visible)m.dataset.tileHeadingHidden='true';else delete m.dataset.tileHeadingHidden;
+      apply();
+      if(typeof notifyBoardChanged==='function')notifyBoardChanged('tile-heading-visibility');
+    });
+    apply();
+}
+
 function ensure(m){
     if(m.dataset.type==='sticker')return;
     let settings=m.querySelector('.tile-settings-toggle,.collection-settings-toggle,.classmeter-settings-toggle,.highfrequency-settings-button');
@@ -32,4 +58,4 @@ function ensure(m){
     }
 
 }
-window.TeacherTilesSettings={setup,ensure};})();
+window.TeacherTilesSettings={setup,ensure,addHeadingToggle};})();

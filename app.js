@@ -3617,6 +3617,7 @@ function setupModuleByType(m,type){
   setupTileAudioSettings(m,type);
   setupEditableTileHeading(m,type);
   window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
+  setupTileHeadingVisibility(m,type);
   window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
 }
 
@@ -9102,6 +9103,14 @@ const EDITABLE_TILE_HEADINGS={
   temperature:'.temperature-title'
 };
 
+const TILE_HEADING_VISIBILITY_SELECTORS={
+  ...EDITABLE_TILE_HEADINGS,
+  essentialquestion:'.widget-title',
+  ambiencevideo:'.ambience-video-heading',
+  lessonplannertile:'.lesson-plan-tile__header>div',
+  visualschedule:'.visual-schedule-title'
+};
+
 function setupEditableTileHeading(m,type){
   const selector=EDITABLE_TILE_HEADINGS[type];
   if(!selector)return;
@@ -9114,6 +9123,14 @@ function setupEditableTileHeading(m,type){
   title.setAttribute('role','textbox');
   title.setAttribute('aria-label','Tile title');
   bindEditableModuleTitle(m,title,fallback);
+}
+
+function setupTileHeadingVisibility(m,type){
+  const selector=TILE_HEADING_VISIBILITY_SELECTORS[type];
+  if(!selector)return;
+  const heading=m.querySelector(selector);
+  if(!heading)return;
+  window.TeacherTilesSettings?.addHeadingToggle?.(m,heading);
 }
 
 function setupTranslation(m){
