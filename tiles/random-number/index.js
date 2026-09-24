@@ -33,36 +33,34 @@
     module.dataset.randomNumberReady = 'true';
 
     const display = module.querySelector('.random-number-display');
+    const valueElement = module.querySelector('.random-number-value');
     const minInput = module.querySelector('.random-number-min');
     const maxInput = module.querySelector('.random-number-max');
     const generateButton = module.querySelector('.random-number-generate');
-    if (!display || !minInput || !maxInput || !generateButton) return;
+    if (!display || !valueElement || !minInput || !maxInput || !generateButton) return;
 
     let min = 1;
     let max = 100;
     let current = randomInclusive(min, max);
 
     const fitDisplay = () => {
-      const width = Math.max(1, display.clientWidth - 10);
-      const height = Math.max(1, display.clientHeight - 10);
-      let low = 24;
-      let high = Math.max(24, Math.min(1200, Math.ceil(Math.max(width, height) * 2.6)));
-      let best = low;
-      while (low <= high) {
-        const size = Math.floor((low + high) / 2);
-        display.style.fontSize = `${size}px`;
-        if (display.scrollWidth <= width && display.scrollHeight <= height) {
-          best = size;
-          low = size + 1;
-        } else high = size - 1;
-      }
-      display.style.fontSize = `${best}px`;
+      const width = Math.max(1, display.clientWidth - 12);
+      const height = Math.max(1, display.clientHeight - 12);
+      const probeSize = 100;
+      valueElement.style.fontSize = `${probeSize}px`;
+
+      const rect = valueElement.getBoundingClientRect();
+      const measuredWidth = Math.max(1, rect.width);
+      const measuredHeight = Math.max(1, rect.height);
+      const scale = Math.min(width / measuredWidth, height / measuredHeight);
+      const fitted = Math.max(28, Math.min(2400, Math.floor(probeSize * scale * .94)));
+      valueElement.style.fontSize = `${fitted}px`;
     };
 
     const render = () => {
       minInput.value = String(min);
       maxInput.value = String(max);
-      display.textContent = String(current);
+      valueElement.textContent = String(current);
       display.setAttribute('aria-label', `Random number ${current}`);
       requestAnimationFrame(fitDisplay);
     };

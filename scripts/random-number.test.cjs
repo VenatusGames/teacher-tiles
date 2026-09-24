@@ -42,22 +42,27 @@ function control(value = '') {
     value,
     textContent: '',
     style: {},
-    clientWidth: 300,
-    clientHeight: 150,
-    scrollWidth: 200,
-    scrollHeight: 100,
+    clientWidth: 340,
+    clientHeight: 280,
     listeners: {},
     addEventListener(type, fn) { this.listeners[type] = fn; },
     setAttribute(name, value) { this[name] = value; },
+    getBoundingClientRect() {
+      const size = Number.parseFloat(this.style.fontSize) || 100;
+      return { width: Math.max(1, String(this.textContent || '').length * size * .58), height: size * .78 };
+    },
     blur() {}
   };
 }
 const display = control();
+const valueElement = control('1');
+valueElement.textContent = '1';
 const minInput = control('1');
 const maxInput = control('100');
 const generateButton = control();
 const controls = new Map([
   ['.random-number-display', display],
+  ['.random-number-value', valueElement],
   ['.random-number-min', minInput],
   ['.random-number-max', maxInput],
   ['.random-number-generate', generateButton]
@@ -72,7 +77,8 @@ assert.equal(typeof tile._boardGetState, 'function');
 assert.equal(typeof tile._boardSetState, 'function');
 tile._boardSetState({ min: 30, max: 10, value: 17 });
 assert.deepEqual(JSON.parse(JSON.stringify(tile._boardGetState())), { min: 10, max: 30, value: 17 });
-assert.equal(display.textContent, '17');
+assert.equal(valueElement.textContent, '17');
+assert(Number.parseFloat(valueElement.style.fontSize) > 200, 'displayed number should scale large enough to dominate the tile');
 minInput.value = '-5';
 maxInput.value = '5';
 generateButton.listeners.click();
@@ -83,15 +89,18 @@ assert(index.includes('data-module="randomnumber" data-category="math tools"'), 
 assert(index.includes('id="randomnumber-template"'), 'Random Number template must exist');
 assert(index.includes('tiles/random-number/styles.css'), 'Random Number stylesheet must load');
 assert(index.includes('tiles/random-number/index.js'), 'Random Number script must load');
+assert(index.includes('class="random-number-value"'), 'Random Number must use a separately measured value element');
 assert(source.includes('module._boardGetState'), 'Random Number state must save with boards');
 assert(source.includes('module._boardSetState'), 'Random Number state must restore with boards');
+assert(source.includes('getBoundingClientRect()'), 'Random Number must size against the actual rendered number bounds');
 
 const css = fs.readFileSync(path.join(__dirname, '../tiles/random-number/styles.css'), 'utf8');
-assert(css.includes('.random-number-display{position:absolute;inset:8px'), 'number display must fill the tile instead of sharing flex space with controls');
-assert(css.includes('bottom:58px'), 'range controls must sit above the bottom-left tile controls');
+assert(css.includes('.random-number-display{position:absolute;inset:6px'), 'number display must fill the tile');
+assert(css.includes('left:50%;bottom:58px'), 'controls must be centered along the bottom while staying above tile buttons');
+assert(css.includes('transform:translate(-50%,5px)'), 'hidden controls must remain horizontally centered');
 assert(css.includes('.random-number-module:hover .random-number-controls{'), 'range and Generate controls must appear on tile hover');
 assert(!css.includes('.random-number-controls:focus-within'), 'controls must not stay visible after the pointer leaves just because an input retained focus');
 assert(css.includes('opacity:0;visibility:hidden;pointer-events:none'), 'range and Generate controls must hide when the tile is idle');
 const randomTemplate = index.slice(index.indexOf('<template id="randomnumber-template">'), index.indexOf('</template>', index.indexOf('<template id="randomnumber-template">')));
-assert(randomTemplate.indexOf('random-number-generate') < randomTemplate.indexOf('random-number-min'), 'Generate must be above the Min/Max row in the Random Number template');
-console.log('Random Number: generation, range normalization, Math/Tools registration, and board persistence passed.');
+assert(randomTemplate.indexOf('random-number-generate') < randomTemplate.indexOf('random-number-min'), 'Generate must be above the Min/Max row');
+console.log('Random Number: full-tile scaling, centered controls, generation, range normalization, Math/Tools registration, and board persistence passed.');
