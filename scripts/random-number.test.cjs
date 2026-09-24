@@ -8,8 +8,13 @@ const index = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 
 const registry = new Map();
 class HTMLElement {}
+const windowListeners = {};
 const sandbox = {
-  window: {},
+  window: {
+    addEventListener(type, fn) { (windowListeners[type] ||= []).push(fn); },
+    removeEventListener(type, fn) { windowListeners[type] = (windowListeners[type] || []).filter(item => item !== fn); }
+  },
+  document: { fonts: { ready: { then() {} } } },
   HTMLElement,
   customElements: {
     get: name => registry.get(name),
@@ -55,6 +60,38 @@ function control(value = '') {
     blur() {}
   };
 }
+
+// Simulate the cold-refresh lifecycle: the custom element can connect while its
+// board box is effectively unavailable, then the saved transform is applied and
+// teachertiles:boardloaded fires. The tile must recover without hover/resize.
+const coldCssVars = {};
+const coldValue = control('7');
+coldValue.textContent = '7';
+const coldDisplay = control();
+const coldMin = control('1');
+const coldMax = control('100');
+const coldGenerate = control();
+const coldControls = new Map([
+  ['.random-number-display', coldDisplay],
+  ['.random-number-value', coldValue],
+  ['.random-number-min', coldMin],
+  ['.random-number-max', coldMax],
+  ['.random-number-generate', coldGenerate]
+]);
+const coldTile = {
+  dataset: {},
+  clientWidth: 0,
+  clientHeight: 0,
+  style: { setProperty(name, value) { coldCssVars[name] = value; } },
+  querySelector(selector) { return coldControls.get(selector) || null; }
+};
+api.setup(coldTile);
+assert.equal(coldCssVars['--random-number-idle-size'], undefined, 'temporary 0x0 restore layout must not overwrite the number with a tiny fit');
+coldTile.clientWidth = 620;
+coldTile.clientHeight = 420;
+for (const listener of windowListeners['teachertiles:boardloaded'] || []) listener();
+assert(Number.parseFloat(coldCssVars['--random-number-idle-size']) > 300, 'boardloaded must refit a restored tile after its real dimensions are applied');
+
 const display = control();
 const valueElement = control('1');
 valueElement.textContent = '1';
@@ -103,6 +140,9 @@ assert(source.includes('getBoundingClientRect()'), 'Random Number must size agai
 assert(source.includes('resizeObserver.observe(module)'), 'Random Number must resize from the stable tile bounds, not the animated display bounds');
 assert(!source.includes('resizeObserver.observe(display)'), 'animated hover display must not drive ResizeObserver sizing');
 assert(source.includes("valueElement.style.transition = 'none'"), 'measurement must disable font-size transitions before reading bounds');
+assert(source.includes("window.addEventListener?.('teachertiles:boardloaded'"), 'Random Number must refit after the board finishes restoring saved dimensions');
+assert(source.includes('width < MIN_MEASURABLE_TILE || height < MIN_MEASURABLE_TILE'), 'temporary hidden/zero-size startup layouts must not commit a tiny font size');
+assert(source.includes('document.fonts?.ready?.then'), 'Random Number must refit after web fonts settle on cold load');
 
 const css = fs.readFileSync(path.join(__dirname, '../tiles/random-number/styles.css'), 'utf8');
 assert(css.includes('.random-number-display{position:absolute;left:6px;right:6px;top:6px;bottom:6px'), 'number display must fill the tile while controls are hidden');
@@ -118,4 +158,4 @@ assert(!css.includes('.random-number-controls:focus-within'), 'controls must not
 assert(css.includes('opacity:0;visibility:hidden;pointer-events:none'), 'range and Generate controls must hide when the tile is idle');
 const randomTemplate = index.slice(index.indexOf('<template id="randomnumber-template">'), index.indexOf('</template>', index.indexOf('<template id="randomnumber-template">')));
 assert(randomTemplate.indexOf('random-number-generate') < randomTemplate.indexOf('random-number-min'), 'Generate must be above the Min/Max row');
-console.log('Random Number: stable initial scaling, full-tile fit, hover reserve/slide, centered controls, resize fit, generation, range normalization, Math/Tools registration, and board persistence passed.');
+console.log('Random Number: cold-refresh restore refit, stable scaling, full-tile fit, hover reserve/slide, centered controls, resize fit, generation, range normalization, Math/Tools registration, and board persistence passed.');

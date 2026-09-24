@@ -6,6 +6,8 @@
   const IDLE_INSET = 12;
   const HOVER_RESERVED_BOTTOM = 146;
   const FIT_SAFETY = 0.93;
+  const MIN_MEASURABLE_TILE = 80;
+  const SETTLE_FRAMES = 6;
 
   function normalizeInteger(value, fallback) {
     const number = Number(value);
@@ -46,7 +48,10 @@
     let max = 100;
     let current = randomInclusive(min, max);
     let resizeFrame = 0;
+    let settleFrame = 0;
+    let settleGeneration = 0;
     let transitionsReady = false;
+    let disposed = false;
 
     const measureAt100 = () => {
       const previousTransition = valueElement.style.transition;
@@ -74,8 +79,15 @@
 
     const fitDisplay = () => {
       resizeFrame = 0;
-      const width = Math.max(1, module.clientWidth || display.clientWidth || 1);
-      const height = Math.max(1, module.clientHeight || display.clientHeight || 1);
+      const width = Number(module.clientWidth) || 0;
+      const height = Number(module.clientHeight) || 0;
+
+      // During board restore the custom element can connect while the workspace is
+      // still hidden or before its saved transform has been applied. Never commit a
+      // tiny fallback size from that temporary 0x0/near-0 box; wait until the tile
+      // has real board dimensions instead.
+      if (width < MIN_MEASURABLE_TILE || height < MIN_MEASURABLE_TILE) return false;
+
       const availableWidth = Math.max(1, width - IDLE_INSET);
       const idleHeight = Math.max(1, height - IDLE_INSET);
       const hoverHeight = Math.max(1, height - HOVER_RESERVED_BOTTOM - 6);
@@ -89,15 +101,37 @@
       if (!transitionsReady) {
         valueElement.style.transition = 'none';
         requestAnimationFrame(() => {
+          if (disposed) return;
           valueElement.style.transition = '';
           transitionsReady = true;
         });
       }
+      return true;
     };
 
     const scheduleFit = () => {
+      if (disposed) return;
       if (resizeFrame) cancelAnimationFrame(resizeFrame);
       resizeFrame = requestAnimationFrame(fitDisplay);
+    };
+
+    // Board restore applies the saved tile transform after this custom element has
+    // connected and after _boardSetState runs. Refit over a few layout frames so the
+    // final saved dimensions win even on a cold refresh. This is deliberately separate
+    // from hover state: hovering must never be required to repair the tile size.
+    const settleFit = () => {
+      if (disposed) return;
+      const generation = ++settleGeneration;
+      if (settleFrame) cancelAnimationFrame(settleFrame);
+      let frames = 0;
+      const step = () => {
+        if (disposed || generation !== settleGeneration) return;
+        fitDisplay();
+        frames += 1;
+        if (frames < SETTLE_FRAMES) settleFrame = requestAnimationFrame(step);
+        else settleFrame = 0;
+      };
+      settleFrame = requestAnimationFrame(step);
     };
 
     const render = () => {
@@ -150,14 +184,35 @@
 
     const resizeObserver = new ResizeObserver(scheduleFit);
     resizeObserver.observe(module);
+
+    const refitAfterRestore = () => settleFit();
+    window.addEventListener?.('teachertiles:boardloaded', refitAfterRestore);
+    window.addEventListener?.('pageshow', refitAfterRestore);
+    window.addEventListener?.('load', refitAfterRestore);
+    if (typeof document !== 'undefined' && document.fonts?.ready?.then) {
+      document.fonts.ready.then(() => { if (!disposed) settleFit(); });
+    }
+
+    const priorAfterResize = module._afterModuleResize;
+    module._afterModuleResize = () => {
+      priorAfterResize?.();
+      settleFit();
+    };
+
     const priorCleanup = module._cleanup;
     module._cleanup = () => {
+      disposed = true;
       resizeObserver.disconnect();
       if (resizeFrame) cancelAnimationFrame(resizeFrame);
+      if (settleFrame) cancelAnimationFrame(settleFrame);
+      window.removeEventListener?.('teachertiles:boardloaded', refitAfterRestore);
+      window.removeEventListener?.('pageshow', refitAfterRestore);
+      window.removeEventListener?.('load', refitAfterRestore);
       priorCleanup?.();
     };
 
     render();
+    settleFit();
   }
 
   class TeacherTilesRandomNumberElement extends HTMLElement {
