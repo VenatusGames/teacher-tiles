@@ -95,12 +95,15 @@ assert(source.includes('module._boardSetState'), 'Random Number state must resto
 assert(source.includes('getBoundingClientRect()'), 'Random Number must size against the actual rendered number bounds');
 
 const css = fs.readFileSync(path.join(__dirname, '../tiles/random-number/styles.css'), 'utf8');
-assert(css.includes('.random-number-display{position:absolute;inset:6px'), 'number display must fill the tile');
+assert(css.includes('.random-number-display{position:absolute;left:6px;right:6px;top:6px;bottom:6px'), 'number display must fill the tile while controls are hidden');
 assert(css.includes('left:50%;bottom:58px'), 'controls must be centered along the bottom while staying above tile buttons');
 assert(css.includes('transform:translate(-50%,5px)'), 'hidden controls must remain horizontally centered');
 assert(css.includes('.random-number-module:hover .random-number-controls{'), 'range and Generate controls must appear on tile hover');
+assert(css.includes('.random-number-module:hover .random-number-display{bottom:146px}'), 'hover controls must reserve bottom space so the number slides upward');
+assert(css.includes('transition:bottom .18s cubic-bezier(.2,.8,.2,1)'), 'number stage must animate smoothly as controls appear and disappear');
+assert(css.includes('transition:font-size .18s cubic-bezier(.2,.8,.2,1)'), 'number must smoothly rescale with the changing stage');
 assert(!css.includes('.random-number-controls:focus-within'), 'controls must not stay visible after the pointer leaves just because an input retained focus');
 assert(css.includes('opacity:0;visibility:hidden;pointer-events:none'), 'range and Generate controls must hide when the tile is idle');
 const randomTemplate = index.slice(index.indexOf('<template id="randomnumber-template">'), index.indexOf('</template>', index.indexOf('<template id="randomnumber-template">')));
 assert(randomTemplate.indexOf('random-number-generate') < randomTemplate.indexOf('random-number-min'), 'Generate must be above the Min/Max row');
-console.log('Random Number: full-tile scaling, centered controls, generation, range normalization, Math/Tools registration, and board persistence passed.');
+console.log('Random Number: full-tile scaling, hover control reserve/slide, centered controls, generation, range normalization, Math/Tools registration, and board persistence passed.');
