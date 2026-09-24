@@ -4331,11 +4331,17 @@ function setupDrag(m){
       m.addEventListener('click',block,{capture:true,once:true});
       setTimeout(()=>m.removeEventListener('click',block,true),0);
     };
-    const end=()=>{
+    const end=ev=>{
       suppressPostDragClick();
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}
-      if(pendingTab&&dragMoved){const target=pendingTab;cleanup();applyModuleTransform(m,origins.get(m));window.TeacherTilesTabs.merge(target,m);return;}
+      let releaseTab=null;
+      if(!multi&&!snappingDisabled&&dragMoved&&!pinnedDrag&&Number.isFinite(ev?.clientX)&&Number.isFinite(ev?.clientY)){
+        releaseTab=window.TeacherTilesTabs?.dropTarget(m,ev.clientX,ev.clientY)||null;
+      }else if(!ev&&pendingTab){
+        releaseTab=pendingTab;
+      }
+      if(releaseTab){const target=releaseTab;cleanup();applyModuleTransform(m,origins.get(m));window.TeacherTilesTabs.merge(target,m);return;}
       let willSnap=false;
       if(!multi&&pending){
         willSnap=pending.left!==null||pending.top!==null;
