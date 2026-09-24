@@ -1,0 +1,9 @@
+.random-number-module{width:360px;height:300px;min-width:250px;min-height:220px;padding:28px 18px 16px;display:flex;flex-direction:column;gap:10px;container-type:size}
+.random-number-display{flex:1;min-width:0;min-height:0;display:grid;place-items:center;text-align:center;font-weight:850;line-height:.9;letter-spacing:-.055em;font-variant-numeric:tabular-nums;overflow:hidden;user-select:none}
+.random-number-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end}
+.random-number-field{display:grid;gap:4px;min-width:0}.random-number-field span{font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;opacity:.55}
+.random-number-field input{width:100%;min-width:0;box-sizing:border-box;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:9px;background:color-mix(in srgb,var(--module-bg,#fff) 88%,transparent);color:inherit;padding:8px 9px;font:inherit;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;outline:none}
+.random-number-field input:focus{border-color:color-mix(in srgb,currentColor 42%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,currentColor 10%,transparent)}
+.random-number-generate{min-height:37px;white-space:nowrap}
+.random-number-module .customization-bar{margin-top:0}
+@container (max-width:300px){.random-number-controls{grid-template-columns:1fr 1fr}.random-number-generate{grid-column:1/-1;width:100%}}

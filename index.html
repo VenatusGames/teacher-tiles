@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
   <link rel="stylesheet" href="tiles/dice/styles.css?v=20260908-polish-1" />
+  <link rel="stylesheet" href="tiles/random-number/styles.css?v=20260924-1" />
   <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=20260922-refine-3" />
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20260908-polish-1" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20260910-fishtank-deadspace-1" />
@@ -1971,6 +1972,7 @@
 <button class="context-menu__item" data-module="google" data-category="tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></span><span><strong>Google</strong><small>Search Google from your board</small></span></button>
 <button class="context-menu__item" data-module="link" data-category="tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M14 8l1-1a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"/></svg></span><span><strong>Link</strong><small>Turn an image or text into a website link</small></span></button>
 <button class="context-menu__item" data-module="dice" data-category="math tools"><span class="context-menu__icon context-menu__icon--dice" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><g fill="currentColor"><circle cx="8" cy="8" r="1.6"/><circle cx="16" cy="8" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></g></svg></span><span><strong>Dice</strong><small>Roll one to four dice</small></span></button>
+<button class="context-menu__item" data-module="randomnumber" data-category="math tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 9h2v6M13 9h3l-3 6h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>Random Number</strong><small>Generate a number in any range</small></span></button>
 <button class="context-menu__item" data-module="seatingchart" data-category="planning"><span class="context-menu__icon context-menu__icon--seating" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v7M5 13h14v4H5zM7 17v4M17 17v4M9 6h6"/></svg></span><span><strong>Seating Chart</strong><small>Arrange your class and randomize seats</small></span></button>
 <button class="context-menu__item" data-module="fishtank" data-category="sel"><span class="context-menu__icon context-menu__icon--fish" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12 2 7v10l5-5Zm0 0c4-8 10-7 15 0-5 7-11 8-15 0Z"/><path d="M15 6c-2 3-2 9 0 12M10 7l2-4 4 3"/><circle cx="18" cy="11" r="1" fill="currentColor" stroke="none"/></svg></span><span><strong>Fish Tank</strong><small>A quiet classroom brings more fish</small></span></button>
 <button class="context-menu__item" data-module="squishy" data-category="sel"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 4Q12 6 17 4Q21 3 20 8Q18 12 20 17Q21 21 16 20Q12 18 7 20Q3 21 4 16Q6 12 4 7Q3 3 7 4Z"/></svg></span><span><strong>Squishy</strong><small>Squeeze, stretch, and let go</small></span></button>
@@ -2598,6 +2600,19 @@
     <h2>Dice</h2><div class="dice-faces"></div><div class="dice-result" role="status" aria-live="polite">Click a die to roll</div><div class="dice-actions tile-toolbar"><button class="dice-remove tile-action" aria-label="Remove a die">−</button><button class="dice-roll tile-action tile-action--primary">Roll dice</button><button class="dice-add tile-action" aria-label="Add a die">+</button></div>
     <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
   </section>
+</template>
+<template id="randomnumber-template">
+  <teacher-random-number class="module classroom-widget random-number-module" data-type="randomnumber" data-bg="white" data-font="inter" data-text="dark">
+    <button class="module-delete" aria-label="Delete Random Number">×</button><div class="module-drag-handle"></div>
+    <div class="random-number-display" role="status" aria-live="polite">1</div>
+    <div class="random-number-controls">
+      <label class="random-number-field"><span>Min</span><input class="random-number-min" type="number" inputmode="numeric" min="-999999999" max="999999999" step="1" value="1" aria-label="Minimum random number"></label>
+      <label class="random-number-field"><span>Max</span><input class="random-number-max" type="number" inputmode="numeric" min="-999999999" max="999999999" step="1" value="100" aria-label="Maximum random number"></label>
+      <button class="random-number-generate tile-action tile-action--primary" type="button">Generate</button>
+    </div>
+    <div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
+    <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div>
+  </teacher-random-number>
 </template>
 <template id="seatingchart-template">
   <section class="module seating-chart-module" data-type="seatingchart" data-bg="white" data-font="inter" data-text="dark">
@@ -4127,6 +4142,7 @@
   <script src="tiles/interactive-timers/pointer.js?v=20260908-1"></script>
   <script src="tiles/interactive-timers/index.js?v=20260912-symbol-controls-1"></script>
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
+  <script src="tiles/random-number/index.js?v=20260924-1"></script>
   <script src="tiles/seating-chart/index.js?v=20260905-clear-chart-1"></script>
   <script src="tiles/fish-tank/index.js?v=20260912-reset-1"></script>
   <script src="tiles/sleepy-monster/index.js?v=20260912-reset-1"></script>
