@@ -45,6 +45,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
   const [error, setError] = useState('');
   const [adminOpen, setAdminOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [debugEnabled, setDebugEnabled] = useState(false);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [surveyStarted, setSurveyStarted] = useState(false);
 
@@ -279,14 +280,14 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
           <DialogTitle className="sr-only">WIGs admin panel</DialogTitle>
-          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} completedIds={completedIds} />}
+          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} completedIds={completedIds} debugEnabled={debugEnabled} setDebugEnabled={setDebugEnabled} />}
         </DialogContent>
       </Dialog>
 
       <Dialog open={statsOpen} onOpenChange={setStatsOpen}>
         <DialogContent className="stats-dialog" showCloseButton>
           <DialogTitle className="sr-only">Class statistics</DialogTitle>
-          {access.role === 'teacher' && <StatisticsPanel access={access} data={data} completedIds={completedIds} open={statsOpen} />}
+          {access.role === 'teacher' && <StatisticsPanel access={access} data={data} completedIds={completedIds} open={statsOpen} debugEnabled={debugEnabled} />}
         </DialogContent>
       </Dialog>
     </main>
@@ -436,7 +437,7 @@ function HistoryBrowser({ access, students, onDelete, onEdit, data }: { access: 
 
 type StatsRange = '7' | '30' | 'all';
 
-function StatisticsPanel({ access, data, completedIds, open }: { access: Access; data: AppData; completedIds: Set<string>; open: boolean }) {
+function StatisticsPanel({ access, data, completedIds, open, debugEnabled }: { access: Access; data: AppData; completedIds: Set<string>; open: boolean; debugEnabled: boolean }) {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [range, setRange] = useState<StatsRange>('30');
   const [loading, setLoading] = useState(true);
@@ -464,15 +465,49 @@ function StatisticsPanel({ access, data, completedIds, open }: { access: Access;
   const classResponses = useMemo(() => {
     let affirmative = 0;
     let negative = 0;
+    const negativeSources: Array<{
+      studentName: string;
+      studentId: string;
+      date: string;
+      createdAt: string;
+      question: string;
+      answer: string;
+      imageKey: string | null;
+      answerId?: string;
+      questionId?: string;
+      resolvedImageKey: string | null;
+    }> = [];
+
+    const answerById = new Map(data.answers.map(answer => [answer.id, answer] as const));
+
     filtered.forEach(entry => entry.items.forEach(item => {
-      const imageKey = item.imageKey;
-      const answer = item.answer.trim().toLowerCase();
-      if (imageKey === 'preset:smile' || imageKey === 'preset:yes' || answer === 'smiley face' || answer === 'yes') affirmative += 1;
-      else if (imageKey === 'preset:sad' || imageKey === 'preset:no' || answer === 'sad face' || answer === 'no') negative += 1;
+      const currentAnswer = item.answerId ? answerById.get(item.answerId) : undefined;
+      const resolvedImageKey = currentAnswer?.imageKey ?? item.imageKey;
+      const normalizedAnswer = (currentAnswer?.label ?? item.answer).trim().toLowerCase();
+      const positive = resolvedImageKey === 'preset:smile' || resolvedImageKey === 'preset:yes' || (!resolvedImageKey && (normalizedAnswer === 'smiley face' || normalizedAnswer === 'yes'));
+      const isNegative = resolvedImageKey === 'preset:sad' || resolvedImageKey === 'preset:no' || (!resolvedImageKey && (normalizedAnswer === 'sad face' || normalizedAnswer === 'no'));
+
+      if (positive) affirmative += 1;
+      else if (isNegative) {
+        negative += 1;
+        negativeSources.push({
+          studentName: entry.studentName,
+          studentId: entry.studentId,
+          date: entry.id,
+          createdAt: entry.createdAt,
+          question: item.question,
+          answer: item.answer,
+          imageKey: item.imageKey,
+          answerId: item.answerId,
+          questionId: item.questionId,
+          resolvedImageKey,
+        });
+      }
     }));
+
     const total = affirmative + negative;
-    return { affirmative, negative, total, percentage: total ? Math.round((affirmative / total) * 100) : null };
-  }, [filtered]);
+    return { affirmative, negative, total, percentage: total ? Math.round((affirmative / total) * 100) : null, negativeSources };
+  }, [data.answers, filtered]);
   const timeline = useMemo(() => buildStatsTimeline(entries, range), [entries, range]);
   const maxTimeline = Math.max(1, ...timeline.map(row => row.count));
   const maxStudent = Math.max(1, ...studentCounts.map(row => row.count));
@@ -501,7 +536,32 @@ function StatisticsPanel({ access, data, completedIds, open }: { access: Access;
         <div className="stats-visual-grid">
           <article className="stats-card stats-today-card"><div className="stats-card-heading"><div><small>Today&apos;s participation</small><h3>{todayRate}% complete</h3></div></div><div className="stats-ring" style={{ background: `conic-gradient(#65a30d 0 ${todayRate}%, #e7f4eb ${todayRate}% 100%)` }}><span><strong>{completedIds.size}</strong><small>of {data.students.length}</small></span></div><p>{data.students.length ? `${Math.max(0, data.students.length - completedIds.size)} student${data.students.length - completedIds.size === 1 ? '' : 's'} still to check in today.` : 'Add students to begin tracking participation.'}</p></article>
           <article className="stats-card stats-timeline-card"><div className="stats-card-heading"><div><small>{range === 'all' ? 'Monthly activity' : 'Daily activity'}</small><h3>Check-ins over time</h3></div></div><div className="stats-bars">{timeline.map((row, index) => <div className="stats-bar-column" key={row.key} title={`${row.label}: ${row.count}`}><div><i style={{ height: `${Math.max(row.count ? 10 : 2, (row.count / maxTimeline) * 100)}%`, animationDelay: `${index * 35}ms` }} /></div><span>{row.short}</span></div>)}</div></article>
-          <article className="stats-card stats-answer-card"><div className="stats-card-heading"><div><small>Class Percentage</small><h3>Positive response score</h3></div></div><div className="stats-donut-wrap"><div className="stats-donut" style={{ background: classDonut }}><span><strong>{classPercentage === null ? '—' : `${classPercentage}%`}</strong><small>class score</small></span></div><div className="stats-legend"><div><i style={{ background: '#65a30d' }} /><span>Affirmative · Smiley Face + Yes</span><strong>{classResponses.affirmative}</strong></div><div><i style={{ background: '#dc2626' }} /><span>Negative · Sad Face + No</span><strong>{classResponses.negative}</strong></div><p className="stats-class-note">100% means every scored response in this range was affirmative. Negative responses lower the class percentage.</p></div></div></article>
+          <article className="stats-card stats-answer-card">
+            <div className="stats-card-heading"><div><small>Class Percentage</small><h3>Positive response score</h3></div></div>
+            <div className="stats-donut-wrap">
+              <div className="stats-donut" style={{ background: classDonut }}><span><strong>{classPercentage === null ? '—' : `${classPercentage}%`}</strong><small>class score</small></span></div>
+              <div className="stats-legend">
+                <div><i style={{ background: '#65a30d' }} /><span>Affirmative · Smiley Face + Yes</span><strong>{classResponses.affirmative}</strong></div>
+                <div><i style={{ background: '#dc2626' }} /><span>Negative · Sad Face + No</span><strong>{classResponses.negative}</strong></div>
+                <p className="stats-class-note">100% means every scored response in this range was affirmative. Negative responses lower the class percentage.</p>
+              </div>
+            </div>
+            {debugEnabled && classResponses.negativeSources.length > 0 && <div className="stats-negative-audit">
+              <strong>Negative response audit</strong>
+              <p>Debug mode is showing every response currently counted as negative.</p>
+              {classResponses.negativeSources.map((source, index) => <div className="stats-negative-audit-row" key={`${source.studentId}-${source.date}-${source.answerId ?? index}`}>
+                <span><b>Student:</b> {source.studentName} <small>({source.studentId})</small></span>
+                <span><b>Date:</b> {source.date}</span>
+                <span><b>Saved:</b> {formatDate(source.createdAt)}</span>
+                <span><b>Question:</b> {source.question}</span>
+                <span><b>Answer:</b> {source.answer}</span>
+                <span><b>Stored imageKey:</b> {source.imageKey ?? 'null'}</span>
+                <span><b>Resolved imageKey:</b> {source.resolvedImageKey ?? 'null'}</span>
+                <span><b>answerId:</b> {source.answerId ?? 'none'}</span>
+                <span><b>questionId:</b> {source.questionId ?? 'none'}</span>
+              </div>)}
+            </div>}
+          </article>
           <article className="stats-card stats-students-card"><div className="stats-card-heading"><div><small>Participation by student</small><h3>Check-in activity</h3></div></div><div className="stats-student-bars">{studentCounts.length ? studentCounts.map((row, index) => <div key={row.student.id}><span>{row.student.name}</span><div><i style={{ width: `${(row.count / maxStudent) * 100}%`, animationDelay: `${index * 45}ms` }} /></div><strong>{row.count}</strong></div>) : <p className="stats-empty">Add students to see participation.</p>}</div></article>
         </div>
       </>}
@@ -517,7 +577,7 @@ function buildStatsTimeline(entries: HistoryEntry[], range: StatsRange) {
   if (range === 'all') {
     const counts = new Map<string, number>();
     entries.forEach(entry => counts.set(entry.id.slice(0, 7), (counts.get(entry.id.slice(0, 7)) ?? 0) + 1));
-    return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-12).map(([key, count]) => {
+    return [...counts.entries()].sort(([a], [b]) => b.localeCompare(a)).slice(0, 12).map(([key, count]) => {
       const [year, month] = key.split('-').map(Number);
       const date = new Date(year, month - 1, 1);
       return { key, count, label: new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(date), short: new Intl.DateTimeFormat(undefined, { month: 'short' }).format(date) };
@@ -529,7 +589,7 @@ function buildStatsTimeline(entries: HistoryEntry[], range: StatsRange) {
   return Array.from({ length: days }, (_, index) => {
     const date = new Date();
     date.setHours(12, 0, 0, 0);
-    date.setDate(date.getDate() - (days - 1 - index));
+    date.setDate(date.getDate() - index);
     const key = statsDateKey(date);
     return { key, count: counts.get(key) ?? 0, label: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date), short: days <= 7 ? new Intl.DateTimeFormat(undefined, { weekday: 'narrow' }).format(date) : String(date.getDate()) };
   });
@@ -540,12 +600,11 @@ function ReadActivity() {
   return <details className="read-activity"><summary>Database activity in this tab: {activity.requests} read requests</summary><p>{activity.documents} documents returned · {activity.errors} failed requests · {activity.pending} pending</p><p>Last request: {activity.lastRequest ? new Date(activity.lastRequest).toLocaleTimeString() : 'None'}. Counts start when this page loads. Cached menu visits do not increase them. Firebase’s total also includes security-rule reads, minimum query charges, and other tabs/devices.</p></details>;
 }
 
-function AdminPanel({ data, refresh, access, completedIds }: { data: AppData; refresh: () => Promise<void>; access: Access; completedIds: Set<string> }) {
+function AdminPanel({ data, refresh, access, completedIds, debugEnabled, setDebugEnabled }: { data: AppData; refresh: () => Promise<void>; access: Access; completedIds: Set<string>; debugEnabled: boolean; setDebugEnabled: (enabled: boolean) => void }) {
   const [tab, setTab] = useState<'students' | 'measures' | 'history' | 'access'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [successNotice, setSuccessNotice] = useState(false);
-  const [debugEnabled, setDebugEnabled] = useState(false);
 
   useEffect(() => {
     if (!message || !successNotice) return;
@@ -850,47 +909,71 @@ function FilePicker({ label, onFile }: { label: string; onFile: (file: File | nu
 
 async function prepareImageForUpload(file: File) {
   const maxBytes = 24 * 1024;
+  const maxInputBytes = 6 * 1024 * 1024;
   if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
+  if (file.size > maxInputBytes) throw new Error('That photo is too large. Choose an image under 6 MB or resize it first.');
 
+  const image = await loadUploadImage(file);
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+  if (!width || !height) throw new Error('That picture could not be read. Try a JPG, PNG, or WebP image.');
+  if (width * height > 45_000_000) throw new Error('That photo has an extremely high resolution. Resize it before uploading.');
 
-  let bitmap: ImageBitmap;
-  try {
-    bitmap = await createImageBitmap(file);
-  } catch {
-    throw new Error('That image format could not be resized. Try a JPG or PNG.');
-  }
+  let smallest: Blob | null = null;
+  for (const maxEdge of [384, 320, 256, 192, 128]) {
+    const scale = Math.min(1, maxEdge / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    const context = canvas.getContext('2d', { alpha: false });
+    if (!context) throw new Error('This browser could not prepare the image.');
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  try {
-    let smallest: Blob | null = null;
-    for (const maxEdge of [384, 256, 192, 128]) {
-      const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-      const context = canvas.getContext('2d');
-      if (!context) throw new Error('This browser could not prepare the image.');
-      context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-
-      for (const quality of [0.82, 0.7, 0.58]) {
-        const blob = await canvasToBlob(canvas, quality);
-        smallest = blob;
-        if (blob.size <= maxBytes) {
-          return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'image'}.jpg`, { type: 'image/jpeg' });
-        }
+    for (const quality of [0.82, 0.7, 0.58, 0.46]) {
+      const blob = await canvasToBlob(canvas, quality);
+      smallest = blob;
+      if (blob.size <= maxBytes) {
+        return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'image'}.jpg`, { type: 'image/jpeg' });
       }
     }
-    if (smallest && smallest.size <= maxBytes) return new File([smallest], 'image.jpg', { type: 'image/jpeg' });
-    throw new Error('The image could not be prepared.');
-  } finally {
-    bitmap.close();
+
+    canvas.width = 1;
+    canvas.height = 1;
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
   }
+
+  if (smallest && smallest.size <= maxBytes) return new File([smallest], 'image.jpg', { type: 'image/jpeg' });
+  throw new Error('The image could not be compressed enough. Try a smaller picture.');
+}
+
+function loadUploadImage(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      URL.revokeObjectURL(url);
+      if (error) reject(error); else resolve(image);
+    };
+    const timeout = window.setTimeout(() => finish(new Error('That picture took too long to open. Try a smaller JPG, PNG, or WebP image.')), 15000);
+    image.onload = () => { window.clearTimeout(timeout); finish(); };
+    image.onerror = () => { window.clearTimeout(timeout); finish(new Error('That image format is not supported by this browser. Try a JPG, PNG, or WebP image.')); };
+    image.decoding = 'async';
+    image.src = url;
+  });
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The image could not be prepared.')), 'image/jpeg', quality);
+    try {
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The image could not be prepared.')), 'image/jpeg', quality);
+    } catch {
+      reject(new Error('The image could not be prepared. Try a different picture.'));
+    }
   });
 }
 
