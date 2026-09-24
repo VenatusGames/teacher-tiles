@@ -819,7 +819,31 @@ function StudentAdminCard({ student, complete, busy, upload, action, closeAdmin 
       )}
       <Button variant="destructive" size="icon" aria-label={`Delete ${student.name}`} onClick={() => action({ action: 'deleteStudent', id: student.id }, `${student.name} was removed.`)}><Trash2 /></Button>
       <div className="student-photo-actions">
-        <ExistingStudentPhotoPicker studentId={student.id} disabled={busy || uploading} label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />
+        <button
+          type="button"
+          className="file-picker existing-student-photo-button"
+          disabled={busy || uploading}
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.jpg,.jpeg,.png,image/jpeg,image/png';
+            input.style.position = 'fixed';
+            input.style.left = '-10000px';
+            input.style.top = '0';
+            input.style.width = '1px';
+            input.style.height = '1px';
+            input.style.opacity = '0';
+            input.onchange = () => {
+              const file = input.files?.[0] ?? null;
+              input.remove();
+              if (file) void replaceImage(file);
+            };
+            input.oncancel = () => input.remove();
+            document.body.appendChild(input);
+            closeAdmin();
+            window.setTimeout(() => input.click(), 180);
+          }}
+        ><ImagePlus /><span>{uploading ? 'Preparing…' : 'Change picture'}</span></button>
         {student.imageKey && <button type="button" disabled={busy || uploading} onClick={() => void removeImage()}>Remove</button>}
       </div>
       <div className="student-score-editor">
@@ -912,24 +936,6 @@ function FilePicker({ label, onFile }: { label: string; onFile: (file: File | nu
     onFile(file);
     event.currentTarget.value = '';
   }} /></label>;
-}
-
-function ExistingStudentPhotoPicker({ studentId, label, disabled, onFile }: { studentId: string; label: string; disabled: boolean; onFile: (file: File | null) => void }) {
-  return <label className={`file-picker${disabled ? ' is-disabled' : ''}`} aria-disabled={disabled}>
-    <ImagePlus /><span>{label}</span>
-    <input
-      key={studentId}
-      type="file"
-      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-      disabled={disabled}
-      onChange={(event) => {
-        const input = event.currentTarget;
-        const file = input.files?.[0] ?? null;
-        input.value = '';
-        if (file) void onFile(file);
-      }}
-    />
-  </label>;
 }
 
 async function prepareImageForUpload(file: File) {
