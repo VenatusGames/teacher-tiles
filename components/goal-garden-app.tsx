@@ -904,101 +904,117 @@ function QuestionBuilder({ question, index, answers, busy, upload, action }: { q
 }
 
 function FilePicker({ label, onFile }: { label: string; onFile: (file: File | null) => void }) {
-  return <label className="file-picker"><ImagePlus /><span>{label}</span><input type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onChange={(event) => onFile(event.target.files?.[0] ?? null)} /></label>;
+  return <label className="file-picker"><ImagePlus /><span>{label}</span><input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onChange={(event) => {
+    const file = event.currentTarget.files?.[0] ?? null;
+    onFile(file);
+    event.currentTarget.value = '';
+  }} /></label>;
 }
 
 async function prepareImageForUpload(file: File) {
-  const maxBytes = 24 * 1024;
-  const maxInputBytes = 8 * 1024 * 1024;
-  const supported = /\.(jpe?g|png)$/i.test(file.name) || ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'].includes(file.type.toLowerCase());
-  if (!supported) throw new Error('Please choose a JPG, JPEG, or PNG picture.');
-  if (file.size > maxInputBytes) throw new Error('That photo is too large. Choose a JPG or PNG under 8 MB or resize it first.');
+  const maxInputBytes = 10 * 1024 * 1024;
+  const maxOutputBytes = 20 * 1024;
+  const lowerName = file.name.toLowerCase();
+  const mime = (file.type || '').toLowerCase();
+  const isJpeg = /\.(jpe?g)$/.test(lowerName) || mime === 'image/jpeg' || mime === 'image/jpg' || mime === 'image/pjpeg';
+  const isPng = /\.png$/.test(lowerName) || mime === 'image/png';
 
-  const dimensions = await readJpegOrPngDimensions(file);
-  if (dimensions && dimensions.width * dimensions.height > 24_000_000) {
-    throw new Error(`That photo is ${dimensions.width}×${dimensions.height}, which is too large to safely open on this device. Resize it and try again.`);
-  }
+  if (!isJpeg && !isPng) throw new Error('Please choose a JPG, JPEG, or PNG picture.');
+  if (file.size <= 0) throw new Error('That picture is empty. Choose another JPG or PNG image.');
+  if (file.size > maxInputBytes) throw new Error('That photo is too large. Choose a JPG or PNG under 10 MB.');
 
-  const image = await loadUploadImage(file);
-  const width = image.naturalWidth || image.width;
-  const height = image.naturalHeight || image.height;
-  if (!width || !height) throw new Error('That picture could not be read. Try another JPG or PNG image.');
-  if (width * height > 24_000_000) throw new Error('That photo has an extremely high resolution. Resize it before uploading.');
+  const loaded = await loadUploadImage(file);
+  try {
+    const image = loaded.image;
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    if (!width || !height) throw new Error('That picture could not be read. Try another JPG or PNG image.');
+    if (width * height > 32_000_000) throw new Error(`That photo is ${width}×${height}, which is too large to process safely. Resize it and try again.`);
 
-  let smallest: Blob | null = null;
-  for (const maxEdge of [384, 320, 256, 192, 128]) {
-    const scale = Math.min(1, maxEdge / Math.max(width, height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(width * scale));
-    canvas.height = Math.max(1, Math.round(height * scale));
-    const context = canvas.getContext('2d', { alpha: false });
-    if (!context) throw new Error('This browser could not prepare the image.');
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    let smallest: Blob | null = null;
+    for (const maxEdge of [384, 320, 256, 192, 160, 128]) {
+      const scale = Math.min(1, maxEdge / Math.max(width, height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
 
-    for (const quality of [0.82, 0.7, 0.58, 0.46]) {
-      const blob = await canvasToBlob(canvas, quality);
-      smallest = blob;
-      if (blob.size <= maxBytes) {
-        return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'image'}.jpg`, { type: 'image/jpeg' });
+      let context: CanvasRenderingContext2D | null = null;
+      try {
+        context = canvas.getContext('2d');
+      } catch {
+        context = null;
       }
+      if (!context) throw new Error('This browser could not prepare the picture. Try another JPG or PNG image.');
+
+      try {
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      } catch {
+        throw new Error('This browser could not draw that picture. Try another JPG or PNG image.');
+      }
+
+      for (const quality of [0.82, 0.7, 0.58, 0.46, 0.36]) {
+        const blob = await canvasToBlob(canvas, quality);
+        smallest = blob;
+        if (blob.size <= maxOutputBytes) {
+          return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'student-photo'}.jpg`, { type: 'image/jpeg' });
+        }
+      }
+
+      canvas.width = 1;
+      canvas.height = 1;
+      await new Promise<void>(resolve => window.setTimeout(resolve, 0));
     }
 
-    canvas.width = 1;
-    canvas.height = 1;
-    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
-  }
-
-  if (smallest && smallest.size <= maxBytes) return new File([smallest], 'image.jpg', { type: 'image/jpeg' });
-  throw new Error('The image could not be compressed enough. Try a smaller picture.');
-}
-
-
-async function readJpegOrPngDimensions(file: File): Promise<{ width: number; height: number } | null> {
-  const header = new Uint8Array(await file.slice(0, Math.min(file.size, 512 * 1024)).arrayBuffer());
-  if (header.length >= 24 && header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47) {
-    const view = new DataView(header.buffer, header.byteOffset, header.byteLength);
-    return { width: view.getUint32(16), height: view.getUint32(20) };
-  }
-  if (header.length >= 4 && header[0] === 0xff && header[1] === 0xd8) {
-    let offset = 2;
-    while (offset + 9 < header.length) {
-      if (header[offset] !== 0xff) { offset += 1; continue; }
-      const marker = header[offset + 1];
-      offset += 2;
-      if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
-      if (offset + 2 > header.length) break;
-      const length = (header[offset] << 8) | header[offset + 1];
-      if (length < 2 || offset + length > header.length) break;
-      const isSof = [0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker);
-      if (isSof && length >= 7) {
-        return {
-          height: (header[offset + 3] << 8) | header[offset + 4],
-          width: (header[offset + 5] << 8) | header[offset + 6],
-        };
-      }
-      offset += length;
+    if (smallest && smallest.size <= 24 * 1024) {
+      return new File([smallest], 'student-photo.jpg', { type: 'image/jpeg' });
     }
+    throw new Error('The picture could not be compressed enough. Try a smaller JPG or PNG image.');
+  } finally {
+    loaded.cleanup();
   }
-  return null;
 }
 
-function loadUploadImage(file: File) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
+type LoadedUploadImage = { image: HTMLImageElement; cleanup: () => void };
+
+function loadUploadImage(file: File): Promise<LoadedUploadImage> {
+  return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const image = new Image();
     let settled = false;
-    const finish = (error?: Error) => {
+    let timeout = 0;
+
+    const cleanup = () => {
+      if (timeout) window.clearTimeout(timeout);
+      URL.revokeObjectURL(url);
+      image.onload = null;
+      image.onerror = null;
+    };
+
+    const fail = (message: string) => {
       if (settled) return;
       settled = true;
-      URL.revokeObjectURL(url);
-      if (error) reject(error); else resolve(image);
+      cleanup();
+      reject(new Error(message));
     };
-    const timeout = window.setTimeout(() => finish(new Error('That picture took too long to open. Try a smaller JPG or PNG image.')), 15000);
-    image.onload = () => { window.clearTimeout(timeout); finish(); };
-    image.onerror = () => { window.clearTimeout(timeout); finish(new Error('That image format is not supported by this browser. Please use a JPG, JPEG, or PNG image.')); };
-    image.decoding = 'async';
+
+    image.onload = async () => {
+      if (settled) return;
+      try {
+        if (typeof image.decode === 'function') {
+          try { await image.decode(); } catch { /* onload already confirmed the browser decoded enough to draw */ }
+        }
+        if (settled) return;
+        settled = true;
+        if (timeout) window.clearTimeout(timeout);
+        resolve({ image, cleanup });
+      } catch {
+        fail('That picture could not be decoded. Try another JPG or PNG image.');
+      }
+    };
+    image.onerror = () => fail('That picture could not be opened. Please use a standard JPG, JPEG, or PNG image.');
+    timeout = window.setTimeout(() => fail('That picture took too long to open. Try a smaller JPG or PNG image.'), 20000);
     image.src = url;
   });
 }
@@ -1006,9 +1022,9 @@ function loadUploadImage(file: File) {
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {
     try {
-      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The image could not be prepared.')), 'image/jpeg', quality);
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The picture could not be converted. Try another JPG or PNG image.')), 'image/jpeg', quality);
     } catch {
-      reject(new Error('The image could not be prepared. Try a different picture.'));
+      reject(new Error('The picture could not be converted. Try another JPG or PNG image.'));
     }
   });
 }
