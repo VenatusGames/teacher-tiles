@@ -2449,36 +2449,64 @@ async function readBoardConflictReview(boardId) {
   return { uid, boardId, local: cleanBoardSnapshot(local?.snapshot || pending.snapshot), cloud: cloud.snapshot, remote };
 }
 
+function clearEmergencyBoardBackup(uid, boardId) {
+  const key = `teachertiles-last-local-board-${uid}`;
+  for (const storage of [sessionStorage, localStorage]) {
+    try {
+      const backup = JSON.parse(storage.getItem(key) || "null");
+      if (backup?.boardId === boardId) storage.removeItem(key);
+    } catch {}
+  }
+}
+
 async function resolveBoardConflict(review, choice, settingsSource = 'local') {
   if (!['local', 'cloud', 'merge'].includes(choice)) throw new Error('Choose a version to keep.');
   const { uid, boardId } = review;
   if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
-  if (boardSavePromise) await boardSavePromise.catch(() => {});
-  if (activeBoardId === boardId) await flushCurrentBoardLocal();
-  const latest = await readLocalBoardSnapshot(uid, boardId);
-  if (latest?.snapshot && contentHashForSnapshot(latest.snapshot) !== contentHashForSnapshot(review.local)) throw new Error('Your local board changed during review. Close and reopen the review to compare the latest versions.');
-  const doc = await firestoreSdk.getDocFromServer(boardDocument(uid, boardId));
-  if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
-  if (!doc.exists() || (Number(doc.data().revision) || 0) !== review.remote.revision || (doc.data().contentHash || '') !== review.remote.cloudContentHash) throw new Error('The cloud board changed again. Close and reopen the review before choosing.');
   const chosen = choice === 'merge' ? mergeBoardConflictSnapshots(review.local, review.cloud, settingsSource) : review[choice];
   const oldBoard = boardList.find(board => board.id === boardId);
   if (!oldBoard) throw new Error('Board not found.');
   const originalMeta = { ...oldBoard };
-  // Retain both reviewed versions locally even after the chosen result syncs.
-  await writeLocalBoardSnapshot(uid, 'conflict-archive/' + boardId, { snapshot: review.local, cloudSnapshot: review.cloud, dirty: false });
-  if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+  let latest = await readLocalBoardSnapshot(uid, boardId);
+  let migrateCloudChoice = false;
+
   boardLoading = true;
-  clearTimeout(localBoardSaveTimer); clearCloudBoardSaveTimer(boardId);
+  clearTimeout(localBoardSaveTimer);
+  clearCloudBoardSaveTimer(boardId);
   try {
+    if (boardSavePromise) await boardSavePromise.catch(() => {});
+    latest = await readLocalBoardSnapshot(uid, boardId) || latest;
+    const doc = await firestoreSdk.getDocFromServer(boardDocument(uid, boardId));
+    if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+    if (!doc.exists() || (Number(doc.data().revision) || 0) !== review.remote.revision || (doc.data().contentHash || '') !== review.remote.cloudContentHash) throw new Error('The cloud board changed again. Close and reopen the review before choosing.');
+
+    // Retain both reviewed versions locally even after the chosen result syncs.
+    await writeLocalBoardSnapshot(uid, 'conflict-archive/' + boardId, { snapshot: review.local, cloudSnapshot: review.cloud, dirty: false });
+    if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+
     Object.assign(oldBoard, review.remote, { hasConflict: true });
     boardLocalHashes.delete(boardId);
-    await cacheSnapshotLocally(boardId, chosen, { dirty: true });
-    if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
-    await writeBoardSnapshotToCloud(boardId, oldBoard.name, chosen);
+
+    if (choice === 'cloud') {
+      // Choosing cloud is a discard operation for this browser. Replace the local
+      // cache with the reviewed cloud snapshot rather than sending it back through
+      // the cloud writer or retaining stale conflict-era metadata.
+      await deleteLocalBoardSnapshot(uid, boardId);
+      const needsMigration = Boolean(oldBoard.needsMigration || oldBoard.storageFormat === 'legacy-objects-v1');
+      await cacheSnapshotLocally(boardId, chosen, { dirty: needsMigration });
+      migrateCloudChoice = needsMigration;
+    } else {
+      await cacheSnapshotLocally(boardId, chosen, { dirty: true });
+      if (currentUser?.uid !== uid) throw new Error('Account changed. Open the review again.');
+      await writeBoardSnapshotToCloud(boardId, oldBoard.name, chosen);
+    }
+
     if (currentUser?.uid !== uid) return;
     await deleteLocalBoardSnapshot(uid, boardConflictKey(boardId));
+    clearEmergencyBoardBackup(uid, boardId);
     oldBoard.hasConflict = false;
     if (activeBoardId === boardId) boardApi().load(chosen);
+    if (migrateCloudChoice) scheduleCloudBoardSave(2200, boardId);
     cacheBoardListMetadata(); renderBoards(); setBoardStatus('Conflict resolved — saved');
   } catch (error) {
     if (currentUser?.uid === uid) {

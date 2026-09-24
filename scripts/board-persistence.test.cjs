@@ -64,6 +64,47 @@ function harness() {
     assert.equal(c.boardHasConflict(c.boardList[0]),false);
   }
   {
+    const { c, docs, base } = harness();
+    const local = { ...base, frames: [{ id: 'reviewed-local-frame' }] };
+    await c.cacheSnapshotLocally('one', local);
+    const cloud = { ...base, frames: [{ id: 'cloud-frame' }] };
+    Object.assign(docs.get('users/teacher/boards/one'), cloud, {
+      revision: 2,
+      contentHash: c.contentHashForSnapshot(cloud),
+      inlineObjects: cloud.objects
+    });
+    await c.saveCachedBoardToCloud('one');
+    const review = await c.readBoardConflictReview('one');
+    c.workspace = { ...local, frames: [{ id: 'live-tile-drift' }] };
+    await c.resolveBoardConflict(review, 'local');
+    assert.equal(docs.get('users/teacher/boards/one').frames[0].id, 'reviewed-local-frame', 'local resolution must keep the reviewed snapshot instead of recapturing live drift');
+    assert.equal(c.boardHasConflict(c.boardList[0]), false);
+  }
+  {
+    const { c, docs, base } = harness();
+    const local = { ...base, frames: [{ id: 'local-before-cloud-choice' }] };
+    await c.cacheSnapshotLocally('one', local);
+    const cloud = { ...base, frames: [{ id: 'cloud-kept' }] };
+    Object.assign(docs.get('users/teacher/boards/one'), cloud, {
+      revision: 2,
+      contentHash: c.contentHashForSnapshot(cloud),
+      inlineObjects: cloud.objects
+    });
+    await c.saveCachedBoardToCloud('one');
+    const review = await c.readBoardConflictReview('one');
+    c.sessionStorage.setItem('teachertiles-last-local-board-teacher', JSON.stringify({ boardId: 'one', snapshot: local, savedAt: Date.now(), revision: 1, cloudContentHash: c.contentHashForSnapshot(base) }));
+    c.workspace = { ...local, frames: [{ id: 'drift-that-should-be-discarded' }] };
+    await c.resolveBoardConflict(review, 'cloud');
+    const clean = await c.readLocalBoardSnapshot('teacher', 'one');
+    assert.equal(clean.dirty, false);
+    assert.equal(clean.snapshot.frames[0].id, 'cloud-kept');
+    assert.equal(c.sessionStorage.getItem('teachertiles-last-local-board-teacher'), null, 'cloud resolution must clear stale emergency backup state');
+    c.workspace = clean.snapshot;
+    await c.cacheSnapshotLocally('one', { ...clean.snapshot, frames: [...clean.snapshot.frames, { id: 'after-resolution-edit' }] });
+    await c.saveCachedBoardToCloud('one');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).dirty, false, 'the next save after keeping cloud must not inherit stale conflict metadata');
+  }
+  {
     const {c,docs,base,offline}=harness();await c.cacheSnapshotLocally('one',{...base,frames:[]});docs.get('users/teacher/boards/one').revision=2;
     await c.saveCachedBoardToCloud('one');const review=await c.readBoardConflictReview('one');
     docs.get('users/teacher/boards/one').revision=3;await assert.rejects(c.resolveBoardConflict(review,'local'),/cloud board changed/);
