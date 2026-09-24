@@ -904,20 +904,26 @@ function QuestionBuilder({ question, index, answers, busy, upload, action }: { q
 }
 
 function FilePicker({ label, onFile }: { label: string; onFile: (file: File | null) => void }) {
-  return <label className="file-picker"><ImagePlus /><span>{label}</span><input type="file" accept="image/*" onChange={(event) => onFile(event.target.files?.[0] ?? null)} /></label>;
+  return <label className="file-picker"><ImagePlus /><span>{label}</span><input type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onChange={(event) => onFile(event.target.files?.[0] ?? null)} /></label>;
 }
 
 async function prepareImageForUpload(file: File) {
   const maxBytes = 24 * 1024;
-  const maxInputBytes = 6 * 1024 * 1024;
-  if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
-  if (file.size > maxInputBytes) throw new Error('That photo is too large. Choose an image under 6 MB or resize it first.');
+  const maxInputBytes = 8 * 1024 * 1024;
+  const supported = /\.(jpe?g|png)$/i.test(file.name) || ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png'].includes(file.type.toLowerCase());
+  if (!supported) throw new Error('Please choose a JPG, JPEG, or PNG picture.');
+  if (file.size > maxInputBytes) throw new Error('That photo is too large. Choose a JPG or PNG under 8 MB or resize it first.');
+
+  const dimensions = await readJpegOrPngDimensions(file);
+  if (dimensions && dimensions.width * dimensions.height > 24_000_000) {
+    throw new Error(`That photo is ${dimensions.width}×${dimensions.height}, which is too large to safely open on this device. Resize it and try again.`);
+  }
 
   const image = await loadUploadImage(file);
   const width = image.naturalWidth || image.width;
   const height = image.naturalHeight || image.height;
-  if (!width || !height) throw new Error('That picture could not be read. Try a JPG, PNG, or WebP image.');
-  if (width * height > 45_000_000) throw new Error('That photo has an extremely high resolution. Resize it before uploading.');
+  if (!width || !height) throw new Error('That picture could not be read. Try another JPG or PNG image.');
+  if (width * height > 24_000_000) throw new Error('That photo has an extremely high resolution. Resize it before uploading.');
 
   let smallest: Blob | null = null;
   for (const maxEdge of [384, 320, 256, 192, 128]) {
@@ -948,6 +954,36 @@ async function prepareImageForUpload(file: File) {
   throw new Error('The image could not be compressed enough. Try a smaller picture.');
 }
 
+
+async function readJpegOrPngDimensions(file: File): Promise<{ width: number; height: number } | null> {
+  const header = new Uint8Array(await file.slice(0, Math.min(file.size, 512 * 1024)).arrayBuffer());
+  if (header.length >= 24 && header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47) {
+    const view = new DataView(header.buffer, header.byteOffset, header.byteLength);
+    return { width: view.getUint32(16), height: view.getUint32(20) };
+  }
+  if (header.length >= 4 && header[0] === 0xff && header[1] === 0xd8) {
+    let offset = 2;
+    while (offset + 9 < header.length) {
+      if (header[offset] !== 0xff) { offset += 1; continue; }
+      const marker = header[offset + 1];
+      offset += 2;
+      if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > header.length) break;
+      const length = (header[offset] << 8) | header[offset + 1];
+      if (length < 2 || offset + length > header.length) break;
+      const isSof = [0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker);
+      if (isSof && length >= 7) {
+        return {
+          height: (header[offset + 3] << 8) | header[offset + 4],
+          width: (header[offset + 5] << 8) | header[offset + 6],
+        };
+      }
+      offset += length;
+    }
+  }
+  return null;
+}
+
 function loadUploadImage(file: File) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -959,9 +995,9 @@ function loadUploadImage(file: File) {
       URL.revokeObjectURL(url);
       if (error) reject(error); else resolve(image);
     };
-    const timeout = window.setTimeout(() => finish(new Error('That picture took too long to open. Try a smaller JPG, PNG, or WebP image.')), 15000);
+    const timeout = window.setTimeout(() => finish(new Error('That picture took too long to open. Try a smaller JPG or PNG image.')), 15000);
     image.onload = () => { window.clearTimeout(timeout); finish(); };
-    image.onerror = () => { window.clearTimeout(timeout); finish(new Error('That image format is not supported by this browser. Try a JPG, PNG, or WebP image.')); };
+    image.onerror = () => { window.clearTimeout(timeout); finish(new Error('That image format is not supported by this browser. Please use a JPG, JPEG, or PNG image.')); };
     image.decoding = 'async';
     image.src = url;
   });
