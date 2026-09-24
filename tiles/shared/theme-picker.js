@@ -11,11 +11,36 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
     const sourceFan=document.getElementById(pack.getAttribute('aria-controls')),name=pack.querySelector('strong')?.textContent||'Themes';const section=document.createElement('section');section.className='theme-picker-pack';const heading=document.createElement('button');heading.type='button';heading.className='theme-picker-pack-heading';heading.setAttribute('aria-expanded','false');heading.innerHTML='<span class="theme-pack-stack" aria-hidden="true"></span><span class="theme-pack-label"><strong></strong><small></small></span><span class="theme-pack-arrow" aria-hidden="true">›</span>';heading.querySelector('strong').textContent=name;const badge=heading.querySelector('small');section.append(heading);results.append(section);
     const cards=[...sourceFan.querySelectorAll('[data-theme-choice]')].map((source,i)=>{const card=source.cloneNode(true);card.removeAttribute('id');card.classList.remove('is-cosmetic-locked');const product=entitlement(source);card.dataset.entitlement=product;card.querySelectorAll('.subscription-access-crown').forEach(el=>el.remove());card.title=source.querySelector('strong')?.textContent||card.dataset.themeChoice;card.onclick=()=>{if(!owns(product)){requestAccess(card);return}apply(card.dataset.themeChoice);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)card.animate([{transform:'rotate(0deg) scale(1)'},{transform:'rotate(0deg) scale(1.07)',filter:'brightness(1.12)'},{transform:'rotate(0deg) scale(1)'}],{duration:360,easing:'ease-out'});refresh()};
       if(i<3){const sample=document.createElement('span');sample.className=source.className+' theme-pack-sample';sample.style.setProperty('--sample',i);sample.innerHTML=source.innerHTML;sample.querySelectorAll('.theme-card__check,.subscription-access-crown').forEach(el=>el.remove());heading.querySelector('.theme-pack-stack').append(sample)}
-      return {card,product,text:(name+' '+card.textContent+' '+card.dataset.themeChoice).toLowerCase()};});const group={section,heading,badge,cards,name};heading.onclick=()=>open(group);return group;
+      return {card,product,text:(name+' '+card.textContent+' '+card.dataset.themeChoice).toLowerCase()};});
+    const products=[...new Set(cards.map(item=>item.product).filter(Boolean))];
+    const product=products.length===1?products[0]:'';
+    if(product)heading.dataset.entitlement=product;
+    const group={section,heading,badge,cards,name,product};
+    heading.onclick=()=>{if(group.product&&!owns(group.product)){requestAccess(heading);return}open(group)};
+    return group;
   });
   function refresh(){const terms=search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);let total=0;
-    for(const group of groups){let visible=0;for(const item of group.cards){const accessible=owns(item.product),show=(!owned.checked||accessible)&&terms.every(term=>item.text.includes(term));item.card.hidden=!show;if(show)visible++;item.card.classList.toggle('theme-picker-locked',!accessible);item.card.setAttribute('aria-label',(accessible?'Apply ':'Unlock ')+item.card.title);item.card.setAttribute('aria-pressed',String(item.card.dataset.themeChoice===document.body.dataset.theme));crown(item.card,item.product)}group.section.hidden=!visible;group.badge.textContent=visible+(visible===1?' theme':' themes');total+=visible;group.heading.classList.toggle('has-selected-theme',group.cards.some(item=>item.card.dataset.themeChoice===document.body.dataset.theme))}
-    count.textContent=total?total+(total===1?' theme · ':' themes · ')+groups.filter(g=>!g.section.hidden).length+(groups.filter(g=>!g.section.hidden).length===1?' pack':' packs'):'No matching themes';const selected=groups.flatMap(g=>g.cards).find(item=>item.card.dataset.themeChoice===document.body.dataset.theme);applied.textContent=selected?'✓ '+selected.card.title+' is applied':'Open a pack to explore';if(active){if(active.section.hidden)close();else{const cards=active.cards.filter(item=>!item.card.hidden).map(item=>item.card);if(cards.length!==stage.children.length||cards.some((card,i)=>stage.children[i]!==card))stage.replaceChildren(...cards);position()}}
+    for(const group of groups){
+      let visible=0;
+      for(const item of group.cards){
+        const accessible=!item.product||owns(item.product),show=(!owned.checked||accessible)&&terms.every(term=>item.text.includes(term));
+        item.card.hidden=!show;if(show)visible++;
+        item.card.classList.toggle('theme-picker-locked',!accessible);
+        item.card.setAttribute('aria-label',(accessible?'Apply ':'Unlock ')+item.card.title);
+        item.card.setAttribute('aria-pressed',String(item.card.dataset.themeChoice===document.body.dataset.theme));
+        crown(item.card,item.product);
+      }
+      const packLocked=Boolean(group.product&&!owns(group.product));
+      group.section.hidden=!visible;
+      group.badge.textContent=(packLocked?'🔒 ':'')+visible+(visible===1?' theme':' themes');
+      group.heading.classList.toggle('theme-picker-pack-locked',packLocked);
+      group.heading.classList.toggle('is-cosmetic-locked',packLocked);
+      group.heading.setAttribute('aria-disabled',String(packLocked));
+      group.heading.setAttribute('aria-label',packLocked?`Unlock ${group.name} theme pack in Shop`:`Open ${group.name} theme pack`);
+      total+=visible;
+      group.heading.classList.toggle('has-selected-theme',group.cards.some(item=>item.card.dataset.themeChoice===document.body.dataset.theme));
+    }
+    count.textContent=total?total+(total===1?' theme · ':' themes · ')+groups.filter(g=>!g.section.hidden).length+(groups.filter(g=>!g.section.hidden).length===1?' pack':' packs'):'No matching themes';const selected=groups.flatMap(g=>g.cards).find(item=>item.card.dataset.themeChoice===document.body.dataset.theme);applied.textContent=selected?'✓ '+selected.card.title+' is applied':'Open a pack to explore';if(active){if(active.section.hidden||Boolean(active.product&&!owns(active.product)))close();else{const cards=active.cards.filter(item=>!item.card.hidden).map(item=>item.card);if(cards.length!==stage.children.length||cards.some((card,i)=>stage.children[i]!==card))stage.replaceChildren(...cards);position()}}
   }
   search.addEventListener('input',refresh);owned.addEventListener('change',refresh);for(const event of ['teachertiles:accountchange','teachertiles:shopownershipchange','teachertiles:themechange'])window.addEventListener(event,refresh);
   document.addEventListener('pointerdown',e=>{if(active&&!fan.contains(e.target)&&!active.heading.contains(e.target))close()});fan.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();const button=active?.heading;close();button?.focus()}});window.addEventListener('resize',position);results.addEventListener('scroll',close,{passive:true});refresh();return {refresh,close,open(){refresh();search.focus({preventScroll:true})}};
