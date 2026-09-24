@@ -280,7 +280,7 @@ export function GoalGardenApp({ access, email }: { access: Access; email: string
       <Dialog open={adminOpen} onOpenChange={setAdminOpen}>
         <DialogContent className="admin-dialog" showCloseButton>
           <DialogTitle className="sr-only">WIGs admin panel</DialogTitle>
-          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} completedIds={completedIds} debugEnabled={debugEnabled} setDebugEnabled={setDebugEnabled} />}
+          {access.role === 'teacher' && <AdminPanel data={data} refresh={refresh} access={access} completedIds={completedIds} debugEnabled={debugEnabled} setDebugEnabled={setDebugEnabled} closeAdmin={() => setAdminOpen(false)} />}
         </DialogContent>
       </Dialog>
 
@@ -600,7 +600,7 @@ function ReadActivity() {
   return <details className="read-activity"><summary>Database activity in this tab: {activity.requests} read requests</summary><p>{activity.documents} documents returned · {activity.errors} failed requests · {activity.pending} pending</p><p>Last request: {activity.lastRequest ? new Date(activity.lastRequest).toLocaleTimeString() : 'None'}. Counts start when this page loads. Cached menu visits do not increase them. Firebase’s total also includes security-rule reads, minimum query charges, and other tabs/devices.</p></details>;
 }
 
-function AdminPanel({ data, refresh, access, completedIds, debugEnabled, setDebugEnabled }: { data: AppData; refresh: () => Promise<void>; access: Access; completedIds: Set<string>; debugEnabled: boolean; setDebugEnabled: (enabled: boolean) => void }) {
+function AdminPanel({ data, refresh, access, completedIds, debugEnabled, setDebugEnabled, closeAdmin }: { data: AppData; refresh: () => Promise<void>; access: Access; completedIds: Set<string>; debugEnabled: boolean; setDebugEnabled: (enabled: boolean) => void; closeAdmin: () => void }) {
   const [tab, setTab] = useState<'students' | 'measures' | 'history' | 'access'>('students');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -659,7 +659,7 @@ function AdminPanel({ data, refresh, access, completedIds, debugEnabled, setDebu
       {message && <p key={message} className={`form-message${successNotice ? ' form-message-success' : ''}`} role="status">{message}</p>}
       <div className="admin-scroll">
         {debugEnabled && <ReadActivity />}
-        {tab === 'students' && <StudentsAdmin students={data.students} completedIds={completedIds} busy={busy} upload={upload} action={action} />}
+        {tab === 'students' && <StudentsAdmin students={data.students} completedIds={completedIds} busy={busy} upload={upload} action={action} closeAdmin={closeAdmin} />}
         {tab === 'measures' && <MeasuresAdmin data={data} busy={busy} upload={upload} action={action} />}
         {tab === 'history' && <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Past check-ins</p><h3>Student history</h3></div></div><HistoryBrowser access={access} students={data.students} data={data} onDelete={deleteCheckIn} onEdit={editCheckIn} /></section>}
         {tab === 'access' && <StudentAccessAdmin access={access} data={data} refreshClass={refresh} />}
@@ -742,13 +742,13 @@ function StudentAccessAdmin({ access, data, refreshClass }: { access: Access; da
   </section>;
 }
 
-function StudentsAdmin({ students, completedIds, busy, upload, action }: { students: Student[]; completedIds: Set<string>; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
+function StudentsAdmin({ students, completedIds, busy, upload, action, closeAdmin }: { students: Student[]; completedIds: Set<string>; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean>; closeAdmin: () => void }) {
   const [name, setName] = useState(''); const [file, setFile] = useState<File | null>(null); const [key, setKey] = useState(0);
   const add = async (event: FormEvent) => { event.preventDefault(); try { const imageKey = await upload(file); if (await action({ action: 'addStudent', name, imageKey }, `${name} was added.`)) { setName(''); setFile(null); setKey((value) => value + 1); } } catch (error) { window.alert(error instanceof Error ? error.message : 'Upload failed.'); } };
-  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student initials or first name" required maxLength={100} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} complete={completedIds.has(student.id)} busy={busy} upload={upload} action={action} />)}</div></section>;
+  return <section className="admin-section"><div className="section-title"><div><p className="eyebrow">Profiles</p><h3>Add a student</h3></div><span className="count-pill">{students.length} students</span></div><form className="admin-form-row" onSubmit={add}><Input className="admin-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Student initials or first name" required maxLength={100} /><FilePicker key={key} label={file?.name ?? 'Choose picture'} onFile={setFile} /><Button className="admin-primary" type="submit" disabled={busy || !name.trim()}><Plus /> Add student</Button></form><div className="admin-student-list">{students.map((student) => <StudentAdminCard key={student.id} student={student} complete={completedIds.has(student.id)} busy={busy} upload={upload} action={action} closeAdmin={closeAdmin} />)}</div></section>;
 }
 
-function StudentAdminCard({ student, complete, busy, upload, action }: { student: Student; complete: boolean; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
+function StudentAdminCard({ student, complete, busy, upload, action, closeAdmin }: { student: Student; complete: boolean; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean>; closeAdmin: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
@@ -765,7 +765,7 @@ function StudentAdminCard({ student, complete, busy, upload, action }: { student
     try {
       const imageKey = await upload(file);
       if (!imageKey) return;
-      await action({ action: 'updateStudentImage', id: student.id, imageKey }, 'Student picture saved.');
+      if (await action({ action: 'updateStudentImage', id: student.id, imageKey }, 'Student picture saved.')) closeAdmin();
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Image update failed.');
     } finally {
