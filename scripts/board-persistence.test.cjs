@@ -36,7 +36,8 @@ function harness() {
     boardLocalHashes: new Map(), localBoardMemory: new Map(), localBoardDbPromise: null, cloudBoardSaveTimers: new Map(),
     localBoardSaveTimer: 0, boardsView: { hidden: true }, boardsSaveStatus: {}, pendingBoardChangeReason: '',
     INLINE_OBJECT_BUDGET: 560000, CHUNK_OBJECT_BUDGET: 520000, MAX_SINGLE_OBJECT_BYTES: 900000, PREVIEW_OBJECT_BUDGET: 90000,
-    CLOUD_SAVE_DELAY: 1200, LOCAL_SAVE_DELAY: 280, boardListLoadedFromNetwork: false,
+    CLOUD_SAVE_DELAY: 5000, LOCAL_SAVE_DELAY: 280, BOARD_LIBRARY_RECHECK_TTL: 300000, ACTIVE_BOARD_CLOUD_RECHECK_TTL: 600000,
+    boardListLoadedFromNetwork: false, boardLibraryCheckedAt: 0,
     setBoardStatus: message => { context.status = message; }, renderBoards() {}, markBoardCloudLoadedForSession() {},
     boardApi: () => ({ setActiveBoardId() {}, capture: () => context.workspace || context.localBoardMemory.get(`teacher:${context.activeBoardId}`)?.snapshot, load: snapshot => { context.workspace = snapshot; } }), activeBoardStorageKey: uid => `active-${uid}` });
   vm.runInContext(source.slice(source.indexOf('function boardCollection('), source.indexOf('function layoutBoardPreviewObjects(')), context);
@@ -124,7 +125,7 @@ function harness() {
     assert.equal(original.revision, 1, 'library refresh must not rebase unsaved work');
     assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).snapshot.frames[0].id, 'unsaved-local-frame');
     c.firestoreSdk.getDocsFromServer = async () => { throw new Error('Offline'); };
-    await assert.rejects(() => c.refreshBoardLibrary(), /Offline/);
+    await assert.rejects(() => c.refreshBoardLibrary({ force: true }), /Offline/);
     assert(c.boardList.some(board => board.id === 'last-night'), 'network failure must retain visible library');
   }
   {
@@ -232,5 +233,39 @@ function harness() {
     const restored = await c.resolveBoardSnapshot('one');
     assert.equal(restored.snapshot.frames[0].id, 'new-device-frame', 'reopening must check cloud rather than stale metadata');
   }
-  console.log('Board persistence: frame round-trip, conflict recovery, refresh recovery, offline retry, atomic chunks, and fresh cloud reads passed.');
+  {
+    const { c } = harness();
+    let scans = 0;
+    const originalGetDocsFromServer = c.firestoreSdk.getDocsFromServer;
+    c.firestoreSdk.getDocsFromServer = async ref => { scans += 1; return originalGetDocsFromServer(ref); };
+    await c.refreshBoardLibrary({ force: true });
+    await c.refreshBoardLibrary();
+    await c.refreshBoardLibrary();
+    assert.equal(scans, 1, 'reopening Boards inside the freshness window must not rescan Firestore');
+  }
+  {
+    const { c, base } = harness();
+    c.workspace = base;
+    await c.cacheSnapshotLocally('one', base, { dirty: false });
+    let reads = 0;
+    const originalGetDocFromServer = c.firestoreSdk.getDocFromServer;
+    c.firestoreSdk.getDocFromServer = async ref => { reads += 1; return originalGetDocFromServer(ref); };
+    c.boardList[0].cloudCheckedAt = 0;
+    await c.refreshActiveBoardFromCloud();
+    for (let i = 0; i < 100; i += 1) await c.refreshActiveBoardFromCloud();
+    assert.equal(reads, 1, 'repeated focus checks inside the active-board freshness window must collapse to one Firestore read');
+  }
+  {
+    const { c, base } = harness();
+    await c.cacheSnapshotLocally('one', base, { dirty: false });
+    c.markBoardMetadataChecked(c.boardList[0]);
+    let reads = 0;
+    const originalGetDocFromServer = c.firestoreSdk.getDocFromServer;
+    c.firestoreSdk.getDocFromServer = async ref => { reads += 1; return originalGetDocFromServer(ref); };
+    const restored = await c.resolveBoardSnapshot('one');
+    assert.equal(restored.fromLocal, true);
+    assert.equal(reads, 0, 'a board whose metadata was just fetched must not immediately reread the same document');
+  }
+  assert(harness().c.CLOUD_SAVE_DELAY >= 5000, 'cloud debounce should combine rapid board edits before starting a transaction');
+  console.log('Board persistence: frame round-trip, conflict recovery, refresh recovery, offline retry, atomic chunks, fresh cloud reads, and read throttling passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

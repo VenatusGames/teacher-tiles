@@ -153,7 +153,36 @@ vm.runInContext(authNames.map(name => functionSource(authSource, name)).join('\n
 
   assert(plannerSource.includes('queuePlannerCloudSave();'), 'planner saves must enqueue cloud persistence');
   assert(plannerSource.includes("window.addEventListener('teachertiles:authchange'"), 'planner must hydrate on auth changes');
-  assert(plannerSource.includes("window.addEventListener('focus'"), 'planner must refresh when returning to a browser');
+  assert(plannerSource.includes("window.addEventListener('focus', () => { void refreshPlannerCloudFromCloud(); });"), 'passive focus must use the throttled planner refresh');
+  assert(plannerSource.includes('PLANNER_CLOUD_RECHECK_TTL = 10 * 60 * 1000'), 'planner passive refreshes must have a long freshness window');
+  assert(plannerSource.includes('readPlannerCloudMeta(nextUserId)'), 'fresh planner cloud metadata must survive reloads');
+  assert(plannerSource.includes('writePlannerCloudMeta(userId)'), 'successful planner saves must refresh local cloud metadata');
   assert(authSource.includes('window.TeacherTilesLessonPlannerCloud = Object.freeze'), 'auth layer must expose planner cloud API');
-  console.log('Lesson planner cloud migration, conflict merge, revision guard, and sync hooks passed');
+
+  let syncCalls = 0;
+  let releaseSync = null;
+  const refreshSandbox = {
+    Date, Promise, String,
+    plannerCloudUserId: 'teacher',
+    plannerCloudLastReadAt: Date.now(),
+    plannerCloudRefreshPromise: null,
+    plannerCloudDirty: false,
+    PLANNER_CLOUD_RECHECK_TTL: 10 * 60 * 1000,
+    window: { TeacherTilesAuth: { user: { uid: 'teacher' } } },
+    flushPlannerCloudSave: async () => {},
+    syncPlannerCloudAccount: async () => { syncCalls += 1; await new Promise(resolve => { releaseSync = resolve; }); }
+  };
+  vm.createContext(refreshSandbox);
+  vm.runInContext(functionSource(plannerSource, 'refreshPlannerCloudFromCloud'), refreshSandbox);
+  await refreshSandbox.refreshPlannerCloudFromCloud();
+  assert.equal(syncCalls, 0, 'a fresh planner snapshot must not reread Firestore on focus');
+  refreshSandbox.plannerCloudLastReadAt = 0;
+  const firstRefresh = refreshSandbox.refreshPlannerCloudFromCloud();
+  const secondRefresh = refreshSandbox.refreshPlannerCloudFromCloud();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(syncCalls, 1, 'overlapping focus/visibility planner refreshes must share one cloud read');
+  releaseSync();
+  await Promise.all([firstRefresh, secondRefresh]);
+
+  console.log('Lesson planner cloud migration, conflict merge, revision guard, sync hooks, and read throttling passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

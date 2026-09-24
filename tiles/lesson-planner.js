@@ -76,9 +76,11 @@
   const PLANNING_LIBRARY_KEY = 'teachertiles-lesson-planning-library-v1';
   const PLANNER_CLOUD_MIGRATION_KEY = 'teachertiles-lesson-planner-cloud-migrated-v1';
   const PLANNER_LEGACY_OWNER_KEY = 'teachertiles-lesson-planner-legacy-owner-v1';
+  const PLANNER_CLOUD_META_KEY = 'teachertiles-lesson-planner-cloud-meta-v1';
   const MAX_SAVED_SCHEDULES = 4;
   const FREE_PLANNER_LIMIT = 2;
   const PAID_PLANNER_LIMIT = 10;
+  const PLANNER_CLOUD_RECHECK_TTL = 10 * 60 * 1000;
   const VIEWS = ['day', 'week', 'month', 'year'];
   const DAY_START = 6 * 60;
   const DAY_END = 20 * 60;
@@ -109,6 +111,8 @@
   let plannerCloudLastSyncedJson = '';
   let plannerCloudSaveTimer = 0;
   let plannerCloudSavePromise = null;
+  let plannerCloudRefreshPromise = null;
+  let plannerCloudLastReadAt = 0;
   let plannerCloudGeneration = 0;
   let plannerCloudApplying = false;
   let planners = readPlanners();
@@ -406,6 +410,34 @@
     return `${PLANNER_CLOUD_MIGRATION_KEY}:${userId}`;
   }
 
+  function plannerCloudMetaKey(userId) {
+    return `${PLANNER_CLOUD_META_KEY}:${userId}`;
+  }
+
+  function readPlannerCloudMeta(userId) {
+    if (!userId) return null;
+    try {
+      const value = JSON.parse(localStorage.getItem(plannerCloudMetaKey(userId)) || 'null');
+      if (!value || typeof value !== 'object') return null;
+      return {
+        revision: Math.max(0, Number(value.revision) || 0),
+        checkedAt: Math.max(0, Number(value.checkedAt) || 0),
+        syncedJson: typeof value.syncedJson === 'string' ? value.syncedJson : ''
+      };
+    } catch { return null; }
+  }
+
+  function writePlannerCloudMeta(userId) {
+    if (!userId || !plannerCloudLastSyncedJson) return;
+    try {
+      localStorage.setItem(plannerCloudMetaKey(userId), JSON.stringify({
+        revision: plannerCloudRevision,
+        checkedAt: plannerCloudLastReadAt || Date.now(),
+        syncedJson: plannerCloudLastSyncedJson
+      }));
+    } catch {}
+  }
+
   function hasPlannerStorage(userId) {
     if (!userId) return false;
     try {
@@ -622,9 +654,11 @@
           if (plannerCloudUserId !== userId || plannerCloudGeneration !== generation) return;
           plannerCloudRevision = Number(saved?.revision) || (plannerCloudRevision + 1);
           plannerCloudConnected = true;
+          plannerCloudLastReadAt = Date.now();
           plannerCloudLastSyncedJson = outgoingJson;
           plannerCloudDirty = plannerCloudStateJson(capturePlannerState()) !== outgoingJson;
           markPlannerCloudMigrated(userId);
+          writePlannerCloudMeta(userId);
         } catch (error) {
           if (error?.code !== 'planner-conflict') {
             plannerCloudConnected = false;
@@ -663,6 +697,8 @@
       plannerCloudDirty = false;
       plannerCloudRevision = 0;
       plannerCloudLastSyncedJson = '';
+      plannerCloudLastReadAt = 0;
+      plannerCloudRefreshPromise = null;
       applyPlannerState(readPlannerStateForScope(''));
       return;
     }
@@ -694,12 +730,25 @@
 
     const cloud = window.TeacherTilesLessonPlannerCloud;
     if (!cloud?.load || !cloud?.save) return;
+    const migrated = (() => { try { return localStorage.getItem(plannerMigrationKey(nextUserId)) === '1'; } catch { return false; } })();
+    const cachedMeta = !force && migrated ? readPlannerCloudMeta(nextUserId) : null;
+    if (cachedMeta?.syncedJson && cachedMeta.checkedAt > 0 && Date.now() - cachedMeta.checkedAt < PLANNER_CLOUD_RECHECK_TTL) {
+      plannerCloudRevision = cachedMeta.revision;
+      plannerCloudConnected = true;
+      plannerCloudHydrated = true;
+      plannerCloudLastReadAt = cachedMeta.checkedAt;
+      plannerCloudLastSyncedJson = cachedMeta.syncedJson;
+      plannerCloudDirty = plannerCloudStateJson(localState) !== cachedMeta.syncedJson;
+      applyPlannerState(localState);
+      if (plannerCloudDirty) queuePlannerCloudSave();
+      return;
+    }
     try {
       const remote = await cloud.load();
       if (plannerCloudGeneration !== generation || plannerCloudUserId !== nextUserId) return;
+      plannerCloudLastReadAt = Date.now();
       const remoteState = normalizePlannerState(remote?.state);
       const remoteJson = plannerCloudStateJson(remoteState);
-      const migrated = (() => { try { return localStorage.getItem(plannerMigrationKey(nextUserId)) === '1'; } catch { return false; } })();
       let chosen;
       let shouldSave = false;
 
@@ -721,11 +770,13 @@
       plannerCloudRevision = Number(remote?.revision) || 0;
       plannerCloudConnected = true;
       plannerCloudHydrated = true;
-      plannerCloudLastSyncedJson = remote?.exists ? remoteJson : '';
+      plannerCloudLastSyncedJson = remoteJson;
       plannerCloudDirty = shouldSave;
       applyPlannerState(chosen);
-      if (!shouldSave) markPlannerCloudMigrated(nextUserId, { claimLegacy: importedLegacy });
-      else {
+      if (!shouldSave) {
+        markPlannerCloudMigrated(nextUserId, { claimLegacy: importedLegacy });
+        writePlannerCloudMeta(nextUserId);
+      } else {
         await flushPlannerCloudSave();
         if (!plannerCloudDirty) markPlannerCloudMigrated(nextUserId, { claimLegacy: importedLegacy });
       }
@@ -738,12 +789,17 @@
     }
   }
 
-  async function refreshPlannerCloudFromCloud() {
+  function refreshPlannerCloudFromCloud({ force = false } = {}) {
     const userId = plannerCloudUserId || String(window.TeacherTilesAuth?.user?.uid || '');
-    if (!userId) return;
-    if (plannerCloudDirty) await flushPlannerCloudSave();
-    if (plannerCloudDirty) return;
-    await syncPlannerCloudAccount(userId, { force: true });
+    if (!userId) return Promise.resolve();
+    if (!force && plannerCloudLastReadAt && Date.now() - plannerCloudLastReadAt < PLANNER_CLOUD_RECHECK_TTL) return Promise.resolve();
+    if (plannerCloudRefreshPromise) return plannerCloudRefreshPromise;
+    plannerCloudRefreshPromise = (async () => {
+      if (plannerCloudDirty) await flushPlannerCloudSave();
+      if (plannerCloudDirty) return;
+      await syncPlannerCloudAccount(userId, { force: true });
+    })().finally(() => { plannerCloudRefreshPromise = null; });
+    return plannerCloudRefreshPromise;
   }
 
   function readLegacyBlocks() {
@@ -1975,6 +2031,7 @@
     panel.setAttribute('aria-hidden', 'false');
     openButton.setAttribute('aria-expanded', 'true');
     document.body.classList.add('lesson-planner-open');
+    void refreshPlannerCloudFromCloud({ force: true });
     closeScheduling();
     closeTemplates();
     if(requestedPlannerId&&planners.some(planner=>planner.id===requestedPlannerId))openPlannerBook(requestedPlannerId);else showPlannerLibrary();
@@ -2098,7 +2155,7 @@
     if (!panel.hidden && !library.hidden) renderLibrary();
   });
   window.addEventListener('focus', () => { void refreshPlannerCloudFromCloud(); });
-  window.addEventListener('online', () => { void refreshPlannerCloudFromCloud(); });
+  window.addEventListener('online', () => { void refreshPlannerCloudFromCloud({ force: true }); });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') void flushPlannerCloudSave();
     else void refreshPlannerCloudFromCloud();

@@ -24,7 +24,7 @@ assert(pickerCss.includes("theme-picker-pack-locked .theme-pack-stack::after"), 
 assert(html.includes('theme-picker.css?v=20260924-pack-artwork-1'), 'theme picker CSS cache buster must be updated');
 assert(html.includes('animated-themes.css?v=20260924-pack-artwork-1'), 'animated theme CSS cache buster must be updated');
 assert(html.includes('theme-picker.js?v=20260924-pack-artwork-1'), 'theme picker JS cache buster must be updated');
-assert(html.includes('lesson-planner.js?v=20260924-planner-cloud-sync-1'), 'planner cloud fix cache buster must remain intact');
-assert(html.includes('firebase-auth.js?v=20260924-planner-cloud-sync-1'), 'planner auth cloud fix cache buster must remain intact');
+assert(html.includes('lesson-planner.js?v=20260924-read-budget-1'), 'planner cloud fix cache buster must remain intact');
+assert(html.includes('firebase-auth.js?v=20260924-read-budget-1'), 'planner auth cloud fix cache buster must remain intact');
 
 console.log('Theme packs: raster+SVG preview fallback, pack-level locking, purchase routing, and cache busting passed');
