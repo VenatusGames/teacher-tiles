@@ -3,6 +3,9 @@
 
   const MIN_VALUE = -999999999;
   const MAX_VALUE = 999999999;
+  const IDLE_INSET = 12;
+  const HOVER_RESERVED_BOTTOM = 146;
+  const FIT_SAFETY = 0.93;
 
   function normalizeInteger(value, fallback) {
     const number = Number(value);
@@ -42,19 +45,59 @@
     let min = 1;
     let max = 100;
     let current = randomInclusive(min, max);
+    let resizeFrame = 0;
+    let transitionsReady = false;
+
+    const measureAt100 = () => {
+      const previousTransition = valueElement.style.transition;
+      const previousSize = valueElement.style.fontSize;
+      valueElement.style.transition = 'none';
+      valueElement.style.fontSize = '100px';
+      // Force layout while transitions are disabled. Measuring during a font-size
+      // transition can report an interpolated old size and wildly overscale the tile.
+      const rect = valueElement.getBoundingClientRect();
+      valueElement.style.fontSize = previousSize;
+      valueElement.style.transition = previousTransition;
+      return {
+        width: Math.max(1, rect.width),
+        height: Math.max(1, rect.height)
+      };
+    };
+
+    const fittedSize = (availableWidth, availableHeight, measured) => {
+      const scale = Math.min(
+        Math.max(1, availableWidth) / measured.width,
+        Math.max(1, availableHeight) / measured.height
+      );
+      return Math.max(24, Math.min(2400, Math.floor(100 * scale * FIT_SAFETY)));
+    };
 
     const fitDisplay = () => {
-      const width = Math.max(1, display.clientWidth - 12);
-      const height = Math.max(1, display.clientHeight - 12);
-      const probeSize = 100;
-      valueElement.style.fontSize = `${probeSize}px`;
+      resizeFrame = 0;
+      const width = Math.max(1, module.clientWidth || display.clientWidth || 1);
+      const height = Math.max(1, module.clientHeight || display.clientHeight || 1);
+      const availableWidth = Math.max(1, width - IDLE_INSET);
+      const idleHeight = Math.max(1, height - IDLE_INSET);
+      const hoverHeight = Math.max(1, height - HOVER_RESERVED_BOTTOM - 6);
+      const measured = measureAt100();
+      const idleSize = fittedSize(availableWidth, idleHeight, measured);
+      const hoverSize = fittedSize(availableWidth, hoverHeight, measured);
 
-      const rect = valueElement.getBoundingClientRect();
-      const measuredWidth = Math.max(1, rect.width);
-      const measuredHeight = Math.max(1, rect.height);
-      const scale = Math.min(width / measuredWidth, height / measuredHeight);
-      const fitted = Math.max(28, Math.min(2400, Math.floor(probeSize * scale * .94)));
-      valueElement.style.fontSize = `${fitted}px`;
+      module.style.setProperty('--random-number-idle-size', `${idleSize}px`);
+      module.style.setProperty('--random-number-hover-size', `${hoverSize}px`);
+
+      if (!transitionsReady) {
+        valueElement.style.transition = 'none';
+        requestAnimationFrame(() => {
+          valueElement.style.transition = '';
+          transitionsReady = true;
+        });
+      }
+    };
+
+    const scheduleFit = () => {
+      if (resizeFrame) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(fitDisplay);
     };
 
     const render = () => {
@@ -62,7 +105,7 @@
       maxInput.value = String(max);
       valueElement.textContent = String(current);
       display.setAttribute('aria-label', `Random number ${current}`);
-      requestAnimationFrame(fitDisplay);
+      scheduleFit();
     };
 
     const announceChange = reason => {
@@ -105,11 +148,12 @@
       render();
     };
 
-    const resizeObserver = new ResizeObserver(fitDisplay);
-    resizeObserver.observe(display);
+    const resizeObserver = new ResizeObserver(scheduleFit);
+    resizeObserver.observe(module);
     const priorCleanup = module._cleanup;
     module._cleanup = () => {
       resizeObserver.disconnect();
+      if (resizeFrame) cancelAnimationFrame(resizeFrame);
       priorCleanup?.();
     };
 
