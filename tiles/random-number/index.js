@@ -43,14 +43,20 @@
     let current = randomInclusive(min, max);
 
     const fitDisplay = () => {
-      const width = Math.max(1, display.clientWidth - 8);
-      const height = Math.max(1, display.clientHeight - 8);
-      let size = Math.max(34, Math.min(150, height * 0.72, width * 0.38));
-      display.style.fontSize = `${size}px`;
-      while (size > 34 && (display.scrollWidth > width || display.scrollHeight > height)) {
-        size -= 4;
+      const width = Math.max(1, display.clientWidth - 10);
+      const height = Math.max(1, display.clientHeight - 10);
+      let low = 24;
+      let high = Math.max(24, Math.min(1200, Math.ceil(Math.max(width, height) * 2.6)));
+      let best = low;
+      while (low <= high) {
+        const size = Math.floor((low + high) / 2);
         display.style.fontSize = `${size}px`;
+        if (display.scrollWidth <= width && display.scrollHeight <= height) {
+          best = size;
+          low = size + 1;
+        } else high = size - 1;
       }
+      display.style.fontSize = `${best}px`;
     };
 
     const render = () => {

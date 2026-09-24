@@ -85,4 +85,13 @@ assert(index.includes('tiles/random-number/styles.css'), 'Random Number styleshe
 assert(index.includes('tiles/random-number/index.js'), 'Random Number script must load');
 assert(source.includes('module._boardGetState'), 'Random Number state must save with boards');
 assert(source.includes('module._boardSetState'), 'Random Number state must restore with boards');
+
+const css = fs.readFileSync(path.join(__dirname, '../tiles/random-number/styles.css'), 'utf8');
+assert(css.includes('.random-number-display{position:absolute;inset:8px'), 'number display must fill the tile instead of sharing flex space with controls');
+assert(css.includes('bottom:58px'), 'range controls must sit above the bottom-left tile controls');
+assert(css.includes('.random-number-module:hover .random-number-controls{'), 'range and Generate controls must appear on tile hover');
+assert(!css.includes('.random-number-controls:focus-within'), 'controls must not stay visible after the pointer leaves just because an input retained focus');
+assert(css.includes('opacity:0;visibility:hidden;pointer-events:none'), 'range and Generate controls must hide when the tile is idle');
+const randomTemplate = index.slice(index.indexOf('<template id="randomnumber-template">'), index.indexOf('</template>', index.indexOf('<template id="randomnumber-template">')));
+assert(randomTemplate.indexOf('random-number-generate') < randomTemplate.indexOf('random-number-min'), 'Generate must be above the Min/Max row in the Random Number template');
 console.log('Random Number: generation, range normalization, Math/Tools registration, and board persistence passed.');
