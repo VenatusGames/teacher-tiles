@@ -819,7 +819,7 @@ function StudentAdminCard({ student, complete, busy, upload, action }: { student
       )}
       <Button variant="destructive" size="icon" aria-label={`Delete ${student.name}`} onClick={() => action({ action: 'deleteStudent', id: student.id }, `${student.name} was removed.`)}><Trash2 /></Button>
       <div className="student-photo-actions">
-        <FilePicker label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />
+        <ExistingStudentPhotoPicker studentId={student.id} disabled={busy || uploading} label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />
         {student.imageKey && <button type="button" disabled={busy || uploading} onClick={() => void removeImage()}>Remove</button>}
       </div>
       <div className="student-score-editor">
@@ -912,6 +912,24 @@ function FilePicker({ label, onFile }: { label: string; onFile: (file: File | nu
     onFile(file);
     event.currentTarget.value = '';
   }} /></label>;
+}
+
+function ExistingStudentPhotoPicker({ studentId, label, disabled, onFile }: { studentId: string; label: string; disabled: boolean; onFile: (file: File | null) => void }) {
+  return <label className={`file-picker${disabled ? ' is-disabled' : ''}`} aria-disabled={disabled}>
+    <ImagePlus /><span>{label}</span>
+    <input
+      key={studentId}
+      type="file"
+      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+      disabled={disabled}
+      onChange={(event) => {
+        const input = event.currentTarget;
+        const file = input.files?.[0] ?? null;
+        input.value = '';
+        if (file) void onFile(file);
+      }}
+    />
+  </label>;
 }
 
 async function prepareImageForUpload(file: File) {
