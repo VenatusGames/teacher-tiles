@@ -57,7 +57,7 @@
   }
   function merge(target,source){
     if(target?.dataset.type==='sticker'||source?.dataset.type==='sticker')return false;
-    if(!target?.isConnected||!source?.isConnected||target===source||document.fullscreenElement)return false;
+    if(!target?.isConnected||!source?.isConnected||target===source||document.fullscreenElement?.classList?.contains('module'))return false;
     window.TeacherTilesEditHistory?.flush();
     const before=serializeBoardModule(target),sourceSnapshot=serializeBoardModule(source);
     if(!before||!sourceSnapshot)return false;
