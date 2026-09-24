@@ -188,6 +188,50 @@ function classKeyVaultDocument(uid) {
   return firestoreSdk.doc(db, "users", uid, "private", "classKey");
 }
 
+function lessonPlannerDocument(uid) {
+  return firestoreSdk.doc(db, "users", uid, "private", "lessonPlanner");
+}
+
+async function loadLessonPlannerCloud() {
+  if (!currentUser || !db || !firestoreSdk) return { exists: false, revision: 0, state: null };
+  const uid = currentUser.uid;
+  const snapshot = await firestoreSdk.getDocFromServer(lessonPlannerDocument(uid));
+  if (currentUser?.uid !== uid) throw new Error("Account changed while loading lesson planner data.");
+  if (!snapshot.exists()) return { exists: false, revision: 0, state: null };
+  const data = snapshot.data() || {};
+  return {
+    exists: true,
+    revision: Math.max(0, Number(data.revision) || 0),
+    state: data.state && typeof data.state === "object" ? data.state : null
+  };
+}
+
+async function saveLessonPlannerCloud(state, { expectedRevision = null } = {}) {
+  if (!currentUser || !db || !firestoreSdk) throw new Error("Sign in to save lesson planner data.");
+  const uid = currentUser.uid;
+  const reference = lessonPlannerDocument(uid);
+  const revision = await firestoreSdk.runTransaction(db, async transaction => {
+    const snapshot = await transaction.get(reference);
+    const currentRevision = snapshot.exists() ? Math.max(0, Number(snapshot.data()?.revision) || 0) : 0;
+    if (expectedRevision != null && currentRevision !== Number(expectedRevision)) {
+      const error = new Error("Lesson planner cloud data changed on another device.");
+      error.code = "planner-conflict";
+      error.remoteRevision = currentRevision;
+      throw error;
+    }
+    const nextRevision = currentRevision + 1;
+    transaction.set(reference, {
+      schemaVersion: 1,
+      revision: nextRevision,
+      state,
+      updatedAt: firestoreSdk.serverTimestamp()
+    });
+    return nextRevision;
+  });
+  if (currentUser?.uid !== uid) throw new Error("Account changed while saving lesson planner data.");
+  return { revision };
+}
+
 function bytesToBase64(bytes) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -4065,6 +4109,7 @@ async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
   currentUser = user || null;
+  window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {
     try {
       sessionStorage.removeItem(classEncryptionKeySessionStorageKey(previousUser.uid));
@@ -4228,6 +4273,7 @@ async function handleSignOut() {
   setStatus("Saving and signing out…");
 
   try {
+    await window.TeacherTilesLessonPlanner?.flushCloud?.();
     await saveCurrentBoard({ immediate: true });
     await authSdk.signOut(auth);
     setStatus("Signed out.");
@@ -4543,6 +4589,11 @@ window.TeacherTilesAuth = {
   get ready() { return authReady; },
   openProfile
 };
+
+window.TeacherTilesLessonPlannerCloud = Object.freeze({
+  load: loadLessonPlannerCloud,
+  save: saveLessonPlannerCloud
+});
 
 window.TeacherTilesEncryptedClasses = {
   save: saveEncryptedClasses,
