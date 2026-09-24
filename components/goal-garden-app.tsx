@@ -750,7 +750,6 @@ function StudentsAdmin({ students, completedIds, busy, upload, action }: { stude
 
 function StudentAdminCard({ student, complete, busy, upload, action }: { student: Student; complete: boolean; busy: boolean; upload: ImageUploader; action: (body: Record<string, unknown>, success?: string) => Promise<boolean> }) {
   const [uploading, setUploading] = useState(false);
-  const [pictureDraft, setPictureDraft] = useState<string | null | undefined>(undefined);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
   const [currentScore, setCurrentScore] = useState(student.currentScore === null ? '' : String(student.currentScore));
@@ -765,12 +764,17 @@ function StudentAdminCard({ student, complete, busy, upload, action }: { student
     setUploading(true);
     try {
       const imageKey = await upload(file);
-      if (imageKey) setPictureDraft(imageKey);
+      if (!imageKey) return;
+      await action({ action: 'updateStudentImage', id: student.id, imageKey }, 'Student picture saved.');
     } catch (error) {
       window.alert(error instanceof Error ? error.message : 'Image update failed.');
     } finally {
       setUploading(false);
     }
+  };
+  const removeImage = async () => {
+    if (!student.imageKey || busy || uploading) return;
+    await action({ action: 'updateStudentImage', id: student.id, imageKey: null }, 'Student picture removed.');
   };
   const saveName = async () => {
     const nextName = nameDraft.trim();
@@ -786,7 +790,7 @@ function StudentAdminCard({ student, complete, busy, upload, action }: { student
   const saveScores = () => action({ action: 'updateStudentScores', id: student.id, currentScore: Number(currentScore), goalScore: Number(goalScore) }, `${student.name}'s scores were saved.`);
   return (
     <div className="admin-student">
-      <span className="student-photo-wrap admin-student-photo-wrap"><ProfileImage student={pictureDraft === undefined ? student : { ...student, imageKey: pictureDraft }} />{complete && <span className="student-complete-badge" title="Checked in today" aria-label="Checked in today"><Check /></span>}</span>
+      <span className="student-photo-wrap admin-student-photo-wrap"><ProfileImage student={student} />{complete && <span className="student-complete-badge" title="Checked in today" aria-label="Checked in today"><Check /></span>}</span>
       {editingName ? (
         <form onSubmit={event => { event.preventDefault(); void saveName(); }}>
         <Input
@@ -814,10 +818,9 @@ function StudentAdminCard({ student, complete, busy, upload, action }: { student
         >{student.name}</strong>
       )}
       <Button variant="destructive" size="icon" aria-label={`Delete ${student.name}`} onClick={() => action({ action: 'deleteStudent', id: student.id }, `${student.name} was removed.`)}><Trash2 /></Button>
-      <div className="student-photo-actions"><FilePicker label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />{(pictureDraft === undefined ? student.imageKey : pictureDraft) && <button type="button" onClick={() => setPictureDraft(null)}>Remove</button>}
-        {pictureDraft !== undefined && <><Button type="button" className="admin-secondary" disabled={busy || uploading} onClick={async () => {
-          if (await action({ action: 'updateStudentImage', id: student.id, imageKey: pictureDraft }, 'Student picture saved.')) setPictureDraft(undefined);
-        }}>Save picture</Button><button type="button" disabled={busy || uploading} onClick={() => setPictureDraft(undefined)}>Cancel</button></>}
+      <div className="student-photo-actions">
+        <FilePicker label={uploading ? 'Preparing…' : 'Change picture'} onFile={replaceImage} />
+        {student.imageKey && <button type="button" disabled={busy || uploading} onClick={() => void removeImage()}>Remove</button>}
       </div>
       <div className="student-score-editor">
         <label>Current Score<Input className="admin-input" type="number" step="any" value={currentScore} onChange={(event) => setCurrentScore(event.target.value)} placeholder="0" /></label>
