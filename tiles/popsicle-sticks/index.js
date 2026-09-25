@@ -16,7 +16,7 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Math.round((((hash%1000)/999)-.5)*108),
+    offsetX:Math.round((((hash%1000)/999)-.5)*84),
     rotation:Number(((((hash>>>4)%1000)/999)-.5)*22).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
@@ -90,7 +90,7 @@ function setup(m){
     stack.replaceChildren();
     const available=inCup().slice().sort((a,b)=>a.depth-b.depth);
     // Keep the cup readable with large rosters while still showing variety.
-    const visible=available.slice(-Math.min(18,available.length));
+    const visible=available.slice(-Math.min(16,available.length));
     visible.forEach(stick=>stack.append(makeStickElement(stick)));
     drawnHost.replaceChildren();
     const active=activeStick();
