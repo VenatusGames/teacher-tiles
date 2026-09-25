@@ -5,8 +5,9 @@ const STICK_VARIANTS=[
   'tiles/popsicle-sticks/assets/stick-3.png'
 ];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
+const ASSET_VERSION='20260925-pastel-scale-1';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>38)return clamp((n/84)*30,-30,30);return clamp(n,-30,30)}
+function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>30)return clamp((n/84)*24,-24,24);return clamp(n,-24,24)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}
 function rosterNames(value){
   const source=Array.isArray(value)?value:[];
@@ -17,8 +18,8 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Number(((((hash%1000)/999)-.5)*56).toFixed(2)),
-    rotation:Number(((((hash>>>4)%1000)/999)-.5)*16).toFixed(2),
+    offsetX:Number(((((hash%1000)/999)-.5)*44).toFixed(2)),
+    rotation:Number(((((hash>>>4)%1000)/999)-.5)*12).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
 }
@@ -31,7 +32,7 @@ function makeStick(name,index,prior={}){
     variant:Math.abs(Number(prior.variant??index))%STICK_VARIANTS.length,
     state:prior.state==='removed'?'removed':'cup',
     offsetX:normalizeStickOffset(prior.offsetX,pose.offsetX),
-    rotation:Number.isFinite(Number(prior.rotation))?Number(prior.rotation):pose.rotation,
+    rotation:Number.isFinite(Number(prior.rotation))?clamp(Number(prior.rotation),-7,7):pose.rotation,
     depth:Number.isFinite(Number(prior.depth))?Number(prior.depth):pose.depth
   };
 }
@@ -39,17 +40,20 @@ function makeStickElement(stick,{drawn=false}={}){
   const el=document.createElement('div');
   el.className=`popsicle-stick${drawn?' popsicle-stick--drawn':''}`;
   el.style.setProperty('--stick-x',`${normalizeStickOffset(stick.offsetX)}%`);
-  el.style.setProperty('--stick-r',`${stick.rotation}deg`);
+  el.style.setProperty('--stick-r',`${clamp(Number(stick.rotation)||0,-7,7)}deg`);
   el.style.setProperty('--stick-z',String(Math.round(stick.depth*30)));
   const image=document.createElement('img');
   image.className='popsicle-stick__art';
   image.src=STICK_VARIANTS[stick.variant%STICK_VARIANTS.length];
   image.alt='';image.draggable=false;
+  const label=document.createElement('span');
+  label.className='popsicle-stick__name';
   const name=document.createElement('span');
-  name.className='popsicle-stick__name';
+  name.className='popsicle-stick__name-text';
   name.textContent=stick.name;
   name.style.fontFamily=HANDWRITING_FONTS;
-  el.append(image,name);
+  label.append(name);
+  el.append(image,label);
   return el;
 }
 function setup(m){
@@ -62,6 +66,10 @@ function setup(m){
   const bundle=m.querySelector('.popsicle-sticks-bundle');
   const drawnHost=m.querySelector('.popsicle-sticks-drawn');
   const cup=m.querySelector('.popsicle-sticks-cup');
+  const cupFront=m.querySelector('.popsicle-sticks-cup-art--front');
+  const cupBack=m.querySelector('.popsicle-sticks-cup-art--back');
+  if(cupFront)cupFront.src=`tiles/popsicle-sticks/assets/cup-front.png?v=${ASSET_VERSION}`;
+  if(cupBack)cupBack.src=`tiles/popsicle-sticks/assets/cup-back.png?v=${ASSET_VERSION}`;
   const putBack=m.querySelector('.popsicle-sticks-put-back');
   const remove=m.querySelector('.popsicle-sticks-remove');
   const reset=m.querySelector('.popsicle-sticks-reset');
@@ -74,9 +82,7 @@ function setup(m){
   const removed=()=>sticks.filter(stick=>stick.state==='removed'&&stick.id!==drawnId);
   const notify=reason=>{render();if(typeof notifyBoardChanged==='function')notifyBoardChanged(reason)};
 
-  function showImport(show){
-    importView.hidden=!show;dashboard.hidden=show;
-  }
+  function showImport(show){importView.hidden=!show;dashboard.hidden=show}
   function updateCopy(){
     const active=activeStick(),available=inCup().length,removedCount=removed().length;
     classNameEl.textContent=className||'Class';
@@ -90,7 +96,6 @@ function setup(m){
   function renderCup(){
     stack.replaceChildren();
     const available=inCup().slice().sort((a,b)=>a.depth-b.depth);
-    // Keep the cup readable with large rosters while still showing variety.
     const visible=available.slice(-Math.min(14,available.length));
     visible.forEach(stick=>stack.append(makeStickElement(stick)));
     drawnHost.replaceChildren();
@@ -99,10 +104,7 @@ function setup(m){
     else drawnHost.hidden=true;
     m.classList.toggle('has-drawn-stick',Boolean(active));
   }
-  function render(){
-    showImport(!classId&&!sticks.length);
-    if(!dashboard.hidden){renderCup();updateCopy()}
-  }
+  function render(){showImport(!classId&&!sticks.length);if(!dashboard.hidden){renderCup();updateCopy()}}
   function loadRoster(roster,{preserve=false,markChanged=true}={}){
     if(!roster)return;
     const names=rosterNames(roster.students);
@@ -115,39 +117,12 @@ function setup(m){
     showImport(false);renderCup();updateCopy();
     if(markChanged&&typeof notifyBoardChanged==='function')notifyBoardChanged('popsicle-sticks-class');
   }
-  function returnToClassPicker(){
-    classId='';className='';sticks=[];drawnId='';showImport(true);
-    if(typeof notifyBoardChanged==='function')notifyBoardChanged('popsicle-sticks-change-class');
-  }
-  function draw(){
-    if(activeStick())return;
-    const pool=inCup();if(!pool.length)return;
-    const chosen=pool[Math.floor(Math.random()*pool.length)];
-    chosen.state='removed';drawnId=chosen.id;notify('popsicle-sticks-draw');
-  }
-  function putDrawnBack(){
-    const stick=activeStick();if(!stick)return;
-    stick.state='cup';
-    const pose=defaultPose(stick.name,sticks.indexOf(stick),`${stick.id}:${Date.now()}`);
-    stick.offsetX=pose.offsetX;stick.rotation=pose.rotation;stick.depth=pose.depth;
-    drawnId='';notify('popsicle-sticks-put-back');
-  }
-  function removeDrawn(){
-    if(!activeStick())return;
-    drawnId='';notify('popsicle-sticks-remove');
-  }
-  function resetAll(){
-    sticks.forEach((stick,index)=>{
-      stick.state='cup';const pose=defaultPose(stick.name,index,`${stick.id}:reset`);
-      stick.offsetX=pose.offsetX;stick.rotation=pose.rotation;stick.depth=pose.depth;
-    });
-    drawnId='';notify('popsicle-sticks-reset');
-  }
-  function syncRoster(){
-    if(!classId)return;
-    const roster=getRoster(classId);if(!roster)return;
-    loadRoster(roster,{preserve:true,markChanged:false});
-  }
+  function returnToClassPicker(){classId='';className='';sticks=[];drawnId='';showImport(true);if(typeof notifyBoardChanged==='function')notifyBoardChanged('popsicle-sticks-change-class')}
+  function draw(){if(activeStick())return;const pool=inCup();if(!pool.length)return;const chosen=pool[Math.floor(Math.random()*pool.length)];chosen.state='removed';drawnId=chosen.id;notify('popsicle-sticks-draw')}
+  function putDrawnBack(){const stick=activeStick();if(!stick)return;stick.state='cup';const pose=defaultPose(stick.name,sticks.indexOf(stick),`${stick.id}:${Date.now()}`);stick.offsetX=pose.offsetX;stick.rotation=pose.rotation;stick.depth=pose.depth;drawnId='';notify('popsicle-sticks-put-back')}
+  function removeDrawn(){if(!activeStick())return;drawnId='';notify('popsicle-sticks-remove')}
+  function resetAll(){sticks.forEach((stick,index)=>{stick.state='cup';const pose=defaultPose(stick.name,index,`${stick.id}:reset`);stick.offsetX=pose.offsetX;stick.rotation=pose.rotation;stick.depth=pose.depth});drawnId='';notify('popsicle-sticks-reset')}
+  function syncRoster(){if(!classId)return;const roster=getRoster(classId);if(!roster)return;loadRoster(roster,{preserve:true,markChanged:false})}
 
   const detach=typeof attachClassRosterLoader==='function'?attachClassRosterLoader(loaderAnchor,(_students,roster)=>loadRoster(roster)):()=>{};
   cup.addEventListener('click',draw);bundle?.addEventListener('click',draw);stack?.addEventListener('click',draw);putBack.addEventListener('click',putDrawnBack);remove.addEventListener('click',removeDrawn);reset.addEventListener('click',resetAll);changeClass.addEventListener('click',returnToClassPicker);
