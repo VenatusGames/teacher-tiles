@@ -3946,31 +3946,33 @@
 
         <div class="popsicle-sticks-stage" aria-label="Popsicle stick name picker">
           <div class="popsicle-sticks-drawn" hidden aria-live="polite"></div>
+          <div class="popsicle-sticks-stage-ui">
+            <div class="popsicle-sticks-actions">
+              <button class="tile-action popsicle-sticks-put-back" type="button" hidden>Put Back</button>
+              <button class="tile-action popsicle-sticks-remove" type="button" hidden>Remove</button>
+              <button class="tile-action popsicle-sticks-reset" type="button">Reset All</button>
+            </div>
+            <p class="popsicle-sticks-status widget-status" role="status" aria-live="polite">Click the cup to draw a random student.</p>
+          </div>
           <div class="popsicle-sticks-bundle" aria-hidden="true"><div class="popsicle-sticks-stack"></div></div>
           <button class="popsicle-sticks-cup" type="button" aria-label="Draw a random popsicle stick" title="Draw a stick">
             <svg class="popsicle-sticks-cup-art" viewBox="0 0 300 230" aria-hidden="true">
               <defs>
-                <linearGradient id="popsicleCupBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86c8f2"/><stop offset=".46" stop-color="#5aaee5"/><stop offset="1" stop-color="#3388c8"/></linearGradient>
-                <linearGradient id="popsicleCupRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8f7ff"/><stop offset="1" stop-color="#8cc8ea"/></linearGradient>
+                <linearGradient id="popsicleCupBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd4ff"/><stop offset=".48" stop-color="#5cb5ee"/><stop offset="1" stop-color="#3a8fd5"/></linearGradient>
+                <linearGradient id="popsicleCupFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dc7f4"/><stop offset="1" stop-color="#2f7fbe"/></linearGradient>
+                <linearGradient id="popsicleCupRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff9ff"/><stop offset="1" stop-color="#a9dbfb"/></linearGradient>
               </defs>
-              <ellipse cx="150" cy="48" rx="110" ry="30" fill="#234d68" opacity=".7"/>
-              <path d="M42 48 62 198c2 17 174 17 176 0l20-150Z" fill="url(#popsicleCupBody)" stroke="#277bb4" stroke-width="5" stroke-linejoin="round"/>
-              <path d="M53 74c34 14 160 14 194 0" stroke="#ffffff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round"/>
-              <path d="M69 103c8 54 16 77 23 94" stroke="#ffffff" stroke-opacity=".22" stroke-width="10" stroke-linecap="round"/>
-              <ellipse cx="150" cy="48" rx="111" ry="30" fill="none" stroke="url(#popsicleCupRim)" stroke-width="10"/>
-              <path d="M42 48c17 23 199 23 216 0" fill="none" stroke="#bde5fb" stroke-width="6" stroke-linecap="round"/>
-              <ellipse cx="150" cy="202" rx="86" ry="15" fill="#2f79ad" opacity=".35"/>
-              <text x="150" y="145" text-anchor="middle" fill="#eff9ff" font-size="20" font-family="Inter, sans-serif" font-weight="800" letter-spacing="1.5">PICK A STICK</text>
+              <ellipse cx="150" cy="208" rx="88" ry="14" fill="#184a6c" opacity=".18"/>
+              <ellipse cx="150" cy="56" rx="112" ry="28" fill="#1d5477"/>
+              <ellipse cx="150" cy="56" rx="98" ry="19" fill="#2e6e95"/>
+              <path d="M48 56 68 196c3 15 162 15 164 0l20-140Z" fill="url(#popsicleCupBody)" stroke="#2a7eb8" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M48 56c18 22 186 22 204 0" fill="none" stroke="url(#popsicleCupRim)" stroke-width="10" stroke-linecap="round"/>
+              <path d="M64 88c28 10 144 10 172 0" stroke="#ffffff" stroke-opacity=".24" stroke-width="5" stroke-linecap="round"/>
+              <path d="M63 56 80 192c2 11 137 11 140 0l17-136" fill="url(#popsicleCupFront)" opacity=".97" stroke="#2778b3" stroke-width="4.6" stroke-linejoin="round"/>
+              <path d="M88 104c10 51 18 74 25 88" stroke="#ffffff" stroke-opacity=".16" stroke-width="11" stroke-linecap="round"/>
             </svg>
           </button>
         </div>
-
-        <div class="popsicle-sticks-actions">
-          <button class="tile-action popsicle-sticks-put-back" type="button" hidden>Put Back</button>
-          <button class="tile-action popsicle-sticks-remove" type="button" hidden>Remove</button>
-          <button class="tile-action popsicle-sticks-reset" type="button">Reset All</button>
-        </div>
-        <p class="popsicle-sticks-status widget-status" role="status" aria-live="polite">Click the cup to draw a random student.</p>
 
         <div class="customization-bar widget-controls" aria-label="Popsicle Sticks customization">
           <button class="custom-icon tile-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
