@@ -10,7 +10,7 @@ const DRAWN_STICK_VARIANTS=[
   'tiles/popsicle-sticks/assets/stick-3-horizontal.png'
 ];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
-const ASSET_VERSION='20260925-balanced-width-1';
+const ASSET_VERSION='20260925-drawn-same-size-1';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>34)return clamp((n/84)*29,-29,29);return clamp(n,-29,29)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}

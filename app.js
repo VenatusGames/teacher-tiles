@@ -3293,7 +3293,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=3`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=4`,document.baseURI).href;
     cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
     cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
     cursorRoot.style.setProperty('--teacher-cursor-open',`url("${asset('open')}") 12 12`);
@@ -13182,7 +13182,7 @@ function setupCollectionShelf(){
       if(cursor.id==='default'){
         const arrow=document.createElement('img');arrow.className='cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--default';arrow.src='assets/cursors/default-normal.png?v=1';arrow.alt='';arrow.draggable=false;return arrow;
       }
-      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=3`;arrow.alt='';arrow.draggable=false;return arrow;
+      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=4`;arrow.alt='';arrow.draggable=false;return arrow;
     };
     const makePack=(label,detail,cursors,{locked=false,onClick}={})=>{
       const wrapper=document.createElement('div');wrapper.className=`cursor-pack-wrap${locked?' is-shop-locked':''}`;
