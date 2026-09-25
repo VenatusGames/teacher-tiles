@@ -5,9 +5,9 @@ const STICK_VARIANTS=[
   'tiles/popsicle-sticks/assets/stick-3.png'
 ];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
-const ASSET_VERSION='20260925-pastel-scale-1';
+const ASSET_VERSION='20260925-stick-fit-3';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>30)return clamp((n/84)*24,-24,24);return clamp(n,-24,24)}
+function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>30)return clamp((n/84)*18,-18,18);return clamp(n,-18,18)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}
 function rosterNames(value){
   const source=Array.isArray(value)?value:[];
@@ -18,8 +18,8 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Number(((((hash%1000)/999)-.5)*44).toFixed(2)),
-    rotation:Number(((((hash>>>4)%1000)/999)-.5)*12).toFixed(2),
+    offsetX:Number(((((hash%1000)/999)-.5)*34).toFixed(2)),
+    rotation:Number(((((hash>>>4)%1000)/999)-.5)*8).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
 }
@@ -32,7 +32,7 @@ function makeStick(name,index,prior={}){
     variant:Math.abs(Number(prior.variant??index))%STICK_VARIANTS.length,
     state:prior.state==='removed'?'removed':'cup',
     offsetX:normalizeStickOffset(prior.offsetX,pose.offsetX),
-    rotation:Number.isFinite(Number(prior.rotation))?clamp(Number(prior.rotation),-7,7):pose.rotation,
+    rotation:Number.isFinite(Number(prior.rotation))?clamp(Number(prior.rotation),-5,5):pose.rotation,
     depth:Number.isFinite(Number(prior.depth))?Number(prior.depth):pose.depth
   };
 }
@@ -40,7 +40,7 @@ function makeStickElement(stick,{drawn=false}={}){
   const el=document.createElement('div');
   el.className=`popsicle-stick${drawn?' popsicle-stick--drawn':''}`;
   el.style.setProperty('--stick-x',`${normalizeStickOffset(stick.offsetX)}%`);
-  el.style.setProperty('--stick-r',`${clamp(Number(stick.rotation)||0,-7,7)}deg`);
+  el.style.setProperty('--stick-r',`${clamp(Number(stick.rotation)||0,-5,5)}deg`);
   el.style.setProperty('--stick-z',String(Math.round(stick.depth*30)));
   const image=document.createElement('img');
   image.className='popsicle-stick__art';
@@ -52,6 +52,8 @@ function makeStickElement(stick,{drawn=false}={}){
   name.className='popsicle-stick__name-text';
   name.textContent=stick.name;
   name.style.fontFamily=HANDWRITING_FONTS;
+  const chars=Math.max(1,Array.from(stick.name).length);
+  label.style.setProperty('--name-scale',String(clamp(11/chars,.72,1)));
   label.append(name);
   el.append(image,label);
   return el;
