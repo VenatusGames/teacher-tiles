@@ -16,7 +16,7 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Math.round((((hash%1000)/999)-.5)*152),
+    offsetX:Math.round((((hash%1000)/999)-.5)*108),
     rotation:Number(((((hash>>>4)%1000)/999)-.5)*22).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
@@ -58,6 +58,7 @@ function setup(m){
   const classNameEl=m.querySelector('.popsicle-sticks-class-name');
   const changeClass=m.querySelector('.popsicle-sticks-change-class');
   const stack=m.querySelector('.popsicle-sticks-stack');
+  const bundle=m.querySelector('.popsicle-sticks-bundle');
   const drawnHost=m.querySelector('.popsicle-sticks-drawn');
   const cup=m.querySelector('.popsicle-sticks-cup');
   const putBack=m.querySelector('.popsicle-sticks-put-back');
@@ -148,7 +149,7 @@ function setup(m){
   }
 
   const detach=typeof attachClassRosterLoader==='function'?attachClassRosterLoader(loaderAnchor,(_students,roster)=>loadRoster(roster)):()=>{};
-  cup.addEventListener('click',draw);putBack.addEventListener('click',putDrawnBack);remove.addEventListener('click',removeDrawn);reset.addEventListener('click',resetAll);changeClass.addEventListener('click',returnToClassPicker);
+  cup.addEventListener('click',draw);bundle?.addEventListener('click',draw);stack?.addEventListener('click',draw);putBack.addEventListener('click',putDrawnBack);remove.addEventListener('click',removeDrawn);reset.addEventListener('click',resetAll);changeClass.addEventListener('click',returnToClassPicker);
   window.addEventListener('teachertiles:classeschange',syncRoster);
 
   m._boardGetState=()=>({classId,className,drawnId,sticks:sticks.map(stick=>({...stick}))});
