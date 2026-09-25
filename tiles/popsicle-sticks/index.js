@@ -10,9 +10,9 @@ const DRAWN_STICK_VARIANTS=[
   'tiles/popsicle-sticks/assets/stick-3-horizontal.png'
 ];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
-const ASSET_VERSION='20260925-wider-lower-1';
+const ASSET_VERSION='20260925-balanced-width-1';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>32)return clamp((n/84)*31,-31,31);return clamp(n,-31,31)}
+function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>34)return clamp((n/84)*29,-29,29);return clamp(n,-29,29)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}
 function rosterNames(value){
   const source=Array.isArray(value)?value:[];
@@ -23,7 +23,7 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Number(((((hash%1000)/999)-.5)*60).toFixed(2)),
+    offsetX:Number(((((hash%1000)/999)-.5)*56).toFixed(2)),
     rotation:Number(((((hash>>>4)%1000)/999)-.5)*8).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
@@ -104,7 +104,7 @@ function setup(m){
   function renderCup(){
     stack.replaceChildren();
     const available=inCup().slice().sort((a,b)=>a.depth-b.depth);
-    const visible=available.slice(-Math.min(12,available.length));
+    const visible=available.slice(-Math.min(13,available.length));
     visible.forEach(stick=>stack.append(makeStickElement(stick)));
     drawnHost.replaceChildren();
     const active=activeStick();
