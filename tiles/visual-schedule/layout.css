@@ -37,3 +37,8 @@
 .visual-schedule-module .visual-schedule-resize,.visual-schedule-module .visual-schedule-resize:hover{background:transparent}
 .visual-schedule-module .visual-schedule-resize::before{content:"";width:24px;height:3px;left:50%;right:auto;bottom:3px;transform:translateX(-50%);border:0;border-radius:999px;background:#d1d5db}
 .visual-schedule-module .visual-schedule-resize::after{content:none}
+.visual-schedule-module .tile-settings-panel .visual-schedule-scale-dock{display:grid;gap:8px;padding-bottom:10px;margin-bottom:2px;border-bottom:1px solid color-mix(in srgb,var(--module-text,#17191d) 10%,transparent);contain:layout}
+.visual-schedule-module .tile-settings-panel .visual-schedule-row-size{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'label output' 'slider slider';align-items:center;gap:8px 10px;min-width:0;width:100%}
+.visual-schedule-module .tile-settings-panel .visual-schedule-row-size>span:first-child{grid-area:label;min-width:0;font-weight:800}
+.visual-schedule-module .tile-settings-panel .visual-schedule-row-size-input{grid-area:slider;min-width:0;width:100%}
+.visual-schedule-module .tile-settings-panel .visual-schedule-row-size-output{grid-area:output;justify-self:end;font-variant-numeric:tabular-nums;white-space:nowrap}
