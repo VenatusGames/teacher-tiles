@@ -4,10 +4,15 @@ const STICK_VARIANTS=[
   'tiles/popsicle-sticks/assets/stick-2.png',
   'tiles/popsicle-sticks/assets/stick-3.png'
 ];
+const DRAWN_STICK_VARIANTS=[
+  'tiles/popsicle-sticks/assets/stick-1-horizontal.png',
+  'tiles/popsicle-sticks/assets/stick-2-horizontal.png',
+  'tiles/popsicle-sticks/assets/stick-3-horizontal.png'
+];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
-const ASSET_VERSION='20260925-stick-fit-3';
+const ASSET_VERSION='20260925-stick-size-drawn-text-4';
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>30)return clamp((n/84)*18,-18,18);return clamp(n,-18,18)}
+function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>32)return clamp((n/84)*24,-24,24);return clamp(n,-24,24)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}
 function rosterNames(value){
   const source=Array.isArray(value)?value:[];
@@ -18,7 +23,7 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Number(((((hash%1000)/999)-.5)*34).toFixed(2)),
+    offsetX:Number(((((hash%1000)/999)-.5)*46).toFixed(2)),
     rotation:Number(((((hash>>>4)%1000)/999)-.5)*8).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
@@ -44,7 +49,7 @@ function makeStickElement(stick,{drawn=false}={}){
   el.style.setProperty('--stick-z',String(Math.round(stick.depth*30)));
   const image=document.createElement('img');
   image.className='popsicle-stick__art';
-  image.src=STICK_VARIANTS[stick.variant%STICK_VARIANTS.length];
+  image.src=(drawn?DRAWN_STICK_VARIANTS:STICK_VARIANTS)[stick.variant%STICK_VARIANTS.length];
   image.alt='';image.draggable=false;
   const label=document.createElement('span');
   label.className='popsicle-stick__name';
@@ -54,6 +59,7 @@ function makeStickElement(stick,{drawn=false}={}){
   name.style.fontFamily=HANDWRITING_FONTS;
   const chars=Math.max(1,Array.from(stick.name).length);
   label.style.setProperty('--name-scale',String(clamp(11/chars,.72,1)));
+  if(drawn)label.style.setProperty('--drawn-name-scale',String(clamp(9/chars,.62,.94)));
   label.append(name);
   el.append(image,label);
   return el;
