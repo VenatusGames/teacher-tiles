@@ -6,6 +6,7 @@ const STICK_VARIANTS=[
 ];
 const HANDWRITING_FONTS="'Caveat','Segoe Print','Bradley Hand','Comic Sans MS',cursive";
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+function normalizeStickOffset(value,fallback=0){const n=Number(value);if(!Number.isFinite(n))return fallback;if(Math.abs(n)>38)return clamp((n/84)*30,-30,30);return clamp(n,-30,30)}
 function cleanName(value){return String(value||'').replace(/\s+/g,' ').trim().slice(0,50)}
 function rosterNames(value){
   const source=Array.isArray(value)?value:[];
@@ -16,8 +17,8 @@ function hashText(value){let hash=2166136261;for(const char of String(value)){ha
 function defaultPose(name,index,id){
   const hash=hashText(`${id}:${name}:${index}`);
   return{
-    offsetX:Math.round((((hash%1000)/999)-.5)*84),
-    rotation:Number(((((hash>>>4)%1000)/999)-.5)*22).toFixed(2),
+    offsetX:Number(((((hash%1000)/999)-.5)*56).toFixed(2)),
+    rotation:Number(((((hash>>>4)%1000)/999)-.5)*16).toFixed(2),
     depth:Number((((hash>>>9)%1000)/999).toFixed(3))
   };
 }
@@ -29,7 +30,7 @@ function makeStick(name,index,prior={}){
     name:cleanName(prior.name||name)||`Student ${index+1}`,
     variant:Math.abs(Number(prior.variant??index))%STICK_VARIANTS.length,
     state:prior.state==='removed'?'removed':'cup',
-    offsetX:Number.isFinite(Number(prior.offsetX))?Number(prior.offsetX):pose.offsetX,
+    offsetX:normalizeStickOffset(prior.offsetX,pose.offsetX),
     rotation:Number.isFinite(Number(prior.rotation))?Number(prior.rotation):pose.rotation,
     depth:Number.isFinite(Number(prior.depth))?Number(prior.depth):pose.depth
   };
@@ -37,7 +38,7 @@ function makeStick(name,index,prior={}){
 function makeStickElement(stick,{drawn=false}={}){
   const el=document.createElement('div');
   el.className=`popsicle-stick${drawn?' popsicle-stick--drawn':''}`;
-  el.style.setProperty('--stick-x',`${stick.offsetX}px`);
+  el.style.setProperty('--stick-x',`${normalizeStickOffset(stick.offsetX)}%`);
   el.style.setProperty('--stick-r',`${stick.rotation}deg`);
   el.style.setProperty('--stick-z',String(Math.round(stick.depth*30)));
   const image=document.createElement('img');
@@ -90,7 +91,7 @@ function setup(m){
     stack.replaceChildren();
     const available=inCup().slice().sort((a,b)=>a.depth-b.depth);
     // Keep the cup readable with large rosters while still showing variety.
-    const visible=available.slice(-Math.min(16,available.length));
+    const visible=available.slice(-Math.min(14,available.length));
     visible.forEach(stick=>stack.append(makeStickElement(stick)));
     drawnHost.replaceChildren();
     const active=activeStick();
