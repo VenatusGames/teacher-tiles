@@ -27,3 +27,4 @@ body.theme-bamboo-green .workspace{background-image:url('assets/themes/baked/bam
 .theme-picker .theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"]){background:#fff;color:#20272c;opacity:1}
 .theme-picker .theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"]) .theme-card__copy{background:#fff}
 .theme-picker .theme-pack-stack:has(.theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"])){opacity:1}
+.theme-picker .theme-pack-sample[class*="theme-card--bamboo-"] .theme-card__preview :is(i,b,em){display:none}
