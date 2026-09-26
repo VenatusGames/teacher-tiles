@@ -1476,7 +1476,7 @@ const CONTEXT_MODULE_TRANSLATIONS={
     hundredschart:['Hundreds Chart','Hide, reveal, and highlight 1–100'],tenframes:['Ten Frames','Build quantities with draggable counters'],ruler:['Ruler','Measure with draggable ruler points'],calculator:['Calculator','Basic classroom calculator'],
     grapher:['Graphing Tool','Plot points and graph equations'],tablemaker:['Table Maker','Turn your data into animated charts'],tallychart:['Tally Chart','Count and compare results in real time'],periodictable:['Periodic Table','Explore all 118 elements'],money:['Money','Drag money manipulatives and total them'],noise:['Noise Meter','Live microphone sound level'],
     collections:['Collections','Fill a class reward jar together'],prizeboard:['Prize Board','Create and redeem student or whole-class rewards'],pbisconsole:['PBIS Console','Manage every tracked PBIS stat in one place'],punchcards:['Punchcards','Punch reward cards for students or the whole class'],racer:['Racer','Move student racers toward the finish line'],stoplight:['Stoplight','Use a stoplight for various visual cues'],starchart:['Star Chart','Award stars to a class or individual students'],classmeter:['Class Meter','Hold to fill a whole-class reward meter'],classvsclass:['Class vs Class','Coming soon: class incentive competitions'],spinner:['Spinner','Spin a wheel to pick a name'],groupmaker:['Group Maker','Shuffle students into balanced groups'],
-    lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Voting','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
+    lunchcount:['Lunch Count','Tally lunches or sort student names'],voting:['Polls','Tally votes or sort student names'],ambiencevideo:['Ambience Video','Campfire, fireplace, and aquarium scenes'],hangman:['Hangman','Guess the hidden word'],
     wordypuzzle:['Wordy Puzzle','Guess the teacher’s secret word'],minesweeper:['Minesweeper','Clear every safe square without hitting a mine'],boombox:['Soundscapes','Loop classroom soundscapes'],
     livecaption:['Live Captions','Display speech as clear, readable text'],voicememo:['Voice Memos','Record and replay short audio notes'],photobooth:['Photobooth','Take filtered photos with your camera'],backgroundremover:['Background Remover','Remove image backgrounds and save transparent cutouts'],mirror:['Mirror','Use the camera as a classroom mirror'],
     weather:['Weather','Compare current weather for several places'],weatherwheel:['Weather Wheel','Point to today’s weather'],seasonwheel:['Season Wheel','Explore spring, summer, fall, and winter'],temperature:['Temperature','Display the outdoor temperature your way'],worldmap:['World Map','Explore countries, continents, and hemispheres'],compass:['Compass','Explore directions and compass parts']
@@ -5439,6 +5439,7 @@ function setupMagnifier(m){
     m.dataset.zoom=String(zoom);
     const label=`${Number.isInteger(zoom)?zoom:zoom.toFixed(2).replace(/0$/,'')}×`;
     zoomValue.textContent=label;
+    m.querySelector('.magnifier-zoom-readout').textContent=label;
     handleValue.textContent=label;
     zoomOut.disabled=zoom<=1.5;
     zoomIn.disabled=zoom>=3;
@@ -7765,7 +7766,7 @@ function setupVoting(m){
       title.className='voting-choice-name';
       title.maxLength=30;
       title.value=choice.name;
-      title.setAttribute('aria-label',`Voting choice ${index+1}`);
+      title.setAttribute('aria-label',`Poll choice ${index+1}`);
       title.addEventListener('click',event=>event.stopPropagation());
       title.addEventListener('input',()=>choice.name=title.value);
       title.addEventListener('blur',()=>{

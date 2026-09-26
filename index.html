@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261010-magnifier-alignment" />
+  <link rel="stylesheet" href="styles.css?v=20261010-hover-controls" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -54,7 +54,7 @@
 <link rel="stylesheet" href="tiles/reminders/styles.css?v=20261009-tile-updates">
 <link rel="stylesheet" href="tiles/shared/theme-picker.css?v=20260924-pack-artwork-1">
 <link rel="stylesheet" href="tiles/noise-meter/styles.css?v=20261009-tile-updates">
-<link rel="stylesheet" href="tiles/squishy/styles.css?v=20261009-tile-updates">
+<link rel="stylesheet" href="tiles/squishy/styles.css?v=20261010-hover-controls">
 <link rel="stylesheet" href="tiles/sentence-expansion/styles.css?v=20261009-tile-updates">
 <link rel="stylesheet" href="tiles/soundscapes/styles.css?v=20261009-tile-updates">
 <link rel="stylesheet" href="tiles/shared/animated-themes.css?v=20260928-twinkle">
@@ -2301,7 +2301,7 @@
             <path d="M4 14.5h16M8 17h8" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
           </svg>
         </span>
-        <span><strong>Voting</strong><small>Tally votes or sort student names</small></span>
+        <span><strong>Polls</strong><small>Tally votes or sort student names</small></span>
       </button>
       <button class="context-menu__item" data-module="ambiencevideo" data-category="sel">
         <span class="context-menu__icon context-menu__icon--ambiencevideo" aria-hidden="true">
@@ -3068,6 +3068,7 @@
         <span class="magnifier-glare"></span>
       </div>
       <div class="magnifier-handle" aria-hidden="true"><span>2×</span></div>
+      <output class="magnifier-zoom-readout" aria-label="Current magnification" aria-live="polite">2×</output>
       <div class="magnifier-zoom-controls" role="group" aria-label="Magnification level">
         <button class="magnifier-zoom-out" type="button" aria-label="Decrease magnification">−</button>
         <output class="magnifier-zoom-value" aria-live="polite">2×</output>
@@ -3604,16 +3605,16 @@
 
       <header class="voting-header">
         <div class="voting-heading">
-          <strong>Voting</strong>
+          <strong>Polls</strong>
           <span class="voting-summary">Tap a choice to add a vote</span>
         </div>
-        <div class="voting-mode-switch" aria-label="Voting mode">
+        <div class="voting-mode-switch" aria-label="Poll mode">
           <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
           <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
         </div>
       </header>
 
-      <div class="voting-grid" aria-label="Voting choices"></div>
+      <div class="voting-grid" aria-label="Poll choices"></div>
 
       <section class="voting-name-pool" aria-label="Student names">
         <div class="voting-pool-heading">
@@ -3634,7 +3635,7 @@
 
       <input class="voting-image-input" type="file" accept="image/*" hidden>
 
-      <div class="customization-bar voting-customization" aria-label="Voting customization">
+      <div class="customization-bar voting-customization" aria-label="Poll customization">
         <button class="custom-icon voting-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon voting-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
         <button class="custom-icon voting-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
@@ -4303,7 +4304,7 @@
 <script src="tiles/shared/theme-picker.js?v=20260925-cosmetics-performance-1"></script>
 <script src="tiles/noise-meter/index.js?v=20260922-meter-spacing-4"></script>
 <script src="tiles/squishy/gel-cube.js?v=20261010-squishy-audio"></script>
-<script src="tiles/squishy/index.js?v=20261010-squishy-audio-soft"></script>
+<script src="tiles/squishy/index.js?v=20261010-hover-controls"></script>
 <script src="tiles/sentence-expansion/index.js?v=20260923-history-wheel-1"></script>
 <script src="tiles/soundscapes/index.js?v=20260923-skins-1"></script>
 <script src="tiles/shared/animated-themes.js?v=20260928-twinkle"></script>
@@ -4313,7 +4314,7 @@
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20260928-unified"></script>
 <script src="tiles/growth-rewards/index.js?v=20261003"></script>
-<script src="app.js?v=20261010-squishy-audio"></script>
+<script src="app.js?v=20261010-hover-controls"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
