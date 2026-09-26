@@ -358,6 +358,8 @@ function readClassRosters(){
         classMeter:normalizeClassMeterProgress(item.classMeter),
         collectionJar:normalizeCollectionProgress(item.collectionJar),
         punchcards:normalizePunchcardProgress(item.punchcards,students),
+        eggHatching:normalizePunchcardProgress(item.eggHatching,students),
+        flowerPots:normalizePunchcardProgress(item.flowerPots,students),
         racer:normalizeRacerProgress(item.racer,students)
       };
     });
@@ -482,6 +484,14 @@ function writeClassPunchcards(classId,value){
   return roster.punchcards;
 }
 
+
+function writeClassGrowth(classId,kind,value){
+  if(!['eggHatching','flowerPots'].includes(kind))return null;
+  const classes=readClassRosters(),roster=classes.find(item=>item.id===classId);if(!roster)return null;
+  roster[kind]=normalizePunchcardProgress(value,roster.students);
+  markPbisLocalDirty(classes);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));schedulePbisCloudSave();return roster[kind];
+}
 
 function writeClassRacer(classId,value){
   const classes=readClassRosters();
@@ -825,6 +835,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const STUDENT_VIEW_STATS_KEY='teachertiles-student-view-stats-v1';
 const studentViewStatsStorageKey=()=>`${STUDENT_VIEW_STATS_KEY}:${window.TeacherTilesClassScope||'local'}`;
 const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
+  ...[['eggPoints','Egg Hatching','🥚','eggHatching'],['flowerPoints','Flower Pots','🌷','flowerPots']].map(([id,label,icon,key])=>Object.freeze({id,label,icon,studentOnly:true,description:label+' PBIS points',value:(roster,name)=>normalizePunchcardProgress(roster[key],roster.students).studentPoints[starChartStudentKey(name)]||0})),
   Object.freeze({
     id:'stars',
     label:'Stars',
@@ -930,7 +941,9 @@ function setupStudentView(){
     const target=wholeClass?roster.name:(String(name||'Student').trim()||'Student');
     const scope=wholeClass?`the whole-class ${stat.label} for ${target}`:`${stat.label} for ${target}`;
     if(!window.confirm(`Reset ${scope}? This cannot be undone.`))return;
-    if(stat.id==='stars'){
+    if(stat.id==='eggPoints'||stat.id==='flowerPoints'){
+      const kind=stat.id==='eggPoints'?'eggHatching':'flowerPots',progress=normalizePunchcardProgress(roster[kind],roster.students);progress.studentPoints[starChartStudentKey(name)]=0;writeClassGrowth(roster.id,kind,progress);
+    }else if(stat.id==='stars'){
       const progress=normalizeStarChartProgress(roster.starChart,roster.students);
       if(wholeClass)progress.wholeClassStars=0;else progress.studentStars[starChartStudentKey(name)]=0;
       writeClassStarChart(roster.id,progress);
@@ -963,6 +976,11 @@ function setupStudentView(){
       empty.textContent=compact?'Stats hidden':'No PBIS stats are currently enabled for student profiles.';
       container.append(empty);return;
     }
+    const valueFor=stat=>wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
+    if(compact){
+      const total=stats.reduce((sum,stat)=>sum+valueFor(stat),0),summary=document.createElement('span');summary.className='student-view-reward-total';summary.textContent=total+' rewards';summary.title=stats.map(stat=>stat.label+': '+valueFor(stat)).join(' · ');container.append(summary);return;
+    }
+    const other=document.createElement('details');other.className='student-profile-other';const label=document.createElement('summary');label.textContent='Other activities';other.append(label);const otherGrid=document.createElement('div');otherGrid.className='student-profile-other-grid';other.append(otherGrid);
     stats.forEach(stat=>{
       const value=wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
       const item=document.createElement(compact?'span':'div');
@@ -976,8 +994,9 @@ function setupStudentView(){
         reset.addEventListener('click',()=>resetProfileStat(stat,roster,name,{wholeClass}));
         copy.append(count,label);item.append(icon,copy,reset);
       }
-      container.append(item);
+      (Number(value)>0?container:otherGrid).append(item);
     });
+    if(otherGrid.childElementCount){label.textContent=`Other activities (${otherGrid.childElementCount})`;container.append(other)}
   };
 
   const renderDetail=()=>{
@@ -3592,6 +3611,7 @@ function setupModuleByType(m,type){
   if(type==='prizeboard')setupPrizeBoard(m);
   if(type==='pbisconsole')setupPbisConsole(m);
   if(type==='punchcards')setupPunchcards(m);
+  if(type==='egghatching'||type==='flowerpots')window.TeacherTilesGrowthRewards.setup(m);
   if(type==='racer')setupRacer(m);
   if(type==='stoplight')setupStoplight(m);
   if(type==='groupmaker')setupGroupMaker(m);
@@ -6358,6 +6378,8 @@ function setupClassMeter(m){
 
 
 const PRIZE_STAT_OPTIONS=Object.freeze([
+  Object.freeze({id:'studentEggPoints',label:'Egg Hatching Points',icon:'🥚',scope:'student'}),
+  Object.freeze({id:'studentFlowerPoints',label:'Flower Pot Points',icon:'🌷',scope:'student'}),
   Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
   Object.freeze({id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●',scope:'student'}),
   Object.freeze({id:'studentRaceWins',label:'Race Wins',icon:'🏁',scope:'student'}),
@@ -6380,7 +6402,7 @@ function prizeId(){return globalThis.crypto?.randomUUID?crypto.randomUUID():`pri
 function normalizePrize(value){
   const source=value&&typeof value==='object'?value:{};
   const scope=source.scope==='class'?'class':'student';
-  const allowed=scope==='student'?['studentStars','studentPunchcardPoints','studentRaceWins']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
+  const allowed=scope==='student'?['studentStars','studentPunchcardPoints','studentRaceWins','studentEggPoints','studentFlowerPoints']:['classStars','meterWins','jarsFilled','classPunchcardPoints'];
   return{
     id:String(source.id||prizeId()),scope,title:String(source.title||'New Prize').trim().slice(0,80)||'New Prize',
     description:String(source.description||'').trim().slice(0,400),costStat:allowed.includes(source.costStat)?source.costStat:allowed[0],
@@ -6390,6 +6412,7 @@ function normalizePrize(value){
 
 function pbisBalance(roster,statId,studentName=''){
   if(!roster)return 0;
+  if(statId==='studentEggPoints'||statId==='studentFlowerPoints')return normalizePunchcardProgress(roster[statId==='studentEggPoints'?'eggHatching':'flowerPots'],roster.students).studentPoints[starChartStudentKey(studentName)]||0;
   if(statId==='studentStars')return normalizeStarChartCount(roster.starChart?.studentStars?.[starChartStudentKey(studentName)]);
   if(statId==='classStars')return normalizeStarChartCount(roster.starChart?.wholeClassStars);
   if(statId==='studentPunchcardPoints')return normalizePunchcardProgress(roster.punchcards,roster.students).studentPoints[starChartStudentKey(studentName)]||0;
@@ -6407,7 +6430,9 @@ function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={
   const current=pbisBalance(roster,statId,studentName);
   let next=mode==='set'?Number(amount):current+Number(amount);
   if(statId==='meterFill')next=Math.max(0,Math.min(100,next));else if(statId==='jarItems')next=Math.max(0,Math.min(80,Math.round(next)));else next=normalizeStarChartCount(next);
-  if(statId==='studentStars'||statId==='classStars'){
+  if(statId==='studentEggPoints'||statId==='studentFlowerPoints'){
+    const kind=statId==='studentEggPoints'?'eggHatching':'flowerPots',progress=normalizePunchcardProgress(roster[kind],roster.students);progress.studentPoints[starChartStudentKey(studentName)]=next;writeClassGrowth(classId,kind,progress);
+  }else if(statId==='studentStars'||statId==='classStars'){
     const progress=normalizeStarChartProgress(roster.starChart,roster.students);
     if(statId==='studentStars')progress.studentStars[starChartStudentKey(studentName)]=next;else progress.wholeClassStars=next;
     writeClassStarChart(classId,progress);
@@ -6530,7 +6555,7 @@ function setupPbisConsole(m){
   const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
   let activeClassId='',student='',view='students';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
-  const studentDefinitions=[{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'},{id:'studentRaceWins',label:'Race Wins',icon:'🏁'}];
+  const studentDefinitions=[{id:'studentEggPoints',label:'Egg Hatching Points',icon:'🥚'},{id:'studentFlowerPoints',label:'Flower Pot Points',icon:'🌷'},{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'},{id:'studentRaceWins',label:'Race Wins',icon:'🏁'}];
   const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'○'}];
   const setClass=id=>{
     const r=readClassRosters().find(item=>item.id===id);

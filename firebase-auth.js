@@ -1806,6 +1806,7 @@ function buildPbisPreviewRoster(object) {
     prizeboard: "activeClassId",
     pbisconsole: "activeClassId",
     punchcards: "activeClassId",
+    egghatching: "activeClassId",flowerpots: "activeClassId",
     racer: "activeClassId"
   };
   const classKey = classKeyByType[object?.type];
@@ -1839,6 +1840,8 @@ function buildPbisPreviewRoster(object) {
         filled: Boolean(roster.collectionJar?.filled),
         item: String(roster.collectionJar?.item || "pompom")
       },
+      eggHatching: {studentPoints: selectValues(roster.eggHatching?.studentPoints),studentProgress: selectValues(roster.eggHatching?.studentProgress)},
+      flowerPots: {studentPoints: selectValues(roster.flowerPots?.studentPoints),studentProgress: selectValues(roster.flowerPots?.studentProgress)},
       punchcards: {
         wholeClassPoints: Number(roster.punchcards?.wholeClassPoints) || 0,
         wholeClassProgress: Number(roster.punchcards?.wholeClassProgress) || 0,
@@ -1907,6 +1910,8 @@ function compactPreviewObject(object) {
     collections: ["classId"],
     prizeboard: ["activeClassId", "scope"],
     pbisconsole: ["activeClassId", "student", "view"],
+    egghatching: ["activeClassId"],
+    flowerpots: ["activeClassId", "goal"],
     punchcards: ["activeClassId", "scope", "student"],
     racer: ["activeClassId", "selectedStudent"]
   };

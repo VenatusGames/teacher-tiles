@@ -38,7 +38,7 @@
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20260913-crayon-circle-1">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20260912-1">
-<link rel="stylesheet" href="tiles/meditation/styles.css?v=20260921-free-resize-meditation-10">
+<link rel="stylesheet" href="tiles/meditation/styles.css?v=20260929-meditation-lotus">
 <link rel="stylesheet" href="tiles/rainbow/styles.css?v=20260912-music-staff-piano-1">
 <link rel="stylesheet" href="tiles/music-score/styles.css?v=20260912-tile-refinements-2">
 <link rel="stylesheet" href="tiles/piano/styles.css?v=20260912-1">
@@ -64,6 +64,7 @@
 <link rel="stylesheet" href="tiles/shared/cursor-picker.css?v=20260928-sticker-button">
 <link rel="stylesheet" href="tiles/shared/cursor-effects.css?v=20260928-unified">
 <link rel="stylesheet" href="theme-basic-bamboo.css?v=20260928-tinted">
+<link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=20260929">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -2248,6 +2249,8 @@
       <button class="context-menu__item" data-module="classmeter" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classmeter" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 1 6 0v9.1a5 5 0 1 1-6 0V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v9.5M9.2 17.2h5.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><strong>Class Meter</strong><small>Hold to fill a whole-class reward meter</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="classvsclass" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--classvsclass" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M5 5h7l-2.2 3L12 11H5M19 5h-7l2.2 3L12 11h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 16.5h5M12 14v5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span><strong>Class vs Class</strong><small>Coming soon: class incentive competitions</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="collections" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon context-menu__icon--jar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v2H8zM7 5h10l1 3v10.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V8l1-3Zm1.2 3-.2.7v9.8c0 .3.2.5.5.5h7c.3 0 .5-.2.5-.5V8.7l-.2-.7H8.2Z"/></svg></span><span><strong>Collections</strong><small>Fill a class reward jar together</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+<button class="context-menu__item" data-module="egghatching" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon" aria-hidden="true">🥚</span><span><strong>Egg Hatching</strong><small>Crack an egg in five taps to earn a PBIS point</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
+<button class="context-menu__item" data-module="flowerpots" data-category="pbis" data-pbis-tracking="true"><span class="context-menu__icon" aria-hidden="true">🌷</span><span><strong>Flower Pots</strong><small>Water flowers and grow student rewards</small></span><span class="context-menu__tracking-badge">PBIS</span></button>
       <button class="context-menu__item" data-module="punchcards" data-category="pbis" data-pbis-tracking="true">
         <span class="context-menu__icon context-menu__icon--punchcards" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h.1M12 9h.1M17 9h.1M7 15h.1M12 15h.1M17 15h.1" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M9.5 5v14M14.5 5v14" stroke="currentColor" stroke-width="1" opacity=".3" stroke-dasharray="1.5 2"/></svg></span>
         <span><strong>Punchcards</strong><small>Punch reward cards for students or the whole class</small></span><span class="context-menu__tracking-badge">PBIS</span>
@@ -2685,7 +2688,7 @@
 <section class="module classroom-widget meditation-module" data-type="meditation" data-bg="white" data-font="inter" data-text="dark">
 <button class="module-delete" aria-label="Delete Meditation">×</button><div class="module-drag-handle"></div>
 <header class="meditation-heading"><span>A MOMENT FOR YOU</span><h2 class="meditation-title">Meditation</h2></header>
-<div class="meditation-scene"><div class="meditation-aura" aria-hidden="true"></div><div class="meditation-bloom" aria-hidden="true"><div class="meditation-ripples"><i></i><i></i><i></i><i></i></div><div class="meditation-core"></div><div class="meditation-glint"></div></div><span class="meditation-count" aria-hidden="true">✦</span></div>
+<div class="meditation-scene"><div class="meditation-aura" aria-hidden="true"></div><div class="meditation-bloom" aria-hidden="true"><div class="meditation-ripples"><i></i><i></i><i></i><i></i></div><div class="meditation-core"></div><div class="meditation-glint"></div></div><span class="meditation-count" aria-hidden="true"></span></div>
 <div class="meditation-copy"><h3 class="meditation-cue" role="status" aria-live="polite">Find your calm</h3></div>
 <div class="meditation-rhythm"><span class="meditation-inhale-label">Inhale · 4 seconds</span><i aria-hidden="true"></i><span class="meditation-exhale-label">Exhale · 6 seconds</span></div>
 <div class="meditation-session"><span>Session remaining</span><strong class="meditation-remaining" role="timer">3:00</strong></div>
@@ -3334,6 +3337,8 @@
   </template>
 
 
+<template id="egghatching-template"><section class="module growth-module egghatching-module" data-type="egghatching" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Egg Hatching">×</button><div class="module-drag-handle"></div><h2 class="growth-heading">Egg Hatching</h2><div class="growth-import"><strong>Choose a class to begin</strong><p>Crack an egg in five taps to earn a PBIS point.</p><div class="growth-loader" hidden></div></div><div class="growth-dashboard" hidden data-skip-board-save><header class="growth-header"><strong class="growth-class"></strong><button class="growth-change" type="button">Change class</button></header><div class="growth-grid"></div></div><div class="customization-bar"><button class="custom-icon tile-bg" title="Change background" aria-label="Change background"><span class="icon-palette"></span></button><button class="custom-icon tile-font" title="Change font" aria-label="Change font"><span class="icon-font">Aa</span></button><button class="custom-icon tile-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="flowerpots-template"><section class="module growth-module flowerpots-module" data-type="flowerpots" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Flower Pots">×</button><div class="module-drag-handle"></div><h2 class="growth-heading">Flower Pots</h2><div class="growth-import"><strong>Choose a class to begin</strong><p>Water flowers and grow student rewards.</p><div class="growth-loader" hidden></div></div><div class="growth-dashboard" hidden data-skip-board-save><header class="growth-header"><strong class="growth-class"></strong><button class="growth-change" type="button">Change class</button></header><div class="growth-grid"></div></div><div class="customization-bar"><button class="custom-icon tile-bg" title="Change background" aria-label="Change background"><span class="icon-palette"></span></button><button class="custom-icon tile-font" title="Change font" aria-label="Change font"><span class="icon-font">Aa</span></button><button class="custom-icon tile-text" title="Change text color" aria-label="Change text color"><span class="icon-text-color">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" aria-label="Flower Pots settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>Flower Pots settings</strong><label class="tile-setting">Waterings per flower<input class="growth-goal" type="number" min="1" max="10" value="5"></label></div></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
   <template id="punchcards-template">
     <section class="module punchcard-module" data-type="punchcards" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete Punchcards">×</button><div class="module-drag-handle"></div>
@@ -4257,7 +4262,7 @@
   <script src="tiles/visual-directions/index.js?v=20260913-readable-directions-1"></script>
   <script src="tiles/color-picker/index.js?v=20260912-1"></script>
 <script src="tiles/shared/tabs.js?v=20260925-cosmetics-performance-1"></script>
-<script src="tiles/meditation/index.js?v=20260921-free-resize-meditation-10"></script>
+<script src="tiles/meditation/index.js?v=20260929-meditation-lotus"></script>
 <script src="tiles/rainbow/index.js?v=20260912-1"></script>
 <script src="tiles/music-score/notes.js?v=20260912-1"></script>
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
@@ -4280,11 +4285,12 @@
 <script src="tiles/shared/flashcard-navigation.js?v=20260926-fixes-1"></script>
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20260928-unified"></script>
-<script src="app.js?v=20260928-space-snow"></script>
+<script src="tiles/growth-rewards/index.js?v=20260929"></script>
+<script src="app.js?v=20260929-growth-rewards"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20260926-templates"></script>
+<script type="module" src="firebase-auth.js?v=20260929-growth-rewards"></script>
 
 
   <template id="ruler-template">
