@@ -36,6 +36,6 @@ assert(await page.locator('.shop-product[data-shop-product^="cursor-"]').evaluat
 assert.equal(await page.locator('[data-shop-product="tile-skin-visualschedule-planner"]').count(),1);
 assert.equal(await page.locator('#classmeter-template').evaluate(t=>t.content.querySelectorAll('.classmeter-remove-progress').length),0);
 await page.evaluate(()=>{const p=screenToBoard(1100,180);window.mag=createModule('magnifier',p.x,p.y);});await page.locator('.magnifier-module').hover();await page.waitForTimeout(200);
-assert(await page.locator('.magnifier-module').evaluate(m=>{const zoom=m.querySelector('.magnifier-zoom-controls').getBoundingClientRect(),skin=m.querySelector('.tile-skins-toggle').getBoundingClientRect();return zoom.bottom<=skin.top+1}));
+assert(await page.locator('.magnifier-module').evaluate(m=>{const zoom=m.querySelector('.magnifier-zoom-controls').getBoundingClientRect(),skin=m.querySelector('.tile-skins-toggle').getBoundingClientRect();return zoom.left>=skin.right+3}));
 assert.deepEqual(errors,[]);console.log('50 states, map selection, rainbow resizing, book skin, squishy reset/colors and cursor pricing passed');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});
