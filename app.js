@@ -3197,6 +3197,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'bamboo-theme-pack':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','rainy-window-theme-pack':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel',
   'polka-dot-theme-pack':'theme-polka-dot',
@@ -3220,6 +3221,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  bamboo:'theme-bamboo',
   underwater:'theme-underwater',rainy:'theme-rainy-window',
   pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
 });
@@ -12816,6 +12818,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
   'underwater-ocean','rainy-window','underwater-ocean-light','rainy-window-light',
   'light','dark','gray',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
@@ -12829,6 +12832,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  "theme-basic-red","theme-basic-orange","theme-basic-yellow","theme-basic-green","theme-basic-blue","theme-basic-indigo","theme-basic-violet","theme-bamboo-yellow","theme-bamboo-brown","theme-bamboo-green",
   'theme-underwater-ocean','theme-rainy-window','theme-underwater-ocean-light','theme-rainy-window-light',
   'dark','theme-gray',
   'theme-pastel-red','theme-pastel-yellow','theme-pastel-green','theme-pastel-blue','theme-pastel-lilac',
@@ -12852,12 +12856,14 @@ function updateThemeControls(theme){
 }
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['bamboo-','theme-bamboo'],
   ['underwater-','theme-underwater'],['rainy-','theme-rainy-window'],
   ['pastel-','theme-pastel'],['polka-','theme-polka-dot'],['programmer-','theme-programmer'],
   ['wood-','theme-wood'],['notebook-','theme-notebook'],['cardboard-','theme-cardboard'],
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'bamboo-theme-pack':'theme-bamboo','bamboo-theme-fan':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','underwater-theme-fan':'theme-underwater',
   'rainy-window-theme-pack':'theme-rainy-window','rainy-window-theme-fan':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel','pastel-theme-fan':'theme-pastel',

@@ -63,6 +63,7 @@
 <link rel="stylesheet" href="tiles/shared/cosmetics.css?v=20260927-packs">
 <link rel="stylesheet" href="tiles/shared/cursor-picker.css?v=20260928-sticker-button">
 <link rel="stylesheet" href="tiles/shared/cursor-effects.css?v=20260928-unified">
+<link rel="stylesheet" href="theme-basic-bamboo.css?v=20260928-1">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -1028,7 +1029,8 @@
                   <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
                 </button>
               </div>
-              <div class="theme-pack-wrap">
+              <div class="theme-pack-wrap"><button id="basic-theme-pack" class="theme-pack" type="button" data-theme-pack aria-expanded="false" aria-controls="basic-theme-fan"><span class="theme-pack__stack" aria-hidden="true"><i class="theme-pack__sheet theme-pack__sheet--basic-red"></i><i class="theme-pack__sheet theme-pack__sheet--basic-orange"></i><i class="theme-pack__sheet theme-pack__sheet--basic-yellow"></i></span><span class="theme-pack__meta"><strong>Basic</strong><small>7 themes</small></span><span class="theme-pack__chevron" aria-hidden="true">⌃</span></button></div>
+<div class="theme-pack-wrap">
                 <button id="polka-dot-theme-pack" class="theme-pack theme-pack--polka" type="button" data-theme-pack aria-expanded="false" aria-controls="polka-dot-theme-fan">
                   <span class="theme-pack__stack theme-pack__stack--polka" aria-hidden="true">
                     <i class="theme-pack__sheet theme-pack__sheet--polka-berry"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sunshine"></i><i class="theme-pack__sheet theme-pack__sheet--polka-mint"></i><i class="theme-pack__sheet theme-pack__sheet--polka-sky"></i><i class="theme-pack__sheet theme-pack__sheet--polka-lavender"></i>
@@ -1051,7 +1053,8 @@
                   <span class="theme-pack__chevron" aria-hidden="true">⌃</span>
                 </button>
               </div>
-              <div class="theme-pack-wrap">
+              <div class="theme-pack-wrap"><button id="bamboo-theme-pack" class="theme-pack" type="button" data-theme-pack aria-expanded="false" aria-controls="bamboo-theme-fan"><span class="theme-pack__stack" aria-hidden="true"><i class="theme-pack__sheet theme-pack__sheet--bamboo-yellow"></i><i class="theme-pack__sheet theme-pack__sheet--bamboo-brown"></i><i class="theme-pack__sheet theme-pack__sheet--bamboo-green"></i></span><span class="theme-pack__meta"><strong>Bamboo</strong><small>3 themes</small></span><span class="theme-pack__chevron" aria-hidden="true">⌃</span></button></div>
+<div class="theme-pack-wrap">
                 <button id="wood-theme-pack" class="theme-pack theme-pack--wood" type="button" data-theme-pack aria-expanded="false" aria-controls="wood-theme-fan">
                   <span class="theme-pack__stack theme-pack__stack--wood" aria-hidden="true">
                     <i class="theme-pack__sheet theme-pack__sheet--wood-oak"></i>
@@ -1514,7 +1517,8 @@
             <div><span>THEME COLLECTIONS</span><h2>Themes</h2><p>Transform the entire look of your TeacherTiles board.</p></div>
           </div>
           <div class="shop-product-grid">
-            <article class="shop-product" data-shop-product="theme-pastel" data-shop-price="250">
+            <article class="shop-product" data-shop-product="theme-bamboo" data-shop-price="300"><div class="shop-product__preview shop-product__preview--bamboo" aria-hidden="true"><i style="background-image:url('assets/themes/previews/bamboo-yellow.webp')"></i><i style="background-image:url('assets/themes/previews/bamboo-brown.webp')"></i><i style="background-image:url('assets/themes/previews/bamboo-green.webp')"></i></div><div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Bamboo</h3><p>Natural bamboo in yellow, brown, and green.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>300</strong></button></div></article>
+<article class="shop-product" data-shop-product="theme-pastel" data-shop-price="250">
               <div class="shop-product__preview shop-product__preview--pastel" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
               <div class="shop-product__body"><div><span class="shop-product__type">THEME PACK</span><h3>Pastel</h3><p>Five soft classroom-ready colors.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
@@ -1740,7 +1744,9 @@
     </button>
   </div>
 
-  <div id="pastel-theme-fan" class="theme-fan theme-fan--pastel" aria-hidden="true" role="group" aria-label="Pastel theme pack">
+  <div id="basic-theme-fan" class="theme-fan theme-fan--pastel" aria-hidden="true" role="group" aria-label="Basic theme pack"><button class="theme-card theme-card--basic-red" type="button" data-theme-choice="basic-red" aria-label="Use Basic Red theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Red</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-orange" type="button" data-theme-choice="basic-orange" aria-label="Use Basic Orange theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Orange</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-yellow" type="button" data-theme-choice="basic-yellow" aria-label="Use Basic Yellow theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Yellow</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-green" type="button" data-theme-choice="basic-green" aria-label="Use Basic Green theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Green</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-blue" type="button" data-theme-choice="basic-blue" aria-label="Use Basic Blue theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Blue</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-indigo" type="button" data-theme-choice="basic-indigo" aria-label="Use Basic Indigo theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Indigo</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--basic-violet" type="button" data-theme-choice="basic-violet" aria-label="Use Basic Violet theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Basic Violet</strong><small>Rainbow colors</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button></div>
+<div id="bamboo-theme-fan" class="theme-fan theme-fan--pastel" aria-hidden="true" role="group" aria-label="Bamboo theme pack"><button class="theme-card theme-card--bamboo-yellow" type="button" data-theme-choice="bamboo-yellow" aria-label="Use Bamboo Yellow theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Bamboo Yellow</strong><small>Natural bamboo</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--bamboo-brown" type="button" data-theme-choice="bamboo-brown" aria-label="Use Bamboo Brown theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Bamboo Brown</strong><small>Natural bamboo</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button><button class="theme-card theme-card--bamboo-green" type="button" data-theme-choice="bamboo-green" aria-label="Use Bamboo Green theme"><span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span><span class="theme-card__copy"><strong>Bamboo Green</strong><small>Natural bamboo</small></span><span class="theme-card__check" aria-hidden="true">✓</span></button></div>
+<div id="pastel-theme-fan" class="theme-fan theme-fan--pastel" aria-hidden="true" role="group" aria-label="Pastel theme pack">
     <button class="theme-card theme-card--pastel-red" type="button" data-theme-choice="pastel-red" aria-label="Use Pastel Red theme">
       <span class="theme-card__preview" aria-hidden="true"><i></i><b></b><em></em></span>
       <span class="theme-card__copy"><strong>Pastel Red</strong><small>Warm blush</small></span>
@@ -4268,7 +4274,7 @@
 <script src="tiles/shared/flashcard-navigation.js?v=20260926-fixes-1"></script>
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20260928-unified"></script>
-<script src="app.js?v=20260928-sticker-button"></script>
+<script src="app.js?v=20260928-theme-packs"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
