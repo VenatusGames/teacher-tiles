@@ -266,6 +266,50 @@ function harness() {
     assert.equal(restored.fromLocal, true);
     assert.equal(reads, 0, 'a board whose metadata was just fetched must not immediately reread the same document');
   }
+  {
+    const { c, docs, base } = harness();
+    const timers = [];
+    c.window.setTimeout = (callback, delay) => { timers.push({ callback, delay }); return timers.length; };
+    await c.cacheSnapshotLocally('one', { ...base, frames: [{ id: 'first' }] });
+    await c.saveCachedBoardToCloud('one', { automatic: true });
+    await c.cacheSnapshotLocally('one', { ...base, frames: [{ id: 'second' }] });
+    await c.saveCachedBoardToCloud('one', { automatic: true });
+    assert.equal(docs.get('users/teacher/boards/one').frames[0].id, 'first');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).dirty, true);
+    assert(timers.at(-1).delay > 29000, 'automatic follow-up must wait for the per-board write interval');
+    await c.saveCachedBoardToCloud('one');
+    assert.equal(docs.get('users/teacher/boards/one').frames[0].id, 'second', 'explicit navigation/sign-out flush must bypass automatic throttling');
+  }
+  {
+    const { c, docs, base } = harness();
+    const transaction = c.firestoreSdk.runTransaction;
+    let calls = 0;
+    c.firestoreSdk.runTransaction = async (...args) => {
+      calls++;
+      await transaction(...args);
+      if (calls === 1) await c.cacheSnapshotLocally('one', { ...base, frames: [{ id: 'edited-during-save' }] });
+    };
+    await c.cacheSnapshotLocally('one', { ...base, frames: [{ id: 'before-save' }] });
+    await c.saveCachedBoardToCloud('one', { automatic: true });
+    assert.equal(calls, 1, 'automatic save must not loop into another transaction for every arriving edit');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).snapshot.frames[0].id, 'edited-during-save');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).dirty, true);
+    await c.saveCachedBoardToCloud('one');
+    assert.equal(docs.get('users/teacher/boards/one').frames[0].id, 'edited-during-save');
+  }
+  {
+    const { c, base } = harness();
+    const delays = [];
+    c.window.setTimeout = (_, delay) => { delays.push(delay); return delays.length; };
+    c.firestoreSdk.runTransaction = async () => { throw Object.assign(new Error('Unavailable'), { code: 'unavailable' }); };
+    await c.cacheSnapshotLocally('one', { ...base, frames: [] });
+    for (let i = 0; i < 3; i++) await c.saveCachedBoardToCloud('one');
+    assert.deepEqual(delays, [15000, 30000, 60000], 'network failures must back off instead of repeating every 15 seconds forever');
+    c.firestoreSdk.runTransaction = async () => { throw Object.assign(new Error('Denied'), { code: 'permission-denied' }); };
+    await c.saveCachedBoardToCloud('one');
+    assert.equal(delays.length, 3, 'permanent errors must not schedule a retry loop');
+    assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).dirty, true);
+  }
   assert(harness().c.CLOUD_SAVE_DELAY >= 5000, 'cloud debounce should combine rapid board edits before starting a transaction');
   console.log('Board persistence: frame round-trip, conflict recovery, refresh recovery, offline retry, atomic chunks, fresh cloud reads, and read throttling passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

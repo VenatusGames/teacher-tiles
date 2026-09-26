@@ -619,7 +619,7 @@
     } catch {}
   }
 
-  function queuePlannerCloudSave(delay = 180) {
+  function queuePlannerCloudSave(delay = 5000) {
     if (plannerCloudApplying || !plannerCloudUserId) return;
     const currentJson = plannerCloudStateJson(capturePlannerState());
     if (plannerCloudLastSyncedJson && currentJson === plannerCloudLastSyncedJson) {
@@ -629,10 +629,10 @@
     plannerCloudDirty = true;
     if (!plannerCloudHydrated || !plannerCloudConnected) return;
     clearTimeout(plannerCloudSaveTimer);
-    plannerCloudSaveTimer = window.setTimeout(() => { void flushPlannerCloudSave(); }, delay);
+    plannerCloudSaveTimer = window.setTimeout(() => { void flushPlannerCloudSave({ automatic: true }); }, delay);
   }
 
-  async function flushPlannerCloudSave() {
+  async function flushPlannerCloudSave({ automatic = false } = {}) {
     if (!plannerCloudUserId || !plannerCloudDirty) return plannerCloudSavePromise;
     if (plannerCloudSavePromise) return plannerCloudSavePromise;
     const cloud = window.TeacherTilesLessonPlannerCloud;
@@ -659,6 +659,7 @@
           plannerCloudDirty = plannerCloudStateJson(capturePlannerState()) !== outgoingJson;
           markPlannerCloudMigrated(userId);
           writePlannerCloudMeta(userId);
+          if (automatic) break;
         } catch (error) {
           if (error?.code !== 'planner-conflict') {
             plannerCloudConnected = false;
@@ -678,7 +679,7 @@
     })().finally(() => {
       plannerCloudSavePromise = null;
       if (plannerCloudDirty && plannerCloudConnected && plannerCloudUserId === userId && plannerCloudGeneration === generation) {
-        queuePlannerCloudSave(350);
+        queuePlannerCloudSave(5000);
       }
     });
     return plannerCloudSavePromise;

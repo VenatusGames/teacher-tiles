@@ -97,7 +97,7 @@ const boardsLibraryPanel = document.getElementById("boards-library-panel");
 const boardTemplatesPanel = document.getElementById("board-templates-panel");
 
 const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle", "boards-toggle"]);
-const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg>`;
+const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>`;
 
 let auth = null;
 let authSdk = null;
@@ -155,7 +155,7 @@ const localBoardMemory = new Map();
 let localBoardDbPromise = null;
 
 const LOCAL_SAVE_DELAY = 280;
-const CLOUD_SAVE_DELAY = 5000;
+const CLOUD_SAVE_DELAY = 8000;
 const BOARD_LIST_CACHE_TTL = 10 * 60 * 1000;
 const SESSION_CLOUD_RECHECK_TTL = 10 * 60 * 1000;
 const BOARD_LIBRARY_RECHECK_TTL = 60 * 1000;
@@ -2363,6 +2363,10 @@ async function flushCurrentBoardLocal() {
   return result ? { ...result, boardId: savingBoardId } : null;
 }
 
+// Per-board automatic saves are coalesced; explicit switch/sign-out saves still flush.
+const cloudBoardLastWriteAt = new Map();
+const cloudBoardRetryCounts = new Map();
+const AUTOMATIC_CLOUD_SAVE_INTERVAL = 30000;
 function clearCloudBoardSaveTimer(boardId) {
   const id = String(boardId || "");
   if (!id) return;
@@ -2374,6 +2378,8 @@ function clearCloudBoardSaveTimer(boardId) {
 function clearAllCloudBoardSaveTimers() {
   for (const timer of cloudBoardSaveTimers.values()) clearTimeout(timer);
   cloudBoardSaveTimers.clear();
+  cloudBoardLastWriteAt.clear();
+  cloudBoardRetryCounts.clear();
 }
 
 function scheduleCloudBoardSave(delay = CLOUD_SAVE_DELAY, boardId = activeBoardId) {
@@ -2382,12 +2388,12 @@ function scheduleCloudBoardSave(delay = CLOUD_SAVE_DELAY, boardId = activeBoardI
   clearCloudBoardSaveTimer(targetBoardId);
   const timer = window.setTimeout(() => {
     cloudBoardSaveTimers.delete(targetBoardId);
-    saveCachedBoardToCloud(targetBoardId);
-  }, delay);
+    saveCachedBoardToCloud(targetBoardId, { automatic: true });
+  }, Math.max(delay, (cloudBoardLastWriteAt.get(targetBoardId) || 0) + AUTOMATIC_CLOUD_SAVE_INTERVAL - Date.now()));
   cloudBoardSaveTimers.set(targetBoardId, timer);
 }
 
-async function saveCachedBoardToCloud(boardId) {
+async function saveCachedBoardToCloud(boardId, { automatic = false } = {}) {
   const targetBoardId = String(boardId || "");
   if (!currentUser || !targetBoardId || !db || !firestoreSdk) return false;
   const userId = currentUser.uid;
@@ -2399,6 +2405,11 @@ async function saveCachedBoardToCloud(boardId) {
   const previous = boardSavePromise;
   const task = (previous ? previous.catch(() => {}) : Promise.resolve()).then(async () => {
     if (!currentUser || currentUser.uid !== userId) return false;
+    if (automatic && Date.now() - (cloudBoardLastWriteAt.get(targetBoardId) || 0) < AUTOMATIC_CLOUD_SAVE_INTERVAL) {
+      scheduleCloudBoardSave(CLOUD_SAVE_DELAY, targetBoardId);
+      return false;
+    }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
     const pendingConflict = await readLocalBoardSnapshot(userId, boardConflictKey(targetBoardId));
     if (pendingConflict?.pending) { setBoardStatus('Save conflict — review this board in Boards. Edits are saved locally.'); return false; }
     boardSaving = true;
@@ -2422,9 +2433,18 @@ async function saveCachedBoardToCloud(boardId) {
           forceMigration: Boolean(board.needsMigration)
         });
         wrote = true;
+        cloudBoardLastWriteAt.set(targetBoardId, Date.now());
+        cloudBoardRetryCounts.delete(targetBoardId);
+        if (automatic) {
+          const pending = await readLocalBoardSnapshot(userId, targetBoardId);
+          if (pending?.dirty) scheduleCloudBoardSave(CLOUD_SAVE_DELAY, targetBoardId);
+          break;
+        }
       }
 
-      if (showStatus && activeBoardId === targetBoardId) {
+      if (showStatus && activeBoardId === targetBoardId && localBoardMemory.get(localBoardKey(userId, targetBoardId))?.dirty) {
+        setBoardStatus("Saved locally — waiting to sync");
+      } else if (showStatus && activeBoardId === targetBoardId) {
         setBoardStatus("Saved");
         window.setTimeout(() => {
           if (activeBoardId === targetBoardId && boardsSaveStatus?.textContent === "Saved") setBoardStatus("");
@@ -2441,7 +2461,11 @@ async function saveCachedBoardToCloud(boardId) {
       }
       console.error("TeacherTiles board save failed", error);
       if (activeBoardId === targetBoardId) setBoardStatus("Saved locally — cloud sync failed", true);
-      if (currentUser?.uid === userId) scheduleCloudBoardSave(15000, targetBoardId);
+      if (currentUser?.uid === userId && !['permission-denied','unauthenticated','invalid-argument','failed-precondition','not-found'].includes(error.code)) {
+        const failures = (cloudBoardRetryCounts.get(targetBoardId) || 0) + 1;
+        cloudBoardRetryCounts.set(targetBoardId, failures);
+        scheduleCloudBoardSave(Math.min(300000, 15000 * 2 ** Math.min(failures - 1, 5)), targetBoardId);
+      }
       return false;
     } finally {
       boardSaving = false;
@@ -4366,7 +4390,7 @@ async function initializeFirebaseAuth() {
     ]);
 
     authSdk = authModule;
-    firestoreSdk = firestoreModule;
+    firestoreSdk = window.TeacherTilesReadDiagnostics?.wrap(firestoreModule) || firestoreModule;
     functionsSdk = functionsModule;
 
     const firebaseApp = appModule.initializeApp(firebaseConfig);

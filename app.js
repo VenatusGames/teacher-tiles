@@ -3248,7 +3248,7 @@ function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().h
 function markSubscriptionAccess(element,product){
   element.querySelector(':scope > .subscription-access-crown')?.remove();
   if(!product||!hasCosmeticSubscription()||getOwnedShopProducts().has(product))return;
-  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg>';element.append(crown);
+  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>';element.append(crown);
 }
 // Render crown hints outside cards and drawers so overflow cannot clip them.
 (()=>{
@@ -3294,7 +3294,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=4`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260926`,document.baseURI).href;
     cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
     cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
     cursorRoot.style.setProperty('--teacher-cursor-open',`url("${asset('open')}") 12 12`);
@@ -13180,44 +13180,8 @@ function setupCollectionShelf(){
     window.TeacherTilesShop?.openProduct(COLLECTION_PACK_PRODUCTS[pack.id]||shelfEntitlement(pack));
   };
 
-  const renderCursorShelf=()=>{
-    if(!cursorsGrid)return;
-    const saved=cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default');
-    const active=cursorIsOwned(saved)?saved.id:'default';
-    if(active!==saved.id)applyAppCursor('default');
-    cursorsGrid.replaceChildren();
-    const makeArrow=(cursor,state='normal')=>{
-      if(cursor.id==='default'){
-        const arrow=document.createElement('img');arrow.className='cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--default';arrow.src='assets/cursors/default-normal.png?v=1';arrow.alt='';arrow.draggable=false;return arrow;
-      }
-      const arrow=document.createElement('img');arrow.className=`cursor-arrow-art cursor-arrow-art--image cursor-arrow-art--${state}`;arrow.src=`assets/cursors/${cursor.id}-${state}.png?v=4`;arrow.alt='';arrow.draggable=false;return arrow;
-    };
-    const makePack=(label,detail,cursors,{locked=false,onClick}={})=>{
-      const wrapper=document.createElement('div');wrapper.className=`cursor-pack-wrap${locked?' is-shop-locked':''}`;
-      const pack=document.createElement('button');pack.type='button';pack.className='theme-pack cursor-pack';pack.setAttribute('aria-expanded','false');
-      const stack=document.createElement('span');stack.className='cursor-pack__stack';stack.setAttribute('aria-hidden','true');
-      const previewStates=['open','point','normal','grab','point'];
-      cursors.forEach((cursor,index)=>stack.appendChild(makeArrow(cursor,cursors.length>1?previewStates[index%previewStates.length]:'normal')));
-      const meta=document.createElement('span');meta.className='theme-pack__meta';meta.innerHTML=`<strong>${label}</strong><small>${detail}</small>`;
-      pack.append(stack,meta);
-      if(cursors.length>1){const chevron=document.createElement('span');chevron.className='theme-pack__chevron';chevron.textContent='⌃';chevron.setAttribute('aria-hidden','true');pack.appendChild(chevron)}
-      if(locked){const badge=document.createElement('span');badge.className='collection-pack-lock';badge.textContent='🔒 Shop';badge.setAttribute('aria-hidden','true');wrapper.append(pack,badge)}else wrapper.appendChild(pack);
-      pack.addEventListener('click',onClick);
-      return{wrapper,pack};
-    };
-    const defaultCursor=CURSOR_CATALOG[0];
-    const defaultPack=makePack('Default Cursor',active==='default'?'Equipped':'System pointer',[defaultCursor],{onClick:()=>applyAppCursor('default')});
-    if(active==='default'){const check=document.createElement('span');check.className='cursor-pack__check';check.textContent='✓';defaultPack.wrapper.appendChild(check)}
-    cursorsGrid.appendChild(defaultPack.wrapper);
-
-    for(const entry of [{name:'Colored Cursors',productId:CURSOR_COLOR_PACK_PRODUCT_ID},...window.TeacherTilesCursorPacks]){
-      const colors=CURSOR_CATALOG.filter(cursor=>cursor.productId===entry.productId),packOwned=cosmeticIsAccessible(entry.productId);let drawer;
-      const colorPack=makePack(entry.name,colors.length+' colors'+(packOwned?'':' · Shop'),colors,{locked:!packOwned,onClick:()=>{if(!packOwned){closeShelf();window.TeacherTilesShop?.openProduct(entry.productId);return}const open=!drawer.classList.contains('is-open');drawer.classList.toggle('is-open',open);colorPack.pack.classList.toggle('is-open',open);colorPack.pack.setAttribute('aria-expanded',String(open))}});
-      drawer=document.createElement('div');drawer.className='cursor-pack-drawer';drawer.setAttribute('aria-label',entry.name+' choices');
-      colors.forEach(cursor=>{const choice=document.createElement('button');choice.type='button';choice.className='cursor-choice'+(active===cursor.id?' is-selected':'');choice.style.setProperty('--cursor-color',cursor.color);choice.setAttribute('aria-pressed',String(active===cursor.id));choice.append(makeArrow(cursor));const name=document.createElement('span');name.textContent=cursor.name;choice.append(name);choice.addEventListener('click',()=>applyAppCursor(cursor.id));drawer.append(choice)});cursorsGrid.append(colorPack.wrapper,drawer);
-    }
-    if(cursorsStatus)cursorsStatus.textContent='1 free · 4 cursor packs';
-  };
+  const cursorPicker=window.TeacherTilesCursorPicker.create({panel:cursorsPanel,catalog:CURSOR_CATALOG,packs:[{name:'Default',productId:''},{name:'Colored Cursors',productId:CURSOR_COLOR_PACK_PRODUCT_ID},...window.TeacherTilesCursorPacks],owned:cosmeticIsAccessible,active:()=>cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default').id,apply:applyAppCursor,unlock:product=>{closeShelf();window.TeacherTilesShop?.openProduct(product)}});
+  const renderCursorShelf=()=>cursorPicker.render();
 
   const positionThemeFan=()=>{
     if(!activePack||!activeFan||!activeFan.classList.contains('is-open'))return;
@@ -13434,7 +13398,7 @@ function setupCollectionShelf(){
   window.addEventListener('resize',positionThemeFan,{passive:true});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){const trigger=activeShelf==='stickers'?stickerButton:activeShelf==='themes'?themeButton:cursorsButton;closeShelf();trigger.focus()}});
   document.addEventListener('pointerdown',e=>{
-    if(!activeShelf||activeShelf==='stickers'||activeShelf==='themes')return;
+    if(!activeShelf||['stickers','themes','cursors'].includes(activeShelf))return;
     const target=e.target;
     if(!(target instanceof Element))return;
     if(target.closest('#asset-shelf,.theme-fan,.workspace-upcoming-controls'))return;

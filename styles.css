@@ -14150,7 +14150,7 @@ body.is-board-selecting .workspace{cursor:crosshair!important}
 .subscriber-crown[hidden]{display:none!important}
 .subscriber-crown svg{width:72%;height:72%;overflow:visible}
 .subscriber-crown svg path:first-child{fill:currentColor;stroke:none}
-.subscriber-crown svg path:last-child{fill:none;stroke:#fff3bb;stroke-width:2.4;stroke-linecap:round}
+.subscriber-crown svg path:last-child{fill:none;stroke:#a87523;stroke-width:2.4;stroke-linecap:round}
 .subscriber-crown--launch{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:7px;transform:rotate(7deg)}
 .subscriber-crown--profile{position:absolute;top:-10px;right:-10px;width:32px;height:32px;border-radius:10px;transform:rotate(7deg)}
 .profile-modal{position:fixed;inset:0;z-index:56000;display:grid;place-items:center;padding:24px}

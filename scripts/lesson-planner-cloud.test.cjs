@@ -184,5 +184,28 @@ vm.runInContext(authNames.map(name => functionSource(authSource, name)).join('\n
   releaseSync();
   await Promise.all([firstRefresh, secondRefresh]);
 
+  {
+    let state = { version: 1 }, saves = 0;
+    const queued = [];
+    const saveSandbox = {
+      console, Date, Promise, Number, clearTimeout() {},
+      plannerCloudUserId: 'teacher', plannerCloudDirty: true, plannerCloudSavePromise: null,
+      plannerCloudHydrated: true, plannerCloudConnected: true, plannerCloudSaveTimer: 0,
+      plannerCloudGeneration: 1, plannerCloudRevision: 0, plannerCloudLastReadAt: 0, plannerCloudLastSyncedJson: '',
+      window: { TeacherTilesLessonPlannerCloud: { load: async () => {}, save: async () => { saves++; if (saves === 1) state = { version: 2 }; return { revision: saves }; } } },
+      capturePlannerCloudState: () => ({ ...state }), capturePlannerState: () => ({ ...state }),
+      plannerCloudStateJson: JSON.stringify, markPlannerCloudMigrated() {}, writePlannerCloudMeta() {},
+      queuePlannerCloudSave: delay => queued.push(delay)
+    };
+    vm.createContext(saveSandbox);
+    vm.runInContext(functionSource(plannerSource, 'flushPlannerCloudSave'), saveSandbox);
+    await saveSandbox.flushPlannerCloudSave({ automatic: true });
+    assert.equal(saves, 1, 'edits arriving during an automatic planner save must not trigger immediate transaction bursts');
+    assert.equal(saveSandbox.plannerCloudDirty, true);
+    assert.deepEqual(queued, [5000]);
+    await saveSandbox.flushPlannerCloudSave();
+    assert.equal(saves, 2, 'explicit planner flush saves pending changes immediately');
+    assert.equal(saveSandbox.plannerCloudDirty, false);
+  }
   console.log('Lesson planner cloud migration, conflict merge, revision guard, sync hooks, and read throttling passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
