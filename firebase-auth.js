@@ -2007,6 +2007,12 @@ function boardMetadataRecentlyChecked(board, maxAge = ACTIVE_BOARD_CLOUD_RECHECK
   return checkedAt > 0 && Date.now() - checkedAt < maxAge;
 }
 
+function boardNeedsOpenCloudCheck(boardId) {
+  // Reuse the document just returned by the library or a save, but still check
+  // older boards when explicitly opening them on another device/session.
+  return !boardMetadataRecentlyChecked(boardList.find(board => board.id === boardId), 15000);
+}
+
 function serializableBoardMetadata(board) {
   return {
     id: board.id,
@@ -4004,7 +4010,7 @@ function createBoardCard(board) {
     if (boardLoading || boardDeleting || boardRenaming) return;
     if (board.id === activeBoardId) {
       openButton.disabled = true;
-      try { await refreshActiveBoardFromCloud({ force: true }); }
+      try { await refreshActiveBoardFromCloud({ force: boardNeedsOpenCloudCheck(board.id) }); }
       finally { openButton.disabled = false; }
       closeBoardsView();
       return;
@@ -4013,7 +4019,7 @@ function createBoardCard(board) {
     openButton.disabled = true;
     try {
       await saveCurrentBoard({ immediate: true });
-      await loadBoard(board.id, { forceCloudCheck: true });
+      await loadBoard(board.id, { forceCloudCheck: boardNeedsOpenCloudCheck(board.id) });
     } finally {
       openButton.disabled = false;
     }

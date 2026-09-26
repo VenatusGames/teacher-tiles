@@ -21,7 +21,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
       for(const cursor of choices){
         const cell=document.createElement('div');cell.className='cursor-picker-cell';
         const choice=document.createElement('button');choice.type='button';choice.className='cursor-picker-choice';choice.setAttribute('aria-pressed',String(selected===cursor.id));choice.setAttribute('aria-label',(accessible?'Use ':'Unlock ')+pack.name+' '+cursor.name);choice.dataset.cursorChoice=cursor.id;
-        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260926`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
+        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260926-templates`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
         const label=document.createElement('span');label.textContent=cursor.name;choice.append(label);
         choice.onclick=()=>accessible?apply(cursor.id):unlock(pack.productId);
         const favorite=document.createElement('button');favorite.type='button';favorite.className='cursor-picker-favorite';favorite.textContent=favorites.has(cursor.id)?'★':'☆';favorite.setAttribute('aria-label',(favorites.has(cursor.id)?'Unfavorite ':'Favorite ')+cursor.name);favorite.setAttribute('aria-pressed',String(favorites.has(cursor.id)));favorite.onclick=()=>{favorites.has(cursor.id)?favorites.delete(cursor.id):favorites.add(cursor.id);try{localStorage.setItem('teacherTilesCursorFavorites',JSON.stringify([...favorites]))}catch{}render()};

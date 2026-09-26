@@ -36,7 +36,7 @@ function harness() {
     boardLocalHashes: new Map(), localBoardMemory: new Map(), localBoardDbPromise: null, cloudBoardSaveTimers: new Map(),
     localBoardSaveTimer: 0, boardsView: { hidden: true }, boardsSaveStatus: {}, pendingBoardChangeReason: '',
     INLINE_OBJECT_BUDGET: 560000, CHUNK_OBJECT_BUDGET: 520000, MAX_SINGLE_OBJECT_BYTES: 900000, PREVIEW_OBJECT_BUDGET: 90000,
-    CLOUD_SAVE_DELAY: 5000, LOCAL_SAVE_DELAY: 280, BOARD_LIBRARY_RECHECK_TTL: 300000, ACTIVE_BOARD_CLOUD_RECHECK_TTL: 600000,
+    CLOUD_SAVE_DELAY: 8000, LOCAL_SAVE_DELAY: 280, BOARD_LIBRARY_RECHECK_TTL: 60000, ACTIVE_BOARD_CLOUD_RECHECK_TTL: 600000,
     boardListLoadedFromNetwork: false, boardLibraryCheckedAt: 0,
     setBoardStatus: message => { context.status = message; }, renderBoards() {}, markBoardCloudLoadedForSession() {},
     boardApi: () => ({ setActiveBoardId() {}, capture: () => context.workspace || context.localBoardMemory.get(`teacher:${context.activeBoardId}`)?.snapshot, load: snapshot => { context.workspace = snapshot; } }), activeBoardStorageKey: uid => `active-${uid}` });
@@ -310,6 +310,61 @@ function harness() {
     assert.equal(delays.length, 3, 'permanent errors must not schedule a retry loop');
     assert.equal((await c.readLocalBoardSnapshot('teacher', 'one')).dirty, true);
   }
+  {
+    const { c, base } = harness();
+    await c.cacheSnapshotLocally('one', base, { dirty: false });
+    c.markBoardMetadataChecked(c.boardList[0]);
+    let reads = 0;
+    const read = c.firestoreSdk.getDocFromServer;
+    c.firestoreSdk.getDocFromServer = async ref => { reads++; return read(ref); };
+    await c.resolveBoardSnapshot('one', { forceCloudCheck: c.boardNeedsOpenCloudCheck('one') });
+    assert.equal(reads, 0, 'opening immediately after a library fetch must reuse that document');
+    c.boardList[0].cloudCheckedAt = Date.now() - 16000;
+    await c.resolveBoardSnapshot('one', { forceCloudCheck: c.boardNeedsOpenCloudCheck('one') });
+    assert.equal(reads, 1, 'an explicit open of older data must still check the server');
+  }
+  const workloads = [];
+  for (const tileCount of [1, 30]) {
+    const { c, base } = harness();
+    let now = Date.now(), timerId = 0, reads = 0;
+    const timers = new Map();
+    c.Date = class extends Date { static now() { return now; } };
+    c.window.setTimeout = (callback, delay) => { const id = ++timerId; timers.set(id, { callback, at: now + delay }); return id; };
+    c.clearTimeout = id => timers.delete(id);
+    const transaction = c.firestoreSdk.runTransaction;
+    c.firestoreSdk.runTransaction = (...args) => { reads++; return transaction(...args); };
+    async function advance(milliseconds) {
+      const end = now + milliseconds;
+      for (;;) {
+        const next = [...timers.entries()].filter(([, t]) => t.at <= end).sort((a, b) => a[1].at - b[1].at)[0];
+        if (!next) break;
+        now = next[1].at; timers.delete(next[0]); next[1].callback();
+        if (c.boardSavePromise) await c.boardSavePromise;
+      }
+      now = end;
+    }
+    const board = { ...base, objects: Array.from({ length: tileCount }, (_, i) => ({ id: `tile-${i}`, type: 'text', special: { text: 'Hello' } })) };
+    await c.cacheSnapshotLocally('one', board, { dirty: false });
+    for (let edit = 0; edit < 60; edit++) {
+      board.objects[0].special.text = `Edit ${edit}`;
+      c.workspace = board;
+      await c.saveCurrentBoard();
+      await advance(10000);
+    }
+    const automaticReads = reads;
+    assert(automaticReads <= 20, 'ten minutes of edits every ten seconds must use at most twenty automatic transaction reads');
+    await c.saveCurrentBoard({ immediate: true });
+    const flushedReads = reads;
+    for (let i = 0; i < 60; i++) {
+      c.workspace = { ...board, camera: { x: i, y: i, scale: 1 } };
+      await c.saveCurrentBoard();
+      await advance(10000);
+    }
+    assert.equal(reads, flushedReads, 'ten minutes of unchanged content and camera movement must add zero transaction reads');
+    workloads.push(automaticReads);
+  }
+  assert.equal(workloads[0], workloads[1], 'thirty tiles must not multiply board save reads');
+  console.log(`Read workload: 60 edits / 10 minutes = ${workloads[0]} automatic reads with either 1 or 30 tiles; unchanged content / camera movement = 0 extra reads.`);
   assert(harness().c.CLOUD_SAVE_DELAY >= 5000, 'cloud debounce should combine rapid board edits before starting a transaction');
   console.log('Board persistence: frame round-trip, conflict recovery, refresh recovery, offline retry, atomic chunks, fresh cloud reads, and read throttling passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

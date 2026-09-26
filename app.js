@@ -3294,11 +3294,9 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260926`,document.baseURI).href;
-    cursorRoot.style.setProperty('--teacher-cursor-normal',`url("${asset('normal')}") 4 1`);
-    cursorRoot.style.setProperty('--teacher-cursor-point',`url("${asset('point')}") 10 1`);
-    cursorRoot.style.setProperty('--teacher-cursor-open',`url("${asset('open')}") 12 12`);
-    cursorRoot.style.setProperty('--teacher-cursor-grab',`url("${asset('grab')}") 12 12`);
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260926-templates`,document.baseURI).href;
+    const defaults={normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
+    for(const state of ['normal','point','open','grab'])cursorRoot.style.setProperty(`--teacher-cursor-${state}`,`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`);
   }
   window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
   return cursor;

@@ -28,4 +28,32 @@ function art(pack,color,state){
   }
   return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"'+(pixel?' shape-rendering="crispEdges"':'')+'><defs><clipPath id="body"><path d="'+d+'"/></clipPath></defs><path d="'+d+'" fill="'+color+'"/><g clip-path="url(#body)" fill="'+light+'">'+inside+'</g>'+(!pixel?'<path d="'+d+'" fill="none" stroke="'+dark+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>':'')+'</svg>';
 }
-(async()=>{for(const pack of packs){pack.cursors=[];for(const [name,color] of pack.colors){const id=pack.id+'-'+name;pack.cursors.push({id,name:name[0].toUpperCase()+name.slice(1),productId:pack.productId,color});for(const state of ['normal','point','open','grab']){const svg=art(pack.id,color,state);await sharp(Buffer.from(svg)).png().toFile(path.join(root,'cursors',id+'-'+state+'.png'))}const svg=art(pack.id,color,'normal');await sharp(Buffer.from(svg)).resize(256,256,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'))}delete pack.colors}fs.writeFileSync(path.join(root,'cursors/packs.js'),'window.TeacherTilesCursorPacks='+JSON.stringify(packs)+';\n');console.log('Generated 3 cursor packs, 15 variants and 60 cursor states')})().catch(e=>{console.error(e);process.exitCode=1});
+
+packs.push({id:'toon',name:'Toon Cursors',productId:'cursor-toon-pack',price:350,colors:[['rose','#ed8eaa'],['ocean','#4eacce'],['mint','#70bd94'],['lilac','#a28cda'],['honey','#e8b955']]});
+const spriteHotspots={pixel:{normal:[6,2],point:[12,2],open:[16,16],grab:[16,16]},toon:{normal:[4,4],point:[9,4],open:[16,16],grab:[16,16]}};
+async function tintTemplate(pack,color,state){
+  const {data,info}=await sharp(path.join(root,'cursors/templates',pack,state+'.png')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  const rgb=color.slice(1).match(/../g).map(value=>parseInt(value,16));
+  // Multiply the original grayscale shading by the chosen palette color. Alpha is untouched.
+  for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)data[i+channel]=Math.round(data[i+channel]*rgb[channel]/255);
+  return sharp(data,{raw:info}).resize(32,32,{kernel:pack==='pixel'?'nearest':'lanczos3'}).png().toBuffer();
+}
+(async()=>{
+  for(const pack of packs){
+    pack.cursors=[];
+    for(const [name,color] of pack.colors){
+      const id=pack.id+'-'+name;
+      pack.cursors.push({id,name:name[0].toUpperCase()+name.slice(1),productId:pack.productId,color,...(spriteHotspots[pack.id]?{hotspots:spriteHotspots[pack.id]}:{})});
+      for(const state of ['normal','point','open','grab']){
+        const output=path.join(root,'cursors',id+'-'+state+'.png');
+        if(spriteHotspots[pack.id])await fs.promises.writeFile(output,await tintTemplate(pack.id,color,state));
+        else await sharp(Buffer.from(art(pack.id,color,state))).png().toFile(output);
+      }
+      if(spriteHotspots[pack.id])await sharp(path.join(root,'cursors',id+'-normal.png')).resize(256,256,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));
+      else await sharp(Buffer.from(art(pack.id,color,'normal'))).resize(256,256,{kernel:'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));
+    }
+    delete pack.colors;
+  }
+  fs.writeFileSync(path.join(root,'cursors/packs.js'),'window.TeacherTilesCursorPacks='+JSON.stringify(packs)+';\n');
+  console.log('Generated '+packs.length+' cursor packs with 5 variants and 4 states each');
+})().catch(e=>{console.error(e);process.exitCode=1});
