@@ -19,7 +19,7 @@
 .meditation-ripples i:nth-child(2){inset:5%;opacity:.7;}.meditation-ripples i:nth-child(3){inset:10%;opacity:.5;}.meditation-ripples i:nth-child(4){inset:-6%;opacity:.25;}
 .meditation-core{position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 32% 22%,#ffffffd9,transparent 40%),radial-gradient(ellipse at 65% 80%,var(--med-light),transparent 62%),linear-gradient(145deg,var(--med-light),var(--med-mid) 48%,var(--med-deep));box-shadow:inset 0 0 0 1px #ffffff70,inset -12px -18px 35px color-mix(in srgb,var(--med-deep) 28%,transparent),0 15px 35px color-mix(in srgb,var(--med-deep) 15%,transparent);}
 .meditation-glint{position:absolute;inset:8% 18% 52% 13%;border-radius:50%;background:linear-gradient(150deg,#ffffff80,transparent 70%);transform:rotate(-25deg);filter:blur(3px);}
-.meditation-count{position:relative;color:var(--med-deep);font-size:clamp(20px,7cqw,34px);font-weight:450;pointer-events:none;}
+.meditation-count{position:relative;color:var(--med-deep);font-size:clamp(36px,13cqw,72px);font-weight:550;pointer-events:none;}
 .meditation-copy{text-align:center;flex:none;}
 .meditation-cue{margin:0;font-size:clamp(20px,5.5cqw,27px);font-weight:450;letter-spacing:-.02em;}
 .meditation-detail{color:color-mix(in srgb,currentColor 70%,transparent);font-size:12px;margin:7px 0 0;}
@@ -69,5 +69,5 @@
 .meditation-palette-drawer button:focus-visible,.meditation-palette-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px;}
 @container(max-height:320px){.meditation-heading>span,.meditation-rhythm,.meditation-session{display:none}.meditation-title{font-size:16px}.meditation-actions{gap:4px}.meditation-actions button{min-width:0;padding:5px 8px;font-size:10px}.meditation-cue{font-size:16px}}
 
-.meditation-lotus{display:block;width:clamp(72px,24cqw,130px);height:auto;filter:drop-shadow(0 3px 5px #59396c12)}
+.meditation-lotus{display:block;width:clamp(72px,24cqw,130px);height:auto;filter:drop-shadow(0 3px 5px color-mix(in srgb,var(--med-deep) 12%,transparent))}
 .rainbow-breath-art{width:100%;max-height:100%;overflow:visible;filter:drop-shadow(0 4px 8px #607a9c16)}.rainbow-breath-art path{stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--rainbow-progress,0))}.rainbowbreath-module .meditation-count{position:absolute;top:auto;bottom:0;left:50%;transform:translateX(-50%);font-size:28px}.rainbowbreath-module .meditation-palette-toggle{display:none}
