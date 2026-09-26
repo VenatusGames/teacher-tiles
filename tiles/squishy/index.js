@@ -3,7 +3,7 @@ function sound(m){
  const audio=new Audio('assets/ui/squishy-press.wav');audio.preload='auto';
  const api=window.TeacherTilesTileAudio;
  const stop=()=>{audio.pause();audio.currentTime=0};
- const volume=()=>{const level=api?.level(m)??1;api?.mediaVolume(audio,level*.65);if(level<=0)stop();return level};
+ const volume=()=>{const level=api?.level(m)??1;api?.mediaVolume(audio,level*.28);if(level<=0)stop();return level};
  m._playSquish=()=>{if(!m.isConnected||document.hidden||volume()<=0)return;audio.currentTime=0;audio.play().catch(()=>{})};
  const visibility=()=>{if(document.hidden)stop()};
  m.addEventListener('teachertiles:tileaudiochange',volume);document.addEventListener('visibilitychange',visibility);
