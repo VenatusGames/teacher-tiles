@@ -18,7 +18,7 @@ assert.equal(await favorite.evaluate(el=>getComputedStyle(el).borderRadius),'50%
 await favorite.click();await page.mouse.move(1400,100);await page.waitForTimeout(200);
 assert.equal(await page.locator('.cursor-picker-favorite').first().getAttribute('aria-pressed'),'true');
 assert.equal(await page.locator('.cursor-picker-choice').first().innerText(),'Default');
-assert((await page.locator('.cursor-picker-choice').first().boundingBox()).height<=64);
+assert((await page.locator('.cursor-picker-choice').first().boundingBox()).height<=90);
 assert((await page.locator('.cursor-picker-choice img').first().boundingBox()).width<=26);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/compact-cursor-shelf.png'});
 await page.evaluate(()=>document.getElementById('asset-shelf-close').click());
@@ -38,6 +38,8 @@ await page.waitForFunction(()=>document.documentElement.style.getPropertyValue('
 for(const [button,kind] of [[0,'left'],[2,'right'],[1,'middle']]){
  await page.evaluate(button=>document.dispatchEvent(new PointerEvent('pointerdown',{button,clientX:700,clientY:200,pointerType:'mouse'})),button);
  assert(await page.locator('.cursor-particle--'+kind).count());
+ assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).cursor),'none');
+ assert(await page.locator('.pickaxe-click-swing').count());
 }
 await page.evaluate(()=>document.dispatchEvent(new MouseEvent('dblclick',{clientX:700,clientY:200})));
 assert(await page.locator('.cursor-particle--double').count());

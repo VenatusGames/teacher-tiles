@@ -1,10 +1,24 @@
 (()=>{'use strict';
-  let layer;
+  let layer,swing,swingAnimation;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  function clear(){for(const node of layer?.children||[])for(const animation of node.getAnimations())animation.cancel();layer?.replaceChildren()}
+  function stopSwing(){swingAnimation?.cancel();swingAnimation=null;swing?.remove();swing=null;document.documentElement.classList.remove('is-pickaxe-swinging')}
+  function clear(){stopSwing();for(const node of layer?.children||[])for(const animation of node.getAnimations())animation.cancel();layer?.replaceChildren()}
+  function swingPickaxe(event,id){
+    stopSwing();
+    swing=document.createElement('img');swing.className='pickaxe-click-swing';swing.alt='';
+    swing.src=new URL(`assets/cursors/runtime/${id}-normal.png?v=20260928-unified`,document.baseURI).href;
+    Object.assign(swing.style,{left:`${event.clientX-2}px`,top:`${event.clientY-18}px`});
+    (document.fullscreenElement||document.body).append(swing);
+    document.documentElement.classList.add('is-pickaxe-swinging');
+    const animation=swing.animate([{transform:'rotate(0deg)'},{transform:'rotate(14deg)',offset:.35},{transform:'rotate(-5deg)',offset:.65},{transform:'rotate(0deg)'}],{duration:180,easing:'ease-out'});
+    swingAnimation=animation;animation.finished.then(()=>{if(swingAnimation===animation)stopSwing()}).catch(()=>{});
+  }
+  document.addEventListener('pointermove',event=>{if(swing)Object.assign(swing.style,{left:`${event.clientX-2}px`,top:`${event.clientY-18}px`})},{passive:true});
+  window.addEventListener('blur',clear);
   function burst(event,kind){
     const id=document.body.dataset.appCursor||'';
     if(!id.startsWith('pickaxe-')||reduced.matches||document.hidden||event.pointerType==='touch')return;
+    swingPickaxe(event,id);
     if(!layer){layer=document.createElement('div');layer.className='cursor-particles';layer.setAttribute('aria-hidden','true');document.body.append(layer)}
     const color=window.TeacherTilesCursorPacks?.find(pack=>pack.id==='pickaxe')?.cursors.find(cursor=>cursor.id===id)?.color||'#efc35f';
     const count=kind==='double'?18:kind==='right'?12:kind==='middle'?6:8;

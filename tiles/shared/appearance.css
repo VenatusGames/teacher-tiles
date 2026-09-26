@@ -51,3 +51,5 @@ body.is-board-idle .module:not(.is-appearance-open)>.tile-appearance-toggle{opac
 .module .tile-settings-floating .tile-reset-scale-icon{width:27px;height:27px;flex:none;display:grid;place-items:center;border-radius:8px;background:color-mix(in srgb,#60a5fa 18%,var(--surface));color:#3b82f6;}
 .module .tile-settings-floating .tile-reset-scale-icon svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
 .tile-reset-scale:focus-visible{outline:2px solid #60a5fa;outline-offset:2px;}
+
+.tile-appearance-flyout[popover]{margin:0;padding:0;border:0;background:transparent;overflow:visible;right:auto;bottom:auto;color:var(--text)}

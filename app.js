@@ -3297,7 +3297,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.runtimeDirectory||''}${cursor.id}-${state}.png?v=20260928-sized`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.runtimeDirectory||''}${cursor.id}-${state}.png?v=20260928-unified`,document.baseURI).href;
     const defaults={normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
     const value=state=>`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`;
     // Decode all states before activating the pack so the first grab cannot
@@ -13322,6 +13322,7 @@ function setupCollectionShelf(){
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
     cursorsButton.setAttribute('aria-expanded',String(activeShelf==='cursors'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
+    const customize=document.getElementById('customize-toggle');customize?.setAttribute('aria-expanded',String(Boolean(activeShelf)));customize?.classList.toggle('is-active',Boolean(activeShelf));
   };
 
   const closeShelf=()=>{
@@ -13338,7 +13339,7 @@ function setupCollectionShelf(){
   };
 
   const openShelf=type=>{
-    if(activeShelf===type){closeShelf();return}
+    if(activeShelf===type)return;
     themePicker?.close();
     activeShelf=type;
     closeThemeFan();
@@ -13408,7 +13409,7 @@ function setupCollectionShelf(){
   },{passive:false});
 
   window.addEventListener('resize',positionThemeFan,{passive:true});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){const trigger=activeShelf==='stickers'?stickerButton:activeShelf==='themes'?themeButton:cursorsButton;closeShelf();trigger.focus()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){closeShelf();document.getElementById('customize-toggle')?.focus()}});
   document.addEventListener('pointerdown',e=>{
     if(!activeShelf||['stickers','themes','cursors'].includes(activeShelf))return;
     const target=e.target;
@@ -13615,32 +13616,18 @@ populateGeneratedStickerPacks();
 setupCollectionShelf();
 
 function setupCustomizeLauncher(){
-  const launcher=document.getElementById('customize-launcher');
   const toggle=document.getElementById('customize-toggle');
-  const menu=document.getElementById('customize-launch-menu');
-  if(!launcher||!toggle||!menu)return;
-  let closeTimer=0;
-  const cancelClose=()=>{clearTimeout(closeTimer);closeTimer=0};
-  const setOpen=open=>{
-    cancelClose();
-    launcher.classList.toggle('is-open',open);
-    toggle.classList.toggle('is-active',open);
-    toggle.setAttribute('aria-expanded',String(open));
-    menu.setAttribute('aria-hidden',String(!open));
-  };
-  toggle.addEventListener('click',event=>{
-    event.stopPropagation();
-    setOpen(!launcher.classList.contains('is-open'));
-  });
-  launcher.addEventListener('pointerenter',cancelClose);
-  launcher.addEventListener('pointerleave',()=>{
-    if(!launcher.classList.contains('is-open'))return;
-    cancelClose();
-    closeTimer=setTimeout(()=>setOpen(false),900);
-  });
-  document.addEventListener('keydown',event=>{
-    if(event.key==='Escape'&&launcher.classList.contains('is-open'))setOpen(false);
-  });
+  const shelf=document.getElementById('asset-shelf');
+  const tabs=document.createElement('nav');tabs.className='collection-category-tabs';tabs.setAttribute('aria-label','Customization categories');
+  for(const [id,label] of [['theme-shelf-toggle','Themes'],['sticker-shelf-toggle','Stickers'],['cursors-shelf-toggle','Cursors']]){
+    const button=document.getElementById(id);button.className='collection-category-tab';
+    button.querySelector('.upcoming-control__tooltip').remove();
+    const text=document.createElement('span');text.textContent=label;button.append(text);tabs.append(button);
+  }
+  shelf.querySelector('.asset-shelf__header').after(tabs);
+  document.getElementById('customize-launch-menu').hidden=true;
+  toggle.setAttribute('aria-controls','asset-shelf');
+  toggle.addEventListener('click',event=>{event.stopPropagation();if(shelf.classList.contains('is-open'))document.getElementById('asset-shelf-close').click();else document.getElementById('theme-shelf-toggle').click()});
 }
 
 setupCustomizeLauncher();

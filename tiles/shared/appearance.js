@@ -5,7 +5,7 @@
   const notes={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};
   const fontNames={lexend:'Lexend',pacifico:'Pacifico',calibri:'Calibri',inter:'Inter',poppins:'Poppins',nunito:'Nunito',quicksand:'Quicksand',oswald:'Oswald',lora:'Lora',merriweather:'Merriweather',playfair:'Playfair Display',caveat:'Caveat',phantom:'Phantom Guardians',dm:'DM Sans',space:'Space Grotesk',mono:'Roboto Mono'};
   let active=null,frame=0,hideTimer=0,keyboard=false;
-  const flyout=document.createElement('div');flyout.className='tile-appearance-flyout';flyout.hidden=true;flyout.setAttribute('role','group');flyout.setAttribute('aria-label','Tile appearance');
+  const flyout=document.createElement('div');flyout.className='tile-appearance-flyout';flyout.hidden=true;flyout.setAttribute('popover','manual');flyout.setAttribute('role','group');flyout.setAttribute('aria-label','Tile appearance');
   const rail=document.createElement('div');rail.className='tile-appearance-rail';
   const picker=document.createElement('div');picker.className='tile-appearance-picker';picker.hidden=true;
   flyout.append(rail,picker);document.body.appendChild(flyout);
@@ -13,7 +13,7 @@
   function close(){
     clearTimeout(hideTimer);cancelAnimationFrame(frame);
     if(active){active.button.setAttribute('aria-expanded','false');active.module.classList.remove('is-appearance-open')}
-    active=null;flyout.hidden=true;picker.hidden=true;rail.replaceChildren();picker.replaceChildren();
+    active=null;if(flyout.matches(':popover-open'))flyout.hidePopover();flyout.hidden=true;document.body.appendChild(flyout);picker.hidden=true;rail.replaceChildren();picker.replaceChildren();
   }
   function deferClose(){clearTimeout(hideTimer);hideTimer=setTimeout(()=>{if(!flyout.matches(':hover')&&!active?.module.matches(':hover')&&!(keyboard&&(flyout.matches(':focus-within')||active?.module.matches(':has(:focus-visible)'))))close()},240)}
   function position(){
@@ -104,7 +104,7 @@
   }
   function open(state){
     if(active===state){close();return}
-    close();active=state;state.button.setAttribute('aria-expanded','true');state.module.classList.add('is-appearance-open');flyout.hidden=false;
+    close();active=state;state.button.setAttribute('aria-expanded','true');state.module.classList.add('is-appearance-open');(document.fullscreenElement||document.body).appendChild(flyout);flyout.hidden=false;flyout.showPopover();
     state.controls.forEach(control=>{
       const button=document.createElement('button');button.type='button';button.className='tile-appearance-tool';button.dataset.appearanceKey=control.key;
       button.setAttribute('aria-label',control.label);button.title=control.label;button.setAttribute('aria-expanded','false');

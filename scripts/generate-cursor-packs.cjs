@@ -1,5 +1,6 @@
 const fs=require('fs');const path=require('path');const sharp=require(process.env.SHARP_MODULE||'sharp');
 const root=path.join(__dirname,'../assets');
+async function writeAsset(file,data){if(fs.existsSync(file)&&fs.readFileSync(file).equals(data))return;await fs.promises.writeFile(file,data)}
 const packs=[{id:'pixel',name:'Pixel Cursors',productId:'cursor-pixel-pack',price:350,colors:[['melon','#f58978'],['mint','#63bfa0'],['sky','#6d9dd8'],['grape','#ae81ca'],['lemon','#d9bc5a']]},{id:'soft',name:'Soft Cursors',productId:'cursor-soft-pack',price:350,colors:[['lavender','#827080'],['rose','#ba8393'],['sage','#80998c'],['slate','#74899b'],['sand','#b29a7e']]},{id:'fluid',name:'Fluid Cursors',productId:'cursor-fluid-pack',price:400,colors:[['mango','#ff9e26'],['berry','#e74688'],['ocean','#20b5cc'],['lime','#99d936'],['violet','#9465e9']]}];
 function fluidArt(pack,color,state){const pixel=pack==='pixel';const shapes={normal:pixel?'M4 1H7V4H10V7H13V10H16V13H19V16H22V19H16V22H19V28H16V31H13V25H10V19H7V22H4Z':'M4 2Q3 1 3 4L8 28Q9 31 12 27L17 20L26 17Q29 16 26 13Z',point:pixel?'M10 1H14V12H18V14H22V16H26V27H23V31H12V28H9V23H6V17H10Z':'M10 14V4Q10 0 14 2Q15 3 15 5V12Q19 9 20 14Q24 12 25 17Q28 16 28 20V24Q27 31 20 31H15Q10 30 8 24L5 16Q4 12 7 12Q9 12 10 17Z',open:pixel?'M10 15H7V6H11V3H14V1H17V3H20V4H23V8H27V11H29V23H26V28H23V31H14V28H10V25H7V22H3V16H7V18H10Z':'M10 15 8 6Q8 3 10 3Q12 3 13 13V3Q14 0 16 2L17 13 18 4Q20 1 22 4L21 15 24 8Q27 6 28 9L26 22Q26 30 20 31H15Q11 31 8 27L3 20Q1 16 4 16L10 21Z',grab:pixel?'M7 16V11H11V8H15V10H18V8H22V11H26V13H29V25H26V29H22V31H14V28H10V25H7V22H3V17H7Z':'M7 16V12Q8 8 12 12Q14 7 17 11Q20 7 23 12Q27 10 28 15L27 24Q26 30 20 31H14Q10 30 8 26L4 21Q2 17 5 16Z'};const palettes={'#ff9e26':['#ff342a','#fff53e','#baff91'],'#e74688':['#95164f','#ffa9db','#ffc98d'],'#20b5cc':['#1254bd','#9bfff3','#9ee2ff'],'#99d936':['#237d39','#edff90','#abf3ad'],'#9465e9':['#5730b9','#eac5ff','#aabaff']};const fluid=palettes[color]||palettes['#ff9e26'];const d=shapes[state];return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><clipPath id="clip"><path d="${d}"/></clipPath><linearGradient id="g" x2=".8" y2="1"><stop stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="1.3"/></filter></defs><path d="${d}" fill="${color}" stroke="${pack==='soft'?'#443c46':color}" stroke-width="${pixel?1:2}" stroke-linejoin="round"/><g clip-path="url(#clip)">${pack==='fluid'?`<g filter="url(#blur)"><path d="M-4-2H12C3 8 25 10 20 20S35 24 33 35H14C23 22-2 21 6 12S-4 6-4-2Z" fill="${fluid[0]}"/><path d="M18-3H35V12C16 2 10 22 27 28L18 35C-4 28 9 8 18-3Z" fill="${fluid[1]}"/><path d="M-3 9C9 3 6 17 22 12S39 20 28 23C11 28 15 13-3 20Z" fill="${fluid[2]}"/></g>`:`<path d="${d}" fill="url(#g)" transform="translate(2 1) scale(.78)"/>`}</g>${pixel?'':`<path d="${state==='normal'?'M5 5 23 15':'M12 5v10'}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>`}</svg>`}
 
@@ -31,7 +32,7 @@ function art(pack,color,state){
 
 packs.push({id:'toon',name:'Toon Cursors',productId:'cursor-toon-pack',price:350,colors:[['rose','#ed8eaa'],['ocean','#4eacce'],['mint','#70bd94'],['lilac','#a28cda'],['honey','#e8b955']]});
 packs.push({id:'pickaxe',name:'Pickaxe Cursors',productId:'cursor-pickaxe-pack',price:400,colors:[['silver','#b4c8d8'],['gold','#efc35f'],['ruby','#e38194'],['emerald','#72c4a2'],['diamond','#73d2e4']]},{id:'gauntlet',name:'Gauntlet Cursors',productId:'cursor-gauntlet-pack',price:350,colors:[['steel','#b8c3d2'],['gold','#eac367'],['copper','#cf9174'],['violet','#a99ad8'],['obsidian','#7e879c']]});
-const spriteHotspots={pickaxe:{normal:[24,4],point:[24,4],open:[24,4],grab:[24,4]},gauntlet:{normal:[5,5],point:[3,5],open:[7,3],grab:[14,14]},pixel:{normal:[6,2],point:[12,2],open:[16,16],grab:[16,16]},toon:{normal:[4,4],point:[9,4],open:[16,16],grab:[16,16]}};
+const spriteHotspots={pickaxe:{normal:[3,24],point:[3,24],open:[3,24],grab:[3,24]},gauntlet:{normal:[5,5],point:[3,5],open:[7,3],grab:[14,14]},pixel:{normal:[6,2],point:[12,2],open:[16,16],grab:[16,16]},toon:{normal:[4,4],point:[9,4],open:[16,16],grab:[16,16]}};
 async function tintTemplate(pack,color,state){
   const {data,info}=await sharp(path.join(root,'cursors/templates',pack,(pack==='pickaxe'?'normal':state)+'.png')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   const rgb=color.slice(1).match(/../g).map(value=>parseInt(value,16));
@@ -52,13 +53,13 @@ async function tintTemplate(pack,color,state){
       pack.cursors.push({id,name:name[0].toUpperCase()+name.slice(1),productId:pack.productId,color,runtimeDirectory:'runtime/',hotspots:Object.fromEntries(Object.entries(hotspots).map(([state,point])=>[state,point.map(n=>Math.round(n*.75))]))});
       for(const state of ['normal','point','open','grab']){
         const output=path.join(root,'cursors',id+'-'+state+'.png');
-        if(spriteHotspots[pack.id])await fs.promises.writeFile(output,await tintTemplate(pack.id,color,state));
-        else await sharp(Buffer.from(art(pack.id,color,state))).png().toFile(output);
+        if(spriteHotspots[pack.id])await writeAsset(output,await tintTemplate(pack.id,color,state));
+        else await writeAsset(output,await sharp(Buffer.from(art(pack.id,color,state))).png().toBuffer());
         await fs.promises.mkdir(path.join(root,'cursors/runtime'),{recursive:true});
-        await sharp(output).resize(24,24,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors/runtime',id+'-'+state+'.png'));
+        await writeAsset(path.join(root,'cursors/runtime',id+'-'+state+'.png'),await sharp(output).resize(24,24,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toBuffer());
       }
-      if(spriteHotspots[pack.id])await sharp(path.join(root,'cursors',id+'-normal.png')).resize(256,256,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));
-      else await sharp(Buffer.from(art(pack.id,color,'normal'))).resize(256,256,{kernel:'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));
+      if(spriteHotspots[pack.id])await writeAsset(path.join(root,'cursors',id+'-preview.png'),await sharp(path.join(root,'cursors',id+'-normal.png')).resize(256,256,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toBuffer());
+      else await writeAsset(path.join(root,'cursors',id+'-preview.png'),await sharp(Buffer.from(art(pack.id,color,'normal'))).resize(256,256,{kernel:'lanczos3'}).png().toBuffer());
     }
     delete pack.colors;
   }
