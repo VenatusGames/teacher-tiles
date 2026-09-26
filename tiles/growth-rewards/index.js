@@ -2,6 +2,8 @@
   function setup(m){
     const eggs=m.dataset.type==='egghatching',kind=eggs?'eggHatching':'flowerPots';
     const intro=m.querySelector('.growth-import'),panel=m.querySelector('.growth-dashboard'),grid=m.querySelector('.growth-grid'),goalInput=m.querySelector('.growth-goal');
+    const header=m.querySelector('.growth-header'),heading=m.querySelector('.growth-heading'),classLabel=m.querySelector('.growth-class');
+    m.insertBefore(header,heading);header.prepend(heading);panel.append(classLabel);
     let activeClassId='',goal=5,showAll=true;const completed=new Set();
     const roster=()=>readClassRosters().find(r=>r.id===activeClassId);
     const goalValue=()=>eggs?5:goal;
@@ -12,7 +14,7 @@
     };
     function render(){
       const r=roster(),focus=document.activeElement?.dataset.student;
-      intro.hidden=Boolean(r);panel.hidden=!r;if(!r){grid.replaceChildren();return;}
+      intro.hidden=Boolean(r);panel.hidden=!r;header.classList.toggle('has-class',Boolean(r));if(!r){grid.replaceChildren();return;}
       const names=new Set(r.students);for(const card of [...grid.children])if(!names.has(card.dataset.student))card.remove();
       m.querySelector('.growth-class').textContent=r.name;
       const progress=normalizePunchcardProgress(r[kind],r.students);

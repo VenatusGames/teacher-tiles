@@ -16,3 +16,11 @@
 .growth-grid.show-all .growth-student strong,.growth-grid.show-all .growth-student small,.growth-grid.show-all .growth-restart{position:relative;line-height:1.2;max-width:100%;overflow-wrap:anywhere}
 .student-profile-rewards-heading{grid-column:1/-1;margin:0 0 2px;font-size:16px;font-weight:650;color:var(--text)}
 .growth-header{flex-wrap:wrap;gap:8px}.growth-header .growth-class{margin-right:auto}.growth-reset{border:1px solid var(--border);border-radius:9px;padding:6px 9px;background:var(--surface-solid);color:var(--muted);font:inherit;font-size:11px;cursor:pointer}.growth-reset:hover{background:var(--surface-soft);color:var(--text)}
+.growth-module>.growth-header{flex:0 0 auto;display:flex;align-items:center;flex-wrap:nowrap;gap:8px;margin:0 0 10px;min-width:0}
+.growth-header .growth-heading{flex:1;min-width:0;margin:0;font-size:clamp(15px,3.6cqw,22px);line-height:1.2}
+.growth-header :is(.growth-reset,.growth-change){opacity:0;pointer-events:none;transition:opacity .16s ease;white-space:nowrap}
+.growth-module:hover .growth-header.has-class :is(.growth-reset,.growth-change),.growth-header.has-class :is(.growth-reset,.growth-change):focus-visible{opacity:1;pointer-events:auto}
+.growth-header:not(.has-class) :is(.growth-reset,.growth-change){display:none}
+.growth-dashboard>.growth-class{flex:0 0 auto;margin:8px 0 0;text-align:center;font-size:11px;font-weight:400;color:var(--muted)}
+@container(max-width:390px){.growth-header{gap:5px!important}.growth-header :is(.growth-reset,.growth-change){padding:5px;font-size:10px!important}.growth-header .growth-heading{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.growth-header :is(.growth-reset,.growth-change){transition:none}}
