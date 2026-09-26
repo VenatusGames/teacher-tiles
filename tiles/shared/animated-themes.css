@@ -24,3 +24,7 @@ body:is(.theme-frosted-window,.theme-frosted-window-light) .workspace{z-index:1;
 body.theme-frosted-window{--grid:transparent;--bg:#708b9f}
 :is(.theme-card--frosted-window,.theme-card--frosted-window-light) .animated-theme-preview,.animated-theme-shop--frosted-window,.board-preview-theme-frosted-window,.board-preview-theme-frosted-window-light{background:url('../../assets/themes/previews/frosted-window.webp') center / cover}
 .theme-card--frosted-window,.theme-card--frosted-window-light{background:#f8fafc;color:#20272c}.theme-card--frosted-window .theme-card__copy{background:#182235;color:#f1f5fa}.theme-card--frosted-window-light .theme-card__copy{background:#fff;color:#20272c}
+
+.theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light),.theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light) .theme-card__copy{background:#1b2845;color:#eff4ff}
+
+.theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light),.theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light) .theme-card__copy{background:#b3c8d2;color:#223849}

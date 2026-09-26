@@ -11,12 +11,11 @@
     if(theme==='outer-space'){
       bg.fillStyle=gradient(bg,height,[[0,'#080e24'],[.55,'#141d38'],[1,'#17273e']]);bg.fillRect(0,0,width,height);
       const haze=bg.createRadialGradient(width*.7,height*.4,0,width*.7,height*.4,width*.6);haze.addColorStop(0,'#58406b35');haze.addColorStop(1,'#58406b00');bg.fillStyle=haze;bg.fillRect(0,0,width,height);
-      for(const [x,y,r,color] of [[.17,.24,12,'#899acb'],[.8,.35,20,'#bd907e'],[.63,.75,9,'#77aeb0'],[.35,.62,6,'#b3a1c5']]){const px=x*width,py=y*height;const g=bg.createRadialGradient(px-r*.4,py-r*.4,0,px,py,r);g.addColorStop(0,color);g.addColorStop(.72,color);g.addColorStop(1,'#202b42');bg.fillStyle=g;bg.beginPath();bg.arc(px,py,r,0,Math.PI*2);bg.fill();if(r===20){bg.strokeStyle='#cfb6a15e';bg.lineWidth=2;bg.beginPath();bg.ellipse(px,py,r*1.7,r*.32,-.3,0,Math.PI*2);bg.stroke()}}
+
     }else if(theme==='frosted-window'){
       bg.fillStyle=gradient(bg,height,[[0,'#708b9f'],[.58,'#b3c6ce'],[1,'#e2e9e8']]);bg.fillRect(0,0,width,height);
       bg.filter='blur(5px)';for(let i=0;i<20;i++){const x=random(i+70)*width,h=height*(.1+random(i+45)*.28),y=height*.86;bg.fillStyle=i%2?'#5876824a':'#405d7138';bg.beginPath();bg.moveTo(x,y-h);bg.lineTo(x-h*.32,y);bg.lineTo(x+h*.32,y);bg.closePath();bg.fill()}bg.filter='none';
       const frost=bg.createRadialGradient(width*.5,height*.5,Math.min(width,height)*.25,width*.5,height*.5,Math.max(width,height)*.65);frost.addColorStop(0,'#f3fcff00');frost.addColorStop(.65,'#e5f5fb45');frost.addColorStop(1,'#f2fbffd9');bg.fillStyle=frost;bg.fillRect(0,0,width,height);
-      for(let i=0;i<90;i++){const x=random(i+500)*width,y=(i%2?height:0)+(i%2?-1:1)*random(i+900)*height*.12;bg.strokeStyle='#f3fbff36';bg.lineWidth=1;bg.beginPath();bg.moveTo(x,y);bg.lineTo(x+12,y+(i%2?-24:24));bg.stroke()}
     }else if(theme==='underwater-ocean'){
 
       bg.fillStyle=gradient(bg,height,[[0,'#208caa'],[.28,'#126781'],[.7,'#094156'],[1,'#092f42']]);bg.fillRect(0,0,width,height);
@@ -49,10 +48,18 @@
     const mist=ctx.createLinearGradient(0,0,width,0);mist.addColorStop(0,'#b3cbd413');mist.addColorStop(.2,'#b3cbd400');mist.addColorStop(.8,'#b3cbd400');mist.addColorStop(1,'#b3cbd41c');ctx.fillStyle=mist;ctx.fillRect(0,0,width,height);
   }
   function space(t){
-    for(let i=0;i<150;i++){const x=random(i+10)*width,y=random(i+210)*height,r=.45+random(i+410)*.8;ctx.globalAlpha=.3+.5*(.5+.5*Math.sin(t*(.35+random(i))+i));ctx.fillStyle='#edf3ff';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
-    ctx.globalAlpha=1;const phase=(t+23)%47;if(phase<1.1){const progress=phase/1.1,x=width*.65+progress*width*.2,y=height*.16+progress*height*.18,tail=ctx.createLinearGradient(x-90,y-40,x,y);tail.addColorStop(0,'#e9f4ff00');tail.addColorStop(1,'#e9f4ffd9');ctx.strokeStyle=tail;ctx.lineWidth=1.6;ctx.globalAlpha=Math.sin(progress*Math.PI);ctx.beginPath();ctx.moveTo(x-90,y-40);ctx.lineTo(x,y);ctx.stroke();ctx.globalAlpha=1}
+      for(const [x,y,r,color] of [[.17,.24,12,'#899acb'],[.8,.35,20,'#bd907e'],[.63,.75,9,'#77aeb0'],[.35,.62,6,'#b3a1c5']]){const px=x*width+Math.sin(t*.22+x*9)*9,py=y*height+Math.cos(t*.28+y*8)*6;const g=ctx.createRadialGradient(px-r*.4,py-r*.4,0,px,py,r);g.addColorStop(0,color);g.addColorStop(.72,color);g.addColorStop(1,'#202b42');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);ctx.fill();if(r===20){ctx.strokeStyle='#cfb6a15e';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px,py,r*1.7,r*.32,-.3,0,Math.PI*2);ctx.stroke()}}
+    for(let i=0;i<150;i++){
+      const x=random(i+10)*width,y=random(i+210)*height,pulse=(.5+.5*Math.sin(t*(1.1+random(i)*1.5)+i*2.4)),r=.55+random(i+410)*.8;
+      ctx.globalAlpha=.12+.88*pulse;ctx.fillStyle='#edf3ff';ctx.beginPath();ctx.arc(x,y,r*(.65+pulse*.55),0,Math.PI*2);ctx.fill();
+      if(i%9===0){ctx.strokeStyle='#dbeaff';ctx.lineWidth=.7;const ray=1.2+pulse*3;ctx.beginPath();ctx.moveTo(x-ray,y);ctx.lineTo(x+ray,y);ctx.moveTo(x,y-ray);ctx.lineTo(x,y+ray);ctx.stroke()}
+    }
+    ctx.globalAlpha=1;
+    // First meteor appears after four seconds, then occasionally in different places.
+    const cycle=Math.floor((t+29)/33),phase=(t+29)%33;
+    if(phase<1.8){const progress=phase/1.8,x=width*(.2+random(cycle+710)*.45)+progress*width*.24,y=height*(.12+random(cycle+810)*.2)+progress*height*.2,tail=ctx.createLinearGradient(x-145,y-65,x,y);tail.addColorStop(0,'#e9f4ff00');tail.addColorStop(1,'#ffffff');ctx.strokeStyle=tail;ctx.lineWidth=2;ctx.globalAlpha=Math.sin(progress*Math.PI);ctx.beginPath();ctx.moveTo(x-145,y-65);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
   }
-  function snow(t){for(let i=0;i<85;i++){const depth=random(i+801),x=(random(i+401)*width+Math.sin(t*.25+i)*22+width)%width,y=(random(i+601)*height+t*(8+depth*22))%(height+20)-10,r=1+depth*2;ctx.strokeStyle='#ffffffc4';ctx.fillStyle='#ffffffb8';ctx.lineWidth=.8;if(r>2.3){ctx.beginPath();for(let k=0;k<3;k++){const a=k*Math.PI/3;ctx.moveTo(x-Math.cos(a)*r*1.6,y-Math.sin(a)*r*1.6);ctx.lineTo(x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*1.6)}ctx.stroke()}else{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}}
+  function snow(t){for(let i=0;i<85;i++){const depth=random(i+801),x=(random(i+401)*width+Math.sin(t*.25+i)*22+width)%width,y=(random(i+601)*height+t*(8+depth*22))%(height+20)-10,r=1.4+depth*2.6;ctx.strokeStyle='#ffffffc4';ctx.fillStyle='#ffffffb8';ctx.lineWidth=.8;if(r>2.3){ctx.beginPath();for(let k=0;k<3;k++){const a=k*Math.PI/3;ctx.moveTo(x-Math.cos(a)*r*1.6,y-Math.sin(a)*r*1.6);ctx.lineTo(x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*1.6)}ctx.stroke()}else{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}}
   function draw(){ctx.clearRect(0,0,width,height);ctx.drawImage(background,0,0);if(theme==='underwater-ocean')underwater(time);else if(theme==='outer-space')space(time);else if(theme==='frosted-window')snow(time);else rainy(time)}
   function tick(now){frame=0;if(!theme||document.hidden||reduced.matches)return;if(now-last>=32){time+=Math.min((now-last)/1000,.06);last=now;draw()}frame=requestAnimationFrame(tick)}
   function resize(){width=Math.max(1,innerWidth);height=Math.max(1,innerHeight);const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(theme){paintBackground();draw()}}

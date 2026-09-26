@@ -28,3 +28,14 @@ body.theme-bamboo-green .workspace{background-image:url('assets/themes/baked/bam
 .theme-picker .theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"]) .theme-card__copy{background:#fff}
 .theme-picker .theme-pack-stack:has(.theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"])){opacity:1}
 .theme-picker .theme-pack-sample[class*="theme-card--bamboo-"] .theme-card__preview :is(i,b,em){display:none}
+
+.theme-picker .theme-pack-sample.theme-card--basic-red{background:#df5a60}.theme-picker .theme-pack-sample.theme-card--basic-red .theme-card__copy{background:#df5a60;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-orange{background:#e99145}.theme-picker .theme-pack-sample.theme-card--basic-orange .theme-card__copy{background:#e99145;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-yellow{background:#ead363}.theme-picker .theme-pack-sample.theme-card--basic-yellow .theme-card__copy{background:#ead363;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-green{background:#70ad79}.theme-picker .theme-pack-sample.theme-card--basic-green .theme-card__copy{background:#70ad79;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-blue{background:#639ed9}.theme-picker .theme-pack-sample.theme-card--basic-blue .theme-card__copy{background:#639ed9;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-indigo{background:#7777bd}.theme-picker .theme-pack-sample.theme-card--basic-indigo .theme-card__copy{background:#7777bd;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--basic-violet{background:#af79c5}.theme-picker .theme-pack-sample.theme-card--basic-violet .theme-card__copy{background:#af79c5;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--bamboo-yellow{background:#d4b45e}.theme-picker .theme-pack-sample.theme-card--bamboo-yellow .theme-card__copy{background:#d4b45e;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--bamboo-brown{background:#9f7450}.theme-picker .theme-pack-sample.theme-card--bamboo-brown .theme-card__copy{background:#9f7450;color:#172027}
+.theme-picker .theme-pack-sample.theme-card--bamboo-green{background:#7f9957}.theme-picker .theme-pack-sample.theme-card--bamboo-green .theme-card__copy{background:#7f9957;color:#172027}
