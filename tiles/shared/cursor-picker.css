@@ -11,3 +11,5 @@
 .collection-category-tab{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 4px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:600 12px Inter,system-ui,sans-serif;cursor:pointer}
 .collection-category-tab svg{width:21px;height:21px;flex:none}.collection-category-tab.is-active{background:var(--surface-solid);color:var(--text);box-shadow:0 2px 5px #17243c0c}.collection-category-tab:focus-visible{outline:2px solid #6888c7;outline-offset:1px}
 #asset-shelf .asset-shelf__shell{width:min(400px,calc(100vw - 24px))}
+
+.asset-shelf.is-sticker-mode .collection-category-tabs{display:none}

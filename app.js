@@ -13322,7 +13322,7 @@ function setupCollectionShelf(){
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
     cursorsButton.setAttribute('aria-expanded',String(activeShelf==='cursors'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
-    const customize=document.getElementById('customize-toggle');customize?.setAttribute('aria-expanded',String(Boolean(activeShelf)));customize?.classList.toggle('is-active',Boolean(activeShelf));
+    const customize=document.getElementById('customize-toggle');customize?.setAttribute('aria-expanded',String(Boolean(activeShelf)&&activeShelf!=='stickers'));customize?.classList.toggle('is-active',Boolean(activeShelf)&&activeShelf!=='stickers');
   };
 
   const closeShelf=()=>{
@@ -13367,7 +13367,7 @@ function setupCollectionShelf(){
   };
 
   themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
-  stickerButton.addEventListener('click',e=>{e.stopPropagation();openShelf('stickers')});
+  stickerButton.addEventListener('click',e=>{e.stopPropagation();if(activeShelf==='stickers')closeShelf();else openShelf('stickers')});
   cursorsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('cursors')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleThemeFan(pack)}));
@@ -13619,15 +13619,17 @@ function setupCustomizeLauncher(){
   const toggle=document.getElementById('customize-toggle');
   const shelf=document.getElementById('asset-shelf');
   const tabs=document.createElement('nav');tabs.className='collection-category-tabs';tabs.setAttribute('aria-label','Customization categories');
-  for(const [id,label] of [['theme-shelf-toggle','Themes'],['sticker-shelf-toggle','Stickers'],['cursors-shelf-toggle','Cursors']]){
+  for(const [id,label] of [['theme-shelf-toggle','Themes'],['cursors-shelf-toggle','Cursors']]){
     const button=document.getElementById(id);button.className='collection-category-tab';
     button.querySelector('.upcoming-control__tooltip').remove();
     const text=document.createElement('span');text.textContent=label;button.append(text);tabs.append(button);
   }
   shelf.querySelector('.asset-shelf__header').after(tabs);
+  const stickers=document.getElementById('sticker-shelf-toggle');stickers.classList.remove('shelf-launch-control');
+  document.getElementById('shop-toggle').before(stickers);
   document.getElementById('customize-launch-menu').hidden=true;
   toggle.setAttribute('aria-controls','asset-shelf');
-  toggle.addEventListener('click',event=>{event.stopPropagation();if(shelf.classList.contains('is-open'))document.getElementById('asset-shelf-close').click();else document.getElementById('theme-shelf-toggle').click()});
+  toggle.addEventListener('click',event=>{event.stopPropagation();if(shelf.classList.contains('is-open')&&!shelf.classList.contains('is-sticker-mode'))document.getElementById('asset-shelf-close').click();else document.getElementById('theme-shelf-toggle').click()});
 }
 
 setupCustomizeLauncher();
