@@ -23,3 +23,7 @@ body.theme-bamboo-green{--bg:#7f9957;--grid:rgba(20,30,20,.09);--surface:rgba(25
 .theme-card--bamboo-green .theme-card__preview,.theme-pack__sheet--bamboo-green,.board-preview-theme-bamboo-green{background:url('assets/themes/previews/bamboo-green.webp') center / cover}
 body.theme-bamboo-green .workspace{background-image:url('assets/themes/baked/bamboo-green.webp');background-size:1200px 800px;background-repeat:repeat}
 .shop-product__preview--bamboo{display:flex;align-items:center;justify-content:center;gap:12px;background:#eae6d7}.shop-product__preview--bamboo>i{display:block;width:25%;height:72%;border-radius:13px;background-size:cover;background-position:center;box-shadow:0 8px 18px #332d2929}.shop-product__preview--bamboo>i:first-child{transform:rotate(-8deg)}.shop-product__preview--bamboo>i:last-child{transform:rotate(8deg)}
+/* Opaque holders keep the stacked pack logos from showing through each other. */
+.theme-picker .theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"]){background:#fff;color:#20272c;opacity:1}
+.theme-picker .theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"]) .theme-card__copy{background:#fff}
+.theme-picker .theme-pack-stack:has(.theme-pack-sample:is([class*="theme-card--basic-"],[class*="theme-card--bamboo-"])){opacity:1}
