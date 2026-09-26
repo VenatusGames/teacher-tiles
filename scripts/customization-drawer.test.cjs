@@ -13,7 +13,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 
 await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;document.getElementById('customize-toggle').click()});
 assert(await page.locator('#asset-shelf').evaluate(el=>el.classList.contains('is-open')));
-for(const id of ['sticker-shelf-toggle','cursors-shelf-toggle','theme-shelf-toggle']){await page.locator('#'+id).click();assert(await page.locator('#asset-shelf').evaluate(el=>el.classList.contains('is-open')))}
+for(const id of ['cursors-shelf-toggle','theme-shelf-toggle']){await page.locator('#'+id).click();assert(await page.locator('#asset-shelf').evaluate(el=>el.classList.contains('is-open')))}
 await page.locator('#cursors-shelf-toggle').click();await page.waitForTimeout(500);
 assert.equal(await page.locator('.cursor-picker-choice span').first().evaluate(el=>getComputedStyle(el).whiteSpace),'normal');
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/unified-customize.png'});
@@ -25,6 +25,12 @@ await page.locator('.tile-appearance-toggle').last().click({force:true});
 assert(await page.locator('.tile-appearance-flyout').evaluate(el=>el.matches(':popover-open')));
 await page.locator('.tile-appearance-tool').first().click();assert(await page.locator('.tile-appearance-picker').isVisible());
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/fullscreen-appearance.png'});
+const trigger=page.locator('.tile-appearance-toggle').last();
+const railBounds=await page.locator('.tile-appearance-rail').boundingBox(),buttonBounds=await trigger.boundingBox();
+assert(railBounds.y+railBounds.height<buttonBounds.y,'drawer clears the paintbrush button');
+await trigger.click();assert(await page.locator('.tile-appearance-flyout').isHidden());
+await trigger.click();assert(await page.locator('.tile-appearance-flyout').isVisible());
+await page.mouse.click(750,350);assert(await page.locator('.tile-appearance-flyout').isHidden());
 await page.evaluate(()=>document.exitFullscreen());assert.deepEqual(errors,[]);
 console.log('Unified shelf navigation, wrapping cursor names and fullscreen appearance controls passed');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

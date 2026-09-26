@@ -20,7 +20,8 @@
     if(!active)return;
     if(!active.module.isConnected){close();return}
     const rect=active.module.getBoundingClientRect(),anchor=active.button.getBoundingClientRect();
-    const left=Math.max(8,Math.min(rect.left-48,innerWidth-48)),top=Math.max(8,Math.min(anchor.bottom-rail.offsetHeight,innerHeight-rail.offsetHeight-8));
+    const fullscreen=document.fullscreenElement===active.module;
+    const left=Math.max(8,Math.min(fullscreen?anchor.left:rect.left-48,innerWidth-48)),top=Math.max(8,Math.min((fullscreen?anchor.top-8:anchor.bottom)-rail.offsetHeight,innerHeight-rail.offsetHeight-8));
     flyout.style.left=`${left}px`;flyout.style.top=`${top}px`;
     if(!picker.hidden){
       const w=picker.offsetWidth,h=picker.offsetHeight;
@@ -131,7 +132,7 @@
   flyout.addEventListener('keydown',event=>{event.stopPropagation();if(event.key==='Escape'){const button=active?.button;close();button?.focus()}});
   document.addEventListener('keydown',event=>{if(event.key==='Tab')keyboard=true},true);
   document.addEventListener('pointerdown',()=>{keyboard=false},true);
-  document.addEventListener('pointerdown',event=>{if(active&&!flyout.contains(event.target)&&!active.button.contains(event.target))close()});
+  document.addEventListener('pointerdown',event=>{if(active&&!flyout.contains(event.target)&&!active.button.contains(event.target))close()},true);
   window.addEventListener('blur',close);
   document.addEventListener('fullscreenchange',close);
   function setup(m,{fonts,onChange}){
