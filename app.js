@@ -978,9 +978,8 @@ function setupStudentView(){
     }
     const valueFor=stat=>wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
     if(compact){
-      const total=stats.reduce((sum,stat)=>sum+valueFor(stat),0),summary=document.createElement('span');summary.className='student-view-reward-total';summary.textContent=total+' rewards';summary.title=stats.map(stat=>stat.label+': '+valueFor(stat)).join(' · ');container.append(summary);return;
+      const total=stats.reduce((sum,stat)=>sum+valueFor(stat),0),summary=document.createElement('span');summary.className='student-view-reward-total';summary.textContent=total+' PBIS Rewards';summary.title=stats.map(stat=>stat.label+': '+valueFor(stat)).join(' · ');container.append(summary);return;
     }
-    const other=document.createElement('details');other.className='student-profile-other';const label=document.createElement('summary');label.textContent='Other activities';other.append(label);const otherGrid=document.createElement('div');otherGrid.className='student-profile-other-grid';other.append(otherGrid);
     stats.forEach(stat=>{
       const value=wholeClass?stat.wholeClassValue?.(roster)??0:stat.value(roster,name);
       const item=document.createElement(compact?'span':'div');
@@ -994,9 +993,9 @@ function setupStudentView(){
         reset.addEventListener('click',()=>resetProfileStat(stat,roster,name,{wholeClass}));
         copy.append(count,label);item.append(icon,copy,reset);
       }
-      (Number(value)>0?container:otherGrid).append(item);
+      container.append(item);
     });
-    if(otherGrid.childElementCount){label.textContent=`Other activities (${otherGrid.childElementCount})`;container.append(other)}
+
   };
 
   const renderDetail=()=>{
@@ -1091,6 +1090,7 @@ function setupStudentView(){
   });
   studentSearch.addEventListener('input',renderRosters);
   statMenuToggle.addEventListener('click',()=>setStatMenuOpen(statMenu.hidden));
+  document.getElementById('student-view-settings-close')?.addEventListener('click',()=>{setStatMenuOpen(false);statMenuToggle.focus()});
   panel.addEventListener('pointerdown',event=>{
     if(!statMenu.hidden&&!event.target.closest('.student-view-stat-menu'))setStatMenuOpen(false);
   });
