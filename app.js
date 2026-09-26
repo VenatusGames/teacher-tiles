@@ -3177,7 +3177,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
   Object.freeze({id:'meditation-rainbow',productId:'tile-skin-meditation-rainbow',tileType:'meditation',tileLabel:'Meditation',name:'Rainbow Breath',description:'Translucent rainbow bands rise together on the inhale and recede on the exhale.',tags:'meditation rainbow breath breathing sel',released:33}),
-  Object.freeze({id:'squishy-gel-cube',productId:'tile-skin-squishy-gel-cube',tileType:'squishy',tileLabel:'Squishy',name:'Gel Cube',description:'A dimensional translucent gel cube with soft rounded edges.',tags:'squishy gel cube 3d sensory',released:32}),
+  Object.freeze({id:'squishy-gel-cube',productId:'tile-skin-squishy-gel-cube',tileType:'squishy',tileLabel:'Squishy',name:'3D Squishy',description:'Grab, stretch, rotate, and toss a soft 3D gel cube with spring physics.',tags:'squishy gel cube 3d sensory',released:32}),
   Object.freeze({id:'soundscapes-vinyl',productId:'tile-skin-soundscapes-vinyl',tileType:'boombox',tileLabel:'Soundscapes',name:'Vinyl',description:'Turn Soundscapes into a spinning record player.',tags:'soundscapes audio vinyl record music ambient sound',released:29}),
   Object.freeze({id:'soundscapes-music-player',productId:'tile-skin-soundscapes-music-player',tileType:'boombox',tileLabel:'Soundscapes',name:'Music Player',description:'A polished modern music-player layout for classroom soundscapes.',tags:'soundscapes audio music player modern ambient sound',released:30}),
   Object.freeze({id:'soundscapes-ipod',productId:'tile-skin-soundscapes-ipod',tileType:'boombox',tileLabel:'Soundscapes',name:'iPod',description:'A classic click-wheel player look for your classroom soundscapes.',tags:'soundscapes audio ipod click wheel retro music ambient sound',released:31,preferredSize:Object.freeze({width:270,height:430})})
@@ -6166,6 +6166,7 @@ function setupClassMeter(m){
   const meter=m.querySelector('.classmeter-meter');
   const percent=m.querySelector('.classmeter-percent');
   const winCount=m.querySelector('.classmeter-win-count b');
+  const headerActions=document.createElement('div');headerActions.className='pbis-header-actions';changeClass.before(headerActions);headerActions.append(m.querySelector('.classmeter-win-count'),changeClass);
   const fillButton=m.querySelector('.classmeter-fill');
   const decreaseButton=m.querySelector('.classmeter-decrease');
   const orientationButton=m.querySelector('.classmeter-orientation');
@@ -6804,6 +6805,8 @@ function setupCollections(m){
   const importView=m.querySelector('.collection-import'),dashboard=m.querySelector('.collection-dashboard'),className=m.querySelector('.collection-class-name'),classLogo=m.querySelector('.collection-class-logo'),changeClass=m.querySelector('.collection-change-class');
   const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),fillHandle=m.querySelector('.collection-fill-line-handle'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
   const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),bannerRestart=m.querySelector('.collection-banner-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),emptyCurrent=m.querySelector('.collection-empty-current'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
+  const headerActions=document.createElement('div');headerActions.className='pbis-header-actions';changeClass.before(headerActions);
+  const fillCounter=document.createElement('span');fillCounter.className='collection-win-count';fillCounter.innerHTML='<span aria-hidden="true">🏆</span><strong><b>0</b> fills</strong>';headerActions.append(fillCounter,changeClass);
   const types=[
     {id:'pompom',label:'Pom Poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
     {id:'jellybean',label:'Jellybeans'},{id:'fruit',label:'Fruits'},{id:'coin',label:'Coins'}
@@ -6842,7 +6845,7 @@ function setupCollections(m){
   }
   function updateCount(){
     countEl.textContent=`${bodies.length} item${bodies.length===1?'':'s'}`;
-    jarsFilledEl.textContent=String(normalizeStarChartCount(progress.jarsFilled));
+    jarsFilledEl.textContent=String(normalizeStarChartCount(progress.jarsFilled));fillCounter.querySelector('b').textContent=jarsFilledEl.textContent;
     emptyCurrent.disabled=bodies.length<=0&&!progress.filled;
     removeFill.disabled=progress.jarsFilled<=0;
     resetFills.disabled=progress.jarsFilled<=0;
