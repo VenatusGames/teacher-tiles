@@ -70,6 +70,9 @@ jobs:
           git archive origin/main | tar -x -C _site
           mkdir _site/sandbox
           git archive origin/sandbox | tar -x -C _site/sandbox
+          if test -f _site/sandbox/sandbox/build.cjs; then
+            node _site/sandbox/sandbox/build.cjs _site/sandbox
+          fi
           mkdir _site/wigs
           cp -R .wigs-source/dist/. _site/wigs/
           {
@@ -103,7 +106,7 @@ jobs:
           if missing:
               raise SystemExit(f'Missing required site entry point(s): {", ".join(missing)}')
 
-          candidates = required_indexes
+          candidates = required_indexes + [Path('_site/sandbox/board.html')]
           indexes = [index for index in candidates if index.is_file()]
           for index in indexes:
               html = index.read_text(encoding='utf-8')

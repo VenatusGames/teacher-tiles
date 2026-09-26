@@ -1258,7 +1258,6 @@ window.TeacherTilesTileAudio=Object.freeze({
 });
 
 function playUiSfx(kind='click',volumeScale=1,owner=null){
-  if(window.TeacherTilesAdminAccess?.locked)return;
   if(owner&&!owner.isConnected)return;
   const effectiveLevel=kind==='click'?globalUiAudioLevel():tileAudioLevel(owner);
   if(effectiveLevel<=0)return;
@@ -3271,7 +3270,7 @@ function migrateLegacyCursorOwnership(){
 }
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
-function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive||window.TeacherTilesSandbox?.subscriptionEnabled)}
+function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive)}
 function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().has(product)||hasCosmeticSubscription()}
 function markSubscriptionAccess(element,product){
   element.querySelector(':scope > .subscription-access-crown')?.remove();
@@ -20541,13 +20540,3 @@ function setupTeacherTilesShop(){
   syncShop();handleCheckoutReturn();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
-
-let sandboxRuntimeLoading=false;
-async function initializeSandboxRuntime(){
-  if(!window.TeacherTilesAdminAccess?.required||!window.TeacherTilesAdminAccess.allowed||sandboxRuntimeLoading)return;
-  sandboxRuntimeLoading=true;
-  try{await import(new URL('sandbox/dev-console.js?v=20261011-admin-access',window.location.href).href)}
-  catch(error){sandboxRuntimeLoading=false;console.error('Sandbox tools could not load',error)}
-}
-window.addEventListener('teachertiles:adminaccess',initializeSandboxRuntime);
-initializeSandboxRuntime();

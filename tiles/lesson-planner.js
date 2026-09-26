@@ -831,7 +831,7 @@
 
   function hasPlannerSubscription() {
     const accountState = window.TeacherTilesAccount?.state;
-    return Boolean(accountState?.subscriptionActive || window.TeacherTilesSandbox?.subscriptionEnabled);
+    return Boolean(accountState?.subscriptionActive);
   }
 
   function plannerLimit() {

@@ -11,7 +11,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 
 
 
-await page.evaluate(async()=>{document.getElementById('profile-modal').hidden=true;await import('/sandbox/dev-console.js');localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(Object.values(COLLECTION_PACK_PRODUCTS)));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'));document.querySelector('#sandbox-reset-owned-items').click()});
+await page.evaluate(async()=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesAdminAccess={required:true,allowed:true};await import('/sandbox/dev-console.js');localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(Object.values(COLLECTION_PACK_PRODUCTS)));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'));document.querySelector('#sandbox-reset-owned-items').click()});
 const retained=await page.evaluate(()=>[...document.querySelectorAll('[data-sticker-pack]')].filter(p=>COLLECTION_PACK_PRODUCTS[p.id]).filter(p=>{const d=document.getElementById(p.getAttribute('aria-controls'));return [...d.querySelectorAll('.sticker-shelf-item')].some(s=>ownsCosmetic(shelfEntitlement(s)))}).map(p=>p.id));assert.deepEqual(retained,[]);
 
 await page.evaluate(()=>localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(['theme-outer-space','theme-frosted-window'])));

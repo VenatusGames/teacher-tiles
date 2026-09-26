@@ -12,7 +12,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 
 
 
-await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesSandbox={subscriptionEnabled:true};const p=screenToBoard(730,130);window.us=createModule('usstates',p.x,p.y);});
+await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesAccount={state:{subscriptionActive:true}};const p=screenToBoard(730,130);window.us=createModule('usstates',p.x,p.y);});
 await page.waitForFunction(()=>document.querySelectorAll('.usstates-module [data-country-id]').length===50);
 await page.locator('.usstates-module .worldmap-legend select').selectOption({label:'California'});
 assert.equal(await page.locator('.usstates-module .worldmap-name').innerText(),'California');

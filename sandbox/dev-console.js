@@ -37,6 +37,7 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.allo
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.1 8.2 4.3 12l3.8 3.8M15.9 8.2l3.8 3.8-3.8 3.8M13.7 5.8l-3.4 12.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span class="upcoming-control__tooltip"><strong>Dev Console</strong></span>`;
   boardButton?.insertAdjacentElement('afterend',devButton);
+  const portalLink=document.createElement('a');portalLink.href='./';portalLink.className='sandbox-portal-return';portalLink.textContent='← Developer Portal';document.body.append(portalLink);
 
   const consoleRoot=document.createElement('section');
   consoleRoot.id='sandbox-dev-console';

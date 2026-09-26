@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const required = /^\/sandbox(?:\/|$)/i.test(location.pathname);
+  const required = true;
   let allowed = false, role = '', gate, message, signIn, refresh;
   let actions = {}, pending = false;
   const blocked = () => required && !allowed;
@@ -18,7 +18,7 @@
     for (const type of ['keydown','keyup','pointerdown','click','wheel','drop']) document.addEventListener(type, prevent, {capture:true,passive:false});
     document.addEventListener('DOMContentLoaded', () => {
       gate = document.createElement('div'); gate.id = 'sandbox-access-gate';
-      gate.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="sandbox-access-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><h1 id="sandbox-access-title">Admin access only</h1><p role="status" aria-live="polite">Checking your account…</p><button type="button" data-signin disabled>Sign in with Google</button><button type="button" data-refresh disabled>Check access again</button><a href="/">Back to TeacherTiles</a></section>`;
+      gate.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="sandbox-access-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><h1 id="sandbox-access-title">Admin access only</h1><p role="status" aria-live="polite">Checking your account…</p><button type="button" data-signin disabled>Sign in with Google</button><button type="button" data-refresh disabled>Check access again</button><a href="./">Back to Developer Portal</a></section>`;
       document.body.append(gate);
       message = gate.querySelector('p'); signIn = gate.querySelector('[data-signin]'); refresh = gate.querySelector('[data-refresh]');
       const run = async (action, popup = false) => {
@@ -59,4 +59,35 @@
       sync();window.dispatchEvent(new CustomEvent('teachertiles:adminaccess',{detail:{allowed,role}}));
     }
   });
+})();
+
+(() => {
+  const access=window.TeacherTilesAdminAccess;
+  const base=new URL('.',document.currentScript.src);
+  const client=import(new URL('access-client.js',base).href);
+  let lastCheck=0,inFlight=false,loaded=false;
+  async function validate(user){
+    lastCheck=Date.now();const wasAllowed=access.allowed;
+    if(!user){access.update();if(wasAllowed)location.replace('./');throw Error('Sign in required');}
+    try{
+      access.status('Signed in. Verifying administrator access…');
+      const {verifyAccess}=await client;
+      const result=await verifyAccess(user,window.TeacherTilesAuth.call);
+      if(window.TeacherTilesAuth.user?.uid!==user.uid)throw Error('Account changed');
+      access.update({portalRole:result.role},user.email);
+      if(!loaded){loaded=true;await import(new URL('dev-console.js',base).href);}
+    }catch(error){
+      const {accessError}=await client;access.update({},user.email);access.status(accessError(error));
+      if(wasAllowed)location.replace('./');throw error;
+    }
+  }
+  window.addEventListener('teachertiles:beforeaccountload',event=>event.detail.waitUntil(validate(event.detail.user)));
+  window.addEventListener('teachertiles:authready',()=>access.configure({signIn:()=>window.TeacherTilesAuth.signIn(),refresh:()=>window.TeacherTilesAuth.refresh()}));
+  window.addEventListener('teachertiles:authstatus',event=>{if(event.detail.isError||['Opening Google sign-in…','Sign-in was canceled.'].includes(event.detail.message))access.status(event.detail.message)});
+  window.addEventListener('teachertiles:autherror',()=>{access.update();access.status('Sign-in could not load. Check your connection and refresh.');});
+  // Suppress application sounds until access has been verified.
+  const nativePlay=HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play=function(...args){return access.locked?Promise.resolve():nativePlay.apply(this,args)};
+  const recheck=async()=>{if(inFlight||document.hidden||!window.TeacherTilesAuth?.user||Date.now()-lastCheck<300000)return;inFlight=true;try{await window.TeacherTilesAuth.refresh()}finally{inFlight=false}};
+  setInterval(recheck,60000);window.addEventListener('focus',recheck);
 })();

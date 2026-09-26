@@ -14,7 +14,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 
 
 for(const skin of ['', 'squishy-gel-cube']){
- await page.evaluate(skin=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesSandbox={subscriptionEnabled:true};const p=screenToBoard(650,170);window.cube=createModule('squishy',p.x,p.y,{tileSkin:skin});cube.style.width='500px';cube.style.height='520px';},skin);
+ await page.evaluate(skin=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesAccount={state:{subscriptionActive:true}};const p=screenToBoard(650,170);window.cube=createModule('squishy',p.x,p.y,{tileSkin:skin});cube.style.width='500px';cube.style.height='520px';},skin);
  await page.waitForTimeout(600);
  assert.equal(await page.locator('.squishy-module .tile-audio-volume').count(),1);
  const canvas=page.locator('.squishy-canvas'),box=await canvas.boundingBox();

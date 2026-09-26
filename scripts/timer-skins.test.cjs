@@ -19,7 +19,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     await page.addStyleTag({content:"*,*::before,*::after{transition:none!important}"});
 
 
-    await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;boardCamera.x=0;boardCamera.y=0;boardCamera.scale=1;applyBoardCamera();window.TeacherTilesSandbox={subscriptionEnabled:true};const m=createModule('timer',500,250,{record:false,tileSkin:'timer-liquid'});m.style.left='250px';m.style.top='150px';m._boardTimerSetState({total:10,left:10,running:false});});
+    await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;boardCamera.x=0;boardCamera.y=0;boardCamera.scale=1;applyBoardCamera();window.TeacherTilesAccount={state:{subscriptionActive:true}};const m=createModule('timer',500,250,{record:false,tileSkin:'timer-liquid'});m.style.left='250px';m.style.top='150px';m._boardTimerSetState({total:10,left:10,running:false});});
     const tile=page.locator('.workspace .module'),liquid=page.locator('.timer-liquid-fill');
     assert.notEqual(await tile.evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','Liquid Fill has a tile background');
     assert.equal(await tile.getAttribute('data-tile-skin'),'timer-liquid');assert.equal(await liquid.evaluate(el=>el.style.height),'0%');

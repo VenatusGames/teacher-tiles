@@ -12,7 +12,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 
 
 
-await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesSandbox={subscriptionEnabled:true};const p=screenToBoard(650,170);window.cube=createModule('squishy',p.x,p.y,{tileSkin:'squishy-gel-cube'});cube.style.width='500px';cube.style.height='520px';});await page.waitForTimeout(1000);
+await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;window.TeacherTilesAccount={state:{subscriptionActive:true}};const p=screenToBoard(650,170);window.cube=createModule('squishy',p.x,p.y,{tileSkin:'squishy-gel-cube'});cube.style.width='500px';cube.style.height='520px';});await page.waitForTimeout(1000);
 assert.equal(await page.locator('.squishy-canvas').evaluate(c=>!!c.getContext('webgl')),true);
 const canvas=page.locator('.squishy-canvas'),box=await canvas.boundingBox();const before=await canvas.evaluate(c=>c.toDataURL());
 await page.mouse.move(box.x+box.width*.52,box.y+box.height*.5);await page.mouse.down();await page.mouse.move(box.x+box.width*.73,box.y+box.height*.25,{steps:20});await page.waitForTimeout(350);

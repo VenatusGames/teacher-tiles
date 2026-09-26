@@ -1,12 +1,5 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyBa1AkZfYLemz4gDAI505704wsG1CC_sSQ",
-  authDomain: "auth.teachertiles.com",
-  projectId: "teachertiles-6739b",
-  storageBucket: "teachertiles-6739b.firebasestorage.app",
-  messagingSenderId: "41204185343",
-  appId: "1:41204185343:web:1b170fbf73e35d2926f4ca",
-  measurementId: "G-18VJG8SWLD"
-};
+import { firebaseConfig } from './firebase-config.js';
+
 
 const modal = document.getElementById("profile-modal");
 const toggle = document.getElementById("profile-toggle");
@@ -561,7 +554,7 @@ async function loadEncryptedClasses() {
 }
 
 function setStatus(message = "", isError = false) {
-  if(isError||message==='Opening Google sign-in…'||message==='Sign-in was canceled.')window.TeacherTilesAdminAccess?.status(message);
+  window.dispatchEvent(new CustomEvent('teachertiles:authstatus',{detail:{message,isError}}));
   status.textContent = message;
   status.classList.toggle("is-error", isError);
 }
@@ -660,7 +653,7 @@ function syncProfileBadgeCount() {
 }
 
 function syncSubscriberMarks(state = shopAccountState) {
-  const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesSandbox?.subscriptionEnabled));
+  const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive));
   if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
   if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
   toggle?.classList.toggle("is-subscriber", active);
@@ -2997,7 +2990,7 @@ function showBoardLimitPopup() {
   popup.querySelector(".board-limit-popup__close")?.focus({ preventScroll: true });
 }
 
-function membershipBoardLimit(){return shopAccountState.subscriptionActive||window.TeacherTilesSandbox?.subscriptionEnabled?20:2}
+function membershipBoardLimit(){return shopAccountState.subscriptionActive||window.TeacherTilesAccount?.state.subscriptionActive?20:2}
 
 async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
@@ -4391,12 +4384,9 @@ async function handleSignOut() {
   }
 }
 
-let adminAuthGeneration = 0;
-let adminRenderedUid;
-let lastAdminCheck = 0;
-let adminCheckInFlight = null;
-
-function syncAdminPatch(allowed) {
+let accountAuthGeneration = 0;
+let renderedAccountUid;
+function syncStaffPatch(allowed) {
   const badge = document.getElementById('profile-teachertiles-badge');
   if (!badge) return;
   badge.classList.toggle('profile-badge--locked', !allowed);
@@ -4407,57 +4397,18 @@ function syncAdminPatch(allowed) {
   syncProfileBadgeCount();
 }
 
-async function handleAdminAuthChange(user) {
-  const generation = ++adminAuthGeneration;
-  lastAdminCheck = Date.now();
-  const access = window.TeacherTilesAdminAccess;
-  const wasAllowed = access?.allowed;
-  let claims = {};
-  try {
-    if (user) {
-      if (access?.required) {
-        access.status('Signed in. Verifying administrator access…');
-        const result = await functionsSdk.httpsCallable(cloudFunctions, 'verifyDeveloperAccess', {timeout:15000})({});
-        if (result.data?.uid !== user.uid) throw new Error('Account verification mismatch');
-        claims = {portalRole:result.data.role};
-      } else claims = (await authSdk.getIdTokenResult(user)).claims;
-    }
-  } catch (error) {
-    if (generation !== adminAuthGeneration || auth.currentUser?.uid !== user?.uid) return;
-    access?.update({},user?.email || '');
-    syncAdminPatch(false);
-    if (access?.required && wasAllowed) { location.reload(); return; }
-    if (error?.code === 'functions/unauthenticated') access?.status('Your session has expired. Please sign in again.');
-    else if (error?.code !== 'functions/permission-denied') access?.status('The admin verification service could not be reached. Confirm verifyDeveloperAccess deployed successfully, then choose Check access again.');
-    return;
-  }
-  if (generation !== adminAuthGeneration || auth.currentUser?.uid !== user?.uid) return;
-  lastAdminCheck = Date.now();
-  access?.update(claims,user?.email || '');
-  syncAdminPatch(Boolean(access?.allowed));
-  if (access?.required && (!access.allowed || (adminRenderedUid && adminRenderedUid !== user?.uid))) {
-    if (wasAllowed || adminRenderedUid) location.reload();
-    return;
-  }
-  const uid = user?.uid || '';
-  if (adminRenderedUid !== uid) {
-    adminRenderedUid = uid;
-    await renderUser(user);
-  }
+async function handleAccountAuthChange(user) {
+  const generation=++accountAuthGeneration;
+  const checks=[];
+  window.dispatchEvent(new CustomEvent('teachertiles:beforeaccountload',{detail:{user,waitUntil:promise=>checks.push(promise)}}));
+  try { await Promise.all(checks); } catch { return; }
+  if(generation!==accountAuthGeneration||auth.currentUser?.uid!==user?.uid)return;
+  const claims=user?(await authSdk.getIdTokenResult(user)).claims:{};
+  if(generation!==accountAuthGeneration||auth.currentUser?.uid!==user?.uid)return;
+  syncStaffPatch(['owner','admin'].includes(claims.portalRole));
+  const uid=user?.uid||'';
+  if(renderedAccountUid!==uid){renderedAccountUid=uid;await renderUser(user);}
 }
-
-function refreshAdminAccess() {
-  if (!auth || adminCheckInFlight) return adminCheckInFlight;
-  adminCheckInFlight = handleAdminAuthChange(auth.currentUser).finally(() => {adminCheckInFlight=null});
-  return adminCheckInFlight;
-}
-// Recheck active sandbox sessions without Firestore listeners or reads.
-setInterval(() => {
-  if (window.TeacherTilesAdminAccess?.required && auth?.currentUser && !document.hidden && Date.now()-lastAdminCheck >= 300000) void refreshAdminAccess();
-}, 60000);
-window.addEventListener('focus', () => {
-  if (window.TeacherTilesAdminAccess?.required && auth?.currentUser && Date.now()-lastAdminCheck >= 300000) void refreshAdminAccess();
-});
 
 async function initializeFirebaseAuth() {
   signInButton.disabled = true;
@@ -4485,15 +4436,20 @@ async function initializeFirebaseAuth() {
       console.warn("TeacherTiles could not set local Firebase auth persistence", error);
     }
 
-    window.TeacherTilesAdminAccess?.configure({signIn:handleSignIn,refresh:()=>refreshAdminAccess()});
+    window.TeacherTilesAuth=Object.freeze({
+      get user(){return auth.currentUser},
+      signIn:handleSignIn,signOut:handleSignOut,
+      refresh:()=>handleAccountAuthChange(auth.currentUser),
+      call:(name,data={})=>functionsSdk.httpsCallable(cloudFunctions,name,{timeout:15000})(data)
+    });
+    window.dispatchEvent(new Event('teachertiles:authready'));
     authModule.onIdTokenChanged(auth, user => {
-      handleAdminAuthChange(user).catch(error => {
+      handleAccountAuthChange(user).catch(error => {
         console.error("TeacherTiles account initialization failed", error);
         setStatus("Your account signed in, but cloud boards could not be initialized.", true);
       });
     }, error => {
-      window.TeacherTilesAdminAccess?.update();
-      window.TeacherTilesAdminAccess?.status("Unable to verify your account. Please refresh and try again.");
+      window.dispatchEvent(new CustomEvent("teachertiles:autherror"));
       console.error("TeacherTiles auth state error", error);
       authReady = true;
       loadingState.hidden = true;
@@ -4506,7 +4462,7 @@ async function initializeFirebaseAuth() {
       openProfile();
     });
   } catch (error) {
-    window.TeacherTilesAdminAccess?.status("Sign-in could not load. Check your connection and refresh this page.");
+    window.dispatchEvent(new CustomEvent("teachertiles:autherror"));
     console.error("TeacherTiles Firebase SDK failed to load", error);
     authReady = true;
     loadingState.hidden = true;
@@ -4525,8 +4481,7 @@ document.addEventListener("click", event => {
     ? event.target.closest("#theme-shelf-toggle, #sticker-shelf-toggle, #tile-skins-shelf-toggle, #shop-toggle, #boards-toggle")
     : null;
 
-  const sandboxShopAccess = document.body.classList.contains("sandbox-mode") && Boolean(window.TeacherTilesSandbox?.coinsEnabled) && target?.id !== "boards-toggle";
-  if (!target || !gatedFeatureIds.has(target.id) || currentUser || sandboxShopAccess) return;
+  if (!target || !gatedFeatureIds.has(target.id) || currentUser) return;
 
   event.preventDefault();
   event.stopPropagation();
