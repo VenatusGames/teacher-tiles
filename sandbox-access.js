@@ -2,7 +2,7 @@
   'use strict';
   const required = /^\/sandbox(?:\/|$)/i.test(location.pathname);
   let allowed = false, role = '', gate, message, signIn, refresh;
-  let actions = {};
+  let actions = {}, pending = false;
   const blocked = () => required && !allowed;
   if (required) {
     document.documentElement.classList.add('sandbox-access-locked');
@@ -21,8 +21,19 @@
       gate.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="sandbox-access-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><h1 id="sandbox-access-title">Admin access only</h1><p role="status" aria-live="polite">Checking your account…</p><button type="button" data-signin disabled>Sign in with Google</button><button type="button" data-refresh disabled>Check access again</button><a href="/">Back to TeacherTiles</a></section>`;
       document.body.append(gate);
       message = gate.querySelector('p'); signIn = gate.querySelector('[data-signin]'); refresh = gate.querySelector('[data-refresh]');
-      signIn.onclick = async () => { signIn.disabled=true;try {await actions.signIn?.()} finally {signIn.disabled=false} };
-      refresh.onclick = async () => { refresh.disabled=true;try {await actions.refresh?.()} finally {refresh.disabled=false} };
+      const run = async (action, popup = false) => {
+        if(pending||!action)return;
+        pending=true;sync();
+        const reminder=popup?setTimeout(()=>{
+          if(blocked()&&status==='Opening Google sign-in…'){
+            status='Finish signing in in the Google window. If no window opened, allow popups for teachertiles.com and refresh this page.';sync();
+          }
+        },12000):0;
+        try{await action()}catch{status='Sign-in could not finish. Please refresh this page and try again.'}
+        finally{clearTimeout(reminder);pending=false;sync()}
+      };
+      signIn.onclick = () => run(actions.signIn,true);
+      refresh.onclick = () => run(actions.refresh);
       const inert = () => { for (const child of document.body.children) if(child!==gate) {if(blocked()&&!child.inert){child.inert=true;child.dataset.sandboxAccessInert='true'}else if(!blocked()&&child.dataset.sandboxAccessInert){child.inert=false;delete child.dataset.sandboxAccessInert}} };
       new MutationObserver(inert).observe(document.body,{childList:true});
       window.addEventListener('teachertiles:adminaccess',inert); inert();
@@ -34,8 +45,8 @@
     document.documentElement.classList.toggle('sandbox-access-locked',blocked());
     if(gate)gate.hidden=!blocked();
     if(message)message.textContent=status;
-    if(signIn)signIn.disabled=!actions.signIn;
-    if(refresh)refresh.disabled=!actions.refresh;
+    if(signIn)signIn.disabled=pending||!actions.signIn;
+    if(refresh)refresh.disabled=pending||!actions.refresh;
   }
   window.TeacherTilesAdminAccess = Object.freeze({
     get required(){return required},get allowed(){return allowed},get role(){return role},get locked(){return blocked()},

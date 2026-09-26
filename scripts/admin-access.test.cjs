@@ -19,3 +19,9 @@ function uiContext({role='owner',failure=false,required=true}={}){
 test('sandbox does not initialize account data when denied or verification fails',async()=>{for(const options of [{role:'moderator'},{failure:true}]){const c=uiContext(options);await c.ctx.handleAdminAuthChange(c.user);assert.equal(c.renders.length,0);assert.equal(c.access.allowed,false);assert.equal(c.check.hidden,true)}});
 test('admin gets patch and one account initialization across token refreshes; revocation relocks',async()=>{const c=uiContext();await c.ctx.handleAdminAuthChange(c.user);await c.ctx.handleAdminAuthChange(c.user);assert.equal(c.renders.length,1);assert.equal(c.check.hidden,false);c.ctx.auth.currentUser=null;await c.ctx.handleAdminAuthChange(null);assert.equal(c.access.allowed,false);assert.equal(c.check.hidden,true);assert.equal(c.ctx.reloaded,true)});
 test('ordinary accounts can still use production',async()=>{const c=uiContext({required:false,role:''});await c.ctx.handleAdminAuthChange(c.user);assert.equal(c.renders.length,1);assert.equal(c.check.hidden,true)});
+
+test('Google popup opens in the click handler without awaiting persistence',async()=>{
+ let opened=false;const messages=[];const context={busy:false,auth:{},authSdk:{GoogleAuthProvider:class{setCustomParameters(){}},signInWithPopup:()=>{opened=true;return Promise.resolve()}},signInButton:{disabled:false},setStatus:m=>messages.push(m),console};
+ vm.createContext(context);vm.runInContext(authSource.slice(authSource.indexOf('async function handleSignIn()'),authSource.indexOf('async function handleSignOut()')),context);
+ const pending=context.handleSignIn();assert.equal(opened,true);await pending;assert.equal(context.busy,false);
+});

@@ -4348,7 +4348,8 @@ async function handleSignIn() {
   setStatus("Opening Google sign-in…");
 
   try {
-    await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
+    // Persistence is configured during initialization. Open the popup directly
+    // from the click so a second IndexedDB wait cannot consume user activation.
     const provider = new authSdk.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     await authSdk.signInWithPopup(auth, provider);
@@ -4415,7 +4416,8 @@ async function handleAdminAuthChange(user) {
   try {
     if (user) {
       if (access?.required) {
-        const result = await functionsSdk.httpsCallable(cloudFunctions, 'verifyDeveloperAccess')({});
+        access.status('Signed in. Verifying administrator access…');
+        const result = await functionsSdk.httpsCallable(cloudFunctions, 'verifyDeveloperAccess', {timeout:15000})({});
         if (result.data?.uid !== user.uid) throw new Error('Account verification mismatch');
         claims = {portalRole:result.data.role};
       } else claims = (await authSdk.getIdTokenResult(user)).claims;
@@ -4425,7 +4427,8 @@ async function handleAdminAuthChange(user) {
     access?.update({},user?.email || '');
     syncAdminPatch(false);
     if (access?.required && wasAllowed) { location.reload(); return; }
-    if (error?.code !== 'functions/permission-denied') access?.status('Admin access could not be verified. Check your connection and choose Check access again.');
+    if (error?.code === 'functions/unauthenticated') access?.status('Your session has expired. Please sign in again.');
+    else if (error?.code !== 'functions/permission-denied') access?.status('The admin verification service could not be reached. Confirm verifyDeveloperAccess deployed successfully, then choose Check access again.');
     return;
   }
   if (generation !== adminAuthGeneration || auth.currentUser?.uid !== user?.uid) return;
