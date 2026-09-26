@@ -15213,7 +15213,8 @@ body.theme-polka-berry .workspace,body.theme-polka-sunshine .workspace,body.them
 .timer-module[data-tile-skin="timer-freestanding"] .timer-controls:has(:focus-visible){opacity:1;visibility:visible;pointer-events:auto;max-height:245px}
 
 /* Cursor collection shelf and active app cursor. */
-body.has-custom-cursor,body.has-custom-cursor *{cursor:var(--teacher-cursor-normal),auto!important}
+body.has-custom-cursor{cursor:var(--teacher-cursor-normal),auto!important}
+body.has-custom-cursor *{cursor:inherit!important}
 body.has-custom-cursor button,body.has-custom-cursor a,body.has-custom-cursor label,body.has-custom-cursor select,body.has-custom-cursor summary,body.has-custom-cursor [role="button"],body.has-custom-cursor [role="slider"],body.has-custom-cursor [data-shop-open-page],body.has-custom-cursor .cursor-choice{cursor:var(--teacher-cursor-point),pointer!important}
 body.has-custom-cursor .module-drag-handle,body.has-custom-cursor .module-grab-cursor,body.has-custom-cursor .sticker-shelf-item,body.has-custom-cursor .photobooth-photo-card,body.has-custom-cursor .choicewheel-face,body.has-custom-cursor .choicewheel-pointer,body.has-custom-cursor .board-minimap canvas{cursor:var(--teacher-cursor-open),grab!important}
 body.has-custom-cursor .money-piece,body.has-custom-cursor .money-palette-piece,body.has-custom-cursor .shape-manipulatives-palette-item,body.has-custom-cursor .shape-manipulative-piece,body.has-custom-cursor .shape-manipulative-rotate-handle,body.has-custom-cursor .tenframe-counter,body.has-custom-cursor .sticker-rotate-handle,body.has-custom-cursor .groupmaker-name-chip,body.has-custom-cursor .lunchcount-student-chip,body.has-custom-cursor .voting-student-chip,body.has-custom-cursor .spinner-name-chip,body.has-custom-cursor .attendance-student,body.has-custom-cursor .worldmap-stage,body.has-custom-cursor .magnifier-module{cursor:var(--teacher-cursor-open),grab!important}

@@ -31,6 +31,10 @@ assert.equal(await page.evaluate(()=>document.body.classList.contains('has-custo
 releaseGrab.resolve();
 await page.waitForFunction(()=>document.documentElement.style.getPropertyValue('--teacher-cursor-grab').includes('gauntlet-copper-grab'));
 assert.equal(await page.evaluate(()=>document.body.classList.contains('has-custom-cursor')),true);
+for(const selector of ['.cursor-picker-choice img','.cursor-picker-choice span','.cursor-picker-pack-heading svg path']){
+ const cursor=await page.locator(selector).first().evaluate(el=>getComputedStyle(el).cursor);
+ assert(cursor.includes('gauntlet-copper-point.png'),selector+' must inherit the finger cursor');
+}
 await page.evaluate(()=>{applyAppCursor('gauntlet-gold');applyAppCursor('default')});await page.waitForTimeout(100);
 assert.equal(await page.evaluate(()=>document.body.classList.contains('has-custom-cursor')),false,'a completed preload must not override a newer selection');
 await page.evaluate(()=>applyAppCursor('pickaxe-diamond'));

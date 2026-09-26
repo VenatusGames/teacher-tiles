@@ -41,3 +41,17 @@
 @media(max-width:520px){.shop-modal .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shop-modal .shop-category{min-height:195px;padding:12px}.shop-modal .shop-category__art{left:4px;right:4px;height:105px}.shop-modal .shop-category__art>i{width:62px;height:62px}.shop-modal .shop-category__art--stickers b{font-size:50px}.shop-modal .shop-category__art--cursors img{width:57px;height:57px}.shop-modal .shop-category__art--cursors img:first-child{transform:translate(-30px,7px) rotate(-11deg)}.shop-modal .shop-category__art--cursors img:last-child{transform:translate(30px,7px) rotate(12deg)}.shop-modal .shop-category__tile-skin{width:29px;height:54px;flex-basis:29px}.shop-modal .shop-category__copy strong{font-size:16px}.shop-modal .shop-category__copy em{font-size:10px}.shop-modal .shop-category__arrow{width:22px;height:22px;right:8px;bottom:12px;font-size:14px}}
 
 .shop-modal .shop-category{min-width:0;width:100%}@media(max-width:520px){.shop-modal .shop-category{aspect-ratio:auto}.shop-modal .shop-category__art--tiles{gap:1px}.shop-modal .shop-category__copy{max-width:calc(100% - 14px)}}
+/* Keep collection artwork separated and cursor sprites at their native size. */
+.shop-modal .shop-category__art--stickers b:nth-child(1){transform:translate(-72px,12px) rotate(-12deg)}
+.shop-modal .shop-category__art--stickers b:nth-child(2){transform:translate(0,-15px) rotate(6deg)}
+.shop-modal .shop-category__art--stickers b:nth-child(3){transform:translate(72px,12px) rotate(14deg)}
+.shop-modal .shop-category__art--cursors{display:grid;grid-template-columns:repeat(4,32px);grid-template-rows:repeat(2,32px);gap:22px 24px;align-content:center;justify-content:center}
+.shop-modal .shop-category__art--cursors img:nth-child(n){position:static;width:32px;height:32px;transform:none;filter:none;image-rendering:auto}
+.shop-modal .shop-category__art--cursors img.is-pixel-art{image-rendering:pixelated}
+.shop-modal .shop-category__tile-skin{width:64px;height:108px;flex-basis:64px}
+.shop-modal .shop-category__tile-skin--magnifier>.classic-magnifier-art{transform:translate(-50%,-50%) scale(.48)}
+.shop-modal .shop-category__tile-skin--tv>.tile-skin-art{transform:translate(-50%,-50%) scale(.52)}
+.shop-modal .shop-category__tile-skin--clipboard>.tile-skin-art{transform:translate(-50%,-50%) scale(.62)}
+.shop-modal .shop-category__tile-skin--calendar>.tile-skin-art{transform:translate(-50%,-50%) scale(.57)}
+@media(max-width:1100px){.shop-modal .shop-category__art--tiles{gap:2px}.shop-modal .shop-category__tile-skin{width:48px;flex-basis:48px;height:90px}}
+@media(max-width:520px){.shop-modal .shop-category__art--stickers b{font-size:43px}.shop-modal .shop-category__art--stickers b:nth-child(1){transform:translate(-44px,10px) rotate(-12deg)}.shop-modal .shop-category__art--stickers b:nth-child(2){transform:translate(0,-10px) rotate(6deg)}.shop-modal .shop-category__art--stickers b:nth-child(3){transform:translate(44px,10px) rotate(14deg)}.shop-modal .shop-category__art--cursors{gap:14px 5px}.shop-modal .shop-category__art--tiles{display:grid;grid-template-columns:repeat(2,58px);gap:3px}.shop-modal .shop-category__tile-skin{width:58px;height:46px}.shop-modal .shop-category__tile-skin:nth-child(n){transform:none}.shop-modal .shop-category__tile-skin>.tile-skin-art,.shop-modal .shop-category__tile-skin>.classic-magnifier-art{transform:translate(-50%,-50%) scale(.3)}}
