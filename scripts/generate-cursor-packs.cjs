@@ -48,11 +48,14 @@ async function tintTemplate(pack,color,state){
     pack.cursors=[];
     for(const [name,color] of pack.colors){
       const id=pack.id+'-'+name;
-      pack.cursors.push({id,name:name[0].toUpperCase()+name.slice(1),productId:pack.productId,color,...(spriteHotspots[pack.id]?{hotspots:spriteHotspots[pack.id]}:{})});
+      const hotspots=spriteHotspots[pack.id]||{normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
+      pack.cursors.push({id,name:name[0].toUpperCase()+name.slice(1),productId:pack.productId,color,runtimeDirectory:'runtime/',hotspots:Object.fromEntries(Object.entries(hotspots).map(([state,point])=>[state,point.map(n=>Math.round(n*.75))]))});
       for(const state of ['normal','point','open','grab']){
         const output=path.join(root,'cursors',id+'-'+state+'.png');
         if(spriteHotspots[pack.id])await fs.promises.writeFile(output,await tintTemplate(pack.id,color,state));
         else await sharp(Buffer.from(art(pack.id,color,state))).png().toFile(output);
+        await fs.promises.mkdir(path.join(root,'cursors/runtime'),{recursive:true});
+        await sharp(output).resize(24,24,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors/runtime',id+'-'+state+'.png'));
       }
       if(spriteHotspots[pack.id])await sharp(path.join(root,'cursors',id+'-normal.png')).resize(256,256,{kernel:pack.id==='pixel'?'nearest':'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));
       else await sharp(Buffer.from(art(pack.id,color,'normal'))).resize(256,256,{kernel:'lanczos3'}).png().toFile(path.join(root,'cursors',id+'-preview.png'));

@@ -3297,7 +3297,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260927-packs`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.runtimeDirectory||''}${cursor.id}-${state}.png?v=20260928-sized`,document.baseURI).href;
     const defaults={normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
     const value=state=>`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`;
     // Decode all states before activating the pack so the first grab cannot

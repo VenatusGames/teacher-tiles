@@ -24,3 +24,20 @@
 .shop-modal .shop-membership-perks{font-size:12px;line-height:1.35;gap:7px;margin:12px 0}
 .shop-modal .shop-membership-card__foot{margin-top:10px}
 @media(min-width:761px){.shop-modal .shop-membership-grid{grid-template-columns:minmax(0,2fr) minmax(240px,1fr)}}
+
+.shop-modal .shop-category-grid{gap:16px}
+.shop-modal .shop-category{min-height:235px;aspect-ratio:1.12;padding:20px}
+.shop-modal .shop-category__art{left:16px;right:16px;top:12px;width:auto;height:calc(100% - 98px)}
+.shop-modal .shop-category__art>i{width:96px;height:96px;border-radius:20px}
+.shop-modal .shop-category__art--stickers b{font-size:76px}
+.shop-modal .shop-category__art--cursors img{width:88px;height:88px}
+.shop-modal .shop-category__art--cursors img:first-child{image-rendering:pixelated;transform:translate(-53px,7px) rotate(-11deg)}
+.shop-modal .shop-category__art--cursors img:last-child{transform:translate(53px,7px) rotate(12deg)}
+.shop-modal .shop-category__art--tiles{gap:5px}
+.shop-modal .shop-category__tile-skin{width:52px;height:78px;flex-basis:52px}
+.shop-modal .shop-category__copy{max-width:calc(100% - 24px)}
+.shop-modal .shop-category__copy strong{font-size:20px}
+.shop-modal .shop-category__copy em{font-size:11px}
+@media(max-width:520px){.shop-modal .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shop-modal .shop-category{min-height:195px;padding:12px}.shop-modal .shop-category__art{left:4px;right:4px;height:105px}.shop-modal .shop-category__art>i{width:62px;height:62px}.shop-modal .shop-category__art--stickers b{font-size:50px}.shop-modal .shop-category__art--cursors img{width:57px;height:57px}.shop-modal .shop-category__art--cursors img:first-child{transform:translate(-30px,7px) rotate(-11deg)}.shop-modal .shop-category__art--cursors img:last-child{transform:translate(30px,7px) rotate(12deg)}.shop-modal .shop-category__tile-skin{width:29px;height:54px;flex-basis:29px}.shop-modal .shop-category__copy strong{font-size:16px}.shop-modal .shop-category__copy em{font-size:10px}.shop-modal .shop-category__arrow{width:22px;height:22px;right:8px;bottom:12px;font-size:14px}}
+
+.shop-modal .shop-category{min-width:0;width:100%}@media(max-width:520px){.shop-modal .shop-category{aspect-ratio:auto}.shop-modal .shop-category__art--tiles{gap:1px}.shop-modal .shop-category__copy{max-width:calc(100% - 14px)}}
