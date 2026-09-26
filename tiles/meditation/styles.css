@@ -76,3 +76,4 @@
 .meditation-lotus{opacity:.5;filter:none}
 
 .rainbow-breath-art{opacity:.68;filter:none}
+.meditation-module[data-tile-skin="meditation-rainbow"]{width:640px;height:440px;min-width:300px;min-height:280px;gap:8px}.rainbowbreath-module .meditation-scene{min-height:0;overflow:hidden}.rainbowbreath-module .rainbow-breath-art{position:absolute;left:4%;top:0;width:92%;height:calc(100% - 38px);max-height:none;overflow:hidden}.rainbowbreath-module .meditation-count{bottom:0;font-size:clamp(20px,6cqh,32px)}.rainbowbreath-module .meditation-title{font-size:clamp(17px,4cqh,25px)}.rainbowbreath-module .meditation-cue{font-size:clamp(16px,4cqh,25px)}

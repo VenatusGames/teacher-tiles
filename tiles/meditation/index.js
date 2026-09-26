@@ -6,7 +6,7 @@
     if(m.dataset.type==='rainbowbreath'){m.dataset.type='meditation';m.dataset.tileSkin='meditation-rainbow';}
     const rainbow=m.dataset.tileSkin==='meditation-rainbow';
     m.classList.toggle('rainbowbreath-module',rainbow);
-    if(rainbow){scene.querySelectorAll('.meditation-aura,.meditation-bloom').forEach(el=>el.remove());const colors=['#ef6478','#f6a14f','#f0d356','#6bbf8c','#61b3db','#7b88cf','#b28bd0'];scene.insertAdjacentHTML('afterbegin','<svg class="rainbow-breath-art" viewBox="0 0 400 250" aria-hidden="true">'+colors.map((color,i)=>{const r=177-i*18;return [-1,1].map(side=>'<path d="M '+(200+side*r)+' 220 A '+r+' '+r+' 0 0 '+(side===-1?1:0)+' 200 '+(220-r)+'" fill="none" stroke="'+color+'" stroke-width="18" stroke-linecap="butt" pathLength="1"/>').join('')}).join('')+'</svg>');}
+    if(rainbow){scene.querySelectorAll('.meditation-aura,.meditation-bloom').forEach(el=>el.remove());const colors=['#ef6478','#f6a14f','#f0d356','#6bbf8c','#61b3db','#7b88cf','#b28bd0'];scene.insertAdjacentHTML('afterbegin','<svg class="rainbow-breath-art" viewBox="0 0 400 250" preserveAspectRatio="none" aria-hidden="true">'+colors.map((color,i)=>{const r=177-i*18;return [-1,1].map(side=>'<path d="M '+(200+side*r)+' 220 A '+r+' '+r+' 0 0 '+(side===-1?1:0)+' 200 '+(220-r)+'" fill="none" stroke="'+color+'" stroke-width="18" stroke-linecap="butt" pathLength="1"/>').join('')}).join('')+'</svg>');}
     const cue=m.querySelector('.meditation-cue');
     const count=m.querySelector('.meditation-count');
     const showCues=m.querySelector('.meditation-show-cues');

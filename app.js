@@ -1329,7 +1329,7 @@ document.addEventListener('click',e=>{
   if(!e.isTrusted)return;
   const target=e.target;
   if(!(target instanceof Element))return;
-  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key,.module-delete'))return;
+  if(target.closest('#settings-ui-sfx-toggle,.punchcard-hole,.piano-key,.module-delete,.squishy-canvas'))return;
   const interactive=target.closest('button,[role="button"],input[type="checkbox"],input[type="radio"],select');
   if(interactive&&!interactive.disabled)playUiSfx('click',1,interactive.closest('.module'));
 },true);
@@ -3176,7 +3176,8 @@ const TILE_SKIN_CATALOG=Object.freeze([
   }),
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
-  Object.freeze({id:'meditation-rainbow',productId:'tile-skin-meditation-rainbow',tileType:'meditation',tileLabel:'Meditation',name:'Rainbow Breath',description:'Translucent rainbow bands rise together on the inhale and recede on the exhale.',tags:'meditation rainbow breath breathing sel',released:33}),
+  Object.freeze({id:'visualschedule-planner',productId:'tile-skin-visualschedule-planner',tileType:'visualschedule',tileLabel:'Visual Schedule',name:'Planner Book',description:'A spiral-bound blue planner with paper pages for your daily schedule.',tags:'visual schedule planner book spiral notebook',released:34}),
+  Object.freeze({id:'meditation-rainbow',productId:'tile-skin-meditation-rainbow',tileType:'meditation',tileLabel:'Meditation',name:'Rainbow Breath',description:'Translucent rainbow bands rise together on the inhale and recede on the exhale.',tags:'meditation rainbow breath breathing sel',released:33,preferredSize:Object.freeze({width:640,height:440})}),
   Object.freeze({id:'squishy-gel-cube',productId:'tile-skin-squishy-gel-cube',tileType:'squishy',tileLabel:'Squishy',name:'3D Squishy',description:'Grab, stretch, rotate, and toss a soft 3D gel cube with spring physics.',tags:'squishy gel cube 3d sensory',released:32}),
   Object.freeze({id:'soundscapes-vinyl',productId:'tile-skin-soundscapes-vinyl',tileType:'boombox',tileLabel:'Soundscapes',name:'Vinyl',description:'Turn Soundscapes into a spinning record player.',tags:'soundscapes audio vinyl record music ambient sound',released:29}),
   Object.freeze({id:'soundscapes-music-player',productId:'tile-skin-soundscapes-music-player',tileType:'boombox',tileLabel:'Soundscapes',name:'Music Player',description:'A polished modern music-player layout for classroom soundscapes.',tags:'soundscapes audio music player modern ambient sound',released:30}),
@@ -3424,10 +3425,10 @@ function setupClassroomTileControls(m){
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
   'timer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
-  'flyswat','quietcritters','robothfw','chime','transitionbell','meditation','rainbowbreath'
+  'flyswat','quietcritters','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
-  timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
   rainbowbreath:'Rainbow Breath',meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
@@ -3602,7 +3603,7 @@ function setupModuleByType(m,type){
   if(type==='weatherwheel')setupWeatherWheel(m);
   if(type==='seasonwheel')setupSeasonWheel(m);
   if(type==='temperature')setupTemperature(m);
-  if(type==='worldmap')setupWorldMap(m);
+  if(type==='worldmap'||type==='usstates')setupWorldMap(m);
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
@@ -6176,7 +6177,7 @@ function setupClassMeter(m){
   const settings=m.querySelector('.classmeter-settings');
   const removeWin=m.querySelector('.classmeter-remove-win');
   const resetWins=m.querySelector('.classmeter-reset-wins');
-  const removeProgress=m.querySelector('.classmeter-remove-progress');
+
   const resetProgress=m.querySelector('.classmeter-reset-progress');
   m.querySelector('.classmeter-hover-tools').insertBefore(resetProgress,m.querySelector('.classmeter-orientation'));resetProgress.textContent='Reset';resetProgress.title='Reset current meter; keep earned fills';
   const popup=m.querySelector('.classmeter-win-popup');
@@ -6200,7 +6201,7 @@ function setupClassMeter(m){
     percent.textContent=`${Math.round(fill)}%`;
     winCount.textContent=String(normalizeStarChartCount(progress.wins));
     decreaseButton.disabled=fill<=0||celebrating;
-    removeProgress.disabled=fill<=0||celebrating;
+
     resetProgress.disabled=fill<=0||celebrating;
     removeWin.disabled=progress.wins<=0;
     resetWins.disabled=progress.wins<=0;
@@ -6334,7 +6335,7 @@ function setupClassMeter(m){
   });
   const decreaseProgress=()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=Math.max(0,(Number(progress.fill)||0)-5);persistProgress()};
   decreaseButton.addEventListener('click',decreaseProgress);
-  removeProgress.addEventListener('click',decreaseProgress);
+
   resetProgress.addEventListener('click',()=>{if(!activeClassId||celebrating||progress.fill<=0)return;stopHolding({persist:false});progress.fill=0;persistProgress();setSettingsOpen(false)});
   removeWin.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=normalizeStarChartCount(progress.wins-1);persistProgress()});
   resetWins.addEventListener('click',()=>{if(!activeClassId||!progress.wins)return;progress.wins=0;persistProgress();flushPbisCloudSave();setSettingsOpen(false)});
@@ -9159,7 +9160,7 @@ const EDITABLE_TILE_HEADINGS={
   attendance:'.attendance-title',
   livecaption:'.livecaption-title',
   voicememo:'.voicememo-title',
-  worldmap:'.worldmap-title',
+  worldmap:'.worldmap-title',usstates:'.worldmap-title',
   compass:'.compass-title',
   shapes:'.shapes-header>div>span:first-child',
   hangman:'.hangman-kicker',
@@ -10919,7 +10920,8 @@ const WORLD_MAP_REGIONS=[
 ];
 
 function setupWorldMap(m){
-  const tileTitle=bindEditableModuleTitle(m,'.worldmap-title','Explore the World');
+  const states=m.dataset.type==='usstates';
+  const tileTitle=bindEditableModuleTitle(m,'.worldmap-title',states?'50 States':'Explore the World');
   const stage=m.querySelector('.worldmap-stage');
   const mapLayer=m.querySelector('.worldmap-map-layer');
   const countries=m.querySelector('.worldmap-countries');
@@ -10970,13 +10972,13 @@ function setupWorldMap(m){
     selected='';
     legend.querySelectorAll('[data-map-legend]').forEach(button=>button.classList.remove('is-active'));
     countries.querySelectorAll('[data-country-id]').forEach(path=>path.classList.toggle('is-selected',path.dataset.countryId===selectedCountry));
-    kicker.textContent='COUNTRY';
+    kicker.textContent=states?'STATE':'COUNTRY';
     name.textContent=countryName||'Country';
-    hemisphere.textContent='Natural Earth country boundary';
-    fact.textContent='Click another country to compare its location, or use a continent button for a closer regional view.';
+    hemisphere.textContent=states?'United States of America':'Natural Earth country boundary';
+    fact.textContent=states?'Scroll to zoom, drag to explore, or choose another state. Alaska and Hawaii appear as insets.':'Click another country to compare its location, or use a continent button for a closer regional view.';
     if(notify)notifyBoardChanged('world-map-country');
   };
-  const project=point=>[(point[0]+180)/360*1000,(90-point[1])/180*480+20];
+  const project=point=>states?[point[0]*.8+110,point[1]*.8+16]:[(point[0]+180)/360*1000,(90-point[1])/180*480+20];
   const renderTopology=topology=>{
     const scale=topology.transform?.scale||[1,1];
     const translate=topology.transform?.translate||[0,0];
@@ -10997,7 +10999,7 @@ function setupWorldMap(m){
         while(projected[index][0]-projected[index-1][0]>500)projected[index][0]-=1000;
         while(projected[index-1][0]-projected[index][0]>500)projected[index][0]+=1000;
       }
-      return[-1000,0,1000].map(offset=>projected.map((point,index)=>`${index?'L':'M'}${(point[0]+offset).toFixed(2)} ${point[1].toFixed(2)}`).join('')+'Z').join('');
+      return(states?[0]:[-1000,0,1000]).map(offset=>projected.map((point,index)=>`${index?'L':'M'}${(point[0]+offset).toFixed(2)} ${point[1].toFixed(2)}`).join('')+'Z').join('');
     };
     const geometryPath=geometry=>{
       const polygons=geometry.type==='Polygon'?[geometry.arcs]:geometry.type==='MultiPolygon'?geometry.arcs:[];
@@ -11005,7 +11007,8 @@ function setupWorldMap(m){
     };
     const svgNs='http://www.w3.org/2000/svg';
     const fragment=document.createDocumentFragment();
-    for(const geometry of topology.objects?.countries?.geometries||[]){
+    for(const geometry of (states?topology.objects?.states:topology.objects?.countries)?.geometries||[]){
+      if(states&&(Number(geometry.id)===11||Number(geometry.id)>56))continue;
       const path=document.createElementNS(svgNs,'path');
       const countryName=geometry.properties?.name||'Country';
       path.setAttribute('d',geometryPath(geometry));
@@ -11019,12 +11022,13 @@ function setupWorldMap(m){
       fragment.appendChild(path);
     }
     countries.replaceChildren(fragment);
+    if(states){const select=document.createElement('select');select.setAttribute('aria-label','Choose a state');select.innerHTML='<option value="">Choose a state…</option>';[...countries.children].sort((a,b)=>a.dataset.countryName.localeCompare(b.dataset.countryName)).forEach(path=>select.add(new Option(path.dataset.countryName,path.dataset.countryId)));select.onchange=()=>{const path=[...countries.children].find(p=>p.dataset.countryId===select.value);if(path)selectCountry(select.value,path.dataset.countryName)};legend.replaceChildren(select);}
     if(pendingCountry){
       const path=countries.querySelector(`[data-country-id="${CSS.escape(pendingCountry)}"]`);
       if(path)selectCountry(pendingCountry,path.dataset.countryName,{notify:false});
     }
   };
-  WORLD_MAP_REGIONS.forEach(region=>{
+  (states?[]:WORLD_MAP_REGIONS).forEach(region=>{
     const button=document.createElement('button');
     button.type='button';
     button.dataset.mapLegend=region.id;
@@ -11104,10 +11108,10 @@ function setupWorldMap(m){
   m.querySelector('.worldmap-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.worldmap-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   applyZoom();
-  name.textContent='Loading world map…';
-  fetch('assets/world-countries-110m.json',{signal:controller.signal}).then(response=>{if(!response.ok)throw new Error('map-data');return response.json()}).then(topology=>{
+  name.textContent=states?'Loading states…':'Loading world map…';
+  fetch(states?'assets/us-states-albers-10m.json':'assets/world-countries-110m.json',{signal:controller.signal}).then(response=>{if(!response.ok)throw new Error('map-data');return response.json()}).then(topology=>{
     renderTopology(topology);
-    if(!selected&&!pendingCountry){name.textContent='World Map';hemisphere.textContent='Real Natural Earth boundaries';fact.textContent='Click any country, or use a continent button to zoom and learn.'}
+    if(!selected&&!pendingCountry){name.textContent=states?'50 States':'World Map';hemisphere.textContent=states?'United States of America':'Real Natural Earth boundaries';fact.textContent=states?'Click a state to select it. Scroll to zoom and drag to explore. Alaska and Hawaii are shown as insets.':'Click any country, or use a continent button to zoom and learn.'}
   }).catch(error=>{if(error?.name!=='AbortError'){name.textContent='Map unavailable';fact.textContent='The geographic boundary file could not be loaded.'}});
   m._boardGetState=()=>({title:tileTitle.get(),selected,selectedCountry,zoom,centerX,centerY});
   m._boardSetState=state=>{
