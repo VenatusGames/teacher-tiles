@@ -43,6 +43,14 @@ await page.evaluate(()=>document.querySelector('.flowerpots-module .growth-stude
 assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentPoints['student:alex']),2);
 await page.evaluate(()=>{const m=document.querySelector('.flowerpots-module');m._boardSetState({activeClassId:'test-growth',goal:1});m.querySelector('.growth-student').click()});
 assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentPoints['student:alex']),3);
+await page.evaluate(()=>{for(const m of document.querySelectorAll('.growth-module')){m._boardSetState({activeClassId:'test-growth',goal:5});m.querySelectorAll('.growth-student').forEach(card=>card.click());}});
+await page.evaluate(()=>document.querySelector('.egghatching-module .growth-reset').click());
+assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentProgress['student:alex']),1);
+await page.evaluate(()=>document.querySelector('.flowerpots-module .growth-reset').click());
+assert(await page.evaluate(()=>['eggHatching','flowerPots'].every(kind=>Object.values(readClassRosters()[0][kind].studentProgress).every(value=>value===0))));
+assert.equal(await page.evaluate(()=>readClassRosters()[0].eggHatching.studentPoints['student:alex']),1);
+assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentPoints['student:alex']),3);
+
 await page.evaluate(()=>{const classes=readClassRosters();classes[0].students=Array.from({length:30},(_,i)=>'Student '+i);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));document.querySelector('.flowerpots-module')._boardSetState({activeClassId:'test-growth',goal:5,showAll:true})});await page.waitForTimeout(300);
 assert(await page.locator('.flowerpots-module .growth-grid').evaluate(el=>el.scrollHeight<=el.clientHeight+1&&el.scrollWidth<=el.clientWidth+1));
 assert.equal(await page.locator('.flowerpots-module .growth-student').count(),30);

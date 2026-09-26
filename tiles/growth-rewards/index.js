@@ -37,6 +37,12 @@
     m.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
     const selectClass=id=>{activeClassId=String(id||'');completed.clear();render()};
     const detach=attachClassRosterLoader(m.querySelector('.growth-loader'),(_,r)=>{selectClass(r.id);notifyBoardChanged('growth-class')});
+    const reset=document.createElement('button');reset.type='button';reset.className='growth-reset';reset.textContent='Reset progress';
+    reset.title=eggs?'Start current eggs over; keep earned PBIS points':'Start current flowers over; keep earned PBIS points';
+    m.querySelector('.growth-header').insertBefore(reset,m.querySelector('.growth-change'));
+    reset.onclick=()=>{const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r[kind],r.students);for(const key of Object.keys(progress.studentProgress))progress.studentProgress[key]=0;completed.clear();writeClassGrowth(r.id,kind,progress);window.dispatchEvent(new CustomEvent('teachertiles:growthreset',{detail:{classId:r.id,kind}}));};
+    const onReset=event=>{if(event.detail?.classId===activeClassId&&event.detail?.kind===kind){completed.clear();grid.querySelectorAll('.growth-particle').forEach(p=>p.remove());render();}};
+    window.addEventListener('teachertiles:growthreset',onReset);
     m.querySelector('.growth-change').onclick=()=>{selectClass('');notifyBoardChanged('growth-class')};
     goalInput?.addEventListener('change',()=>{goal=Math.max(1,Math.min(10,Math.round(Number(goalInput.value)||5)));goalInput.value=goal;render();notifyBoardChanged('flower-goal')});
     for(const [selector,key,values] of [['.tile-bg','bg',['white','cream','blue','pink','green','lavender','charcoal']],['.tile-font','font',FONT_OPTIONS],['.tile-text','text',['dark','soft','blue','rose','white','cream']]])m.querySelector(selector).onclick=()=>cycleData(m,key,values);
@@ -45,7 +51,7 @@
     window.addEventListener('teachertiles:classeschange',render);
     m._boardGetState=()=>({activeClassId,goal,showAll});m._boardSetState=s=>{showAll=s?.showAll!==false;fitInput.checked=showAll;goal=Math.max(1,Math.min(10,Math.round(Number(s?.goal)||5)));if(goalInput)goalInput.value=goal;selectClass(s?.activeClassId)};
     bindGeneratedTileSettings(m,m.querySelector('.tile-settings-toggle'),m.querySelector('.tile-settings-panel'));
-    const prior=m._cleanup;m._cleanup=()=>{observer.disconnect();detach();window.removeEventListener('teachertiles:classeschange',render);prior?.()};render();
+    const prior=m._cleanup;m._cleanup=()=>{observer.disconnect();detach();window.removeEventListener('teachertiles:growthreset',onReset);window.removeEventListener('teachertiles:classeschange',render);prior?.()};render();
   }
   window.TeacherTilesGrowthRewards={setup};
 })();
