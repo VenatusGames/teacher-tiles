@@ -97,7 +97,7 @@ const boardsLibraryPanel = document.getElementById("boards-library-panel");
 const boardTemplatesPanel = document.getElementById("board-templates-panel");
 
 const gatedFeatureIds = new Set(["theme-shelf-toggle", "sticker-shelf-toggle", "tile-skins-shelf-toggle", "shop-toggle", "boards-toggle"]);
-const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6M15.7 26.6h16.6"/></svg>`;
+const subscriberMarkSvg = `<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg>`;
 
 let auth = null;
 let authSdk = null;

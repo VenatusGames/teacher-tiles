@@ -3,6 +3,12 @@
   const colors=['#88bdf0','#b9a2e7','#83cbb8','#edbc7b','#e9a3b6','#9fc681'];
   const strips=new Map();
   let frame=0;
+  const schedule=()=>{if(strips.size&&!frame)frame=requestAnimationFrame(position)};
+  const sizes=new ResizeObserver(schedule);
+  new MutationObserver(records=>{if(records.some(r=>strips.has(r.target)||r.target===document.getElementById('workspace')))schedule()}).observe(document.getElementById('workspace'),{attributes:true,attributeFilter:['style','class'],subtree:true});
+  for(const event of ['pointerover','pointerout','focusin','focusout','fullscreenchange'])document.addEventListener(event,schedule,{passive:true});
+  window.addEventListener('resize',schedule);
+
   const clone=value=>structuredClone(value);
   function label(snapshot,index){return snapshot.tabLabel||document.querySelector(`.context-menu__item[data-module="${CSS.escape(snapshot.type)}"] strong`)?.textContent||`Tab ${index+1}`;}
   function bare(snapshot){const copy=clone(snapshot);delete copy.tabs;copy.classes=(copy.classes||[]).filter(name=>name!=='is-tabbed-tile');return copy;}
@@ -79,9 +85,10 @@
     if(items.length===1)delete after.tabs;
     replace(m,after);
   }
-  function release(m){const strip=strips.get(m);if(strip)strip.remove();strips.delete(m);}
+  function release(m){const strip=strips.get(m);if(strip)strip.remove();strips.delete(m);sizes.unobserve(m);}
   function position(){
     frame=0;
+    const board=workspace.getBoundingClientRect();
     for(const [m,strip] of strips){
       if(!m.isConnected){release(m);continue;}
       const tileFullscreen=document.fullscreenElement===m;
@@ -91,7 +98,7 @@
       const parent=tileFullscreen?m:workspace;
       if(strip.parentElement!==parent)parent.append(strip);
 
-      const rect=m.getBoundingClientRect(),board=workspace.getBoundingClientRect();
+      const rect=m.getBoundingClientRect();
       const scale=tileFullscreen?1:rect.width/Math.max(1,m.offsetWidth)/boardCamera.scale;
       const left=tileFullscreen?0:(rect.left-board.left)/boardCamera.scale;
       const top=tileFullscreen?0:(rect.top-board.top)/boardCamera.scale;
@@ -118,7 +125,7 @@
         else if(selected.offsetTop+selected.offsetHeight>strip.scrollTop+strip.clientHeight)strip.scrollTop=selected.offsetTop+selected.offsetHeight-strip.clientHeight;
       }
     }
-    if(strips.size)frame=requestAnimationFrame(position);
+
   }
   function render(m){
     release(m);
@@ -135,7 +142,7 @@
     });
     strip.addEventListener('pointerdown',event=>event.stopPropagation());
     strip.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
-    workspace.append(strip);strips.set(m,strip);if(!frame)frame=requestAnimationFrame(position);
+    workspace.append(strip);strips.set(m,strip);sizes.observe(m);schedule();
   }
   function restore(m,state){
     if(m.dataset.type==='sticker')return;

@@ -32,7 +32,7 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
       }
       const packLocked=Boolean(group.product&&!owns(group.product));
       group.section.hidden=!visible;
-      group.badge.textContent=(packLocked?'🔒 ':'')+visible+(visible===1?' theme':' themes');
+      group.badge.textContent=(packLocked?'Locked · ':'')+visible+(visible===1?' theme':' themes');
       group.heading.classList.toggle('theme-picker-pack-locked',packLocked);
       group.heading.classList.toggle('is-cosmetic-locked',packLocked);
       group.heading.setAttribute('aria-disabled',String(packLocked));

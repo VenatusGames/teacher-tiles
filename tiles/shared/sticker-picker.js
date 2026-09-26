@@ -68,8 +68,8 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
       const locked=items.length>0&&items.every(item=>!accessible(item.product));
       if(locked){
         section.classList.add('is-pack-locked');grid.inert=true;
-        const lock=document.createElement('button');lock.type='button';lock.className='sticker-picker-pack-lock';lock.dataset.entitlement=items[0].product;lock.setAttribute('aria-label','Unlock '+pack.name+' sticker pack');lock.innerHTML='<span>🔒 Unlock pack</span>';lock.addEventListener('click',()=>requestAccess(lock));section.append(lock);
-        const badge=document.createElement('span');badge.className='sticker-picker-pack-lock-mark';badge.textContent='🔒';badge.setAttribute('aria-hidden','true');toggle.insertBefore(badge,total);
+        const lock=document.createElement('button');lock.type='button';lock.className='sticker-picker-pack-lock';lock.dataset.entitlement=items[0].product;lock.setAttribute('aria-label','Unlock '+pack.name+' sticker pack');lock.innerHTML='<span><img src="assets/ui/lock.svg" alt="">Unlock pack</span>';lock.addEventListener('click',()=>requestAccess(lock));section.append(lock);
+        const badge=document.createElement('span');badge.className='sticker-picker-pack-lock-mark';badge.innerHTML='<img src="assets/ui/lock.svg" alt="">';badge.setAttribute('aria-hidden','true');toggle.insertBefore(badge,total);
       }
       packCache.set(pack.id,{signature,section});
       sections.push(section);

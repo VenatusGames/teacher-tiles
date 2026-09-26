@@ -3167,7 +3167,8 @@ const CURSOR_CATALOG=Object.freeze([
   Object.freeze({id:'red',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Cherry Red',description:'Bold classroom red.',color:'#ef4444'}),
   Object.freeze({id:'green',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Marker Green',description:'Lively marker green.',color:'#22a860'}),
   Object.freeze({id:'purple',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Violet',description:'Rich violet purple.',color:'#8b5cf6'}),
-  Object.freeze({id:'gold',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'})
+  Object.freeze({id:'gold',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Golden Chalk',description:'Warm golden yellow.',color:'#e2a51f'}),
+  ...window.TeacherTilesCursorPacks.flatMap(pack=>pack.cursors)
 ]);
 const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
@@ -3247,7 +3248,7 @@ function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().h
 function markSubscriptionAccess(element,product){
   element.querySelector(':scope > .subscription-access-crown')?.remove();
   if(!product||!hasCosmeticSubscription()||getOwnedShopProducts().has(product))return;
-  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m7.5 15 10.1 7.1L24 9l6.4 13.1L40.5 15l-4.2 22H11.7L7.5 15Z"/><path d="M12.7 31.5h22.6"/></svg>';element.append(crown);
+  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg>';element.append(crown);
 }
 // Render crown hints outside cards and drawers so overflow cannot clip them.
 (()=>{
@@ -3567,6 +3568,7 @@ function setupModuleByType(m,type){
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
+  if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
   if(type==='classmeter')setupClassMeter(m);
@@ -3615,6 +3617,7 @@ function setupModuleByType(m,type){
   if(type==='progressbar')setupProgressBar(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
+  window.TeacherTilesFlashcardNavigation?.setup(m);
   setupTileAudioSettings(m,type);
   setupEditableTileHeading(m,type);
   window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
@@ -4917,7 +4920,8 @@ function setupClock(m){
     }
     m.style.setProperty('--clock-size',`${Math.max(12,best*.975)}px`);
   };
-  const refit=()=>requestAnimationFrame(fit);
+  let fitFrame=0;
+  const refit=()=>{if(!fitFrame)fitFrame=requestAnimationFrame(()=>{fitFrame=0;if(m.isConnected)fit()})};
 
   m.querySelector('.clock-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.clock-font').addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);refit()});
@@ -4959,23 +4963,25 @@ function setupClock(m){
     refit();
   });
 
+  const formatter=new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit',hour12:true});
+  let lastMinute=-1,lastSecond=-1;
   const update=()=>{
-    const d=new Date();
-    const parts=new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit',hour12:true}).formatToParts(d);
-    const hour=parts.find(p=>p.type==='hour')?.value||'';
-    const minute=parts.find(p=>p.type==='minute')?.value||'';
-    const dayPeriod=parts.find(p=>p.type==='dayPeriod')?.value||'';
-    main.textContent=`${hour}:${minute}`;
-    sec.textContent=`:${String(d.getSeconds()).padStart(2,'0')}`;
-    period.textContent=dayPeriod;
-
-    const seconds=d.getSeconds()+d.getMilliseconds()/1000;
-    const minutes=d.getMinutes()+seconds/60;
-    const hours=(d.getHours()%12)+minutes/60;
-    hourHand.style.transform=`translateX(-50%) rotate(${hours*30}deg)`;
-    minuteHand.style.transform=`translateX(-50%) rotate(${minutes*6}deg)`;
-    secondHand.style.transform=`translateX(-50%) rotate(${seconds*6}deg)`;
-    refit();
+    if(document.hidden)return;
+    const d=new Date(),minuteStamp=Math.floor(d.getTime()/60000),second=d.getSeconds();
+    if(minuteStamp!==lastMinute){
+      lastMinute=minuteStamp;
+      const parts=formatter.formatToParts(d);
+      main.textContent=parts.find(p=>p.type==='hour')?.value+':'+parts.find(p=>p.type==='minute')?.value;
+      period.textContent=parts.find(p=>p.type==='dayPeriod')?.value||'';
+      refit();
+    }
+    if(second!==lastSecond){lastSecond=second;sec.textContent=':'+String(second).padStart(2,'0')}
+    if(isAnalog()){
+      const seconds=second+d.getMilliseconds()/1000,minutes=d.getMinutes()+seconds/60,hours=(d.getHours()%12)+minutes/60;
+      hourHand.style.transform='translateX(-50%) rotate('+hours*30+'deg)';
+      minuteHand.style.transform='translateX(-50%) rotate('+minutes*6+'deg)';
+      secondHand.style.transform='translateX(-50%) rotate('+seconds*6+'deg)';
+    }
   };
 
   const ro=new ResizeObserver(refit);
@@ -4990,7 +4996,8 @@ function setupClock(m){
   periodBtn.setAttribute('aria-pressed',String(periodActive));
   const id=setInterval(update,100);
   update();
-  m._cleanup=()=>{clearInterval(id);ro.disconnect()};
+  const previousCleanup=m._cleanup;
+  m._cleanup=()=>{clearInterval(id);cancelAnimationFrame(fitFrame);ro.disconnect();previousCleanup?.()};
 }
 
 
@@ -9054,6 +9061,7 @@ const EDITABLE_TILE_HEADINGS={
   meditation:'.meditation-title',
   noise:'.nm-heading',
   squishy:'.squishy-heading',
+  coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',
   reminders:'.reminders-heading',
@@ -13202,24 +13210,13 @@ function setupCollectionShelf(){
     if(active==='default'){const check=document.createElement('span');check.className='cursor-pack__check';check.textContent='✓';defaultPack.wrapper.appendChild(check)}
     cursorsGrid.appendChild(defaultPack.wrapper);
 
-    const colors=CURSOR_CATALOG.slice(1);
-    const packOwned=cosmeticIsAccessible(CURSOR_COLOR_PACK_PRODUCT_ID);
-    let drawer=null;
-    const colorPack=makePack('Colored Cursors',packOwned?'5 cursor colors':'Available in Shop',colors,{locked:!packOwned,onClick:()=>{
-      if(!packOwned){closeShelf();window.TeacherTilesShop?.openProduct(CURSOR_COLOR_PACK_PRODUCT_ID);return}
-      const open=!drawer.classList.contains('is-open');
-      drawer.classList.toggle('is-open',open);colorPack.pack.classList.toggle('is-open',open);colorPack.pack.setAttribute('aria-expanded',String(open));
-    }});
-    drawer=document.createElement('div');drawer.className='cursor-pack-drawer';drawer.setAttribute('aria-label','Colored cursor choices');
-    colors.forEach(cursor=>{
-      const choice=document.createElement('button');choice.type='button';choice.className=`cursor-choice${active===cursor.id?' is-selected':''}`;choice.style.setProperty('--cursor-color',cursor.color);choice.setAttribute('aria-pressed',String(active===cursor.id));
-      choice.appendChild(makeArrow(cursor));
-      const name=document.createElement('span');name.textContent=cursor.name;choice.appendChild(name);
-      if(active===cursor.id){const check=document.createElement('b');check.textContent='✓';choice.appendChild(check)}
-      choice.addEventListener('click',()=>applyAppCursor(cursor.id));drawer.appendChild(choice);
-    });
-    cursorsGrid.append(colorPack.wrapper,drawer);
-    if(cursorsStatus)cursorsStatus.textContent=packOwned?'Color pack owned':'1 free · 1 Shop pack';
+    for(const entry of [{name:'Colored Cursors',productId:CURSOR_COLOR_PACK_PRODUCT_ID},...window.TeacherTilesCursorPacks]){
+      const colors=CURSOR_CATALOG.filter(cursor=>cursor.productId===entry.productId),packOwned=cosmeticIsAccessible(entry.productId);let drawer;
+      const colorPack=makePack(entry.name,colors.length+' colors'+(packOwned?'':' · Shop'),colors,{locked:!packOwned,onClick:()=>{if(!packOwned){closeShelf();window.TeacherTilesShop?.openProduct(entry.productId);return}const open=!drawer.classList.contains('is-open');drawer.classList.toggle('is-open',open);colorPack.pack.classList.toggle('is-open',open);colorPack.pack.setAttribute('aria-expanded',String(open))}});
+      drawer=document.createElement('div');drawer.className='cursor-pack-drawer';drawer.setAttribute('aria-label',entry.name+' choices');
+      colors.forEach(cursor=>{const choice=document.createElement('button');choice.type='button';choice.className='cursor-choice'+(active===cursor.id?' is-selected':'');choice.style.setProperty('--cursor-color',cursor.color);choice.setAttribute('aria-pressed',String(active===cursor.id));choice.append(makeArrow(cursor));const name=document.createElement('span');name.textContent=cursor.name;choice.append(name);choice.addEventListener('click',()=>applyAppCursor(cursor.id));drawer.append(choice)});cursorsGrid.append(colorPack.wrapper,drawer);
+    }
+    if(cursorsStatus)cursorsStatus.textContent='1 free · 4 cursor packs';
   };
 
   const positionThemeFan=()=>{

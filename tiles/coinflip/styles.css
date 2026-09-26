@@ -1,0 +1,7 @@
+.coinflip-module{width:290px;height:320px;min-width:210px;min-height:230px;display:flex;flex-direction:column;padding:22px;gap:8px;overflow:hidden}
+.coinflip-heading{font-size:20px;margin:0;font-weight:650}
+.coinflip-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px 0 24px;container-type:size}
+.coinflip-coin{width:min(150px,65cqw,65cqh);aspect-ratio:1;flex-shrink:0;border-radius:50%;border:5px solid #dda73c;background:radial-gradient(ellipse at 30% 22%,#fff5b0,#f3ca65 46%,#dfa634);box-shadow:inset 0 0 0 3px #ffe9a0,inset 0 0 0 8px #bd852329,0 6px 0 #b67b22,0 12px 18px #57340c20;color:#9e681a;cursor:pointer;display:grid;place-items:center;position:relative;font-family:Georgia,serif;font-size:clamp(32px,27cqw,70px);font-weight:700;text-shadow:0 1px #fff4bd;touch-action:manipulation}
+.coinflip-coin::before{content:'H';line-height:1}.coinflip-coin[data-side=tails]::before{content:'T'}
+.coinflip-coin::after{content:'';position:absolute;inset:12%;border:1px dashed #b58239;border-radius:50%;pointer-events:none}
+.coinflip-coin:focus-visible{outline:3px solid #6082cf;outline-offset:8px}.coinflip-result{font-size:17px;font-weight:650;min-height:22px;margin:0}
