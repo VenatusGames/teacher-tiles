@@ -30,12 +30,17 @@ function art(pack,color,state){
 }
 
 packs.push({id:'toon',name:'Toon Cursors',productId:'cursor-toon-pack',price:350,colors:[['rose','#ed8eaa'],['ocean','#4eacce'],['mint','#70bd94'],['lilac','#a28cda'],['honey','#e8b955']]});
-const spriteHotspots={pixel:{normal:[6,2],point:[12,2],open:[16,16],grab:[16,16]},toon:{normal:[4,4],point:[9,4],open:[16,16],grab:[16,16]}};
+packs.push({id:'pickaxe',name:'Pickaxe Cursors',productId:'cursor-pickaxe-pack',price:400,colors:[['silver','#b4c8d8'],['gold','#efc35f'],['ruby','#e38194'],['emerald','#72c4a2'],['diamond','#73d2e4']]},{id:'gauntlet',name:'Gauntlet Cursors',productId:'cursor-gauntlet-pack',price:350,colors:[['steel','#b8c3d2'],['gold','#eac367'],['copper','#cf9174'],['violet','#a99ad8'],['obsidian','#7e879c']]});
+const spriteHotspots={pickaxe:{normal:[24,4],point:[24,4],open:[24,4],grab:[24,4]},gauntlet:{normal:[5,5],point:[3,5],open:[7,3],grab:[14,14]},pixel:{normal:[6,2],point:[12,2],open:[16,16],grab:[16,16]},toon:{normal:[4,4],point:[9,4],open:[16,16],grab:[16,16]}};
 async function tintTemplate(pack,color,state){
-  const {data,info}=await sharp(path.join(root,'cursors/templates',pack,state+'.png')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  const {data,info}=await sharp(path.join(root,'cursors/templates',pack,(pack==='pickaxe'?'normal':state)+'.png')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   const rgb=color.slice(1).match(/../g).map(value=>parseInt(value,16));
   // Multiply the original grayscale shading by the chosen palette color. Alpha is untouched.
-  for(let i=0;i<data.length;i+=4)for(let channel=0;channel<3;channel++)data[i+channel]=Math.round(data[i+channel]*rgb[channel]/255);
+  for(let i=0;i<data.length;i+=4){
+    const x=(i/4)%info.width,y=Math.floor(i/4/info.width);
+    const palette=pack==='pickaxe'&&x+y>=32?[149,98,55]:rgb;
+    for(let channel=0;channel<3;channel++)data[i+channel]=Math.round(data[i+channel]*palette[channel]/255);
+  }
   return sharp(data,{raw:info}).resize(32,32,{kernel:pack==='pixel'?'nearest':'lanczos3'}).png().toBuffer();
 }
 (async()=>{

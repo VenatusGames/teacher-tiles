@@ -1,7 +1,7 @@
 (()=>{'use strict';
 function setup(m){
   const button=m.querySelector('.coinflip-coin'),label=m.querySelector('.coinflip-result');
-  button.innerHTML='<span class="coinflip-body" aria-hidden="true"><span class="coinflip-face coinflip-heads"><svg viewBox="0 0 64 64"><circle cx="22" cy="25" r="3"/><circle cx="42" cy="25" r="3"/><path d="M18 36q14 17 28 0" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></span><span class="coinflip-face coinflip-tails"><img src="assets/shop/shop-logo.png" alt=""></span></span>';
+  button.innerHTML='<span class="coinflip-body" aria-hidden="true"><span class="coinflip-face coinflip-heads"><svg viewBox="0 0 48 48"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg></span><span class="coinflip-face coinflip-tails"><img src="assets/shop/shop-logo.png" alt=""></span></span>';
   const body=button.querySelector('.coinflip-body');
   let result='heads',animation=null,running=false;
   function render(){button.dataset.side=result;body.style.transform=`rotateY(${result==='tails'?180:0}deg)`;label.textContent=result==='heads'?'Heads':'Tails';button.setAttribute('aria-label',`${label.textContent}. Flip coin`)}

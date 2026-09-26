@@ -7,7 +7,7 @@ const root = path.join(__dirname, '../assets/cursors');
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, 'packs.js'), 'utf8'), context);
 (async () => {
-  for (const pack of context.window.TeacherTilesCursorPacks.filter(p => ['pixel', 'toon'].includes(p.id))) {
+  for (const pack of context.window.TeacherTilesCursorPacks.filter(p => ['pixel', 'toon', 'gauntlet'].includes(p.id))) {
     for (const state of ['normal', 'point', 'open', 'grab']) {
       const original = await sharp(path.join(root, 'templates', pack.id, `${state}.png`)).ensureAlpha().resize(32, 32, { kernel: pack.id === 'pixel' ? 'nearest' : 'lanczos3' }).raw().toBuffer();
       for (const cursor of pack.cursors) {
@@ -22,5 +22,16 @@ vm.runInNewContext(fs.readFileSync(path.join(root, 'packs.js'), 'utf8'), context
       }
     }
   }
-  console.log('Pixel + Toon: all 40 sprites retain the exact source silhouettes, transparency, shading and expected palette colors.');
+  const pickaxes=context.window.TeacherTilesCursorPacks.find(p=>p.id==='pickaxe').cursors;
+  const original=await sharp(path.join(root,'templates/pickaxe/normal.png')).ensureAlpha().raw().toBuffer();
+  for(const cursor of pickaxes)for(const state of ['normal','point','open','grab']){
+    const actual=await sharp(path.join(root,`${cursor.id}-${state}.png`)).ensureAlpha().raw().toBuffer();
+    const head=cursor.color.slice(1).match(/../g).map(n=>parseInt(n,16));
+    for(let i=0;i<actual.length;i+=4){
+      const palette=(i/4)%32+Math.floor(i/4/32)>=32?[149,98,55]:head;
+      assert.equal(actual[i+3],original[i+3]);
+      if(original[i+3])for(let channel=0;channel<3;channel++)assert.equal(actual[i+channel],Math.round(original[i+channel]*palette[channel]/255),'pickaxe head and fixed wooden handle');
+    }
+  }
+  console.log('Template sprites: exact silhouettes, transparency and palettes; all pickaxes share the same wooden shaft with individually colored heads.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -3162,7 +3162,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
 ]);
 const CURSOR_COLOR_PACK_PRODUCT_ID='cursor-color-pack';
 const CURSOR_CATALOG=Object.freeze([
-  Object.freeze({id:'default',productId:'',name:'System Default',description:'Use your normal device cursor.',color:'#252a31'}),
+  Object.freeze({id:'default',productId:'',name:'Default',description:'Use your normal device cursor.',color:'#252a31'}),
   Object.freeze({id:'blue',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Electric Blue',description:'Bright and crisp.',color:'#3182f6'}),
   Object.freeze({id:'red',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Cherry Red',description:'Bold classroom red.',color:'#ef4444'}),
   Object.freeze({id:'green',productId:CURSOR_COLOR_PACK_PRODUCT_ID,name:'Marker Green',description:'Lively marker green.',color:'#22a860'}),
@@ -3280,23 +3280,37 @@ function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack
 function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>String(theme||'').startsWith(`${name}-`));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
 function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return cosmeticIsAccessible(product)}
 
+const cursorSpriteLoads=new Map();
+let cursorEquipGeneration=0;
 function applyAppCursor(id,{persist=true}={}){
+  const equipGeneration=++cursorEquipGeneration;
   const requested=cursorById(id);
   const cursor=cursorIsOwned(requested)?requested:CURSOR_CATALOG[0];
   if(persist){try{localStorage.setItem(ACTIVE_CURSOR_KEY,cursor.id)}catch{}}
   document.body.dataset.appCursor=cursor.id;
-  document.body.classList.toggle('has-custom-cursor',cursor.id!=='default');
   const cursorRoot=document.documentElement;
   if(cursor.id==='default'){
+    document.body.classList.remove('has-custom-cursor');
     cursorRoot.style.removeProperty('--teacher-cursor-normal');
     cursorRoot.style.removeProperty('--teacher-cursor-point');
     cursorRoot.style.removeProperty('--teacher-cursor-open');
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260926-templates`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.id}-${state}.png?v=20260927-packs`,document.baseURI).href;
     const defaults={normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
-    for(const state of ['normal','point','open','grab'])cursorRoot.style.setProperty(`--teacher-cursor-${state}`,`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`);
+    const value=state=>`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`;
+    // Decode all states before activating the pack so the first grab cannot
+    // lazily download its sprite and briefly show the operating system hand.
+    if(!cursorSpriteLoads.has(cursor.id)){
+      const images=['normal','point','open','grab'].map(state=>{const img=new Image();img.src=asset(state);return img});
+      const ready=Promise.all(images.map(img=>img.decode()));
+      cursorSpriteLoads.set(cursor.id,{images,ready,decoded:false});
+      ready.then(()=>{cursorSpriteLoads.get(cursor.id).decoded=true}).catch(()=>cursorSpriteLoads.delete(cursor.id));
+    }
+    const applyStates=()=>{if(equipGeneration!==cursorEquipGeneration)return;for(const state of ['normal','point','open','grab'])cursorRoot.style.setProperty(`--teacher-cursor-${state}`,value(state));document.body.classList.add('has-custom-cursor')};
+    const load=cursorSpriteLoads.get(cursor.id);
+    if(load.decoded)applyStates();else load.ready.then(applyStates).catch(()=>{});
   }
   window.dispatchEvent(new CustomEvent('teachertiles:cursorchange',{detail:{cursorId:cursor.id}}));
   return cursor;
@@ -13168,7 +13182,7 @@ function setupCollectionShelf(){
       if(!badge&&wrapper){
         badge=document.createElement('span');badge.className='collection-pack-lock';badge.setAttribute('aria-hidden','true');wrapper.appendChild(badge);
       }
-      if(badge){badge.textContent=owned?'✓ Owned':'🔒 Shop';badge.hidden=owned}
+      if(badge){badge.innerHTML=owned?'✓ Owned':'<img src="assets/ui/lock.svg?v=20260927-gold" alt="">Shop';badge.hidden=owned}
     });
     if(!themeChoiceIsOwned(document.body.dataset.theme||'light'))applyTeacherTheme('light');
   };

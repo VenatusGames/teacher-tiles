@@ -4,10 +4,13 @@
 .new-cursor-pack-preview img:nth-child(1){transform:translateY(14px) rotate(-18deg)}.new-cursor-pack-preview img:nth-child(2){transform:translateY(-4px) rotate(-9deg)}.new-cursor-pack-preview img:nth-child(4){transform:translateY(-4px) rotate(9deg)}.new-cursor-pack-preview img:nth-child(5){transform:translateY(14px) rotate(18deg)}
 .shop-product:hover .new-cursor-pack-preview img{transform:translateY(-4px)}
 .theme-picker-pack-heading.theme-picker-pack-locked .theme-pack-stack{filter:saturate(.8);opacity:.9}
-.theme-picker-pack-heading.theme-picker-pack-locked .theme-pack-stack::after{content:'';width:29px;height:29px;right:-4px;top:-4px;background:#f7f8fc url('../../assets/ui/lock.svg') center/19px no-repeat;border:1px solid #cdd5e1;border-radius:10px;box-shadow:0 2px 5px #17243c14}
+.theme-picker-pack-heading.theme-picker-pack-locked .theme-pack-stack::after{content:'';width:29px;height:29px;left:50%;top:50%;right:auto;transform:translate(-50%,-50%);background:#fff9e8 url('../../assets/ui/lock.svg?v=20260927-gold') center/19px no-repeat;border:1px solid #dbc382;border-radius:10px;box-shadow:0 2px 5px #17243c14}
 .theme-picker-pack-locked .theme-pack-badge{color:var(--muted)}
 .sticker-picker-pack-lock{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--surface-solid) 75%,transparent));backdrop-filter:none}
 .sticker-picker-pack-lock>span{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--surface-solid);box-shadow:0 3px 12px #17243c0c;color:var(--text)}
 .sticker-picker-pack-lock img{width:19px;height:19px}.sticker-picker-pack-lock-mark{display:inline-flex;padding:4px;border-radius:7px;background:var(--surface-soft)}.sticker-picker-pack-lock-mark img{width:15px;height:15px}
-.theme-picker-locked::after{content:''!important;background:#f7f8fc url('../../assets/ui/lock.svg') center/18px no-repeat!important;width:28px;height:28px;border:1px solid #cdd5e1;border-radius:9px}
+.theme-picker-locked::after{content:''!important;background:#fff9e8 url('../../assets/ui/lock.svg?v=20260927-gold') center/18px no-repeat!important;width:28px;height:28px;border:1px solid #dbc382;border-radius:9px}
 @media(prefers-reduced-motion:reduce){.new-cursor-pack-preview img{transition:none}}
+
+.theme-picker-pack-heading.theme-picker-pack-locked .theme-pack-stack,.theme-picker-pack-heading.theme-picker-pack-locked:hover .theme-pack-stack{filter:none;opacity:1}
+.collection-pack-lock img{width:17px;height:17px;vertical-align:middle;margin-right:4px}

@@ -3,10 +3,11 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
   let view='all',query='',ownedOnly=false;
   const closed=new Set();let favorites=new Set();
   try{favorites=new Set(JSON.parse(localStorage.getItem('teacherTilesCursorFavorites')||'[]'))}catch{}
-  panel.innerHTML='<div class="cursor-picker"><div class="cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All cursors</button><button type="button" data-view="favorites" aria-pressed="false">♡ Favorites</button></div><input class="cursor-picker-search" type="search" aria-label="Search cursors" placeholder="Search cursors…"><div class="cursor-picker-filters"><span role="status"></span><label>Owned only <input type="checkbox" role="switch" aria-label="Owned cursors only"><i aria-hidden="true"></i></label></div><div class="cursor-picker-results"></div><footer>Choose a cursor to use across your board.</footer></div>';
+  panel.innerHTML='<div class="cursor-picker"><div class="cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All cursors</button><button type="button" data-view="favorites" aria-pressed="false">♡ Favorites <span></span></button></div><input class="cursor-picker-search" type="search" aria-label="Search cursors" placeholder="Search cursors…"><div class="cursor-picker-filters"><span role="status"></span><label>Owned only <input type="checkbox" role="switch" aria-label="Owned cursors only"><i aria-hidden="true"></i></label></div><div class="cursor-picker-results"></div><footer>Choose a cursor to use across your board.</footer></div>';
   const results=panel.querySelector('.cursor-picker-results'),status=panel.querySelector('[role="status"]');
-  const lock=()=>'<img src="assets/ui/lock.svg" alt="">';
+  const lock=()=>'<img src="assets/ui/lock.svg?v=20260927-gold" alt="">';
   function render(){
+    panel.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';
     const selected=active();let total=0;const sections=[];
     for(const pack of packs){
       const accessible=owned(pack.productId),choices=catalog.filter(c=>c.productId===pack.productId&&(!ownedOnly||accessible)&&(view!=='favorites'||favorites.has(c.id))&&(!query||(pack.name+' '+c.name).toLowerCase().includes(query)));
@@ -21,7 +22,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
       for(const cursor of choices){
         const cell=document.createElement('div');cell.className='cursor-picker-cell';
         const choice=document.createElement('button');choice.type='button';choice.className='cursor-picker-choice';choice.setAttribute('aria-pressed',String(selected===cursor.id));choice.setAttribute('aria-label',(accessible?'Use ':'Unlock ')+pack.name+' '+cursor.name);choice.dataset.cursorChoice=cursor.id;
-        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260926-templates`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
+        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260927-packs`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
         const label=document.createElement('span');label.textContent=cursor.name;choice.append(label);
         choice.onclick=()=>accessible?apply(cursor.id):unlock(pack.productId);
         const favorite=document.createElement('button');favorite.type='button';favorite.className='cursor-picker-favorite';favorite.textContent=favorites.has(cursor.id)?'★':'☆';favorite.setAttribute('aria-label',(favorites.has(cursor.id)?'Unfavorite ':'Favorite ')+cursor.name);favorite.setAttribute('aria-pressed',String(favorites.has(cursor.id)));favorite.onclick=()=>{favorites.has(cursor.id)?favorites.delete(cursor.id):favorites.add(cursor.id);try{localStorage.setItem('teacherTilesCursorFavorites',JSON.stringify([...favorites]))}catch{}render()};

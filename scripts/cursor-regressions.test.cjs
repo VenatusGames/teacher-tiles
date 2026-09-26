@@ -20,7 +20,7 @@ assert(await page.locator('[data-test-deck] header .flashcard-counter').count())
 await page.locator('[data-test-deck]').evaluate(m=>{m._cleanup?.();m.remove()});
 }
 await page.evaluate(()=>document.getElementById('cursors-shelf-toggle').click());await page.waitForTimeout(450);
-assert.equal(await page.locator('.cursor-picker-pack').count(),6);assert.equal(await page.locator('.cursor-picker-unlock').count(),5);
+assert.equal(await page.locator('.cursor-picker-pack').count(),8);assert.equal(await page.locator('.cursor-picker-unlock').count(),7);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/cursor-drawer-revised.png'});
 await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('melon');assert.equal(await page.locator('.cursor-picker-choice').count(),1);await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('');
 await page.evaluate(()=>{localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(['cursor-pixel-pack','cursor-soft-pack','cursor-fluid-pack','cursor-color-pack']));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'))});
