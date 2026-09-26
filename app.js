@@ -3197,6 +3197,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
   'bamboo-theme-pack':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','rainy-window-theme-pack':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel',
@@ -3221,6 +3222,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  outer:'theme-outer-space',frosted:'theme-frosted-window',
   bamboo:'theme-bamboo',
   underwater:'theme-underwater',rainy:'theme-rainy-window',
   pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
@@ -12818,6 +12820,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  "outer-space-light","outer-space","frosted-window-light","frosted-window",
   "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
   'underwater-ocean','rainy-window','underwater-ocean-light','rainy-window-light',
   'light','dark','gray',
@@ -12832,6 +12835,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  "theme-outer-space-light","theme-outer-space","theme-frosted-window-light","theme-frosted-window",
   "theme-basic-red","theme-basic-orange","theme-basic-yellow","theme-basic-green","theme-basic-blue","theme-basic-indigo","theme-basic-violet","theme-bamboo-yellow","theme-bamboo-brown","theme-bamboo-green",
   'theme-underwater-ocean','theme-rainy-window','theme-underwater-ocean-light','theme-rainy-window-light',
   'dark','theme-gray',
@@ -12856,6 +12860,7 @@ function updateThemeControls(theme){
 }
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
   ['bamboo-','theme-bamboo'],
   ['underwater-','theme-underwater'],['rainy-','theme-rainy-window'],
   ['pastel-','theme-pastel'],['polka-','theme-polka-dot'],['programmer-','theme-programmer'],
@@ -12863,6 +12868,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
   'bamboo-theme-pack':'theme-bamboo','bamboo-theme-fan':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','underwater-theme-fan':'theme-underwater',
   'rainy-window-theme-pack':'theme-rainy-window','rainy-window-theme-fan':'theme-rainy-window',
@@ -12893,7 +12899,8 @@ function shelfEntitlement(element){
   if(!element)return'';
   if(element.dataset?.entitlement)return element.dataset.entitlement;
   const owner=element.closest?.('[data-entitlement],.theme-fan,.sticker-pack-drawer,[data-theme-pack],[data-sticker-pack]');
-  return owner?.dataset?.entitlement||SHELF_ENTITLEMENTS[owner?.id]||SHELF_ENTITLEMENTS[element.id]||'';
+  const pack=owner?.matches('.sticker-pack-drawer')?document.querySelector(`[data-sticker-pack][aria-controls="${owner.id}"]`):owner;
+  return owner?.dataset?.entitlement||COLLECTION_PACK_PRODUCTS[pack?.id]||SHELF_ENTITLEMENTS[owner?.id]||SHELF_ENTITLEMENTS[element.id]||'';
 }
 function ownsCosmetic(productId){return cosmeticIsAccessible(productId)}
 function requestCosmeticPurchase(productId){
@@ -12955,7 +12962,7 @@ function applyTeacherTheme(theme,{persist=true}={}){
   else if(next==='gray')document.body.classList.add('theme-gray');
   else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  const darkTheme=next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
+  const darkTheme=next==='outer-space'||next==='frosted-window'||next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   applyMaterialThemeArtwork(next);

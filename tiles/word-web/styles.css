@@ -234,3 +234,7 @@
 }
 
 @media(prefers-reduced-motion:reduce){.wordweb-node,.wordweb-connector,.wordweb-center,.wordweb-entry{transition:none}}
+
+.wordweb-center{height:var(--wordweb-center-size,144px);min-height:0;box-sizing:border-box;overflow:hidden}
+
+.wordweb-center::after{display:none}

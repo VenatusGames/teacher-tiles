@@ -15,3 +15,12 @@ body.theme-underwater-ocean{--bg:#094156;--grid:transparent}body.theme-rainy-win
 :is(.theme-card--underwater-ocean-light,.theme-card--rainy-window-light) .animated-theme-preview{border-color:#ffffff99}:is(.theme-card--underwater-ocean-light,.theme-card--rainy-window-light) .theme-card__copy{background:#ffffffed;color:#17191d}
 .board-preview-theme-underwater-ocean-light{background-color:#126781!important;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg')!important;background-position:center,center!important;background-size:cover,cover!important}.board-preview-theme-rainy-window-light{background-color:#344b59!important;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg')!important;background-position:center,center!important;background-size:cover,cover!important}
 .theme-pack-stage:has(>.theme-card:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+
+body:is(.theme-outer-space,.theme-outer-space-light) .workspace{z-index:1;background:none!important}
+body.theme-outer-space{--grid:transparent;--bg:#080e24}
+:is(.theme-card--outer-space,.theme-card--outer-space-light) .animated-theme-preview,.animated-theme-shop--outer-space,.board-preview-theme-outer-space,.board-preview-theme-outer-space-light{background:url('../../assets/themes/previews/outer-space.webp') center / cover}
+.theme-card--outer-space,.theme-card--outer-space-light{background:#f8fafc;color:#20272c}.theme-card--outer-space .theme-card__copy{background:#182235;color:#f1f5fa}.theme-card--outer-space-light .theme-card__copy{background:#fff;color:#20272c}
+body:is(.theme-frosted-window,.theme-frosted-window-light) .workspace{z-index:1;background:none!important}
+body.theme-frosted-window{--grid:transparent;--bg:#708b9f}
+:is(.theme-card--frosted-window,.theme-card--frosted-window-light) .animated-theme-preview,.animated-theme-shop--frosted-window,.board-preview-theme-frosted-window,.board-preview-theme-frosted-window-light{background:url('../../assets/themes/previews/frosted-window.webp') center / cover}
+.theme-card--frosted-window,.theme-card--frosted-window-light{background:#f8fafc;color:#20272c}.theme-card--frosted-window .theme-card__copy{background:#182235;color:#f1f5fa}.theme-card--frosted-window-light .theme-card__copy{background:#fff;color:#20272c}

@@ -120,7 +120,12 @@
         const raw=clamp((20*Math.log10(Math.sqrt(sum/samples.length)||.00001)+60)/60*100,0,100)*Number(sensitivity.value)/100;
         level+= (clamp(raw,0,100)-level)*Math.min(1,dt*9);meter.value=level;
       }
+      const wasScared=environment.scared>0;
       if(advance(environment,{mode,listening:active,level,threshold:Number(threshold.value)},dt)){
+        if(!wasScared&&environment.scared>0){
+          for(const fish of fishes){fish.leaving=true;fish.scaredDeparture=true;fish.replacementIndex=null;fish.meal=null;fish.dir=fish.x<.5?-1:1}
+          food=[];nextArrival=8;scheduleSwap(24);notifyBoardChanged('fish-scared');
+        }
         if(environment.quiet>=nextArrival){
           nextArrival=environment.quiet+8;
           const unlocked=eligible(environment.quiet);const visitor=[...unlocked].reverse().find(s=>s[2]>0&&!fishes.some(f=>!f.leaving&&species[f.index]===s));
@@ -136,7 +141,7 @@
       for(const f of fishes.slice()){
         f.age+=dt;
         if(f.leaving){
-          f.meal=null;f.x+=f.dir*Math.max(.08,f.speed*2.6)*dt*motionScale;
+          f.meal=null;f.x+=f.dir*(f.scaredDeparture?.45:Math.max(.08,f.speed*2.6))*dt*motionScale;
           if(f.x<-.24||f.x>1.24){
             const replacementIndex=f.replacementIndex,index=fishes.indexOf(f);if(index>=0)fishes.splice(index,1);
             if(Number.isInteger(replacementIndex)&&fishes.filter(other=>!other.leaving).length<18)addFish(replacementIndex);
@@ -182,8 +187,8 @@
     const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(!visible){cancelAnimationFrame(frame);frame=0;last=0;}else wake();});observer.observe(canvas);
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;last=0;if(active||pending)stop('Microphone paused while the tab is hidden.');}else wake();}
     document.addEventListener('visibilitychange',visibility);
-    m._boardGetState=()=>({mode,threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.map(f=>f.leaving&&Number.isInteger(f.replacementIndex)?f.replacementIndex:f.index)});
-    m._boardSetState=s=>{stop();setMode(s?.mode,{notify:false});food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);(stock.length?stock:[0,3,5,6]).forEach(i=>addFish(i,true));scheduleSwap(22+Math.random()*14);draw();};
+    m._boardGetState=()=>({mode,threshold:Number(threshold.value),sensitivity:Number(sensitivity.value),fish:fishes.filter(f=>!f.scaredDeparture).map(f=>f.leaving&&Number.isInteger(f.replacementIndex)?f.replacementIndex:f.index)});
+    m._boardSetState=s=>{stop();setMode(s?.mode,{notify:false});food=[];threshold.value=String(clamp(Number(s?.threshold)||45,15,85));sensitivity.value=String(clamp(Number(s?.sensitivity)||100,30,200));m.querySelector('.fish-threshold-value').textContent=`${threshold.value}%`;fishes=[];const stock=(Array.isArray(s?.fish)?s.fish:[0,3,5,6]).filter(i=>Number.isInteger(i)&&i>=0&&i<species.length).slice(0,18);stock.forEach(i=>addFish(i,true));scheduleSwap(22+Math.random()*14);draw();};
     const prior=m._cleanup;m._cleanup=()=>{disposed=true;stop();cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);images.forEach(img=>img.onload=null);prior?.();};setMode('ambient',{notify:false});wake();
   }
   window.TeacherTilesFishTank=Object.freeze({setup,eligible,ecology,advance});

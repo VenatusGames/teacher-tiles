@@ -18,6 +18,7 @@
   function setup(m){
     const stage=m.querySelector('.wordweb-stage');
     const center=m.querySelector('.wordweb-center');
+    center.title='Double-click to edit';
     const nodeLayer=m.querySelector('.wordweb-nodes');
     const connectorLayer=m.querySelector('.wordweb-connectors');
     const form=m.querySelector('.wordweb-entry');
@@ -70,7 +71,8 @@
       const tileScale=clamp(Math.min(width/596,usableHeight/372),.66,1.8);
       const densityScale=clamp(1-Math.max(0,nodes.length-16)*.0095,.6,1);
       const nodeScale=tileScale*densityScale;
-      const centerSize=clamp(144*tileScale,94,248);
+      const contentGrowth=clamp((centerText().length-12)/90,0,.3);
+      const centerSize=clamp(144*tileScale*(1+contentGrowth),94,300);
       const nodeMinWidth=clamp(86*nodeScale,48,152);
       const nodeMaxWidth=clamp(154*nodeScale,76,270);
       const nodeMinHeight=clamp(46*nodeScale,28,82);
@@ -78,12 +80,19 @@
       const nodePadX=clamp(17*nodeScale,8,30);
       const nodePadY=clamp(10*nodeScale,5,18);
       const centerFont=clamp(27*tileScale,17,46);
-      const centerPad=clamp(18*tileScale,11,32);
+      const centerPad=clamp(Math.max(18*tileScale,centerSize*.16),11,48);
       const lineSize=clamp(2*tileScale,1.4,3.4);
 
       stage.style.setProperty('--wordweb-center-size',`${centerSize}px`);
       stage.style.setProperty('--wordweb-center-font',`${centerFont}px`);
       stage.style.setProperty('--wordweb-center-pad',`${centerPad}px`);
+      // Measure wrapping without changing the editable DOM or caret.
+      const probe=document.createElement('div');
+      Object.assign(probe.style,{position:'fixed',visibility:'hidden',pointerEvents:'none',width:`${centerSize-centerPad*2-4}px`,fontFamily:getComputedStyle(center).fontFamily,fontWeight:'800',lineHeight:'1.1',overflowWrap:'anywhere',whiteSpace:'pre-wrap'});
+      probe.textContent=centerText();document.body.append(probe);
+      let fitted=centerFont;
+      while(fitted>8){probe.style.fontSize=fitted+'px';if(probe.offsetHeight<=centerSize-centerPad*2-4&&probe.scrollWidth<=probe.clientWidth)break;fitted-=.5}
+      probe.remove();stage.style.setProperty('--wordweb-center-font',`${fitted}px`);
       stage.style.setProperty('--wordweb-node-min-width',`${nodeMinWidth}px`);
       stage.style.setProperty('--wordweb-node-max-width',`${nodeMaxWidth}px`);
       stage.style.setProperty('--wordweb-node-min-height',`${nodeMinHeight}px`);
@@ -361,7 +370,7 @@
           selection.addRange(range);
         }
       }
-      changed('center');
+      scheduleLayout();changed('center');
     });
 
     center.addEventListener('keydown',event=>{
@@ -379,6 +388,7 @@
 
     const resizeObserver=new ResizeObserver(scheduleLayout);
     resizeObserver.observe(stage);
+    document.fonts?.addEventListener('loadingdone',scheduleLayout);
 
     m._boardGetState=()=>({
       center:centerText(),
@@ -401,6 +411,7 @@
       cancelAnimationFrame(resizeFrame);
       cancelAnimationFrame(connectorFollowFrame);
       resizeObserver.disconnect();
+      document.fonts?.removeEventListener('loadingdone',scheduleLayout);
       priorCleanup?.();
     };
 
