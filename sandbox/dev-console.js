@@ -6,7 +6,7 @@ const OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const DEFAULT_TILE_SKINS_KEY='teacherTilesDefaultTileSkins';
 const SANDBOX_COIN_BALANCE=999999;
 
-if(!window.__teacherTilesSandboxConsoleLoaded){
+if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.allowed&&!window.__teacherTilesSandboxConsoleLoaded){
   window.__teacherTilesSandboxConsoleLoaded=true;
 
   const stylesheet=document.createElement('link');

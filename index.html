@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src="sandbox-access.js?v=20261011-admin-access"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TeacherTiles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -647,10 +648,11 @@
                 <span class="profile-badge__date" role="tooltip">Awarded Aug 28, 2026</span>
                 <span class="profile-badge__check" aria-hidden="true">✓</span>
               </article>
-              <button class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-disabled="true" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. Work for TeacherTiles to unlock.">
+              <button id="profile-teachertiles-badge" class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-disabled="true" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. Work for TeacherTiles to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><img src="assets/profile/teachertiles-profile-logo.png" alt=""></span>
                 <span class="profile-badge__copy"><strong>TeacherTiles</strong></span>
                 <span id="teachertiles-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Work for TeacherTiles</span>
+                <span class="profile-badge__check" aria-hidden="true" hidden>✓</span>
               </button>
               <button id="profile-subscriber-badge" class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" aria-disabled="true" aria-describedby="subscriber-patch-requirement" aria-label="Subscriber patch. Locked. Pay for a monthly subscription to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span>
@@ -4314,11 +4316,11 @@
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20260928-unified"></script>
 <script src="tiles/growth-rewards/index.js?v=20261003"></script>
-<script src="app.js?v=20261010-hover-controls"></script>
+<script src="app.js?v=20261011-admin-access"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20260929-growth-rewards"></script>
+<script type="module" src="firebase-auth.js?v=20261011-admin-access"></script>
 
 
   <template id="ruler-template">

@@ -1258,6 +1258,7 @@ window.TeacherTilesTileAudio=Object.freeze({
 });
 
 function playUiSfx(kind='click',volumeScale=1,owner=null){
+  if(window.TeacherTilesAdminAccess?.locked)return;
   if(owner&&!owner.isConnected)return;
   const effectiveLevel=kind==='click'?globalUiAudioLevel():tileAudioLevel(owner);
   if(effectiveLevel<=0)return;
@@ -20541,19 +20542,12 @@ function setupTeacherTilesShop(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
 
+let sandboxRuntimeLoading=false;
 async function initializeSandboxRuntime(){
-  try{
-    const url=new URL('sandbox/sandbox.md',window.location.href);
-    url.searchParams.set('ttSandboxCheck',Date.now().toString(36));
-    const response=await fetch(url,{cache:'no-store'});
-    if(!response.ok)return;
-    const contentType=(response.headers.get('content-type')||'').toLowerCase();
-    if(contentType.includes('text/html'))return;
-    const moduleUrl=new URL('sandbox/dev-console.js',window.location.href);
-    moduleUrl.searchParams.set('ttSandboxRuntime',Date.now().toString(36));
-    await import(moduleUrl.href);
-  }catch{
-    // The removable sandbox/ folder is intentionally absent from production builds.
-  }
+  if(!window.TeacherTilesAdminAccess?.required||!window.TeacherTilesAdminAccess.allowed||sandboxRuntimeLoading)return;
+  sandboxRuntimeLoading=true;
+  try{await import(new URL('sandbox/dev-console.js?v=20261011-admin-access',window.location.href).href)}
+  catch(error){sandboxRuntimeLoading=false;console.error('Sandbox tools could not load',error)}
 }
+window.addEventListener('teachertiles:adminaccess',initializeSandboxRuntime);
 initializeSandboxRuntime();

@@ -561,6 +561,7 @@ async function loadEncryptedClasses() {
 }
 
 function setStatus(message = "", isError = false) {
+  if(isError||message==='Opening Google sign-in…'||message==='Sign-in was canceled.')window.TeacherTilesAdminAccess?.status(message);
   status.textContent = message;
   status.classList.toggle("is-error", isError);
 }
@@ -4389,6 +4390,72 @@ async function handleSignOut() {
   }
 }
 
+let adminAuthGeneration = 0;
+let adminRenderedUid;
+let lastAdminCheck = 0;
+let adminCheckInFlight = null;
+
+function syncAdminPatch(allowed) {
+  const badge = document.getElementById('profile-teachertiles-badge');
+  if (!badge) return;
+  badge.classList.toggle('profile-badge--locked', !allowed);
+  badge.setAttribute('aria-disabled', String(!allowed));
+  badge.setAttribute('aria-label', allowed ? 'TeacherTiles patch. TeacherTiles administrator.' : 'TeacherTiles patch. Locked. Work for TeacherTiles to unlock.');
+  badge.querySelector('.profile-badge__check').hidden = !allowed;
+  document.getElementById('teachertiles-patch-requirement').textContent = allowed ? 'TeacherTiles administrator' : 'Unlock: Work for TeacherTiles';
+  syncProfileBadgeCount();
+}
+
+async function handleAdminAuthChange(user) {
+  const generation = ++adminAuthGeneration;
+  lastAdminCheck = Date.now();
+  const access = window.TeacherTilesAdminAccess;
+  const wasAllowed = access?.allowed;
+  let claims = {};
+  try {
+    if (user) {
+      if (access?.required) {
+        const result = await functionsSdk.httpsCallable(cloudFunctions, 'verifyDeveloperAccess')({});
+        if (result.data?.uid !== user.uid) throw new Error('Account verification mismatch');
+        claims = {portalRole:result.data.role};
+      } else claims = (await authSdk.getIdTokenResult(user)).claims;
+    }
+  } catch (error) {
+    if (generation !== adminAuthGeneration || auth.currentUser?.uid !== user?.uid) return;
+    access?.update({},user?.email || '');
+    syncAdminPatch(false);
+    if (access?.required && wasAllowed) { location.reload(); return; }
+    if (error?.code !== 'functions/permission-denied') access?.status('Admin access could not be verified. Check your connection and choose Check access again.');
+    return;
+  }
+  if (generation !== adminAuthGeneration || auth.currentUser?.uid !== user?.uid) return;
+  lastAdminCheck = Date.now();
+  access?.update(claims,user?.email || '');
+  syncAdminPatch(Boolean(access?.allowed));
+  if (access?.required && (!access.allowed || (adminRenderedUid && adminRenderedUid !== user?.uid))) {
+    if (wasAllowed || adminRenderedUid) location.reload();
+    return;
+  }
+  const uid = user?.uid || '';
+  if (adminRenderedUid !== uid) {
+    adminRenderedUid = uid;
+    await renderUser(user);
+  }
+}
+
+function refreshAdminAccess() {
+  if (!auth || adminCheckInFlight) return adminCheckInFlight;
+  adminCheckInFlight = handleAdminAuthChange(auth.currentUser).finally(() => {adminCheckInFlight=null});
+  return adminCheckInFlight;
+}
+// Recheck active sandbox sessions without Firestore listeners or reads.
+setInterval(() => {
+  if (window.TeacherTilesAdminAccess?.required && auth?.currentUser && !document.hidden && Date.now()-lastAdminCheck >= 300000) void refreshAdminAccess();
+}, 60000);
+window.addEventListener('focus', () => {
+  if (window.TeacherTilesAdminAccess?.required && auth?.currentUser && Date.now()-lastAdminCheck >= 300000) void refreshAdminAccess();
+});
+
 async function initializeFirebaseAuth() {
   signInButton.disabled = true;
 
@@ -4415,12 +4482,15 @@ async function initializeFirebaseAuth() {
       console.warn("TeacherTiles could not set local Firebase auth persistence", error);
     }
 
-    authModule.onAuthStateChanged(auth, user => {
-      renderUser(user).catch(error => {
+    window.TeacherTilesAdminAccess?.configure({signIn:handleSignIn,refresh:()=>refreshAdminAccess()});
+    authModule.onIdTokenChanged(auth, user => {
+      handleAdminAuthChange(user).catch(error => {
         console.error("TeacherTiles account initialization failed", error);
         setStatus("Your account signed in, but cloud boards could not be initialized.", true);
       });
     }, error => {
+      window.TeacherTilesAdminAccess?.update();
+      window.TeacherTilesAdminAccess?.status("Unable to verify your account. Please refresh and try again.");
       console.error("TeacherTiles auth state error", error);
       authReady = true;
       loadingState.hidden = true;
@@ -4433,6 +4503,7 @@ async function initializeFirebaseAuth() {
       openProfile();
     });
   } catch (error) {
+    window.TeacherTilesAdminAccess?.status("Sign-in could not load. Check your connection and refresh this page.");
     console.error("TeacherTiles Firebase SDK failed to load", error);
     authReady = true;
     loadingState.hidden = true;
