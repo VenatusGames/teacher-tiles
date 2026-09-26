@@ -19231,3 +19231,13 @@ body .sticker-module>.module-delete{
 .flashcard-shuffle:active{transform:translateY(0) scale(.98)}
 .flashcard-shuffle:focus-visible{outline:2px solid #438cd2;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.flashcard-shuffle{transition:none}}
+
+/* Shared PBIS class-picker button appearance. */
+.module .pbis-change-class{
+  width:auto;height:auto;min-height:0;flex-shrink:0;
+  padding:6px 9px;border:1px solid var(--border);border-radius:9px;
+  background:var(--surface-solid);color:var(--muted)!important;
+  font:inherit;font-size:11px;font-weight:400;letter-spacing:normal;
+  box-shadow:none;cursor:pointer;
+}
+.module .pbis-change-class:hover{background:var(--surface-solid)}
