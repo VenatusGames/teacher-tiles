@@ -70,3 +70,4 @@
 @container(max-height:320px){.meditation-heading>span,.meditation-rhythm,.meditation-session{display:none}.meditation-title{font-size:16px}.meditation-actions{gap:4px}.meditation-actions button{min-width:0;padding:5px 8px;font-size:10px}.meditation-cue{font-size:16px}}
 
 .meditation-lotus{display:block;width:clamp(72px,24cqw,130px);height:auto;filter:drop-shadow(0 3px 5px #59396c12)}
+.rainbow-breath-art{width:100%;max-height:100%;overflow:visible;filter:drop-shadow(0 4px 8px #607a9c16)}.rainbow-breath-art path{stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--rainbow-progress,0))}.rainbowbreath-module .meditation-count{position:absolute;top:auto;bottom:0;left:50%;transform:translateX(-50%);font-size:28px}.rainbowbreath-module .meditation-palette-toggle{display:none}

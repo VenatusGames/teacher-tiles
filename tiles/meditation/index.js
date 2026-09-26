@@ -3,6 +3,8 @@
   const lotus="<svg class=\"meditation-lotus\" viewBox=\"0 0 240 160\" aria-hidden=\"true\"><g stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\"><path fill=\"#803c98\" d=\"M120 124C70 112 34 88 18 110L5 137C25 121 43 155 120 124ZM120 124C170 112 206 88 222 110L235 137C215 121 197 155 120 124Z\"/><path fill=\"#92359a\" d=\"M120 124C55 124 22 97 18 53Q17 36 5 35Q38 15 51 42C71 77 94 112 120 124ZM120 124C185 124 218 97 222 53Q223 36 235 35Q202 15 189 42C169 77 146 112 120 124Z\"/><path fill=\"#aa409e\" d=\"M120 124C48 111 35 75 53 32Q59 19 56 8Q86 13 96 37L120 124ZM120 124C192 111 205 75 187 32Q181 19 184 8Q154 13 144 37Z\"/><path fill=\"#c8489f\" d=\"M120 124Q68 68 82 24Q94 8 84 1Q115 8 120 40Q125 8 156 1Q146 8 158 24Q172 68 120 124Z\"/><path fill=\"#e90095\" d=\"M120 124C44 107 57 59 92 32Q118 15 120 1Q122 15 148 32C183 59 196 107 120 124Z\"/><path fill=\"#9152a1\" d=\"M120 124Q50 111 42 154Q54 143 79 149Q116 154 120 124ZM120 124Q190 111 198 154Q186 143 161 149Q124 154 120 124Z\"/></g></svg>";
   function setup(m) {
     const scene=m.querySelector('.meditation-scene');
+    const rainbow=m.dataset.type==='rainbowbreath';
+    if(rainbow){scene.querySelectorAll('.meditation-aura,.meditation-bloom').forEach(el=>el.remove());const colors=['#ee718b','#f3a76b','#eed376','#81c5a1','#73b8d9','#9a92d4','#c497cc'];scene.insertAdjacentHTML('afterbegin','<svg class="rainbow-breath-art" viewBox="0 0 400 250" aria-hidden="true">'+colors.map((color,i)=>{const r=177-i*18;return [-1,1].map(side=>'<path d="M '+(200+side*r)+' 220 A '+r+' '+r+' 0 0 '+(side===-1?1:0)+' 200 '+(220-r)+'" fill="none" stroke="'+color+'" stroke-width="14" stroke-linecap="round" pathLength="1"/>').join('')}).join('')+'</svg>');}
     const cue=m.querySelector('.meditation-cue');
     const count=m.querySelector('.meditation-count');
     const showCues=m.querySelector('.meditation-show-cues');
@@ -73,13 +75,14 @@
       const progress=inhale?position/inhaleMs:(position-inhaleMs)/(exhaleSeconds*1000);
       const ease=(1-Math.cos(Math.PI*progress))/2;
       const expansion=inhale?ease:1-ease;
+      if(rainbow)scene.style.setProperty('--rainbow-progress',String(expansion));
       scene.style.setProperty('--breath-scale',String(.64+expansion*.36));
       scene.style.setProperty('--breath-glow',String(.24+expansion*.42));
       scene.style.setProperty('--breath-turn',`${elapsed/350}deg`);
       const complete=elapsed>=durationSeconds*1000;
       const phase=complete?'Well done':running?(inhale?'Breathe in':'Breathe out'):(elapsed?'Paused':'Find your calm');
       if(phase!==lastPhase){cue.textContent=phase;lastPhase=phase;}
-      if(running)count.textContent=String(Math.max(1,Math.ceil((inhale?inhaleMs-position:cycle-position)/1000)));else if(!count.querySelector('svg'))count.innerHTML=lotus;
+      if(running)count.textContent=String(Math.max(1,Math.ceil((inhale?inhaleMs-position:cycle-position)/1000)));else if(rainbow)count.textContent='';else if(!count.querySelector('svg'))count.innerHTML=lotus;
       cue.hidden=!showCues.checked;
       toggle.textContent=complete?'Start again':running?'Pause':elapsed?'Resume':'Start breathing';
       remaining.textContent=format(Math.max(0,Math.ceil(durationSeconds-elapsed/1000)));
