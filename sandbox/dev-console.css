@@ -53,4 +53,4 @@ body.boards-screen-open .sandbox-dev-toggle{opacity:0;visibility:hidden;pointer-
 @media(max-width:620px){.sandbox-dev-toggle{top:10px;left:56px;width:38px;height:38px}.sandbox-dev-setting{align-items:flex-start}.sandbox-dev-setting--action{flex-direction:column}.sandbox-dev-setting--action button{width:100%}}
 @media(prefers-reduced-motion:reduce){.sandbox-dev-toggle,.sandbox-dev-console,.sandbox-dev-console__panel{transition:none}}
 
-.sandbox-portal-return{position:fixed;right:20px;top:18px;z-index:9000;padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-solid);color:var(--text);font:600 12px system-ui;text-decoration:none;box-shadow:0 3px 12px #0001}
+.sandbox-portal-return{display:block;text-align:center;padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-solid);color:var(--text);font:600 12px system-ui;text-decoration:none;box-shadow:0 3px 12px #0001}

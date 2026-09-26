@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261010-hover-controls" />
+  <link rel="stylesheet" href="styles.css?v=20261012-patch-viewer" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -640,20 +640,21 @@
               <div><span>YOUR PROFILE</span><h3 id="profile-badges-title">Patch Collection</h3></div>
               <small id="profile-badge-count">1 earned</small>
             </div>
-            <div class="profile-badge-grid">
-              <article id="profile-beta-badge" class="profile-badge profile-badge--beta" tabindex="0" aria-label="Beta Tester patch. Awarded August 28, 2026.">
+            <div class="profile-patch-tabs" role="group" aria-label="Patch category"><button type="button" data-patch-category="earned" aria-pressed="true">Earned</button><button type="button" data-patch-category="locked" aria-pressed="false">Locked</button></div>
+            <div class="profile-badge-grid" data-category="earned">
+              <button type="button" data-awarded="2026-08-28" id="profile-beta-badge" class="profile-badge profile-badge--beta" tabindex="0" aria-label="Beta Tester patch. Awarded August 28, 2026.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><i>β</i></span>
                 <span class="profile-badge__copy"><strong>Beta Tester</strong></span>
-                <span class="profile-badge__date" role="tooltip">Awarded Aug 28, 2026</span>
+                <span class="profile-badge__requirement" role="tooltip">Unlock: Beta Tester!</span>
                 <span class="profile-badge__check" aria-hidden="true">✓</span>
-              </article>
-              <button id="profile-teachertiles-badge" class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-disabled="true" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. Work for TeacherTiles to unlock.">
+              </button>
+              <button id="profile-teachertiles-badge" class="profile-badge profile-badge--locked profile-badge--teachertiles" type="button" aria-describedby="teachertiles-patch-requirement" aria-label="TeacherTiles patch. Locked. TeacherTiles Employee.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><img src="assets/profile/teachertiles-profile-logo.png" alt=""></span>
                 <span class="profile-badge__copy"><strong>TeacherTiles</strong></span>
-                <span id="teachertiles-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Work for TeacherTiles</span>
+                <span id="teachertiles-patch-requirement" class="profile-badge__requirement" role="tooltip">TeacherTiles Employee</span>
                 <span class="profile-badge__check" aria-hidden="true" hidden>✓</span>
               </button>
-              <button id="profile-subscriber-badge" class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" aria-disabled="true" aria-describedby="subscriber-patch-requirement" aria-label="Subscriber patch. Locked. Pay for a monthly subscription to unlock.">
+              <button id="profile-subscriber-badge" class="profile-badge profile-badge--locked profile-badge--subscriber" type="button" aria-describedby="subscriber-patch-requirement" aria-label="Subscriber patch. Locked. Pay for a monthly subscription to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span>
                   <svg viewBox="0 0 48 48"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>
                 </span>
@@ -662,19 +663,19 @@
                 <span id="subscriber-patch-earned" class="profile-badge__date" role="tooltip" hidden>Active subscription</span>
                 <span class="profile-badge__check" aria-hidden="true" hidden>✓</span>
               </button>
-              <button class="profile-badge profile-badge--locked profile-badge--contributor" type="button" aria-disabled="true" aria-describedby="contributor-patch-requirement" aria-label="Contributor patch. Locked. Get your idea added to TeacherTiles to unlock.">
+              <button class="profile-badge profile-badge--locked profile-badge--contributor" type="button" aria-describedby="contributor-patch-requirement" aria-label="Contributor patch. Locked. Get your idea added to TeacherTiles to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span>
                   <svg viewBox="0 0 48 48"><path d="M24 7.5a12.8 12.8 0 0 0-8.4 22.5c2 1.7 2.9 3.3 3.1 5h10.6c.2-1.7 1.1-3.3 3.1-5A12.8 12.8 0 0 0 24 7.5Z"/><path d="M19 39h10M20.8 43h6.4M24 3V.8M9.8 9.8 7.5 7.5M38.2 9.8l2.3-2.3M7 23H3.8M44.2 23H41"/></svg>
                 </span>
                 <span class="profile-badge__copy"><strong>Contributor</strong></span>
                 <span id="contributor-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Get your idea added to TeacherTiles</span>
               </button>
-              <button class="profile-badge profile-badge--locked profile-badge--stickerer" type="button" aria-disabled="true" aria-describedby="stickerer-patch-requirement" aria-label="Stickerer patch. Locked. Place 1000 stickers to unlock.">
+              <button class="profile-badge profile-badge--locked profile-badge--stickerer" type="button" aria-describedby="stickerer-patch-requirement" aria-label="Stickerer patch. Locked. Place 1000 stickers to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><svg viewBox="0 0 48 48"><path d="M10 8h21l7 7v25H10V8Z"/><path d="M31 8v8h7M17 27c3.8 4.2 10.2 4.2 14 0M18 21h.1M30 21h.1"/></svg></span>
                 <span class="profile-badge__copy"><strong>Stickerer</strong></span>
                 <span id="stickerer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 1000 stickers</span>
               </button>
-              <button class="profile-badge profile-badge--locked profile-badge--tile-layer" type="button" aria-disabled="true" aria-describedby="tile-layer-patch-requirement" aria-label="Tile Layer patch. Locked. Place 100 tiles to unlock.">
+              <button class="profile-badge profile-badge--locked profile-badge--tile-layer" type="button" aria-describedby="tile-layer-patch-requirement" aria-label="Tile Layer patch. Locked. Place 100 tiles to unlock.">
                 <span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span><svg viewBox="0 0 48 48"><rect x="9" y="9" width="24" height="24" rx="4"/><path d="M15 39h21a3 3 0 0 0 3-3V15"/></svg></span>
                 <span class="profile-badge__copy"><strong>Tile Layer</strong></span>
                 <span id="tile-layer-patch-requirement" class="profile-badge__requirement" role="tooltip">Unlock: Place 100 tiles</span>
@@ -4319,7 +4320,8 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261012-account-hooks"></script>
+<script type="module" src="firebase-auth.js?v=20261012-employee-patch"></script>
+<script type="module" src="profile-patches.js?v=20261012-patch-viewer"></script>
 
 
   <template id="ruler-template">

@@ -659,7 +659,7 @@ function syncSubscriberMarks(state = shopAccountState) {
   toggle?.classList.toggle("is-subscriber", active);
   if (profileSubscriberBadge) {
     profileSubscriberBadge.classList.toggle("profile-badge--locked", !active);
-    profileSubscriberBadge.setAttribute("aria-disabled", String(!active));
+
     profileSubscriberBadge.setAttribute("aria-describedby", active ? "subscriber-patch-earned" : "subscriber-patch-requirement");
     profileSubscriberBadge.setAttribute("aria-label", active ? "Subscriber patch. Earned with an active subscription." : "Subscriber patch. Locked. Pay for a monthly subscription to unlock.");
   }
@@ -4390,10 +4390,10 @@ function syncStaffPatch(allowed) {
   const badge = document.getElementById('profile-teachertiles-badge');
   if (!badge) return;
   badge.classList.toggle('profile-badge--locked', !allowed);
-  badge.setAttribute('aria-disabled', String(!allowed));
-  badge.setAttribute('aria-label', allowed ? 'TeacherTiles patch. TeacherTiles administrator.' : 'TeacherTiles patch. Locked. Work for TeacherTiles to unlock.');
+
+  badge.setAttribute('aria-label', allowed ? 'TeacherTiles patch. TeacherTiles Employee.' : 'TeacherTiles patch. Locked. TeacherTiles Employee.');
   badge.querySelector('.profile-badge__check').hidden = !allowed;
-  document.getElementById('teachertiles-patch-requirement').textContent = allowed ? 'TeacherTiles administrator' : 'Unlock: Work for TeacherTiles';
+  document.getElementById('teachertiles-patch-requirement').textContent = 'TeacherTiles Employee';
   syncProfileBadgeCount();
 }
 
