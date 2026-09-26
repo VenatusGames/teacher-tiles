@@ -969,6 +969,7 @@ function setupStudentView(){
 
   const appendStats=(container,roster,name,{compact=false,wholeClass=false}={})=>{
     container.replaceChildren();
+    if(!compact){const heading=document.createElement('h5');heading.className='student-profile-rewards-heading';heading.textContent='PBIS Rewards';container.append(heading);}
     const stats=enabledStats({wholeClass});
     if(!stats.length){
       const empty=document.createElement(compact?'span':'p');

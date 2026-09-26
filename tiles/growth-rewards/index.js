@@ -2,7 +2,7 @@
   function setup(m){
     const eggs=m.dataset.type==='egghatching',kind=eggs?'eggHatching':'flowerPots';
     const intro=m.querySelector('.growth-import'),panel=m.querySelector('.growth-dashboard'),grid=m.querySelector('.growth-grid'),goalInput=m.querySelector('.growth-goal');
-    let activeClassId='',goal=5,showAll=false;const completed=new Set();
+    let activeClassId='',goal=5,showAll=true;const completed=new Set();
     const roster=()=>readClassRosters().find(r=>r.id===activeClassId);
     const goalValue=()=>eggs?5:goal;
     const art=(step,done)=>{
@@ -41,9 +41,9 @@
     goalInput?.addEventListener('change',()=>{goal=Math.max(1,Math.min(10,Math.round(Number(goalInput.value)||5)));goalInput.value=goal;render();notifyBoardChanged('flower-goal')});
     for(const [selector,key,values] of [['.tile-bg','bg',['white','cream','blue','pink','green','lavender','charcoal']],['.tile-font','font',FONT_OPTIONS],['.tile-text','text',['dark','soft','blue','rose','white','cream']]])m.querySelector(selector).onclick=()=>cycleData(m,key,values);
     const settings=m.querySelector('.tile-settings-panel')||createStandardTileSettingsPanel(m,m.dataset.type);
-    const fitLabel=document.createElement('label');fitLabel.className='tile-setting growth-fit-setting';fitLabel.innerHTML='<span>Show all students</span><input class="growth-show-all" type="checkbox" role="switch">';settings.append(fitLabel);const fitInput=fitLabel.querySelector('input');fitInput.onchange=()=>{showAll=fitInput.checked;fit();notifyBoardChanged('growth-layout')};
+    const fitLabel=document.createElement('label');fitLabel.className='tile-setting growth-fit-setting';fitLabel.innerHTML='<span>Show all students</span><input class="growth-show-all" type="checkbox" role="switch">';settings.append(fitLabel);const fitInput=fitLabel.querySelector('input');fitInput.checked=showAll;fitInput.onchange=()=>{showAll=fitInput.checked;fit();notifyBoardChanged('growth-layout')};
     window.addEventListener('teachertiles:classeschange',render);
-    m._boardGetState=()=>({activeClassId,goal,showAll});m._boardSetState=s=>{showAll=Boolean(s?.showAll);fitInput.checked=showAll;goal=Math.max(1,Math.min(10,Math.round(Number(s?.goal)||5)));if(goalInput)goalInput.value=goal;selectClass(s?.activeClassId)};
+    m._boardGetState=()=>({activeClassId,goal,showAll});m._boardSetState=s=>{showAll=s?.showAll!==false;fitInput.checked=showAll;goal=Math.max(1,Math.min(10,Math.round(Number(s?.goal)||5)));if(goalInput)goalInput.value=goal;selectClass(s?.activeClassId)};
     bindGeneratedTileSettings(m,m.querySelector('.tile-settings-toggle'),m.querySelector('.tile-settings-panel'));
     const prior=m._cleanup;m._cleanup=()=>{observer.disconnect();detach();window.removeEventListener('teachertiles:classeschange',render);prior?.()};render();
   }

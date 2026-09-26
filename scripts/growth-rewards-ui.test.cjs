@@ -17,6 +17,7 @@ await page.evaluate(()=>{
  for(const [type,x] of [['egghatching',80],['flowerpots',750]]){const p=screenToBoard(x,180);const m=createModule(type,p.x,p.y);m._boardSetState({activeClassId:'test-growth',goal:3});}
 });
 assert.equal(await page.locator('.growth-student').count(),4);
+assert(await page.locator('.growth-show-all').evaluateAll(inputs=>inputs.every(input=>input.checked)));
 await page.evaluate(()=>document.querySelector('.flowerpots-module .tile-settings-toggle').click());
 assert.equal(await page.locator('.flowerpots-module .tile-settings-panel').evaluate(el=>el.hidden),false);
 await page.evaluate(()=>document.querySelector('.flowerpots-module .tile-settings-toggle').click());
@@ -45,6 +46,12 @@ assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentPoi
 await page.evaluate(()=>{const classes=readClassRosters();classes[0].students=Array.from({length:30},(_,i)=>'Student '+i);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));document.querySelector('.flowerpots-module')._boardSetState({activeClassId:'test-growth',goal:5,showAll:true})});await page.waitForTimeout(300);
 assert(await page.locator('.flowerpots-module .growth-grid').evaluate(el=>el.scrollHeight<=el.clientHeight+1&&el.scrollWidth<=el.clientWidth+1));
 assert.equal(await page.locator('.flowerpots-module .growth-student').count(),30);
+assert(await page.locator('.flowerpots-module .growth-student').evaluateAll(cards=>cards.every(card=>{const art=card.querySelector('svg').getBoundingClientRect(),label=card.querySelector('strong').getBoundingClientRect();return art.height>15&&art.bottom<=label.top+1})));
+for(const showAll of [false,true]){
+ await page.evaluate(showAll=>{const classes=JSON.parse(localStorage.getItem(classRostersStorageKey()));classes[0].students=Array.from({length:16},(_,i)=>'Student '+i);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));document.querySelectorAll('.growth-module').forEach(m=>m._boardSetState({activeClassId:'test-growth',showAll}));},showAll);await page.waitForTimeout(150);
+ assert(await page.locator('.growth-student').evaluateAll(cards=>cards.every(card=>{const art=card.querySelector('svg').getBoundingClientRect(),label=card.querySelector('strong').getBoundingClientRect();return art.height>20&&art.bottom<=label.top+1})));
+}
+
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/growth-fit.png'});
 await page.evaluate(()=>{const classes=JSON.parse(localStorage.getItem(classRostersStorageKey()));classes[0].students=['Alex','Sam'];localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));});
 await page.evaluate(()=>{document.querySelectorAll('.growth-module').forEach(m=>{m._cleanup?.();m.remove()});const p=screenToBoard(350,180);window.med=createModule('meditation',p.x,p.y)});
@@ -60,7 +67,7 @@ await page.evaluate(()=>document.getElementById('student-view-stat-menu-toggle')
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/pbis-settings.png'});
 await page.evaluate(()=>document.getElementById('student-view-settings-close').click());
 await page.evaluate(()=>document.querySelector('.student-view-person').click());
-assert.equal(await page.locator('.student-profile-stat').count(),5);await page.waitForTimeout(300);
+assert.equal(await page.locator('.student-profile-stat').count(),5);assert.equal(await page.locator('.student-profile-rewards-heading').innerText(),'PBIS Rewards');await page.waitForTimeout(300);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/student-view-growth.png'});
 await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(600);
 assert.equal(await page.evaluate(()=>readClassRosters()[0].flowerPots.studentPoints['student:alex']),3);
