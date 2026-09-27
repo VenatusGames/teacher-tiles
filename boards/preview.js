@@ -670,6 +670,7 @@ function applyPreviewState(module, state) {
   });
 }
 
+const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
 function createMiniObject(item) {
   const state = item?.state || null;
   const type = state?.type || item?.type || "";
@@ -724,15 +725,15 @@ function createMiniObject(item) {
       module.style.maxHeight = "none";
       module.style.left = "0";
       module.style.top = "0";
-      module.style.transform = "none";
+      module.style.transform = "scale(0)";module.style.visibility="hidden";
       module.style.transformOrigin = "0 0";
-      el.appendChild(module);
+      el.appendChild(module);previewResize.observe(el);
 
       requestAnimationFrame(() => {
         if (!el.isConnected || !module.isConnected) return;
         const scale = Math.min(el.clientWidth / originalWidth, el.clientHeight / originalHeight);
         if (!Number.isFinite(scale) || scale <= 0) return;
-        module.style.transform = `scale(${scale})`;
+        module.style.transform = `scale(${scale})`;module.style.visibility="visible";
       });
       return el;
     }

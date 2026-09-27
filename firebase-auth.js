@@ -1,7 +1,8 @@
-import {setupNickname} from './nickname.js';
-import {setupBugReports} from './bug-reports.js?v=20260926-ticket-thread';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js';
-import {createTemplateLibrary} from './templates/ui.js?v=20260926-support-nicknames';
+import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js';
+import {setupNickname} from './nickname.js?v=20260926-edit';
+import {setupBugReports} from './bug-reports.js?v=20260926-board-access';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-fit';
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-board-access';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -717,6 +718,8 @@ async function callShopFunction(name, data = {}) {
   return (await callable(data)).data || {};
 }
 
+let shopAccessCheckedAt=0,shopAccessRequest=null;
+async function ensureShopAccess(){if(!shopAccountState.ready||Date.now()-shopAccessCheckedAt>300000){if(!shopAccessRequest)shopAccessRequest=refreshShopAccount().finally(()=>{shopAccessRequest=null;});await shopAccessRequest;}return shopAccountState;}
 async function refreshShopAccount() {
   if (!currentUser) {
     publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false });
@@ -726,7 +729,7 @@ async function refreshShopAccount() {
   const uid = currentUser.uid;
   publishShopAccount({ loading: true, signedIn: true });
   try {
-    const account = await callShopFunction("getShopAccount");
+    const account = await callShopFunction("getShopAccount");shopAccessCheckedAt=Date.now();
     if (currentUser?.uid === uid) {
       publishShopAccount({
         ready: true,
@@ -1577,6 +1580,7 @@ async function inviteToOrganization(event) {
 }
 
 function closeBoardsView() {
+  if(lockedCosmeticBoard){void reviewLockedBoard();return;}
   if (!boardsView) return;
   // Always synchronize the DOM and body state. A stale boards-screen-open class
   // must never survive just because the view was already marked hidden.
@@ -1586,17 +1590,24 @@ function closeBoardsView() {
   boardsToggle?.setAttribute("aria-expanded", "false");
 }
 
+let lockedCosmeticBoard=null,cosmeticReviewOpen=false;
+async function reviewLockedBoard(){if(!lockedCosmeticBoard||cosmeticReviewOpen)return;cosmeticReviewOpen=true;const locked=lockedCosmeticBoard,uid=currentUser?.uid;try{const action=await cosmeticAccessDialog();if(currentUser?.uid!==uid||locked!==lockedCosmeticBoard)return;if(action==='remove'){const snapshot=boardCosmetics.strip(locked.snapshot,await ensureShopAccess());lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;boardApi().load(snapshot);await saveCurrentBoard({immediate:true});closeBoardsView();}else if(action==='subscribe'||action==='shop')openCosmeticShop(action);}catch(error){setBoardStatus(error.message||'Could not update board access.',true);}finally{cosmeticReviewOpen=false;}}
+window.TeacherTilesBoardAccessCheck=snapshot=>{if(!currentUser)return true;const needs=boardCosmetics.requirements(snapshot).length;if(needs&&(!shopAccountState.ready||boardCosmetics.missing(snapshot,shopAccountState).length)){lockedCosmeticBoard={id:activeBoardId,snapshot,notLoaded:true};document.getElementById('workspace').inert=true;openBoardsView();if(shopAccountState.ready)void reviewLockedBoard();return false;}return true;};
+function checkActiveCosmetics(){if(!currentUser||!activeBoardId||boardLoading||!shopAccountState.ready||shopAccountState.loading)return;if(lockedCosmeticBoard&&lockedCosmeticBoard.id!==activeBoardId){lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;}const snapshot=lockedCosmeticBoard?.snapshot||boardApi()?.capture();if(!snapshot)return;if(boardCosmetics.missing(snapshot,shopAccountState).length){if(!lockedCosmeticBoard){lockedCosmeticBoard={id:activeBoardId,snapshot};document.getElementById('workspace').inert=true;openBoardsView();void reviewLockedBoard();}else if(lockedCosmeticBoard.notLoaded)void reviewLockedBoard();}else if(lockedCosmeticBoard){const locked=lockedCosmeticBoard;lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;if(locked.notLoaded)boardApi().load(locked.snapshot);}}
+window.addEventListener('teachertiles:accountchange',checkActiveCosmetics);window.addEventListener('teachertiles:boardloaded',()=>queueMicrotask(checkActiveCosmetics));
+setInterval(()=>{if(currentUser&&activeBoardId&&!document.hidden)ensureShopAccess().catch(()=>{});},300000);
+window.addEventListener('focus',()=>{if(currentUser&&activeBoardId)ensureShopAccess().catch(()=>{});});
 let communityTemplates;
 function templateLibrary(){
   return communityTemplates ||= createTemplateLibrary({element:boardTemplatesPanel,call:callShopFunction,
     renderPreview:snapshot=>createBoardPreview({theme:snapshot.theme,inlineObjects:snapshot.objects}),
     listBoards:async()=>{await saveCurrentBoard({immediate:true});return boardList.map(board=>({...board,snapshot:{theme:board.theme,objects:board.inlineObjects||board.previewObjects||[]}}));},
-    readBoard:async id=>id===activeBoardId?boardApi().capture():(await resolveBoardSnapshot(id)).snapshot,
-getUid:()=>currentUser?.uid,capture:()=>boardApi()?.capture(),knownTypes:()=>[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker'),importBoard:async(id,requestId)=>{
+    readBoard:async id=>id===activeBoardId?(lockedCosmeticBoard?.snapshot||boardApi().capture()):(await resolveBoardSnapshot(id)).snapshot,
+getUid:()=>currentUser?.uid,capture:()=>lockedCosmeticBoard?.snapshot||boardApi()?.capture(),knownTypes:()=>[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker'),importBoard:async(id,requestId)=>{
     if(boardList.length>=membershipBoardLimit()){showBoardLimitPopup();throw new Error('You have reached your board limit.');}
     const uid=currentUser?.uid;
     await saveCurrentBoard({immediate:true});
-    const result=await callShopFunction('boardTemplates',{action:'import',id,requestId,clientVersion:globalThis.TeacherTilesTemplateContract.VERSION,viewport:{width:innerWidth,height:innerHeight},supportedTypes:[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker')});
+    let result;try{result=await callShopFunction('boardTemplates',{action:'import',id,requestId,clientVersion:globalThis.TeacherTilesTemplateContract.VERSION,viewport:{width:innerWidth,height:innerHeight},supportedTypes:[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker')});}catch(error){if(error.details?.reason==='missing-cosmetics'){const action=await cosmeticAccessDialog({importing:true});document.querySelectorAll('.template-dialog').forEach(d=>d.close());if(action==='subscribe')openCosmeticShop(action);return;}throw error;}
     if(currentUser?.uid!==uid)return;
     await fetchBoards();
     await loadBoard(result.boardId,{forceCloudCheck:true});
@@ -2388,7 +2399,7 @@ async function flushCurrentBoardLocal() {
   // Capture the board id and its snapshot together before the first await. A board
   // switch must never be able to pair one board's state with another board's id.
   const savingBoardId = activeBoardId;
-  const savingSnapshot = cleanBoardSnapshot(api.capture());
+  const savingSnapshot = cleanBoardSnapshot(lockedCosmeticBoard?.snapshot||api.capture());
   const result = await cacheSnapshotLocally(savingBoardId, savingSnapshot);
   if (result?.dirty && activeBoardId === savingBoardId) setBoardStatus("Unsaved");
   if (!boardsView?.hidden) renderBoards();
@@ -2673,14 +2684,14 @@ async function openBoardConflictReview(boardId) {
 
 async function saveCurrentBoard({ immediate = false } = {}) {
   clearTimeout(localBoardSaveTimer);
-  if (!currentUser || !activeBoardId || !db || !firestoreSdk || boardLoading) return false;
+  if (!currentUser || !activeBoardId || !db || !firestoreSdk || boardLoading || lockedCosmeticBoard) return false;
   const api = boardApi();
   if (!api) return false;
 
   // Capture synchronously so asynchronous IndexedDB/Firestore work can never
   // change which board this snapshot belongs to.
   const savingBoardId = activeBoardId;
-  const savingSnapshot = cleanBoardSnapshot(api.capture());
+  const savingSnapshot = cleanBoardSnapshot(lockedCosmeticBoard?.snapshot||api.capture());
   const local = await cacheSnapshotLocally(savingBoardId, savingSnapshot);
 
   if (!local?.dirty) {
@@ -2888,6 +2899,7 @@ async function resolveBoardSnapshot(boardId, { forceCloudCheck = false } = {}) {
 }
 
 async function loadBoard(boardId, { closeView = true, forceCloudCheck = false } = {}) {
+  let showBoardsAfterLoad=false;
   if (!currentUser || !boardId || !db || !firestoreSdk) return;
   const api = boardApi();
   if (!api) return;
@@ -2903,7 +2915,11 @@ async function loadBoard(boardId, { closeView = true, forceCloudCheck = false } 
   setBoardStatus("Loading…");
 
   try {
+    const uid=currentUser.uid;
     const resolved = await resolveBoardSnapshot(boardId, { forceCloudCheck });
+    await ensureShopAccess();if(currentUser?.uid!==uid)return;
+    if(boardCosmetics.missing(resolved.snapshot,shopAccountState).length){const action=await cosmeticAccessDialog();if(currentUser?.uid!==uid)return;if(action!=='remove'){showBoardsAfterLoad=true;openBoardsView();if(action==='subscribe'||action==='shop')openCosmeticShop(action);return;}resolved.snapshot=boardCosmetics.strip(resolved.snapshot,shopAccountState);resolved.dirty=true;await cacheSnapshotLocally(boardId,resolved.snapshot,{dirty:true});}
+    lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;
     activeBoardId = boardId;
     localStorage.setItem(activeBoardStorageKey(currentUser.uid), activeBoardId);
     api.setActiveBoardId(activeBoardId);
@@ -2935,6 +2951,7 @@ async function loadBoard(boardId, { closeView = true, forceCloudCheck = false } 
     setBoardStatus("Could not load board", true);
   } finally {
     boardLoading = false;
+    if(showBoardsAfterLoad||lockedCosmeticBoard){void openBoardsView();checkActiveCosmetics();}
   }
 }
 
@@ -2946,7 +2963,7 @@ async function createInitialBoardFromWorkspace() {
   const api = boardApi();
   if (!api) return null;
   const ref = createBoardReference();
-  const snapshot = cleanBoardSnapshot(api.capture());
+  const snapshot = cleanBoardSnapshot(lockedCosmeticBoard?.snapshot||api.capture());
   const name = "Board 1";
   const board = {
     id: ref.id,
@@ -3476,6 +3493,7 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
+  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   currentUser = user || null;
   window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {
@@ -3554,7 +3572,7 @@ async function renderUser(user) {
       });
     }
 
-    refreshShopAccount().catch(error => {
+    ensureShopAccess().catch(error => {
       console.error("TeacherTiles could not load the shop account", error);
       setStatus("Your profile loaded, but the shop balance is temporarily unavailable.", true);
     });
@@ -3921,7 +3939,7 @@ function backupCurrentBoard() {
         const board = boardList.find(item => item.id === activeBoardId);
         sessionStorage.setItem(
           `teachertiles-last-local-board-${currentUser.uid}`,
-          JSON.stringify({ boardId: activeBoardId, snapshot: api.capture(), savedAt: Date.now(),
+          JSON.stringify({ boardId: activeBoardId, snapshot: lockedCosmeticBoard?.snapshot||api.capture(), savedAt: Date.now(),
             revision: board?.revision || 0, cloudContentHash: board?.cloudContentHash || "" })
         );
       } catch {}

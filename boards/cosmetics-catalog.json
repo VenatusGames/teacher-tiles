@@ -1,0 +1,1516 @@
+{
+  "skins": {
+    "sticky-taped": "tile-skin-sticky-taped",
+    "sticky-ripped": "tile-skin-sticky-ripped",
+    "sticky-pinned": "tile-skin-sticky-pinned",
+    "textbubble-clear": "tile-skin-textbubble-clear",
+    "richtext-clear": "tile-skin-richtext-clear",
+    "chime-clear": "tile-skin-chime-clear",
+    "clock-digital": "tile-skin-clock-digital",
+    "clock-analog-clear": "tile-skin-clock-analog-clear",
+    "dice-clear": "tile-skin-dice-clear",
+    "magnifier-classic": "tile-skin-magnifier-classic",
+    "youtube-retro-tv": "tile-skin-youtube-retro-tv",
+    "todo-clipboard": "tile-skin-todo-clipboard",
+    "calendar-paper-stack": "tile-skin-calendar-paper-stack",
+    "attendance-beehive": "tile-skin-attendance-beehive",
+    "attendance-monkeys": "tile-skin-attendance-monkeys",
+    "attendance-froggies": "tile-skin-attendance-froggies",
+    "attendance-bubble-tea": "tile-skin-attendance-bubble-tea",
+    "stoplight-freestanding": "tile-skin-stoplight-freestanding",
+    "stoplight-simplistic": "tile-skin-stoplight-simplistic",
+    "progressbar-capsule": "tile-skin-progressbar-capsule",
+    "timer-freestanding": "tile-skin-timer-freestanding",
+    "timer-solid": "tile-skin-timer-solid",
+    "timer-liquid": "tile-skin-timer-liquid",
+    "visualschedule-planner": "tile-skin-visualschedule-planner",
+    "meditation-rainbow": "tile-skin-meditation-rainbow",
+    "squishy-gel-cube": "tile-skin-squishy-gel-cube",
+    "soundscapes-vinyl": "tile-skin-soundscapes-vinyl",
+    "soundscapes-music-player": "tile-skin-soundscapes-music-player",
+    "soundscapes-ipod": "tile-skin-soundscapes-ipod"
+  },
+  "themes": {
+    "outer": "theme-outer-space",
+    "frosted": "theme-frosted-window",
+    "bamboo": "theme-bamboo",
+    "underwater": "theme-underwater",
+    "rainy": "theme-rainy-window",
+    "pastel": "theme-pastel",
+    "polka": "theme-polka-dot",
+    "programmer": "theme-programmer",
+    "wood": "theme-wood",
+    "notebook": "theme-notebook",
+    "cardboard": "theme-cardboard",
+    "metal": "theme-metal",
+    "cosmos": "theme-cosmos",
+    "corkboard": "theme-corkboard"
+  },
+  "stickers": {
+    "1": [
+      "sticker-numbers-1-25"
+    ],
+    "2": [
+      "sticker-numbers-1-25"
+    ],
+    "3": [
+      "sticker-numbers-1-25"
+    ],
+    "4": [
+      "sticker-numbers-1-25"
+    ],
+    "5": [
+      "sticker-numbers-1-25"
+    ],
+    "6": [
+      "sticker-numbers-1-25"
+    ],
+    "7": [
+      "sticker-numbers-1-25"
+    ],
+    "8": [
+      "sticker-numbers-1-25"
+    ],
+    "9": [
+      "sticker-numbers-1-25"
+    ],
+    "10": [
+      "sticker-numbers-1-25"
+    ],
+    "11": [
+      "sticker-numbers-1-25"
+    ],
+    "12": [
+      "sticker-numbers-1-25"
+    ],
+    "13": [
+      "sticker-numbers-1-25"
+    ],
+    "14": [
+      "sticker-numbers-1-25"
+    ],
+    "15": [
+      "sticker-numbers-1-25"
+    ],
+    "16": [
+      "sticker-numbers-1-25"
+    ],
+    "17": [
+      "sticker-numbers-1-25"
+    ],
+    "18": [
+      "sticker-numbers-1-25"
+    ],
+    "19": [
+      "sticker-numbers-1-25"
+    ],
+    "20": [
+      "sticker-numbers-1-25"
+    ],
+    "21": [
+      "sticker-numbers-1-25"
+    ],
+    "22": [
+      "sticker-numbers-1-25"
+    ],
+    "23": [
+      "sticker-numbers-1-25"
+    ],
+    "24": [
+      "sticker-numbers-1-25"
+    ],
+    "25": [
+      "sticker-numbers-1-25"
+    ],
+    "assets/stickers/default/tiles.png": [
+      ""
+    ],
+    "assets/stickers/default/welcome.png": [
+      ""
+    ],
+    "assets/stickers/default/thumbs-up.png": [
+      ""
+    ],
+    "assets/stickers/default/thumbs-down.png": [
+      ""
+    ],
+    "assets/stickers/default/apple.png": [
+      ""
+    ],
+    "😀": [
+      "sticker-emoji"
+    ],
+    "😂": [
+      "sticker-emoji"
+    ],
+    "😍": [
+      "sticker-emoji"
+    ],
+    "😎": [
+      "sticker-emoji"
+    ],
+    "👍": [
+      "sticker-emoji"
+    ],
+    "❤️": [
+      "sticker-emoji",
+      "sticker-colored-hearts"
+    ],
+    "🎉": [
+      "sticker-emoji"
+    ],
+    "⭐": [
+      "sticker-emoji"
+    ],
+    "🌸": [
+      "sticker-nature-emojis"
+    ],
+    "🌻": [
+      "sticker-nature-emojis"
+    ],
+    "🌈": [
+      "sticker-nature-emojis"
+    ],
+    "☀️": [
+      "sticker-nature-emojis",
+      "sticker-weather-emojis"
+    ],
+    "🌙": [
+      "sticker-nature-emojis"
+    ],
+    "☁️": [
+      "sticker-nature-emojis",
+      "sticker-weather-emojis"
+    ],
+    "🌿": [
+      "sticker-nature-emojis"
+    ],
+    "🍂": [
+      "sticker-nature-emojis"
+    ],
+    "🌤️": [
+      "sticker-weather-emojis"
+    ],
+    "⛅": [
+      "sticker-weather-emojis"
+    ],
+    "🌥️": [
+      "sticker-weather-emojis"
+    ],
+    "🌦️": [
+      "sticker-weather-emojis"
+    ],
+    "🌧️": [
+      "sticker-weather-emojis"
+    ],
+    "⛈️": [
+      "sticker-weather-emojis"
+    ],
+    "🌩️": [
+      "sticker-weather-emojis"
+    ],
+    "🌨️": [
+      "sticker-weather-emojis"
+    ],
+    "❄️": [
+      "sticker-weather-emojis"
+    ],
+    "🌫️": [
+      "sticker-weather-emojis"
+    ],
+    "💨": [
+      "sticker-weather-emojis"
+    ],
+    "🌪️": [
+      "sticker-weather-emojis"
+    ],
+    "🐶": [
+      "sticker-animal-emojis"
+    ],
+    "🐱": [
+      "sticker-animal-emojis"
+    ],
+    "🐼": [
+      "sticker-animal-emojis"
+    ],
+    "🦊": [
+      "sticker-animal-emojis"
+    ],
+    "🐸": [
+      "sticker-animal-emojis"
+    ],
+    "🐵": [
+      "sticker-animal-emojis"
+    ],
+    "🦋": [
+      "sticker-animal-emojis"
+    ],
+    "🐝": [
+      "sticker-animal-emojis"
+    ],
+    "🥳": [
+      "sticker-more-faces"
+    ],
+    "🤩": [
+      "sticker-more-faces"
+    ],
+    "🤔": [
+      "sticker-more-faces"
+    ],
+    "😭": [
+      "sticker-more-faces"
+    ],
+    "😡": [
+      "sticker-more-faces"
+    ],
+    "😴": [
+      "sticker-more-faces"
+    ],
+    "🤓": [
+      "sticker-more-faces"
+    ],
+    "🤪": [
+      "sticker-more-faces"
+    ],
+    "😄": [
+      "sticker-faces-happy"
+    ],
+    "😁": [
+      "sticker-faces-happy"
+    ],
+    "😊": [
+      "sticker-faces-happy"
+    ],
+    "🙂": [
+      "sticker-faces-happy"
+    ],
+    "😇": [
+      "sticker-faces-happy"
+    ],
+    "😌": [
+      "sticker-faces-happy"
+    ],
+    "☺️": [
+      "sticker-faces-happy"
+    ],
+    "🥰": [
+      "sticker-faces-happy"
+    ],
+    "😛": [
+      "sticker-faces-silly"
+    ],
+    "😜": [
+      "sticker-faces-silly"
+    ],
+    "😝": [
+      "sticker-faces-silly"
+    ],
+    "🤭": [
+      "sticker-faces-silly"
+    ],
+    "🤫": [
+      "sticker-faces-silly"
+    ],
+    "🤗": [
+      "sticker-faces-silly"
+    ],
+    "🫠": [
+      "sticker-faces-silly"
+    ],
+    "🙃": [
+      "sticker-faces-silly"
+    ],
+    "😟": [
+      "sticker-faces-worried"
+    ],
+    "😕": [
+      "sticker-faces-worried"
+    ],
+    "🙁": [
+      "sticker-faces-worried"
+    ],
+    "☹️": [
+      "sticker-faces-worried"
+    ],
+    "😣": [
+      "sticker-faces-worried"
+    ],
+    "😖": [
+      "sticker-faces-worried"
+    ],
+    "😫": [
+      "sticker-faces-worried"
+    ],
+    "😩": [
+      "sticker-faces-worried"
+    ],
+    "😮": [
+      "sticker-faces-big-reactions"
+    ],
+    "😯": [
+      "sticker-faces-big-reactions"
+    ],
+    "😲": [
+      "sticker-faces-big-reactions"
+    ],
+    "😳": [
+      "sticker-faces-big-reactions"
+    ],
+    "🥺": [
+      "sticker-faces-big-reactions"
+    ],
+    "😱": [
+      "sticker-faces-big-reactions"
+    ],
+    "🤯": [
+      "sticker-faces-big-reactions"
+    ],
+    "🥶": [
+      "sticker-faces-big-reactions"
+    ],
+    "❗": [
+      "sticker-symbols"
+    ],
+    "❓": [
+      "sticker-symbols"
+    ],
+    "✅": [
+      "sticker-symbols"
+    ],
+    "❌": [
+      "sticker-symbols"
+    ],
+    "💯": [
+      "sticker-symbols"
+    ],
+    "⚠️": [
+      "sticker-symbols"
+    ],
+    "➕": [
+      "sticker-symbols"
+    ],
+    "➖": [
+      "sticker-symbols"
+    ],
+    "🍎": [
+      "sticker-food"
+    ],
+    "🍕": [
+      "sticker-food"
+    ],
+    "🍔": [
+      "sticker-food"
+    ],
+    "🍟": [
+      "sticker-food"
+    ],
+    "🍓": [
+      "sticker-food"
+    ],
+    "🍩": [
+      "sticker-food"
+    ],
+    "🍪": [
+      "sticker-food"
+    ],
+    "🧁": [
+      "sticker-food"
+    ],
+    "🍏": [
+      "sticker-food-fruit"
+    ],
+    "🍐": [
+      "sticker-food-fruit"
+    ],
+    "🍊": [
+      "sticker-food-fruit"
+    ],
+    "🍋": [
+      "sticker-food-fruit"
+    ],
+    "🍌": [
+      "sticker-food-fruit"
+    ],
+    "🍉": [
+      "sticker-food-fruit"
+    ],
+    "🍇": [
+      "sticker-food-fruit"
+    ],
+    "🫐": [
+      "sticker-food-fruit"
+    ],
+    "🥕": [
+      "sticker-food-vegetables"
+    ],
+    "🌽": [
+      "sticker-food-vegetables"
+    ],
+    "🥦": [
+      "sticker-food-vegetables"
+    ],
+    "🥒": [
+      "sticker-food-vegetables"
+    ],
+    "🫑": [
+      "sticker-food-vegetables"
+    ],
+    "🍅": [
+      "sticker-food-vegetables"
+    ],
+    "🍆": [
+      "sticker-food-vegetables"
+    ],
+    "🥔": [
+      "sticker-food-vegetables"
+    ],
+    "🌭": [
+      "sticker-food-meals"
+    ],
+    "🌮": [
+      "sticker-food-meals"
+    ],
+    "🌯": [
+      "sticker-food-meals"
+    ],
+    "🥪": [
+      "sticker-food-meals"
+    ],
+    "🍝": [
+      "sticker-food-meals"
+    ],
+    "🍜": [
+      "sticker-food-meals"
+    ],
+    "🍣": [
+      "sticker-food-meals"
+    ],
+    "🍱": [
+      "sticker-food-meals"
+    ],
+    "🍦": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍧": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍨": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍰": [
+      "sticker-food-sweet-treats"
+    ],
+    "🎂": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍫": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍬": [
+      "sticker-food-sweet-treats"
+    ],
+    "🍭": [
+      "sticker-food-sweet-treats"
+    ],
+    "a": [
+      "sticker-letters-lowercase"
+    ],
+    "b": [
+      "sticker-letters-lowercase"
+    ],
+    "c": [
+      "sticker-letters-lowercase"
+    ],
+    "d": [
+      "sticker-letters-lowercase"
+    ],
+    "e": [
+      "sticker-letters-lowercase"
+    ],
+    "f": [
+      "sticker-letters-lowercase"
+    ],
+    "g": [
+      "sticker-letters-lowercase"
+    ],
+    "h": [
+      "sticker-letters-lowercase"
+    ],
+    "i": [
+      "sticker-letters-lowercase"
+    ],
+    "j": [
+      "sticker-letters-lowercase"
+    ],
+    "k": [
+      "sticker-letters-lowercase"
+    ],
+    "l": [
+      "sticker-letters-lowercase"
+    ],
+    "m": [
+      "sticker-letters-lowercase"
+    ],
+    "n": [
+      "sticker-letters-lowercase"
+    ],
+    "o": [
+      "sticker-letters-lowercase"
+    ],
+    "p": [
+      "sticker-letters-lowercase"
+    ],
+    "q": [
+      "sticker-letters-lowercase"
+    ],
+    "r": [
+      "sticker-letters-lowercase"
+    ],
+    "s": [
+      "sticker-letters-lowercase"
+    ],
+    "t": [
+      "sticker-letters-lowercase"
+    ],
+    "u": [
+      "sticker-letters-lowercase"
+    ],
+    "v": [
+      "sticker-letters-lowercase"
+    ],
+    "w": [
+      "sticker-letters-lowercase"
+    ],
+    "x": [
+      "sticker-letters-lowercase"
+    ],
+    "y": [
+      "sticker-letters-lowercase"
+    ],
+    "z": [
+      "sticker-letters-lowercase"
+    ],
+    "A": [
+      "sticker-letters-uppercase"
+    ],
+    "B": [
+      "sticker-letters-uppercase"
+    ],
+    "C": [
+      "sticker-letters-uppercase"
+    ],
+    "D": [
+      "sticker-letters-uppercase"
+    ],
+    "E": [
+      "sticker-letters-uppercase"
+    ],
+    "F": [
+      "sticker-letters-uppercase"
+    ],
+    "G": [
+      "sticker-letters-uppercase"
+    ],
+    "H": [
+      "sticker-letters-uppercase"
+    ],
+    "I": [
+      "sticker-letters-uppercase"
+    ],
+    "J": [
+      "sticker-letters-uppercase"
+    ],
+    "K": [
+      "sticker-letters-uppercase"
+    ],
+    "L": [
+      "sticker-letters-uppercase"
+    ],
+    "M": [
+      "sticker-letters-uppercase"
+    ],
+    "N": [
+      "sticker-letters-uppercase"
+    ],
+    "O": [
+      "sticker-letters-uppercase"
+    ],
+    "P": [
+      "sticker-letters-uppercase"
+    ],
+    "Q": [
+      "sticker-letters-uppercase"
+    ],
+    "R": [
+      "sticker-letters-uppercase"
+    ],
+    "S": [
+      "sticker-letters-uppercase"
+    ],
+    "T": [
+      "sticker-letters-uppercase"
+    ],
+    "U": [
+      "sticker-letters-uppercase"
+    ],
+    "V": [
+      "sticker-letters-uppercase"
+    ],
+    "W": [
+      "sticker-letters-uppercase"
+    ],
+    "X": [
+      "sticker-letters-uppercase"
+    ],
+    "Y": [
+      "sticker-letters-uppercase"
+    ],
+    "Z": [
+      "sticker-letters-uppercase"
+    ],
+    "assets/stickers/quiet-critters/jump-lavender.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/jump-blue.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/sleep-mint.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/sway-rose.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/blink-amber.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/dance-moss.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/dance-sky.png": [
+      "sticker-quiet-critters"
+    ],
+    "assets/stickers/quiet-critters/sway-lavender.png": [
+      "sticker-quiet-critters"
+    ],
+    "🧡": [
+      "sticker-colored-hearts"
+    ],
+    "💛": [
+      "sticker-colored-hearts"
+    ],
+    "💚": [
+      "sticker-colored-hearts"
+    ],
+    "💙": [
+      "sticker-colored-hearts"
+    ],
+    "💜": [
+      "sticker-colored-hearts"
+    ],
+    "🤎": [
+      "sticker-colored-hearts"
+    ],
+    "🖤": [
+      "sticker-colored-hearts"
+    ],
+    "🤍": [
+      "sticker-colored-hearts"
+    ],
+    "🩷": [
+      "sticker-colored-hearts"
+    ],
+    "🩵": [
+      "sticker-colored-hearts"
+    ],
+    "🩶": [
+      "sticker-colored-hearts"
+    ],
+    "💖": [
+      "sticker-decorative-hearts"
+    ],
+    "💗": [
+      "sticker-decorative-hearts"
+    ],
+    "💓": [
+      "sticker-decorative-hearts"
+    ],
+    "💕": [
+      "sticker-decorative-hearts"
+    ],
+    "💞": [
+      "sticker-decorative-hearts"
+    ],
+    "💝": [
+      "sticker-decorative-hearts"
+    ],
+    "💘": [
+      "sticker-decorative-hearts"
+    ],
+    "💟": [
+      "sticker-decorative-hearts"
+    ],
+    "❤️‍🔥": [
+      "sticker-decorative-hearts"
+    ],
+    "❤️‍🩹": [
+      "sticker-decorative-hearts"
+    ],
+    "https://flagcdn.io/flags/4x3/ad.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ae.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/af.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ag.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ai.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/al.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/am.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ao.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/aq.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ar.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/as.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/at.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/au.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/aw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ax.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/az.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ba.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bb.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bd.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/be.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bi.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bj.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bo.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bq.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/br.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bs.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/by.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/bz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ca.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cd.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ch.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ci.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ck.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/co.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cx.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cy.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/cz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/de.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/dj.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/dk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/dm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/do.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/dz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ec.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ee.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/eg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/eh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/er.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/es.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/et.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/eu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fi.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fj.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fo.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/fr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ga.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gb.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gd.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ge.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gi.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gp.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gq.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gs.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/gy.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/hk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/hm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/hn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/hr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ht.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/hu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/id.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ie.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/il.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/im.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/in.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/io.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/iq.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ir.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/is.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/it.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/je.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/jm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/jo.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/jp.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ke.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ki.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/km.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kp.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ky.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/kz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/la.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lb.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/li.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ls.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/lv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ly.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ma.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/md.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/me.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ml.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mo.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mp.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mq.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ms.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mx.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/my.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/mz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/na.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ne.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ng.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ni.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/no.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/np.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/nz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/om.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pa.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pe.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ph.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ps.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/pw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/py.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/qa.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/re.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ro.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/rs.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ru.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/rw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sa.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sb.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sd.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/se.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sh.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/si.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sj.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/so.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ss.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/st.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sx.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sy.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/sz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/td.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/th.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tj.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tl.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/to.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tr.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tv.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tw.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/tz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ua.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ug.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/um.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/un.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/us.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/uy.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/uz.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/va.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/vc.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ve.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/vg.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/vi.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/vn.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/vu.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/wf.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ws.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/xk.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/ye.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/yt.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/za.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/zm.svg": [
+      "sticker-country-flags"
+    ],
+    "https://flagcdn.io/flags/4x3/zw.svg": [
+      "sticker-country-flags"
+    ]
+  },
+  "tiles": {}
+}

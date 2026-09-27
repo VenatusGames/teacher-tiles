@@ -12982,7 +12982,7 @@ function syncCosmeticEntitlements(){
   if(state?.ready&&!state.loading){
     const activeTheme=document.body.dataset.theme||'light';
     const required=themeEntitlement(activeTheme);
-    if(required&&!ownsCosmetic(required))applyTeacherTheme('light');
+    if(required&&!ownsCosmetic(required)&&!window.TeacherTilesBoard?.activeBoardId)applyTeacherTheme('light');
   }
 }
 
@@ -19543,6 +19543,7 @@ function restoreTeacherTilesBoardObject(state){
 }
 
 function loadTeacherTilesBoard(snapshot){
+  if(window.TeacherTilesBoardAccessCheck?.(snapshot)===false)return {locked:true};
   const data=snapshot&&typeof snapshot==='object'?snapshot:{};
   const removedObjectIds=[];
   withBoardChangesSuspended(()=>{
