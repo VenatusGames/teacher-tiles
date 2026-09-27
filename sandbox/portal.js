@@ -6,7 +6,7 @@ const login=document.getElementById('portal-login'),home=document.getElementById
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
 function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar').append(signOut);else document.querySelector('.access-actions').append(signOut);}
-const usersPanel=createUsersPanel((name,data)=>call(name,data));
+const usersPanel=createUsersPanel((name,data)=>call(name,data),()=>auth?.currentUser?.uid);
 document.getElementById('community-toggle').onclick=()=>{const toggle=document.getElementById('community-toggle'),menu=document.getElementById('community-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 let view="overview";
 function navigate(next){view=next;home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
@@ -16,7 +16,7 @@ function lock(message){showPortal(false);authorized=false;home.hidden=true;login
 function busy(value){pending=value;signIn.disabled=retry.disabled=value||!auth;signOut.disabled=value;}
 async function check(user){
   const attempt=++generation;lastCheck=Date.now();
-  if(!user){usersPanel.clear();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
+  if(!user){usersPanel.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
   busy(true);lock('Signed in. Verifying sandbox access…');
   try{
     const access=await verifyAccess(user,call,{sandbox:true});
@@ -26,7 +26,7 @@ async function check(user){
     document.getElementById('portal-email').textContent=user.email||'';
     document.getElementById('portal-role').textContent=access.role==='owner'?'Owner':'Administrator';
     authorized=true;showPortal(true);login.hidden=true;navigate(view);signOut.hidden=false;
-  }catch(error){if(attempt===generation){usersPanel.clear();lock(accessError(error));}}
+  }catch(error){if(attempt===generation){usersPanel.reset();lock(accessError(error));}}
   finally{if(attempt===generation)busy(false);}
 }
 signIn.onclick=async()=>{

@@ -1,10 +1,13 @@
+import {createUsersClient} from './users-cache.js';
 import {createUserDetails} from './user-details.js';
-export function createUsersPanel(call) {
+export function createUsersPanel(rawCall,getUid=()=>'') {
+  const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
   const search=document.getElementById('users-search');
   const details=createUserDetails(call,()=>{clear();void load();});
-  let searchTimer;
+  const searchButton=document.getElementById('users-search-submit');
+  let query='';
   let nextPageToken=null,loaded=false,busy=false,generation=0;
   function clear(){details.close();generation++;loaded=false;busy=false;nextPageToken=null;list.replaceChildren();status.textContent='';more.hidden=true;refresh.disabled=false;}
   function row(user){
@@ -27,13 +30,15 @@ export function createUsersPanel(call) {
   async function load(append=false){
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
-    try{const response=await call('listDeveloperUsers',{query:search.value.trim(),...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
+    try{const response=await call('listDeveloperUsers',{query,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
       for(const user of response.data.users)list.append(row(user));
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
     }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
     finally{if(attempt===generation){busy=false;refresh.disabled=more.disabled=false;}}
   }
-  search.oninput=()=>{clearTimeout(searchTimer);clear();searchTimer=setTimeout(()=>load(),350);};
-  refresh.onclick=()=>{clear();void load();};more.onclick=()=>load(true);
-  return {element,load,clear};
+  const submitSearch=()=>{query=search.value.trim().toLowerCase();clear();void load();};
+  searchButton.onclick=submitSearch;search.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitSearch();}};
+  search.addEventListener('search',()=>{if(!search.value)submitSearch();});
+  refresh.onclick=()=>{client.invalidate();clear();void load();};more.onclick=()=>load(true);
+  return {element,load,clear,reset(){client.clearSession();clear();query='';search.value='';}};
 }
