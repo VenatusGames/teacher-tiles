@@ -15,8 +15,17 @@ export function discoveryShelves(root,data,card,onTag){
  const pause=el('button','','Pause rotation');pause.type='button';pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Resume rotation':'Pause rotation';};if(picks.length>1)controls.append(pause);
  const timer=picks.length>1?setInterval(()=>{if(!paused&&!document.hidden&&root.getClientRects().length&&!featured.matches(':hover,:focus-within')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)show((current+1)%picks.length);},7000):null;
  for(const [title,description,items] of [['TeacherTiles Curated','From TeacherTiles — thoughtfully selected for your classroom.',data.curated],['Most Liked','Boards the community has upvoted.',data.highlyRated]]){const s=section(title,description),row=el('div','template-shelf-row');for(const m of items||[])row.append(card(m));if(!row.children.length)row.append(el('p','template-empty','No boards here yet.'));s.append(row);}
- const tags=section('Explore by tag','Popular subjects, routines, and activities.'),bar=el('div','template-tag-filters template-popular-tags');for(const tag of [...new Set(data.tags||[])]){const b=el('button','template-tag-filter',tag);b.type='button';b.onclick=()=>onTag(tag);bar.append(b);}tags.append(bar);
- const fitTags=()=>{if(!bar.clientWidth)return;const buttons=[...bar.children];buttons.forEach(b=>b.hidden=false);let first=null,second=null,overflow=false;for(const b of buttons){const top=b.offsetTop;if(first===null)first=top;else if(top!==first&&second===null)second=top;if(second!==null&&top>second)overflow=true;if(overflow)b.hidden=true;}};
- const resize=new ResizeObserver(fitTags);resize.observe(bar);
- return ()=>{clearInterval(timer);resize.disconnect();};
+ const tags=section('Explore by tag','Popular subjects, routines, and activities.'),browser=el('div','template-tag-browser'),bar=el('div','template-tag-filters template-popular-tags'),pager=el('div','template-tag-pager');Object.assign(bar.style,{display:'grid',gridTemplateColumns:'repeat(10,minmax(86px,1fr))',gap:'9px',overflowX:'auto',padding:'2px 0 8px',margin:'15px 0 8px'});Object.assign(pager.style,{display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',margin:'4px 0 0'});
+ const allTags=[...new Set((data.tags||[]).filter(Boolean))],pageSize=30,totalPages=Math.max(1,Math.ceil(allTags.length/pageSize));let page=0;
+ const previous=el('button','template-tag-page-button','Previous tags'),pageLabel=el('span','template-tag-page-label'),next=el('button','template-tag-page-button','More tags');previous.type=next.type='button';
+ const renderTags=()=>{
+  page=Math.max(0,Math.min(page,totalPages-1));bar.replaceChildren();
+  const start=page*pageSize;
+  for(const tag of allTags.slice(start,start+pageSize)){const b=el('button','template-tag-filter',tag);b.type='button';b.title=tag;Object.assign(b.style,{boxSizing:'border-box',width:'100%',minWidth:'0',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textAlign:'center'});b.onclick=()=>onTag(tag);bar.append(b);}
+  if(!bar.children.length)bar.append(el('p','template-empty','Popular tags will appear here.'));
+  previous.disabled=page===0;next.disabled=page>=totalPages-1;pageLabel.textContent=`Page ${page+1} of ${totalPages}`;pager.hidden=allTags.length<=pageSize;
+ };
+ previous.onclick=()=>{if(page>0){page--;renderTags();bar.scrollLeft=0;}};next.onclick=()=>{if(page<totalPages-1){page++;renderTags();bar.scrollLeft=0;}};
+ pager.append(previous,pageLabel,next);browser.append(bar,pager);tags.append(browser);renderTags();
+ return ()=>{clearInterval(timer);};
 }

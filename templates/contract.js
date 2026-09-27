@@ -8,7 +8,29 @@
   // Preserve only formatting tags; attributes, links, embeds and executable content never cross this boundary.
   function html(value){return text(value,30000).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style|iframe|object|svg|math)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'').replace(/<[^>]*>/g,tag=>{const m=tag.match(/^<\s*(\/?)\s*(b|strong|i|em|u|s|p|div|br|ul|ol|li|h1|h2|h3|blockquote)\b[^>]*>$/i);return m?`<${m[1]}${m[2].toLowerCase()}>`:'';});}
   function raster(value){const s=String(value||'');if(s.length>400000)return '';return /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(s)?s:'';}
+  function remoteImage(value){
+    const source=String(value||'');
+    if(!source||source.length>4096)return '';
+    try{
+      const url=new URL(source);
+      if(url.protocol!=='https:'||url.username||url.password||url.port)return '';
+      if(!['upload.wikimedia.org','thumb.wikimedia.org'].includes(url.hostname))return '';
+      if(!url.pathname.startsWith('/wikipedia/commons/'))return '';
+      return url.href;
+    }catch{return '';}
+  }
+  function commonsSource(value){
+    const source=String(value||'');
+    if(!source||source.length>4096)return '';
+    try{
+      const url=new URL(source);
+      if(url.protocol!=='https:'||url.username||url.password||url.port)return '';
+      if(url.hostname!=='commons.wikimedia.org'||!url.pathname.startsWith('/wiki/File:'))return '';
+      return url.href;
+    }catch{return '';}
+  }
   const image=value=>raster(value)||(/^(?:assets|stickers|tiles)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_. -]+\.(?:png|webp|jpg|jpeg|gif|svg)$/.test(String(value||''))?String(value):'');
+  const templateImage=value=>raster(value)||remoteImage(value);
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
@@ -31,8 +53,18 @@
     meditation:s=>({version:4,inhaleSeconds:num(s.inhaleSeconds,1,30,4),exhaleSeconds:num(s.exhaleSeconds,1,30,6),durationSeconds:num(s.durationSeconds,10,7200,60),showCues:s.showCues!==false,palette:token(s.palette)}),
     sentenceexpansion:s=>({version:1,source:list(s.source,2).map(v=>text(v)),draft:list(s.source,2).map(v=>text(v)),history:[],image:raster(s.image)}),
     wordweb:s=>({center:text(s.center,300),nodes:list(s.nodes,24).map((n,i)=>({id:`node-${i}`,text:text(n.text,400)}))}),
-    image:s=>({src:raster(s.src),previewSrc:raster(s.src),border:token(s.border),borderColor:token(s.borderColor)}),
-    youtube:s=>{let id='';try{const u=new URL(s.url);if(['youtube.com','www.youtube.com','youtu.be','www.youtube-nocookie.com'].includes(u.hostname))id=u.hostname==='youtu.be'?u.pathname.slice(1):u.searchParams.get('v')||u.pathname.split('/').pop();}catch{}return {url:/^[\w-]{11}$/.test(id)?`https://www.youtube.com/watch?v=${id}`:'',loaded:false};},
+    image:s=>{
+      const src=templateImage(s.src),previewSrc=templateImage(s.previewSrc)||src;
+      const attribution=s.attribution&&typeof s.attribution==='object'?{
+        url:src,
+        sourceUrl:commonsSource(s.attribution.sourceUrl),
+        title:text(s.attribution.title,180),
+        creator:text(s.attribution.creator,240),
+        license:text(s.attribution.license,100)
+      }:null;
+      return {src,previewSrc,border:token(s.border),borderColor:token(s.borderColor),...(attribution?.sourceUrl?{attribution}: {})};
+    },
+    youtube:s=>{let id='';try{const u=new URL(s.url);if(['youtube.com','www.youtube.com','youtu.be','www.youtube-nocookie.com'].includes(u.hostname))id=u.hostname==='youtu.be'?u.pathname.slice(1):u.searchParams.get('v')||u.pathname.split('/').pop();}catch{}const url=/^[\w-]{11}$/.test(id)?`https://www.youtube.com/watch?v=${id}`:'';return {url,loaded:Boolean(url&&s.loaded)};},
     visualschedule:s=>({segments:list(s.segments,40).map(v=>({title:text(v.title,200),time:text(v.time,40),iconSrc:image(v.iconSrc),complete:false,size:num(v.size,24,150,44)}))}),
     todo:s=>({rows:list(s.rows,50).map(v=>({text:text(v.text,400),checked:false}))}),
     spreadsheet:s=>{const cells={},pictures={},formats={};for(const [key,value] of Object.entries(s.cells||{}).slice(0,1000))if(/^[A-Z][1-9][0-9]?$/.test(key))cells[key]=text(value,2000);for(const [key,value] of Object.entries(s.pictures||{}).slice(0,100))if(/^[A-Z][1-9][0-9]?$/.test(key)&&raster(value))pictures[key]=raster(value);for(const [key,f] of Object.entries(s.formats||{}).slice(0,1000)){if(!/^[A-Z][1-9][0-9]?$/.test(key)||!f)continue;const out={};for(const k of ['bold','italic','underline','strike'])if(f[k]===true)out[k]=true;for(const k of ['font','color','highlight','align','block'])if(token(f[k]))out[k]=token(f[k]);out.size=num(f.size,10,64,16);formats[key]=out;}return{version:3,rows:num(s.rows,1,99,12),cols:num(s.cols,1,26,6),cells,pictures,formats,columnWidths:list(s.columnWidths,26).map(v=>num(v,48,600,96)),rowHeights:list(s.rowHeights,99).map(v=>num(v,24,240,29))};}
@@ -54,7 +86,7 @@
       if(adapters[raw.type])out.special=adapters[raw.type](raw.type==='progressbar'?{...raw.special,title:raw.special?.title??list(raw.fields).find(f=>f.index===0)?.value}:raw.special||{});
       else if(!rich.has(raw.type)&&raw.type!=='sticker')warnings.add(`${raw.type}: activity and content reset; layout and appearance kept`);
       if(raw.type==='sticker'){out.sticker={emoji:text(raw.sticker?.emoji,20),src:image(raw.sticker?.src),name:text(raw.sticker?.name,80),aspect:num(raw.sticker?.aspect,.1,10,1)};if(!out.sticker.emoji&&!out.sticker.src){warnings.add('An unavailable sticker was omitted');return null;}}
-      if(raw.type==='image'&&raw.special?.src&&!out.special.src)warnings.add('External or oversized image omitted; use an embedded image under 300 KB');
+      if(raw.type==='image'&&raw.special?.src&&!out.special.src)warnings.add('External or oversized image omitted; use an embedded image under 300 KB or an Image Search result');
       if(!tab&&raw.tabs){const items=list(raw.tabs.items,20).map(v=>tile(v,true)).filter(Boolean);if(items.length>1)out.tabs={active:0,items};}
       return out;
     }
