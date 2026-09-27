@@ -8,17 +8,18 @@ function fixture(){
  function collection(name,filters=[],maximum=Infinity,cursor=null,orders=[]){
   const field=(key,k)=>k==='__name__'?key.split('/').at(-1):records.get(key)[k];
   const cmp=(a,b)=>a<b?-1:a>b?1:0;
-  const q={key:name,query:true,doc(id='auto'+(++serial)){const key=name+'/'+id;return {key,id,parent:collection(name),collection:sub=>collection(key+'/'+sub),get:async()=>{stats.reads++;return snapshot(q.doc(id));}};},where:(...f)=>collection(name,[...filters,f],maximum,cursor,orders),orderBy:(...o)=>collection(name,filters,maximum,cursor,[...orders,o]),startAfter:(...v)=>collection(name,filters,maximum,v,orders),limit:n=>collection(name,filters,n,cursor,orders),get:async()=>{
+  const q={key:name,query:true,doc(id='auto'+(++serial)){const key=name+'/'+id;return {key,id,parent:collection(name),collection:sub=>collection(key+'/'+sub),get:async()=>{stats.reads++;return snapshot(q.doc(id));}};},where:(...f)=>collection(name,[...filters,f],maximum,cursor,orders),select:()=>q,orderBy:(...o)=>collection(name,filters,maximum,cursor,[...orders,o]),startAfter:(...v)=>collection(name,filters,maximum,v,orders),limit:n=>collection(name,filters,n,cursor,orders),get:async()=>{
    const actualOrders=orders.length?orders:[['__name__','asc']];const compare=(a,b)=>{for(const [k,dir] of actualOrders){const c=cmp(field(a,k),field(b,k))*(dir==='desc'?-1:1);if(c)return c;}return 0;};
    const keys=[...records.keys()].filter(k=>k.startsWith(name+'/')&&k.split('/').length===name.split('/').length+1).filter(k=>filters.every(([f,op,v])=>{const x=field(k,f);return op==='=='?x===v:op==='array-contains'?x?.includes(v):x>v;})).sort(compare).filter(k=>{if(!cursor)return true;for(let i=0;i<actualOrders.length;i++){const [f,dir]=actualOrders[i],c=cmp(field(k,f),cursor[i])*(dir==='desc'?-1:1);if(c)return c>0;}return false;}).slice(0,maximum);stats.reads+=keys.length;return {docs:keys.map(k=>snapshot(q.doc(k.split('/').at(-1)))),size:keys.length};}};return q;
  }
  const db={collection,recursiveDelete:async ref=>{for(const key of records.keys())if(key===ref.key||key.startsWith(ref.key+'/'))records.delete(key);},runTransaction:async fn=>{const writes=[];const result=await fn({get:r=>r.get(),set:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),create:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),delete:r=>writes.push(()=>records.delete(r.key))});writes.forEach(w=>w());return result;}};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
- const account=async r=>{if(!r.auth)throw new HttpsError('unauthenticated','Sign in');return {uid:r.auth.uid,emailVerified:true};},developer=async r=>{if(r.auth?.uid!=='admin')throw new HttpsError('permission-denied','Admin only');return {uid:'admin'};};
- const modules={'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>123},FieldPath:{documentId:()=>'__name__'}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'../sandbox/admin-access':{requireAccount:account},'./admin-access':{requireDeveloper:developer},'./contract':contract,'./types.json':require(backend+'/templates/types.json'),'node:crypto':require('node:crypto')};
+ const account=async r=>{if(!r.auth)throw new HttpsError('unauthenticated','Sign in');return {uid:r.auth.uid,emailVerified:true,email:r.auth.uid+'@example.com'};},developer=async r=>{if(r.auth?.uid!=='admin')throw new HttpsError('permission-denied','Admin only');return {uid:'admin'};};
+ const modules={'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>123},FieldPath:{documentId:()=>'__name__'}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'../sandbox/admin-access':{requireAccount:account},'./sandbox/admin-access':{requireAccount:account},'../templates/contract':contract,'./admin-access':{requireDeveloper:developer},'./contract':contract,'./types.json':require(backend+'/templates/types.json'),'node:crypto':require('node:crypto')};
  function load(file){const exports={};vm.runInNewContext(fs.readFileSync(backend+'/'+file,'utf8'),{exports,require:n=>modules[n],console,Date,TextEncoder,URL,Buffer});return exports;}
+ const reportApi=load('bug-reports.js'),reportAdmin=load('sandbox/bug-reports.js');
  const api=load('templates/index.js');modules['../templates']=api;const review=load('sandbox/templates.js').boardTemplateModeration;
- return {records,stats,call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
+ return {records,stats,report:(uid,data)=>reportApi.submitBugReport({auth:uid?{uid}:null,data}),bugs:(uid,data)=>reportAdmin.developerBugReports({auth:uid?{uid}:null,data}),call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
 }
 const submission={action:'submit',title:'Morning welcome',description:'A calm welcome for the school day.',tags:['morning'],snapshot:board,confirmPrivacy:true};
 test('export explicitly excludes private data, nested tab state, raw fields and executable HTML',()=>{
@@ -82,4 +83,19 @@ test('discovery ranks globally, only admin-approved official boards are curated,
  const before=f.stats.reads,home=await f.call('viewer',{action:'discover'});assert.equal(f.stats.reads-before,13);assert.equal(home.featured[0].votes,14);assert.equal(home.curated.length,1);assert.equal(home.curated[0].votes,3);assert(home.highlyRated[0].preview.objects.length);
  const first=await f.call('viewer',{action:'list'}),second=await f.call('viewer',{action:'list',cursor:first.cursor});assert.equal(first.items.length,12);assert.equal(second.items.length,3);assert.equal(new Set([...first.items,...second.items].map(x=>x.id)).size,15);
  const tagged=await f.call('viewer',{action:'list',tag:'math'});assert(tagged.items.every(m=>m.tags.includes('math')));assert.equal(tagged.items[0].votes,13);
+});
+
+test('ten tags are supported and admins can search and delete every template status',async()=>{
+ const f=fixture(),tags=Array.from({length:10},(_,i)=>'tag'+i),{id}=await f.call('author',{...submission,tags});assert.equal((await f.call('author',{action:'detail',id})).meta.tags.length,10);
+ assert.equal((await f.review('admin',{action:'list',status:'all',search:'tag9'})).items.length,1);
+ await f.review('admin',{action:'review',id,revision:1,decision:'approve'});assert.equal((await f.review('admin',{action:'list',status:'all',search:'tag9'})).items[0].status,'approved');
+ await assert.rejects(f.review('other',{action:'delete',id}),{code:'permission-denied'});await f.review('admin',{action:'delete',id});assert.equal((await f.call('viewer',{action:'list'})).items.length,0);assert(!f.records.has('_boardTemplateBodies/'+id));
+});
+test('bug reporting is private, bounded, retry-safe, and only admins may track status',async()=>{
+ const f=fixture(),data={category:'Saving & syncing',title:'A saved board disappeared',description:'After refreshing the browser, my saved board disappeared.',requestId:'1234567890abcdef'};
+ await assert.rejects(f.report(null,data),{code:'unauthenticated'});const {id}=await f.report('author',data);await f.report('author',data);assert.equal((await f.bugs('admin',{action:'list'})).items.length,1);
+ await assert.rejects(f.bugs('author',{action:'detail',id}),{code:'permission-denied'});await assert.rejects(f.bugs('author',{action:'update',id,status:'complete',revision:1}),{code:'permission-denied'});
+ await f.bugs('admin',{action:'update',id,status:'in-progress',revision:1});assert.equal((await f.bugs('admin',{action:'detail',id})).report.status,'in-progress');
+ await assert.rejects(f.bugs('admin',{action:'update',id,status:'complete',revision:1}),{code:'failed-precondition'});await f.bugs('admin',{action:'update',id,status:'complete',revision:2});assert.equal((await f.bugs('admin',{action:'list',status:'complete'})).items.length,1);
+ await assert.rejects(f.report('author',{...data,category:'invalid'}),{code:'invalid-argument'});for(let i=1;i<5;i++)await f.report('author',{...data,requestId:'1234567890abcdef'+i});await assert.rejects(f.report('author',{...data,requestId:'1234567890abcdef6'}),{code:'resource-exhausted'});
 });
