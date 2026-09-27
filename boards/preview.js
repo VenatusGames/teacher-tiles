@@ -1,3 +1,7 @@
+import '../tiles/interactive-timers/hourglass.js';
+import '../tiles/interactive-timers/garden-rocket.js';
+import {renderTimerPreview} from './timer-preview.js';
+let previewIds=0;
 let previewTemplates=null;
 export function setPreviewTemplates(doc){previewTemplates=doc;}
 function previewThemeClass(theme) {
@@ -301,7 +305,7 @@ function applyPreviewState(module, state) {
   if (!module || !state) return;
   const special = state.special && typeof state.special === "object" ? state.special : null;
 
-  for (const element of module.querySelectorAll("[id]")) element.removeAttribute("id");
+  const ids=new Map();for(const element of module.querySelectorAll('[id]')){if(element instanceof SVGElement){const before=element.id,after='board-preview-'+(++previewIds);ids.set(before,after);element.id=after;}else element.removeAttribute('id');}for(const element of module.querySelectorAll('*'))for(const attr of [...element.attributes]){let value=attr.value;for(const [before,after] of ids){value=value.split('url(#'+before+')').join('url(#'+after+')');if(value==='#'+before)value='#'+after;}if(value!==attr.value)element.setAttribute(attr.name,value);}
   module.removeAttribute("id");
   module.setAttribute("aria-hidden", "true");
 
@@ -312,19 +316,10 @@ function applyPreviewState(module, state) {
     }
   }
 
+  const border=state.dataset?.appearanceBorderStyle;if(['solid','dashed','dotted','double'].includes(border)){const size=Math.max(1,Math.min(20,Number(state.dataset.appearanceBorderSize)||2)),color=/^#[0-9a-f]{6}$/i.test(state.dataset.appearanceBorderColor||'')?state.dataset.appearanceBorderColor:'#17191d';module.style.setProperty('outline',size+'px '+border+' '+color,'important');module.style.setProperty('outline-offset',-size+'px');}
   for (const cls of Array.isArray(state.classes) ? state.classes : []) module.classList.add(cls);
 
-  if (state.type === "interactive") {
-    const candle = module.dataset.interactiveMode === "candle";
-    const hourglassStage = module.querySelector(".hourglass-stage");
-    const candleStage = module.querySelector(".candle-stage");
-    if (hourglassStage) hourglassStage.hidden = candle;
-    if (candleStage) candleStage.hidden = !candle;
-    module.querySelectorAll("[data-interactive]").forEach(button => {
-      button.classList.toggle("is-active", button.dataset.interactive === (candle ? "candle" : "hourglass"));
-    });
-  }
-
+  if (state.type === "timer" || state.type === "interactive") renderTimerPreview(module,state);
   if (state.type === "shapes") {
     const shapePaths = {
       circle: "M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z",
@@ -743,6 +738,7 @@ function createMiniObject(item) {
   return el;
 }
 
+const previewLayout=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewLayout.unobserve(target);continue;}const layer=target.querySelector('.board-card__objects'),w=target.clientWidth,h=target.clientHeight,width=Math.min(w,h*1.6),height=width/1.6;if(layer&&w&&h){Object.assign(layer.style,{width:width+'px',height:height+'px',left:(w-width)/2+'px',top:(h-height)/2+'px',right:'auto',bottom:'auto'});}}});
 function createBoardPreview(board) {
   const preview = document.createElement("div");
   preview.className = `board-card__preview ${previewThemeClass(board.theme)}`;
@@ -756,7 +752,7 @@ function createBoardPreview(board) {
     ? layoutBoardPreviewObjects(previewSource)
     : (Array.isArray(board.preview) ? board.preview : []);
   for (const item of previewItems) objects.appendChild(createMiniObject(item));
-  preview.appendChild(objects);
+  preview.appendChild(objects);previewLayout.observe(preview);
 
   return preview;
 }

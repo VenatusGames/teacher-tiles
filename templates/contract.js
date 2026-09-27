@@ -48,7 +48,7 @@
       if(types&&!types.has(raw.type)){warnings.add(`${raw.type}: unavailable tile omitted`);return null;}
       if(Number(raw.templateTileVersion||1)>1){warnings.add(`${raw.type}: newer tile format omitted`);return null;}
       const t=raw.transform||{},out={templateTileVersion:1,id:`template-${count}`,schemaVersion:2,type:raw.type,transform:{left:num(t.left,-100000,100000,0),top:num(t.top,-100000,100000,0),width:num(t.width,80,2400,320),height:num(t.height,60,2400,240),uniformScale:num(t.uniformScale,.25,4,1),rotation:num(t.rotation,-360,360,0)},zIndex:count,dataset:{}};
-      for(const key of ['bg','font','text','color','shape','orientation','tileSkin','timerColor','timerShape','interactiveMode','squishyColor'])if(token(raw.dataset?.[key]))out.dataset[key]=token(raw.dataset[key]);
+      for(const key of ['bg','font','text','color','shape','orientation','tileSkin','timerColor','timerShape','interactiveMode','squishyColor','shapeColor','candleColor','appearanceBorderStyle','appearanceBorderSize','appearanceBorderColor'])if(token(raw.dataset?.[key]))out.dataset[key]=token(raw.dataset[key]);
       if(['timer','interactive'].includes(raw.type)&&raw.timer){const total=num(raw.timer.total,1,86400,60);out.timer={total,left:total,running:false,finished:false,endAt:0};}
       if(rich.has(raw.type))out.editables=list(raw.editables,3).map((v,i)=>({index:i,html:html(v.html)}));
       if(adapters[raw.type])out.special=adapters[raw.type](raw.special||{});

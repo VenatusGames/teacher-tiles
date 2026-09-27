@@ -1,4 +1,4 @@
-import {openTicketThread,ticketBadge} from './ticket-thread.js';
+import {openTicketThread,ticketBadge} from './ticket-thread.js?v=20260926-ticket-updates';
 export const BUG_CATEGORIES=['Saving & syncing','Tiles & tools','Boards & templates','Themes, stickers & cursors','Account & subscription','Purchases & coins','Other support','Performance','Accessibility','Other'];
 export function setupBugReports(call){
  const form=document.getElementById('bug-report-form');if(!form)return;

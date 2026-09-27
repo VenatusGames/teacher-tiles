@@ -1,8 +1,9 @@
+import {createTicketNotifications} from './ticket-notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js';
 import {setupNickname} from './nickname.js?v=20260926-edit';
-import {setupBugReports} from './bug-reports.js?v=20260926-board-access';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-fit';
-import {createTemplateLibrary} from './templates/ui.js?v=20260926-board-access';
+import {setupBugReports} from './bug-reports.js?v=20260926-board-previews';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-board-previews';
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-board-previews';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -78,6 +79,7 @@ const organizationPendingCount = document.getElementById("organization-pending-c
 const organizationPendingList = document.getElementById("organization-pending-list");
 const organizationDangerZone = document.getElementById("organization-danger-zone");
 const organizationDelete = document.getElementById("organization-delete");
+let ticketInbox;
 const notificationButton = document.getElementById("profile-notification-button");
 const notificationCount = document.getElementById("profile-notification-count");
 const notificationMenu = document.getElementById("profile-notification-menu");
@@ -968,7 +970,7 @@ function renderNotificationInbox() {
   if (!notificationList) return;
   notificationList.replaceChildren();
   const reminders = window.TeacherTilesReminders?.inbox() || [];
-  const count = organizationInvites.length + reminders.length;
+  const count = organizationInvites.length + reminders.length+(ticketInbox?.count||0);
   if (notificationCount) {
     notificationCount.textContent = count > 99 ? "99+" : String(count);
     notificationCount.hidden = count === 0;
@@ -982,6 +984,7 @@ function renderNotificationInbox() {
     notificationList.appendChild(empty);
     return;
   }
+  ticketInbox?.render(notificationList);
   reminders.forEach(item => {
     const card=document.createElement('article');card.className='profile-notification-card';
     const copy=document.createElement('div');copy.className='profile-notification-card__copy';
@@ -1586,14 +1589,14 @@ function closeBoardsView() {
   // must never survive just because the view was already marked hidden.
   boardsView.hidden = true;
   boardsView.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("boards-screen-open");
+  document.body.classList.remove("boards-screen-open");window.TeacherTilesTheme?.showBoard();
   boardsToggle?.setAttribute("aria-expanded", "false");
 }
 
 let lockedCosmeticBoard=null,cosmeticReviewOpen=false;
 async function reviewLockedBoard(){if(!lockedCosmeticBoard||cosmeticReviewOpen)return;cosmeticReviewOpen=true;const locked=lockedCosmeticBoard,uid=currentUser?.uid;try{const action=await cosmeticAccessDialog();if(currentUser?.uid!==uid||locked!==lockedCosmeticBoard)return;if(action==='remove'){const snapshot=boardCosmetics.strip(locked.snapshot,await ensureShopAccess());lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;boardApi().load(snapshot);await saveCurrentBoard({immediate:true});closeBoardsView();}else if(action==='subscribe'||action==='shop')openCosmeticShop(action);}catch(error){setBoardStatus(error.message||'Could not update board access.',true);}finally{cosmeticReviewOpen=false;}}
-window.TeacherTilesBoardAccessCheck=snapshot=>{if(!currentUser)return true;const needs=boardCosmetics.requirements(snapshot).length;if(needs&&(!shopAccountState.ready||boardCosmetics.missing(snapshot,shopAccountState).length)){lockedCosmeticBoard={id:activeBoardId,snapshot,notLoaded:true};document.getElementById('workspace').inert=true;openBoardsView();if(shopAccountState.ready)void reviewLockedBoard();return false;}return true;};
-function checkActiveCosmetics(){if(!currentUser||!activeBoardId||boardLoading||!shopAccountState.ready||shopAccountState.loading)return;if(lockedCosmeticBoard&&lockedCosmeticBoard.id!==activeBoardId){lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;}const snapshot=lockedCosmeticBoard?.snapshot||boardApi()?.capture();if(!snapshot)return;if(boardCosmetics.missing(snapshot,shopAccountState).length){if(!lockedCosmeticBoard){lockedCosmeticBoard={id:activeBoardId,snapshot};document.getElementById('workspace').inert=true;openBoardsView();void reviewLockedBoard();}else if(lockedCosmeticBoard.notLoaded)void reviewLockedBoard();}else if(lockedCosmeticBoard){const locked=lockedCosmeticBoard;lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;if(locked.notLoaded)boardApi().load(locked.snapshot);}}
+window.TeacherTilesBoardAccessCheck=snapshot=>{if(!currentUser)return true;const needs=boardCosmetics.requirements(snapshot).filter(r=>r.kind!=='theme').length;if(needs&&(!shopAccountState.ready||boardCosmetics.missing(snapshot,shopAccountState).some(r=>r.kind!=='theme'))){lockedCosmeticBoard={id:activeBoardId,snapshot,notLoaded:true};document.getElementById('workspace').inert=true;openBoardsView();if(shopAccountState.ready)void reviewLockedBoard();return false;}return true;};
+function checkActiveCosmetics(){if(!currentUser||!activeBoardId||boardLoading||!shopAccountState.ready||shopAccountState.loading)return;if(lockedCosmeticBoard&&lockedCosmeticBoard.id!==activeBoardId){lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;}const snapshot=lockedCosmeticBoard?.snapshot||boardApi()?.capture();if(!snapshot)return;if(boardCosmetics.missing(snapshot,shopAccountState).some(r=>r.kind!=='theme')){if(!lockedCosmeticBoard){lockedCosmeticBoard={id:activeBoardId,snapshot};document.getElementById('workspace').inert=true;openBoardsView();void reviewLockedBoard();}else if(lockedCosmeticBoard.notLoaded)void reviewLockedBoard();}else if(lockedCosmeticBoard){const locked=lockedCosmeticBoard;lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;if(locked.notLoaded)boardApi().load(locked.snapshot);}}
 window.addEventListener('teachertiles:accountchange',checkActiveCosmetics);window.addEventListener('teachertiles:boardloaded',()=>queueMicrotask(checkActiveCosmetics));
 setInterval(()=>{if(currentUser&&activeBoardId&&!document.hidden)ensureShopAccess().catch(()=>{});},300000);
 window.addEventListener('focus',()=>{if(currentUser&&activeBoardId)ensureShopAccess().catch(()=>{});});
@@ -2917,8 +2920,8 @@ async function loadBoard(boardId, { closeView = true, forceCloudCheck = false } 
   try {
     const uid=currentUser.uid;
     const resolved = await resolveBoardSnapshot(boardId, { forceCloudCheck });
-    await ensureShopAccess();if(currentUser?.uid!==uid)return;
-    if(boardCosmetics.missing(resolved.snapshot,shopAccountState).length){const action=await cosmeticAccessDialog();if(currentUser?.uid!==uid)return;if(action!=='remove'){showBoardsAfterLoad=true;openBoardsView();if(action==='subscribe'||action==='shop')openCosmeticShop(action);return;}resolved.snapshot=boardCosmetics.strip(resolved.snapshot,shopAccountState);resolved.dirty=true;await cacheSnapshotLocally(boardId,resolved.snapshot,{dirty:true});}
+    await ensureShopAccess();if(currentUser?.uid!==uid)return;if(boardCosmetics.missing({...resolved.snapshot,objects:[]},shopAccountState).length){resolved.snapshot={...resolved.snapshot,theme:'light'};resolved.dirty=true;await cacheSnapshotLocally(boardId,resolved.snapshot,{dirty:true});}
+    if(boardCosmetics.missing(resolved.snapshot,shopAccountState).some(r=>r.kind!=='theme')){const action=await cosmeticAccessDialog();if(currentUser?.uid!==uid)return;if(action!=='remove'){showBoardsAfterLoad=true;openBoardsView();if(action==='subscribe'||action==='shop')openCosmeticShop(action);return;}resolved.snapshot=boardCosmetics.strip(resolved.snapshot,shopAccountState);resolved.dirty=true;await cacheSnapshotLocally(boardId,resolved.snapshot,{dirty:true});}
     lockedCosmeticBoard=null;document.getElementById('workspace').inert=false;
     activeBoardId = boardId;
     localStorage.setItem(activeBoardStorageKey(currentUser.uid), activeBoardId);
@@ -3392,7 +3395,7 @@ async function openBoardsView() {
 
   boardsView.hidden = false;
   boardsView.setAttribute("aria-hidden", "false");
-  document.body.classList.add("boards-screen-open");
+  document.body.classList.add("boards-screen-open");window.TeacherTilesTheme?.hideBoard();
   boardsToggle?.setAttribute("aria-expanded", "true");
   setBoardsMenu("boards");
 
@@ -3494,7 +3497,7 @@ async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
   if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
-  currentUser = user || null;
+  currentUser = user || null;if(!user)window.TeacherTilesTheme?.hideBoard();
   window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {
     try {
@@ -3526,7 +3529,7 @@ async function renderUser(user) {
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   nicknameUi.load(user);
-  supportUi.reset();
+  supportUi.reset();ticketInbox?.reset();if(user)void ticketInbox?.refresh();
   authReady = true;
   loadingState.hidden = true;
   signedInState.hidden = !user;
@@ -3827,6 +3830,7 @@ organizationCustomLogo?.addEventListener("paste", event => {
   organizationCustomLogo.dispatchEvent(new Event("input", { bubbles: true }));
 });
 notificationButton?.addEventListener("click", event => {
+  void ticketInbox?.refresh();
   event.stopPropagation();
   if (!notificationMenu) return;
   const open = notificationMenu.hidden;
@@ -4087,4 +4091,5 @@ initializeFirebaseAuth();
 
 const profileCall=async(name,data)=>{if(!currentUser)throw new Error('Sign in to use Support.');if(!functionsSdk||!cloudFunctions)throw new Error('The reporting service is still loading. Please try again.');return (await functionsSdk.httpsCallable(cloudFunctions,name)(data)).data;};
 const nicknameUi=setupNickname(profileCall);
-const supportUi=setupBugReports(profileCall); 
+const supportUi=setupBugReports(profileCall);
+ticketInbox=createTicketNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);

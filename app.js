@@ -12980,9 +12980,9 @@ function syncCosmeticEntitlements(){
 
   const state=window.TeacherTilesAccount?.state;
   if(state?.ready&&!state.loading){
-    const activeTheme=document.body.dataset.theme||'light';
+    const activeTheme=window.TeacherTilesTheme?.selected||'light';
     const required=themeEntitlement(activeTheme);
-    if(required&&!ownsCosmetic(required)&&!window.TeacherTilesBoard?.activeBoardId)applyTeacherTheme('light');
+    if(required&&!ownsCosmetic(required))applyTeacherTheme('light');
   }
 }
 
@@ -12996,9 +12996,10 @@ function applyMaterialThemeArtwork(){
   }
 }
 
-function applyTeacherTheme(theme,{persist=true}={}){
+let activeBoardTheme='light';
+function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
   const requested=TEACHERTILES_THEMES.has(theme)?theme:'light';
-  const next=themeChoiceIsOwned(requested)?requested:'light';
+  let next=themeChoiceIsOwned(requested)?requested:'light';if(!presentation)activeBoardTheme=next;if(document.body.classList.contains('boards-screen-open'))next='light';
   document.body.classList.remove(...THEME_BODY_CLASSES);
   if(next==='dark')document.body.classList.add('dark');
   else if(next==='gray')document.body.classList.add('theme-gray');
@@ -13008,14 +13009,14 @@ function applyTeacherTheme(theme,{persist=true}={}){
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   applyMaterialThemeArtwork(next);
-  if(persist)localStorage.setItem(THEME_STORAGE_KEY,next);
+
   updateThemeControls(next);
   window.dispatchEvent(new CustomEvent('teachertiles:themechange'));
   if(persist)notifyBoardChanged('theme');
 }
 
-const savedTheme=localStorage.getItem(THEME_STORAGE_KEY);
-applyTeacherTheme(TEACHERTILES_THEMES.has(savedTheme)?savedTheme:'light',{persist:false});
+applyTeacherTheme('light',{persist:false});
+window.TeacherTilesTheme={get selected(){return activeBoardTheme},showBoard:()=>applyTeacherTheme(activeBoardTheme,{persist:false,presentation:true}),hideBoard:()=>applyTeacherTheme('light',{persist:false,presentation:true})};
 
 fullscreenToggle.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{}});
 document.addEventListener('fullscreenchange',()=>{
@@ -19488,7 +19489,7 @@ function captureTeacherTilesBoard(){
   objects.push(...unrestoredBoardObjects);
   return{
     schemaVersion:BOARD_SAVE_SCHEMA_VERSION,
-    theme:document.body.dataset.theme||'light',
+    theme:activeBoardTheme||'light',
     camera:{x:boardCamera.x,y:boardCamera.y,scale:boardCamera.scale},
     frames:boardFrames.map(frame=>({...frame})),
     preferences:boardPreferenceSnapshot(),
