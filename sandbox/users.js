@@ -1,13 +1,16 @@
-import {createBulkPatches} from './bulk-patches.js?v=20261012-compact-users';
-import {createUsersClient} from './users-cache.js?v=20261012-compact-users';
-import {createUserDetails} from './user-details.js?v=20261012-compact-users';
+import {createBulkPatches} from './bulk-patches.js?v=20261012-selection-mode';
+import {createUsersClient} from './users-cache.js?v=20261012-selection-mode';
+import {createUserDetails} from './user-details.js?v=20261012-selection-mode';
 export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
   const search=document.getElementById('users-search');
   const online=document.getElementById('users-online-filter'),subscribers=document.getElementById('users-subscriber-filter'),selected=new Set();
-  const bulk=createBulkPatches(document.getElementById('bulk-patch-tool'),call,selected,()=>{client.invalidate();if(!element.hidden){clear();void load();}});
+  const selectionToggle=document.getElementById('users-selection-toggle');
+  function setSelectionMode(enabled){element.classList.toggle('is-selecting-users',enabled);selectionToggle.setAttribute('aria-pressed',String(enabled));selectionToggle.textContent=enabled?'Cancel selection':'Select users';if(!enabled){selected.clear();list.querySelectorAll('.user-select').forEach(input=>input.checked=false);}bulk.update();}
+  selectionToggle.onclick=()=>setSelectionMode(!element.classList.contains('is-selecting-users'));
+  const bulk=createBulkPatches(document.getElementById('bulk-patch-tool'),call,selected,()=>{client.invalidate();if(!element.hidden){clear();void load();}},()=>setSelectionMode(true));
   online.onchange=subscribers.onchange=()=>{clear();void load();};
   const details=createUserDetails(call,()=>{clear();void load();});
   const searchButton=document.getElementById('users-search-submit');
@@ -45,5 +48,5 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   searchButton.onclick=submitSearch;search.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitSearch();}};
   search.addEventListener('search',()=>{if(!search.value)submitSearch();});
   refresh.onclick=()=>{client.invalidate();clear();void load();};more.onclick=()=>load(true);
-  return {element,load,clear,reset(){bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';}};
+  return {element,load,clear,reset(){setSelectionMode(false);bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';}};
 }

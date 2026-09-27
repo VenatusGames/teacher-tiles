@@ -1,13 +1,20 @@
-export function createBulkPatches(root,call,selected,onComplete){
+export function createBulkPatches(root,call,selected,onComplete,startSelection=()=>{}){
  root.innerHTML=`<div><h3>Bulk patch awards</h3></div><div class="bulk-patch-controls"><select aria-label="Bulk patch"><option value="">Choose a patch…</option><option value="beta">Beta Tester</option><option value="contributor">Contributor</option><option value="stickerer">Stickerer</option><option value="tile-layer">Tile Layer</option></select><select aria-label="Award audience"><option value="selected">Selected users</option><option value="all">All users</option></select><button class="primary" disabled>Review award</button></div><div class="bulk-selection"><span>0 selected</span><button class="quiet" data-page type="button">Select loaded users</button><button class="quiet" data-clear type="button">Clear selection</button></div>`;
+ const menu=document.createElement('div');menu.id='bulk-patch-menu';menu.className='bulk-patch-menu';menu.setAttribute('popover','auto');menu.setAttribute('role','dialog');menu.setAttribute('aria-label','Bulk patch controls');
+ menu.append(...root.childNodes);
+ const toggle=document.createElement('button');toggle.type='button';toggle.className='quiet';toggle.textContent='Bulk patches';toggle.setAttribute('aria-label','Bulk patches');toggle.setAttribute('popovertarget',menu.id);toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-haspopup','dialog');
+ root.append(toggle,menu);document.querySelector('.users-toolbar').insertBefore(root,document.getElementById('users-status'));
+ const closeMenu=()=>{if(menu.matches(':popover-open'))menu.hidePopover();};
+ menu.addEventListener('toggle',event=>{const open=event.newState==='open';toggle.setAttribute('aria-expanded',String(open));if(open){const rect=toggle.getBoundingClientRect();menu.style.left=Math.max(16,Math.min(rect.right-menu.offsetWidth,innerWidth-menu.offsetWidth-16))+'px';menu.style.top=Math.max(16,Math.min(rect.bottom+8,innerHeight-menu.offsetHeight-16))+'px';}});
+ window.addEventListener('resize',closeMenu);
  const [patch,audience]=root.querySelectorAll('select'),review=root.querySelector('.primary'),count=root.querySelector('.bulk-selection span');
  const dialog=document.createElement('dialog');dialog.className='user-details bulk-confirm';dialog.setAttribute('aria-labelledby','bulk-confirm-title');dialog.innerHTML='<h2 id="bulk-confirm-title">Give patch in bulk?</h2><p class="bulk-summary"></p><p>Existing awards keep their original dates. Disabled accounts are skipped.</p><p class="bulk-progress" role="status" aria-live="polite"></p><div class="bulk-confirm-actions"><button class="quiet" data-cancel>Cancel</button><button class="primary" data-confirm>Give patch</button></div>';document.body.append(dialog);
  let running=false,stop=false;const cancel=dialog.querySelector('[data-cancel]'),confirm=dialog.querySelector('[data-confirm]'),progress=dialog.querySelector('.bulk-progress');
- function update(){count.textContent=selected.size+' selected';review.disabled=running||!patch.value||audience.value==='selected'&&!selected.size;}
+ function update(){toggle.textContent='Bulk patches'+(selected.size?' ('+selected.size+')':'');count.textContent=selected.size+' selected';review.disabled=running||!patch.value||audience.value==='selected'&&!selected.size;}
  patch.onchange=audience.onchange=update;
- root.querySelector('[data-page]').onclick=()=>{document.querySelectorAll('.user-select:not(:disabled)').forEach(input=>{input.checked=true;input.dispatchEvent(new Event('change'));});};
+ root.querySelector('[data-page]').onclick=()=>{startSelection();document.querySelectorAll('.user-select:not(:disabled)').forEach(input=>{input.checked=true;input.dispatchEvent(new Event('change'));});};
  root.querySelector('[data-clear]').onclick=()=>{selected.clear();document.querySelectorAll('.user-select').forEach(input=>input.checked=false);update();};
- review.onclick=()=>{dialog.querySelector('.bulk-summary').textContent=`Award ${patch.selectedOptions[0].textContent} to ${audience.value==='all'?'ALL enabled users (including users outside the current filters)':selected.size+' selected users'}?`;progress.textContent='';confirm.hidden=false;confirm.disabled=false;cancel.textContent='Cancel';dialog.showModal();};
+ review.onclick=()=>{closeMenu();dialog.querySelector('.bulk-summary').textContent=`Award ${patch.selectedOptions[0].textContent} to ${audience.value==='all'?'ALL enabled users (including users outside the current filters)':selected.size+' selected users'}?`;progress.textContent='';confirm.hidden=false;confirm.disabled=false;cancel.textContent='Cancel';dialog.showModal();};
  cancel.onclick=()=>{if(running){stop=true;cancel.disabled=true;progress.textContent+=' Stopping after this batch…';}else dialog.close();};
  dialog.addEventListener('cancel',event=>{if(running){event.preventDefault();stop=true;}});
  confirm.onclick=async()=>{
@@ -22,5 +29,5 @@ export function createBulkPatches(root,call,selected,onComplete){
   }catch(error){progress.textContent=`Confirmed ${awarded} awards. The last batch may have partially completed. ${error.message||'Please try again.'} Retrying will skip awards already given.`;}
   finally{running=false;confirm.hidden=true;cancel.disabled=false;cancel.textContent='Close';update();onComplete();}
  };
- return {update,reset(){stop=true;dialog.close();selected.clear();update();}};
+ return {update,reset(){closeMenu();stop=true;dialog.close();selected.clear();update();}};
 }
