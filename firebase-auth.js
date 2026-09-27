@@ -1,4 +1,4 @@
-import {createTemplateLibrary} from './templates/ui.js?v=20260926-templates';
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-template-shelves';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -1585,7 +1585,11 @@ function closeBoardsView() {
 
 let communityTemplates;
 function templateLibrary(){
-  return communityTemplates ||= createTemplateLibrary({element:boardTemplatesPanel,call:callShopFunction,getUid:()=>currentUser?.uid,capture:()=>boardApi()?.capture(),knownTypes:()=>[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker'),importBoard:async(id,requestId)=>{
+  return communityTemplates ||= createTemplateLibrary({element:boardTemplatesPanel,call:callShopFunction,
+    renderPreview:snapshot=>createBoardPreview({theme:snapshot.theme,inlineObjects:snapshot.objects}),
+    listBoards:async()=>{await saveCurrentBoard({immediate:true});return boardList.map(board=>({...board,snapshot:{theme:board.theme,objects:board.inlineObjects||board.previewObjects||[]}}));},
+    readBoard:async id=>id===activeBoardId?boardApi().capture():(await resolveBoardSnapshot(id)).snapshot,
+getUid:()=>currentUser?.uid,capture:()=>boardApi()?.capture(),knownTypes:()=>[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker'),importBoard:async(id,requestId)=>{
     if(boardList.length>=membershipBoardLimit()){showBoardLimitPopup();throw new Error('You have reached your board limit.');}
     const uid=currentUser?.uid;
     await saveCurrentBoard({immediate:true});
@@ -1598,7 +1602,7 @@ function templateLibrary(){
 }
 function setBoardsMenu(menu = "boards") {
   const showTemplates = menu === "templates";
-  if(showTemplates)void templateLibrary().load();
+  if(showTemplates)void templateLibrary().open();
   boardsLibraryTab?.classList.toggle("is-active", !showTemplates);
   boardTemplatesTab?.classList.toggle("is-active", showTemplates);
   boardsLibraryTab?.setAttribute("aria-selected", String(!showTemplates));
@@ -3973,16 +3977,7 @@ function beginBoardRename(card, board, title) {
   });
 }
 
-function createBoardCard(board) {
-  const card = document.createElement("article");
-  card.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
-  card.dataset.boardId = board.id;
-
-  const openButton = document.createElement("button");
-  openButton.type = "button";
-  openButton.className = "board-card__open";
-  openButton.setAttribute("aria-label", `Open ${board.name}`);
-
+function createBoardPreview(board) {
   const preview = document.createElement("div");
   preview.className = `board-card__preview ${previewThemeClass(board.theme)}`;
 
@@ -3996,6 +3991,21 @@ function createBoardCard(board) {
     : (Array.isArray(board.preview) ? board.preview : []);
   for (const item of previewItems) objects.appendChild(createMiniObject(item));
   preview.appendChild(objects);
+
+  return preview;
+}
+
+function createBoardCard(board) {
+  const card = document.createElement("article");
+  card.className = `board-card${board.id === activeBoardId ? " is-active" : ""}`;
+  card.dataset.boardId = board.id;
+
+  const openButton = document.createElement("button");
+  openButton.type = "button";
+  openButton.className = "board-card__open";
+  openButton.setAttribute("aria-label", `Open ${board.name}`);
+
+  const preview = createBoardPreview(board);
 
   const meta = document.createElement("div");
   meta.className = "board-card__meta";

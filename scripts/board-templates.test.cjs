@@ -5,10 +5,14 @@ const board={objects:[{type:'sticky',editables:[{index:0,html:'<b>Welcome</b><sc
 function fixture(){
  const records=new Map();let serial=0;const stats={reads:0};
  const snapshot=ref=>({id:ref.id,ref,exists:records.has(ref.key),data:()=>records.get(ref.key)});
- function collection(name,filters=[],maximum=Infinity,cursor=''){
-  const q={key:name,query:true,doc(id='auto'+(++serial)){const key=name+'/'+id;return {key,id,parent:collection(name),collection:sub=>collection(key+'/'+sub),get:async()=>{stats.reads++;return snapshot(q.doc(id));}};},where:(...f)=>collection(name,[...filters,f],maximum,cursor),orderBy:()=>q,startAfter:v=>collection(name,filters,maximum,v),limit:n=>collection(name,filters,n,cursor),get:async()=>{const keys=[...records.keys()].filter(k=>k.startsWith(name+'/')&&k.split('/').length===name.split('/').length+1).sort().filter(k=>k.split('/').at(-1)>cursor&&filters.every(([field,op,v])=>{const x=records.get(k)[field];return op==='=='?x===v:op==='array-contains'?x?.includes(v):x>v;})).slice(0,maximum);stats.reads+=keys.length;return {docs:keys.map(k=>snapshot(q.doc(k.split('/').at(-1)))),size:keys.length};}};return q;
+ function collection(name,filters=[],maximum=Infinity,cursor=null,orders=[]){
+  const field=(key,k)=>k==='__name__'?key.split('/').at(-1):records.get(key)[k];
+  const cmp=(a,b)=>a<b?-1:a>b?1:0;
+  const q={key:name,query:true,doc(id='auto'+(++serial)){const key=name+'/'+id;return {key,id,parent:collection(name),collection:sub=>collection(key+'/'+sub),get:async()=>{stats.reads++;return snapshot(q.doc(id));}};},where:(...f)=>collection(name,[...filters,f],maximum,cursor,orders),orderBy:(...o)=>collection(name,filters,maximum,cursor,[...orders,o]),startAfter:(...v)=>collection(name,filters,maximum,v,orders),limit:n=>collection(name,filters,n,cursor,orders),get:async()=>{
+   const actualOrders=orders.length?orders:[['__name__','asc']];const compare=(a,b)=>{for(const [k,dir] of actualOrders){const c=cmp(field(a,k),field(b,k))*(dir==='desc'?-1:1);if(c)return c;}return 0;};
+   const keys=[...records.keys()].filter(k=>k.startsWith(name+'/')&&k.split('/').length===name.split('/').length+1).filter(k=>filters.every(([f,op,v])=>{const x=field(k,f);return op==='=='?x===v:op==='array-contains'?x?.includes(v):x>v;})).sort(compare).filter(k=>{if(!cursor)return true;for(let i=0;i<actualOrders.length;i++){const [f,dir]=actualOrders[i],c=cmp(field(k,f),cursor[i])*(dir==='desc'?-1:1);if(c)return c>0;}return false;}).slice(0,maximum);stats.reads+=keys.length;return {docs:keys.map(k=>snapshot(q.doc(k.split('/').at(-1)))),size:keys.length};}};return q;
  }
- const db={collection,runTransaction:async fn=>{const writes=[];const result=await fn({get:r=>r.get(),set:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),create:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),delete:r=>writes.push(()=>records.delete(r.key))});writes.forEach(w=>w());return result;}};
+ const db={collection,recursiveDelete:async ref=>{for(const key of records.keys())if(key===ref.key||key.startsWith(ref.key+'/'))records.delete(key);},runTransaction:async fn=>{const writes=[];const result=await fn({get:r=>r.get(),set:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),create:(r,v)=>writes.push(()=>records.set(r.key,structuredClone(v))),delete:r=>writes.push(()=>records.delete(r.key))});writes.forEach(w=>w());return result;}};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
  const account=async r=>{if(!r.auth)throw new HttpsError('unauthenticated','Sign in');return {uid:r.auth.uid,emailVerified:true};},developer=async r=>{if(r.auth?.uid!=='admin')throw new HttpsError('permission-denied','Admin only');return {uid:'admin'};};
  const modules={'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>123},FieldPath:{documentId:()=>'__name__'}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'../sandbox/admin-access':{requireAccount:account},'./admin-access':{requireDeveloper:developer},'./contract':contract,'./types.json':require(backend+'/templates/types.json'),'node:crypto':require('node:crypto')};
@@ -61,4 +65,21 @@ test('imports adapt to the receiving app and migrate retired Rainbow Breath tile
  const f=fixture(),{id}=await f.call('author',submission);await f.review('admin',{action:'review',id,revision:1,decision:'approve'});
  await assert.rejects(f.call('viewer',{action:'import',id,requestId:'older',clientVersion:99}),{code:'failed-precondition'});
  await assert.rejects(f.call('viewer',{action:'import',id,requestId:'unavailable',supportedTypes:['timer']}),{code:'failed-precondition'});
+});
+
+test('only the author may edit or delete; edits preserve votes but require a fresh approval',async()=>{
+ const f=fixture(),{id}=await f.call('author',submission);await f.review('admin',{action:'review',id,revision:1,decision:'approve',official:true});await f.call('voter',{action:'vote',id});
+ await assert.rejects(f.call('other',{action:'delete',id}),{code:'permission-denied'});
+ await assert.rejects(f.call('other',{action:'edit',id,title:'New title',description:'A better description.'}),{code:'permission-denied'});
+ await f.call('author',{action:'edit',id,title:'Updated board',description:'A new reviewed description.',tags:['math'],official:true});
+ const detail=await f.call('author',{action:'detail',id});assert.equal(detail.meta.status,'pending');assert.equal(detail.meta.votes,1);assert.equal(detail.meta.official,false);assert.equal((await f.call('viewer',{action:'discover'})).curated.length,0);
+ await assert.rejects(f.review('admin',{action:'review',id,revision:1,decision:'approve'}),{code:'failed-precondition'});
+ await f.review('admin',{action:'review',id,revision:2,decision:'approve'});await f.call('voter',{action:'vote',id});assert.equal((await f.call('voter',{action:'detail',id})).meta.votes,1);
+ const imported=await f.call('reader',{action:'import',id,requestId:'copy'});await f.call('author',{action:'delete',id});assert.equal((await f.call('author',{action:'list',mine:true})).items.length,0);assert(!f.records.has('_boardTemplateBodies/'+id));assert(![...f.records.keys()].some(k=>k.startsWith('_boardTemplates/'+id)));assert(f.records.has('users/reader/boards/'+imported.boardId));
+});
+test('discovery ranks globally, only admin-approved official boards are curated, and tags support paging',async()=>{
+ const f=fixture();for(let i=0;i<15;i++){const {id}=await f.call('author'+i,{...submission,tags:i%2?['math']:['morning'],official:true});await f.review('admin',{action:'review',id,revision:1,decision:'approve',official:i===3});for(let j=0;j<i;j++)await f.call('voter'+j,{action:'vote',id});}
+ const before=f.stats.reads,home=await f.call('viewer',{action:'discover'});assert.equal(f.stats.reads-before,13);assert.equal(home.featured[0].votes,14);assert.equal(home.curated.length,1);assert.equal(home.curated[0].votes,3);assert(home.highlyRated[0].preview.objects.length);
+ const first=await f.call('viewer',{action:'list'}),second=await f.call('viewer',{action:'list',cursor:first.cursor});assert.equal(first.items.length,12);assert.equal(second.items.length,3);assert.equal(new Set([...first.items,...second.items].map(x=>x.id)).size,15);
+ const tagged=await f.call('viewer',{action:'list',tag:'math'});assert(tagged.items.every(m=>m.tags.includes('math')));assert.equal(tagged.items[0].votes,13);
 });

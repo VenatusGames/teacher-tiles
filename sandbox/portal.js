@@ -1,5 +1,5 @@
-import {createTemplateLibrary} from '../templates/ui.js?v=20260926-templates';
-import {createInsights} from './insights.js?v=20260926-templates';
+import {createTemplateLibrary} from '../templates/ui.js?v=20260926-template-shelves';
+import {createInsights} from './insights.js?v=20260926-template-shelves';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20261012-selection-mode';
