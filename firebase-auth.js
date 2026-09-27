@@ -1,7 +1,7 @@
 import {setupNickname} from './nickname.js';
-import {setupBugReports} from './bug-reports.js';
+import {setupBugReports} from './bug-reports.js?v=20260926-tickets';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js';
-import {createTemplateLibrary} from './templates/ui.js?v=20260926-reporting';
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-support-nicknames';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';

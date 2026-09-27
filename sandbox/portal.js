@@ -1,10 +1,10 @@
 import {adminBoardPreview} from './board-preview.js';
-import {createBugReports} from './bug-reports.js';
-import {createTemplateLibrary} from '../templates/ui.js?v=20260926-reporting';
-import {createInsights} from './insights.js?v=20260926-reporting';
+import {createBugReports} from './bug-reports.js?v=20260926-tickets';
+import {createTemplateLibrary} from '../templates/ui.js?v=20260926-support-nicknames';
+import {createInsights} from './insights.js?v=20260926-support-nicknames';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261012-selection-mode';
+import {createUsersPanel} from './users.js?v=20260926-nicknames';
 import {startSiteActivity} from '../site-activity.js';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');

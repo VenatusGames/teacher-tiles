@@ -1,6 +1,6 @@
-import {createBulkPatches} from './bulk-patches.js?v=20261012-selection-mode';
-import {createUsersClient} from './users-cache.js?v=20261012-selection-mode';
-import {createUserDetails} from './user-details.js?v=20261012-selection-mode';
+import {createBulkPatches} from './bulk-patches.js?v=20260926-nicknames';
+import {createUsersClient} from './users-cache.js?v=20260926-nicknames';
+import {createUserDetails} from './user-details.js?v=20260926-nicknames';
 export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
