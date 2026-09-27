@@ -13,6 +13,13 @@ await page.evaluate(()=>{testRole='admin';testError='functions/failed-preconditi
 await page.evaluate(()=>testError=null);await page.getByRole('button',{name:'Check access again'}).click();await page.locator('#portal-home').waitFor({state:'visible'});
 const popupCount=await page.evaluate(()=>localStorage.getItem('test-popup-count'));
 await page.locator('#enter-board-sandbox').click();await page.locator('#sandbox-dev-console-toggle').waitFor({state:'attached'});assert.equal(await page.locator('#sandbox-access-gate').isVisible(),false);assert.equal(await page.evaluate(()=>localStorage.getItem('test-popup-count')),popupCount);assert.equal(await page.locator('.sandbox-portal-return').getAttribute('href'),'./');
+assert.equal(await page.locator('body>.sandbox-portal-return').count(),0);
+assert.equal(await page.locator('.sandbox-portal-return').isVisible(),false);
+await page.locator('#sandbox-dev-console-toggle').click();
+await page.locator('#sandbox-dev-console .sandbox-portal-return').waitFor({state:'visible'});
+assert.equal(await page.locator('.sandbox-portal-return').evaluate(el=>getComputedStyle(el).position),'static');
+await page.locator('.sandbox-dev-console__close').click();
+await page.locator('.sandbox-portal-return').waitFor({state:'hidden'});
 await page.goto('http://tiles.test/sandbox/');await page.locator('#portal-home').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>localStorage.getItem('test-popup-count')),popupCount);
 await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.locator('#portal-login').waitFor({state:'visible'});assert.equal(await page.locator('.portal-shell').isVisible(),false);
 await page.goto('http://tiles.test/sandbox/board.html');await page.locator('#sandbox-access-gate').waitFor({state:'visible'});assert(await page.locator('#workspace').evaluate(e=>e.inert||!!e.closest('[inert]')));assert.equal(await page.locator('#sandbox-dev-console-toggle').count(),0);assert.equal(await page.evaluate(()=>calls.length),0);

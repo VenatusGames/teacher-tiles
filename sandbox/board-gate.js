@@ -75,7 +75,7 @@
       const result=await verifyAccess(user,window.TeacherTilesAuth.call);
       if(window.TeacherTilesAuth.user?.uid!==user.uid)throw Error('Account changed');
       access.update({portalRole:result.role},user.email);
-      if(!loaded){loaded=true;await import(new URL('dev-console.js',base).href);}
+      if(!loaded){loaded=true;await import(new URL('dev-console.js?v=20261012-console-return-2',base).href);}
     }catch(error){
       const {accessError}=await client;access.update({},user.email);access.status(accessError(error));
       if(wasAllowed)location.replace('./');throw error;

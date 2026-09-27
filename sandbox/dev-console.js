@@ -12,7 +12,7 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.allo
   const stylesheet=document.createElement('link');
   stylesheet.rel='stylesheet';
   const stylesheetUrl=new URL('./dev-console.css',import.meta.url);
-  stylesheetUrl.searchParams.set('v','20261012-portal-link');
+  stylesheetUrl.searchParams.set('v','20261012-console-return-2');
   stylesheet.href=stylesheetUrl.href;
   document.head.appendChild(stylesheet);
   document.body.classList.add('sandbox-mode');
