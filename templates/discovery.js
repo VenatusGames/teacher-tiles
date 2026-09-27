@@ -3,7 +3,7 @@ export function tagEditor(initial=[]){
  const root=el('div','template-tag-editor'),chips=el('div','template-tags'),input=el('input');input.placeholder='Type a tag and press Enter';input.setAttribute('aria-label','Add a tag');input.maxLength=24;let values=[...initial];
  const paint=()=>{chips.replaceChildren();values.forEach(tag=>{const chip=el('span','template-tag',tag),remove=el('button','','×');remove.type='button';remove.setAttribute('aria-label',`Remove tag ${tag}`);remove.onclick=()=>{values=values.filter(t=>t!==tag);input.setCustomValidity('');paint();input.focus();};chip.append(remove);chips.append(chip);});};
  const add=()=>{const tag=input.value.trim().toLowerCase();if(tag&&values.length<10&&!values.includes(tag))values.push(tag);if(values.includes(tag))input.value='';input.setCustomValidity(tag&&values.length>=10&&!values.includes(tag)?'Use up to ten tags.':'');paint();};
- input.oninput=()=>input.setCustomValidity('');input.onkeydown=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();add();}else if(e.key==='Backspace'&&!input.value){values.pop();paint();}};input.onblur=e=>{if(input.value.trim()&&!e.relatedTarget?.closest('.template-tag'))add();};root.append(input,chips);paint();return {element:root,values:()=>{add();return [...values];}};
+ input.oninput=()=>input.setCustomValidity('');input.onkeydown=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();add();}};input.onblur=e=>{if(input.value.trim()&&!e.relatedTarget?.closest('.template-tag'))add();};root.append(input,chips);paint();return {element:root,values:()=>{add();return [...values];}};
 }
 export function discoveryShelves(root,data,card,onTag){
  root.replaceChildren();root.className='template-discovery';

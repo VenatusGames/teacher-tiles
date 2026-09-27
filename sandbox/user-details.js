@@ -18,7 +18,7 @@ export function createUserDetails(call,onDeleted) {
     choices.innerHTML='<label for="award-patch-select">Patch</label><div class="patch-award-row"><select id="award-patch-select" aria-label="Choose a patch"><option value="">Choose a patch…</option></select><button class="primary" type="button" disabled>Give Patch</button></div>';
     const select=choices.querySelector('select'),give=choices.querySelector('button');
     const isAwarded=id=>!user.patchAwards?.[id]?.revoked&&(!!user.patchAwards?.[id]||id==='beta'&&user.legacyBeta);
-    for(const [id,name] of [['beta','Beta Tester'],['contributor','Contributor'],['stickerer','Stickerer'],['tile-layer','Tile Layer']]){
+    for(const [id,name] of [['beta','Beta Tester'],['contributor','Contributor'],['stickerer','Stickerer'],['tile-layer','Tile Layer'],['template-creator','Template Creator'],['template-artist','Template Artist']]){
       const option=document.createElement('option'),awarded=isAwarded(id);option.value=id;option.textContent=name+(awarded?' · Awarded':'');select.append(option);
     }
     select.disabled=user.disabled;select.onchange=()=>{give.disabled=!select.value||user.disabled;give.textContent=isAwarded(select.value)?'Remove Patch':'Give Patch';give.className=isAwarded(select.value)?'danger':'primary';};

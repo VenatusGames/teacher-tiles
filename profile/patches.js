@@ -1,7 +1,63 @@
 const grid = document.querySelector('.profile-badge-grid');
 const tabs = document.querySelector('.profile-patch-tabs');
 
+const plannedPatches = [
+    {
+      id: 'template-creator',
+      name: 'Template Creator',
+      requirement: 'Upload your first template!',
+      icon: '<svg viewBox="0 0 48 48"><path d="M12 7h17l7 7v27H12V7Z"/><path d="M29 7v8h7M24 33V20M18.5 25.5 24 20l5.5 5.5"/></svg>'
+    },
+    {
+      id: 'template-artist',
+      name: 'Template Artist',
+      requirement: 'Create and Upload 10 Templates!',
+      icon: '<svg viewBox="0 0 48 48"><path d="M24 7C14.6 7 7 13.9 7 22.3 7 31.5 14.6 39 24 39h3.6c2.7 0 3.8-3.3 1.7-4.9-1.8-1.4-.8-4.2 1.5-4.2h3.1c4.4 0 7.1-3.4 7.1-7.7C41 13.8 33.4 7 24 7Z"/><path d="M16 19h.1M22 14h.1M29 16h.1M14 26h.1"/></svg>'
+    }
+  ];
+
+export function ensurePlannedPatches() {
+  if (!grid) return;
+  for (const patch of plannedPatches) {
+    if (grid.querySelector(`.profile-badge--${patch.id}`)) continue;
+    const button = document.createElement('button');
+    const requirementId = `${patch.id}-patch-requirement`;
+    button.type = 'button';
+    button.className = `profile-badge profile-badge--locked profile-badge--coming-soon profile-badge--${patch.id}`;
+    button.setAttribute('aria-describedby', requirementId);
+    button.setAttribute('aria-label', `${patch.name} patch. Locked. Coming Soon. ${patch.requirement}`);
+    button.innerHTML = `<span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span>${patch.icon}</span>
+      <span class="profile-badge__copy"><strong>${patch.name}</strong></span>
+      <span id="${requirementId}" class="profile-badge__requirement" role="tooltip">Unlock: ${patch.requirement}</span>
+      <span class="profile-badge__check" aria-hidden="true" hidden>✓</span>`;
+    grid.append(button);
+  }
+}
+
+ensurePlannedPatches();
+
 if (grid && tabs) {
+  for (const id of ['stickerer', 'tile-layer', 'template-creator', 'template-artist']) {
+    grid.querySelector(`.profile-badge--${id}`)?.classList.add('profile-badge--coming-soon');
+  }
+
+  if (!document.getElementById('template-patch-styles')) {
+    const style = document.createElement('style');
+    style.id = 'template-patch-styles';
+    style.textContent = `
+      .profile-badge--coming-soon .profile-badge__requirement::before{content:'Coming Soon';display:block;margin-bottom:2px;color:#ffd976;font-size:7px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+      .profile-badge--template-creator:not(.profile-badge--locked){--patch-high:#8bdcff;--patch-low:#2c64c7;--braid-light:#d8f5ff;--braid-mid:#67aee8;--braid-dark:#244f9f}
+      .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion{border:5px double #ccefff;box-shadow:0 0 0 2px #3567b0,0 5px 10px #163c7730,inset 0 0 0 1px #214f99}
+      .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion::before{border:1px dashed #e6f9ff;inset:3px}
+      .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#f2fbff;filter:drop-shadow(0 2px 1px #173c7666)}
+      .profile-badge--template-artist:not(.profile-badge--locked){--patch-high:#d6a3ff;--patch-low:#7b3fb7;--braid-light:#f2dbff;--braid-mid:#b779df;--braid-dark:#5e2f8c}
+      .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion{border:5px solid #e8cafc;box-shadow:0 0 0 2px #7d48a9,0 5px 10px #4d246f30,inset 0 0 0 2px #6e3597}
+      .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion::before{border:2px dotted #f7e6ff;inset:-3px}
+      .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#fff1c7;filter:drop-shadow(0 2px 1px #51266f66)}
+    `;
+    document.head.append(style);
+  }
+
   tabs.addEventListener('click', event => {
     const button = event.target.closest('[data-patch-category]');
     if (!button) return;
@@ -32,8 +88,8 @@ if (grid && tabs) {
     copy.append(medallion.cloneNode(true));
     art.replaceChildren(copy);
     dialog.querySelector('h2').textContent = patch.querySelector('strong').textContent;
-    dialog.querySelector('.patch-inspector__flavor').textContent =
-      patch.querySelector('.profile-badge__requirement:not([hidden]), .profile-badge__date:not([hidden])')?.textContent || '';
+    const flavor = patch.querySelector('.profile-badge__requirement:not([hidden]), .profile-badge__date:not([hidden])')?.textContent || '';
+    dialog.querySelector('.patch-inspector__flavor').textContent = patch.classList.contains('profile-badge--coming-soon') ? `Coming Soon · ${flavor}` : flavor;
     const date = dialog.querySelector('.patch-inspector__date');
     const awarded = patch.dataset.awarded;
     date.textContent = awarded ? `Awarded ${new Date(`${awarded}T12:00:00`).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}` : '';
