@@ -1,3 +1,4 @@
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-templates';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -1582,8 +1583,22 @@ function closeBoardsView() {
   boardsToggle?.setAttribute("aria-expanded", "false");
 }
 
+let communityTemplates;
+function templateLibrary(){
+  return communityTemplates ||= createTemplateLibrary({element:boardTemplatesPanel,call:callShopFunction,getUid:()=>currentUser?.uid,capture:()=>boardApi()?.capture(),knownTypes:()=>[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker'),importBoard:async(id,requestId)=>{
+    if(boardList.length>=membershipBoardLimit()){showBoardLimitPopup();throw new Error('You have reached your board limit.');}
+    const uid=currentUser?.uid;
+    await saveCurrentBoard({immediate:true});
+    const result=await callShopFunction('boardTemplates',{action:'import',id,requestId,clientVersion:globalThis.TeacherTilesTemplateContract.VERSION,viewport:{width:innerWidth,height:innerHeight},supportedTypes:[...document.querySelectorAll('template[id$="-template"]')].map(t=>t.id.slice(0,-9)).concat('sticker')});
+    if(currentUser?.uid!==uid)return;
+    await fetchBoards();
+    await loadBoard(result.boardId,{forceCloudCheck:true});
+    if(result.warnings?.length)setBoardStatus('Template added. Some tile content was reset for compatibility.',true);
+  }});
+}
 function setBoardsMenu(menu = "boards") {
   const showTemplates = menu === "templates";
+  if(showTemplates)void templateLibrary().load();
   boardsLibraryTab?.classList.toggle("is-active", !showTemplates);
   boardTemplatesTab?.classList.toggle("is-active", showTemplates);
   boardsLibraryTab?.setAttribute("aria-selected", String(!showTemplates));
@@ -4401,6 +4416,7 @@ function syncStaffPatch(allowed) {
 }
 
 async function handleAccountAuthChange(user) {
+  if(currentUser?.uid!==user?.uid)communityTemplates?.reset();
   const generation=++accountAuthGeneration;
   const checks=[];
   window.dispatchEvent(new CustomEvent('teachertiles:beforeaccountload',{detail:{user,waitUntil:promise=>checks.push(promise)}}));

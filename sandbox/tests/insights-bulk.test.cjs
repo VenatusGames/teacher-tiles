@@ -21,7 +21,7 @@ function fixture(){
 }
 const request=data=>({auth:{uid:'admin'},data});
 test('insights use aggregates plus one bounded history document',async()=>{
- const {api,stats}=fixture();const result=await api.getDeveloperInsights(request({}));assert.equal(result.online,2);assert.equal(result.subscribers,2);assert.equal(result.total,3);assert.equal(stats.aggregates,2);assert.equal(stats.documentReads,1);assert.equal(result.history.length,1);
+ const {api,stats}=fixture();const result=await api.getDeveloperInsights(request({}));assert.equal(result.online,2);assert.equal(result.subscribers,2);assert.equal(result.total,3);assert.equal(stats.aggregates,3);assert.equal(result.approvalQueue,0);assert.equal(stats.documentReads,1);assert.equal(result.history.length,1);
  await assert.rejects(api.getDeveloperInsights({auth:{uid:'beta'}}),{code:'permission-denied'});
 });
 test('online/subscriber filters query matching records and reuse their snapshots',async()=>{
