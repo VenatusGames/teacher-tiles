@@ -1,18 +1,20 @@
 const SANDBOX_COIN_KEY='teacherTilesCoins';
 const SANDBOX_COIN_TOGGLE_KEY='teacherTilesSandboxCoinsEnabled';
 const SANDBOX_PREVIOUS_COINS_KEY='teacherTilesSandboxPreviousCoins';
-const SANDBOX_SUBSCRIPTION_TOGGLE_KEY='teacherTilesSandboxSubscriptionEnabled';
+const SANDBOX_SUBSCRIPTION_TOGGLE_KEY='teacherTilesSandboxSubscriptionEnabled:'+(window.TeacherTilesAuth?.user?.uid||'local');
 const OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const DEFAULT_TILE_SKINS_KEY='teacherTilesDefaultTileSkins';
 const SANDBOX_COIN_BALANCE=999999;
 
 if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.developer&&!window.__teacherTilesSandboxConsoleLoaded){
   window.__teacherTilesSandboxConsoleLoaded=true;
+  const legacyPreview=localStorage.getItem('teacherTilesSandboxSubscriptionEnabled');
+  if(legacyPreview!==null){if(localStorage.getItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY)===null)localStorage.setItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY,legacyPreview);localStorage.removeItem('teacherTilesSandboxSubscriptionEnabled');}
 
   const stylesheet=document.createElement('link');
   stylesheet.rel='stylesheet';
   const stylesheetUrl=new URL('./dev-console.css',import.meta.url);
-  stylesheetUrl.searchParams.set('v','20261012-console-return-2');
+  stylesheetUrl.searchParams.set('v','20261012-subscription-preview');
   stylesheet.href=stylesheetUrl.href;
   document.head.appendChild(stylesheet);
   document.body.classList.add('sandbox-mode');
@@ -174,16 +176,23 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.deve
     syncSandboxAccount();
   };
 
+  let previewSync=Promise.resolve();
+  const syncSubscriptionPreview=enabled=>{
+    previewSync=previewSync.catch(()=>{}).then(()=>window.TeacherTilesAuth.call('setDeveloperSubscriptionPreview',{enabled}));
+    previewSync.catch(()=>setStatus('Subscription preview works locally, but its Users crown could not sync. Reopen the console to retry.'));
+  };
   const setTestingSubscription=enabled=>{
     if(enabled)localStorage.setItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY,'true');
     else localStorage.removeItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY);
     subscriptionToggle.checked=enabled;
+    syncSubscriptionPreview(enabled);
     installAccountBridge();
     syncSandboxAccount();
     setStatus(enabled?'Testing subscription enabled. Subscriber crowns are active.':'Testing subscription disabled. Restored your real subscription state.');
   };
 
   const openConsole=()=>{
+    syncSubscriptionPreview(subscriptionEnabled());
     consoleRoot.hidden=false;
     devButton.setAttribute('aria-expanded','true');
     requestAnimationFrame(()=>consoleRoot.classList.add('is-open'));
@@ -237,6 +246,7 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.deve
 
   coinsToggle.checked=coinsEnabled();
   subscriptionToggle.checked=subscriptionEnabled();
+  syncSubscriptionPreview(subscriptionToggle.checked);
   if(coinsToggle.checked)writeCoins(SANDBOX_COIN_BALANCE);
   if(subscriptionToggle.checked){installAccountBridge();syncSandboxAccount()}
 }

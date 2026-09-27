@@ -19311,3 +19311,17 @@ body .sticker-module>.module-delete{
 .patch-inspector h2{margin:28px 0 8px;font-size:22px}
 .patch-inspector__date{margin:0;color:var(--muted,#667085);font-size:13px}
 @media(max-height:520px){.patch-inspector{padding:24px}.patch-inspector__art{width:160px;height:160px}.patch-inspector__art .profile-badge__medallion{transform:scale(2)}.patch-inspector__flavor{margin-bottom:12px}.patch-inspector h2{margin-top:16px}}
+
+/* Awarded patches have individual thread colors and embroidered edges. */
+.profile-badge--contributor:not(.profile-badge--locked){--patch-high:#f7bb76;--patch-low:#ad4e25;--braid-light:#ffe5b8;--braid-mid:#d8903e;--braid-dark:#77411d}
+.profile-badge--contributor:not(.profile-badge--locked) .profile-badge__medallion{border-radius:24%;box-shadow:0 0 0 1px #935529,0 5px 10px #68371730,inset 0 0 0 2px #ffdfa475}
+.profile-badge--contributor:not(.profile-badge--locked) .profile-badge__medallion::before{border-radius:24%;border:2px dashed #ffedc4}
+.profile-badge--contributor:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#fff3d6;filter:drop-shadow(0 2px 1px #78331666)}
+.profile-badge--stickerer:not(.profile-badge--locked){--patch-high:#f8a4c5;--patch-low:#a8417c;--braid-light:#ffe0ec;--braid-mid:#d47aa9;--braid-dark:#783459}
+.profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion{border:5px solid #f6c9de;box-shadow:0 0 0 2px #9f4d7a,0 5px 10px #63284930,inset 0 0 0 2px #8d386b}
+.profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion::before{border:2px dotted #94416f;inset:-3px}
+.profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#fff0f7;filter:drop-shadow(0 2px 1px #70245266)}
+.profile-badge--tile-layer:not(.profile-badge--locked){--patch-high:#99d8b7;--patch-low:#26776a;--braid-light:#d7f5cf;--braid-mid:#70ad91;--braid-dark:#23584e}
+.profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion{border-radius:16%;border:5px double #d6efc7;box-shadow:0 0 0 2px #3d7561,0 5px 10px #214e3f30,inset 0 0 0 1px #205947}
+.profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion::before{border-radius:12%;border:1px solid #d8efc2;inset:3px}
+.profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#ecffde;filter:drop-shadow(0 2px 1px #164e4266)}

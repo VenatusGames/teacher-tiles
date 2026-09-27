@@ -7,6 +7,7 @@ const signIn=document.getElementById('portal-signin'),retry=document.getElementB
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
 function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar').append(signOut);else document.querySelector('.access-actions').append(signOut);}
 const usersPanel=createUsersPanel((name,data)=>call(name,data));
+document.getElementById('community-toggle').onclick=()=>{const toggle=document.getElementById('community-toggle'),menu=document.getElementById('community-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 let view="overview";
 function navigate(next){view=next;home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
 document.querySelectorAll("[data-portal-view]").forEach(link=>link.onclick=event=>{event.preventDefault();if(authorized)navigate(link.dataset.portalView)});

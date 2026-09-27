@@ -64,3 +64,9 @@ test('deletion rejects beta callers, self-delete, wrong confirmation and subscri
 test('search matches names and exact email without limiting search to the loaded page',async()=>{
  const {api}=fixture();assert.equal((await api.listDeveloperUsers(request('admin',{query:'beta@example.com'}))).users.length,1);assert.equal((await api.listDeveloperUsers(request('admin',{query:'beta'}))).users.length,1);
 });
+
+test('subscription previews are developer-only and never change paid subscription data',async()=>{
+ const {api,records}=fixture();await assert.rejects(api.setDeveloperSubscriptionPreview(request('beta',{enabled:true})),{code:'permission-denied'});
+ await api.setDeveloperSubscriptionPreview(request('admin',{enabled:true}));assert.equal(records.get('_sandboxUsers/admin').subscriptionPreview,true);assert.equal(records.has('users/admin'),false);
+ await api.setDeveloperSubscriptionPreview(request('admin',{enabled:false}));assert.equal(records.get('_sandboxUsers/admin').subscriptionPreview,false);
+});

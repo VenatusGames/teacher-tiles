@@ -4396,7 +4396,7 @@ function syncStaffPatch(allowed) {
 
   badge.setAttribute('aria-label', allowed ? 'TeacherTiles patch. TeacherTiles Employee.' : 'TeacherTiles patch. Locked. TeacherTiles Employee.');
   badge.querySelector('.profile-badge__check').hidden = !allowed;
-  document.getElementById('teachertiles-patch-requirement').textContent = 'TeacherTiles Employee';
+  document.getElementById('teachertiles-patch-requirement').textContent = 'Unlock: TeacherTiles Employee';
   syncProfileBadgeCount();
 }
 
