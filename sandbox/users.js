@@ -1,3 +1,4 @@
+import {createBulkPatches} from './bulk-patches.js';
 import {createUsersClient} from './users-cache.js';
 import {createUserDetails} from './user-details.js';
 export function createUsersPanel(rawCall,getUid=()=>'') {
@@ -5,6 +6,9 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
   const search=document.getElementById('users-search');
+  const online=document.getElementById('users-online-filter'),subscribers=document.getElementById('users-subscriber-filter'),selected=new Set();
+  const bulk=createBulkPatches(document.getElementById('bulk-patch-tool'),call,selected,()=>{client.invalidate();if(!element.hidden){clear();void load();}});
+  online.onchange=subscribers.onchange=()=>{clear();void load();};
   const details=createUserDetails(call,()=>{clear();void load();});
   const searchButton=document.getElementById('users-search-submit');
   let query='';
@@ -23,6 +27,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
     const input=item.querySelector('input');input.checked=user.betaAccess;input.setAttribute('aria-label','Has Beta access: '+(user.email||user.uid));
     if(user.developer){input.disabled=true;input.closest('label').title='Developer accounts already have sandbox access.';item.querySelector('.beta-toggle span').textContent='Developer access';input.checked=true;}
     input.onchange=async()=>{const before=!input.checked,enabled=input.checked,attempt=generation;input.disabled=true;status.textContent='Saving beta access…';try{await call('setUserBetaAccess',{uid:user.uid,enabled});if(attempt===generation)status.textContent=enabled?'Beta access granted.':'Beta access removed. Open sandbox sessions recheck approximately every 5 minutes.';}catch(error){input.checked=before;if(attempt===generation)status.textContent='Could not save beta access. '+(error.message||'Please try again.');}finally{if(!user.developer)input.disabled=false;}};
+    const select=document.createElement('input');select.type='checkbox';select.className='user-select';select.checked=selected.has(user.uid);select.disabled=!!user.disabled;select.setAttribute('aria-label','Select '+(user.email||user.uid));select.onchange=()=>{if(select.checked)selected.add(user.uid);else selected.delete(user.uid);bulk.update();};item.prepend(select);
     const open=document.createElement('button');open.className='user-details-open';open.type='button';open.textContent='View details';open.setAttribute('aria-label','View details for '+(user.email||user.uid));open.onclick=()=>details.open(user.uid);item.append(open);
     item.addEventListener('click',event=>{if(!event.target.closest('button,input,label'))details.open(user.uid);});
     return item;
@@ -30,8 +35,8 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   async function load(append=false){
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
-    try{const response=await call('listDeveloperUsers',{query,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
-      for(const user of response.data.users)list.append(row(user));
+    try{const response=await call('listDeveloperUsers',{query,onlineOnly:online.checked,subscribersOnly:subscribers.checked,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
+      for(const user of response.data.users){if(online.checked&&(!user.lastSeen||Date.now()-user.lastSeen>=360000))continue;list.append(row(user));}
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
     }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
     finally{if(attempt===generation){busy=false;refresh.disabled=more.disabled=false;}}
@@ -40,5 +45,5 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   searchButton.onclick=submitSearch;search.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitSearch();}};
   search.addEventListener('search',()=>{if(!search.value)submitSearch();});
   refresh.onclick=()=>{client.invalidate();clear();void load();};more.onclick=()=>load(true);
-  return {element,load,clear,reset(){client.clearSession();clear();query='';search.value='';}};
+  return {element,load,clear,reset(){bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';}};
 }
