@@ -12063,6 +12063,7 @@ function setupProgressBar(m){
   render();
 
   m._boardGetState=()=>({
+    title:m.querySelector(".progress-bar-title")?.value||"",
     initializedAt,
     targetAt,
     completed,
@@ -12074,6 +12075,7 @@ function setupProgressBar(m){
   });
   m._boardSetState=state=>{
     if(!state)return;
+    if(typeof state.title==="string")m.querySelector(".progress-bar-title").value=state.title;
     initializedAt=Number(state.initializedAt)||Date.now();
     targetAt=Number(state.targetAt)||Date.now()+30*60*1000;
     completed=Boolean(state.completed);
@@ -20528,6 +20530,7 @@ function setupTeacherTilesShop(){
   syncStickerShopPackCounts();
   window.TeacherTilesShop={
     open:openShop,
+    openMembership:()=>{openShop();closeProduct();closeCoins(false);requestAnimationFrame(()=>{subscribePreview?.closest('.shop-membership-card')?.scrollIntoView({block:'center',behavior:'smooth'});subscribePreview?.focus({preventScroll:true});});},
     openProduct,
     openCoins:()=>{openShop();openCoins()},
     openPage:name=>{openShop();showPage(name)},

@@ -37,7 +37,7 @@ test('activity cannot change beta access and disabled accounts cannot enter',asy
 });
 
 test('activity updates are throttled across tabs and skipped in hidden tabs',async()=>{
- const source=fs.readFileSync(path.resolve(__dirname,'../../site-activity.js'),'utf8').replace('export function','function');
+ const source=fs.readFileSync(path.resolve(__dirname,'../../account/site-activity.js'),'utf8').replace('export function','function');
  let now=1000000,calls=0,hidden=false;const values=new Map(),ticks=[];
  for(let i=0;i<2;i++){
   const context={Date:{now:()=>now},navigator:{},localStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)},document:{get hidden(){return hidden},addEventListener(){},removeEventListener(){}},window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>ticks.push(fn),clearInterval(){}};

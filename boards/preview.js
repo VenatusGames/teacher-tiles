@@ -1,6 +1,70 @@
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js';
+import {renderTimerPreview} from './timer-preview.js?v=20260926-reset';
+const EDITABLE_TILE_HEADINGS={
+  wordoftheday:'.widget-title',
+  quoteoftheday:'.widget-title',
+  colorpicker:'.widget-title',
+  rainbow:'.widget-title',
+  meditation:'.meditation-title',rainbowbreath:'.meditation-title',
+  noise:'.nm-heading',
+  squishy:'.squishy-heading',
+  coinflip:'.coinflip-heading',
+  spreadsheet:'.sheet-heading',
+  sentenceexpansion:'.sentence-heading',
+  reminders:'.reminders-heading',
+  glitterjar:'.glitter-jar-heading',
+  piano:'.widget-title',
+  musicscore:'.widget-title',
+  vocabulary:'.widget-title',
+  visualdirections:'.widget-title',
+  timestables:'.widget-title',
+  google:'.widget-title',
+  link:'.widget-title',
+  dice:'.dice-module h2',
+  fishtank:'.fish-heading h2',
+  sleepymonster:'.sleepymonster-heading h2',
+  quietcritters:'.quietcritters-heading h2',
+  chime:'.widget-title',
+  butterflygarden:'.butterflygarden-heading h2',
+  seatingchart:'.seating-title',
+  imagesearch:'.image-search-header h2',
+
+  collections:'.collection-title',
+  groupmaker:'.groupmaker-heading strong',
+  lunchcount:'.lunchcount-heading strong',
+  voting:'.voting-heading strong',
+  ruler:'.ruler-header>div>span',
+  calculator:'.calculator-header>span',
+  grapher:'.grapher-header strong',
+  tablemaker:'.table-maker-title',
+  tallychart:'.tally-chart-title',
+  periodictable:'.periodic-header strong',
+  money:'.money-header strong:first-of-type',
+  cvcword:'.cvcword-header>div>span:first-child',
+  highfrequency:'.highfrequency-header>div>span:first-child',
+  customflashcards:'.customflashcards-header>div>span:first-child',
+  abc:'.abc-header>div>span:first-child',
+  numberflashcards:'.number-flashcards-header>div>span:first-child',
+  numberline:'.numberline-heading>span:first-child',
+  hundredschart:'.hundreds-header>div>span:first-child',
+  tenframes:'.tenframes-heading>span:first-child',
+  dictionary:'.dictionary-header strong',
+  translation:'.translation-title',
+  attendance:'.attendance-title',
+  livecaption:'.livecaption-title',
+  voicememo:'.voicememo-title',
+  worldmap:'.worldmap-title',usstates:'.worldmap-title',
+  compass:'.compass-title',
+  shapes:'.shapes-header>div>span:first-child',
+  hangman:'.hangman-kicker',
+  wordypuzzle:'.wordy-kicker',
+  photobooth:'.photobooth-title',
+  backgroundremover:'.backgroundremover-title',
+  mirror:'.mirror-title',
+  weather:'.weather-title',
+  temperature:'.temperature-title'
+};
 let previewIds=0;
 let previewTemplates=null;
 export function setPreviewTemplates(doc){previewTemplates=doc;}
@@ -319,7 +383,7 @@ function applyPreviewState(module, state) {
   const border=state.dataset?.appearanceBorderStyle;if(['solid','dashed','dotted','double'].includes(border)){const size=Math.max(1,Math.min(20,Number(state.dataset.appearanceBorderSize)||2)),color=/^#[0-9a-f]{6}$/i.test(state.dataset.appearanceBorderColor||'')?state.dataset.appearanceBorderColor:'#17191d';module.style.setProperty('outline',size+'px '+border+' '+color,'important');module.style.setProperty('outline-offset',-size+'px');}
   for (const cls of Array.isArray(state.classes) ? state.classes : []) module.classList.add(cls);
 
-  if (state.type === "timer" || state.type === "interactive") renderTimerPreview(module,state);
+
   if (state.type === "shapes") {
     const shapePaths = {
       circle: "M44 100 A76 76 0 0 1 196 100 A76 76 0 0 1 44 100 Z",
@@ -388,6 +452,19 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  if (state.type === 'timer' || state.type === 'interactive') {
+    module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
+    renderTimerPreview(module,state);
+  }
+  if(state.type==='progressbar'){
+    const title=module.querySelector('.progress-bar-title');
+    if(title){const heading=document.createElement('div');heading.className=title.className;heading.textContent=state.special?.title??title.value;heading.style.cssText='border:0;background:transparent;box-shadow:none';title.replaceWith(heading);}
+    module.querySelector('.progress-bar-remaining').textContent='00:00';
+    module.querySelector('.progress-bar-end-label').textContent='';
+  }
+  const headingSelector=EDITABLE_TILE_HEADINGS[state.type];
+  const heading=headingSelector?module.querySelector(headingSelector):null;
+  if(heading)heading.setAttribute('contenteditable','true');
   const editables = [...module.querySelectorAll('[contenteditable]:not([contenteditable="false"])')];
   for (const saved of Array.isArray(state.editables) ? state.editables : []) {
     const editable = editables[saved.index];
@@ -396,6 +473,7 @@ function applyPreviewState(module, state) {
     editable.removeAttribute("contenteditable");
   }
 
+  if(heading){if(typeof special?.title==='string')heading.textContent=special.title;heading.removeAttribute('contenteditable');}
   if (state.type === "image" && special) {
     const image = module.querySelector(".image-display");
     const src = String(special.previewSrc || special.src || "");

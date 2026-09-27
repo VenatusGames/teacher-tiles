@@ -1,4 +1,4 @@
-import {openTicketThread,ticketBadge} from '../ticket-thread.js?v=20260926-ticket-updates';
+import {openTicketThread,ticketBadge} from '../support/ticket-thread.js?v=20260926-ticket-actions';
 const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 const labels={new:'Reported','in-progress':'In Progress',complete:'Closed'};
 export function createBugReports(call){

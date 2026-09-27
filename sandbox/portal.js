@@ -1,11 +1,11 @@
-import {adminBoardPreview} from './board-preview.js?v=20260926-board-previews';
-import {createBugReports} from './bug-reports.js?v=20260926-board-previews';
-import {createTemplateLibrary} from '../templates/ui.js?v=20260926-board-previews';
-import {createInsights} from './insights.js?v=20260926-board-previews';
+import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
+import {createBugReports} from './bug-reports.js?v=20260926-preview-titles';
+import {createTemplateLibrary} from '../templates/ui.js?v=20260926-preview-titles';
+import {createInsights} from './insights.js?v=20260926-preview-titles';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20260926-nicknames';
-import {startSiteActivity} from '../site-activity.js';
+import {startSiteActivity} from '../account/site-activity.js';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');

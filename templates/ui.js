@@ -1,5 +1,5 @@
 import {tagEditor,discoveryShelves} from './discovery.js';
-import './contract.js';
+import './contract.js?v=20260926-titles';
 import {tileLabels} from './labels.js';
 const contract=globalThis.TeacherTilesTemplateContract;
 const make=(tag,className,value)=>{const e=document.createElement(tag);if(className)e.className=className;if(value!==undefined)e.textContent=value;return e;};

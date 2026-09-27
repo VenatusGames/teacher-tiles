@@ -1,4 +1,4 @@
-import {openTicketThread,ticketStatuses} from './ticket-thread.js?v=20260926-ticket-updates';
+import {openTicketThread,ticketStatuses} from './ticket-thread.js?v=20260926-ticket-actions';
 export function createTicketNotifications(call,getUid,onChange){
  let entries=[],loadedAt=0,epoch=0,pending=null;
  async function refresh(force=false){if(!getUid())return;if(pending)return pending;if(!force&&Date.now()-loadedAt<60000)return;const token=epoch;pending=(async()=>{try{const data=await call('mySupportTickets',{action:'notifications'});if(token!==epoch)return;entries=data.items||[];loadedAt=Date.now();onChange();}catch{}finally{if(token===epoch)pending=null;}})();return pending;}

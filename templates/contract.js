@@ -12,6 +12,7 @@
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
+    progressbar:s=>({title:text(s.title,200),orientation:token(s.orientation),barStyle:token(s.barStyle),startIconSrc:image(s.startIconSrc),endIconSrc:image(s.endIconSrc),running:false}),
     essentialquestion:s=>({question:text(s.question,2000),subheading:text(s.subheading,500)}),
     vocabulary:s=>({cards:list(s.cards,100).map(v=>({word:text(v.word,100),definition:text(v.definition,800)})),showDefinitions:s.showDefinitions!==false,size:token(s.size)}),
     venndiagram:s=>({title:text(s.title,100),mode:s.mode==='3'?'3':'2',headings:{a:text(s.headings?.a,100),b:text(s.headings?.b,100),c:text(s.headings?.c,100)},selectedRegion:1,items:list(s.items,100).map((v,i)=>({id:`item-${i}`,text:text(v.text,500),region:num(v.region,1,7,1)}))}),
@@ -49,9 +50,8 @@
       if(Number(raw.templateTileVersion||1)>1){warnings.add(`${raw.type}: newer tile format omitted`);return null;}
       const t=raw.transform||{},out={templateTileVersion:1,id:`template-${count}`,schemaVersion:2,type:raw.type,transform:{left:num(t.left,-100000,100000,0),top:num(t.top,-100000,100000,0),width:num(t.width,80,2400,320),height:num(t.height,60,2400,240),uniformScale:num(t.uniformScale,.25,4,1),rotation:num(t.rotation,-360,360,0)},zIndex:count,dataset:{}};
       for(const key of ['bg','font','text','color','shape','orientation','tileSkin','timerColor','timerShape','interactiveMode','squishyColor','shapeColor','candleColor','appearanceBorderStyle','appearanceBorderSize','appearanceBorderColor'])if(token(raw.dataset?.[key]))out.dataset[key]=token(raw.dataset[key]);
-      if(['timer','interactive'].includes(raw.type)&&raw.timer){const total=num(raw.timer.total,1,86400,60);out.timer={total,left:total,running:false,finished:false,endAt:0};}
       if(rich.has(raw.type))out.editables=list(raw.editables,3).map((v,i)=>({index:i,html:html(v.html)}));
-      if(adapters[raw.type])out.special=adapters[raw.type](raw.special||{});
+      if(adapters[raw.type])out.special=adapters[raw.type](raw.type==='progressbar'?{...raw.special,title:raw.special?.title??list(raw.fields).find(f=>f.index===0)?.value}:raw.special||{});
       else if(!rich.has(raw.type)&&raw.type!=='sticker')warnings.add(`${raw.type}: activity and content reset; layout and appearance kept`);
       if(raw.type==='sticker'){out.sticker={emoji:text(raw.sticker?.emoji,20),src:image(raw.sticker?.src),name:text(raw.sticker?.name,80),aspect:num(raw.sticker?.aspect,.1,10,1)};if(!out.sticker.emoji&&!out.sticker.src){warnings.add('An unavailable sticker was omitted');return null;}}
       if(raw.type==='image'&&raw.special?.src&&!out.special.src)warnings.add('External or oversized image omitted; use an embedded image under 300 KB');

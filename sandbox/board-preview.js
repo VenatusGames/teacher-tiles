@@ -1,4 +1,4 @@
-import {createBoardPreview,setPreviewTemplates} from '../boards/preview.js?v=20260926-board-previews';
+import {createBoardPreview,setPreviewTemplates} from '../boards/preview.js?v=20260926-preview-reset';
 let assets;
 function loadAssets(){
   return assets ||= fetch(new URL('../board.html',import.meta.url)).then(async response=>{

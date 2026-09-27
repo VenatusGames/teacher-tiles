@@ -1,11 +1,11 @@
-import {createTicketNotifications} from './ticket-notifications.js';
-import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js';
-import {setupNickname} from './nickname.js?v=20260926-edit';
-import {setupBugReports} from './bug-reports.js?v=20260926-board-previews';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-board-previews';
-import {createTemplateLibrary} from './templates/ui.js?v=20260926-board-previews';
-import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
-import {startSiteActivity} from './site-activity.js';
+import {createTicketNotifications} from './support/notifications.js';
+import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
+import {setupNickname} from './profile/nickname.js?v=20260926-edit';
+import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-preview-reset';
+import {createTemplateLibrary} from './templates/ui.js?v=20260926-preview-titles';
+import {syncAwardedPatches} from './profile/awards.js?v=20261012-removal';
+import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 
 
