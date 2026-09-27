@@ -1,4 +1,4 @@
-import {syncAwardedPatches} from './profile-awards.js';
+import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 

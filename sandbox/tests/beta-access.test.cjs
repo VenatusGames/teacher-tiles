@@ -70,3 +70,10 @@ test('subscription previews are developer-only and never change paid subscriptio
  await api.setDeveloperSubscriptionPreview(request('admin',{enabled:true}));assert.equal(records.get('_sandboxUsers/admin').subscriptionPreview,true);assert.equal(records.has('users/admin'),false);
  await api.setDeveloperSubscriptionPreview(request('admin',{enabled:false}));assert.equal(records.get('_sandboxUsers/admin').subscriptionPreview,false);
 });
+
+test('patch removal is admin-only, suppresses legacy awards, and supports re-awarding',async()=>{
+ const {api,records}=fixture();await assert.rejects(api.giveUserPatch(request('beta',{uid:'beta',patchId:'beta',enabled:false})),{code:'permission-denied'});
+ const removed=await api.giveUserPatch(request('admin',{uid:'beta',patchId:'beta',enabled:false}));assert.equal(removed.patchAwards.beta.revoked,true);assert.equal(removed.patchAwards.beta.awardedAt,undefined);
+ const awarded=await api.giveUserPatch(request('admin',{uid:'beta',patchId:'beta',enabled:true}));assert.equal(awarded.patchAwards.beta.awardedAt,5678);assert.equal(records.get('users/beta').patchAwards.beta.revoked,false);
+ await assert.rejects(api.giveUserPatch(request('admin',{uid:'beta',patchId:'beta',enabled:'false'})),{code:'invalid-argument'});
+});
