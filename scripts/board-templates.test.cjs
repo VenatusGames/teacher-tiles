@@ -17,9 +17,10 @@ function fixture(){
  const account=async r=>{if(!r.auth)throw new HttpsError('unauthenticated','Sign in');return {uid:r.auth.uid,emailVerified:true,email:r.auth.uid+'@example.com'};},developer=async r=>{if(r.auth?.uid!=='admin')throw new HttpsError('permission-denied','Admin only');return {uid:'admin'};};
  const modules={'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>123},FieldPath:{documentId:()=>'__name__'}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'../sandbox/admin-access':{requireAccount:account},'./sandbox/admin-access':{requireAccount:account},'../templates/contract':contract,'./admin-access':{requireDeveloper:developer},'./contract':contract,'./types.json':require(backend+'/templates/types.json'),'node:crypto':require('node:crypto')};
  function load(file){const exports={};vm.runInNewContext(fs.readFileSync(backend+'/'+file,'utf8'),{exports,require:n=>modules[n],console,Date,TextEncoder,URL,Buffer});return exports;}
+ const nicknames=load('nicknames.js');modules['../nicknames']=nicknames;
  const reportApi=load('bug-reports.js'),reportAdmin=load('sandbox/bug-reports.js');
  const api=load('templates/index.js');modules['../templates']=api;const review=load('sandbox/templates.js').boardTemplateModeration;
- return {records,stats,report:(uid,data)=>reportApi.submitBugReport({auth:uid?{uid}:null,data}),bugs:(uid,data)=>reportAdmin.developerBugReports({auth:uid?{uid}:null,data}),call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
+ return {records,stats,nickname:(uid,nickname)=>nicknames.profileNickname({auth:uid?{uid}:null,data:{nickname}}),tickets:(uid,data={})=>reportApi.mySupportTickets({auth:uid?{uid}:null,data}),report:(uid,data)=>reportApi.submitBugReport({auth:uid?{uid}:null,data}),bugs:(uid,data)=>reportAdmin.developerBugReports({auth:uid?{uid}:null,data}),call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
 }
 const submission={action:'submit',title:'Morning welcome',description:'A calm welcome for the school day.',tags:['morning'],snapshot:board,confirmPrivacy:true};
 test('export explicitly excludes private data, nested tab state, raw fields and executable HTML',()=>{
@@ -69,7 +70,7 @@ test('imports adapt to the receiving app and migrate retired Rainbow Breath tile
 });
 
 test('only the author may edit or delete; edits preserve votes but require a fresh approval',async()=>{
- const f=fixture(),{id}=await f.call('author',submission);await f.review('admin',{action:'review',id,revision:1,decision:'approve',official:true});await f.call('voter',{action:'vote',id});
+ const f=fixture(),{id}=await f.call('author',submission);await f.review('admin',{action:'review',id,revision:1,decision:'approve',official:false});await f.call('voter',{action:'vote',id});
  await assert.rejects(f.call('other',{action:'delete',id}),{code:'permission-denied'});
  await assert.rejects(f.call('other',{action:'edit',id,title:'New title',description:'A better description.'}),{code:'permission-denied'});
  await f.call('author',{action:'edit',id,title:'Updated board',description:'A new reviewed description.',tags:['math'],official:true});
@@ -80,7 +81,7 @@ test('only the author may edit or delete; edits preserve votes but require a fre
 });
 test('discovery ranks globally, only admin-approved official boards are curated, and tags support paging',async()=>{
  const f=fixture();for(let i=0;i<15;i++){const {id}=await f.call('author'+i,{...submission,tags:i%2?['math']:['morning'],official:true});await f.review('admin',{action:'review',id,revision:1,decision:'approve',official:i===3});for(let j=0;j<i;j++)await f.call('voter'+j,{action:'vote',id});}
- const before=f.stats.reads,home=await f.call('viewer',{action:'discover'});assert.equal(f.stats.reads-before,13);assert.equal(home.featured[0].votes,14);assert.equal(home.curated.length,1);assert.equal(home.curated[0].votes,3);assert(home.highlyRated[0].preview.objects.length);
+ const before=f.stats.reads,home=await f.call('viewer',{action:'discover'});assert.equal(f.stats.reads-before,13);assert.equal(home.featured.length,0);assert.equal(home.curated.length,1);assert.equal(home.curated[0].votes,3);assert(home.highlyRated[0].preview.objects.length);
  const first=await f.call('viewer',{action:'list'}),second=await f.call('viewer',{action:'list',cursor:first.cursor});assert.equal(first.items.length,12);assert.equal(second.items.length,3);assert.equal(new Set([...first.items,...second.items].map(x=>x.id)).size,15);
  const tagged=await f.call('viewer',{action:'list',tag:'math'});assert(tagged.items.every(m=>m.tags.includes('math')));assert.equal(tagged.items[0].votes,13);
 });
@@ -98,4 +99,19 @@ test('bug reporting is private, bounded, retry-safe, and only admins may track s
  await f.bugs('admin',{action:'update',id,status:'in-progress',revision:1});assert.equal((await f.bugs('admin',{action:'detail',id})).report.status,'in-progress');
  await assert.rejects(f.bugs('admin',{action:'update',id,status:'complete',revision:1}),{code:'failed-precondition'});await f.bugs('admin',{action:'update',id,status:'complete',revision:2});assert.equal((await f.bugs('admin',{action:'list',status:'complete'})).items.length,1);
  await assert.rejects(f.report('author',{...data,category:'invalid'}),{code:'invalid-argument'});for(let i=1;i<5;i++)await f.report('author',{...data,requestId:'1234567890abcdef'+i});await assert.rejects(f.report('author',{...data,requestId:'1234567890abcdef6'}),{code:'resource-exhausted'});
+});
+
+test('nicknames are generated once, case-insensitively unique, replaceable, and server-attributed',async()=>{
+ const f=fixture(),first=await f.nickname('author');assert.match(first.nickname,/^TeacherTiles-\d{9}$/);assert.equal((await f.nickname('author')).nickname,first.nickname);
+ await f.nickname('author','Ms Willow');await assert.rejects(f.nickname('other','ms willow'),{code:'already-exists'});await assert.rejects(f.nickname('other','TeacherTiles'),{code:'invalid-argument'});await assert.rejects(f.nickname(null,'Hello'),{code:'unauthenticated'});
+ await f.nickname('author','Ms Oak');await f.nickname('other','Ms Willow');const {id}=await f.call('author',{...submission,authorName:'Fake name'});assert.equal((await f.call('author',{action:'detail',id})).meta.authorName,'Ms Oak');
+});
+test('only developers claim and feature boards; claimed submissions cannot be changed by their former submitter',async()=>{
+ const f=fixture(),{id}=await f.call('author',submission);await assert.rejects(f.review('author',{action:'curate',id,revision:1,featured:true}),{code:'permission-denied'});await assert.rejects(f.review('admin',{action:'curate',id,revision:1,featured:true}),{code:'failed-precondition'});
+ await f.review('admin',{action:'review',id,revision:1,decision:'approve'});await f.call('voter',{action:'vote',id});await f.review('admin',{action:'curate',id,revision:1,official:true,featured:true});assert.equal((await f.call('author',{action:'list',mine:true})).items.length,0);assert.equal((await f.call('viewer',{action:'discover'})).featured[0].id,id);assert.equal((await f.review('admin',{action:'list',status:'featured'})).items.length,1);
+ await assert.rejects(f.call('author',{action:'delete',id}),{code:'permission-denied'});await assert.rejects(f.call('author',{...submission,id}),{code:'permission-denied'});await f.call('voter',{action:'vote',id});assert.equal((await f.call('viewer',{action:'detail',id})).meta.votes,1);
+ await f.review('admin',{action:'curate',id,revision:2,official:false,featured:false});assert.equal((await f.call('viewer',{action:'discover'})).featured.length,0);assert.equal((await f.call('author',{action:'list',mine:true})).items.length,1);
+});
+test('Support users see only their own tickets and never internal reviewer fields',async()=>{
+ const f=fixture(),{id}=await f.report('author',{requestId:'support-purchase-0001',category:'Purchases & coins',title:'Missing coins',description:'My coin purchase has not shown up in my account.'});await f.bugs('admin',{action:'update',id,revision:1,status:'in-progress'});const own=await f.tickets('author');assert.equal(own.items.length,1);assert.equal(own.items[0].status,'in-progress');assert(!('updatedBy' in own.items[0]));assert.equal((await f.tickets('other')).items.length,0);await assert.rejects(f.tickets(null),{code:'unauthenticated'});
 });

@@ -8,10 +8,10 @@ export function tagEditor(initial=[]){
 export function discoveryShelves(root,data,card,onTag){
  root.replaceChildren();root.className='template-discovery';
  const section=(title,subtitle)=>{const s=el('section','template-shelf');s.append(el('h3','',title),el('p','template-hint',subtitle));root.append(s);return s;};
- const featured=section('Featured Boards','Community favorites to inspire your next board.'),slides=el('div','template-featured'),controls=el('div','template-feature-controls');const picks=data.featured||[];
+ const featured=section('Featured Boards','Selected by TeacherTiles to inspire your next board.'),slides=el('div','template-featured'),controls=el('div','template-feature-controls');const picks=data.featured||[];
  picks.forEach((m,i)=>{const slide=card(m);slide.classList.add('template-feature-slide');slide.hidden=i!==0;slides.append(slide);const b=el('button','',String(i+1));b.type='button';b.setAttribute('aria-label',`Show featured board ${i+1}`);b.onclick=()=>show(i);controls.append(b);});let current=0,paused=false;
  const show=i=>{current=i;[...slides.children].forEach((s,j)=>s.hidden=j!==i);[...controls.children].forEach((b,j)=>b.setAttribute('aria-pressed',String(j===i)));root.dispatchEvent(new Event('templatepreviewresize',{bubbles:true}));};
- if(picks.length){featured.append(slides,controls);show(0);}else featured.append(el('p','template-empty','Featured boards will appear as the community adds upvotes.'));
+ if(picks.length){featured.append(slides,controls);show(0);}else featured.append(el('p','template-empty','Boards selected by TeacherTiles will appear here.'));
  const pause=el('button','','Pause rotation');pause.type='button';pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Resume rotation':'Pause rotation';};if(picks.length>1)controls.append(pause);
  const timer=picks.length>1?setInterval(()=>{if(!paused&&!document.hidden&&root.getClientRects().length&&!featured.matches(':hover,:focus-within')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)show((current+1)%picks.length);},7000):null;
  for(const [title,description,items] of [['TeacherTiles Curated','From TeacherTiles — thoughtfully selected for your classroom.',data.curated],['Highly Rated','Boards the community has upvoted.',data.highlyRated]]){const s=section(title,description),row=el('div','template-shelf-row');for(const m of items||[])row.append(card(m));if(!row.children.length)row.append(el('p','template-empty','No boards here yet.'));s.append(row);}

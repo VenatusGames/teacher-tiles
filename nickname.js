@@ -1,0 +1,5 @@
+export function setupNickname(call){
+ const form=document.getElementById('profile-nickname-form'),input=form.elements.nickname,status=form.querySelector('[role="status"]'),save=form.querySelector('button');let uid='',generation=0;
+ form.onsubmit=async e=>{e.preventDefault();if(!form.reportValidity())return;const token=generation;save.disabled=true;status.textContent='Saving…';try{const result=await call('profileNickname',{nickname:input.value});if(token!==generation)return;input.value=result.nickname;status.textContent='Nickname saved.';}catch(e){if(token===generation)status.textContent=e.message;}finally{if(token===generation)save.disabled=false;}};
+ return {async load(user){if(uid===(user?.uid||''))return;uid=user?.uid||'';const token=++generation;input.value='';status.textContent='';save.disabled=true;if(!uid)return;status.textContent='Loading nickname…';try{const result=await call('profileNickname',{});if(token!==generation)return;input.value=result.nickname;status.textContent='Your public name on shared boards.';}catch(e){if(token===generation)status.textContent=e.message;}finally{if(token===generation)save.disabled=false;}}};
+}

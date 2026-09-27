@@ -1,6 +1,6 @@
 // Display data only. Every mutation and access verification still goes to the server.
 export function createUsersClient(call,getUid,storage=globalThis.sessionStorage) {
-  const ttl=300000,prefix='tt-dev-users-v1:',pending=new Map();
+  const ttl=300000,prefix='tt-dev-users-v2:',pending=new Map();
   let owner='',cache=new Map(),epoch=0;
   function save(){try{storage.setItem(prefix+owner,JSON.stringify([...cache]));}catch{}}
   function scope(){const uid=getUid()||'';if(owner===uid)return;owner=uid;epoch++;cache=new Map();pending.clear();try{cache=new Map(JSON.parse(storage.getItem(prefix+owner)||'[]'));}catch{};}

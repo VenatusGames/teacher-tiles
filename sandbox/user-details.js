@@ -13,7 +13,7 @@ export function createUserDetails(call,onDeleted) {
   dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
   const date=value=>value?new Date(value).toLocaleString():'Not available';
   function render(){
-    dialog.querySelector('h2').textContent=user.displayName||'User details';dialog.querySelector('.user-detail-email').textContent=user.email||user.uid;facts.replaceChildren();
+    dialog.querySelector('h2').textContent=user.displayName||'User details';dialog.querySelector('.user-detail-email').textContent=(user.email||user.uid)+(user.nickname?' · '+user.nickname:'');facts.replaceChildren();
     for(const [label,value] of [['User ID',user.uid],['Created',date(user.createdAt)],['Last sign-in',date(user.lastSignIn)],['Last activity',date(user.lastSeen)],['Account',user.disabled?'Disabled':'Enabled'],['Email verified',user.emailVerified?'Yes':'No'],['Subscriber',user.subscriber?'Yes':user.subscriptionPreview?'Dev console preview':'No'],['Beta access',user.developer?'Developer':user.betaAccess?'Enabled':'Off'],['Coins',String(user.coinBalance)]]){const term=document.createElement('dt'),detail=document.createElement('dd');term.textContent=label;detail.textContent=value;facts.append(term,detail);}
     choices.innerHTML='<label for="award-patch-select">Patch</label><div class="patch-award-row"><select id="award-patch-select" aria-label="Choose a patch"><option value="">Choose a patch…</option></select><button class="primary" type="button" disabled>Give Patch</button></div>';
     const select=choices.querySelector('select'),give=choices.querySelector('button');

@@ -1,13 +1,18 @@
-export const BUG_CATEGORIES=['Saving & syncing','Tiles & tools','Boards & templates','Themes, stickers & cursors','Account & subscription','Performance','Accessibility','Other'];
+export const BUG_CATEGORIES=['Saving & syncing','Tiles & tools','Boards & templates','Themes, stickers & cursors','Account & subscription','Purchases & coins','Other support','Performance','Accessibility','Other'];
 export function setupBugReports(call){
  const form=document.getElementById('bug-report-form');if(!form)return;
  const category=form.elements.category,status=form.querySelector('[role="status"]'),submit=form.querySelector('[type="submit"]');
  for(const name of BUG_CATEGORIES){const option=document.createElement('option');option.value=option.textContent=name;category.append(option);}
+ const pane=document.getElementById('support-my-tickets'),newPane=document.getElementById('support-new-ticket');let cache=null,epoch=0;
+ const tabs=[...document.querySelectorAll('[data-support-tab]')];
+ async function load(force=false,append=false){const token=epoch;pane.replaceChildren();const notice=document.createElement('p');notice.textContent='Loading your tickets…';pane.append(notice);try{let data=cache;if(force||append||!data||Date.now()-data.at>300000){const next=await call('mySupportTickets',{cursor:append?cache?.cursor:null});data={...next,items:append?[...(cache?.items||[]),...next.items]:next.items,at:Date.now()};}if(token!==epoch)return;cache=data;pane.replaceChildren();const refresh=document.createElement('button');refresh.textContent='Refresh tickets';refresh.onclick=()=>load(true);pane.append(refresh);const active=data.items.filter(r=>r.status!=='complete');if(!active.length){notice.textContent='No open tickets in this page. New submissions appear here until closed.';pane.append(notice);}for(const report of active){const item=document.createElement('article');item.className='support-ticket';for(const [tag,text] of [['strong',report.title],['p',report.description],['small',report.category+' · '+(report.status==='in-progress'?'In Progress':'Reported')+' · '+new Date(report.createdAt).toLocaleDateString()]]){const n=document.createElement(tag);n.textContent=text;item.append(n);}pane.append(item);}if(data.cursor){const more=document.createElement('button');more.textContent='Load more tickets';more.onclick=()=>load(false,true);pane.append(more);}}catch(e){if(token===epoch)notice.textContent=e.message;}}
+ for(const tab of tabs)tab.onclick=()=>{const own=tab.dataset.supportTab==='tickets';tabs.forEach(b=>b.setAttribute('aria-pressed',String(b===tab)));pane.hidden=!own;newPane.hidden=own;if(own)load();};
  let requestId=null,busy=false;form.addEventListener('input',()=>{if(!busy)requestId=null;});
- form.addEventListener('submit',async event=>{event.preventDefault();if(busy||!form.reportValidity())return;busy=true;submit.disabled=true;status.textContent='Sending report…';requestId ||= Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
+ form.addEventListener('submit',async event=>{event.preventDefault();if(busy||!form.reportValidity())return;busy=true;submit.disabled=true;status.textContent='Sending ticket…';requestId ||= Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');
   const values=new FormData(form);for(const input of form.querySelectorAll('input,textarea,select'))input.disabled=true;
-  try{await call('submitBugReport',{requestId,category:values.get('category'),title:values.get('title'),description:values.get('description'),browser:navigator.userAgent.slice(0,180)});form.reset();requestId=null;status.textContent='Report sent. Thank you! Our team will review it.';}
-  catch(error){status.textContent=error.message||'Could not send your report. Please try again.';}
+  try{await call('submitBugReport',{requestId,category:values.get('category'),title:values.get('title'),description:values.get('description'),browser:navigator.userAgent.slice(0,180)});form.reset();requestId=null;cache=null;status.textContent='Ticket sent. Track it in In Progress Tickets.';}
+  catch(error){status.textContent=error.message||'Could not send your ticket. Please try again.';}
   finally{busy=false;submit.disabled=false;for(const input of form.querySelectorAll('input,textarea,select'))input.disabled=false;}
  });
+ return {reset(){epoch++;cache=null;if(pane)pane.replaceChildren();}};
 }

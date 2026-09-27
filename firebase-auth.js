@@ -1,3 +1,4 @@
+import {setupNickname} from './nickname.js';
 import {setupBugReports} from './bug-reports.js';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js';
 import {createTemplateLibrary} from './templates/ui.js?v=20260926-reporting';
@@ -3506,6 +3507,8 @@ async function renderUser(user) {
   }
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
+  nicknameUi.load(user);
+  supportUi.reset();
   authReady = true;
   loadingState.hidden = true;
   signedInState.hidden = !user;
@@ -4064,4 +4067,6 @@ window.TeacherTilesCloudBoards = {
 
 initializeFirebaseAuth();
 
-setupBugReports(async(name,data)=>{if(!currentUser)throw new Error('Sign in to submit a bug report.');if(!functionsSdk||!cloudFunctions)throw new Error('The reporting service is still loading. Please try again.');return (await functionsSdk.httpsCallable(cloudFunctions,name)(data)).data;});
+const profileCall=async(name,data)=>{if(!currentUser)throw new Error('Sign in to use Support.');if(!functionsSdk||!cloudFunctions)throw new Error('The reporting service is still loading. Please try again.');return (await functionsSdk.httpsCallable(cloudFunctions,name)(data)).data;};
+const nicknameUi=setupNickname(profileCall);
+const supportUi=setupBugReports(profileCall); 

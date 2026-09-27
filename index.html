@@ -282,7 +282,7 @@
             <div class="profile-account-copy">
               <span class="profile-state__kicker" data-i18n="profile.signedIn">SIGNED IN</span>
               <h2 id="profile-display-name">Teacher</h2>
-              <p id="profile-email"></p>
+              <p id="profile-email"></p><form id="profile-nickname-form"><label>Nickname<input name="nickname" aria-label="Nickname" required minlength="3" maxlength="32" autocomplete="off"></label><button type="submit">Save</button><small role="status" aria-live="polite"></small></form>
               <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
             </div>
           </div>
@@ -731,7 +731,7 @@
             </span>
             <span data-i18n="settings.tab.announcements">Updates</span>
           </button>
-          <button class="settings-nav__item" type="button" data-settings-tab="bug-reports" aria-selected="false"><span class="settings-nav__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="13" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 7V4h6v3M3 10h4M17 10h4M3 16h4M17 16h4M12 10v7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span>Bug Reports</span></button>
+          <button class="settings-nav__item" type="button" data-settings-tab="bug-reports" aria-selected="false"><span class="settings-nav__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="13" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 7V4h6v3M3 10h4M17 10h4M3 16h4M17 16h4M12 10v7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span>Support</span></button>
           <button class="settings-nav__item" type="button" data-settings-tab="contact" aria-selected="false">
             <span class="settings-nav__icon settings-nav__icon--contact" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v11h-15zM5 7l7 5 7-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -907,12 +907,12 @@
           </section>
 
           <section class="settings-pane settings-pane--contact" data-settings-pane="bug-reports" hidden>
-            <div class="settings-page-heading settings-updates-heading"><span>HELP US IMPROVE</span><h2>Bug Reports</h2><p>Something not working? Sign in and tell our developers what happened. Please leave out student names and private information.</p></div>
-            <div class="settings-contact-card"><form id="bug-report-form" class="contact-form">
+            <div class="settings-page-heading settings-updates-heading"><span>HELP US IMPROVE</span><h2>Support</h2><p>Need help with a bug, purchase, or your account? Sign in to contact our team. Please leave out student names and private information.</p></div>
+            <nav class="support-tabs" aria-label="Support views"><button type="button" data-support-tab="new" aria-pressed="true">New ticket</button><button type="button" data-support-tab="tickets" aria-pressed="false">In Progress Tickets</button></nav><div id="support-my-tickets" hidden></div><div id="support-new-ticket" class="settings-contact-card"><form id="bug-report-form" class="contact-form">
               <label class="contact-field"><span>Category</span><select name="category" aria-label="Category" required><option value="">Choose a category</option></select></label>
               <label class="contact-field"><span>Title</span><input name="title" required minlength="3" maxlength="160" placeholder="A short summary of the problem"></label>
-              <label class="contact-field contact-field--message"><span>What happened?</span><textarea name="description" required minlength="15" maxlength="5000" rows="7" placeholder="What were you doing? What did you expect, and what happened instead? Include steps to reproduce the bug."></textarea></label>
-              <div class="contact-actions"><div class="contact-status" role="status" aria-live="polite"></div><button class="contact-submit" type="submit">Submit Bug Report</button></div>
+              <label class="contact-field contact-field--message"><span>What happened?</span><textarea name="description" required minlength="15" maxlength="5000" rows="7" placeholder="What were you doing? What did you expect, and what happened instead? For bugs, include steps to reproduce. For purchases, describe what you need help with."></textarea></label>
+              <div class="contact-actions"><div class="contact-status" role="status" aria-live="polite"></div><button class="contact-submit" type="submit">Submit Ticket</button></div>
             </form></div>
           </section>
           <section class="settings-pane settings-pane--contact" data-settings-pane="contact" hidden>
