@@ -18,7 +18,7 @@
     for (const type of ['keydown','keyup','pointerdown','click','wheel','drop']) document.addEventListener(type, prevent, {capture:true,passive:false});
     document.addEventListener('DOMContentLoaded', () => {
       gate = document.createElement('div'); gate.id = 'sandbox-access-gate';
-      gate.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="sandbox-access-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><h1 id="sandbox-access-title">Admin access only</h1><p role="status" aria-live="polite">Checking your account…</p><button type="button" data-signin disabled>Sign in with Google</button><button type="button" data-refresh disabled>Check access again</button><a href="./">Back to Developer Portal</a></section>`;
+      gate.innerHTML = `<section role="dialog" aria-modal="true" aria-labelledby="sandbox-access-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><h1 id="sandbox-access-title">Sandbox access</h1><p role="status" aria-live="polite">Checking your account…</p><button type="button" data-signin disabled>Sign in with Google</button><button type="button" data-refresh disabled>Check access again</button><a href="./">Back to Developer Portal</a></section>`;
       document.body.append(gate);
       message = gate.querySelector('p'); signIn = gate.querySelector('[data-signin]'); refresh = gate.querySelector('[data-refresh]');
       const run = async (action, popup = false) => {
@@ -49,13 +49,13 @@
     if(refresh)refresh.disabled=pending||!actions.refresh;
   }
   window.TeacherTilesAdminAccess = Object.freeze({
-    get required(){return required},get allowed(){return allowed},get role(){return role},get locked(){return blocked()},
+    get developer(){return ['owner','admin'].includes(role)},get required(){return required},get allowed(){return allowed},get role(){return role},get locked(){return blocked()},
     configure(value){actions=value;sync()},
     status(value){status=value;sync()},
     update(claims={},email=''){
-      role=['owner','admin'].includes(claims.portalRole)?claims.portalRole:'';
+      role=['owner','admin','beta'].includes(claims.portalRole)?claims.portalRole:'';
       allowed=Boolean(role);
-      status=allowed?'Access granted.':email?`${email} does not have admin access. Sign in with an authorized account.`:'Sign in with an authorized administrator account to use the sandbox.';
+      status=allowed?'Access granted.':email?`${email} does not have sandbox access. Sign in with an authorized account.`:'Sign in with an administrator or beta-enabled account to use the sandbox.';
       sync();window.dispatchEvent(new CustomEvent('teachertiles:adminaccess',{detail:{allowed,role}}));
     }
   });
@@ -70,12 +70,13 @@
     lastCheck=Date.now();const wasAllowed=access.allowed;
     if(!user){access.update();if(wasAllowed)location.replace('./');throw Error('Sign in required');}
     try{
-      access.status('Signed in. Verifying administrator access…');
+      access.status('Signed in. Verifying sandbox access…');
       const {verifyAccess}=await client;
-      const result=await verifyAccess(user,window.TeacherTilesAuth.call);
+      const result=await verifyAccess(user,window.TeacherTilesAuth.call,{sandbox:true});
       if(window.TeacherTilesAuth.user?.uid!==user.uid)throw Error('Account changed');
       access.update({portalRole:result.role},user.email);
-      if(!loaded){loaded=true;await import(new URL('dev-console.js?v=20261012-console-return-2',base).href);}
+      if(loaded&&!access.developer){location.replace('./');throw Error('Developer access removed');}
+      if(access.developer&&!loaded){loaded=true;await import(new URL('dev-console.js?v=20261012-beta-users',base).href);}
     }catch(error){
       const {accessError}=await client;access.update({},user.email);access.status(accessError(error));
       if(wasAllowed)location.replace('./');throw error;

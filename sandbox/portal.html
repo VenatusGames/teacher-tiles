@@ -5,13 +5,13 @@
   <meta name="robots" content="noindex,nofollow">
   <title>TeacherTiles · Developer Portal</title>
   <link rel="icon" href="assets/profile/teachertiles-profile-logo.png">
-  <link rel="stylesheet" href="sandbox/portal.css?v=20261012-access-screen">
+  <link rel="stylesheet" href="sandbox/portal.css?v=20261012-beta-users">
 </head>
 <body>
   <main id="portal-access-screen">
       <section id="portal-login" class="access-card" aria-labelledby="access-heading">
         <div class="access-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
-        <p class="eyebrow">RESTRICTED WORKSPACE</p><h1 id="access-heading">Admin access only</h1>
+        <p class="eyebrow">RESTRICTED WORKSPACE</p><h1 id="access-heading">Sandbox sign-in</h1>
         <p id="portal-status" role="status" aria-live="polite">Checking your sign-in…</p>
         <div class="access-actions"><button id="portal-signin" class="primary" disabled>Sign in with Google</button><button id="portal-retry" class="quiet" disabled>Check access again</button></div>
       </section>
@@ -20,7 +20,7 @@
     <aside class="portal-sidebar">
       <a class="portal-brand" href="./"><img src="assets/profile/teachertiles-profile-logo.png" alt=""><span>TeacherTiles<small>Developer Portal</small></span></a>
       <div class="portal-environment"><i></i> Developer workspace</div>
-      <nav aria-label="Developer portal"><a class="selected" href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Overview</a></nav>
+      <nav aria-label="Developer portal"><a data-portal-view="overview" class="selected" href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Overview</a><a data-portal-view="users" href="#users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/></svg>Users</a></nav>
       <a class="public-site" href="/">Open TeacherTiles <span aria-hidden="true">↗</span></a>
     </aside>
     <main>
@@ -35,8 +35,9 @@
         </a>
         <p class="portal-footnote">Template moderation and other management tools will live here as they become available.</p>
       </section>
+      <section id="portal-users" hidden aria-labelledby="users-heading"><div class="portal-welcome"><p class="eyebrow">ACCESS MANAGEMENT</p><h1 id="users-heading">Users</h1><p>Enabled accounts. Beta access grants the board sandbox only.</p></div><div class="users-actions"><span>Online means active within the last 6 minutes.</span><button id="users-refresh" class="quiet">Refresh</button></div><p id="users-status" role="status" aria-live="polite"></p><div id="users-list"></div><button id="users-more" class="quiet" hidden>Load more users</button></section>
     </main>
   </div>
-  <script type="module" src="sandbox/portal.js?v=20261012-access-screen"></script>
+  <script type="module" src="sandbox/portal.js?v=20261012-beta-users"></script>
 </body>
 </html>

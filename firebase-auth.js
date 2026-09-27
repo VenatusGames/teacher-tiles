@@ -1,3 +1,4 @@
+import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 
 
@@ -4443,6 +4444,7 @@ async function initializeFirebaseAuth() {
       call:(name,data={})=>functionsSdk.httpsCallable(cloudFunctions,name,{timeout:15000})(data)
     });
     window.dispatchEvent(new Event('teachertiles:authready'));
+    startSiteActivity(()=>auth.currentUser,(name,data)=>window.TeacherTilesAuth.call(name,data));
     authModule.onIdTokenChanged(auth, user => {
       handleAccountAuthChange(user).catch(error => {
         console.error("TeacherTiles account initialization failed", error);
