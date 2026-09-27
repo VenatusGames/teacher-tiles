@@ -2,8 +2,10 @@ import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
+const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
+function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar').append(signOut);else document.querySelector('.access-actions').append(signOut);}
 let auth,sdk,call,pending=false,generation=0,lastCheck=0,authorized=false;
-function lock(message){authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}
+function lock(message){showPortal(false);authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}
 function busy(value){pending=value;signIn.disabled=retry.disabled=value||!auth;signOut.disabled=value;}
 async function check(user){
   const attempt=++generation;lastCheck=Date.now();
@@ -15,7 +17,7 @@ async function check(user){
     document.getElementById('portal-name').textContent=user.displayName||'Administrator';
     document.getElementById('portal-email').textContent=user.email||'';
     document.getElementById('portal-role').textContent=access.role==='owner'?'Owner':'Administrator';
-    authorized=true;login.hidden=true;home.hidden=false;signOut.hidden=false;
+    authorized=true;showPortal(true);login.hidden=true;home.hidden=false;signOut.hidden=false;
   }catch(error){if(attempt===generation)lock(accessError(error));}
   finally{if(attempt===generation)busy(false);}
 }
