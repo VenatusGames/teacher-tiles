@@ -19,3 +19,5 @@
 .boards-capacity{display:inline-flex;align-items:center;white-space:nowrap;padding:8px 13px;border:1px solid #dbe4ef;border-radius:999px;background:#eef3fa;color:#49617f;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}.boards-capacity.is-full{background:#fff1dc;border-color:#edd3a5;color:#88611f}
 
 .template-card.template-card--official{position:relative}.template-card--official .template-card-copy{padding-right:46px}.template-card--official>.template-official-logo{right:12px;bottom:12px;pointer-events:none}
+
+.template-popular-tags{position:relative;align-content:start}.template-popular-tags [hidden]{display:none!important}

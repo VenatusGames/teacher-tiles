@@ -15,6 +15,8 @@ export function discoveryShelves(root,data,card,onTag){
  const pause=el('button','','Pause rotation');pause.type='button';pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Resume rotation':'Pause rotation';};if(picks.length>1)controls.append(pause);
  const timer=picks.length>1?setInterval(()=>{if(!paused&&!document.hidden&&root.getClientRects().length&&!featured.matches(':hover,:focus-within')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)show((current+1)%picks.length);},7000):null;
  for(const [title,description,items] of [['TeacherTiles Curated','From TeacherTiles — thoughtfully selected for your classroom.',data.curated],['Most Liked','Boards the community has upvoted.',data.highlyRated]]){const s=section(title,description),row=el('div','template-shelf-row');for(const m of items||[])row.append(card(m));if(!row.children.length)row.append(el('p','template-empty','No boards here yet.'));s.append(row);}
- const tags=section('Explore by tag','Find a board for your subject, routine, or activity.'),bar=el('div','template-tag-filters');for(const tag of [...new Set(['All',...(data.tags||[]),'literacy','math','planning','morning','wellbeing'])]){const b=el('button','template-tag-filter',tag);b.type='button';b.onclick=()=>onTag(tag==='All'?'':tag);bar.append(b);}tags.append(bar);
- return ()=>clearInterval(timer);
+ const tags=section('Explore by tag','Popular subjects, routines, and activities.'),bar=el('div','template-tag-filters template-popular-tags');for(const tag of [...new Set(data.tags||[])]){const b=el('button','template-tag-filter',tag);b.type='button';b.onclick=()=>onTag(tag);bar.append(b);}tags.append(bar);
+ const fitTags=()=>{if(!bar.clientWidth)return;const buttons=[...bar.children];buttons.forEach(b=>b.hidden=false);let first=null,second=null,overflow=false;for(const b of buttons){const top=b.offsetTop;if(first===null)first=top;else if(top!==first&&second===null)second=top;if(second!==null&&top>second)overflow=true;if(overflow)b.hidden=true;}};
+ const resize=new ResizeObserver(fitTags);resize.observe(bar);
+ return ()=>{clearInterval(timer);resize.disconnect();};
 }

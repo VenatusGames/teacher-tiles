@@ -1,4 +1,4 @@
-import {tagEditor,discoveryShelves} from './discovery.js';
+import {tagEditor,discoveryShelves} from './discovery.js?v=20260927-popular-tags';
 import './contract.js?v=20260926-titles';
 import {tileLabels} from './labels.js';
 const contract=globalThis.TeacherTilesTemplateContract;

@@ -3,7 +3,7 @@ import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/acc
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20260926-preview-reset';
-import {createTemplateLibrary} from './templates/ui.js?v=20260927-card-logo';
+import {createTemplateLibrary} from './templates/ui.js?v=20260927-tags';
 import {syncAwardedPatches} from './profile/awards.js?v=20261012-removal';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -3375,7 +3375,7 @@ function createNewBoardCard() {
   return button;
 }
 
-function updateBoardCapacity(){const badge=document.getElementById("boards-capacity");if(!badge)return;const limit=membershipBoardLimit();badge.textContent=`${boardList.length} / ${limit} boards`;badge.setAttribute("aria-label",`${boardList.length} of ${limit} boards used`);badge.classList.toggle("is-full",boardList.length>=limit);}
+function updateBoardCapacity(){const badge=document.getElementById("boards-capacity");if(!badge)return;const limit=membershipBoardLimit();badge.textContent=`${boardList.length} / ${limit} Boards`;badge.setAttribute("aria-label",`${boardList.length} of ${limit} boards used`);badge.classList.toggle("is-full",boardList.length>=limit);}
 window.addEventListener("teachertiles:accountchange",()=>{updateBoardCapacity();if(!boardsView?.hidden)renderBoards();});
 function renderBoards() {
   updateBoardCapacity();
