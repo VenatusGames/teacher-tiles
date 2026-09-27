@@ -59,23 +59,42 @@ if (grid && tabs) {
       .profile-badge--template-creator:not(.profile-badge--locked){--patch-high:#8bdcff;--patch-low:#2c64c7;--braid-light:#d8f5ff;--braid-mid:#67aee8;--braid-dark:#244f9f}
       .profile-badge--template-artist:not(.profile-badge--locked){--patch-high:#d6a3ff;--patch-low:#7b3fb7;--braid-light:#f2dbff;--braid-mid:#b779df;--braid-dark:#5e2f8c}
 
-      /* Remove the alternate contributor-style borders/double rims/dotted rims so these match Beta exactly. */
+      /* Exact Beta Tester rim geometry; these patches only change thread/medallion colors. */
       .profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion,
       .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion,
       .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion,
       .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion{
-        border:none !important;
+        border:4px solid transparent !important;
         border-radius:50% !important;
-        box-shadow:none !important;
+        background:radial-gradient(circle at 38% 30%,var(--patch-high),var(--patch-low) 76%) padding-box,repeating-conic-gradient(from 2deg,var(--braid-light) 0 2.5deg,var(--braid-mid) 2.5deg 5deg,var(--braid-dark) 5deg 7.5deg,var(--braid-mid) 7.5deg 10deg) border-box !important;
+        box-shadow:0 0 0 1px #77818a,0 5px 10px rgba(33,48,67,.18),inset 0 0 0 1px rgba(255,255,255,.22) !important;
       }
 
       .profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion::before,
       .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion::before,
       .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion::before,
       .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion::before{
-        border:0 !important;
-        inset:0 !important;
+        content:'' !important;
+        position:absolute !important;
+        z-index:2 !important;
+        inset:-1px !important;
+        border:1px dashed rgba(248,250,252,.65) !important;
         border-radius:50% !important;
+        box-shadow:inset 0 0 0 1px rgba(52,63,74,.2) !important;
+        pointer-events:none !important;
+      }
+
+      .profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion::after,
+      .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion::after,
+      .profile-badge--template-creator:not(.profile-badge--locked) .profile-badge__medallion::after,
+      .profile-badge--template-artist:not(.profile-badge--locked) .profile-badge__medallion::after{
+        content:'' !important;
+        position:absolute !important;
+        inset:6px !important;
+        border:0 !important;
+        border-radius:50% !important;
+        background:radial-gradient(circle at 36% 25%,rgba(255,255,255,.2),transparent 48%) !important;
+        pointer-events:none !important;
       }
 
       .profile-badge--stickerer:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#fff0f7;filter:drop-shadow(0 2px 1px #70245266)}
