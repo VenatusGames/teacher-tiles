@@ -1,6 +1,6 @@
 import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
 import {createBugReports} from './bug-reports.js?v=20260926-preview-titles';
-import {createTemplateLibrary} from '../templates/ui.js?v=20260927-tags';
+import {createTemplateLibrary} from '../templates/ui.js?v=20260927-upload-close';
 import {createInsights} from './insights.js?v=20260926-preview-titles';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
