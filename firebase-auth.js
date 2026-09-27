@@ -3371,11 +3371,14 @@ function createNewBoardCard() {
   label.textContent = boardUiText("boards.new", "New Board");
 
   button.append(preview, label);
-  button.addEventListener("click", () => isAtFreeLimit ? showBoardLimitPopup() : createBlankBoard());
+  button.addEventListener("click", () => boardList.length >= membershipBoardLimit() ? showBoardLimitPopup() : createBlankBoard());
   return button;
 }
 
+function updateBoardCapacity(){const badge=document.getElementById("boards-capacity");if(!badge)return;const limit=membershipBoardLimit();badge.textContent=`${boardList.length} / ${limit} boards`;badge.setAttribute("aria-label",`${boardList.length} of ${limit} boards used`);badge.classList.toggle("is-full",boardList.length>=limit);}
+window.addEventListener("teachertiles:accountchange",()=>{updateBoardCapacity();if(!boardsView?.hidden)renderBoards();});
 function renderBoards() {
+  updateBoardCapacity();
   if (!boardsGrid) return;
   boardsGrid.replaceChildren();
   for (const board of sortBoards(boardList)) boardsGrid.appendChild(createBoardCard(board));
