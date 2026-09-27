@@ -1,5 +1,5 @@
 import {adminBoardPreview} from './board-preview.js';
-import {createBugReports} from './bug-reports.js?v=20260926-tickets';
+import {createBugReports} from './bug-reports.js?v=20260926-ticket-thread';
 import {createTemplateLibrary} from '../templates/ui.js?v=20260926-support-nicknames';
 import {createInsights} from './insights.js?v=20260926-support-nicknames';
 import {firebaseConfig} from '../firebase-config.js';

@@ -18,9 +18,10 @@ function fixture(){
  const modules={'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>123},FieldPath:{documentId:()=>'__name__'}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'../sandbox/admin-access':{requireAccount:account},'./sandbox/admin-access':{requireAccount:account},'../templates/contract':contract,'./admin-access':{requireDeveloper:developer},'./contract':contract,'./types.json':require(backend+'/templates/types.json'),'node:crypto':require('node:crypto')};
  function load(file){const exports={};vm.runInNewContext(fs.readFileSync(backend+'/'+file,'utf8'),{exports,require:n=>modules[n],console,Date,TextEncoder,URL,Buffer});return exports;}
  const nicknames=load('nicknames.js');modules['../nicknames']=nicknames;
+ modules['./ticket-conversation']=modules['../ticket-conversation']=load('ticket-conversation.js');
  const reportApi=load('bug-reports.js'),reportAdmin=load('sandbox/bug-reports.js');
  const api=load('templates/index.js');modules['../templates']=api;const review=load('sandbox/templates.js').boardTemplateModeration;
- return {records,stats,nickname:(uid,nickname)=>nicknames.profileNickname({auth:uid?{uid}:null,data:{nickname}}),tickets:(uid,data={})=>reportApi.mySupportTickets({auth:uid?{uid}:null,data}),report:(uid,data)=>reportApi.submitBugReport({auth:uid?{uid}:null,data}),bugs:(uid,data)=>reportAdmin.developerBugReports({auth:uid?{uid}:null,data}),call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
+ return {records,stats,nickname:(uid,nickname)=>nicknames.profileNickname({auth:uid?{uid}:null,data:{nickname}}),tickets:(uid,data={})=>reportApi.mySupportTickets({auth:uid?{uid}:null,data}),report:(uid,data)=>reportApi.submitBugReport({auth:uid?{uid}:null,data}),bugs:(uid,data)=>reportAdmin.developerBugReports({auth:uid?{uid}:null,data:{requestId:require('node:crypto').randomUUID(),...data}}),call:(uid,data)=>api.boardTemplates({auth:uid?{uid}:null,data:data.action==='import'?{clientVersion:1,supportedTypes:['sticky','richtext','timer'],...data}:data}),review:(uid,data)=>review({auth:uid?{uid}:null,data})};
 }
 const submission={action:'submit',title:'Morning welcome',description:'A calm welcome for the school day.',tags:['morning'],snapshot:board,confirmPrivacy:true};
 test('export explicitly excludes private data, nested tab state, raw fields and executable HTML',()=>{
@@ -114,4 +115,14 @@ test('only developers claim and feature boards; claimed submissions cannot be ch
 });
 test('Support users see only their own tickets and never internal reviewer fields',async()=>{
  const f=fixture(),{id}=await f.report('author',{requestId:'support-purchase-0001',category:'Purchases & coins',title:'Missing coins',description:'My coin purchase has not shown up in my account.'});await f.bugs('admin',{action:'update',id,revision:1,status:'in-progress'});const own=await f.tickets('author');assert.equal(own.items.length,1);assert.equal(own.items[0].status,'in-progress');assert(!('updatedBy' in own.items[0]));assert.equal((await f.tickets('other')).items.length,0);await assert.rejects(f.tickets(null),{code:'unauthenticated'});
+});
+
+test('ticket conversations authorize both sides, log transitions, retry safely and reopen closed tickets',async()=>{
+ const f=fixture(),{id}=await f.report('author',{requestId:'conversation-ticket-0001',category:'Other',title:'Please help',description:'I need assistance with my board.'});
+ await assert.rejects(f.tickets('other',{action:'detail',id}),{code:'not-found'});await assert.rejects(f.tickets('other',{action:'reply',id,message:'Intruder',requestId:'intruder-reply-0001'}),{code:'not-found'});
+ const update={action:'update',id,revision:1,status:'complete',message:'This is fixed now.',requestId:'developer-reply-0001'};await f.bugs('admin',update);await f.bugs('admin',update);
+ let detail=await f.tickets('author',{action:'detail',id});assert.equal(detail.events.length,1);assert.equal(detail.events[0].message,'This is fixed now.');assert.equal(detail.events[0].fromStatus,'new');assert.equal(detail.events[0].status,'complete');assert(!('authorEmail' in detail.report));assert.equal((await f.tickets('author')).items.length,1);
+ const reply={action:'reply',id,message:'Thank you, but I still see the issue.',requestId:'author-reply-000001'};await f.tickets('author',reply);await f.tickets('author',reply);detail=await f.tickets('author',{action:'detail',id});assert.equal(detail.events.length,2);assert.equal(detail.report.status,'new');assert.equal(detail.events[0].role,'user');assert.equal(detail.events[0].fromStatus,'complete');assert.equal(detail.events[0].statusChanged,true);
+ await assert.rejects(f.bugs('admin',{action:'update',id,revision:1,status:'complete'}),{code:'failed-precondition'});
+ for(let i=0;i<32;i++)await f.tickets('author',{...reply,requestId:'page-reply-'+String(i).padStart(8,'0')});detail=await f.tickets('author',{action:'detail',id});assert.equal(detail.events.length,30);const older=await f.tickets('author',{action:'detail',id,cursor:detail.cursor});assert.equal(older.events.length,4);assert.equal(new Set([...detail.events,...older.events].map(e=>e.sequence)).size,34);
 });

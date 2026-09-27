@@ -1,5 +1,5 @@
 import {setupNickname} from './nickname.js';
-import {setupBugReports} from './bug-reports.js?v=20260926-tickets';
+import {setupBugReports} from './bug-reports.js?v=20260926-ticket-thread';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js';
 import {createTemplateLibrary} from './templates/ui.js?v=20260926-support-nicknames';
 import {syncAwardedPatches} from './profile-awards.js?v=20261012-removal';
