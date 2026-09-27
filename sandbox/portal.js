@@ -1,7 +1,7 @@
-import {createInsights} from './insights.js';
+import {createInsights} from './insights.js?v=20261012-compact-users';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js';
+import {createUsersPanel} from './users.js?v=20261012-compact-users';
 import {startSiteActivity} from '../site-activity.js';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');

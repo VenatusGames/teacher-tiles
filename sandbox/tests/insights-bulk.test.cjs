@@ -16,12 +16,12 @@ function fixture(){
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code}}
  const guard=async req=>{if(req.auth?.uid!=='admin')throw new HttpsError('permission-denied','Denied');return {uid:'admin',role:'admin'}};
  const modules={'firebase-admin/auth':{getAuth:()=>({getUsers:async ids=>({users:users.filter(u=>ids.some(id=>id.uid===u.uid))}),listUsers:async()=>({users})})},'firebase-admin/firestore':{getFirestore:()=>db,Timestamp:{fromMillis:stamp},FieldPath:{documentId:()=>'id'},FieldValue:{serverTimestamp:()=>stamp(now)}},'firebase-functions/v2/https':{onCall:(_,fn)=>fn,HttpsError},'./admin-access':{requireDeveloper:guard},'../context':{accountRef:(db,uid)=>ref('users/'+uid),isSubscriptionActive:(data={})=>data.subscriptionStatus==='active'},'../patch-awards':require(backend+'/patch-awards.js')};
- const load=file=>{const exports={};vm.runInNewContext(fs.readFileSync(backend+'/sandbox/'+file,'utf8'),{exports,require:name=>modules[name],Date,Buffer});return exports};
+ const load=file=>{const exports={};vm.runInNewContext(fs.readFileSync(backend+'/sandbox/'+file,'utf8'),{exports,require:name=>modules[name],Date:{now:()=>now,parse:Date.parse},Buffer});return exports};
  return {api:{...load('insights.js'),...load('bulk-patches.js'),...load('users.js')},stats,records,users};
 }
 const request=data=>({auth:{uid:'admin'},data});
-test('insights use aggregate queries and do not read individual Firestore documents',async()=>{
- const {api,stats}=fixture();const result=await api.getDeveloperInsights(request({}));assert.equal(result.online,2);assert.equal(result.subscribers,2);assert.equal(result.total,3);assert.equal(stats.aggregates,2);assert.equal(stats.documentReads,0);
+test('insights use aggregates plus one bounded history document',async()=>{
+ const {api,stats}=fixture();const result=await api.getDeveloperInsights(request({}));assert.equal(result.online,2);assert.equal(result.subscribers,2);assert.equal(result.total,3);assert.equal(stats.aggregates,2);assert.equal(stats.documentReads,1);assert.equal(result.history.length,1);
  await assert.rejects(api.getDeveloperInsights({auth:{uid:'beta'}}),{code:'permission-denied'});
 });
 test('online/subscriber filters query matching records and reuse their snapshots',async()=>{
@@ -38,4 +38,10 @@ test('bulk selected awards preserve dates, skip duplicates, and reject non-admin
 });
 test('bulk all skips disabled users and does not grant beta access',async()=>{
  const {api,users,records}=fixture();users[1].disabled=true;const result=await api.bulkGiveUserPatch(request({scope:'all',patchId:'beta'}));assert.equal(result.awarded,2);assert.equal(result.skipped,1);assert.equal(records.get('_sandboxUsers/c').betaAccess,undefined);
+});
+
+test('analytics history is sampled, bounded, and not rewritten on every refresh',async()=>{
+ const {api,records}=fixture();const first=await api.getDeveloperInsights(request({}));const stored=records.get('_developerAnalytics/userCounts');await api.getDeveloperInsights(request({}));assert.equal(records.get('_developerAnalytics/userCounts'),stored);assert.equal(stored.points.length,1);
+ records.set('_developerAnalytics/userCounts',{points:Array.from({length:3000},(_,i)=>({at:first.asOf-(3000-i)*900000,online:2,subscribers:1}))});
+ const next=await api.getDeveloperInsights(request({}));assert(next.history.length<=2880);assert(next.history.every(point=>point.at>=first.asOf-30*86400000));
 });

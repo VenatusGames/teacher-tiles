@@ -5,7 +5,7 @@
   <meta name="robots" content="noindex,nofollow">
   <title>TeacherTiles · Developer Portal</title>
   <link rel="icon" href="assets/profile/teachertiles-profile-logo.png">
-  <link rel="stylesheet" href="sandbox/portal.css?v=20261012-bulk-insights">
+  <link rel="stylesheet" href="sandbox/portal.css?v=20261012-compact-users">
 </head>
 <body>
   <main id="portal-access-screen">
@@ -40,9 +40,14 @@
         </a>
         <p class="portal-footnote">Template moderation and other management tools will live here as they become available.</p>
       </section>
-      <section id="portal-users" hidden aria-labelledby="users-heading"><div class="portal-welcome"><p class="eyebrow">ACCESS MANAGEMENT</p><h1 id="users-heading">Users</h1><p>Enabled accounts. Beta access grants the board sandbox only.</p></div><section id="bulk-patch-tool" class="bulk-patch-tool" aria-label="Bulk patch awards"></section><div class="user-filters"><label class="beta-toggle"><span>Show All Online</span><input id="users-online-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label><label class="beta-toggle"><span>Show Subscribers</span><input id="users-subscriber-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label><small>Subscribers means active subscriptions, excluding dev previews.</small></div><label class="users-search"><span>Find a user</span><input id="users-search" type="search" placeholder="Search email, name, or user ID" maxlength="180" autocomplete="off"><button id="users-search-submit" class="quiet" type="button">Search</button></label><div class="users-actions"><span>Online means active within the last 6 minutes. Results are cached for 5 minutes; Refresh gets the latest.</span><button id="users-refresh" class="quiet">Refresh</button></div><p id="users-status" role="status" aria-live="polite"></p><div id="users-list"></div><button id="users-more" class="quiet" hidden>Load more users</button></section>
+      <section id="portal-users" hidden aria-labelledby="users-heading">
+        <div class="users-panel-head"><h1 id="users-heading">Users</h1><div class="users-search"><label for="users-search" class="visually-hidden">Find a user</label><input id="users-search" type="search" placeholder="Search email, name, or user ID" maxlength="180" autocomplete="off"><button id="users-search-submit" class="quiet" type="button">Search</button><button id="users-refresh" class="quiet" type="button" title="Refresh cached users and activity">Refresh</button></div></div>
+        <div class="users-toolbar"><div class="user-filters"><label class="beta-toggle" title="Active within the last 6 minutes"><span>Show All Online</span><input id="users-online-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label><label class="beta-toggle" title="Active subscriptions, excluding dev previews"><span>Show Subscribers</span><input id="users-subscriber-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div><p id="users-status" role="status" aria-live="polite"></p></div>
+        <section id="bulk-patch-tool" class="bulk-patch-tool" aria-label="Bulk patch awards"></section>
+        <div id="users-list"></div><button id="users-more" class="quiet" hidden>Load more users</button>
+      </section>
     </main>
   </div>
-  <script type="module" src="sandbox/portal.js?v=20261012-bulk-insights"></script>
+  <script type="module" src="sandbox/portal.js?v=20261012-compact-users"></script>
 </body>
 </html>

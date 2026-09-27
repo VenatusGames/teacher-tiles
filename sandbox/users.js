@@ -1,6 +1,6 @@
-import {createBulkPatches} from './bulk-patches.js';
-import {createUsersClient} from './users-cache.js';
-import {createUserDetails} from './user-details.js';
+import {createBulkPatches} from './bulk-patches.js?v=20261012-compact-users';
+import {createUsersClient} from './users-cache.js?v=20261012-compact-users';
+import {createUserDetails} from './user-details.js?v=20261012-compact-users';
 export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
