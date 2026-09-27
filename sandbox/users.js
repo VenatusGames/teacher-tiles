@@ -1,8 +1,12 @@
+import {createUserDetails} from './user-details.js';
 export function createUsersPanel(call) {
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
+  const search=document.getElementById('users-search');
+  const details=createUserDetails(call,()=>{clear();void load();});
+  let searchTimer;
   let nextPageToken=null,loaded=false,busy=false,generation=0;
-  function clear(){generation++;loaded=false;busy=false;nextPageToken=null;list.replaceChildren();status.textContent='';more.hidden=true;refresh.disabled=false;}
+  function clear(){details.close();generation++;loaded=false;busy=false;nextPageToken=null;list.replaceChildren();status.textContent='';more.hidden=true;refresh.disabled=false;}
   function row(user){
     const item=document.createElement('article');item.className='user-card';
     item.innerHTML='<div class="user-avatar"></div><div class="user-info"><strong></strong><span class="user-email"></span><small class="user-presence"></small></div><label class="beta-toggle"><span>Has Beta access</span><input type="checkbox" role="switch"><i aria-hidden="true"></i></label>';
@@ -16,17 +20,20 @@ export function createUsersPanel(call) {
     const input=item.querySelector('input');input.checked=user.betaAccess;input.setAttribute('aria-label','Has Beta access: '+(user.email||user.uid));
     if(user.developer){input.disabled=true;input.closest('label').title='Developer accounts already have sandbox access.';item.querySelector('.beta-toggle span').textContent='Developer access';input.checked=true;}
     input.onchange=async()=>{const before=!input.checked,enabled=input.checked,attempt=generation;input.disabled=true;status.textContent='Saving beta access…';try{await call('setUserBetaAccess',{uid:user.uid,enabled});if(attempt===generation)status.textContent=enabled?'Beta access granted.':'Beta access removed. Open sandbox sessions recheck approximately every 5 minutes.';}catch(error){input.checked=before;if(attempt===generation)status.textContent='Could not save beta access. '+(error.message||'Please try again.');}finally{if(!user.developer)input.disabled=false;}};
+    const open=document.createElement('button');open.className='user-details-open';open.type='button';open.textContent='View details';open.setAttribute('aria-label','View details for '+(user.email||user.uid));open.onclick=()=>details.open(user.uid);item.append(open);
+    item.addEventListener('click',event=>{if(!event.target.closest('button,input,label'))details.open(user.uid);});
     return item;
   }
   async function load(append=false){
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
-    try{const response=await call('listDeveloperUsers',append&&nextPageToken?{pageToken:nextPageToken}:{});if(attempt!==generation)return;
+    try{const response=await call('listDeveloperUsers',{query:search.value.trim(),...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
       for(const user of response.data.users)list.append(row(user));
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
     }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
     finally{if(attempt===generation){busy=false;refresh.disabled=more.disabled=false;}}
   }
+  search.oninput=()=>{clearTimeout(searchTimer);clear();searchTimer=setTimeout(()=>load(),350);};
   refresh.onclick=()=>{clear();void load();};more.onclick=()=>load(true);
   return {element,load,clear};
 }

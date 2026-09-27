@@ -1,3 +1,4 @@
+import {syncAwardedPatches} from './profile-awards.js';
 import {startSiteActivity} from './site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -689,6 +690,8 @@ function publishShopAccount(patch = {}) {
     profileCoinCard.classList.toggle("is-extra-wide-balance", formattedCoinBalance.length > 13);
     profileCoinCard.setAttribute("aria-label", `Open the coin shop. Balance: ${formattedCoinBalance} coins.`);
   }
+  if(!shopAccountState.signedIn)shopAccountState.patchAwards={};
+  syncAwardedPatches(currentUser,shopAccountState.patchAwards);
   syncSubscriberMarks(shopAccountState);
   window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
     detail: {
@@ -727,6 +730,7 @@ async function refreshShopAccount() {
         signedIn: true,
         coinBalance: account.coinBalance,
         ownedProductIds: account.ownedProductIds,
+        patchAwards: account.patchAwards || {},
         subscriptionActive: Boolean(account.subscriptionActive)
       });
     }
@@ -4248,10 +4252,8 @@ async function renderUser(user) {
   if (user) {
     const name = user.displayName?.trim() || "Teacher";
     const photo = user.photoURL || fallbackAvatarData(name);
-    const betaCutoff = Date.parse("2026-08-29T04:00:00Z");
-    const createdAt = Date.parse(user.metadata?.creationTime || "");
-    const isBetaTester = !Number.isFinite(createdAt) || createdAt <= betaCutoff;
-    if (profileBetaBadge) profileBetaBadge.hidden = !isBetaTester;
+    shopAccountState.patchAwards={};
+    syncAwardedPatches(user,{});
     syncProfileBadgeCount();
     profileDisplayName.textContent = name;
     profileEmail.textContent = user.email || "Google account";

@@ -44,7 +44,7 @@ try{
     import('https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js')
   ]);
   sdk=authSdk;const firebase=app.initializeApp(firebaseConfig);auth=sdk.getAuth(firebase);
-  call=(name,data)=>functions.httpsCallable(functions.getFunctions(firebase,'us-central1'),name,{timeout:15000})(data);
+  call=(name,data)=>functions.httpsCallable(functions.getFunctions(firebase,'us-central1'),name,{timeout:name==='deleteDeveloperUser'?540000:15000})(data);
   await sdk.setPersistence(auth,sdk.browserLocalPersistence);
   startSiteActivity(()=>auth.currentUser,call);
   sdk.onIdTokenChanged(auth,user=>void check(user),()=>{lock('Unable to read your sign-in session. Please refresh.');busy(false)});

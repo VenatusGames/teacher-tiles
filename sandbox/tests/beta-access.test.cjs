@@ -3,12 +3,13 @@ const backend=process.env.TT_FUNCTIONS_DIR||path.resolve(__dirname,'../../../../
 function fixture(){
   const accounts=new Map([['admin',{uid:'admin',customClaims:{portalRole:'admin'}}],['beta',{uid:'beta',email:'beta@example.com',customClaims:{}}]]);
   const records=new Map([['_sandboxUsers/beta',{betaAccess:true,lastSeen:{toMillis:()=>1234}}],['users/beta',{subscriptionStatus:'active'}]]);
-  const ref=key=>({key,get:async()=>({data:()=>records.get(key)}),set:async data=>records.set(key,{...records.get(key),...data})});
-  const db={collection:name=>({doc:uid=>ref(name+'/'+uid)}),getAll:async(...refs)=>refs.map(r=>({data:()=>records.get(r.key)}))};
+  const ref=key=>({key,get:async()=>({data:()=>records.get(key)}),delete:async()=>records.delete(key),set:async data=>records.set(key,{...records.get(key),...data})});
+  const db={recursiveDelete:async r=>records.delete(r.key),runTransaction:async fn=>fn({get:r=>r.get(),set:(r,data)=>r.set(data)}),collection:name=>({doc:uid=>ref(name+'/'+(uid||'audit')),where:()=>({limit:()=>({get:async()=>({empty:true})}),get:async()=>({docs:[]})})}),getAll:async(...refs)=>refs.map(r=>({data:()=>records.get(r.key)}))};
   class HttpsError extends Error{constructor(code,message,details){super(message);this.code=code;this.details=details}}
-  const auth={getUser:async uid=>accounts.get(uid),listUsers:async()=>({users:[accounts.get('beta')],pageToken:'next'})};
+  const auth={deleteUser:async uid=>accounts.delete(uid),updateUser:async(uid,data)=>Object.assign(accounts.get(uid),data),revokeRefreshTokens:async()=>{},getUserByEmail:async email=>[...accounts.values()].find(u=>u.email===email),getUser:async uid=>accounts.get(uid),listUsers:async()=>({users:[accounts.get('beta')],pageToken:'next'})};
   const modules={'firebase-admin/auth':{getAuth:()=>auth},'firebase-admin/firestore':{getFirestore:()=>db,FieldValue:{serverTimestamp:()=>({toMillis:()=>5678})}},'firebase-functions/v2/https':{HttpsError,onCall:(_,fn)=>fn},'../context':{accountRef:(db,uid)=>ref('users/'+uid),isSubscriptionActive:(data={})=>data.subscriptionStatus==='active'}};
   function load(file){const exports={};vm.runInNewContext(fs.readFileSync(backend+'/sandbox/'+file,'utf8'),{exports,require:name=>modules[name],Date});return exports;}
+  modules['../patch-awards']=require(backend+'/patch-awards.js');
   modules['./admin-access']=load('admin-access.js');
   return {api:load('users.js'),accounts,records};
 }
@@ -44,4 +45,22 @@ test('activity updates are throttled across tabs and skipped in hidden tabs',asy
  }
  await Promise.resolve();assert.equal(calls,1);await ticks[0]();await ticks[1]();assert.equal(calls,1);
  now+=300001;hidden=true;await ticks[0]();assert.equal(calls,1);hidden=false;await ticks[1]();assert.equal(calls,2);
+});
+
+test('patch awards require developer access, preserve first date, and disallow employee grants',async()=>{
+ const {api,records}=fixture();await assert.rejects(api.giveUserPatch(request('beta',{uid:'beta',patchId:'contributor'})),{code:'permission-denied'});
+ await assert.rejects(api.giveUserPatch(request('admin',{uid:'beta',patchId:'teachertiles'})),{code:'invalid-argument'});
+ const result=await api.giveUserPatch(request('admin',{uid:'beta',patchId:'contributor'}));assert.equal(result.patchAwards.contributor.awardedAt,5678);
+ const first=records.get('users/beta').patchAwards.contributor;await api.giveUserPatch(request('admin',{uid:'beta',patchId:'contributor'}));assert.equal(records.get('users/beta').patchAwards.contributor,first);
+});
+test('deletion rejects beta callers, self-delete, wrong confirmation and subscribers; then removes account',async()=>{
+ const {api,accounts,records}=fixture();const data={uid:'beta',confirmation:'beta@example.com'};
+ await assert.rejects(api.deleteDeveloperUser(request('beta',data)),{code:'permission-denied'});
+ await assert.rejects(api.deleteDeveloperUser(request('admin',{uid:'admin',confirmation:'admin'})),{code:'permission-denied'});
+ await assert.rejects(api.deleteDeveloperUser(request('admin',{uid:'beta',confirmation:'wrong'})),{code:'invalid-argument'});
+ await assert.rejects(api.deleteDeveloperUser(request('admin',data)),{code:'failed-precondition'});assert.equal(accounts.get('beta').disabled,undefined);
+ records.set('users/beta',{});assert.equal((await api.deleteDeveloperUser(request('admin',data))).deleted,true);assert.equal(accounts.has('beta'),false);assert.equal(records.has('users/beta'),false);
+});
+test('search matches names and exact email without limiting search to the loaded page',async()=>{
+ const {api}=fixture();assert.equal((await api.listDeveloperUsers(request('admin',{query:'beta@example.com'}))).users.length,1);assert.equal((await api.listDeveloperUsers(request('admin',{query:'beta'}))).users.length,1);
 });
