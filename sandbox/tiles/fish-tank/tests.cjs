@@ -1,0 +1,17 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const context={window:{}};vm.runInNewContext(fs.readFileSync(`${__dirname}/index.js`,'utf8'),context);
+const {eligible,ecology}=context.window.TeacherTilesFishTank;
+assert.equal(eligible(0).length,7);assert.ok(!eligible(179).some(s=>s[0]==='shark'));assert.ok(eligible(180).some(s=>s[0]==='shark'));
+const state={quiet:0,loud:0,scared:0};for(let i=0;i<1801;i++)ecology(state,0,45,.1);
+assert.ok(state.quiet>=180);assert.equal(state.scared,0);
+ecology(state,100,45,.1);assert.equal(state.scared,0,'One short spike should not scare the fish');
+for(let i=0;i<4;i++)ecology(state,100,45,.1);assert.ok(state.scared>0);assert.equal(state.quiet,0);
+for(let i=0;i<50;i++)ecology(state,0,45,.1);assert.equal(state.scared,0);assert.ok(state.quiet>=4.9);
+console.log('Fish Tank: quiet unlocks rare species; sustained loudness scares fish and resets the streak; calm recovers.');
+const ambient={quiet:0,loud:0,scared:0};
+for(let i=0;i<1810;i++)context.window.TeacherTilesFishTank.advance(ambient,{mode:'ambient',listening:false,level:100},.1);
+assert.ok(ambient.quiet>=180,'No mic mode must progress without permission or audio');
+assert.equal(ambient.scared,0,'No mic mode must ignore room noise');
+const before=ambient.quiet;context.window.TeacherTilesFishTank.advance(ambient,{mode:'microphone',listening:false},.1);assert.equal(ambient.quiet,before,'Mic mode must pause without an active microphone');
+assert.ok(eligible(ambient.quiet).some(s=>s[0]==='shark'));
+console.log('Fish Tank: no-mic visitors progress to the rarest species; inactive microphone mode does not progress.');
