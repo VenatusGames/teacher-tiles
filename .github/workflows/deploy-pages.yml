@@ -3,10 +3,10 @@ name: Deploy branch to GitHub Pages
 run-name: Deploy ${{ github.ref_name }}
 
 # Each branch publishes only its own slice of teachertiles.com:
-#   main    -> /          (live Firebase)
-#   sandbox -> /sandbox/  (live Firebase)
+#   main    -> /          (teachertiles-6739b)
+#   sandbox -> /sandbox/  (teachertiles-6739b)
 #   wigs    -> /wigs/
-#   dev     -> /dev/      (sandbox Firebase)
+#   dev     -> /dev/      (teachertiles-dev)
 #
 # The combined site is stored on the `gh-pages` branch. A push rebuilds only the
 # pushed branch, replaces its folder on `gh-pages`, then deploys `gh-pages` as-is.
@@ -14,8 +14,8 @@ run-name: Deploy ${{ github.ref_name }}
 #
 # Firebase web config comes from repository variables (Settings > Secrets and
 # variables > Actions > Variables), each holding the firebaseConfig object as JSON:
-#   FIREBASE_CONFIG_LIVE     optional; falls back to the committed firebase-config.js
-#   FIREBASE_CONFIG_SANDBOX  required for dev; the build fails without it
+#   FIREBASE_CONFIG_LIVE  teachertiles-6739b; optional, falls back to the committed firebase-config.js
+#   FIREBASE_CONFIG_DEV   teachertiles-dev; required for dev, the build fails without it
 
 on:
   push:
@@ -54,7 +54,7 @@ jobs:
       - name: Build site
         env:
           FIREBASE_CONFIG_LIVE: ${{ vars.FIREBASE_CONFIG_LIVE }}
-          FIREBASE_CONFIG_SANDBOX: ${{ vars.FIREBASE_CONFIG_SANDBOX }}
+          FIREBASE_CONFIG_DEV: ${{ vars.FIREBASE_CONFIG_DEV }}
         run: |
           set -euo pipefail
 
@@ -73,11 +73,11 @@ jobs:
           firebase_config() {
             case "$1" in
               dev)
-                if test -z "${FIREBASE_CONFIG_SANDBOX}"; then
-                  echo "::error::Set the FIREBASE_CONFIG_SANDBOX repository variable before deploying dev." >&2
+                if test -z "${FIREBASE_CONFIG_DEV}"; then
+                  echo "::error::Set the FIREBASE_CONFIG_DEV repository variable before deploying dev." >&2
                   return 1
                 fi
-                echo "${FIREBASE_CONFIG_SANDBOX}" ;;
+                echo "${FIREBASE_CONFIG_DEV}" ;;
               *) echo "${FIREBASE_CONFIG_LIVE}" ;;
             esac
           }
