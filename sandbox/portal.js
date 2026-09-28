@@ -6,7 +6,7 @@ import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20260927-template-patches';
 import {startSiteActivity} from '../account/site-activity.js';
-import {createCodesPanel} from './codes.js?v=20260927-codes-fix';
+import {createCodesPanel} from './codes.js?v=20260927-codes-catalog';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
