@@ -6,7 +6,7 @@ import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20260927-template-patches';
 import {startSiteActivity} from '../account/site-activity.js';
-import {createCodesPanel} from './codes.js?v=20260927-tt-codes';
+import {createCodesPanel} from './codes.js?v=20260927-codes-fix';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
@@ -55,7 +55,7 @@ try{
     import('https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js')
   ]);
   sdk=authSdk;const firebase=app.initializeApp(firebaseConfig);auth=sdk.getAuth(firebase);
-  call=(name,data)=>functions.httpsCallable(functions.getFunctions(firebase,'us-central1'),name,{timeout:name==='deleteDeveloperUser'?540000:['bulkGiveUserPatch','getDeveloperInsights'].includes(name)?120000:15000})(data);
+  call=(name,data)=>functions.httpsCallable(functions.getFunctions(firebase,'us-central1'),name,{timeout:name==='deleteDeveloperUser'?540000:name==='developerCodes'?60000:['bulkGiveUserPatch','getDeveloperInsights'].includes(name)?120000:15000})(data);
   await sdk.setPersistence(auth,sdk.browserLocalPersistence);
   startSiteActivity(()=>auth.currentUser,call);
   sdk.onIdTokenChanged(auth,user=>void check(user),()=>{lock('Unable to read your sign-in session. Please refresh.');busy(false)});
