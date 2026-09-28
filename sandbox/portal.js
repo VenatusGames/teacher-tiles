@@ -6,6 +6,7 @@ import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20260927-template-patches';
 import {startSiteActivity} from '../account/site-activity.js';
+import {createCodesPanel} from './codes.js?v=20260927-tt-codes';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
@@ -16,15 +17,16 @@ const templatesElement=document.createElement('section');templatesElement.id='po
 const templates=createTemplateLibrary({element:templatesElement,call:(name,data)=>call(name,data),getUid:()=>authorized?auth?.currentUser?.uid:null,admin:true,renderPreview:adminBoardPreview});
 const bugs=createBugReports((name,data)=>call(name,data));home.parentElement.append(bugs.element);
 const insights=createInsights((name,data)=>call(name,data));
+const codes=createCodesPanel((name,data)=>call(name,data));home.parentElement.append(codes.element);
 let view="overview";
-function navigate(next){view=next;bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
+function navigate(next){view=next;bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
 document.querySelectorAll("[data-portal-view]").forEach(link=>link.onclick=event=>{event.preventDefault();if(authorized)navigate(link.dataset.portalView)});
 let auth,sdk,call,pending=false,generation=0,lastCheck=0,authorized=false;
 function lock(message){showPortal(false);authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}
 function busy(value){pending=value;signIn.disabled=retry.disabled=value||!auth;signOut.disabled=value;}
 async function check(user){
   const attempt=++generation;lastCheck=Date.now();
-  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
+  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();codes.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
   busy(true);lock('Signed in. Verifying sandbox access…');
   try{
     const access=await verifyAccess(user,call,{sandbox:true});
@@ -34,7 +36,7 @@ async function check(user){
     document.getElementById('portal-email').textContent=user.email||'';
     document.getElementById('portal-role').textContent=access.role==='owner'?'Owner':'Administrator';
     authorized=true;showPortal(true);login.hidden=true;navigate(view);void insights.load();signOut.hidden=false;
-  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();lock(accessError(error));}}
+  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();codes.reset();lock(accessError(error));}}
   finally{if(attempt===generation)busy(false);}
 }
 signIn.onclick=async()=>{

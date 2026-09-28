@@ -4074,7 +4074,26 @@ window.TeacherTilesAccount = {
     return applyReturnedShopAccount(await callShopFunction("purchaseCosmetic", { productId }));
   },
   async redeem(code) {
-    return applyReturnedShopAccount(await callShopFunction("redeemCoinCode", { code }));
+    const returnUrl = new URL(window.location.href);
+    returnUrl.hash = "";
+    returnUrl.searchParams.delete("tt_checkout");
+    returnUrl.searchParams.delete("tt_code");
+    const result = await callShopFunction("redeemCode", { code, returnUrl: returnUrl.href });
+    if (result?.requiresCheckout && result?.checkoutUrl) {
+      window.location.assign(result.checkoutUrl);
+      return new Promise(() => {});
+    }
+    const applied = applyReturnedShopAccount(result);
+    if (result?.rewardType === "cosmetic") {
+      window.setTimeout(() => {
+        const status = document.getElementById("shop-redeem-status");
+        if (status) {
+          status.classList.remove("is-error");
+          status.textContent = `${result.rewardName || "Cosmetic"} unlocked.`;
+        }
+      }, 0);
+    }
+    return applied;
   },
   async generateCode(packId) {
     return callShopFunction("generateCoinCode", { packId });
