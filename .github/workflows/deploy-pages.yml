@@ -253,7 +253,7 @@ jobs:
 
       - name: Check site entry points
         run: |
-          for index in index.html sandbox/index.html wigs/index.html; do
+          for index in index.html sandbox/index.html wigs/index.html dev/index.html; do
             test -f "${index}" || { echo "::error::Missing ${index} on ${PAGES_BRANCH}" >&2; exit 1; }
           done
           echo "Deploying ${PAGES_BRANCH} @ $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
