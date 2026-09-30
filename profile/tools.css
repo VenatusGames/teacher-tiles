@@ -1,0 +1,16 @@
+/* Account tool cards: scoped to the profile, preserving existing icon artwork. */
+.profile-tools{gap:10px;margin-top:24px}
+.profile-tools .profile-tools__head{margin:0 0 2px}
+.profile-tools .profile-tools__head h3{font-size:17px;line-height:1.4;letter-spacing:-.02em}
+.profile-tools .profile-tool-button{box-sizing:border-box;min-height:104px;margin:0;padding:16px;grid-template-columns:46px minmax(0,1fr) 16px;gap:12px;border:1px solid color-mix(in srgb,var(--border) 75%,transparent);border-radius:16px;background:var(--surface-solid);color:var(--text);box-shadow:0 2px 5px #15263c04;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.profile-tools .profile-tool-button__icon{width:46px;height:46px;border-radius:14px}
+.profile-tools .profile-tool-button>span:nth-child(2){min-width:0}
+.profile-tools .profile-tool-button strong{font-size:14px;font-weight:650;line-height:1.35;letter-spacing:-.015em;overflow-wrap:anywhere}
+.profile-tools .profile-tool-button small{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.55;overflow:visible;-webkit-line-clamp:unset}
+.profile-tools .profile-tool-button>i{display:block;font-size:22px;line-height:1;color:var(--muted);opacity:.55;transition:transform .18s ease,opacity .18s ease}
+@media(hover:hover){.profile-tools .profile-tool-button:hover{background:color-mix(in srgb,var(--surface-solid) 96%,var(--accent));border-color:color-mix(in srgb,var(--accent) 28%,var(--border));box-shadow:0 4px 12px #15263c09;transform:translateY(-1px)}.profile-tools .profile-tool-button:hover>i{transform:translateX(2px);opacity:1}}
+.profile-tools .profile-tool-button[aria-expanded="true"]{background:color-mix(in srgb,var(--surface-solid) 94%,var(--accent));border-color:color-mix(in srgb,var(--accent) 42%,var(--border));box-shadow:none}
+.profile-tools .profile-tool-button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 65%,#6d9cde);outline-offset:3px}
+.profile-tools .profile-tool-button:active{transform:translateY(0);box-shadow:none}
+@media(max-width:560px){.profile-tools{grid-template-columns:1fr;gap:8px}.profile-tools .profile-tool-button{min-height:84px;padding:13px 14px;grid-template-columns:44px minmax(0,1fr) 16px}.profile-tools .profile-tool-button__icon{width:44px;height:44px}.profile-tools .profile-tool-button strong{font-size:14px}.profile-tools .profile-tool-button small{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.profile-tools .profile-tool-button,.profile-tools .profile-tool-button>i{transition:none}.profile-tools .profile-tool-button:hover,.profile-tools .profile-tool-button:hover>i{transform:none}}
