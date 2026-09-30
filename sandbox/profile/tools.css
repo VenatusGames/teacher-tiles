@@ -60,5 +60,5 @@
 .profile-tools .profile-tool-button--unavailable small{font-size:10.5px;line-height:1.4}
 @media(max-width:560px){.profile-tools .profile-tool-button--unavailable{min-height:96px}}
 
-.profile-tools .profile-tool-button--unavailable>span:nth-child(2){text-align:center}
+.profile-tools .profile-tool-button--unavailable>span:nth-child(2){text-align:left}
 .profile-tools .profile-tool-button--unavailable small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
