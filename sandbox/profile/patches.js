@@ -36,7 +36,8 @@ export function ensurePlannedPatches() {
 
 ensurePlannedPatches();
 
-if (grid && tabs) {
+if (grid && tabs && grid.dataset.patchInspectorInitialized !== 'true') {
+  grid.dataset.patchInspectorInitialized = 'true';
   for (const id of ['stickerer', 'tile-layer', 'template-creator', 'template-artist']) {
     grid.querySelector(`.profile-badge--${id}`)?.classList.add('profile-badge--coming-soon');
   }
