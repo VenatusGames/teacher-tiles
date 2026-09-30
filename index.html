@@ -67,7 +67,7 @@
 <link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=20261009-tile-updates">
   <link rel="stylesheet" href="templates/style.css?v=20260930-template-details">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
-  <link rel="stylesheet" href="profile/tools.css?v=20260930-patch-holder">
+  <link rel="stylesheet" href="profile/tools.css?v=20260930-presentations">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -310,6 +310,10 @@
               <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span>
               <span><strong>Lesson Planner</strong><small>Organize lessons for the day, week, or school year</small></span>
               <i aria-hidden="true">›</i>
+            </button>
+            <button id="profile-presentations-button" class="profile-tool-button profile-tool-button--unavailable" type="button" disabled>
+              <span class="profile-tool-button__icon profile-tool-button__icon--presentations" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v5M8 21l4-3 4 3M8 8h8M8 12h5"/></svg></span>
+              <span><strong>Presentations</strong><small>Create presentation slides and slidedecks and make them interactive</small><span class="profile-tool-coming-soon">Coming Soon</span></span>
             </button>
           </section>
           <section id="lesson-planner-panel" class="lesson-planner-panel" hidden aria-hidden="true" aria-label="Lesson Planner">
@@ -4322,7 +4326,7 @@
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
 <script type="module" src="firebase-auth.js?v=20260927-upload-close"></script>
-<script type="module" src="profile/patches.js?v=20261012-patch-viewer"></script>
+<script type="module" src="profile/patches.js?v=20260930-single-inspector"></script>
 
 
   <template id="ruler-template">
