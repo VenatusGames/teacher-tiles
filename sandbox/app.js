@@ -790,7 +790,7 @@ renderMenuCategoryPins();
 
 // A keyboard-accessible corner grip resizes the catalog without changing board zoom.
 const menuResizeGrip=document.createElement('button');menuResizeGrip.type='button';menuResizeGrip.className='context-menu__resize';menuResizeGrip.setAttribute('aria-label','Resize Add tile menu');menuResizeGrip.title='Drag to resize. Arrow keys adjust size.';menu.appendChild(menuResizeGrip);
-const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
+const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset Scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
 menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
 
 menuResetSize.addEventListener('click',event=>{
