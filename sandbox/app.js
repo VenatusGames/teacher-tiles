@@ -3607,6 +3607,7 @@ function setupModuleByType(m,type){
   if(type==='compass')setupCompass(m);
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
+  if(type==='classroomjobs')window.TeacherTilesClassroomJobs.setup(m);
   if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
