@@ -14,3 +14,17 @@
 .profile-tools .profile-tool-button:active{transform:translateY(0);box-shadow:none}
 @media(max-width:560px){.profile-tools{grid-template-columns:1fr;gap:8px}.profile-tools .profile-tool-button{min-height:84px;padding:13px 14px;grid-template-columns:44px minmax(0,1fr) 16px}.profile-tools .profile-tool-button__icon{width:44px;height:44px}.profile-tools .profile-tool-button strong{font-size:14px}.profile-tools .profile-tool-button small{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.profile-tools .profile-tool-button,.profile-tools .profile-tool-button>i{transition:none}.profile-tools .profile-tool-button:hover,.profile-tools .profile-tool-button:hover>i{transform:none}}
+
+.organization-development-note{margin:0;padding:14px 16px;border:1px solid #ead58b;border-radius:12px;background:#fff5cc;color:#725716;font-size:13px;line-height:1.6}
+.profile-badge-showcase{margin-top:24px;padding:18px;border:1px solid color-mix(in srgb,var(--border) 75%,transparent);border-radius:16px;background:var(--surface-solid);box-shadow:0 2px 5px #15263c04}
+.profile-badge-showcase .profile-badge-showcase__head{align-items:center;gap:12px;margin-bottom:14px}
+.profile-badge-showcase .profile-badge-showcase__head h3{font-size:17px;line-height:1.4;letter-spacing:-.02em}
+.profile-badge-showcase .profile-badge-showcase__head span{color:var(--muted);font-size:9px;font-weight:600;letter-spacing:.1em}
+.profile-badge-showcase .profile-badge-showcase__head>small{color:var(--muted);font-size:11px;font-weight:500}
+.profile-badge-showcase .profile-patch-tabs{gap:4px;padding:4px;margin:0 0 18px;border:1px solid color-mix(in srgb,var(--border) 70%,transparent);border-radius:12px;background:var(--surface-soft)}
+.profile-badge-showcase .profile-patch-tabs button{padding:9px 14px;border:1px solid transparent;border-radius:9px;font-size:12px;font-weight:600;box-shadow:none}
+.profile-badge-showcase .profile-patch-tabs button[aria-pressed="true"]{background:var(--surface-solid);border-color:color-mix(in srgb,var(--border) 80%,transparent);color:var(--text);box-shadow:0 1px 3px #15263c07}
+.profile-badge-showcase .profile-patch-tabs button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 65%,#6d9cde);outline-offset:2px}
+.profile-badge-showcase .profile-badge-grid{gap:18px 14px;padding:6px 0;justify-content:start}
+@media(hover:hover){.profile-badge-showcase .profile-patch-tabs button:hover{color:var(--text);background:color-mix(in srgb,var(--surface-solid) 96%,var(--accent))}}
+@media(max-width:480px){.profile-badge-showcase{padding:14px}.profile-badge-showcase .profile-badge-showcase__head{flex-wrap:wrap}.profile-badge-showcase .profile-badge-grid{gap:14px 10px}}
