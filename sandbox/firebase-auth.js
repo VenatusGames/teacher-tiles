@@ -3500,6 +3500,7 @@ async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
   if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
+  window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
   currentUser = user || null;if(!user)window.TeacherTilesTheme?.hideBoard();
   window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {

@@ -336,6 +336,7 @@ function isTileLocked(m){return m?.dataset.tileLocked==='true'}
 
 function syncTileLockControl(m){
   const locked=isTileLocked(m);
+  m.querySelector(':scope>.module-pin')?.setAttribute('aria-pressed',String(locked||isTilePinned(m)));
   const button=m.querySelector('.module-lock-action');
   if(button){button.setAttribute('aria-pressed',String(locked));button.querySelector('span').textContent=locked?'Unlock':'Lock';}
 }
@@ -353,7 +354,7 @@ function ensureTilePinControl(m){
   const del=m.querySelector(':scope>.module-delete');if(!del)return null;
   button=document.createElement('button');button.className='module-pin';button.type='button';
   button.setAttribute('aria-label','Pin and Lock');button.setAttribute('aria-expanded','false');button.title='Pin and Lock';
-  button.innerHTML=TILE_PIN_OFF_ICON;
+  button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 7 0-1 4 2 2v2H2V9l2-2-1-4ZM6.5 11v6"/><rect x="12" y="12" width="10" height="9" rx="2"/><path d="M14 12V9a3 3 0 0 1 6 0v3M17 16v2"/></svg>';
   const drawer=document.createElement('div');drawer.className='module-position-drawer';drawer.hidden=true;
   drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Tile Position');
   drawer.innerHTML=`<button type="button" class="module-pin-action" aria-pressed="false">${TILE_PIN_OFF_ICON}<span>Pin</span></button><button type="button" class="module-lock-action" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><span>Lock</span></button>`;
@@ -371,8 +372,8 @@ function ensureTilePinControl(m){
     document.addEventListener('pointerdown',e=>{if(!drawer.contains(e.target)&&!button.contains(e.target))close();},{capture:true,signal:controller.signal});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();button.focus();}},{signal:controller.signal});
   });
-  drawer.querySelector('.module-pin-action').addEventListener('click',()=>setTilePinned(m,!isTilePinned(m)));
-  drawer.querySelector('.module-lock-action').addEventListener('click',()=>setTileLocked(m,!isTileLocked(m)));
+  drawer.querySelector('.module-pin-action').addEventListener('click',()=>{setTilePinned(m,!isTilePinned(m));close();});
+  drawer.querySelector('.module-lock-action').addEventListener('click',()=>{setTileLocked(m,!isTileLocked(m));close();});
   syncTilePinControl(m);syncTileLockControl(m);return button;
 }
 
