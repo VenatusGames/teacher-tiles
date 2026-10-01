@@ -304,13 +304,14 @@ function isTilePinned(m){return Boolean(m&&m.dataset.tilePinned==='true')}
 
 function syncTilePinControl(m){
   if(!m)return;
-  const button=m.querySelector(':scope>.module-pin');
+  const button=m.querySelector('.module-pin-action');
   const pinned=isTilePinned(m);
   m.classList.toggle('is-tile-pinned',pinned);
   if(!button)return;
   button.setAttribute('aria-pressed',String(pinned));
   button.setAttribute('aria-label',pinned?'Unpin tile from camera':'Pin tile to camera');
   button.title=pinned?'Unpin tile':'Pin tile';
+  button.querySelector('span').textContent=pinned?'Unpin':'Pin';
 }
 
 function snapScreenCoordinate(value){

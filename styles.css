@@ -19325,3 +19325,16 @@ body .sticker-module>.module-delete{
 .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion{border-radius:50%;border:5px double #d6efc7;box-shadow:0 0 0 2px #3d7561,0 5px 10px #214e3f30,inset 0 0 0 1px #205947}
 .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion::before{border-radius:50%;border:1px solid #d8efc2;inset:3px}
 .profile-badge--tile-layer:not(.profile-badge--locked) .profile-badge__medallion svg{stroke:#ecffde;filter:drop-shadow(0 2px 1px #164e4266)}
+
+/* Shared position drawer keeps pinning separate from movement locking. */
+.module>.module-position-drawer{position:absolute;z-index:10001;display:flex;gap:6px;padding:8px;border:1px solid var(--border);border-radius:14px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 8px 24px #0f172a24;animation:tile-position-reveal .16s ease-out}
+.module>.module-position-drawer[hidden]{display:none}
+.module-position-drawer button{display:flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:inherit;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 4px #0f172a10;transition:background .15s,transform .15s}
+.module-position-drawer button:hover{transform:translateY(-1px)}
+.module-position-drawer button[aria-pressed=true]{background:#e5f1ff;color:#185f9f;border-color:#7fb0df}
+.module-position-drawer svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body .module>.module-pin[aria-expanded=true]{opacity:1!important;pointer-events:auto!important}
+.module[data-tile-locked=true]>.resize-handle{pointer-events:none!important;opacity:0!important}
+.board-mini-object .module-position-drawer,.magnifier-source-clone .module-position-drawer{display:none!important}
+@keyframes tile-position-reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.module>.module-position-drawer{animation:none}}

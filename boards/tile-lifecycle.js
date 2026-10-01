@@ -79,7 +79,7 @@ function clearSnapGroupMember(m,{notify=true}={}){
 }
 
 function assignSnapGroup(modules){
-  const connected=[...new Set(modules.filter(module=>module?.isConnected&&module.dataset.type!=='sticker'))];
+  const connected=[...new Set(modules.filter(module=>module?.isConnected&&!isTileLocked(module)&&module.dataset.type!=='sticker'))];
   if(connected.length<2)return connected;
   const expanded=new Set(connected);
   for(const module of connected)for(const member of snapGroupMembers(module))if(member.dataset.type!=='sticker')expanded.add(member);
@@ -105,6 +105,7 @@ function syncSnapGroupLayer(modules){
 function normalizeSnapGroups(){
   const groups=new Map();
   for(const module of workspace.querySelectorAll('.module')){
+    if(isTileLocked(module)){delete module.dataset.snapGroup;module.classList.remove('is-snap-grouped');continue;}
     const id=module.dataset.snapGroup;
     if(id){if(!groups.has(id))groups.set(id,[]);groups.get(id).push(module)}
   }
@@ -331,20 +332,48 @@ function layoutTileOptionControls(m){
   requestAnimationFrame(()=>shiftTileControlsAwayFromOptions(m));
 }
 
+function isTileLocked(m){return m?.dataset.tileLocked==='true'}
+
+function syncTileLockControl(m){
+  const locked=isTileLocked(m);
+  const button=m.querySelector('.module-lock-action');
+  if(button){button.setAttribute('aria-pressed',String(locked));button.querySelector('span').textContent=locked?'Unlock':'Lock';}
+}
+
+function setTileLocked(m,locked){
+  if(locked){clearSnapGroupMember(m);m.dataset.tileLocked='true';}
+  else delete m.dataset.tileLocked;
+  syncTileLockControl(m);
+  notifyBoardChanged('tile-lock');
+}
+
 function ensureTilePinControl(m){
   let button=m.querySelector(':scope>.module-pin');
-  if(button){
-    button.tabIndex=-1;
-    syncTilePinControl(m);
-    return button;
-  }
+  if(button){syncTilePinControl(m);syncTileLockControl(m);return button;}
   const del=m.querySelector(':scope>.module-delete');if(!del)return null;
-  button=document.createElement('button');button.className='module-pin';button.type='button';button.tabIndex=-1;button.setAttribute('aria-pressed','false');button.innerHTML=`${TILE_PIN_OFF_ICON}${TILE_PIN_ON_ICON}`;
-  del.after(button);
-  button.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation()});
-  button.addEventListener('focus',()=>button.blur());
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();setTilePinned(m,!isTilePinned(m))});
-  syncTilePinControl(m);return button;
+  button=document.createElement('button');button.className='module-pin';button.type='button';
+  button.setAttribute('aria-label','Pin and Lock');button.setAttribute('aria-expanded','false');button.title='Pin and Lock';
+  button.innerHTML=TILE_PIN_OFF_ICON;
+  const drawer=document.createElement('div');drawer.className='module-position-drawer';drawer.hidden=true;
+  drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Tile Position');
+  drawer.innerHTML=`<button type="button" class="module-pin-action" aria-pressed="false">${TILE_PIN_OFF_ICON}<span>Pin</span></button><button type="button" class="module-lock-action" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><span>Lock</span></button>`;
+  del.after(button,drawer);
+  let controller;
+  const close=()=>{drawer.hidden=true;button.setAttribute('aria-expanded','false');controller?.abort();};
+  button.addEventListener('pointerdown',event=>event.stopPropagation());
+  drawer.addEventListener('pointerdown',event=>event.stopPropagation());
+  button.addEventListener('click',event=>{
+    event.stopPropagation();if(!drawer.hidden){close();return;}
+    drawer.hidden=false;button.setAttribute('aria-expanded','true');
+    drawer.style.top=`${button.offsetTop+button.offsetHeight+7}px`;
+    drawer.style.right=`${Math.max(8,m.clientWidth-button.offsetLeft-button.offsetWidth)}px`;
+    controller=new AbortController();
+    document.addEventListener('pointerdown',e=>{if(!drawer.contains(e.target)&&!button.contains(e.target))close();},{capture:true,signal:controller.signal});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();button.focus();}},{signal:controller.signal});
+  });
+  drawer.querySelector('.module-pin-action').addEventListener('click',()=>setTilePinned(m,!isTilePinned(m)));
+  drawer.querySelector('.module-lock-action').addEventListener('click',()=>setTileLocked(m,!isTileLocked(m)));
+  syncTilePinControl(m);syncTileLockControl(m);return button;
 }
 
 function syncTileFullscreenControls(){
@@ -531,7 +560,7 @@ function setupDrag(m){
     const w=tileDisplayWidth(m),hh=tileDisplayHeight(m),right=left+w,bottom=top+hh;
     let sx=null,sy=null,bestX=SNAP,bestY=SNAP,targetX=null,targetY=null,seamX=0,seamY=0,xStart=0,xLength=0,yStart=0,yLength=0;
     for(const o of workspace.querySelectorAll('.module')){
-      if(o===m||selectedModules.has(o)||o.dataset.type==='sticker')continue;
+      if(o===m||isTileLocked(o)||selectedModules.has(o)||o.dataset.type==='sticker')continue;
       const ol=o.offsetLeft,ot=o.offsetTop,ow=tileDisplayWidth(o),oh=tileDisplayHeight(o),or=ol+ow,ob=ot+oh;
       const vStart=Math.max(top,ot),vEnd=Math.min(bottom,ob),vOverlap=vEnd-vStart,hStart=Math.max(left,ol),hEnd=Math.min(right,or),hOverlap=hEnd-hStart;
       if(vOverlap>28){
@@ -568,7 +597,7 @@ function setupDrag(m){
   };
   h.addEventListener('pointerdown',e=>{
     const floatingDragSurface=isFloatingTileSkinDragSurface(e.target,m);
-    if(e.button!==0||(isInteractiveModuleTarget(e.target,m)&&!floatingDragSurface))return;
+    if(isTileLocked(m)||e.button!==0||(isInteractiveModuleTarget(e.target,m)&&!floatingDragSurface))return;
     const clickableStoplightSurface=floatingDragSurface&&e.target instanceof Element&&Boolean(e.target.closest('.stoplight-stage'));
     if(!clickableStoplightSurface)e.preventDefault();
     m.classList.add('is-dragging');
@@ -584,7 +613,7 @@ function setupDrag(m){
       expanded.add(selectedModule);
       for(const member of snapGroupMembers(selectedModule))expanded.add(member);
     }
-    let group=[...expanded];
+    let group=[...expanded].filter(module=>!isTileLocked(module));
     let multi=group.length>1;
     let tugCandidate=selected.length===1&&selected[0]===m&&connectedToAnchor.length>1;
     let tugArmed=false;
@@ -721,7 +750,7 @@ function setupResize(m){
   m.style.setProperty('min-height',m._resizeMinimum.height+'px','important');
   for(const d of ['t','r','b','l'])if(!m.querySelector('[data-resize="'+d+'"]')){const h=document.createElement('div');h.className='resize-handle resize-handle--'+d;h.dataset.resize=d;m.appendChild(h);}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
-    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    if(isTileLocked(m)||e.button!==0)return;e.preventDefault();e.stopPropagation();
     const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);
     const minimum=m._resizeMinimum,mw=minimum.width*.85,mh=minimum.height*.85,viewportScale=moduleViewportScale(m)/tileUniformScale(m);
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
