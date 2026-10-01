@@ -146,6 +146,7 @@ function applyBoardPostSetupState(m,state){
   }
   disableModuleSpellcheck(m);
   syncTilePinControl(m);
+  syncTileLockControl(m);
   if(isTilePinned(m)){
     delete m.dataset.pinBaseScale;
     syncPinnedTileToCamera(m);
