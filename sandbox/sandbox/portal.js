@@ -1,7 +1,7 @@
 import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
 import {createBugReports} from './bug-reports.js?v=20260926-preview-titles';
 import {createTemplateLibrary} from '../templates/ui.js?v=20260930-report-dialog';
-import {createInsights} from './insights.js?v=20260926-preview-titles';
+import {createInsights} from './insights.js?v=20260930-portal-refresh';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20260927-template-patches';
@@ -19,7 +19,7 @@ const bugs=createBugReports((name,data)=>call(name,data));home.parentElement.app
 const insights=createInsights((name,data)=>call(name,data));
 const codes=createCodesPanel((name,data)=>call(name,data));home.parentElement.append(codes.element);
 let view="overview";
-function navigate(next){view=next;bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
+function navigate(next){view=next;document.getElementById('portal-current-view').textContent=({overview:'Overview',users:'Users',templates:'Board Templates',codes:'TT Codes',bugs:'Tickets'})[next]||'Overview';bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
 document.querySelectorAll("[data-portal-view]").forEach(link=>link.onclick=event=>{event.preventDefault();if(authorized)navigate(link.dataset.portalView)});
 let auth,sdk,call,pending=false,generation=0,lastCheck=0,authorized=false;
 function lock(message){showPortal(false);authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}

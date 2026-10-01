@@ -5,11 +5,12 @@
   <meta name="robots" content="noindex,nofollow">
   <title>TeacherTiles · Developer Portal</title>
   <link rel="icon" href="assets/profile/teachertiles-profile-logo.png">
-  <link rel="stylesheet" href="sandbox/portal.css?v=1790815355966">
-<link rel="stylesheet" href="templates/style.css?v=1790815355966">
-<link rel="stylesheet" href="support/ticket-thread.css?v=1790815355966">
+  <link rel="stylesheet" href="sandbox/portal.css?v=1790816881589">
+<link rel="stylesheet" href="templates/style.css?v=1790816881589">
+<link rel="stylesheet" href="support/ticket-thread.css?v=1790816881589">
+  <link rel="stylesheet" href="sandbox/portal-appearance.css?v=1790816881589">
 </head>
-<body>
+<body class="developer-portal">
   <main id="portal-access-screen">
       <section id="portal-login" class="access-card" aria-labelledby="access-heading">
         <div class="access-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
@@ -30,7 +31,7 @@
       <a class="public-site" href="/">Open TeacherTiles <span aria-hidden="true">↗</span></a>
     </aside>
     <main>
-      <header class="portal-topbar"><span>DEVELOPER TOOLS</span><button id="portal-signout" class="quiet" hidden>Sign out</button></header>
+      <header class="portal-topbar"><div class="portal-breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="portal-current-view">Overview</strong></div><button id="portal-signout" class="quiet" hidden>Sign out</button></header>
 
       <section id="portal-home" hidden aria-labelledby="portal-heading">
         <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer overview</h1><p>A place to test, review, and manage TeacherTiles.</p></div>
@@ -41,7 +42,7 @@
         </a>
         <div class="account-strip"><span class="verified-icon" aria-hidden="true">✓</span><div><strong id="portal-name"></strong><span id="portal-email"></span></div><span id="portal-role" class="role-chip"></span></div>
         <section id="developer-insights" aria-label="User insights"></section>
-        <p class="portal-footnote">Template moderation and other management tools will live here as they become available.</p>
+        <p class="portal-footnote">Insights are a saved snapshot. Use Refresh insights to get the latest counts.</p>
       </section>
       <section id="portal-users" hidden aria-labelledby="users-heading">
         <div class="users-panel-head"><h1 id="users-heading">Users</h1><div class="users-search"><label for="users-search" class="visually-hidden">Find a user</label><input id="users-search" type="search" placeholder="Search email, nickname, name, or user ID" maxlength="180" autocomplete="off"><button id="users-search-submit" class="quiet" type="button">Search</button><button id="users-refresh" class="quiet" type="button" title="Refresh cached users and activity">Refresh</button></div></div>
@@ -51,7 +52,7 @@
       </section>
     </main>
   </div>
-  <script type="module" src="sandbox/portal.js?v=1790815355966"></script>
+  <script type="module" src="sandbox/portal.js?v=1790816881589"></script>
 </body>
 </html>
 
