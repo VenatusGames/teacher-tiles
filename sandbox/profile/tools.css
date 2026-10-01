@@ -62,3 +62,7 @@
 
 .profile-tools .profile-tool-button--unavailable>span:nth-child(2){text-align:left}
 .profile-tools .profile-tool-button--unavailable small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+
+.profile-tools .profile-tool-coming-soon{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease}
+.profile-tools .profile-tool-button--unavailable:hover .profile-tool-coming-soon{opacity:1;visibility:visible}
+@media(prefers-reduced-motion:reduce){.profile-tools .profile-tool-coming-soon{transition:none}}
