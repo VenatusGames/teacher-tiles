@@ -763,7 +763,7 @@ menu.addEventListener('click',event=>{
   event.preventDefault();event.stopPropagation();
   const id=star.dataset.tileFavorite;
   if(menuFavorites.has(id))menuFavorites.delete(id);else menuFavorites.add(id);
-  try{localStorage.setItem(menuFavoritesStorageKey,JSON.stringify([...menuFavorites]))}catch{}
+  try{window.TeacherTilesCollectionPreferences.write(menuFavoritesStorageKey,JSON.stringify([...menuFavorites]))}catch{}
   const list=menu.querySelector('.context-menu__list'),scroll=list.scrollTop;
   applyMenuView();renderMenuCategoryPins();list.scrollTop=scroll;
   const next=[...menu.querySelectorAll('[data-tile-favorite]')].find(button=>button.dataset.tileFavorite===id);
@@ -782,7 +782,7 @@ menu.addEventListener('click',event=>{
   const pin=event.target.closest('[data-category-pin]');if(!pin)return;
   event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;
   if(menuPinnedCategories.has(id))menuPinnedCategories.delete(id);else menuPinnedCategories.add(id);
-  try{localStorage.setItem('teacherTiles.categoryPins.v1',JSON.stringify([...menuPinnedCategories]))}catch{}
+  try{window.TeacherTilesCollectionPreferences.write('teacherTiles.categoryPins.v1',JSON.stringify([...menuPinnedCategories]))}catch{}
   renderMenuCategoryPins();
   [...menu.querySelectorAll('[data-category-pin]')].find(button=>button.dataset.categoryPin===id)?.focus({preventScroll:true});
 });
@@ -1796,3 +1796,10 @@ if(document.readyState==='loading'){
 
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupTeacherTilesShop,{once:true});else setupTeacherTilesShop();
+
+window.addEventListener('teachertiles:collectionpreferences',()=>{
+  for(const [set,key] of [[menuFavorites,menuFavoritesStorageKey],[menuPinnedCategories,'teacherTiles.categoryPins.v1']]){
+    set.clear();try{for(const id of JSON.parse(localStorage.getItem(key)||'[]'))set.add(id)}catch{}
+  }
+  applyMenuView();renderMenuCategoryPins();
+});

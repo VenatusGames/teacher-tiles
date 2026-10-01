@@ -306,6 +306,7 @@ function syncTilePinControl(m){
   if(!m)return;
   const button=m.querySelector('.module-pin-action');
   const pinned=isTilePinned(m);
+  m.querySelector(':scope>.module-pin')?.setAttribute('aria-pressed',String(pinned||isTileLocked(m)));
   m.classList.toggle('is-tile-pinned',pinned);
   if(!button)return;
   button.setAttribute('aria-pressed',String(pinned));

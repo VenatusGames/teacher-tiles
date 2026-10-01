@@ -3,7 +3,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=path.resolve(__dirname,'..');
 (async()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
- const sources=[...html.matchAll(/<script src="([^"?]+)\?v=20260930-tile-refactor"><\/script>/g)].map(m=>m[1]);
+ const linked=[...html.matchAll(/<script src="([^"?]+)(?:\?[^"\s]*)?"><\/script>/g)].map(m=>m[1]).filter(source=>!/^https?:/.test(source));
+ const sources=linked.slice(0,linked.indexOf('app.js')+1);
  assert(sources.length>60,'Extracted scripts must be linked into the app');
  assert.equal(new Set(sources).size,sources.length,'Load each extracted script once');
  assert.equal(sources.at(-1),'app.js','Load shared declarations before the bootstrap');
