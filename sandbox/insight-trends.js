@@ -5,13 +5,13 @@ const node = (tag, className, text) => { const el=document.createElement(tag);el
 const svgNode = (tag, attrs, text) => { const el=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)));if(text!==undefined)el.textContent=text;return el; };
 
 export function createTrendCharts(root) {
- root.innerHTML=`<header class="trend-heading"><div><h2>Activity over time</h2><p>Your recorded online users and memberships.</p></div><div class="trend-controls"><div class="portal-segments" role="group" aria-label="Analytics time range"><button type="button" data-range="1" aria-pressed="false">24 hours</button><button type="button" data-range="7" aria-pressed="true">7 days</button><button type="button" data-range="30" aria-pressed="false">30 days</button></div><div class="portal-segments" role="group" aria-label="Analytics chart style"><button type="button" data-style="bar" aria-pressed="true">Bars</button><button type="button" data-style="line" aria-pressed="false">Line</button></div></div></header><div class="trend-grid"></div><p class="trend-footnote">Snapshots are recorded on refresh, at most once every 15 minutes. Gaps mean no recorded observation, not zero users.</p>`;
+ root.innerHTML=`<header class="trend-heading"><div><h2>User Analytics</h2><p>Your recorded online users and memberships.</p></div><div class="trend-controls"><div class="portal-segments" role="group" aria-label="Analytics time range"><button type="button" data-range="1" aria-pressed="false">24 Hours</button><button type="button" data-range="7" aria-pressed="true">7 Days</button><button type="button" data-range="30" aria-pressed="false">30 Days</button></div><div class="portal-segments" role="group" aria-label="Analytics chart style"><button type="button" data-style="bar" aria-pressed="false">Bars</button><button type="button" data-style="line" aria-pressed="true">Line</button></div></div></header><div class="trend-grid"></div><p class="trend-footnote">Snapshots are recorded on refresh, at most once every 15 minutes. Gaps mean no recorded observation, not zero users.</p>`;
  const grid=root.querySelector('.trend-grid');
- let points=[],asOf=Date.now(),loaded=false,days=7,style='bar';
+ let points=[],asOf=Date.now(),loaded=false,days=7,style='line';
  function render() {
   grid.replaceChildren();
   const start=asOf-days*86400000,visible=points.filter(p=>p.at>=start&&p.at<=asOf);
-  for(const [key,title,description] of [['online','Online users','Active in the last 6 minutes at each snapshot'],['subscribers','Subscribers','Active subscriptions · dev previews excluded']]) {
+  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],['subscribers','Subscribers','Active subscriptions · dev previews excluded']]) {
    const card=node('article','trend-card trend-'+key);
    const head=node('div','trend-card-heading'),copy=node('div','');copy.append(node('h3','',title),node('p','',description));
    const summary=node('div','trend-summary');summary.append(node('strong','',visible.length?number(visible.at(-1)[key]):'—'),node('span','','Latest snapshot'));head.append(copy,summary);card.append(head);
