@@ -1,5 +1,6 @@
 {
   "skins": {
+    "interactive-wonders": "tile-skin-interactive-wonders",
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
     "sticky-pinned": "tile-skin-sticky-pinned",
@@ -31,6 +32,7 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "basic": "theme-basic",
     "outer": "theme-outer-space",
     "frosted": "theme-frosted-window",
     "bamboo": "theme-bamboo",

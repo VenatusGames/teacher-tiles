@@ -7,8 +7,13 @@
     const hourglass=window.TeacherTilesHourglass.create(m.querySelector('.hourglass-canvas'));
     const rocketStage=m.querySelector('.rocket-stage'),plantStage=m.querySelector('.sunflower-stage');
     const stories=window.TeacherTilesGardenRocket.create(rocketStage,plantStage);
-    let mode='hourglass';
-    const symbols={hourglass:'⌛',candle:'🕯️',rocket:'🚀',sunflower:'🌻'};
+    const wonderSkin=m.dataset.tileSkin==='interactive-wonders';
+    const wonderStage=document.createElement('div');wonderStage.className='timer-story-stage wonder-stage';wonderStage.hidden=true;plantStage.after(wonderStage);
+    const wonders=window.TeacherTilesTimerWonders.create(wonderStage);
+    const types=wonderSkin?['firework','ice','icecream','ants']:['hourglass','candle','rocket','sunflower'];
+    if(wonderSkin)modeButtons.forEach((button,i)=>{button.dataset.interactive=types[i];button.title=['Firework','Ice','Ice Cream','Ants'][i]});
+    let mode=types[0];
+    const symbols={hourglass:'⌛',candle:'🕯️',rocket:'🚀',sunflower:'🌻',firework:'🎆',ice:'🧊',icecream:'🍦',ants:'🐜'};
     const typeButton=document.createElement('button');typeButton.type='button';typeButton.className='tile-action interactive-type-toggle';typeButton.setAttribute('aria-label','Choose timer type');typeButton.setAttribute('aria-expanded','false');
     const originalPicker=m.querySelector('.interactive-picker');const typeRow=document.createElement('div');typeRow.className='interactive-type-row';originalPicker.replaceWith(typeRow);typeRow.append(typeButton,m.querySelector('.interactive-customization'));
     const drawer=document.createElement('div');drawer.className='timer-shape-shelf interactive-type-shelf';drawer.hidden=true;drawer.setAttribute('role','group');drawer.setAttribute('aria-label','Timer type');document.body.appendChild(drawer);
@@ -22,9 +27,9 @@
     document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape,true);drawer.addEventListener('pointerdown',event=>event.stopPropagation());
 
     const setMode=next=>{
-      mode=['hourglass','candle','rocket','sunflower'].includes(next)?next:'hourglass';m.dataset.interactiveMode=mode;typeButton.textContent=symbols[mode];typeButton.title='Choose timer type: '+mode;typeButton.setAttribute('aria-label','Choose timer type: '+mode);
+      mode=types.includes(next)?next:types[0];m.dataset.interactiveMode=mode;typeButton.textContent=symbols[mode];typeButton.title='Choose timer type: '+mode;typeButton.setAttribute('aria-label','Choose timer type: '+mode);
       hourStage.hidden=mode!=='hourglass';candleStage.hidden=mode!=='candle';
-      rocketStage.hidden=mode!=='rocket';plantStage.hidden=mode!=='sunflower';stories.setMode(mode);
+      rocketStage.hidden=mode!=='rocket';plantStage.hidden=mode!=='sunflower';stories.setMode(mode);wonderStage.hidden=!wonderSkin;if(wonderSkin)wonders.setMode(mode);
       hourglass.setActive(mode==='hourglass');
       modeButtons.forEach(b=>{b.classList.toggle('is-active',b.dataset.interactive===mode);b.setAttribute('aria-pressed',String(b.dataset.interactive===mode));});
     };
@@ -35,16 +40,16 @@
       const {progress,left}=state,text=formatCountdown(left);
       countdownHour.textContent=text;countdownCandle.textContent=text;
       rocketStage.querySelector('.scene-countdown').textContent=text;plantStage.querySelector('.scene-countdown').textContent=text;
-      stories.update(state);
+      stories.update(state);wonders.update(state);
       hourglass.update(state);
       candleScene.style.setProperty('--candle-height',`${Math.max(8,78-70*progress)}%`);
       m.classList.toggle('candle-finished',mode==='candle'&&left<=0);
-    },{onFinish:()=>{stories.finish();if(mode==='candle')m.classList.add('candle-finished');celebrateTimerFinish(m)}});
+    },{onFinish:()=>{if(wonderSkin)wonders.finish();stories.finish();if(mode==='candle')m.classList.add('candle-finished');celebrateTimerFinish(m)}});
     setMode(m.dataset.interactiveMode);
     m._boardGetState=()=>({mode});
     m._boardSetState=state=>setMode(state?.mode||m.dataset.interactiveMode);
     const priorDeactivate=m._deactivate;m._deactivate=()=>{closeDrawer();priorDeactivate?.()};
-    m._cleanup=()=>{closeDrawer();drawer.remove();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape,true);hourglass.destroy();stories.destroy();cleanup();};
+    m._cleanup=()=>{closeDrawer();drawer.remove();document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape,true);hourglass.destroy();stories.destroy();wonders.destroy();cleanup();};
     window.TeacherTilesTimerPointer.attach(m);
   }
   window.TeacherTilesInteractiveTimers=Object.freeze({setup});

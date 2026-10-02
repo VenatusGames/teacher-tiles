@@ -7,6 +7,12 @@ function setupABC(m){
 
   const uppercase='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const lowercase='abcdefghijklmnopqrstuvwxyz'.split('');
+  const settings=document.createElement('div');settings.className='tile-settings-wrap';
+  settings.innerHTML='<button type="button" class="custom-icon tile-settings-toggle" aria-label="ABC Settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>ABC Settings</strong><label class="tile-setting">Red Vowels<input type="checkbox" role="switch" class="abc-red-vowels" checked></label></div>';
+  m.querySelector('.customization-bar').append(settings);
+  const vowelToggle=settings.querySelector('input');
+  vowelToggle.checked=m.dataset.redVowels!=='false';
+  vowelToggle.addEventListener('change',()=>{m.dataset.redVowels=String(vowelToggle.checked);letterEl.classList.toggle('is-vowel',vowelToggle.checked&&vowels.has(current.toLowerCase()));notifyBoardChanged('abc-vowels')});
   const vowels=new Set(['a','e','i','o','u','y']);
 
   const modeNames={
@@ -66,7 +72,7 @@ function setupABC(m){
     completed=false;
     completion.hide();
     letterEl.classList.add('is-fitting');
-    letterEl.classList.toggle('is-vowel',vowels.has(letter.toLowerCase()));
+    letterEl.classList.toggle('is-vowel',m.dataset.redVowels!=='false'&&vowels.has(letter.toLowerCase()));
     letterEl.textContent=letter;
     letterEl.style.fontSize=`${size}px`;
     card.setAttribute('aria-label',`${letter}. Click for another letter.`);
@@ -144,6 +150,7 @@ function setupABC(m){
   setMode('uppercase');
 
   m._boardGetState=()=>({
+    redVowels:m.dataset.redVowels!=='false',
     mode:m.dataset.abcMode||'uppercase',
     current,
     remaining:[...remaining],
@@ -151,6 +158,7 @@ function setupABC(m){
   });
   m._boardSetState=state=>{
     if(!state)return;
+    m.dataset.redVowels=String(state.redVowels??(m.dataset.redVowels!=='false'));vowelToggle.checked=m.dataset.redVowels!=='false';
     const mode=state.mode in modeNames?state.mode:'uppercase';
     m.dataset.abcMode=mode;
     modeSelect.value=mode;

@@ -39,7 +39,7 @@
     vocabulary:s=>({cards:list(s.cards,100).map(v=>({word:text(v.word,100),definition:text(v.definition,800)})),showDefinitions:s.showDefinitions!==false,size:token(s.size)}),
     venndiagram:s=>({title:text(s.title,100),mode:s.mode==='3'?'3':'2',headings:{a:text(s.headings?.a,100),b:text(s.headings?.b,100),c:text(s.headings?.c,100)},selectedRegion:1,items:list(s.items,100).map((v,i)=>({id:`item-${i}`,text:text(v.text,500),region:num(v.region,1,7,1)}))}),
     customflashcards:s=>({sets:list(s.sets,20).map((v,i)=>({id:`set-${i}`,name:text(v.name,40),cards:list(v.cards,60).map((c,j)=>({id:`card-${i}-${j}`,text:text(c.text,180),imageSrc:raster(c.imageSrc),imageName:text(c.imageName,120)}))})),completed:false}),
-    abc:s=>({mode:token(s.mode),completed:false}),
+    abc:s=>({mode:token(s.mode),redVowels:s.redVowels!==false,completed:false}),
     numberflashcards:s=>({mode:token(s.mode),completed:false}),
     cvcword:s=>({category:token(s.category),completed:false}),
     highfrequency:s=>({grade:token(s.grade),completed:false}),

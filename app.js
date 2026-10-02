@@ -966,6 +966,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
   Object.freeze({id:'visualschedule-planner',productId:'tile-skin-visualschedule-planner',tileType:'visualschedule',tileLabel:'Visual Schedule',name:'Planner Book',description:'A spiral-bound blue planner with paper pages for your daily schedule.',tags:'visual schedule planner book spiral notebook',released:34}),
+  Object.freeze({id:'interactive-wonders',productId:'tile-skin-interactive-wonders',tileType:'interactive',tileLabel:'Interactive Timers',name:'Interactive Pack I',description:'Four playful timers: Firework, Ice, Ice Cream, and Ants.',tags:'interactive timer firework ice cream ants pizza',released:40}),
   Object.freeze({id:'meditation-rainbow',productId:'tile-skin-meditation-rainbow',tileType:'meditation',tileLabel:'Meditation',name:'Rainbow Breath',description:'Translucent rainbow bands rise together on the inhale and recede on the exhale.',tags:'meditation rainbow breath breathing sel',released:33,preferredSize:Object.freeze({width:640,height:440})}),
   Object.freeze({id:'squishy-gel-cube',productId:'tile-skin-squishy-gel-cube',tileType:'squishy',tileLabel:'Squishy',name:'3D Squishy',description:'Grab, stretch, rotate, and toss a soft 3D gel cube with spring physics.',tags:'squishy gel cube 3d sensory',released:32}),
   Object.freeze({id:'soundscapes-vinyl',productId:'tile-skin-soundscapes-vinyl',tileType:'boombox',tileLabel:'Soundscapes',name:'Vinyl',description:'Turn Soundscapes into a spinning record player.',tags:'soundscapes audio vinyl record music ambient sound',released:29}),
@@ -1010,6 +1011,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
   'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
+  'basic-theme-pack':'theme-basic',
   'bamboo-theme-pack':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','rainy-window-theme-pack':'theme-rainy-window',
   'pastel-theme-pack':'theme-pastel',
@@ -1035,6 +1037,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
   outer:'theme-outer-space',frosted:'theme-frosted-window',
+  basic:'theme-basic',
   bamboo:'theme-bamboo',
   underwater:'theme-underwater',rainy:'theme-rainy-window',
   pastel:'theme-pastel',polka:'theme-polka-dot',programmer:'theme-programmer',wood:'theme-wood',notebook:'theme-notebook',cardboard:'theme-cardboard',metal:'theme-metal',cosmos:'theme-cosmos',corkboard:'theme-corkboard'
@@ -1527,6 +1530,7 @@ const THEME_BODY_CLASSES=[
 
 const THEME_ENTITLEMENT_PREFIXES=[
   ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
+  ['basic-','theme-basic'],
   ['bamboo-','theme-bamboo'],
   ['underwater-','theme-underwater'],['rainy-','theme-rainy-window'],
   ['pastel-','theme-pastel'],['polka-','theme-polka-dot'],['programmer-','theme-programmer'],
@@ -1535,6 +1539,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
 ];
 const SHELF_ENTITLEMENTS={
   'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
+  'basic-theme-pack':'theme-basic','basic-theme-fan':'theme-basic',
   'bamboo-theme-pack':'theme-bamboo','bamboo-theme-fan':'theme-bamboo',
   'underwater-theme-pack':'theme-underwater','underwater-theme-fan':'theme-underwater',
   'rainy-window-theme-pack':'theme-rainy-window','rainy-window-theme-fan':'theme-rainy-window',
