@@ -5,6 +5,9 @@ function normalizeAppPreferences(value={}){
   const rawVolume=Number(source.uiVolume);
   const rawScroll=Number(source.scrollSpeed);
   return{
+    siteFont:['inter','system','arial','verdana','georgia'].includes(source.siteFont)?source.siteFont:'inter',
+    siteFontSize:prefClamp(Number(source.siteFontSize)||100,100,150),
+    squareCorners:Boolean(source.squareCorners),
     uiMuted:Boolean(source.uiMuted),
     masterVolume:prefClamp(Number.isFinite(rawMasterVolume)?rawMasterVolume:100,0,100),
     uiVolume:prefClamp(Number.isFinite(rawVolume)?rawVolume:100,0,100),
@@ -275,6 +278,11 @@ function applyAppLanguage({load=true}={}){
 }
 
 function updateSettingsControls(){
+  const font=document.getElementById('settings-site-font'),fontSize=document.getElementById('settings-site-font-size'),corners=document.getElementById('settings-square-corners');
+  if(font)font.value=appPreferences.siteFont||'inter';
+  if(fontSize)fontSize.value=String(appPreferences.siteFontSize||100);
+  if(corners)corners.setAttribute('aria-checked',String(!!appPreferences.squareCorners));
+  window.TeacherTilesSiteAppearance?.apply(appPreferences);
   const mute=document.getElementById('settings-ui-sfx-toggle');
   const masterVolume=document.getElementById('settings-master-volume');
   const masterVolumeOut=document.getElementById('settings-master-volume-value');
@@ -287,7 +295,7 @@ function updateSettingsControls(){
   const deleteButtons=document.getElementById('settings-tile-delete-toggle');
   if(mute){
     mute.setAttribute('aria-checked',String(Boolean(appPreferences.uiMuted)));
-    mute.setAttribute('aria-label',appPreferences.uiMuted?'Turn UI sounds on':'Mute UI sounds');
+    mute.setAttribute('aria-label',appPreferences.uiMuted?'Turn UI sounds on':'Mute UI Sounds');
   }
   if(masterVolume)masterVolume.value=String(appPreferences.masterVolume);
   if(masterVolumeOut)masterVolumeOut.textContent=`${Math.round(appPreferences.masterVolume)}%`;
@@ -299,7 +307,7 @@ function updateSettingsControls(){
   if(language)language.value=appPreferences.language;
   if(deleteButtons){
     deleteButtons.setAttribute('aria-checked',String(Boolean(appPreferences.alwaysShowTileDeleteButtons)));
-    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile options near their corners':'Show tile options always');
+    deleteButtons.setAttribute('aria-label',appPreferences.alwaysShowTileDeleteButtons?'Only show tile options near their corners':'Always Show Tile Options');
   }
   applyTileDeleteVisibilityPreference();
   const volumeRow=volume?.closest('.settings-row');
@@ -335,7 +343,7 @@ function setupSettingsHub(){
   if(boardSettingsCard&&!document.getElementById('settings-tile-delete-toggle')){
     const row=document.createElement('div');
     row.className='settings-row settings-row--switch';
-    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Show tile options always</strong><small data-i18n="settings.deleteButtons.copy">Show tabbing, fullscreen, pin, and delete controls whenever you hover over a tile, instead of only near its corners.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
+    row.innerHTML='<div><strong data-i18n="settings.deleteButtons.title">Always Show Tile Options</strong><small data-i18n="settings.deleteButtons.copy">Show tabbing, fullscreen, pin, and delete controls whenever you hover over a tile, instead of only near its corners.</small></div><button id="settings-tile-delete-toggle" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Show tile options always"><span></span></button>';
     boardSettingsCard.appendChild(row);
   }
   const modal=document.getElementById('settings-modal');
@@ -398,6 +406,9 @@ function setupSettingsHub(){
     requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
   };
 
+  document.getElementById('settings-site-font')?.addEventListener('change',event=>applyAppPreferences({siteFont:event.target.value}));
+  document.getElementById('settings-site-font-size')?.addEventListener('change',event=>applyAppPreferences({siteFontSize:Number(event.target.value)}));
+  document.getElementById('settings-square-corners')?.addEventListener('click',()=>applyAppPreferences({squareCorners:!appPreferences.squareCorners}));
   settingsToggle.addEventListener('click',open);
   closeButtons.forEach(button=>button.addEventListener('click',close));
   tabs.forEach(tab=>tab.addEventListener('click',()=>showTab(tab.dataset.settingsTab)));
