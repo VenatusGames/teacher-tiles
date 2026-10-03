@@ -1,5 +1,5 @@
 import '../tiles/interactive-timers/hourglass.js';
-import '../tiles/interactive-timers/wonders.js?v=20261002-timer-refinement';
+import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
 import {renderTimerPreview} from './timer-preview.js?v=20261002-pack';
 const EDITABLE_TILE_HEADINGS={
