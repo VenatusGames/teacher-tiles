@@ -1,0 +1,11 @@
+body[data-site-typography] [data-site-text]{font-family:var(--site-font-family,Inter,system-ui,sans-serif)!important;font-size:calc(var(--site-base-font-size,14px) * var(--site-font-scale,1))!important}
+body.site-square-corners .module:not(.sticker-module){border-radius:0!important}
+.settings-card__glyph svg,.help-mouse-icon svg,.help-section__heading>span svg{display:block;width:24px;height:24px}
+.help-feature-guide details{border:1px solid var(--border);border-radius:12px;margin-top:8px;background:var(--surface-solid,var(--surface));overflow:hidden}
+.help-feature-guide summary{padding:14px 16px;cursor:pointer;font-weight:650;line-height:1.4}
+.help-feature-guide details[open] summary{color:var(--accent)}
+.help-feature-guide details p{margin:0;padding:0 16px 16px;font-size:13px;line-height:1.65;color:var(--muted)}
+.settings-row>div:first-child{min-width:0}.settings-select{max-width:100%}
+@media(max-width:600px){.settings-row:not(.settings-row--switch){flex-wrap:wrap;gap:12px}.settings-select{width:100%}}
+
+.settings-card__glyph{flex-shrink:0}.settings-nav__item{height:auto;min-height:42px}.settings-nav__item>span:last-child{min-width:0;overflow-wrap:anywhere}
