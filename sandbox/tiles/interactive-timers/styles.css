@@ -30,3 +30,6 @@
 .interactive-type-row{display:flex;align-items:center;justify-content:center;gap:6px}
 .interactive-type-toggle{align-self:center;min-width:42px;width:42px;height:38px;padding:0!important;font:26px/1 "Segoe UI Emoji","Apple Color Emoji",sans-serif}
 .interactive-type-shelf button{font-family:"Segoe UI Emoji","Apple Color Emoji",sans-serif}
+
+.wonder-canvas{display:block;width:100%;height:0;min-height:0;flex:1 1 0}
+.interactive-module[data-tile-skin="interactive-wonders"] .candle-color-control{display:none}

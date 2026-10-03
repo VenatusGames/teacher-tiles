@@ -1,6 +1,7 @@
 import '../tiles/interactive-timers/hourglass.js';
+import '../tiles/interactive-timers/wonders.js?v=20261002-pack';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20260926-reset';
+import {renderTimerPreview} from './timer-preview.js?v=20261002-pack';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
