@@ -2,7 +2,7 @@
   'use strict';
   const fonts={inter:'Inter,system-ui,sans-serif',system:'system-ui,-apple-system,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif'};
   const roots='#settings-modal,#profile-modal,#context-menu,#boards-view,#boards-panel,#boards-modal,#asset-shelf,#shop-modal,#shop-shelf,#shop-panel,#shop-coin-menu,#board-frame-menu,.workspace-control,.theme-picker,.sticker-picker,.cursor-picker,.board-template-dialog,.template-library,.board-access-dialog,.board-template-report-dialog,.profile-patch-dialog,.profile-tool-panel,.board-menu,dialog,[role="dialog"]';
-  const exclude='.module,.board-mini-object,.board-preview,.board-card__preview,svg,script,style,.icon,[class*="__icon"],.help-section__heading>span,.settings-nav__icon,.settings-card__glyph,.help-mouse-icon';
+  const exclude='.settings-nav,.module,.board-mini-object,.board-preview,.board-card__preview,svg,script,style,.icon,[class*="__icon"],.help-section__heading>span,.settings-nav__icon,.settings-card__glyph,.help-mouse-icon';
   const pending=new Set();let frame=0,currentFont='inter',currentSize=100;
   function scan(){
     frame=0;document.body.removeAttribute('data-site-typography');
