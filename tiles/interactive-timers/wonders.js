@@ -40,18 +40,18 @@
       <g class="wonder-spark"><circle r="11" fill="#ffc365" opacity=".14"/><circle r="5" fill="#ffc761"/><circle r="2" fill="#fff9d2"/><path d="M-7-5-12-9M7-5 12-9M-8 4-13 7M5 7 8 12" stroke="#edac48" stroke-width="1.5" stroke-linecap="round"/></g>
       <g class="wonder-bursts" fill="none" stroke-linecap="round"></g>
     </g>
-    <g data-wonder="ice"><ellipse cx="160" cy="315" rx="80" ry="10" fill="#38526a" opacity=".08"/><ellipse class="wonder-water" cx="160" cy="310" rx="61" ry="13" fill="${url('water')}" stroke="#81c2d7" stroke-opacity=".4"/>
+    <g data-wonder="ice"><ellipse cx="160" cy="276" rx="83" ry="35" fill="#38526a" opacity=".055"/><ellipse class="wonder-water" cx="160" cy="270" rx="90" ry="40" fill="${url('water')}" stroke="#81c2d7" stroke-opacity=".25"/>
       <g class="wonder-ice-solid">
-      <path d="M83 158Q82 150 91 143L123 115Q130 109 140 112L235 139Q243 141 243 153L241 262Q241 271 232 279L205 307Q198 314 187 310L94 284Q83 281 83 269Z" fill="${url('glass')}" stroke="#a0c8d8" stroke-width="1.2"/>
-      <path d="M204 183 235 153Q239 150 238 161L236 258Q236 268 230 274L204 301Q199 306 199 297V193Q199 188 204 183Z" fill="${url('glass-side')}"/>
-      <path d="M92 150 129 119Q133 116 140 118L229 144Q237 146 231 151L199 181Q195 185 187 182L93 156Q87 154 92 150Z" fill="#effbff" opacity=".85"/>
-      <path d="M94 171Q94 163 103 166L179 187Q187 189 187 199V286Q187 295 179 292L102 270Q95 268 95 261Z" fill="#fff" opacity=".16"/>
-      <path d="m96 164 87 25M94 176v80" stroke="#fff" stroke-width="4" opacity=".73" stroke-linecap="round"/>
-      <path d="M204 196v90M230 163v91" stroke="#e9f9ff" stroke-width="2.5" opacity=".38" stroke-linecap="round"/>
-      <path d="m110 147 25-21 69 20-23 24Z" fill="#fff" opacity=".36"/>
-      <path d="M127 188q-10 28 16 45q-14 22 6 43M210 204q20 7 13 32" stroke="#fff" stroke-width="7" opacity=".12" fill="none"/>
-      <ellipse cx="157" cy="241" rx="4.5" ry="6" fill="#ecfaff" opacity=".67"/><ellipse cx="133" cy="254" rx="2" ry="3" fill="#ecfaff" opacity=".6"/>
-      <path d="m99 279 85 25q10 4 16-2l31-29" stroke="#e5faff" stroke-width="3" opacity=".65" fill="none"/>
+      <path d="M83 173Q78 169 84 164L153 125Q160 121 167 125L236 164Q242 168 242 176V265Q242 272 236 276L167 315Q160 319 153 315L84 276Q78 272 78 265V178Q78 171 83 173Z" fill="${url('glass')}" stroke="#a0c8d8" stroke-width="1.2"/>
+      <path d="M164 216Q164 210 169 207L232 172Q237 169 237 177V261Q237 268 231 272L170 307Q164 311 164 304Z" fill="${url('glass-side')}"/>
+      <path d="M89 166 154 130Q160 126 166 130L230 166Q235 169 229 173L166 208Q160 212 154 208L90 173Q83 169 89 166Z" fill="#effbff" opacity=".88"/>
+      <path d="M90 187Q90 180 97 184L143 210Q151 214 151 222V295Q151 303 144 299L98 273Q90 269 90 261Z" fill="#fff" opacity=".16"/>
+      <path d="m90 178 63 36M88 191v65" stroke="#fff" stroke-width="4" opacity=".73" stroke-linecap="round"/>
+      <path d="M171 222v71M230 186v67" stroke="#e9f9ff" stroke-width="2.5" opacity=".38" stroke-linecap="round"/>
+      <path d="m109 166 48-27q3-2 7 0l39 23-46 26Z" fill="#fff" opacity=".36"/>
+      <path d="M111 206q-9 23 13 38q-11 18 7 34M195 214q25 8 18 36" stroke="#fff" stroke-width="7" opacity=".12" fill="none"/>
+      <ellipse cx="126" cy="251" rx="4" ry="6" fill="#ecfaff" opacity=".67"/><ellipse cx="106" cy="252" rx="2" ry="3" fill="#ecfaff" opacity=".6"/>
+      <path d="m91 273 63 36q6 4 12 0l62-35" stroke="#e5faff" stroke-width="3" opacity=".65" fill="none"/>
       </g><g class="wonder-drops" fill="#87cbe2"></g>
     </g>
     <g data-wonder="icecream"><ellipse cx="160" cy="339" rx="72" ry="9" fill="#493941" opacity=".1"/><ellipse class="wonder-cream-pool" cx="160" cy="334" rx="28" ry="7" fill="#e4a7b7" stroke="#ce90a2" stroke-width="1"/>
@@ -72,6 +72,9 @@
     </g></svg><div class="timer-story-caption"></div>`;
     const svg=stage.querySelector('svg'),find=c=>svg.querySelector('.wonder-'+c),caption=stage.querySelector('.timer-story-caption');
     const fuse=find('fuse'),length=fuse.getTotalLength(),spark=find('spark');
+    const waterMask=document.createElementNS(svg.namespaceURI,'mask');waterMask.id=id+'-water-under-cube';waterMask.innerHTML='<rect width="320" height="380" fill="white"/>';
+    const waterCutout=find('ice-solid').firstElementChild.cloneNode();waterCutout.setAttribute('fill','black');waterCutout.setAttribute('stroke','none');waterMask.append(waterCutout);svg.querySelector('defs').append(waterMask);find('water').setAttribute('mask',`url(#${waterMask.id})`);
+
     const ants=Array.from({length:7},(_,i)=>{const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.innerHTML='<g class="ant-legs" fill="none" stroke="#57443a" stroke-width="1.2"><path d="M-3-2-8-8M1-2 2-9M4-1 10-6M-3 2-8 8M1 2 2 9M4 1 10 6"/></g><ellipse cx="-6" cy="0" rx="4.8" ry="3.6" fill="#574238"/><ellipse rx="3" ry="2.8" fill="#79513a"/><circle cx="5" r="3" fill="#574238"/><path d="m7-2 4-3m-4 7 4 3" stroke="#574238" stroke-width="1"/><path class="ant-crumb" d="m9-3 6 2-3 5-4-2Z" fill="#e2aa53"/>';find('ant-trail').append(g);return g});
     const burstLines=Array.from({length:66},()=>{const line=document.createElementNS(svg.namespaceURI,'path');find('bursts').append(line);return line});
     const biteSites=[];
@@ -99,7 +102,7 @@
           }
         }
       }else if(mode==='ice'){
-        const size=Math.pow(q,.5);attr(find('ice-solid'),'transform',`translate(${160*(1-size)} ${310*(1-size)}) scale(${size})`);find('ice-solid').style.opacity=String(Math.min(1,q*15));attr(find('water'),'rx',40+p*66);attr(find('water'),'ry',8+p*12);
+        const size=Math.pow(q,.5);attr(find('ice-solid'),'transform',`translate(${160*(1-size)} ${270*(1-size)}) scale(${size})`);attr(waterCutout,'transform',find('ice-solid').getAttribute('transform'));find('ice-solid').style.opacity=String(Math.min(1,q*15));attr(find('water'),'rx',90+p*20);attr(find('water'),'ry',40+p*9);find('water').style.opacity=String(Math.min(1,p*4));
       }else if(mode==='icecream'){
         const size=Math.pow(q,.57),wide=.6+.4*size;
         attr(find('scoop'),'transform',`translate(${160*(1-wide)} ${198*(1-size)}) scale(${wide} ${size})`);find('scoop').style.opacity=String(Math.min(1,q*14));
