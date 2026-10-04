@@ -17,6 +17,11 @@ export function renderTimerPreview(module,state){
   module.querySelectorAll('.timer-remaining').forEach(n=>n.textContent=text);
  }else{
   const mode=state.special?.mode||state.dataset?.interactiveMode||'hourglass';module.dataset.interactiveMode=mode;for(const name of ['hourglass','candle','rocket','sunflower']){const stage=module.querySelector('.'+name+'-stage');if(stage)stage.hidden=name!==mode;}
+  if(state.dataset?.tileSkin==='interactive-wonders'){
+    module.querySelectorAll('.hourglass-stage,.candle-stage,.rocket-stage,.sunflower-stage').forEach(stage=>stage.hidden=true);
+    const stage=document.createElement('div');stage.className='timer-story-stage wonder-stage';module.querySelector('.sunflower-stage').after(stage);
+    const art=window.TeacherTilesTimerWonders.create(stage);art.setMode(['firework','ice','icecream','ants'].includes(mode)?mode:'firework');art.update(timer);art.destroy();
+  }
   if(mode==='hourglass'){const canvas=module.querySelector('.hourglass-canvas');if(canvas){const art=window.TeacherTilesHourglass.create(canvas);art.update(timer);art.destroy();}}
   if(mode==='rocket'||mode==='sunflower'){const art=window.TeacherTilesGardenRocket.create(module.querySelector('.rocket-stage'),module.querySelector('.sunflower-stage'));art.setMode(mode);art.update(timer);art.destroy();}
   module.querySelector('.candle-scene')?.style.setProperty('--candle-height',Math.max(8,78-70*progress)+'%');module.querySelectorAll('.hourglass-countdown,.candle-countdown,.scene-countdown').forEach(n=>n.textContent=text);

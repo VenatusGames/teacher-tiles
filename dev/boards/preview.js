@@ -1,6 +1,8 @@
+import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/interactive-timers/hourglass.js';
+import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20260926-reset';
+import {renderTimerPreview} from './timer-preview.js?v=20261002-pack';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -452,6 +454,7 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if (state.type === 'timer' || state.type === 'interactive') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);

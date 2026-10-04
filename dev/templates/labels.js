@@ -1,4 +1,5 @@
 export const tileLabels={
+  "classroomjobs": "Classroom Jobs",
   "chime": "Chime",
   "transitionbell": "Transition Bell",
   "sticky": "Sticky note",

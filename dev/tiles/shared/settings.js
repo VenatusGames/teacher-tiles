@@ -2,7 +2,7 @@
 const cog='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg>';
 function setup(m,button){if(!button)return;button.innerHTML=cog;button.setAttribute('aria-label',button.getAttribute('aria-label')||'Tile settings');
 const panel=m.querySelector('.tile-settings-panel,.collection-settings,.classmeter-settings,.highfrequency-settings');if(!panel||panel.dataset.settingsPositioned)return;panel.dataset.settingsPositioned='true';panel.classList.add('tile-settings-floating');panel.setAttribute('popover','manual');let frame=0;
-const resetScale=m.querySelector('.tile-reset-scale');if(resetScale){resetScale.innerHTML='<span class="tile-reset-scale-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 21h5v-5m0 5-6-6M21 8V3h-5m5 0-6 6M3 16v5h5m-5 0 6-6"/></svg></span><span>Reset scale</span>';panel.append(resetScale);}
+const resetScale=m.querySelector('.tile-reset-scale');if(resetScale){resetScale.innerHTML='<span class="tile-reset-scale-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M3 3l6 6M16 21h5v-5m0 5-6-6M21 8V3h-5m5 0-6 6M3 16v5h5m-5 0 6-6"/></svg></span><span>Reset Scale</span>';panel.append(resetScale);}
 function hide(){cancelAnimationFrame(frame);if(panel.matches(':popover-open'))panel.hidePopover();}
 function close(){panel.hidden=true;button.setAttribute('aria-expanded','false');m.classList.remove('has-tile-settings-open');hide()}
 if(resetScale)resetScale.addEventListener('click',close);
@@ -26,15 +26,15 @@ function addHeadingToggle(m,heading){
     const resetScale=panel.querySelector('.tile-reset-scale');
     if(resetScale)panel.insertBefore(row,resetScale);else panel.append(row);
     const apply=()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true';
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(m.dataset.type!=='countdown'||m.dataset.tileHeadingHidden==='false');
       heading.classList.toggle('tile-heading-hidden',!visible);
       heading.setAttribute('aria-hidden',String(!visible));
       toggle.setAttribute('aria-checked',String(visible));
       toggle.setAttribute('aria-label',visible?'Hide tile heading':'Show tile heading');
     };
     toggle.addEventListener('click',()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true';
-      if(visible)m.dataset.tileHeadingHidden='true';else delete m.dataset.tileHeadingHidden;
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(m.dataset.type!=='countdown'||m.dataset.tileHeadingHidden==='false');
+      if(visible)m.dataset.tileHeadingHidden='true';else if(m.dataset.type==='countdown')m.dataset.tileHeadingHidden='false';else delete m.dataset.tileHeadingHidden;
       apply();
       if(typeof notifyBoardChanged==='function')notifyBoardChanged('tile-heading-visibility');
     });

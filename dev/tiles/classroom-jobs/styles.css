@@ -1,0 +1,39 @@
+
+.classroomjobs-module{width:650px;height:540px;min-width:300px;min-height:300px;display:flex;flex-direction:column;gap:10px;padding:22px 20px 42px;overflow:hidden;container-type:inline-size}
+.jobs-heading{font-size:20px;letter-spacing:-.025em;margin:0;font-weight:650;flex-shrink:0}
+.jobs-toolbar{display:flex;align-items:center;gap:6px;max-height:0;opacity:0;overflow:hidden;visibility:hidden;transition:max-height .22s,opacity .18s;flex-shrink:0}
+.classroomjobs-module:hover .jobs-toolbar,.classroomjobs-module:focus-within .jobs-toolbar{max-height:80px;opacity:1;visibility:visible;flex-wrap:wrap}
+.jobs-toolbar button,.jobs-picker button,.jobs-editor button{font:inherit;cursor:pointer;border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:10px;background:var(--module-bg,var(--surface-solid,#fff));color:inherit;padding:8px 11px;font-size:12px;transition:background .18s}
+.jobs-toolbar button:disabled{opacity:.4;cursor:default}.jobs-toolbar .jobs-add{margin-left:auto;width:32px;height:32px;padding:0;font-size:23px;line-height:1}
+.jobs-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;overflow:auto;align-content:start;overscroll-behavior:contain;padding:3px}
+.jobs-card{position:relative;border:1px solid color-mix(in srgb,currentColor 12%,transparent);background:color-mix(in srgb,var(--module-bg,#fff) 96%,#829fa8);border-radius:16px;padding:14px 12px;min-width:0;transition:border-color .18s,background .18s;box-shadow:0 2px 5px #15263c04}
+.jobs-card-head{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px;text-align:center}.jobs-art{font-size:32px;display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:color-mix(in srgb,var(--module-bg,#fff) 88%,#9fb7be)}.jobs-art img{width:52px;height:52px;object-fit:cover;border-radius:16px}
+.classroomjobs-module .jobs-target{border:0;background:none;color:inherit;padding:0;font:inherit;font-size:13px;font-weight:650;overflow-wrap:anywhere;cursor:pointer}
+.classroomjobs-module .jobs-edit{position:absolute;right:6px;top:5px;border:0;background:none;color:inherit;padding:2px 6px;font-size:20px;opacity:0;visibility:hidden;cursor:pointer;transition:opacity .15s}
+.classroomjobs-module:hover .jobs-edit,.classroomjobs-module:focus-within .jobs-edit{opacity:.65;visibility:visible}
+.classroomjobs-module .jobs-student{display:block;width:100%;text-align:center;margin-top:6px;padding:6px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:12px;overflow-wrap:anywhere;cursor:grab;transition:background .18s,border-color .18s}
+.classroomjobs-module:hover .jobs-student,.classroomjobs-module:focus-within .jobs-student{background:var(--module-bg,#fff);border-color:color-mix(in srgb,currentColor 10%,transparent)}
+.jobs-student[aria-pressed=true],.jobs-card.is-drop-target{outline:2px solid #6a9dca;outline-offset:-2px}.jobs-vacancy{display:block;text-align:center;font-size:11px;opacity:.45}.jobs-class{font-size:11px;opacity:.65;margin:0}.jobs-class{text-align:center}
+.jobs-intro{font-size:13px;flex-shrink:0}.jobs-intro[hidden],.jobs-picker[hidden]{display:none!important}.classroomjobs-module:not(:hover):not(:focus-within) .jobs-intro .tile-class-loader{display:none}
+
+.classroomjobs-module>.customization-bar{position:absolute;bottom:10px;left:10px}
+.jobs-picker{position:absolute;z-index:40;inset:64px 12px 44px;padding:16px;border:1px solid var(--border,#dbe2ea);border-radius:16px;background:var(--module-bg,#fff);color:inherit;box-shadow:0 12px 30px #15263c18;overflow:auto;overscroll-behavior:contain}.jobs-picker-title{display:block;font-size:14px;margin-bottom:12px}.jobs-preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:12px}.jobs-preset-grid button{display:flex;align-items:center;text-align:left;gap:8px;min-width:0;font-size:11px}.jobs-preset-grid button>span:first-child{font-size:22px}.jobs-preset-grid button:hover{background:color-mix(in srgb,var(--module-bg,#fff) 90%,#9fb7be)}
+.jobs-editor{width:min(430px,90vw);box-sizing:border-box;border:1px solid #dbe2ea;border-radius:18px;padding:24px;color:var(--text,#263145);background:var(--surface-solid,#fff);max-height:85vh;overflow:auto}.jobs-editor::backdrop{background:#15233977}.jobs-editor h2{margin:0 0 18px;font-size:21px}.jobs-editor label{display:grid;gap:7px;margin:12px 0;font-size:13px}.jobs-editor input{box-sizing:border-box;width:100%;padding:9px;font:inherit;border:1px solid #ccd5df;border-radius:8px}.jobs-image-preview{width:90px;height:90px;object-fit:cover;border-radius:10px}.jobs-image-preview[hidden]{display:none}.jobs-editor-actions{display:flex;justify-content:flex-end;gap:8px;margin:14px 0}.jobs-editor p{font-size:12px}.classroomjobs-module button:focus-visible,.jobs-editor button:focus-visible{outline:2px solid #6a9dca;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.jobs-card,.jobs-student,.jobs-toolbar,.jobs-edit{transition:none}}
+
+.classroomjobs-module .jobs-add-card{display:grid;place-items:center;align-self:stretch;min-height:130px;width:100%;margin:0;padding:18px;border:1px dashed color-mix(in srgb,currentColor 22%,transparent);border-radius:16px;background:color-mix(in srgb,var(--module-bg,#fff) 96%,#829fa8);color:inherit;font:inherit;font-size:34px;font-weight:300;cursor:pointer;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s,background .18s}
+.classroomjobs-module:hover .jobs-add-card,.classroomjobs-module .jobs-add-card:focus-visible{opacity:.65;visibility:visible;pointer-events:auto}
+.classroomjobs-module .jobs-add-card:hover{opacity:1;background:color-mix(in srgb,var(--module-bg,#fff) 90%,#829fa8)}
+@media(prefers-reduced-motion:reduce){.classroomjobs-module .jobs-add-card{transition:none}}
+
+.classroomjobs-module .jobs-edit{left:6px;right:auto}
+.classroomjobs-module .jobs-delete{position:absolute;top:7px;right:7px;display:grid;place-items:center;width:24px;height:24px;padding:0;border:1px solid color-mix(in srgb,currentColor 12%,transparent);border-radius:8px;background:var(--module-bg,#fff);color:inherit;font:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,background .15s}
+.classroomjobs-module .jobs-card:hover .jobs-delete,.classroomjobs-module .jobs-card:focus-within .jobs-delete{opacity:1;visibility:visible;pointer-events:auto}
+.classroomjobs-module .jobs-delete:hover{background:#fde9e8;color:#a93c36;border-color:#efc5c2}
+@media(prefers-reduced-motion:reduce){.classroomjobs-module .jobs-delete{transition:none}}
+
+.jobs-assigned{max-height:116px;overflow:auto;overscroll-behavior:contain;min-height:24px}
+.jobs-student-select{box-sizing:border-box;width:100%;min-width:0;margin-top:8px;padding:7px 8px;border:1px solid color-mix(in srgb,currentColor 15%,transparent);border-radius:9px;background:var(--module-bg,#fff);color:inherit;font:inherit;font-size:11px;cursor:pointer;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s}
+.classroomjobs-module:hover .jobs-student-select,.classroomjobs-module:focus-within .jobs-student-select{opacity:1;visibility:visible;pointer-events:auto}
+.jobs-student-select:focus-visible{outline:2px solid #6a9dca;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.jobs-student-select{transition:none}}

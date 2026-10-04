@@ -4,24 +4,27 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>TeacherTiles · Developer Portal</title>
+  <link rel="preload" href="sandbox/assets/fonts/inter/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="sandbox/assets/fonts/inter/inter.css?v=1791080052492">
   <link rel="icon" href="assets/profile/teachertiles-profile-logo.png">
-  <link rel="stylesheet" href="sandbox/portal.css?v=1790730225514">
-<link rel="stylesheet" href="templates/style.css?v=1790730225514">
-<link rel="stylesheet" href="support/ticket-thread.css?v=1790730225514">
+  <link rel="stylesheet" href="sandbox/portal.css?v=1791080052492">
+<link rel="stylesheet" href="templates/style.css?v=1791080052492">
+<link rel="stylesheet" href="support/ticket-thread.css?v=1791080052492">
+  <link rel="stylesheet" href="sandbox/portal-appearance.css?v=1791080052492">
 </head>
-<body>
+<body class="developer-portal">
   <main id="portal-access-screen">
       <section id="portal-login" class="access-card" aria-labelledby="access-heading">
         <div class="access-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
-        <p class="eyebrow">RESTRICTED WORKSPACE</p><h1 id="access-heading">Sandbox sign-in</h1>
+        <p class="eyebrow">RESTRICTED WORKSPACE</p><h1 id="access-heading">Sandbox Sign-In</h1>
         <p id="portal-status" role="status" aria-live="polite">Checking your sign-in…</p>
-        <div class="access-actions"><button id="portal-signin" class="primary" disabled>Sign in with Google</button><button id="portal-retry" class="quiet" disabled>Check access again</button></div>
+        <div class="access-actions"><button id="portal-signin" class="primary" disabled>Sign In with Google</button><button id="portal-retry" class="quiet" disabled>Check Access Again</button></div>
       </section>
   </main>
   <div class="portal-shell" hidden inert>
     <aside class="portal-sidebar">
       <a class="portal-brand" href="./"><img src="assets/profile/teachertiles-profile-logo.png" alt=""><span>TeacherTiles<small>Developer Portal</small></span></a>
-      <div class="portal-environment"><i></i> Developer workspace</div>
+      <div class="portal-environment"><i></i> Developer Workspace</div>
       <nav aria-label="Developer portal"><a data-portal-view="overview" class="selected" href="./" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Overview</a><a data-portal-view="users" href="#users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/></svg>Users</a>
         <button class="portal-nav-placeholder" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 21V5h10v16M14 11h6v10M8 9h2M8 13h2M8 17h2M2 21h20"/></svg>Organization</button>
         <div class="portal-nav-group"><button id="community-toggle" type="button" aria-expanded="false" aria-controls="community-submenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v12H9l-5 4V4Z"/><path d="M8 8h8M8 12h5"/></svg>Community<span class="nav-chevron" aria-hidden="true">⌄</span></button><div id="community-submenu" hidden><button type="button" data-portal-view="templates">Board Templates</button><button type="button" data-portal-view="codes">TT Codes</button></div></div>
@@ -30,10 +33,10 @@
       <a class="public-site" href="/">Open TeacherTiles <span aria-hidden="true">↗</span></a>
     </aside>
     <main>
-      <header class="portal-topbar"><span>DEVELOPER TOOLS</span><button id="portal-signout" class="quiet" hidden>Sign out</button></header>
+      <header class="portal-topbar"><div class="portal-breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="portal-current-view">Overview</strong></div><button id="portal-signout" class="quiet" hidden>Sign Out</button></header>
 
       <section id="portal-home" hidden aria-labelledby="portal-heading">
-        <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer overview</h1><p>A place to test, review, and manage TeacherTiles.</p></div>
+        <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer Overview</h1><p>A place to test, review, and manage TeacherTiles.</p></div>
         <a id="enter-board-sandbox" class="board-card board-banner" href="board.html">
           <svg class="board-banner-icon" viewBox="0 0 56 56" aria-hidden="true"><rect x="5" y="7" width="29" height="29" rx="7" fill="#e6efff" stroke="#a6bee5"/><circle cx="19.5" cy="21.5" r="8" fill="#80a6df"/><path d="M19.5 13.5v8h8" fill="#e6efff"/><rect x="30" y="24" width="21" height="25" rx="5" fill="#fff0c9" stroke="#ddc994"/><path d="M35 32h11M35 37h11M35 42h7" stroke="#b9a671" stroke-width="2" stroke-linecap="round"/></svg>
           <div><h2>Board Sandbox</h2><p>Test tiles and try new features.</p></div>
@@ -41,17 +44,17 @@
         </a>
         <div class="account-strip"><span class="verified-icon" aria-hidden="true">✓</span><div><strong id="portal-name"></strong><span id="portal-email"></span></div><span id="portal-role" class="role-chip"></span></div>
         <section id="developer-insights" aria-label="User insights"></section>
-        <p class="portal-footnote">Template moderation and other management tools will live here as they become available.</p>
+        <p class="portal-footnote">Insights are a saved snapshot. Use Refresh Insights to get the latest counts.</p>
       </section>
       <section id="portal-users" hidden aria-labelledby="users-heading">
         <div class="users-panel-head"><h1 id="users-heading">Users</h1><div class="users-search"><label for="users-search" class="visually-hidden">Find a user</label><input id="users-search" type="search" placeholder="Search email, nickname, name, or user ID" maxlength="180" autocomplete="off"><button id="users-search-submit" class="quiet" type="button">Search</button><button id="users-refresh" class="quiet" type="button" title="Refresh cached users and activity">Refresh</button></div></div>
-        <div class="users-toolbar"><div class="user-filters"><label class="beta-toggle" title="Active within the last 6 minutes"><span>Show All Online</span><input id="users-online-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label><label class="beta-toggle" title="Active subscriptions, excluding dev previews"><span>Show Subscribers</span><input id="users-subscriber-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div><button id="users-selection-toggle" class="quiet" type="button" aria-pressed="false">Select users</button><p id="users-status" role="status" aria-live="polite"></p></div>
+        <div class="users-toolbar"><div class="user-filters"><label class="beta-toggle" title="Active within the last 6 minutes"><span>Show All Online</span><input id="users-online-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label><label class="beta-toggle" title="Active subscriptions, excluding dev previews"><span>Show Subscribers</span><input id="users-subscriber-filter" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div><button id="users-selection-toggle" class="quiet" type="button" aria-pressed="false">Select Users</button><p id="users-status" role="status" aria-live="polite"></p></div>
         <section id="bulk-patch-tool" class="bulk-patch-tool" aria-label="Bulk patch awards"></section>
-        <div id="users-list"></div><button id="users-more" class="quiet" hidden>Load more users</button>
+        <div id="users-list"></div><button id="users-more" class="quiet" hidden>Load More Users</button>
       </section>
     </main>
   </div>
-  <script type="module" src="sandbox/portal.js?v=1790730225514"></script>
+  <script type="module" src="sandbox/portal.js?v=1791080052492"></script>
 </body>
 </html>
 

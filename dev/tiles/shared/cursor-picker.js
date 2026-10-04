@@ -25,7 +25,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
         const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260927-packs`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
         const label=document.createElement('span');label.textContent=cursor.name;choice.append(label);
         choice.onclick=()=>accessible?apply(cursor.id):unlock(pack.productId);
-        const favorite=document.createElement('button');favorite.type='button';favorite.className='cursor-picker-favorite';favorite.textContent=favorites.has(cursor.id)?'★':'☆';favorite.setAttribute('aria-label',(favorites.has(cursor.id)?'Unfavorite ':'Favorite ')+cursor.name);favorite.setAttribute('aria-pressed',String(favorites.has(cursor.id)));favorite.onclick=()=>{favorites.has(cursor.id)?favorites.delete(cursor.id):favorites.add(cursor.id);try{localStorage.setItem('teacherTilesCursorFavorites',JSON.stringify([...favorites]))}catch{}render()};
+        const favorite=document.createElement('button');favorite.type='button';favorite.className='cursor-picker-favorite';favorite.textContent=favorites.has(cursor.id)?'★':'☆';favorite.setAttribute('aria-label',(favorites.has(cursor.id)?'Unfavorite ':'Favorite ')+cursor.name);favorite.setAttribute('aria-pressed',String(favorites.has(cursor.id)));favorite.onclick=()=>{favorites.has(cursor.id)?favorites.delete(cursor.id):favorites.add(cursor.id);try{window.TeacherTilesCollectionPreferences.write('teacherTilesCursorFavorites',JSON.stringify([...favorites]))}catch{}render()};
         cell.append(choice,favorite);grid.append(cell);
       }
       body.append(grid);
@@ -39,6 +39,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
   panel.querySelector('.cursor-picker-search').oninput=e=>{query=e.target.value.trim().toLowerCase();render()};
   panel.querySelector('[role="switch"]').onchange=e=>{ownedOnly=e.target.checked;render()};
   panel.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>{view=button.dataset.view;panel.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));render()});
+  window.addEventListener('teachertiles:collectionpreferences',()=>{try{favorites=new Set(JSON.parse(localStorage.getItem('teacherTilesCursorFavorites')||'[]'))}catch{}render()});
   return {render};
 }
 window.TeacherTilesCursorPicker=Object.freeze({create});})();

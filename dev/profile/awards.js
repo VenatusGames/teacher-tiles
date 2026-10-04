@@ -1,4 +1,4 @@
-import {ensurePlannedPatches} from './patches.js?v=20261012-patch-viewer';
+import {ensurePlannedPatches} from './patches.js?v=20260930-single-inspector';
 export function syncAwardedPatches(user,awards={}) {
   ensurePlannedPatches();
   const created=Date.parse(user?.metadata?.creationTime||'');

@@ -23,7 +23,7 @@
   function compose(before,items,active){
     const selected=bare(items[active]);
     selected.id=before.id;selected.transform=clone(before.transform);selected.zIndex=before.zIndex;
-    for(const key of ['tilePinned','pinScreenX','pinScreenY']){
+    for(const key of ['tilePinned','tileLocked','pinScreenX','pinScreenY']){
       if(before.dataset[key]!==undefined)selected.dataset[key]=before.dataset[key];else delete selected.dataset[key];
     }
     const current=[...workspace.querySelectorAll('.module')].find(m=>m.dataset.boardObjectId===before.id);
@@ -167,7 +167,7 @@
     if(source.dataset.type==='sticker')return null;
     let target=null;
     for(const m of workspace.querySelectorAll('.module')){
-      if(m===source||isTilePinned(m))continue;
+      if(m===source||isTilePinned(m)||isTileLocked(m))continue;
       const rect=m.querySelector(':scope>.module-tab-add')?.getBoundingClientRect();
       if(rect&&x>=rect.left-12&&x<=rect.right+12&&y>=rect.top-12&&y<=rect.bottom+12&&(!target||Number(m.style.zIndex)>Number(target.style.zIndex)))target=m;
     }
