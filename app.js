@@ -1154,6 +1154,7 @@ function setupModuleByType(m,type){
   if(type==='writinglines')setupWritingLines(m);
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
   if(type==='classroomjobs')window.TeacherTilesClassroomJobs.setup(m);
+  if(type==='countdown')window.TeacherTilesCountdown.setup(m);
   if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
@@ -1314,6 +1315,7 @@ const EDITABLE_TILE_HEADINGS={
   meditation:'.meditation-title',rainbowbreath:'.meditation-title',
   noise:'.nm-heading',
   squishy:'.squishy-heading',
+  countdown:'.countdown-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',

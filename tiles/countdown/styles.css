@@ -1,0 +1,12 @@
+.countdown-module{width:350px;height:330px;min-width:280px;min-height:290px;display:flex;flex-direction:column;padding:22px;gap:10px;overflow:hidden}
+.countdown-heading{margin:0;font-size:20px;font-weight:650}
+.countdown-display{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;padding:4px 0 28px;container-type:inline-size}
+.countdown-event{font-size:clamp(16px,7cqw,24px);font-weight:650;overflow-wrap:anywhere;line-height:1.2;max-width:100%}
+.countdown-number{font-size:clamp(28px,22cqw,74px);font-weight:750;line-height:1.1;letter-spacing:-.045em;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}
+.countdown-unit{font-size:15px;opacity:.8}.countdown-date{font-size:11px;opacity:.6;margin-top:5px}
+.countdown-actions{position:absolute;right:16px;bottom:16px;display:flex;gap:6px;opacity:0;visibility:hidden;transform:translateY(5px);transition:opacity .18s,transform .18s,visibility .18s}
+.countdown-module:hover .countdown-actions,.countdown-actions:focus-within,.countdown-module.is-editing .countdown-actions{opacity:1;visibility:visible;transform:none}
+.countdown-module button.countdown-edit,.countdown-module button.countdown-metric,.countdown-form button{border:1px solid var(--border);border-radius:9px;background:var(--module-bg,var(--surface));color:inherit;padding:7px 10px;font:600 12px var(--module-font,Inter,sans-serif);box-shadow:0 2px 5px #1720330b;cursor:pointer}
+.countdown-form{position:absolute;inset:52px 16px 54px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--module-bg,var(--surface-solid,#fff));z-index:5;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.countdown-form[hidden]{display:none}.countdown-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600}.countdown-form input{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--surface);color:var(--text);font:14px Inter,sans-serif}.countdown-form>div{display:flex;justify-content:flex-end;gap:7px}.countdown-form button[type=submit]{background:#7252ad;color:white;border-color:#7252ad}.countdown-module.is-editing .countdown-display{visibility:hidden}
+@media(hover:none){.countdown-actions{opacity:1;visibility:visible;transform:none}}@media(prefers-reduced-motion:reduce){.countdown-actions{transition:none}}

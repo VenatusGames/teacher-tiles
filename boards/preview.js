@@ -1,3 +1,4 @@
+import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
@@ -453,6 +454,7 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  if(state.type==='countdown')window.TeacherTilesCountdown.render(module,state.special||{});
   if (state.type === 'timer' || state.type === 'interactive') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
