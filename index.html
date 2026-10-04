@@ -70,6 +70,7 @@
   <link rel="stylesheet" href="profile/tools.css?v=20260930-matched-tool-cards">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
+<link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -1488,16 +1489,16 @@
               </div>
             </article>
 
-            <article class="shop-redeem-card">
-              <span class="shop-redeem-card__icon" aria-hidden="true">⌁</span>
-              <small>HAVE A CODE?</small>
-              <h3>Redeem Code</h3>
-              <p>Enter a TeacherTiles code to unlock eligible rewards.</p>
+            <article class="shop-redeem-card" aria-labelledby="shop-redeem-title">
+              <header class="shop-redeem-card__header">
+                <span class="shop-redeem-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4Z"/><path d="M9 5v2m0 3v1m0 3v1m0 3v1M13 12h4m-2-2v4"/></svg></span>
+                <h3 id="shop-redeem-title">Redeem Code</h3>
+              </header>
               <form id="shop-redeem-form" class="shop-redeem-form">
-                <label for="shop-redeem-code">Redemption code</label>
-                <div><input id="shop-redeem-code" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="TT-XXXX-XXXX"><button type="submit">Redeem</button></div>
+                <label for="shop-redeem-code">Enter your TeacherTiles code</label>
+                <div><input id="shop-redeem-code" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="TT-XXXX-XXXX" aria-describedby="shop-redeem-status"><button type="submit">Redeem</button></div>
               </form>
-              <div id="shop-redeem-status" class="shop-redeem-status" role="status" aria-live="polite"></div>
+              <div id="shop-redeem-status" class="shop-redeem-status" role="status" aria-live="polite" aria-atomic="true"></div>
             </article>
           </div>
 
