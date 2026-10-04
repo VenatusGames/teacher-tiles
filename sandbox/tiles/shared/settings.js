@@ -26,15 +26,15 @@ function addHeadingToggle(m,heading){
     const resetScale=panel.querySelector('.tile-reset-scale');
     if(resetScale)panel.insertBefore(row,resetScale);else panel.append(row);
     const apply=()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true';
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(m.dataset.type!=='countdown'||m.dataset.tileHeadingHidden==='false');
       heading.classList.toggle('tile-heading-hidden',!visible);
       heading.setAttribute('aria-hidden',String(!visible));
       toggle.setAttribute('aria-checked',String(visible));
       toggle.setAttribute('aria-label',visible?'Hide tile heading':'Show tile heading');
     };
     toggle.addEventListener('click',()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true';
-      if(visible)m.dataset.tileHeadingHidden='true';else delete m.dataset.tileHeadingHidden;
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(m.dataset.type!=='countdown'||m.dataset.tileHeadingHidden==='false');
+      if(visible)m.dataset.tileHeadingHidden='true';else if(m.dataset.type==='countdown')m.dataset.tileHeadingHidden='false';else delete m.dataset.tileHeadingHidden;
       apply();
       if(typeof notifyBoardChanged==='function')notifyBoardChanged('tile-heading-visibility');
     });
