@@ -454,7 +454,7 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
-  if(state.type==='countdown')window.TeacherTilesCountdown.render(module,state.special||{});
+  if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if (state.type === 'timer' || state.type === 'interactive') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
