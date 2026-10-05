@@ -30,6 +30,7 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
   scrollSpeed:100,
   defaultViewSize:100,
   language:'en',
+  disableTileSnapping:false,
   alwaysShowTileDeleteButtons:false
 });
 
@@ -314,9 +315,9 @@ const APP_TRANSLATIONS={
     'help.mouse.tug.title':'Hold, Then Tug','help.mouse.tug.copy':'Press and hold a grouped tile until it shakes, then pull through the resistance to detach and move it independently.',
     'help.mouse.text.title':'Edit Text','help.mouse.text.copy':'Double-click a text field to type. Click away from it to leave text-edit mode.',
     'help.mouse.sticker.title':'Transform Stickers','help.mouse.sticker.copy':'Use corner handles to resize and the round handle to rotate. Hold Shift while rotating to snap by 15°.',
-    'help.mouse.trash.title':'Delete by Dragging','help.mouse.trash.copy':'Drag any snapped tile into the corner trash to delete its entire group.',
+    'help.mouse.trash.title':'Delete by Dragging','help.mouse.trash.copy':'Drag any snapped tile into the trash at the top of the board to delete its entire group.',
     'help.mouse.clear.title':'Clear Selection','help.mouse.clear.copy':'Click outside the current selection to deselect it.',
-    'help.tutorial.kicker':'GUIDES','help.tutorial.title':'More tutorials are coming soon.','help.tutorial.copy':'Step-by-step guides, feature walkthroughs, and searchable help are planned for this page.',
+    'help.tutorial.kicker':'GUIDES','help.tutorial.title':'Watch a Board Walkthrough','help.tutorial.copy':'Choose a Mouse & Trackpad card above to watch a short demonstration with step-by-step instructions.',
     'profile.eyebrow':'TEACHERTILES ACCOUNT','profile.title':'Profile','profile.checking':'Checking your account…','profile.welcome':'WELCOME','profile.signinTitle':'Sign in to TeacherTiles','profile.signinCopy':'Log in to an account to save your TileSets, purchase optional cosmetics, access the full app, and explore all that TeacherTiles has to offer.','profile.google':'Continue with Google','profile.signedIn':'SIGNED IN','profile.coins':'COINS','profile.balance':'Account balance','profile.connectedTitle':'Your profile is connected.','profile.connectedCopy':'This account will be used for your saved TeacherTiles boards and account data.','profile.signout':'Sign out',
     'shop.title':'Shop','shop.coins':'Coins','shop.kicker':'MAKE IT YOURS','shop.customize':'Customize your board','shop.browse':'Browse visual packs made for TeacherTiles.','shop.collection':'COLLECTION','shop.themeCopy':'Color & board styles','shop.stickerPacks':'Sticker Packs','shop.stickerCopy':'Decorate your workspace','shop.coming':'COMING SOON','shop.tilePacks':'Tile Skins','shop.tileCopy':'Cosmetic Tile Skins','shop.comingTitle':'Coming Soon','shop.extras':'Extras','shop.extrasCopy':'More ways to customize',
     'boards.new':'New Board','boards.delete':'Delete board','boards.create':'Create new blank board'
@@ -1010,6 +1011,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
   'basic-theme-pack':'theme-basic',
   'bamboo-theme-pack':'theme-bamboo',
@@ -1036,6 +1038,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
   outer:'theme-outer-space',frosted:'theme-frosted-window',
   basic:'theme-basic',
   bamboo:'theme-bamboo',
@@ -1499,6 +1502,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
   "outer-space-light","outer-space","frosted-window-light","frosted-window",
   "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
   'underwater-ocean','rainy-window','underwater-ocean-light','rainy-window-light',
@@ -1514,6 +1518,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
   "theme-outer-space-light","theme-outer-space","theme-frosted-window-light","theme-frosted-window",
   "theme-basic-red","theme-basic-orange","theme-basic-yellow","theme-basic-green","theme-basic-blue","theme-basic-indigo","theme-basic-violet","theme-bamboo-yellow","theme-bamboo-brown","theme-bamboo-green",
   'theme-underwater-ocean','theme-rainy-window','theme-underwater-ocean-light','theme-rainy-window-light',
@@ -1531,6 +1536,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
   ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
   ['basic-','theme-basic'],
   ['bamboo-','theme-bamboo'],
@@ -1540,6 +1546,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
   'basic-theme-pack':'theme-basic','basic-theme-fan':'theme-basic',
   'bamboo-theme-pack':'theme-bamboo','bamboo-theme-fan':'theme-bamboo',

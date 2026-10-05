@@ -49,7 +49,7 @@
     squishy:s=>({version:1,color:token(s.color)}),
     colorpicker:s=>({color:token(s.color)}),
     interactive:s=>({mode:token(s.mode)}),
-    musicscore:s=>({tempo:num(s.tempo,40,200,100),rows:num(s.rows,1,4,1),labels:s.labels!==false,notes:list(s.notes,256).map(n=>({beat:num(n.beat,0,63,0),pitch:num(n.pitch,0,127,60)}))}),
+    musicscore:s=>({tempo:num(s.tempo,40,200,100),rows:num(s.rows,1,4,1),labels:s.labels!==false,notes:list(s.notes,256).map(n=>({beat:num(n.beat,0,63,0),pitch:num(n.pitch,0,127,60),duration:[1,2,4].includes(n.duration)?n.duration:1,rest:n.rest===true}))}),
     meditation:s=>({version:4,inhaleSeconds:num(s.inhaleSeconds,1,30,4),exhaleSeconds:num(s.exhaleSeconds,1,30,6),durationSeconds:num(s.durationSeconds,10,7200,60),showCues:s.showCues!==false,palette:token(s.palette)}),
     sentenceexpansion:s=>({version:1,source:list(s.source,2).map(v=>text(v)),draft:list(s.source,2).map(v=>text(v)),history:[],image:raster(s.image)}),
     wordweb:s=>({center:text(s.center,300),nodes:list(s.nodes,24).map((n,i)=>({id:`node-${i}`,text:text(n.text,400)}))}),

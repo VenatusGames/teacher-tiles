@@ -1,13 +1,14 @@
 (()=>{'use strict';
   const canvas=document.createElement('canvas');canvas.className='animated-board-backdrop';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;document.body.prepend(canvas);
   const ctx=canvas.getContext('2d'),background=document.createElement('canvas'),bg=background.getContext('2d'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const nature=window.TeacherTilesNatureScenes;
   let theme='',width=1,height=1,frame=0,last=0,time=0;
   // Seeded positions keep resizing and theme changes calm rather than randomizing the scene.
   const random=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};
   const bubbles=Array.from({length:48},(_,i)=>({x:random(i+1),y:random(i+101),r:2+random(i+201)*7,speed:9+random(i+301)*20}));
   const drops=Array.from({length:220},(_,i)=>({x:random(i+401),y:random(i+601),r:1+random(i+801)*4.3,speed:12+random(i+1001)*70}));
   function gradient(context,y,stops){const g=context.createLinearGradient(0,0,0,y);stops.forEach(([at,color])=>g.addColorStop(at,color));return g}
-  function paintBackground(){background.width=width;background.height=height;
+  function paintBackground(){const scale=nature?.themes.includes(theme)?Math.min(devicePixelRatio||1,1.5):1;background.width=width*scale;background.height=height*scale;bg.setTransform(scale,0,0,scale,0,0);if(nature?.themes.includes(theme)){nature.paint(bg,width,height,theme);return}
     if(theme==='outer-space'){
       bg.fillStyle=gradient(bg,height,[[0,'#080e24'],[.55,'#141d38'],[1,'#17273e']]);bg.fillRect(0,0,width,height);
       const haze=bg.createRadialGradient(width*.7,height*.4,0,width*.7,height*.4,width*.6);haze.addColorStop(0,'#58406b35');haze.addColorStop(1,'#58406b00');bg.fillStyle=haze;bg.fillRect(0,0,width,height);
@@ -60,9 +61,9 @@
     if(phase<1.8){const progress=phase/1.8,x=width*(.2+random(cycle+710)*.45)+progress*width*.24,y=height*(.12+random(cycle+810)*.2)+progress*height*.2,tail=ctx.createLinearGradient(x-145,y-65,x,y);tail.addColorStop(0,'#e9f4ff00');tail.addColorStop(1,'#ffffff');ctx.strokeStyle=tail;ctx.lineWidth=2;ctx.globalAlpha=Math.sin(progress*Math.PI);ctx.beginPath();ctx.moveTo(x-145,y-65);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
   }
   function snow(t){for(let i=0;i<85;i++){const depth=random(i+801),x=(random(i+401)*width+Math.sin(t*.25+i)*22+width)%width,y=(random(i+601)*height+t*(8+depth*22))%(height+20)-10,r=1.4+depth*2.6;ctx.strokeStyle='#ffffffc4';ctx.fillStyle='#ffffffb8';ctx.lineWidth=.8;if(r>2.3){ctx.beginPath();for(let k=0;k<3;k++){const a=k*Math.PI/3;ctx.moveTo(x-Math.cos(a)*r*1.6,y-Math.sin(a)*r*1.6);ctx.lineTo(x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*1.6)}ctx.stroke()}else{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}}}
-  function draw(){ctx.clearRect(0,0,width,height);ctx.drawImage(background,0,0);if(theme==='underwater-ocean')underwater(time);else if(theme==='outer-space')space(time);else if(theme==='frosted-window')snow(time);else rainy(time)}
+  function draw(){ctx.clearRect(0,0,width,height);ctx.drawImage(background,0,0,width,height);if(nature?.themes.includes(theme)){nature.draw(ctx,width,height,theme,time);return}if(theme==='underwater-ocean')underwater(time);else if(theme==='outer-space')space(time);else if(theme==='frosted-window')snow(time);else rainy(time)}
   function tick(now){frame=0;if(!theme||document.hidden||reduced.matches)return;if(now-last>=32){time+=Math.min((now-last)/1000,.06);last=now;draw()}frame=requestAnimationFrame(tick)}
   function resize(){width=Math.max(1,innerWidth);height=Math.max(1,innerHeight);const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(theme){paintBackground();draw()}}
-  function sync(){cancelAnimationFrame(frame);frame=0;const selected=document.body.dataset.theme,base=selected?.replace(/-light$/,'');const next=['underwater-ocean','rainy-window','outer-space','frosted-window'].includes(base)?base:'';if(next!==theme){theme=next;time=0}canvas.hidden=!theme;if(!theme)return;resize();last=performance.now();if(!document.hidden&&!reduced.matches)frame=requestAnimationFrame(tick)}
+  function sync(){cancelAnimationFrame(frame);frame=0;const selected=document.body.dataset.theme,base=selected?.replace(/-light$/,'');const next=['underwater-ocean','rainy-window','outer-space','frosted-window',...(nature?.themes||[])].includes(base)?base:'';if(next!==theme){theme=next;time=0}canvas.hidden=!theme;if(!theme)return;resize();if(nature?.themes.includes(theme)){const requested=theme;nature.prepare(requested).then(()=>{if(theme===requested){paintBackground();draw()}})}last=performance.now();if(!document.hidden&&!reduced.matches)frame=requestAnimationFrame(tick)}
   window.addEventListener('teachertiles:themechange',sync);window.addEventListener('resize',resize);document.addEventListener('visibilitychange',sync);reduced.addEventListener('change',sync);sync();
 })();

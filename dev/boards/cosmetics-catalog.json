@@ -32,6 +32,11 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "fireplace": "theme-fireplace",
+    "campfire": "theme-campfire",
+    "fireflies": "theme-fireflies",
+    "beach": "theme-beach",
+    "christmas-tree": "theme-christmas-tree",
     "basic": "theme-basic",
     "outer": "theme-outer-space",
     "frosted": "theme-frosted-window",

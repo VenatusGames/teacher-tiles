@@ -3,7 +3,7 @@
  function policy(catalog){
   const stickerKey=s=>String(s?.src||s?.emoji||'').split('?')[0];
   let latestMissing=[];
-  function requirements(snapshot){const found=[];const add=(products,kind)=>{if(products?.length&&!products.includes(''))found.push({products:[...products],kind});};const theme=String(snapshot?.theme||'');const prefix=Object.keys(catalog.themes).find(p=>theme.startsWith(p+'-'));if(prefix)add([catalog.themes[prefix]],'theme');
+  function requirements(snapshot){const found=[];const add=(products,kind)=>{if(products?.length&&!products.includes(''))found.push({products:[...products],kind});};const theme=String(snapshot?.theme||'');const prefix=Object.keys(catalog.themes).find(p=>(theme===p||theme.startsWith(p+'-')));if(prefix)add([catalog.themes[prefix]],'theme');
    function tile(o){if(!o)return;const typeProduct=catalog.tiles[o.type];if(typeProduct)add([typeProduct],'tile');const skin=o.dataset?.tileSkin;if(skin&&skin!=='default')add([catalog.skins[skin]||'tile-skin-'+skin],'skin');if(o.type==='sticker'){const products=catalog.stickers[stickerKey(o.sticker)];if(products)add(products,'sticker');}for(const segment of o.special?.segments||[]){const products=catalog.stickers[String(segment.iconSrc||'').split('?')[0]];if(products)add(products,'sticker');}for(const t of o.tabs?.items||[])tile(t);}for(const o of snapshot?.objects||[])tile(o);return found;}
   const devSubscription=()=>root.TeacherTilesAdminAccess?.developer===true&&root.TeacherTilesSandbox?.subscriptionEnabled===true;
   const allowed=(r,account={})=>devSubscription()||account.subscriptionActive===true||account.subscriptionStatus==='active'||r.products.some(p=>(account.ownedProductIds||[]).includes(p));

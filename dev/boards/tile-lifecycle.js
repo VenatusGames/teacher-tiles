@@ -630,8 +630,8 @@ function setupDrag(m){
     let snappingDisabled=false;
     const trashHit=ev=>{if(!trashZone)return false;const b=trashZone.getBoundingClientRect();return ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom};
     const setTrash=(visible,armed=false)=>{trashZone?.classList.toggle('is-visible',visible);trashZone?.classList.toggle('is-armed',visible&&armed);for(const g of dragStartGroup)g.classList.toggle('is-over-trash',visible&&armed)};
-    const setSnappingDisabled=disabled=>{
-      snappingDisabled=Boolean(disabled);
+    const setSnappingDisabled=(disabled,ending=false)=>{
+      snappingDisabled=!ending&&Boolean(disabled||appPreferences.disableTileSnapping);
       if(snappingDisabled){
         boardZoomPrecision=false;
         zoomIndicator?.classList.remove('is-precise','is-visible');
@@ -640,7 +640,7 @@ function setupDrag(m){
         snapDisabledIndicator.hidden=!snappingDisabled;
         snapDisabledIndicator.classList.toggle('is-visible',snappingDisabled);
       }
-      if(snappingDisabled){pending=null;clearPreview()}
+      if(snappingDisabled){pending=null;pendingTab=null;clearPreview();workspace.querySelectorAll('.is-tab-drop-target').forEach(el=>el.classList.remove('is-tab-drop-target'))}
     };
     const keyDown=event=>{if(event.key==='Shift')setSnappingDisabled(true)};
     const keyUp=event=>{if(event.key==='Shift')setSnappingDisabled(false)};
@@ -700,7 +700,7 @@ function setupDrag(m){
       }
     };
     const dragEventTarget=clickableStoplightSurface?window:h;
-    const cleanup=()=>{workspace.querySelectorAll('.is-tab-drop-target').forEach(el=>el.classList.remove('is-tab-drop-target'));clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);dragEventTarget.removeEventListener('pointermove',move);dragEventTarget.removeEventListener('pointerup',end);dragEventTarget.removeEventListener('pointercancel',cancel)};
+    const cleanup=()=>{workspace.querySelectorAll('.is-tab-drop-target').forEach(el=>el.classList.remove('is-tab-drop-target'));clearTimeout(tugHoldTimer);m.classList.remove('is-dragging','is-tug-armed');document.body.classList.remove('is-module-dragging');setSnappingDisabled(false,true);clearPreview();setTrash(false,false);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',windowBlur);dragEventTarget.removeEventListener('pointermove',move);dragEventTarget.removeEventListener('pointerup',end);dragEventTarget.removeEventListener('pointercancel',cancel)};
     const suppressPostDragClick=()=>{
       if(!dragMoved)return;
       const block=event=>{event.preventDefault();event.stopImmediatePropagation()};
@@ -708,6 +708,7 @@ function setupDrag(m){
       setTimeout(()=>m.removeEventListener('click',block,true),0);
     };
     const end=ev=>{
+      setSnappingDisabled(Boolean(ev?.shiftKey));
       suppressPostDragClick();
       if(overTrash){cleanup();deleteModules(dragStartGroup.filter(module=>module.isConnected));return}
       if(tugArmed&&!tugged){for(const [module,origin] of origins)applyModuleTransform(module,origin);cleanup();return}

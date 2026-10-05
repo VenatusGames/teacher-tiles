@@ -28,3 +28,35 @@ body.theme-frosted-window{--grid:transparent;--bg:#708b9f}
 .theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light),.theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light) .theme-card__copy{background:#1b2845;color:#eff4ff}
 
 .theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light),.theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light) .theme-card__copy{background:#b3c8d2;color:#223849}
+
+/* Scene artwork is shared by shop cards, shelf packs, and board previews. */
+body:is(.theme-fireplace,.theme-fireplace-light){--grid:transparent;--bg:#48352a}
+body:is(.theme-fireplace,.theme-fireplace-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--fireplace,.theme-card--fireplace-light),:is(.theme-card--fireplace,.theme-card--fireplace-light) .animated-theme-preview,.animated-theme-shop--fireplace,.board-preview-theme-fireplace,.board-preview-theme-fireplace-light{background:#48352a url('../../assets/themes/previews/fireplace.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--fireplace .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--fireplace-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--fireplace,.theme-card--fireplace-light) .theme-card__copy{background:#48352a;color:#fff}
+body:is(.theme-campfire,.theme-campfire-light){--grid:transparent;--bg:#132e35}
+body:is(.theme-campfire,.theme-campfire-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--campfire,.theme-card--campfire-light),:is(.theme-card--campfire,.theme-card--campfire-light) .animated-theme-preview,.animated-theme-shop--campfire,.board-preview-theme-campfire,.board-preview-theme-campfire-light{background:#132e35 url('../../assets/themes/previews/campfire.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--campfire .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--campfire-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--campfire,.theme-card--campfire-light) .theme-card__copy{background:#132e35;color:#fff}
+body:is(.theme-fireflies,.theme-fireflies-light){--grid:transparent;--bg:#193b38}
+body:is(.theme-fireflies,.theme-fireflies-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--fireflies,.theme-card--fireflies-light),:is(.theme-card--fireflies,.theme-card--fireflies-light) .animated-theme-preview,.animated-theme-shop--fireflies,.board-preview-theme-fireflies,.board-preview-theme-fireflies-light{background:#193b38 url('../../assets/themes/previews/fireflies.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--fireflies .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--fireflies-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--fireflies,.theme-card--fireflies-light) .theme-card__copy{background:#193b38;color:#fff}
+body:is(.theme-beach,.theme-beach-light){--grid:transparent;--bg:#92bfb7}
+body:is(.theme-beach,.theme-beach-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--beach,.theme-card--beach-light),:is(.theme-card--beach,.theme-card--beach-light) .animated-theme-preview,.animated-theme-shop--beach,.board-preview-theme-beach,.board-preview-theme-beach-light{background:#92bfb7 url('../../assets/themes/previews/beach.webp') center/cover!important;color:#fff}
+.theme-card--beach .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--beach-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--beach,.theme-card--beach-light) .theme-card__copy{background:#92bfb7;color:#fff}
+body:is(.theme-christmas-tree,.theme-christmas-tree-light){--grid:transparent;--bg:#614630}
+body:is(.theme-christmas-tree,.theme-christmas-tree-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light),:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light) .animated-theme-preview,.animated-theme-shop--christmas-tree,.board-preview-theme-christmas-tree,.board-preview-theme-christmas-tree-light{background:#614630 url('../../assets/themes/previews/christmas-tree.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--christmas-tree .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--christmas-tree-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light) .theme-card__copy{background:#614630;color:#fff}
