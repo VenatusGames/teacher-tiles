@@ -1,9 +1,9 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyBa1AkZfYLemz4gDAI505704wsG1CC_sSQ",
-  authDomain: "auth.teachertiles.com",
-  projectId: "teachertiles-6739b",
-  storageBucket: "teachertiles-6739b.firebasestorage.app",
-  messagingSenderId: "41204185343",
-  appId: "1:41204185343:web:1b170fbf73e35d2926f4ca",
-  measurementId: "G-18VJG8SWLD"
+  "apiKey": "AIzaSyBa1AkZfYLemz4gDAI505704wsG1CC_sSQ",
+  "authDomain": "teachertiles-6739b.firebaseapp.com",
+  "projectId": "teachertiles-6739b",
+  "storageBucket": "teachertiles-6739b.firebasestorage.app",
+  "messagingSenderId": "41204185343",
+  "appId": "1:41204185343:web:1b170fbf73e35d2926f4ca",
+  "measurementId": "G-18VJG8SWLD"
 };
