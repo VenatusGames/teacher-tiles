@@ -42,3 +42,13 @@
 
 .musicscore-module{container-type:inline-size;container-name:music-score}
 @container music-score (max-width:520px){.score-duration span{display:none}.score-palette{margin-left:0}.score-palette .score-duration{padding:3px 10px}}
+
+/* Keep controls below the compact, single-octave staff. */
+.score-symbol-outline>*{stroke:#fff;stroke-width:7px;fill:#fff;paint-order:stroke fill}
+.music-staff-note .score-note-glyph{filter:drop-shadow(0 1px 1px #13233535)}
+.musicscore-module .score-toolbar-slot{margin-bottom:0!important;margin-top:0;transition:grid-template-rows .22s,margin-top .22s,opacity .16s,visibility .22s}
+.musicscore-module:hover .score-toolbar-slot,.musicscore-module:has(.score-toolbar :focus-visible,.music-staff-note:focus-visible) .score-toolbar-slot{margin-top:10px}
+.musicscore-module .score-toolbar{padding:0 1px}
+.musicscore-module .score-status{padding-left:0;margin-bottom:32px}
+.music-staff-note .score-letter{top:91%;font-size:clamp(8px,calc(var(--staff-note-size)*.2),16px);background:#fff;color:inherit;border-radius:5px}
+@media(hover:none){.musicscore-module .score-toolbar-slot{margin-top:10px}}
