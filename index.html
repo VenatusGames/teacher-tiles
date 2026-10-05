@@ -73,7 +73,7 @@
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
 <link rel="stylesheet" href="account/panel-search/styles.css?v=20261004-filter">
-<script defer src="account/panel-search/index.js?v=20261004-filter"></script>
+<script defer src="account/panel-search/index.js?v=20261004-snapping"></script>
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -794,6 +794,7 @@
                 <span class="settings-card__glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/><rect x="6" y="7" width="5" height="7" rx="1"/><path d="M14 8h4M14 11h4M14 14h2"/></svg></span>
                 <div><strong data-i18n="settings.board.title">Board</strong><small data-i18n="settings.board.copy">Tune how the canvas feels while you work.</small></div>
               </div>
+              <div class="settings-row settings-row--switch"><div><strong>Disable Tile Snapping</strong><small>Move tiles freely without snapping to other tiles or board edges. Existing groups stay together.</small></div><button id="settings-disable-snapping" class="settings-switch" type="button" role="switch" aria-checked="false" aria-label="Disable Tile Snapping"><span></span></button></div>
               <label class="settings-row settings-row--range" for="settings-scroll-speed">
                 <div><strong data-i18n="settings.scroll.title">Scroll Speed</strong><small data-i18n="settings.scroll.copy">Changes mouse-wheel zoom and shelf scrolling sensitivity.</small></div>
                 <div class="settings-range-control"><input id="settings-scroll-speed" type="range" min="50" max="175" step="5" value="100"><output id="settings-scroll-speed-value">100%</output></div>
@@ -4415,11 +4416,11 @@
 <script src="tiles/spinner/setup.js?v=20260930-tile-refactor"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
-<script src="account/interface-services.js?v=20261002-ice-cube"></script>
+<script src="account/interface-services.js?v=20261004-snapping"></script>
 <script src="boards/navigation.js?v=20261001-collections"></script>
 <script src="shop/cosmetic-services.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
-<script src="boards/tile-lifecycle.js?v=20261001-collections"></script>
+<script src="boards/tile-lifecycle.js?v=20261004-snapping"></script>
 <script src="tiles/visual-timer/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/media-helpers.js?v=20260930-tile-refactor"></script>
@@ -4434,7 +4435,7 @@
 <script src="shop/ui.js?v=20260930-tile-refactor"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
-<script src="app.js?v=20261002-ice-cube"></script>
+<script src="app.js?v=20261004-snapping"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
