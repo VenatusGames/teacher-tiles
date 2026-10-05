@@ -22,10 +22,10 @@ function mount(pane,kind){
  const help=kind==='help',title=help?'Help':'Settings';
  const search=document.createElement('form');search.className='panel-search';search.setAttribute('role','search');search.setAttribute('aria-label',title+' search');
  search.innerHTML='<div class="panel-search__field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" maxlength="160" autocomplete="off" spellcheck="false"><button type="button" class="panel-search__clear" aria-label="Clear search" hidden>×</button></div><p class="panel-search__status" role="status" aria-live="polite"></p>';
- const input=search.querySelector('input'),clear=search.querySelector('button'),status=search.querySelector('p');input.id=kind+'-search';input.placeholder=help?'Search Help — try “move tiles”':'Search Settings — try “font size”';input.setAttribute('aria-label','Search '+title);input.setAttribute('aria-controls',kind+'-search-results');
- const results=document.createElement('div');results.id=kind+'-search-results';results.className='panel-search__results';results.setAttribute('role','list');results.setAttribute('aria-label',title+' search results');results.hidden=true;
+ const input=search.querySelector('input'),clear=search.querySelector('button'),status=search.querySelector('p');input.id=kind+'-search';input.placeholder=help?'Search Help — try “move tiles”':'Search Settings — try “font size”';input.setAttribute('aria-label','Search '+title);
+ const results=document.createElement('div');results.id=kind+'-search-results';results.className='panel-search__results';results.hidden=true;
  pane.querySelector('.help-search-coming')?.remove();pane.querySelector('.settings-page-heading').after(search);search.after(results);
- let timer=0,highlight=null,highlightTimer=0;
+ let timer=0;const filtered=new Set();let matches=[];
  function items(){
   const selectors=help?'.help-shortcut,.help-mouse-list>div,[data-help-topic]':'.settings-row';
   return [...pane.querySelectorAll(selectors)].filter(el=>!el.parentElement.closest('[data-help-topic]')).map(el=>{
@@ -34,17 +34,35 @@ function mount(pane,kind){
    const category=help?(el.closest('.help-section')?.querySelector('.help-section__heading strong')?.textContent||'Tutorials'):el.closest('.settings-card')?.querySelector('.settings-card__title strong')?.textContent;
    const caption=shortcut?el.querySelector('div')?.textContent:el.querySelector('small,p,[data-search-summary]')?.textContent;
    const transcript=el.dataset.searchTranscript||el.querySelector('[data-search-transcript]')?.textContent||'';
-   return{el,shortcut:shortcut?el.querySelector('div')?.textContent:'',title:title.trim(),category:category||title,text:[caption,el.querySelector('select')?.textContent,transcript].filter(Boolean).join(' '),caption:caption?.trim()||'',keywords:[el.dataset.searchKeywords,hints[control?.id],shortcut?el.querySelector('div')?.textContent:'',el.dataset.helpType].filter(Boolean).join(' '),type:el.dataset.helpType|| (shortcut?'Shortcut':help?'Guide':'Setting')};
+   return{el,shortcut:shortcut?el.querySelector('div')?.textContent:'',title:title.trim(),category:category||title,text:[caption,el.querySelector('select')?.textContent,transcript].filter(Boolean).join(' '),caption:caption?.trim()||'',keywords:[category,el.dataset.searchKeywords,hints[control?.id],shortcut?el.querySelector('div')?.textContent:'',el.dataset.helpType].filter(Boolean).join(' '),type:el.dataset.helpType|| (shortcut?'Shortcut':help?'Guide':'Setting')};
   });
  }
  function reset(){input.value='';update()}
- function reveal(item){reset();let parent=item.el.parentElement;while(parent&&parent!==pane){if(parent.matches('details'))parent.open=true;parent=parent.parentElement}if(item.el.matches('details'))item.el.open=true;highlight?.classList.remove('panel-search-target');clearTimeout(highlightTimer);highlight=item.el;highlight.classList.add('panel-search-target');highlightTimer=setTimeout(()=>highlight?.classList.remove('panel-search-target'),2400);item.el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});const target=help?item.el:item.el.querySelector('input,select,button');if(target){if(!target.hasAttribute('tabindex')&&!target.matches('input,select,button,a')){target.tabIndex=-1;target.addEventListener('blur',()=>target.removeAttribute('tabindex'),{once:true})}target.focus({preventScroll:true})}}
- function update(){clearTimeout(timer);const query=input.value.trim(),active=!!query;clear.hidden=!active;pane.classList.toggle('has-panel-search',active);results.hidden=!active;results.replaceChildren();status.textContent='';if(!active)return;
- const matches=rank(items(),query);status.textContent=matches.length+' '+(matches.length===1?'result':'results');
- if(!matches.length){const empty=document.createElement('div');empty.className='panel-search__empty';const heading=document.createElement('strong');heading.textContent='No Matches Yet';const copy=document.createElement('p');copy.textContent=help?'Try fewer words, such as “zoom”, “copy”, or “keyboard”.':'Try a setting name, such as “sound”, “font”, or “language”.';const back=document.createElement('button');back.type='button';back.textContent='Show All '+title;back.onclick=()=>{reset();input.focus()};empty.append(heading,copy,back);results.append(empty);return}
- for(const item of matches){const row=document.createElement('div');row.setAttribute('role','listitem');const button=document.createElement('button');button.type='button';button.className='panel-search__result';const meta=document.createElement('small');meta.textContent=item.category+' · '+item.type;const label=document.createElement('strong');label.textContent=item.title;const copy=document.createElement('span');copy.textContent=item.caption;button.append(meta,label);if(item.caption)button.append(copy);button.addEventListener('click',()=>reveal(item));row.append(button);results.append(row)}
+ function hide(el){el.classList.add('panel-search-filtered');filtered.add(el)}
+ function update(){
+  clearTimeout(timer);for(const el of filtered)el.classList.remove('panel-search-filtered');filtered.clear();
+  const query=input.value.trim(),active=!!query;clear.hidden=!active;results.hidden=true;results.replaceChildren();status.textContent='';matches=[];
+  if(!active)return;
+  const entries=items();matches=rank(entries,query);const visible=new Set(matches.map(item=>item.el));
+  status.textContent=matches.length+' '+(matches.length===1?'result':'results');
+  // Keep the original controls and their event handlers in place; filter only presentation.
+  for(const item of entries)if(!visible.has(item.el))hide(item.el);
+  const containers=new Set();
+  for(const item of entries){let parent=item.el.parentElement;while(parent&&parent!==pane){containers.add(parent);parent=parent.parentElement}}
+  for(const container of containers)if(!matches.some(item=>container.contains(item.el)))hide(container);
+  for(const child of pane.children){if(child===search||child===results||child.matches('.settings-page-heading'))continue;if(!matches.some(item=>child===item.el||child.contains(item.el)))hide(child)}
+  if(!matches.length){results.hidden=false;const empty=document.createElement('div');empty.className='panel-search__empty';const heading=document.createElement('strong');heading.textContent='No Matches Yet';const copy=document.createElement('p');copy.textContent=help?'Try fewer words, such as “zoom”, “copy”, or “keyboard”.':'Try a setting name, such as “sound”, “font”, or “language”.';const back=document.createElement('button');back.type='button';back.textContent='Show All '+title;back.onclick=()=>{reset();input.focus()};empty.append(heading,copy,back);results.append(empty)}
  }
- input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(update,100)});clear.addEventListener('click',()=>{reset();input.focus()});search.addEventListener('submit',event=>{event.preventDefault();update();results.querySelector('.panel-search__result')?.click()});input.addEventListener('keydown',event=>{if(event.key==='Escape'&&input.value){event.stopPropagation();event.preventDefault();reset()}else if(event.key==='ArrowDown'){event.preventDefault();update();results.querySelector('button')?.focus()}});
+ input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(update,100)});
+ clear.addEventListener('click',()=>{reset();input.focus()});
+ search.addEventListener('submit',event=>{event.preventDefault();update()});
+ input.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&input.value){event.stopPropagation();event.preventDefault();reset()}
+  else if(event.key==='ArrowDown'){
+   event.preventDefault();update();const first=matches[0]?.el,target=first?.querySelector('input,select,button,summary,a[href]')||first||results.querySelector('button');
+   if(target){if(!target.matches('input,select,button,summary,a[href]')&&!target.hasAttribute('tabindex')){target.tabIndex=-1;target.addEventListener('blur',()=>target.removeAttribute('tabindex'),{once:true})}target.focus()}
+  }
+ });
  controllers.push({update});
 }
 function setup(){for(const name of ['settings','help']){const pane=document.querySelector('[data-settings-pane="'+name+'"]');if(pane)mount(pane,name)}window.addEventListener('teachertiles:settings-tab',()=>controllers.forEach(c=>c.update()))}
