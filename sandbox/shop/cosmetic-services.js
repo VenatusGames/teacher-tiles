@@ -36,7 +36,7 @@ function cursorIsOwned(cursor){return Boolean(cursor&&(!cursor.productId||cosmet
 
 function collectionPackIsOwned(pack){const product=COLLECTION_PACK_PRODUCTS[pack?.id];return cosmeticIsAccessible(product)}
 
-function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>String(theme||'').startsWith(`${name}-`));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
+function themeChoiceProduct(theme){const prefix=Object.keys(THEME_CHOICE_PRODUCTS).find(name=>(String(theme||'')===name||String(theme||'').startsWith(`${name}-`)));return prefix?THEME_CHOICE_PRODUCTS[prefix]:''}
 
 function themeChoiceIsOwned(theme){const product=themeChoiceProduct(theme);return cosmeticIsAccessible(product)}
 
