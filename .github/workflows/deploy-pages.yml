@@ -1,6 +1,6 @@
-name: Deploy branch to GitHub Pages
+name: Deploy teacher-tiles via GitHub Pages
 
-run-name: Deploy ${{ github.ref_name }}
+run-name: '${{ github.ref_name }}: ${{ github.event.head_commit.message }}'
 
 # Each branch publishes only its own slice of teachertiles.com:
 #   main    -> /          (teachertiles-6739b)
