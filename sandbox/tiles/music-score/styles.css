@@ -52,3 +52,6 @@
 .musicscore-module .score-status{padding-left:0;margin-bottom:32px}
 .music-staff-note .score-letter{top:91%;font-size:clamp(8px,calc(var(--staff-note-size)*.2),16px);background:#fff;color:inherit;border-radius:5px}
 @media(hover:none){.musicscore-module .score-toolbar-slot{margin-top:10px}}
+
+/* The cropped clef retains its aspect ratio and follows the staff's vertical scale. */
+.musicscore-module .music-clef{max-width:none;left:3%;-webkit-mask-size:179.575% 114.286%;mask-size:179.575% 114.286%}

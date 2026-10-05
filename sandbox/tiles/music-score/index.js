@@ -3,10 +3,11 @@
  const pitches=[60,62,64,65,67,69,71,72];
  const names=['C4','D4','E4','F4','G4','A4','B4','C5'];
  const colors=['#df5252','#e38935','#b89c1d','#42a26b','#3799d2','#7160bc','#b65ea5'];
- const rowUnits=140,firstBeat=166,beatStep=52,measureStart=140,measureEnd=972;
+ const rowUnits=140,measureEnd=972;
  const NS='http://www.w3.org/2000/svg';
  function setup(m) {
   const staff=m.querySelector('.score-grid'),tempo=m.querySelector('.score-tempo'),status=m.querySelector('.score-status'),play=m.querySelector('.score-play'),instrument=TeacherTilesInstrument();
+  let firstBeat=166,beatStep=52,measureStart=140;
   let choice={duration:1,rest:false},rows=1,labels=true,notes=[],timers=[],playing=false,cancelDrag=null,ignoreStaffClickUntil=0;
   staff.classList.remove('score-grid');staff.classList.add('music-staff');const palette=m.querySelector('.score-palette');palette.setAttribute('role','group');palette.setAttribute('aria-label','Notes and rests');
   const toolbar=m.querySelector('.score-toolbar'),slot=document.createElement('div');slot.className='score-toolbar-slot';staff.after(slot);slot.append(toolbar);toolbar.append(palette);
@@ -40,10 +41,24 @@
    });palette.append(button);
   }
 
+  function updateStaffGeometry(){
+   const svg=staff.querySelector('.music-staff-lines');if(!svg)return;
+   const paths=[],line=d=>paths.push(`<path d="${d}"/>`);
+   for(let row=0;row<rows;row++){
+    for(const y of [20,40,60,80,100])line(`M0 ${y+row*rowUnits}H${measureEnd}`);
+    for(let measure=0;measure<=4;measure++)line(`M${measureStart+measure*4*beatStep} ${20+row*rowUnits}V${100+row*rowUnits}`);
+   }
+   for(const note of notes){if(note.rest||note.beat>=rows*16)continue;const y=120-pitches.indexOf(note.pitch)*10,x=firstBeat+(note.beat%16)*beatStep,base=Math.floor(note.beat/16)*rowUnits;for(let ledger=100;y>=ledger+20;){ledger+=20;line(`M${x-16} ${base+ledger}h32`)}}
+   svg.innerHTML=paths.join('');
+   staff.querySelectorAll('[data-note]').forEach(button=>position(button,notes[Number(button.dataset.note)]));
+  }
   const fit=()=>{
    const rowHeight=staff.clientHeight/rows,noteSize=Math.max(6,Math.min(88,rowHeight*.42,staff.clientWidth*.060));
-   const clefHeight=Math.min(rowHeight*.88,staff.clientWidth*.075*720/422);
-   staff.style.setProperty('--staff-note-size',noteSize+'px');staff.style.setProperty('--staff-clef-height',clefHeight+'px');staff.style.setProperty('--staff-clef-width',clefHeight*422/720+'px');
+   // Crop transparent asset padding; size the visible clef from the staff spacing.
+   const clefHeight=Math.min(rowHeight*116/rowUnits,staff.clientWidth*.34*630/235),clefWidth=clefHeight*235/630;
+   measureStart=Math.max(140,(clefWidth+staff.clientWidth*.03+12)/Math.max(1,staff.clientWidth)*1000);
+   beatStep=(measureEnd-measureStart)/16;firstBeat=measureStart+beatStep/2;
+   staff.style.setProperty('--staff-note-size',noteSize+'px');staff.style.setProperty('--staff-clef-height',clefHeight+'px');staff.style.setProperty('--staff-clef-width',clefWidth+'px');updateStaffGeometry();
   };
   const observer=new ResizeObserver(fit);observer.observe(staff);
   function stop(){instrument.stop();timers.forEach(clearTimeout);timers=[];playing=false;play.textContent='Play';staff.querySelectorAll('.is-playing').forEach(n=>n.classList.remove('is-playing'));}
@@ -62,19 +77,13 @@
   function render(){
    clearPreview();staff.replaceChildren();
    const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`0 0 1000 ${rowUnits*rows}`);svg.setAttribute('preserveAspectRatio','none');svg.classList.add('music-staff-lines');
-   const line=d=>{const path=document.createElementNS(NS,'path');path.setAttribute('d',d);svg.append(path);};
-   for(let row=0;row<rows;row++){
-    for(const y of [20,40,60,80,100])line(`M0 ${y+row*rowUnits}H${measureEnd}`);
-    for(let measure=0;measure<=4;measure++)line(`M${measureStart+measure*4*beatStep} ${20+row*rowUnits}V${100+row*rowUnits}`);
-   }
    staff.append(svg);
-   for(let row=0;row<rows;row++){const clef=document.createElement('span');clef.className='music-clef';clef.setAttribute('aria-hidden','true');clef.style.top=(row*rowUnits+60)/(rowUnits*rows)*100+'%';staff.append(clef);}
+   for(let row=0;row<rows;row++){const clef=document.createElement('span');clef.className='music-clef';clef.setAttribute('aria-hidden','true');clef.style.top=(row*rowUnits+58)/(rowUnits*rows)*100+'%';staff.append(clef);}
    notes.forEach((note,index)=>{
     if(note.beat>=rows*16)return;
     const button=document.createElement('button');button.type='button';button.className='music-staff-note'+(note.rest?' is-rest':'');button.dataset.note=index;position(button,note);
     const glyph=document.createElement('span');glyph.className='score-note-glyph';glyph.setAttribute('aria-hidden','true');
     glyph.innerHTML=glyphMarkup(note);
-    if(!note.rest){const y=120-pitches.indexOf(note.pitch)*10,x=firstBeat+(note.beat%16)*beatStep,base=Math.floor(note.beat/16)*rowUnits;for(let ledger=100;y>=ledger+20;){ledger+=20;line(`M${x-16} ${base+ledger}h32`)}for(let ledger=20;y<=ledger-20;){ledger-=20;line(`M${x-16} ${base+ledger}h32`)}}
     const letter=document.createElement('span');letter.className='score-letter';letter.textContent=names[pitches.indexOf(note.pitch)].replace(/[0-9]/g,'');letter.hidden=!labels||!!note.rest;button.append(glyph,letter);
     button.style.color=note.rest?'var(--module-text,#17191d)':colors[pitches.indexOf(note.pitch)%7];
     button.setAttribute('aria-label',`${durationName(duration(note))} ${note.rest?'rest':names[pitches.indexOf(note.pitch)]}, beat ${note.beat+1}. Click to ${note.rest?'restore note':'make a rest'}. Drag or use arrow keys to change pitch; Delete removes.`);
