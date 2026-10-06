@@ -1,6 +1,8 @@
 function setupSpinner(m){
   const canvas=m.querySelector('.spinner-canvas');
   const ctx=canvas.getContext('2d');
+  const carnival=m.dataset.tileSkin==='spinner-carnival';
+  const lights=carnival?window.TeacherTilesCarnivalSpinner.create(m):null;
   const spinButton=m.querySelector('.spinner-spin-button');
   const winner=m.querySelector('.spinner-winner');
   const resultOverlay=m.querySelector('.spinner-result-overlay');
@@ -53,7 +55,10 @@ function setupSpinner(m){
   window.addEventListener('teachertiles:audiopreferenceschange',syncSpinnerAudio);
   syncSpinnerAudio();
 
-  const palette=[
+  const palette=carnival?[
+    ['#ffe9b9','#eeae50'],['#ffd2d0','#e86e82'],['#c4eafa','#68abd4'],
+    ['#d4eedb','#70b897'],['#e4d8fb','#b18cdd'],['#ffdebd','#f69765']
+  ]:[
     ['#bcdcff','#91bdf5'],['#ffdad1','#f7a999'],['#fff0ba','#f1d17b'],['#c8eadb','#94cfb6'],
     ['#e1d4ff','#bfa6ed'],['#ffdae8','#eeacc5'],['#c7ecf1','#91cbd5'],['#e4edc0','#bed18e']
   ];
@@ -64,6 +69,7 @@ function setupSpinner(m){
   };
 
   function renderNameList(){
+    lights?.setNames(names.length);
     namesButton.querySelector('span').textContent=`Names · ${names.length}`;
     list.replaceChildren();
     names.forEach((name,i)=>{
@@ -89,6 +95,7 @@ function setupSpinner(m){
   }
 
   function drawWheel(){
+    lights?.rotate(rotation);
     const dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));
     const size=560;
     const wheelWrap=canvas.parentElement;
@@ -124,7 +131,7 @@ function setupSpinner(m){
     const arc=Math.PI*2/names.length;
     const wheelFont=getWheelFont();
     const labelStart=68;
-    const labelEnd=r-16;
+    const labelEnd=r-(carnival?46:16);
     const labelWidth=labelEnd-labelStart;
 
     const fitLabel=(name,maxFont)=>{
@@ -200,11 +207,15 @@ function setupSpinner(m){
 
     ctx.beginPath();
     ctx.arc(0,0,r,0,Math.PI*2);
-    ctx.strokeStyle='#fff';
-    ctx.lineWidth=9;
+    ctx.strokeStyle=carnival?'#8b5734':'#fff';
+    ctx.lineWidth=carnival?12:9;
     ctx.stroke();
     ctx.beginPath();ctx.arc(0,0,r-6,0,Math.PI*2);
-    ctx.strokeStyle='rgba(35,52,77,.13)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.strokeStyle=carnival?'#ffe7a5':'rgba(35,52,77,.13)';ctx.lineWidth=carnival?5:1.5;ctx.stroke();
+    if(carnival){
+      ctx.beginPath();ctx.arc(0,0,249,0,Math.PI*2);ctx.strokeStyle='#b37e43';ctx.lineWidth=18;ctx.stroke();
+      ctx.beginPath();ctx.arc(0,0,238,0,Math.PI*2);ctx.strokeStyle='#ffe7a5';ctx.lineWidth=2;ctx.stroke();
+    }
 
     ctx.beginPath();
     ctx.arc(0,0,56,0,Math.PI*2);
@@ -456,6 +467,7 @@ function setupSpinner(m){
     detachRosterLoader();
     cancelAnimationFrame(raf);
     ro.disconnect();
+    lights?.cleanup();
     m.removeEventListener('pointerenter',refreshWheelLayout);
     m.removeEventListener('pointerleave',refreshWheelLayout);
     m.removeEventListener('teachertiles:tileaudiochange',syncSpinnerAudio);

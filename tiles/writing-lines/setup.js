@@ -77,6 +77,7 @@ function setupWritingLines(m){
   const setMode=(typing,{focus=false}={})=>{
     m.dataset.writingMode=typing?'type':'practice';
     toggle.classList.toggle('is-active',typing);
+    toggle.setAttribute('aria-pressed',String(typing));
     entries.forEach(entry=>{
       entry.setAttribute('contenteditable',typing?'true':'false');
       entry.tabIndex=typing&&!entry.closest('.writinglines-row')?.hidden?0:-1;

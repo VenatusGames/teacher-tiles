@@ -33,3 +33,26 @@
 .spinner-module .spinner-settings:not([hidden]) :is(.spinner-name-entry,.class-roster-loader){max-height:none!important;opacity:1!important;transform:none!important;pointer-events:auto!important;visibility:visible!important}
 
 @container(max-width:350px){.spinner-module .spinner-winner{opacity:0!important}}
+
+/* Winner and replay share one row, so hiding the action never reserves space. */
+.spinner-module .spinner-result-overlay{min-height:0;padding:14px 16px;gap:6px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;align-items:center}
+.spinner-module .spinner-result-overlay.is-visible{display:grid!important}
+.spinner-module .spinner-result-label{grid-area:1/1}
+.spinner-module .spinner-result-name{grid-area:2/1;line-height:1.15;transition:opacity .16s}
+.spinner-module .spinner-spin-again{grid-area:2/1;z-index:1;margin:0;max-width:100%;height:36px;align-self:center;justify-self:center}
+.spinner-module .spinner-result-overlay:is(:hover,:has(.spinner-spin-again:focus-visible)) .spinner-result-name{opacity:0}
+.spinner-module .spinner-result-overlay:is(:hover,:has(.spinner-spin-again:focus-visible)) .spinner-spin-again{opacity:1;transform:none;pointer-events:auto}
+.spinner-carnival-lights{position:absolute;left:50%;top:50%;width:var(--spinner-wheel-size);height:var(--spinner-wheel-size);transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+.spinner-carnival-lights svg{display:block;width:100%;height:100%;overflow:visible;transform-origin:50% 50%}
+.spinner-carnival-bulb-glow{fill:#ffc85a;opacity:.14}
+.spinner-carnival-bulb-light{fill:#fff8d1;opacity:.6}
+.spinner-carnival-bulb-light,.spinner-carnival-bulb-glow{animation:spinner-marquee 2.4s ease-in-out infinite;animation-delay:var(--bulb-delay);animation-play-state:paused}
+.spinner-carnival-lights.is-lit :is(.spinner-carnival-bulb-light,.spinner-carnival-bulb-glow){animation-play-state:running}
+.spinner-carnival-bulb-glow{animation-name:spinner-marquee-glow}
+.spinner-module[data-tile-skin=spinner-carnival] .spinner-pointer{background:linear-gradient(135deg,#fff3c0,#e4b95e 50%,#9a642e)}
+.spinner-module[data-tile-skin=spinner-carnival] .spinner-spin-button{color:#734422;background:linear-gradient(145deg,#fff9e7,#f2dca3);border-color:#fff0bd;box-shadow:0 4px 12px #5129174d,inset 0 0 0 1px #c79349}
+.spinner-module[data-tile-skin=spinner-carnival] .spinner-result-overlay{border-color:#e0c591;background:#fffdf6fa}
+.spinner-module[data-tile-skin=spinner-carnival] .spinner-spin-again{background:#fff0c9;border-color:#ddbd76;color:#734422}
+@keyframes spinner-marquee{0%,100%{opacity:.48}40%,65%{opacity:1}}
+@keyframes spinner-marquee-glow{0%,100%{opacity:.05}40%,65%{opacity:.42}}
+@media(prefers-reduced-motion:reduce){.spinner-carnival-lights :is(.spinner-carnival-bulb-light,.spinner-carnival-bulb-glow){animation:none}.spinner-module :is(.spinner-result-name,.spinner-spin-again){transition:none}}
