@@ -1,0 +1,5 @@
+/* Leave a full descent below the writing baseline at every row scale. */
+.writinglines-module .writinglines-entry{top:0;height:100%;font-size:100cqh!important;line-height:1;overflow:visible!important}
+.writinglines-module .writinglines-guide--top{top:14%}
+.writinglines-module .writinglines-guide--mid{top:45%}
+.writinglines-module .writinglines-guide--base{bottom:24%}
