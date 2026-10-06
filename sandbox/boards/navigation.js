@@ -519,8 +519,7 @@ function beginBoardSelection(e){
   e.preventDefault();
   workspace.setPointerCapture(e.pointerId);
   const sx=e.clientX,sy=e.clientY;
-  const base=new Set();
-  clearSelection();
+  const base=new Set(selectedModules);
   let dragging=false;
 
   const draw=ev=>{

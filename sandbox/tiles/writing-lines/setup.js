@@ -74,7 +74,7 @@ function setupWritingLines(m){
     fitAll();
   };
 
-  const setMode=typing=>{
+  const setMode=(typing,{focus=false}={})=>{
     m.dataset.writingMode=typing?'type':'practice';
     toggle.classList.toggle('is-active',typing);
     entries.forEach(entry=>{
@@ -82,10 +82,10 @@ function setupWritingLines(m){
       entry.tabIndex=typing&&!entry.closest('.writinglines-row')?.hidden?0:-1;
     });
     fitAll();
-    if(typing)requestAnimationFrame(()=>visibleEntries()[0]?.focus({preventScroll:true}));
+    if(typing&&focus)requestAnimationFrame(()=>{if(m.isConnected)visibleEntries()[0]?.focus({preventScroll:true})});
   };
 
-  toggle.addEventListener('click',()=>setMode(m.dataset.writingMode!=='type'));
+  toggle.addEventListener('click',()=>setMode(m.dataset.writingMode!=='type',{focus:true}));
 
   countBtn?.addEventListener('click',()=>{
     const current=Number(m.dataset.lineCount)||3;

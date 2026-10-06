@@ -606,7 +606,7 @@ function setupDrag(m){
     bringToFront(m);
     const pinnedDrag=isTilePinned(m);
     if(pinnedDrag){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
-    else if(!selectedModules.has(m)){clearSelection();selectedModules.add(m);m.classList.add('is-selected')}
+    else if(!selectedModules.has(m)){if(!e.shiftKey)clearSelection();selectModule(m)}
     const selected=pinnedDrag?[m]:[...selectedModules];
     const connectedToAnchor=snapGroupMembers(m);
     const expanded=new Set();
