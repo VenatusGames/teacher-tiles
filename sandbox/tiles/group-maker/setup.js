@@ -12,6 +12,33 @@ function setupGroupMaker(m){
   const bg=m.querySelector('.groupmaker-bg');
   const font=m.querySelector('.groupmaker-font');
   const textColor=m.querySelector('.groupmaker-text-color');
+  const editor=m.querySelector('.groupmaker-setup');
+  const footer=m.querySelector('.groupmaker-footer');
+  const actions=m.querySelector('.groupmaker-actions');
+  const empty=results.querySelector('.groupmaker-empty');
+  const editorHeading=document.createElement('strong');editorHeading.className='groupmaker-editor-heading';editorHeading.textContent='Names & Group Size';
+  editor.prepend(editorHeading,m.querySelector('.groupmaker-size-control'));
+  editor.hidden=true;m.append(editor);
+  footer.querySelector('.groupmaker-balance-note')?.remove();
+  footer.prepend(actions);
+  const listIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>';
+  editBtn.innerHTML=listIcon+'<span>Names</span>';editBtn.setAttribute('aria-expanded','false');
+  shuffleBtn.classList.remove('primary');makeBtn.classList.remove('primary');
+  shuffleBtn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3.5-2 5-4m2-4c1.5-2 3-4 5-4h3m-4-4 4 4-4 4"/></svg><span>Shuffle</span>';
+  const startButton=document.createElement('button');startButton.type='button';startButton.className='groupmaker-start';startButton.innerHTML=listIcon+'<span>Add Names</span>';empty.append(startButton);
+  function closeEditor(){
+    if(editor.contains(document.activeElement))document.activeElement.blur();
+    editor.hidden=true;editBtn.setAttribute('aria-expanded','false');
+  }
+  function openEditor(){editor.hidden=false;editBtn.setAttribute('aria-expanded','true');nameInput.focus({preventScroll:true})}
+  function showEmpty(){results.replaceChildren(empty);m.classList.remove('has-groups');summary.textContent=names.length?`${names.length} names ready`:'Add names to get started'}
+  startButton.addEventListener('click',openEditor);
+  const outsideEditor=event=>{if(!m.contains(event.target))closeEditor()};
+  document.addEventListener('pointerdown',outsideEditor);
+  m.addEventListener('pointerleave',closeEditor);
+  editor.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeEditor();editBtn.focus({preventScroll:true})}});
+  for(const scroll of [editor,results])scroll.addEventListener('wheel',event=>{if(!event.ctrlKey)event.stopPropagation()},{passive:true});
+
 
   let names=[];
   let groupTitles=[];
@@ -22,11 +49,11 @@ function setupGroupMaker(m){
   const updateCount=()=>{
     const count=names.length;
     countLabel.textContent=`${count} ${count===1?'name':'names'}`;
-    makeBtn.disabled=count<2;
+    makeBtn.disabled=count<2;shuffleBtn.disabled=count<2;
+    editBtn.querySelector('span').textContent=`Names · ${count}`;
   };
 
   const renderNameList=()=>{
-    requestAnimationFrame(()=>fitNameModuleToRoster(m,names.length,{namesPerRow:5,rowHeight:32,threshold:10}));
     nameList.replaceChildren();
 
     names.forEach((name,index)=>{
@@ -48,9 +75,10 @@ function setupGroupMaker(m){
           if(names.length>=2){
             makeGroups(true);
           }else{
-            m.classList.remove('has-groups');
+            showEmpty();
           }
         }
+        notifyBoardChanged('groupmaker-names');
       });
 
       chip.append(text,remove);
@@ -75,6 +103,7 @@ function setupGroupMaker(m){
     renderNameList();
     updateCount();
     nameInput.focus({preventScroll:true});
+    notifyBoardChanged('groupmaker-names');
   };
 
   const shuffleNames=list=>{
@@ -117,6 +146,7 @@ function setupGroupMaker(m){
     groups.forEach((group,index)=>{
       const card=document.createElement('section');
       card.className='groupmaker-group';
+      card.style.setProperty('--group-accent',['#6b9bd2','#8eaf8a','#bc91bb','#d4ab68'][index%4]);
       if(animate)card.style.setProperty('--group-delay',`${index*55}ms`);
 
       const title=document.createElement('input');
@@ -170,6 +200,7 @@ function setupGroupMaker(m){
     const targetSize=Math.max(2,Math.min(12,Math.round(Number(sizeInput.value)||4)));
     sizeInput.value=String(targetSize);
     renderGroups(balanceGroups(shuffleNames(names),targetSize),{animate});
+    notifyBoardChanged('groupmaker-groups');
   };
 
   addNameBtn.addEventListener('click',addName);
@@ -185,7 +216,7 @@ function setupGroupMaker(m){
     if(m.classList.contains('has-groups'))makeGroups(true);
   });
 
-  makeBtn.addEventListener('click',()=>makeGroups(true));
+  makeBtn.addEventListener('click',()=>{makeGroups(true);closeEditor()});
 
   shuffleBtn.addEventListener('click',()=>{
     if(names.length<2){
@@ -193,13 +224,11 @@ function setupGroupMaker(m){
       nameInput.focus({preventScroll:true});
       return;
     }
-    makeGroups(true);
+    makeGroups(true);closeEditor();
   });
 
   editBtn.addEventListener('click',()=>{
-    m.classList.remove('has-groups');
-    summary.textContent='Edit your class list';
-    requestAnimationFrame(()=>nameInput.focus({preventScroll:true}));
+    if(editor.hidden)openEditor();else closeEditor();
   });
 
   bg.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
@@ -212,8 +241,9 @@ function setupGroupMaker(m){
   const detachRosterLoader=attachClassRosterLoader(nameInput.closest('.groupmaker-name-entry'),rosterNames=>{
     names=normalizeRosterNames(rosterNames);
     groupTitles=[];
-    m.classList.remove('has-groups');
+    showEmpty();
     summary.textContent='Class roster loaded';
+    notifyBoardChanged('groupmaker-roster');
     renderNameList();
     updateCount();
   });
@@ -234,11 +264,16 @@ function setupGroupMaker(m){
     renderNameList();
     updateCount();
     if(Array.isArray(state.groups)&&state.groups.length&&names.length>=2)renderGroups(state.groups,{animate:false});
-    else m.classList.remove('has-groups');
+    else showEmpty();
   };
 
+  const priorDeactivate=m._deactivate;
+  m._deactivate=()=>{closeEditor();priorDeactivate?.()};
   const prior=m._cleanup;
   m._cleanup=()=>{
+    closeEditor();
+    document.removeEventListener('pointerdown',outsideEditor);
+    m.removeEventListener('pointerleave',closeEditor);
     prior?.();
     detachRosterLoader();
     clearTimeout(shuffleTimer);
