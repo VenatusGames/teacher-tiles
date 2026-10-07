@@ -16,8 +16,15 @@ function setupGroupMaker(m){
   const footer=m.querySelector('.groupmaker-footer');
   const actions=m.querySelector('.groupmaker-actions');
   const empty=results.querySelector('.groupmaker-empty');
-  const editorHeading=document.createElement('strong');editorHeading.className='groupmaker-editor-heading';editorHeading.textContent='Names & Group Size';
-  editor.prepend(editorHeading,m.querySelector('.groupmaker-size-control'));
+  const editorHeading=document.createElement('strong');editorHeading.className='groupmaker-editor-heading';editorHeading.textContent='Names';
+  editor.prepend(editorHeading);
+  const sizeControl=m.querySelector('.groupmaker-size-control');
+  sizeControl.querySelector('span').textContent='Students Per Group';
+  const sizePanel=document.createElement('div');sizePanel.className='groupmaker-size-panel';sizePanel.hidden=true;sizePanel.append(sizeControl);m.append(sizePanel);
+  const sizeButton=document.createElement('button');sizeButton.type='button';sizeButton.className='groupmaker-size-button';sizeButton.setAttribute('aria-expanded','false');
+  sizeButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 20v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M18 13a5 5 0 0 1 3 4v3"/></svg><span class="groupmaker-size-button-label">Students Per Group</span><span class="groupmaker-size-value">4</span>';
+  actions.prepend(sizeButton);
+  const layout=createGroupMakerLayout(results);
   editor.hidden=true;m.append(editor);
   footer.querySelector('.groupmaker-balance-note')?.remove();
   footer.prepend(actions);
@@ -30,12 +37,20 @@ function setupGroupMaker(m){
     if(editor.contains(document.activeElement))document.activeElement.blur();
     editor.hidden=true;editBtn.setAttribute('aria-expanded','false');
   }
-  function openEditor(){editor.hidden=false;editBtn.setAttribute('aria-expanded','true');nameInput.focus({preventScroll:true})}
+  function closeSize(){sizePanel.hidden=true;sizeButton.setAttribute('aria-expanded','false');if(sizePanel.contains(document.activeElement))document.activeElement.blur()}
+  function syncSize(){sizeButton.querySelector('.groupmaker-size-value').textContent=sizeInput.value;sizeButton.setAttribute('aria-label',`Students Per Group: ${sizeInput.value}`)}
+  sizeButton.addEventListener('click',()=>{const open=sizePanel.hidden;closeSize();closeEditor();if(open){sizePanel.hidden=false;sizeButton.setAttribute('aria-expanded','true');sizeInput.focus({preventScroll:true});sizeInput.select()}});
+  sizePanel.addEventListener('keydown',event=>{if(event.key==='Escape'||event.key==='Enter'){event.stopPropagation();if(event.key==='Enter')sizeInput.dispatchEvent(new Event('change'));closeSize();sizeButton.focus({preventScroll:true})}});
+  function openEditor(){closeSize();editor.hidden=false;editBtn.setAttribute('aria-expanded','true');nameInput.focus({preventScroll:true})}
   function showEmpty(){results.replaceChildren(empty);m.classList.remove('has-groups');summary.textContent=names.length?`${names.length} names ready`:'Add names to get started'}
   startButton.addEventListener('click',openEditor);
-  const outsideEditor=event=>{if(!m.contains(event.target))closeEditor()};
-  document.addEventListener('pointerdown',outsideEditor);
-  m.addEventListener('pointerleave',closeEditor);
+  const outsideEditor=event=>{
+    if(!editor.contains(event.target)&&!editBtn.contains(event.target)&&!startButton.contains(event.target))closeEditor();
+    if(!sizePanel.contains(event.target)&&!sizeButton.contains(event.target))closeSize();
+  };
+  const closePopups=()=>{closeEditor();closeSize()};
+  document.addEventListener('pointerdown',outsideEditor,true);
+  m.addEventListener('pointerleave',closePopups);
   editor.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeEditor();editBtn.focus({preventScroll:true})}});
   for(const scroll of [editor,results])scroll.addEventListener('wheel',event=>{if(!event.ctrlKey)event.stopPropagation()},{passive:true});
 
@@ -180,6 +195,7 @@ function setupGroupMaker(m){
     });
 
     results.appendChild(grid);
+    layout.refresh();
     const total=groups.reduce((sum,group)=>sum+group.length,0);
     summary.textContent=`${total} students · ${groups.length} ${groups.length===1?'group':'groups'}`;
     m.classList.add('has-groups');
@@ -198,7 +214,7 @@ function setupGroupMaker(m){
     }
 
     const targetSize=Math.max(2,Math.min(12,Math.round(Number(sizeInput.value)||4)));
-    sizeInput.value=String(targetSize);
+    sizeInput.value=String(targetSize);syncSize();
     renderGroups(balanceGroups(shuffleNames(names),targetSize),{animate});
     notifyBoardChanged('groupmaker-groups');
   };
@@ -212,7 +228,8 @@ function setupGroupMaker(m){
   });
 
   sizeInput.addEventListener('change',()=>{
-    sizeInput.value=String(Math.max(2,Math.min(12,Math.round(Number(sizeInput.value)||4))));
+    sizeInput.value=String(Math.max(2,Math.min(12,Math.round(Number(sizeInput.value)||4))));syncSize();
+    notifyBoardChanged('groupmaker-size');
     if(m.classList.contains('has-groups'))makeGroups(true);
   });
 
@@ -232,7 +249,7 @@ function setupGroupMaker(m){
   });
 
   bg.addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
-  font.addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
+  font.addEventListener('click',()=>{cycleData(m,'font',FONT_OPTIONS);layout.refresh()});
   textColor.addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   renderNameList();
@@ -260,7 +277,7 @@ function setupGroupMaker(m){
     if(!state)return;
     names=Array.isArray(state.names)?state.names.map(String):[];
     groupTitles=Array.isArray(state.groupTitles)?state.groupTitles.map(String):[];
-    sizeInput.value=String(Math.max(2,Math.min(12,Math.round(Number(state.targetSize)||4))));
+    sizeInput.value=String(Math.max(2,Math.min(12,Math.round(Number(state.targetSize)||4))));syncSize();
     renderNameList();
     updateCount();
     if(Array.isArray(state.groups)&&state.groups.length&&names.length>=2)renderGroups(state.groups,{animate:false});
@@ -268,12 +285,12 @@ function setupGroupMaker(m){
   };
 
   const priorDeactivate=m._deactivate;
-  m._deactivate=()=>{closeEditor();priorDeactivate?.()};
+  m._deactivate=()=>{closePopups();priorDeactivate?.()};
   const prior=m._cleanup;
   m._cleanup=()=>{
-    closeEditor();
-    document.removeEventListener('pointerdown',outsideEditor);
-    m.removeEventListener('pointerleave',closeEditor);
+    closePopups();layout.cleanup();
+    document.removeEventListener('pointerdown',outsideEditor,true);
+    m.removeEventListener('pointerleave',closePopups);
     prior?.();
     detachRosterLoader();
     clearTimeout(shuffleTimer);
