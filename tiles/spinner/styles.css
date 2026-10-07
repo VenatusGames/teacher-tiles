@@ -6,8 +6,8 @@
 .spinner-module .spinner-winner{position:absolute;z-index:3;left:50%;top:auto;bottom:1px;transform:translateX(-50%);min-height:0;max-width:75%;width:max-content;padding:5px 12px;border:1px solid #d9e2ef;border-radius:20px;background:#fffffff0;color:#475974;font-size:10px;font-weight:700;line-height:1.25;letter-spacing:.07em;opacity:0;pointer-events:none;transition:opacity .18s;overflow-wrap:anywhere}
 .spinner-module:is(:hover,.is-pointer-over,.is-spinning) .spinner-winner{opacity:1}
 .spinner-module .spinner-pointer{z-index:4;top:calc(50% - var(--spinner-wheel-radius) + 5px);width:clamp(18px,6cqw,30px);height:clamp(25px,8cqw,40px);border:0;border-radius:8px 8px 12px 12px;background:linear-gradient(150deg,#526882,#283d59);clip-path:polygon(0 0,100% 0,100% 32%,50% 100%,0 32%);filter:drop-shadow(0 2px 2px #172b4540)}
-.spinner-module .spinner-spin-button{width:calc(var(--spinner-wheel-size)*.195);height:calc(var(--spinner-wheel-size)*.195);min-width:0;border:clamp(3px,1cqw,5px) solid #fff;border-radius:50%;background:linear-gradient(145deg,#fff,#eaf1fa);color:#334865;box-shadow:0 3px 8px #23394f33,inset 0 0 0 1px #d6e0ed;font:800 clamp(9px,3cqw,14px)/1 var(--module-font,Inter,sans-serif);letter-spacing:.08em;transition:box-shadow .18s,background .18s}
-.spinner-module .spinner-spin-button:hover{background:#fff;box-shadow:0 4px 14px #23394f44,inset 0 0 0 1px #a8c7ea}
+.spinner-module .spinner-spin-button{width:calc(var(--spinner-wheel-size)*.195);height:calc(var(--spinner-wheel-size)*.195);min-width:0;border:clamp(3px,1cqw,5px) solid #fff;border-radius:50%;background:#fff linear-gradient(145deg,#fff,#eaf1fa);color:#334865;box-shadow:0 3px 8px #23394f33,inset 0 0 0 1px #d6e0ed;font:800 clamp(9px,3cqw,14px)/1 var(--module-font,Inter,sans-serif);letter-spacing:.08em;transition:box-shadow .18s,transform .18s}
+.spinner-module .spinner-spin-button:hover{background-color:#fff;box-shadow:0 4px 14px #23394f44,inset 0 0 0 1px #a8c7ea}
 .spinner-module .spinner-spin-button:active{transform:translate(-50%,-50%) scale(.95)}
 .spinner-module .spinner-names-toggle{position:absolute;right:12px;bottom:10px;z-index:8;display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid #dbe3ed;border-radius:11px;background:#ffffffed;box-shadow:0 3px 8px #253a5810;color:#42546e;font:600 11px/1 Inter,system-ui,sans-serif;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(5px);transition:opacity .16s,transform .16s,visibility .16s}
 .spinner-names-toggle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
@@ -50,7 +50,7 @@
 .spinner-carnival-lights.is-lit :is(.spinner-carnival-bulb-light,.spinner-carnival-bulb-glow){animation-play-state:running}
 .spinner-carnival-bulb-glow{animation-name:spinner-marquee-glow}
 .spinner-module[data-tile-skin=spinner-carnival] .spinner-pointer{background:linear-gradient(135deg,#fff3c0,#e4b95e 50%,#9a642e)}
-.spinner-module[data-tile-skin=spinner-carnival] .spinner-spin-button{color:#734422;background:linear-gradient(145deg,#fff9e7,#f2dca3);border-color:#fff0bd;box-shadow:0 4px 12px #5129174d,inset 0 0 0 1px #c79349}
+.spinner-module[data-tile-skin=spinner-carnival] .spinner-spin-button{color:#734422;background:#fff9e7 linear-gradient(145deg,#fff9e7,#f2dca3);border-color:#fff0bd;box-shadow:0 4px 12px #5129174d,inset 0 0 0 1px #c79349}
 .spinner-module[data-tile-skin=spinner-carnival] .spinner-result-overlay{border-color:#e0c591;background:#fffdf6fa}
 .spinner-module[data-tile-skin=spinner-carnival] .spinner-spin-again{background:#fff0c9;border-color:#ddbd76;color:#734422}
 @keyframes spinner-marquee{0%,100%{opacity:.48}40%,65%{opacity:1}}

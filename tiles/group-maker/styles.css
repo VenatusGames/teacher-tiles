@@ -1,0 +1,50 @@
+/* Compact controls and readable group cards share the current tile styling. */
+.groupmaker-module{width:640px;height:470px;min-width:360px;min-height:300px;padding:28px 16px 48px!important;gap:14px}
+.groupmaker-module .groupmaker-heading{gap:5px}
+.groupmaker-module .groupmaker-heading>strong{font-size:clamp(19px,3.8cqw,25px);font-weight:700;letter-spacing:-.025em;line-height:1.2}
+.groupmaker-module .groupmaker-summary{font-size:11px;line-height:1.4;white-space:normal;opacity:.6}
+.groupmaker-module .groupmaker-body{overflow:hidden!important;min-height:0}
+.groupmaker-module .groupmaker-results{opacity:1;visibility:visible;pointer-events:auto;transform:none;overflow:auto;overscroll-behavior:contain;padding:0;background:none;border:0}
+.groupmaker-module .groupmaker-grid{height:100%;grid-template-columns:repeat(auto-fit,minmax(min(175px,100%),1fr));grid-auto-rows:minmax(150px,1fr);gap:10px;padding:1px;overflow:auto;overscroll-behavior:contain}
+.groupmaker-module .groupmaker-group{border:1px solid color-mix(in srgb,var(--module-text,#17191d) 11%,transparent);border-top:3px solid var(--group-accent,#6b9bd2);border-radius:14px;background:color-mix(in srgb,var(--module-bg,#fff) 97%,var(--group-accent,#6b9bd2));box-shadow:0 2px 5px #17203308}
+.groupmaker-module .groupmaker-group-title-input{flex:none;width:100%;min-height:35px;margin:0;padding:9px 12px;border:0;border-bottom:1px solid color-mix(in srgb,var(--module-text,#17191d) 8%,transparent);border-radius:0;background:color-mix(in srgb,var(--module-bg,#fff) 92%,var(--group-accent,#6b9bd2));color:var(--module-text,#17191d);font:650 13px/1.3 var(--module-font,Inter,sans-serif);text-align:left}
+.groupmaker-module .groupmaker-group-title-input:focus{outline:2px solid var(--group-accent);outline-offset:-2px;box-shadow:none}
+.groupmaker-module .groupmaker-group-list{justify-content:flex-start;gap:2px;padding:6px 8px;overflow:auto;overscroll-behavior:contain}
+.groupmaker-module .groupmaker-group-list li{flex:none;padding:3px 8px;background:none;font-size:clamp(13px,2.4cqw,16px);font-weight:550;line-height:1.3;text-align:left;white-space:normal;overflow-wrap:anywhere;overflow:visible}
+.groupmaker-module .groupmaker-group-list li:nth-child(odd){background:color-mix(in srgb,var(--group-accent) 8%,transparent)}
+.groupmaker-module .groupmaker-footer{position:absolute;bottom:9px;right:12px;left:auto;min-height:32px;gap:6px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(4px);transition:opacity .16s,visibility .16s,transform .16s}
+.groupmaker-module:hover .groupmaker-footer,.groupmaker-module .groupmaker-footer:has(button:focus-visible){opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.groupmaker-module .groupmaker-actions{gap:6px}
+.groupmaker-module :is(.groupmaker-shuffle,.groupmaker-edit-names,.groupmaker-make,.groupmaker-add-name,.groupmaker-start){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:6px 11px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:10px;background:var(--module-bg,#fff);color:var(--module-text,#17191d);font:600 12px/1.3 Inter,system-ui,sans-serif;box-shadow:0 2px 5px #1720330d;opacity:1;transition:background .15s,transform .15s,border-color .15s}
+.groupmaker-module :is(.groupmaker-shuffle,.groupmaker-edit-names,.groupmaker-make,.groupmaker-add-name,.groupmaker-start):hover:not(:disabled){background:color-mix(in srgb,var(--module-bg,#fff) 90%,#79abe6);border-color:#a6c5e8;transform:translateY(-1px)}
+.groupmaker-module :is(.groupmaker-shuffle,.groupmaker-edit-names,.groupmaker-make,.groupmaker-add-name,.groupmaker-start):active:not(:disabled){transform:translateY(1px);box-shadow:none}
+.groupmaker-module :is(.groupmaker-shuffle,.groupmaker-make):disabled{opacity:.4;cursor:default}
+.groupmaker-module :is(.groupmaker-make,.groupmaker-start){background:color-mix(in srgb,var(--module-bg,#fff) 83%,#79abe6);border-color:#a6c5e8}
+.groupmaker-module :is(.groupmaker-footer,.groupmaker-empty) svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.groupmaker-module button:focus-visible{outline:2px solid #5a8dcc;outline-offset:2px}
+.groupmaker-module .groupmaker-setup[hidden]{display:none!important}
+.groupmaker-module .groupmaker-setup:not([hidden]){position:absolute;inset:auto 12px 50px auto;z-index:70;display:flex!important;width:min(360px,calc(100% - 24px));max-height:calc(100% - 68px);gap:12px;padding:15px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:17px;background:var(--module-bg,#fff);color:var(--module-text,#17191d);box-shadow:0 12px 35px #233b5830;opacity:1;visibility:visible;pointer-events:auto;transform:none;overflow:auto;overscroll-behavior:contain}
+.groupmaker-editor-heading{font:700 13px/1.3 Inter,system-ui,sans-serif}
+.groupmaker-module .groupmaker-size-control{flex:none;justify-content:space-between;min-height:34px;padding:4px 8px 4px 10px;border-radius:10px;font-size:11px;font-weight:500;background:color-mix(in srgb,var(--module-bg,#fff) 96%,var(--module-text,#17191d))}
+.groupmaker-module .groupmaker-size{width:46px;height:26px;font-size:12px;font-weight:600;background:var(--module-bg,#fff);border:1px solid color-mix(in srgb,var(--module-text,#17191d) 12%,transparent);border-radius:7px}
+.groupmaker-module .groupmaker-setup:not([hidden]) :is(.groupmaker-name-entry,.tile-class-loader){flex-shrink:0;max-height:none!important;margin:0;opacity:1;visibility:visible;pointer-events:auto;transform:none;overflow:visible}
+.groupmaker-module .groupmaker-name-entry{display:flex;flex-wrap:wrap;gap:6px;padding:0;background:none;border:0}
+.groupmaker-module .groupmaker-name-input{flex:1;min-width:90px;padding:8px 10px;font:12px Inter,system-ui,sans-serif}
+.groupmaker-module .groupmaker-name-list{flex:0 1 auto;display:flex;flex-wrap:wrap;gap:6px;max-height:180px!important;min-height:34px;overflow:auto!important;padding:2px;overscroll-behavior:contain}
+.groupmaker-module .groupmaker-name-chip{font-size:12px;font-weight:500;border-radius:9px;box-shadow:none;cursor:default}
+.groupmaker-module .groupmaker-name-chip span{white-space:normal;overflow-wrap:anywhere;max-width:240px}
+.groupmaker-module .groupmaker-setup-footer{flex:none;gap:10px;padding:0;min-height:32px}
+.groupmaker-module .groupmaker-name-count{font-size:11px;font-weight:500;opacity:.65}
+.groupmaker-module .groupmaker-empty{height:100%;min-height:0;gap:8px;padding:12px;border:1px dashed color-mix(in srgb,var(--module-text,#17191d) 14%,transparent);border-radius:14px;opacity:1}
+.groupmaker-module .groupmaker-empty-icon{display:none}
+.groupmaker-module .groupmaker-empty>strong{font-size:15px;font-weight:600;opacity:.8}
+.groupmaker-module .groupmaker-empty>span{font-size:12px;line-height:1.4;max-width:280px;opacity:.6}
+.groupmaker-module .groupmaker-start{margin-top:8px}
+@media(hover:none){.groupmaker-module .groupmaker-footer{opacity:1;visibility:visible;pointer-events:auto;transform:none}}
+@media(prefers-reduced-motion:reduce){.groupmaker-module .groupmaker-footer,.groupmaker-module button,.groupmaker-module .is-shuffling :is(.groupmaker-group,.groupmaker-group-list li){animation:none;transition:none}}
+
+.groupmaker-module .tile-class-loader{padding:5px;gap:6px;min-height:36px;border-radius:11px;background:color-mix(in srgb,var(--module-bg,#fff) 97%,var(--module-text,#17191d));box-shadow:none}
+.groupmaker-module .tile-class-loader select{min-width:0;min-height:30px;font:500 12px/1.3 Inter,system-ui,sans-serif;background:transparent}
+.groupmaker-module .tile-class-loader button{flex:none;min-height:30px;padding:5px 10px;border:1px solid #b7cde6;border-radius:9px;background:color-mix(in srgb,var(--module-bg,#fff) 84%,#79abe6);color:var(--module-text,#17191d);font:600 12px/1.3 Inter,system-ui,sans-serif;box-shadow:0 2px 5px #1720330d}
+.groupmaker-module .tile-class-loader button:disabled{opacity:.45;cursor:default}
+.groupmaker-module .groupmaker-name-input{border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent)!important;background:color-mix(in srgb,var(--module-bg,#fff) 97%,var(--module-text,#17191d))!important;border-radius:10px}
