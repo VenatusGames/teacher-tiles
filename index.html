@@ -75,6 +75,10 @@
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
+<link rel="stylesheet" href="tiles/visual-timer/finish-time.css?v=20261008">
+<link rel="stylesheet" href="tiles/tens-sticks/styles.css?v=20261008">
+<link rel="stylesheet" href="tiles/lava-lamp/styles.css?v=20261008">
+
 <link rel="stylesheet" href="account/panel-search/styles.css?v=20261004-filter">
 <script defer src="account/panel-search/index.js?v=20261004-snapping"></script>
 <link rel="stylesheet" href="account/help-tutorials/styles.css?v=20261004">
@@ -1967,11 +1971,14 @@
             <button type="button" class="context-menu__filter" data-category-drawer-filter="geography" data-i18n="context.cat.geography">GEOGRAPHY</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="sel" data-i18n="context.cat.sel">SEL</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="classconnect" data-i18n="context.cat.classconnect">CLASS CONNECT</button>
+<button type="button" class="context-menu__filter" data-category-drawer-filter="misc">MISC</button>
           </div>
         </div>
       </div>
     </div>
     <div class="context-menu__list">
+<button type="button" class="context-menu__item" data-module="tenssticks" data-category="math" data-search-aliases="base ten blocks place value manipulatives ones hundreds"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h10v10H3zM6 3v10m4-10v10M3 6h10M3 10h10M17 3h4v18h-4zM17 7h4m-4 4h4m-4 4h4M3 17h4v4H3z"/></svg></span><span><strong>Tens Sticks</strong><small>Build numbers with ones, tens, and hundreds</small></span></button>
+<button type="button" class="context-menu__item" data-module="lavalamp" data-category="misc" data-search-aliases="visualizer fluids calming"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4l1 3H9zM9 6 6 17q6 3 12 0L15 6M6 18l2 2-1 2h10l-1-2 2-2"/><path d="M11 9c-2 1 1 4 2 2s-1-3-2-2Zm-2 6q2-3 4-1t2 3"/></svg></span><span><strong>Lava Lamp</strong><small>Slow, glowing waves of color</small></span></button>
 <button type="button" class="context-menu__item" data-module="visualdirections" data-category="tools accessibility"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M14 6h4v4M6 14v4h4m-4-2v2h2"/></svg></span><span><strong>Visual Directions</strong><small>Put picture steps in order</small></span></button>
 <button type="button" class="context-menu__item" data-module="colorpicker" data-category="art tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 3 7 7-10 10H4v-7zM12 5l7 7M4 20l-2 2"/></svg></span><span><strong>Color Picker</strong><small>Explore and identify colors</small></span></button>
 <button type="button" class="context-menu__item" data-module="rainbow" data-category="art"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a10 10 0 0 1 20 0M6 20a6 6 0 0 1 12 0M10 20a2 2 0 0 1 4 0"/></svg></span><span><strong>Rainbow</strong><small>Explore the colors of the rainbow</small></span></button>
@@ -2723,6 +2730,9 @@
 <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
 </section></template>
 <template id="classroomjobs-template"><section class="module classroomjobs-module" data-type="classroomjobs" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Classroom Jobs">×</button><div class="module-drag-handle"></div><h2 class="jobs-heading">Classroom Jobs</h2><div class="jobs-toolbar"><button class="jobs-change" type="button">Choose class</button><button class="jobs-shuffle" data-jobs-action type="button">Shuffle</button><button class="jobs-shift" data-jobs-action type="button">Shift jobs →</button><button class="jobs-add" type="button" aria-label="Add classroom job" aria-expanded="false">+</button></div><div class="jobs-intro"><p>Load a saved class to assign classroom helpers.</p><div class="jobs-loader" hidden></div></div><div class="jobs-grid" data-skip-board-save></div><p class="jobs-class"></p><div class="customization-bar"><button class="custom-icon tile-bg" type="button" aria-label="Change background"><span class="icon-palette"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font"><span class="icon-font">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color"><span class="icon-text-color">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="tenssticks-template"><section class="module tenssticks-module" data-type="tenssticks" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Tens Sticks">×</button><div class="module-drag-handle"></div><div class="tens-heading-row"><h2 class="tens-heading">Tens Sticks</h2><div class="tens-total-label">Total <output class="tens-total">0</output></div></div><div class="tens-stage" title="Drag blocks to move them. Drag outside the tile to place them on the board."><div class="tens-workspace"></div><div class="tens-empty">Add blocks or build a number</div></div><div class="tens-palette"><button type="button" data-tens-add="1" title="Add One Cube" aria-label="Add One Cube"></button><button type="button" data-tens-add="10" title="Add Ten Stick" aria-label="Add Ten Stick"></button><button type="button" data-tens-add="100" title="Add Hundred Block" aria-label="Add Hundred Block"></button><form class="tens-number-form"><input name="number" type="number" min="0" max="999" step="1" required placeholder="0–999" aria-label="Number to Build (0–999)"><button type="submit">Build</button></form></div><div class="tens-footer"><button type="button" class="tens-remove" title="Remove selected block">Remove</button><button type="button" class="tens-clear">Clear</button></div><div class="customization-bar"><button class="custom-icon tile-bg" type="button" aria-label="Change background"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font">Aa</button><button class="custom-icon tile-text" type="button" aria-label="Change text color">A</button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="tensblock-template"><section class="module tensblock-module" data-type="tensblock" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Block">×</button><div class="module-drag-handle"></div><div class="tens-block-art"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="lavalamp-template"><section class="module lavalamp-module" data-type="lavalamp" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Lava Lamp">×</button><div class="module-drag-handle"></div><h2 class="lava-heading">Lava Lamp</h2><canvas class="lava-visual" role="img" aria-label="Lava lamp with slowly rising and merging wax"></canvas><button type="button" class="lava-colors-toggle" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z"/></svg>Colors</button><div class="lava-color-drawer" role="group" aria-label="Lava Lamp Colors" hidden></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="countdown-template"><section class="module countdown-module" data-type="countdown" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Countdown">×</button><div class="module-drag-handle"></div><h2 class="countdown-heading">Countdown</h2><div class="countdown-display" data-skip-board-save><div class="countdown-content"><div class="countdown-event">Your Event</div><div class="countdown-number">—</div><div class="countdown-unit">days remaining</div><div class="countdown-date">Choose a date and time</div></div></div><form class="countdown-form" hidden><label>Event Name<input name="event" maxlength="120" placeholder="Field trip" required></label><label>Date and Time<input name="target" type="datetime-local" required></label><div><button class="countdown-cancel" type="button">Cancel</button><button type="submit">Save</button></div></form><div class="countdown-actions"><button class="countdown-metric" type="button" aria-label="Change countdown units">Days ↻</button><button class="countdown-edit" type="button" aria-expanded="false">Edit</button></div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
 <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
 </section></template>
@@ -4370,6 +4380,10 @@
 <script src="assets/cursors/packs.js?v=20260928-unified"></script>
 <script src="tiles/shared/flashcard-navigation.js?v=20260926-fixes-1"></script>
 <script src="tiles/countdown/index.js?v=20261003-fit"></script>
+<script src="tiles/visual-timer/finish-time.js?v=20261008"></script>
+<script src="tiles/tens-sticks/index.js?v=20261008"></script>
+<script src="tiles/lava-lamp/index.js?v=20261008"></script>
+
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20261001-collections"></script>
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
@@ -4446,11 +4460,11 @@
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
 <script src="account/interface-services.js?v=20261004-snapping"></script>
-<script src="boards/navigation.js?v=20261006-spinner-selection"></script>
+<script src="boards/navigation.js?v=20261008-tiles"></script>
 <script src="shop/cosmetic-services.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
 <script src="boards/tile-lifecycle.js?v=20261006-spinner-selection"></script>
-<script src="tiles/visual-timer/helpers.js?v=20260930-tile-refactor"></script>
+<script src="tiles/visual-timer/helpers.js?v=20261008-tiles"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/media-helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/heading-services.js?v=20260930-tile-refactor"></script>
@@ -4464,7 +4478,7 @@
 <script src="shop/ui.js?v=20260930-tile-refactor"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
-<script src="app.js?v=20261006-carnival"></script>
+<script src="app.js?v=20261008-tiles"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>

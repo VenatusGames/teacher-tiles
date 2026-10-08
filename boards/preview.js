@@ -1,4 +1,6 @@
 import '../tiles/countdown/index.js?v=20261003';
+import '../tiles/tens-sticks/index.js?v=20261008';
+import '../tiles/lava-lamp/index.js?v=20261008';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
@@ -16,6 +18,8 @@ const EDITABLE_TILE_HEADINGS={
   sentenceexpansion:'.sentence-heading',
   reminders:'.reminders-heading',
   glitterjar:'.glitter-jar-heading',
+  tenssticks:'.tens-heading',
+  lavalamp:'.lava-heading',
   piano:'.widget-title',
   musicscore:'.widget-title',
   vocabulary:'.widget-title',
@@ -454,6 +458,9 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  if(state.type==='tenssticks'){window.TeacherTilesTensSticks.render(module,state.special||{});const area=module.querySelector('.tens-workspace');const w=Number(state.transform?.width)||700,h=Number(state.transform?.height)||460;area.style.transform=`translate(-50%,-50%) scale(${Math.min((w-34)/640,(h-143)/340)})`;}
+  if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);
+  if(state.type==='lavalamp')window.TeacherTilesLavaLamp.render(module,state.special||{});
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if (state.type === 'timer' || state.type === 'interactive') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
