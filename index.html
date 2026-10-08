@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261002-ice-cube" />
+  <link rel="stylesheet" href="styles.css?v=20261012-board-chrome" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -152,9 +152,12 @@
 
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
     <div class="trash-can" aria-hidden="true">
-      <span class="trash-lid"></span><span class="trash-body"><i></i><i></i><i></i></span>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <g class="trash-can__lid"><path d="M4 7h16M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/></g>
+        <path d="m6 7 .8 12.1A2 2 0 0 0 8.8 21h6.4a2 2 0 0 0 2-1.9L18 7M10 11v6M14 11v6"/>
+      </svg>
     </div>
-    <span class="trash-label">DELETE</span>
+    <span class="trash-label">Delete</span>
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
