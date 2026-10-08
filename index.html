@@ -76,6 +76,10 @@
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
+<link rel="stylesheet" href="tiles/calculator/skins.css?v=20261012-calculator-choices">
+<link rel="stylesheet" href="tiles/shared/choice-board.css?v=20261012-calculator-choices">
+<link rel="stylesheet" href="tiles/polls/styles.css?v=20261012-calculator-choices">
+<link rel="stylesheet" href="tiles/lunch-count/styles.css?v=20261012-calculator-choices">
 <link rel="stylesheet" href="tiles/visual-timer/neon.css?v=20261012-skins">
 <link rel="stylesheet" href="tiles/text-bubble/skins.css?v=20261012-skins">
 <link rel="stylesheet" href="tiles/visual-timer/finish-time.css?v=20261008">
@@ -1725,7 +1729,9 @@
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--timer-liquid"><img src="assets/tile-skins/liquid-visual-timer.svg?v=2" alt=""></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Liquid Fill</h3><p>Watch your timer shape fill with gently moving liquid as time passes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
-<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-timer-neon" data-shop-price="250" data-shop-tile-type="timer"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/visual-timer/assets/neon.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Neon</h3><p>Eight electric colors with luminous edges and a soft neon glow.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-timer-neon" data-shop-price="250" data-shop-tile-type="timer"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/visual-timer/assets/neon.svg?v=2" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Neon</h3><p>Eight electric colors with luminous edges and a soft neon glow.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-calculator-glass" data-shop-price="250" data-shop-tile-type="calculator"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/calculator/assets/glass.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">CALCULATOR SKIN</span><h3>Midnight Glass</h3><p>Smoky glass keys with cool blue and violet accents.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-calculator-retro" data-shop-price="250" data-shop-tile-type="calculator"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/calculator/assets/retro.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">CALCULATOR SKIN</span><h3>Retro Desk</h3><p>Cream keys, a sage display, and vintage desktop details.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-dice-clear" data-shop-price="250" data-shop-tile-type="dice">
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--dice-clear"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><g fill="currentColor"><circle cx="8" cy="8" r="1.6"/><circle cx="16" cy="8" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></g></svg></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">DICE SKIN</span><h3>No Background</h3><p>Roll loose dice directly on your board with a transparent tile background.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
@@ -3626,38 +3632,32 @@
 
 
   <template id="lunchcount-template">
-    <section class="module lunchcount-module" data-type="lunchcount" data-bg="white" data-font="inter" data-text="dark" data-lunch-mode="tally">
+    <section class="module lunchcount-module tile-modern choice-board" data-type="lunchcount" data-bg="white" data-font="inter" data-text="dark" data-lunch-mode="tally">
       <button class="module-delete" aria-label="Delete lunch count">×</button><div class="module-drag-handle"></div>
 
-      <header class="lunchcount-header">
-        <div class="lunchcount-heading">
+      <header class="lunchcount-header choice-header">
+        <div class="lunchcount-heading choice-heading">
           <strong>Lunch Count</strong>
-          <span class="lunchcount-summary">Tap a category to add a tally</span>
+          <span class="lunchcount-summary choice-summary">Tap a category to add a tally</span>
         </div>
-        <div class="lunchcount-mode-switch" aria-label="Lunch Count mode">
-          <button class="lunchcount-mode is-active" type="button" data-lunch-mode-button="tally">Tally</button>
-          <button class="lunchcount-mode" type="button" data-lunch-mode-button="names">Names</button>
-        </div>
+
       </header>
 
-      <div class="lunchcount-grid" aria-label="Lunch categories"></div>
+      <div class="lunchcount-grid choice-grid" aria-label="Lunch categories"></div>
 
-      <section class="lunchcount-name-pool" aria-label="Student names">
-        <div class="lunchcount-pool-heading">
-          <strong>Students</strong>
+      <section class="lunchcount-name-pool choice-roster-drawer" aria-label="Student names">
+        <div class="lunchcount-pool-heading choice-pool-heading">
+          <strong>Students</strong><button class="choice-roster-close" type="button" aria-label="Close student drawer">×</button>
           <span>Add names, then drag them to a lunch choice</span>
         </div>
-        <div class="lunchcount-name-entry">
+        <div class="lunchcount-name-entry choice-name-entry">
           <input class="lunchcount-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
           <button class="lunchcount-add-name" type="button">Add</button>
         </div>
-        <div class="lunchcount-pool-list"></div>
+        <div class="lunchcount-pool-list choice-pool-list"></div>
       </section>
 
-      <div class="lunchcount-inline-actions">
-        <button class="lunchcount-reset-counts" type="button">Reset Tallies</button>
-        <button class="lunchcount-reset-names" type="button">Unassign Names</button>
-      </div>
+
 
       <div class="lunchcount-icon-picker" hidden role="dialog" aria-modal="true" aria-label="Choose lunch category icon">
         <div class="lunchcount-icon-picker__panel">
@@ -3670,6 +3670,13 @@
         </div>
       </div>
 
+      <div class="tile-modern-footer"><div class="lunchcount-mode-switch choice-mode-switch" aria-label="Lunch Count mode">
+          <button class="lunchcount-mode is-active" type="button" data-lunch-mode-button="tally">Tally</button>
+          <button class="lunchcount-mode" type="button" data-lunch-mode-button="names">Names</button>
+        </div><div class="lunchcount-inline-actions choice-inline-actions">
+        <button class="lunchcount-reset-counts" type="button">Reset Tallies</button>
+        <button class="lunchcount-reset-names" type="button">Unassign Names</button>
+      <button class="choice-students-toggle" type="button" aria-expanded="false">Students</button></div></div>
       <div class="customization-bar lunchcount-customization" aria-label="Lunch Count customization">
         <button class="custom-icon lunchcount-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon lunchcount-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -3678,45 +3685,46 @@
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
-  </template>
+</template>
 
 
   <template id="voting-template">
-    <section class="module voting-module" data-type="voting" data-bg="white" data-font="inter" data-text="dark" data-voting-mode="tally">
+    <section class="module voting-module tile-modern choice-board" data-type="voting" data-bg="white" data-font="inter" data-text="dark" data-voting-mode="tally">
       <button class="module-delete" aria-label="Delete voting tile">×</button><div class="module-drag-handle"></div>
 
-      <header class="voting-header">
-        <div class="voting-heading">
+      <header class="voting-header choice-header">
+        <div class="voting-heading choice-heading">
           <strong>Polls</strong>
-          <span class="voting-summary">Tap a choice to add a vote</span>
+          <span class="voting-summary choice-summary">Tap a choice to add a vote</span>
         </div>
-        <div class="voting-mode-switch" aria-label="Poll mode">
-          <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
-          <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
-        </div>
+
       </header>
 
-      <div class="voting-grid" aria-label="Poll choices"></div>
+      <div class="voting-grid choice-grid" aria-label="Poll choices"></div>
 
-      <section class="voting-name-pool" aria-label="Student names">
-        <div class="voting-pool-heading">
-          <strong>Students</strong>
+      <section class="voting-name-pool choice-roster-drawer" aria-label="Student names">
+        <div class="voting-pool-heading choice-pool-heading">
+          <strong>Students</strong><button class="choice-roster-close" type="button" aria-label="Close student drawer">×</button>
           <span>Add names, then drag them to a choice</span>
         </div>
-        <div class="voting-name-entry">
+        <div class="voting-name-entry choice-name-entry">
           <input class="voting-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
           <button class="voting-add-name" type="button">Add</button>
         </div>
-        <div class="voting-pool-list"></div>
+        <div class="voting-pool-list choice-pool-list"></div>
       </section>
 
-      <div class="voting-inline-actions">
-        <button class="voting-reset-counts" type="button">Reset Votes</button>
-        <button class="voting-reset-names" type="button">Unassign Names</button>
-      </div>
+
 
       <input class="voting-image-input" type="file" accept="image/*" hidden>
 
+      <div class="tile-modern-footer"><div class="voting-mode-switch choice-mode-switch" aria-label="Poll mode">
+          <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
+          <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
+        </div><div class="voting-inline-actions choice-inline-actions">
+        <button class="voting-reset-counts" type="button">Reset Votes</button>
+        <button class="voting-reset-names" type="button">Unassign Names</button>
+      <button class="choice-students-toggle" type="button" aria-expanded="false">Students</button></div></div>
       <div class="customization-bar voting-customization" aria-label="Poll customization">
         <button class="custom-icon voting-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon voting-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -3725,7 +3733,7 @@
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
-  </template>
+</template>
 
 
   <template id="imagesearch-template">
@@ -4426,8 +4434,9 @@
 <script src="tiles/racer/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/punchcards/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/collections/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/lunch-count/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/polls/setup.js?v=20260930-tile-refactor"></script>
+<script src="tiles/shared/choice-roster-drawer.js?v=20261012-calculator-choices"></script>
+<script src="tiles/lunch-count/setup.js?v=20261012-calculator-choices"></script>
+<script src="tiles/polls/setup.js?v=20261012-calculator-choices"></script>
 <script src="tiles/group-maker/layout.js?v=20261006-fit"></script>
 <script src="tiles/group-maker/setup.js?v=20261006-fit"></script>
 <script src="tiles/stoplight/setup.js?v=20260930-tile-refactor"></script>
@@ -4501,7 +4510,7 @@
 <script src="shop/ui.js?v=20260930-tile-refactor"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
-<script src="app.js?v=20261012-skins"></script>
+<script src="app.js?v=20261012-calculator-choices"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
