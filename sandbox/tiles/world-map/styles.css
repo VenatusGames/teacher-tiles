@@ -1,0 +1,20 @@
+.worldmap-module.tile-modern{width:900px;height:560px;min-width:620px;min-height:450px}
+.worldmap-module .worldmap-layout{grid-template-columns:minmax(0,1fr) minmax(160px,24%);gap:12px}
+.worldmap-module .worldmap-stage{border-radius:16px;background:linear-gradient(145deg,#edf6fb,#d8eafa);border-color:#bed4e5;box-shadow:inset 0 1px #ffffffb3}
+.worldmap-module .worldmap-info{align-self:stretch;padding:16px;border-radius:16px;border-color:var(--tile-line);background:var(--tile-soft)}
+.worldmap-module .worldmap-info>span{font-size:9px;font-weight:650;letter-spacing:.08em;color:#597996}
+.worldmap-module .worldmap-info>strong{font-size:clamp(19px,3cqw,27px);font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.worldmap-module .worldmap-info>small{font-size:12px;font-weight:450;line-height:1.45}
+.worldmap-module .worldmap-info>p{font-size:12px;line-height:1.5;font-weight:450;margin-top:12px}
+.worldmap-module .worldmap-info>em{font-size:9px;font-style:normal;opacity:.5;margin-top:12px}
+.worldmap-module .worldmap-legend{height:0;min-height:0;margin-top:-12px;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;transition:height .2s,margin .2s,opacity .16s,visibility .16s}
+.worldmap-module:is(:hover,:has(:focus-visible)) .worldmap-legend{height:38px;margin-top:0;opacity:1;visibility:visible;pointer-events:auto}
+.worldmap-module .worldmap-legend button{padding:4px 5px;font-size:clamp(9px,1.3cqw,12px);white-space:normal;line-height:1.25;overflow:visible;text-overflow:clip}
+.worldmap-module .worldmap-legend button.is-active{background:color-mix(in srgb,var(--module-bg,#fff) 82%,#79abe6);border-color:#a6c5e8}
+.worldmap-module .worldmap-zoom-controls{gap:6px}
+.worldmap-module .worldmap-zoom-controls button{width:32px;height:32px;padding:0;font-size:19px}
+.usstates-module .worldmap-legend select{height:36px;width:230px;max-width:100%;padding:6px 30px 6px 11px;border:1px solid var(--tile-line);border-radius:10px;background:var(--module-bg,#fff);color:inherit;font:500 12px var(--module-font,Inter,sans-serif)}
+@container(max-width:680px){.worldmap-module .worldmap-layout{grid-template-columns:minmax(0,1fr) 155px}.worldmap-module .worldmap-info{padding:12px}.worldmap-module .worldmap-info>p{font-size:11px}.worldmap-module .worldmap-info>small{font-size:11px}}
+@media(hover:none){.worldmap-module .worldmap-legend{height:38px;margin-top:0;opacity:1;visibility:visible;pointer-events:auto}}
+
+.worldmap-module .worldmap-header .worldmap-title{font-weight:700;font-size:clamp(19px,3.8cqw,25px);line-height:1.2;letter-spacing:-.025em}

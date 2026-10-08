@@ -1,0 +1,24 @@
+.wordy-module.tile-modern{width:570px;height:640px;min-width:450px;min-height:560px}
+.wordy-module .wordy-kicker{font-size:10px;font-weight:650;letter-spacing:.1em;color:#6586ac;opacity:1}
+.wordy-module .wordy-heading{gap:5px}
+.wordy-module .wordy-status{font-size:clamp(17px,3.8cqw,23px);font-weight:700;line-height:1.2}
+.wordy-module .wordy-guess-count{font-size:11px;font-weight:500;padding:6px 9px;border:1px solid var(--tile-line);border-radius:9px;opacity:.7;background:var(--tile-soft)}
+.wordy-module .wordy-guess-count:empty{display:none}
+.wordy-module .wordy-game{gap:7px}
+.wordy-module .wordy-board{gap:5px}
+.wordy-module .wordy-row{gap:5px;justify-content:center}
+.wordy-module .wordy-tile{justify-self:center;border-radius:10px;border-width:1px;font-weight:700;box-shadow:0 2px 4px #17203309;background:var(--tile-soft);width:100%;max-height:none;aspect-ratio:auto;height:100%;font-size:clamp(19px,5cqw,30px)}
+.wordy-module .wordy-tile.has-letter{border-color:#8da9c9;background:color-mix(in srgb,var(--module-bg,#fff) 92%,#79abe6)}
+.wordy-module .wordy-tile[data-state="correct"],.wordy-module .wordy-key[data-state="correct"]{background:#6c9d7d;border-color:#6c9d7d;color:white}
+.wordy-module .wordy-tile[data-state="present"],.wordy-module .wordy-key[data-state="present"]{background:#b69b54;border-color:#b69b54;color:white}
+.wordy-module .wordy-tile[data-state="absent"],.wordy-module .wordy-key[data-state="absent"]{background:#788493;border-color:#788493;color:white}
+.wordy-module .wordy-message{font-size:11px;font-weight:500}
+.wordy-module .wordy-keyboard{gap:5px}
+.wordy-module .wordy-key{height:35px;border:1px solid var(--tile-line);border-radius:9px;background:var(--module-bg,#fff);font-weight:600;box-shadow:0 2px 3px #1720330d}
+.wordy-module .wordy-key:hover:not(:disabled){border-color:#a6c5e8;filter:brightness(.97)}
+.wordy-module .wordy-key--wide{font-size:10px}
+.wordy-module .wordy-key--backspace{font-size:18px}
+.wordy-module .wordy-setup-card,.wordy-module .wordy-result-card{padding:22px;border-radius:17px;border-color:var(--tile-line);box-shadow:0 10px 30px #233b5820}
+.wordy-module .wordy-setup-card>strong{font-size:21px;font-weight:700}
+.wordy-module .wordy-setup-card p{font-size:12px;font-weight:450;line-height:1.5}
+.wordy-module .wordy-secret-input{background:var(--tile-soft);border-color:var(--tile-line)}

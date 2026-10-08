@@ -52,6 +52,7 @@ function setupHangman(m){
     });
   }
 
+  m.querySelector('.hangman-new-game')?.addEventListener('click',()=>{openSetup();notifyBoardChanged('hangman-new-game')});
   function openSetup(){
     clearRound();
     input.value='';

@@ -24,6 +24,7 @@ function setupWordyPuzzle(m){
   let finished=false;
   let revealing=false;
   let keyboardState={};
+  let roundVersion=0;
 
   const normalizeWord=value=>(value||'')
     .toUpperCase()
@@ -172,6 +173,7 @@ function setupWordyPuzzle(m){
   }
 
   function revealGuess(guess,states){
+    const version=roundVersion;
     revealing=true;
     renderKeyboard();
 
@@ -186,6 +188,7 @@ function setupWordyPuzzle(m){
       tile.style.setProperty('--wordy-delay',`${index*115}ms`);
 
       setTimeout(()=>{
+        if(version!==roundVersion||!m.isConnected)return;
         tile.dataset.state=states[index];
         setKeyState(guess[index],states[index]);
       },index*115+170);
@@ -194,6 +197,7 @@ function setupWordyPuzzle(m){
     const duration=(secret.length-1)*115+560;
 
     setTimeout(()=>{
+      if(version!==roundVersion||!m.isConnected)return;
       revealing=false;
       tiles.forEach(tile=>tile.classList.remove('is-flipping'));
       renderKeyboard();
@@ -203,7 +207,7 @@ function setupWordyPuzzle(m){
 
       if(won){
         row.classList.add('is-bouncing');
-        setTimeout(()=>finishRound(true),430);
+        setTimeout(()=>{if(version===roundVersion&&m.isConnected)finishRound(true)},430);
       }else if(lost){
         finishRound(false);
       }else{
@@ -278,6 +282,7 @@ function setupWordyPuzzle(m){
       return;
     }
 
+    roundVersion++;
     secret=next;
     guesses=[];
     current='';
@@ -301,7 +306,9 @@ function setupWordyPuzzle(m){
     });
   }
 
+  m.querySelector('.wordy-new-game')?.addEventListener('click',()=>{openSetup();notifyBoardChanged('wordy-new-game')});
   function openSetup(){
+    roundVersion++;
     secret='';
     guesses=[];
     current='';
@@ -394,6 +401,7 @@ function setupWordyPuzzle(m){
     setupOpen:!setup.hidden
   });
   m._boardSetState=state=>{
+    roundVersion++;
     if(!state||state.setupOpen||!normalizeWord(state.secret||'')){
       openSetup();
       return;

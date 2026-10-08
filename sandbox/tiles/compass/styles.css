@@ -1,0 +1,21 @@
+.compass-module.tile-modern{width:720px;height:500px;min-width:560px;min-height:400px}
+.compass-module .compass-heading{font-size:12px;font-weight:600;border:1px solid var(--tile-line);background:var(--tile-soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+.compass-module .compass-layout{grid-template-columns:minmax(0,1fr) minmax(155px,29%);gap:12px}
+.compass-module .compass-face-wrap{border-radius:16px;border-color:var(--tile-line);background:radial-gradient(circle,#fff 20%,#edf2f7 100%)}
+.compass-module .compass-face{width:98%;height:98%;max-height:100%;filter:drop-shadow(0 4px 8px #293b5710)}
+.compass-module .compass-ring{fill:#fff9;stroke:#889bad;stroke-width:2}
+.compass-module .compass-ticks line{stroke:#8293a5}
+.compass-module .compass-ticks line.is-major{stroke:#3c5068;stroke-width:2.5}
+.compass-module .compass-points text{fill:#3c5068;stroke:#f4f7fb;font-weight:700}
+.compass-module .compass-needle-south{fill:#d3dfee;stroke:#7b8fa9}
+.compass-module .compass-needle-north{fill:#dd6474;stroke:#b74b5c}
+.compass-module .compass-info{padding:16px;border-radius:16px;border-color:var(--tile-line);background:var(--tile-soft)}
+.compass-module .compass-info>span{font-size:9px;font-weight:650;letter-spacing:.08em;color:#8d616e}
+.compass-module .compass-info>strong{font-size:clamp(19px,3cqw,25px);font-weight:700;line-height:1.2}
+.compass-module .compass-info>p{font-size:12px;font-weight:450;line-height:1.55;margin-bottom:0}
+.compass-module .compass-part-buttons{display:flex;gap:6px;min-width:0}
+.compass-module .compass-part-buttons button{height:32px;font-size:11px;white-space:nowrap;padding:6px 9px}
+.compass-module .compass-part-buttons button.is-active{border-color:#e0a8b1;background:color-mix(in srgb,var(--module-bg,#fff) 88%,#dd6474);color:inherit}
+@container(max-width:540px){.compass-module .compass-info{padding:12px}.compass-module .compass-info>p{font-size:11px}.compass-module .compass-part-buttons{gap:4px}.compass-module .compass-part-buttons button{padding:5px 6px;font-size:10px}}
+
+.compass-module .compass-header .compass-title{font-weight:700;font-size:clamp(19px,3.8cqw,25px);line-height:1.2;letter-spacing:-.025em}
