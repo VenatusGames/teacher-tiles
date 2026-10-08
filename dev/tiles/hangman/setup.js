@@ -56,7 +56,7 @@ function setupHangman(m){
     clearRound();
     input.value='';
     setup.hidden=false;
-    requestAnimationFrame(()=>input.focus());
+    if(!m._isBoardRestore)requestAnimationFrame(()=>{if(m.isConnected&&!setup.hidden)input.focus({preventScroll:true})});
   }
 
   function closeSetup(){

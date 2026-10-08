@@ -324,7 +324,7 @@ function setupWordyPuzzle(m){
       delete button.dataset.state;
     });
 
-    requestAnimationFrame(()=>secretInput.focus({preventScroll:true}));
+    if(!m._isBoardRestore)requestAnimationFrame(()=>{if(m.isConnected&&!setup.hidden)secretInput.focus({preventScroll:true})});
   }
 
   startButton.addEventListener('click',startGame);

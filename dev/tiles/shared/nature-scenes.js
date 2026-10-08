@@ -21,6 +21,7 @@
   for(let i=0;i<50;i++){const x=i<25?random(i)*160:W-random(i)*130,y=H+10;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x-25,y-60,x-40+random(i+23)*80,y-70-random(i+16)*90);g.strokeStyle=i%2?'#607665':'#9d9c76';g.lineWidth=1+random(i)*2;g.stroke()}
  }
  function waves(g,t){
+  t*=.20; // A calm fivefold slowdown shared by the breakers, wash, and glints.
   // Translucent wash advances over the wet sand, then recedes beneath the next break.
   const shore=x=>748+Math.sin(t*.55)*22+Math.sin(x*.005+t*.2)*13+Math.sin(x*.017-t*.3)*3;
   g.beginPath();g.moveTo(0,675);g.lineTo(W,675);for(let x=W;x>=0;x-=8)g.lineTo(x,shore(x));g.closePath();g.fillStyle=gradient(g,0,675,0,805,[[0,'#73c7bd00'],[.35,'#66bbb777'],[.75,'#97d5c3aa'],[1,'#e2e3c855']]);g.fill();

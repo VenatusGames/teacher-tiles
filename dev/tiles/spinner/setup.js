@@ -1,6 +1,8 @@
 function setupSpinner(m){
   const canvas=m.querySelector('.spinner-canvas');
   const ctx=canvas.getContext('2d');
+  const carnival=m.dataset.tileSkin==='spinner-carnival';
+  const lights=carnival?window.TeacherTilesCarnivalSpinner.create(m):null;
   const spinButton=m.querySelector('.spinner-spin-button');
   const winner=m.querySelector('.spinner-winner');
   const resultOverlay=m.querySelector('.spinner-result-overlay');
@@ -13,6 +15,30 @@ function setupSpinner(m){
   const list=m.querySelector('.spinner-name-list');
   const bgButton=m.querySelector('.spinner-bg');
   const fontButton=m.querySelector('.spinner-font');
+  const settings=m.querySelector('.spinner-settings');
+  const namesButton=document.createElement('button');
+  namesButton.type='button';namesButton.className='spinner-names-toggle';
+  namesButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Names</span>';
+  namesButton.setAttribute('aria-label','Edit Spinner Names');
+  namesButton.setAttribute('aria-expanded','false');
+  const drawerTitle=document.createElement('strong');drawerTitle.className='spinner-drawer-title';drawerTitle.textContent='Spinner Names';
+  settings.prepend(drawerTitle);settings.hidden=true;
+  m.append(namesButton,settings);
+  function closeNames(){
+    if(settings.contains(document.activeElement))document.activeElement.blur();
+    settings.hidden=true;namesButton.setAttribute('aria-expanded','false');
+  }
+  namesButton.addEventListener('click',event=>{
+    event.stopPropagation();
+    if(!settings.hidden){closeNames();return}
+    settings.hidden=false;namesButton.setAttribute('aria-expanded','true');input.focus({preventScroll:true});
+  });
+  const outsideNames=event=>{if(!m.contains(event.target))closeNames()};
+  const escapeNames=event=>{if(event.key==='Escape'&&!settings.hidden){event.stopPropagation();closeNames();namesButton.focus({preventScroll:true})}};
+  document.addEventListener('pointerdown',outsideNames);
+  settings.addEventListener('keydown',escapeNames);
+  settings.addEventListener('wheel',event=>{if(!event.ctrlKey)event.stopPropagation()},{passive:true});
+  m.addEventListener('pointerleave',closeNames);
 
   let names=['Alex','Jordan','Taylor','Morgan'];
   let rotation=0;
@@ -29,10 +55,12 @@ function setupSpinner(m){
   window.addEventListener('teachertiles:audiopreferenceschange',syncSpinnerAudio);
   syncSpinnerAudio();
 
-  const palette=[
-    ['#ffb8a7','#ed806e'],['#ffe09a','#eebf50'],['#c8eaa9','#81bd67'],['#a9e7dc','#55bbaa'],
-    ['#b7d7ff','#6fa5e9'],['#d5c4fa','#987bd8'],['#f7bed9','#df7dad'],['#ead9b8','#c7a36c'],
-    ['#ffc9a8','#ef9364'],['#c4e4f5','#6eafd1'],['#d8eba8','#9ebd53'],['#efc1b2','#d77966']
+  const palette=carnival?[
+    ['#ffe9b9','#eeae50'],['#ffd2d0','#e86e82'],['#c4eafa','#68abd4'],
+    ['#d4eedb','#70b897'],['#e4d8fb','#b18cdd'],['#ffdebd','#f69765']
+  ]:[
+    ['#bcdcff','#91bdf5'],['#ffdad1','#f7a999'],['#fff0ba','#f1d17b'],['#c8eadb','#94cfb6'],
+    ['#e1d4ff','#bfa6ed'],['#ffdae8','#eeacc5'],['#c7ecf1','#91cbd5'],['#e4edc0','#bed18e']
   ];
 
   const getWheelFont=()=>{
@@ -41,7 +69,8 @@ function setupSpinner(m){
   };
 
   function renderNameList(){
-    requestAnimationFrame(()=>fitNameModuleToRoster(m,names.length,{namesPerRow:4,rowHeight:32,threshold:8}));
+    lights?.setNames(names.length);
+    namesButton.querySelector('span').textContent=`Names · ${names.length}`;
     list.replaceChildren();
     names.forEach((name,i)=>{
       const chip=document.createElement('div');
@@ -58,6 +87,7 @@ function setupSpinner(m){
         renderNameList();
         drawWheel();
         winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';
+        notifyBoardChanged('spinner-names');
       });
       chip.append(text,remove);
       list.append(chip);
@@ -65,21 +95,23 @@ function setupSpinner(m){
   }
 
   function drawWheel(){
-    const dpr=Math.max(1,window.devicePixelRatio||1);
+    lights?.rotate(rotation);
+    const dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));
     const size=560;
     const wheelWrap=canvas.parentElement;
-    const displaySize=Math.max(190,Math.min(390,(wheelWrap?.clientWidth||390)*.94,wheelWrap?.clientHeight||390));
+    const displaySize=Math.max(1,Math.min(wheelWrap.clientWidth,wheelWrap.clientHeight));
     m.style.setProperty('--spinner-wheel-size',`${displaySize}px`);
     m.style.setProperty('--spinner-wheel-radius',`${displaySize/2}px`);
-    if(canvas.width!==size*dpr||canvas.height!==size*dpr){
-      canvas.width=size*dpr;
-      canvas.height=size*dpr;
+    const resolution=Math.min(2048,Math.max(560,Math.round(displaySize*dpr)));
+    if(canvas.width!==resolution||canvas.height!==resolution){
+      canvas.width=resolution;
+      canvas.height=resolution;
       canvas.style.aspectRatio='1';
     }
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.setTransform(resolution/size,0,0,resolution/size,0,0);
     ctx.clearRect(0,0,size,size);
 
-    const cx=size/2,cy=size/2,r=258;
+    const cx=size/2,cy=size/2,r=268;
     ctx.save();
     ctx.translate(cx,cy);
     ctx.rotate(rotation);
@@ -99,7 +131,7 @@ function setupSpinner(m){
     const arc=Math.PI*2/names.length;
     const wheelFont=getWheelFont();
     const labelStart=68;
-    const labelEnd=r-16;
+    const labelEnd=r-(carnival?46:16);
     const labelWidth=labelEnd-labelStart;
 
     const fitLabel=(name,maxFont)=>{
@@ -118,7 +150,7 @@ function setupSpinner(m){
       }
       let fontSize=maxFont;
       const fits=()=>{
-        ctx.font=`850 ${fontSize}px ${wheelFont}`;
+        ctx.font=`700 ${fontSize}px ${wheelFont}`;
         return lines.every(line=>ctx.measureText(line).width<=labelWidth);
       };
       while(fontSize>7&&!fits())fontSize-=.5;
@@ -156,21 +188,18 @@ function setupSpinner(m){
       if(upsideDown)ctx.rotate(Math.PI);
       const labelCenter=(labelStart+labelEnd)/2;
       ctx.translate(upsideDown?-labelCenter:labelCenter,0);
-      ctx.fillStyle='#111820';
+      ctx.fillStyle='#243348';
       ctx.textAlign='center';
       ctx.textBaseline='middle';
-      const maxFont=Math.max(10,Math.min(24,arc*112*.72));
+      const maxFont=Math.max(10,Math.min(25,arc*112*.72));
       const fitted=fitLabel(name,maxFont);
-      ctx.font=`950 ${fitted.fontSize}px ${wheelFont}`;
+      ctx.font=`700 ${fitted.fontSize}px ${wheelFont}`;
       ctx.lineJoin='round';
-      ctx.strokeStyle='rgba(255,255,255,.78)';
-      ctx.lineWidth=Math.max(2.4,fitted.fontSize*.18);
-      ctx.shadowColor='rgba(255,255,255,.64)';
-      ctx.shadowBlur=1.5;
+      ctx.shadowColor='rgba(255,255,255,.45)';
+      ctx.shadowOffsetY=1;
       const lineHeight=fitted.fontSize*1.08;
       fitted.lines.forEach((line,lineIndex)=>{
         const y=(lineIndex-(fitted.lines.length-1)/2)*lineHeight;
-        ctx.strokeText(line,0,y);
         ctx.fillText(line,0,y);
       });
       ctx.restore();
@@ -178,9 +207,15 @@ function setupSpinner(m){
 
     ctx.beginPath();
     ctx.arc(0,0,r,0,Math.PI*2);
-    ctx.strokeStyle='rgba(20,27,35,.24)';
-    ctx.lineWidth=5;
+    ctx.strokeStyle=carnival?'#8b5734':'#fff';
+    ctx.lineWidth=carnival?12:9;
     ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,r-6,0,Math.PI*2);
+    ctx.strokeStyle=carnival?'#ffe7a5':'rgba(35,52,77,.13)';ctx.lineWidth=carnival?5:1.5;ctx.stroke();
+    if(carnival){
+      ctx.beginPath();ctx.arc(0,0,249,0,Math.PI*2);ctx.strokeStyle='#b37e43';ctx.lineWidth=18;ctx.stroke();
+      ctx.beginPath();ctx.arc(0,0,238,0,Math.PI*2);ctx.strokeStyle='#ffe7a5';ctx.lineWidth=2;ctx.stroke();
+    }
 
     ctx.beginPath();
     ctx.arc(0,0,56,0,Math.PI*2);
@@ -200,7 +235,8 @@ function setupSpinner(m){
     renderNameList();
     drawWheel();
     winner.textContent='CLICK TO SPIN';
-    input.focus();
+    input.focus({preventScroll:true});
+    notifyBoardChanged('spinner-names');
   }
 
   function fireSpinnerConfetti(){
@@ -253,6 +289,7 @@ function setupSpinner(m){
   async function spin(){
     if(!m.isConnected||spinning||winnerVisible||names.length<1)return;
     const generation=++spinGeneration;
+    closeNames();
 
     spinning=true;
     m.classList.add('is-spinning');
@@ -379,12 +416,13 @@ function setupSpinner(m){
 
   m.addEventListener('click',e=>{
     if(!winnerVisible)return;
-    if(e.target.closest('.module-delete,.spinner-customization,.spinner-settings,.resize-handle'))return;
+    if(e.target.closest('.module-delete,.spinner-customization,.spinner-settings,.spinner-names-toggle,.resize-handle'))return;
     dismissWinner();
   });
 
   const ro=new ResizeObserver(()=>drawWheel());
   ro.observe(m);
+  ro.observe(canvas.parentElement);
   const refreshWheelLayout=()=>requestAnimationFrame(drawWheel);
   m.addEventListener('pointerenter',refreshWheelLayout);
   m.addEventListener('pointerleave',refreshWheelLayout);
@@ -395,6 +433,7 @@ function setupSpinner(m){
   const detachRosterLoader=attachClassRosterLoader(input.closest('.spinner-name-entry'),rosterNames=>{
     if(spinning)return;
     names=normalizeRosterNames(rosterNames);
+    notifyBoardChanged('spinner-names');
     dismissWinner();
     renderNameList();
     drawWheel();
@@ -415,6 +454,7 @@ function setupSpinner(m){
 
   const priorDeactivate=m._deactivate;
   m._deactivate=()=>{
+    closeNames();
     spinGeneration++;cancelMetadata?.();cancelAnimationFrame(raf);spinning=false;
     spinAudio.pause();spinAudio.currentTime=0;spinButton.disabled=false;m.classList.remove('is-spinning');
     dismissWinner();winner.textContent=names.length?'CLICK TO SPIN':'ADD NAMES';priorDeactivate?.();
@@ -422,9 +462,12 @@ function setupSpinner(m){
   const prior=m._cleanup;
   m._cleanup=()=>{
     m._deactivate();prior?.();
+    document.removeEventListener('pointerdown',outsideNames);
+    m.removeEventListener('pointerleave',closeNames);
     detachRosterLoader();
     cancelAnimationFrame(raf);
     ro.disconnect();
+    lights?.cleanup();
     m.removeEventListener('pointerenter',refreshWheelLayout);
     m.removeEventListener('pointerleave',refreshWheelLayout);
     m.removeEventListener('teachertiles:tileaudiochange',syncSpinnerAudio);

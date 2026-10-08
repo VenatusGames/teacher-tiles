@@ -4,7 +4,7 @@
  const names=['fireplace','campfire','fireflies','christmas-tree'];
  const assetRoot=new URL('../../assets/themes/scenes/',document.currentScript.src);
  const random=i=>{const v=Math.sin(i*127.1+47.3)*43758.5453;return v-Math.floor(v)};
- let flames=null,flameTried=false;
+ let flames=null,flameTried=false,forest=null,forestTried=false;
  const flameComposite=document.createElement('canvas');flameComposite.width=flameComposite.height=384;const flameContext=flameComposite.getContext('2d');
  const fireRegions={fireplace:{x:810,y:776,w:1050,h:710,logTop:540},campfire:{x:800,y:748,w:295,h:370,logTop:638},'christmas-tree':{x:685,y:638,w:235,h:227,logTop:553}};
  function glowSprite(color){const c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d'),gradient=g.createRadialGradient(48,48,0,48,48,48);gradient.addColorStop(0,color);gradient.addColorStop(.12,color);gradient.addColorStop(.4,color.replace('1)', '.15)'));gradient.addColorStop(1,color.replace('1)', '0)'));g.fillStyle=gradient;g.fillRect(0,0,96,96);return c}
@@ -74,6 +74,10 @@
  function draw(g,w,h,theme,t){
   if(!cache.get(theme)?.ready)return;
   frame(g,w,h,()=>{
+   if(theme==='campfire'||theme==='fireflies'){
+    if(!forestTried){forestTried=true;forest=window.TeacherTilesForestMotion?.()}
+    const moving=forest?.draw(cache.get(theme).image,t,theme);if(moving)g.drawImage(moving,0,0,W,H);
+   }
    if(theme==='fireplace'){
     relight(g,t,800,660,1100);flamesAt(g,t,theme);emberDrift(g,t,805,730,690,540,27);
    }else if(theme==='campfire'){
@@ -82,7 +86,14 @@
    else{
     g.save();g.beginPath();g.rect(557,452,270,187);g.clip();flamesAt(g,t,theme);emberDrift(g,t,685,620,130,160,12);g.restore();
     relight(g,t,700,630,430);snow(g,t);
-    g.save();g.globalCompositeOperation='screen';for(const p of cache.get(theme).lights){const pulse=.2+.8*Math.pow(.5+.5*Math.sin(t*.9+p.phase),3);sprite(g,gold,p.x,p.y,8,pulse*.43)}g.restore();
+    g.save();
+    for(const p of cache.get(theme).lights){
+     // A slow travelling shimmer dims and blooms the actual photographed bulbs.
+     const pulse=Math.pow(.5+.5*Math.sin(t*1.45-p.y*.018+p.phase*.35),2);
+     g.globalCompositeOperation='source-over';g.fillStyle=`rgba(30,16,3,${(1-pulse)*.65})`;g.beginPath();g.arc(p.x,p.y,3.1,0,TAU);g.fill();
+     g.globalCompositeOperation='screen';sprite(g,gold,p.x,p.y,13+pulse*6,.15+pulse*.8);
+     if(pulse>.65){const flare=(pulse-.65)/.35;g.strokeStyle=`rgba(255,244,197,${flare*.75})`;g.lineWidth=.7;g.beginPath();g.moveTo(p.x-5*flare,p.y);g.lineTo(p.x+5*flare,p.y);g.moveTo(p.x,p.y-7*flare);g.lineTo(p.x,p.y+7*flare);g.stroke()}
+    }g.restore();
    }
   });
  }
