@@ -44,7 +44,7 @@ function setupVoting(m){
 
     summary.textContent=next==='tally'
       ?'Tap a choice to add a vote'
-      :'Add names below, then drag them to a choice';
+      :'Open Students, then drag names to a choice';
 
     pool.hidden=next!=='names';
     resetCounts.hidden=next!=='tally';
@@ -95,7 +95,7 @@ function setupVoting(m){
 
   const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
-    chip.className='voting-student-chip';
+    chip.className='voting-student-chip choice-student-chip';
     chip.draggable=true;
 
     const text=document.createElement('span');
@@ -163,7 +163,7 @@ function setupVoting(m){
 
     choices.forEach((choice,index)=>{
       const card=document.createElement('section');
-      card.className='voting-choice';
+      card.className='voting-choice choice-card';
       if(namesMode)wireDrop(card,choice.id);
 
       const controls=document.createElement('div');
@@ -171,7 +171,7 @@ function setupVoting(m){
 
       const remove=document.createElement('button');
       remove.type='button';
-      remove.className='voting-choice-remove';
+      remove.className='voting-choice-remove choice-remove';
       remove.textContent='×';
       remove.title='Remove choice';
       remove.setAttribute('aria-label',`Remove ${choice.name}`);
@@ -210,7 +210,7 @@ function setupVoting(m){
 
       const title=document.createElement('input');
       title.type='text';
-      title.className='voting-choice-name';
+      title.className='voting-choice-name choice-name';
       title.maxLength=30;
       title.value=choice.name;
       title.setAttribute('aria-label',`Poll choice ${index+1}`);
@@ -222,11 +222,11 @@ function setupVoting(m){
       });
 
       const count=document.createElement('strong');
-      count.className='voting-choice-count';
+      count.className='voting-choice-count choice-count';
       count.textContent=String(namesMode?choice.students.length:choice.tally);
 
       const content=document.createElement('div');
-      content.className='voting-choice-content';
+      content.className='voting-choice-content choice-content';
 
       if(namesMode){
         if(choice.students.length){
@@ -245,7 +245,7 @@ function setupVoting(m){
 
         const minus=document.createElement('button');
         minus.type='button';
-        minus.className='voting-tally-minus';
+        minus.className='voting-tally-minus choice-tally-minus';
         minus.textContent='−';
         minus.disabled=choice.tally<=0;
         minus.setAttribute('aria-label',`Remove one vote from ${choice.name}`);
@@ -284,7 +284,7 @@ function setupVoting(m){
 
     const addCard=document.createElement('button');
     addCard.type='button';
-    addCard.className='voting-add-choice-card';
+    addCard.className='voting-add-choice-card choice-add-card';
     addCard.setAttribute('aria-label','Add voting choice');
     addCard.title='Add choice';
     addCard.innerHTML='<span aria-hidden="true">+</span><small>Add Choice</small>';
@@ -413,5 +413,6 @@ function setupVoting(m){
   const priorCleanup=m._cleanup;
   m._cleanup=()=>{priorCleanup?.();detachRosterLoader()};
 
+  setupChoiceRosterDrawer(m);
   setMode('tally');
 }

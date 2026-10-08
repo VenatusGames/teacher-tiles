@@ -972,6 +972,8 @@ const TILE_SKIN_CATALOG=Object.freeze([
     name:'No Background',description:'The animated timer shape becomes the tile and floats directly on the board.',
     tags:'visual timer floating freestanding object clock countdown',released:12
   }),
+  Object.freeze({id:'calculator-retro',productId:'tile-skin-calculator-retro',tileType:'calculator',tileLabel:'Calculator',name:'Retro Desk',description:'Cream keys, a sage display, and vintage desktop details.',tags:'calculator retro desk',released:49}),
+  Object.freeze({id:'calculator-glass',productId:'tile-skin-calculator-glass',tileType:'calculator',tileLabel:'Calculator',name:'Midnight Glass',description:'Smoky glass keys with cool blue and violet accents.',tags:'calculator midnight glass',released:50}),
   Object.freeze({id:'timer-neon',productId:'tile-skin-timer-neon',tileType:'timer',tileLabel:'Visual Timer',name:'Neon',description:'Eight electric colors with luminous edges and a soft neon glow.',tags:'visual timer neon',released:46}),
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),

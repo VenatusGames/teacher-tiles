@@ -46,7 +46,7 @@ function setupLunchCount(m){
     });
     summary.textContent=next==='tally'
       ?'Tap a category to add a tally'
-      :'Add names below, then drag them to a lunch choice';
+      :'Open Students, then drag names to a lunch choice';
     pool.hidden=next!=='names';
     resetCounts.hidden=next!=='tally';
     resetNames.hidden=next!=='names';
@@ -93,7 +93,7 @@ function setupLunchCount(m){
 
   const studentChip=(name,{removable=false,unassignOnly=false}={})=>{
     const chip=document.createElement('div');
-    chip.className='lunchcount-student-chip';
+    chip.className='lunchcount-student-chip choice-student-chip';
     chip.draggable=true;
 
     const text=document.createElement('span');
@@ -168,7 +168,7 @@ function setupLunchCount(m){
 
     categories.forEach((category,index)=>{
       const card=document.createElement('section');
-      card.className='lunchcount-category';
+      card.className='lunchcount-category choice-card';
       card.dataset.categoryKind=category.kind;
       if(namesMode)wireDrop(card,category.id);
 
@@ -178,7 +178,7 @@ function setupLunchCount(m){
       if(category.kind==='normal'){
         const remove=document.createElement('button');
         remove.type='button';
-        remove.className='lunchcount-category-remove';
+        remove.className='lunchcount-category-remove choice-remove';
         remove.textContent='×';
         remove.title='Remove category';
         remove.setAttribute('aria-label',`Remove ${category.name}`);
@@ -220,7 +220,7 @@ function setupLunchCount(m){
 
       const title=document.createElement('input');
       title.type='text';
-      title.className='lunchcount-category-name';
+      title.className='lunchcount-category-name choice-name';
       title.maxLength=22;
       title.value=category.name;
       title.addEventListener('click',event=>event.stopPropagation());
@@ -231,11 +231,11 @@ function setupLunchCount(m){
       });
 
       const count=document.createElement('strong');
-      count.className='lunchcount-category-count';
+      count.className='lunchcount-category-count choice-count';
       count.textContent=String(namesMode?category.students.length:category.tally);
 
       const content=document.createElement('div');
-      content.className='lunchcount-category-content';
+      content.className='lunchcount-category-content choice-content';
 
       if(namesMode){
         if(category.students.length){
@@ -254,7 +254,7 @@ function setupLunchCount(m){
 
         const minus=document.createElement('button');
         minus.type='button';
-        minus.className='lunchcount-tally-minus';
+        minus.className='lunchcount-tally-minus choice-tally-minus';
         minus.textContent='−';
         minus.disabled=category.tally<=0;
         minus.setAttribute('aria-label',`Remove one ${category.name} tally`);
@@ -292,7 +292,7 @@ function setupLunchCount(m){
 
     const addCard=document.createElement('button');
     addCard.type='button';
-    addCard.className='lunchcount-add-category-card';
+    addCard.className='lunchcount-add-category-card choice-add-card';
     addCard.setAttribute('aria-label','Add lunch category');
     addCard.title='Add category';
     addCard.innerHTML='<span aria-hidden="true">+</span><small>Add Category</small>';
@@ -461,6 +461,7 @@ function setupLunchCount(m){
     renderPool();
   };
 
+  setupChoiceRosterDrawer(m);
   setMode('tally');
   const priorCleanup=m._cleanup;
   m._cleanup=()=>{priorCleanup?.();detachRosterLoader()};

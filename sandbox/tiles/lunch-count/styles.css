@@ -1,0 +1,9 @@
+.lunchcount-module.tile-modern{width:760px;height:520px;min-width:500px;min-height:360px}
+.lunchcount-module .lunchcount-grid{grid-template-columns:repeat(auto-fit,minmax(min(145px,100%),1fr))!important;grid-auto-rows:minmax(164px,1fr)!important}
+.lunchcount-module .lunchcount-category-icon{width:58px!important;height:54px!important;flex:none;border-radius:10px}
+.lunchcount-module .lunchcount-category-icon.is-empty{height:54px!important;font-size:28px}
+.lunchcount-module .lunchcount-icon-picker__panel{border:1px solid var(--tile-line);border-radius:17px;box-shadow:0 12px 35px #233b5830}
+.lunchcount-module .lunchcount-icon-picker__head strong{font-size:15px;font-weight:650}
+.lunchcount-module .lunchcount-icon-option{border-radius:12px;border-color:var(--tile-line);background:var(--module-bg,#fff);color:inherit}
+.lunchcount-module .lunchcount-icon-option span{font-size:11px;font-weight:500}
+.lunchcount-module .lunchcount-icon-option.is-selected{border-color:#8cb4e0;box-shadow:0 0 0 1px #8cb4e0;background:color-mix(in srgb,var(--module-bg,#fff) 90%,#79abe6)}

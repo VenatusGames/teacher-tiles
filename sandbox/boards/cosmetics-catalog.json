@@ -1,5 +1,7 @@
 {
   "skins": {
+    "calculator-glass": "tile-skin-calculator-glass",
+    "calculator-retro": "tile-skin-calculator-retro",
     "textbubble-scrap": "tile-skin-textbubble-scrap",
     "textbubble-speech": "tile-skin-textbubble-speech",
     "timer-neon": "tile-skin-timer-neon",
