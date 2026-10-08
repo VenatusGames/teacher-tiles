@@ -65,6 +65,7 @@ function makeStickElement(stick,{drawn=false}={}){
   return el;
 }
 function setup(m){
+  const gumball=m.dataset.tileSkin==='popsicle-gumball'?window.TeacherTilesGumball.create(m):null;
   const importView=m.querySelector('.popsicle-sticks-import');
   const dashboard=m.querySelector('.popsicle-sticks-dashboard');
   const loaderAnchor=m.querySelector('.popsicle-sticks-loader-anchor');
@@ -95,13 +96,16 @@ function setup(m){
     const active=activeStick(),available=inCup().length,removedCount=removed().length;
     classNameEl.textContent=className||'Class';
     if(active)status.textContent=`${active.name} was drawn. Put it back for another chance, or remove it until reset.`;
+    else if(gumball&&available)status.textContent=`${available} ${available===1?'gumball':'gumballs'} remaining. Click the machine to dispense.`;
     else if(available)status.textContent=`${available} ${available===1?'stick':'sticks'} left in the cup${removedCount?` · ${removedCount} removed`:''}. Click the cup to draw.`;
     else status.textContent=sticks.length?'The cup is empty. Reset All to put every stick back.':'This class has no students yet.';
+    if(gumball&&!active&&!available&&sticks.length)status.textContent='The machine is empty. Reset All to refill it.';
     cup.disabled=Boolean(active)||available===0;
     putBack.hidden=!active;remove.hidden=!active;
     reset.disabled=!sticks.length||(!active&&removedCount===0&&available===sticks.length);
   }
   function renderCup(){
+    if(gumball){gumball.render(activeStick(),inCup().length,{animate:!m._isBoardRestore});return;}
     stack.replaceChildren();
     const available=inCup().slice().sort((a,b)=>a.depth-b.depth);
     const visible=available.slice(-Math.min(13,available.length));
@@ -145,7 +149,7 @@ function setup(m){
     if(!sticks.length&&classId){const roster=getRoster(classId);if(roster){loadRoster(roster,{markChanged:false});return}}
     render();
   };
-  const prior=m._cleanup;m._cleanup=()=>{detach();window.removeEventListener('teachertiles:classeschange',syncRoster);prior?.()};
+  const prior=m._cleanup;m._cleanup=()=>{gumball?.destroy();detach();window.removeEventListener('teachertiles:classeschange',syncRoster);prior?.()};
   render();
 }
 window.TeacherTilesPopsicleSticks=Object.freeze({setup});
