@@ -2,7 +2,7 @@ import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
 import '../tiles/shared/timer-colors.js?v=20261008';
-import '../tiles/lava-lamp/index.js?v=20261008-refine';
+import '../tiles/lava-lamp/index.js?v=20261008-neon';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';

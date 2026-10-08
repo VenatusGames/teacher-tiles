@@ -1,0 +1,23 @@
+.hangman-module.tile-modern{width:600px;height:430px;min-width:390px;min-height:390px}
+.hangman-module .hangman-kicker{font-size:10px;font-weight:650;letter-spacing:.1em;color:#6586ac;opacity:1;margin-bottom:5px}
+.hangman-module .hangman-status{font-size:clamp(17px,3.8cqw,23px);font-weight:700;line-height:1.2}
+.hangman-module .hangman-game{grid-template-columns:minmax(100px,.65fr) minmax(0,1.35fr);gap:14px}
+.hangman-module .hangman-figure{border-radius:16px;border:1px solid var(--tile-line);background:var(--tile-soft)}
+.hangman-module .hangman-figure svg{width:95%;height:95%;max-height:280px}
+.hangman-module .hangman-gallows{stroke:#8595a7;opacity:.6;stroke-width:4}
+.hangman-module .hangman-part{stroke:#5f84b3;stroke-width:4}
+.hangman-module .hangman-play-area{gap:12px}
+.hangman-module .hangman-word{gap:5px;min-height:45px;max-height:140px;overflow:auto;overscroll-behavior:contain}
+.hangman-module .hangman-letter-slot{font-weight:650;border-bottom-width:2px;width:clamp(17px,4cqw,29px);height:36px;font-size:clamp(18px,4cqw,27px)}
+.hangman-module .hangman-wrong-row{min-height:22px;font-size:9px}
+.hangman-module .hangman-wrong-row span{font-weight:550}
+.hangman-module .hangman-keyboard{grid-template-columns:repeat(9,minmax(0,1fr));gap:5px}
+.hangman-module .hangman-key{height:34px;font-size:12px;font-weight:600;border-color:var(--tile-line);background:var(--module-bg,#fff);box-shadow:0 2px 3px #1720330b;transition:background .15s,transform .15s}
+.hangman-module .hangman-key:hover:not(:disabled){background:#eaf2fc;border-color:#a6c5e8;color:#294c76}
+.hangman-module .hangman-key.is-correct{background:#e0f2e8;color:#31704c}
+.hangman-module .hangman-key.is-wrong{background:#f8e4e8;color:#944f5d}
+.hangman-module .hangman-setup-card{padding:20px;border-radius:17px;box-shadow:0 10px 30px #233b5820}
+.hangman-module .hangman-setup-card>strong{font-size:21px;font-weight:700}
+.hangman-module .hangman-setup-card p{font-size:12px;font-weight:450;line-height:1.5}
+.hangman-module .hangman-word-input{background:var(--tile-soft);border-color:var(--tile-line)}
+@container(max-width:430px){.hangman-module .hangman-game{grid-template-columns:minmax(80px,.45fr) minmax(0,1fr);gap:10px}.hangman-module .hangman-keyboard{gap:3px}.hangman-module .hangman-key{font-size:10px;height:31px}}
