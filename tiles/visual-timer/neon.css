@@ -1,0 +1,15 @@
+/* Neon retains the standard timer shapes, controls, and progress behavior. */
+.timer-module[data-tile-skin="timer-neon"]{--timer:#20baff;--timer-soft:color-mix(in srgb,var(--timer) 12%,#17192c)}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="blue"]{--timer:#20baff}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="green"]{--timer:#64ff45}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="amber"]{--timer:#ffb51b}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="rose"]{--timer:#ff36a9}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="purple"]{--timer:#c15bff}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="teal"]{--timer:#19ffe4}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="midnight"]{--timer:#637dff}
+.timer-module[data-tile-skin="timer-neon"][data-shape-color="creme"]{--timer:#f5ff71}
+.timer-module[data-tile-skin="timer-neon"] .shape-fill{background:radial-gradient(circle at 30% 20%,#ffffff20,transparent 42%),conic-gradient(from -90deg,var(--timer) var(--progress,0deg),var(--timer-soft) 0)}
+.timer-module[data-tile-skin="timer-neon"] .shape-outline{stroke:var(--timer);stroke-width:3;filter:drop-shadow(0 0 1.2px var(--timer)) drop-shadow(0 0 3px color-mix(in srgb,var(--timer) 65%,transparent));stroke-linejoin:round}
+.timer-module[data-tile-skin="timer-neon"] .shape-highlight{stroke:color-mix(in srgb,var(--timer) 40%,white);stroke-width:1;opacity:.7}
+.timer-module[data-tile-skin="timer-neon"] .timer-readout{border-color:color-mix(in srgb,var(--timer) 44%,transparent);background:color-mix(in srgb,var(--module-bg,var(--surface)) 94%,transparent);box-shadow:0 3px 16px #10152730,0 0 12px color-mix(in srgb,var(--timer) 25%,transparent),inset 0 1px #ffffff40}
+.timer-module[data-tile-skin="timer-neon"] .timer-color-swatch{box-shadow:0 0 5px color-mix(in srgb,var(--timer) 45%,transparent),inset 0 1px 2px #ffffff55}

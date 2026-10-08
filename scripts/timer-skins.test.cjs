@@ -32,7 +32,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     const clip=await page.evaluate(()=>{const m=workspace.querySelector('.module'),field=m.querySelector('.timer-shape-select');field.value='heart';field.dispatchEvent(new Event('change'));return m.querySelector('.shape-foreign').getAttribute('clip-path');});assert(clip.startsWith('url(#shape-clip-'));
     await page.evaluate(()=>{const saved=TeacherTilesBoard.capture();TeacherTilesBoard.load(saved);});assert.equal(await tile.getAttribute('data-tile-skin'),'timer-liquid');assert.equal(await tile.getAttribute('data-timer-shape'),'heart');
     await tile.hover();await tile.locator('.tile-skins-toggle').click();
-    const names=await page.locator('.tile-skins-choice>strong').allTextContents();assert.deepEqual(names,['Default','No Background','Solid','Liquid Fill']);
+    const names=await page.locator('.tile-skins-choice>strong').allTextContents();assert.deepEqual(names,['Default','No Background','Neon','Solid','Liquid Fill']);
     assert.equal(await page.locator('.shop-product[data-shop-product="tile-skin-timer-solid"]').count(),1);assert.equal(await page.locator('.shop-product[data-shop-product="tile-skin-timer-liquid"]').count(),1);
     await page.locator('.tile-skins-choice').filter({has:page.locator('strong',{hasText:/^Solid$/})}).click();assert.equal(await tile.getAttribute('data-tile-skin'),'timer-solid');
     assert.equal(await liquid.evaluate(el=>getComputedStyle(el).display),'none');

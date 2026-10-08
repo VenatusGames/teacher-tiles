@@ -4,8 +4,8 @@
   const aliases={violet:'purple',sunset:'amber',ocean:'teal',lime:'green',gold:'amber'};
   const normalizeColor=key=>Object.hasOwn(palette,key)?key:(aliases[key]||'purple');
   const colors=Object.fromEntries(Object.entries(palette).map(([key,hex])=>[key,{label:key[0].toUpperCase()+key.slice(1),wax:[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)),liquid:key==='midnight'?'#a2afc4':'#211e38'}]));
-  const neonPalette={blue:'#20baff',green:'#64ff45',amber:'#ffb51b',rose:'#ff36a9',purple:'#c15bff',teal:'#19ffe4',midnight:'#637dff',creme:'#f5ff71'};
-  const neonLabels={blue:'Electric Blue',green:'Laser Green',amber:'Neon Orange',rose:'Hot Pink',purple:'Ultraviolet',teal:'Electric Mint',midnight:'Electric Indigo',creme:'Neon Yellow'};
+  const neonPalette=window.TeacherTilesNeonColors;
+  const neonLabels=window.TeacherTilesNeonColorLabels;
   const neonColors=Object.fromEntries(Object.entries(neonPalette).map(([key,hex])=>[key,{label:neonLabels[key],wax:[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)),liquid:'#161027'}]));
   function createRenderer(canvas,neon=false){
     const ctx=canvas.getContext('2d'),buffer=document.createElement('canvas');buffer.width=152;buffer.height=280;
