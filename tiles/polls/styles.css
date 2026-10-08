@@ -4,3 +4,13 @@
 .voting-module .voting-choice-image:has(img){border-style:solid}
 .voting-module .voting-choice-image>small{font-weight:500;font-size:9px;opacity:.65}
 .voting-module .voting-choice-image>span{font-size:23px;font-weight:400}
+
+/* Size card contents against their own row, rather than the full tile width. */
+.voting-module .voting-choice{container-type:size;gap:clamp(3px,1.6cqh,5px)}
+.voting-module .voting-choice-image{height:clamp(42px,24cqh,64px);width:clamp(48px,30cqh,70px);padding:4px;gap:2px}
+.voting-module .voting-choice-image>span{font-size:clamp(16px,9cqh,23px);line-height:1}
+.voting-module .voting-choice-image>small{font-size:8px;line-height:1.1}
+.voting-module .voting-choice-name{height:clamp(22px,11cqh,28px);font-size:clamp(12px,7cqh,16px);line-height:1.2}
+.voting-module .voting-choice-count{font-size:clamp(22px,15cqh,38px);line-height:1.1}
+.voting-module .voting-choice-content{min-height:26px;overflow:auto!important;line-height:16px}
+.voting-module .voting-choice.is-tally .voting-choice-content{flex:0 0 20px;min-height:20px;overflow:visible!important}
