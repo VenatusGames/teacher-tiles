@@ -118,6 +118,8 @@ jobs:
                 node "${out}/sandbox/build.cjs" "${out}"
               fi
             fi
+            # Keep development checks in Git, but leave them out of the published site.
+            find "${out}" -type f -name '*.test.cjs' -delete
             # GITHUB_TOKEN may not push workflow files, and Pages never served them anyway.
             rm -rf "${out}/.github"
             test -f "${out}/index.html" || { echo "::error::${branch} build produced no index.html" >&2; return 1; }
