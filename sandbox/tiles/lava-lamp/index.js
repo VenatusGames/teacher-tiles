@@ -1,14 +1,17 @@
 (() => {
   'use strict';
-  const colors={violet:{label:'Violet',wax:[209,91,242],liquid:'#21134e'},sunset:{label:'Sunset',wax:[255,107,56],liquid:'#53183f'},ocean:{label:'Ocean',wax:[49,232,226],liquid:'#103568'},rose:{label:'Rose',wax:[255,99,159],liquid:'#391a50'},lime:{label:'Lime',wax:[183,241,82],liquid:'#164b49'},gold:{label:'Gold',wax:[255,201,76],liquid:'#4a2846'}};
+  const palette=window.TeacherTilesTimerColors;
+  const aliases={violet:'purple',sunset:'amber',ocean:'teal',lime:'green',gold:'amber'};
+  const normalizeColor=key=>Object.hasOwn(palette,key)?key:(aliases[key]||'purple');
+  const colors=Object.fromEntries(Object.entries(palette).map(([key,hex])=>[key,{label:key[0].toUpperCase()+key.slice(1),wax:[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)),liquid:key==='midnight'?'#a2afc4':'#211e38'}]));
   function createRenderer(canvas){
     const ctx=canvas.getContext('2d'),buffer=document.createElement('canvas');buffer.width=152;buffer.height=280;
     const wax=buffer.getContext('2d'),pixels=wax.createImageData(152,280);
     const dpr=Math.min(devicePixelRatio||1,2);canvas.width=360*dpr;canvas.height=540*dpr;ctx.scale(dpr,dpr);
     const vessel=new Path2D('M139 68Q135 116 117 198L81 387Q76 413 97 427Q180 449 263 427Q284 413 279 387L243 198Q225 116 221 68Z');
     function gradient(x,y,x2,y2,stops){const g=ctx.createLinearGradient(x,y,x2,y2);stops.forEach(([at,color])=>g.addColorStop(at,color));return g}
-    function draw(time=0,key='violet'){
-      const color=colors[key]||colors.violet;
+    function draw(time=0,key='purple'){
+      const color=colors[key]||colors.purple;
       ctx.clearRect(0,0,360,540);
       const shadow=ctx.createRadialGradient(180,498,5,180,498,122);shadow.addColorStop(0,'#28334828');shadow.addColorStop(1,'#28334800');ctx.fillStyle=shadow;ctx.save();ctx.translate(0,379);ctx.scale(1,.24);ctx.fillRect(50,0,260,540);ctx.restore();
       ctx.save();ctx.clip(vessel);
@@ -43,27 +46,31 @@
     }
     return {draw};
   }
-  function render(m,state={}){const key=Object.hasOwn(colors,state.color)?state.color:'violet';m.dataset.lavaColor=key;createRenderer(m.querySelector('canvas')).draw(12,key);}
+  function render(m,state={}){const key=normalizeColor(state.color);m.dataset.lavaColor=key;createRenderer(m.querySelector('canvas')).draw(12,key);}
   function setup(m){
     const renderer=createRenderer(m.querySelector('canvas')),toggle=m.querySelector('.lava-colors-toggle'),drawer=m.querySelector('.lava-color-drawer');
-    let color='violet',raf=0,visible=true,disposed=false,elapsed=12,last=0,painted=0;
+    let color='purple',raf=0,visible=true,disposed=false,elapsed=12,last=0,painted=0;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-    function choose(key){color=Object.hasOwn(colors,key)?key:'violet';m.dataset.lavaColor=color;drawer.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.color===color)));renderer.draw(elapsed,color)}
-    function close(){drawer.hidden=true;toggle.setAttribute('aria-expanded','false')}
+    function choose(key){color=normalizeColor(key);m.dataset.lavaColor=color;toggle.querySelector('.timer-color-swatch').style.background=palette[color];drawer.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.color===color)));renderer.draw(elapsed,color)}
+    let drawerFrame=0;
+    drawer.className='timer-shape-shelf lava-color-drawer';drawer.setAttribute('popover','manual');
+    function close(){cancelAnimationFrame(drawerFrame);if(drawer.matches(':popover-open'))drawer.hidePopover();drawer.hidden=true;toggle.setAttribute('aria-expanded','false')}
+    function position(){if(!m.isConnected){close();return}const rect=toggle.getBoundingClientRect();drawer.style.left=Math.max(8,Math.min(rect.left+rect.width/2-drawer.offsetWidth/2,innerWidth-drawer.offsetWidth-8))+'px';drawer.style.top=Math.max(8,rect.top-drawer.offsetHeight-8)+'px';drawerFrame=requestAnimationFrame(position)}
     for(const [key,option] of Object.entries(colors)){
-      const b=document.createElement('button');b.type='button';b.dataset.color=key;b.title=option.label;b.setAttribute('aria-label',option.label);b.innerHTML='<i></i><span></span>';b.querySelector('i').style.background=`rgb(${option.wax.join(',')})`;b.querySelector('span').textContent=option.label;
+      const b=document.createElement('button');b.type='button';b.dataset.color=key;b.title=option.label;b.setAttribute('aria-label',option.label);b.innerHTML='<i></i><span></span>';b.querySelector('i').className='timer-shelf-swatch';b.querySelector('i').style.background=palette[key];b.querySelector('span').textContent=option.label;
       b.addEventListener('click',()=>{choose(key);close();notifyBoardChanged('lava-color')});drawer.append(b);
     }
-    toggle.addEventListener('click',()=>{drawer.hidden=!drawer.hidden;toggle.setAttribute('aria-expanded',String(!drawer.hidden))});
+    toggle.addEventListener('click',()=>{if(!drawer.hidden){close();return}drawer.hidden=false;drawer.showPopover();toggle.setAttribute('aria-expanded','true');position()});
     const outside=e=>{if(!drawer.contains(e.target)&&!toggle.contains(e.target))close()};const escape=e=>{if(e.key==='Escape'&&!drawer.hidden){e.stopPropagation();close();toggle.focus({preventScroll:true})}};
-    document.addEventListener('pointerdown',outside);m.addEventListener('keydown',escape);m.addEventListener('pointerleave',close);
+    document.addEventListener('pointerdown',outside);m.addEventListener('keydown',escape);drawer.addEventListener('pointerdown',e=>e.stopPropagation());
     function frame(now){raf=0;if(disposed||!visible||document.hidden||reduced.matches)return;if(now-painted>=32){elapsed+=last?Math.min((now-last)/1000,.1):0;last=now;painted=now;renderer.draw(elapsed,color)}raf=requestAnimationFrame(frame)}
     function resume(){cancelAnimationFrame(raf);raf=0;last=0;if(!disposed&&visible&&!document.hidden&&!reduced.matches)raf=requestAnimationFrame(frame);else renderer.draw(elapsed,color)}
     const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;resume()});observer.observe(m);
     document.addEventListener('visibilitychange',resume);reduced.addEventListener('change',resume);
     m._boardGetState=()=>({color});m._boardSetState=s=>choose(s?.color);
-    const cleanup=m._cleanup;m._cleanup=()=>{disposed=true;cancelAnimationFrame(raf);observer.disconnect();document.removeEventListener('visibilitychange',resume);document.removeEventListener('pointerdown',outside);reduced.removeEventListener('change',resume);cleanup?.()};
-    choose(m.dataset.lavaColor||'violet');resume();
+    const cleanup=m._cleanup;m._cleanup=()=>{close();disposed=true;cancelAnimationFrame(raf);observer.disconnect();document.removeEventListener('visibilitychange',resume);document.removeEventListener('pointerdown',outside);reduced.removeEventListener('change',resume);cleanup?.()};
+    const deactivate=m._deactivate;m._deactivate=()=>{close();deactivate?.()};
+    choose(m.dataset.lavaColor||'purple');resume();
   }
   window.TeacherTilesLavaLamp={setup,render};
 })();

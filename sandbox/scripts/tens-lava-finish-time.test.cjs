@@ -14,12 +14,35 @@ await page.evaluate(()=>{const m=document.getElementById('tens');m.querySelector
 await page.waitForTimeout(250);
 const piece=page.locator('.tens-piece').first(),before=await piece.boundingBox();await page.mouse.move(before.x+before.width/2,before.y+before.height/2);await page.mouse.down();await page.mouse.move(before.x+before.width/2+18,before.y+before.height/2+20,{steps:6});await page.mouse.up();const after=await piece.boundingBox();assert(after.x>before.x+10,'block dragged');
 const next=await piece.boundingBox();await page.mouse.move(next.x+next.width/2,next.y+next.height/2);await page.mouse.down();await page.mouse.move(600,800,{steps:8});await page.mouse.up();assert.equal(await page.locator('.tensblock-module').count(),1,'drag exports a native board block');assert.equal(await page.locator('.tens-total').textContent(),'137');
-await page.evaluate(()=>{const m=document.querySelector('.lavalamp-module');m.querySelector('.lava-colors-toggle').click();m.querySelector('[data-color="ocean"]').click()});
+await page.evaluate(()=>{const m=document.querySelector('.lavalamp-module');m.querySelector('.lava-colors-toggle').click();m.querySelector('[data-color="teal"]').click()});
 const pixels=await page.locator('.lava-visual').evaluate(c=>c.toDataURL());await page.waitForTimeout(1600);assert.notEqual(await page.locator('.lava-visual').evaluate(c=>c.toDataURL()),pixels,'lava moves');
 await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(200);const still=await page.locator('.lava-visual').evaluate(c=>c.toDataURL());await page.waitForTimeout(250);assert.equal(await page.locator('.lava-visual').evaluate(c=>c.toDataURL()),still,'reduced motion is still');await page.emulateMedia({reducedMotion:'no-preference'});
 
 const saved=await page.evaluate(()=>{const objects=[...workspace.querySelectorAll('.module')].map(serializeBoardModule);clearTeacherTilesBoard();objects.forEach(restoreTeacherTilesBoardObject);return objects});
-assert.equal(await page.locator('.tens-total').textContent(),'137');assert.equal(await page.locator('.lavalamp-module').getAttribute('data-lava-color'),'ocean');assert.equal(await page.locator('.tensblock-module').getAttribute('data-block-value'),'100');
+assert.equal(await page.locator('.tens-total').textContent(),'137');assert.equal(await page.locator('.lavalamp-module').getAttribute('data-lava-color'),'teal');assert.equal(await page.locator('.tensblock-module').getAttribute('data-block-value'),'100');
+
+// Reclaim the footer space without letting an empty manipulation surface drag the tile.
+const tens=page.locator('.tenssticks-module'),box=await tens.boundingBox();
+await page.mouse.move(box.x+box.width/2,box.y+35);await page.waitForTimeout(300);
+const hovered=await tens.locator('.tens-stage').boundingBox();
+await page.mouse.move(hovered.x+hovered.width-20,hovered.y+hovered.height-20);await page.mouse.down();await page.mouse.move(hovered.x+hovered.width-55,hovered.y+hovered.height-40,{steps:5});await page.mouse.up();
+assert(Math.abs((await tens.boundingBox()).x-box.x)<1,'empty workspace must not drag tile');
+await page.mouse.move(40,850);await page.waitForTimeout(350);const rested=await tens.locator('.tens-stage').boundingBox();assert(rested.height>hovered.height+45,'workspace reclaims hidden controls');
+await page.evaluate(()=>document.querySelector('.tenssticks-module [data-tens-add="10"]').click());
+const vertical=await page.locator('.tens-piece').last().boundingBox();assert(vertical.height>vertical.width*5,'ten stick is vertical');
+assert.equal(await page.locator('.lava-heading').evaluate(e=>e.classList.contains('tile-heading-hidden')),true);
+assert.deepEqual(await page.locator('.lava-color-drawer button').evaluateAll(es=>es.map(e=>e.dataset.color)),['blue','green','amber','rose','purple','teal','midnight','creme']);
+await page.evaluate(()=>document.querySelector('.lava-colors-toggle').click());assert(await page.locator('.lava-color-drawer').evaluate(e=>e.matches(':popover-open')),'color shelf opens above tile');
+await page.locator('.lava-color-drawer [data-color="amber"]').click();assert.equal(await page.locator('.lavalamp-module').getAttribute('data-lava-color'),'amber');
+await page.evaluate(()=>{window.TeacherTilesAccount={state:{subscriptionActive:true}};applyTileSkinToModule(document.querySelector('.lavalamp-module'),'lavalamp-clear')});
+assert.equal(await page.locator('.lavalamp-module').getAttribute('data-tile-skin'),'lavalamp-clear');
+assert.equal(await page.locator('.lavalamp-module').evaluate(m=>getComputedStyle(m).backgroundColor),'rgba(0, 0, 0, 0)');
+assert.equal(await page.locator('.lavalamp-module .tile-settings-panel>strong').textContent(),'Tile Settings');
+assert.equal(await page.locator('[data-shop-product="tile-skin-lavalamp-clear"]').count(),1);
+await page.evaluate(()=>{renderMenuCategoryPins();document.querySelector('[data-category-pin="misc"]').click()});
+assert(await page.evaluate(()=>menuPinnedCategories.has('misc')),'Misc can be pinned');
+await page.evaluate(()=>document.querySelector('[data-category-pin="misc"]').click());
+
 await page.evaluate(()=>clearTeacherTilesBoard());
 await page.clock.install({time:new Date('2026-10-08T15:00:00Z')});
 for(const type of ['timer','interactive']){
