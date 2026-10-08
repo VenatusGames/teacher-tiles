@@ -687,6 +687,7 @@ function menuCategoryLabel(category){
   if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAY TILES';
   if(category.startsWith('favorite:'))return menuCategoryLabel(category.slice(9));
   if(category==='music')return 'MUSIC';
+  if(category==='misc')return 'MISC';
   if(category==='art')return 'ART';
   if(category==='holidays')return 'HOLIDAY TILES';
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);
@@ -699,14 +700,14 @@ function normalizeMenuSearch(value=''){
 function renderMenuCategoryPins(){
   const rail=menu.querySelector('.context-menu__category-drawer-grid');
   const sidebar=menu.querySelector('.context-menu__category-drawer'),savedScroll=sidebar.scrollTop;
-  const ordered=[...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),...[...menuPinnedCategories].filter(id=>id.startsWith('holiday:')),...['favorites','all'].filter(id=>!menuPinnedCategories.has(id)),...menuCategoryOrder.filter(id=>!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id)),...(!menuPinnedCategories.has('holidays')?['holidays']:[])];
+  const ordered=[...menuCategoryOrder.filter(id=>id!=='misc'&&menuPinnedCategories.has(id)),...[...menuPinnedCategories].filter(id=>id.startsWith('holiday:')),...['favorites','all'].filter(id=>!menuPinnedCategories.has(id)),...menuCategoryOrder.filter(id=>!['all','favorites','holidays'].includes(id)&&(id==='misc'||!menuPinnedCategories.has(id))),...(!menuPinnedCategories.has('holidays')?['holidays']:[])];
   const fragment=document.createDocumentFragment();
   for(const id of ordered){
     let button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);
     if(!button&&id.startsWith('holiday:')){button=document.createElement('button');button.type='button';button.className='context-menu__filter';button.textContent=menuCategoryLabel(id).toUpperCase();button.classList.toggle('is-active',activeMenuCategory===id);button.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(id)})}
     if(!button)continue;
     const row=document.createElement('div');row.className='context-menu__category-row';row.appendChild(button);
-    const nested=!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id);
+    const nested=!['all','favorites','holidays'].includes(id)&&(id==='misc'||!menuPinnedCategories.has(id));
     if(nested){row.classList.add('context-menu__category-row--nested');row.hidden=!menuAllExpanded}
     if(['all','holidays','favorites'].includes(id)){
       row.classList.add('context-menu__category-parent');
@@ -714,7 +715,7 @@ function renderMenuCategoryPins(){
       const disclosure=document.createElement('button');disclosure.type='button';disclosure.className='context-menu__disclosure';disclosure.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg>';disclosure.setAttribute('aria-expanded',String(expanded));disclosure.setAttribute('aria-label',`${expanded?'Collapse':'Expand'} ${menuCategoryLabel(id)}`);
       disclosure.addEventListener('click',event=>{event.stopPropagation();if(id==='all')menuAllExpanded=!menuAllExpanded;else if(id==='favorites')menuFavoritesExpanded=!menuFavoritesExpanded;else menuHolidaysExpanded=!menuHolidaysExpanded;renderMenuCategoryPins()});row.appendChild(disclosure);
     }
-    if(id!=='all'){
+    if(id!=='all'&&id!=='misc'){
       const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=id;
       pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';
       const pinned=menuPinnedCategories.has(id);pin.setAttribute('aria-pressed',String(pinned));pin.setAttribute('aria-label',`${pinned?'Unpin':'Pin'} ${menuCategoryLabel(id)}`);pin.title=pin.getAttribute('aria-label');row.appendChild(pin);

@@ -1,0 +1,3 @@
+.timer-module .timer-status.has-finish-time{letter-spacing:.045em;white-space:nowrap;font-size:clamp(8px,calc(var(--timer-visual-size,240px) * .034),14px)}
+.interactive-timer-status{flex:0 0 auto;max-width:100%;padding:4px 3px 1px;font:650 clamp(9px,3cqw,12px)/1.3 var(--module-font,Inter,sans-serif);letter-spacing:.04em;color:var(--module-text,var(--text));opacity:.65;text-align:center;white-space:nowrap}
+.interactive-timer-status[hidden]{display:none}

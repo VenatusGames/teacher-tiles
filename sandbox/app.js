@@ -754,7 +754,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','music','pbis','planning','science','sel','text','time','tools'];
+const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','music','pbis','planning','science','sel','text','time','tools','misc'];
 
 const menuFavoritesStorageKey='teacherTiles.tileFavorites.v1';
 const menuFavorites=new Set();
@@ -1161,6 +1161,9 @@ function setupModuleByType(m,type){
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
   if(type==='classroomjobs')window.TeacherTilesClassroomJobs.setup(m);
   if(type==='countdown')window.TeacherTilesCountdown.setup(m);
+  if(type==='tenssticks')window.TeacherTilesTensSticks.setup(m);
+  if(type==='tensblock')window.TeacherTilesTensSticks.setupBlock(m);
+  if(type==='lavalamp')window.TeacherTilesLavaLamp.setup(m);
   if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
@@ -1322,6 +1325,8 @@ const EDITABLE_TILE_HEADINGS={
   noise:'.nm-heading',
   squishy:'.squishy-heading',
   countdown:'.countdown-heading',
+  tenssticks:'.tens-heading',
+  lavalamp:'.lava-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',
