@@ -291,11 +291,6 @@ function setupVoting(m){
     addCard.addEventListener('click',()=>{
       choices.push(createChoice(`Choice ${choices.length+1}`));
       renderChoices();
-      requestAnimationFrame(()=>{
-        const titles=[...grid.querySelectorAll('.voting-choice-name')];
-        titles.at(-1)?.focus({preventScroll:true});
-        titles.at(-1)?.select();
-      });
     });
     grid.appendChild(addCard);
   };
