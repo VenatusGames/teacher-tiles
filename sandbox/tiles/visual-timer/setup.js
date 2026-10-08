@@ -88,10 +88,11 @@ function setupTimer(m){
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
-    for(const [value,color] of Object.entries(window.TeacherTilesTimerColors)){
+    const neon=m.dataset.tileSkin==='timer-neon';
+    for(const [value,color] of Object.entries(neon?window.TeacherTilesNeonColors:window.TeacherTilesTimerColors)){
       const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String((m.dataset.shapeColor||'blue')===value));
       const swatch=document.createElement('i');swatch.className='timer-shelf-swatch';swatch.style.background=color;swatch.setAttribute('aria-hidden','true');
-      const label=document.createElement('span');label.textContent=value[0].toUpperCase()+value.slice(1);button.append(swatch,label);
+      const label=document.createElement('span');label.textContent=neon?window.TeacherTilesNeonColorLabels[value]:value[0].toUpperCase()+value.slice(1);button.append(swatch,label);
       button.addEventListener('click',()=>{m.dataset.shapeColor=value;notifyBoardChanged('timer-color');closeShapes();colorButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
     }
     shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();

@@ -1,5 +1,8 @@
 {
   "skins": {
+    "textbubble-scrap": "tile-skin-textbubble-scrap",
+    "textbubble-speech": "tile-skin-textbubble-speech",
+    "timer-neon": "tile-skin-timer-neon",
     "interactive-wonders": "tile-skin-interactive-wonders",
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
