@@ -71,6 +71,7 @@
 <link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="templates/style.css?v=20260930-template-details">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
+  <link rel="stylesheet" href="profile/subscription.css?v=20261010">
   <link rel="stylesheet" href="profile/tools.css?v=20260930-matched-tool-cards">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
@@ -320,6 +321,7 @@
               <p id="profile-email"></p><form id="profile-nickname-form" hidden><label>Nickname<input name="nickname" aria-label="Nickname" required minlength="3" maxlength="32" autocomplete="off"></label><button type="submit">Save</button><button type="button" data-cancel>Cancel</button><small role="status" aria-live="polite"></small></form>
               <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
             </div>
+            <button id="profile-manage-subscription" type="button" aria-haspopup="dialog"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>Manage Subscription</button>
           </div>
           <section class="profile-tools" aria-labelledby="profile-tools-title">
             <div class="profile-tools__head"><h3 id="profile-tools-title">Tools</h3></div>
@@ -4514,7 +4516,7 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20260926-fixes-1"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261001-collections"></script>
+<script type="module" src="firebase-auth.js?v=20261010-subscription"></script>
 <script type="module" src="profile/patches.js?v=20260930-single-inspector"></script>
 
 

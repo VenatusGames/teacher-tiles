@@ -1,3 +1,4 @@
+import {setupSubscriptionManagement} from './profile/subscription.js?v=20261010';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
@@ -4114,5 +4115,6 @@ initializeFirebaseAuth();
 
 const profileCall=async(name,data)=>{if(!currentUser)throw new Error('Sign in to use Support.');if(!functionsSdk||!cloudFunctions)throw new Error('The reporting service is still loading. Please try again.');return (await functionsSdk.httpsCallable(cloudFunctions,name)(data)).data;};
 const nicknameUi=setupNickname(profileCall);
+setupSubscriptionManagement(callShopFunction,()=>currentUser?.uid||"",()=>shopAccountState.subscriptionActive);
 const supportUi=setupBugReports(profileCall);
 ticketInbox=createTicketNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);
