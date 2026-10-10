@@ -913,7 +913,7 @@
     createPlannerButton.title = createPlannerButton.disabled ? `Planner limit reached (${limit})` : 'Create planner';
     libraryGrid.replaceChildren();
     createPlannerButton.classList.add('planner-library-create--shelf');
-    createPlannerButton.innerHTML = '<span aria-hidden="true">＋</span><strong>New planner</strong>';
+    createPlannerButton.innerHTML = '<span aria-hidden="true">＋</span><strong>New Planner</strong>';
 
     planners.forEach(planner => {
       const color = plannerColor(planner);
@@ -926,7 +926,7 @@
       open.setAttribute('role', 'button');
       open.tabIndex = 0;
       open.setAttribute('aria-label', `Open ${planner.name}`);
-      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><i></i><b></b><em></em></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><span class="planner-book-cover"><span class="planner-book-cover-label"><small>TEACHERTILES</small><b>Lesson<br>Planner</b><svg viewBox="0 0 32 32" fill="none"><rect x="6" y="7" width="20" height="19" rx="3"/><path d="M11 4v6m10-6v6M6 13h20m-14 5h2m4 0h2m-8 4h2m4 0h2"/></svg></span><span class="planner-book-ribbon"></span></span><span class="planner-book-binding"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
       const name = open.querySelector('strong');
       name.textContent = planner.name;
       const count = planner.blocks.length;
@@ -1147,7 +1147,7 @@
     schedulingWeekday.value = '1';
     scheduleEditorColor = COLORS[0].id;
     schedulingCancel.hidden = true;
-    schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Add schedule block';
+    schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Add Schedule Block';
     syncScheduleRepeatUi();
     renderScheduleColors();
   }
@@ -1249,7 +1249,7 @@
         schedulingWeekday.value = String(item.weekday);
         scheduleEditorColor = item.color;
         schedulingCancel.hidden = false;
-        schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Save changes';
+        schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Save Changes';
         syncScheduleRepeatUi(); renderScheduleColors(); schedulingLabel.focus({preventScroll:true}); schedulingLabel.select();
       });
       remove.addEventListener('click', () => {
@@ -1267,7 +1267,7 @@
     templateForm.reset();
     templateDescriptionCount.textContent = '0';
     templateCancel.hidden = true;
-    templateForm.querySelector('.lesson-planner-template-save').textContent = 'Add template';
+    templateForm.querySelector('.lesson-planner-template-save').textContent = 'Add Template';
   }
 
   function renderTemplateList() {
@@ -1294,7 +1294,7 @@
         templateDescription.value = item.description;
         templateDescriptionCount.textContent = String(item.description.length);
         templateCancel.hidden = false;
-        templateForm.querySelector('.lesson-planner-template-save').textContent = 'Save changes';
+        templateForm.querySelector('.lesson-planner-template-save').textContent = 'Save Changes';
         templateName.focus({ preventScroll: true });
         templateName.select();
       });
@@ -1445,7 +1445,7 @@
     agendaList.replaceChildren();
     if (!dayBlocks.length) {
       const empty = make('div', 'lesson-planner-agenda__empty');
-      empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open space</strong><small>Add a lesson block for this day.</small>';
+      empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open Space</strong><small>Add a lesson block for this day.</small>';
       agendaList.append(empty);
       return;
     }
@@ -2011,7 +2011,7 @@
     editorColor = block?.color || prefill.color || COLORS[0].id;
     deleteButton.hidden = !block;
     duplicateButton.hidden = !block;
-    document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit lesson' : 'Plan a lesson';
+    document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit Lesson' : 'Plan a Lesson';
     renderEditorScheduleContext(section);
     renderColors();
     editor.hidden = false;
