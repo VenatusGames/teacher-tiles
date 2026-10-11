@@ -29,10 +29,12 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   const initialSeconds=m.dataset.type==='timer'?0:300;
   let total=initialSeconds,left=initialSeconds,running=false,end=0,interval=null,finished=false;
 
+  const renderFinishTime=window.TeacherTilesTimerFinish.setup(m);
   const render=()=>{
     remain.textContent=formatCountdown(left);
     const progress=total>0?1-clamp(left/total,0,1):0;
     onRender({progress,running,left,total});
+    renderFinishTime({running,left,total,endAt:end});
   };
   const stop=()=>{if(interval){clearInterval(interval);interval=null}};
   const clearUntil=()=>{if(untilInput)untilInput.value=''};

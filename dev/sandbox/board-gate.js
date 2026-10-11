@@ -76,7 +76,7 @@
       if(window.TeacherTilesAuth.user?.uid!==user.uid)throw Error('Account changed');
       access.update({portalRole:result.role},user.email);
       if(loaded&&!access.developer){location.replace('./');throw Error('Developer access removed');}
-      if(access.developer&&!loaded){loaded=true;await import(new URL('dev-console.js?v=20261012-subscription-preview',base).href);}
+      if(access.developer&&!loaded){loaded=true;await import(new URL('dev-console.js?v=20261012-board-chrome',base).href);}
     }catch(error){
       const {accessError}=await client;access.update({},user.email);access.status(accessError(error));
       if(wasAllowed)location.replace('./');throw error;

@@ -754,7 +754,7 @@ const menuCategoryDrawer=menu.querySelector('.context-menu__category-drawer');
 const menuCategoryDrawerToggle=menuCategoryCycle;
 const menuCategoryDrawerClose=menu.querySelector('.context-menu__category-drawer-close');
 let activeMenuCategory='all';
-const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','music','pbis','planning','science','sel','text','time','tools'];
+const menuCategoryOrder=['favorites','holidays','basics','all','accessibility','art','audio','classconnect','games','geography','language','literacy','math','media','music','pbis','planning','science','sel','text','time','tools','misc'];
 
 const menuFavoritesStorageKey='teacherTiles.tileFavorites.v1';
 const menuFavorites=new Set();
@@ -894,9 +894,14 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({"id": "sticky-taped", "productId": "tile-skin-sticky-taped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Taped Up", "description": "A softly textured strip of tape holds your note on the board.", "tags": "Sticky Note Taped Up", "released": 21}),
   Object.freeze({"id": "sticky-ripped", "productId": "tile-skin-sticky-ripped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Ripped-Edge", "description": "A paper note with a naturally torn bottom edge.", "tags": "Sticky Note Ripped-Edge", "released": 22}),
   Object.freeze({"id": "sticky-pinned", "productId": "tile-skin-sticky-pinned", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Pinned", "description": "A glossy red thumbtack pins your note in place.", "tags": "Sticky Note Pinned", "released": 23}),
+  Object.freeze({id:'textbubble-speech',productId:'tile-skin-textbubble-speech',tileType:'textbubble',tileLabel:'Text Bubble',name:'Speech Bubble',description:'A rounded speech bubble with a playful pointed tail.',tags:'text bubble speech bubble',released:47}),
+  Object.freeze({id:'textbubble-scrap',productId:'tile-skin-textbubble-scrap',tileType:'textbubble',tileLabel:'Text Bubble',name:'Scrap Paper',description:'A torn scrap of paper with soft fibers and uneven edges.',tags:'text bubble scrap paper',released:48}),
   Object.freeze({"id": "textbubble-clear", "productId": "tile-skin-textbubble-clear", "tileType": "textbubble", "tileLabel": "Text Bubble", "name": "No Background", "description": "Your text floats directly on the board.", "tags": "Text Bubble No Background", "released": 24}),
   Object.freeze({"id": "richtext-clear", "productId": "tile-skin-richtext-clear", "tileType": "richtext", "tileLabel": "Rich Text", "name": "No Background", "description": "Your formatted document floats directly on the board with no tile shell.", "tags": "Rich Text No Background transparent clear floating text document", "released": 27}),
   Object.freeze({id:'spinner-carnival',productId:'tile-skin-spinner-carnival',tileType:'spinner',tileLabel:'Spinner',name:'Carnival Spinner',description:'A colorful carnival wheel with golden trim and chasing lights on every segment.',tags:'spinner carnival fairground wheel lights marquee names',released:42}),
+  Object.freeze({id:'popsicle-gumball',productId:'tile-skin-popsicle-gumball',tileType:'popsiclesticks',tileLabel:'Popsicle Sticks',name:'Gumball Machine',description:'Turn the handle and dispense a colorful gumball with a student’s name.',tags:'popsicle sticks gumball machine candy student name picker',released:44}),
+  Object.freeze({id:'lavalamp-neon',productId:'tile-skin-lavalamp-neon',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'Neon',description:'Electric colors and a soft neon glow.',tags:'lava lamp neon electric bright glowing',released:45}),
+  Object.freeze({id:'lavalamp-clear',productId:'tile-skin-lavalamp-clear',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'No Background',description:'A glowing lava lamp floating directly on your board.',tags:'lava lamp clear transparent no background',released:43}),
   Object.freeze({id:'spinner-clear',productId:'tile-skin-spinner-clear',tileType:'spinner',tileLabel:'Spinner',name:'No Background',description:'A colorful spinning wheel floating directly on your board.',tags:'spinner wheel clear transparent no background names',released:41}),
   Object.freeze({"id": "chime-clear", "productId": "tile-skin-chime-clear", "tileType": "chime", "tileLabel": "Chime", "name": "No Background", "description": "Let the classroom chime float directly on the board with no tile shell.", "tags": "Chime No Background clear transparent sel calm mindfulness mallet", "released": 28}),
   Object.freeze({"id": "clock-digital", "productId": "tile-skin-clock-digital", "tileType": "clock", "tileLabel": "Clock", "name": "Digital Clock", "description": "A bedside clock with a dark casing and glowing digital display.", "tags": "Clock Digital Clock", "released": 25}),
@@ -967,6 +972,9 @@ const TILE_SKIN_CATALOG=Object.freeze([
     name:'No Background',description:'The animated timer shape becomes the tile and floats directly on the board.',
     tags:'visual timer floating freestanding object clock countdown',released:12
   }),
+  Object.freeze({id:'calculator-retro',productId:'tile-skin-calculator-retro',tileType:'calculator',tileLabel:'Calculator',name:'Retro Desk',description:'Cream keys, a sage display, and vintage desktop details.',tags:'calculator retro desk',released:49}),
+  Object.freeze({id:'calculator-glass',productId:'tile-skin-calculator-glass',tileType:'calculator',tileLabel:'Calculator',name:'Midnight Glass',description:'Smoky glass keys with cool blue and violet accents.',tags:'calculator midnight glass',released:50}),
+  Object.freeze({id:'timer-neon',productId:'tile-skin-timer-neon',tileType:'timer',tileLabel:'Visual Timer',name:'Neon',description:'Eight electric colors with luminous edges and a soft neon glow.',tags:'visual timer neon',released:46}),
   Object.freeze({id:'timer-solid',productId:'tile-skin-timer-solid',tileType:'timer',tileLabel:'Visual Timer',name:'Solid',description:'A bold timer that starts empty and fills with solid color as time passes.',tags:'visual timer solid vivid bold',released:13}),
   Object.freeze({id:'timer-liquid',productId:'tile-skin-timer-liquid',tileType:'timer',tileLabel:'Visual Timer',name:'Liquid Fill',description:'Your timer shape fills with gently moving liquid as time passes.',tags:'visual timer liquid fill water wave',released:14}),
   Object.freeze({id:'visualschedule-planner',productId:'tile-skin-visualschedule-planner',tileType:'visualschedule',tileLabel:'Visual Schedule',name:'Planner Book',description:'A spiral-bound blue planner with paper pages for your daily schedule.',tags:'visual schedule planner book spiral notebook',released:34}),
@@ -1161,6 +1169,9 @@ function setupModuleByType(m,type){
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
   if(type==='classroomjobs')window.TeacherTilesClassroomJobs.setup(m);
   if(type==='countdown')window.TeacherTilesCountdown.setup(m);
+  if(type==='tenssticks')window.TeacherTilesTensSticks.setup(m);
+  if(type==='tensblock')window.TeacherTilesTensSticks.setupBlock(m);
+  if(type==='lavalamp')window.TeacherTilesLavaLamp.setup(m);
   if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
@@ -1322,6 +1333,8 @@ const EDITABLE_TILE_HEADINGS={
   noise:'.nm-heading',
   squishy:'.squishy-heading',
   countdown:'.countdown-heading',
+  tenssticks:'.tens-heading',
+  lavalamp:'.lava-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',

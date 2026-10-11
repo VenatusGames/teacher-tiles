@@ -55,3 +55,12 @@ body.boards-screen-open .sandbox-dev-toggle{opacity:0;visibility:hidden;pointer-
 
 .sandbox-portal-return{display:none;position:static;}
 .sandbox-dev-console__body>.sandbox-portal-return{display:block;text-align:center;padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-solid);color:var(--text);font:600 12px system-ui;text-decoration:none;box-shadow:0 3px 12px #0001}
+
+/* Match the workspace controls when the board enters presentation idle. */
+body.is-board-idle .sandbox-dev-toggle{
+  opacity:0!important;
+  filter:none!important;
+  pointer-events:none!important;
+  transition:opacity .55s ease,filter .55s ease!important;
+}
+@media(prefers-reduced-motion:reduce){body.is-board-idle .sandbox-dev-toggle{transition:none!important}}

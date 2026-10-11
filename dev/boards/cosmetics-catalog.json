@@ -1,5 +1,10 @@
 {
   "skins": {
+    "calculator-glass": "tile-skin-calculator-glass",
+    "calculator-retro": "tile-skin-calculator-retro",
+    "textbubble-scrap": "tile-skin-textbubble-scrap",
+    "textbubble-speech": "tile-skin-textbubble-speech",
+    "timer-neon": "tile-skin-timer-neon",
     "interactive-wonders": "tile-skin-interactive-wonders",
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
@@ -7,6 +12,9 @@
     "textbubble-clear": "tile-skin-textbubble-clear",
     "richtext-clear": "tile-skin-richtext-clear",
     "chime-clear": "tile-skin-chime-clear",
+    "popsicle-gumball": "tile-skin-popsicle-gumball",
+    "lavalamp-neon": "tile-skin-lavalamp-neon",
+    "lavalamp-clear": "tile-skin-lavalamp-clear",
     "spinner-clear": "tile-skin-spinner-clear",
     "spinner-carnival": "tile-skin-spinner-carnival",
     "clock-digital": "tile-skin-clock-digital",

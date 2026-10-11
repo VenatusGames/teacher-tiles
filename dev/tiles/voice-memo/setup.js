@@ -18,7 +18,7 @@ function setupVoiceMemo(m){
   const setRecordingUI=recording=>{
     m.classList.toggle('is-recording',recording);
     recordButton.setAttribute('aria-pressed',String(recording));
-    recordLabel.textContent=recording?'Stop recording':'Record memo';
+    recordLabel.textContent=recording?'Stop Recording':'Record Memo';
   };
   const stopTracks=()=>{stream?.getTracks().forEach(track=>track.stop());stream=null};
   const render=()=>{

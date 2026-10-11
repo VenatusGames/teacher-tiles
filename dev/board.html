@@ -1,86 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="sandbox/board-gate.js?v=1791428708703"></script>
+  <script src="sandbox/board-gate.js?v=1791678176348"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TeacherTiles</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="assets/themes/baked.css?v=1791428708703" />
-  <link rel="stylesheet" href="styles-materials.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/shared/controls.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/dice/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/random-number/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/chime/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/transition-bell/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/essential-question/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/butterfly-garden/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/image-search/styles.css?v=1791428708703" />
-  <link rel="stylesheet" href="tiles/word-of-the-day/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/quote-of-the-day/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/vocabulary/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/word-web/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/venn-diagrams/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/times-tables/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/google/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/link/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/background-remover/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/shared/appearance.css?v=1791428708703">
-  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=1791428708703">
+  <link rel="stylesheet" href="styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="assets/themes/baked.css?v=1791678176348" />
+  <link rel="stylesheet" href="styles-materials.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/shared/controls.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/dice/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/random-number/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/quiet-critters/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/chime/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/transition-bell/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/essential-question/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/butterfly-garden/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/interactive-timers/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/image-search/styles.css?v=1791678176348" />
+  <link rel="stylesheet" href="tiles/word-of-the-day/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/quote-of-the-day/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/vocabulary/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/word-web/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/venn-diagrams/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/times-tables/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/google/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/link/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/background-remover/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/shared/appearance.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=1791678176348">
   <link rel="icon" href="T.png" type="image/x-icon">
-<link rel="stylesheet" href="tiles/visual-directions/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/color-picker/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/meditation/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/rainbow/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/music-score/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/piano/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/tabs.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/skins.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/object-skins.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/spinner/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/group-maker/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/writing-lines/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/visual-schedule/layout.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/popsicle-sticks/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/shop-refresh.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/sticker-picker.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/glitter-jar/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/spreadsheet/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/reminders/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/theme-picker.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/noise-meter/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/squishy/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/sentence-expansion/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/soundscapes/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/animated-themes.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/flashcard-navigation.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/coinflip/styles.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/cosmetics.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/cursor-picker.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/shared/cursor-effects.css?v=1791428708703">
-<link rel="stylesheet" href="assets/themes/basic-bamboo.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=1791428708703">
-  <link rel="stylesheet" href="templates/style.css?v=1791428708703">
-<link rel="stylesheet" href="support/ticket-thread.css?v=1791428708703">
-  <link rel="stylesheet" href="profile/tools.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=1791428708703">
-<link rel="stylesheet" href="account/site-appearance.css?v=1791428708703">
-<link rel="stylesheet" href="shop/redemption.css?v=1791428708703">
-<link rel="stylesheet" href="tiles/countdown/styles.css?v=1791428708703">
-<link rel="stylesheet" href="account/panel-search/styles.css?v=1791428708703">
-<script defer src="account/panel-search/index.js?v=1791428708703"></script>
-<link rel="stylesheet" href="account/help-tutorials/styles.css?v=1791428708703">
-<script defer src="account/help-tutorials/catalog.js?v=1791428708703"></script>
-<script defer src="account/help-tutorials/index.js?v=1791428708703"></script>
+<link rel="stylesheet" href="tiles/visual-directions/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/color-picker/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/meditation/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/rainbow/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/music-score/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/piano/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/tabs.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/skins.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/object-skins.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/spinner/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/group-maker/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/writing-lines/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/visual-schedule/layout.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/popsicle-sticks/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/popsicle-sticks/gumball.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/shop-refresh.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/sticker-picker.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/glitter-jar/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/spreadsheet/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/reminders/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/theme-picker.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/noise-meter/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/squishy/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/sentence-expansion/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/soundscapes/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/animated-themes.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/flashcard-navigation.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/coinflip/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/cosmetics.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/cursor-picker.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/cursor-effects.css?v=1791678176348">
+<link rel="stylesheet" href="assets/themes/basic-bamboo.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="templates/style.css?v=1791678176348">
+<link rel="stylesheet" href="support/ticket-thread.css?v=1791678176348">
+  <link rel="stylesheet" href="profile/subscription.css?v=1791678176348">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=1791678176348">
+  <link rel="stylesheet" href="profile/tools.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=1791678176348">
+<link rel="stylesheet" href="account/site-appearance.css?v=1791678176348">
+<link rel="stylesheet" href="shop/redemption.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/countdown/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/calculator/skins.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/choice-board.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/polls/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/lunch-count/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/visual-timer/neon.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/text-bubble/skins.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/visual-timer/finish-time.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/tens-sticks/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/shared/modern-surfaces.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/voice-memo/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/world-map/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/compass/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/hangman/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/wordy-puzzle/styles.css?v=1791678176348">
+<link rel="stylesheet" href="tiles/lava-lamp/styles.css?v=1791678176348">
+
+<link rel="stylesheet" href="account/panel-search/styles.css?v=1791678176348">
+<script defer src="account/panel-search/index.js?v=1791678176348"></script>
+<link rel="stylesheet" href="account/help-tutorials/styles.css?v=1791678176348">
+<script defer src="account/help-tutorials/catalog.js?v=1791678176348"></script>
+<script defer src="account/help-tutorials/index.js?v=1791678176348"></script>
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -142,9 +161,12 @@
 
   <div id="trash-zone" class="trash-zone" aria-hidden="true">
     <div class="trash-can" aria-hidden="true">
-      <span class="trash-lid"></span><span class="trash-body"><i></i><i></i><i></i></span>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <g class="trash-can__lid"><path d="M4 7h16M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/></g>
+        <path d="m6 7 .8 12.1A2 2 0 0 0 8.8 21h6.4a2 2 0 0 0 2-1.9L18 7M10 11v6M14 11v6"/>
+      </svg>
     </div>
-    <span class="trash-label">DELETE</span>
+    <span class="trash-label">Delete</span>
   </div>
 
   <div class="workspace-controls" aria-label="Workspace controls">
@@ -299,7 +321,7 @@
               <span class="profile-state__kicker" data-i18n="profile.signedIn">SIGNED IN</span>
               <div class="profile-name-row"><h2 id="profile-display-name">Teacher</h2><span id="profile-nickname"></span><button id="profile-nickname-edit" type="button" aria-label="Edit nickname" title="Edit nickname">✎</button></div>
               <p id="profile-email"></p><form id="profile-nickname-form" hidden><label>Nickname<input name="nickname" aria-label="Nickname" required minlength="3" maxlength="32" autocomplete="off"></label><button type="submit">Save</button><button type="button" data-cancel>Cancel</button><small role="status" aria-live="polite"></small></form>
-              <span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span>
+              <div class="profile-account-meta"><span class="profile-connected-badge"><i aria-hidden="true"></i> Google</span><button id="profile-manage-subscription" type="button" aria-haspopup="dialog"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>Manage Subscription</button></div>
             </div>
           </div>
           <section class="profile-tools" aria-labelledby="profile-tools-title">
@@ -320,7 +342,7 @@
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-lesson-planner-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="lesson-planner-panel">
-              <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span>
+              <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
               <span><strong>Lesson Planner</strong><small>Organize lessons for the day, week, or school year</small></span>
               <i aria-hidden="true">›</i>
             </button>
@@ -339,7 +361,7 @@
               <header class="planner-library-header">
                 <button id="lesson-planner-library-back" class="planner-library-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
                 <div class="planner-library-brand">
-                  <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h11.5a2.5 2.5 0 0 1 2.5 2.5v12H7.5A2.5 2.5 0 0 1 5 16.5v-12Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 19c-1.4 0-2.5-1.1-2.5-2.5S6.1 14 7.5 14H19M8 7.5h7M8 10.5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+                  <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
                   <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-library-title">Your Planners</h2></div>
                 </div>
                 <div class="planner-library-header__actions">
@@ -355,7 +377,7 @@
                   <button id="lesson-planner-library-templates" class="planner-library-shortcut" type="button">Templates</button>
                 </div>
                 <section class="planner-library-intro">
-                  <div><span>PLANNER LIBRARY</span><h3>Choose a planner</h3><p>Keep separate lesson plans for different classes, subjects, or school years.</p></div>
+                  <div><span>PLANNER LIBRARY</span><h3>Choose a Planner</h3><p>Keep separate lesson plans for different classes, subjects, or school years.</p></div>
                 </section>
                 <div id="lesson-planner-library-grid" class="planner-library-grid" aria-live="polite"></div>
               </main>
@@ -364,12 +386,12 @@
               <header class="lesson-planner-header">
                 <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><span aria-hidden="true">←</span><strong>Planners</strong></button>
                 <div class="lesson-planner-brand">
-                  <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.25" y="4.75" width="17.5" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M7.75 2.75v4M16.25 2.75v4M3.25 9.25h17.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="8" cy="13" r=".9" fill="currentColor"/><circle cx="12" cy="13" r=".9" fill="currentColor"/><circle cx="16" cy="13" r=".9" fill="currentColor"/><circle cx="8" cy="17" r=".9" fill="currentColor"/><circle cx="12" cy="17" r=".9" fill="currentColor"/><circle cx="16" cy="17" r=".9" fill="currentColor"/></svg></span>
+                  <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
                   <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
                 </div>
                 <div class="lesson-planner-header__actions">
-                  <button id="lesson-planner-scheduling-button" type="button">Scheduling</button>
-                  <button id="lesson-planner-templates-button" type="button">Templates</button>
+                  <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-12 5h2m4 0h2m-8 3h2"/></svg><span>Scheduling</span></button>
+                  <button id="lesson-planner-templates-button" type="button" aria-label="Templates" title="Templates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="14" height="17" rx="3"/><path d="M4 7H3v13a2 2 0 0 0 2 2h11M11 8h6m-6 4h6m-6 4h3"/></svg><span>Templates</span></button>
                   <div class="lesson-planner-settings-wrap">
                     <button id="lesson-planner-settings-button" class="lesson-planner-settings-button" type="button" aria-label="Planner settings" title="Planner settings" aria-expanded="false" aria-controls="lesson-planner-settings-menu">
                       <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/></svg>
@@ -377,7 +399,7 @@
                     <div id="lesson-planner-settings-menu" class="lesson-planner-settings-menu" hidden>
                       <div class="lesson-planner-settings-menu__heading">
                         <span class="lesson-planner-settings-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/></svg></span>
-                        <div><span>PLANNER SETTINGS</span><strong>Calendar display</strong><small>Customize how this planner appears.</small></div>
+                        <div><span>PLANNER SETTINGS</span><strong>Calendar Display</strong><small>Customize how this planner appears.</small></div>
                       </div>
                       <div class="lesson-planner-settings-menu__body">
                         <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
@@ -421,10 +443,16 @@
                     <small id="lesson-planner-focus-month">September 2026</small>
                   </section>
                   <section class="lesson-planner-agenda" aria-labelledby="lesson-planner-agenda-title">
-                    <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
+                    <header><div><span>SELECTED DAY</span><h3 id="lesson-planner-agenda-title">Daily Plans</h3></div><small id="lesson-planner-agenda-count">0 blocks</small></header>
                     <div id="lesson-planner-agenda-list"></div>
                   </section>
-                  <div class="lesson-planner-tip"><span aria-hidden="true">✦</span><p><strong>Planner controls</strong> Drag to pan. Double-click or right-click to add a lesson block.</p></div>
+                  <button id="lesson-planner-help" class="settings-nav__item lesson-planner-help" type="button" aria-label="Help with Lesson Planner"><span class="settings-nav__icon settings-nav__icon--help" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8.1" fill="none" stroke="currentColor" stroke-width="3.1"/>
+                <circle cx="12" cy="12" r="3.65" fill="none" stroke="currentColor" stroke-width="1.45"/>
+                <path d="M6.2 6.2 9.4 9.4M14.6 14.6l3.2 3.2M17.8 6.2l-3.2 3.2M9.4 14.6l-3.2 3.2" fill="none" stroke="currentColor" stroke-width="3.25" stroke-linecap="round"/>
+              </svg>
+            </span><span>Help</span></button>
                 </aside>
                 <main id="lesson-planner-canvas" class="lesson-planner-canvas" aria-live="polite"></main>
               </div>
@@ -436,7 +464,7 @@
                     <button id="lesson-planner-scheduling-close" type="button" aria-label="Close Scheduling">×</button>
                   </header>
                   <div class="lesson-planner-schedule-library">
-                    <div class="lesson-planner-schedule-library__copy"><span>SAVED SCHEDULES</span><strong>Shared schedule library</strong><small>Available to every planner · 4 maximum</small></div>
+                    <div class="lesson-planner-schedule-library__copy"><span>SAVED SCHEDULES</span><strong>Shared Schedule Library</strong><small>Available to every planner · 4 maximum</small></div>
                     <div class="lesson-planner-schedule-library__controls">
                       <label><span id="lesson-planner-schedule-library-label">Schedule used by this planner</span><select id="lesson-planner-schedule-library-select" aria-label="Saved schedule"></select></label>
                       <div class="lesson-planner-schedule-library__actions"><button id="lesson-planner-schedule-library-new" type="button">＋ New</button><button id="lesson-planner-schedule-library-rename" type="button">Rename</button><button id="lesson-planner-schedule-library-delete" type="button">Delete</button><small id="lesson-planner-schedule-library-count">0 / 4</small></div>
@@ -444,7 +472,7 @@
                   </div>
                   <div class="lesson-planner-scheduling__content">
                     <form id="lesson-planner-schedule-form" class="lesson-planner-schedule-form">
-                      <label class="lesson-planner-field"><span>Schedule label</span><input id="lesson-planner-schedule-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
+                      <label class="lesson-planner-field"><span>Schedule Label</span><input id="lesson-planner-schedule-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
                       <div class="lesson-planner-field-row lesson-planner-schedule-time-row">
                         <label class="lesson-planner-field"><span>Starts</span><input id="lesson-planner-schedule-start" type="time" step="300" value="08:00" required></label>
                         <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-schedule-end" type="time" step="300" value="09:00" required></label>
@@ -453,11 +481,11 @@
                         <label class="lesson-planner-field"><span>Repeats</span><select id="lesson-planner-schedule-repeat"><option value="daily">Daily · Mon–Fri</option><option value="weekly">Weekly</option></select></label>
                         <label id="lesson-planner-schedule-weekday-wrap" class="lesson-planner-field" hidden><span>Day</span><select id="lesson-planner-schedule-weekday"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select></label>
                       </div>
-                      <fieldset class="lesson-planner-colors lesson-planner-schedule-colors"><legend>Block color</legend><div id="lesson-planner-schedule-colors"></div></fieldset>
-                      <div class="lesson-planner-schedule-form__actions"><button id="lesson-planner-schedule-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-schedule-save" type="submit">Add schedule block</button></div>
+                      <fieldset class="lesson-planner-colors lesson-planner-schedule-colors"><legend>Block Color</legend><div id="lesson-planner-schedule-colors"></div></fieldset>
+                      <div class="lesson-planner-schedule-form__actions"><button id="lesson-planner-schedule-cancel" type="button" hidden>Cancel Edit</button><button class="lesson-planner-schedule-save" type="submit">Add Schedule Block</button></div>
                     </form>
                     <section class="lesson-planner-schedule-list-wrap">
-                      <div class="lesson-planner-schedule-list__heading"><div><span>SELECTED SCHEDULE</span><h4>Background sections</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
+                      <div class="lesson-planner-schedule-list__heading"><div><span>SELECTED SCHEDULE</span><h4>Background Sections</h4></div><small id="lesson-planner-schedule-count">0 blocks</small></div>
                       <div id="lesson-planner-schedule-list" class="lesson-planner-schedule-list"></div>
                     </section>
                   </div>
@@ -468,17 +496,17 @@
                 <button class="lesson-planner-templates__backdrop" type="button" aria-label="Close Templates"></button>
                 <section class="lesson-planner-templates__panel">
                   <header>
-                    <div><span>SHARED PLANNING LIBRARY</span><h3 id="lesson-planner-templates-title">Lesson Templates</h3><p>Save reusable Plans and notes text once and use it in every planner. Templates are kept when planner books are deleted.</p></div>
+                    <div><span>SHARED PLANNING LIBRARY</span><h3 id="lesson-planner-templates-title">Lesson Templates</h3><p>Save reusable Plans and Notes text once and use it in every planner. Templates are kept when planner books are deleted.</p></div>
                     <button id="lesson-planner-templates-close" type="button" aria-label="Close Templates">×</button>
                   </header>
                   <div class="lesson-planner-templates__content">
                     <form id="lesson-planner-template-form" class="lesson-planner-template-form">
-                      <label class="lesson-planner-field"><span>Template name</span><input id="lesson-planner-template-name" type="text" maxlength="80" placeholder="e.g. Guided reading routine" required></label>
-                      <label class="lesson-planner-field lesson-planner-field--description"><span>Preset Plans and notes text</span><textarea id="lesson-planner-template-description" maxlength="4000" placeholder="Add the reusable text you want inserted into new lesson blocks…" required></textarea><small><span id="lesson-planner-template-description-count">0</span>/4000</small></label>
-                      <div class="lesson-planner-template-form__actions"><button id="lesson-planner-template-cancel" type="button" hidden>Cancel edit</button><button class="lesson-planner-template-save" type="submit">Add template</button></div>
+                      <label class="lesson-planner-field"><span>Template Name</span><input id="lesson-planner-template-name" type="text" maxlength="80" placeholder="e.g. Guided reading routine" required></label>
+                      <label class="lesson-planner-field lesson-planner-field--description"><span>Template Text</span><textarea id="lesson-planner-template-description" maxlength="4000" placeholder="Add the reusable text you want inserted into new lesson blocks…" required></textarea><small><span id="lesson-planner-template-description-count">0</span>/4000</small></label>
+                      <div class="lesson-planner-template-form__actions"><button id="lesson-planner-template-cancel" type="button" hidden>Cancel Edit</button><button class="lesson-planner-template-save" type="submit">Add Template</button></div>
                     </form>
                     <section class="lesson-planner-template-list-wrap">
-                      <div class="lesson-planner-template-list__heading"><div><span>SHARED TEMPLATES</span><h4>Reusable lesson text</h4></div><small id="lesson-planner-template-count">0 templates</small></div>
+                      <div class="lesson-planner-template-list__heading"><div><span>SHARED TEMPLATES</span><h4>Reusable Lesson Text</h4></div><small id="lesson-planner-template-count">0 templates</small></div>
                       <div id="lesson-planner-template-list" class="lesson-planner-template-list"></div>
                     </section>
                   </div>
@@ -488,18 +516,18 @@
               <aside id="lesson-planner-editor" class="lesson-planner-editor" hidden aria-hidden="true" aria-labelledby="lesson-planner-editor-title">
                 <button class="lesson-planner-editor__backdrop" type="button" aria-label="Close lesson editor"></button>
                 <form id="lesson-planner-form" class="lesson-planner-editor__card">
-                  <header><div><span>LESSON BLOCK</span><h3 id="lesson-planner-editor-title">Plan a lesson</h3></div><button id="lesson-planner-editor-close" type="button" aria-label="Close lesson editor">×</button></header>
+                  <header><div><span>LESSON BLOCK</span><h3 id="lesson-planner-editor-title">Plan a Lesson</h3></div><button id="lesson-planner-editor-close" type="button" aria-label="Close lesson editor">×</button></header>
                   <div id="lesson-planner-editor-context" class="lesson-planner-editor-context" hidden><span>INSIDE SCHEDULE</span><div><strong id="lesson-planner-editor-context-label"></strong><small id="lesson-planner-editor-context-time"></small></div></div>
-                  <label class="lesson-planner-field lesson-planner-field--label"><span>Lesson label</span><input id="lesson-planner-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
+                  <label class="lesson-planner-field lesson-planner-field--label"><span>Lesson Label</span><input id="lesson-planner-label" type="text" maxlength="80" placeholder="e.g. Reading workshop" required></label>
                   <div class="lesson-planner-field-row">
                     <label class="lesson-planner-field"><span>Date</span><input id="lesson-planner-date" type="date" required></label>
                     <label class="lesson-planner-field"><span>Starts</span><input id="lesson-planner-start" type="time" step="300" required></label>
                     <label class="lesson-planner-field"><span>Ends</span><input id="lesson-planner-end" type="time" step="300" required></label>
                   </div>
-                  <fieldset class="lesson-planner-colors"><legend>Block color</legend><div id="lesson-planner-colors"></div></fieldset>
-                  <label id="lesson-planner-template-picker-wrap" class="lesson-planner-field lesson-planner-template-picker"><span>Template</span><select id="lesson-planner-template-picker" aria-label="Apply a lesson template"><option value="">Choose a template…</option></select><small>Select a saved template to fill Plans and notes.</small></label>
-                  <label class="lesson-planner-field lesson-planner-field--description"><span>Plans and notes</span><textarea id="lesson-planner-description" maxlength="4000" placeholder="Learning goal, materials, activities, differentiation, assessment notes…"></textarea><small><span id="lesson-planner-description-count">0</span>/4000</small></label>
-                  <div class="lesson-planner-editor__actions"><button id="lesson-planner-delete" class="lesson-planner-delete" type="button" hidden>Delete</button><span></span><button id="lesson-planner-duplicate" type="button" hidden>Duplicate</button><button class="lesson-planner-save" type="submit">Save lesson</button></div>
+                  <fieldset class="lesson-planner-colors"><legend>Block Color</legend><div id="lesson-planner-colors"></div></fieldset>
+                  <label id="lesson-planner-template-picker-wrap" class="lesson-planner-field lesson-planner-template-picker"><span>Template</span><select id="lesson-planner-template-picker" aria-label="Apply a lesson template"><option value="">Choose a template…</option></select><small>Select a saved template to fill Plans and Notes.</small></label>
+                  <label class="lesson-planner-field lesson-planner-field--description"><span>Plans and Notes</span><textarea id="lesson-planner-description" maxlength="4000" placeholder="Learning goal, materials, activities, differentiation, assessment notes…"></textarea><small><span id="lesson-planner-description-count">0</span>/4000</small></label>
+                  <div class="lesson-planner-editor__actions"><button id="lesson-planner-delete" class="lesson-planner-delete" type="button" hidden>Delete</button><span></span><button id="lesson-planner-duplicate" type="button" hidden>Duplicate</button><button class="lesson-planner-save" type="submit">Save Lesson</button></div>
                 </form>
               </aside>
             </div>
@@ -897,6 +925,12 @@
                 <div><span class="help-mouse-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="12" height="12" rx="2" stroke-dasharray="3 3"/><path d="m14 12 2 10 2-4 4-2Z" fill="var(--surface-solid,#fff)"/></svg></span><p><strong data-i18n="help.mouse.clear.title">Clear Selection</strong><small data-i18n="help.mouse.clear.copy">Click outside the current selection to deselect it.</small></p></div>
               </div>
             </div>
+<section id="help-lesson-planner" class="help-section planner-help-section" aria-labelledby="help-lesson-planner-title"><div class="help-section__heading"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span><div><strong id="help-lesson-planner-title" tabindex="-1">Lesson Planner Controls and Usage</strong><small>Organize your books, schedule your day, and reuse your lesson plans.</small></div></div><div class="planner-help-grid"><article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner book rename title cover color create delete"><h3>Planner Books</h3><p>Open Lesson Planner from your profile’s Tools section, then choose a book or select New Planner. Double-click the name below a book to rename it. Use its brush button to change the cover color; the settings button contains Delete.</p></article>
+<article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner calendar navigation pan zoom weekends today"><h3>Navigate Your Plans</h3><p>Switch between Day, Week, Month, and Year using the view buttons or Zoom slider. Use the arrows to move through dates and Today to return to the current date. Drag empty calendar space to pan. Planner Settings lets you show weekends.</p></article>
+<article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner create add lesson time notes"><h3>Add a Lesson</h3><p>Choose Add Lesson Block, or drag the Lesson Block card onto a day and time. In Day or Week view, you can also double-click or right-click empty timeline space. Set the label, date, start and end times, color, and Plans and Notes, then choose Save Lesson.</p></article>
+<article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner edit drag move reschedule duplicate delete"><h3>Edit and Move Lessons</h3><p>Click a lesson to edit its details. Choose Save Lesson to keep your changes, Duplicate to create a copy, or Delete to remove it. Drag a lesson to another day or time to reschedule it; the preview shows where it will land.</p></article>
+<article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner schedule timetable recurring repeat background"><h3>Shared Schedules</h3><p>Open Scheduling to create a reusable timetable with repeating background blocks. Choose which saved schedule each planner uses. You can save up to four schedules, and they remain available when a planner book is deleted. Schedule blocks organize the day; individual lessons hold your plans.</p></article>
+<article class="planner-help-topic" data-help-topic data-search-keywords="lesson planner template reusable notes planning"><h3>Lesson Templates</h3><p>Open Templates to save reusable Plans and Notes text. When creating a lesson, choose a saved template to fill its notes, then adjust the text for that lesson. Templates are shared between planner books and remain available when a book is deleted.</p></article></div></section>
 <div class="help-tutorial-card">
               <div class="help-tutorial-card__art" aria-hidden="true"><span>▶</span></div>
               <div><span data-i18n="help.tutorial.kicker">GUIDES</span><strong data-i18n="help.tutorial.title">Watch a Board Walkthrough</strong><p data-i18n="help.tutorial.copy">Choose a Mouse & Trackpad card above to watch a short demonstration with step-by-step instructions.</p></div>
@@ -1636,8 +1670,13 @@
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-sticky-ripped" data-shop-price="250" data-shop-tile-type="sticky"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/shared/skin-art/sticky-ripped.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKY NOTE SKIN</span><h3>Ripped-Edge</h3><p>A paper note with a naturally torn bottom edge.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-sticky-pinned" data-shop-price="250" data-shop-tile-type="sticky"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/shared/skin-art/sticky-pinned.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">STICKY NOTE SKIN</span><h3>Pinned</h3><p>A glossy red thumbtack pins your note in place.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-textbubble-clear" data-shop-price="250" data-shop-tile-type="textbubble"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/shared/skin-art/textbubble-clear.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">TEXT BUBBLE SKIN</span><h3>No Background</h3><p>Your text floats directly on the board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-textbubble-scrap" data-shop-price="250" data-shop-tile-type="textbubble"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/text-bubble/assets/scrap.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">TEXT BUBBLE SKIN</span><h3>Scrap Paper</h3><p>A torn scrap of paper with soft fibers and uneven edges.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-textbubble-speech" data-shop-price="250" data-shop-tile-type="textbubble"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/text-bubble/assets/speech.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">TEXT BUBBLE SKIN</span><h3>Speech Bubble</h3><p>A rounded speech bubble with a playful pointed tail.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-richtext-clear" data-shop-price="250" data-shop-tile-type="richtext"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/shared/skin-art/richtext-clear.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">RICH TEXT SKIN</span><h3>No Background</h3><p>Remove the tile shell and let your formatted document float directly on the board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-spinner-carnival" data-shop-price="250" data-shop-tile-type="spinner"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/spinner/assets/carnival.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">SPINNER SKIN</span><h3>Carnival Spinner</h3><p>A colorful carnival wheel with golden trim and chasing lights on every segment.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-popsicle-gumball" data-shop-price="250" data-shop-tile-type="popsiclesticks"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/popsicle-sticks/assets/gumball-machine.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">POPSICLE STICKS SKIN</span><h3>Gumball Machine</h3><p>Dispense a colorful gumball with a student’s name.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-lavalamp-clear" data-shop-price="250" data-shop-tile-type="lavalamp"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/lava-lamp/assets/no-background.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">LAVA LAMP SKIN</span><h3>No Background</h3><p>A glowing lava lamp floating directly on your board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-lavalamp-neon" data-shop-price="250" data-shop-tile-type="lavalamp"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/lava-lamp/assets/neon.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">LAVA LAMP SKIN</span><h3>Neon</h3><p>Electric colors and a soft neon glow.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-spinner-clear" data-shop-price="250" data-shop-tile-type="spinner"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/spinner/assets/no-background.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">SPINNER SKIN</span><h3>No Background</h3><p>A colorful spinning wheel floating directly on your board.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-chime-clear" data-shop-price="250" data-shop-tile-type="chime"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/chime/assets/chime.png" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">CHIME SKIN</span><h3>No Background</h3><p>Let the classroom chime float directly on the board with no tile shell.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
 <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-soundscapes-vinyl" data-shop-price="250" data-shop-tile-type="boombox"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--soundscapes-vinyl"><i></i><b></b></span></div><div class="shop-product__body"><div><span class="shop-product__type">SOUNDSCAPES SKIN</span><h3>Vinyl</h3><p>Turn Soundscapes into a spinning record player.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
@@ -1705,6 +1744,9 @@
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--timer-liquid"><img src="assets/tile-skins/liquid-visual-timer.svg?v=2" alt=""></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Liquid Fill</h3><p>Watch your timer shape fill with gently moving liquid as time passes.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
             </article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-timer-neon" data-shop-price="250" data-shop-tile-type="timer"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/visual-timer/assets/neon.svg?v=2" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">VISUAL TIMER SKIN</span><h3>Neon</h3><p>Eight electric colors with luminous edges and a soft neon glow.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-calculator-glass" data-shop-price="250" data-shop-tile-type="calculator"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/calculator/assets/glass.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">CALCULATOR SKIN</span><h3>Midnight Glass</h3><p>Smoky glass keys with cool blue and violet accents.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
+<article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-calculator-retro" data-shop-price="250" data-shop-tile-type="calculator"><div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--new"><img src="tiles/calculator/assets/retro.svg" alt=""></span></div><div class="shop-product__body"><div><span class="shop-product__type">CALCULATOR SKIN</span><h3>Retro Desk</h3><p>Cream keys, a sage display, and vintage desktop details.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div></article>
             <article class="shop-product shop-product--tile-skin" data-shop-product="tile-skin-dice-clear" data-shop-price="250" data-shop-tile-type="dice">
               <div class="shop-product__preview shop-product__preview--tile-art" aria-hidden="true"><span class="tile-skin-art tile-skin-art--dice-clear"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><g fill="currentColor"><circle cx="8" cy="8" r="1.6"/><circle cx="16" cy="8" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="8" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></g></svg></span></div>
               <div class="shop-product__body"><div><span class="shop-product__type">DICE SKIN</span><h3>No Background</h3><p>Roll loose dice directly on your board with a transparent tile background.</p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>
@@ -1968,11 +2010,14 @@
             <button type="button" class="context-menu__filter" data-category-drawer-filter="geography" data-i18n="context.cat.geography">GEOGRAPHY</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="sel" data-i18n="context.cat.sel">SEL</button>
             <button type="button" class="context-menu__filter" data-category-drawer-filter="classconnect" data-i18n="context.cat.classconnect">CLASS CONNECT</button>
+<button type="button" class="context-menu__filter" data-category-drawer-filter="misc">MISC</button>
           </div>
         </div>
       </div>
     </div>
     <div class="context-menu__list">
+<button type="button" class="context-menu__item" data-module="tenssticks" data-category="math" data-search-aliases="base ten blocks place value manipulatives ones hundreds"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h10v10H3zM6 3v10m4-10v10M3 6h10M3 10h10M17 3h4v18h-4zM17 7h4m-4 4h4m-4 4h4M3 17h4v4H3z"/></svg></span><span><strong>Tens Sticks</strong><small>Build numbers with ones, tens, and hundreds</small></span></button>
+<button type="button" class="context-menu__item" data-module="lavalamp" data-category="misc" data-search-aliases="visualizer fluids calming"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4l1 3H9zM9 6 6 17q6 3 12 0L15 6M6 18l2 2-1 2h10l-1-2 2-2"/><path d="M11 9c-2 1 1 4 2 2s-1-3-2-2Zm-2 6q2-3 4-1t2 3"/></svg></span><span><strong>Lava Lamp</strong><small>Slow, glowing waves of color</small></span></button>
 <button type="button" class="context-menu__item" data-module="visualdirections" data-category="tools accessibility"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M14 6h4v4M6 14v4h4m-4-2v2h2"/></svg></span><span><strong>Visual Directions</strong><small>Put picture steps in order</small></span></button>
 <button type="button" class="context-menu__item" data-module="colorpicker" data-category="art tools"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 3 7 7-10 10H4v-7zM12 5l7 7M4 20l-2 2"/></svg></span><span><strong>Color Picker</strong><small>Explore and identify colors</small></span></button>
 <button type="button" class="context-menu__item" data-module="rainbow" data-category="art"><span class="context-menu__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a10 10 0 0 1 20 0M6 20a6 6 0 0 1 12 0M10 20a2 2 0 0 1 4 0"/></svg></span><span><strong>Rainbow</strong><small>Explore the colors of the rainbow</small></span></button>
@@ -2534,7 +2579,8 @@
 <template id="piano-template"><section class="module classroom-widget piano-module" data-type="piano" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Piano">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Piano</h2></header><div class="piano-keys" aria-label="Piano keyboard"></div><div class="piano-status widget-status" role="status">Click or hold a key to play</div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="musicscore-template"><section class="module classroom-widget musicscore-module" data-type="musicscore" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Music Score">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Music Score</h2></header><div class="score-toolbar"><button class="tile-action score-play">Play</button><button class="tile-action score-stop">Stop</button><label>Tempo <input class="score-tempo" type="number" min="40" max="200" value="100" aria-label="Tempo"></label><button class="tile-action score-clear">Clear</button></div><div class="score-grid widget-scroll" aria-label="Music score"></div><div class="score-palette" aria-label="Note palette"></div><p class="score-status widget-status" role="status">Select a note, then click a beat or drag the note onto it.</p><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="rainbow-template"><section class="module classroom-widget rainbow-module" data-type="rainbow" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Rainbow">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Rainbow</h2></header><div class="rainbow-scene"><svg viewBox="0 0 700 380" class="rainbow-art" aria-label="Explore the rainbow"></svg><div class="rainbow-cloud rainbow-cloud--left"></div><div class="rainbow-cloud rainbow-cloud--right"></div></div><div class="rainbow-detail"><strong></strong><p></p></div><div class="rainbow-colors" aria-label="Rainbow colors"></div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
-<template id="colorpicker-template"><section class="module classroom-widget colorpicker-module" data-type="colorpicker" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Color Picker">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Color Picker</h2></header><div class="color-display"><div class="color-large"></div><strong class="color-name"></strong><span class="color-code"></span></div><div class="color-controls"><canvas class="color-wheel" width="220" height="220" aria-label="Color wheel" tabindex="0"></canvas><div><label class="tile-setting">Hex code<input class="color-hex" value="#6F8FB7" maxlength="7" aria-label="Hex color"></label><label class="tile-setting">Brightness<input class="color-value" type="range" min="1" max="100" value="100"></label><button class="tile-action color-eyedropper">Pick from screen</button><p class="color-status" role="status"></p></div></div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
+<template id="colorpicker-template"><section class="module classroom-widget colorpicker-module tile-modern" data-type="colorpicker" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Color Picker">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Color Picker</h2></header><div class="color-display"><div class="color-large"></div><strong class="color-name"></strong><span class="color-code"></span></div><div class="color-controls"><canvas class="color-wheel" width="220" height="220" aria-label="Color wheel" tabindex="0"></canvas><div><label class="tile-setting">Hex Code<input class="color-hex" value="#6F8FB7" maxlength="7" aria-label="Hex color"></label><label class="tile-setting">Brightness<input class="color-value" type="range" min="1" max="100" value="100"></label><p class="color-status" role="status"></p></div></div><div class="tile-modern-footer"><button class="tile-modern-button color-eyedropper">Pick from screen</button></div>
+      <div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="visualdirections-template"><section class="module classroom-widget visualdirections-module" data-type="visualdirections" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Visual Directions">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Visual Directions</h2></header><div class="directions-wall widget-scroll" aria-label="Direction steps"></div><form class="directions-form widget-editor" hidden data-skip-board-save><strong>Choose an image</strong><label class="tile-setting" hidden>Title<input class="directions-title" maxlength="80" required placeholder="What should students do?"></label><div class="directions-library" aria-label="Choose an image"></div><label class="tile-setting">Upload your image<input class="directions-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><img class="directions-preview" alt="Selected direction image"><div class="tile-toolbar"><button type="submit" class="tile-action tile-action--primary" hidden>Save step</button><button type="button" class="tile-action directions-cancel" aria-label="Close image drawer">×</button></div><p class="directions-error" role="status"></p></form><div class="directions-status widget-status" role="status"></div><div class="customization-bar widget-controls"><button class="tile-action directions-add" type="button">+ Add step</button><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-label="Open Visual Directions settings" title="Visual Directions settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg></button><div class="tile-settings-panel" hidden><strong>Visual Directions settings</strong><label class="tile-setting">Step labels<select class="directions-mode"><option value="numbers">1, 2, 3</option><option value="ordinals">First, Second, Third</option><option value="sequence">First, Next, Then, Last</option></select></label><small>Drag a step to reorder it. Use the dotted indicator to drag steps.</small></div></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 
   <template id="timer-template">
@@ -2724,6 +2770,9 @@
 <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
 </section></template>
 <template id="classroomjobs-template"><section class="module classroomjobs-module" data-type="classroomjobs" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Classroom Jobs">×</button><div class="module-drag-handle"></div><h2 class="jobs-heading">Classroom Jobs</h2><div class="jobs-toolbar"><button class="jobs-change" type="button">Choose class</button><button class="jobs-shuffle" data-jobs-action type="button">Shuffle</button><button class="jobs-shift" data-jobs-action type="button">Shift jobs →</button><button class="jobs-add" type="button" aria-label="Add classroom job" aria-expanded="false">+</button></div><div class="jobs-intro"><p>Load a saved class to assign classroom helpers.</p><div class="jobs-loader" hidden></div></div><div class="jobs-grid" data-skip-board-save></div><p class="jobs-class"></p><div class="customization-bar"><button class="custom-icon tile-bg" type="button" aria-label="Change background"><span class="icon-palette"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font"><span class="icon-font">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color"><span class="icon-text-color">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="tenssticks-template"><section class="module tenssticks-module" data-type="tenssticks" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Tens Sticks">×</button><div class="module-drag-handle"></div><div class="tens-heading-row"><h2 class="tens-heading">Tens Sticks</h2><div class="tens-total-label">Total <output class="tens-total">0</output></div></div><div class="tens-stage" title="Drag blocks to move them. Drag outside the tile to place them on the board."><div class="tens-workspace"></div><div class="tens-empty">Add blocks or build a number</div></div><div class="tens-palette"><button type="button" data-tens-add="1" title="Add One Cube" aria-label="Add One Cube"></button><button type="button" data-tens-add="10" title="Add Ten Stick" aria-label="Add Ten Stick"></button><button type="button" data-tens-add="100" title="Add Hundred Block" aria-label="Add Hundred Block"></button><form class="tens-number-form"><input name="number" type="number" min="0" max="999" step="1" required placeholder="0–999" aria-label="Number to Build (0–999)"><button type="submit">Build</button></form></div><div class="tens-footer"><button type="button" class="tens-remove" title="Remove selected block">Remove</button><button type="button" class="tens-clear">Clear</button></div><div class="customization-bar"><button class="custom-icon tile-bg" type="button" aria-label="Change background"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font">Aa</button><button class="custom-icon tile-text" type="button" aria-label="Change text color">A</button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="tensblock-template"><section class="module tensblock-module" data-type="tensblock" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Block">×</button><div class="module-drag-handle"></div><div class="tens-block-art"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="lavalamp-template"><section class="module lavalamp-module" data-type="lavalamp" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Lava Lamp">×</button><div class="module-drag-handle"></div><h2 class="lava-heading">Lava Lamp</h2><canvas class="lava-visual" role="img" aria-label="Lava lamp with slowly rising and merging wax"></canvas><button type="button" class="custom-icon timer-shape-color lava-colors-toggle" aria-label="Choose lamp color" title="Choose lamp color" aria-expanded="false"><span class="timer-color-swatch" aria-hidden="true"></span></button><div class="lava-color-drawer" role="group" aria-label="Lava Lamp Colors" hidden></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="countdown-template"><section class="module countdown-module" data-type="countdown" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Countdown">×</button><div class="module-drag-handle"></div><h2 class="countdown-heading">Countdown</h2><div class="countdown-display" data-skip-board-save><div class="countdown-content"><div class="countdown-event">Your Event</div><div class="countdown-number">—</div><div class="countdown-unit">days remaining</div><div class="countdown-date">Choose a date and time</div></div></div><form class="countdown-form" hidden><label>Event Name<input name="event" maxlength="120" placeholder="Field trip" required></label><label>Date and Time<input name="target" type="datetime-local" required></label><div><button class="countdown-cancel" type="button">Cancel</button><button type="submit">Save</button></div></form><div class="countdown-actions"><button class="countdown-metric" type="button" aria-label="Change countdown units">Days ↻</button><button class="countdown-edit" type="button" aria-expanded="false">Edit</button></div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
 <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
 </section></template>
@@ -3598,38 +3647,32 @@
 
 
   <template id="lunchcount-template">
-    <section class="module lunchcount-module" data-type="lunchcount" data-bg="white" data-font="inter" data-text="dark" data-lunch-mode="tally">
+    <section class="module lunchcount-module tile-modern choice-board" data-type="lunchcount" data-bg="white" data-font="inter" data-text="dark" data-lunch-mode="tally">
       <button class="module-delete" aria-label="Delete lunch count">×</button><div class="module-drag-handle"></div>
 
-      <header class="lunchcount-header">
-        <div class="lunchcount-heading">
+      <header class="lunchcount-header choice-header">
+        <div class="lunchcount-heading choice-heading">
           <strong>Lunch Count</strong>
-          <span class="lunchcount-summary">Tap a category to add a tally</span>
+          <span class="lunchcount-summary choice-summary">Tap a category to add a tally</span>
         </div>
-        <div class="lunchcount-mode-switch" aria-label="Lunch Count mode">
-          <button class="lunchcount-mode is-active" type="button" data-lunch-mode-button="tally">Tally</button>
-          <button class="lunchcount-mode" type="button" data-lunch-mode-button="names">Names</button>
-        </div>
+
       </header>
 
-      <div class="lunchcount-grid" aria-label="Lunch categories"></div>
+      <div class="lunchcount-grid choice-grid" aria-label="Lunch categories"></div>
 
-      <section class="lunchcount-name-pool" aria-label="Student names">
-        <div class="lunchcount-pool-heading">
-          <strong>Students</strong>
+      <section class="lunchcount-name-pool choice-roster-drawer" aria-label="Student names">
+        <div class="lunchcount-pool-heading choice-pool-heading">
+          <strong>Students</strong><button class="choice-roster-close" type="button" aria-label="Close student drawer">×</button>
           <span>Add names, then drag them to a lunch choice</span>
         </div>
-        <div class="lunchcount-name-entry">
+        <div class="lunchcount-name-entry choice-name-entry">
           <input class="lunchcount-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
           <button class="lunchcount-add-name" type="button">Add</button>
         </div>
-        <div class="lunchcount-pool-list"></div>
+        <div class="lunchcount-pool-list choice-pool-list"></div>
       </section>
 
-      <div class="lunchcount-inline-actions">
-        <button class="lunchcount-reset-counts" type="button">Reset Tallies</button>
-        <button class="lunchcount-reset-names" type="button">Unassign Names</button>
-      </div>
+
 
       <div class="lunchcount-icon-picker" hidden role="dialog" aria-modal="true" aria-label="Choose lunch category icon">
         <div class="lunchcount-icon-picker__panel">
@@ -3642,6 +3685,13 @@
         </div>
       </div>
 
+      <div class="tile-modern-footer"><div class="lunchcount-mode-switch choice-mode-switch" aria-label="Lunch Count mode">
+          <button class="lunchcount-mode is-active" type="button" data-lunch-mode-button="tally">Tally</button>
+          <button class="lunchcount-mode" type="button" data-lunch-mode-button="names">Names</button>
+        </div><div class="lunchcount-inline-actions choice-inline-actions">
+        <button class="lunchcount-reset-counts" type="button">Reset Tallies</button>
+        <button class="lunchcount-reset-names" type="button">Unassign Names</button>
+      <button class="choice-students-toggle" type="button" aria-expanded="false">Students</button></div></div>
       <div class="customization-bar lunchcount-customization" aria-label="Lunch Count customization">
         <button class="custom-icon lunchcount-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon lunchcount-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -3650,45 +3700,46 @@
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
-  </template>
+</template>
 
 
   <template id="voting-template">
-    <section class="module voting-module" data-type="voting" data-bg="white" data-font="inter" data-text="dark" data-voting-mode="tally">
+    <section class="module voting-module tile-modern choice-board" data-type="voting" data-bg="white" data-font="inter" data-text="dark" data-voting-mode="tally">
       <button class="module-delete" aria-label="Delete voting tile">×</button><div class="module-drag-handle"></div>
 
-      <header class="voting-header">
-        <div class="voting-heading">
+      <header class="voting-header choice-header">
+        <div class="voting-heading choice-heading">
           <strong>Polls</strong>
-          <span class="voting-summary">Tap a choice to add a vote</span>
+          <span class="voting-summary choice-summary">Tap a choice to add a vote</span>
         </div>
-        <div class="voting-mode-switch" aria-label="Poll mode">
-          <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
-          <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
-        </div>
+
       </header>
 
-      <div class="voting-grid" aria-label="Poll choices"></div>
+      <div class="voting-grid choice-grid" aria-label="Poll choices"></div>
 
-      <section class="voting-name-pool" aria-label="Student names">
-        <div class="voting-pool-heading">
-          <strong>Students</strong>
+      <section class="voting-name-pool choice-roster-drawer" aria-label="Student names">
+        <div class="voting-pool-heading choice-pool-heading">
+          <strong>Students</strong><button class="choice-roster-close" type="button" aria-label="Close student drawer">×</button>
           <span>Add names, then drag them to a choice</span>
         </div>
-        <div class="voting-name-entry">
+        <div class="voting-name-entry choice-name-entry">
           <input class="voting-name-input" type="text" maxlength="40" placeholder="Add a name" aria-label="Student name">
           <button class="voting-add-name" type="button">Add</button>
         </div>
-        <div class="voting-pool-list"></div>
+        <div class="voting-pool-list choice-pool-list"></div>
       </section>
 
-      <div class="voting-inline-actions">
-        <button class="voting-reset-counts" type="button">Reset Votes</button>
-        <button class="voting-reset-names" type="button">Unassign Names</button>
-      </div>
+
 
       <input class="voting-image-input" type="file" accept="image/*" hidden>
 
+      <div class="tile-modern-footer"><div class="voting-mode-switch choice-mode-switch" aria-label="Poll mode">
+          <button class="voting-mode is-active" type="button" data-voting-mode-button="tally">Tally</button>
+          <button class="voting-mode" type="button" data-voting-mode-button="names">Names</button>
+        </div><div class="voting-inline-actions choice-inline-actions">
+        <button class="voting-reset-counts" type="button">Reset Votes</button>
+        <button class="voting-reset-names" type="button">Unassign Names</button>
+      <button class="choice-students-toggle" type="button" aria-expanded="false">Students</button></div></div>
       <div class="customization-bar voting-customization" aria-label="Poll customization">
         <button class="custom-icon voting-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon voting-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -3697,7 +3748,7 @@
 
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
-  </template>
+</template>
 
 
   <template id="imagesearch-template">
@@ -3816,6 +3867,8 @@
   <template id="textbubble-template">
     <section class="module textbubble-module" data-type="textbubble" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete text bubble">×</button><div class="module-drag-handle"></div>
+      <svg class="textbubble-skin-art textbubble-speech-art" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true"><path class="textbubble-skin-surface" d="M32 5H368Q395 5 395 32V182Q395 209 368 209H132Q111 234 72 254L81 209H32Q5 209 5 182V32Q5 5 32 5Z" vector-effect="non-scaling-stroke"/></svg>
+      <svg class="textbubble-skin-art textbubble-paper-art" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true"><path class="textbubble-skin-surface" d="M9 11 28 7 44 10 61 6 83 9 103 5 127 8 146 6 169 10 193 6 216 9 238 5 262 8 285 6 309 10 330 5 352 9 376 6 392 12 389 30 394 48 390 67 393 85 389 108 394 128 390 150 393 170 389 191 393 213 389 235 392 249 372 251 353 246 334 252 311 248 288 254 268 249 244 253 222 247 202 252 178 248 156 254 134 250 115 253 94 248 73 253 54 249 34 254 9 248 12 229 6 209 10 187 7 165 12 143 7 122 11 102 6 80 11 59 7 39Z" vector-effect="non-scaling-stroke"/><path class="textbubble-paper-grain" d="M382 115l6 0 M129 59l3 0 M361 191l2 -2 M95 223l7 -1 M24 129l5 -2 M343 46l2 -2 M104 142l7 -1 M367 94l5 0 M369 211l4 -2 M98 191l4 -1 M56 155l7 -1 M356 25l3 -1 M191 207l2 -1 M67 79l7 -2 M96 226l5 -1 M154 160l7 -1 M119 40l6 -1 M96 184l3 -1 M263 67l7 -2 M85 138l6 -1 M278 212l3 -2 M142 38l7 0 M151 97l7 -2 M350 75l5 0 M174 120l2 -1 M203 229l4 -1 M112 207l6 -1 M192 240l3 -1 M35 31l5 -2 M178 129l5 0 M37 37l4 -2 M227 224l5 -2 M272 164l6 -1 M220 231l3 -1 M173 112l4 0 M190 207l2 -2 M346 222l2 -1 M296 20l7 -2 M232 119l7 -1 M167 85l5 -1 M364 211l4 -1 M22 118l2 -1 M254 219l2 0 M136 233l3 -2 M352 167l3 -1 M86 61l2 0 M60 30l3 0 M303 196l5 0 M111 102l4 0 M111 45l3 -2 M58 169l6 -1 M285 197l4 -1 M369 184l5 -1 M349 113l5 -2 M97 104l2 0 M289 56l3 0 M243 104l4 0 M346 175l3 0 M69 95l7 -2 M329 171l3 -1 M254 33l3 0 M210 176l6 -1 M318 104l5 -2 M97 237l2 0 M104 226l3 -2 M133 20l3 -1 M175 138l7 -2 M315 78l4 -1 M139 91l5 -2 M162 24l3 -1 M341 169l6 -1 M130 110l3 -2 M219 102l2 0 M201 130l5 -1 M247 137l6 -1 M139 25l2 0 M283 24l4 -2 M295 229l2 -2 M355 109l3 -2 M369 172l3 -1 M90 46l7 -2 M127 149l4 -2 M340 198l4 0 M160 149l5 -1 M101 89l6 0 M213 173l2 0 M141 140l2 0 M278 214l5 -1 M89 154l7 0 M325 106l2 -2 M344 183l2 -1 M338 204l3 -2 M327 213l3 -2 M121 104l3 -2 M233 76l4 -1 M213 160l2 -1 M294 110l4 0 M258 232l7 -2 M143 182l3 -2 M19 88l7 0"/><path class="textbubble-paper-crease" d="M18 210Q190 202 381 215"/></svg>
       <div class="textbubble-text" contenteditable="true" spellcheck="true" data-text-edit-mode="double">TYPE HERE</div>
       <div class="customization-bar textbubble-customization" aria-label="Text bubble customization">
         <button class="custom-icon textbubble-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
@@ -4307,170 +4360,177 @@
     </section>
   </template>
 
-  <script src="changelog/data.js?v=1791428708703"></script>
-  <script src="news/data.js?v=1791428708703"></script>
-  <script src="tiles/image-search/index.js?v=1791428708703"></script>
-  <script src="tiles/interactive-timers/hourglass.js?v=1791428708703"></script>
-  <script src="tiles/interactive-timers/garden-rocket.js?v=1791428708703"></script>
-  <script src="tiles/interactive-timers/pointer.js?v=1791428708703"></script>
-  <script src="tiles/interactive-timers/wonders.js?v=1791428708703"></script>
-<script src="tiles/interactive-timers/index.js?v=1791428708703"></script>
-  <script src="tiles/dice/index.js?v=1791428708703"></script>
-  <script src="tiles/random-number/index.js?v=1791428708703"></script>
-  <script src="tiles/seating-chart/index.js?v=1791428708703"></script>
-  <script src="tiles/fish-tank/index.js?v=1791428708703"></script>
-  <script src="tiles/sleepy-monster/index.js?v=1791428708703"></script>
-  <script src="tiles/quiet-critters/index.js?v=1791428708703"></script>
-  <script src="tiles/chime/index.js?v=1791428708703"></script>
-  <script src="tiles/transition-bell/index.js?v=1791428708703"></script>
-  <script src="tiles/essential-question/index.js?v=1791428708703"></script>
-  <script src="tiles/butterfly-garden/index.js?v=1791428708703"></script>
-  <script src="tiles/shared/live.js?v=1791428708703"></script>
-  <script src="tiles/shared/daily.js?v=1791428708703"></script>
-  <script src="tiles/word-of-the-day/words.js?v=1791428708703"></script>
-  <script src="tiles/quote-of-the-day/quotes.js?v=1791428708703"></script>
-  <script src="tiles/word-of-the-day/index.js?v=1791428708703"></script>
-  <script src="tiles/quote-of-the-day/index.js?v=1791428708703"></script>
-  <script src="tiles/vocabulary/index.js?v=1791428708703"></script>
-  <script src="tiles/word-web/index.js?v=1791428708703"></script>
-  <script src="tiles/venn-diagrams/index.js?v=1791428708703"></script>
-  <script src="tiles/times-tables/index.js?v=1791428708703"></script>
-  <script src="tiles/google/index.js?v=1791428708703"></script>
-  <script src="tiles/link/index.js?v=1791428708703"></script>
-  <script src="tiles/background-remover/index.js?v=1791428708703"></script>
-  <script src="tiles/shared/settings.js?v=1791428708703"></script>
-<script src="tiles/shared/skins.js?v=1791428708703"></script>
-<script src="tiles/shared/appearance.js?v=1791428708703"></script>
-  <script src="tiles/visual-directions/index.js?v=1791428708703"></script>
-  <script src="tiles/color-picker/index.js?v=1791428708703"></script>
-<script src="tiles/shared/tabs.js?v=1791428708703"></script>
-<script src="tiles/meditation/index.js?v=1791428708703"></script>
-<script src="tiles/rainbow/index.js?v=1791428708703"></script>
-<script src="tiles/music-score/notes.js?v=1791428708703"></script>
-<script src="tiles/shared/instrument.js?v=1791428708703"></script>
-<script src="tiles/piano/index.js?v=1791428708703"></script>
-<script src="tiles/music-score/index.js?v=1791428708703"></script>
-<script src="tiles/rich-text/index.js?v=1791428708703"></script>
-<script src="tiles/fly-swat/index.js?v=1791428708703"></script>
-<script src="tiles/shared/sticker-picker.js?v=1791428708703"></script>
-<script src="tiles/glitter-jar/index.js?v=1791428708703"></script>
-<script src="tiles/spreadsheet/index.js?v=1791428708703"></script>
-<script src="tiles/reminders/index.js?v=1791428708703"></script>
-<script src="tiles/shared/theme-picker.js?v=1791428708703"></script>
-<script src="tiles/noise-meter/index.js?v=1791428708703"></script>
-<script src="tiles/squishy/gel-cube.js?v=1791428708703"></script>
-<script src="tiles/squishy/index.js?v=1791428708703"></script>
-<script src="tiles/sentence-expansion/index.js?v=1791428708703"></script>
-<script src="tiles/soundscapes/index.js?v=1791428708703"></script>
-<script src="tiles/shared/flame-renderer.js?v=1791428708703"></script>
-<script src="tiles/shared/forest-motion.js?v=1791428708703"></script>
-<script src="tiles/shared/living-scenes.js?v=1791428708703"></script>
-<script src="tiles/shared/nature-scenes.js?v=1791428708703"></script>
-<script src="tiles/shared/animated-themes.js?v=1791428708703"></script>
-<script src="tiles/popsicle-sticks/index.js?v=1791428708703"></script>
-<script src="assets/cursors/packs.js?v=1791428708703"></script>
-<script src="tiles/shared/flashcard-navigation.js?v=1791428708703"></script>
-<script src="tiles/countdown/index.js?v=1791428708703"></script>
-<script src="tiles/coinflip/index.js?v=1791428708703"></script>
-<script src="tiles/shared/cursor-picker.js?v=1791428708703"></script>
-<script src="tiles/classroom-jobs/index.js?v=1791428708703"></script>
-<script src="tiles/growth-rewards/index.js?v=1791428708703"></script>
-<script src="tiles/sticky/setup.js?v=1791428708703"></script>
-<script src="tiles/visual-timer/setup.js?v=1791428708703"></script>
-<script src="tiles/interactive-timers/setup.js?v=1791428708703"></script>
-<script src="tiles/clock/setup.js?v=1791428708703"></script>
-<script src="tiles/writing-lines/setup.js?v=1791428708703"></script>
-<script src="tiles/stopwatch/setup.js?v=1791428708703"></script>
-<script src="tiles/magnifier/setup.js?v=1791428708703"></script>
-<script src="tiles/draw/setup.js?v=1791428708703"></script>
-<script src="tiles/star-chart/setup.js?v=1791428708703"></script>
-<script src="tiles/class-meter/setup.js?v=1791428708703"></script>
-<script src="tiles/prize-board/setup.js?v=1791428708703"></script>
-<script src="tiles/pbis-console/setup.js?v=1791428708703"></script>
-<script src="tiles/racer/setup.js?v=1791428708703"></script>
-<script src="tiles/punchcards/setup.js?v=1791428708703"></script>
-<script src="tiles/collections/setup.js?v=1791428708703"></script>
-<script src="tiles/lunch-count/setup.js?v=1791428708703"></script>
-<script src="tiles/polls/setup.js?v=1791428708703"></script>
-<script src="tiles/group-maker/layout.js?v=1791428708703"></script>
-<script src="tiles/group-maker/setup.js?v=1791428708703"></script>
-<script src="tiles/stoplight/setup.js?v=1791428708703"></script>
-<script src="tiles/image/setup.js?v=1791428708703"></script>
-<script src="tiles/youtube/setup.js?v=1791428708703"></script>
-<script src="tiles/ambience-video/setup.js?v=1791428708703"></script>
-<script src="tiles/window-share/setup.js?v=1791428708703"></script>
-<script src="tiles/text-bubble/setup.js?v=1791428708703"></script>
-<script src="tiles/dictionary/setup.js?v=1791428708703"></script>
-<script src="tiles/translation/setup.js?v=1791428708703"></script>
-<script src="tiles/attendance/setup.js?v=1791428708703"></script>
-<script src="tiles/live-caption/setup.js?v=1791428708703"></script>
-<script src="tiles/voice-memo/setup.js?v=1791428708703"></script>
-<script src="tiles/photobooth/setup.js?v=1791428708703"></script>
-<script src="tiles/mirror/setup.js?v=1791428708703"></script>
-<script src="tiles/weather/setup.js?v=1791428708703"></script>
-<script src="tiles/shared/choice-wheel/setup.js?v=1791428708703"></script>
-<script src="tiles/weather-wheel/setup.js?v=1791428708703"></script>
-<script src="tiles/season-wheel/setup.js?v=1791428708703"></script>
-<script src="tiles/temperature/setup.js?v=1791428708703"></script>
-<script src="tiles/world-map/setup.js?v=1791428708703"></script>
-<script src="tiles/compass/setup.js?v=1791428708703"></script>
-<script src="tiles/shapes/setup.js?v=1791428708703"></script>
-<script src="tiles/date/setup.js?v=1791428708703"></script>
-<script src="tiles/calendar/setup.js?v=1791428708703"></script>
-<script src="tiles/progress-bar/setup.js?v=1791428708703"></script>
-<script src="tiles/visual-schedule/setup.js?v=1791428708703"></script>
-<script src="tiles/lesson-planner/setup.js?v=1791428708703"></script>
-<script src="tiles/table-maker/setup.js?v=1791428708703"></script>
-<script src="tiles/tally-chart/setup.js?v=1791428708703"></script>
-<script src="tiles/to-do/setup.js?v=1791428708703"></script>
-<script src="tiles/cvc-word/setup.js?v=1791428708703"></script>
-<script src="tiles/high-frequency-words/setup.js?v=1791428708703"></script>
-<script src="tiles/robot-hfw/setup.js?v=1791428708703"></script>
-<script src="tiles/abc/setup.js?v=1791428708703"></script>
-<script src="tiles/number-flashcards/setup.js?v=1791428708703"></script>
-<script src="tiles/custom-flashcards/setup.js?v=1791428708703"></script>
-<script src="tiles/ruler/setup.js?v=1791428708703"></script>
-<script src="tiles/calculator/setup.js?v=1791428708703"></script>
-<script src="tiles/grapher/setup.js?v=1791428708703"></script>
-<script src="tiles/periodic-table/setup.js?v=1791428708703"></script>
-<script src="tiles/money/setup.js?v=1791428708703"></script>
-<script src="tiles/pattern-maker/setup.js?v=1791428708703"></script>
-<script src="tiles/shape-manipulatives/setup.js?v=1791428708703"></script>
-<script src="tiles/number-line/setup.js?v=1791428708703"></script>
-<script src="tiles/hundreds-chart/setup.js?v=1791428708703"></script>
-<script src="tiles/ten-frames/setup.js?v=1791428708703"></script>
-<script src="tiles/wordy-puzzle/setup.js?v=1791428708703"></script>
-<script src="tiles/minesweeper/setup.js?v=1791428708703"></script>
-<script src="tiles/hangman/setup.js?v=1791428708703"></script>
-<script src="tiles/spinner/carnival.js?v=1791428708703"></script>
-<script src="tiles/spinner/setup.js?v=1791428708703"></script>
-<script src="boards/interaction-helpers.js?v=1791428708703"></script>
-<script src="profile/classroom-services.js?v=1791428708703"></script>
-<script src="account/interface-services.js?v=1791428708703"></script>
-<script src="boards/navigation.js?v=1791428708703"></script>
-<script src="shop/cosmetic-services.js?v=1791428708703"></script>
-<script src="tiles/shared/control-services.js?v=1791428708703"></script>
-<script src="boards/tile-lifecycle.js?v=1791428708703"></script>
-<script src="tiles/visual-timer/helpers.js?v=1791428708703"></script>
-<script src="tiles/prize-board/helpers.js?v=1791428708703"></script>
-<script src="tiles/shared/media-helpers.js?v=1791428708703"></script>
-<script src="tiles/shared/heading-services.js?v=1791428708703"></script>
-<script src="tiles/shared/camera-services.js?v=1791428708703"></script>
-<script src="tiles/weather/helpers.js?v=1791428708703"></script>
-<script src="tiles/shared/calendar-chart-services.js?v=1791428708703"></script>
-<script src="shop/shelf-services.js?v=1791428708703"></script>
-<script src="tiles/shared/flashcard-services.js?v=1791428708703"></script>
-<script src="boards/serialization.js?v=1791428708703"></script>
-<script src="changelog/ui.js?v=1791428708703"></script>
-<script src="shop/ui.js?v=1791428708703"></script>
-<script src="account/site-appearance.js?v=1791428708703"></script>
-<script src="account/collection-preferences.js?v=1791428708703"></script>
-<script src="app.js?v=1791428708703"></script>
-<script src="tiles/shared/cursor-effects.js?v=1791428708703"></script>
-  <script src="tiles/lesson-planner.js?v=1791428708703"></script>
-  <script src="tiles/shared/firestore-read-metrics.js?v=1791428708703"></script>
-<script type="module" src="firebase-auth.js?v=1791428708703"></script>
-<script type="module" src="profile/patches.js?v=1791428708703"></script>
+  <script src="changelog/data.js?v=1791678176348"></script>
+  <script src="news/data.js?v=1791678176348"></script>
+  <script src="tiles/image-search/index.js?v=1791678176348"></script>
+  <script src="tiles/interactive-timers/hourglass.js?v=1791678176348"></script>
+  <script src="tiles/interactive-timers/garden-rocket.js?v=1791678176348"></script>
+  <script src="tiles/interactive-timers/pointer.js?v=1791678176348"></script>
+  <script src="tiles/interactive-timers/wonders.js?v=1791678176348"></script>
+<script src="tiles/interactive-timers/index.js?v=1791678176348"></script>
+  <script src="tiles/dice/index.js?v=1791678176348"></script>
+  <script src="tiles/random-number/index.js?v=1791678176348"></script>
+  <script src="tiles/seating-chart/index.js?v=1791678176348"></script>
+  <script src="tiles/fish-tank/index.js?v=1791678176348"></script>
+  <script src="tiles/sleepy-monster/index.js?v=1791678176348"></script>
+  <script src="tiles/quiet-critters/index.js?v=1791678176348"></script>
+  <script src="tiles/chime/index.js?v=1791678176348"></script>
+  <script src="tiles/transition-bell/index.js?v=1791678176348"></script>
+  <script src="tiles/essential-question/index.js?v=1791678176348"></script>
+  <script src="tiles/butterfly-garden/index.js?v=1791678176348"></script>
+  <script src="tiles/shared/live.js?v=1791678176348"></script>
+  <script src="tiles/shared/daily.js?v=1791678176348"></script>
+  <script src="tiles/word-of-the-day/words.js?v=1791678176348"></script>
+  <script src="tiles/quote-of-the-day/quotes.js?v=1791678176348"></script>
+  <script src="tiles/word-of-the-day/index.js?v=1791678176348"></script>
+  <script src="tiles/quote-of-the-day/index.js?v=1791678176348"></script>
+  <script src="tiles/vocabulary/index.js?v=1791678176348"></script>
+  <script src="tiles/word-web/index.js?v=1791678176348"></script>
+  <script src="tiles/venn-diagrams/index.js?v=1791678176348"></script>
+  <script src="tiles/times-tables/index.js?v=1791678176348"></script>
+  <script src="tiles/google/index.js?v=1791678176348"></script>
+  <script src="tiles/link/index.js?v=1791678176348"></script>
+  <script src="tiles/background-remover/index.js?v=1791678176348"></script>
+  <script src="tiles/shared/settings.js?v=1791678176348"></script>
+<script src="tiles/shared/skins.js?v=1791678176348"></script>
+<script src="tiles/shared/appearance.js?v=1791678176348"></script>
+  <script src="tiles/visual-directions/index.js?v=1791678176348"></script>
+  <script src="tiles/color-picker/index.js?v=1791678176348"></script>
+<script src="tiles/shared/tabs.js?v=1791678176348"></script>
+<script src="tiles/meditation/index.js?v=1791678176348"></script>
+<script src="tiles/rainbow/index.js?v=1791678176348"></script>
+<script src="tiles/music-score/notes.js?v=1791678176348"></script>
+<script src="tiles/shared/instrument.js?v=1791678176348"></script>
+<script src="tiles/piano/index.js?v=1791678176348"></script>
+<script src="tiles/music-score/index.js?v=1791678176348"></script>
+<script src="tiles/rich-text/index.js?v=1791678176348"></script>
+<script src="tiles/fly-swat/index.js?v=1791678176348"></script>
+<script src="tiles/shared/sticker-picker.js?v=1791678176348"></script>
+<script src="tiles/glitter-jar/index.js?v=1791678176348"></script>
+<script src="tiles/spreadsheet/index.js?v=1791678176348"></script>
+<script src="tiles/reminders/index.js?v=1791678176348"></script>
+<script src="tiles/shared/theme-picker.js?v=1791678176348"></script>
+<script src="tiles/noise-meter/index.js?v=1791678176348"></script>
+<script src="tiles/squishy/gel-cube.js?v=1791678176348"></script>
+<script src="tiles/squishy/index.js?v=1791678176348"></script>
+<script src="tiles/sentence-expansion/index.js?v=1791678176348"></script>
+<script src="tiles/soundscapes/index.js?v=1791678176348"></script>
+<script src="tiles/shared/flame-renderer.js?v=1791678176348"></script>
+<script src="tiles/shared/forest-motion.js?v=1791678176348"></script>
+<script src="tiles/shared/living-scenes.js?v=1791678176348"></script>
+<script src="tiles/shared/nature-scenes.js?v=1791678176348"></script>
+<script src="tiles/shared/animated-themes.js?v=1791678176348"></script>
+<script src="tiles/popsicle-sticks/gumball.js?v=1791678176348"></script>
+<script src="tiles/popsicle-sticks/index.js?v=1791678176348"></script>
+<script src="assets/cursors/packs.js?v=1791678176348"></script>
+<script src="tiles/shared/flashcard-navigation.js?v=1791678176348"></script>
+<script src="tiles/countdown/index.js?v=1791678176348"></script>
+<script src="tiles/shared/timer-colors.js?v=1791678176348"></script>
+<script src="tiles/visual-timer/finish-time.js?v=1791678176348"></script>
+<script src="tiles/tens-sticks/index.js?v=1791678176348"></script>
+<script src="tiles/lava-lamp/index.js?v=1791678176348"></script>
+
+<script src="tiles/coinflip/index.js?v=1791678176348"></script>
+<script src="tiles/shared/cursor-picker.js?v=1791678176348"></script>
+<script src="tiles/classroom-jobs/index.js?v=1791678176348"></script>
+<script src="tiles/growth-rewards/index.js?v=1791678176348"></script>
+<script src="tiles/sticky/setup.js?v=1791678176348"></script>
+<script src="tiles/visual-timer/setup.js?v=1791678176348"></script>
+<script src="tiles/interactive-timers/setup.js?v=1791678176348"></script>
+<script src="tiles/clock/setup.js?v=1791678176348"></script>
+<script src="tiles/writing-lines/setup.js?v=1791678176348"></script>
+<script src="tiles/stopwatch/setup.js?v=1791678176348"></script>
+<script src="tiles/magnifier/setup.js?v=1791678176348"></script>
+<script src="tiles/draw/setup.js?v=1791678176348"></script>
+<script src="tiles/star-chart/setup.js?v=1791678176348"></script>
+<script src="tiles/class-meter/setup.js?v=1791678176348"></script>
+<script src="tiles/prize-board/setup.js?v=1791678176348"></script>
+<script src="tiles/pbis-console/setup.js?v=1791678176348"></script>
+<script src="tiles/racer/setup.js?v=1791678176348"></script>
+<script src="tiles/punchcards/setup.js?v=1791678176348"></script>
+<script src="tiles/collections/setup.js?v=1791678176348"></script>
+<script src="tiles/shared/choice-roster-drawer.js?v=1791678176348"></script>
+<script src="tiles/lunch-count/setup.js?v=1791678176348"></script>
+<script src="tiles/polls/setup.js?v=1791678176348"></script>
+<script src="tiles/group-maker/layout.js?v=1791678176348"></script>
+<script src="tiles/group-maker/setup.js?v=1791678176348"></script>
+<script src="tiles/stoplight/setup.js?v=1791678176348"></script>
+<script src="tiles/image/setup.js?v=1791678176348"></script>
+<script src="tiles/youtube/setup.js?v=1791678176348"></script>
+<script src="tiles/ambience-video/setup.js?v=1791678176348"></script>
+<script src="tiles/window-share/setup.js?v=1791678176348"></script>
+<script src="tiles/text-bubble/setup.js?v=1791678176348"></script>
+<script src="tiles/dictionary/setup.js?v=1791678176348"></script>
+<script src="tiles/translation/setup.js?v=1791678176348"></script>
+<script src="tiles/attendance/setup.js?v=1791678176348"></script>
+<script src="tiles/live-caption/setup.js?v=1791678176348"></script>
+<script src="tiles/voice-memo/setup.js?v=1791678176348"></script>
+<script src="tiles/photobooth/setup.js?v=1791678176348"></script>
+<script src="tiles/mirror/setup.js?v=1791678176348"></script>
+<script src="tiles/weather/setup.js?v=1791678176348"></script>
+<script src="tiles/shared/choice-wheel/setup.js?v=1791678176348"></script>
+<script src="tiles/weather-wheel/setup.js?v=1791678176348"></script>
+<script src="tiles/season-wheel/setup.js?v=1791678176348"></script>
+<script src="tiles/temperature/setup.js?v=1791678176348"></script>
+<script src="tiles/world-map/setup.js?v=1791678176348"></script>
+<script src="tiles/compass/setup.js?v=1791678176348"></script>
+<script src="tiles/shapes/setup.js?v=1791678176348"></script>
+<script src="tiles/date/setup.js?v=1791678176348"></script>
+<script src="tiles/calendar/setup.js?v=1791678176348"></script>
+<script src="tiles/progress-bar/setup.js?v=1791678176348"></script>
+<script src="tiles/visual-schedule/setup.js?v=1791678176348"></script>
+<script src="tiles/lesson-planner/setup.js?v=1791678176348"></script>
+<script src="tiles/table-maker/setup.js?v=1791678176348"></script>
+<script src="tiles/tally-chart/setup.js?v=1791678176348"></script>
+<script src="tiles/to-do/setup.js?v=1791678176348"></script>
+<script src="tiles/cvc-word/setup.js?v=1791678176348"></script>
+<script src="tiles/high-frequency-words/setup.js?v=1791678176348"></script>
+<script src="tiles/robot-hfw/setup.js?v=1791678176348"></script>
+<script src="tiles/abc/setup.js?v=1791678176348"></script>
+<script src="tiles/number-flashcards/setup.js?v=1791678176348"></script>
+<script src="tiles/custom-flashcards/setup.js?v=1791678176348"></script>
+<script src="tiles/ruler/setup.js?v=1791678176348"></script>
+<script src="tiles/calculator/setup.js?v=1791678176348"></script>
+<script src="tiles/grapher/setup.js?v=1791678176348"></script>
+<script src="tiles/periodic-table/setup.js?v=1791678176348"></script>
+<script src="tiles/money/setup.js?v=1791678176348"></script>
+<script src="tiles/pattern-maker/setup.js?v=1791678176348"></script>
+<script src="tiles/shape-manipulatives/setup.js?v=1791678176348"></script>
+<script src="tiles/number-line/setup.js?v=1791678176348"></script>
+<script src="tiles/hundreds-chart/setup.js?v=1791678176348"></script>
+<script src="tiles/ten-frames/setup.js?v=1791678176348"></script>
+<script src="tiles/wordy-puzzle/setup.js?v=1791678176348"></script>
+<script src="tiles/minesweeper/setup.js?v=1791678176348"></script>
+<script src="tiles/hangman/setup.js?v=1791678176348"></script>
+<script src="tiles/spinner/carnival.js?v=1791678176348"></script>
+<script src="tiles/spinner/setup.js?v=1791678176348"></script>
+<script src="boards/interaction-helpers.js?v=1791678176348"></script>
+<script src="profile/classroom-services.js?v=1791678176348"></script>
+<script src="account/interface-services.js?v=1791678176348"></script>
+<script src="boards/navigation.js?v=1791678176348"></script>
+<script src="shop/cosmetic-services.js?v=1791678176348"></script>
+<script src="tiles/shared/control-services.js?v=1791678176348"></script>
+<script src="boards/tile-lifecycle.js?v=1791678176348"></script>
+<script src="tiles/visual-timer/helpers.js?v=1791678176348"></script>
+<script src="tiles/prize-board/helpers.js?v=1791678176348"></script>
+<script src="tiles/shared/media-helpers.js?v=1791678176348"></script>
+<script src="tiles/shared/heading-services.js?v=1791678176348"></script>
+<script src="tiles/shared/camera-services.js?v=1791678176348"></script>
+<script src="tiles/weather/helpers.js?v=1791678176348"></script>
+<script src="tiles/shared/calendar-chart-services.js?v=1791678176348"></script>
+<script src="shop/shelf-services.js?v=1791678176348"></script>
+<script src="tiles/shared/flashcard-services.js?v=1791678176348"></script>
+<script src="boards/serialization.js?v=1791678176348"></script>
+<script src="changelog/ui.js?v=1791678176348"></script>
+<script src="shop/ui.js?v=1791678176348"></script>
+<script src="account/site-appearance.js?v=1791678176348"></script>
+<script src="account/collection-preferences.js?v=1791678176348"></script>
+<script src="app.js?v=1791678176348"></script>
+<script src="tiles/shared/cursor-effects.js?v=1791678176348"></script>
+  <script src="tiles/lesson-planner.js?v=1791678176348"></script>
+  <script src="tiles/shared/firestore-read-metrics.js?v=1791678176348"></script>
+<script type="module" src="firebase-auth.js?v=1791678176348"></script>
+<script type="module" src="profile/patches.js?v=1791678176348"></script>
 
 
   <template id="ruler-template">
@@ -5333,14 +5393,14 @@
   </template>
 
   <template id="voicememo-template">
-    <section class="module voicememo-module" data-type="voicememo" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module voicememo-module tile-modern" data-type="voicememo" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete voice memo tile">×</button><div class="module-drag-handle"></div>
-      <header class="voicememo-header"><div><span>AUDIO</span><strong class="voicememo-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Voice Memos</strong></div><span class="voicememo-count">0 / 5</span></header>
+      <header class="voicememo-header tile-modern-header"><div><span>AUDIO</span><strong class="voicememo-title tile-modern-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Voice Memos</strong></div><span class="voicememo-count">0 / 5</span></header>
       <div class="voicememo-recorder">
-        <button class="voicememo-record" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>Record memo</span></button>
         <div class="voicememo-recording-status"><strong class="voicememo-time">0:00</strong><div class="voicememo-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small class="voicememo-message" aria-live="polite">Ready to record a short memo.</small></div>
       </div>
       <div class="voicememo-list" aria-label="Recorded voice memos"><p class="voicememo-empty">Your recordings will appear here.</p></div>
+      <div class="tile-modern-footer"><button class="voicememo-record tile-modern-button" type="button" aria-pressed="false"><i aria-hidden="true"></i><span>Record Memo</span></button></div>
       <div class="customization-bar voicememo-customization" aria-label="Voice memo customization">
         <button class="custom-icon voicememo-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon voicememo-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -5463,9 +5523,9 @@
   </template>
 
   <template id="worldmap-template">
-    <section class="module worldmap-module" data-type="worldmap" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module worldmap-module tile-modern" data-type="worldmap" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete world map tile">×</button><div class="module-drag-handle"></div>
-      <header class="worldmap-header"><div><span>GEOGRAPHY</span><strong class="worldmap-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Explore the World</strong></div><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom">⌂</button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></header>
+      <header class="worldmap-header tile-modern-header"><div><span>GEOGRAPHY</span><strong class="worldmap-title tile-modern-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Explore the World</strong></div></header>
       <div class="worldmap-layout">
         <div class="worldmap-stage">
           <svg class="worldmap-svg" viewBox="0 0 1000 520" role="img" aria-label="Interactive world map with selectable continents">
@@ -5476,14 +5536,15 @@
         <aside class="worldmap-info" aria-live="polite"><span class="worldmap-kicker">SELECT A COUNTRY</span><strong class="worldmap-name">World Map</strong><small class="worldmap-hemisphere">Real Natural Earth boundaries</small><p class="worldmap-fact">Click any country, or use a continent button to zoom and learn.</p><em>Natural Earth · 1:110m</em></aside>
       </div>
       <div class="worldmap-legend" role="list" aria-label="Continents"></div>
+      <div class="tile-modern-footer"><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2 7M4 5v6h6"/></svg></button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></div>
       <div class="customization-bar worldmap-customization" aria-label="World map customization"><button class="custom-icon worldmap-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon worldmap-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon worldmap-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
 <template id="usstates-template">
-    <section class="module worldmap-module usstates-module" data-type="usstates" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module worldmap-module usstates-module tile-modern" data-type="usstates" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete US states map tile">×</button><div class="module-drag-handle"></div>
-      <header class="worldmap-header"><div><span>GEOGRAPHY</span><strong class="worldmap-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">50 States</strong></div><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom">⌂</button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></header>
+      <header class="worldmap-header tile-modern-header"><div><span>GEOGRAPHY</span><strong class="worldmap-title tile-modern-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">50 States</strong></div></header>
       <div class="worldmap-layout">
         <div class="worldmap-stage">
           <svg class="worldmap-svg" viewBox="0 0 1000 520" role="img" aria-label="Interactive US states map with selectable continents">
@@ -5494,15 +5555,16 @@
         <aside class="worldmap-info" aria-live="polite"><span class="worldmap-kicker">SELECT A STATE</span><strong class="worldmap-name">50 States</strong><small class="worldmap-hemisphere">Real Natural Earth boundaries</small><p class="worldmap-fact">Click any country, or use a continent button to zoom and learn.</p><em>US Census · US Atlas</em></aside>
       </div>
       <div class="worldmap-legend" role="list" aria-label="States"></div>
+      <div class="tile-modern-footer"><div class="worldmap-zoom-controls"><button type="button" data-map-zoom="out" aria-label="Zoom map out">−</button><button type="button" data-map-zoom="reset" aria-label="Reset map zoom"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2 7M4 5v6h6"/></svg></button><button type="button" data-map-zoom="in" aria-label="Zoom map in">+</button></div></div>
       <div class="customization-bar worldmap-customization" aria-label="World map customization"><button class="custom-icon worldmap-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon worldmap-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon worldmap-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
   </template>
 
   <template id="compass-template">
-    <section class="module compass-module" data-type="compass" data-bg="white" data-font="inter" data-text="dark">
+    <section class="module compass-module tile-modern" data-type="compass" data-bg="white" data-font="inter" data-text="dark">
       <button class="module-delete" aria-label="Delete compass tile">×</button><div class="module-drag-handle"></div>
-      <header class="compass-header"><div><span>GEOGRAPHY</span><strong class="compass-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Compass Explorer</strong></div><output class="compass-heading">0° · North</output></header>
+      <header class="compass-header tile-modern-header"><div><span>GEOGRAPHY</span><strong class="compass-title tile-modern-title" contenteditable="true" spellcheck="true" data-text-edit-mode="double">Compass Explorer</strong></div><output class="compass-heading">0° · North</output></header>
       <div class="compass-layout">
         <div class="compass-face-wrap">
           <svg class="compass-face" viewBox="0 0 420 420" role="img" tabindex="0" aria-label="Interactive compass rose. Grab and drag to turn the needle.">
@@ -5512,8 +5574,9 @@
             <g class="compass-points"><text x="210" y="54">N</text><text x="366" y="219">E</text><text x="210" y="382">S</text><text x="54" y="219">W</text><text x="319" y="103">NE</text><text x="319" y="329">SE</text><text x="101" y="329">SW</text><text x="101" y="103">NW</text></g>
           </svg>
         </div>
-        <aside class="compass-info"><span>EXPLORE A PART</span><strong class="compass-part-name">Direction needle</strong><p class="compass-part-copy">The colored end points toward the selected heading. Rotate it to practice finding directions.</p><div class="compass-part-buttons"><button type="button" data-compass-part="needle">Needle</button><button type="button" data-compass-part="cardinal">Cardinal</button><button type="button" data-compass-part="intercardinal">Intercardinal</button><button type="button" data-compass-part="degrees">Degree ring</button></div></aside>
+        <aside class="compass-info"><span>EXPLORE A PART</span><strong class="compass-part-name">Direction needle</strong><p class="compass-part-copy">The colored end points toward the selected heading. Rotate it to practice finding directions.</p></aside>
       </div>
+      <div class="tile-modern-footer"><div class="compass-part-buttons"><button type="button" data-compass-part="needle">Needle</button><button type="button" data-compass-part="cardinal">Cardinal</button><button type="button" data-compass-part="intercardinal">Intercardinal</button><button type="button" data-compass-part="degrees">Degrees</button></div></div>
       <div class="customization-bar compass-customization" aria-label="Compass customization"><button class="custom-icon compass-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon compass-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon compass-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
@@ -5660,12 +5723,12 @@
   </template>
 
   <template id="hangman-template">
-    <section class="module hangman-module" data-type="hangman" data-bg="white" data-font="inter">
+    <section class="module hangman-module tile-modern" data-type="hangman" data-bg="white" data-font="inter">
       <button class="module-delete" aria-label="Delete Hangman">×</button>
       <div class="module-drag-handle"></div>
       <div class="confetti-layer" aria-hidden="true"></div>
 
-      <div class="hangman-header">
+      <div class="hangman-header tile-modern-header">
         <div>
           <span class="hangman-kicker">HANGMAN</span>
           <strong class="hangman-status">READY</strong>
@@ -5698,11 +5761,11 @@
       <div class="hangman-setup">
         <div class="hangman-setup-card">
           <span class="hangman-setup-label">TEACHER SETUP</span>
-          <strong>Set the secret word</strong>
+          <strong>Set the Secret Word</strong>
           <p>Letters and spaces are supported. Spaces will be shown automatically.</p>
           <input class="hangman-word-input" type="password" maxlength="40" autocomplete="off" placeholder="Enter a word or phrase">
           <div class="hangman-setup-actions">
-            <button class="hangman-save-word" type="button">Start game</button>
+            <button class="hangman-save-word" type="button">Start Game</button>
           </div>
         </div>
       </div>
@@ -5715,6 +5778,7 @@
         </div>
       </div>
 
+      <div class="tile-modern-footer"><button type="button" class="tile-modern-button hangman-new-game">New Game</button></div>
       <div class="customization-bar hangman-customization" aria-label="Hangman customization">
         <button class="custom-icon hangman-bg" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon hangman-font" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -5728,12 +5792,12 @@
   </template>
 
   <template id="wordypuzzle-template">
-    <section class="module wordy-module" data-type="wordypuzzle" data-bg="white" data-font="inter" tabindex="-1">
+    <section class="module wordy-module tile-modern" data-type="wordypuzzle" data-bg="white" data-font="inter" tabindex="-1">
       <button class="module-delete" aria-label="Delete Wordy Puzzle">×</button>
       <div class="module-drag-handle"></div>
       <div class="confetti-layer wordy-confetti" aria-hidden="true"></div>
 
-      <header class="wordy-header">
+      <header class="wordy-header tile-modern-header">
         <div class="wordy-heading">
           <span class="wordy-kicker">WORDY PUZZLE</span>
           <strong class="wordy-status">TEACHER SETUP</strong>
@@ -5750,7 +5814,7 @@
       <div class="wordy-setup">
         <div class="wordy-setup-card">
           <span class="wordy-setup-label">TEACHER SETUP</span>
-          <strong>Set the secret word</strong>
+          <strong>Set the Secret Word</strong>
           <p>Choose a word from 3–8 letters. Students will get six guesses.</p>
           <input class="wordy-secret-input" type="password" maxlength="8" autocomplete="off" spellcheck="false" placeholder="Enter secret word" aria-label="Secret word">
           <div class="wordy-setup-error" aria-live="polite"></div>
@@ -5766,6 +5830,7 @@
         </div>
       </div>
 
+      <div class="tile-modern-footer"><button type="button" class="tile-modern-button wordy-new-game">New Game</button></div>
       <div class="customization-bar wordy-customization" aria-label="Wordy Puzzle customization">
         <button class="custom-icon wordy-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button>
         <button class="custom-icon wordy-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
@@ -5823,6 +5888,6 @@
     </section>
   </template>
 
-<script src="tiles/shared/history.js?v=1791428708703"></script>
+<script src="tiles/shared/history.js?v=1791678176348"></script>
 </body>
 </html>

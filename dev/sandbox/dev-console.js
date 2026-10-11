@@ -14,7 +14,7 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.deve
   const stylesheet=document.createElement('link');
   stylesheet.rel='stylesheet';
   const stylesheetUrl=new URL('./dev-console.css',import.meta.url);
-  stylesheetUrl.searchParams.set('v','20261012-subscription-preview');
+  stylesheetUrl.searchParams.set('v','20261012-board-chrome');
   stylesheet.href=stylesheetUrl.href;
   document.head.appendChild(stylesheet);
   document.body.classList.add('sandbox-mode');

@@ -687,6 +687,7 @@ function menuCategoryLabel(category){
   if(category.startsWith('holiday:'))return menuHolidays[Number(category.split(':')[1])]||'HOLIDAY TILES';
   if(category.startsWith('favorite:'))return menuCategoryLabel(category.slice(9));
   if(category==='music')return 'MUSIC';
+  if(category==='misc')return 'MISC';
   if(category==='art')return 'ART';
   if(category==='holidays')return 'HOLIDAY TILES';
   return translateAppText(category==='all'?'context.all':`context.cat.${category}`);

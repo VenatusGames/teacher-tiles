@@ -913,7 +913,7 @@
     createPlannerButton.title = createPlannerButton.disabled ? `Planner limit reached (${limit})` : 'Create planner';
     libraryGrid.replaceChildren();
     createPlannerButton.classList.add('planner-library-create--shelf');
-    createPlannerButton.innerHTML = '<span aria-hidden="true">＋</span><strong>New planner</strong>';
+    createPlannerButton.innerHTML = '<span aria-hidden="true">＋</span><strong>New Planner</strong>';
 
     planners.forEach(planner => {
       const color = plannerColor(planner);
@@ -926,7 +926,9 @@
       open.setAttribute('role', 'button');
       open.tabIndex = 0;
       open.setAttribute('aria-label', `Open ${planner.name}`);
-      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><i></i><b></b><em></em></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><span class="planner-book-loop"></span><span class="planner-book-cover"><span class="planner-book-cover-label"><b class="planner-book-embossed-title"></b><small>LESSON PLANNER</small></span><span class="planner-book-elastic"></span></span><span class="planner-book-binding">' + '<span></span>'.repeat(12) + '</span></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      open.querySelector('.planner-book-embossed-title').textContent = planner.name;
+      card.style.setProperty('--planner-title-size', planner.name.length > 38 ? '6.5cqi' : planner.name.length > 22 ? '11cqi' : '14cqi');
       const name = open.querySelector('strong');
       name.textContent = planner.name;
       const count = planner.blocks.length;
@@ -1147,7 +1149,7 @@
     schedulingWeekday.value = '1';
     scheduleEditorColor = COLORS[0].id;
     schedulingCancel.hidden = true;
-    schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Add schedule block';
+    schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Add Schedule Block';
     syncScheduleRepeatUi();
     renderScheduleColors();
   }
@@ -1249,7 +1251,7 @@
         schedulingWeekday.value = String(item.weekday);
         scheduleEditorColor = item.color;
         schedulingCancel.hidden = false;
-        schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Save changes';
+        schedulingForm.querySelector('.lesson-planner-schedule-save').textContent = 'Save Changes';
         syncScheduleRepeatUi(); renderScheduleColors(); schedulingLabel.focus({preventScroll:true}); schedulingLabel.select();
       });
       remove.addEventListener('click', () => {
@@ -1267,7 +1269,7 @@
     templateForm.reset();
     templateDescriptionCount.textContent = '0';
     templateCancel.hidden = true;
-    templateForm.querySelector('.lesson-planner-template-save').textContent = 'Add template';
+    templateForm.querySelector('.lesson-planner-template-save').textContent = 'Add Template';
   }
 
   function renderTemplateList() {
@@ -1294,7 +1296,7 @@
         templateDescription.value = item.description;
         templateDescriptionCount.textContent = String(item.description.length);
         templateCancel.hidden = false;
-        templateForm.querySelector('.lesson-planner-template-save').textContent = 'Save changes';
+        templateForm.querySelector('.lesson-planner-template-save').textContent = 'Save Changes';
         templateName.focus({ preventScroll: true });
         templateName.select();
       });
@@ -1445,7 +1447,7 @@
     agendaList.replaceChildren();
     if (!dayBlocks.length) {
       const empty = make('div', 'lesson-planner-agenda__empty');
-      empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open space</strong><small>Add a lesson block for this day.</small>';
+      empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open Space</strong><small>Add a lesson block for this day.</small>';
       agendaList.append(empty);
       return;
     }
@@ -2011,7 +2013,7 @@
     editorColor = block?.color || prefill.color || COLORS[0].id;
     deleteButton.hidden = !block;
     duplicateButton.hidden = !block;
-    document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit lesson' : 'Plan a lesson';
+    document.getElementById('lesson-planner-editor-title').textContent = block ? 'Edit Lesson' : 'Plan a Lesson';
     renderEditorScheduleContext(section);
     renderColors();
     editor.hidden = false;
@@ -2069,6 +2071,19 @@
   document.getElementById('lesson-planner-library-back').addEventListener('click', () => closePlanner(true));
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
   document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
+  document.getElementById('lesson-planner-help')?.addEventListener('click', () => {
+    closePlanner(false);
+    if (document.getElementById('settings-modal')?.hidden) document.getElementById('settings-toggle')?.click();
+    const search = document.getElementById('help-search');
+    if (search) search.value = '';
+    document.querySelector('[data-settings-tab="help"]')?.click();
+    window.TeacherTilesPanelSearch?.refresh();
+    requestAnimationFrame(() => {
+      const heading = document.getElementById('help-lesson-planner-title');
+      heading?.focus({ preventScroll: true });
+      document.getElementById('help-lesson-planner')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    });
+  });
   schedulingButton.addEventListener('click', () => { closeSettingsMenu(); openScheduling(); });
   templatesButton.addEventListener('click', () => { closeSettingsMenu(); openTemplates(); });
   librarySchedulingButton?.addEventListener('click', () => openScheduling(null, { fromLibrary: true }));
