@@ -2071,6 +2071,19 @@
   document.getElementById('lesson-planner-library-back').addEventListener('click', () => closePlanner(true));
   document.getElementById('lesson-planner-close').addEventListener('click', () => closePlanner(false));
   document.getElementById('lesson-planner-back').addEventListener('click', () => showPlannerLibrary());
+  document.getElementById('lesson-planner-help')?.addEventListener('click', () => {
+    closePlanner(false);
+    if (document.getElementById('settings-modal')?.hidden) document.getElementById('settings-toggle')?.click();
+    const search = document.getElementById('help-search');
+    if (search) search.value = '';
+    document.querySelector('[data-settings-tab="help"]')?.click();
+    window.TeacherTilesPanelSearch?.refresh();
+    requestAnimationFrame(() => {
+      const heading = document.getElementById('help-lesson-planner-title');
+      heading?.focus({ preventScroll: true });
+      document.getElementById('help-lesson-planner')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    });
+  });
   schedulingButton.addEventListener('click', () => { closeSettingsMenu(); openScheduling(); });
   templatesButton.addEventListener('click', () => { closeSettingsMenu(); openTemplates(); });
   librarySchedulingButton?.addEventListener('click', () => openScheduling(null, { fromLibrary: true }));
