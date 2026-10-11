@@ -4,7 +4,7 @@ import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/acc
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261008-tiles';
-import {createTemplateLibrary} from './templates/ui.js?v=20260930-report-dialog';
+import {createTemplateLibrary} from './templates/ui.js?v=20261010-gallery-loading';
 import {syncAwardedPatches} from './profile/awards.js?v=20260930-single-inspector';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
