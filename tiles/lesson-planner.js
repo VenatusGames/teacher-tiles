@@ -926,7 +926,9 @@
       open.setAttribute('role', 'button');
       open.tabIndex = 0;
       open.setAttribute('aria-label', `Open ${planner.name}`);
-      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><span class="planner-book-cover"><span class="planner-book-cover-label"><small>TEACHERTILES</small><b>Lesson<br>Planner</b><svg viewBox="0 0 32 32" fill="none"><rect x="6" y="7" width="20" height="19" rx="3"/><path d="M11 4v6m10-6v6M6 13h20m-14 5h2m4 0h2m-8 4h2m4 0h2"/></svg></span><span class="planner-book-ribbon"></span></span><span class="planner-book-binding"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      open.innerHTML = '<span class="planner-book-art" aria-hidden="true"><span class="planner-book-loop"></span><span class="planner-book-cover"><span class="planner-book-cover-label"><b class="planner-book-embossed-title"></b><small>LESSON PLANNER</small></span><span class="planner-book-elastic"></span></span><span class="planner-book-binding">' + '<span></span>'.repeat(12) + '</span></span><span class="planner-book-copy"><small>LESSON PLANNER</small><strong title="Double-click to rename"></strong><em></em></span>';
+      open.querySelector('.planner-book-embossed-title').textContent = planner.name;
+      card.style.setProperty('--planner-title-size', planner.name.length > 38 ? '6.5cqi' : planner.name.length > 22 ? '11cqi' : '14cqi');
       const name = open.querySelector('strong');
       name.textContent = planner.name;
       const count = planner.blocks.length;
