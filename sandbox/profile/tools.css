@@ -62,3 +62,22 @@
 .profile-tools .profile-tool-coming-soon{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease}
 .profile-tools .profile-tool-button--unavailable:hover .profile-tool-coming-soon{opacity:1;visibility:visible}
 @media(prefers-reduced-motion:reduce){.profile-tools .profile-tool-coming-soon{transition:none}}
+
+/* Keep scrolling content inside the profile's rounded shell. */
+.profile-panel{display:flex;flex-direction:column;overflow:hidden}
+.profile-panel__header{position:relative;z-index:3;flex:0 0 auto;border-start-start-radius:inherit;border-start-end-radius:inherit}
+.profile-panel__body{min-height:0;overflow:auto;overscroll-behavior:contain;margin:0 5px 6px 0}
+.profile-notification-menu{overflow:hidden;isolation:isolate}
+.profile-notification-menu:not([hidden]){display:flex;flex-direction:column}
+.profile-notification-menu>header{position:relative;flex:0 0 auto;border-start-start-radius:inherit;border-start-end-radius:inherit;background:var(--surface-solid)}
+.profile-notification-list{min-height:0;overflow:auto;overscroll-behavior:contain;margin:0 4px 5px 0}
+.profile-panel__body,.profile-notification-list{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 25%,transparent) transparent}
+.profile-panel__body::-webkit-scrollbar,.profile-notification-list::-webkit-scrollbar{width:8px;height:8px}
+.profile-panel__body::-webkit-scrollbar-track,.profile-notification-list::-webkit-scrollbar-track{background:transparent;border-radius:999px}
+.profile-panel__body::-webkit-scrollbar-thumb,.profile-notification-list::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:color-mix(in srgb,var(--text) 25%,transparent);background-clip:padding-box}
+.profile-panel__body::-webkit-scrollbar-thumb:hover,.profile-notification-list::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--text) 40%,transparent)}
+.profile-panel__body::-webkit-scrollbar-corner,.profile-notification-list::-webkit-scrollbar-corner{background:transparent}
+@media(max-width:720px){.profile-notification-menu{right:-54px;width:min(430px,calc(100vw - 58px))}}
+
+/* Notification titles must not inherit the profile header size on phones. */
+.profile-notification-card .profile-notification-card__copy>strong{font-size:13px;line-height:1.4;letter-spacing:normal}
