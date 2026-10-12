@@ -518,9 +518,15 @@ function setupTeacherTilesShop(){
     try{
       const previousBalance=Number(accountState().coinBalance)||0;
       const result=await window.TeacherTilesAccount.redeem(code);
-      redeemInput.value='';redeemStatus.textContent=`Added ${Number(result.grantedCoins||0).toLocaleString()} coins to your account.`;
-      showToast('Code redeemed successfully.');syncShop();
-      showCoinCelebration(previousBalance,Number(result.coinBalance)||Number(accountState().coinBalance)||previousBalance+Number(result.grantedCoins||0));
+      redeemInput.value='';
+      const coins=Number(result.coinsAwarded)||0;
+      if(result.status==='already_owned')redeemStatus.textContent='You already own this cosmetic. The code was not used.';
+      else if(result.duplicate)redeemStatus.textContent='You have already redeemed this code.';
+      else if(result.rewardType==='cosmetic')redeemStatus.textContent='Cosmetic unlocked!';
+      else if(result.rewardType==='membership_trial')redeemStatus.textContent='Membership trial redeemed. Your membership is being confirmed.';
+      else redeemStatus.textContent=`Added ${coins.toLocaleString()} coins to your account.`;
+      showToast(redeemStatus.textContent);syncShop();
+      if(coins>0&&!result.duplicate)showCoinCelebration(previousBalance,Number(accountState().coinBalance)||previousBalance+coins);
     }catch(error){
       redeemStatus.classList.add('is-error');redeemStatus.textContent=errorMessage(error,'That code could not be redeemed.');
     }finally{if(button)button.disabled=false}
