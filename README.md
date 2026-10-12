@@ -8,13 +8,13 @@ Custom Flashcards lets teachers create multiple reusable card sets, switch betwe
 
 ## Run locally
 
-Open `index.html` directly for most features. Microphone access for the Noise Detector requires localhost or HTTPS. From this folder, you can run:
+The homepage is `index.html`; the main board is `board.html`. Homepage assets and isolated demos live in `home-site/`. Open `board.html` directly for most board features. Microphone access for the Noise Detector requires localhost or HTTPS. From this folder, you can run:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000` in your browser.
+Then open `http://localhost:8000` for the homepage or `http://localhost:8000/board.html` for the board.
 
 ## Image module
 
