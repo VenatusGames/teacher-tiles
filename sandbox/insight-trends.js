@@ -11,7 +11,7 @@ export function createTrendCharts(root) {
  function render() {
   grid.replaceChildren();
   const start=asOf-days*86400000,inRange=points.filter(p=>p.at>=start&&p.at<=asOf);
-  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],[membershipKind==='paid'?'paidSubscribers':'trialSubscribers',membershipKind==='paid'?'Paid Subscribers':'Trial Subscribers',membershipKind==='paid'?'Active paid subscriptions · trials excluded':'Active trial subscriptions · paid plans excluded']]) {
+  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],[membershipKind==='paid'?'paidSubscribers':'trialSubscribers',membershipKind==='paid'?'Paid Subscribers':'Trial Subscribers',membershipKind==='paid'?'Active paid subscriptions · trials excluded':'Trials and dev-console testing · paid plans excluded']]) {
    const visible=inRange.filter(p=>Number.isFinite(p[key]));
    const card=node('article','trend-card trend-'+key);
    const head=node('div','trend-card-heading'),copy=node('div','');copy.append(node('h3','',title),node('p','',description));if(key!=='online'){const tabs=node('div','portal-segments membership-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Subscription trend type');for(const [kind,label] of [['paid','Paid'],['trials','Trials']]){const button=node('button','',label);button.type='button';button.dataset.membershipKind=kind;button.setAttribute('aria-pressed',String(kind===membershipKind));tabs.append(button);}tabs.classList.add('membership-trend-tabs');head.append(tabs);}
