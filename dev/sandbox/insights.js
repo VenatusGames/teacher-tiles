@@ -1,4 +1,4 @@
-import {createTrendCharts} from './insight-trends.js?v=20261012-compact-membership';
+import {createTrendCharts} from './insight-trends.js?v=20261012-preview-trials';
 export function createInsights(call){
  const root=document.getElementById('developer-insights');
  root.innerHTML=`<div class="insights-header"><div><h2>At a Glance</h2><p id="insights-status" role="status">Loading a current snapshot…</p></div><button class="quiet" id="insights-refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/></svg>Refresh Insights</button></div>
@@ -11,7 +11,7 @@ export function createInsights(call){
  </div>
  <div class="insight-charts" hidden>
   <article class="insight-chart"><div><h3>Account Activity</h3><p>Activity across enabled accounts.</p></div><div class="portal-ring-content"><div class="portal-ring activity-ring" role="img"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="portal-ring-track" cx="60" cy="60" r="50"/><circle class="portal-ring-fill" cx="60" cy="60" r="50" pathLength="100"/></svg><span class="portal-ring-center"><strong>—</strong><small>online</small></span></div><div class="portal-ring-legend"><div class="activity-total"><strong data-stat="total">—</strong><span>enabled accounts</span></div><div class="chart-legend"><span class="online-legend"></span><span class="offline-legend"></span></div></div></div></article>
-  <article class="insight-chart subscription-chart"><div class="membership-chart-heading"><h3>Subscription Share</h3><div class="portal-segments membership-tabs" role="group" aria-label="Subscription type"><button type="button" data-membership-kind="paid" aria-pressed="true">Paid</button><button type="button" data-membership-kind="trials" aria-pressed="false">Trials</button></div><p>Active subscriptions · dev previews excluded.</p></div><div class="portal-ring-content"><div class="portal-ring subscription-donut" role="img"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="portal-ring-track" cx="60" cy="60" r="50"/><circle class="portal-ring-fill" cx="60" cy="60" r="50" pathLength="100"/></svg><span class="portal-ring-center"><strong>—</strong><small>subscribed</small></span></div><div class="portal-ring-legend"><div class="activity-total"><strong data-membership-count>—</strong><span>active subscriptions</span></div><span class="subscription-legend"></span><p class="subscription-other"></p></div></div></article>
+  <article class="insight-chart subscription-chart"><div class="membership-chart-heading"><h3>Subscription Share</h3><div class="portal-segments membership-tabs" role="group" aria-label="Subscription type"><button type="button" data-membership-kind="paid" aria-pressed="true">Paid</button><button type="button" data-membership-kind="trials" aria-pressed="false">Trials</button></div><p>Trials include dev-console testing subscriptions.</p></div><div class="portal-ring-content"><div class="portal-ring subscription-donut" role="img"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="portal-ring-track" cx="60" cy="60" r="50"/><circle class="portal-ring-fill" cx="60" cy="60" r="50" pathLength="100"/></svg><span class="portal-ring-center"><strong>—</strong><small>subscribed</small></span></div><div class="portal-ring-legend"><div class="activity-total"><strong data-membership-count>—</strong><span>active subscriptions</span></div><span class="subscription-legend"></span><p class="subscription-other"></p></div></div></article>
  </div>
  <section class="insight-trends" aria-label="Online users and subscriber trends"></section>`;
  const trends=createTrendCharts(root.querySelector('.insight-trends'));
@@ -21,8 +21,8 @@ export function createInsights(call){
   root.querySelectorAll('button[data-membership-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.membershipKind===membershipKind)));
   const paid=membershipKind==='paid',title=paid?'Paid Subscribers':'Trial Subscribers';
   root.querySelector('.insight-subscribers h3').textContent=title;
-  root.querySelector('.insight-subscribers>small').textContent=paid?'Active paid subscriptions':'Active trial subscriptions';
-  root.querySelector('.subscription-chart>div>p').textContent=paid?'Paid memberships only · trials and dev previews excluded.':'Trial memberships only · paid plans and dev previews excluded.';
+  root.querySelector('.insight-subscribers>small').textContent=paid?'Active paid subscriptions':'Trials and dev-console testing subscriptions';
+  root.querySelector('.subscription-chart>div>p').textContent=paid?'Paid memberships only · trials and dev previews excluded.':'Trials include dev-console testing subscriptions · paid plans excluded.';
   root.querySelector('.subscription-chart').dataset.membershipKind=membershipKind;
   if(!snapshot)return;
   const count=snapshot[paid?'paidSubscribers':'trialSubscribers'],known=Number.isFinite(count);
