@@ -4065,6 +4065,9 @@ window.TeacherTilesAccount = {
     return result;
   },
   async createSubscriptionCheckout(priceId) {
+    if (shopAccountState.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive) {
+      throw new Error("Your subscription is already active.");
+    }
     const returnUrl = new URL(window.location.href);
     returnUrl.hash = "";
     returnUrl.searchParams.delete("tt_checkout");
