@@ -526,7 +526,7 @@ function setupTeacherTilesShop(){
       else if(result.rewardType==='membership_trial')redeemStatus.textContent='Membership trial redeemed. Your membership is being confirmed.';
       else redeemStatus.textContent=`Added ${coins.toLocaleString()} coins to your account.`;
       showToast(redeemStatus.textContent);syncShop();
-      if(coins>0&&!result.duplicate)showCoinCelebration(previousBalance,Number(accountState().coinBalance)||previousBalance+coins);
+      if(coins>0&&!result.duplicate)showCoinCelebration(previousBalance,previousBalance+coins);
     }catch(error){
       redeemStatus.classList.add('is-error');redeemStatus.textContent=errorMessage(error,'That code could not be redeemed.');
     }finally{if(button)button.disabled=false}
