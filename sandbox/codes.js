@@ -14,11 +14,17 @@ export function createCodesPanel(call) {
     <div class="codes-table-wrap"><table class="codes-table"><thead><tr><th>Code</th><th>Reward</th><th>Status</th><th>Uses</th><th>Expires</th><th></th></tr></thead><tbody id="codes-list"></tbody></table></div><button id="codes-more" type="button" class="quiet" hidden>Load More</button>
     <dialog id="codes-create" class="codes-dialog"><form method="dialog" id="codes-create-form"><button class="codes-dialog-close quiet" type="button" data-codes-create-close aria-label="Close">×</button><p class="eyebrow">NEW REDEMPTION CODE</p><h2>Generate TT Code</h2>
       <label>Reward Type<select id="codes-create-type"><option value="coins">Coin Pack</option><option value="cosmetic">Specific Cosmetic</option><option value="membership_trial">Membership Trial</option></select></label>
-      <label id="codes-create-reward-wrap">Reward<select id="codes-create-reward"></select></label>
+      <section id="codes-create-reward-wrap" class="codes-reward-picker" aria-labelledby="codes-reward-heading">
+        <div class="codes-reward-heading"><span id="codes-reward-heading">Choose a Reward</span><span id="codes-reward-count" role="status"></span></div>
+        <label class="codes-reward-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="codes-reward-search" type="search" aria-label="Search Rewards" placeholder="Search rewards…" autocomplete="off"></label>
+        <input id="codes-create-reward" type="hidden">
+        <div id="codes-reward-options" class="codes-reward-options" role="radiogroup" aria-label="Available Rewards"></div>
+        <p id="codes-selected-reward" class="codes-selected-reward" role="status">Choose a reward above.</p>
+      </section>
       <label id="codes-create-days-wrap" hidden>Trial Length (Days)<input id="codes-create-days" type="number" min="1" max="365" value="30"></label>
       <label>Internal Label <input id="codes-create-label" maxlength="120" placeholder="Optional campaign / purpose"></label>
-      <label>Use Limit <input id="codes-create-limit" type="number" min="1" max="100000" placeholder="Unlimited"></label>
-      <label>Expires <input id="codes-create-expires" type="datetime-local"></label>
+      <div class="codes-create-fields"><label>Use Limit <input id="codes-create-limit" type="number" min="1" max="100000" placeholder="Unlimited"></label>
+      <label>Expires <input id="codes-create-expires" type="datetime-local"></label></div>
       <p id="codes-create-status" class="codes-status" role="status"></p><button type="button" class="quiet" id="codes-catalog-retry" hidden>Retry Loading Rewards</button>
       <div class="codes-dialog-actions"><button class="quiet" value="cancel" type="button" data-codes-cancel>Cancel</button><button class="primary" type="submit">Generate</button></div>
     </form></dialog>
@@ -46,21 +52,58 @@ export function createCodesPanel(call) {
     if (item.maxRedemptions != null && item.completedUses >= item.maxRedemptions) return 'exhausted';
     return 'active';
   }
+  const rewardOptions = q('codes-reward-options'), rewardSearch = q('codes-reward-search');
+  const searchable = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const rewardKind = item => item.rewardType === 'coins' ? 'Coin Pack'
+    : item.rewardId.startsWith('tile-skin-') ? 'Tile Skin'
+    : item.rewardId.startsWith('theme-') ? 'Theme'
+    : item.rewardId.startsWith('cursor-') ? 'Cursor Pack' : 'Cosmetic Pack';
   function fillRewards() {
     const trial = type.value === 'membership_trial';
     q('codes-create-days-wrap').hidden = !trial;
     q('codes-create-reward-wrap').hidden = trial;
     const options = catalog?.[type.value === 'coins' ? 'coins' : 'cosmetics'] || [];
-    const selectedReward = reward.value;
-    reward.replaceChildren(...options.map(item => {
-      const option = document.createElement('option');
-      option.value = item.rewardId;
-      option.textContent = item.name;
-      return option;
+    const selected = options.find(item => item.rewardId === reward.value);
+    if (!selected) reward.value = '';
+    const terms = searchable(rewardSearch.value).split(' ').filter(Boolean);
+    const visible = options.filter(item => {
+      const words = searchable(`${item.name} ${item.rewardId} ${rewardKind(item)}`);
+      return terms.every(term => words.includes(term));
+    });
+    rewardOptions.replaceChildren(...visible.map(item => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'codes-reward-option';
+      button.dataset.rewardId = item.rewardId;
+      button.setAttribute('role', 'radio');
+      button.setAttribute('aria-checked', String(item.rewardId === reward.value));
+      button.innerHTML = `<span><strong>${escape(item.name)}</strong><small>${escape(rewardKind(item))}</small></span><span class="codes-reward-check" aria-hidden="true">✓</span>`;
+      button.onclick = () => { reward.value = item.rewardId; fillRewards(); rewardOptions.querySelector(`[data-reward-id="${item.rewardId}"]`)?.focus({preventScroll:true}); };
+      return button;
     }));
-    if (options.some(item => item.rewardId === selectedReward)) reward.value = selectedReward;
-    form.querySelector('[type="submit"]').disabled = !catalog || (!trial && !options.length);
+    const buttons = [...rewardOptions.querySelectorAll('button')];
+    const current = buttons.find(button => button.getAttribute('aria-checked') === 'true') || buttons[0];
+    buttons.forEach(button => { button.tabIndex = button === current ? 0 : -1; });
+    if (!visible.length) {
+      const empty = document.createElement('p'); empty.className = 'codes-reward-empty';
+      empty.textContent = !catalog ? 'Loading rewards…' : !options.length ? 'No rewards available. Refresh the reward catalog.' : 'No matching rewards. Try another search.';
+      rewardOptions.append(empty);
+    }
+    q('codes-reward-count').textContent = catalog ? `${visible.length} of ${options.length}` : '';
+    q('codes-selected-reward').textContent = selected ? `Selected: ${selected.name}` : 'Choose a reward above.';
+    rewardSearch.placeholder = type.value === 'coins' ? 'Search coin packs…' : 'Search cosmetics by name or type…';
+    form.querySelector('[type="submit"]').disabled = creating || !catalog || (!trial && !selected);
   }
+  rewardSearch.oninput = fillRewards;
+  rewardSearch.onkeydown = event => { if (event.key === 'Enter') event.preventDefault(); };
+  rewardOptions.onkeydown = event => {
+    const buttons = [...rewardOptions.querySelectorAll('button')], index = buttons.indexOf(event.target);
+    if (index < 0 || !['ArrowDown','ArrowRight','ArrowUp','ArrowLeft','Home','End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+      : (index + (['ArrowDown','ArrowRight'].includes(event.key) ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next].click();
+    rewardOptions.querySelector('[aria-checked="true"]')?.scrollIntoView({block:'nearest'});
+  };
   function render() {
     list.innerHTML = items.map(item => {
       const state = availability(item);
@@ -103,7 +146,8 @@ export function createCodesPanel(call) {
       body.innerHTML = `<p class="eyebrow">TT CODE DETAILS</p><h2>${escape(item.codeHint)}</h2><dl class="codes-facts"><dt>Reward</dt><dd>${escape(item.rewardName)}</dd><dt>Status</dt><dd>${title(availability(item))}</dd><dt>Uses</dt><dd>${Number(item.completedUses || 0)} / ${item.maxRedemptions ?? 'unlimited'}</dd><dt>Expires</dt><dd>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</dd><dt>Label</dt><dd>${escape(item.label || '—')}</dd></dl><h3>Redemption History</h3><div class="codes-history">${uses.length ? uses.map(use => `<div><strong>${escape(use.uid || use.id)}</strong><span>${escape(title(use.status))}</span><small>${escape(date(use.completedAt || use.createdAt))}</small>${use.releaseReason ? `<em>${escape(use.releaseReason)}</em>` : ''}</div>`).join('') : '<p>No redemptions yet.</p>'}</div><small>Shows up to 50 recent redemptions and 50 reservations.</small>`;
     } catch (error) { body.innerHTML = `<p class="codes-status">${escape(err(error))}</p>`; }
   }
-  async function loadRewards() {
+  async function loadRewards(force = false) {
+    if (force) catalog = null;
     form.querySelector('[type="submit"]').disabled = true;
     type.disabled = true;
     q('codes-catalog-retry').hidden = true;
@@ -111,7 +155,11 @@ export function createCodesPanel(call) {
     try {
       if (!catalog) {
         catalogPromise ||= request({action:'catalog'}).finally(() => { catalogPromise = null; });
-        catalog = await catalogPromise;
+        const received = await catalogPromise;
+        if (!Array.isArray(received?.coins) || !Array.isArray(received?.cosmetics) || !received?.trials?.rewardId) {
+          throw new Error('The reward service is out of date. Publish the current dev functions and try again.');
+        }
+        catalog = received;
       }
       fillRewards();
       q('codes-create-days').min = catalog.trials.minDays;
@@ -123,12 +171,12 @@ export function createCodesPanel(call) {
     } finally { type.disabled = false; }
   }
   q('codes-new').onclick = () => {
-    form.reset(); createAttempt = null;
+    form.reset(); reward.value = ''; createAttempt = null;
     q('codes-create-days').value = catalog?.trials.defaultDays || 30;
-    fillRewards(); create.showModal(); void loadRewards();
+    fillRewards(); create.showModal(); void loadRewards(true);
   };
-  q('codes-catalog-retry').onclick = loadRewards;
-  type.onchange = fillRewards;
+  q('codes-catalog-retry').onclick = () => loadRewards(true);
+  type.onchange = () => { reward.value = ''; rewardSearch.value = ''; fillRewards(); };
   const closeCreate = () => { if (!creating) create.close(); };
   element.querySelector('[data-codes-cancel]').onclick = closeCreate;
   element.querySelector('[data-codes-create-close]').onclick = closeCreate;
@@ -137,6 +185,7 @@ export function createCodesPanel(call) {
     event.preventDefault();
     if (creating || !catalog || type.disabled || !form.reportValidity()) return;
     const trial = type.value === 'membership_trial';
+    if (!trial && !catalog[type.value === 'coins' ? 'coins' : 'cosmetics'].some(item => item.rewardId === reward.value)) return;
     const expires = q('codes-create-expires').value;
     const payload = {
       action:'create', rewardType:type.value,
