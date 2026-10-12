@@ -47,12 +47,22 @@ export function setupSubscriptionManagement(call,getUserId,getSubscriptionAccess
       const labels={active:'Active',trialing:'Free Trial',past_due:'Payment Overdue',unpaid:'Unpaid',paused:'Paused',canceled:'Ended',incomplete:'Payment Incomplete',incomplete_expired:'Expired'};
       const badge=node('span','subscription-status',s.cancellationScheduled&&!ended?'Cancellation Scheduled':labels[s.status]||'Subscription');badge.dataset.status=ended?'ended':s.cancellationScheduled?'ending':s.status;
       head.append(node('h3','','TeacherTiles Subscriber'),badge);card.append(head);
+      if(s.status==='trialing'){
+        const notice=node('aside','subscription-trial-notice'+(s.cancellationScheduled?' is-ending':''));
+        notice.setAttribute('role','note');
+        if(s.cancellationScheduled){
+          notice.append(node('strong','','Your Trial Will Not Renew'),node('p','',`Your trial ends on ${dateLabel(s.endsAt||s.nextBillingAt)}. Cancellation is already scheduled, so this trial will not automatically start charging you.`));
+        }else{
+          notice.append(node('strong','','Your Trial Will Become a Paid Subscription'),node('p','',`If you do not cancel before your trial ends on ${dateLabel(s.nextBillingAt)}, your subscription will automatically renew and you will be charged the plan price shown below, plus any applicable taxes. Cancel before the end date to avoid being charged.`));
+        }
+        card.append(notice);
+      }
       const metrics=node('div','subscription-metrics');
       for(const [label,value] of [['Time Subscribed',subscriptionDuration(s.startedAt,s.endedAt)],['Plan Price',planPrice(s)]]){const metric=node('div','subscription-metric');metric.append(node('span','',label),node('strong','',value));metrics.append(metric)}card.append(metrics);
       const dates=node('dl','subscription-dates');
       for(const [label,value] of [['Member Since',s.startedAt],[ended?'Membership Ended':s.cancellationScheduled?'Access Ends':s.status==='trialing'?'Trial Ends':'Current Period Ends',ended?s.endedAt:s.cancellationScheduled?s.endsAt:s.nextBillingAt]]){dates.append(node('dt','',label),node('dd','',dateLabel(value)))}card.append(dates);
       card.append(node('p','subscription-fine-print','Duration covers this membership, including any trial time. Plan price is before applicable discounts or taxes.'));
-      if(s.cancellationScheduled&&!ended)card.append(node('p','subscription-notice',`Cancellation is scheduled for ${dateLabel(s.endsAt)}. Your current access continues until then.`));
+      if(s.cancellationScheduled&&!ended&&s.status!=='trialing')card.append(node('p','subscription-notice',`Cancellation is scheduled for ${dateLabel(s.endsAt)}. Your current access continues until then.`));
       if(s.scheduleManaged&&!s.cancellationScheduled&&!ended)card.append(node('p','subscription-notice','This plan has a custom billing schedule. Contact Support to manage cancellation.'));
       if(s.canCancel){const cancel=node('button','subscription-cancel','Cancel Subscription');cancel.type='button';cancel.dataset.cancelSubscription=s.id;cancel.addEventListener('click',()=>{if(busy)return;selected=s;confirm.hidden=false;confirm.querySelector('p').textContent=`Your subscription will stop renewing at the end of this billing cycle, on ${dateLabel(s.nextBillingAt)}. This does not end your current access immediately.`;confirm.querySelector('[data-keep]').focus({preventScroll:true});confirm.scrollIntoView({block:'nearest',behavior:'smooth'});});card.append(cancel)}
       details.append(card);

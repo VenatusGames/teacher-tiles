@@ -1,4 +1,4 @@
-import {setupSubscriptionManagement} from './profile/subscription.js?v=20261010';
+import {setupSubscriptionManagement} from './profile/subscription.js?v=20261011-trial-notice';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
