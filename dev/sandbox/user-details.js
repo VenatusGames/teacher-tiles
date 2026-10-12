@@ -1,15 +1,17 @@
+import {createAccountTools} from './user-account-tools.js?v=20261011-account-tools';
 export function createUserDetails(call,onDeleted) {
   const dialog=document.createElement('dialog');dialog.className='user-details';dialog.setAttribute('aria-labelledby','user-detail-title');
-  dialog.innerHTML=`<button class="user-details-close quiet" aria-label="Close user details">×</button><p class="eyebrow">USER ACCOUNT</p><h2 id="user-detail-title">User Details</h2><p class="user-detail-email"></p><dl class="user-detail-facts"></dl>
+  dialog.innerHTML=`<button class="user-details-close quiet" aria-label="Close user details">×</button><p class="eyebrow">USER ACCOUNT</p><h2 id="user-detail-title">User Details</h2><p class="user-detail-email"></p><dl class="user-detail-facts"></dl><div data-account-tools></div>
     <section class="user-patch-tools"><h3>Manage Patches</h3><p>Give or remove a patch. New awards use today’s date. Employee and Subscriber patches are managed automatically.</p><div class="user-patch-choices"></div></section>
     <section class="user-delete-tools"><h3>Delete Account</h3><p>Permanently removes the sign-in account, saved boards, private account data, and organization memberships. This cannot be undone. Billing records are retained.</p><button class="user-delete-open danger" type="button">Delete Account…</button><form class="user-delete-confirm" hidden><label>Type <strong></strong> to confirm<input autocomplete="off" spellcheck="false" aria-label="Confirm account email or ID"></label><div><button class="quiet" type="button">Cancel</button><button class="danger" type="submit" disabled>Permanently Delete Account</button></div></form></section><p class="user-detail-status" role="status" aria-live="polite"></p>`;
   document.body.append(dialog);
   const status=dialog.querySelector('.user-detail-status'),facts=dialog.querySelector('dl'),choices=dialog.querySelector('.user-patch-choices');
-  const confirm=dialog.querySelector('form'),input=confirm.querySelector('input'),submit=confirm.querySelector('[type=submit]'),remove=dialog.querySelector('.user-delete-open');
+  const confirm=dialog.querySelector('.user-delete-confirm'),input=confirm.querySelector('input'),submit=confirm.querySelector('[type=submit]'),remove=dialog.querySelector('.user-delete-open');
   let user=null,generation=0,deleting=false;
-  const close=()=>{if(!deleting){generation++;dialog.close();}};
+  const accountTools=createAccountTools(dialog.querySelector('[data-account-tools]'),call,data=>{if(user){Object.assign(user,data);render();}});
+  const close=()=>{if(!deleting&&!accountTools.busy){generation++;accountTools.reset();dialog.close();}};
   dialog.querySelector('.user-details-close').onclick=close;
-  dialog.addEventListener('cancel',event=>{if(deleting)event.preventDefault();else generation++;});
+  dialog.addEventListener('cancel',event=>{if(deleting||accountTools.busy)event.preventDefault();else {generation++;accountTools.reset();}});
   dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
   const date=value=>value?new Date(value).toLocaleString():'Not available';
   function render(){
@@ -29,6 +31,6 @@ export function createUserDetails(call,onDeleted) {
   confirm.querySelector('[type=button]').onclick=()=>{confirm.hidden=true;remove.hidden=false;};
   input.oninput=()=>{submit.disabled=input.value!==(user?.email||user?.uid);};
   confirm.onsubmit=async event=>{event.preventDefault();if(deleting||input.value!==(user?.email||user?.uid))return;deleting=true;dialog.querySelectorAll('button,input').forEach(el=>el.disabled=true);status.textContent='Deleting account and saved data. Please wait…';try{await call('deleteDeveloperUser',{uid:user.uid,confirmation:input.value});deleting=false;close();onDeleted();}catch(error){status.textContent=error.message||'Deletion failed. Reload details before retrying.';deleting=false;dialog.querySelectorAll('button,input').forEach(el=>el.disabled=false);render();}};
-  async function open(uid){const attempt=++generation;user=null;dialog.querySelectorAll('button,input').forEach(el=>el.disabled=false);status.textContent='Loading user…';facts.replaceChildren();choices.replaceChildren();dialog.querySelector('h2').textContent='User Details';dialog.querySelector('.user-detail-email').textContent='';confirm.hidden=true;remove.hidden=false;remove.disabled=true;if(!dialog.open)dialog.showModal();try{const response=await call('getDeveloperUser',{uid});if(attempt!==generation)return;user=response.data;render();status.textContent='';}catch(error){if(attempt===generation)status.textContent=error.message||'Could not load user.';}}
+  async function open(uid){const attempt=++generation;accountTools.reset();user=null;dialog.querySelectorAll('button,input').forEach(el=>el.disabled=false);status.textContent='Loading user…';facts.replaceChildren();choices.replaceChildren();dialog.querySelector('h2').textContent='User Details';dialog.querySelector('.user-detail-email').textContent='';confirm.hidden=true;remove.hidden=false;remove.disabled=true;if(!dialog.open)dialog.showModal();try{const response=await call('getDeveloperUser',{uid});if(attempt!==generation)return;user=response.data;render();accountTools.open(user);status.textContent='';}catch(error){if(attempt===generation)status.textContent=error.message||'Could not load user.';}}
   return {open,close};
 }
