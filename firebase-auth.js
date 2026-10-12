@@ -4073,7 +4073,9 @@ window.TeacherTilesAccount = {
     return result;
   },
   async purchase(productId) {
-    return applyReturnedShopAccount(await callShopFunction("purchaseCosmetic", { productId }));
+    const result = await callShopFunction("purchaseCosmetic", { productId });
+    await refreshShopAccount();
+    return result;
   },
   async redeem(code) {
     const returnUrl = new URL(window.location.href);
@@ -4081,20 +4083,12 @@ window.TeacherTilesAccount = {
     returnUrl.searchParams.delete("tt_checkout");
     returnUrl.searchParams.delete("tt_code");
     const result = await callShopFunction("redeemCode", { code, returnUrl: returnUrl.href });
-    if (result?.requiresCheckout && result?.checkoutUrl) {
-      window.location.assign(result.checkoutUrl);
+    if (result?.rewardType === "membership_trial" && result?.status === "pending" && result?.url) {
+      window.location.assign(result.url);
       return new Promise(() => {});
     }
-    const applied = applyReturnedShopAccount(result);
-    if (result?.rewardType === "cosmetic") {
-      window.setTimeout(() => {
-        const status = document.getElementById("shop-redeem-status");
-        if (status) {
-          status.classList.remove("is-error");
-          status.textContent = `${result.rewardName || "Cosmetic"} unlocked.`;
-        }
-      }, 0);
-    }
+    await refreshShopAccount();
+    const applied = result;
     return applied;
   },
   async generateCode(packId) {

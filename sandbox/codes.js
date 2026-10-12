@@ -5,19 +5,19 @@ export function createCodesPanel(call) {
   element.innerHTML=`
     <div class="codes-head"><div><p class="eyebrow">REDEMPTION MANAGEMENT</p><h1>TT Codes</h1><p>Generate, review, disable, and audit TeacherTiles redemption codes.</p></div><button class="primary" id="codes-new" type="button">Generate Code</button></div>
     <div class="codes-toolbar">
-      <input id="codes-search" type="search" placeholder="Search label, reward, code, or creator" maxlength="120">
-      <select id="codes-status"><option value="active">Active</option><option value="all">All</option><option value="exhausted">Exhausted</option><option value="expired">Expired</option><option value="disabled">Disabled</option></select>
-      <select id="codes-reward"><option value="all">All Rewards</option><option value="coin_pack">Coin Packs</option><option value="cosmetic">Cosmetics</option><option value="membership_trial">Membership Trials</option></select>
+      <input id="codes-search" type="search" placeholder="Search by a label, reward, or code word" maxlength="40">
+      <select id="codes-status"><option value="active">Active</option><option value="all">All</option><option value="inactive">Disabled</option><option value="deleted">Deleted</option></select>
+      <select id="codes-reward"><option value="all">All Rewards</option><option value="coins">Coin Packs</option><option value="cosmetic">Cosmetics</option><option value="membership_trial">Membership Trials</option></select>
       <button id="codes-refresh" class="quiet" type="button">Refresh</button>
     </div>
     <p id="codes-status-text" class="codes-status" role="status" aria-live="polite"></p>
-    <div class="codes-table-wrap"><table class="codes-table"><thead><tr><th>Code</th><th>Reward</th><th>Status</th><th>Uses</th><th>Expires</th><th></th></tr></thead><tbody id="codes-list"></tbody></table></div>
+    <div class="codes-table-wrap"><table class="codes-table"><thead><tr><th>Code</th><th>Reward</th><th>Status</th><th>Uses</th><th>Expires</th><th></th></tr></thead><tbody id="codes-list"></tbody></table></div><button id="codes-more" type="button" class="quiet" hidden>Load More</button>
     <dialog id="codes-create" class="codes-dialog"><form method="dialog" id="codes-create-form"><button class="codes-dialog-close quiet" type="button" data-codes-create-close aria-label="Close">×</button><p class="eyebrow">NEW REDEMPTION CODE</p><h2>Generate TT Code</h2>
-      <label>Reward Type<select id="codes-create-type"><option value="coin_pack">Coin Pack</option><option value="cosmetic">Specific Cosmetic</option><option value="membership_trial">Membership Trial</option></select></label>
+      <label>Reward Type<select id="codes-create-type"><option value="coins">Coin Pack</option><option value="cosmetic">Specific Cosmetic</option><option value="membership_trial">Membership Trial</option></select></label>
       <label id="codes-create-reward-wrap">Reward<select id="codes-create-reward"></select></label>
       <label id="codes-create-days-wrap" hidden>Trial Length (Days)<input id="codes-create-days" type="number" min="1" max="365" value="30"></label>
       <label>Internal Label <input id="codes-create-label" maxlength="120" placeholder="Optional campaign / purpose"></label>
-      <label>Use Limit <input id="codes-create-limit" type="number" min="1" max="1000000" placeholder="Unlimited"></label>
+      <label>Use Limit <input id="codes-create-limit" type="number" min="1" max="100000" placeholder="Unlimited"></label>
       <label>Expires <input id="codes-create-expires" type="datetime-local"></label>
       <p id="codes-create-status" class="codes-status" role="status"></p><button type="button" class="quiet" id="codes-catalog-retry" hidden>Retry Loading Rewards</button>
       <div class="codes-dialog-actions"><button class="quiet" value="cancel" type="button" data-codes-cancel>Cancel</button><button class="primary" type="submit">Generate</button></div>
@@ -25,40 +25,185 @@ export function createCodesPanel(call) {
     <dialog id="codes-result" class="codes-dialog codes-result"><button class="codes-dialog-close quiet" data-codes-result-close aria-label="Close">×</button><p class="eyebrow">CODE CREATED</p><h2>Ready to Redeem</h2><div class="codes-created-code" id="codes-created-code"></div><p id="codes-created-description"></p><button class="primary" id="codes-copy" type="button">Copy Code</button></dialog>
     <dialog id="codes-detail" class="codes-dialog codes-detail"><button class="codes-dialog-close quiet" data-codes-detail-close aria-label="Close">×</button><div id="codes-detail-body"></div></dialog>`;
 
-  const q=id=>element.querySelector(`#${id}`),list=q('codes-list'),status=q('codes-status-text');
-  const create=q('codes-create'),form=q('codes-create-form'),type=q('codes-create-type'),reward=q('codes-create-reward'),rewardWrap=q('codes-create-reward-wrap'),daysWrap=q('codes-create-days-wrap');
-  let catalog={coinPacks:[],cosmetics:[]},loaded=false,busy=false,creating=false,catalogLoading=false,catalogReady=false,lastCreated='';
-  const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const date=value=>value?new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'Never';
-  const err=error=>['functions/not-found','functions/unavailable'].includes(error?.code)?'The TT Codes service is unavailable. Deploy developerCodes, then refresh this page.':error?.message?.replace(/^Firebase:\s*/,'')||'Something went wrong.';
-  function setBusy(value){busy=value;element.querySelectorAll('button,select,input').forEach(node=>node.disabled=value)}
-  function fillRewards(){
-    const value=type.value;reward.innerHTML='';daysWrap.hidden=value!=='membership_trial';rewardWrap.hidden=value==='membership_trial';
-    const items=value==='coin_pack'?catalog.coinPacks:value==='cosmetic'?catalog.cosmetics:[];
-    for(const item of items){const option=document.createElement('option');option.value=item.id;option.textContent=item.name;reward.append(option)}
+
+  const q = id => element.querySelector(`#${id}`);
+  const list = q('codes-list'), status = q('codes-status-text');
+  const create = q('codes-create'), form = q('codes-create-form');
+  const type = q('codes-create-type'), reward = q('codes-create-reward');
+  let catalog, catalogPromise, loaded = false, creating = false, lastCreated = '';
+  let items = [], cursor = null, loadVersion = 0, createAttempt = null;
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const millis = value => value && typeof value === 'object'
+    ? (value.seconds ?? value._seconds) * 1000 : new Date(value).getTime();
+  const date = value => value && Number.isFinite(millis(value))
+    ? new Intl.DateTimeFormat(undefined, {dateStyle:'medium', timeStyle:'short'}).format(millis(value)) : '—';
+  const err = error => error?.message?.replace(/^Firebase:\s*/, '') || 'Something went wrong. Please try again.';
+  const title = value => value ? value[0].toUpperCase() + value.slice(1) : 'Unknown';
+  function availability(item) {
+    if (item.status === 'deleted') return 'deleted';
+    if (!item.active) return 'disabled';
+    if (item.expiresAt && millis(item.expiresAt) <= Date.now()) return 'expired';
+    if (item.maxRedemptions != null && item.completedUses >= item.maxRedemptions) return 'exhausted';
+    return 'active';
   }
-  async function ensureCatalog(){if(catalogReady)return;catalog=await request({action:'catalog'});catalogReady=true;fillRewards()}
-  function statusLabel(item){return item.status[0].toUpperCase()+item.status.slice(1)}
-  function render(items){
-    list.innerHTML=items.map(item=>`<tr data-code-id="${item.id}"><td><button class="codes-link" type="button" data-code-detail>${escape(item.hint)}</button>${item.label?`<small>${escape(item.label)}</small>`:''}</td><td>${escape(item.rewardName)}</td><td><span class="codes-chip is-${escape(item.status)}">${escape(statusLabel(item))}</span></td><td>${item.useCount.toLocaleString()}${item.maxUses===null?' / ∞':` / ${item.maxUses.toLocaleString()}`}${item.reservedCount?`<small>${item.reservedCount} reserved</small>`:''}</td><td>${escape(date(item.expiresAtMs))}</td><td><button class="quiet codes-row-action" type="button" data-code-toggle>${item.active?'Disable':'Enable'}</button><button class="danger codes-row-action" type="button" data-code-delete>Delete</button></td></tr>`).join('')||'<tr><td colspan="6" class="codes-empty">No matching TT Codes.</td></tr>';
+  function fillRewards() {
+    const trial = type.value === 'membership_trial';
+    q('codes-create-days-wrap').hidden = !trial;
+    q('codes-create-reward-wrap').hidden = trial;
+    const options = catalog?.[type.value === 'coins' ? 'coins' : 'cosmetics'] || [];
+    const selectedReward = reward.value;
+    reward.replaceChildren(...options.map(item => {
+      const option = document.createElement('option');
+      option.value = item.rewardId;
+      option.textContent = item.name;
+      return option;
+    }));
+    if (options.some(item => item.rewardId === selectedReward)) reward.value = selectedReward;
+    form.querySelector('[type="submit"]').disabled = !catalog || (!trial && !options.length);
   }
-  async function load(force=false){if(busy||loaded&&!force)return;setBusy(true);status.textContent='Loading TT Codes…';try{const result=await request({action:'list',status:q('codes-status').value,rewardType:q('codes-reward').value,search:q('codes-search').value});render(result.items||[]);status.textContent=result.truncated?'Showing the newest 1,000 stored codes. Narrow the filters to find older codes.':`${(result.items||[]).length} code${(result.items||[]).length===1?'':'s'}`;loaded=true}catch(error){status.textContent=err(error)}finally{setBusy(false)}}
-  async function detail(id){const dialog=q('codes-detail'),body=q('codes-detail-body');body.innerHTML='<p>Loading…</p>';dialog.showModal();try{const result=await request({action:'detail',id}),item=result.item,uses=result.uses||[];body.innerHTML=`<p class="eyebrow">TT CODE DETAILS</p><h2>${escape(item.hint)}</h2><dl class="codes-facts"><dt>Reward</dt><dd>${escape(item.rewardName)}</dd><dt>Status</dt><dd>${escape(statusLabel(item))}</dd><dt>Uses</dt><dd>${item.useCount}${item.maxUses===null?' / unlimited':` / ${item.maxUses}`}</dd><dt>Expires</dt><dd>${escape(date(item.expiresAtMs))}</dd><dt>Label</dt><dd>${escape(item.label||'—')}</dd></dl><h3>Redemption History</h3><div class="codes-history">${uses.length?uses.map(use=>`<div><strong>${escape(use.uid)}</strong><span>${escape(use.status)}</span><small>${escape(date(use.completedAtMs||use.createdAtMs))}</small>${use.releaseReason?`<em>${escape(use.releaseReason)}</em>`:''}</div>`).join(''):'<p>No redemptions yet.</p>'}</div>${result.historyTruncated?'<small>Showing the first 250 stored redemption records.</small>':''}`;}catch(error){body.innerHTML=`<p class="codes-status">${escape(err(error))}</p>`}}
-  async function loadRewards(){if(catalogLoading)return;catalogLoading=true;const submit=form.querySelector('[type="submit"]');submit.disabled=true;type.disabled=true;q('codes-catalog-retry').hidden=true;q('codes-create-status').textContent='Loading code rewards…';try{await ensureCatalog();q('codes-create-status').textContent='';}catch(error){q('codes-create-status').textContent=err(error);q('codes-catalog-retry').hidden=false;}finally{catalogLoading=false;type.disabled=false;submit.disabled=!catalogReady;}}
-  q('codes-new').onclick=()=>{form.reset();q('codes-create-days').value='30';fillRewards();create.showModal();void loadRewards();};
-  q('codes-catalog-retry').onclick=()=>loadRewards();
-  type.onchange=fillRewards;
-  const closeCreate=()=>{if(!creating)create.close();};
-  element.querySelector('[data-codes-cancel]').onclick=closeCreate;
-  element.querySelector('[data-codes-create-close]').onclick=closeCreate;
-  create.addEventListener('cancel',e=>{if(creating)e.preventDefault();});
-  form.onsubmit=async event=>{event.preventDefault();if(busy||creating||catalogLoading||!catalogReady)return;creating=true;const submit=form.querySelector('[type="submit"]');submit.disabled=true;q('codes-create-status').textContent='Generating…';try{const expires=q('codes-create-expires').value;const result=await request({action:'create',rewardType:type.value,rewardId:reward.value,trialDays:q('codes-create-days').value,maxUses:q('codes-create-limit').value,label:q('codes-create-label').value,expiresAt:expires?new Date(expires).toISOString():null});lastCreated=result.code;create.close();q('codes-created-code').textContent=result.code;q('codes-created-description').textContent=result.item.rewardName;q('codes-result').showModal();loaded=false;await load(true)}catch(error){q('codes-create-status').textContent=err(error)}finally{creating=false;submit.disabled=false}};
-  q('codes-copy').onclick=async()=>{if(!lastCreated)return;await navigator.clipboard.writeText(lastCreated);q('codes-copy').textContent='Copied!';setTimeout(()=>q('codes-copy').textContent='Copy Code',1400)};
-  q('codes-result').querySelector('[data-codes-result-close]').onclick=()=>q('codes-result').close();
-  q('codes-detail').querySelector('[data-codes-detail-close]').onclick=()=>q('codes-detail').close();
-  list.onclick=async event=>{const row=event.target.closest('[data-code-id]');if(!row)return;const id=row.dataset.codeId;if(event.target.closest('[data-code-detail]'))return detail(id);if(event.target.closest('[data-code-toggle]')){const button=event.target.closest('[data-code-toggle]');button.disabled=true;try{await request({action:'set-active',id,active:button.textContent.trim()==='Enable'});loaded=false;await load(true)}catch(error){status.textContent=err(error)}return}if(event.target.closest('[data-code-delete]')){if(!confirm('Delete this TT Code? It will immediately stop redeeming, but its audit history is retained.'))return;try{await request({action:'delete',id});loaded=false;await load(true)}catch(error){status.textContent=err(error)}}};
-  q('codes-refresh').onclick=()=>{loaded=false;void load(true)};
-  q('codes-status').onchange=q('codes-reward').onchange=()=>{loaded=false;void load(true)};
-  let searchTimer;q('codes-search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{loaded=false;void load(true)},280)};
-  return{element,load:()=>load(false),reset(){loaded=false;list.innerHTML='';status.textContent='';}};
+  function render() {
+    list.innerHTML = items.map(item => {
+      const state = availability(item);
+      return `<tr data-code-id="${escape(item.id)}"><td><button class="codes-link" type="button" data-code-detail>${escape(item.codeHint)}</button>${item.label ? `<small>${escape(item.label)}</small>` : ''}</td><td>${escape(item.rewardName)}</td><td><span class="codes-chip is-${state}">${title(state)}</span></td><td>${Number(item.completedUses || 0).toLocaleString()} / ${item.maxRedemptions == null ? '∞' : Number(item.maxRedemptions).toLocaleString()}${item.pendingReservations ? `<small>${Number(item.pendingReservations)} reserved</small>` : ''}</td><td>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</td><td>${item.status === 'deleted' ? '' : `<button class="quiet codes-row-action" type="button" data-code-toggle>${item.active ? 'Disable' : 'Enable'}</button><button class="danger codes-row-action" type="button" data-code-delete>Delete</button>`}</td></tr>`;
+    }).join('') || '<tr><td colspan="6" class="codes-empty">No matching TT Codes.</td></tr>';
+  }
+  async function load(force = false, append = false) {
+    if (loaded && !force) return;
+    const version = ++loadVersion;
+    status.textContent = 'Loading TT Codes…';
+    q('codes-more').disabled = true;
+    try {
+      const filters = {action:'list', search:q('codes-search').value.trim()};
+      // "All" is a UI choice, not a backend filter value.
+      if (q('codes-status').value !== 'all') filters.status = q('codes-status').value;
+      if (q('codes-reward').value !== 'all') filters.rewardType = q('codes-reward').value;
+      if (append && cursor) filters.cursor = cursor;
+      const result = await request(filters);
+      if (version !== loadVersion) return;
+      items = append ? [...items, ...(result.items || [])] : result.items || [];
+      cursor = result.cursor || null;
+      render();
+      q('codes-more').hidden = !cursor;
+      status.textContent = `${items.length} code${items.length === 1 ? '' : 's'}`;
+      loaded = true;
+    } catch (error) {
+      if (version === loadVersion) status.textContent = err(error);
+    } finally {
+      if (version === loadVersion) q('codes-more').disabled = false;
+    }
+  }
+  async function detail(id) {
+    const dialog = q('codes-detail'), body = q('codes-detail-body');
+    body.innerHTML = '<p>Loading…</p>';
+    dialog.showModal();
+    try {
+      const item = await request({action:'detail', codeId:id});
+      const uses = [...(item.redemptions || []), ...(item.reservations || []).filter(r => r.status !== 'completed')]
+        .sort((a,b) => millis(b.createdAt) - millis(a.createdAt));
+      body.innerHTML = `<p class="eyebrow">TT CODE DETAILS</p><h2>${escape(item.codeHint)}</h2><dl class="codes-facts"><dt>Reward</dt><dd>${escape(item.rewardName)}</dd><dt>Status</dt><dd>${title(availability(item))}</dd><dt>Uses</dt><dd>${Number(item.completedUses || 0)} / ${item.maxRedemptions ?? 'unlimited'}</dd><dt>Expires</dt><dd>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</dd><dt>Label</dt><dd>${escape(item.label || '—')}</dd></dl><h3>Redemption History</h3><div class="codes-history">${uses.length ? uses.map(use => `<div><strong>${escape(use.uid || use.id)}</strong><span>${escape(title(use.status))}</span><small>${escape(date(use.completedAt || use.createdAt))}</small>${use.releaseReason ? `<em>${escape(use.releaseReason)}</em>` : ''}</div>`).join('') : '<p>No redemptions yet.</p>'}</div><small>Shows up to 50 recent redemptions and 50 reservations.</small>`;
+    } catch (error) { body.innerHTML = `<p class="codes-status">${escape(err(error))}</p>`; }
+  }
+  async function loadRewards() {
+    form.querySelector('[type="submit"]').disabled = true;
+    type.disabled = true;
+    q('codes-catalog-retry').hidden = true;
+    q('codes-create-status').textContent = 'Loading code rewards…';
+    try {
+      if (!catalog) {
+        catalogPromise ||= request({action:'catalog'}).finally(() => { catalogPromise = null; });
+        catalog = await catalogPromise;
+      }
+      fillRewards();
+      q('codes-create-days').min = catalog.trials.minDays;
+      q('codes-create-days').max = catalog.trials.maxDays;
+      q('codes-create-status').textContent = '';
+    } catch (error) {
+      q('codes-create-status').textContent = err(error);
+      q('codes-catalog-retry').hidden = false;
+    } finally { type.disabled = false; }
+  }
+  q('codes-new').onclick = () => {
+    form.reset(); createAttempt = null;
+    q('codes-create-days').value = catalog?.trials.defaultDays || 30;
+    fillRewards(); create.showModal(); void loadRewards();
+  };
+  q('codes-catalog-retry').onclick = loadRewards;
+  type.onchange = fillRewards;
+  const closeCreate = () => { if (!creating) create.close(); };
+  element.querySelector('[data-codes-cancel]').onclick = closeCreate;
+  element.querySelector('[data-codes-create-close]').onclick = closeCreate;
+  create.addEventListener('cancel', event => { if (creating) event.preventDefault(); });
+  form.onsubmit = async event => {
+    event.preventDefault();
+    if (creating || !catalog || type.disabled || !form.reportValidity()) return;
+    const trial = type.value === 'membership_trial';
+    const expires = q('codes-create-expires').value;
+    const payload = {
+      action:'create', rewardType:type.value,
+      rewardId:trial ? catalog.trials.rewardId : reward.value,
+      ...(trial ? {trialDays:Number(q('codes-create-days').value)} : {}),
+      maxRedemptions:q('codes-create-limit').value ? Number(q('codes-create-limit').value) : null,
+      label:q('codes-create-label').value,
+      expiresAt:expires ? new Date(expires).toISOString() : null
+    };
+    const fingerprint = JSON.stringify(payload);
+    // Keep the same request ID on retry so a lost response cannot mint another code.
+    if (createAttempt?.fingerprint !== fingerprint) createAttempt = {
+      fingerprint, requestId:Array.from(crypto.getRandomValues(new Uint8Array(16)), n => n.toString(16).padStart(2,'0')).join('')
+    };
+    creating = true;
+    form.querySelectorAll('input,select,button').forEach(node => { node.disabled = true; });
+    q('codes-create-status').textContent = 'Generating…';
+    try {
+      const result = await request({...payload, requestId:createAttempt.requestId});
+      lastCreated = result.code || '';
+      create.close();
+      q('codes-created-code').textContent = result.code || result.codeHint || 'Already Created';
+      q('codes-created-description').textContent = result.code
+        ? 'Copy this code now. For security, the full code is shown only once.'
+        : 'This request already created a code. The full code cannot be shown again. Disable it in the list if you did not save it, then generate a replacement.';
+      q('codes-copy').hidden = !lastCreated;
+      q('codes-copy').textContent = 'Copy Code';
+      q('codes-result').showModal();
+      await load(true);
+    } catch (error) { q('codes-create-status').textContent = err(error); }
+    finally {
+      creating = false;
+      form.querySelectorAll('input,select,button').forEach(node => { node.disabled = false; });
+      fillRewards();
+    }
+  };
+  q('codes-copy').onclick = async () => {
+    if (!lastCreated) return;
+    try { await navigator.clipboard.writeText(lastCreated); q('codes-copy').textContent = 'Copied!'; }
+    catch { q('codes-created-description').textContent = 'Select and copy the code above manually.'; }
+  };
+  q('codes-result').querySelector('[data-codes-result-close]').onclick = () => q('codes-result').close();
+  q('codes-detail').querySelector('[data-codes-detail-close]').onclick = () => q('codes-detail').close();
+  list.onclick = async event => {
+    const row = event.target.closest('[data-code-id]');
+    if (!row) return;
+    const id = row.dataset.codeId;
+    if (event.target.closest('[data-code-detail]')) return detail(id);
+    const toggle = event.target.closest('[data-code-toggle]'), remove = event.target.closest('[data-code-delete]');
+    if (!toggle && !remove) return;
+    if (remove && !confirm('Delete this TT Code? It will stop redeeming, but its audit history is retained.')) return;
+    row.querySelectorAll('button').forEach(node => { node.disabled = true; });
+    try {
+      await request(toggle ? {action:'set-active', codeId:id, active:!items.find(item => item.id === id).active} : {action:'delete', codeId:id});
+      await load(true);
+    } catch (error) { status.textContent = err(error); }
+    finally { row.querySelectorAll('button').forEach(node => { node.disabled = false; }); }
+  };
+  q('codes-more').onclick = () => load(true, true);
+  q('codes-refresh').onclick = () => load(true);
+  q('codes-status').onchange = q('codes-reward').onchange = () => load(true);
+  let searchTimer;
+  q('codes-search').oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => load(true), 280); };
+  return {element, load:() => load(), reset() {
+    ++loadVersion; clearTimeout(searchTimer); loaded = false; items = []; cursor = null;
+    list.innerHTML = ''; status.textContent = ''; q('codes-more').hidden = true;
+    lastCreated = ''; q('codes-created-code').textContent = '';
+    element.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
+  }};
 }
