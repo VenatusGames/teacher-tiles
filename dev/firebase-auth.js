@@ -4060,6 +4060,7 @@ window.TeacherTilesAccount = {
     const returnUrl = new URL(window.location.href);
     returnUrl.hash = "";
     returnUrl.searchParams.delete("tt_checkout");
+    returnUrl.searchParams.delete("tt_checkout_kind");
     const result = await callShopFunction("createCoinCheckoutSession", { packId, returnUrl: returnUrl.href });
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;
@@ -4071,6 +4072,7 @@ window.TeacherTilesAccount = {
     const returnUrl = new URL(window.location.href);
     returnUrl.hash = "";
     returnUrl.searchParams.delete("tt_checkout");
+    returnUrl.searchParams.set("tt_checkout_kind", "membership");
     const result = await callShopFunction("createSubscriptionCheckoutSession", { priceId, returnUrl: returnUrl.href });
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;
