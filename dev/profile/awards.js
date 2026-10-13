@@ -1,10 +1,11 @@
-import {ensurePlannedPatches} from './patches.js?v=20260930-single-inspector';
+import {manualPatchOptions} from './patch-catalog.js?v=20261013-new-patches';
+import {ensurePlannedPatches} from './patches.js?v=20261013-new-patches';
 export function syncAwardedPatches(user,awards={}) {
   ensurePlannedPatches();
   const created=Date.parse(user?.metadata?.creationTime||'');
   const legacyBeta=!!user&&Number.isFinite(created)&&created<=Date.parse('2026-08-29T04:00:00Z');
   const comingSoon=new Set(['stickerer','tile-layer','template-creator','template-artist']);
-  for(const id of ['beta','contributor','stickerer','tile-layer','template-creator','template-artist']){
+  for(const id of manualPatchOptions.map(([id])=>id)){
     const patch=document.querySelector(`.profile-badge-grid .profile-badge--${id}`);if(!patch)continue;
     const award=user?awards?.[id]:null,earned=!award?.revoked&&(!!award||(id==='beta'&&legacyBeta));
     patch.hidden=false;patch.classList.toggle('profile-badge--locked',!earned);

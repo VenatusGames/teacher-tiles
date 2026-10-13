@@ -1,0 +1,8 @@
+.profile-badge--first-100:not(.profile-badge--locked){--patch-high:#edcd7e;--patch-low:#9a631e;--braid-light:#fff1b8;--braid-mid:#ca9b45;--braid-dark:#785121;color:#fff6d6}
+.profile-badge--alpha-tester:not(.profile-badge--locked){--patch-high:#b396d8;--patch-low:#553878;--braid-light:#e6d5fb;--braid-mid:#9d7cbe;--braid-dark:#49305f;color:#f7ebff}
+.profile-badge--connected:not(.profile-badge--locked){--patch-high:#88dbce;--patch-low:#237e80;--braid-light:#d5fff2;--braid-mid:#61b4a5;--braid-dark:#205c65;color:#e8fff7}
+.profile-badge:is(.profile-badge--first-100,.profile-badge--alpha-tester,.profile-badge--connected) .profile-badge__medallion svg{color:#68727b;stroke:currentColor;width:52px;height:52px}
+.profile-badge:is(.profile-badge--first-100,.profile-badge--alpha-tester,.profile-badge--connected):not(.profile-badge--locked) .profile-badge__medallion svg{color:inherit;filter:drop-shadow(0 1px 1px #30223c70)}
+.profile-badge--first-100:not(.profile-badge--locked) .profile-badge__medallion{color:#fff6d6}
+.profile-badge--alpha-tester:not(.profile-badge--locked) .profile-badge__medallion{color:#f7ebff}
+.profile-badge--connected:not(.profile-badge--locked) .profile-badge__medallion{color:#e8fff7}
