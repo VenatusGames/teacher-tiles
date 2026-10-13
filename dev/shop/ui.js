@@ -41,12 +41,12 @@ function setupTeacherTilesShop(){
   const previousFeatured=new Map();
   function refreshFeatured(){
     const owned=getOwnedShopProducts();
-    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors','extras']})){
+    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors'],planners:['extras']})){
       const container=modal.querySelector('[data-featured-section="'+group+'"]');
       for(const card of [...container.children]){const index=products.indexOf(card);if(index>=0)products.splice(index,1)}
       container.replaceChildren();
       const previous=previousFeatured.get(group)||new Set();
-      const pool=pages.flatMap(page=>[...modal.querySelectorAll('[data-shop-page="'+page+'"] [data-shop-product]')]).filter(card=>!owned.has(card.dataset.shopProduct));
+      const pool=pages.flatMap(page=>[...modal.querySelectorAll('[data-shop-page="'+page+'"] [data-shop-product]')]).filter(card=>!owned.has(card.dataset.shopProduct)&&(group!=='planners'||card.classList.contains('shop-product--planner-skin')));
       // Shuffle, then prefer products absent from the last opening.
       for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
       pool.sort((a,b)=>Number(previous.has(a.dataset.shopProduct))-Number(previous.has(b.dataset.shopProduct)));

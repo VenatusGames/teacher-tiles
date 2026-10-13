@@ -1,9 +1,11 @@
-import {readTileCatalog,tileKey} from './tile-catalog.js';
+import {readTileCatalog,tileKey,readTileBadges,badgeOptions} from './tile-catalog.js?v=20261012-badges';
 import {cachedTileMetadata,fetchTileMetadata} from './tile-metadata-client.js';
 const menu=window.TeacherTilesTileMenu;
 if(menu){
   const catalog=readTileCatalog(document,menu.items),known=new Set(catalog.categories.map(c=>c.id));
   const defaults=new Map(menu.items.map(item=>[item,item.dataset.category]));let revision=-1;
+  const defaultBadges=new Map(menu.items.map(item=>[item,readTileBadges(item)]));
+  const badgeSelector=badgeOptions.map(badge=>`.${badge.className}`).join(',');
   function apply(data){
     if(!data || data.revision<=revision)return;
     let changed=false;
@@ -12,6 +14,18 @@ if(menu){
       const categories=Array.isArray(metadata?.categories)?metadata.categories.filter(c=>known.has(c)):null;
       const next=categories?.length?categories.join(' '):defaults.get(item);
       if(item.dataset.category!==next){item.dataset.category=next;changed=true;}
+      const badges=Array.isArray(metadata?.badges)?badgeOptions.filter(b=>metadata.badges.includes(b.id)).map(b=>b.id):defaultBadges.get(item);
+      if(JSON.stringify(readTileBadges(item))!==JSON.stringify(badges)){
+        item.querySelectorAll(badgeSelector).forEach(node=>node.remove());
+        item.querySelector('.context-menu__managed-badges')?.remove();
+        if(badges.length){
+          const group=document.createElement('div');group.className='context-menu__managed-badges';
+          for(const id of badges){const option=badgeOptions.find(b=>b.id===id),badge=document.createElement('span');badge.className=option.className;badge.textContent=option.label;group.append(badge);}
+          item.append(group);
+        }
+        // Badges are display labels; entitlement and PBIS tracking attributes stay intact.
+        changed=true;
+      }
       item.dataset.gradeLevels=Array.isArray(metadata?.grades)?metadata.grades.join(' '):'';
     }
     revision=data.revision;if(changed)menu.refresh();

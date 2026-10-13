@@ -1,4 +1,4 @@
-import {createTileManagementPanel} from './tile-management.js?v=20261012';
+import {createTileManagementPanel} from './tile-management.js?v=20261012-badges';
 import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20260930-title-case';
