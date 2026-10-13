@@ -7,6 +7,17 @@ function setupTeacherTilesShop(){
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
   shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
+  const landing=document.createElement('div');landing.className='shop-landing';
+  const promotions=document.createElement('div');promotions.className='shop-promotions';
+  const discovery=document.createElement('div');discovery.className='shop-discovery';
+  promotions.append(shopHome.querySelector('.shop-banner'),shopHome.querySelector('.shop-membership-grid'));
+  discovery.append(shopHome.querySelector('.shop-home-heading'),shopHome.querySelector('[data-shop-browser]'),shopHome.querySelector('.shop-category-grid'));
+  const explore=document.createElement('button');explore.type='button';explore.className='shop-explore-packs';explore.innerHTML='Explore Featured Packs <span aria-hidden="true">↓</span>';
+  explore.addEventListener('click',()=>shopHome.querySelector('.shop-featured-section:not([hidden])')?.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'}));
+  discovery.append(explore);landing.append(promotions,discovery);shopHome.prepend(landing);
+  const navigation=document.createElement('nav');navigation.className='shop-navigation';navigation.setAttribute('aria-label','Shop collections');
+  navigation.innerHTML='<button type="button" data-shop-open-page="home" aria-label="Shop home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></svg></button>'+[['themes','Themes'],['stickers','Stickers'],['tile-skins','Tile Skins'],['cursors','Cursors']].map(([page,label])=>`<button type="button" data-shop-open-page="${page}">${label}</button>`).join('');
+  modal.querySelector('.shop-header').after(navigation);
   for(const name of ['themes','stickers','cursors']){
     const page=modal.querySelector('[data-shop-page="'+name+'"]');
     if(page.querySelector('[data-shop-browser]'))continue;
@@ -356,6 +367,7 @@ function setupTeacherTilesShop(){
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
+    navigation.querySelectorAll('button').forEach(button=>{if(button.dataset.shopOpenPage===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
     pages.forEach(page=>{
       const active=page.dataset.shopPage===name;
       page.hidden=!active;
