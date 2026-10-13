@@ -1,16 +1,31 @@
 function setupShopExtras(modal) {
-  if(modal.querySelector('[data-shop-page="extras"]'))return;
-  const skins=window.TeacherTilesPlannerSkins;
-  const page=document.createElement('section');page.className='shop-page';page.dataset.shopPage='extras';page.hidden=true;
-  page.innerHTML='<div class="shop-page-heading"><button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button><div><span>EXTRAS</span><h2>Planner Skins</h2><p>A personal touch for your planning shelf. Choose a cover for each book.</p></div></div><div class="shop-product-grid shop-product-grid--extras"></div>';
-  for(const skin of skins.catalog){
-    const product=document.createElement('article');product.className='shop-product shop-product--planner-skin';product.dataset.shopProduct=skin.productId;product.dataset.shopPrice=skin.price;
-    product.innerHTML='<div class="shop-product__preview shop-product__preview--planner" aria-hidden="true"></div><div class="shop-product__body"><div><span class="shop-product__type">PLANNER SKIN</span><h3></h3><p></p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong>250</strong></button></div>';
-    product.querySelector('h3').textContent=skin.name;product.querySelector('p').textContent=skin.description;product.querySelector('.shop-product__preview').append(skins.preview(skin.id));page.querySelector('.shop-product-grid').append(product);
+  if(modal.querySelector('[data-shop-page="planner-skins"]'))return;
+  const skins=window.TeacherTilesPlannerSkins,frames=window.TeacherTilesProfileFrames;
+  function page(id,title,description){
+    const section=document.createElement('section');section.className='shop-page';section.dataset.shopPage=id;section.hidden=true;
+    section.innerHTML='<div class="shop-page-heading"><button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button><div><span>COLLECTION</span><h2></h2><p></p></div></div><div class="shop-product-grid shop-product-grid--extras"></div>';
+    section.querySelector('h2').textContent=title;section.querySelector('p').textContent=description;modal.querySelector('.shop-content').append(section);return section;
   }
-  modal.querySelector('.shop-content').append(page);
-  const category=document.createElement('button');category.type='button';category.className='shop-category shop-category--extras';category.dataset.shopOpenPage='extras';
-  category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong>Extras</strong><em>Planner Skins & More</em></span>';
-  for(const skin of skins.catalog.slice(0,2))category.querySelector('.shop-category__art').append(skins.preview(skin.id));
-  modal.querySelector('.shop-category-grid').append(category);
+  function product(item,kind,preview){
+    const card=document.createElement('article');card.className='shop-product shop-product--'+kind;card.dataset.shopProduct=item.productId;card.dataset.shopPrice=item.price;
+    card.innerHTML='<div class="shop-product__preview" aria-hidden="true"></div><div class="shop-product__body"><div><span class="shop-product__type"></span><h3></h3><p></p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong></strong></button></div>';
+    card.querySelector('h3').textContent=item.name;card.querySelector('p').textContent=item.description;card.querySelector('.shop-buy strong').textContent=item.price;
+    card.querySelector('.shop-product__type').textContent=kind==='planner-skin'?'PLANNER SKIN':item.tier==='animated'?'ANIMATED PROFILE FRAME':'PROFILE FRAME';
+    const art=card.querySelector('.shop-product__preview');art.classList.add('shop-product__preview--'+(kind==='planner-skin'?'planner':'frame'));art.append(preview);return card;
+  }
+  const planners=page('planner-skins','Planner Skins','A personal touch for your planning shelf. Choose a cover for each book.');
+  for(const skin of skins.catalog)planners.querySelector('.shop-product-grid').append(product(skin,'planner-skin',skins.preview(skin.id)));
+  const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile. Basic colors · 10 coins. Decorative · 25 coins. Animated · 40 coins.');
+  for(const frame of frames.catalog)profiles.querySelector('.shop-product-grid').append(product(frame,'profile-frame',frames.preview(frame.id)));
+  const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentation Themes','Coming Soon'],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','Coming Soon']];
+  for(const [id,title,subtitle] of categories){
+    const category=document.createElement('button');category.type='button';category.className='shop-category shop-category--'+id;category.dataset.shopCategory=id;
+    category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong></strong><em></em></span>';
+    category.querySelector('strong').textContent=title;category.querySelector('em').textContent=subtitle;
+    const art=category.querySelector('.shop-category__art');
+    if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.slice(0,2))art.append(skins.preview(skin.id));}
+    else if(id==='profile-cosmetics'){category.dataset.shopOpenPage=id;art.append(frames.preview('aurora'));}
+    else{category.disabled=true;category.classList.add('shop-category--coming-soon');art.innerHTML=id==='presentation-themes'?'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="10" width="46" height="32" rx="5"/><path d="M32 42v12M22 55l10-7 10 7M19 21h26M19 30h16"/></svg>':'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="22" width="30" height="30" rx="7"/><path d="m45 7 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8ZM15 8v8M11 12h8M52 40v8M48 44h8"/></svg>';}
+    modal.querySelector('.shop-category-grid').append(category);
+  }
 }
