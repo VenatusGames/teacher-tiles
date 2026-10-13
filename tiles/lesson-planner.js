@@ -390,6 +390,7 @@
     const result = {
       id: String(planner.id || plannerId()),
       name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
+      skin: window.TeacherTilesPlannerSkins.normalize(planner.skin),
       color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
       blocks: Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [],
       scheduleId: String(planner.scheduleId || ''),
@@ -902,6 +903,7 @@
 
   function renderLibrary() {
     if (!libraryGrid) return;
+    window.TeacherTilesPlannerSkins.close();
     const limit = plannerLimit();
     const paid = hasPlannerSubscription();
     libraryLimit.textContent = `${planners.length} / ${limit}`;
@@ -1027,6 +1029,7 @@
       customize.addEventListener('click', event => toggleBookPopover(event, customize, colorPanel));
       settings.addEventListener('click', event => toggleBookPopover(event, settings, settingsPanel));
       card.append(open, customize, settings, colorPanel, settingsPanel);
+      window.TeacherTilesPlannerSkins.mount(card, planner, {save:savePlanners, render:renderLibrary, openShop:id=>{closePlanner();window.TeacherTilesShop?.openProduct(id);}});
       libraryGrid.append(card);
     });
     libraryGrid.append(createPlannerButton);
@@ -2041,6 +2044,7 @@
   }
 
   function closePlanner(reopenProfile = false) {
+    window.TeacherTilesPlannerSkins.close();
     cancelLessonDrag?.();
     closeEditor();
     closeScheduling();
@@ -2165,6 +2169,7 @@
   window.addEventListener('teachertiles:authchange', event => {
     void syncPlannerCloudAccount(event?.detail?.userId || '');
   });
+  window.addEventListener('teachertiles:shopownershipchange', () => {if (!panel.hidden && !library.hidden) renderLibrary();});
   window.addEventListener('teachertiles:accountchange', event => {
     const userId = String(event?.detail?.userId || window.TeacherTilesAuth?.user?.uid || '');
     if (userId !== plannerCloudUserId) void syncPlannerCloudAccount(userId);
