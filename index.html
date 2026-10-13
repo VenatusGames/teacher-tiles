@@ -78,7 +78,7 @@
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="shop/membership.css?v=20261011-active">
-<link rel="stylesheet" href="shop/storefront.css?v=20261012-fluid-banners">
+<link rel="stylesheet" href="shop/storefront.css?v=20261012-featured-planners">
 <link rel="stylesheet" href="tiles/lesson-planner/skins.css?v=20261012-group-hover">
 <link rel="stylesheet" href="shop/extras.css?v=20261012-more-covers">
 <link rel="stylesheet" href="shop/coins.css?v=20261012-stamped-gold">
@@ -104,6 +104,7 @@
 <link rel="stylesheet" href="account/help-tutorials/styles.css?v=20261004">
 <script defer src="account/help-tutorials/catalog.js?v=20261004"></script>
 <script defer src="account/help-tutorials/index.js?v=20261004"></script>
+<link rel="stylesheet" href="tiles/shared/tile-menu-metadata.css?v=20261012-badges">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro" aria-hidden="true">
@@ -1468,7 +1469,7 @@
               <small data-i18n="shop.coins">COINS</small>
               <span class="shop-coins-button__balance"><span class="shop-coins-button__icon" aria-hidden="true"><img src="assets/shop/coin-profile.png" alt=""></span><strong id="shop-coin-balance">0</strong></span>
             </span>
-            <span class="shop-coins-button__plus" aria-hidden="true">+</span>
+            <span class="shop-coins-button__plus" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 3v10M3 8h10"/></svg></span>
           </button>
           <button id="shop-close" class="shop-close" type="button" aria-label="Close shop">×</button>
         </div>
@@ -1501,6 +1502,7 @@
           <section class="shop-featured-section" aria-label="Featured Themes"><header><div><h2>Featured Themes</h2><p>A fresh backdrop for your classroom.</p></div><button type="button" data-shop-open-page="themes">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="themes"></div></section>
 <section class="shop-featured-section" aria-label="Featured Tile Skins"><header><div><h2>Featured Tile Skins</h2><p>Give your everyday tools a new look.</p></div><button type="button" data-shop-open-page="tile-skins">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="skins"></div></section>
 <section class="shop-featured-section" aria-label="Stickers & Cursors"><header><div><h2>Stickers & Cursors</h2><p>Small touches that make your board your own.</p></div><button type="button" data-shop-open-page="stickers">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="extras"></div></section>
+<section class="shop-featured-section" aria-label="Featured Planner Skins"><header><div><h2>Featured Planner Skins</h2><p>A fresh cover for your planning shelf.</p></div><button type="button" data-shop-open-page="extras">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="planners"></div></section>
 <div class="shop-home-heading">
             <div><span data-i18n="shop.kicker">MAKE IT YOURS</span><h2 data-i18n="shop.customize">Customize your board</h2></div>
             <p data-i18n="shop.browse">Browse visual packs made for TeacherTiles.</p>
@@ -4540,11 +4542,11 @@
 <script src="shop/ad-rewards.js?v=20261012"></script>
 <script src="tiles/lesson-planner/skins.js?v=20261012-group-hover"></script>
 <script src="shop/extras.js?v=20261012-more-covers"></script>
-<script src="shop/ui.js?v=20261012-planner-skins"></script>
+<script src="shop/ui.js?v=20261012-featured-planners"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
 <script src="app.js?v=20261012-tile-management"></script>
-<script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261012"></script>
+<script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261012-badges"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261012-skin-colors"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
