@@ -4,6 +4,7 @@ const menu=window.TeacherTilesTileMenu;
 if(menu){
   const catalog=readTileCatalog(document,menu.items),known=new Set(catalog.categories.map(c=>c.id));
   const defaults=new Map(menu.items.map(item=>[item,item.dataset.category]));let revision=-1;
+  const defaultDescriptions=new Map(menu.items.map(item=>[item,item.querySelector('small')?.textContent||'']));
   const defaultBadges=new Map(menu.items.map(item=>[item,readTileBadges(item)]));
   const badgeSelector=badgeOptions.map(badge=>`.${badge.className}`).join(',');
   function apply(data){
@@ -11,6 +12,12 @@ if(menu){
     let changed=false;
     for(const item of menu.items){
       const metadata=data.tiles[tileKey(item)];
+      const description=typeof metadata?.description==='string'?metadata.description:defaultDescriptions.get(item);
+      let summary=item.querySelector('small');
+      if((summary?.textContent||'')!==description){
+        if(!summary){summary=document.createElement('small');(item.querySelector('strong')?.parentElement||item).append(summary);}
+        summary.textContent=description;changed=true;
+      }
       const categories=Array.isArray(metadata?.categories)?metadata.categories.filter(c=>known.has(c)):null;
       const next=categories?.length?categories.join(' '):defaults.get(item);
       if(item.dataset.category!==next){item.dataset.category=next;changed=true;}
