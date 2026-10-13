@@ -70,8 +70,6 @@ function setupTeacherTilesShop(){
   const coinCelebrationClose=document.getElementById('shop-coin-celebration-close');
   const banners=[...modal.querySelectorAll('[data-shop-banner]')];
   const dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
-  const prev=modal.querySelector('[data-shop-banner-prev]');
-  const next=modal.querySelector('[data-shop-banner-next]');
   const products=[...modal.querySelectorAll('[data-shop-product]')];
   const redeemForm=document.getElementById('shop-redeem-form');
   const redeemInput=document.getElementById('shop-redeem-code');
@@ -393,7 +391,7 @@ function setupTeacherTilesShop(){
     dots.forEach((dot,i)=>{
       const active=i===bannerIndex;
       dot.classList.toggle('is-active',active);
-      dot.setAttribute('aria-selected',String(active));
+      dot.setAttribute('aria-pressed',String(active));
     });
     if(restart)startBannerTimer();
   }
@@ -574,8 +572,6 @@ function setupTeacherTilesShop(){
   });
   coinMenuClose?.addEventListener('click',()=>closeCoins());
   coinCelebrationClose?.addEventListener('click',closeCoinCelebration);
-  prev?.addEventListener('click',()=>showBanner(bannerIndex-1));
-  next?.addEventListener('click',()=>showBanner(bannerIndex+1));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
   function bindProduct(card){
     card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);

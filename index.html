@@ -78,7 +78,7 @@
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="shop/membership.css?v=20261011-active">
-<link rel="stylesheet" href="shop/storefront.css?v=20261012-shop-layout">
+<link rel="stylesheet" href="shop/storefront.css?v=20261012-fluid-banners">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
 <link rel="stylesheet" href="tiles/calculator/skins.css?v=20261012-calculator-choices">
 <link rel="stylesheet" href="tiles/shared/choice-board.css?v=20261012-calculator-choices">
@@ -1476,23 +1476,22 @@
           <div class="shop-banner" aria-label="Shop featured banners">
             <div id="shop-banner-track" class="shop-banner__track">
               <article class="shop-banner__slide is-active" data-shop-banner>
-                <img src="assets/shop/theme-collection.svg" alt="Theme collection featured banner">
+                <img src="assets/shop/theme-collection.svg?v=20261012-responsive" alt="Theme collection featured banner">
               </article>
               <article class="shop-banner__slide" data-shop-banner>
-                <img src="assets/shop/sticker-drop.svg" alt="Sticker packs featured banner">
+                <img src="assets/shop/sticker-drop.svg?v=20261012-responsive" alt="Sticker packs featured banner">
               </article>
               <article class="shop-banner__slide" data-shop-banner>
-                <img src="assets/shop/board-style.svg" alt="Customize your TeacherTiles board banner">
+                <img src="assets/shop/board-style.svg?v=20261012-responsive" alt="Customize your TeacherTiles board banner">
               </article>
-              <article class="shop-banner__slide" data-shop-banner><img src="assets/shop/subscription.svg?v=20260926" alt="TeacherTiles Membership: all paid cosmetics, 20 saved boards, and 500 coins each month for $5.99 per month"></article>
+              <article class="shop-banner__slide" data-shop-banner><img src="assets/shop/subscription.svg?v=20261012-responsive" alt="TeacherTiles Membership: all paid cosmetics, 20 saved boards, and 500 coins each month for $5.99 per month"></article>
             </div>
-            <button class="shop-banner__arrow shop-banner__arrow--prev" type="button" data-shop-banner-prev aria-label="Previous banner">‹</button>
-            <button class="shop-banner__arrow shop-banner__arrow--next" type="button" data-shop-banner-next aria-label="Next banner">›</button>
-            <div class="shop-banner__dots" role="tablist" aria-label="Choose featured banner">
-              <button class="is-active" type="button" data-shop-banner-dot="0" aria-label="Banner 1" aria-selected="true"></button>
-              <button type="button" data-shop-banner-dot="1" aria-label="Banner 2" aria-selected="false"></button>
-              <button type="button" data-shop-banner-dot="2" aria-label="Banner 3" aria-selected="false"></button>
-              <button type="button" data-shop-banner-dot="3" aria-label="Subscription banner" aria-selected="false"></button>
+
+            <div class="shop-banner__dots" role="group" aria-label="Choose featured banner">
+              <button class="is-active" type="button" data-shop-banner-dot="0" aria-label="Banner 1" aria-pressed="true"></button>
+              <button type="button" data-shop-banner-dot="1" aria-label="Banner 2" aria-pressed="false"></button>
+              <button type="button" data-shop-banner-dot="2" aria-label="Banner 3" aria-pressed="false"></button>
+              <button type="button" data-shop-banner-dot="3" aria-label="Subscription banner" aria-pressed="false"></button>
             </div>
           </div>
 
@@ -1788,6 +1787,18 @@
           <article class="shop-coin-pack"><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>2,600</strong><small>Coins</small><button type="button" data-coin-pack="coins-2600">$19.99</button></article>
           <article class="shop-coin-pack"><span class="shop-coin-pile" aria-hidden="true"><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i><i><img src="assets/shop/coin.png" alt=""></i></span><strong>7,000</strong><small>Coins</small><button type="button" data-coin-pack="coins-7000">$49.99</button></article>
         </div>
+        <section class="shop-ad-rewards" aria-labelledby="shop-ad-rewards-title">
+          <div class="shop-ad-rewards__intro">
+            <span class="shop-ad-rewards__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="4"/><path d="m10 8 5 3-5 3Z"/><path d="M8 21h8"/></svg></span>
+            <div><span class="shop-ad-rewards__soon">Coming Soon</span><h3 id="shop-ad-rewards-title">Watch an Ad, Earn Coins</h3><p>Earn <strong>10 coins</strong> per ad, up to <strong>10 ads a day</strong>.</p></div>
+          </div>
+          <div class="shop-ad-rewards__daily">
+            <div class="shop-ad-rewards__progress-label"><label for="shop-ad-progress">Daily Ad Rewards</label><output id="shop-ad-count">0 / 10 watched</output></div>
+            <progress id="shop-ad-progress" max="10" value="0">0 of 10 ads watched</progress>
+            <div class="shop-ad-rewards__totals"><span id="shop-ad-remaining">10 ads remaining</span><span id="shop-ad-earned">0 / 100 coins earned</span></div>
+          </div>
+          <div class="shop-ad-rewards__action"><button id="shop-watch-ad" type="button" disabled aria-describedby="shop-ad-availability"><span aria-hidden="true">▷</span> Watch Ad <span class="shop-ad-reward"><img src="assets/shop/coin.png" alt="">+10</span></button><small id="shop-ad-availability">Ad rewards aren’t available yet.</small></div>
+        </section>
         <p class="shop-coin-menu__note">Coins are attached to the signed in TeacherTiles account after payment is confirmed and are non refundable.</p>
       </aside>
 
@@ -4523,7 +4534,8 @@
 <script src="tiles/shared/flashcard-services.js?v=20260930-tile-refactor"></script>
 <script src="boards/serialization.js?v=20261001-position-drawer"></script>
 <script src="changelog/ui.js?v=20260930-tile-refactor"></script>
-<script src="shop/ui.js?v=20261012-shop-layout"></script>
+<script src="shop/ad-rewards.js?v=20261012"></script>
+<script src="shop/ui.js?v=20261012-ad-rewards"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
 <script src="app.js?v=20261012-calculator-choices"></script>
