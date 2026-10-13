@@ -153,3 +153,36 @@
 .shop-modal .shop-promotions .shop-membership-perks{gap:9px 15px;margin:14px 0}
 .shop-modal .shop-promotions .shop-membership-card__foot{margin-top:12px;padding-top:10px}
 @media(max-width:600px){.shop-modal .shop-coin-menu{inset:119px 0 0}}
+
+/* A single promotion row, followed by a full-width collection gallery. */
+.shop-modal .shop-panel{width:min(1440px,97vw);height:96dvh;max-height:96dvh}
+.shop-modal .shop-landing{display:block}
+.shop-modal .shop-promotions{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start;gap:22px;margin-bottom:22px}
+.shop-modal .shop-promotions .shop-banner{margin:0}
+.shop-modal .shop-promotions .shop-membership-grid{display:block;margin:0}
+.shop-modal .shop-promotions .shop-membership-card h3{font-size:22px}
+.shop-modal .shop-discovery{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;align-items:center}
+.shop-modal .shop-discovery .shop-home-heading{margin:0 0 14px}
+.shop-modal .shop-discovery .shop-home-heading p{display:none}
+.shop-modal .shop-discovery .shop-browser-toolbar{margin:0 0 14px;grid-template-columns:minmax(0,1fr) 135px}
+.shop-modal .shop-discovery .shop-category-grid{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.shop-modal .shop-discovery .shop-category{min-height:174px}
+.shop-modal .shop-discovery .shop-category__art{height:92px}
+.shop-modal .shop-explore-packs{grid-column:1/-1}
+.shop-modal .shop-navigation .shop-redeem-trigger{margin-left:auto;background:transparent;border-color:transparent;box-shadow:none;color:color-mix(in srgb,#8b55cb 85%,var(--text));padding-inline:12px;font-weight:650}
+.shop-modal .shop-navigation .shop-redeem-trigger:hover{background:color-mix(in srgb,#a976dc 12%,var(--surface-solid));border-color:color-mix(in srgb,#a976dc 22%,var(--border))}
+.shop-redeem-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);padding:0;border:1px solid var(--border);border-radius:20px;background:var(--surface-solid);color:var(--text);box-shadow:0 22px 80px #17203340;overflow:auto;font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
+.shop-redeem-dialog::backdrop{background:#17203365;backdrop-filter:blur(4px)}
+.shop-redeem-dialog[open]{animation:shopSuccessIn .22s ease both}
+.shop-modal .shop-redeem-dialog .shop-redeem-card{padding:28px;border:0;margin:0;border-radius:0;background:var(--surface-solid)}
+.shop-modal .shop-redeem-dialog .shop-redeem-card__header{margin-bottom:20px;padding-right:25px}
+.shop-redeem-dismiss{position:absolute;z-index:2;right:12px;top:12px;width:32px;height:32px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);font:24px/1 var(--site-font-family,Inter,sans-serif);cursor:pointer}
+.shop-modal .shop-page.is-global-searching .shop-discovery{display:block}
+@media(max-width:1050px){.shop-modal .shop-promotions{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.shop-modal .shop-promotions .shop-membership-perks{grid-template-columns:1fr 1fr;gap:8px 12px}.shop-modal .shop-promotions .shop-membership-card{padding:16px}.shop-modal .shop-promotions .shop-membership-card h3{font-size:19px}.shop-modal .shop-promotions .shop-membership-card__head{grid-template-columns:32px minmax(0,1fr) auto;gap:8px}.shop-modal .shop-promotions .shop-membership-crown{width:32px;height:32px}.shop-modal .shop-promotions .shop-membership-price strong{font-size:23px}}
+@media(max-width:700px){.shop-modal .shop-promotions{grid-template-columns:1fr}.shop-modal .shop-discovery{display:block}.shop-modal .shop-discovery .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shop-modal .shop-discovery .shop-category{min-height:146px}.shop-modal .shop-discovery .shop-category__art{height:76px}.shop-modal .shop-navigation{gap:3px;padding-inline:9px}.shop-modal .shop-navigation button{font-size:10px;padding-inline:4px;flex:0 1 auto;min-width:0}.shop-modal .shop-navigation button:first-child{flex-basis:28px}.shop-modal .shop-navigation .shop-redeem-trigger{padding-inline:4px;white-space:nowrap}.shop-modal .shop-panel{height:97dvh;max-height:97dvh}.shop-modal .shop-promotions .shop-membership-card h3{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.shop-redeem-dialog[open]{animation:none}}
+
+@media(min-width:1051px) and (max-height:820px){.shop-modal .shop-content{padding-top:16px}.shop-modal .shop-promotions{margin-bottom:16px}.shop-modal .shop-discovery .shop-category{min-height:162px}.shop-modal .shop-discovery .shop-category__art{height:84px}}
+@media(max-width:380px){.shop-modal .shop-navigation{padding-inline:6px;gap:2px}.shop-modal .shop-navigation button{font-size:9px;padding-inline:3px}.shop-modal .shop-navigation button:first-child{flex-basis:24px}.shop-modal .shop-navigation .shop-redeem-trigger{padding-inline:3px}}
+@media(max-width:700px){.shop-modal .shop-navigation.shop-navigation button{font-size:10px;padding:7px 4px}}
+@media(max-width:380px){.shop-modal .shop-navigation.shop-navigation button{font-size:9px;padding:7px 3px}}
