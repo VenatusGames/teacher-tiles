@@ -4,14 +4,7 @@
 .profile-frame-outline::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:var(--frame-width);background:var(--frame-paint);background-size:var(--frame-size,auto);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude}
 .profile-frame-outline[data-profile-frame=rainbow]{--frame-paint:linear-gradient(120deg,#eb95a4,#f3cb83,#a6cda0,#8ac5db,#b29bdb,#eb95a4)}
 .profile-frame-outline[data-profile-frame=candy]{--frame-paint:repeating-linear-gradient(45deg,#ed829d 0 7px,#fff0df 7px 14px)}
-.profile-frame-outline[data-profile-frame=confetti]{--frame-paint:radial-gradient(circle at 4px 4px,#ed987e 0 2px,transparent 2.5px),radial-gradient(circle at 13px 10px,#8dafce 0 2px,transparent 2.5px),radial-gradient(circle at 5px 15px,#b7a3d6 0 2px,transparent 2.5px),linear-gradient(#fff1d9,#fff1d9);--frame-size:18px 18px;--frame-width:7px}
-.profile-frame-outline[data-profile-frame=garden]{--frame-paint:radial-gradient(ellipse at 5px 4px,#efb6c6 0 3px,transparent 3.5px),radial-gradient(ellipse at 13px 10px,#447d64 0 3px,transparent 3.5px),linear-gradient(#b8d6b1,#b8d6b1);--frame-size:20px 15px;--frame-width:7px}
-.profile-frame-outline[data-profile-frame=starlight]{--frame-paint:radial-gradient(circle at 5px 4px,#ffe5a2 0 1.5px,transparent 2px),radial-gradient(circle at 16px 12px,#cbc1f0 0 1px,transparent 1.5px),linear-gradient(#323d69,#323d69);--frame-size:23px 18px;--frame-width:7px}
 .profile-frame-outline[data-profile-frame=gilded]{--frame-paint:linear-gradient(135deg,#8a682a,#f8e3a6 25%,#bd954b 45%,#fae7b6 65%,#93702e);box-shadow:inset 0 0 0 1px #947137;--frame-width:6px}
-.profile-frame-outline[data-profile-frame=stitched]{--frame-paint:linear-gradient(#6186aa,#6186aa);outline:1px dashed #dbe8f5;outline-offset:-3px;--frame-width:6px}
-.profile-frame-outline[data-profile-frame=checker]{--frame-paint:conic-gradient(#a39bc8 25%,#f1eaf9 0 50%,#a39bc8 0 75%,#f1eaf9 0);--frame-size:14px 14px;--frame-width:7px}
-.profile-frame-outline[data-profile-frame=notebook]{--frame-paint:linear-gradient(90deg,transparent 0 20px,#df9ba8 20px 22px,transparent 22px),repeating-linear-gradient(#f5efdd 0 7px,#8eb1cc 7px 8px);--frame-width:7px}
-.profile-frame-outline[data-profile-frame=terrazzo]{--frame-paint:conic-gradient(from 30deg at 30% 40%,#b9816d 0 70deg,transparent 70deg),conic-gradient(from 170deg at 75% 75%,#8caaa0 0 60deg,#f0dfc9 60deg);--frame-size:17px 13px;--frame-width:7px}
 .profile-frame-outline[data-profile-frame=aurora]{--frame-paint:linear-gradient(110deg,#79c5b1,#a5d7df,#b899df,#ebafd0,#79c5b1);--frame-size:300% 300%}
 .profile-frame-outline[data-profile-frame=aurora]::before{animation:profile-frame-flow 10s ease-in-out infinite}
 .profile-frame-outline[data-profile-frame=neon]{--frame-paint:linear-gradient(120deg,#be8bf0,#edbafa,#8f9aec);box-shadow:inset 0 0 10px #b486e942,0 0 8px #b486e933;animation:profile-frame-pulse 4s ease-in-out infinite}
@@ -24,6 +17,9 @@
 .profile-frame-marquee-lights rect{width:calc(100% - 8px);height:calc(100% - 8px);rx:12px;fill:none;stroke:#ffe9ae;stroke-width:4px;stroke-linecap:round;stroke-dasharray:.01 12;animation:profile-frame-lights 3s ease-in-out infinite}
 .profile-frame-marquee-lights rect+rect{stroke:#fffbe2;stroke-width:2px;animation-delay:-1.5s}
 .profile-frames-drawer .profile-frame-marquee-lights rect{rx:5px}
+.profile-frame-outline:has(tt-profile-frame-art)::before{display:none}
+tt-profile-frame-art{position:absolute;inset:0;display:block;overflow:hidden;border-radius:inherit;pointer-events:none}
+tt-profile-frame-art>svg{display:block;width:100%;height:100%;overflow:visible}
 .profile-frame-preview{position:relative;isolation:isolate;display:flex;align-items:center;gap:13px;width:min(230px,85%);min-height:110px;padding:20px;border-radius:16px;background:var(--surface-solid,#fff);color:var(--text,#29364b);border:1px solid var(--border,#dbe2ea);box-shadow:0 8px 20px #1e29430c;box-sizing:border-box}
 .profile-frame-preview-avatar{width:38px;height:44px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--surface-soft,#eef1f5);color:var(--muted,#8c99aa)}
 .profile-frame-preview-avatar svg{width:27px;height:27px}.profile-frame-preview-copy{display:grid;gap:8px;flex:1;min-width:0}.profile-frame-preview-copy b{font-size:13px;font-weight:650}.profile-frame-preview-copy i{height:4px;border-radius:4px;background:var(--border,#e0e5ed);width:90%}.profile-frame-preview-copy i:last-child{width:60%}
