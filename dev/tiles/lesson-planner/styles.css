@@ -53,7 +53,6 @@
 .lesson-planner-panel .planner-book-copy>em{margin-top:3px;font-size:11px;font-weight:450;line-height:1.5}
 .lesson-planner-panel .planner-book-tool-button{top:13px;left:auto;right:12px;width:29px;height:29px;padding:6px;border-radius:8px;background:var(--surface-solid);box-shadow:0 2px 5px #15263c17}
 .lesson-planner-panel .planner-book-customize{right:46px}.lesson-planner-panel .planner-book-tool-button svg{width:17px;height:17px}
-.lesson-planner-panel .planner-book-card:focus-within .planner-book-tool-button{opacity:1;visibility:visible;pointer-events:auto;transform:none}
 .lesson-planner-panel .planner-book-popover{top:49px;left:0;border-radius:12px;box-shadow:0 10px 24px #15263c24;animation:planner-pop-in .16s ease-out}
 .lesson-planner-panel .planner-book-actions button{font-size:12px;font-weight:550}
 .lesson-planner-panel .planner-library-create--shelf{margin-top:8px;height:225px;min-height:225px;padding:16px;border:1px dashed var(--planner-line);border-radius:12px;background:var(--surface-solid);box-shadow:none;transition:border-color .18s,background .18s,transform .18s}

@@ -1,0 +1,44 @@
+/* Shared book art for the planner shelf, Extras, and the skin drawer. */
+.planner-skin-preview{display:block;width:140px;height:184px;position:relative;margin:8px auto;--book-cover:#b4cbbc;--planner-title-size:16px}
+.planner-skin-preview .planner-book-art{position:relative;display:block;container-type:inline-size;width:100%;height:100%;aspect-ratio:.76;margin:0;overflow:visible;border:0;border-radius:5px 14px 14px 5px;background:transparent;box-shadow:5px 9px 13px #24332824;transform:none}
+.planner-skin-preview .planner-book-art::before{content:"";position:absolute;inset:5px -5px -3px 5px;width:auto;border:1px solid #d9dcd6;border-radius:4px 14px 14px 5px;background:repeating-linear-gradient(90deg,#f9faf7 0 1px,#e2e5df 1px 2px);box-shadow:2px 1px 0 var(--book-cover)}
+.planner-skin-preview .planner-book-art::after{display:none}
+.planner-skin-preview .planner-book-cover-label{inset:25px 25px 24px 20px}
+.planner-skin-preview .planner-book-embossed-title{font-size:16px!important}
+.planner-skin-preview .planner-book-cover-label small{font-size:5px}
+[data-planner-skin="floral"] .planner-book-art{--book-cover:#f5f2e7}
+[data-planner-skin="floral"] .planner-book-cover{background:#faf8ed url('assets/floral.svg') center/145px 174px;border-color:#b5c6a3;box-shadow:inset 1px 1px 2px #fff9,inset -2px -2px 3px #546b4826}
+[data-planner-skin="floral"] .planner-book-cover-label{inset:28% 23% 29%;padding:8px 5px;border:3px double #d1aa70;border-radius:2px 2px 38% 38%;background:#fffcf3;color:#8c683c;box-shadow:0 0 0 3px #fffcf3,0 3px 6px #42503718;justify-content:center}
+[data-planner-skin="floral"] .planner-book-cover-label .planner-book-embossed-title{font-size:clamp(8px,9cqi,18px);font-weight:500;letter-spacing:0;text-shadow:none;margin:0;line-height:1.2}
+[data-planner-skin="floral"] .planner-book-cover-label small{margin-top:9px;font-size:4px;letter-spacing:.14em;text-shadow:none}
+[data-planner-skin="floral"] :is(.planner-book-loop,.planner-book-elastic){display:none}
+[data-planner-skin="floral"] .planner-book-binding>span{border-color:#b28b4c;border-top-color:#fff1b7;border-bottom-color:#94723a;background:linear-gradient(#fff3c4 0 22%,#d9ba73 23% 40%,transparent 41%)}
+[data-planner-skin="leather"] .planner-book-art{--book-cover:#895936}
+[data-planner-skin="leather"] .planner-book-cover{border-radius:9px;border-color:#63402b;background:linear-gradient(100deg,#23150944,transparent 15%,#fbe5c417 75%,#22140733),url('assets/leather.svg') center/100px 100px;box-shadow:inset 1px 1px 3px #efcda94d,inset -2px -2px 4px #26160477}
+[data-planner-skin="leather"] .planner-book-cover::before{inset:5px;border:1px dashed #d1ab7c90;border-radius:5px;box-shadow:0 0 0 1px #55352140}
+[data-planner-skin="leather"] .planner-book-cover::after{inset:0 auto 0 9px;width:5px;opacity:.5;background:linear-gradient(90deg,#39200a55,#f3c99022,transparent)}
+[data-planner-skin="leather"] .planner-book-cover-label{inset:30% 22% 22% 16%;color:#402916}
+[data-planner-skin="leather"] .planner-book-cover-label .planner-book-embossed-title{text-shadow:0 1px 0 #c4996680,0 -1px 1px #28170aaa;font-weight:550}
+[data-planner-skin="leather"] .planner-book-cover-label small{text-shadow:0 1px #c4996666;color:#49301d}
+[data-planner-skin="leather"] :is(.planner-book-binding,.planner-book-elastic){display:none}
+[data-planner-skin="leather"] .planner-book-loop{z-index:3;right:-9px;top:46%;width:34px;height:25px;border:1px solid #68462e;border-radius:14px 3px 3px 14px;background:linear-gradient(#e4b78117,#311b1433),url('assets/leather.svg') center/100px;box-shadow:0 3px 4px #2d1e1a55,inset 1px 1px 2px #d8b08370}
+[data-planner-skin="leather"] .planner-book-loop::after{content:"";position:absolute;inset:3px;border:1px dashed #d1ab7c88;border-radius:10px 1px 1px 10px}
+/* Corner proximity controls; invisible controls remain reachable with Tab. */
+.lesson-planner-panel .planner-book-card{container-type:inline-size}
+.lesson-planner-panel .planner-book-card .planner-book-tool-button{opacity:0;visibility:visible;pointer-events:none;transform:translateY(3px)}
+.lesson-planner-panel .planner-book-card .planner-book-tool-button:is(.is-near-pointer,:focus-visible,[aria-expanded="true"]){opacity:1;pointer-events:auto;transform:none}
+.lesson-planner-panel .planner-book-skins{left:17px;right:auto;top:calc((100cqi - 12px)/.76 - 29px);bottom:auto}
+.planner-skins-drawer{margin:0;inset:auto;font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
+.planner-skins-drawer:not(:popover-open){display:none}
+.planner-skins-drawer .tile-skins-choice-preview{height:126px}
+.planner-skins-drawer .planner-skin-preview{width:74px;height:98px;margin:0}
+.planner-skins-drawer .planner-skin-preview .planner-book-cover-label{inset:25% 18% 23%;padding:3px}
+.planner-skins-drawer .planner-skin-preview .planner-book-embossed-title{font-size:8px!important}
+.planner-skins-drawer .planner-skin-preview .planner-book-cover-label small{font-size:3px;margin-top:5px}
+.planner-skins-drawer .planner-book-loop{width:20px;height:17px;right:-6px}
+.planner-skins-drawer .planner-book-binding{inset:7px auto 7px -5px;width:12px}
+.planner-skins-drawer .planner-book-binding>span{width:12px;height:3px}
+.planner-skins-drawer .tile-skins-choice{position:relative}
+.planner-skins-drawer .tile-skins-choice.is-locked small{color:#977224;opacity:1}
+@media(hover:none){.lesson-planner-panel .planner-book-card .planner-book-tool-button{opacity:1;pointer-events:auto;transform:none;min-width:34px;min-height:34px}}
+@media(prefers-reduced-motion:reduce){.lesson-planner-panel .planner-book-tool-button{transition:none}}

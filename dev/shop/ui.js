@@ -4,6 +4,7 @@ function setupTeacherTilesShop(){
   const close=document.getElementById('shop-close');
   if(!modal||!toggle||!close)return;
 
+  setupShopExtras(modal);
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
   shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
@@ -16,7 +17,7 @@ function setupTeacherTilesShop(){
   explore.addEventListener('click',()=>shopHome.querySelector('.shop-featured-section:not([hidden])')?.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'}));
   discovery.append(explore);landing.append(promotions,discovery);shopHome.prepend(landing);
   const navigation=document.createElement('nav');navigation.className='shop-navigation';navigation.setAttribute('aria-label','Shop collections');
-  navigation.innerHTML='<button type="button" data-shop-open-page="home" aria-label="Shop home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></svg></button>'+[['themes','Themes'],['stickers','Stickers'],['tile-skins','Tile Skins'],['cursors','Cursors']].map(([page,label])=>`<button type="button" data-shop-open-page="${page}">${label}</button>`).join('');
+  navigation.innerHTML='<button type="button" data-shop-open-page="home" aria-label="Shop home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></svg></button>'+[['themes','Themes'],['stickers','Stickers'],['tile-skins','Tile Skins'],['cursors','Cursors'],['extras','Extras']].map(([page,label])=>`<button type="button" data-shop-open-page="${page}">${label}</button>`).join('');
   modal.querySelector('.shop-header').after(navigation);
   const redeemTrigger=document.createElement('button');redeemTrigger.type='button';redeemTrigger.className='shop-redeem-trigger';redeemTrigger.textContent='Redeem Code';redeemTrigger.setAttribute('aria-haspopup','dialog');redeemTrigger.setAttribute('aria-expanded','false');
   navigation.append(redeemTrigger);
@@ -28,7 +29,7 @@ function setupTeacherTilesShop(){
   redeemDialog.addEventListener('close',()=>{redeemTrigger.setAttribute('aria-expanded','false');if(!modal.hidden)startBannerTimer()});
   redeemDialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation()});
   redeemDialog.addEventListener('click',event=>{if(event.target!==redeemDialog)return;const rect=redeemDialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)redeemDialog.close()});
-  for(const name of ['themes','stickers','cursors']){
+  for(const name of ['themes','stickers','cursors','extras']){
     const page=modal.querySelector('[data-shop-page="'+name+'"]');
     if(page.querySelector('[data-shop-browser]'))continue;
     const toolbar=shopHome.querySelector('[data-shop-browser]').cloneNode(true);
@@ -40,7 +41,7 @@ function setupTeacherTilesShop(){
   const previousFeatured=new Map();
   function refreshFeatured(){
     const owned=getOwnedShopProducts();
-    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors']})){
+    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors','extras']})){
       const container=modal.querySelector('[data-featured-section="'+group+'"]');
       for(const card of [...container.children]){const index=products.indexOf(card);if(index>=0)products.splice(index,1)}
       container.replaceChildren();
