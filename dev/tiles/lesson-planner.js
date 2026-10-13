@@ -97,6 +97,8 @@
     { id: 'ocean', name: 'Ocean', value: '#397db9', ink: '#f4fbff' },
     { id: 'slate', name: 'Slate', value: '#718096', ink: '#ffffff' }
   ];
+  const DEFAULT_COVER_COLOR = Object.freeze({id:'default',name:'Default',value:'#b4cbbc',ink:'#35483b'});
+  const normalizeCoverColor = id => COLORS.some(color=>color.id===id)?id:'default';
   const monthLong = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
   const dayTitle = new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
   const weekdayLong = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
@@ -391,7 +393,8 @@
       id: String(planner.id || plannerId()),
       name: cleanPlannerName(planner.name, `Planner ${index + 1}`),
       skin: window.TeacherTilesPlannerSkins.normalize(planner.skin),
-      color: COLORS.some(color => color.id === planner.color) ? planner.color : COLORS[index % COLORS.length].id,
+      color: normalizeCoverColor(planner.color),
+      skinColors: Object.fromEntries(window.TeacherTilesPlannerSkins.catalog.map(skin=>[skin.id,normalizeCoverColor(planner.skinColors?.[skin.id])])),
       blocks: Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [],
       scheduleId: String(planner.scheduleId || ''),
       settings: { showWeekends: planner.settings?.showWeekends === true }
@@ -897,8 +900,9 @@
   }
 
 
-  function plannerColor(planner) {
-    return COLORS.find(color => color.id === planner?.color) || COLORS[0];
+  function plannerColor(planner, skin = window.TeacherTilesPlannerSkins.equipped(planner.skin)) {
+    const id = skin ? planner.skinColors?.[skin] : planner.color;
+    return COLORS.find(color => color.id === id) || DEFAULT_COVER_COLOR;
   }
 
   function renderLibrary() {
@@ -921,6 +925,7 @@
       const color = plannerColor(planner);
       const card = make('article', 'planner-book-card');
       card.dataset.plannerId = planner.id;
+      card.dataset.plannerColor = color.id;
       card.style.setProperty('--planner-book-color', color.value);
       card.style.setProperty('--planner-book-ink', color.ink);
 
@@ -963,17 +968,20 @@
       colorPanel.hidden = true;
       const colors = make('div', 'planner-book-colors');
       colors.setAttribute('aria-label', `${planner.name} color`);
-      COLORS.forEach(option => {
+      [DEFAULT_COVER_COLOR,...COLORS].forEach(option => {
         const swatch = make('button', 'planner-book-color');
+        if(option.id==='default'){swatch.classList.add('planner-book-color--default');swatch.textContent='Default';}
         swatch.type = 'button';
         swatch.title = option.name;
         swatch.setAttribute('aria-label', `Use ${option.name} for ${planner.name}`);
-        swatch.setAttribute('aria-pressed', String(option.id === planner.color));
-        swatch.classList.toggle('is-selected', option.id === planner.color);
+        swatch.setAttribute('aria-pressed', String(option.id === color.id));
+        swatch.classList.toggle('is-selected', option.id === color.id);
         swatch.style.setProperty('--planner-swatch', option.value);
         swatch.addEventListener('click', event => {
           event.stopPropagation();
-          planner.color = option.id;
+          const skin = window.TeacherTilesPlannerSkins.equipped(planner.skin);
+          if(skin){planner.skinColors ||= {};planner.skinColors[skin]=option.id;}
+          else planner.color = option.id;
           savePlanners();
           renderLibrary();
         });
@@ -1029,7 +1037,7 @@
       customize.addEventListener('click', event => toggleBookPopover(event, customize, colorPanel));
       settings.addEventListener('click', event => toggleBookPopover(event, settings, settingsPanel));
       card.append(open, customize, settings, colorPanel, settingsPanel);
-      window.TeacherTilesPlannerSkins.mount(card, planner, {save:savePlanners, render:renderLibrary, openShop:id=>{closePlanner();window.TeacherTilesShop?.openProduct(id);}});
+      window.TeacherTilesPlannerSkins.mount(card, planner, {save:savePlanners, render:renderLibrary, colorForSkin:id=>plannerColor(planner,id), openShop:id=>{closePlanner();window.TeacherTilesShop?.openProduct(id);}});
       libraryGrid.append(card);
     });
     libraryGrid.append(createPlannerButton);
@@ -1071,7 +1079,8 @@
     const planner = {
       id: plannerId(),
       name: `Planner ${planners.length + 1}`,
-      color: COLORS[planners.length % COLORS.length].id,
+      color: 'default',
+      skinColors: {},
       blocks: [],
       scheduleId: planningLibrary.schedules[0]?.id || '',
       settings: { showWeekends: false }

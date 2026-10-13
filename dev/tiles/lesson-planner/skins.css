@@ -42,3 +42,17 @@
 .planner-skins-drawer .tile-skins-choice.is-locked small{color:#977224;opacity:1}
 @media(hover:none){.lesson-planner-panel .planner-book-card .planner-book-tool-button{opacity:1;pointer-events:auto;transform:none;min-width:34px;min-height:34px}}
 @media(prefers-reduced-motion:reduce){.lesson-planner-panel .planner-book-tool-button{transition:none}}
+
+/* Each skin retains its original palette until a cover color is selected. */
+[data-planner-skin=""][data-planner-color="default"] .planner-book-art{--book-cover:#b4cbbc}
+.planner-skin-preview[data-planner-skin=""][data-planner-color]:not([data-planner-color="default"]) .planner-book-art{--book-cover:color-mix(in srgb,var(--planner-book-color) 48%,#cbd2c8)}
+[data-planner-skin="floral"][data-planner-color]:not([data-planner-color="default"]) .planner-book-art{--book-cover:color-mix(in srgb,var(--planner-book-color) 32%,#faf8ed)}
+[data-planner-skin="floral"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover{background-color:var(--book-cover);background-image:linear-gradient(var(--book-cover),var(--book-cover)),url('assets/floral.svg');background-size:auto,145px 174px;background-blend-mode:multiply,normal;border-color:color-mix(in srgb,var(--planner-book-color) 50%,#b5c6a3)}
+[data-planner-skin="floral"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:color-mix(in srgb,var(--planner-book-color) 40%,#483d32);border-color:color-mix(in srgb,var(--planner-book-color) 40%,#b7965f)}
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) .planner-book-art{--book-cover:color-mix(in srgb,var(--planner-book-color) 80%,#796d60)}
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) :is(.planner-book-cover,.planner-book-loop){background-color:var(--book-cover);background-blend-mode:normal,luminosity;border-color:color-mix(in srgb,var(--book-cover) 62%,#252b30);box-shadow:inset 1px 1px 3px #ffffff4d,inset -2px -2px 4px #101b2577}
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover::before,
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) .planner-book-loop::after{border-color:color-mix(in srgb,var(--book-cover) 50%,#fff)}
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:color-mix(in srgb,var(--book-cover) 35%,#17232a)}
+[data-planner-skin="leather"][data-planner-color]:not([data-planner-color="default"]) :is(.planner-book-embossed-title,.planner-book-cover-label small){color:inherit;text-shadow:0 1px 0 #ffffff40,0 -1px 1px #10182099}
+.planner-book-color-panel .planner-book-color--default{grid-column:1/-1;width:100%;border-radius:8px;background:var(--surface-soft);color:var(--text);font:500 12px var(--site-font-family,Inter,system-ui,sans-serif)}
