@@ -1847,3 +1847,6 @@ window.addEventListener('teachertiles:collectionpreferences',()=>{
   }
   applyMenuView();renderMenuCategoryPins();
 });
+
+// Keep the original catalog elements, including those currently hidden or cloned.
+window.TeacherTilesTileMenu = {element:menu, items:menuItems, refresh(){applyMenuView();renderMenuCategoryPins();}};
