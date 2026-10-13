@@ -11,7 +11,11 @@ function setupShopExtras(modal) {
     card.innerHTML='<div class="shop-product__preview" aria-hidden="true"></div><div class="shop-product__body"><div><span class="shop-product__type"></span><h3></h3><p></p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong></strong></button></div>';
     card.querySelector('h3').textContent=item.name;card.querySelector('p').textContent=item.description;card.querySelector('.shop-buy strong').textContent=item.price;
     card.querySelector('.shop-product__type').textContent=kind==='planner-skin'?'PLANNER SKIN':item.tier==='animated'?'ANIMATED PROFILE FRAME':'PROFILE FRAME';
-    const art=card.querySelector('.shop-product__preview');art.classList.add('shop-product__preview--'+(kind==='planner-skin'?'planner':'frame'));art.append(preview);return card;
+    const art=card.querySelector('.shop-product__preview');art.classList.add('shop-product__preview--'+(kind==='planner-skin'?'planner':'frame'));art.append(preview);
+    if(kind==='profile-frame'&&item.tier==='animated'){
+      const badge=document.createElement('span');badge.className='shop-animated-badge';badge.textContent='ANIMATED';art.append(badge);
+    }
+    return card;
   }
   const planners=page('planner-skins','Planner Skins','A personal touch for your planning shelf. Choose a cover for each book.');
   for(const skin of skins.catalog)planners.querySelector('.shop-product-grid').append(product(skin,'planner-skin',skins.preview(skin.id)));

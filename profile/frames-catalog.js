@@ -231,6 +231,10 @@
     host.querySelector(':scope > .profile-frame-outline')?.remove();
     const frame=find(id);if(!frame)return;
     const edge=document.createElement('span');edge.className='profile-frame-outline';edge.dataset.profileFrame=id;edge.style.setProperty('--frame-color',frame.color);edge.setAttribute('aria-hidden','true');host.append(edge);
+    if(id==='marquee'){
+      // Draw bulbs along a rounded path instead of clipping a tiled pattern at the edges.
+      edge.innerHTML='<svg class="profile-frame-marquee-lights" width="100%" height="100%" focusable="false"><rect x="4" y="4"/><rect x="4" y="4"/></svg>';
+    }
   }
   function preview(id){
     const card=document.createElement('span');card.className='profile-frame-preview';card.setAttribute('aria-hidden','true');
