@@ -367,7 +367,7 @@ function setupTeacherTilesShop(){
   function showBanner(index,restart=true){
     if(!banners.length)return;
     bannerIndex=(index+banners.length)%banners.length;
-    banners.forEach((slide,i)=>slide.classList.toggle('is-active',i===bannerIndex));
+    banners.forEach((slide,i)=>{const active=i===bannerIndex;slide.classList.toggle('is-active',active);slide.inert=!active;slide.setAttribute('aria-hidden',String(!active))});
     dots.forEach((dot,i)=>{
       const active=i===bannerIndex;
       dot.classList.toggle('is-active',active);
@@ -379,7 +379,7 @@ function setupTeacherTilesShop(){
   function startBannerTimer(){
     stopBannerTimer();
     if(reduceMotion||modal.hidden||coinMenu&&!coinMenu.hidden)return;
-    bannerTimer=setInterval(()=>showBanner(bannerIndex+1,false),5200);
+    bannerTimer=setInterval(()=>{if(!modal.querySelector('.shop-banner')?.contains(document.activeElement))showBanner(bannerIndex+1,false)},7500);
   }
   function openCoins(){
     if(!coinMenu)return;
@@ -479,28 +479,54 @@ function setupTeacherTilesShop(){
     const url=new URL(window.location.href);url.searchParams.delete('tt_checkout');url.searchParams.delete('tt_checkout_kind');
     history.replaceState(history.state,'',`${url.pathname}${url.search}${url.hash}`);
   }
+  let subscriptionDialog=null;
+  function showMembershipNotice(message){
+    let notice=document.getElementById('shop-membership-notice');
+    if(!notice){notice=document.createElement('div');notice.id='shop-membership-notice';notice.className='shop-membership-notice';notice.setAttribute('role','status');document.body.append(notice)}
+    notice.textContent=message;
+    if(!pendingMembershipConfirmation)setTimeout(()=>notice.remove(),6000);
+  }
+  function showSubscriptionActivated(){
+    cleanCheckoutQuery();
+    if(!modal.hidden)closeShop();
+    const profile=document.getElementById('profile-modal');
+    if(profile&&!profile.hidden)profile.querySelector('[data-profile-close]')?.click();
+    document.getElementById('shop-membership-notice')?.remove();
+    if(!subscriptionDialog){
+      subscriptionDialog=document.createElement('dialog');
+      subscriptionDialog.className='shop-subscription-success';
+      subscriptionDialog.setAttribute('aria-labelledby','shop-subscription-success-title');
+      subscriptionDialog.innerHTML='<span class="shop-success-crown" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg></span><small>WELCOME TO MEMBERSHIP</small><h2 id="shop-subscription-success-title">Subscription Activated!</h2><p>Your subscriber features are ready to use on your board. Thanks for supporting TeacherTiles!</p><button type="button">Back to My Board</button>';
+      document.body.append(subscriptionDialog);
+      subscriptionDialog.querySelector('button').addEventListener('click',()=>subscriptionDialog.close());
+      subscriptionDialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation()});
+    }
+    if(!subscriptionDialog.open)subscriptionDialog.showModal();
+  }
   function handleCheckoutReturn(){
     if(pendingMembershipConfirmation&&accountState().subscriptionActive){
       pendingMembershipConfirmation=false;
-      showToast('Membership active! Your subscriber features are ready.');
+      showSubscriptionActivated();
     }
     if(checkoutHandled)return;
     const params=new URLSearchParams(window.location.search);
     const status=params.get('tt_checkout');
     if(!status||!accountState().signedIn)return;
-    checkoutHandled=true;openShop();
-    if(params.get('tt_checkout_kind')==='membership_trial'){
+    checkoutHandled=true;
+    if(['membership','membership_trial'].includes(params.get('tt_checkout_kind'))){
       if(status==='success'){
         pendingMembershipConfirmation=!accountState().subscriptionActive;
-        showToast(pendingMembershipConfirmation?'Confirming your membership…':'Membership active! Your subscriber features are ready.');
-        [500,1600,3600,7000].forEach(delay=>setTimeout(()=>{
+        if(pendingMembershipConfirmation)showMembershipNotice('Confirming your subscription…');
+        else showSubscriptionActivated();
+        [500,1600,3600,7000,15000,30000,60000].forEach(delay=>setTimeout(()=>{
           if(pendingMembershipConfirmation&&accountState().signedIn)window.TeacherTilesAccount?.refresh?.().catch(()=>{});
         },delay));
-      }else showToast('Trial setup cancelled. Your membership has not started.');
-      cleanCheckoutQuery();
+        setTimeout(()=>{if(pendingMembershipConfirmation)showMembershipNotice('Still confirming your subscription. Reload this page to check again.');},65000);
+      }else showMembershipNotice('Subscription checkout cancelled. Your membership has not started.');
+      if(!pendingMembershipConfirmation)cleanCheckoutQuery();
       return;
     }
-    openCoins();
+    openShop();openCoins();
     if(status==='success'){
       pendingCoinCelebration=readPendingCoinCheckout()||{balance:Number(accountState().coinBalance)||0,startedAt:Date.now()};
       showToast('Payment complete. Your coin balance will update momentarily.');

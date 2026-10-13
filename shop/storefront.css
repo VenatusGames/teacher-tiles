@@ -1,0 +1,82 @@
+/* Shop surfaces share the board's type, soft edges and restrained motion. */
+.shop-modal{font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
+.shop-modal .shop-panel{width:min(1240px,96vw);border-radius:24px;background:var(--surface-solid)}
+.shop-modal .shop-header{height:76px;padding:14px 28px;background:var(--surface-solid)}
+.shop-modal .shop-content{padding:22px 28px 36px;scrollbar-gutter:stable}
+.shop-modal .shop-brand strong{font-size:24px;letter-spacing:-.04em}
+.shop-modal .shop-coins-button{box-shadow:none;border-radius:14px}
+.shop-modal .shop-close{border-radius:12px;box-shadow:none}
+/* Preserve the original complete banner artwork at its native aspect ratio. */
+.shop-modal .shop-banner{width:100%;height:auto;max-height:none;aspect-ratio:1200 / 420;margin:0 0 20px;border:0;border-radius:20px;box-shadow:none;background:#eee7fa}
+.shop-modal .shop-banner__slide{transform:none}
+.shop-modal .shop-banner__slide img{width:100%;height:100%;object-fit:contain}
+.shop-modal .shop-banner__arrow{width:30px;height:38px;margin-top:-19px;border-radius:10px;background:#ffffffa8;color:#52617a;border:0;font-size:24px;backdrop-filter:none}
+.shop-modal .shop-banner__arrow--prev{left:12px}.shop-modal .shop-banner__arrow--next{right:12px}
+.shop-modal .shop-banner__dots{bottom:10px;background:#ffffff85;padding:5px 7px;gap:6px;backdrop-filter:none}
+.shop-modal .shop-banner__dots button{background:#66789455;width:6px;height:6px}
+.shop-modal .shop-banner__dots button.is-active{background:#526887;width:18px}
+.shop-modal .shop-home-heading{margin:0 0 14px;align-items:center}
+.shop-modal .shop-home-heading h2{font-size:23px;font-weight:700;letter-spacing:-.035em}
+.shop-modal .shop-home-heading>div>span{font-size:9px;letter-spacing:.14em;color:var(--muted)}
+.shop-modal .shop-home-heading p{font-size:12px}
+.shop-modal .shop-browser-toolbar{padding:0;margin:0 0 16px;border:0;background:transparent;box-shadow:none;gap:12px}
+.shop-modal .shop-browser-search,.shop-modal .shop-browser-sort{height:42px;background:var(--surface-soft);border-radius:12px}
+.shop-modal .shop-browser-search input{font-size:13px;font-weight:450}
+.shop-modal .shop-browser-toolbar output{font-size:11px;font-weight:500}
+.shop-modal .shop-category-grid{gap:14px;margin:0 0 28px}
+.shop-modal .shop-category{min-height:176px;aspect-ratio:auto;border-radius:17px;padding:16px;box-shadow:0 2px 5px #15263c05;transition:transform .2s,box-shadow .2s}
+.shop-modal .shop-category:hover{transform:translateY(-4px);box-shadow:0 10px 18px #15263c12}
+.shop-modal .shop-category__art{inset:6px 10px auto;height:98px;transform:scale(.78);transform-origin:center}
+.shop-modal .shop-category__copy{max-width:calc(100% - 25px)}
+.shop-modal .shop-category__copy small{display:none}
+.shop-modal .shop-category__copy strong{font-size:18px;font-weight:700}
+.shop-modal .shop-category__copy em{font-size:11px;font-weight:450;margin-top:4px}
+.shop-modal .shop-category__arrow{width:25px;height:25px;right:13px;bottom:18px;border-radius:8px;font-size:15px}
+.shop-modal .shop-membership-grid{grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:18px;margin:0 0 32px;align-items:start}
+/* Retain the subscriber card's dark-and-gold identity; improve legibility only. */
+.shop-modal .shop-membership-card{padding:22px;border-radius:20px}
+.shop-modal .shop-membership-card__head small{font-size:10px;letter-spacing:.1em}
+.shop-modal .shop-membership-card h3{font-size:24px;line-height:1.2}
+.shop-modal .shop-membership-price strong{font-size:27px}
+.shop-modal .shop-membership-price span{font-size:11px;color:#ffffffb8}
+.shop-modal .shop-membership-perks{gap:12px 20px;margin:20px 0}
+.shop-modal .shop-membership-perks li{font-size:13px;line-height:1.55;color:#ffffffe0;padding-left:19px}
+.shop-modal .shop-membership-perks small{font-size:11px;color:#ffffffb8}
+.shop-modal .shop-membership-card__foot{margin-top:16px}
+.shop-modal #shop-subscribe-preview{height:42px;padding:0 20px;font-size:13px;border-radius:11px}
+.shop-modal .shop-redeem-card{padding:22px;border-radius:20px;box-shadow:none;background:var(--surface-soft)}
+.shop-modal .shop-redeem-card h3{font-size:18px}.shop-modal .shop-redeem-form button{background:#526ba0;border-color:#526ba0;font-family:inherit}
+.shop-modal .shop-redeem-form button:hover:not(:disabled){background:#425887}
+.shop-modal .shop-redeem-form input{background:var(--surface-solid)}
+.shop-modal .shop-featured-section{margin:28px 0}
+.shop-modal .shop-featured-section h2{font-size:22px;font-weight:700}
+.shop-modal .shop-featured-section header p{font-size:12px}
+.shop-modal .shop-featured-section header button{font-size:12px;font-weight:550;border-radius:10px}
+.shop-modal .shop-product{border-radius:18px;box-shadow:0 2px 7px #15263c06;transition:transform .2s,box-shadow .2s}
+.shop-modal .shop-product:hover{transform:translateY(-3px);box-shadow:0 9px 20px #15263c12}
+.shop-modal .shop-product h3{font-size:18px;font-weight:700}.shop-modal .shop-product p{font-size:12px}
+.shop-modal .shop-buy{border-radius:10px;box-shadow:none;font-weight:650}
+.shop-modal .shop-page-heading h2{font-size:28px;letter-spacing:-.04em}.shop-modal .shop-page-heading p{font-size:13px}
+.shop-modal .shop-coin-menu{inset:76px 0 0;padding:28px;background:var(--surface-solid)}
+.shop-modal .shop-coin-pack{border-radius:18px;background:var(--surface-soft);box-shadow:none}
+.shop-modal .shop-coin-pack>button{border-radius:10px;box-shadow:none}
+.shop-subscription-success{width:min(410px,calc(100vw - 32px));box-sizing:border-box;padding:32px;border:1px solid var(--border,#e1e5ec);border-radius:24px;background:var(--surface-solid,#fff);color:var(--text,#24334b);text-align:center;box-shadow:0 24px 90px #13213640;font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
+.shop-subscription-success[open]{animation:shopSuccessIn .3s ease both}
+.shop-subscription-success::backdrop{background:#18233670;backdrop-filter:blur(5px)}
+.shop-success-crown{display:grid;place-items:center;width:90px;height:90px;margin:0 auto 18px;border-radius:26px;background:#fff2cd}.shop-success-crown svg{width:67px;height:67px}
+.shop-subscription-success>small{font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--muted,#617088)}
+.shop-subscription-success h2{font-size:27px;line-height:1.15;letter-spacing:-.04em;margin:10px 0}
+.shop-subscription-success p{font-size:14px;line-height:1.65;color:var(--muted,#617088);margin:0 0 24px}
+.shop-subscription-success button{width:100%;padding:12px;border:0;border-radius:12px;background:#526ba0;color:#fff;font:650 14px var(--site-font-family,Inter,sans-serif);cursor:pointer}
+@keyframes shopSuccessIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:850px){.shop-modal .shop-membership-grid{grid-template-columns:1fr}.shop-modal .shop-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.shop-modal .shop-category__copy em{display:none}.shop-modal .shop-category{min-height:148px;padding:12px}.shop-modal .shop-category__copy strong{font-size:15px}.shop-modal .shop-category__art{transform:scale(.58)}.shop-modal .shop-category__arrow{display:none}}
+@media(max-width:600px){.shop-modal .shop-panel{width:98vw;border-radius:18px}.shop-modal .shop-header{padding:12px 15px;height:68px}.shop-modal .shop-content{padding:14px}.shop-modal .shop-banner{border-radius:16px}.shop-modal .shop-banner__arrow{width:23px;height:32px;font-size:22px}.shop-modal .shop-banner__arrow--prev{left:5px}.shop-modal .shop-banner__arrow--next{right:5px}.shop-modal .shop-home-heading h2{font-size:21px}.shop-modal .shop-home-heading p{display:none}.shop-modal .shop-browser-toolbar{grid-template-columns:minmax(0,1fr) 130px;gap:8px}.shop-modal .shop-browser-toolbar output{display:none}.shop-modal .shop-browser-sort{padding-left:8px;grid-row:auto}.shop-modal .shop-browser-sort>span{display:none}.shop-modal .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:20px}.shop-modal .shop-category{min-height:151px}.shop-modal .shop-category__copy em{display:block;font-size:10px}.shop-modal .shop-category__art{transform:scale(.8);height:83px;inset:4px 5px auto}.shop-modal .shop-membership-card,.shop-modal .shop-redeem-card{padding:18px}.shop-modal .shop-membership-card h3{font-size:21px}.shop-modal .shop-membership-card__head{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}.shop-modal .shop-membership-price strong{font-size:23px}.shop-modal .shop-membership-perks{grid-template-columns:1fr;gap:11px}.shop-modal .shop-coin-menu{inset:68px 0 0;padding:16px}.shop-modal .shop-featured-section>header{gap:8px}.shop-modal .shop-featured-section h2{font-size:19px}.shop-modal .shop-featured-section header button{padding:8px;font-size:11px}.shop-modal .shop-featured-section header p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.shop-modal :is(.shop-category,.shop-product,}
+
+.shop-membership-notice{position:fixed;z-index:2147483646;bottom:24px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 40px);padding:13px 20px;border:1px solid var(--border,#e1e5ec);border-radius:14px;background:var(--surface-solid,#fff);color:var(--text,#24334b);box-shadow:0 8px 30px #13213622;font:500 13px/1.5 var(--site-font-family,Inter,system-ui,sans-serif);text-align:center}
+
+@media(max-width:600px){.shop-modal .shop-browser-toolbar--tile-skins{grid-template-columns:1fr 1fr}.shop-modal .shop-browser-toolbar--tile-skins .shop-browser-search{grid-column:1/-1}}
+
+.shop-modal .shop-membership-card.is-subscription-active .shop-membership-perks li{font-size:14px}
+
+
