@@ -8,12 +8,14 @@
   const accessible = skin => !skin || cosmeticIsAccessible(skin.productId);
   const equipped = id => {const skin=catalog.find(item=>item.id===id);return skin&&accessible(skin)?skin.id:'';};
   let closeActive = null;
-  function preview(id,title='My Planner') {
+  function preview(id,title='My Planner',color=null) {
     const host=document.createElement('span');host.className='planner-skin-preview';host.dataset.plannerSkin=id||'';host.setAttribute('aria-hidden','true');
     host.innerHTML='<span class="planner-book-art"><span class="planner-book-loop"></span><span class="planner-book-cover"><span class="planner-book-cover-label"><b class="planner-book-embossed-title"></b><small>LESSON PLANNER</small></span><span class="planner-book-elastic"></span></span><span class="planner-book-binding">'+'<span></span>'.repeat(12)+'</span></span>';
+    host.dataset.plannerColor=color?.id||'default';
+    if(color){host.style.setProperty('--planner-book-color',color.value);host.style.setProperty('--planner-book-ink',color.ink);}
     host.querySelector('b').textContent=title;return host;
   }
-  function mount(card,planner,{save,render,openShop}) {
+  function mount(card,planner,{save,render,openShop,colorForSkin}) {
     card.dataset.plannerSkin=equipped(planner.skin);
     const button=document.createElement('button');button.type='button';button.className='planner-book-tool-button planner-book-skins';button.innerHTML=icon;button.title='Planner Skins';button.setAttribute('aria-label',`Change ${planner.name} skin`);button.setAttribute('aria-expanded','false');button.setAttribute('aria-haspopup','dialog');card.append(button);
     // Reveal each control only in its nearby corner, not across the whole book.
@@ -32,7 +34,7 @@
       for(const skin of [null,...catalog]){
         const id=skin?.id||'',locked=!accessible(skin),selected=equipped(planner.skin)===id;
         const choice=document.createElement('button');choice.type='button';choice.className='tile-skins-choice';choice.dataset.plannerSkinChoice=id;choice.classList.toggle('is-locked',locked);choice.setAttribute('aria-pressed',String(selected));
-        const art=document.createElement('span');art.className='tile-skins-choice-preview';art.append(preview(id));
+        const art=document.createElement('span');art.className='tile-skins-choice-preview';art.append(preview(id,planner.name,colorForSkin?.(id)));
         const name=document.createElement('strong');name.textContent=skin?.name||'Default';const status=document.createElement('small');status.textContent=locked?'Locked · 250 Coins':selected?'Applied':'Apply Skin';choice.append(art,name,status);
         choice.addEventListener('click',()=>{close();if(locked){openShop(skin.productId);return;}planner.skin=id;save();render();document.querySelector(`[data-planner-id="${CSS.escape(planner.id)}"] .planner-book-skins`)?.focus({preventScroll:true});});
         drawer.querySelector('.tile-skins-drawer-grid').append(choice);if(skin)markSubscriptionAccess(choice,skin.productId);
