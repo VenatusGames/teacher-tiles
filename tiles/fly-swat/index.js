@@ -142,6 +142,7 @@
     const redButton = moduleElement.querySelector('[data-flyswat-team="red"]');
     const blueScore = moduleElement.querySelector('.flyswat-blue-score');
     const redScore = moduleElement.querySelector('.flyswat-red-score');
+    const teamsToggle = moduleElement.querySelector('.flyswat-teams-toggle');
     const gameOver = moduleElement.querySelector('.flyswat-gameover');
     const gameOverResult = moduleElement.querySelector('.flyswat-gameover-result');
     const resetButtons = moduleElement.querySelectorAll('.flyswat-reset');
@@ -157,6 +158,7 @@
     let state = {
       mode: 'upper',
       count: 20,
+      teamsEnabled: true,
       activeTeam: 'blue',
       blueScore: 0,
       redScore: 0,
@@ -216,6 +218,11 @@
     }
 
     function updateHud() {
+      moduleElement.classList.toggle('flyswat-without-teams', !state.teamsEnabled);
+      teamsToggle.setAttribute('aria-checked', String(state.teamsEnabled));
+      blueButton.hidden = !state.teamsEnabled;
+      redButton.hidden = !state.teamsEnabled;
+      gameOverResult.hidden = !state.teamsEnabled;
       blueScore.textContent = String(state.blueScore);
       redScore.textContent = String(state.redScore);
       blueButton.classList.toggle('is-active', state.activeTeam === 'blue');
@@ -225,11 +232,12 @@
       setPressed(modeButtons, 'data-flyswat-mode', state.mode);
       setPressed(countButtons, 'data-flyswat-count', state.count);
       const remaining = remainingFlies();
+      const remainingText = `${remaining} ${remaining === 1 ? 'fly' : 'flies'} left`;
       status.textContent = state.ended
-        ? `Board cleared · ${winnerText()}`
-        : `${TEAM_LABEL[state.activeTeam]} team active · ${remaining} ${remaining === 1 ? 'fly' : 'flies'} left`;
+        ? (state.teamsEnabled ? `Board cleared · ${winnerText()}` : 'Board cleared')
+        : (state.teamsEnabled ? `${TEAM_LABEL[state.activeTeam]} team active · ${remainingText}` : remainingText);
       gameOver.hidden = !state.ended;
-      if (state.ended) gameOverResult.textContent = winnerText();
+      gameOverResult.textContent = state.ended && state.teamsEnabled ? winnerText() : '';
     }
 
     function fitFlies() {
@@ -354,7 +362,7 @@
       const fly = state.flies.find(item => item.id === id);
       if (!fly || fly.swatted) return;
       fly.swatted = true;
-      state[`${state.activeTeam}Score`] += 1;
+      if (state.teamsEnabled) state[`${state.activeTeam}Score`] += 1;
       makeSplat(button, fly);
       playSquish();
       button.disabled = true;
@@ -381,11 +389,18 @@
     }
 
     function setTeam(team) {
-      if (!TEAM_LABEL[team] || state.activeTeam === team) return;
+      if (!state.teamsEnabled || !TEAM_LABEL[team] || state.activeTeam === team) return;
       state.activeTeam = team;
       updateHud();
       markChanged('flyswat-team');
     }
+
+    teamsToggle.addEventListener('click', () => {
+      state.teamsEnabled = !state.teamsEnabled;
+      updateHud();
+      requestAnimationFrame(fitFlies);
+      markChanged('flyswat-teams-enabled');
+    }, {signal});
 
     blueButton.addEventListener('click', () => setTeam('blue'), {signal});
     redButton.addEventListener('click', () => setTeam('red'), {signal});
@@ -412,6 +427,7 @@
     moduleElement._boardGetState = () => ({
       mode: state.mode,
       count: state.count,
+      teamsEnabled: state.teamsEnabled,
       activeTeam: state.activeTeam,
       blueScore: state.blueScore,
       redScore: state.redScore,
@@ -427,6 +443,7 @@
       state = {
         mode,
         count,
+        teamsEnabled: saved?.teamsEnabled !== false,
         activeTeam: saved?.activeTeam === 'red' ? 'red' : 'blue',
         blueScore: Math.max(0, Number(saved?.blueScore) || 0),
         redScore: Math.max(0, Number(saved?.redScore) || 0),

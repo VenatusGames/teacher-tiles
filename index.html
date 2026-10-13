@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
   <link rel="stylesheet" href="tiles/dice/styles.css?v=20261002-ice-cube" />
   <link rel="stylesheet" href="tiles/random-number/styles.css?v=20261002-ice-cube" />
-  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=20261002-ice-cube" />
+  <link rel="stylesheet" href="tiles/fly-swat/styles.css?v=20261012-teams" />
   <link rel="stylesheet" href="tiles/seating-chart/styles.css?v=20261002-ice-cube" />
   <link rel="stylesheet" href="tiles/fish-tank/styles.css?v=20261002-ice-cube" />
   <link rel="stylesheet" href="tiles/sleepy-monster/styles.css?v=20261002-ice-cube" />
@@ -79,7 +79,7 @@
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
 <link rel="stylesheet" href="shop/membership.css?v=20261011-active">
 <link rel="stylesheet" href="shop/storefront.css?v=20261012-fluid-banners">
-<link rel="stylesheet" href="shop/coins.css?v=20261012-solid-gold">
+<link rel="stylesheet" href="shop/coins.css?v=20261012-no-outline">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
 <link rel="stylesheet" href="tiles/calculator/skins.css?v=20261012-calculator-choices">
 <link rel="stylesheet" href="tiles/shared/choice-board.css?v=20261012-calculator-choices">
@@ -4417,7 +4417,7 @@
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20261005-clef"></script>
 <script src="tiles/rich-text/index.js?v=20260918-toolbar-hidden-color-fix-1"></script>
-<script src="tiles/fly-swat/index.js?v=20260922-refine-3"></script>
+<script src="tiles/fly-swat/index.js?v=20261012-teams"></script>
 <script src="tiles/shared/sticker-picker.js?v=20261001-collections"></script>
 <script src="tiles/glitter-jar/index.js?v=20260922-2"></script>
 <script src="tiles/spreadsheet/index.js?v=20260922-controls-2"></script>
@@ -5664,7 +5664,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m9 3 6 0 .6 3 2 .9 2.6-1 3 5.2-2.3 2 .1 2.1 2.2 2-3 5.2-2.8-.9-1.8 1-.6 3H9l-.6-3-1.8-1-2.8.9-3-5.2 2.2-2 .1-2.1-2.3-2 3-5.2 2.6 1 2-.9Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.2"/></svg>
           </button>
           <div class="tile-settings-panel" hidden>
-            <strong>Fly Swat settings</strong>
+            <strong>Fly Swat Settings</strong>
+            <div class="tile-settings-switch-row"><span>Teams</span><button type="button" class="tile-settings-switch flyswat-teams-toggle" role="switch" aria-label="Teams" aria-checked="true"><i aria-hidden="true"></i></button></div>
             <div class="tile-setting"><span>Targets</span></div>
             <div class="tile-mode-switch flyswat-target-modes" role="group" aria-label="Fly Swat target type">
               <button type="button" data-flyswat-mode="upper" aria-pressed="true" class="is-active">Uppercase</button>
@@ -5678,7 +5679,7 @@
               <button type="button" data-flyswat-count="20" aria-pressed="true" class="is-active">20</button>
               <button type="button" data-flyswat-count="30" aria-pressed="false">30</button>
             </div>
-            <small class="flyswat-settings-note">Changing a setting resets the board and both team scores.</small>
+            <small class="flyswat-settings-note">Changing targets or the number of flies resets the board and scores.</small>
           </div>
         </div>
       </div>
