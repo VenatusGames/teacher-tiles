@@ -21,9 +21,9 @@ function setupTeacherTilesShop(){
   modal.querySelector('.shop-header').after(navigation);
   const redeemTrigger=document.createElement('button');redeemTrigger.type='button';redeemTrigger.className='shop-redeem-trigger';redeemTrigger.textContent='Redeem Code';redeemTrigger.setAttribute('aria-haspopup','dialog');redeemTrigger.setAttribute('aria-expanded','false');
   navigation.append(redeemTrigger);
-  for(const [id,label,soon] of [['planner-skins','Planner Skins',false],['presentation-themes','Presentation Themes',true],['profile-cosmetics','Profile Cosmetics',false],['tile-effects','Tile Effects',true]]){
+  for(const [id,label,soon] of [['planner-skins','Planners',false],['presentation-themes','Presentations',true],['profile-cosmetics','Profiles',false],['tile-effects','Tile Effects',true]]){
     const button=document.createElement('button');button.type='button';button.textContent=label;
-    if(soon){button.disabled=true;const hint=document.createElement('small');hint.textContent='Coming Soon';button.append(hint);}else button.dataset.shopOpenPage=id;
+    if(soon){button.disabled=true;button.setAttribute('aria-label',label+' — Coming Soon');const caption=document.createElement('span');caption.textContent=label;button.replaceChildren(caption);const hint=document.createElement('small');hint.textContent='Coming Soon';hint.setAttribute('aria-hidden','true');button.append(hint);}else button.dataset.shopOpenPage=id;
     navigation.insertBefore(button,redeemTrigger);
   }
   const redeemDialog=document.createElement('dialog');redeemDialog.className='shop-redeem-dialog';redeemDialog.setAttribute('aria-labelledby','shop-redeem-title');
