@@ -10,16 +10,16 @@ function createGroupMakerLayout(results){
     let best=null;
     // Test column counts against actual wrapped text, rather than estimating names' heights.
     for(let columns=1;columns<=count;columns++){
-      const naturalWidth=Math.max(width,columns*150+(columns-1)*8);
+      const naturalWidth=columns*200+(columns-1)*8;
       grid.style.width=`${naturalWidth}px`;
       grid.style.gridTemplateColumns=`repeat(${columns},minmax(0,1fr))`;
       const naturalHeight=grid.offsetHeight;
-      const scale=Math.min(1,width/naturalWidth,height/Math.max(1,naturalHeight));
+      const scale=Math.min(width/naturalWidth,height/Math.max(1,naturalHeight));
       const cardWidth=(naturalWidth-(columns-1)*8)/columns*scale;
       const penalty=Math.abs(cardWidth-200);
       if(!best||scale>best.scale+.005||(Math.abs(scale-best.scale)<=.005&&penalty<best.penalty))best={columns,naturalWidth,scale,penalty};
       // More columns cannot improve once width alone makes them smaller than the best fit.
-      if(width/((columns+1)*150+columns*8)<best.scale-.005)break;
+      if(width/((columns+1)*200+columns*8)<best.scale-.005)break;
     }
     grid.style.width=`${best.naturalWidth}px`;
     grid.style.gridTemplateColumns=`repeat(${best.columns},minmax(0,1fr))`;

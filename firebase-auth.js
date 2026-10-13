@@ -4,7 +4,7 @@ import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/acc
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261008-tiles';
-import {createTemplateLibrary} from './templates/ui.js?v=20261010-gallery-loading';
+import {createTemplateLibrary} from './templates/ui.js?v=20261013-subscriber-names';
 import {syncAwardedPatches} from './profile/awards.js?v=20260930-single-inspector';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -664,6 +664,8 @@ function syncProfileBadgeCount() {
 
 function syncSubscriberMarks(state = shopAccountState) {
   const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive));
+  profileDisplayName?.classList.toggle("subscriber-name-shine",active);
+  document.getElementById("profile-nickname")?.classList.toggle("subscriber-name-shine",active);
   if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
   if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
   toggle?.classList.toggle("is-subscriber", active);
