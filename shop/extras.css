@@ -20,8 +20,11 @@
 /* All collections share one navigation row, with horizontal scrolling on small screens. */
 .shop-modal .shop-navigation{flex-wrap:nowrap;overflow-x:auto;gap:6px;scrollbar-width:thin}
 .shop-modal .shop-navigation button{flex:0 0 auto;white-space:nowrap}
-.shop-modal .shop-navigation button:has(small){position:relative;padding-bottom:15px}
-.shop-navigation button small{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:7px;font-weight:500;line-height:1;opacity:.8}
+.shop-modal .shop-navigation button:has(small){position:relative}
+.shop-navigation button:has(small)>span{transition:transform .15s}
+.shop-navigation button:has(small):hover>span{transform:translateY(-4px)}
+.shop-navigation button small{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:7px;font-weight:500;line-height:1;opacity:0;pointer-events:none;transition:opacity .15s}
+.shop-navigation button:hover small{opacity:1}
 .shop-modal .shop-navigation button:disabled{opacity:.48;cursor:default;transform:none}
 .shop-modal .shop-category--coming-soon{opacity:.5;cursor:default;transform:none!important}
 .shop-category--coming-soon .shop-category__art svg{width:60px;height:60px;color:var(--muted)}
@@ -31,4 +34,4 @@
 @media(max-width:900px){.shop-modal .shop-discovery .shop-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.shop-modal .shop-category__art--extras{gap:5px}}
 @media(max-width:700px){.shop-modal .shop-discovery .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-@media(max-width:700px){.shop-modal .shop-navigation.shop-navigation button:has(small){padding-bottom:15px}}
+@media(prefers-reduced-motion:reduce){.shop-navigation button:has(small)>span,.shop-navigation button small{transition:none}}
