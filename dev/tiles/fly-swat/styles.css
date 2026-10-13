@@ -253,3 +253,6 @@
 @container (max-height:390px){
   .flyswat-board{top:44px;bottom:96px;left:8px;right:8px}
 }
+
+.flyswat-team[hidden],.flyswat-gameover-result[hidden]{display:none}
+.flyswat-without-teams .flyswat-board{bottom:12px}

@@ -2,13 +2,13 @@
 #shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{
   color:#d9a12a;
   background:none;-webkit-text-fill-color:currentColor;
-  -webkit-text-stroke:.3px #98681a;
+  -webkit-text-stroke:0;
   filter:drop-shadow(0 1px 0 #fff4ce80);
   animation:coinAmountShine 8s ease-in-out infinite;
 }
 body.dark :is(#shop-coin-balance,#profile-coin-balance),body.dark .shop-coin-pack>strong{
   color:#d9a12a;
-  -webkit-text-stroke:.3px #ae7c27;filter:drop-shadow(0 1px 1px #0007);
+  -webkit-text-stroke:0;filter:drop-shadow(0 1px 1px #0007);
 }
 .shop-coins-button__balance,.profile-coin-card__balance{position:relative}
 .shop-coins-button__balance::after,.profile-coin-card__balance::after,.shop-coin-pack::after{
