@@ -11,6 +11,6 @@ function setupShopExtras(modal) {
   modal.querySelector('.shop-content').append(page);
   const category=document.createElement('button');category.type='button';category.className='shop-category shop-category--extras';category.dataset.shopOpenPage='extras';
   category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong>Extras</strong><em>Planner Skins & More</em></span>';
-  for(const skin of skins.catalog)category.querySelector('.shop-category__art').append(skins.preview(skin.id));
+  for(const skin of skins.catalog.slice(0,2))category.querySelector('.shop-category__art').append(skins.preview(skin.id));
   modal.querySelector('.shop-category-grid').append(category);
 }

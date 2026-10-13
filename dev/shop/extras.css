@@ -1,7 +1,7 @@
 .shop-modal .shop-product__preview--planner{height:238px;min-height:238px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 80%,#b6bfb522,transparent 70%),var(--surface-soft)}
 .shop-modal .shop-product__preview--planner .planner-skin-preview{transition:transform .25s cubic-bezier(.2,.7,.3,1)}
 .shop-modal .shop-product--planner-skin:hover .planner-skin-preview{transform:translateY(-4px) rotate(-2deg)}
-.shop-modal .shop-product-grid--extras{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));max-width:800px}
+.shop-modal .shop-product-grid--extras{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));max-width:none}
 .shop-modal .shop-discovery .shop-category-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 .shop-modal .shop-category__art--extras{display:flex;justify-content:center;align-items:center;gap:12px}
 .shop-modal .shop-category__art--extras .planner-skin-preview{width:60px;height:79px;margin:0;transform:rotate(-9deg)}

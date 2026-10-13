@@ -1,7 +1,13 @@
 (() => {
   const catalog = Object.freeze([
     Object.freeze({id:'floral',productId:'planner-skin-floral',name:'Garden Bloom',description:'Pastel botanical flowers, golden rings, and a framed plaque for your planner title.',price:250}),
-    Object.freeze({id:'leather',productId:'planner-skin-leather',name:'Classic Leather',description:'Warm textured leather, fine stitching, an embossed title, and a matching clasp.',price:250})
+    Object.freeze({id:'leather',productId:'planner-skin-leather',name:'Classic Leather',description:'Warm textured leather, fine stitching, an embossed title, and a matching clasp.',price:250}),
+    Object.freeze({id:'striped',productId:'planner-skin-striped',name:'Ribbon Stripes',description:'Burgundy and blush stripes, golden corners, and a mint title plaque.',price:250}),
+    Object.freeze({id:'open',productId:'planner-skin-open',name:'Open Planner',description:'An open weekly spread with center rings, ruled pages, and colorful divider tabs.',price:250}),
+    Object.freeze({id:'seabirds',productId:'planner-skin-seabirds',name:'Seabirds',description:'White seabirds across a soft blue cover with a golden title plate.',price:250}),
+    Object.freeze({id:'space',productId:'planner-skin-space',name:'Outer Space',description:'A midnight sky with distant stars, colorful planets, and delicate orbital paths.',price:250}),
+    Object.freeze({id:'notebook',productId:'planner-skin-notebook',name:'Composition Notebook',description:'A classic marbled notebook with a cloth spine and ruled title label.',price:250}),
+    Object.freeze({id:'hardcover',productId:'planner-skin-hardcover',name:'Cloth Hardcover',description:'A ring-free clothbound book with a recessed spine groove and embossed lettering.',price:250})
   ]);
   const icon = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 19h8a2 2 0 0 0 2-2V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
   const normalize = id => catalog.some(skin=>skin.id===id)?id:'';
@@ -18,9 +24,22 @@
   function mount(card,planner,{save,render,openShop,colorForSkin}) {
     card.dataset.plannerSkin=equipped(planner.skin);
     const button=document.createElement('button');button.type='button';button.className='planner-book-tool-button planner-book-skins';button.innerHTML=icon;button.title='Planner Skins';button.setAttribute('aria-label',`Change ${planner.name} skin`);button.setAttribute('aria-expanded','false');button.setAttribute('aria-haspopup','dialog');card.append(button);
-    // Reveal each control only in its nearby corner, not across the whole book.
+    // Top-right tools share a hover zone; the skin control has its own corner.
     const controls=[...card.querySelectorAll('.planner-book-tool-button')];
-    card.addEventListener('pointermove',event=>{if(event.pointerType==='touch')return;for(const control of controls){const r=control.getBoundingClientRect();const dx=Math.max(r.left-event.clientX,0,event.clientX-r.right),dy=Math.max(r.top-event.clientY,0,event.clientY-r.bottom);control.classList.toggle('is-near-pointer',Math.hypot(dx,dy)<48);}});
+    const topTools=controls.filter(control=>control.matches('.planner-book-customize,.planner-book-settings'));
+    const hoverRadius=64;
+    card.addEventListener('pointermove',event=>{
+      if(event.pointerType==='touch')return;
+      const nearby=control=>{
+        const r=control.getBoundingClientRect();
+        const dx=Math.max(r.left-event.clientX,0,event.clientX-r.right);
+        const dy=Math.max(r.top-event.clientY,0,event.clientY-r.bottom);
+        return Math.hypot(dx,dy)<hoverRadius;
+      };
+      const nearTop=topTools.some(nearby);
+      topTools.forEach(control=>control.classList.toggle('is-near-pointer',nearTop));
+      button.classList.toggle('is-near-pointer',nearby(button));
+    });
     card.addEventListener('pointerleave',()=>controls.forEach(control=>control.classList.remove('is-near-pointer')));
     button.addEventListener('click',event=>{
       event.stopPropagation();if(button.getAttribute('aria-expanded')==='true'){closeActive?.();return;}closeActive?.();
