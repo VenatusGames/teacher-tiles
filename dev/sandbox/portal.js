@@ -11,7 +11,7 @@ import {createCodesPanel} from './codes.js?v=20261012-codes-activity';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
-function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar').append(signOut);else document.querySelector('.access-actions').append(signOut);}
+function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar-actions').append(signOut);else document.querySelector('.access-actions').append(signOut);}
 const usersPanel=createUsersPanel((name,data)=>call(name,data),()=>auth?.currentUser?.uid);
 document.getElementById('community-toggle').onclick=()=>{const toggle=document.getElementById('community-toggle'),menu=document.getElementById('community-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 const templatesElement=document.createElement('section');templatesElement.id='portal-templates';templatesElement.hidden=true;home.parentElement.append(templatesElement);
