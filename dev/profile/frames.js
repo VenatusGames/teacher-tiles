@@ -38,7 +38,7 @@
     for(const frame of [null,...frames.catalog.filter(accessible)]){
       const choice=document.createElement('button');choice.type='button';choice.className='tile-skins-choice profile-frame-choice';choice.dataset.frameChoice=frame?.id||'';choice.setAttribute('aria-pressed',String(equipped()===(frame?.id||'')));
       const art=document.createElement('span');art.className='tile-skins-choice-preview';art.append(frames.preview(frame?.id||''));
-      const name=document.createElement('strong');name.textContent=frame?.name||'Default';const detail=document.createElement('small');detail.textContent=equipped()===(frame?.id||'')?'Applied':frame?.tier==='animated'?'Animated':'Apply Frame';choice.append(art,name,detail);choice.onclick=()=>void equip(frame?.id||'',status);drawer.querySelector('.tile-skins-drawer-grid').append(choice);
+      const name=document.createElement('strong');name.textContent=frame?.name||'Default';const detail=document.createElement('small');detail.textContent=equipped()===(frame?.id||'')?'Applied':'Apply Frame';choice.append(art,name,detail);choice.onclick=()=>void equip(frame?.id||'',status);drawer.querySelector('.tile-skins-drawer-grid').append(choice);
     }
     drawer.querySelector('header button').onclick=()=>close(true);
     drawer.querySelector('.profile-frames-shop').onclick=()=>{close();window.TeacherTilesShop?.openPage('profile-cosmetics');};
