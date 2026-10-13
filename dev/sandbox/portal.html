@@ -5,6 +5,7 @@
   <meta name="robots" content="noindex,nofollow">
   <title>TeacherTiles · Developer Portal</title>
   <script src="sandbox/portal-theme.js?v=20261013-dark-mode"></script>
+  <script src="sandbox/portal-clock.js?v=20261013-clock" defer></script>
   <link rel="preload" href="sandbox/assets/fonts/inter/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="sandbox/assets/fonts/inter/inter.css">
   <link rel="icon" href="assets/profile/teachertiles-profile-logo.png">
@@ -13,7 +14,7 @@
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="sandbox/portal-appearance.css?v=20261012-preview-trials">
   <link rel="stylesheet" href="sandbox/tile-management.css?v=20261013-description">
-  <link rel="stylesheet" href="sandbox/portal-theme.css?v=20261013-dark-mode">
+  <link rel="stylesheet" href="sandbox/portal-theme.css?v=20261013-clock">
 </head>
 <body class="developer-portal">
   <main id="portal-access-screen">
@@ -35,10 +36,10 @@
         <div class="portal-nav-group"><button id="community-toggle" type="button" aria-expanded="false" aria-controls="community-submenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v12H9l-5 4V4Z"/><path d="M8 8h8M8 12h5"/></svg>Community<span class="nav-chevron" aria-hidden="true">⌄</span></button><div id="community-submenu" hidden><button type="button" data-portal-view="templates">Board Templates</button><button type="button" data-portal-view="codes">TT Codes</button></div></div>
         <button data-portal-view="bugs" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7V4h6v3M3 10h4M17 10h4M3 16h4M17 16h4M12 10v7"/></svg>Tickets</button>
       </nav>
-      <a class="public-site" href="/">Open TeacherTiles <span aria-hidden="true">↗</span></a>
+      <div class="portal-sidebar-footer"><button id="portal-theme-toggle" class="quiet portal-theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Dark Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg><span>Dark Mode</span><i aria-hidden="true"></i></button><a class="public-site" href="/">Open TeacherTiles <span aria-hidden="true">↗</span></a></div>
     </aside>
     <main>
-      <header class="portal-topbar"><div class="portal-breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="portal-current-view">Overview</strong></div><div class="portal-topbar-actions"><button id="portal-theme-toggle" class="quiet portal-theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Dark Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg><span>Dark Mode</span><i aria-hidden="true"></i></button><button id="portal-signout" class="quiet" hidden>Sign Out</button></div></header>
+      <header class="portal-topbar"><div class="portal-breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="portal-current-view">Overview</strong></div><div class="portal-topbar-actions"><time id="portal-clock" class="portal-clock"><span class="portal-clock-date"></span><span class="portal-clock-time"></span></time><button id="portal-signout" class="quiet" hidden>Sign Out</button></div></header>
 
       <section id="portal-home" hidden aria-labelledby="portal-heading">
         <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer Overview</h1><p>A place to test, review, and manage TeacherTiles.</p></div>

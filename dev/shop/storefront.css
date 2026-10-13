@@ -169,7 +169,7 @@
 .shop-modal .shop-discovery .shop-category{min-height:174px}
 .shop-modal .shop-discovery .shop-category__art{height:92px}
 .shop-modal .shop-explore-packs{grid-column:1/-1}
-.shop-modal .shop-navigation .shop-redeem-trigger{margin-left:auto;background:transparent;border-color:transparent;box-shadow:none;color:color-mix(in srgb,#8b55cb 85%,var(--text));padding-inline:12px;font-weight:650}
+.shop-modal .shop-navigation .shop-redeem-trigger{margin-left:auto;background:var(--surface-solid);border-color:color-mix(in srgb,#a976dc 30%,var(--border));box-shadow:0 2px 0 color-mix(in srgb,#a976dc 15%,var(--border));color:color-mix(in srgb,#8b55cb 85%,var(--text));padding-inline:12px;font-weight:650}
 .shop-modal .shop-navigation .shop-redeem-trigger:hover{background:color-mix(in srgb,#a976dc 12%,var(--surface-solid));border-color:color-mix(in srgb,#a976dc 22%,var(--border))}
 .shop-redeem-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);padding:0;border:1px solid var(--border);border-radius:20px;background:var(--surface-solid);color:var(--text);box-shadow:0 22px 80px #17203340;overflow:auto;font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
 .shop-redeem-dialog::backdrop{background:#17203365;backdrop-filter:blur(4px)}
