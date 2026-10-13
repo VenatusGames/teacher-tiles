@@ -228,7 +228,9 @@
 ].map(frame=>Object.freeze(frame)));
   const find=id=>catalog.find(frame=>frame.id===id);
   function decorate(host,id){
-    host.querySelector(':scope > .profile-frame-outline')?.remove();
+    const existing=host.querySelector(':scope > .profile-frame-outline');
+    if(existing?.dataset.profileFrame===id)return;
+    existing?.remove();
     const frame=find(id);if(!frame)return;
     const edge=document.createElement('span');edge.className='profile-frame-outline';edge.dataset.profileFrame=id;edge.style.setProperty('--frame-color',frame.color);edge.setAttribute('aria-hidden','true');host.append(edge);
     if(['garden','confetti','starlight','stitched','checker','notebook','terrazzo'].includes(id)){
