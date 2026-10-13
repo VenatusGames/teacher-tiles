@@ -21,13 +21,11 @@ function setupTeacherTilesShop(){
   modal.querySelector('.shop-header').after(navigation);
   const redeemTrigger=document.createElement('button');redeemTrigger.type='button';redeemTrigger.className='shop-redeem-trigger';redeemTrigger.textContent='Redeem Code';redeemTrigger.setAttribute('aria-haspopup','dialog');redeemTrigger.setAttribute('aria-expanded','false');
   navigation.append(redeemTrigger);
-  const secondRow=document.createElement('div');secondRow.className='shop-navigation-secondary';
   for(const [id,label,soon] of [['planner-skins','Planner Skins',false],['presentation-themes','Presentation Themes',true],['profile-cosmetics','Profile Cosmetics',false],['tile-effects','Tile Effects',true]]){
     const button=document.createElement('button');button.type='button';button.textContent=label;
     if(soon){button.disabled=true;const hint=document.createElement('small');hint.textContent='Coming Soon';button.append(hint);}else button.dataset.shopOpenPage=id;
-    secondRow.append(button);
+    navigation.insertBefore(button,redeemTrigger);
   }
-  navigation.append(secondRow);
   const redeemDialog=document.createElement('dialog');redeemDialog.className='shop-redeem-dialog';redeemDialog.setAttribute('aria-labelledby','shop-redeem-title');
   const redeemDismiss=document.createElement('button');redeemDismiss.type='button';redeemDismiss.className='shop-redeem-dismiss';redeemDismiss.setAttribute('aria-label','Close code redemption');redeemDismiss.textContent='×';
   redeemDialog.append(redeemDismiss,shopHome.querySelector('.shop-redeem-card'));modal.querySelector('.shop-panel').append(redeemDialog);
