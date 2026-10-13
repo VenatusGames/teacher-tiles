@@ -1,13 +1,13 @@
 /* Solid coin gold with a brief animated light glint. */
 #shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{
-  color:#d9a12a;
+  color:#b78120;
   background:none;-webkit-text-fill-color:currentColor;
   -webkit-text-stroke:0;
   filter:drop-shadow(0 1px 0 #fff4ce80);
   animation:coinAmountShine 8s ease-in-out infinite;
 }
 body.dark :is(#shop-coin-balance,#profile-coin-balance),body.dark .shop-coin-pack>strong{
-  color:#d9a12a;
+  color:#b78120;
   -webkit-text-stroke:0;filter:drop-shadow(0 1px 1px #0007);
 }
 .shop-coins-button__balance,.profile-coin-card__balance{position:relative}
