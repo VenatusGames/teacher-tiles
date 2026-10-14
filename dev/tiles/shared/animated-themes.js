@@ -1,7 +1,9 @@
 (()=>{'use strict';
   const canvas=document.createElement('canvas');canvas.className='animated-board-backdrop';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;document.body.prepend(canvas);
   const ctx=canvas.getContext('2d'),background=document.createElement('canvas'),bg=background.getContext('2d'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  const nature=window.TeacherTilesNatureScenes;
+  const providers=[window.TeacherTilesNatureScenes,window.TeacherTilesHalloweenScenes].filter(Boolean);
+  const provider=theme=>providers.find(scene=>scene.themes.includes(theme));
+  const nature={themes:providers.flatMap(scene=>scene.themes),prepare:theme=>provider(theme).prepare(theme),paint:(g,w,h,theme)=>provider(theme).paint(g,w,h,theme),draw:(g,w,h,theme,t)=>provider(theme).draw(g,w,h,theme,t)};
   let theme='',width=1,height=1,frame=0,last=0,time=0;
   // Seeded positions keep resizing and theme changes calm rather than randomizing the scene.
   const random=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};

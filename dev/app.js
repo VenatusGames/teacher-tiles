@@ -1022,6 +1022,7 @@ const ADDITIONAL_STICKER_PACKS=Object.freeze([
   ])})
 ]);
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
   'basic-theme-pack':'theme-basic',
@@ -1049,6 +1050,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
   'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
   outer:'theme-outer-space',frosted:'theme-frosted-window',
   basic:'theme-basic',
@@ -1518,6 +1520,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  'webbed-light','webbed','haunted-house-light','haunted-house','pumpkin-orange','pumpkin-yellow',
   'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
   "outer-space-light","outer-space","frosted-window-light","frosted-window",
   "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
@@ -1534,6 +1537,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
   'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
   "theme-outer-space-light","theme-outer-space","theme-frosted-window-light","theme-frosted-window",
   "theme-basic-red","theme-basic-orange","theme-basic-yellow","theme-basic-green","theme-basic-blue","theme-basic-indigo","theme-basic-violet","theme-bamboo-yellow","theme-bamboo-brown","theme-bamboo-green",
@@ -1552,6 +1556,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
   ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
   ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
   ['basic-','theme-basic'],
@@ -1562,6 +1567,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
   'basic-theme-pack':'theme-basic','basic-theme-fan':'theme-basic',

@@ -42,6 +42,9 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "webbed": "theme-webbed",
+    "haunted-house": "theme-haunted-house",
+    "pumpkin": "theme-pumpkin",
     "fireplace": "theme-fireplace",
     "campfire": "theme-campfire",
     "fireflies": "theme-fireflies",
