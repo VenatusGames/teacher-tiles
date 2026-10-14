@@ -1,0 +1,17 @@
+html,body{background:#f4f6f8!important;overscroll-behavior:none}
+body{visibility:hidden}body.demo-ready{visibility:visible}
+/* Remove app navigation, while retaining tile popovers and controls created by the native app. */
+body>.demo-chrome{display:none!important}
+#workspace{background:transparent!important}
+#workspace>.module{box-shadow:none!important;filter:none!important}
+#workspace>.snap-guide{pointer-events:none}
+#workspace-empty-hint,#zoom-indicator,#snap-disabled-indicator{display:none!important}
+.module{transition:none!important}
+html,body,#workspace{overflow:clip!important}
+html{overflow:hidden!important}body{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important}#workspace{position:absolute!important;left:0;top:0}
+body{overflow:clip!important}
+
+#workspace{outline:none!important;box-shadow:none!important}
+
+/* Homepage demo omits account/class loading and cosmetic skin selection. */
+#teachertiles-intro,.teachertiles-intro,.attendance-class-strip,.tile-skins-toggle,.tile-skins-drawer,.reminders-note{display:none!important}
