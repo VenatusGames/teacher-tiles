@@ -1,0 +1,5 @@
+/* Shared subscriber treatment for profile names and public template bylines. */
+.subscriber-name-shine{color:#ae791d!important;background:linear-gradient(110deg,#ad791e 0%,#b98729 38%,#f8df90 47%,#fff5cb 50%,#d5a342 54%,#ad791e 64%,#ad791e 100%);background-size:250% 100%;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:subscriber-name-glint 6s ease-in-out infinite}
+@keyframes subscriber-name-glint{0%,20%{background-position:150% 0}65%,100%{background-position:-60% 0}}
+@media(prefers-reduced-motion:reduce){.subscriber-name-shine{animation:none;background:none;-webkit-text-fill-color:currentColor}}
+@media(forced-colors:active){.subscriber-name-shine{background:none;-webkit-text-fill-color:currentColor;color:CanvasText!important;animation:none}}

@@ -3,7 +3,7 @@ name: Deploy teacher-tiles via GitHub Pages
 run-name: '${{ github.ref_name }}: ${{ github.event.head_commit.message }}'
 
 # Each branch publishes only its own slice of teachertiles.com:
-#   main    -> / homepage + /board.html board (teachertiles-6739b)
+#   main    -> /          (teachertiles-6739b)
 #   sandbox -> /sandbox/  (teachertiles-6739b)
 #   wigs    -> /wigs/
 #   dev     -> /dev/      (teachertiles-dev)
@@ -255,7 +255,7 @@ jobs:
 
       - name: Check site entry points
         run: |
-          for index in index.html board.html sandbox/index.html wigs/index.html dev/index.html; do
+          for index in index.html sandbox/index.html wigs/index.html dev/index.html; do
             test -f "${index}" || { echo "::error::Missing ${index} on ${PAGES_BRANCH}" >&2; exit 1; }
           done
           echo "Deploying ${PAGES_BRANCH} @ $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
@@ -277,8 +277,7 @@ jobs:
           {
             echo '### Deployment result'
             echo "- Deployed \`${PAGES_BRANCH}\` @ \`$(git rev-parse --short HEAD)\` — $(git log -1 --pretty=%s)"
-            echo '- Home: https://teachertiles.com/'
-            echo '- Board (main): https://teachertiles.com/board.html'
+            echo '- Main: https://teachertiles.com/'
             echo '- Sandbox: https://teachertiles.com/sandbox/'
             echo '- Wigs: https://teachertiles.com/wigs/'
             if test -f dev/index.html; then echo '- Dev: https://teachertiles.com/dev/'; fi

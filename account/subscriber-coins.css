@@ -1,0 +1,30 @@
+.subscriber-coins-dialog{box-sizing:border-box;width:min(410px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:30px;border:1px solid color-mix(in srgb,#d8b75d 30%,var(--border,#dce2e8));border-radius:26px;background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,#f6d56a 14%,transparent),transparent 65%),var(--surface-solid,#fff);color:var(--text,#273344);box-shadow:0 26px 90px #18223740;text-align:center;font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
+.subscriber-coins-dialog[open]{animation:subscriber-coins-enter .32s cubic-bezier(.2,.8,.3,1) both}
+.subscriber-coins-dialog::backdrop{background:#17223366;backdrop-filter:blur(5px)}
+.subscriber-coins-close{position:absolute;right:13px;top:13px;display:grid;place-items:center;width:30px;height:30px;padding:6px;border:1px solid var(--border,#e0e4eb);border-radius:10px;background:var(--surface-solid,#fff);color:var(--muted,#64748b);cursor:pointer}
+.subscriber-coins-close svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.subscriber-coins-label{display:flex;align-items:center;justify-content:center;gap:7px;margin:3px 14px 12px;color:var(--muted,#64748b);font-size:11px;font-weight:600}
+.subscriber-coins-label svg{width:24px;height:24px}
+.subscriber-coins-dialog h2{font-size:26px;line-height:1.2;letter-spacing:-.035em;margin:0;font-weight:700}
+.subscriber-coins-art{position:relative;height:142px;margin:13px auto 0;width:240px;max-width:100%;isolation:isolate}
+.subscriber-coins-art i{position:absolute;inset:30px 20px 0;border-radius:50%;background:radial-gradient(ellipse,#f4ca5d35,transparent 68%)}
+.subscriber-coins-art img{position:absolute;object-fit:contain;filter:drop-shadow(0 8px 9px #9b651c24)}
+.subscriber-coins-main{width:108px;height:108px;left:calc(50% - 54px);top:15px;z-index:2;animation:subscriber-coin-arrive .6s cubic-bezier(.2,.8,.3,1) both}
+.subscriber-coins-side{width:65px;height:65px;top:63px;animation:subscriber-coin-arrive .6s .1s cubic-bezier(.2,.8,.3,1) both}
+.subscriber-coins-side--left{left:22px;rotate:-18deg}.subscriber-coins-side--right{right:22px;rotate:18deg}
+.subscriber-coins-spark{position:absolute;color:#d4a735;font-size:20px;animation:subscriber-coin-spark 2.8s ease-in-out 2}
+.subscriber-coins-spark--one{left:24px;top:20px}.subscriber-coins-spark--two{right:23px;top:45px;font-size:13px;animation-delay:.35s}.subscriber-coins-spark--three{right:50px;top:4px;font-size:11px;animation-delay:.7s}
+.subscriber-coins-amount{display:flex;align-items:baseline;justify-content:center;gap:9px;margin:0 0 7px;color:#ab741d}
+.subscriber-coins-amount strong{font-size:52px;line-height:1.12;letter-spacing:-.055em;font-weight:800;font-variant-numeric:tabular-nums}.subscriber-coins-amount span{font-size:16px;font-weight:550}
+.subscriber-coins-dialog p{font-size:12px;line-height:1.6;color:var(--muted,#64748b);margin:0}
+.subscriber-coins-dialog .subscriber-coins-periods{margin-top:3px;font-size:11px}
+.subscriber-coins-balance{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:22px 0 14px;padding:13px 15px;border:1px solid var(--border,#e2e6ed);border-radius:13px;background:var(--surface-soft,#f6f7f9);font-size:12px}
+.subscriber-coins-balance span{color:var(--muted,#64748b)}.subscriber-coins-balance strong{font-weight:650;font-variant-numeric:tabular-nums}
+.subscriber-coins-done{width:100%;padding:13px;border:1px solid #d5ad54;border-radius:13px;background:#f5d77f;color:#634715;box-shadow:0 3px 7px #94641512;font:650 13px var(--site-font-family,Inter,system-ui,sans-serif);cursor:pointer;transition:background .18s,transform .18s}
+.subscriber-coins-done:hover{background:#f9df99;transform:translateY(-1px)}.subscriber-coins-dialog button:focus-visible{outline:2px solid #b58b36;outline-offset:3px}
+body.dark .subscriber-coins-amount{color:#e9bf67}body.dark .subscriber-coins-done{background:#e9c575}
+@keyframes subscriber-coins-enter{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes subscriber-coin-arrive{from{opacity:0;transform:translateY(18px) scale(.7)}to{opacity:1;transform:none}}
+@keyframes subscriber-coin-spark{0%,100%{opacity:.4;transform:scale(.75)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:420px){.subscriber-coins-dialog{padding:26px 22px}.subscriber-coins-dialog h2{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.subscriber-coins-dialog,.subscriber-coins-dialog *{animation:none!important;transition:none!important}}

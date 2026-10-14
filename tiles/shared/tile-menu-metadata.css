@@ -1,0 +1,4 @@
+/* Multiple managed badges share a row instead of overlapping in a corner. */
+#context-menu .context-menu__item:has(.context-menu__managed-badges){padding-bottom:10px}
+#context-menu .context-menu__item>.context-menu__managed-badges{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px;width:100%;margin-top:auto;position:relative;z-index:5}
+#context-menu .context-menu__managed-badges>span{position:relative;inset:auto;display:inline-flex;align-items:center;justify-content:center;height:15px;padding:0 5px;font-size:7px;line-height:1}

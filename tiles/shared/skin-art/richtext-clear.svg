@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 160">
+  <g fill="#334155">
+    <text x="28" y="48" font-family="Arial, sans-serif" font-size="26" font-weight="700">Heading</text>
+    <rect x="28" y="64" width="122" height="7" rx="3.5" opacity=".82"/>
+    <rect x="28" y="82" width="94" height="6" rx="3" opacity=".64"/>
+    <rect x="28" y="99" width="116" height="6" rx="3" opacity=".64"/>
+    <rect x="28" y="116" width="72" height="6" rx="3" opacity=".64"/>
+  </g>
+  <text x="132" y="122" font-family="Georgia, serif" font-size="20" font-style="italic" fill="#8b4055">Aa</text>
+</svg>

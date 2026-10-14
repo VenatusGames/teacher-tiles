@@ -1,0 +1,3657 @@
+/* Reviewed advanced vocabulary; definitions are original TeacherTiles explanations. */
+window.TeacherTilesWords=Object.freeze({
+  "everyday": [
+    {
+      "word": "affable",
+      "part": "adjective",
+      "definition": "Friendly and easy to talk to.",
+      "id": "affable",
+      "level": "everyday",
+      "example": "Try using “affable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/affable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "allocate",
+      "part": "verb",
+      "definition": "To set aside something for a particular use.",
+      "id": "allocate",
+      "level": "everyday",
+      "example": "Try using “allocate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/allocate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "articulate",
+      "part": "adjective",
+      "definition": "Able to express ideas clearly in words.",
+      "id": "articulate",
+      "level": "everyday",
+      "example": "Try using “articulate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/articulate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "authentic",
+      "part": "adjective",
+      "definition": "Real and true to what it claims to be.",
+      "id": "authentic",
+      "level": "everyday",
+      "example": "Try using “authentic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/authentic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "coherent",
+      "part": "adjective",
+      "definition": "Organized so that the parts make sense together.",
+      "id": "coherent",
+      "level": "everyday",
+      "example": "Try using “coherent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/coherent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "commence",
+      "part": "verb",
+      "definition": "To begin an activity or process.",
+      "id": "commence",
+      "level": "everyday",
+      "example": "Try using “commence” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/commence",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "compelling",
+      "part": "adjective",
+      "definition": "Interesting or convincing enough to hold your attention.",
+      "id": "compelling",
+      "level": "everyday",
+      "example": "Try using “compelling” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/compelling",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "complement",
+      "part": "verb",
+      "definition": "To add something that makes another thing more complete.",
+      "id": "complement",
+      "level": "everyday",
+      "example": "Try using “complement” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/complement",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "concise",
+      "part": "adjective",
+      "definition": "Expressing the main ideas clearly in few words.",
+      "id": "concise",
+      "level": "everyday",
+      "example": "Try using “concise” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/concise",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "contemplate",
+      "part": "verb",
+      "definition": "To think carefully about something for a while.",
+      "id": "contemplate",
+      "level": "everyday",
+      "example": "Try using “contemplate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/contemplate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "credible",
+      "part": "adjective",
+      "definition": "Able to be believed because there is good reason or evidence.",
+      "id": "credible",
+      "level": "everyday",
+      "example": "Try using “credible” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/credible",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cultivate",
+      "part": "verb",
+      "definition": "To help something grow or develop through care and effort.",
+      "id": "cultivate",
+      "level": "everyday",
+      "example": "Try using “cultivate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cultivate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "diligent",
+      "part": "adjective",
+      "definition": "Working steadily with care and attention.",
+      "id": "diligent",
+      "level": "everyday",
+      "example": "Try using “diligent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/diligent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "elaborate",
+      "part": "verb",
+      "definition": "To explain an idea with more detail.",
+      "id": "elaborate",
+      "level": "everyday",
+      "example": "Try using “elaborate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/elaborate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "endeavor",
+      "part": "noun",
+      "definition": "A serious effort to accomplish something.",
+      "id": "endeavor",
+      "level": "everyday",
+      "example": "Try using “endeavor” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/endeavor",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "equitable",
+      "part": "adjective",
+      "definition": "Fair while taking different needs and circumstances into account.",
+      "id": "equitable",
+      "level": "everyday",
+      "example": "Try using “equitable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/equitable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "feasible",
+      "part": "adjective",
+      "definition": "Possible to do with the time and resources available.",
+      "id": "feasible",
+      "level": "everyday",
+      "example": "Try using “feasible” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/feasible",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "flourish",
+      "part": "verb",
+      "definition": "To grow or develop in a healthy and successful way.",
+      "id": "flourish",
+      "level": "everyday",
+      "example": "Try using “flourish” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/flourish",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "formulate",
+      "part": "verb",
+      "definition": "To develop an idea or plan carefully.",
+      "id": "formulate",
+      "level": "everyday",
+      "example": "Try using “formulate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/formulate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fortitude",
+      "part": "noun",
+      "definition": "Courage and strength when facing a difficult situation.",
+      "id": "fortitude",
+      "level": "everyday",
+      "example": "Try using “fortitude” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fortitude",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "frugal",
+      "part": "adjective",
+      "definition": "Careful to avoid wasting money or materials.",
+      "id": "frugal",
+      "level": "everyday",
+      "example": "Try using “frugal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/frugal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "harmonious",
+      "part": "adjective",
+      "definition": "Working together in a peaceful or pleasing way.",
+      "id": "harmonious",
+      "level": "everyday",
+      "example": "Try using “harmonious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/harmonious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "impartial",
+      "part": "adjective",
+      "definition": "Fair and not favoring one side over another.",
+      "id": "impartial",
+      "level": "everyday",
+      "example": "Try using “impartial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/impartial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "implement",
+      "part": "verb",
+      "definition": "To put a plan into action.",
+      "id": "implement",
+      "level": "everyday",
+      "example": "Try using “implement” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/implement",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "industrious",
+      "part": "adjective",
+      "definition": "Working hard and using time productively.",
+      "id": "industrious",
+      "level": "everyday",
+      "example": "Try using “industrious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/industrious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ingenuity",
+      "part": "noun",
+      "definition": "Skill at finding clever ways to solve problems.",
+      "id": "ingenuity",
+      "level": "everyday",
+      "example": "Try using “ingenuity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ingenuity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "initiative",
+      "part": "noun",
+      "definition": "The ability to begin useful action without being told.",
+      "id": "initiative",
+      "level": "everyday",
+      "example": "Try using “initiative” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/initiative",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "innovative",
+      "part": "adjective",
+      "definition": "Using new ideas or methods.",
+      "id": "innovative",
+      "level": "everyday",
+      "example": "Try using “innovative” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/innovative",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "insight",
+      "part": "noun",
+      "definition": "A clear understanding of something that was not obvious.",
+      "id": "insight",
+      "level": "everyday",
+      "example": "Try using “insight” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/insight",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "integrity",
+      "part": "noun",
+      "definition": "Being honest and following your values through your actions.",
+      "id": "integrity",
+      "level": "everyday",
+      "example": "Try using “integrity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/integrity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "intricate",
+      "part": "adjective",
+      "definition": "Containing many small parts arranged in a complex way.",
+      "id": "intricate",
+      "level": "everyday",
+      "example": "Try using “intricate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/intricate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "invigorate",
+      "part": "verb",
+      "definition": "To give someone fresh energy or enthusiasm.",
+      "id": "invigorate",
+      "level": "everyday",
+      "example": "Try using “invigorate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/invigorate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "methodical",
+      "part": "adjective",
+      "definition": "Doing things in a careful and organized order.",
+      "id": "methodical",
+      "level": "everyday",
+      "example": "Try using “methodical” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/methodical",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "meticulous",
+      "part": "adjective",
+      "definition": "Paying close attention to even small details.",
+      "id": "meticulous",
+      "level": "everyday",
+      "example": "Try using “meticulous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/meticulous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "objective",
+      "part": "adjective",
+      "definition": "Based on facts rather than personal preferences.",
+      "id": "objective",
+      "level": "everyday",
+      "example": "Try using “objective” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/objective",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perceptive",
+      "part": "adjective",
+      "definition": "Good at noticing and understanding things.",
+      "id": "perceptive",
+      "level": "everyday",
+      "example": "Try using “perceptive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perceptive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "persevere",
+      "part": "verb",
+      "definition": "To keep working toward a goal despite difficulties.",
+      "id": "persevere",
+      "level": "everyday",
+      "example": "Try using “persevere” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/persevere",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perspective",
+      "part": "noun",
+      "definition": "A particular way of looking at or understanding something.",
+      "id": "perspective",
+      "level": "everyday",
+      "example": "Try using “perspective” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perspective",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "plausible",
+      "part": "adjective",
+      "definition": "Reasonable enough to seem possible or believable.",
+      "id": "plausible",
+      "level": "everyday",
+      "example": "Try using “plausible” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/plausible",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "proficient",
+      "part": "adjective",
+      "definition": "Skilled at doing a particular activity.",
+      "id": "proficient",
+      "level": "everyday",
+      "example": "Try using “proficient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/proficient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "receptive",
+      "part": "adjective",
+      "definition": "Willing to listen to and consider new ideas.",
+      "id": "receptive",
+      "level": "everyday",
+      "example": "Try using “receptive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/receptive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "aberration",
+      "part": "noun",
+      "definition": "A departure from what is usual or expected.",
+      "id": "aberration",
+      "level": "everyday",
+      "example": "Try using “aberration” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/aberration",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "abeyance",
+      "part": "noun",
+      "definition": "A temporary pause in an activity or in the use of a rule.",
+      "id": "abeyance",
+      "level": "everyday",
+      "example": "Try using “abeyance” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/abeyance",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "abstruse",
+      "part": "adjective",
+      "definition": "Difficult to understand because it involves complex ideas.",
+      "id": "abstruse",
+      "level": "everyday",
+      "example": "Try using “abstruse” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/abstruse",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "accolade",
+      "part": "noun",
+      "definition": "An award or expression of praise for an achievement.",
+      "id": "accolade",
+      "level": "everyday",
+      "example": "Try using “accolade” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/accolade",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "acquiesce",
+      "part": "verb",
+      "definition": "To accept something without protest, even if you are not enthusiastic.",
+      "id": "acquiesce",
+      "level": "everyday",
+      "example": "Try using “acquiesce” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/acquiesce",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "acumen",
+      "part": "noun",
+      "definition": "The ability to understand a situation quickly and make good judgments.",
+      "id": "acumen",
+      "level": "everyday",
+      "example": "Try using “acumen” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/acumen",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "adroit",
+      "part": "adjective",
+      "definition": "Skillful and clever, especially in handling a difficult task.",
+      "id": "adroit",
+      "level": "everyday",
+      "example": "Try using “adroit” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/adroit",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "aesthetic",
+      "part": "adjective",
+      "definition": "Concerned with beauty or the appreciation of art.",
+      "id": "aesthetic",
+      "level": "everyday",
+      "example": "Try using “aesthetic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/aesthetic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "alacrity",
+      "part": "noun",
+      "definition": "Cheerful readiness to do something.",
+      "id": "alacrity",
+      "level": "everyday",
+      "example": "Try using “alacrity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/alacrity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "altruism",
+      "part": "noun",
+      "definition": "Concern for other people's well-being without expecting a reward.",
+      "id": "altruism",
+      "level": "everyday",
+      "example": "Try using “altruism” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/altruism",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ameliorate",
+      "part": "verb",
+      "definition": "To make a difficult situation better.",
+      "id": "ameliorate",
+      "level": "everyday",
+      "example": "Try using “ameliorate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ameliorate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "amiable",
+      "part": "adjective",
+      "definition": "Pleasant, friendly, and easy to get along with.",
+      "id": "amiable",
+      "level": "everyday",
+      "example": "Try using “amiable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/amiable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "amorphous",
+      "part": "adjective",
+      "definition": "Having no definite shape or clear structure.",
+      "id": "amorphous",
+      "level": "everyday",
+      "example": "Try using “amorphous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/amorphous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "anachronism",
+      "part": "noun",
+      "definition": "Something placed in a time period where it does not belong.",
+      "id": "anachronism",
+      "level": "everyday",
+      "example": "Try using “anachronism” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/anachronism",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "analogous",
+      "part": "adjective",
+      "definition": "Similar in a way that makes a useful comparison possible.",
+      "id": "analogous",
+      "level": "everyday",
+      "example": "Try using “analogous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/analogous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "anecdote",
+      "part": "noun",
+      "definition": "A short account of an interesting or amusing event.",
+      "id": "anecdote",
+      "level": "everyday",
+      "example": "Try using “anecdote” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/anecdote",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "anomaly",
+      "part": "noun",
+      "definition": "Something that differs from the pattern you would normally expect.",
+      "id": "anomaly",
+      "level": "everyday",
+      "example": "Try using “anomaly” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/anomaly",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "antithesis",
+      "part": "noun",
+      "definition": "The direct opposite of something.",
+      "id": "antithesis",
+      "level": "everyday",
+      "example": "Try using “antithesis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/antithesis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "aplomb",
+      "part": "noun",
+      "definition": "Calm confidence when dealing with a challenging situation.",
+      "id": "aplomb",
+      "level": "everyday",
+      "example": "Try using “aplomb” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/aplomb",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "apocryphal",
+      "part": "adjective",
+      "definition": "Widely repeated but probably not true or genuine.",
+      "id": "apocryphal",
+      "level": "everyday",
+      "example": "Try using “apocryphal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/apocryphal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "arbitrary",
+      "part": "adjective",
+      "definition": "Based on personal choice or chance rather than a clear rule or reason.",
+      "id": "arbitrary",
+      "level": "everyday",
+      "example": "Try using “arbitrary” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/arbitrary",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "arcane",
+      "part": "adjective",
+      "definition": "Known or understood by only a small number of people.",
+      "id": "arcane",
+      "level": "everyday",
+      "example": "Try using “arcane” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/arcane",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "archetype",
+      "part": "noun",
+      "definition": "A typical example or original pattern of a particular kind of thing.",
+      "id": "archetype",
+      "level": "everyday",
+      "example": "Try using “archetype” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/archetype",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "arduous",
+      "part": "adjective",
+      "definition": "Requiring a great deal of effort and determination.",
+      "id": "arduous",
+      "level": "everyday",
+      "example": "Try using “arduous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/arduous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "assiduous",
+      "part": "adjective",
+      "definition": "Showing steady effort and close attention to a task.",
+      "id": "assiduous",
+      "level": "everyday",
+      "example": "Try using “assiduous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/assiduous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "astute",
+      "part": "adjective",
+      "definition": "Quick to understand situations and judge what is important.",
+      "id": "astute",
+      "level": "everyday",
+      "example": "Try using “astute” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/astute",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "audacious",
+      "part": "adjective",
+      "definition": "Willing to attempt something unusually bold or daring.",
+      "id": "audacious",
+      "level": "everyday",
+      "example": "Try using “audacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/audacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "auspicious",
+      "part": "adjective",
+      "definition": "Suggesting that a good result is likely.",
+      "id": "auspicious",
+      "level": "everyday",
+      "example": "Try using “auspicious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/auspicious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "autodidact",
+      "part": "noun",
+      "definition": "A person who learns a subject through their own study rather than formal instruction.",
+      "id": "autodidact",
+      "level": "everyday",
+      "example": "Try using “autodidact” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/autodidact",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "axiom",
+      "part": "noun",
+      "definition": "A statement accepted as a starting point for reasoning.",
+      "id": "axiom",
+      "level": "everyday",
+      "example": "Try using “axiom” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/axiom",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "beatific",
+      "part": "adjective",
+      "definition": "Showing a calm, deeply happy expression.",
+      "id": "beatific",
+      "level": "everyday",
+      "example": "Try using “beatific” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/beatific",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "benevolent",
+      "part": "adjective",
+      "definition": "Kind and willing to help others.",
+      "id": "benevolent",
+      "level": "everyday",
+      "example": "Try using “benevolent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/benevolent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "blithe",
+      "part": "adjective",
+      "definition": "Cheerful and carefree, sometimes without enough concern about a problem.",
+      "id": "blithe",
+      "level": "everyday",
+      "example": "Try using “blithe” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/blithe",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "bucolic",
+      "part": "adjective",
+      "definition": "Relating to the peaceful life and scenery of the countryside.",
+      "id": "bucolic",
+      "level": "everyday",
+      "example": "Try using “bucolic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/bucolic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "burgeon",
+      "part": "verb",
+      "definition": "To grow or develop rapidly.",
+      "id": "burgeon",
+      "level": "everyday",
+      "example": "Try using “burgeon” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/burgeon",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cacophony",
+      "part": "noun",
+      "definition": "A mixture of loud, harsh sounds that do not blend well.",
+      "id": "cacophony",
+      "level": "everyday",
+      "example": "Try using “cacophony” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cacophony",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "camaraderie",
+      "part": "noun",
+      "definition": "A feeling of friendship and trust among people who spend time together.",
+      "id": "camaraderie",
+      "level": "everyday",
+      "example": "Try using “camaraderie” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/camaraderie",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "candor",
+      "part": "noun",
+      "definition": "The quality of being honest and direct when speaking.",
+      "id": "candor",
+      "level": "everyday",
+      "example": "Try using “candor” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/candor",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "capacious",
+      "part": "adjective",
+      "definition": "Having plenty of space inside.",
+      "id": "capacious",
+      "level": "everyday",
+      "example": "Try using “capacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/capacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "capricious",
+      "part": "adjective",
+      "definition": "Changing suddenly and unpredictably in mood or behavior.",
+      "id": "capricious",
+      "level": "everyday",
+      "example": "Try using “capricious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/capricious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "circumspect",
+      "part": "adjective",
+      "definition": "Careful to consider possible problems before acting.",
+      "id": "circumspect",
+      "level": "everyday",
+      "example": "Try using “circumspect” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/circumspect",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cogent",
+      "part": "adjective",
+      "definition": "Clear, logical, and convincing.",
+      "id": "cogent",
+      "level": "everyday",
+      "example": "Try using “cogent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cogent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cognizant",
+      "part": "adjective",
+      "definition": "Aware of something and understanding it.",
+      "id": "cognizant",
+      "level": "everyday",
+      "example": "Try using “cognizant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cognizant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "colloquial",
+      "part": "adjective",
+      "definition": "Used in ordinary conversation rather than formal writing.",
+      "id": "colloquial",
+      "level": "everyday",
+      "example": "Try using “colloquial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/colloquial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "commensurate",
+      "part": "adjective",
+      "definition": "Matching something else in size, degree, or importance.",
+      "id": "commensurate",
+      "level": "everyday",
+      "example": "Try using “commensurate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/commensurate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "concomitant",
+      "part": "adjective",
+      "definition": "Occurring along with something else, often as a related effect.",
+      "id": "concomitant",
+      "level": "everyday",
+      "example": "Try using “concomitant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/concomitant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "confluence",
+      "part": "noun",
+      "definition": "A place where rivers meet, or a coming together of ideas or events.",
+      "id": "confluence",
+      "level": "everyday",
+      "example": "Try using “confluence” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/confluence",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "congruent",
+      "part": "adjective",
+      "definition": "Matching or agreeing; in geometry, having the same shape and size.",
+      "id": "congruent",
+      "level": "everyday",
+      "example": "Try using “congruent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/congruent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "connoisseur",
+      "part": "noun",
+      "definition": "Someone with detailed knowledge and good judgment in an art or subject.",
+      "id": "connoisseur",
+      "level": "everyday",
+      "example": "Try using “connoisseur” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/connoisseur",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "conscientious",
+      "part": "adjective",
+      "definition": "Careful to do work thoroughly and fulfill responsibilities properly.",
+      "id": "conscientious",
+      "level": "everyday",
+      "example": "Try using “conscientious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/conscientious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "consensus",
+      "part": "noun",
+      "definition": "General agreement among the members of a group.",
+      "id": "consensus",
+      "level": "everyday",
+      "example": "Try using “consensus” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/consensus",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "conspicuous",
+      "part": "adjective",
+      "definition": "Easy to notice because it stands out from its surroundings.",
+      "id": "conspicuous",
+      "level": "everyday",
+      "example": "Try using “conspicuous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/conspicuous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "convivial",
+      "part": "adjective",
+      "definition": "Friendly, lively, and enjoyable to spend time with.",
+      "id": "convivial",
+      "level": "everyday",
+      "example": "Try using “convivial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/convivial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "copious",
+      "part": "adjective",
+      "definition": "Present or produced in very large amounts.",
+      "id": "copious",
+      "level": "everyday",
+      "example": "Try using “copious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/copious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "corroborate",
+      "part": "verb",
+      "definition": "To support a statement with additional evidence.",
+      "id": "corroborate",
+      "level": "everyday",
+      "example": "Try using “corroborate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/corroborate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cosmopolitan",
+      "part": "adjective",
+      "definition": "Including or being familiar with people and ideas from many countries.",
+      "id": "cosmopolitan",
+      "level": "everyday",
+      "example": "Try using “cosmopolitan” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cosmopolitan",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "credence",
+      "part": "noun",
+      "definition": "Belief that a statement or idea is true.",
+      "id": "credence",
+      "level": "everyday",
+      "example": "Try using “credence” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/credence",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "culminate",
+      "part": "verb",
+      "definition": "To reach a final or highest point after a series of events.",
+      "id": "culminate",
+      "level": "everyday",
+      "example": "Try using “culminate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/culminate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "deference",
+      "part": "noun",
+      "definition": "Respectful consideration for another person's judgment or wishes.",
+      "id": "deference",
+      "level": "everyday",
+      "example": "Try using “deference” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/deference",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "delineate",
+      "part": "verb",
+      "definition": "To describe or show the boundaries and details of something clearly.",
+      "id": "delineate",
+      "level": "everyday",
+      "example": "Try using “delineate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/delineate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "demure",
+      "part": "adjective",
+      "definition": "Quiet and reserved in manner.",
+      "id": "demure",
+      "level": "everyday",
+      "example": "Try using “demure” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/demure",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "denouement",
+      "part": "noun",
+      "definition": "The final part of a story where its main problems are resolved.",
+      "id": "denouement",
+      "level": "everyday",
+      "example": "Try using “denouement” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/denouement",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "derivative",
+      "part": "adjective",
+      "definition": "Based on another work or idea, often without much originality.",
+      "id": "derivative",
+      "level": "everyday",
+      "example": "Try using “derivative” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/derivative",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "desultory",
+      "part": "adjective",
+      "definition": "Moving from one thing to another without a clear plan or purpose.",
+      "id": "desultory",
+      "level": "everyday",
+      "example": "Try using “desultory” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/desultory",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "dichotomy",
+      "part": "noun",
+      "definition": "A division into two sharply different groups or ideas.",
+      "id": "dichotomy",
+      "level": "everyday",
+      "example": "Try using “dichotomy” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/dichotomy",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "diffident",
+      "part": "adjective",
+      "definition": "Lacking confidence and hesitant to speak or act.",
+      "id": "diffident",
+      "level": "everyday",
+      "example": "Try using “diffident” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/diffident",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "discerning",
+      "part": "adjective",
+      "definition": "Able to notice important differences and judge quality well.",
+      "id": "discerning",
+      "level": "everyday",
+      "example": "Try using “discerning” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/discerning",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "disparate",
+      "part": "adjective",
+      "definition": "So different in kind that comparison or combination is difficult.",
+      "id": "disparate",
+      "level": "everyday",
+      "example": "Try using “disparate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/disparate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "disseminate",
+      "part": "verb",
+      "definition": "To spread information or ideas widely.",
+      "id": "disseminate",
+      "level": "everyday",
+      "example": "Try using “disseminate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/disseminate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "distill",
+      "part": "verb",
+      "definition": "To draw out the most important ideas from a larger amount of information.",
+      "id": "distill",
+      "level": "everyday",
+      "example": "Try using “distill” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/distill",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ebullient",
+      "part": "adjective",
+      "definition": "Overflowing with cheerful energy and excitement.",
+      "id": "ebullient",
+      "level": "everyday",
+      "example": "Try using “ebullient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ebullient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "eclectic",
+      "part": "adjective",
+      "definition": "Drawing from a variety of different styles or sources.",
+      "id": "eclectic",
+      "level": "everyday",
+      "example": "Try using “eclectic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/eclectic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "effervescent",
+      "part": "adjective",
+      "definition": "Giving off tiny bubbles, or showing lively enthusiasm.",
+      "id": "effervescent",
+      "level": "everyday",
+      "example": "Try using “effervescent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/effervescent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "efficacious",
+      "part": "adjective",
+      "definition": "Successful in producing the intended result.",
+      "id": "efficacious",
+      "level": "everyday",
+      "example": "Try using “efficacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/efficacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "effusive",
+      "part": "adjective",
+      "definition": "Expressing feelings or gratitude with great enthusiasm.",
+      "id": "effusive",
+      "level": "everyday",
+      "example": "Try using “effusive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/effusive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "egalitarian",
+      "part": "adjective",
+      "definition": "Supporting equal rights and opportunities for all people.",
+      "id": "egalitarian",
+      "level": "everyday",
+      "example": "Try using “egalitarian” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/egalitarian",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "elucidate",
+      "part": "verb",
+      "definition": "To explain something in a way that makes it easier to understand.",
+      "id": "elucidate",
+      "level": "everyday",
+      "example": "Try using “elucidate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/elucidate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "eloquent",
+      "part": "adjective",
+      "definition": "Expressing ideas clearly, gracefully, and persuasively.",
+      "id": "eloquent",
+      "level": "everyday",
+      "example": "Try using “eloquent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/eloquent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "elusive",
+      "part": "adjective",
+      "definition": "Difficult to find, catch, or fully understand.",
+      "id": "elusive",
+      "level": "everyday",
+      "example": "Try using “elusive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/elusive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "embellish",
+      "part": "verb",
+      "definition": "To add decorative details; in a story, sometimes to add invented details.",
+      "id": "embellish",
+      "level": "everyday",
+      "example": "Try using “embellish” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/embellish",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "emulate",
+      "part": "verb",
+      "definition": "To try to match the achievements or qualities of someone you admire.",
+      "id": "emulate",
+      "level": "everyday",
+      "example": "Try using “emulate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/emulate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "enigma",
+      "part": "noun",
+      "definition": "A person, thing, or situation that is difficult to understand.",
+      "id": "enigma",
+      "level": "everyday",
+      "example": "Try using “enigma” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/enigma",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ephemeral",
+      "part": "adjective",
+      "definition": "Lasting for only a short time.",
+      "id": "ephemeral",
+      "level": "everyday",
+      "example": "Try using “ephemeral” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ephemeral",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "epiphany",
+      "part": "noun",
+      "definition": "A sudden moment of understanding something important.",
+      "id": "epiphany",
+      "level": "everyday",
+      "example": "Try using “epiphany” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/epiphany",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "equanimity",
+      "part": "noun",
+      "definition": "Mental calmness, especially in a difficult situation.",
+      "id": "equanimity",
+      "level": "everyday",
+      "example": "Try using “equanimity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/equanimity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "equivocal",
+      "part": "adjective",
+      "definition": "Unclear or open to more than one interpretation.",
+      "id": "equivocal",
+      "level": "everyday",
+      "example": "Try using “equivocal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/equivocal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "erudite",
+      "part": "adjective",
+      "definition": "Having extensive knowledge gained through study.",
+      "id": "erudite",
+      "level": "everyday",
+      "example": "Try using “erudite” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/erudite",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "esoteric",
+      "part": "adjective",
+      "definition": "Intended for or understood by a small group with specialized knowledge.",
+      "id": "esoteric",
+      "level": "everyday",
+      "example": "Try using “esoteric” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/esoteric",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ethereal",
+      "part": "adjective",
+      "definition": "Extremely delicate and light, seeming almost otherworldly.",
+      "id": "ethereal",
+      "level": "everyday",
+      "example": "Try using “ethereal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ethereal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "etymology",
+      "part": "noun",
+      "definition": "The study of where words come from and how their meanings change.",
+      "id": "etymology",
+      "level": "everyday",
+      "example": "Try using “etymology” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/etymology",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "euphonious",
+      "part": "adjective",
+      "definition": "Pleasant in sound, especially when spoken or sung.",
+      "id": "euphonious",
+      "level": "everyday",
+      "example": "Try using “euphonious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/euphonious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "evanescent",
+      "part": "adjective",
+      "definition": "Quickly fading or disappearing.",
+      "id": "evanescent",
+      "level": "everyday",
+      "example": "Try using “evanescent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/evanescent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exemplary",
+      "part": "adjective",
+      "definition": "So good that it provides a model for others.",
+      "id": "exemplary",
+      "level": "everyday",
+      "example": "Try using “exemplary” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exemplary",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exhaustive",
+      "part": "adjective",
+      "definition": "Covering all relevant details or possibilities thoroughly.",
+      "id": "exhaustive",
+      "level": "everyday",
+      "example": "Try using “exhaustive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exhaustive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exigency",
+      "part": "noun",
+      "definition": "An urgent need or demand caused by a particular situation.",
+      "id": "exigency",
+      "level": "everyday",
+      "example": "Try using “exigency” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exigency",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exonerate",
+      "part": "verb",
+      "definition": "To clear someone from blame after examining the evidence.",
+      "id": "exonerate",
+      "level": "everyday",
+      "example": "Try using “exonerate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exonerate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "expedient",
+      "part": "adjective",
+      "definition": "Convenient for reaching an immediate goal, though not necessarily the best choice overall.",
+      "id": "expedient",
+      "level": "everyday",
+      "example": "Try using “expedient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/expedient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "extrapolate",
+      "part": "verb",
+      "definition": "To use known information to estimate what may be true beyond it.",
+      "id": "extrapolate",
+      "level": "everyday",
+      "example": "Try using “extrapolate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/extrapolate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exuberant",
+      "part": "adjective",
+      "definition": "Full of energy, excitement, and happiness.",
+      "id": "exuberant",
+      "level": "everyday",
+      "example": "Try using “exuberant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exuberant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "facetious",
+      "part": "adjective",
+      "definition": "Treating a serious subject with humor that may be inappropriate.",
+      "id": "facetious",
+      "level": "everyday",
+      "example": "Try using “facetious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/facetious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fastidious",
+      "part": "adjective",
+      "definition": "Very attentive to detail and difficult to satisfy.",
+      "id": "fastidious",
+      "level": "everyday",
+      "example": "Try using “fastidious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fastidious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fathom",
+      "part": "verb",
+      "definition": "To understand something that is puzzling or complicated.",
+      "id": "fathom",
+      "level": "everyday",
+      "example": "Try using “fathom” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fathom",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "felicitous",
+      "part": "adjective",
+      "definition": "Especially well chosen or suitable for a situation.",
+      "id": "felicitous",
+      "level": "everyday",
+      "example": "Try using “felicitous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/felicitous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fervent",
+      "part": "adjective",
+      "definition": "Showing strong and sincere feeling.",
+      "id": "fervent",
+      "level": "everyday",
+      "example": "Try using “fervent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fervent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "florid",
+      "part": "adjective",
+      "definition": "Highly decorated or elaborate in style.",
+      "id": "florid",
+      "level": "everyday",
+      "example": "Try using “florid” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/florid",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "formidable",
+      "part": "adjective",
+      "definition": "Impressive in strength or ability and therefore challenging to face.",
+      "id": "formidable",
+      "level": "everyday",
+      "example": "Try using “formidable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/formidable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fortuitous",
+      "part": "adjective",
+      "definition": "Happening by chance rather than by planning.",
+      "id": "fortuitous",
+      "level": "everyday",
+      "example": "Try using “fortuitous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fortuitous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "garrulous",
+      "part": "adjective",
+      "definition": "Talking a great deal, especially about unimportant things.",
+      "id": "garrulous",
+      "level": "everyday",
+      "example": "Try using “garrulous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/garrulous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "gregarious",
+      "part": "adjective",
+      "definition": "Enjoying the company of other people.",
+      "id": "gregarious",
+      "level": "everyday",
+      "example": "Try using “gregarious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/gregarious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "halcyon",
+      "part": "adjective",
+      "definition": "Peaceful and happy, especially when remembering an earlier time.",
+      "id": "halcyon",
+      "level": "everyday",
+      "example": "Try using “halcyon” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/halcyon",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "heuristic",
+      "part": "noun",
+      "definition": "A practical method for solving a problem that helps without guaranteeing the best answer.",
+      "id": "heuristic",
+      "level": "everyday",
+      "example": "Try using “heuristic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/heuristic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "holistic",
+      "part": "adjective",
+      "definition": "Considering a whole system and how its parts work together.",
+      "id": "holistic",
+      "level": "everyday",
+      "example": "Try using “holistic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/holistic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "idiosyncrasy",
+      "part": "noun",
+      "definition": "A distinctive habit or characteristic of a person or thing.",
+      "id": "idiosyncrasy",
+      "level": "everyday",
+      "example": "Try using “idiosyncrasy” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/idiosyncrasy",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "immutable",
+      "part": "adjective",
+      "definition": "Not able to be changed.",
+      "id": "immutable",
+      "level": "everyday",
+      "example": "Try using “immutable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/immutable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "impeccable",
+      "part": "adjective",
+      "definition": "Meeting a very high standard without faults or mistakes.",
+      "id": "impeccable",
+      "level": "everyday",
+      "example": "Try using “impeccable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/impeccable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "implicit",
+      "part": "adjective",
+      "definition": "Suggested or understood without being stated directly.",
+      "id": "implicit",
+      "level": "everyday",
+      "example": "Try using “implicit” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/implicit",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "inadvertent",
+      "part": "adjective",
+      "definition": "Happening by accident rather than on purpose.",
+      "id": "inadvertent",
+      "level": "everyday",
+      "example": "Try using “inadvertent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/inadvertent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "incandescent",
+      "part": "adjective",
+      "definition": "Glowing because of intense heat.",
+      "id": "incandescent",
+      "level": "everyday",
+      "example": "Try using “incandescent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/incandescent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "incipient",
+      "part": "adjective",
+      "definition": "Just beginning to exist or develop.",
+      "id": "incipient",
+      "level": "everyday",
+      "example": "Try using “incipient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/incipient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "indefatigable",
+      "part": "adjective",
+      "definition": "Persisting with energy and determination despite sustained effort.",
+      "id": "indefatigable",
+      "level": "everyday",
+      "example": "Try using “indefatigable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/indefatigable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ineffable",
+      "part": "adjective",
+      "definition": "Too great or unusual to express fully in words.",
+      "id": "ineffable",
+      "level": "everyday",
+      "example": "Try using “ineffable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ineffable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "inexorable",
+      "part": "adjective",
+      "definition": "Impossible to stop or persuade to change.",
+      "id": "inexorable",
+      "level": "everyday",
+      "example": "Try using “inexorable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/inexorable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "innocuous",
+      "part": "adjective",
+      "definition": "Not harmful or likely to cause offense.",
+      "id": "innocuous",
+      "level": "everyday",
+      "example": "Try using “innocuous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/innocuous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "inscrutable",
+      "part": "adjective",
+      "definition": "Difficult to understand or interpret.",
+      "id": "inscrutable",
+      "level": "everyday",
+      "example": "Try using “inscrutable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/inscrutable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "intrepid",
+      "part": "adjective",
+      "definition": "Brave and determined when facing unfamiliar challenges.",
+      "id": "intrepid",
+      "level": "everyday",
+      "example": "Try using “intrepid” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/intrepid",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "intrinsic",
+      "part": "adjective",
+      "definition": "Belonging naturally to something as an essential quality.",
+      "id": "intrinsic",
+      "level": "everyday",
+      "example": "Try using “intrinsic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/intrinsic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "juxtapose",
+      "part": "verb",
+      "definition": "To place things side by side so their differences or similarities become noticeable.",
+      "id": "juxtapose",
+      "level": "everyday",
+      "example": "Try using “juxtapose” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/juxtapose",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "laconic",
+      "part": "adjective",
+      "definition": "Expressing an idea in very few words.",
+      "id": "laconic",
+      "level": "everyday",
+      "example": "Try using “laconic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/laconic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "liminal",
+      "part": "adjective",
+      "definition": "Relating to a boundary or a transition between two states.",
+      "id": "liminal",
+      "level": "everyday",
+      "example": "Try using “liminal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/liminal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "loquacious",
+      "part": "adjective",
+      "definition": "Tending to talk a great deal.",
+      "id": "loquacious",
+      "level": "everyday",
+      "example": "Try using “loquacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/loquacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "lucid",
+      "part": "adjective",
+      "definition": "Clear and easy to understand.",
+      "id": "lucid",
+      "level": "everyday",
+      "example": "Try using “lucid” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/lucid",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "magnanimous",
+      "part": "adjective",
+      "definition": "Generous and forgiving, especially toward someone who has opposed you.",
+      "id": "magnanimous",
+      "level": "everyday",
+      "example": "Try using “magnanimous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/magnanimous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "manifold",
+      "part": "adjective",
+      "definition": "Numerous and varied.",
+      "id": "manifold",
+      "level": "everyday",
+      "example": "Try using “manifold” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/manifold",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "mellifluous",
+      "part": "adjective",
+      "definition": "Having a smooth, pleasant, flowing sound.",
+      "id": "mellifluous",
+      "level": "everyday",
+      "example": "Try using “mellifluous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/mellifluous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "mercurial",
+      "part": "adjective",
+      "definition": "Changing quickly and unpredictably in mood.",
+      "id": "mercurial",
+      "level": "everyday",
+      "example": "Try using “mercurial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/mercurial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "microcosm",
+      "part": "noun",
+      "definition": "A small example that reflects the features of a much larger system.",
+      "id": "microcosm",
+      "level": "everyday",
+      "example": "Try using “microcosm” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/microcosm",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "mitigate",
+      "part": "verb",
+      "definition": "To make something harmful or unpleasant less severe.",
+      "id": "mitigate",
+      "level": "everyday",
+      "example": "Try using “mitigate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/mitigate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "munificent",
+      "part": "adjective",
+      "definition": "Extremely generous in giving.",
+      "id": "munificent",
+      "level": "everyday",
+      "example": "Try using “munificent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/munificent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "myriad",
+      "part": "noun",
+      "definition": "A very large number of people or things.",
+      "id": "myriad",
+      "level": "everyday",
+      "example": "Try using “myriad” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/myriad",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "nascent",
+      "part": "adjective",
+      "definition": "Just coming into existence and beginning to develop.",
+      "id": "nascent",
+      "level": "everyday",
+      "example": "Try using “nascent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/nascent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "nebulous",
+      "part": "adjective",
+      "definition": "Unclear, vague, or not yet fully formed.",
+      "id": "nebulous",
+      "level": "everyday",
+      "example": "Try using “nebulous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/nebulous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "nuance",
+      "part": "noun",
+      "definition": "A small but meaningful difference in expression, meaning, or feeling.",
+      "id": "nuance",
+      "level": "everyday",
+      "example": "Try using “nuance” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/nuance",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "obfuscate",
+      "part": "verb",
+      "definition": "To make an idea harder to understand, often deliberately.",
+      "id": "obfuscate",
+      "level": "everyday",
+      "example": "Try using “obfuscate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/obfuscate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "oblique",
+      "part": "adjective",
+      "definition": "Indirect rather than straightforward, or slanting at an angle.",
+      "id": "oblique",
+      "level": "everyday",
+      "example": "Try using “oblique” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/oblique",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "obstinate",
+      "part": "adjective",
+      "definition": "Unwilling to change an opinion or action despite good reasons to do so.",
+      "id": "obstinate",
+      "level": "everyday",
+      "example": "Try using “obstinate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/obstinate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "omnipresent",
+      "part": "adjective",
+      "definition": "Present everywhere or seeming to be everywhere.",
+      "id": "omnipresent",
+      "level": "everyday",
+      "example": "Try using “omnipresent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/omnipresent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "opulent",
+      "part": "adjective",
+      "definition": "Rich and luxurious in appearance.",
+      "id": "opulent",
+      "level": "everyday",
+      "example": "Try using “opulent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/opulent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "oscillate",
+      "part": "verb",
+      "definition": "To move repeatedly back and forth between positions or states.",
+      "id": "oscillate",
+      "level": "everyday",
+      "example": "Try using “oscillate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/oscillate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ostensible",
+      "part": "adjective",
+      "definition": "Stated or appearing to be true, but not necessarily the real explanation.",
+      "id": "ostensible",
+      "level": "everyday",
+      "example": "Try using “ostensible” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ostensible",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "palatable",
+      "part": "adjective",
+      "definition": "Pleasant to taste or acceptable to consider.",
+      "id": "palatable",
+      "level": "everyday",
+      "example": "Try using “palatable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/palatable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "palpable",
+      "part": "adjective",
+      "definition": "So clear or strong that it seems almost possible to touch it.",
+      "id": "palpable",
+      "level": "everyday",
+      "example": "Try using “palpable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/palpable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "paradigm",
+      "part": "noun",
+      "definition": "A model or pattern that shapes how people understand a subject.",
+      "id": "paradigm",
+      "level": "everyday",
+      "example": "Try using “paradigm” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/paradigm",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "paradox",
+      "part": "noun",
+      "definition": "A statement or situation that seems contradictory but may reveal a truth.",
+      "id": "paradox",
+      "level": "everyday",
+      "example": "Try using “paradox” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/paradox",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "parsimonious",
+      "part": "adjective",
+      "definition": "Extremely unwilling to spend money or use resources.",
+      "id": "parsimonious",
+      "level": "everyday",
+      "example": "Try using “parsimonious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/parsimonious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "penchant",
+      "part": "noun",
+      "definition": "A strong liking or tendency toward something.",
+      "id": "penchant",
+      "level": "everyday",
+      "example": "Try using “penchant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/penchant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perfunctory",
+      "part": "adjective",
+      "definition": "Done with little care or interest, simply to complete a duty.",
+      "id": "perfunctory",
+      "level": "everyday",
+      "example": "Try using “perfunctory” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perfunctory",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "peripheral",
+      "part": "adjective",
+      "definition": "Located at the edge or only indirectly connected to the main subject.",
+      "id": "peripheral",
+      "level": "everyday",
+      "example": "Try using “peripheral” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/peripheral",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perspicacious",
+      "part": "adjective",
+      "definition": "Quick to notice and understand things that others might miss.",
+      "id": "perspicacious",
+      "level": "everyday",
+      "example": "Try using “perspicacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perspicacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "pertinent",
+      "part": "adjective",
+      "definition": "Directly related to the matter being considered.",
+      "id": "pertinent",
+      "level": "everyday",
+      "example": "Try using “pertinent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/pertinent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "pervasive",
+      "part": "adjective",
+      "definition": "Spreading widely through a place or situation.",
+      "id": "pervasive",
+      "level": "everyday",
+      "example": "Try using “pervasive” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/pervasive",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "pithy",
+      "part": "adjective",
+      "definition": "Expressing an important idea briefly and forcefully.",
+      "id": "pithy",
+      "level": "everyday",
+      "example": "Try using “pithy” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/pithy",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "placid",
+      "part": "adjective",
+      "definition": "Calm and not easily disturbed.",
+      "id": "placid",
+      "level": "everyday",
+      "example": "Try using “placid” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/placid",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "pragmatic",
+      "part": "adjective",
+      "definition": "Dealing with problems in a practical way that fits real conditions.",
+      "id": "pragmatic",
+      "level": "everyday",
+      "example": "Try using “pragmatic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/pragmatic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "precarious",
+      "part": "adjective",
+      "definition": "Uncertain or unstable and likely to change for the worse.",
+      "id": "precarious",
+      "level": "everyday",
+      "example": "Try using “precarious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/precarious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "precocious",
+      "part": "adjective",
+      "definition": "Showing an ability or level of understanding earlier than usual for one's age.",
+      "id": "precocious",
+      "level": "everyday",
+      "example": "Try using “precocious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/precocious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "prescient",
+      "part": "adjective",
+      "definition": "Showing knowledge of events before they happen.",
+      "id": "prescient",
+      "level": "everyday",
+      "example": "Try using “prescient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/prescient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "prodigious",
+      "part": "adjective",
+      "definition": "Remarkably great in size, amount, or ability.",
+      "id": "prodigious",
+      "level": "everyday",
+      "example": "Try using “prodigious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/prodigious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "prolific",
+      "part": "adjective",
+      "definition": "Producing a large amount of work or many results.",
+      "id": "prolific",
+      "level": "everyday",
+      "example": "Try using “prolific” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/prolific",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "propensity",
+      "part": "noun",
+      "definition": "A natural tendency to behave in a particular way.",
+      "id": "propensity",
+      "level": "everyday",
+      "example": "Try using “propensity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/propensity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "prosaic",
+      "part": "adjective",
+      "definition": "Ordinary and lacking imagination or excitement.",
+      "id": "prosaic",
+      "level": "everyday",
+      "example": "Try using “prosaic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/prosaic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "provenance",
+      "part": "noun",
+      "definition": "The origin and recorded history of an object or piece of information.",
+      "id": "provenance",
+      "level": "everyday",
+      "example": "Try using “provenance” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/provenance",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "quandary",
+      "part": "noun",
+      "definition": "A state of uncertainty about which choice to make.",
+      "id": "quandary",
+      "level": "everyday",
+      "example": "Try using “quandary” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/quandary",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "quiescent",
+      "part": "adjective",
+      "definition": "Quiet and inactive for a time.",
+      "id": "quiescent",
+      "level": "everyday",
+      "example": "Try using “quiescent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/quiescent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "quintessential",
+      "part": "adjective",
+      "definition": "Representing the most typical or perfect example of something.",
+      "id": "quintessential",
+      "level": "everyday",
+      "example": "Try using “quintessential” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/quintessential",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "quixotic",
+      "part": "adjective",
+      "definition": "Pursuing an admirable but highly impractical ideal.",
+      "id": "quixotic",
+      "level": "everyday",
+      "example": "Try using “quixotic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/quixotic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "recalcitrant",
+      "part": "adjective",
+      "definition": "Stubbornly unwilling to follow instructions or accept guidance.",
+      "id": "recalcitrant",
+      "level": "everyday",
+      "example": "Try using “recalcitrant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/recalcitrant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "reciprocity",
+      "part": "noun",
+      "definition": "An exchange in which people give similar help or benefits to each other.",
+      "id": "reciprocity",
+      "level": "everyday",
+      "example": "Try using “reciprocity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/reciprocity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "reconcile",
+      "part": "verb",
+      "definition": "To bring differing ideas or people into agreement.",
+      "id": "reconcile",
+      "level": "everyday",
+      "example": "Try using “reconcile” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/reconcile",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "redolent",
+      "part": "adjective",
+      "definition": "Having a strong smell or strongly reminding someone of something.",
+      "id": "redolent",
+      "level": "everyday",
+      "example": "Try using “redolent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/redolent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "reiterate",
+      "part": "verb",
+      "definition": "To say something again for emphasis or clarity.",
+      "id": "reiterate",
+      "level": "everyday",
+      "example": "Try using “reiterate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/reiterate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "relinquish",
+      "part": "verb",
+      "definition": "To give up possession or control of something.",
+      "id": "relinquish",
+      "level": "everyday",
+      "example": "Try using “relinquish” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/relinquish",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "repertoire",
+      "part": "noun",
+      "definition": "The range of skills or works that someone can perform.",
+      "id": "repertoire",
+      "level": "everyday",
+      "example": "Try using “repertoire” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/repertoire",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "replete",
+      "part": "adjective",
+      "definition": "Filled or well supplied with something.",
+      "id": "replete",
+      "level": "everyday",
+      "example": "Try using “replete” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/replete",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "resplendent",
+      "part": "adjective",
+      "definition": "Shining brilliantly or looking magnificent.",
+      "id": "resplendent",
+      "level": "everyday",
+      "example": "Try using “resplendent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/resplendent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "reticent",
+      "part": "adjective",
+      "definition": "Not readily sharing thoughts or feelings.",
+      "id": "reticent",
+      "level": "everyday",
+      "example": "Try using “reticent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/reticent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "rudimentary",
+      "part": "adjective",
+      "definition": "Basic and not yet fully developed.",
+      "id": "rudimentary",
+      "level": "everyday",
+      "example": "Try using “rudimentary” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/rudimentary",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "sagacious",
+      "part": "adjective",
+      "definition": "Showing wisdom and sound judgment.",
+      "id": "sagacious",
+      "level": "everyday",
+      "example": "Try using “sagacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/sagacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "salient",
+      "part": "adjective",
+      "definition": "Most noticeable or important in a particular context.",
+      "id": "salient",
+      "level": "everyday",
+      "example": "Try using “salient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/salient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "sanguine",
+      "part": "adjective",
+      "definition": "Confident and hopeful about a situation, even when difficulties exist.",
+      "id": "sanguine",
+      "level": "everyday",
+      "example": "Try using “sanguine” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/sanguine",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "scrupulous",
+      "part": "adjective",
+      "definition": "Extremely careful to act honestly and correctly.",
+      "id": "scrupulous",
+      "level": "everyday",
+      "example": "Try using “scrupulous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/scrupulous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "serendipity",
+      "part": "noun",
+      "definition": "The chance discovery of something valuable or pleasant while looking for something else.",
+      "id": "serendipity",
+      "level": "everyday",
+      "example": "Try using “serendipity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/serendipity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "solicitous",
+      "part": "adjective",
+      "definition": "Showing care and concern for someone's comfort or well-being.",
+      "id": "solicitous",
+      "level": "everyday",
+      "example": "Try using “solicitous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/solicitous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "sporadic",
+      "part": "adjective",
+      "definition": "Happening occasionally at irregular intervals.",
+      "id": "sporadic",
+      "level": "everyday",
+      "example": "Try using “sporadic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/sporadic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "stupendous",
+      "part": "adjective",
+      "definition": "Extremely impressive in size, quality, or achievement.",
+      "id": "stupendous",
+      "level": "everyday",
+      "example": "Try using “stupendous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/stupendous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "substantiate",
+      "part": "verb",
+      "definition": "To provide evidence that supports a statement.",
+      "id": "substantiate",
+      "level": "everyday",
+      "example": "Try using “substantiate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/substantiate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "succinct",
+      "part": "adjective",
+      "definition": "Expressing an idea clearly in very few words.",
+      "id": "succinct",
+      "level": "everyday",
+      "example": "Try using “succinct” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/succinct",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "superfluous",
+      "part": "adjective",
+      "definition": "More than is needed or useful.",
+      "id": "superfluous",
+      "level": "everyday",
+      "example": "Try using “superfluous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/superfluous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "surreptitious",
+      "part": "adjective",
+      "definition": "Done secretly to avoid being noticed.",
+      "id": "surreptitious",
+      "level": "everyday",
+      "example": "Try using “surreptitious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/surreptitious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "tacit",
+      "part": "adjective",
+      "definition": "Understood without being openly stated.",
+      "id": "tacit",
+      "level": "everyday",
+      "example": "Try using “tacit” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/tacit",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "taciturn",
+      "part": "adjective",
+      "definition": "Usually quiet and not inclined to talk much.",
+      "id": "taciturn",
+      "level": "everyday",
+      "example": "Try using “taciturn” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/taciturn",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "tangential",
+      "part": "adjective",
+      "definition": "Only slightly connected to the main subject.",
+      "id": "tangential",
+      "level": "everyday",
+      "example": "Try using “tangential” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/tangential",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "temerity",
+      "part": "noun",
+      "definition": "Boldness that goes beyond what is sensible or respectful.",
+      "id": "temerity",
+      "level": "everyday",
+      "example": "Try using “temerity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/temerity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "transient",
+      "part": "adjective",
+      "definition": "Lasting for only a short time.",
+      "id": "transient",
+      "level": "everyday",
+      "example": "Try using “transient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/transient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ubiquitous",
+      "part": "adjective",
+      "definition": "Present or found almost everywhere.",
+      "id": "ubiquitous",
+      "level": "everyday",
+      "example": "Try using “ubiquitous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ubiquitous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "unassuming",
+      "part": "adjective",
+      "definition": "Modest and not trying to draw attention to one's abilities.",
+      "id": "unassuming",
+      "level": "everyday",
+      "example": "Try using “unassuming” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/unassuming",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "unequivocal",
+      "part": "adjective",
+      "definition": "Clear and leaving no doubt about what is meant.",
+      "id": "unequivocal",
+      "level": "everyday",
+      "example": "Try using “unequivocal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/unequivocal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "venerable",
+      "part": "adjective",
+      "definition": "Respected because of age, experience, or long service.",
+      "id": "venerable",
+      "level": "everyday",
+      "example": "Try using “venerable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/venerable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "veracity",
+      "part": "noun",
+      "definition": "Truthfulness or accuracy.",
+      "id": "veracity",
+      "level": "everyday",
+      "example": "Try using “veracity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/veracity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "verbose",
+      "part": "adjective",
+      "definition": "Using more words than are needed.",
+      "id": "verbose",
+      "level": "everyday",
+      "example": "Try using “verbose” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/verbose",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "verisimilitude",
+      "part": "noun",
+      "definition": "The appearance of being true or real, especially in a story.",
+      "id": "verisimilitude",
+      "level": "everyday",
+      "example": "Try using “verisimilitude” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/verisimilitude",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "vestige",
+      "part": "noun",
+      "definition": "A small remaining trace of something that has mostly disappeared.",
+      "id": "vestige",
+      "level": "everyday",
+      "example": "Try using “vestige” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/vestige",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "vicissitude",
+      "part": "noun",
+      "definition": "A change in circumstances, especially an unwelcome one.",
+      "id": "vicissitude",
+      "level": "everyday",
+      "example": "Try using “vicissitude” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/vicissitude",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "virtuoso",
+      "part": "noun",
+      "definition": "A person with exceptional skill in an art, especially music.",
+      "id": "virtuoso",
+      "level": "everyday",
+      "example": "Try using “virtuoso” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/virtuoso",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "vivacious",
+      "part": "adjective",
+      "definition": "Lively and full of energy.",
+      "id": "vivacious",
+      "level": "everyday",
+      "example": "Try using “vivacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/vivacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "vociferous",
+      "part": "adjective",
+      "definition": "Expressing an opinion loudly and strongly.",
+      "id": "vociferous",
+      "level": "everyday",
+      "example": "Try using “vociferous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/vociferous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "voluminous",
+      "part": "adjective",
+      "definition": "Very large in amount, size, or volume.",
+      "id": "voluminous",
+      "level": "everyday",
+      "example": "Try using “voluminous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/voluminous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "whimsical",
+      "part": "adjective",
+      "definition": "Playfully imaginative or unusual.",
+      "id": "whimsical",
+      "level": "everyday",
+      "example": "Try using “whimsical” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/whimsical",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "zealous",
+      "part": "adjective",
+      "definition": "Showing great energy and enthusiasm for a cause or activity.",
+      "id": "zealous",
+      "level": "everyday",
+      "example": "Try using “zealous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/zealous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "abundance",
+      "part": "noun",
+      "definition": "A quantity that is more than enough.",
+      "id": "abundance",
+      "level": "everyday",
+      "example": "Try using “abundance” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/abundance",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "accretion",
+      "part": "noun",
+      "definition": "Gradual growth through the addition of small amounts.",
+      "id": "accretion",
+      "level": "everyday",
+      "example": "Try using “accretion” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/accretion",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "adumbrate",
+      "part": "verb",
+      "definition": "To outline an idea without explaining all its details.",
+      "id": "adumbrate",
+      "level": "everyday",
+      "example": "Try using “adumbrate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/adumbrate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "affinity",
+      "part": "noun",
+      "definition": "A natural liking for someone or a close similarity between things.",
+      "id": "affinity",
+      "level": "everyday",
+      "example": "Try using “affinity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/affinity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ambiguity",
+      "part": "noun",
+      "definition": "The possibility of more than one meaning or interpretation.",
+      "id": "ambiguity",
+      "level": "everyday",
+      "example": "Try using “ambiguity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ambiguity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ambivalent",
+      "part": "adjective",
+      "definition": "Having mixed or conflicting feelings about something.",
+      "id": "ambivalent",
+      "level": "everyday",
+      "example": "Try using “ambivalent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ambivalent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "anthropomorphic",
+      "part": "adjective",
+      "definition": "Giving human characteristics to something that is not human.",
+      "id": "anthropomorphic",
+      "level": "everyday",
+      "example": "Try using “anthropomorphic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/anthropomorphic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "apotheosis",
+      "part": "noun",
+      "definition": "The highest or most developed example of something.",
+      "id": "apotheosis",
+      "level": "everyday",
+      "example": "Try using “apotheosis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/apotheosis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "attenuate",
+      "part": "verb",
+      "definition": "To reduce the strength, force, or effect of something.",
+      "id": "attenuate",
+      "level": "everyday",
+      "example": "Try using “attenuate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/attenuate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "autonomous",
+      "part": "adjective",
+      "definition": "Able to act or govern itself independently.",
+      "id": "autonomous",
+      "level": "everyday",
+      "example": "Try using “autonomous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/autonomous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "bifurcate",
+      "part": "verb",
+      "definition": "To divide into two branches or parts.",
+      "id": "bifurcate",
+      "level": "everyday",
+      "example": "Try using “bifurcate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/bifurcate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "concatenation",
+      "part": "noun",
+      "definition": "A series of things linked together.",
+      "id": "concatenation",
+      "level": "everyday",
+      "example": "Try using “concatenation” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/concatenation",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "conjecture",
+      "part": "noun",
+      "definition": "An explanation based on incomplete evidence.",
+      "id": "conjecture",
+      "level": "everyday",
+      "example": "Try using “conjecture” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/conjecture",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "contiguous",
+      "part": "adjective",
+      "definition": "Touching or sharing a boundary.",
+      "id": "contiguous",
+      "level": "everyday",
+      "example": "Try using “contiguous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/contiguous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "desiccate",
+      "part": "verb",
+      "definition": "To remove moisture or become thoroughly dry.",
+      "id": "desiccate",
+      "level": "everyday",
+      "example": "Try using “desiccate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/desiccate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "diaphanous",
+      "part": "adjective",
+      "definition": "So thin and delicate that light can pass through it.",
+      "id": "diaphanous",
+      "level": "everyday",
+      "example": "Try using “diaphanous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/diaphanous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "dissonance",
+      "part": "noun",
+      "definition": "A lack of harmony between sounds, ideas, or expectations.",
+      "id": "dissonance",
+      "level": "everyday",
+      "example": "Try using “dissonance” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/dissonance",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "equilibrium",
+      "part": "noun",
+      "definition": "A state of balance between opposing forces or influences.",
+      "id": "equilibrium",
+      "level": "everyday",
+      "example": "Try using “equilibrium” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/equilibrium",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "homogeneous",
+      "part": "adjective",
+      "definition": "Made up of parts that are alike in kind or character.",
+      "id": "homogeneous",
+      "level": "everyday",
+      "example": "Try using “homogeneous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/homogeneous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "heterogeneous",
+      "part": "adjective",
+      "definition": "Made up of different kinds of parts.",
+      "id": "heterogeneous",
+      "level": "everyday",
+      "example": "Try using “heterogeneous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/heterogeneous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "intermittent",
+      "part": "adjective",
+      "definition": "Stopping and starting at intervals rather than continuing steadily.",
+      "id": "intermittent",
+      "level": "everyday",
+      "example": "Try using “intermittent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/intermittent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "lexicon",
+      "part": "noun",
+      "definition": "The vocabulary of a language, person, or particular subject.",
+      "id": "lexicon",
+      "level": "everyday",
+      "example": "Try using “lexicon” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/lexicon",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "luminescence",
+      "part": "noun",
+      "definition": "Light produced without the high temperature that causes something to glow from heat.",
+      "id": "luminescence",
+      "level": "everyday",
+      "example": "Try using “luminescence” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/luminescence",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "mnemonic",
+      "part": "noun",
+      "definition": "A pattern or phrase that helps someone remember information.",
+      "id": "mnemonic",
+      "level": "everyday",
+      "example": "Try using “mnemonic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/mnemonic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "obsolescence",
+      "part": "noun",
+      "definition": "The process of becoming outdated or no longer used.",
+      "id": "obsolescence",
+      "level": "everyday",
+      "example": "Try using “obsolescence” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/obsolescence",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "polymath",
+      "part": "noun",
+      "definition": "A person with extensive knowledge in several different subjects.",
+      "id": "polymath",
+      "level": "everyday",
+      "example": "Try using “polymath” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/polymath",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "refractile",
+      "part": "adjective",
+      "definition": "Able to bend light as it passes through.",
+      "id": "refractile",
+      "level": "everyday",
+      "example": "Try using “refractile” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/refractile",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "epistemology",
+      "part": "noun",
+      "definition": "The study of knowledge, including how we gain it and how we decide what is justified.",
+      "id": "epistemology",
+      "level": "everyday",
+      "example": "Try using “epistemology” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/epistemology",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "synecdoche",
+      "part": "noun",
+      "definition": "A figure of speech that uses a part to refer to a whole, such as hands for workers.",
+      "id": "synecdoche",
+      "level": "everyday",
+      "example": "Try using “synecdoche” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/synecdoche",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "transcend",
+      "part": "verb",
+      "definition": "To go beyond an ordinary limit or level.",
+      "id": "transcend",
+      "level": "everyday",
+      "example": "Try using “transcend” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/transcend",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "undulate",
+      "part": "verb",
+      "definition": "To move or rise and fall in a smooth, wave-like pattern.",
+      "id": "undulate",
+      "level": "everyday",
+      "example": "Try using “undulate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/undulate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "vernal",
+      "part": "adjective",
+      "definition": "Relating to spring.",
+      "id": "vernal",
+      "level": "everyday",
+      "example": "Try using “vernal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/vernal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    }
+  ],
+  "challenge": [
+    {
+      "word": "resilient",
+      "part": "adjective",
+      "definition": "Able to recover and adapt after difficulty.",
+      "id": "resilient",
+      "level": "challenge",
+      "example": "Try using “resilient” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/resilient",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "resourceful",
+      "part": "adjective",
+      "definition": "Good at finding useful ways to solve problems.",
+      "id": "resourceful",
+      "level": "challenge",
+      "example": "Try using “resourceful” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/resourceful",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "rigorous",
+      "part": "adjective",
+      "definition": "Very careful and thorough.",
+      "id": "rigorous",
+      "level": "challenge",
+      "example": "Try using “rigorous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/rigorous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "serene",
+      "part": "adjective",
+      "definition": "Calm and peaceful.",
+      "id": "serene",
+      "level": "challenge",
+      "example": "Try using “serene” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/serene",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "spontaneous",
+      "part": "adjective",
+      "definition": "Happening naturally without being planned in advance.",
+      "id": "spontaneous",
+      "level": "challenge",
+      "example": "Try using “spontaneous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/spontaneous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "steadfast",
+      "part": "adjective",
+      "definition": "Remaining committed even when something becomes difficult.",
+      "id": "steadfast",
+      "level": "challenge",
+      "example": "Try using “steadfast” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/steadfast",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "synthesize",
+      "part": "verb",
+      "definition": "To combine ideas into a new understanding.",
+      "id": "synthesize",
+      "level": "challenge",
+      "example": "Try using “synthesize” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/synthesize",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "tenacious",
+      "part": "adjective",
+      "definition": "Holding firmly to a goal and not giving up easily.",
+      "id": "tenacious",
+      "level": "challenge",
+      "example": "Try using “tenacious” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/tenacious",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "tranquil",
+      "part": "adjective",
+      "definition": "Quiet and peaceful.",
+      "id": "tranquil",
+      "level": "challenge",
+      "example": "Try using “tranquil” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/tranquil",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "versatile",
+      "part": "adjective",
+      "definition": "Able to be useful in many different ways.",
+      "id": "versatile",
+      "level": "challenge",
+      "example": "Try using “versatile” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/versatile",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "aerodynamic",
+      "part": "adjective",
+      "definition": "Shaped to move through air with less resistance.",
+      "id": "aerodynamic",
+      "level": "challenge",
+      "example": "Try using “aerodynamic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/aerodynamic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ancestral",
+      "part": "adjective",
+      "definition": "Relating to people or organisms from earlier generations.",
+      "id": "ancestral",
+      "level": "challenge",
+      "example": "Try using “ancestral” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ancestral",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "aperture",
+      "part": "noun",
+      "definition": "An opening that allows light or another thing to pass through.",
+      "id": "aperture",
+      "level": "challenge",
+      "example": "Try using “aperture” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/aperture",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "archipelago",
+      "part": "noun",
+      "definition": "A group or chain of islands.",
+      "id": "archipelago",
+      "level": "challenge",
+      "example": "Try using “archipelago” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/archipelago",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "biodiversity",
+      "part": "noun",
+      "definition": "The variety of living things in an area.",
+      "id": "biodiversity",
+      "level": "challenge",
+      "example": "Try using “biodiversity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/biodiversity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "biodegradable",
+      "part": "adjective",
+      "definition": "Able to be broken down naturally by living organisms.",
+      "id": "biodegradable",
+      "level": "challenge",
+      "example": "Try using “biodegradable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/biodegradable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "buoyant",
+      "part": "adjective",
+      "definition": "Able to float or rise in a fluid.",
+      "id": "buoyant",
+      "level": "challenge",
+      "example": "Try using “buoyant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/buoyant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "catalyst",
+      "part": "noun",
+      "definition": "A substance that speeds a chemical reaction without being used up overall.",
+      "id": "catalyst",
+      "level": "challenge",
+      "example": "Try using “catalyst” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/catalyst",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "celestial",
+      "part": "adjective",
+      "definition": "Relating to the sky or outer space.",
+      "id": "celestial",
+      "level": "challenge",
+      "example": "Try using “celestial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/celestial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "cohesion",
+      "part": "noun",
+      "definition": "The tendency of parts to stick or work together.",
+      "id": "cohesion",
+      "level": "challenge",
+      "example": "Try using “cohesion” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/cohesion",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "combustion",
+      "part": "noun",
+      "definition": "A chemical process that releases heat, often seen as burning.",
+      "id": "combustion",
+      "level": "challenge",
+      "example": "Try using “combustion” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/combustion",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "condensation",
+      "part": "noun",
+      "definition": "The change from a gas into a liquid.",
+      "id": "condensation",
+      "level": "challenge",
+      "example": "Try using “condensation” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/condensation",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "constellation",
+      "part": "noun",
+      "definition": "One of the named regions of the sky associated with a star pattern.",
+      "id": "constellation",
+      "level": "challenge",
+      "example": "Try using “constellation” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/constellation",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "contour",
+      "part": "noun",
+      "definition": "The outline or shape of a surface.",
+      "id": "contour",
+      "level": "challenge",
+      "example": "Try using “contour” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/contour",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "converge",
+      "part": "verb",
+      "definition": "To move toward the same point.",
+      "id": "converge",
+      "level": "challenge",
+      "example": "Try using “converge” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/converge",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "correlation",
+      "part": "noun",
+      "definition": "A relationship in how two things vary, without necessarily causing each other.",
+      "id": "correlation",
+      "level": "challenge",
+      "example": "Try using “correlation” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/correlation",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "crystalline",
+      "part": "adjective",
+      "definition": "Having an orderly structure made of crystals.",
+      "id": "crystalline",
+      "level": "challenge",
+      "example": "Try using “crystalline” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/crystalline",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "decompose",
+      "part": "verb",
+      "definition": "To break down into simpler parts.",
+      "id": "decompose",
+      "level": "challenge",
+      "example": "Try using “decompose” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/decompose",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "diffuse",
+      "part": "verb",
+      "definition": "To spread out over a wider area.",
+      "id": "diffuse",
+      "level": "challenge",
+      "example": "Try using “diffuse” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/diffuse",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "dormant",
+      "part": "adjective",
+      "definition": "Temporarily inactive but able to become active again.",
+      "id": "dormant",
+      "level": "challenge",
+      "example": "Try using “dormant” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/dormant",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "ecology",
+      "part": "noun",
+      "definition": "The study of how living things interact with their environment.",
+      "id": "ecology",
+      "level": "challenge",
+      "example": "Try using “ecology” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/ecology",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "endemic",
+      "part": "adjective",
+      "definition": "Naturally found only in a particular geographic area.",
+      "id": "endemic",
+      "level": "challenge",
+      "example": "Try using “endemic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/endemic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "exoskeleton",
+      "part": "noun",
+      "definition": "A hard outer covering that supports and protects an animal.",
+      "id": "exoskeleton",
+      "level": "challenge",
+      "example": "Try using “exoskeleton” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/exoskeleton",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "fluctuate",
+      "part": "verb",
+      "definition": "To rise and fall or change repeatedly.",
+      "id": "fluctuate",
+      "level": "challenge",
+      "example": "Try using “fluctuate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/fluctuate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "germinate",
+      "part": "verb",
+      "definition": "To begin growing from a seed.",
+      "id": "germinate",
+      "level": "challenge",
+      "example": "Try using “germinate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/germinate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "hemisphere",
+      "part": "noun",
+      "definition": "Half of a sphere, such as half of Earth.",
+      "id": "hemisphere",
+      "level": "challenge",
+      "example": "Try using “hemisphere” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/hemisphere",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "hibernate",
+      "part": "verb",
+      "definition": "To enter a prolonged state of reduced activity that conserves energy.",
+      "id": "hibernate",
+      "level": "challenge",
+      "example": "Try using “hibernate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/hibernate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "hypothesis",
+      "part": "noun",
+      "definition": "A possible explanation that can be tested using evidence.",
+      "id": "hypothesis",
+      "level": "challenge",
+      "example": "Try using “hypothesis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/hypothesis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "illuminate",
+      "part": "verb",
+      "definition": "To light up something or make an idea clearer.",
+      "id": "illuminate",
+      "level": "challenge",
+      "example": "Try using “illuminate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/illuminate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "increment",
+      "part": "noun",
+      "definition": "A small increase in an amount.",
+      "id": "increment",
+      "level": "challenge",
+      "example": "Try using “increment” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/increment",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "inertia",
+      "part": "noun",
+      "definition": "The tendency of an object to resist changes in its motion.",
+      "id": "inertia",
+      "level": "challenge",
+      "example": "Try using “inertia” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/inertia",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "invertebrate",
+      "part": "noun",
+      "definition": "An animal without a backbone.",
+      "id": "invertebrate",
+      "level": "challenge",
+      "example": "Try using “invertebrate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/invertebrate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "iridescent",
+      "part": "adjective",
+      "definition": "Showing colors that seem to change as the viewing angle changes.",
+      "id": "iridescent",
+      "level": "challenge",
+      "example": "Try using “iridescent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/iridescent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "latitude",
+      "part": "noun",
+      "definition": "The angular distance of a place north or south of the equator.",
+      "id": "latitude",
+      "level": "challenge",
+      "example": "Try using “latitude” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/latitude",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "longitude",
+      "part": "noun",
+      "definition": "The angular distance of a place east or west of the prime meridian.",
+      "id": "longitude",
+      "level": "challenge",
+      "example": "Try using “longitude” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/longitude",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "luminous",
+      "part": "adjective",
+      "definition": "Giving off or reflecting light.",
+      "id": "luminous",
+      "level": "challenge",
+      "example": "Try using “luminous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/luminous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "meander",
+      "part": "verb",
+      "definition": "To follow a winding path.",
+      "id": "meander",
+      "level": "challenge",
+      "example": "Try using “meander” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/meander",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "meteorology",
+      "part": "noun",
+      "definition": "The scientific study of the atmosphere and weather.",
+      "id": "meteorology",
+      "level": "challenge",
+      "example": "Try using “meteorology” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/meteorology",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "metamorphosis",
+      "part": "noun",
+      "definition": "A major change in body form during an animal's development.",
+      "id": "metamorphosis",
+      "level": "challenge",
+      "example": "Try using “metamorphosis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/metamorphosis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "nocturnal",
+      "part": "adjective",
+      "definition": "Active mainly at night.",
+      "id": "nocturnal",
+      "level": "challenge",
+      "example": "Try using “nocturnal” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/nocturnal",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "opaque",
+      "part": "adjective",
+      "definition": "Not allowing light to pass through.",
+      "id": "opaque",
+      "level": "challenge",
+      "example": "Try using “opaque” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/opaque",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perennial",
+      "part": "adjective",
+      "definition": "Describing a plant that lives for more than two years.",
+      "id": "perennial",
+      "level": "challenge",
+      "example": "Try using “perennial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perennial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "perpendicular",
+      "part": "adjective",
+      "definition": "Meeting at a right angle.",
+      "id": "perpendicular",
+      "level": "challenge",
+      "example": "Try using “perpendicular” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/perpendicular",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "photosynthesis",
+      "part": "noun",
+      "definition": "The process by which plants and some other organisms use light to make food.",
+      "id": "photosynthesis",
+      "level": "challenge",
+      "example": "Try using “photosynthesis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/photosynthesis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "porous",
+      "part": "adjective",
+      "definition": "Having tiny spaces that allow air or liquid to pass through.",
+      "id": "porous",
+      "level": "challenge",
+      "example": "Try using “porous” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/porous",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "precipitation",
+      "part": "noun",
+      "definition": "Water falling from clouds as rain, snow, sleet, or hail.",
+      "id": "precipitation",
+      "level": "challenge",
+      "example": "Try using “precipitation” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/precipitation",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "proportion",
+      "part": "noun",
+      "definition": "The relationship between a part and the whole or between different amounts.",
+      "id": "proportion",
+      "level": "challenge",
+      "example": "Try using “proportion” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/proportion",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "prototype",
+      "part": "noun",
+      "definition": "An early model used to test and improve a design.",
+      "id": "prototype",
+      "level": "challenge",
+      "example": "Try using “prototype” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/prototype",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "refraction",
+      "part": "noun",
+      "definition": "The change in direction of a wave as it enters a different medium.",
+      "id": "refraction",
+      "level": "challenge",
+      "example": "Try using “refraction” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/refraction",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "replicate",
+      "part": "verb",
+      "definition": "To make a copy or repeat a process.",
+      "id": "replicate",
+      "level": "challenge",
+      "example": "Try using “replicate” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/replicate",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "reservoir",
+      "part": "noun",
+      "definition": "A place where water or another supply is stored.",
+      "id": "reservoir",
+      "level": "challenge",
+      "example": "Try using “reservoir” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/reservoir",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "seismic",
+      "part": "adjective",
+      "definition": "Relating to earthquakes or vibrations in the ground.",
+      "id": "seismic",
+      "level": "challenge",
+      "example": "Try using “seismic” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/seismic",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "soluble",
+      "part": "adjective",
+      "definition": "Able to dissolve in a particular liquid.",
+      "id": "soluble",
+      "level": "challenge",
+      "example": "Try using “soluble” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/soluble",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "spherical",
+      "part": "adjective",
+      "definition": "Shaped like a ball.",
+      "id": "spherical",
+      "level": "challenge",
+      "example": "Try using “spherical” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/spherical",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "sustainable",
+      "part": "adjective",
+      "definition": "Able to continue without using resources faster than they can be replaced.",
+      "id": "sustainable",
+      "level": "challenge",
+      "example": "Try using “sustainable” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/sustainable",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "symbiosis",
+      "part": "noun",
+      "definition": "A close, long-term relationship between organisms of different species.",
+      "id": "symbiosis",
+      "level": "challenge",
+      "example": "Try using “symbiosis” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/symbiosis",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "symmetry",
+      "part": "noun",
+      "definition": "A matching arrangement of parts on either side of a line or around a center.",
+      "id": "symmetry",
+      "level": "challenge",
+      "example": "Try using “symmetry” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/symmetry",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "terrestrial",
+      "part": "adjective",
+      "definition": "Relating to land or to planet Earth.",
+      "id": "terrestrial",
+      "level": "challenge",
+      "example": "Try using “terrestrial” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/terrestrial",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "trajectory",
+      "part": "noun",
+      "definition": "The path followed by a moving object.",
+      "id": "trajectory",
+      "level": "challenge",
+      "example": "Try using “trajectory” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/trajectory",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "translucent",
+      "part": "adjective",
+      "definition": "Allowing some light through without showing a clear image.",
+      "id": "translucent",
+      "level": "challenge",
+      "example": "Try using “translucent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/translucent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "turbulent",
+      "part": "adjective",
+      "definition": "Moving in an irregular, swirling way.",
+      "id": "turbulent",
+      "level": "challenge",
+      "example": "Try using “turbulent” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/turbulent",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "velocity",
+      "part": "noun",
+      "definition": "The speed of something in a particular direction.",
+      "id": "velocity",
+      "level": "challenge",
+      "example": "Try using “velocity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/velocity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "viscosity",
+      "part": "noun",
+      "definition": "A measure of how much a fluid resists flowing.",
+      "id": "viscosity",
+      "level": "challenge",
+      "example": "Try using “viscosity” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/viscosity",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    },
+    {
+      "word": "zenith",
+      "part": "noun",
+      "definition": "The point in the sky directly above an observer.",
+      "id": "zenith",
+      "level": "challenge",
+      "example": "Try using “zenith” in a sentence that shows its meaning.",
+      "source": "https://dictionary.cambridge.org/dictionary/english/zenith",
+      "credit": "TeacherTiles definition · Dictionary reference"
+    }
+  ]
+});
