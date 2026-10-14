@@ -1,4 +1,4 @@
-import {newPatches} from './patch-catalog.js?v=20261013-star';
+import {newPatches} from './patch-catalog.js?v=20261013-star-inset';
 const grid = document.querySelector('.profile-badge-grid');
 const tabs = document.querySelector('.profile-patch-tabs');
 

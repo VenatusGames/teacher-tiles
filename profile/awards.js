@@ -1,5 +1,5 @@
 import {manualPatchOptions} from './patch-catalog.js?v=20261013-star';
-import {ensurePlannedPatches} from './patches.js?v=20261013-star';
+import {ensurePlannedPatches} from './patches.js?v=20261013-star-inset';
 export function syncAwardedPatches(user,awards={}) {
   ensurePlannedPatches();
   const created=Date.parse(user?.metadata?.creationTime||'');
