@@ -190,7 +190,7 @@ function setupTeacherTilesShop(){
       const mode=sort.value;
       const tileType=filter?.value||'all';
       if(holidayFilter)holidayFilter.hidden=!activeHoliday;
-      if(pageName==='home'&&(terms.length||activeHoliday)){
+      if(pageName==='home'&&(terms.length||activeHoliday||mode!=='featured')){
         const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
           if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
@@ -217,7 +217,7 @@ function setupTeacherTilesShop(){
         if(!matched.length)globalResults.innerHTML='<span aria-hidden="true">⌕</span><strong>No shop items found</strong><small>Try another product name, collection, or keyword.</small>';
         globalResults.hidden=false;
         empty.hidden=true;
-        clearButton.hidden=false;
+        clearButton.hidden=!search.value;
         if(result)result.textContent=`${matched.length} ${matched.length===1?'result':'results'}`;
         return;
       }
@@ -379,6 +379,7 @@ function setupTeacherTilesShop(){
     pendingCoinCelebration=null;
     try{sessionStorage.removeItem(coinCheckoutStorageKey)}catch{}
   }
+  function resetHomeSort(){const sort=shopHome.querySelector('[data-shop-sort]');sort.value='featured';sort.dispatchEvent(new Event('change',{bubbles:true}))}
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
@@ -572,7 +573,7 @@ function setupTeacherTilesShop(){
   toggle.addEventListener('click',openShop);
   close.addEventListener('click',closeShop);
   modal.querySelectorAll('[data-shop-close]').forEach(node=>node.addEventListener('click',closeShop));
-  pageButtons.forEach(button=>button.addEventListener('click',()=>{if(button.dataset.shopOpenPage==='home'){activeHoliday='';shopHome.querySelector('[data-shop-search]').value=''}showPage(button.dataset.shopOpenPage)}));
+  pageButtons.forEach(button=>button.addEventListener('click',()=>{if(button.dataset.shopOpenPage==='home'){activeHoliday='';shopHome.querySelector('[data-shop-search]').value='';resetHomeSort()}showPage(button.dataset.shopOpenPage)}));
   coinButton?.addEventListener('click',openCoins);
   profileCoinCard?.addEventListener('click',()=>{
     document.querySelector('[data-profile-close]')?.click();
@@ -655,7 +656,7 @@ function setupTeacherTilesShop(){
   syncStickerShopPackCounts();
   window.TeacherTilesShop={
     open:openShop,
-    openMembership:()=>{activeHoliday='';shopHome.querySelector('[data-shop-search]').value='';openShop();closeProduct();closeCoins(false);requestAnimationFrame(()=>{membershipCard?.scrollIntoView({block:'center',behavior:'smooth'});(subscribePreview&&!subscribePreview.disabled&&!subscribePreview.hidden?subscribePreview:membershipCard)?.focus({preventScroll:true});});},
+    openMembership:()=>{resetHomeSort();activeHoliday='';shopHome.querySelector('[data-shop-search]').value='';openShop();closeProduct();closeCoins(false);requestAnimationFrame(()=>{membershipCard?.scrollIntoView({block:'center',behavior:'smooth'});(subscribePreview&&!subscribePreview.disabled&&!subscribePreview.hidden?subscribePreview:membershipCard)?.focus({preventScroll:true});});},
     openProduct,
     openCoins:()=>{openShop();openCoins()},
     openPage:name=>{openShop();showPage(name)},
