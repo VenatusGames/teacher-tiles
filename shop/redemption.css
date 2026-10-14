@@ -1,0 +1,18 @@
+.shop-modal .shop-redeem-card{align-self:start;min-height:0;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-solid,var(--surface));box-shadow:0 3px 12px #17203308;color:var(--text)}
+.shop-redeem-card__header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.shop-modal .shop-redeem-card__icon{position:static;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,#8d6dcc 11%,var(--surface-solid));color:color-mix(in srgb,#7252ad 85%,var(--text));opacity:1}
+.shop-redeem-card__icon svg{width:22px;height:22px}
+.shop-modal .shop-redeem-card h3{margin:0;font-size:18px;font-weight:700;line-height:1.25;letter-spacing:-.025em}
+.shop-modal .shop-redeem-form label{margin:0 0 7px;font-size:12px;line-height:1.4;font-weight:500;color:var(--muted)}
+.shop-modal .shop-redeem-form>div{display:flex;gap:8px;flex-wrap:wrap}
+.shop-modal .shop-redeem-form input{flex:1 1 125px;min-width:0;width:125px;height:42px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);font:600 14px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.04em;transition:border-color .15s,box-shadow .15s}
+.shop-modal .shop-redeem-form input::placeholder{color:var(--muted);opacity:.8;font-weight:400;letter-spacing:.02em}
+.shop-modal .shop-redeem-form button{flex:0 0 auto;height:42px;padding:0 16px;border:1px solid #684b9d;border-radius:10px;background:#7252ad;color:#fff;font:650 13px/1.3 Inter,system-ui,sans-serif;box-shadow:0 2px 4px #50377521;cursor:pointer;transition:background .15s,transform .15s,box-shadow .15s}
+.shop-modal .shop-redeem-form button:hover:not(:disabled){background:#634599;box-shadow:0 3px 7px #5037752b;transform:translateY(-1px)}
+.shop-modal .shop-redeem-form button:active:not(:disabled){transform:translateY(0)}
+.shop-modal .shop-redeem-form button:focus-visible{outline:3px solid #ad93d9;outline-offset:3px}
+.shop-modal .shop-redeem-form button:disabled{opacity:.65;cursor:wait;box-shadow:none}
+.shop-modal .shop-redeem-status{min-height:0;margin:10px 0 0;padding:9px 11px;border-radius:9px;background:color-mix(in srgb,#568463 9%,var(--surface-solid));color:color-mix(in srgb,#457650 80%,var(--text));font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.shop-modal .shop-redeem-status:empty{display:none;margin:0;padding:0}
+.shop-modal .shop-redeem-status.is-error{background:color-mix(in srgb,#c34c4c 8%,var(--surface-solid));color:color-mix(in srgb,#b33d3d 85%,var(--text))}
+@media(prefers-reduced-motion:reduce){.shop-modal .shop-redeem-form :is(input,button){transition:none}}

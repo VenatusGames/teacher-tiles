@@ -1,0 +1,19 @@
+/* Leave a full descent below the writing baseline at every row scale. */
+.writinglines-module .writinglines-entry{top:0;height:100%;font-size:100cqh!important;line-height:1;overflow:visible!important}
+.writinglines-module .writinglines-guide--top{top:14%}
+.writinglines-module .writinglines-guide--mid{top:45%}
+.writinglines-module .writinglines-guide--base{bottom:24%}
+
+/* Match the current tile action buttons while keeping narrow tiles uncluttered. */
+.writinglines-module .writinglines-customization{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;left:auto;right:12px;bottom:9px;transform:none;width:max-content;max-width:calc(100% - 128px);padding:0!important;gap:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
+.writinglines-module:hover .writinglines-customization,.writinglines-module .writinglines-customization:has(button:focus-visible){opacity:1;visibility:visible;pointer-events:auto}
+.writinglines-module .writinglines-customization>.custom-icon{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;height:32px;min-height:32px;padding:0 10px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:10px;background:var(--module-bg,#fff);color:var(--module-text,#17191d);box-shadow:0 2px 5px #1720330d;font:600 12px/1.2 Inter,system-ui,sans-serif;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+.writinglines-module .writinglines-customization>.custom-icon:hover{background:color-mix(in srgb,var(--module-bg,#fff) 92%,#79abe6);border-color:#b1cae8;transform:translateY(-1px);box-shadow:0 3px 8px #17203314}
+.writinglines-module .writinglines-customization>.custom-icon:active{transform:translateY(1px);box-shadow:none}
+.writinglines-module .writinglines-customization>.custom-icon:focus-visible{outline:2px solid #5a8dcc;outline-offset:2px}
+.writinglines-module .writinglines-customization>.custom-icon.is-active{background:color-mix(in srgb,var(--module-bg,#fff) 80%,#79abe6);border-color:#78a3d3;box-shadow:inset 0 0 0 1px #78a3d32b}
+.writinglines-module .writinglines-customization svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.writinglines-module .writinglines-count span{font:inherit}
+@container(max-width:420px){.writinglines-module .writinglines-control-label{display:none}.writinglines-module .writinglines-customization>.custom-icon{padding:0 8px}}
+@media(hover:none){.writinglines-module .writinglines-customization{opacity:1;visibility:visible;pointer-events:auto}}
+@media(prefers-reduced-motion:reduce){.writinglines-module .writinglines-customization,.writinglines-module .writinglines-customization>.custom-icon{transition:none}}

@@ -1,0 +1,7 @@
+export function setupNickname(call){
+ const form=document.getElementById('profile-nickname-form'),input=form.elements.nickname,status=form.querySelector('[role="status"]'),save=form.querySelector('[type=submit]'),display=document.getElementById('profile-nickname'),edit=document.getElementById('profile-nickname-edit'),cancel=form.querySelector('[data-cancel]');let uid='',generation=0,name='';
+ const stop=()=>{form.hidden=true;edit.hidden=false;status.textContent='';input.value=name;};
+ edit.onclick=()=>{form.hidden=false;edit.hidden=true;input.value=name;input.focus();input.select();};cancel.onclick=stop;input.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();stop();}};
+ form.onsubmit=async e=>{e.preventDefault();if(!form.reportValidity())return;const token=generation;save.disabled=true;status.textContent='Saving…';try{const result=await call('profileNickname',{nickname:input.value});if(token!==generation)return;name=result.nickname;display.textContent=name;stop();}catch(e){if(token===generation)status.textContent=e.message;}finally{if(token===generation)save.disabled=false;}};
+ return {async load(user){if(uid===(user?.uid||''))return;uid=user?.uid||'';const token=++generation;name='';display.textContent='';stop();edit.disabled=true;if(!uid)return;try{const result=await call('profileNickname',{});if(token!==generation)return;name=result.nickname;display.textContent=name;}catch(e){if(token===generation){display.textContent='Set nickname';edit.title=e.message;}}finally{if(token===generation)edit.disabled=false;}}};
+}

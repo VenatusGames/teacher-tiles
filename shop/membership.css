@@ -1,0 +1,11 @@
+/* The same membership card becomes a benefits banner while access is active. */
+.shop-membership-card.is-subscription-active{border-color:rgba(235,193,97,.5);background:linear-gradient(130deg,#222630,#302b37 62%,#51411e 140%)}
+.shop-membership-card.is-subscription-active .shop-membership-card__head{grid-template-columns:48px minmax(0,1fr);gap:14px}
+.shop-membership-card.is-subscription-active .shop-membership-crown{width:48px;height:48px}
+.shop-membership-card.is-subscription-active h3{font-size:clamp(23px,2.3vw,29px);line-height:1.15;color:#fff0bf;text-wrap:balance}
+.shop-membership-card.is-subscription-active .shop-membership-card__head small{font-size:9px}
+.shop-membership-card.is-subscription-active .shop-membership-perks{gap:12px 18px;margin:20px 0 2px}
+.shop-membership-card.is-subscription-active .shop-membership-perks li{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.88);padding-left:20px}
+.shop-membership-card.is-subscription-active .shop-membership-perks small{font-size:.85em}
+.shop-membership-card .shop-membership-price[hidden],.shop-membership-card .shop-membership-card__foot[hidden],#shop-subscribe-preview[hidden]{display:none!important}
+@media(max-width:480px){.shop-membership-card.is-subscription-active .shop-membership-perks{gap:10px;margin-top:16px}}

@@ -1,0 +1,62 @@
+.animated-board-backdrop{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}.animated-board-backdrop[hidden]{display:none}
+body:is(.theme-underwater-ocean,.theme-rainy-window,.theme-underwater-ocean-light,.theme-rainy-window-light) .workspace{z-index:1;background:none!important}
+body.theme-underwater-ocean{--bg:#094156;--grid:transparent}body.theme-rainy-window{--bg:#263e48;--grid:transparent}
+.theme-card--underwater-ocean,.animated-theme-shop--underwater{background-color:#126781!important;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg')!important;background-position:center,center!important;background-size:cover,cover!important;background-repeat:no-repeat,no-repeat!important;color:#effffd}
+.theme-card--rainy-window,.animated-theme-shop--rainy-window{background-color:#344b59!important;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg')!important;background-position:center,center!important;background-size:cover,cover!important;background-repeat:no-repeat,no-repeat!important;color:#edf6fa}
+:is(.theme-card--underwater-ocean,.theme-card--underwater-ocean-light) .animated-theme-preview{background-color:#126781;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg');background-position:center,center;background-size:cover,cover;background-repeat:no-repeat,no-repeat;border-color:#e6ffff55}
+:is(.theme-card--rainy-window,.theme-card--rainy-window-light) .animated-theme-preview{background-color:#344b59;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg');background-position:center,center;background-size:cover,cover;background-repeat:no-repeat,no-repeat;border-color:#e6ffff55}.animated-theme-preview::before{display:none}
+.theme-card--underwater-ocean .theme-card__copy,.theme-card--rainy-window .theme-card__copy{background:#0b243dcc;color:#f0f8ff}
+.animated-theme-shop{position:relative;min-height:145px}.animated-theme-shop>span,.shop-animated-badge{position:absolute;right:12px;bottom:12px;padding:5px 8px;background:#0c293eaa;border:1px solid #d1edf733;border-radius:20px;font:700 9px Inter,sans-serif;letter-spacing:.12em;color:#effaff}
+.board-preview-theme-underwater-ocean{background-color:#126781!important;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg')!important;background-position:center,center!important;background-size:cover,cover!important}.board-preview-theme-rainy-window{background-color:#344b59!important;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg')!important;background-position:center,center!important;background-size:cover,cover!important}
+
+.theme-pack-fan:has(.theme-pack-stage>.theme-card:only-child){width:min(300px,calc(100vw - 32px))!important}.theme-pack-stage:has(>.theme-card:only-child){grid-template-columns:minmax(0,1fr)}.theme-pack-fan .theme-card:only-child{height:185px;--fan-angle:0deg!important}.theme-pack-fan .theme-card:only-child .theme-card__preview{height:120px}
+
+.theme-card--underwater-ocean-light{background-color:#126781!important;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg')!important;background-position:center,center!important;background-size:cover,cover!important;background-repeat:no-repeat,no-repeat!important}.theme-card--rainy-window-light{background-color:#344b59!important;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg')!important;background-position:center,center!important;background-size:cover,cover!important;background-repeat:no-repeat,no-repeat!important}
+:is(.theme-card--underwater-ocean-light,.theme-card--rainy-window-light) .animated-theme-preview{border-color:#ffffff99}:is(.theme-card--underwater-ocean-light,.theme-card--rainy-window-light) .theme-card__copy{background:#ffffffed;color:#17191d}
+.board-preview-theme-underwater-ocean-light{background-color:#126781!important;background-image:url('../../assets/themes/previews/underwater-ocean.png'),url('../../assets/themes/underwater-ocean.svg')!important;background-position:center,center!important;background-size:cover,cover!important}.board-preview-theme-rainy-window-light{background-color:#344b59!important;background-image:url('../../assets/themes/previews/rainy-window.png'),url('../../assets/themes/rainy-window.svg')!important;background-position:center,center!important;background-size:cover,cover!important}
+.theme-pack-stage:has(>.theme-card:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+
+body:is(.theme-outer-space,.theme-outer-space-light) .workspace{z-index:1;background:none!important}
+body.theme-outer-space{--grid:transparent;--bg:#080e24}
+:is(.theme-card--outer-space,.theme-card--outer-space-light) .animated-theme-preview,.animated-theme-shop--outer-space,.board-preview-theme-outer-space,.board-preview-theme-outer-space-light{background:url('../../assets/themes/previews/outer-space.webp') center / cover}
+.theme-card--outer-space,.theme-card--outer-space-light{background:#f8fafc;color:#20272c}.theme-card--outer-space .theme-card__copy{background:#182235;color:#f1f5fa}.theme-card--outer-space-light .theme-card__copy{background:#fff;color:#20272c}
+body:is(.theme-frosted-window,.theme-frosted-window-light) .workspace{z-index:1;background:none!important}
+body.theme-frosted-window{--grid:transparent;--bg:#708b9f}
+:is(.theme-card--frosted-window,.theme-card--frosted-window-light) .animated-theme-preview,.animated-theme-shop--frosted-window,.board-preview-theme-frosted-window,.board-preview-theme-frosted-window-light{background:url('../../assets/themes/previews/frosted-window.webp') center / cover}
+.theme-card--frosted-window,.theme-card--frosted-window-light{background:#f8fafc;color:#20272c}.theme-card--frosted-window .theme-card__copy{background:#182235;color:#f1f5fa}.theme-card--frosted-window-light .theme-card__copy{background:#fff;color:#20272c}
+
+.theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light),.theme-picker .theme-pack-sample:is(.theme-card--outer-space,.theme-card--outer-space-light) .theme-card__copy{background:#1b2845;color:#eff4ff}
+
+.theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light),.theme-picker .theme-pack-sample:is(.theme-card--frosted-window,.theme-card--frosted-window-light) .theme-card__copy{background:#b3c8d2;color:#223849}
+
+/* Scene artwork is shared by shop cards, shelf packs, and board previews. */
+body:is(.theme-fireplace,.theme-fireplace-light){--grid:transparent;--bg:#48352a}
+body:is(.theme-fireplace,.theme-fireplace-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--fireplace,.theme-card--fireplace-light),:is(.theme-card--fireplace,.theme-card--fireplace-light) .animated-theme-preview,.animated-theme-shop--fireplace,.board-preview-theme-fireplace,.board-preview-theme-fireplace-light{background:#48352a url('../../assets/themes/previews/fireplace.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--fireplace .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--fireplace-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--fireplace,.theme-card--fireplace-light) .theme-card__copy{background:#48352a;color:#fff}
+body:is(.theme-campfire,.theme-campfire-light){--grid:transparent;--bg:#132e35}
+body:is(.theme-campfire,.theme-campfire-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--campfire,.theme-card--campfire-light),:is(.theme-card--campfire,.theme-card--campfire-light) .animated-theme-preview,.animated-theme-shop--campfire,.board-preview-theme-campfire,.board-preview-theme-campfire-light{background:#132e35 url('../../assets/themes/previews/campfire.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--campfire .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--campfire-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--campfire,.theme-card--campfire-light) .theme-card__copy{background:#132e35;color:#fff}
+body:is(.theme-fireflies,.theme-fireflies-light){--grid:transparent;--bg:#193b38}
+body:is(.theme-fireflies,.theme-fireflies-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--fireflies,.theme-card--fireflies-light),:is(.theme-card--fireflies,.theme-card--fireflies-light) .animated-theme-preview,.animated-theme-shop--fireflies,.board-preview-theme-fireflies,.board-preview-theme-fireflies-light{background:#193b38 url('../../assets/themes/previews/fireflies.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--fireflies .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--fireflies-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--fireflies,.theme-card--fireflies-light) .theme-card__copy{background:#193b38;color:#fff}
+body:is(.theme-beach,.theme-beach-light){--grid:transparent;--bg:#92bfb7}
+body:is(.theme-beach,.theme-beach-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--beach,.theme-card--beach-light),:is(.theme-card--beach,.theme-card--beach-light) .animated-theme-preview,.animated-theme-shop--beach,.board-preview-theme-beach,.board-preview-theme-beach-light{background:#92bfb7 url('../../assets/themes/previews/beach.webp') center/cover!important;color:#fff}
+.theme-card--beach .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--beach-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--beach,.theme-card--beach-light) .theme-card__copy{background:#92bfb7;color:#fff}
+body:is(.theme-christmas-tree,.theme-christmas-tree-light){--grid:transparent;--bg:#614630}
+body:is(.theme-christmas-tree,.theme-christmas-tree-light) .workspace{z-index:1;background:none!important}
+:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light),:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light) .animated-theme-preview,.animated-theme-shop--christmas-tree,.board-preview-theme-christmas-tree,.board-preview-theme-christmas-tree-light{background:#614630 url('../../assets/themes/previews/christmas-tree.webp?v=20261005-photo') center/cover!important;color:#fff}
+.theme-card--christmas-tree .theme-card__copy{background:#182225e8;color:#f4f7fa}
+.theme-card--christmas-tree-light .theme-card__copy{background:#fffffff0;color:#222c31}
+.theme-picker .theme-pack-sample:is(.theme-card--christmas-tree,.theme-card--christmas-tree-light) .theme-card__copy{background:#614630;color:#fff}

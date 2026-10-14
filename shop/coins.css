@@ -1,0 +1,46 @@
+/* Solid coin gold with a brief animated light glint. */
+#shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{
+  color:#b78120;
+  background:none;-webkit-text-fill-color:currentColor;
+  -webkit-text-stroke:0;
+  filter:drop-shadow(0 1px 0 #fff4ce80);
+  animation:coinAmountShine 8s ease-in-out infinite;
+}
+body.dark :is(#shop-coin-balance,#profile-coin-balance),body.dark .shop-coin-pack>strong{
+  color:#b78120;
+  -webkit-text-stroke:0;filter:drop-shadow(0 1px 1px #0007);
+}
+.shop-coins-button__balance,.profile-coin-card__balance{position:relative}
+.shop-coins-button__balance::after,.profile-coin-card__balance::after,.shop-coin-pack::after{
+  content:'';position:absolute;width:9px;height:9px;right:-4px;top:-3px;
+  background:#e7b445;clip-path:polygon(50% 0,61% 36%,100% 50%,61% 62%,50% 100%,38% 62%,0 50%,38% 36%);
+  pointer-events:none;opacity:0;transform:scale(.3) rotate(-15deg);
+}
+:is(.shop-coins-button,.profile-coin-card):is(:hover,:focus-visible) :is(.shop-coins-button__balance,.profile-coin-card__balance)::after{
+  animation:coinSparkle 1.8s ease-in-out infinite;
+}
+.shop-modal .shop-coin-pack{
+  transition:transform .22s cubic-bezier(.2,.8,.2,1),border-color .22s,box-shadow .22s;
+}
+.shop-modal .shop-coin-pack .shop-coin-pile{transition:translate .28s cubic-bezier(.2,.8,.2,1),scale .28s}
+.shop-modal .shop-coin-pack .shop-coin-pile i{transition:translate .3s,rotate .3s}
+.shop-modal .shop-coin-pack::after{top:24px;left:calc(50% + 54px);right:auto;width:14px;height:14px;background:#e5b743}
+@media(hover:hover){
+  .shop-modal .shop-coin-pack:hover{transform:translateY(-4px);border-color:color-mix(in srgb,#d0a03e 70%,var(--border));box-shadow:0 12px 25px #9c73221a}
+  .shop-modal .shop-coin-pack:hover .shop-coin-pile{translate:0 -7px;scale:1.035}
+  .shop-modal .shop-coin-pack:hover .shop-coin-pile i:nth-child(odd){translate:0 -2px;rotate:-3deg}
+  .shop-modal .shop-coin-pack:hover .shop-coin-pile i:nth-child(even){translate:0 1px;rotate:3deg}
+  .shop-modal .shop-coin-pack:hover::after{animation:coinSparkle 1.8s ease-in-out infinite}
+}
+.shop-modal .shop-coin-pack:focus-within{border-color:#d0a03e;box-shadow:0 5px 16px #9c73221a}
+.shop-modal .shop-coin-pack:focus-within::after{animation:coinSparkle 1.8s ease-in-out infinite}
+@keyframes coinAmountShine{0%,70%,90%,100%{text-shadow:0 0 0 transparent}80%{text-shadow:0 -1px 1px #fff0b8,0 0 7px #f5cd6880}}
+@keyframes coinSparkle{0%,100%{opacity:0;transform:scale(.3) rotate(-15deg)}35%{opacity:.85;transform:scale(1) rotate(12deg)}65%{opacity:.3;transform:scale(.65) rotate(25deg)}}
+@media(prefers-reduced-motion:reduce){
+  #shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{animation:none;text-shadow:none}
+  .shop-modal .shop-coin-pack,.shop-modal .shop-coin-pack .shop-coin-pile,.shop-modal .shop-coin-pack .shop-coin-pile i{transition:none!important;translate:none!important;scale:none!important;rotate:none!important}
+  /* Preserve the existing stack transforms; disable only the added movement. */
+  .shop-modal .shop-coin-pack:hover{transform:none}
+  .shop-coins-button__balance::after,.profile-coin-card__balance::after,.shop-modal .shop-coin-pack::after{animation:none!important;opacity:0}
+}
+@media(forced-colors:active){#shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{background:none;-webkit-text-fill-color:CanvasText;-webkit-text-stroke:0;filter:none;animation:none}}

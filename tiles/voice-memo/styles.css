@@ -1,0 +1,23 @@
+.voicememo-module.tile-modern{width:620px;height:430px;min-width:460px;min-height:350px}
+.voicememo-module.is-recording{padding-bottom:50px}
+.voicememo-module .voicememo-count{font-size:11px!important;font-weight:600;padding:5px 9px;background:var(--tile-soft);border:1px solid var(--tile-line)}
+.voicememo-module .voicememo-recorder{display:block;min-height:0;flex:none;padding:11px 14px;border-radius:14px;background:var(--tile-soft);border-color:var(--tile-line)}
+.voicememo-module .voicememo-recording-status{grid-template-columns:auto 1fr;gap:3px 14px}
+.voicememo-module .voicememo-time{font-size:24px;font-weight:650;grid-row:1/3}
+.voicememo-module .voicememo-wave{height:18px}
+.voicememo-module .voicememo-wave i:nth-child(n){max-height:18px}
+.voicememo-module .voicememo-message{grid-column:2;font-size:11px;font-weight:450;white-space:normal;overflow:visible}
+.voicememo-module .voicememo-record{height:32px}
+.voicememo-module .voicememo-record i{width:9px;height:9px;box-shadow:0 0 0 3px #e45d6418}
+.voicememo-module.is-recording .voicememo-record{background:#fff0f1;border-color:#e6a1a6;color:#993e49}
+.voicememo-module.is-recording .voicememo-record i{background:#c94c5c}
+.voicememo-module .voicememo-list{padding:0 2px 0 0;scrollbar-width:thin}
+.voicememo-module .voicememo-empty{border-style:solid;background:var(--tile-soft);font-weight:450;font-size:13px}
+.voicememo-module .voicememo-item{grid-template-columns:minmax(88px,.45fr) minmax(0,1fr) 28px;min-height:64px;border-radius:14px;background:var(--tile-soft);padding:10px 12px;gap:10px;animation:voice-memo-appear .22s ease}
+.voicememo-module .voicememo-name{width:100%;box-sizing:border-box;border:0;background:transparent;color:inherit;font:600 13px var(--module-font,Inter,sans-serif);padding:3px 0}
+.voicememo-module .voicememo-item>div small{font-size:11px;font-weight:450}
+.voicememo-module .voicememo-remove{border:1px solid var(--tile-line);background:var(--module-bg,#fff);color:inherit;cursor:pointer;transition:background .15s}
+.voicememo-module .voicememo-remove:hover{background:#ffe9eb;color:#a94450;border-color:#e8a8b0}
+@keyframes voice-memo-appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+.voicememo-module .voicememo-header .voicememo-title{font-weight:700;font-size:clamp(19px,3.8cqw,25px);line-height:1.2;letter-spacing:-.025em}
