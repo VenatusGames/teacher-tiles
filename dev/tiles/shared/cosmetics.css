@@ -14,3 +14,7 @@
 
 .theme-picker-pack-heading.theme-picker-pack-locked .theme-pack-stack,.theme-picker-pack-heading.theme-picker-pack-locked:hover .theme-pack-stack{filter:none;opacity:1}
 .collection-pack-lock img{width:17px;height:17px;vertical-align:middle;margin-right:4px}
+
+.halloween-cursor-preview{gap:3%;background:radial-gradient(ellipse at 50% 30%,#fff5df,#f0dfeb)}
+.halloween-cursor-preview img{width:20%;flex-basis:20%;max-height:145px}
+.halloween-cursor-preview:has(img:nth-child(2):last-of-type) img{width:36%;flex-basis:36%}
