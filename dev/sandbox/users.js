@@ -1,4 +1,4 @@
-import {createBulkPatches} from './bulk-patches.js?v=20261013-star';
+import {createBulkPatches} from './bulk-patches.js?v=20261013-remove';
 import {createUsersClient} from './users-cache.js?v=20260926-nicknames';
 import {createUserDetails} from './user-details.js?v=20261013-star';
 export function createUsersPanel(rawCall,getUid=()=>'') {
