@@ -5,7 +5,7 @@ import {createTemplateLibrary} from '../templates/ui.js?v=20260930-title-case';
 import {createInsights} from './insights.js?v=20261012-daily-online';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261013-star';
+import {createUsersPanel} from './users.js?v=20261013-remove';
 import {startSiteActivity} from '../account/site-activity.js';
 import {createCodesPanel} from './codes.js?v=20261012-codes-activity';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
