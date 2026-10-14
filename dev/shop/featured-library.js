@@ -2,15 +2,17 @@
 function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRotate}){
   const root=modal.querySelector('.shop-featured-library');
   const stage=root.querySelector('.shop-library-stage');
+  const showcase=root.querySelector('.shop-library-showcase');
+  const medium=root.querySelector('.shop-library-medium');
   const filters=root.querySelector('.shop-library-filters');
   const counter=root.querySelector('.shop-library-count');
   const pause=root.querySelector('[data-library-pause]');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const compact=matchMedia('(max-width: 650px)');
-  const categories=[['all','All Finds'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['profile-cosmetics','Profiles']];
+  const categories=[['all','All Cosmetics'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['profile-cosmetics','Profiles']];
   const accents={'themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','profile-cosmetics':'#cd91b3'};
   let catalog=[],pool=[],cards=[],index=0,filter='all',timer=0,active=false,inView=false,hover=false,paused=motion.matches;
-  const count=()=>Math.min(compact.matches?6:12,pool.length);
+  const count=()=>Math.min(compact.matches?7:12,pool.length);
   function schedule(){
     clearTimeout(timer);
     if(!active||!inView||hover||paused||motion.matches||document.hidden||root.contains(document.activeElement)||pool.length<=count())return;
@@ -20,19 +22,25 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
     for(const card of cards)unmount(card);
     cards=[];
     const fragment=document.createDocumentFragment();
+    showcase.replaceChildren();
+    medium.replaceChildren();
+    root.classList.toggle('is-single-product',pool.length===1);
     for(let offset=0;offset<count();offset++){
       const source=pool[(index+offset)%pool.length];
       const card=source.cloneNode(true);
       card.hidden=false;card.classList.remove('shop-filter-hidden','is-shop-highlighted','is-purchasing');
       card.classList.add('shop-library-card');
+      card.classList.toggle('shop-library-card--showcase',offset===0);
+      card.classList.toggle('shop-library-card--medium',offset>0&&offset<4);
       card.style.setProperty('--library-accent',accents[source.closest('[data-shop-page]').dataset.shopPage]);
       card.style.setProperty('--library-order',offset);
       card.querySelectorAll('[id]').forEach(node=>{if(!node.closest('svg'))node.removeAttribute('id')});
-      mount(card);cards.push(card);fragment.append(card);
+      mount(card);cards.push(card);
+      if(offset===0)showcase.append(card);else if(offset<4)medium.append(card);else fragment.append(card);
     }
     stage.replaceChildren(fragment);
     sync();
-    counter.textContent=pool.length?`${index+1} / ${pool.length} finds`:'Your collection is complete';
+    counter.textContent=pool.length?`${index+1} / ${pool.length} cosmetics`:'Your collection is complete';
     root.querySelector('.shop-library-empty').hidden=pool.length>0;
     root.querySelectorAll('[data-library-step]').forEach(button=>button.disabled=pool.length<=count());
     pause.disabled=pool.length<=count()||motion.matches;
