@@ -223,7 +223,10 @@
 .shop-modal .shop-banner__slide img{object-fit:fill}
 
 /* The coin action echoes the gold coin holder, with centered vector geometry. */
-.shop-modal .shop-coins-button__plus{box-sizing:border-box;align-self:center;place-items:center;padding:0;line-height:1;background:color-mix(in srgb,var(--surface-solid) 86%,#e8b954);border:1px solid #c392354d;color:#956416;box-shadow:0 1px 2px #8655110d;transition:background .16s,border-color .16s}
+.shop-modal .shop-coins-button__plus{box-sizing:border-box;align-self:center;place-items:center;padding:0;line-height:1;background:color-mix(in srgb,var(--surface-solid) 86%,#e8b954);border:1px solid #c392354d;color:#956416;box-shadow:0 1px 2px #8655110d;opacity:0;transition:opacity .16s,background .16s,border-color .16s}
 .shop-modal .shop-coins-button__plus svg{display:block;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .shop-modal .shop-coins-button:hover .shop-coins-button__plus{background:color-mix(in srgb,var(--surface-solid) 72%,#e8b954);border-color:#c3923580}
 body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5359}
+
+.shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__plus{opacity:1}
+@media(prefers-reduced-motion:reduce){.shop-modal .shop-coins-button__plus{transition:none}}

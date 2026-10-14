@@ -1,3 +1,4 @@
+import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
 import {setupSubscriptionManagement} from './profile/subscription.js?v=20261011-trial-notice';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
@@ -723,6 +724,7 @@ async function callShopFunction(name, data = {}) {
   return (await callable(data)).data || {};
 }
 
+const subscriberCoinNotice=createSubscriberCoinNotice({call:callShopFunction,getUid:()=>currentUser?.uid||"",canShow:()=>!boardLoading});
 let shopAccessCheckedAt=0,shopAccessRequest=null;
 async function ensureShopAccess(){if(!shopAccountState.ready||Date.now()-shopAccessCheckedAt>300000){if(!shopAccessRequest)shopAccessRequest=refreshShopAccount().finally(()=>{shopAccessRequest=null;});await shopAccessRequest;}return shopAccountState;}
 async function refreshShopAccount() {
@@ -745,6 +747,7 @@ async function refreshShopAccount() {
         patchAwards: account.patchAwards || {},
         subscriptionActive: Boolean(account.subscriptionActive)
       });
+      subscriberCoinNotice.update(uid,account.subscriptionCoinNotice,account.coinBalance);
     }
     return account;
   } catch (error) {
@@ -3504,6 +3507,7 @@ async function renderUser(user) {
   const previousUser = currentUser;
   if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
+  subscriberCoinNotice.reset(user?.uid||"");
   currentUser = user || null;window.TeacherTilesProfileFrames?.setUser(user?.uid||'',firestoreSdk,db);if(!user)window.TeacherTilesTheme?.hideBoard();
   window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {
