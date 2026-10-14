@@ -6,7 +6,7 @@
   function prepare(theme){
     if(assets.has(theme))return assets.get(theme).promise;
     const image=new Image(),entry={image,ready:false};assets.set(theme,entry);
-    image.src=theme==='webbed'?'assets/themes/webbed.svg':'assets/themes/haunted-house.png';
+    image.src=theme==='webbed'?'assets/themes/webbed.svg':'assets/themes/haunted-house.webp';
     entry.promise=image.decode().then(()=>{entry.ready=true}).catch(()=>{});
     return entry.promise;
   }
@@ -34,11 +34,11 @@
     }
   }
   // Soft irregular cloud banks are cached, then drift completely on and off screen.
-  const cloud=document.createElement('canvas');cloud.width=900;cloud.height=230;
+  const cloud=document.createElement('canvas');cloud.width=900;cloud.height=360;
   const cg=cloud.getContext('2d');
   for(let i=0;i<65;i++){
-    const x=90+random(i+7)*720,y=95+(random(i+61)-.5)*70,r=35+random(i+111)*65;
-    const grad=cg.createRadialGradient(x,y,0,x,y,r);grad.addColorStop(0,'#a4a6cd17');grad.addColorStop(.5,'#8388b50c');grad.addColorStop(1,'#69769b00');cg.fillStyle=grad;cg.fillRect(x-r,y-r,r*2,r*2);
+    const x=90+random(i+7)*720,y=180+(random(i+61)-.5)*80,r=35+random(i+111)*65;
+    const grad=cg.createRadialGradient(x,y,0,x,y,r);grad.addColorStop(0,'#bfc1dd24');grad.addColorStop(.5,'#969dc619');grad.addColorStop(1,'#69769b00');cg.fillStyle=grad;cg.fillRect(x-r,y-r,r*2,r*2);
   }
   function haunted(g,t){
     const entry=assets.get('haunted-house');
@@ -48,16 +48,16 @@
     }
     g.save();g.globalCompositeOperation='screen';
     for(let i=0;i<4;i++){
-      const width=850+i*90,span=W+width+120,progress=(t*(9+i*2)+i*span/4)%span;
+      const width=850+i*90,span=W+width+120,progress=(t*(25+i*4)+i*span/4)%span;
       const x=i%2?W+60-progress:progress-width-60,y=5+i*55+Math.sin(t*.08+i)*8;
-      g.globalAlpha=.40+i*.08;g.drawImage(cloud,x,y,width,180+i*10);
+      g.globalAlpha=.85+i*.14;g.drawImage(cloud,x,y,width,180+i*10);
     }
     g.globalAlpha=.16;g.drawImage(cloud,((t*8+700)%2400)-800,550,1250,190);g.restore();
     for(let i=0;i<10;i++){
-      const p=(t*(.012+random(i+81)*.008)+random(i+2))%1,x=p*(W+160)-80,y=160+random(i+25)*240+Math.sin(t*.6+i*3.7)*24,s=3.5+random(i+41)*4.5;
+      const p=(t*(.006+random(i+81)*.004)+random(i+2))%1,x=p*(W+160)-80,y=160+random(i+25)*240+Math.sin(t*.6+i*3.7)*24,s=.75+random(i+41)*1.1;
       g.save();g.translate(x,y);g.rotate(Math.sin(t*.65+i)*.16);g.scale(s,s);
       const flap=Math.sin(t*(6+random(i)*2)+i)*.7;
-      g.fillStyle='#090d1d';g.beginPath();g.moveTo(0,-.4);
+      g.fillStyle='#202337';g.beginPath();g.moveTo(0,-.4);
       for(const d of [-1,1]){g.lineTo(d*.4,-1);g.quadraticCurveTo(d*1.6,-1.6-flap,d*3.2,-2.1-flap*2);g.quadraticCurveTo(d*2.7,.3,d*2.1,-.2);g.quadraticCurveTo(d*1.6,.9,d*1.1,.3);g.quadraticCurveTo(d*.6,1.3,0,.8)}g.closePath();g.fill();g.beginPath();g.ellipse(0,0,.38,.9,0,0,TAU);g.fill();g.restore();
     }
   }

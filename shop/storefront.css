@@ -233,23 +233,40 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 
 /* Clickable promotions retain their existing art and carousel controls. */
 .shop-modal .shop-banner-link{position:absolute;inset:0;z-index:2;width:100%;height:100%;padding:0;border:0;border-radius:inherit;background:transparent;cursor:pointer;transition:box-shadow .2s}
-.shop-modal .shop-banner-link:hover{box-shadow:inset 0 0 0 3px #ffffff90}
-.shop-modal .shop-banner-link:focus-visible{outline:3px solid #8062d2;outline-offset:-5px;box-shadow:inset 0 0 0 7px #fff}
+.shop-modal .shop-banner{isolation:isolate;transition:transform .22s ease,box-shadow .22s ease}
+.shop-modal .shop-banner__track,.shop-modal .shop-banner__slide,.shop-halloween-art{border-radius:inherit}
+.shop-modal .shop-banner__slide{overflow:hidden}
+.shop-modal .shop-banner-link:is(:hover,:active){box-shadow:none;background:transparent;transform:none}
+.shop-modal .shop-banner-link::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,#ffffff18,transparent 65%);opacity:0;transition:opacity .22s;pointer-events:none}
+.shop-modal .shop-banner-link[data-shop-banner-target="halloween"]::after{background:linear-gradient(120deg,#ffb45a16,transparent 70%)}
+.shop-modal .shop-banner-link:hover::after{opacity:1}
+.shop-modal .shop-banner:has(.shop-banner__slide.is-active .shop-banner-link:hover){transform:translateY(-2px);box-shadow:0 7px 20px #1e192124}
+.shop-modal .shop-banner-link:focus-visible{outline:2px solid #9574dd;outline-offset:-3px;box-shadow:none}.shop-modal .shop-banner-link[data-shop-banner-target="halloween"]:focus-visible{outline-color:#ffb856}
 .shop-modal .shop-banner__dots{z-index:3}
 .shop-modal .shop-search-trigger{flex:0 0 auto;display:grid;place-items:center;min-width:36px}
 .shop-modal .shop-search-trigger svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .shop-holiday-filter{display:inline-flex;align-items:center;gap:8px;width:max-content;padding:7px 12px;margin:0 0 12px;border:1px solid #cfab8e;border-radius:12px;background:#fff1df;color:#7d411f;font:700 13px inherit;cursor:pointer}
 .shop-holiday-filter[hidden]{display:none}
-.shop-holiday-badge{margin:0 0 7px}
-.shop-halloween-art{position:absolute;inset:0;overflow:hidden;container-type:inline-size;background:radial-gradient(ellipse at 90% 85%,#d9a76e,transparent 60%),linear-gradient(115deg,#e8ddfa,#c7b5e2 58%,#b6add6);color:#362746}
-.shop-halloween-title{position:absolute;left:5.8%;top:24%;z-index:1}
-.shop-halloween-title small{display:block;font-size:1.45cqw;letter-spacing:.18em;font-weight:800;margin-bottom:1.2cqw}
-.shop-halloween-title strong{display:block;font-size:5.4cqw;line-height:1.04;letter-spacing:-.04em;font-weight:900}
-.shop-halloween-cards{position:absolute;left:47%;top:14%;width:47%;height:69%}
-.shop-halloween-card{position:absolute;top:0;width:47%;height:100%;border:.5cqw solid #f8f3ff;border-radius:1.7cqw;background-size:cover;background-position:center;box-shadow:0 1.3cqw 2.2cqw #30214530;overflow:hidden}
-.shop-halloween-card span{position:absolute;bottom:0;left:0;right:0;padding:.9cqw .4cqw;background:#fff0e7ed;text-align:center;font-size:1.3cqw;font-weight:800;white-space:nowrap}
-.shop-halloween-card--webbed{left:0;transform:rotate(-12deg);background-image:url('../assets/themes/webbed.svg')}
-.shop-halloween-card--haunted{left:28%;top:-5%;transform:rotate(3deg);background-image:url('../assets/themes/haunted-house.png')}
-.shop-halloween-card--pumpkin{left:55%;top:7%;transform:rotate(13deg);background-image:url('../assets/themes/pumpkin-orange.svg')}
-.shop-halloween-pumpkin{position:absolute;right:1.5%;bottom:0;width:22%;height:63%;filter:drop-shadow(0 8px 9px #3a1b3c30)}
-@media(prefers-reduced-motion:reduce){.shop-modal .shop-banner-link{transition:none}}
+.shop-modal .shop-product__preview>.shop-holiday-badge{position:absolute;left:12px;bottom:12px;right:auto;top:auto;z-index:1;margin:0;pointer-events:none}
+.shop-halloween-art{position:absolute;inset:0;overflow:hidden;container-type:inline-size;background:radial-gradient(ellipse at 18% 85%,#9c431d 0%,#412015 26%,transparent 59%),radial-gradient(ellipse at 85% 30%,#503021 0%,transparent 55%),#101014;color:#fff3df}
+.shop-halloween-title{position:absolute;left:5.7%;top:10%;z-index:1;width:30%}
+.shop-halloween-title strong{display:block;font-size:4.7cqw;line-height:1.04;letter-spacing:-.04em;font-weight:900;text-shadow:0 2px 15px #0005}
+.shop-halloween-title strong::first-line{color:#ffab48}
+.shop-halloween-web{position:absolute;top:0;left:0;width:21%;height:auto;opacity:.5;pointer-events:none}
+.shop-halloween-web--right{left:auto;right:0;transform:scaleX(-1);width:23%;opacity:.6}
+.shop-halloween-cards{position:absolute;left:39%;top:15%;width:55%;height:63%;display:flex;gap:4%;align-items:stretch}
+.shop-halloween-card{position:relative;flex:1;min-width:0;height:100%;border:.23cqw solid #c98238;border-radius:1.2cqw;background-size:cover;background-position:center;box-shadow:0 1.3cqw 2.2cqw #0009;overflow:hidden;transition:transform .3s ease,border-color .3s ease}
+.shop-halloween-card span{position:absolute;bottom:0;left:0;right:0;padding:1.1cqw .3cqw;background:#1a1110f5;color:#ffdbab;text-align:center;font-size:1.35cqw;line-height:1.2;font-weight:800;white-space:nowrap;border-top:1px solid #e8a75b55}
+.shop-halloween-card--webbed{transform:rotate(-4deg) translateY(3%);background-image:url('../assets/themes/webbed-preview.svg');background-size:100% 100%}
+.shop-halloween-card--haunted{transform:translateY(-3%);background-image:url('../assets/themes/haunted-house.webp')}
+.shop-halloween-card--pumpkin{transform:rotate(4deg) translateY(3%);background-image:url('../assets/themes/pumpkin-orange.webp')}
+.shop-modal .shop-banner__slide .shop-halloween-pumpkin{position:absolute;left:4%;bottom:0;right:auto;width:30%;height:63%;object-fit:contain;filter:drop-shadow(0 8px 12px #0008);transform-origin:50% 80%;transition:transform .4s ease}
+.shop-halloween-cta{position:absolute;right:5%;bottom:5%;display:inline-flex;align-items:center;gap:1.2cqw;padding:1cqw 1.5cqw;border-radius:1cqw;background:linear-gradient(#ffc066,#f3a13f);color:#28170e;box-shadow:inset 0 1px #ffe5af,0 4px 12px #0004;font-size:1.4cqw;font-weight:850}
+.shop-halloween-cta>span{font-size:1.8cqw;line-height:1;transition:translate .25s}
+.shop-banner:has(.shop-banner-link:hover) .shop-halloween-card,.shop-banner:has(.shop-banner-link:focus-visible) .shop-halloween-card{transform:translateY(-4%);border-color:#ffcd81}
+.shop-banner:has(.shop-banner-link:hover) .shop-halloween-pumpkin{transform:rotate(-2deg) translateY(-2%)}
+.shop-banner:has(.shop-banner-link:hover) .shop-halloween-cta>span{translate:3px 0}
+@media(prefers-reduced-motion:reduce){.shop-halloween-card,.shop-modal .shop-banner__slide .shop-halloween-pumpkin,.shop-halloween-cta>span{transition:none;transform:none!important}}
+.shop-modal .shop-global-results .shop-search-result{cursor:pointer}
+.shop-modal .shop-global-results .shop-search-result:focus-visible{outline:3px solid #8062d2;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.shop-modal .shop-banner,.shop-modal .shop-banner-link,.shop-modal .shop-banner-link::after{transition:none;transform:none!important}}
