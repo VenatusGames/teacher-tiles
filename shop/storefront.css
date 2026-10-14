@@ -230,3 +230,26 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 
 .shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__plus{opacity:1}
 @media(prefers-reduced-motion:reduce){.shop-modal .shop-coins-button__plus{transition:none}}
+
+/* Clickable promotions retain their existing art and carousel controls. */
+.shop-modal .shop-banner-link{position:absolute;inset:0;z-index:2;width:100%;height:100%;padding:0;border:0;border-radius:inherit;background:transparent;cursor:pointer;transition:box-shadow .2s}
+.shop-modal .shop-banner-link:hover{box-shadow:inset 0 0 0 3px #ffffff90}
+.shop-modal .shop-banner-link:focus-visible{outline:3px solid #8062d2;outline-offset:-5px;box-shadow:inset 0 0 0 7px #fff}
+.shop-modal .shop-banner__dots{z-index:3}
+.shop-modal .shop-search-trigger{flex:0 0 auto;display:grid;place-items:center;min-width:36px}
+.shop-modal .shop-search-trigger svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.shop-holiday-filter{display:inline-flex;align-items:center;gap:8px;width:max-content;padding:7px 12px;margin:0 0 12px;border:1px solid #cfab8e;border-radius:12px;background:#fff1df;color:#7d411f;font:700 13px inherit;cursor:pointer}
+.shop-holiday-filter[hidden]{display:none}
+.shop-holiday-badge{margin:0 0 7px}
+.shop-halloween-art{position:absolute;inset:0;overflow:hidden;container-type:inline-size;background:radial-gradient(ellipse at 90% 85%,#d9a76e,transparent 60%),linear-gradient(115deg,#e8ddfa,#c7b5e2 58%,#b6add6);color:#362746}
+.shop-halloween-title{position:absolute;left:5.8%;top:24%;z-index:1}
+.shop-halloween-title small{display:block;font-size:1.45cqw;letter-spacing:.18em;font-weight:800;margin-bottom:1.2cqw}
+.shop-halloween-title strong{display:block;font-size:5.4cqw;line-height:1.04;letter-spacing:-.04em;font-weight:900}
+.shop-halloween-cards{position:absolute;left:47%;top:14%;width:47%;height:69%}
+.shop-halloween-card{position:absolute;top:0;width:47%;height:100%;border:.5cqw solid #f8f3ff;border-radius:1.7cqw;background-size:cover;background-position:center;box-shadow:0 1.3cqw 2.2cqw #30214530;overflow:hidden}
+.shop-halloween-card span{position:absolute;bottom:0;left:0;right:0;padding:.9cqw .4cqw;background:#fff0e7ed;text-align:center;font-size:1.3cqw;font-weight:800;white-space:nowrap}
+.shop-halloween-card--webbed{left:0;transform:rotate(-12deg);background-image:url('../assets/themes/webbed.svg')}
+.shop-halloween-card--haunted{left:28%;top:-5%;transform:rotate(3deg);background-image:url('../assets/themes/haunted-house.png')}
+.shop-halloween-card--pumpkin{left:55%;top:7%;transform:rotate(13deg);background-image:url('../assets/themes/pumpkin-orange.svg')}
+.shop-halloween-pumpkin{position:absolute;right:1.5%;bottom:0;width:22%;height:63%;filter:drop-shadow(0 8px 9px #3a1b3c30)}
+@media(prefers-reduced-motion:reduce){.shop-modal .shop-banner-link{transition:none}}

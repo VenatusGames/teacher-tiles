@@ -1,3 +1,19 @@
+// Ambiguous 12-hour times choose the next AM or PM occurrence in local time.
+function timerUntilTarget(value,now=new Date()){
+  const match=/^(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)?$/i.exec(String(value||'').trim());
+  if(!match)return null;
+  const hours=Number(match[1]),minutes=Number(match[2]||0),period=match[3]?.[0].toLowerCase();
+  if(minutes>59||hours>23||(period&&(hours<1||hours>12)))return null;
+  const candidates=period?[hours%12+(period==='p'?12:0)]:hours>=1&&hours<=12?[hours%12,hours%12+12]:[hours];
+  const targets=candidates.map(hour=>{
+    const target=new Date(now);
+    target.setHours(hour,minutes,0,0);
+    if(target<=now)target.setDate(target.getDate()+1);
+    return target;
+  });
+  return new Date(Math.min(...targets.map(target=>target.getTime())));
+}
+
 function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!layer)return;layer.innerHTML='';const colors=['#ff6b7a','#ffd34e','#69c6ff','#7edc8b','#9d7cff','#ff9c5a'];for(let i=0;i<54;i++){const p=document.createElement('i');p.className='confetti-piece';const a=Math.random()*Math.PI*2,d=90+Math.random()*230;p.style.setProperty('--x',`${Math.cos(a)*d}px`);p.style.setProperty('--y',`${Math.sin(a)*d-50}px`);p.style.setProperty('--r',`${Math.round(Math.random()*760-380)}deg`);p.style.setProperty('--confetti',colors[i%colors.length]);p.style.width=`${6+Math.random()*5}px`;p.style.height=`${8+Math.random()*10}px`;p.style.animationDelay=`${Math.random()*.12}s`;layer.appendChild(p)}setTimeout(()=>layer.innerHTML='',1700)}
 
 function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
@@ -68,23 +84,16 @@ function bindTimerControls(m,onRender,{onFinish}={}){
     }
     render();
   };
-  const secondsUntil=value=>{
-    const match=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));
-    if(!match)return 0;
-    const hours=Number(match[1]),minutes=Number(match[2]);
-    if(hours>23||minutes>59)return 0;
-    const now=new Date();
-    const target=new Date(now);
-    target.setHours(hours,minutes,0,0);
-    if(target.getTime()<=now.getTime())target.setDate(target.getDate()+1);
-    return Math.max(1,Math.round((target.getTime()-now.getTime())/1000));
-  };
   const applyUntil=()=>{
-    const seconds=secondsUntil(untilInput?.value);
-    if(!seconds)return false;
+    const now=new Date(),target=timerUntilTarget(untilInput?.value,now);
+    untilInput?.setCustomValidity(target?'':'Enter a time such as 3:30 or 3:30 PM.');
+    if(!target){untilInput?.reportValidity();return false}
+    const seconds=Math.max(1,Math.round((target-now)/1000));
+    untilInput.value=target.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     if(input)input.value='';
     return setDurationSeconds(seconds);
   };
+  untilInput?.addEventListener('input',()=>untilInput.setCustomValidity(''));
 
   addButtons.forEach(button=>button.addEventListener('click',()=>addTime(button.dataset.addSeconds)));
   clear?.addEventListener('click',()=>{
