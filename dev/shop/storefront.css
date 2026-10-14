@@ -1,3 +1,4 @@
+@font-face{font-family:TT Halloween;src:url("../assets/fonts/creepster/Creepster-Regular.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
 /* Shop surfaces share the board's type, soft edges and restrained motion. */
 .shop-modal{font-family:var(--site-font-family,Inter,system-ui,sans-serif)}
 .shop-modal .shop-panel{width:min(1240px,96vw);border-radius:24px;background:var(--surface-solid)}
@@ -249,8 +250,8 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-holiday-filter[hidden]{display:none}
 .shop-modal .shop-product__preview>.shop-holiday-badge{position:absolute;left:12px;bottom:12px;right:auto;top:auto;z-index:1;margin:0;pointer-events:none}
 .shop-halloween-art{position:absolute;inset:0;overflow:hidden;container-type:inline-size;background:radial-gradient(ellipse at 18% 85%,#9c431d 0%,#412015 26%,transparent 59%),radial-gradient(ellipse at 85% 30%,#503021 0%,transparent 55%),#101014;color:#fff3df}
-.shop-halloween-title{position:absolute;left:5.7%;top:10%;z-index:1;width:30%}
-.shop-halloween-title strong{display:block;font-size:4.7cqw;line-height:1.04;letter-spacing:-.04em;font-weight:900;text-shadow:0 2px 15px #0005}
+.shop-halloween-title{position:absolute;left:5.1%;top:7%;z-index:1;width:32%}
+.shop-halloween-title strong{display:block;font-family:"TT Halloween",fantasy;font-size:6.5cqw;line-height:.98;letter-spacing:.005em;font-weight:400;text-shadow:0 3px 0 #301306,0 5px 16px #0009}
 .shop-halloween-title strong::first-line{color:#ffab48}
 .shop-halloween-web{position:absolute;top:0;left:0;width:21%;height:auto;opacity:.5;pointer-events:none}
 .shop-halloween-web--right{left:auto;right:0;transform:scaleX(-1);width:23%;opacity:.6}
