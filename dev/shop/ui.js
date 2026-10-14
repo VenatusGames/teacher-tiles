@@ -7,14 +7,14 @@ function setupTeacherTilesShop(){
   setupShopExtras(modal);
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
-  shopHome.querySelectorAll('.shop-featured-section').forEach(section=>shopHome.append(section));
+  shopHome.append(shopHome.querySelector('.shop-featured-library'));
   const landing=document.createElement('div');landing.className='shop-landing';
   const promotions=document.createElement('div');promotions.className='shop-promotions';
   const discovery=document.createElement('div');discovery.className='shop-discovery';
   promotions.append(shopHome.querySelector('.shop-banner'),shopHome.querySelector('.shop-membership-grid'));
   discovery.append(shopHome.querySelector('.shop-home-heading'),shopHome.querySelector('[data-shop-browser]'),shopHome.querySelector('.shop-category-grid'));
-  const explore=document.createElement('button');explore.type='button';explore.className='shop-explore-packs';explore.innerHTML='Explore Featured Packs <span aria-hidden="true">↓</span>';
-  explore.addEventListener('click',()=>shopHome.querySelector('.shop-featured-section:not([hidden])')?.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'}));
+  const explore=document.createElement('button');explore.type='button';explore.className='shop-explore-packs';explore.innerHTML='Explore the Featured Library <span aria-hidden="true">↓</span>';
+  explore.addEventListener('click',()=>shopHome.querySelector('.shop-featured-library')?.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'}));
   discovery.append(explore);landing.append(promotions,discovery);shopHome.prepend(landing);
   const navigation=document.createElement('nav');navigation.className='shop-navigation';navigation.setAttribute('aria-label','Shop collections');
   navigation.innerHTML='<button type="button" data-shop-open-page="home" aria-label="Shop home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></svg></button>'+[['themes','Themes'],['stickers','Stickers'],['tile-skins','Tile Skins'],['cursors','Cursors']].map(([page,label])=>`<button type="button" data-shop-open-page="${page}">${label}</button>`).join('');
@@ -43,24 +43,6 @@ function setupTeacherTilesShop(){
     input.placeholder='Search '+name.replaceAll('-',' ');input.setAttribute('aria-label','Search '+name.replaceAll('-',' '));
     page.querySelector('.shop-page-heading').after(toolbar);
   }
-  const previousFeatured=new Map();
-  function refreshFeatured(){
-    const owned=getOwnedShopProducts();
-    for(const [group,pages] of Object.entries({themes:['themes'],skins:['tile-skins'],extras:['stickers','cursors'],planners:['planner-skins']})){
-      const container=modal.querySelector('[data-featured-section="'+group+'"]');
-      for(const card of [...container.children]){const index=products.indexOf(card);if(index>=0)products.splice(index,1)}
-      container.replaceChildren();
-      const previous=previousFeatured.get(group)||new Set();
-      const pool=pages.flatMap(page=>[...modal.querySelectorAll('[data-shop-page="'+page+'"] [data-shop-product]')]).filter(card=>!owned.has(card.dataset.shopProduct)&&(group!=='planners'||card.classList.contains('shop-product--planner-skin')));
-      // Shuffle, then prefer products absent from the last opening.
-      for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
-      pool.sort((a,b)=>Number(previous.has(a.dataset.shopProduct))-Number(previous.has(b.dataset.shopProduct)));
-      const selected=pool.slice(0,3);
-      previousFeatured.set(group,new Set(selected.map(card=>card.dataset.shopProduct)));
-      container.closest('.shop-featured-section').hidden=!selected.length;
-      for(const source of selected){const card=source.cloneNode(true);bindProduct(card);products.push(card);container.append(card)}
-    }
-  }
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
@@ -77,6 +59,12 @@ function setupTeacherTilesShop(){
   const banners=[...modal.querySelectorAll('[data-shop-banner]')];
   const dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
   const products=[...modal.querySelectorAll('[data-shop-product]')];
+  const catalogProducts=[...products];
+  const featuredLibrary=createShopFeaturedLibrary({modal,sources:catalogProducts,
+    mount:card=>{bindProduct(card);products.push(card)},
+    unmount:card=>{const index=products.indexOf(card);if(index>=0)products.splice(index,1)},
+    sync:()=>syncProducts(),canRotate:()=>!productPopup&&!redeemDialog.open&&(!coinMenu||coinMenu.hidden)
+  });
   const redeemForm=document.getElementById('shop-redeem-form');
   const redeemInput=document.getElementById('shop-redeem-code');
   const redeemStatus=document.getElementById('shop-redeem-status');
@@ -188,7 +176,7 @@ function setupTeacherTilesShop(){
       const mode=sort.value;
       const tileType=filter?.value||'all';
       if(pageName==='home'&&terms.length){
-        const matched=products.filter(item=>terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term))).sort((a,b)=>{
+        const matched=catalogProducts.filter(item=>terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
           if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
           if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
@@ -381,6 +369,7 @@ function setupTeacherTilesShop(){
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
+    featuredLibrary.setActive(name==='home'&&!modal.hidden);
     navigation.querySelectorAll('button').forEach(button=>{if(button.dataset.shopOpenPage===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
     pages.forEach(page=>{
       const active=page.dataset.shopPage===name;
@@ -433,7 +422,7 @@ function setupTeacherTilesShop(){
     toggle.setAttribute('aria-expanded','true');
     showPage('home');
     modal.querySelector('.shop-content').scrollTop=0;
-    refreshFeatured();
+    featuredLibrary.refresh();
     syncShop();
     syncStickerShopPackCounts();
     showBanner(bannerIndex,false);
@@ -442,6 +431,7 @@ function setupTeacherTilesShop(){
     close.focus({preventScroll:true});
   }
   function closeShop(){
+    featuredLibrary.setActive(false);
     if(redeemDialog.open)redeemDialog.close();
     closeProduct();
     closeCoins(false);

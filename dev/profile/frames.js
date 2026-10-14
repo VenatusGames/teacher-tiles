@@ -31,7 +31,7 @@
   button.addEventListener('click',()=>{
     if(closeDrawer){closeDrawer(true);return;}
     const drawer=document.createElement('section');drawer.className='tile-skins-drawer profile-frames-drawer';drawer.setAttribute('popover','manual');drawer.setAttribute('role','dialog');drawer.setAttribute('aria-label','Profile Frames');
-    drawer.innerHTML='<header><strong>Profile Frames</strong><button type="button" aria-label="Close Profile Frames">×</button></header><p class="profile-frames-hint">Your frames, ready to wear.</p><div class="tile-skins-drawer-grid"></div><p class="profile-frames-status" role="status"></p><button type="button" class="profile-frames-shop">Browse Profile Cosmetics →</button>';
+    drawer.innerHTML='<header><strong>Profile Frames</strong><button type="button" aria-label="Close Profile Frames">×</button></header><div class="tile-skins-drawer-grid"></div><p class="profile-frames-status" role="status"></p><button type="button" class="profile-frames-shop">Browse Profile Cosmetics →</button>';
     document.body.append(drawer);drawer.showPopover();button.setAttribute('aria-expanded','true');
     const events=new AbortController(),status=drawer.querySelector('[role=status]');status.textContent=message;
     const close=(focus=false)=>{events.abort();drawer.remove();button.setAttribute('aria-expanded','false');closeDrawer=null;if(focus)button.focus({preventScroll:true});};closeDrawer=close;
