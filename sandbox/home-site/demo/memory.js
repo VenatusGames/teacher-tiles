@@ -1,0 +1,7 @@
+// This runs before any app code. No real browser storage is read or written.
+(()=>{const storage=()=>{const data=new Map();return {getItem:k=>data.get(String(k))??null,setItem:(k,v)=>data.set(String(k),String(v)),removeItem:k=>data.delete(String(k)),clear:()=>data.clear(),key:i=>[...data.keys()][i]??null,get length(){return data.size}}};
+for(const key of ['localStorage','sessionStorage'])Object.defineProperty(window,key,{value:storage(),configurable:false});
+Object.defineProperty(window,'indexedDB',{value:undefined,configurable:false});
+localStorage.setItem('teachertiles-class-rosters-v1:local',JSON.stringify([{id:'demo-class',name:'Our Class',students:['Alex','Avery','Charlie','Jordan','Morgan','Riley','Sam','Taylor'],starChart:{studentStars:{Alex:4,Avery:3,Charlie:5,Jordan:2,Morgan:4,Riley:3,Sam:2,Taylor:5}},classMeter:{fill:65,wins:2}}]));
+const date=new Date().toLocaleDateString('en-CA');localStorage.setItem('teachertiles-lesson-planner-v1',JSON.stringify([{id:'reading',label:'Reading Workshop',date,start:'09:00',end:'09:45',description:'Read together, discuss the big idea, and write a response.'},{id:'math',label:'Math Groups',date,start:'10:00',end:'10:45',description:'Build numbers with manipulatives. Practice and share strategies.'},{id:'science',label:'Science Exploration',date,start:'11:00',end:'11:45',description:'Observe, ask questions, and record what you discover.'}]));
+})();
