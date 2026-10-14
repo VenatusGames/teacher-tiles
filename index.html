@@ -81,9 +81,10 @@
 <link rel="stylesheet" href="shop/storefront.css?v=20261013-frames">
 <link rel="stylesheet" href="tiles/lesson-planner/skins.css?v=20261012-group-hover">
 <link rel="stylesheet" href="profile/subscriber-name.css?v=20261013-subscriber-names">
-<link rel="stylesheet" href="profile/new-patches.css?v=20261013-new-patches">
-<link rel="stylesheet" href="profile/frames.css?v=20261013-patterns">
+<link rel="stylesheet" href="profile/new-patches.css?v=20261013-rose">
+<link rel="stylesheet" href="profile/frames.css?v=20261013-compact">
 <link rel="stylesheet" href="shop/extras.css?v=20261013-short-tabs">
+<link rel="stylesheet" href="shop/featured-library.css?v=20261013-library">
 <link rel="stylesheet" href="shop/coins.css?v=20261012-stamped-gold">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
 <link rel="stylesheet" href="tiles/calculator/skins.css?v=20261012-calculator-choices">
@@ -1502,10 +1503,13 @@
             </div>
           </div>
 
-          <section class="shop-featured-section" aria-label="Featured Themes"><header><div><h2>Featured Themes</h2><p>A fresh backdrop for your classroom.</p></div><button type="button" data-shop-open-page="themes">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="themes"></div></section>
-<section class="shop-featured-section" aria-label="Featured Tile Skins"><header><div><h2>Featured Tile Skins</h2><p>Give your everyday tools a new look.</p></div><button type="button" data-shop-open-page="tile-skins">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="skins"></div></section>
-<section class="shop-featured-section" aria-label="Stickers & Cursors"><header><div><h2>Stickers & Cursors</h2><p>Small touches that make your board your own.</p></div><button type="button" data-shop-open-page="stickers">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="extras"></div></section>
-<section class="shop-featured-section" aria-label="Featured Planner Skins"><header><div><h2>Featured Planner Skins</h2><p>A fresh cover for your planning shelf.</p></div><button type="button" data-shop-open-page="planner-skins">Browse all →</button></header><div class="shop-product-grid shop-featured-grid" data-featured-section="planners"></div></section>
+          <section class="shop-featured-library" aria-labelledby="shop-library-title" aria-roledescription="carousel">
+            <header class="shop-library-heading"><div><span class="shop-library-eyebrow">MAKE IT YOURS</span><h2 id="shop-library-title">Featured Library</h2><p>Find a new favorite for your board, planner, or profile.</p></div><div class="shop-library-controls"><button type="button" data-library-pause aria-label="Pause featured rotation" aria-pressed="false"></button><button type="button" data-library-step="-1" aria-label="Previous featured cosmetics"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" data-library-step="1" aria-label="Next featured cosmetics"><svg viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></svg></button></div></header>
+            <div class="shop-library-filters" role="group" aria-label="Featured cosmetic categories"></div>
+            <div class="shop-library-stage"></div>
+            <p class="shop-library-empty" hidden>You've collected every cosmetic in this category. Explore another collection above.</p>
+            <footer><span>Little details. A classroom that feels like you.</span><span class="shop-library-count"></span></footer>
+          </section>
 <div class="shop-home-heading">
             <div><span data-i18n="shop.kicker">MAKE IT YOURS</span><h2 data-i18n="shop.customize">Customize your board</h2></div>
             <p data-i18n="shop.browse">Browse visual packs made for TeacherTiles.</p>
@@ -4546,9 +4550,10 @@
 <script src="tiles/lesson-planner/skins.js?v=20261012-group-hover"></script>
 <script src="profile/frames-art.js?v=20261013-frame-performance"></script>
 <script src="profile/frames-catalog.js?v=20261013-frame-performance"></script>
-<script src="profile/frames.js?v=20261013-patterns"></script>
+<script src="profile/frames.js?v=20261013-compact"></script>
 <script src="shop/extras.js?v=20261013-frame-polish"></script>
-<script src="shop/ui.js?v=20261013-short-tabs"></script>
+<script src="shop/featured-library.js?v=20261013-library"></script>
+<script src="shop/ui.js?v=20261013-library"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
 <script src="app.js?v=20261012-tile-management"></script>
@@ -4556,8 +4561,8 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261012-skin-colors"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261013-new-patches"></script>
-<script type="module" src="profile/patches.js?v=20261013-new-patches"></script>
+<script type="module" src="firebase-auth.js?v=20261013-star"></script>
+<script type="module" src="profile/patches.js?v=20261013-star"></script>
 
 
   <template id="ruler-template">

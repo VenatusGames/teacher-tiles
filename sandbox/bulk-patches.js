@@ -1,4 +1,4 @@
-import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261013-new-patches';
+import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261013-star';
 export function createBulkPatches(root,call,selected,onComplete,startSelection=()=>{}){
  root.innerHTML=`<div><h3>Bulk Patch Awards</h3></div><div class="bulk-patch-controls"><select aria-label="Bulk patch"><option value="">Choose a patch…</option>${manualPatchOptions.map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select><select aria-label="Award audience"><option value="selected">Selected Users</option><option value="all">All Users</option></select><button class="primary" disabled>Review Award</button></div><div class="bulk-selection"><span>0 selected</span><button class="quiet" data-page type="button">Select Loaded Users</button><button class="quiet" data-clear type="button">Clear Selection</button></div>`;
  const menu=document.createElement('div');menu.id='bulk-patch-menu';menu.className='bulk-patch-menu';menu.setAttribute('popover','auto');menu.setAttribute('role','dialog');menu.setAttribute('aria-label','Bulk patch controls');
