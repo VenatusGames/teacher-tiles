@@ -16465,7 +16465,8 @@ body.boards-screen-open .board-frame-menu{display:none!important}
   and embedded frames from retaining a visible cursor while the board is idle.
   Capture-phase activity listeners in app.js remove the idle state immediately.
 */
-body.is-board-idle::before{
+body.is-board-idle::before,
+body.is-board-idle #fullscreen-idle-cursor-shield{
   content:"";
   position:fixed;
   inset:0;

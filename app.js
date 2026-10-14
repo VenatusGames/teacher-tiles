@@ -1765,6 +1765,18 @@ if(document.readyState==='loading'){
 (() => {
   const IDLE_DELAY=10000;
   let idleTimer=0;
+  // Native fullscreen sits above the body's idle shield. Keep a shield inside
+  // that top-layer element too, including over embedded content and controls.
+  const fullscreenIdleShield=document.createElement('div');
+  fullscreenIdleShield.id='fullscreen-idle-cursor-shield';
+  fullscreenIdleShield.setAttribute('aria-hidden','true');
+  const syncFullscreenIdleShield=()=>{
+    const target=document.fullscreenElement;
+    if(document.body.classList.contains('is-board-idle')&&target&&target!==document.documentElement&&target!==document.body){
+      if(fullscreenIdleShield.parentElement!==target)target.append(fullscreenIdleShield);
+    }else fullscreenIdleShield.remove();
+  };
+  document.addEventListener('fullscreenchange',syncFullscreenIdleShield);
 
   const clearIdleTimer=()=>{
     if(idleTimer)clearTimeout(idleTimer);
@@ -1777,6 +1789,7 @@ if(document.readyState==='loading'){
   const wake=()=>{
     clearIdleTimer();
     document.body.classList.remove('is-board-idle');
+    fullscreenIdleShield.remove();
     clearIdleModuleState();
   };
   const enterIdle=()=>{
@@ -1794,6 +1807,7 @@ if(document.readyState==='loading'){
       module.classList.add('is-idle-unhovered');
     }
     document.body.classList.add('is-board-idle');
+    syncFullscreenIdleShield();
   };
   const arm=()=>{
     clearIdleTimer();
@@ -1833,3 +1847,6 @@ window.addEventListener('teachertiles:collectionpreferences',()=>{
   }
   applyMenuView();renderMenuCategoryPins();
 });
+
+// Keep the original catalog elements, including those currently hidden or cloned.
+window.TeacherTilesTileMenu = {element:menu, items:menuItems, refresh(){applyMenuView();renderMenuCategoryPins();}};

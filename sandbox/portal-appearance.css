@@ -29,7 +29,7 @@
 .account-strip{padding:0 3px 23px;gap:10px}.verified-icon{width:28px;height:28px;font-size:12px}.account-strip strong{font-size:12px}.account-strip div>span{display:inline;font-size:11px;color:var(--portal-muted)}.role-chip{border:1px solid #d9e5f6;background:#edf3fc;font-size:10px}
 #developer-insights{margin:0 0 28px}.insights-header{gap:16px;margin:0 0 16px}.insights-header h2,.trend-heading h2{font-size:19px;font-weight:650;letter-spacing:-.4px;margin:0 0 5px}.insights-header p,.trend-heading p{font-size:12px;color:var(--portal-muted);line-height:1.6}
 #insights-refresh{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0}#insights-refresh svg{width:16px;height:16px}
-.insight-cards{gap:14px;grid-template-columns:repeat(4,minmax(0,1fr))}.insight-card{--metric:#2f8773;--tint:#e9f5ef;min-width:0;min-height:222px;padding:21px 20px 18px;border-radius:18px;border:1px solid var(--portal-line);background:#fff;box-shadow:var(--portal-shadow);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
+.insight-cards{gap:14px;grid-template-columns:repeat(5,minmax(0,1fr))}.insight-card{--metric:#2f8773;--tint:#e9f5ef;min-width:0;min-height:222px;padding:21px 20px 18px;border-radius:18px;border:1px solid var(--portal-line);background:#fff;box-shadow:var(--portal-shadow);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
 .insight-subscribers{--metric:#967020;--tint:#fff4d8}.insight-approvals{--metric:#7861ba;--tint:#f0ebfc}.insight-bugs{--metric:#ba6550;--tint:#fff0e9}
 .insight-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.insight-card .insight-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;color:var(--metric);background:var(--tint);flex-shrink:0}.insight-icon svg{width:22px;height:22px}.insight-subscribers .insight-icon svg{width:28px;height:28px}
 .insight-caption{font-size:10px;color:var(--metric);font-weight:600}.insight-card h3{margin:17px 0 7px;font-size:13px;font-weight:550;color:#5f6f85;line-height:1.4}
@@ -107,3 +107,16 @@
 .developer-portal :is(.template-dialog,.template-library) .template-approve:hover{background:#d8efdf;color:#245f40;border-color:#a8cbb7}
 .developer-portal .ticket-thread .ticket-thread-delete-confirm{background:#bd3348;border-color:#bd3348;color:white}
 .developer-portal .ticket-thread .ticket-thread-delete-confirm:hover{background:#a5263a;color:white;border-color:#a5263a}
+
+.insight-active-day{--metric:#527abe;--tint:#edf2fc}
+
+/* Compact membership selectors stay in the header, clear of the metrics. */
+#developer-insights .membership-tabs{display:inline-flex;align-items:center;align-self:center;flex-shrink:0;width:max-content;margin:0;padding:2px;gap:1px;border:1px solid #e3e6ea;border-radius:8px;background:#f1f3f6}
+#developer-insights .membership-tabs button{min-height:24px;min-width:0;padding:2px 7px;font-size:10px;line-height:18px;border-radius:5px;font-weight:500;letter-spacing:0}
+#developer-insights .membership-tabs button:hover{transform:none}
+.membership-chart-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px 12px;width:100%}
+.membership-chart-heading h3{margin:0}
+.membership-chart-heading p{grid-column:1/-1}
+.trend-card-heading:has(.membership-trend-tabs){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px}
+.trend-card-heading:has(.membership-trend-tabs)>:first-child{grid-row:1/3}
+#developer-insights .membership-trend-tabs{grid-column:2;justify-self:end}

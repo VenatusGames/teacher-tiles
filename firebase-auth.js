@@ -1,11 +1,12 @@
-import {setupSubscriptionManagement} from './profile/subscription.js?v=20261010';
+import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
+import {setupSubscriptionManagement} from './profile/subscription.js?v=20261011-trial-notice';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261008-tiles';
-import {createTemplateLibrary} from './templates/ui.js?v=20261010-gallery-loading';
-import {syncAwardedPatches} from './profile/awards.js?v=20260930-single-inspector';
+import {createTemplateLibrary} from './templates/ui.js?v=20261013-subscriber-names';
+import {syncAwardedPatches} from './profile/awards.js?v=20261013-star-inset';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -664,6 +665,8 @@ function syncProfileBadgeCount() {
 
 function syncSubscriberMarks(state = shopAccountState) {
   const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive));
+  profileDisplayName?.classList.toggle("subscriber-name-shine",active);
+  document.getElementById("profile-nickname")?.classList.toggle("subscriber-name-shine",active);
   if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
   if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
   toggle?.classList.toggle("is-subscriber", active);
@@ -721,6 +724,7 @@ async function callShopFunction(name, data = {}) {
   return (await callable(data)).data || {};
 }
 
+const subscriberCoinNotice=createSubscriberCoinNotice({call:callShopFunction,getUid:()=>currentUser?.uid||"",canShow:()=>!boardLoading});
 let shopAccessCheckedAt=0,shopAccessRequest=null;
 async function ensureShopAccess(){if(!shopAccountState.ready||Date.now()-shopAccessCheckedAt>300000){if(!shopAccessRequest)shopAccessRequest=refreshShopAccount().finally(()=>{shopAccessRequest=null;});await shopAccessRequest;}return shopAccountState;}
 async function refreshShopAccount() {
@@ -743,6 +747,7 @@ async function refreshShopAccount() {
         patchAwards: account.patchAwards || {},
         subscriptionActive: Boolean(account.subscriptionActive)
       });
+      subscriberCoinNotice.update(uid,account.subscriptionCoinNotice,account.coinBalance);
     }
     return account;
   } catch (error) {
@@ -3502,7 +3507,8 @@ async function renderUser(user) {
   const previousUser = currentUser;
   if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
-  currentUser = user || null;if(!user)window.TeacherTilesTheme?.hideBoard();
+  subscriberCoinNotice.reset(user?.uid||"");
+  currentUser = user || null;window.TeacherTilesProfileFrames?.setUser(user?.uid||'',firestoreSdk,db);if(!user)window.TeacherTilesTheme?.hideBoard();
   window.dispatchEvent(new CustomEvent("teachertiles:authchange", { detail: { userId: currentUser?.uid || "" } }));
   if (!user && previousUser?.uid) {
     try {
@@ -4060,14 +4066,19 @@ window.TeacherTilesAccount = {
     const returnUrl = new URL(window.location.href);
     returnUrl.hash = "";
     returnUrl.searchParams.delete("tt_checkout");
+    returnUrl.searchParams.delete("tt_checkout_kind");
     const result = await callShopFunction("createCoinCheckoutSession", { packId, returnUrl: returnUrl.href });
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;
   },
   async createSubscriptionCheckout(priceId) {
+    if (shopAccountState.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive) {
+      throw new Error("Your subscription is already active.");
+    }
     const returnUrl = new URL(window.location.href);
     returnUrl.hash = "";
     returnUrl.searchParams.delete("tt_checkout");
+    returnUrl.searchParams.set("tt_checkout_kind", "membership");
     const result = await callShopFunction("createSubscriptionCheckoutSession", { priceId, returnUrl: returnUrl.href });
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;

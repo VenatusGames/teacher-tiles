@@ -8,12 +8,18 @@ function setupABC(m){
   const uppercase='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const lowercase='abcdefghijklmnopqrstuvwxyz'.split('');
   const settings=document.createElement('div');settings.className='tile-settings-wrap';
-  settings.innerHTML='<button type="button" class="custom-icon tile-settings-toggle" aria-label="ABC Settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>ABC Settings</strong><label class="tile-setting">Red Vowels<input type="checkbox" role="switch" class="abc-red-vowels" checked></label></div>';
+  settings.innerHTML='<button type="button" class="custom-icon tile-settings-toggle" aria-label="ABC Settings" aria-expanded="false">⚙</button><div class="tile-settings-panel" hidden><strong>ABC Settings</strong><div class="tile-settings-switch-row"><span>Red Vowels</span><button type="button" role="switch" class="tile-settings-switch abc-red-vowels" aria-label="Red Vowels" aria-checked="true"><i aria-hidden="true"></i></button></div></div>';
   m.querySelector('.customization-bar').append(settings);
   bindGeneratedTileSettings(m,settings.querySelector('.tile-settings-toggle'),settings.querySelector('.tile-settings-panel'));
-  const vowelToggle=settings.querySelector('input');
-  vowelToggle.checked=m.dataset.redVowels!=='false';
-  vowelToggle.addEventListener('change',()=>{m.dataset.redVowels=String(vowelToggle.checked);letterEl.classList.toggle('is-vowel',vowelToggle.checked&&vowels.has(current.toLowerCase()));notifyBoardChanged('abc-vowels')});
+  const vowelToggle=settings.querySelector('.abc-red-vowels');
+  vowelToggle.setAttribute('aria-checked',String(m.dataset.redVowels!=='false'));
+  vowelToggle.addEventListener('click',()=>{
+    const enabled=m.dataset.redVowels==='false';
+    m.dataset.redVowels=String(enabled);
+    vowelToggle.setAttribute('aria-checked',String(enabled));
+    letterEl.classList.toggle('is-vowel',enabled&&vowels.has(current.toLowerCase()));
+    notifyBoardChanged('abc-vowels');
+  });
   const vowels=new Set(['a','e','i','o','u','y']);
 
   const modeNames={
@@ -159,7 +165,7 @@ function setupABC(m){
   });
   m._boardSetState=state=>{
     if(!state)return;
-    m.dataset.redVowels=String(state.redVowels??(m.dataset.redVowels!=='false'));vowelToggle.checked=m.dataset.redVowels!=='false';
+    m.dataset.redVowels=String(state.redVowels??(m.dataset.redVowels!=='false'));vowelToggle.setAttribute('aria-checked',String(m.dataset.redVowels!=='false'));
     const mode=state.mode in modeNames?state.mode:'uppercase';
     m.dataset.abcMode=mode;
     modeSelect.value=mode;
