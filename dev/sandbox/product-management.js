@@ -17,14 +17,19 @@ export function createProductManagementPanel(call){
   let rows=tab==='products'?catalog.map(effective):tab==='bundles'?Object.entries(config.bundles).map(([id,p])=>({id,...p})):tab==='sales'?Object.entries(config.sales||{}).map(([id,s])=>({id,...s})):defaultBanners.filter(b=>!(config.banners.removed||[]).includes(b.id)).map(b=>({...b,disabled:config.banners.hidden.includes(b.id)})).concat(config.banners.custom.map(b=>({...b,disabled:b.active===false})));
   rows=rows.filter(p=>(tab!=='products'||!category.value||group(p.id)===category.value)&&`${p.name||p.title} ${p.id} ${p.description||''}`.toLowerCase().includes(search.value.trim().toLowerCase()));
   status.textContent=`${rows.length} ${tab==='banners'?'Banners':tab==='bundles'?'Bundles':tab==='sales'?'Sales':'Cosmetics'}`;
-  for(const p of rows){const card=el(['banners','sales'].includes(tab)?'article':'button','pm-card');if(!['banners','sales'].includes(tab))card.type='button';card.dataset.productId=p.id;
+  for(const p of rows){const card=el(['banners','sales','bundles'].includes(tab)?'article':'button','pm-card');if(!['banners','sales','bundles'].includes(tab))card.type='button';card.dataset.productId=p.id;
    if(tab==='banners'){const preview=el('div','pm-banner-preview');if(p.art)preview.append(p.art.cloneNode(true));else{const img=el('img');img.src=p.url;img.alt=p.title;preview.append(img)}card.append(preview);card.append(el('strong','',p.title));const controls=el('div','pm-banner-controls'),label=el('label','pm-banner-active'),toggle=el('input');toggle.type='checkbox';toggle.setAttribute('role','switch');toggle.checked=!p.disabled;toggle.setAttribute('aria-label',`Active: ${p.title}`);toggle.onchange=()=>bannerToggle(p,toggle.checked);label.append(toggle,document.createTextNode(p.disabled?'Inactive':'Active'));const remove=el('button','quiet','Remove');remove.type='button';remove.onclick=()=>bannerRemove(p);controls.append(label,remove);card.append(controls)}
    else if(tab==='sales'){
     const active=p.endsAt>Date.now();card.classList.add('pm-sale-card');card.append(el('span','pm-badge',active?'Active':'Ended'),el('strong','',p.name),el('p','',`${Object.keys(p.prices).length} Products · ${active?'Ends':'Ended'} ${new Date(p.endsAt).toLocaleString()}`));
     const actions=el('div','pm-sale-actions'),editButton=el('button','quiet',active?'Edit Sale':'Restart Sale');editButton.type='button';editButton.onclick=()=>editSale(p);actions.append(editButton);
     if(active){const end=el('button','quiet','End Sale');end.type='button';end.onclick=()=>endSale(p);actions.append(end)}card.append(actions);
    }
-   else{card.append(el('strong','',p.name),el('span','pm-price',`${live(p)?p.sale.price:p.price} Coins`),el('p','',p.description??defaults.get(p.id)?.description??'Default Shop Description'));if(live(p))card.append(el('span','pm-badge',`Sale Ends ${new Date(p.sale.endsAt).toLocaleDateString()}`));if(p.active===false)card.append(el('span','pm-badge','Hidden'));card.onclick=()=>edit(p,tab==='bundles')}
+   else{card.append(el('strong','',p.name),el('span','pm-price',`${live(p)?p.sale.price:p.price} Coins`),el('p','',p.description??defaults.get(p.id)?.description??'Default Shop Description'));if(live(p))card.append(el('span','pm-badge',`Sale Ends ${new Date(p.sale.endsAt).toLocaleDateString()}`));if(p.active===false)card.append(el('span','pm-badge','Hidden'));if(tab==='bundles'){
+    card.classList.add('pm-bundle-card');
+    const actions=el('div','pm-bundle-actions'),editButton=el('button','quiet','Edit Bundle'),remove=el('button','quiet pm-bundle-delete','Delete Bundle');
+    editButton.type=remove.type='button';editButton.onclick=()=>{if(!busy)edit(p,true)};remove.onclick=()=>deleteBundle(p);actions.append(editButton,remove);card.append(actions);
+    card.onclick=e=>{if(!busy&&!e.target.closest('button'))edit(p,true)};
+   }else card.onclick=()=>{if(!busy)edit(p,false)}}
    grid.append(card);
   }
  }
@@ -62,6 +67,13 @@ export function createProductManagementPanel(call){
   const choices=[...catalog.map(effective),...Object.entries(config.bundles).map(([id,b])=>({id,...b}))];
   mountPicker(createProductPicker({products:choices,selected,sale:true}));
   saveAction=()=>{if(!selected.size)throw Error('Choose at least one product.');for(const [id,amount] of selected){const regular=choices.find(c=>c.id===id)?.price;if(!Number.isSafeInteger(amount)||amount<1||amount>=regular)throw Error('Every selected product needs a sale price below its regular price.');}return {action:'saveSale',id:p.id||`sale-${crypto.randomUUID()}`,expectedRevision:revision,name:form.elements.name.value,prices:Object.fromEntries(selected),...(days.value?{saleDays:Number(days.value)}:{})}};
+ }
+ async function deleteBundle(p){
+  if(busy||!confirm(`Delete “${p.name}”? This removes the bundle from the shop and any sales. Customers keep cosmetics they already own.`))return;
+  busy=true;const token=epoch;grid.querySelectorAll('.pm-bundle-actions button').forEach(b=>b.disabled=true);status.textContent='Deleting Bundle…';
+  try{const next=await request({action:'deleteBundle',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render();status.textContent='Bundle Deleted.'}
+  catch(e){if(token===epoch){render();status.textContent=e.message||'Unable to delete this bundle.'}}
+  finally{if(token===epoch)busy=false}
  }
  async function endSale(p){if(busy||!confirm(`End “${p.name}” and restore regular prices?`))return;busy=true;const token=epoch;try{const next=await request({action:'endSale',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render()}catch(e){if(token===epoch)status.textContent=e.message}finally{if(token===epoch)busy=false}}
  async function bannerToggle(b,enabled){if(busy){render();return}busy=true;const token=epoch;try{const next=await request({action:'setBannerEnabled',id:b.id,enabled,expectedRevision:config.revision});if(token!==epoch)return;config=next;render()}catch(e){if(token===epoch){render();status.textContent=e.message}}finally{if(token===epoch)busy=false}}

@@ -1,5 +1,5 @@
 import {createSplashScreensPanel} from './splash-screens.js';
-import {createProductManagementPanel} from './product-management.js?v=20261015-picker';
+import {createProductManagementPanel} from './product-management.js?v=20261015-bundle-actions';
 import {createTileManagementPanel} from './tile-management.js?v=20261013-description';
 import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
