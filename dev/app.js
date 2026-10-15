@@ -31,6 +31,7 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
   defaultViewSize:100,
   language:'en',
   disableTileSnapping:false,
+  defaultSplashOnly:false,
   alwaysShowTileDeleteButtons:false
 });
 
