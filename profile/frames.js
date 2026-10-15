@@ -7,7 +7,7 @@
   const cacheKey=id=>'teachertiles.profile-frame.v1.'+id;
   const normalize=id=>frames.find(id)?id:'';
   const account=()=>window.TeacherTilesAccount?.state;
-  const accessible=frame=>!frame||Boolean(account()?.ready&&account()?.userId===uid&&(account().ownedProductIds?.includes(frame.productId)||account().subscriptionActive));
+  const accessible=frame=>!frame||Boolean(account()?.ready&&account()?.userId===uid&&(account().ownedProductIds?.includes(frame.productId)||account().subscriptionActive||account().subscriptionOverride));
   const equipped=()=>accessible(frames.find(selected))?selected:'';
   function render(){frames.decorate(card,uid?equipped():'');button.disabled=!uid||loading||saving;}
   async function read(){

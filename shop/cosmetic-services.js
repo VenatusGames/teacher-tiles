@@ -18,7 +18,7 @@ function migrateLegacyCursorOwnership(){
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 
-function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive)}
+function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive||state?.subscriptionOverride)}
 
 function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().has(product)||hasCosmeticSubscription()}
 

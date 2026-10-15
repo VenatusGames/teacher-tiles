@@ -1,4 +1,4 @@
-import './cosmetics-policy.js?v=20260927-board-recovery-2';
+import './cosmetics-policy.js?v=20261014-subscription-override';
 const catalog=await fetch(new URL('./cosmetics-catalog.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Cosmetic catalog could not load.');return r.json();});
 export const boardCosmetics=globalThis.TeacherTilesCosmeticsPolicy.policy(catalog);
 
@@ -35,7 +35,7 @@ function openShopShell(){
  const toggle=document.getElementById('shop-toggle');if(toggle){toggle.click();return true}
  return false;
 }
-function accountHasSubscription(account={}){return account.subscriptionActive===true||account.subscriptionStatus==='active'||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true)}
+function accountHasSubscription(account={}){return account.subscriptionActive===true||account.subscriptionOverride===true||account.subscriptionStatus==='active'||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true)}
 function unresolvedRequirements(requirements,account={}){
  if(accountHasSubscription(account))return[];
  const owned=new Set(account.ownedProductIds||[]);
