@@ -552,6 +552,7 @@ function createAdditionalStickerPackUi(){
       button.className=`theme-pack sticker-pack ${isImagePack?'sticker-pack--image-collection':'sticker-pack--emoji sticker-pack--emoji-collection'}${pack.category==='learning'?' sticker-pack--text':''}`;
       button.type='button';
       button.dataset.stickerPack='';
+      if(pack.holiday)button.dataset.holiday=pack.holiday;
       button.setAttribute('aria-expanded','false');
       button.setAttribute('aria-controls',`${pack.id}-sticker-drawer`);
       const stack=document.createElement('span');
@@ -599,6 +600,7 @@ function createAdditionalStickerPackUi(){
       article.className='shop-product';
       article.dataset.shopProduct=pack.productId;
       article.dataset.shopPrice=String(pack.price);
+      if(pack.holiday)article.dataset.shopHoliday=pack.holiday;
       const preview=document.createElement('div');
       preview.className=`shop-product__preview ${isImagePack?'shop-product__preview--image-stickers':'shop-product__preview--emoji'}${pack.category==='learning'?' shop-product__preview--text-stickers':''}`;
       preview.setAttribute('aria-hidden','true');
