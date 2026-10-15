@@ -114,11 +114,29 @@ function setupChangelog(){
       }
 
       content.replaceChildren();
-      for(const entry of valid){
+      let target=content;
+      let nav;
+      if(!isNews){
+        content.classList.add('updates-browser');
+        nav=document.createElement('nav');nav.className='updates-index';nav.setAttribute('aria-label','Update Versions');
+        target=document.createElement('div');target.className='updates-entries';content.append(nav,target);
+      }
+      for(const [index,entry] of valid.entries()){
+
         const article=document.createElement('article');
         article.className='changelog-entry';
         article.innerHTML=renderMarkdown(entry.text);
-        content.append(article);
+        target.append(article);
+        if(nav){
+          article.id=`update-entry-${index}`;
+          const label=entry.file.split(/[\\/]/).pop().replace(/\.md$/i,'');
+          const version=label.match(/\d+(?:\.\d+){2,}/)?.[0].split('.').map(Number);
+          const tier=version&&version.slice(2).every(n=>n===0)?(version[1]===0?'major':'minor'):'patch';
+          const button=document.createElement('button');button.type='button';button.className=`update-bubble update-bubble--${tier}`;button.textContent=label;
+          button.title=`${tier[0].toUpperCase()+tier.slice(1)} Release`;button.setAttribute('aria-controls',article.id);
+          button.onclick=()=>{article.scrollIntoView({behavior:'instant',block:'start'});nav.querySelectorAll('button').forEach(b=>b.removeAttribute('aria-current'));button.setAttribute('aria-current','true')};
+          nav.append(button);
+        }
       }
 
       loaded[kind]=true;
