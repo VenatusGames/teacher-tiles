@@ -4089,8 +4089,8 @@ window.TeacherTilesAccount = {
     if (!result.url) throw new Error("Stripe Checkout did not return a payment page.");
     return result;
   },
-  async purchase(productId) {
-    const result = await callShopFunction("purchaseCosmetic", { productId });
+  async purchase(productId, expectedPrice) {
+    const result = await callShopFunction("purchaseCosmetic", { productId, ...(Number.isSafeInteger(expectedPrice)?{expectedPrice}:{}) });
     await refreshShopAccount();
     return result;
   },

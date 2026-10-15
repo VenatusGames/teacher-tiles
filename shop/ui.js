@@ -67,8 +67,8 @@ function setupTeacherTilesShop(){
   const coinCelebrationAmount=document.getElementById('shop-coin-celebration-amount');
   const coinCelebrationBalance=document.getElementById('shop-coin-celebration-balance');
   const coinCelebrationClose=document.getElementById('shop-coin-celebration-close');
-  const banners=[...modal.querySelectorAll('[data-shop-banner]')];
-  const dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
+  let banners=[...modal.querySelectorAll('[data-shop-banner]')];
+  let dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
   const products=[...modal.querySelectorAll('[data-shop-product]')];
   const catalogProducts=[...products];
   const featuredLibrary=createShopFeaturedLibrary({modal,sources:catalogProducts,
@@ -275,7 +275,7 @@ function setupTeacherTilesShop(){
     const state=accountState();
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
-      const isOwned=owned.has(card.dataset.shopProduct);
+      const isOwned=card.dataset.bundleItems?JSON.parse(card.dataset.bundleItems).every(id=>owned.has(id)):owned.has(card.dataset.shopProduct);
       markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
       const button=card.querySelector('[data-shop-buy]');
@@ -427,7 +427,15 @@ function setupTeacherTilesShop(){
     setTimeout(()=>{coinMenu.hidden=true;if(!modal.hidden)startBannerTimer()},reduceMotion?0:220);
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
+  let managedShop;
+  const managedReady=import('./managed-shop.js').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>render())},replaceBanners:slides=>{
+    stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
+    track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
+    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
+    modal.querySelector('.shop-banner').hidden=!slides.length;showBanner(0);startBannerTimer();
+  }});if(!modal.hidden)return managedShop.refresh()}).catch(error=>console.warn('Shop management could not initialize',error));
   function openShop(){
+    void managedReady.then(()=>managedShop?.refresh());
     lastFocus=document.activeElement;
     const shelf=document.getElementById('asset-shelf');
     if(shelf?.classList.contains('is-open'))document.getElementById('asset-shelf-close')?.click();
@@ -484,10 +492,11 @@ function setupTeacherTilesShop(){
     if(!window.TeacherTilesAccount?.purchase){showToast('The secure shop is still loading.');return}
     card.classList.add('is-purchasing');syncProducts();
     try{
-      const result=await window.TeacherTilesAccount.purchase(id);
+      const result=await window.TeacherTilesAccount.purchase(id,Number(card.dataset.shopPrice));
       syncShop();
       showToast(result.alreadyOwned?'This pack is already owned.':`${card.querySelector('h3')?.textContent||'Pack'} added to your collection.`);
     }catch(error){
+      if(error?.details?.reason==='price-changed')void managedShop?.refresh(true);
       const shortfall=Number(error?.details?.shortfall);
       if(Number.isFinite(shortfall)&&shortfall>0){showToast(`You need ${shortfall.toLocaleString()} more coins.`);setTimeout(openCoins,260)}
       else showToast(errorMessage(error,'The purchase could not be completed.'));
