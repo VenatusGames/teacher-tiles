@@ -32,7 +32,16 @@ export function setupSubscriptionManagement(call,getUserId,getSubscriptionAccess
   const resetConfirmation=()=>{selected=null;confirm.hidden=true;};
   const setBusy=value=>{busy=value;dialog.setAttribute('aria-busy',String(value));dialog.querySelectorAll('[data-cancel-subscription],[data-confirm],[data-keep],[data-refresh]').forEach(button=>button.disabled=value);};
   const node=(tag,className,text)=>{const element=document.createElement(tag);if(className)element.className=className;if(text!==undefined)element.textContent=text;return element;};
+  const gifted=()=>window.TeacherTilesAccount?.state?.subscriptionOverride===true;
+  function renderGift(){
+    resultData=null;details.replaceChildren();resetConfirmation();say('');setBusy(false);
+    dialog.querySelector('footer').hidden=true;
+    const card=node('section','subscription-empty subscription-gift');
+    card.append(node('h3','','You have been gifted a subscription by TeacherTiles! Lucky you!'));details.append(card);
+  }
   function render(result){
+    if(gifted()){renderGift();return}
+    dialog.querySelector('footer').hidden=false;
     resultData=result;details.replaceChildren();resetConfirmation();
     if(!result.subscriptions?.length){
       const dev=window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true;
@@ -69,7 +78,9 @@ export function setupSubscriptionManagement(call,getUserId,getSubscriptionAccess
     }
   }
   async function load(){
-    const token=++generation;resetConfirmation();details.replaceChildren();setBusy(true);say('Loading subscription details…');
+    const token=++generation;resetConfirmation();details.replaceChildren();
+    if(gifted()){renderGift();return}
+    dialog.querySelector('footer').hidden=false;setBusy(true);say('Loading subscription details…');
     try{const result=await call('getSubscriptionDetails');if(valid(token)){render(result);say('')}}
     catch(error){if(valid(token))say(error.message||'Unable to load subscription details. Please try again.',true)}
     finally{if(valid(token))setBusy(false)}
@@ -80,6 +91,7 @@ export function setupSubscriptionManagement(call,getUserId,getSubscriptionAccess
   dialog.addEventListener('close',()=>{generation++;owner='';resultData=null;resetConfirmation();details.replaceChildren();say('');setBusy(false)});
   window.addEventListener('teachertiles:authchange',()=>{if(dialog.open&&getUserId()!==owner)dialog.close()});
   refresh.addEventListener('click',load);
+  window.addEventListener('teachertiles:accountchange',()=>{if(dialog.open){if(owner!==getUserId())dialog.close();else load()}});
   dialog.querySelector('[data-keep]').addEventListener('click',()=>{const id=selected?.id;resetConfirmation();[...details.querySelectorAll('[data-cancel-subscription]')].find(b=>b.dataset.cancelSubscription===id)?.focus()});
   dialog.querySelector('[data-confirm]').addEventListener('click',async()=>{
     if(busy||!selected||owner!==getUserId())return;

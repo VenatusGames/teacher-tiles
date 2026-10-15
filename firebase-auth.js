@@ -1,5 +1,5 @@
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
-import {setupSubscriptionManagement} from './profile/subscription.js?v=20261011-trial-notice';
+import {setupSubscriptionManagement} from './profile/subscription.js?v=20261015-gift';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261014-subscription-override';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
