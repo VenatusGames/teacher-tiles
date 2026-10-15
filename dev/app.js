@@ -901,6 +901,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({"id": "richtext-clear", "productId": "tile-skin-richtext-clear", "tileType": "richtext", "tileLabel": "Rich Text", "name": "No Background", "description": "Your formatted document floats directly on the board with no tile shell.", "tags": "Rich Text No Background transparent clear floating text document", "released": 27}),
   Object.freeze({id:'spinner-carnival',productId:'tile-skin-spinner-carnival',tileType:'spinner',tileLabel:'Spinner',name:'Carnival Spinner',description:'A colorful carnival wheel with golden trim and chasing lights on every segment.',tags:'spinner carnival fairground wheel lights marquee names',released:42}),
   Object.freeze({id:'popsicle-gumball',productId:'tile-skin-popsicle-gumball',tileType:'popsiclesticks',tileLabel:'Popsicle Sticks',name:'Gumball Machine',description:'Turn the handle and dispense a colorful gumball with a student’s name.',tags:'popsicle sticks gumball machine candy student name picker',released:44}),
+  Object.freeze({id:'pumpkinpatch-graveyard',tileType:'pumpkinpatch',tileLabel:'Pumpkin Patch',name:'Graveyard',description:'Moonlit pumpkins, old gravestones, and drifting fog.',free:true,preview:'tiles/halloween/assets/pumpkin-3.png'}),
   Object.freeze({id:'lavalamp-neon',productId:'tile-skin-lavalamp-neon',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'Neon',description:'Electric colors and a soft neon glow.',tags:'lava lamp neon electric bright glowing',released:45}),
   Object.freeze({id:'lavalamp-clear',productId:'tile-skin-lavalamp-clear',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'No Background',description:'A glowing lava lamp floating directly on your board.',tags:'lava lamp clear transparent no background',released:43}),
   Object.freeze({id:'spinner-clear',productId:'tile-skin-spinner-clear',tileType:'spinner',tileLabel:'Spinner',name:'No Background',description:'A colorful spinning wheel floating directly on your board.',tags:'spinner wheel clear transparent no background names',released:41}),
@@ -1076,16 +1077,16 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
-  'timer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
+  'timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
   'flyswat','quietcritters','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
-  squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
   rainbowbreath:'Rainbow Breath',meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
 const TILE_AUDIO_HOSTS=Object.freeze({
-  timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
+  halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
   money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
   rainbowbreath:'.meditation-controls',meditation:'.meditation-controls',robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
 });
@@ -1126,7 +1127,9 @@ function setupModuleByType(m,type){
   if(type==='link')window.TeacherTilesLink.setup(m);
   if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover','boombox'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
-  if(type==='timer')setupTimer(m);
+  if(type==='timer'||type==='halloweentimer')setupTimer(m);
+  if(type==='pumpkincarving')window.TeacherTilesPumpkinCarving.setup(m);
+  if(type==='pumpkinpatch')window.TeacherTilesPumpkinPatch.setup(m);
   if(type==='interactive')setupHourglass(m);
   if(type==='clock')setupClock(m);
   if(type==='stopwatch')setupStopwatch(m);
@@ -1315,6 +1318,7 @@ const EDITABLE_TILE_HEADINGS={
   countdown:'.countdown-heading',
   tenssticks:'.tens-heading',
   lavalamp:'.lava-heading',
+  pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',
