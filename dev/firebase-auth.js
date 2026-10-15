@@ -1,7 +1,7 @@
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
 import {setupSubscriptionManagement} from './profile/subscription.js?v=20261011-trial-notice';
 import {createTicketNotifications} from './support/notifications.js';
-import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20260926-membership';
+import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261014-subscription-override';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261008-tiles';
@@ -176,7 +176,8 @@ const shopAccountState = {
   signedIn: false,
   coinBalance: 0,
   ownedProductIds: [],
-  subscriptionActive: false
+  subscriptionActive: false,
+  subscriptionOverride: false
 };
 
 const boardApi = () => window.TeacherTilesBoard || null;
@@ -665,11 +666,12 @@ function syncProfileBadgeCount() {
 
 function syncSubscriberMarks(state = shopAccountState) {
   const active = Boolean(state?.signedIn && (state?.subscriptionActive || window.TeacherTilesAccount?.state.subscriptionActive));
-  profileDisplayName?.classList.toggle("subscriber-name-shine",active);
-  document.getElementById("profile-nickname")?.classList.toggle("subscriber-name-shine",active);
-  if (launchSubscriberCrown) launchSubscriberCrown.hidden = !active;
-  if (profileSubscriberCrown) profileSubscriberCrown.hidden = !active;
-  toggle?.classList.toggle("is-subscriber", active);
+  const entitled = Boolean(active || state?.subscriptionOverride || window.TeacherTilesAccount?.state.subscriptionOverride);
+  profileDisplayName?.classList.toggle("subscriber-name-shine",entitled);
+  document.getElementById("profile-nickname")?.classList.toggle("subscriber-name-shine",entitled);
+  if (launchSubscriberCrown) launchSubscriberCrown.hidden = !entitled;
+  if (profileSubscriberCrown) profileSubscriberCrown.hidden = !entitled;
+  toggle?.classList.toggle("is-subscriber", entitled);
   if (profileSubscriberBadge) {
     profileSubscriberBadge.classList.toggle("profile-badge--locked", !active);
 
@@ -712,7 +714,8 @@ function publishShopAccount(patch = {}) {
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
-      subscriptionActive: Boolean(shopAccountState.subscriptionActive)
+      subscriptionActive: Boolean(shopAccountState.subscriptionActive),
+      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride)
     }
   }));
 }
@@ -729,7 +732,7 @@ let shopAccessCheckedAt=0,shopAccessRequest=null;
 async function ensureShopAccess(){if(!shopAccountState.ready||Date.now()-shopAccessCheckedAt>300000){if(!shopAccessRequest)shopAccessRequest=refreshShopAccount().finally(()=>{shopAccessRequest=null;});await shopAccessRequest;}return shopAccountState;}
 async function refreshShopAccount() {
   if (!currentUser) {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false });
     return { ...shopAccountState };
   }
 
@@ -745,7 +748,8 @@ async function refreshShopAccount() {
         coinBalance: account.coinBalance,
         ownedProductIds: account.ownedProductIds,
         patchAwards: account.patchAwards || {},
-        subscriptionActive: Boolean(account.subscriptionActive)
+        subscriptionActive: Boolean(account.subscriptionActive),
+        subscriptionOverride: Boolean(account.subscriptionOverride)
       });
       subscriberCoinNotice.update(uid,account.subscriptionCoinNotice,account.coinBalance);
     }
@@ -757,14 +761,15 @@ async function refreshShopAccount() {
 }
 
 function applyReturnedShopAccount(result) {
-  if (result && ("coinBalance" in result || "ownedProductIds" in result || "subscriptionActive" in result)) {
+  if (result && ("coinBalance" in result || "ownedProductIds" in result || "subscriptionActive" in result || "subscriptionOverride" in result)) {
     publishShopAccount({
       ready: true,
       loading: false,
       signedIn: Boolean(currentUser),
       coinBalance: result.coinBalance,
       ownedProductIds: result.ownedProductIds,
-      subscriptionActive: "subscriptionActive" in result ? Boolean(result.subscriptionActive) : shopAccountState.subscriptionActive
+      subscriptionActive: "subscriptionActive" in result ? Boolean(result.subscriptionActive) : shopAccountState.subscriptionActive,
+      subscriptionOverride: "subscriptionOverride" in result ? Boolean(result.subscriptionOverride) : shopAccountState.subscriptionOverride
     });
   }
   return result;
@@ -3043,7 +3048,7 @@ function showBoardLimitPopup() {
   popup.querySelector(".board-limit-popup__close")?.focus({ preventScroll: true });
 }
 
-function membershipBoardLimit(){return shopAccountState.subscriptionActive||window.TeacherTilesAccount?.state.subscriptionActive?20:2}
+function membershipBoardLimit(){const state=window.TeacherTilesAccount?.state||{};return shopAccountState.subscriptionActive||shopAccountState.subscriptionOverride||state.subscriptionActive||state.subscriptionOverride?20:2}
 
 async function createBlankBoard({ skipSave = false, closeView = true } = {}) {
   if (!currentUser || !firestoreSdk || !db) return;
@@ -3505,7 +3510,7 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
-  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
+  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false,subscriptionOverride:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
   subscriberCoinNotice.reset(user?.uid||"");
   currentUser = user || null;window.TeacherTilesProfileFrames?.setUser(user?.uid||'',firestoreSdk,db);if(!user)window.TeacherTilesTheme?.hideBoard();
@@ -3601,7 +3606,7 @@ async function renderUser(user) {
       await initializeBoardsForUser(user);
     }
   } else {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false });
     clearTimeout(localBoardSaveTimer);
     clearAllCloudBoardSaveTimers();
     activeBoardId = "";
@@ -4055,7 +4060,8 @@ window.TeacherTilesAccount = {
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
-      subscriptionActive: Boolean(shopAccountState.subscriptionActive)
+      subscriptionActive: Boolean(shopAccountState.subscriptionActive),
+      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride)
     };
   },
   owns(productId) {
