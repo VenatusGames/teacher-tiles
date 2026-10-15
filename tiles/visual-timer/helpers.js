@@ -42,7 +42,7 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   const clear=m.querySelector('.timer-clear');
   const start=m.querySelector('.timer-start');
   const reset=m.querySelector('.timer-reset');
-  const initialSeconds=m.dataset.type==='timer'?0:300;
+  const initialSeconds=m.classList.contains('timer-module')?0:300;
   let total=initialSeconds,left=initialSeconds,running=false,end=0,interval=null,finished=false;
 
   const renderFinishTime=window.TeacherTilesTimerFinish.setup(m);

@@ -44,3 +44,12 @@ body.dark :is(#shop-coin-balance,#profile-coin-balance),body.dark .shop-coin-pac
   .shop-coins-button__balance::after,.profile-coin-card__balance::after,.shop-modal .shop-coin-pack::after{animation:none!important;opacity:0}
 }
 @media(forced-colors:active){#shop-coin-balance,#profile-coin-balance,.shop-modal .shop-coin-pack>strong{background:none;-webkit-text-fill-color:CanvasText;-webkit-text-stroke:0;filter:none;animation:none}}
+
+.profile-panel__header-actions .profile-coin-card{display:flex;align-items:center;justify-content:flex-start;gap:7px}
+.profile-panel__header-actions .profile-coin-card__copy{flex:1;transition:transform .16s ease}
+.profile-panel__header-actions .profile-coin-card__balance{justify-content:flex-start}
+.profile-coin-plus{display:grid;place-items:center;flex:0 0 23px;width:23px;height:23px;border-radius:7px;background:color-mix(in srgb,var(--surface-solid) 86%,#e8b954);border:1px solid #c392354d;color:#956416;opacity:0;transform:translateX(3px);transition:opacity .16s,transform .16s}
+.profile-coin-plus svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.profile-coin-card:is(:hover,:focus-visible) .profile-coin-plus{opacity:1;transform:none}
+.profile-panel__header-actions .profile-coin-card:is(:hover,:focus-visible) .profile-coin-card__copy{transform:translateX(-3px)}
+@media(prefers-reduced-motion:reduce){.profile-panel__header-actions .profile-coin-card__copy,.profile-coin-plus{transition:none}}

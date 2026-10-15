@@ -1,3 +1,4 @@
+import '../tiles/halloween/shared.js?v=20261015';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
@@ -6,7 +7,7 @@ import '../tiles/lava-lamp/index.js?v=20261012-skins';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20261002-pack';
+import {renderTimerPreview} from './timer-preview.js?v=20261015-halloween';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -22,6 +23,7 @@ const EDITABLE_TILE_HEADINGS={
   glitterjar:'.glitter-jar-heading',
   tenssticks:'.tens-heading',
   lavalamp:'.lava-heading',
+  pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',
   piano:'.widget-title',
   musicscore:'.widget-title',
   vocabulary:'.widget-title',
@@ -465,7 +467,8 @@ function applyPreviewState(module, state) {
   if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);
   if(state.type==='lavalamp'){window.TeacherTilesLavaLamp.render(module,state.special||{});module.querySelector('.lava-heading').classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
-  if (state.type === 'timer' || state.type === 'interactive') {
+  if(window.TeacherTilesHalloween?.types.has(state.type))window.TeacherTilesHalloween.preview(module,state,new URL('../',import.meta.url));
+  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
   }
