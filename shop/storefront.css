@@ -224,12 +224,12 @@
 .shop-modal .shop-banner__slide img{object-fit:fill}
 
 /* The coin action echoes the gold coin holder, with centered vector geometry. */
-.shop-modal .shop-coins-button__plus{box-sizing:border-box;align-self:center;place-items:center;padding:0;line-height:1;background:color-mix(in srgb,var(--surface-solid) 86%,#e8b954);border:1px solid #c392354d;color:#956416;box-shadow:0 1px 2px #8655110d;opacity:0;transition:opacity .16s,background .16s,border-color .16s}
+.shop-modal .shop-coins-button__plus{box-sizing:border-box;align-self:center;place-items:center;padding:0;line-height:1;background:color-mix(in srgb,var(--surface-solid) 86%,#e8b954);border:1px solid #c392354d;color:#956416;box-shadow:0 1px 2px #8655110d;opacity:0;transform:translateX(3px);transition:opacity .16s,transform .16s,background .16s,border-color .16s}
 .shop-modal .shop-coins-button__plus svg{display:block;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .shop-modal .shop-coins-button:hover .shop-coins-button__plus{background:color-mix(in srgb,var(--surface-solid) 72%,#e8b954);border-color:#c3923580}
 body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5359}
 
-.shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__plus{opacity:1}
+.shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__plus{opacity:1;transform:translateX(0)}
 @media(prefers-reduced-motion:reduce){.shop-modal .shop-coins-button__plus{transition:none}}
 
 /* Clickable promotions retain their existing art and carousel controls. */
@@ -288,3 +288,10 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(3){left:33%;bottom:19%;transform:rotate(-12deg)}
 .shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(4){left:64%;top:64%;width:12%;height:25%;transform:rotate(-8deg)}
 .shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(5){left:77%;top:64%;width:12%;height:25%;transform:rotate(8deg)}
+
+/* Keep the balance anchored to the left, with a small nudge for the hover action. */
+.shop-modal .shop-coins-button{justify-content:flex-start}
+.shop-modal .shop-coins-button__balance{justify-content:flex-start}
+.shop-modal .shop-coins-button__copy{transition:transform .16s ease}
+.shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__copy{transform:translateX(-3px)}
+@media(prefers-reduced-motion:reduce){.shop-modal .shop-coins-button__copy{transition:none}}

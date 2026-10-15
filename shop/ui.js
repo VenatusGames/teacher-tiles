@@ -54,6 +54,10 @@ function setupTeacherTilesShop(){
     input.placeholder='Search '+name.replaceAll('-',' ');input.setAttribute('aria-label','Search '+name.replaceAll('-',' '));
     page.querySelector('.shop-page-heading').after(toolbar);
   }
+  const dealsButton=document.createElement('button');dealsButton.type='button';dealsButton.className='shop-deals-trigger';dealsButton.dataset.shopOpenPage='sales-bundles';dealsButton.textContent='Sales & Bundles';dealsButton.hidden=true;navigation.insertBefore(dealsButton,redeemTrigger);
+  const dealsPage=document.createElement('section');dealsPage.className='shop-page';dealsPage.dataset.shopPage='sales-bundles';dealsPage.hidden=true;
+  dealsPage.innerHTML='<div class="shop-page-heading"><button type="button" class="shop-back" data-shop-open-page="home" aria-label="Back to Shop Home">←</button><h2>Sales &amp; Bundles</h2></div><div data-deals-mount></div><p data-deals-empty hidden>No sales or bundles are available right now.</p>';
+  modal.querySelector('.shop-content').append(dealsPage);
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
@@ -383,6 +387,7 @@ function setupTeacherTilesShop(){
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
+    managedShop?.setPage(name);
     featuredLibrary.setActive(name==='home'&&!modal.hidden);
     navigation.querySelectorAll('button').forEach(button=>{if(button.dataset.shopOpenPage===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
     pages.forEach(page=>{
@@ -428,7 +433,7 @@ function setupTeacherTilesShop(){
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
   let managedShop;
-  const managedReady=import('./managed-shop.js').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>render())},replaceBanners:slides=>{
+  const managedReady=import('./managed-shop.js?v=20261015-deals-nav').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>render())},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
     slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
