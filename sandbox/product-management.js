@@ -1,3 +1,4 @@
+import {createProductPicker} from './product-picker.js?v=20261015-picker';
 import {readShopCatalog} from '../shop/catalog-reader.js';
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
 const group=id=>id.startsWith('profile-frame')?'Profile Cosmetics':id.startsWith('planner-')?'Planner Skins':id.startsWith('theme-')?'Themes':id.startsWith('sticker-')?'Stickers':id.startsWith('cursor-')?'Cursors':'Tile Skins';
@@ -8,7 +9,7 @@ export function createProductManagementPanel(call){
  for(const name of ['Themes','Tile Skins','Stickers','Cursors','Planner Skins','Profile Cosmetics']){const o=el('option','',name);o.value=name;category.append(o)}
  let config,catalog=[],defaults=new Map(),defaultBanners=[],tab='products',loaded=false,busy=false,epoch=0,saveAction=null;
  const request=async data=>{const r=await call('developerProductManagement',data);return r?.data??r};
- const effective=p=>({...p,...config.products[p.id],description:config.products[p.id]?.description??defaults.get(p.id)?.description??p.description??''});
+ const effective=p=>({...p,...config.products[p.id],tags:defaults.get(p.id)?.tags||'',description:config.products[p.id]?.description??defaults.get(p.id)?.description??p.description??''});
  const live=p=>p.sale&&p.sale.endsAt>Date.now()&&p.sale.startsAt<=Date.now();
  function render(){
   grid.replaceChildren();add.hidden=tab==='products';add.textContent=tab==='bundles'?'Create Bundle':tab==='sales'?'Create Sale':'Upload Banner';category.hidden=tab!=='products';search.placeholder=tab==='banners'?'Search Banners':tab==='sales'?'Search Sales':'Search Products';
@@ -33,7 +34,8 @@ export function createProductManagementPanel(call){
  }catch(e){if(token===epoch)status.textContent=e.message||'Unable to load products.'}finally{if(token===epoch)busy=false}}
  function input(label,name,value,type='text'){const wrap=el('label','',label),field=el(type==='textarea'?'textarea':'input');if(type!=='textarea')field.type=type;field.name=name;field.value=value??'';if(type==='number'){field.min='1';field.max='100000';field.step='1'}if(type==='textarea'){field.rows=3;field.maxLength=1000}wrap.append(field);fields.append(wrap);return field}
  function check(label,name,value){const wrap=el('label','pm-check'),box=el('input');box.type='checkbox';box.name=name;box.checked=value;wrap.append(box,document.createTextNode(label));fields.append(wrap);return box}
- function begin(title){fields.replaceChildren();message.textContent='';dialog.querySelector('h2').textContent=title;form.querySelector('[type=submit]').disabled=false;dialog.showModal()}
+ function begin(title){dialog.classList.remove('pm-editor--collection');fields.replaceChildren();message.textContent='';dialog.querySelector('h2').textContent=title;form.querySelector('[type=submit]').disabled=false;dialog.showModal()}
+ function mountPicker(picker){dialog.classList.add('pm-editor--collection');const details=el('div','pm-details');details.append(...fields.childNodes);fields.append(details,picker)}
  function edit(p,isBundle){
   begin(isBundle?p.id?'Edit Bundle':'Create Bundle':p.name);const revision=config.revision;
   if(isBundle)input('Bundle Name','name',p.name).required=true;
@@ -44,7 +46,11 @@ export function createProductManagementPanel(call){
   let members=new Set(p.items||[]);let active;
   const updateBundlePrice=()=>{if(!manualPrice)priceField.value=[...members].reduce((sum,id)=>sum+Number(effective(catalog.find(c=>c.id===id)).price),0)||''};
   if(isBundle){const recalculate=el('button','quiet','Use Combined Product Price');recalculate.type='button';recalculate.onclick=()=>{manualPrice=false;updateBundlePrice()};fields.append(recalculate)}
-  if(isBundle){active=check('Show Bundle in Shop','active',p.active!==false);const find=input('Find Cosmetics to Include','find','','search'),list=el('div','pm-items'),count=el('p');fields.append(count,list);const draw=()=>{list.replaceChildren();count.textContent=`${members.size} Selected`;for(const item of catalog.filter(c=>`${c.name} ${c.id}`.toLowerCase().includes(find.value.toLowerCase()))){const label=el('label'),box=el('input');box.type='checkbox';box.checked=members.has(item.id);box.onchange=()=>{box.checked?members.add(item.id):members.delete(item.id);updateBundlePrice();count.textContent=`${members.size} Selected`};label.append(box,document.createTextNode(item.name));list.append(label)}};find.oninput=draw;draw();fields.append(el('p','','The bundle has a fixed price. Previously owned items are not discounted.'))}
+  if(isBundle){
+   active=check('Show Bundle in Shop','active',p.active!==false);
+   fields.append(el('p','','The bundle has a fixed price. Previously owned items are not discounted.'));
+   mountPicker(createProductPicker({products:catalog.map(effective),selected:new Map([...members].map(id=>[id,true])),onChange:selected=>{members=new Set(selected.keys());updateBundlePrice()}}));
+  }
   saveAction=()=>({action:isBundle?'saveBundle':'saveProduct',id:p.id||`bundle-${crypto.randomUUID()}`,expectedRevision:revision,price:Number(priceField.value),description:useDefault?.checked?null:form.elements.description.value,...(isBundle?{name:form.elements.name.value,items:[...members],active:active.checked}:{})});
 
  }
@@ -52,14 +58,9 @@ export function createProductManagementPanel(call){
   begin(p.id?'Edit Sale':'Create Sale');const revision=config.revision;
   input('Sale Name','name',p.name||'').required=true;
   const days=input(p.endsAt>Date.now()?'New Duration (Days) — Leave Blank to Keep the End Date':'Duration (Days)','saleDays',p.endsAt>Date.now()?'':7,'number');days.max='365';days.required=!(p.endsAt>Date.now());
-  const find=input('Find Products','find','','search'),selected=new Map(Object.entries(p.prices||{})),list=el('div','pm-sale-items'),count=el('p');fields.append(count,list);
+  const selected=new Map(Object.entries(p.prices||{}));
   const choices=[...catalog.map(effective),...Object.entries(config.bundles).map(([id,b])=>({id,...b}))];
-  const draw=()=>{list.replaceChildren();count.textContent=`${selected.size} Products Selected`;for(const c of choices.filter(c=>`${c.name} ${c.id}`.toLowerCase().includes(find.value.toLowerCase()))){
-   const row=el('div','pm-sale-item'),label=el('label'),box=el('input'),price=el('input');box.type='checkbox';box.checked=selected.has(c.id);box.dataset.saleProduct=c.id;
-   price.type='number';price.min=1;price.max=c.price-1;price.step=1;price.placeholder='Sale Price';price.value=selected.get(c.id)??'';price.disabled=!box.checked;price.required=box.checked;price.setAttribute('aria-label',`Sale Price: ${c.name}`);
-   box.onchange=()=>{if(box.checked)selected.set(c.id,Number(price.value)||Math.max(1,Math.floor(c.price*.8)));else selected.delete(c.id);draw()};
-   price.oninput=()=>selected.set(c.id,Number(price.value));label.append(box,document.createTextNode(c.name));row.append(label,el('small','',`${c.price} Coins`),price);list.append(row);
-  }};find.oninput=draw;draw();
+  mountPicker(createProductPicker({products:choices,selected,sale:true}));
   saveAction=()=>{if(!selected.size)throw Error('Choose at least one product.');for(const [id,amount] of selected){const regular=choices.find(c=>c.id===id)?.price;if(!Number.isSafeInteger(amount)||amount<1||amount>=regular)throw Error('Every selected product needs a sale price below its regular price.');}return {action:'saveSale',id:p.id||`sale-${crypto.randomUUID()}`,expectedRevision:revision,name:form.elements.name.value,prices:Object.fromEntries(selected),...(days.value?{saleDays:Number(days.value)}:{})}};
  }
  async function endSale(p){if(busy||!confirm(`End “${p.name}” and restore regular prices?`))return;busy=true;const token=epoch;try{const next=await request({action:'endSale',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render()}catch(e){if(token===epoch)status.textContent=e.message}finally{if(token===epoch)busy=false}}
