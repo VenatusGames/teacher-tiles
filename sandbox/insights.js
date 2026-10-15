@@ -1,4 +1,4 @@
-import {createTrendCharts} from './insight-trends.js?v=20261012-daily-online';
+import {createTrendCharts} from './insight-trends.js?v=20261015-override-20261012-daily-online';
 export function createInsights(call){
  const root=document.getElementById('developer-insights');
  root.innerHTML=`<div class="insights-header"><div><h2>At a Glance</h2><p id="insights-status" role="status">Loading a current snapshot…</p></div><button class="quiet" id="insights-refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/></svg>Refresh Insights</button></div>
@@ -21,8 +21,8 @@ export function createInsights(call){
   root.querySelectorAll('button[data-membership-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.membershipKind===membershipKind)));
   const paid=membershipKind==='paid',title=paid?'Paid Subscribers':'Trial Subscribers';
   root.querySelector('.insight-subscribers h3').textContent=title;
-  root.querySelector('.insight-subscribers>small').textContent=paid?'Active paid subscriptions':'Trials and dev-console testing subscriptions';
-  root.querySelector('.subscription-chart>div>p').textContent=paid?'Paid memberships only · trials and dev previews excluded.':'Trials include dev-console testing subscriptions · paid plans excluded.';
+  root.querySelector('.insight-subscribers>small').textContent=paid?'Active paid subscriptions':'Trials, free permanent access, and dev testing';
+  root.querySelector('.subscription-chart>div>p').textContent=paid?'Paid memberships only · trials and dev previews excluded.':'Includes free permanent access and dev testing · paid plans excluded.';
   root.querySelector('.subscription-chart').dataset.membershipKind=membershipKind;
   if(!snapshot)return;
   const count=snapshot[paid?'paidSubscribers':'trialSubscribers'],known=Number.isFinite(count);

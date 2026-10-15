@@ -286,7 +286,7 @@ function setupTeacherTilesShop(){
     });
   }
   function syncMembership(){
-    const state=accountState(),active=Boolean(state.subscriptionActive);
+    const state=accountState(),active=Boolean(state.subscriptionActive||state.subscriptionOverride);
     membershipCard?.classList.toggle('is-subscription-active',active);
     if(membershipTitle)membershipTitle.textContent=active?'Subscription Active!':membershipDefaultTitle;
     for(const selector of ['.shop-membership-price','.shop-membership-card__foot']){
@@ -630,13 +630,13 @@ function setupTeacherTilesShop(){
     }finally{if(button)button.disabled=false}
   });
   subscribePreview?.addEventListener('click',async()=>{
-    if(accountState().subscriptionActive){syncMembership();showToast('Your subscription is already active.');return}
+    if(accountState().subscriptionActive||accountState().subscriptionOverride){syncMembership();showToast('Your subscription is already active.');return}
     if(membershipCheckoutBusy||accountState().loading||!accountState().ready)return;
     if(!window.TeacherTilesAccount?.createSubscriptionCheckout){showToast('The subscription store is still loading.');return}
     membershipCheckoutBusy=true;syncMembership();
     try{
       const {url}=await window.TeacherTilesAccount.createSubscriptionCheckout('price_1U9w2B2H9EEY7x9T4O9EiCIv');
-      if(!accountState().subscriptionActive)window.location.assign(url);
+      if(!accountState().subscriptionActive&&!accountState().subscriptionOverride)window.location.assign(url);
     }catch(error){
       showToast(errorMessage(error,'Subscription checkout could not be opened.'));
     }finally{membershipCheckoutBusy=false;syncMembership()}

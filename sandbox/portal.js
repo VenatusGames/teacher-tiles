@@ -2,10 +2,10 @@ import {createTileManagementPanel} from './tile-management.js?v=20261013-descrip
 import {adminBoardPreview} from './board-preview.js?v=20260926-preview-titles';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20260930-title-case';
-import {createInsights} from './insights.js?v=20261012-daily-online';
+import {createInsights} from './insights.js?v=20261015-override-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261014-subscription-override';
+import {createUsersPanel} from './users.js?v=20261015-override-crown';
 import {startSiteActivity} from '../account/site-activity.js';
 import {createCodesPanel} from './codes.js?v=20261012-codes-activity';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
