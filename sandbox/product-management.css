@@ -13,3 +13,5 @@
 .pm-banner-preview .shop-halloween-extras img:nth-child(3){left:33%;bottom:19%;transform:rotate(-12deg)}
 .pm-banner-preview .shop-halloween-extras img:nth-child(4){left:64%;top:64%;width:12%;height:25%}
 .pm-banner-preview .shop-halloween-extras img:nth-child(5){left:77%;top:64%;width:12%;height:25%}
+
+.pm-sale-card{cursor:default}.pm-sale-card strong{margin-top:12px}.pm-sale-actions{display:flex;gap:8px;opacity:0;transition:opacity .18s}.pm-sale-card:hover .pm-sale-actions,.pm-sale-card:focus-within .pm-sale-actions{opacity:1}.pm-sale-actions button:last-child:not(:first-child){color:#b43b48}.pm-sale-items{max-height:42vh;overflow:auto;padding:5px}.pm-sale-item{display:grid;grid-template-columns:minmax(0,1fr) 75px 100px;align-items:center;gap:10px;border-bottom:1px solid #899ab42b;padding:8px 0}.pm-sale-item label{display:flex;align-items:center;gap:8px;margin:0}.pm-sale-item small{color:var(--portal-muted)}.pm-sale-item input[type=number]{min-width:0}.pm-sale-item input[type=checkbox]{width:auto}@media(hover:none){.pm-sale-actions{opacity:1}}@media(max-width:500px){.pm-sale-item{grid-template-columns:minmax(0,1fr) 82px}.pm-sale-item small{display:none}}
