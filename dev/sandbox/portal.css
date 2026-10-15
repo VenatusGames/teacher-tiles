@@ -58,3 +58,5 @@
 .trend-paidSubscribers{--series:#ba9755}.trend-trialSubscribers{--series:#8370b5}.subscription-chart[data-membership-kind="trials"]{--ring-color:#8370b5}
 
 .bulk-patch-menu .bulk-patch-action{grid-column:1/-1}
+
+.subscription-override-toggle{gap:8px}.subscription-override-crown{width:26px;height:26px;flex:none;display:block}.subscription-override-toggle:has(input:focus-visible){outline:2px solid #b58a38;outline-offset:4px;border-radius:8px}
