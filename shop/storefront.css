@@ -279,3 +279,12 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .subscription-dialog footer[hidden]{display:none}
 .subscription-gift{text-align:center;padding:24px 16px;background:linear-gradient(135deg,#fff9e9,#fff2ce);border-radius:18px;color:#634519}
 .subscription-gift h3{font-size:1.3rem;line-height:1.55;margin:0}
+
+/* Scatter cursor accents without crowding the featured products. */
+.shop-halloween-extras{inset:0;display:block;height:auto}
+.shop-modal .shop-banner__slide .shop-halloween-extras img{position:absolute;width:7%;height:17%;object-fit:contain}
+.shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(1){left:34%;top:8%;transform:rotate(-18deg)}
+.shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(2){right:1%;top:54%;transform:rotate(18deg)}
+.shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(3){left:33%;bottom:19%;transform:rotate(-12deg)}
+.shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(4){left:64%;top:64%;width:12%;height:25%;transform:rotate(-8deg)}
+.shop-modal .shop-banner__slide .shop-halloween-extras img:nth-child(5){left:77%;top:64%;width:12%;height:25%;transform:rotate(8deg)}
