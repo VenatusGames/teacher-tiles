@@ -144,5 +144,8 @@
 
 /* Keep the clock just above the visible silhouette, including its transparent inset. */
 .halloweentimer-module .timer-stage{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0}
-.halloweentimer-module .timer-stage>.timer-readout{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0 0 calc(4px - var(--timer-visual-size,240px)*.06)!important;padding:5px 15px;flex:none;z-index:2}
-.halloweentimer-module[data-tile-skin="halloweentimer-ghost"] .timer-stage>.timer-readout{margin-bottom:calc(4px - var(--timer-visual-size,240px)*.07)!important}
+.halloweentimer-module .timer-stage>.timer-readout{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0 0 calc(10px - var(--timer-visual-size,240px)*.06)!important;padding:5px 15px;flex:none;z-index:2}
+.halloweentimer-module[data-tile-skin="halloweentimer-ghost"] .timer-stage>.timer-readout{margin-bottom:calc(10px - var(--timer-visual-size,240px)*.07)!important}
+
+.halloweentimer-module .timer-stage>.timer-readout{padding:6px 18px}
+.halloweentimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,10.3cqw,54px)!important}
