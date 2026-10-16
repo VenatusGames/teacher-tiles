@@ -113,7 +113,7 @@ function setupTimer(m){
     if(!stage)return;
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
-    const shortest=Math.min(stageWidth,Math.max(0,stageHeight-(pumpkin?Math.max(0,(readout?.offsetHeight||70)-18):0)));
+    const shortest=Math.min(stageWidth,Math.max(0,stageHeight-(pumpkin?Math.max(0,(readout?.offsetHeight||70)-24):0)));
     const breathingRoom=pumpkin?5:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
