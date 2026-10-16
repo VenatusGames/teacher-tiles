@@ -37,3 +37,25 @@
 .carving-cuts .carving-cut-shadow,.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-shadow{fill:none;stroke:#110b08;stroke-width:3;filter:blur(.3px)}
 .carving-cuts .carving-cut-rim,.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-rim{fill:none;stroke:#d48832;stroke-width:1.6;filter:none}
 .carving-cuts clipPath path{fill:black;stroke:none;filter:none}
+
+/* Standard visual timer, with a pumpkin silhouette and a face in both fill states. */
+.timer-module.halloweentimer-module[data-shape-color]{--timer:#f3932e;--timer-soft:#fbe4c7}
+.halloweentimer-module .timer-shape-svg{visibility:visible}
+.pumpkin-timer-face{position:absolute;inset:0;pointer-events:none}
+.pumpkin-timer-face>div{position:absolute;inset:0}
+.pumpkin-timer-face svg{position:absolute;left:16%;top:23%;width:68%;height:58%;fill:#562e1b;stroke:none}
+.pumpkin-face-faint{opacity:.22}
+.pumpkin-face-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0)}
+.timer-shape-shelf button .pumpkin-face-swatch{display:grid;place-items:center;width:100%;max-width:44px;height:44px;padding:6px;overflow:hidden;border-radius:12px}
+.timer-shape-shelf button .pumpkin-face-swatch svg{position:static;display:block;width:100%;height:100%;fill:#613719;stroke:none;transform:none}
+.pumpkinpatch-module .halloween-heading{text-align:left}
+.patch-settings [hidden]{display:none!important}
+.pumpkincarving-module:not(:hover):not(:has(:focus-visible)) .halloween-toolbar{height:0;margin-top:-8px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(8px)}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{animation:pumpkinCandle 3.7s ease-in-out infinite}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-shadow{stroke:#d99132;filter:blur(.3px)}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-rim{stroke:#fff1ad;filter:drop-shadow(0 0 .5px #ffc54d)}
+@keyframes pumpkinCandle{0%,100%{fill:#ffdf85}18%{fill:#ffe9a4}22%{fill:#f9c55a}28%,65%{fill:#ffe49a}70%{fill:#ffd574}74%{fill:#ffeab0}}
+@media(prefers-reduced-motion:reduce){.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{animation:none}}
+
+.timer-module.halloweentimer-module .timer-readout{bottom:8%;border-radius:999px;background:color-mix(in srgb,var(--module-bg,var(--surface)) 70%,transparent)}
+.halloweentimer-module .timer-shape-color svg{stroke:none}
