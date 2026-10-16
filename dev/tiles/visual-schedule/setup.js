@@ -3,6 +3,13 @@ function setupVisualSchedule(m){
   const dock=m.querySelector('.visual-schedule-scale-dock');settings.querySelector('.tile-settings-panel').append(dock);m.querySelector('.visual-schedule-customization').append(settings);
   m.querySelector('.visual-schedule-row-size-input').value='44';
 
+  const timesRow=document.createElement('div');timesRow.className='tile-settings-switch-row';
+  timesRow.innerHTML='<span>Show Times</span><button type="button" class="tile-settings-switch visual-schedule-times-toggle" role="switch" aria-label="Show Times"><i aria-hidden="true"></i></button>';
+  settings.querySelector('.tile-settings-panel').append(timesRow);
+  const timesToggle=timesRow.querySelector('button');
+  const syncTimes=()=>timesToggle.setAttribute('aria-checked',String(m.dataset.scheduleTimesHidden!=='true'));
+  syncTimes();
+  timesToggle.addEventListener('click',()=>{m.dataset.scheduleTimesHidden=String(m.dataset.scheduleTimesHidden!=='true');syncTimes();autoSize();notifyBoardChanged('visual-schedule-times')});
   setupClassroomTileControls(m);
   const list=m.querySelector('.visual-schedule-list');
   const add=m.querySelector('.visual-schedule-add');
@@ -308,6 +315,7 @@ function setupVisualSchedule(m){
     size:Number(row.dataset.segmentSize)||44
   }))});
   m._boardSetState=state=>{
+    syncTimes();
     closePicker();
     list.querySelectorAll('.visual-schedule-segment').forEach(row=>row.remove());
     const segments=Array.isArray(state?.segments)?state.segments:[];
