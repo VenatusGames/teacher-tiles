@@ -13,3 +13,5 @@
 #asset-shelf .asset-shelf__shell{width:min(400px,calc(100vw - 24px))}
 
 .asset-shelf.is-sticker-mode .collection-category-tabs{display:none}
+
+.cursor-picker-pack-heading>.holiday-badge{flex:none;margin-left:5px;font-size:9px}

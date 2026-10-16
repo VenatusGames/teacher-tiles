@@ -8,6 +8,7 @@ function normalizeAppPreferences(value={}){
     siteFont:['inter','system','arial','verdana','georgia'].includes(source.siteFont)?source.siteFont:'inter',
     siteFontSize:prefClamp(Number(source.siteFontSize)||100,100,150),
     squareCorners:Boolean(source.squareCorners),
+    defaultSplashOnly:Boolean(source.defaultSplashOnly),
     disableTileSnapping:Boolean(source.disableTileSnapping),
     uiMuted:Boolean(source.uiMuted),
     masterVolume:prefClamp(Number.isFinite(rawMasterVolume)?rawMasterVolume:100,0,100),
@@ -280,6 +281,7 @@ function applyAppLanguage({load=true}={}){
 }
 
 function updateSettingsControls(){
+  document.getElementById('settings-default-splash')?.setAttribute('aria-checked',String(appPreferences.defaultSplashOnly));
   document.getElementById('settings-disable-snapping')?.setAttribute('aria-checked',String(appPreferences.disableTileSnapping));
   const font=document.getElementById('settings-site-font'),fontSize=document.getElementById('settings-site-font-size'),corners=document.getElementById('settings-square-corners');
   if(font)font.value=appPreferences.siteFont||'inter';
@@ -412,6 +414,7 @@ function setupSettingsHub(){
   document.getElementById('settings-site-font')?.addEventListener('change',event=>applyAppPreferences({siteFont:event.target.value}));
   document.getElementById('settings-site-font-size')?.addEventListener('change',event=>applyAppPreferences({siteFontSize:Number(event.target.value)}));
   document.getElementById('settings-disable-snapping')?.addEventListener('click',()=>applyAppPreferences({disableTileSnapping:!appPreferences.disableTileSnapping},{notify:true}));
+  document.getElementById('settings-default-splash')?.addEventListener('click',()=>applyAppPreferences({defaultSplashOnly:!appPreferences.defaultSplashOnly}));
   document.getElementById('settings-square-corners')?.addEventListener('click',()=>applyAppPreferences({squareCorners:!appPreferences.squareCorners}));
   settingsToggle.addEventListener('click',open);
   closeButtons.forEach(button=>button.addEventListener('click',close));

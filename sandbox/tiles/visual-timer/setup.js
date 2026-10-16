@@ -27,7 +27,9 @@ function setupTimerSync(m){
 }
 
 function setupTimer(m){
+  const pumpkin=m.dataset.type==='halloweentimer';
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
+  const updateFace=()=>{if(pumpkin)TeacherTilesHalloween.timerFace(m,m.dataset.pumpkinFace);};updateFace();
   const liquid=document.createElement('div');liquid.className='timer-liquid-fill';liquid.setAttribute('aria-hidden','true');
   liquid.innerHTML='<svg class="timer-liquid-wave" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z"/></svg><i></i><i></i><i></i>';
   fill.append(liquid);
@@ -36,12 +38,12 @@ function setupTimer(m){
   foreign.setAttribute('clip-path',`url(#${clipId})`);
 
   const setShape=(shape,animate=false)=>{
-    const d=shapePaths[shape]||shapePaths.circle;
+    const d=pumpkin?TeacherTilesHalloween.pumpkinPath:shapePaths[shape]||shapePaths.circle;
     m.dataset.timerShape=shape;
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);
     highlight?.setAttribute('d',d);
-    if(readout&&readout.parentElement!==visual)visual.appendChild(readout);
+    if(readout){if(pumpkin)stage.append(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
     requestAnimationFrame(sizeVisual);
     if(animate&&visual?.animate)visual.animate([
       {transform:'scale(1) rotate(0deg)'},
@@ -59,6 +61,7 @@ function setupTimer(m){
   const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
+  if(pumpkin){colorButton.title='Choose Pumpkin Face';colorButton.setAttribute('aria-label','Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace);}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
   const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
@@ -88,6 +91,14 @@ function setupTimer(m){
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
+    if(pumpkin){
+      shapeShelf.setAttribute('aria-label','Pumpkin Faces');
+      for(const [id,face] of Object.entries(TeacherTilesHalloween.faces)){
+        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.faceIcon(id)+'</i><span>'+face.name+'</span>';
+        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
+      }
+      shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
+    }
     const neon=m.dataset.tileSkin==='timer-neon';
     for(const [value,color] of Object.entries(neon?window.TeacherTilesNeonColors:window.TeacherTilesTimerColors)){
       const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String((m.dataset.shapeColor||'blue')===value));
@@ -102,8 +113,8 @@ function setupTimer(m){
     if(!stage)return;
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
-    const shortest=Math.min(stageWidth,stageHeight);
-    const breathingRoom=Math.max(10,Math.min(28,shortest*.055));
+    const shortest=Math.min(stageWidth,Math.max(0,stageHeight-(pumpkin?Math.max(0,(readout?.offsetHeight||70)-18):0)));
+    const breathingRoom=pumpkin?5:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
   };
@@ -148,7 +159,7 @@ function setupTimer(m){
   };
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     cancelAnimationFrame(visualFrame);paintProgress(progress);
-    if(running&&['timer-solid','timer-liquid'].includes(m.dataset.tileSkin)){
+    if(running&&(pumpkin||['timer-solid','timer-liquid'].includes(m.dataset.tileSkin))){
       const started=performance.now();
       const animate=now=>{
         if(!m.isConnected)return;
@@ -164,11 +175,12 @@ function setupTimer(m){
     if(status)status.textContent=complete?'DONE':running?'RUNNING':paused?'PAUSED':'READY';
   },{onFinish:()=>celebrateTimerFinish(m)});
 
+  const previousCleanup=m._cleanup;
   m._cleanup=()=>{
     clearTimeout(settingsHideTimer);
     closeShapes();shapeShelf.remove();document.removeEventListener('pointerdown',outsideShapes);document.removeEventListener('keydown',escapeShapes,true);
     cancelAnimationFrame(visualFrame);stopTimer();
-    sizeObserver.disconnect();
+    sizeObserver.disconnect();previousCleanup?.();
   };
   window.TeacherTilesTimerPointer.attach(m);
 }

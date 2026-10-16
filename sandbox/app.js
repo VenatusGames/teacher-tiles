@@ -31,6 +31,7 @@ const DEFAULT_APP_PREFERENCES=Object.freeze({
   defaultViewSize:100,
   language:'en',
   disableTileSnapping:false,
+  defaultSplashOnly:false,
   alwaysShowTileDeleteButtons:false
 });
 
@@ -900,6 +901,7 @@ const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({"id": "richtext-clear", "productId": "tile-skin-richtext-clear", "tileType": "richtext", "tileLabel": "Rich Text", "name": "No Background", "description": "Your formatted document floats directly on the board with no tile shell.", "tags": "Rich Text No Background transparent clear floating text document", "released": 27}),
   Object.freeze({id:'spinner-carnival',productId:'tile-skin-spinner-carnival',tileType:'spinner',tileLabel:'Spinner',name:'Carnival Spinner',description:'A colorful carnival wheel with golden trim and chasing lights on every segment.',tags:'spinner carnival fairground wheel lights marquee names',released:42}),
   Object.freeze({id:'popsicle-gumball',productId:'tile-skin-popsicle-gumball',tileType:'popsiclesticks',tileLabel:'Popsicle Sticks',name:'Gumball Machine',description:'Turn the handle and dispense a colorful gumball with a student’s name.',tags:'popsicle sticks gumball machine candy student name picker',released:44}),
+  Object.freeze({id:'pumpkinpatch-graveyard',tileType:'pumpkinpatch',tileLabel:'Pumpkin Patch',name:'Graveyard',description:'A moonlit pumpkin garden with an old manor, weathered graves, and drifting fog.',productId:'tile-skin-pumpkinpatch-graveyard',tags:'halloween pumpkin patch graveyard haunted manor fog',released:65,preview:'tiles/halloween/assets/graveyard-scene.png'}),
   Object.freeze({id:'lavalamp-neon',productId:'tile-skin-lavalamp-neon',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'Neon',description:'Electric colors and a soft neon glow.',tags:'lava lamp neon electric bright glowing',released:45}),
   Object.freeze({id:'lavalamp-clear',productId:'tile-skin-lavalamp-clear',tileType:'lavalamp',tileLabel:'Lava Lamp',name:'No Background',description:'A glowing lava lamp floating directly on your board.',tags:'lava lamp clear transparent no background',released:43}),
   Object.freeze({id:'spinner-clear',productId:'tile-skin-spinner-clear',tileType:'spinner',tileLabel:'Spinner',name:'No Background',description:'A colorful spinning wheel floating directly on your board.',tags:'spinner wheel clear transparent no background names',released:41}),
@@ -997,31 +999,9 @@ const CURSOR_CATALOG=Object.freeze([
 ]);
 const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
-const stickerCatalogItems=(entries,tags='')=>Object.freeze(entries.map(([emoji,name])=>Object.freeze({emoji,name,tags})));
-const ADDITIONAL_STICKER_PACKS=Object.freeze([
-  Object.freeze({id:'faces-happy',productId:'sticker-faces-happy',category:'faces',name:'Happy Faces',description:'Eight cheerful smiles for celebrations and encouragement.',tags:'emoji emojis face faces happy smile smiles cheerful positive reaction emotion',price:180,items:stickerCatalogItems([['😄','Smiling face with open mouth'],['😁','Beaming face'],['😊','Smiling face with smiling eyes'],['🙂','Slightly smiling face'],['😇','Smiling face with halo'],['😌','Relieved face'],['☺️','Smiling face'],['🥰','Smiling face with hearts']])}),
-  Object.freeze({id:'faces-silly',productId:'sticker-faces-silly',category:'faces',name:'Silly Faces',description:'Eight playful reactions for fun classroom moments.',tags:'emoji emojis face faces silly playful funny reaction expression emotion',price:180,items:stickerCatalogItems([['😛','Face with tongue'],['😜','Winking face with tongue'],['😝','Squinting face with tongue'],['🤭','Face with hand over mouth'],['🤫','Shushing face'],['🤗','Hugging face'],['🫠','Melting face'],['🙃','Upside-down face']])}),
-  Object.freeze({id:'faces-worried',productId:'sticker-faces-worried',category:'faces',name:'Worried Faces',description:'Eight concerned and frustrated expressions.',tags:'emoji emojis face faces worried concern sad frustrated reaction expression emotion',price:180,items:stickerCatalogItems([['😟','Worried face'],['😕','Confused face'],['🙁','Slightly frowning face'],['☹️','Frowning face'],['😣','Persevering face'],['😖','Confounded face'],['😫','Tired face'],['😩','Weary face']])}),
-  Object.freeze({id:'faces-big-reactions',productId:'sticker-faces-big-reactions',category:'faces',name:'Big Reactions',description:'Eight surprised, amazed, and dramatic expressions.',tags:'emoji emojis face faces surprised amazed shocked dramatic reaction expression emotion',price:180,items:stickerCatalogItems([['😮','Face with open mouth'],['😯','Hushed face'],['😲','Astonished face'],['😳','Flushed face'],['🥺','Pleading face'],['😱','Face screaming in fear'],['🤯','Exploding head'],['🥶','Cold face']])}),
-  Object.freeze({id:'food-fruit',productId:'sticker-food-fruit',category:'food',name:'Fresh Fruit',description:'Eight colorful fruits for snacks, charts, and rewards.',tags:'food foods fruit fruits fresh snack healthy',price:180,items:stickerCatalogItems([['🍏','Green apple'],['🍐','Pear'],['🍊','Tangerine'],['🍋','Lemon'],['🍌','Banana'],['🍉','Watermelon'],['🍇','Grapes'],['🫐','Blueberries']])}),
-  Object.freeze({id:'food-vegetables',productId:'sticker-food-vegetables',category:'food',name:'Vegetables',description:'Eight garden vegetables and healthy classroom favorites.',tags:'food foods vegetable vegetables veggie veggies garden healthy',price:180,items:stickerCatalogItems([['🥕','Carrot'],['🌽','Ear of corn'],['🥦','Broccoli'],['🥒','Cucumber'],['🫑','Bell pepper'],['🍅','Tomato'],['🍆','Eggplant'],['🥔','Potato']])}),
-  Object.freeze({id:'food-meals',productId:'sticker-food-meals',category:'food',name:'Meals',description:'Eight lunch, dinner, and takeout favorites.',tags:'food foods meal meals lunch dinner entree',price:180,items:stickerCatalogItems([['🌭','Hot dog'],['🌮','Taco'],['🌯','Burrito'],['🥪','Sandwich'],['🍝','Spaghetti'],['🍜','Steaming bowl'],['🍣','Sushi'],['🍱','Bento box']])}),
-  Object.freeze({id:'food-sweet-treats',productId:'sticker-food-sweet-treats',category:'food',name:'Sweet Treats',description:'Eight desserts, candies, and celebration treats.',tags:'food foods sweet sweets treat treats dessert desserts candy celebration',price:180,items:stickerCatalogItems([['🍦','Soft ice cream'],['🍧','Shaved ice'],['🍨','Ice cream'],['🍰','Shortcake'],['🎂','Birthday cake'],['🍫','Chocolate bar'],['🍬','Candy'],['🍭','Lollipop']])}),
-  Object.freeze({id:'numbers-1-25',productId:'sticker-numbers-1-25',category:'learning',name:'Numbers 1–25',description:'Twenty-five bold number stickers for counting and labeling.',tags:'number numbers counting count math mathematics classroom label labels',price:180,items:Object.freeze(Array.from({length:25},(_,index)=>Object.freeze({emoji:String(index+1),name:`Number ${index+1}`,tags:'number numbers counting math'})))}),
-  Object.freeze({id:'letters-lowercase',productId:'sticker-letters-lowercase',category:'learning',name:'Lowercase Letters',description:'All twenty-six lowercase letter stickers from a to z.',tags:'letter letters lowercase alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(97+index);return Object.freeze({emoji:letter,name:`Lowercase ${letter}`,tags:'letter letters lowercase alphabet phonics'})}))}),
-  Object.freeze({id:'letters-uppercase',productId:'sticker-letters-uppercase',category:'learning',name:'Uppercase Letters',description:'All twenty-six uppercase letter stickers from A to Z.',tags:'letter letters uppercase capital capitals alphabet phonics literacy classroom',price:180,items:Object.freeze(Array.from({length:26},(_,index)=>{const letter=String.fromCharCode(65+index);return Object.freeze({emoji:letter,name:`Uppercase ${letter}`,tags:'letter letters uppercase capital alphabet phonics'})}))}),
-  Object.freeze({id:'quiet-critters',productId:'sticker-quiet-critters',category:'characters',name:'Quiet Critters',description:'Eight colorful Quiet Critter poses for praise, routines, and classroom fun.',tags:'quiet critter critters character characters monster monsters classroom cute reward',price:180,items:Object.freeze([
-    Object.freeze({src:'assets/stickers/quiet-critters/jump-lavender.png?v=2',name:'Lavender jumping Quiet Critter',tags:'lavender purple jump jumping'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/jump-blue.png?v=2',name:'Blue jumping Quiet Critter',tags:'blue jump jumping'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sleep-mint.png?v=2',name:'Mint sleeping Quiet Critter',tags:'mint green sleep sleeping calm'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sway-rose.png?v=2',name:'Rose swaying Quiet Critter',tags:'rose pink sway swaying'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/blink-amber.png?v=2',name:'Amber blinking Quiet Critter',tags:'amber orange blink blinking happy'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/dance-moss.png?v=2',name:'Moss dancing Quiet Critter',tags:'moss green dance dancing'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/dance-sky.png?v=2',name:'Sky dancing Quiet Critter',tags:'sky teal blue dance dancing'}),
-    Object.freeze({src:'assets/stickers/quiet-critters/sway-lavender.png?v=2',name:'Lavender swaying Quiet Critter',tags:'lavender purple sway swaying'})
-  ])})
-]);
+const ADDITIONAL_STICKER_PACKS=window.TeacherTilesStickerPacks;
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
   'basic-theme-pack':'theme-basic',
@@ -1049,6 +1029,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
   'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
   outer:'theme-outer-space',frosted:'theme-frosted-window',
   basic:'theme-basic',
@@ -1096,16 +1077,18 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
-  'timer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
-  'flyswat','quietcritters','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
+  'timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
+  'flyswat','quietcritters','trickortreat','pumpkinpatch','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
-  squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  pumpkinpatch:'Pumpkin Patch',trickortreat:'Trick or Treat',
+  halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
   rainbowbreath:'Rainbow Breath',meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
 const TILE_AUDIO_HOSTS=Object.freeze({
-  timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
+  pumpkinpatch:'.halloween-toolbar',trickortreat:'.trick-controls',
+  halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
   money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
   rainbowbreath:'.meditation-controls',meditation:'.meditation-controls',robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
 });
@@ -1146,7 +1129,10 @@ function setupModuleByType(m,type){
   if(type==='link')window.TeacherTilesLink.setup(m);
   if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover','boombox'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
-  if(type==='timer')setupTimer(m);
+  if(type==='timer'||type==='halloweentimer')setupTimer(m);
+  if(type==='pumpkincarving')window.TeacherTilesPumpkinCarving.setup(m);
+  if(type==='pumpkinpatch')window.TeacherTilesPumpkinPatch.setup(m);
+  if(type==='trickortreat')window.TeacherTilesTrickOrTreat.setup(m);
   if(type==='interactive')setupHourglass(m);
   if(type==='clock')setupClock(m);
   if(type==='stopwatch')setupStopwatch(m);
@@ -1335,6 +1321,7 @@ const EDITABLE_TILE_HEADINGS={
   countdown:'.countdown-heading',
   tenssticks:'.tens-heading',
   lavalamp:'.lava-heading',
+  pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',trickortreat:'.halloween-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',
@@ -1518,6 +1505,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  'webbed-light','webbed','haunted-house-light','haunted-house','pumpkin-orange','pumpkin-yellow',
   'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
   "outer-space-light","outer-space","frosted-window-light","frosted-window",
   "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
@@ -1534,6 +1522,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
   'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
   "theme-outer-space-light","theme-outer-space","theme-frosted-window-light","theme-frosted-window",
   "theme-basic-red","theme-basic-orange","theme-basic-yellow","theme-basic-green","theme-basic-blue","theme-basic-indigo","theme-basic-violet","theme-bamboo-yellow","theme-bamboo-brown","theme-bamboo-green",
@@ -1552,6 +1541,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
   ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
   ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
   ['basic-','theme-basic'],
@@ -1562,6 +1552,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
   'basic-theme-pack':'theme-basic','basic-theme-fan':'theme-basic',
@@ -1679,10 +1670,12 @@ if(document.readyState==='loading'){
   setupChangelog();
 }
 
-(function setupTeacherTilesIntro() {
+(async function setupTeacherTilesIntro() {
   const intro = document.getElementById('teachertiles-intro');
   if (!intro) return;
 
+  await window.TeacherTilesSplashReady;
+  intro.classList.remove('is-pending');
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const holdTime = reduced ? 220 : 1260;
 
