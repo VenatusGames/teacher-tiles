@@ -29,9 +29,7 @@ function setupTimerSync(m){
 function setupTimer(m){
   const pumpkin=m.dataset.type==='halloweentimer';
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
-  let pumpkinFill=null;
-  if(pumpkin){const art=document.createElement('div');art.className='halloween-timer-art';art.innerHTML='<div class="halloween-timer-base"></div><div class="halloween-timer-fill"></div>';visual.prepend(art);pumpkinFill=art.lastElementChild;}
-  const updateFace=()=>{if(pumpkinFill)pumpkinFill.innerHTML=TeacherTilesHalloween.svg(m.dataset.pumpkinFace);};updateFace();
+  const updateFace=()=>{if(pumpkin)TeacherTilesHalloween.timerFace(m,m.dataset.pumpkinFace);};updateFace();
   const liquid=document.createElement('div');liquid.className='timer-liquid-fill';liquid.setAttribute('aria-hidden','true');
   liquid.innerHTML='<svg class="timer-liquid-wave" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z"/></svg><i></i><i></i><i></i>';
   fill.append(liquid);
@@ -40,7 +38,7 @@ function setupTimer(m){
   foreign.setAttribute('clip-path',`url(#${clipId})`);
 
   const setShape=(shape,animate=false)=>{
-    const d=shapePaths[shape]||shapePaths.circle;
+    const d=pumpkin?TeacherTilesHalloween.pumpkinPath:shapePaths[shape]||shapePaths.circle;
     m.dataset.timerShape=shape;
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);

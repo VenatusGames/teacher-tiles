@@ -5,6 +5,15 @@
  function setup(m){
   const layer=m.querySelector('.patch-pumpkins'),meter=m.querySelector('.patch-meter'),status=m.querySelector('.patch-status'),mic=m.querySelector('.patch-mic'),threshold=m.querySelector('.patch-threshold'),mode=m.querySelector('.patch-mode');
   let plants=[],progress=0,stream=null,audio=null,analyser=null,samples=null,token=0,disposed=false,visible=true,raf=0,last=0,paintAt=0,level=0;
+  const ambience=new Audio('tiles/halloween/assets/night-forest.mp3');ambience.loop=true;ambience.preload='none';
+  function syncAmbience(){
+   const level=Number(window.TeacherTilesTileAudio?.level?.(m)??1);
+   const enabled=!disposed&&visible&&!document.hidden&&m.isConnected&&TeacherTilesHalloween.hasAccess()&&m.dataset.tileSkin==='pumpkinpatch-graveyard'&&level>0;
+   ambience.volume=Math.min(1,.18*level);
+   if(enabled){if(ambience.paused)ambience.play().catch(()=>{});}else ambience.pause();
+  }
+  const skinObserver=new MutationObserver(syncAmbience);skinObserver.observe(m,{attributes:true,attributeFilter:['data-tile-skin']});
+  m.addEventListener('teachertiles:tileaudiochange',syncAmbience);window.addEventListener('teachertiles:audiopreferenceschange',syncAmbience);document.addEventListener('pointerdown',syncAmbience);
   const previousCleanup=m._cleanup,previousDeactivate=m._deactivate;
   const toggle=m.querySelector('.tile-settings-toggle'),panel=m.querySelector('.tile-settings-panel');
   toggle.onclick=e=>{e.stopPropagation();panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));m.classList.toggle('has-tile-settings-open',!panel.hidden)};
@@ -44,21 +53,27 @@
    if(visible&&!document.hidden&&TeacherTilesHalloween.hasAccess()){
     if(analyser&&samples){analyser.getByteTimeDomainData(samples);let sum=0;for(const v of samples)sum+=((v-128)/128)**2;const raw=clamp((20*Math.log10(Math.sqrt(sum/samples.length)||.00001)+60)/60*100,0,100);level+=(raw-level)*Math.min(1,dt*8);meter.value=level;}
     const growing=mode.value==='ambient'||!!stream&&level<Number(threshold.value);
-    if(growing&&plants.length<24){progress+=dt;if(progress>=SEED_SECONDS){progress-=SEED_SECONDS;seed();notifyBoardChanged('pumpkin-growth')}}
+    if(growing&&plants.length<24){progress+=dt;if(progress>=SEED_SECONDS){progress-=SEED_SECONDS;seed();seed();notifyBoardChanged('pumpkin-growth')}}
     if(growing){let matured=false;for(const p of plants){const before=p.growth;p.growth=Math.min(1,p.growth+dt/GROW_SECONDS);if(before<1&&p.growth===1)matured=true}if(matured)notifyBoardChanged('pumpkin-grown')}
-    if(now-paintAt>180){paintAt=now;[...layer.children].forEach((el,i)=>el.style.setProperty('--growth',String(plants[i].growth)));const text=plants.length>=24?'Your Patch Is Full':mode.value==='ambient'?'Growing · Ambient':stream?(growing?'Quiet Voices · Growing':'Too Loud · Growth Paused'):status.textContent;if(text!==status.textContent)status.textContent=text;}
+    if(now-paintAt>180){paintAt=now;[...layer.children].forEach((el,i)=>el.style.setProperty('--growth',String(plants[i].growth)));const text=plants.length>=24?'Your Patch Is Full':mode.value==='ambient'?(plants.length?'No mic · Pumpkins Are Growing':'No mic · A Fresh Patch · Pumpkins Will Grow Over Time'):stream?(growing?'Quiet Voices · Growing':'Too Loud · Growth Paused'):status.textContent;if(text!==status.textContent)status.textContent=text;}
    }
    if(visible&&!document.hidden)raf=requestAnimationFrame(frame);
   }
-  function wake(){cancelAnimationFrame(raf);last=0;if(!disposed&&visible&&!document.hidden)raf=requestAnimationFrame(frame)}
+  function wake(){cancelAnimationFrame(raf);last=0;syncAmbience();if(!disposed&&visible&&!document.hidden)raf=requestAnimationFrame(frame)}
   const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;wake()});observer.observe(m);document.addEventListener('visibilitychange',wake);
-  mic.onclick=start;mode.onchange=()=>{stop(mode.value==='ambient'?'Growing · Ambient':'Enable the microphone to grow with quiet voices.');mic.hidden=mode.value==='ambient';meter.hidden=mode.value==='ambient';notifyBoardChanged('pumpkin-mode')};
+  function updateMode(){
+   m.querySelectorAll('[data-patch-mode]').forEach(b=>{const selected=b.dataset.patchMode===mode.value;b.classList.toggle('is-active',selected);b.setAttribute('aria-pressed',String(selected));});
+   mic.hidden=mode.value==='ambient';meter.hidden=mode.value==='ambient';threshold.closest('label').hidden=mode.value==='ambient';
+   status.textContent=mode.value==='ambient'?(plants.length?'No mic · Pumpkins Are Growing':'No mic · A Fresh Patch · Pumpkins Will Grow Over Time'):stream?'Quiet Voices · Growing':'Microphone Off · Enable It To Listen';
+  }
+  mic.onclick=start;mode.onchange=()=>{stop();updateMode();syncAmbience();notifyBoardChanged('pumpkin-mode')};
+  m.querySelectorAll('[data-patch-mode]').forEach(b=>b.onclick=()=>{mode.value=b.dataset.patchMode;mode.onchange();});
   threshold.oninput=()=>{m.querySelector('.patch-threshold-value').textContent=threshold.value+'%';notifyBoardChanged('pumpkin-threshold')};
-  m.querySelector('.patch-reset').onclick=()=>{plants=[];progress=0;seed();notifyBoardChanged('pumpkin-reset')};
+  m.querySelector('.patch-reset').onclick=()=>{plants=[];progress=0;level=0;meter.value=0;last=0;ambience.currentTime=0;render();updateMode();notifyBoardChanged('pumpkin-reset')};
   m._boardGetState=()=>({layoutVersion:3,plants:plants.map(p=>({...p})),progress,mode:mode.value,threshold:Number(threshold.value)});
-  m._boardSetState=s=>{plants=(Array.isArray(s?.plants)?s.plants:[]).slice(0,24).map((p,i)=>({sprite:clamp(Math.round(Number(p.sprite)||1),1,4),color:['orange','green','yellow'].includes(p.color)?p.color:'orange',x:clamp(Number(p.x)||50,5,95),y:s?.layoutVersion>=2?clamp(Number(p.y)||60,48,94):clamp(52+(Number(p.y)-42)*.8,48,94),size:s?.layoutVersion>=2?clamp(Number(p.size)||16,7,27):8+(i*7+Number(p.sprite)*3)%18,growth:clamp(Number(p.growth)||0,0,1)}));if(s?.layoutVersion!==3){const spaced=[];for(const p of plants){const placed=placePlant(p,spaced);spaced.push(placed||p);}plants=spaced;}progress=clamp(Number(s?.progress)||0,0,SEED_SECONDS);mode.value=s?.mode==='ambient'?'ambient':'microphone';threshold.value=clamp(Number(s?.threshold)||45,15,85);m.querySelector('.patch-threshold-value').textContent=threshold.value+'%';mic.hidden=mode.value==='ambient';meter.hidden=mode.value==='ambient';render();};
-  m._deactivate=()=>{stop();previousDeactivate?.()};m._cleanup=()=>{disposed=true;stop();cancelAnimationFrame(raf);observer.disconnect();document.removeEventListener('visibilitychange',wake);previousCleanup?.()};
-  seed();wake();
+  m._boardSetState=s=>{plants=(Array.isArray(s?.plants)?s.plants:[]).slice(0,24).map((p,i)=>({sprite:clamp(Math.round(Number(p.sprite)||1),1,4),color:['orange','green','yellow'].includes(p.color)?p.color:'orange',x:clamp(Number(p.x)||50,5,95),y:s?.layoutVersion>=2?clamp(Number(p.y)||60,48,94):clamp(52+(Number(p.y)-42)*.8,48,94),size:s?.layoutVersion>=2?clamp(Number(p.size)||16,7,27):8+(i*7+Number(p.sprite)*3)%18,growth:clamp(Number(p.growth)||0,0,1)}));if(s?.layoutVersion!==3){const spaced=[];for(const p of plants){const placed=placePlant(p,spaced);spaced.push(placed||p);}plants=spaced;}progress=clamp(Number(s?.progress)||0,0,SEED_SECONDS);mode.value=s?.mode==='microphone'?'microphone':'ambient';threshold.value=clamp(Number(s?.threshold)||45,15,85);m.querySelector('.patch-threshold-value').textContent=threshold.value+'%';mic.hidden=mode.value==='ambient';meter.hidden=mode.value==='ambient';render();updateMode();syncAmbience();};
+  m._deactivate=()=>{ambience.pause();stop();previousDeactivate?.()};m._cleanup=()=>{disposed=true;ambience.pause();ambience.removeAttribute('src');ambience.load();skinObserver.disconnect();m.removeEventListener('teachertiles:tileaudiochange',syncAmbience);window.removeEventListener('teachertiles:audiopreferenceschange',syncAmbience);document.removeEventListener('pointerdown',syncAmbience);stop();cancelAnimationFrame(raf);observer.disconnect();document.removeEventListener('visibilitychange',wake);previousCleanup?.()};
+  mode.value='ambient';updateMode();wake();
  }
  window.TeacherTilesPumpkinPatch={setup};
 })();

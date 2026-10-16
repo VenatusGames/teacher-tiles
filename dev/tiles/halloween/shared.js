@@ -11,6 +11,13 @@
   };
   const svg=(face='classic')=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${(faces[face]||faces.classic).d}"/></svg>`;
   const faceIcon=face=>svg(face).replace('0 0 100 100','18 20 64 64');
+  const pumpkinPath='M46 20Q46 12 53 6L60 8Q52 14 53 21C68 12 91 22 94 49C98 76 83 94 67 92Q50 98 34 92C16 96 3 77 6 50C7 25 27 13 46 20Z';
+  function timerFace(m,face){
+    const visual=m.querySelector('.timer-visual');
+    let art=visual.querySelector('.pumpkin-timer-face');
+    if(!art){art=document.createElement('div');art.className='pumpkin-timer-face';visual.append(art);}
+    art.innerHTML='<div class="pumpkin-face-faint">'+svg(face)+'</div><div class="pumpkin-face-filled">'+svg(face)+'</div>';
+  }
   const hasAccess=()=>hasCosmeticSubscription()||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true);
   function requestAccess(){
     let dialog=document.querySelector('.halloween-subscription-dialog');
@@ -54,7 +61,7 @@
   function preview(m,state,base=document.baseURI){
     if(state.type==='pumpkincarving'){prepareCarving(m);m.querySelector('.carving-surface image').setAttribute('href',new URL('tiles/halloween/assets/pumpkin-4.png',base).href);}
     if(state.type==='halloweentimer'){
-      const art=document.createElement('div');art.className='halloween-timer-art';art.innerHTML='<div class="halloween-timer-base"></div><div class="halloween-timer-fill">'+svg(state.dataset?.pumpkinFace)+'</div>';m.querySelector('.timer-visual').prepend(art);
+      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',pumpkinPath));timerFace(m,state.dataset?.pumpkinFace);
     }
     if(state.type==='pumpkincarving')renderCuts(m,(Array.isArray(state.special?.cuts)?state.special.cuts:[]).slice(0,100).filter(d=>typeof d==='string'&&d.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(d)));
     if(state.type==='pumpkinpatch')for(const p of (Array.isArray(state.special?.plants)?state.special.plants:[]).slice(0,24)){
@@ -63,5 +70,5 @@
       const img=document.createElement('img');img.src=new URL('tiles/halloween/assets/pumpkin-'+Math.round(bound(p.sprite,1,4,4))+'.png',base).href;img.alt='Pumpkin';el.append(img);m.querySelector('.patch-pumpkins').append(el);
     }
   }
-  window.TeacherTilesHalloween={types,faces,svg,faceIcon,hasAccess,requestAccess,guard,preview,prepareCarving,renderCuts};
+  window.TeacherTilesHalloween={types,faces,svg,faceIcon,pumpkinPath,timerFace,hasAccess,requestAccess,guard,preview,prepareCarving,renderCuts};
 })();

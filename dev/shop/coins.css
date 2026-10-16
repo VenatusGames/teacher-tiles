@@ -53,3 +53,9 @@ body.dark :is(#shop-coin-balance,#profile-coin-balance),body.dark .shop-coin-pac
 .profile-coin-card:is(:hover,:focus-visible) .profile-coin-plus{opacity:1;transform:none}
 .profile-panel__header-actions .profile-coin-card:is(:hover,:focus-visible) .profile-coin-card__copy{transform:translateX(-3px)}
 @media(prefers-reduced-motion:reduce){.profile-panel__header-actions .profile-coin-card__copy,.profile-coin-plus{transition:none}}
+
+.profile-panel__header-actions .profile-coin-card,.shop-modal .shop-coins-button{position:relative;justify-content:flex-end}
+.profile-panel__header-actions .profile-coin-card__balance,.shop-modal .shop-coins-button__balance{justify-content:flex-end}
+.profile-panel__header-actions .profile-coin-card__copy,.shop-modal .shop-coins-button__copy{flex:1;min-width:0}
+.profile-coin-plus,.shop-modal .shop-coins-button__plus{position:absolute;right:7px;pointer-events:none}
+.profile-panel__header-actions .profile-coin-card:is(:hover,:focus-visible) .profile-coin-card__copy,.shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__copy{transform:translateX(-28px)}
