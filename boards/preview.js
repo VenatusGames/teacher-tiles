@@ -1,5 +1,5 @@
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
-import '../tiles/halloween/shared.js?v=20261015-halloween-v6';
+import '../tiles/halloween/shared.js?v=20261016-timer-coins';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
