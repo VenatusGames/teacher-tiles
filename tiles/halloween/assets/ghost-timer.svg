@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="body" x2=".6" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#deebf7"/></linearGradient></defs><g transform="translate(10 8)"><path d="M50 7C28 7 15 23 15 44C4 36 1 43 5 52Q8 59 16 63Q17 76 8 84Q7 93 28 88Q34 100 49 88Q60 100 71 87Q91 94 87 82Q83 73 85 63Q96 57 97 47Q97 37 85 44C85 23 72 7 50 7Z" fill="url(#body)" stroke="#7d91a7" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="36" cy="38" rx="5" ry="7" fill="#303d56"/><ellipse cx="64" cy="38" rx="5" ry="7" fill="#303d56"/><path d="M40 53Q50 60 60 53Q58 69 50 69Q42 69 40 53Z" fill="#303d56"/><ellipse cx="50" cy="64" rx="5" ry="2.5" fill="#edafbc"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 108">
+<defs><clipPath id="ghost"><path d="M50 7C28 7 15 23 15 44C4 36 1 43 5 52Q8 59 16 63Q17 76 8 84Q7 93 28 88Q34 100 49 88Q60 100 71 87Q91 94 87 82Q83 73 85 63Q96 57 97 47Q97 37 85 44C85 23 72 7 50 7Z"/></clipPath></defs>
+<g transform="translate(5 2)">
+<path d="M50 7C28 7 15 23 15 44C4 36 1 43 5 52Q8 59 16 63Q17 76 8 84Q7 93 28 88Q34 100 49 88Q60 100 71 87Q91 94 87 82Q83 73 85 63Q96 57 97 47Q97 37 85 44C85 23 72 7 50 7Z" fill="#f5f7fa"/>
+<path d="M50 50H0V0H100V100Z" fill="#d7e9f4" clip-path="url(#ghost)"/>
+<path d="M50 7C28 7 15 23 15 44C4 36 1 43 5 52Q8 59 16 63Q17 76 8 84Q7 93 28 88Q34 100 49 88Q60 100 71 87Q91 94 87 82Q83 73 85 63Q96 57 97 47Q97 37 85 44C85 23 72 7 50 7Z" fill="none" stroke="#9baeb9" stroke-width="1.5"/>
+<g transform="translate(4 15) scale(.92 .76)"><path d="M29 36a6 9 0 1 0 12 0a6 9 0 1 0-12 0M59 36a6 9 0 1 0 12 0a6 9 0 1 0-12 0M42 62a8 11 0 1 0 16 0a8 11 0 1 0-16 0" fill="#34405a" opacity=".65"/></g>
+<rect x="26" y="79" width="48" height="21" rx="10.5" fill="#fff" stroke="#e5e8ec" stroke-width=".5"/>
+<text x="50" y="91" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="900" fill="#17191d">00:40</text>
+<text x="50" y="97" text-anchor="middle" font-family="Arial,sans-serif" font-size="3.5" font-weight="700" letter-spacing=".8" fill="#74777b">PAUSED</text>
+</g></svg>
