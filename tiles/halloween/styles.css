@@ -43,7 +43,7 @@
 .halloweentimer-module .timer-shape-svg{visibility:visible}
 .pumpkin-timer-face{position:absolute;inset:0;pointer-events:none}
 .pumpkin-timer-face>div{position:absolute;inset:0}
-.pumpkin-timer-face svg{position:absolute;left:16%;top:23%;width:68%;height:58%;fill:#562e1b;stroke:none}
+.pumpkin-timer-face svg{position:absolute;left:8%;top:17%;width:84%;height:70%;fill:#562e1b;stroke:none}
 .pumpkin-face-faint{opacity:.22}
 .pumpkin-face-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0)}
 .timer-shape-shelf button .pumpkin-face-swatch{display:grid;place-items:center;width:100%;max-width:44px;height:44px;padding:6px;overflow:hidden;border-radius:12px}
@@ -59,3 +59,5 @@
 
 .timer-module.halloweentimer-module .timer-readout{bottom:8%;border-radius:999px;background:color-mix(in srgb,var(--module-bg,var(--surface)) 70%,transparent)}
 .halloweentimer-module .timer-shape-color svg{stroke:none}
+
+.pumpkin-face-filled svg{filter:drop-shadow(0 2px 1.5px #46200970) drop-shadow(0 5px 4px #46200935)}
