@@ -119,7 +119,11 @@ function setupTimer(m){
     const breathingRoom=pumpkin?0:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
-    if(pumpkin)stage.style.setProperty('--timer-visual-size',`${size}px`);
+    if(pumpkin){
+      stage.style.setProperty('--timer-visual-size',`${size}px`);
+      const spareHeight=stageHeight-(size*(ghost?.93:.94)+(readout?.offsetHeight||70)+10);
+      stage.style.setProperty('--halloween-clock-lift',`${Math.min(24,Math.max(0,spareHeight/2))}px`);
+    }
   };
   const sizeObserver=new ResizeObserver(sizeVisual);
   if(stage)sizeObserver.observe(stage);
