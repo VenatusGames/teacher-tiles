@@ -1,6 +1,6 @@
 (() => {
  'use strict';
- const SEED_SECONDS=90,GROW_SECONDS=180;
+ const FIRST_SEED_SECONDS=3,SEED_SECONDS=90,GROW_SECONDS=180,SEED_GROWTH=.12;
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function setup(m){
   const layer=m.querySelector('.patch-pumpkins'),meter=m.querySelector('.patch-meter'),status=m.querySelector('.patch-status'),mic=m.querySelector('.patch-mic'),threshold=m.querySelector('.patch-threshold'),mode=m.querySelector('.patch-mode');
@@ -41,7 +41,7 @@
   }
   function seed(){
    if(plants.length>=24)return;
-   const r=Math.random(),plant=placePlant({sprite:1+Math.floor(Math.random()*4),color:r<.08?'green':r<.18?'yellow':'orange',size:Math.random()<.2?20+Math.random()*5:9+Math.random()*9,growth:0},plants);
+   const r=Math.random(),plant=placePlant({sprite:1+Math.floor(Math.random()*4),color:r<.08?'green':r<.18?'yellow':'orange',size:Math.random()<.2?20+Math.random()*5:9+Math.random()*9,growth:SEED_GROWTH},plants);
    if(plant){plants.push(plant);render();}
   }
   function stop(message='Microphone Off'){++token;stream?.getTracks().forEach(t=>t.stop());stream=null;audio?.close().catch(()=>{});audio=null;analyser=null;samples=null;mic.textContent='Enable Microphone';mic.disabled=false;mic.setAttribute('aria-pressed','false');meter.value=0;status.textContent=message;}
@@ -53,8 +53,8 @@
    if(visible&&!document.hidden&&TeacherTilesHalloween.hasAccess()){
     if(analyser&&samples){analyser.getByteTimeDomainData(samples);let sum=0;for(const v of samples)sum+=((v-128)/128)**2;const raw=clamp((20*Math.log10(Math.sqrt(sum/samples.length)||.00001)+60)/60*100,0,100);level+=(raw-level)*Math.min(1,dt*8);meter.value=level;}
     const growing=mode.value==='ambient'||!!stream&&level<Number(threshold.value);
-    if(growing&&plants.length<24){progress+=dt;if(progress>=SEED_SECONDS){progress-=SEED_SECONDS;seed();seed();notifyBoardChanged('pumpkin-growth')}}
-    if(growing){let matured=false;for(const p of plants){const before=p.growth;p.growth=Math.min(1,p.growth+dt/GROW_SECONDS);if(before<1&&p.growth===1)matured=true}if(matured)notifyBoardChanged('pumpkin-grown')}
+    if(growing&&plants.length<24){const interval=plants.length?SEED_SECONDS:FIRST_SEED_SECONDS;progress+=dt;if(progress>=interval){progress-=interval;seed();seed();notifyBoardChanged('pumpkin-growth')}}
+    if(growing){let matured=false;for(const p of plants){const before=p.growth;p.growth=Math.min(1,p.growth+dt*(1-SEED_GROWTH)/GROW_SECONDS);if(before<1&&p.growth===1)matured=true}if(matured)notifyBoardChanged('pumpkin-grown')}
     if(now-paintAt>180){paintAt=now;[...layer.children].forEach((el,i)=>el.style.setProperty('--growth',String(plants[i].growth)));const text=plants.length>=24?'Your Patch Is Full':mode.value==='ambient'?(plants.length?'No mic · Pumpkins Are Growing':'No mic · A Fresh Patch · Pumpkins Will Grow Over Time'):stream?(growing?'Quiet Voices · Growing':'Too Loud · Growth Paused'):status.textContent;if(text!==status.textContent)status.textContent=text;}
    }
    if(visible&&!document.hidden)raf=requestAnimationFrame(frame);
@@ -69,7 +69,7 @@
   mic.onclick=start;mode.onchange=()=>{stop();level=0;updateMode();wake();notifyBoardChanged('pumpkin-mode')};
   m.querySelectorAll('[data-patch-mode]').forEach(b=>b.onclick=()=>{mode.value=b.dataset.patchMode;mode.onchange();});
   threshold.oninput=()=>{m.querySelector('.patch-threshold-value').textContent=threshold.value+'%';notifyBoardChanged('pumpkin-threshold')};
-  m.querySelector('.patch-reset').onclick=()=>{plants=[];progress=0;level=0;meter.value=0;last=0;ambience.currentTime=0;render();updateMode();notifyBoardChanged('pumpkin-reset')};
+  m.querySelector('.patch-reset').onclick=()=>{plants=[];progress=0;level=0;meter.value=0;paintAt=0;try{ambience.currentTime=0}catch{}render();updateMode();wake();notifyBoardChanged('pumpkin-reset')};
   m._boardGetState=()=>({layoutVersion:3,plants:plants.map(p=>({...p})),progress,mode:mode.value,threshold:Number(threshold.value)});
   m._boardSetState=s=>{plants=(Array.isArray(s?.plants)?s.plants:[]).slice(0,24).map((p,i)=>({sprite:clamp(Math.round(Number(p.sprite)||1),1,4),color:['orange','green','yellow'].includes(p.color)?p.color:'orange',x:clamp(Number(p.x)||50,5,95),y:s?.layoutVersion>=2?clamp(Number(p.y)||60,48,94):clamp(52+(Number(p.y)-42)*.8,48,94),size:s?.layoutVersion>=2?clamp(Number(p.size)||16,7,27):8+(i*7+Number(p.sprite)*3)%18,growth:clamp(Number(p.growth)||0,0,1)}));if(s?.layoutVersion!==3){const spaced=[];for(const p of plants){const placed=placePlant(p,spaced);spaced.push(placed||p);}plants=spaced;}progress=clamp(Number(s?.progress)||0,0,SEED_SECONDS);mode.value=s?.mode==='microphone'?'microphone':'ambient';threshold.value=clamp(Number(s?.threshold)||45,15,85);m.querySelector('.patch-threshold-value').textContent=threshold.value+'%';mic.hidden=mode.value==='ambient';meter.hidden=mode.value==='ambient';render();updateMode();wake();};
   m._deactivate=()=>{ambience.pause();stop();previousDeactivate?.()};m._cleanup=()=>{disposed=true;ambience.pause();ambience.removeAttribute('src');ambience.load();skinObserver.disconnect();m.removeEventListener('teachertiles:tileaudiochange',syncAmbience);window.removeEventListener('teachertiles:audiopreferenceschange',syncAmbience);document.removeEventListener('pointerdown',syncAmbience);stop();cancelAnimationFrame(raf);observer.disconnect();document.removeEventListener('visibilitychange',wake);previousCleanup?.()};
