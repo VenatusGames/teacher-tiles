@@ -100,9 +100,9 @@
 @keyframes trickReveal{from{opacity:0;transform:translateY(25px) scale(.65)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.pumpkincarving-module[data-pumpkin-lit=true] :is(.carving-cavity,.carving-cuts),[data-trick-phase="knocking"] .trick-door-knocker,.trick-result{animation:none}.trick-door-leaf{transition:none}}
 
-.halloweentimer-module .timer-stage>.timer-readout{margin-top:-18px;padding:8px 20px;max-width:95%}
-.halloweentimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,12cqw,64px)!important;line-height:1.05}
-.halloweentimer-module .timer-stage>.timer-readout .timer-status{font-size:clamp(10px,3cqw,14px)!important}
+.halloweentimer-module .timer-stage>.timer-readout{margin-top:-18px;padding:6px 16px;max-width:95%}
+.halloweentimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(22px,8.5cqw,44px)!important;line-height:1.05}
+.halloweentimer-module .timer-stage>.timer-readout .timer-status{font-size:clamp(9px,2.4cqw,12px)!important}
 .pumpkincarving-module.carving-pointer-controls:not(:hover) .halloween-toolbar{height:0;margin-top:-8px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(8px)}
 /* Ground each silhouette with a soft contact shadow that grows with it. */
 .patch-plant{--pumpkin-ground:108.5%;--pumpkin-width:76%;--sprite-ground:89%}
