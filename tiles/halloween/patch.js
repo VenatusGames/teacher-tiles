@@ -1,6 +1,6 @@
 (() => {
  'use strict';
- const FIRST_SEED_SECONDS=3,SEED_SECONDS=90,GROW_SECONDS=180,SEED_GROWTH=.12;
+ const FIRST_SEED_SECONDS=3,SEED_SECONDS=90,GROW_SECONDS=160,SEED_GROWTH=.12;
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function setup(m){
   const layer=m.querySelector('.patch-pumpkins'),meter=m.querySelector('.patch-meter'),status=m.querySelector('.patch-status'),mic=m.querySelector('.patch-mic'),threshold=m.querySelector('.patch-threshold'),mode=m.querySelector('.patch-mode');
