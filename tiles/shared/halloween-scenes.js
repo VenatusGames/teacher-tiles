@@ -26,11 +26,11 @@
     const corners=[[0,0,420,.48],[1600,0,355,.72],[0,900,290,.85],[1600,900,375,.54]];
     for(let i=0;i<corners.length;i++){
       const [cx,cy,range,a]=corners[i],r=range*(.55+.30*Math.sin(t*.075+i*2.1)),x=cx+Math.cos(a)*r*(cx?-1:1),y=cy+Math.sin(a)*r*(cy?-1:1);
-      spider(g,x,y,.9+i*.11,t+i,Math.atan2(y-cy,x-cx)+Math.PI/2);
+      spider(g,x,y,.9+i*.11,t+i,Math.atan2(y-cy,x-cx)+Math.PI/2+Math.acos(Math.tanh(Math.cos(t*.075+i*2.1)*14)));
     }
     for(let i=0;i<2;i++){
       const x=575+i*470+Math.sin(t*.2+i)*9,y=80+(.5+.5*Math.sin(t*.15+i*2))*165;
-      g.strokeStyle='#b9bcd147';g.lineWidth=.65;g.beginPath();g.moveTo(575+i*470,0);g.lineTo(x,y-10);g.stroke();spider(g,x,y,.9,t*.35,Math.sin(t*.2)*.08+Math.PI);
+      g.strokeStyle='#b9bcd147';g.lineWidth=.65;g.beginPath();g.moveTo(575+i*470,0);g.lineTo(x,y-10);g.stroke();spider(g,x,y,.9,t*.35,Math.atan2(12.375*Math.cos(t*.15+i*2),1.8*Math.cos(t*.2+i))+Math.PI/2);
     }
   }
   // Soft irregular cloud banks are cached, then drift completely on and off screen.
