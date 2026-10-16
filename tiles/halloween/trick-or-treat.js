@@ -13,6 +13,9 @@
  function drawDoor(m,variant){
   m.style.setProperty('--door-color',palette[variant%palette.length]);
   m.dataset.doorStyle=String(variant%4);
+  const bell=variant%4>=2;m.dataset.doorHardware=bell?'bell':'knocker';
+  const door=m.querySelector('.trick-door');door.setAttribute('aria-label',bell?'Ring the doorbell':'Knock on the door');
+  if(!door.querySelector('.trick-doorbell')){const button=document.createElement('span');button.className='trick-doorbell';button.setAttribute('aria-hidden','true');button.innerHTML='<i></i>';door.append(button);}
   const panels=m.querySelector('.trick-door-panels');panels.replaceChildren();
   for(let i=0;i<(variant%4===0?6:variant%4===1?4:2);i++)panels.append(document.createElement('i'));
  }
@@ -38,7 +41,7 @@
   }
   door.onclick=()=>{
    if(phase!=='ready'||!TeacherTilesHalloween.hasAccess())return;
-   stopSounds();lastKnock=pickOther(4,lastKnock);phase='knocking';reward=null;paint();
+   stopSounds();const firstSound=variant%4>=2?2:0;lastKnock=firstSound+pickOther(2,lastKnock>=firstSound&&lastKnock<firstSound+2?lastKnock-firstSound:-1);phase='knocking';reward=null;paint();
    const knock=play('knock'+(lastKnock+1));
    timeout=setTimeout(reveal,3500);
    if(knock){knock.onended=()=>{sounds.delete(knock);reveal()};knock.onerror=()=>{clearTimeout(timeout);timeout=setTimeout(reveal,900)};knock._started.catch(()=>{clearTimeout(timeout);timeout=setTimeout(reveal,900)});}else{clearTimeout(timeout);timeout=setTimeout(reveal,900)}

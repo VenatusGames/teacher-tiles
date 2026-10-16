@@ -17,7 +17,7 @@
   const previousCleanup=m._cleanup,previousDeactivate=m._deactivate;
   const toggle=m.querySelector('.tile-settings-toggle'),panel=m.querySelector('.tile-settings-panel');
   toggle.onclick=e=>{e.stopPropagation();panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));m.classList.toggle('has-tile-settings-open',!panel.hidden)};
-  function render(){layer.replaceChildren();plants.forEach(p=>{const el=document.createElement('div');el.className='patch-plant';el.style.cssText=`left:${p.x}%;top:${p.y}%;width:${p.size}%;z-index:${Math.round(p.y)};--growth:${p.growth}`;el.dataset.color=p.color;el.innerHTML=`<img draggable="false" src="tiles/halloween/assets/pumpkin-${p.sprite}.png" alt="${p.color} pumpkin">`;layer.append(el)});}
+  function render(){layer.replaceChildren();plants.forEach(p=>{const el=document.createElement('div');el.className='patch-plant';el.style.cssText=`left:${p.x}%;top:${p.y}%;width:${p.size}%;z-index:${Math.round(p.y)};--growth:${p.growth}`;el.dataset.color=p.color;el.dataset.sprite=String(p.sprite);el.innerHTML=`<img draggable="false" src="tiles/halloween/assets/pumpkin-${p.sprite}.png" alt="${p.color} pumpkin">`;layer.append(el)});}
   // Reserve space for mature pumpkins, including sprite size and the scene aspect ratio.
   function placePlant(plant, occupied){
    const ratio=Math.max(1,layer.clientWidth/Math.max(1,layer.clientHeight));
