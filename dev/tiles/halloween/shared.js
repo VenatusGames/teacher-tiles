@@ -73,7 +73,7 @@
   function preview(m,state,base=document.baseURI){
     if(state.type==='pumpkincarving'){prepareCarving(m);m.querySelector('.carving-surface image').setAttribute('href',new URL('tiles/halloween/assets/pumpkin-4.png',base).href);}
     if(state.type==='halloweentimer'){
-      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',timerPath(m)));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-visual').append(m.querySelector('.timer-readout'));
+      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',timerPath(m)));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-stage').prepend(m.querySelector('.timer-readout'));
     }
     if(state.type==='pumpkincarving')renderCuts(m,(Array.isArray(state.special?.cuts)?state.special.cuts:[]).slice(0,100).filter(d=>typeof d==='string'&&d.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(d)));
     if(state.type==='trickortreat')window.TeacherTilesTrickOrTreat?.preview(m,state.special);
