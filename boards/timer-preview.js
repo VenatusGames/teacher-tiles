@@ -11,7 +11,7 @@ const shapePaths={
 let serial=0;
 export function renderTimerPreview(module,state){
  const progress=0,text='00:00',timer={total:0,left:0,progress:0,running:false};
- if(state.type==='timer'){
+ if(state.type==='timer'||state.type==='halloweentimer'){
   const path=shapePaths[state.dataset?.timerShape||state.dataset?.shape]||shapePaths.circle,id='preview-timer-clip-'+(++serial);module.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(n=>n.setAttribute('d',path));const clip=module.querySelector('.shape-clip');if(clip)clip.id=id;module.querySelector('.shape-foreign')?.setAttribute('clip-path','url(#'+id+')');const fill=module.querySelector('.shape-fill');fill?.style.setProperty('--progress',progress*360+'deg');module.style.setProperty('--timer-progress-ratio',String(progress));const visual=module.querySelector('.timer-visual');visual?.style.setProperty('--timer-visual-size',Math.max(50,Math.min(Number(state.transform?.width)||320,(Number(state.transform?.height)||240)-70)-25)+'px');
   if(state.dataset?.tileSkin==='timer-liquid'&&fill){const liquid=document.createElement('div');liquid.className='timer-liquid-fill';liquid.innerHTML='<svg class="timer-liquid-wave" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z"/></svg>';fill.append(liquid);}
   module.querySelectorAll('.timer-remaining').forEach(n=>n.textContent=text);

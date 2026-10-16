@@ -5,6 +5,13 @@ function setupTeacherTilesShop(){
   if(!modal||!toggle||!close)return;
 
   setupShopExtras(modal);
+  // Explicit seasonal metadata also powers search and the Halloween collection.
+  modal.querySelectorAll('[data-shop-product][data-shop-holiday]').forEach(card=>{
+    const badge=document.createElement('span');badge.className='holiday-badge shop-holiday-badge';badge.textContent='Holiday';
+    badge.title=card.dataset.shopHoliday==='halloween'?'Halloween':'Christmas';
+    card.querySelector('.shop-product__preview')?.append(badge);
+  });
+  let activeHoliday='';
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
   shopHome.append(shopHome.querySelector('.shop-featured-library'));
@@ -21,6 +28,10 @@ function setupTeacherTilesShop(){
   modal.querySelector('.shop-header').after(navigation);
   const redeemTrigger=document.createElement('button');redeemTrigger.type='button';redeemTrigger.className='shop-redeem-trigger';redeemTrigger.textContent='Redeem Code';redeemTrigger.setAttribute('aria-haspopup','dialog');redeemTrigger.setAttribute('aria-expanded','false');
   navigation.append(redeemTrigger);
+  const searchTrigger=document.createElement('button');searchTrigger.type='button';searchTrigger.className='shop-search-trigger';searchTrigger.title='Search Shop';searchTrigger.setAttribute('aria-label','Search Shop');
+  searchTrigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>';
+  navigation.children[0].after(searchTrigger);
+  searchTrigger.addEventListener('click',()=>{activeHoliday='';showPage('home');const search=shopHome.querySelector('[data-shop-search]');search.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});search.focus({preventScroll:true});});
   for(const [id,label,soon] of [['planner-skins','Planners',false],['presentation-themes','Presentations',true],['profile-cosmetics','Profiles',false],['tile-effects','Tile Effects',true]]){
     const button=document.createElement('button');button.type='button';button.textContent=label;
     if(soon){button.disabled=true;button.setAttribute('aria-label',label+' — Coming Soon');const caption=document.createElement('span');caption.textContent=label;button.replaceChildren(caption);const hint=document.createElement('small');hint.textContent='Coming Soon';hint.setAttribute('aria-hidden','true');button.append(hint);}else button.dataset.shopOpenPage=id;
@@ -43,6 +54,10 @@ function setupTeacherTilesShop(){
     input.placeholder='Search '+name.replaceAll('-',' ');input.setAttribute('aria-label','Search '+name.replaceAll('-',' '));
     page.querySelector('.shop-page-heading').after(toolbar);
   }
+  const dealsButton=document.createElement('button');dealsButton.type='button';dealsButton.className='shop-deals-trigger';dealsButton.dataset.shopOpenPage='sales-bundles';dealsButton.textContent='Sales & Bundles';dealsButton.hidden=true;navigation.insertBefore(dealsButton,redeemTrigger);
+  const dealsPage=document.createElement('section');dealsPage.className='shop-page';dealsPage.dataset.shopPage='sales-bundles';dealsPage.hidden=true;
+  dealsPage.innerHTML='<div class="shop-page-heading"><button type="button" class="shop-back" data-shop-open-page="home" aria-label="Back to Shop Home">←</button><h2>Sales &amp; Bundles</h2></div><div data-deals-mount></div><p data-deals-empty hidden>No sales or bundles are available right now.</p>';
+  modal.querySelector('.shop-content').append(dealsPage);
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];
   const balanceNode=document.getElementById('shop-coin-balance');
@@ -56,8 +71,8 @@ function setupTeacherTilesShop(){
   const coinCelebrationAmount=document.getElementById('shop-coin-celebration-amount');
   const coinCelebrationBalance=document.getElementById('shop-coin-celebration-balance');
   const coinCelebrationClose=document.getElementById('shop-coin-celebration-close');
-  const banners=[...modal.querySelectorAll('[data-shop-banner]')];
-  const dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
+  let banners=[...modal.querySelectorAll('[data-shop-banner]')];
+  let dots=[...modal.querySelectorAll('[data-shop-banner-dot]')];
   const products=[...modal.querySelectorAll('[data-shop-product]')];
   const catalogProducts=[...products];
   const featuredLibrary=createShopFeaturedLibrary({modal,sources:catalogProducts,
@@ -164,6 +179,8 @@ function setupTeacherTilesShop(){
     setupShopSelect(sort);
     const items=[...container.children].filter(item=>item.matches(pageName==='home'?'.shop-category':'.shop-product'));
     const globalResults=pageName==='home'?document.createElement('div'):null;
+    const holidayFilter=pageName==='home'?document.createElement('button'):null;
+    if(holidayFilter){holidayFilter.type='button';holidayFilter.className='shop-holiday-filter';holidayFilter.hidden=true;holidayFilter.textContent='Halloween ×';holidayFilter.setAttribute('aria-label','Remove Halloween filter');toolbar.before(holidayFilter);holidayFilter.addEventListener('click',()=>{activeHoliday='';render();search.focus()});}
     if(globalResults){globalResults.className='shop-global-results';globalResults.hidden=true;toolbar.insertAdjacentElement('afterend',globalResults)}
     const empty=document.createElement('div');
     empty.className='shop-browser-empty';
@@ -171,12 +188,14 @@ function setupTeacherTilesShop(){
     empty.hidden=true;
     container.insertAdjacentElement('afterend',empty);
     const nameOf=item=>item.querySelector('h3,.shop-category__copy strong')?.textContent?.trim()||'';
+    const searchText=item=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.dataset.shopHoliday||''} ${nameOf(item)} ${item.querySelector('.shop-product__type')?.textContent||''} ${item.querySelector('p')?.textContent||''}`);
     const render=()=>{
       const terms=shopBrowserClean(search.value).split(/\s+/).filter(Boolean);
       const mode=sort.value;
       const tileType=filter?.value||'all';
-      if(pageName==='home'&&terms.length){
-        const matched=catalogProducts.filter(item=>terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term))).sort((a,b)=>{
+      if(holidayFilter)holidayFilter.hidden=!activeHoliday;
+      if(pageName==='home'&&(terms.length||activeHoliday||mode!=='featured')){
+        const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
           if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
           if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
@@ -188,23 +207,21 @@ function setupTeacherTilesShop(){
         globalResults.classList.toggle('is-empty',matched.length===0);
         matched.forEach(source=>{
           const card=source.cloneNode(true);
-          card.classList.add('shop-search-result');
+          card.classList.add('shop-search-result');card.hidden=false;card.classList.remove('shop-filter-hidden','is-shop-highlighted');card.tabIndex=0;
           card.removeAttribute('data-shop-product');
           const action=card.querySelector('[data-shop-buy]');
-          if(action){action.disabled=false;action.removeAttribute('data-shop-buy');action.className='shop-search-result__view';action.textContent='View →';action.addEventListener('click',()=>{
-            const targetPage=source.closest('[data-shop-page]')?.dataset.shopPage||'home';
-            showPage(targetPage);
-            source.classList.add('is-shop-highlighted');
-            source.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});
-            setTimeout(()=>source.classList.remove('is-shop-highlighted'),1300);
-          })}
+          const view=()=>openProduct(source.dataset.shopProduct);
+          if(action){action.disabled=false;action.removeAttribute('data-shop-buy');action.className='shop-search-result__view';action.textContent='View';action.addEventListener('click',event=>{event.stopPropagation();view()});}
+          card.setAttribute('aria-label','View '+nameOf(source));
+          card.addEventListener('click',event=>{if(!event.target.closest('button'))view()});
+          card.addEventListener('keydown',event=>{if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();view()}});
           globalResults.appendChild(card);
         });
         page.classList.add('is-global-searching');
         if(!matched.length)globalResults.innerHTML='<span aria-hidden="true">⌕</span><strong>No shop items found</strong><small>Try another product name, collection, or keyword.</small>';
         globalResults.hidden=false;
         empty.hidden=true;
-        clearButton.hidden=false;
+        clearButton.hidden=!search.value;
         if(result)result.textContent=`${matched.length} ${matched.length===1?'result':'results'}`;
         return;
       }
@@ -219,7 +236,7 @@ function setupTeacherTilesShop(){
       });
       let visible=0;
       ordered.forEach(item=>{
-        const searchMatch=terms.every(term=>shopBrowserClean(`${item.dataset.shopProduct||''} ${item.textContent||''}`).includes(term));
+        const searchMatch=terms.every(term=>searchText(item).includes(term));
         const typeMatch=tileType==='all'||item.dataset.shopTileType===tileType;
         const match=searchMatch&&typeMatch;
         item.hidden=!match;
@@ -232,8 +249,8 @@ function setupTeacherTilesShop(){
       if(result)result.textContent=`${visible} ${pageName==='home'?(visible===1?'category':'categories'):(visible===1?'item':'items')}`;
     };
     search.addEventListener('input',render);
-    search.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();search.value='';render();search.focus()}});
-    clearButton.addEventListener('click',()=>{search.value='';render();search.focus()});
+    search.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();search.value='';if(pageName==='home')activeHoliday='';render();search.focus()}});
+    clearButton.addEventListener('click',()=>{search.value='';if(pageName==='home')activeHoliday='';render();search.focus()});
     sort.addEventListener('change',render);
     filter?.addEventListener('change',render);
     render();
@@ -262,7 +279,7 @@ function setupTeacherTilesShop(){
     const state=accountState();
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
-      const isOwned=owned.has(card.dataset.shopProduct);
+      const isOwned=card.dataset.bundleItems?JSON.parse(card.dataset.bundleItems).every(id=>owned.has(id)):owned.has(card.dataset.shopProduct);
       markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
       const button=card.querySelector('[data-shop-buy]');
@@ -273,7 +290,7 @@ function setupTeacherTilesShop(){
     });
   }
   function syncMembership(){
-    const state=accountState(),active=Boolean(state.subscriptionActive);
+    const state=accountState(),active=Boolean(state.subscriptionActive||state.subscriptionOverride);
     membershipCard?.classList.toggle('is-subscription-active',active);
     if(membershipTitle)membershipTitle.textContent=active?'Subscription Active!':membershipDefaultTitle;
     for(const selector of ['.shop-membership-price','.shop-membership-card__foot']){
@@ -366,9 +383,11 @@ function setupTeacherTilesShop(){
     pendingCoinCelebration=null;
     try{sessionStorage.removeItem(coinCheckoutStorageKey)}catch{}
   }
+  function resetHomeSort(){const sort=shopHome.querySelector('[data-shop-sort]');sort.value='featured';sort.dispatchEvent(new Event('change',{bubbles:true}))}
   function showPage(name){
     if(!pages.some(page=>page.dataset.shopPage===name))name='home';
     activePage=name;
+    managedShop?.setPage(name);
     featuredLibrary.setActive(name==='home'&&!modal.hidden);
     navigation.querySelectorAll('button').forEach(button=>{if(button.dataset.shopOpenPage===name)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current')});
     pages.forEach(page=>{
@@ -413,7 +432,15 @@ function setupTeacherTilesShop(){
     setTimeout(()=>{coinMenu.hidden=true;if(!modal.hidden)startBannerTimer()},reduceMotion?0:220);
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
+  let managedShop;
+  const managedReady=import('./managed-shop.js?v=20261015-deals-nav').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>render())},replaceBanners:slides=>{
+    stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
+    track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
+    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
+    modal.querySelector('.shop-banner').hidden=!slides.length;showBanner(0);startBannerTimer();
+  }});if(!modal.hidden)return managedShop.refresh()}).catch(error=>console.warn('Shop management could not initialize',error));
   function openShop(){
+    void managedReady.then(()=>managedShop?.refresh());
     lastFocus=document.activeElement;
     const shelf=document.getElementById('asset-shelf');
     if(shelf?.classList.contains('is-open'))document.getElementById('asset-shelf-close')?.click();
@@ -425,7 +452,7 @@ function setupTeacherTilesShop(){
     featuredLibrary.refresh();
     syncShop();
     syncStickerShopPackCounts();
-    showBanner(bannerIndex,false);
+    showBanner(0,false);
     requestAnimationFrame(()=>modal.classList.add('is-open'));
     startBannerTimer();
     close.focus({preventScroll:true});
@@ -470,10 +497,11 @@ function setupTeacherTilesShop(){
     if(!window.TeacherTilesAccount?.purchase){showToast('The secure shop is still loading.');return}
     card.classList.add('is-purchasing');syncProducts();
     try{
-      const result=await window.TeacherTilesAccount.purchase(id);
+      const result=await window.TeacherTilesAccount.purchase(id,Number(card.dataset.shopPrice));
       syncShop();
       showToast(result.alreadyOwned?'This pack is already owned.':`${card.querySelector('h3')?.textContent||'Pack'} added to your collection.`);
     }catch(error){
+      if(error?.details?.reason==='price-changed')void managedShop?.refresh(true);
       const shortfall=Number(error?.details?.shortfall);
       if(Number.isFinite(shortfall)&&shortfall>0){showToast(`You need ${shortfall.toLocaleString()} more coins.`);setTimeout(openCoins,260)}
       else showToast(errorMessage(error,'The purchase could not be completed.'));
@@ -559,7 +587,7 @@ function setupTeacherTilesShop(){
   toggle.addEventListener('click',openShop);
   close.addEventListener('click',closeShop);
   modal.querySelectorAll('[data-shop-close]').forEach(node=>node.addEventListener('click',closeShop));
-  pageButtons.forEach(button=>button.addEventListener('click',()=>showPage(button.dataset.shopOpenPage)));
+  pageButtons.forEach(button=>button.addEventListener('click',()=>{if(button.dataset.shopOpenPage==='home'){activeHoliday='';shopHome.querySelector('[data-shop-search]').value='';resetHomeSort()}showPage(button.dataset.shopOpenPage)}));
   coinButton?.addEventListener('click',openCoins);
   profileCoinCard?.addEventListener('click',()=>{
     document.querySelector('[data-profile-close]')?.click();
@@ -568,6 +596,14 @@ function setupTeacherTilesShop(){
   });
   coinMenuClose?.addEventListener('click',()=>closeCoins());
   coinCelebrationClose?.addEventListener('click',closeCoinCelebration);
+  modal.querySelectorAll('[data-shop-banner-target]').forEach(button=>button.addEventListener('click',()=>{
+    const target=button.dataset.shopBannerTarget;
+    if(target==='membership'){window.TeacherTilesShop.openMembership();return}
+    if(target==='halloween'){
+      activeHoliday='halloween';shopHome.querySelector('[data-shop-search]').value='';showPage('home');
+      shopHome.querySelector('.shop-holiday-filter')?.focus({preventScroll:true});
+    }else showPage(target);
+  }));
   dots.forEach(dot=>dot.addEventListener('click',()=>showBanner(Number(dot.dataset.shopBannerDot)||0)));
   function bindProduct(card){
     card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);
@@ -608,13 +644,13 @@ function setupTeacherTilesShop(){
     }finally{if(button)button.disabled=false}
   });
   subscribePreview?.addEventListener('click',async()=>{
-    if(accountState().subscriptionActive){syncMembership();showToast('Your subscription is already active.');return}
+    if(accountState().subscriptionActive||accountState().subscriptionOverride){syncMembership();showToast('Your subscription is already active.');return}
     if(membershipCheckoutBusy||accountState().loading||!accountState().ready)return;
     if(!window.TeacherTilesAccount?.createSubscriptionCheckout){showToast('The subscription store is still loading.');return}
     membershipCheckoutBusy=true;syncMembership();
     try{
       const {url}=await window.TeacherTilesAccount.createSubscriptionCheckout('price_1U9w2B2H9EEY7x9T4O9EiCIv');
-      if(!accountState().subscriptionActive)window.location.assign(url);
+      if(!accountState().subscriptionActive&&!accountState().subscriptionOverride)window.location.assign(url);
     }catch(error){
       showToast(errorMessage(error,'Subscription checkout could not be opened.'));
     }finally{membershipCheckoutBusy=false;syncMembership()}
@@ -634,7 +670,7 @@ function setupTeacherTilesShop(){
   syncStickerShopPackCounts();
   window.TeacherTilesShop={
     open:openShop,
-    openMembership:()=>{openShop();closeProduct();closeCoins(false);requestAnimationFrame(()=>{membershipCard?.scrollIntoView({block:'center',behavior:'smooth'});(subscribePreview&&!subscribePreview.disabled&&!subscribePreview.hidden?subscribePreview:membershipCard)?.focus({preventScroll:true});});},
+    openMembership:()=>{resetHomeSort();activeHoliday='';shopHome.querySelector('[data-shop-search]').value='';openShop();closeProduct();closeCoins(false);requestAnimationFrame(()=>{membershipCard?.scrollIntoView({block:'center',behavior:'smooth'});(subscribePreview&&!subscribePreview.disabled&&!subscribePreview.hidden?subscribePreview:membershipCard)?.focus({preventScroll:true});});},
     openProduct,
     openCoins:()=>{openShop();openCoins()},
     openPage:name=>{openShop();showPage(name)},

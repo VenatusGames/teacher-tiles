@@ -10,11 +10,12 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
     panel.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';
     const selected=active();let total=0;const sections=[];
     for(const pack of packs){
-      const accessible=owned(pack.productId),choices=catalog.filter(c=>c.productId===pack.productId&&(!ownedOnly||accessible)&&(view!=='favorites'||favorites.has(c.id))&&(!query||(pack.name+' '+c.name).toLowerCase().includes(query)));
+      const accessible=owned(pack.productId),choices=catalog.filter(c=>c.productId===pack.productId&&(!ownedOnly||accessible)&&(view!=='favorites'||favorites.has(c.id))&&(!query||(pack.name+' '+c.name+' '+(pack.holiday||'')).toLowerCase().includes(query)));
       if(!choices.length)continue;total+=choices.length;
       const section=document.createElement('section');section.className='cursor-picker-pack';
       const header=document.createElement('button');header.type='button';header.className='cursor-picker-pack-heading';header.setAttribute('aria-expanded',String(!closed.has(pack.productId)));
       const name=document.createElement('strong');name.textContent=pack.name;header.append(name);
+      if(pack.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title='Halloween';header.append(holiday)}
       if(!accessible){const badge=document.createElement('span');badge.className='cursor-picker-lock';badge.innerHTML=lock();header.append(badge)}
       const count=document.createElement('span');count.textContent=String(choices.length);header.append(count);const arrow=document.createElement('span');arrow.className='cursor-picker-chevron';arrow.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';header.append(arrow);
       const body=document.createElement('div');body.className='cursor-picker-pack-body';body.hidden=closed.has(pack.productId);
@@ -22,7 +23,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
       for(const cursor of choices){
         const cell=document.createElement('div');cell.className='cursor-picker-cell';
         const choice=document.createElement('button');choice.type='button';choice.className='cursor-picker-choice';choice.setAttribute('aria-pressed',String(selected===cursor.id));choice.setAttribute('aria-label',(accessible?'Use ':'Unlock ')+pack.name+' '+cursor.name);choice.dataset.cursorChoice=cursor.id;
-        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=20260927-packs`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
+        const img=document.createElement('img');img.src=`assets/cursors/${cursor.id==='default'?'default':cursor.id}-normal.png?v=${cursor.assetVersion||'20260927-packs'}`;img.alt='';img.draggable=false;if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';choice.append(img);
         const label=document.createElement('span');label.textContent=cursor.name;choice.append(label);
         choice.onclick=()=>accessible?apply(cursor.id):unlock(pack.productId);
         const favorite=document.createElement('button');favorite.type='button';favorite.className='cursor-picker-favorite';favorite.textContent=favorites.has(cursor.id)?'★':'☆';favorite.setAttribute('aria-label',(favorites.has(cursor.id)?'Unfavorite ':'Favorite ')+cursor.name);favorite.setAttribute('aria-pressed',String(favorites.has(cursor.id)));favorite.onclick=()=>{favorites.has(cursor.id)?favorites.delete(cursor.id):favorites.add(cursor.id);try{window.TeacherTilesCollectionPreferences.write('teacherTilesCursorFavorites',JSON.stringify([...favorites]))}catch{}render()};
