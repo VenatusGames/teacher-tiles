@@ -9,7 +9,12 @@ function setupVisualSchedule(m){
   const timesToggle=timesRow.querySelector('button');
   const syncTimes=()=>timesToggle.setAttribute('aria-checked',String(m.dataset.scheduleTimesHidden!=='true'));
   syncTimes();
-  timesToggle.addEventListener('click',()=>{m.dataset.scheduleTimesHidden=String(m.dataset.scheduleTimesHidden!=='true');syncTimes();autoSize();notifyBoardChanged('visual-schedule-times')});
+  timesToggle.addEventListener('click',()=>{
+    const hide=m.dataset.scheduleTimesHidden!=='true';
+    if(hide)m.dataset.scheduleTimedWidth=String(m.offsetWidth);
+    else if(Number(m.dataset.scheduleTimedWidth)>0)m.style.width=m.dataset.scheduleTimedWidth+'px';
+    m.dataset.scheduleTimesHidden=String(hide);syncTimes();autoSize();notifyBoardChanged('visual-schedule-times');
+  });
   setupClassroomTileControls(m);
   const list=m.querySelector('.visual-schedule-list');
   const add=m.querySelector('.visual-schedule-add');
@@ -42,6 +47,21 @@ function setupVisualSchedule(m){
     cancelAnimationFrame(autoSizeFrame);
     autoSizeFrame=requestAnimationFrame(()=>{
       updateSummary();
+      if(m.dataset.scheduleTimesHidden==='true'){
+        const context=document.createElement('canvas').getContext('2d');
+        const textWidth=input=>{if(!input)return 0;const css=getComputedStyle(input);context.font=css.font;return context.measureText(input.value||input.placeholder||'').width+8};
+        const padding=element=>{const css=getComputedStyle(element);return (parseFloat(css.paddingLeft)||0)+(parseFloat(css.paddingRight)||0)+(parseFloat(css.borderLeftWidth)||0)+(parseFloat(css.borderRightWidth)||0)};
+        let contentWidth=0;
+        list.querySelectorAll('.visual-schedule-segment').forEach(row=>{
+          const css=getComputedStyle(row);
+          contentWidth=Math.max(contentWidth,row.querySelector('.visual-schedule-image').offsetWidth+textWidth(row.querySelector('.visual-schedule-segment-title'))+row.querySelector('.visual-schedule-segment-actions').offsetWidth+2*(parseFloat(css.columnGap)||0)+padding(row));
+        });
+        const header=m.querySelector('.visual-schedule-header');
+        if(header&&getComputedStyle(header).display!=='none')contentWidth=Math.max(contentWidth,textWidth(m.querySelector('.visual-schedule-title')));
+        const minWidth=parseFloat(getComputedStyle(m).minWidth)||240;
+        const maxWidth=Math.max(minWidth,Math.min(720,(innerWidth-48)/boardCamera.scale));
+        m.style.width=clamp(Math.ceil(contentWidth+padding(m)+padding(list)+4),minWidth,maxWidth)+'px';
+      }
       const top=m.offsetTop;
       m.classList.add('is-measuring-rest');
       m.style.height='auto';
@@ -201,7 +221,7 @@ function setupVisualSchedule(m){
     title.value=data.title??'New Activity';
     time.value=data.time??'';
     const fitCopy=()=>{title.style.width=Math.max(4,title.value.length+.5)+'ch';time.style.width=Math.max(5,time.value.length+.5)+'ch'};
-    title.addEventListener('input',fitCopy);time.addEventListener('input',fitCopy);fitCopy();
+    title.addEventListener('input',()=>{fitCopy();if(m.dataset.scheduleTimesHidden==='true')autoSize()});time.addEventListener('input',fitCopy);fitCopy();
     row.classList.toggle('is-complete',Boolean(data.complete));
     const completeButton=row.querySelector('.visual-schedule-complete');
     const syncCompleteButton=()=>{
