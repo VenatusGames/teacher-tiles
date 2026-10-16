@@ -63,13 +63,13 @@
   function preview(m,state,base=document.baseURI){
     if(state.type==='pumpkincarving'){prepareCarving(m);m.querySelector('.carving-surface image').setAttribute('href',new URL('tiles/halloween/assets/pumpkin-4.png',base).href);}
     if(state.type==='halloweentimer'){
-      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',pumpkinPath));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-stage').prepend(m.querySelector('.timer-readout'));
+      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',pumpkinPath));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-stage').append(m.querySelector('.timer-readout'));
     }
     if(state.type==='pumpkincarving')renderCuts(m,(Array.isArray(state.special?.cuts)?state.special.cuts:[]).slice(0,100).filter(d=>typeof d==='string'&&d.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(d)));
     if(state.type==='trickortreat')window.TeacherTilesTrickOrTreat?.preview(m,state.special);
     if(state.type==='pumpkinpatch')for(const p of (Array.isArray(state.special?.plants)?state.special.plants:[]).slice(0,24)){
       const bound=(v,min,max,fallback)=>Math.max(min,Math.min(max,Number(v)||fallback));
-      const el=document.createElement('div');el.className='patch-plant';el.style.cssText=`left:${bound(p.x,5,95,50)}%;top:${bound(p.y,35,92,60)}%;width:${bound(p.size,8,24,16)}%;--growth:${bound(p.growth,0,1,.1)}`;el.dataset.color=['green','yellow'].includes(p.color)?p.color:'orange';
+      const el=document.createElement('div');el.className='patch-plant';el.style.cssText=`left:${bound(p.x,5,95,50)}%;top:${bound(p.y,35,92,60)}%;width:${bound(p.size,8,24,16)}%;--growth:${bound(p.growth,0,1,.1)}`;el.dataset.color=['green','yellow'].includes(p.color)?p.color:'orange';el.dataset.sprite=String(Math.round(bound(p.sprite,1,4,4)));
       const img=document.createElement('img');img.src=new URL('tiles/halloween/assets/pumpkin-'+Math.round(bound(p.sprite,1,4,4))+'.png',base).href;img.alt='Pumpkin';el.append(img);m.querySelector('.patch-pumpkins').append(el);
     }
   }

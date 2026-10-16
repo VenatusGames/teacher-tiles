@@ -4,6 +4,16 @@
   TeacherTilesHalloween.prepareCarving(m);
   const svg=m.querySelector('.carving-surface'),cuts=svg.querySelector('.carving-cuts'),preview=svg.querySelector('.carving-trace'),tool=m.querySelector('.carving-tool'),undo=m.querySelector('.carving-undo');
   let shapes=[],points=[],pointer=null;
+  const toolbar=m.querySelector('.halloween-toolbar');
+  // Native selects can retain :focus-visible after mouse selection. Keep that
+  // pointer focus from pinning the controls open, while preserving keyboard access.
+  toolbar.addEventListener('pointerdown',()=>m.classList.add('carving-pointer-controls'));
+  toolbar.addEventListener('keydown',()=>m.classList.remove('carving-pointer-controls'));
+  const keyboardControls=e=>{if(e.key==='Tab')m.classList.remove('carving-pointer-controls');};
+  document.addEventListener('keydown',keyboardControls,true);
+  const previousCleanup=m._cleanup;m._cleanup=()=>{document.removeEventListener('keydown',keyboardControls,true);previousCleanup?.();};
+  tool.addEventListener('change',()=>{if(m.classList.contains('carving-pointer-controls'))tool.blur();});
+  m.addEventListener('pointerleave',()=>{const focused=document.activeElement;if(m.classList.contains('carving-pointer-controls')&&toolbar.contains(focused)&&focused!==tool)focused.blur();});
   const point=e=>{const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(svg.getScreenCTM().inverse());return [Math.max(18,Math.min(82,p.x)),Math.max(29,Math.min(86,p.y))]};
   const path=pts=>pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(' ')+'Z';
   function geometry(a,b){const x=Math.min(a[0],b[0]),y=Math.min(a[1],b[1]),w=Math.abs(a[0]-b[0]),h=Math.abs(a[1]-b[1]);if(tool.value==='triangle')return `M${x+w/2} ${y}L${x+w} ${y+h}L${x} ${y+h}Z`;if(tool.value==='circle')return `M${x} ${y+h/2}a${w/2} ${h/2} 0 1 0 ${w} 0a${w/2} ${h/2} 0 1 0 ${-w} 0Z`;return path(points);}
