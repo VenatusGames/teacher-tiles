@@ -17,7 +17,7 @@
     wink:{name:'Wink',d:'M29 36a6 9 0 1 0 12 0a6 9 0 1 0-12 0M57 36Q65 26 74 36L71 40Q65 34 60 40ZM34 56Q50 67 68 54Q61 77 46 72Q38 69 34 56Z'},
     cat:{name:'Sleepy',d:'M26 33Q35 43 44 33L43 39Q35 48 27 39ZM56 33Q65 43 74 33L73 39Q65 48 57 39ZM44 63a6 5 0 1 0 12 0a6 5 0 1 0-12 0'}
   };
-  const ghostPath='M50 7C26 7 7 25 7 49C7 73 25 90 48 90Q62 90 70 85Q80 94 94 91Q82 82 85 72C91 64 94 56 93 47C92 24 74 7 50 7Z';
+  const ghostPath='M50 7C28 7 15 23 15 44C4 36 1 43 5 52Q8 59 16 63Q17 76 8 84Q7 93 28 88Q34 100 49 88Q60 100 71 87Q91 94 87 82Q83 73 85 63Q96 57 97 47Q97 37 85 44C85 23 72 7 50 7Z';
   const timerPath=m=>m.dataset.tileSkin==='halloweentimer-ghost'?ghostPath:pumpkinPath;
   const svg=(face='classic',ghost=false)=>{const options=ghost?ghostFaces:faces;return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${(options[face]||options.classic).d}"/></svg>`};
   const faceIcon=(face,ghost=false)=>svg(face,ghost).replace('0 0 100 100','18 20 64 64');
@@ -73,7 +73,7 @@
   function preview(m,state,base=document.baseURI){
     if(state.type==='pumpkincarving'){prepareCarving(m);m.querySelector('.carving-surface image').setAttribute('href',new URL('tiles/halloween/assets/pumpkin-4.png',base).href);}
     if(state.type==='halloweentimer'){
-      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',timerPath(m)));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-stage').append(m.querySelector('.timer-readout'));
+      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',timerPath(m)));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-visual').append(m.querySelector('.timer-readout'));
     }
     if(state.type==='pumpkincarving')renderCuts(m,(Array.isArray(state.special?.cuts)?state.special.cuts:[]).slice(0,100).filter(d=>typeof d==='string'&&d.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(d)));
     if(state.type==='trickortreat')window.TeacherTilesTrickOrTreat?.preview(m,state.special);
