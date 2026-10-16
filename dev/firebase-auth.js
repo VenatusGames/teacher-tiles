@@ -3682,6 +3682,7 @@ async function handleSignOut() {
 
   try {
     await window.TeacherTilesLessonPlanner?.flushCloud?.();
+    await window.TeacherTilesPresentations?.flush?.();
     await saveCurrentBoard({ immediate: true });
     await authSdk.signOut(auth);
     setStatus("Signed out.");
