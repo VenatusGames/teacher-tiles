@@ -149,3 +149,5 @@
 
 .halloweentimer-module .timer-stage>.timer-readout{padding:6px 18px}
 .halloweentimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,10.3cqw,54px)!important}
+
+.halloweentimer-module .timer-stage>.timer-readout{transform:translateY(calc(-1 * var(--halloween-clock-lift,0px)))!important}
