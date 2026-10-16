@@ -29,11 +29,22 @@
       return url.href;
     }catch{return '';}
   }
-  const image=value=>raster(value)||(/^(?:assets|stickers|tiles)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_. -]+\.(?:png|webp|jpg|jpeg|gif|svg)$/.test(String(value||''))?String(value):'');
+  const image=value=>raster(value)||(/^https:\/\/flagcdn\.io\/flags\/4x3\/[a-z]{2}(?:-[a-z0-9]+)?\.svg$/.test(String(value||''))?String(value):'')||(/^(?:assets|stickers|tiles)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_. -]+\.(?:png|webp|jpg|jpeg|gif|svg)(?:\?v=[a-zA-Z0-9_-]+)?$/.test(String(value||''))?String(value):'');
   const templateImage=value=>raster(value)||remoteImage(value);
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
+    visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
+    halloweentimer:()=>({}),
+    pumpkincarving:s=>({cuts:list(s.cuts,100).filter(p=>typeof p==='string'&&p.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(p))}),
+    pumpkinpatch:s=>({layoutVersion:3,plants:list(s.plants,24).filter(p=>p&&typeof p==='object').map(p=>({sprite:num(p.sprite,1,4,1),color:['orange','green','yellow'].includes(p.color)?p.color:'orange',x:num(p.x,5,95,50),y:num(p.y,48,94,75),size:num(p.size,7,27,15),growth:num(p.growth,0,1,0)})),progress:0,mode:'ambient',threshold:num(s.threshold,15,85,55)}),
+    trickortreat:s=>({variant:Math.round(num(s.variant,0,7,0)),lastKnock:-1,reward:null}),
+    tenssticks:s=>({pieces:list(s.pieces,120).filter(p=>p&&typeof p==='object').map((p,i)=>({id:'piece-'+i,value:[1,10,100].includes(p.value)?p.value:1,scale:p.scale===.7?.7:1,x:num(p.x,0,640,0),y:num(p.y,0,340,0)}))}),
+    tensblock:s=>({value:[1,10,100].includes(s.value)?s.value:1}),
+    lavalamp:s=>({color:token(s.color)}),
+    countdown:s=>({event:text(s.event,120),target:Number.isFinite(Date.parse(s.target))?new Date(s.target).toISOString():'',unit:['weeks','days','hours','minutes','seconds'].includes(s.unit)?s.unit:'days'}),
+    classroomjobs:s=>({version:1,classId:'',assignments:{},allowMultiple:s.allowMultiple===true,jobs:list(s.jobs,100).filter(j=>j&&typeof j==='object').map((j,i)=>({id:'job-'+i,title:text(j.title,60),icon:text(j.icon,12),image:raster(j.image)}))}),
+
     progressbar:s=>({title:text(s.title,200),orientation:token(s.orientation),barStyle:token(s.barStyle),startIconSrc:image(s.startIconSrc),endIconSrc:image(s.endIconSrc),running:false}),
     essentialquestion:s=>({question:text(s.question,2000),subheading:text(s.subheading,500)}),
     vocabulary:s=>({cards:list(s.cards,100).map(v=>({word:text(v.word,100),definition:text(v.definition,800)})),showDefinitions:s.showDefinitions!==false,size:token(s.size)}),
@@ -81,7 +92,7 @@
       if(types&&!types.has(raw.type)){warnings.add(`${raw.type}: unavailable tile omitted`);return null;}
       if(Number(raw.templateTileVersion||1)>1){warnings.add(`${raw.type}: newer tile format omitted`);return null;}
       const t=raw.transform||{},out={templateTileVersion:1,id:`template-${count}`,schemaVersion:2,type:raw.type,transform:{left:num(t.left,-100000,100000,0),top:num(t.top,-100000,100000,0),width:num(t.width,80,2400,320),height:num(t.height,60,2400,240),uniformScale:num(t.uniformScale,.25,4,1),rotation:num(t.rotation,-360,360,0)},zIndex:count,dataset:{}};
-      for(const key of ['bg','font','text','color','shape','orientation','tileSkin','timerColor','timerShape','interactiveMode','squishyColor','shapeColor','candleColor','appearanceBorderStyle','appearanceBorderSize','appearanceBorderColor'])if(token(raw.dataset?.[key]))out.dataset[key]=token(raw.dataset[key]);
+      for(const key of ['bg','font','text','color','shape','orientation','tileSkin','timerColor','timerShape','interactiveMode','squishyColor','shapeColor','candleColor','appearanceBorderStyle','appearanceBorderSize','appearanceBorderColor','pumpkinFace','pumpkinLit','tileHeadingHidden','blockValue'])if(token(raw.dataset?.[key]))out.dataset[key]=token(raw.dataset[key]);
       if(rich.has(raw.type))out.editables=list(raw.editables,3).map((v,i)=>({index:i,html:html(v.html)}));
       if(adapters[raw.type])out.special=adapters[raw.type](raw.type==='progressbar'?{...raw.special,title:raw.special?.title??list(raw.fields).find(f=>f.index===0)?.value}:raw.special||{});
       else if(!rich.has(raw.type)&&raw.type!=='sticker')warnings.add(`${raw.type}: activity and content reset; layout and appearance kept`);
