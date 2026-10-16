@@ -61,3 +61,41 @@
 .halloweentimer-module .timer-shape-color svg{stroke:none}
 
 .pumpkin-face-filled svg{filter:drop-shadow(0 2px 1.5px #46200970) drop-shadow(0 5px 4px #46200935)}
+/* Keep the clock separate from the pumpkin artwork. */
+.halloweentimer-module .timer-stage{flex-direction:column;gap:10px}
+.halloweentimer-module .timer-stage>.timer-readout{position:relative!important;left:auto;right:auto;top:auto!important;bottom:auto;transform:none!important;flex:0 0 auto;margin:0;z-index:2}
+.halloweentimer-module .timer-visual{flex:0 0 auto}
+/* Candlelight: a warm core and small, irregular changes in intensity. */
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{fill:var(--candle-fill);animation:candleIntensity 4.9s ease-in-out infinite}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts{animation:candleIntensity 4.9s ease-in-out infinite}
+@keyframes candleIntensity{0%,100%{filter:brightness(1)}7%{filter:brightness(.94)}12%{filter:brightness(1.06)}16%{filter:brightness(.98)}29%{filter:brightness(1.03)}34%{filter:brightness(.9)}37%{filter:brightness(1.04)}42%{filter:brightness(.96)}59%{filter:brightness(1.02)}64%{filter:brightness(.93)}68%{filter:brightness(1.06)}79%{filter:brightness(1)}84%{filter:brightness(.95)}91%{filter:brightness(1.04)}}
+.trickortreat-module{width:340px;height:460px;min-width:240px;min-height:300px;padding:28px 16px 12px;display:flex;flex-direction:column;gap:10px;container-type:size;overflow:hidden}
+.trickortreat-module .halloween-heading{text-align:left;flex:none}
+.trick-stage{position:relative;flex:1;min-height:0;display:grid;place-items:center;perspective:900px}
+.trick-door{height:100%;width:auto;aspect-ratio:.55;border:0;background:transparent;padding:0;cursor:pointer;perspective:900px;filter:drop-shadow(0 8px 7px #231a2626);-webkit-tap-highlight-color:transparent}
+.trick-door:disabled{cursor:default;opacity:1}
+.trick-door:focus-visible{outline:3px solid #a87dce;outline-offset:5px;border-radius:3px}
+.trick-door-frame{position:absolute;inset:0;padding:5%;background:linear-gradient(90deg,#b5a48a,#f4e7d1 4%,#c3b39b 6%,#ede0c7 94%,#a7957c 97%,#f1e2cb);box-shadow:inset 0 0 0 1px #573e2733,0 2px 0 #b09b79;display:block}
+.trick-door-frame:before{content:'';position:absolute;inset:3% 5%;background:radial-gradient(ellipse at 50% 70%,#e9a957,#302436 65%);box-shadow:inset 0 0 16px #1e1628}
+.trick-door-leaf{position:absolute;inset:3% 5% 1%;background:linear-gradient(100deg,#ffffff18,transparent 35%,#00000016),var(--door-color,#a83c36);border:2px solid #0003;box-shadow:inset 2px 1px 1px #ffffff44,inset -2px -1px 2px #0003;transform-origin:left center;transition:transform .65s cubic-bezier(.2,.7,.2,1);backface-visibility:hidden}
+.trick-door-panels{position:absolute;inset:6% 12%;display:grid;grid-template-columns:1fr 1fr;gap:7% 12%}
+.trick-door-panels i{background:linear-gradient(135deg,#00000009,#ffffff0b);border:3px solid color-mix(in srgb,var(--door-color) 75%,#492f29);box-shadow:inset 2px 2px 3px #0004,inset -2px -2px 1px #fff3,1px 1px 0 #fff4}
+[data-door-style="2"] .trick-door-panels,[data-door-style="3"] .trick-door-panels{grid-template-columns:1fr}
+[data-door-style="3"] .trick-door-panels i:first-child{border-radius:45% 45% 0 0;background:linear-gradient(90deg,transparent 48%,#b7c7d6 48% 52%,transparent 52%),linear-gradient(0deg,#6794ae 48%,#b7c7d6 48% 52%,#386780 52%);box-shadow:inset 0 3px 9px #182b4766}
+.trick-door-handle{position:absolute;right:5%;top:52%;width:8%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff1be,#bd9148 50%,#6b4b25);box-shadow:1px 3px 2px #0005}
+.trick-door-knocker{position:absolute;left:43%;top:42%;width:14%;height:9%;border:3px solid #cba35f;border-radius:45% 45% 50% 50%;box-shadow:0 2px 2px #0005,inset 0 1px 1px #0005}
+.trick-door-knocker:before{content:'';position:absolute;left:30%;top:-35%;width:40%;height:45%;border-radius:50%;background:#e6c184}
+[data-trick-phase="knocking"] .trick-door-knocker{animation:doorKnock .28s ease-in-out 4}
+[data-trick-phase="opening"] .trick-door-leaf,[data-trick-phase="result"] .trick-door-leaf{transform:rotateY(-78deg)}
+.trick-result{position:absolute;inset:9% 0 5%;padding:clamp(12px,5cqw,24px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:color-mix(in srgb,var(--surface-solid,#fff) 95%,transparent);border:1px solid var(--border);border-radius:22px;box-shadow:0 12px 40px #2815372b;backdrop-filter:blur(10px);animation:trickReveal .5s cubic-bezier(.2,.9,.3,1.2);z-index:2}
+.trick-result[hidden]{display:none}
+.trick-prize{width:min(55cqw,155px);height:min(42cqh,155px);filter:drop-shadow(0 8px 5px #2f183522)}
+.trick-prize svg{width:100%;height:100%}
+.trick-result-title{font-size:clamp(15px,6cqw,25px);text-align:center;line-height:1.2}
+.trick-again{padding:9px 18px;border-radius:11px;border:1px solid var(--border);background:var(--surface-soft);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.trick-again:hover{background:color-mix(in srgb,var(--surface-soft) 80%,#e3b96a);transform:translateY(-1px)}
+.trick-controls{height:30px;flex:none;opacity:0;pointer-events:none;transition:opacity .2s}
+.trickortreat-module:is(:hover,:has(:focus-visible)) .trick-controls{opacity:1;pointer-events:auto}
+@keyframes doorKnock{50%{transform:perspective(70px) rotateX(-38deg)}}
+@keyframes trickReveal{from{opacity:0;transform:translateY(25px) scale(.65)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.pumpkincarving-module[data-pumpkin-lit=true] :is(.carving-cavity,.carving-cuts),[data-trick-phase="knocking"] .trick-door-knocker,.trick-result{animation:none}.trick-door-leaf{transition:none}}
