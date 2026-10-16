@@ -1,11 +1,11 @@
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
 import {setupSubscriptionManagement} from './profile/subscription.js?v=20261015-gift';
 import {createTicketNotifications} from './support/notifications.js';
-import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261014-subscription-override';
+import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261016-template-preview';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261015-halloween';
-import {createTemplateLibrary} from './templates/ui.js?v=20261013-subscriber-names';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261016-template-preview';
+import {createTemplateLibrary} from './templates/ui.js?v=20261016-template-preview';
 import {syncAwardedPatches} from './profile/awards.js?v=20261013-star-inset';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -1947,6 +1947,22 @@ function compactPreviewObject(object) {
       students,
       assignments,
       positions
+    };
+  }
+
+  if (object.type === "visualdirections" && object.special) {
+    let imageBudget = 32000;
+    preview.special = {
+      mode: object.special.mode,
+      layout: object.special.layout,
+      cards: (Array.isArray(object.special.cards) ? object.special.cards : []).slice(0,20).map(card => {
+        let image = String(card?.image || "");
+        if (image.startsWith('data:')) {
+          if (image.length > imageBudget) image = '';
+          else imageBudget -= image.length;
+        }
+        return {title:String(card?.title||'Step').slice(0,80),image,color:String(card?.color||'').slice(0,7)};
+      })
     };
   }
 

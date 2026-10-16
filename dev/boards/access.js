@@ -1,5 +1,5 @@
-import './cosmetics-policy.js?v=20261014-subscription-override';
-const catalog=await fetch(new URL('./cosmetics-catalog.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Cosmetic catalog could not load.');return r.json();});
+import './cosmetics-policy.js?v=20261016-template-preview';
+const catalog=await fetch(new URL('./cosmetics-catalog.json?v=20261016-template-preview',import.meta.url)).then(r=>{if(!r.ok)throw Error('Cosmetic catalog could not load.');return r.json();});
 export const boardCosmetics=globalThis.TeacherTilesCosmeticsPolicy.policy(catalog);
 
 const nextTask=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -35,11 +35,11 @@ function openShopShell(){
  const toggle=document.getElementById('shop-toggle');if(toggle){toggle.click();return true}
  return false;
 }
-function accountHasSubscription(account={}){return account.subscriptionActive===true||account.subscriptionOverride===true||account.subscriptionStatus==='active'||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true)}
+function accountHasSubscription(account={}){return account.subscriptionActive===true||account.subscriptionOverride===true||account.subscriptionStatus==='active'||account.subscriptionStatus==='trialing'||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true)}
 function unresolvedRequirements(requirements,account={}){
  if(accountHasSubscription(account))return[];
  const owned=new Set(account.ownedProductIds||[]);
- return requirements.filter(r=>!r.products.some(id=>owned.has(id)));
+ return requirements.filter(r=>r.kind==='subscription'||!r.products.some(id=>owned.has(id)));
 }
 
 async function openSubscriptionShop(){

@@ -1,24 +1,26 @@
 {
+  "subscriptionOnlyTiles": [
+    "halloweentimer",
+    "trickortreat",
+    "pumpkincarving",
+    "pumpkinpatch"
+  ],
   "skins": {
-    "halloweentimer-ghost": "tile-skin-halloweentimer-ghost",
-    "pumpkinpatch-graveyard": "tile-skin-pumpkinpatch-graveyard",
-    "calculator-glass": "tile-skin-calculator-glass",
-    "calculator-retro": "tile-skin-calculator-retro",
-    "textbubble-scrap": "tile-skin-textbubble-scrap",
-    "textbubble-speech": "tile-skin-textbubble-speech",
-    "timer-neon": "tile-skin-timer-neon",
-    "interactive-wonders": "tile-skin-interactive-wonders",
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
     "sticky-pinned": "tile-skin-sticky-pinned",
+    "textbubble-speech": "tile-skin-textbubble-speech",
+    "textbubble-scrap": "tile-skin-textbubble-scrap",
     "textbubble-clear": "tile-skin-textbubble-clear",
     "richtext-clear": "tile-skin-richtext-clear",
-    "chime-clear": "tile-skin-chime-clear",
+    "spinner-carnival": "tile-skin-spinner-carnival",
     "popsicle-gumball": "tile-skin-popsicle-gumball",
+    "halloweentimer-ghost": "tile-skin-halloweentimer-ghost",
+    "pumpkinpatch-graveyard": "tile-skin-pumpkinpatch-graveyard",
     "lavalamp-neon": "tile-skin-lavalamp-neon",
     "lavalamp-clear": "tile-skin-lavalamp-clear",
     "spinner-clear": "tile-skin-spinner-clear",
-    "spinner-carnival": "tile-skin-spinner-carnival",
+    "chime-clear": "tile-skin-chime-clear",
     "clock-digital": "tile-skin-clock-digital",
     "clock-analog-clear": "tile-skin-clock-analog-clear",
     "dice-clear": "tile-skin-dice-clear",
@@ -34,9 +36,13 @@
     "stoplight-simplistic": "tile-skin-stoplight-simplistic",
     "progressbar-capsule": "tile-skin-progressbar-capsule",
     "timer-freestanding": "tile-skin-timer-freestanding",
+    "calculator-retro": "tile-skin-calculator-retro",
+    "calculator-glass": "tile-skin-calculator-glass",
+    "timer-neon": "tile-skin-timer-neon",
     "timer-solid": "tile-skin-timer-solid",
     "timer-liquid": "tile-skin-timer-liquid",
     "visualschedule-planner": "tile-skin-visualschedule-planner",
+    "interactive-wonders": "tile-skin-interactive-wonders",
     "meditation-rainbow": "tile-skin-meditation-rainbow",
     "squishy-gel-cube": "tile-skin-squishy-gel-cube",
     "soundscapes-vinyl": "tile-skin-soundscapes-vinyl",
@@ -51,10 +57,10 @@
     "campfire": "theme-campfire",
     "fireflies": "theme-fireflies",
     "beach": "theme-beach",
-    "christmas-tree": "theme-christmas-tree",
-    "basic": "theme-basic",
+    "christmas": "theme-christmas-tree",
     "outer": "theme-outer-space",
     "frosted": "theme-frosted-window",
+    "basic": "theme-basic",
     "bamboo": "theme-bamboo",
     "underwater": "theme-underwater",
     "rainy": "theme-rainy-window",
@@ -437,6 +443,42 @@
     ],
     "🧁": [
       "sticker-food"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-01.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-02.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-03.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-04.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-05.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-06.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-07.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-08.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-09.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-10.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-11.webp": [
+      "sticker-jack-o-lanterns"
+    ],
+    "assets/stickers/jack-o-lanterns/pumpkin-12.webp": [
+      "sticker-jack-o-lanterns"
     ],
     "🍏": [
       "sticker-food-fruit"
