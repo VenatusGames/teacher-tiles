@@ -1,4 +1,4 @@
-import '../boards/cosmetics-policy.js?v=20260927-board-recovery-2';
+import '../boards/cosmetics-policy.js?v=20261014-subscription-override';
 import {tagEditor,discoveryShelves} from './discovery.js?v=20260927-tag-30-fix';
 import './contract.js?v=20260927-template-media';
 import {tileLabels} from './labels.js';

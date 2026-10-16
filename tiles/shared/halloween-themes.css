@@ -1,0 +1,29 @@
+/* Shared Halloween art for board, shelf, shop, and template previews. */
+body:is(.theme-webbed,.theme-webbed-light){--grid:transparent;--bg:#11121b}
+body:is(.theme-webbed,.theme-webbed-light) .workspace{z-index:1;background:none!important}
+.theme-card--webbed,.theme-card--webbed .animated-theme-preview,.board-preview-theme-webbed,.theme-card--webbed-light,.theme-card--webbed-light .animated-theme-preview,.board-preview-theme-webbed-light,.animated-theme-shop--webbed{background:#11121b url("../../assets/themes/webbed-preview.svg") center/100% 100%!important;color:#fff}
+.theme-card--webbed .theme-card__copy{background:#171827ed;color:#f5f2ff}
+.theme-picker .theme-pack-sample.theme-card--webbed .theme-card__copy{background:#11121b;color:#fff}
+.theme-card--webbed-light .theme-card__copy{background:#fff9efed;color:#292536}
+.theme-picker .theme-pack-sample.theme-card--webbed-light .theme-card__copy{background:#11121b;color:#fff}
+body:is(.theme-haunted-house,.theme-haunted-house-light){--grid:transparent;--bg:#242440}
+body:is(.theme-haunted-house,.theme-haunted-house-light) .workspace{z-index:1;background:none!important}
+.theme-card--haunted-house,.theme-card--haunted-house .animated-theme-preview,.board-preview-theme-haunted-house,.theme-card--haunted-house-light,.theme-card--haunted-house-light .animated-theme-preview,.board-preview-theme-haunted-house-light,.animated-theme-shop--haunted-house{background:#242440 url("../../assets/themes/haunted-house.webp") center/cover!important;color:#fff}
+.theme-card--haunted-house .theme-card__copy{background:#171827ed;color:#f5f2ff}
+.theme-picker .theme-pack-sample.theme-card--haunted-house .theme-card__copy{background:#242440;color:#fff}
+.theme-card--haunted-house-light .theme-card__copy{background:#fff9efed;color:#292536}
+.theme-picker .theme-pack-sample.theme-card--haunted-house-light .theme-card__copy{background:#242440;color:#fff}
+body:is(.theme-pumpkin-orange){--grid:transparent;--bg:#e8943b}
+body:is(.theme-pumpkin-orange) .workspace{z-index:1;background:none!important}
+body:is(.theme-pumpkin-orange){background:#e8943b url("../../assets/themes/pumpkin-orange.webp") center/cover fixed}
+.theme-card--pumpkin-orange,.theme-card--pumpkin-orange .animated-theme-preview,.board-preview-theme-pumpkin-orange,.animated-theme-shop--pumpkin{background:#e8943b url("../../assets/themes/pumpkin-orange.webp") center/cover!important;color:#fff}
+.theme-card--pumpkin-orange .theme-card__copy{background:#fff9efed;color:#292536}
+.theme-picker .theme-pack-sample.theme-card--pumpkin-orange .theme-card__copy{background:#e8943b;color:#382713}
+body:is(.theme-pumpkin-yellow){--grid:transparent;--bg:#e9ba52}
+body:is(.theme-pumpkin-yellow) .workspace{z-index:1;background:none!important}
+body:is(.theme-pumpkin-yellow){background:#e9ba52 url("../../assets/themes/pumpkin-yellow.webp") center/cover fixed}
+.theme-card--pumpkin-yellow,.theme-card--pumpkin-yellow .animated-theme-preview,.board-preview-theme-pumpkin-yellow,.animated-theme-shop--pumpkin-yellow{background:#e9ba52 url("../../assets/themes/pumpkin-yellow.webp") center/cover!important;color:#fff}
+.theme-card--pumpkin-yellow .theme-card__copy{background:#fff9efed;color:#292536}
+.theme-picker .theme-pack-sample.theme-card--pumpkin-yellow .theme-card__copy{background:#e9ba52;color:#382713}
+
+.theme-pack-label>.holiday-badge{width:max-content;margin-top:4px}

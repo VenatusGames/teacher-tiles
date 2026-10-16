@@ -1,0 +1,9 @@
+@font-face{font-family:TT Halloween;src:url("../../assets/fonts/creepster/Creepster-Regular.ttf") format("truetype");font-display:swap}
+.teachertiles-intro.is-pending .teachertiles-intro__content{visibility:hidden}.teachertiles-intro.is-pending *,.teachertiles-intro.is-pending *::after{animation-play-state:paused!important}
+body .teachertiles-intro[data-splash=halloween]{background:radial-gradient(ellipse at 50% 44%,#ffce83 0,#f79b44 48%,#d66b20 100%)}
+.teachertiles-intro[data-splash=halloween]::before,.teachertiles-intro[data-splash=halloween]::after{content:'';position:absolute;width:min(42vw,550px);height:min(42vw,550px);top:0;left:0;opacity:.12;background:url("web.svg") top left/contain no-repeat;pointer-events:none}
+.teachertiles-intro[data-splash=halloween]::after{left:auto;top:auto;right:0;bottom:0;transform:rotate(180deg);width:min(33vw,460px);height:min(33vw,460px)}
+.teachertiles-intro[data-splash=halloween] .teachertiles-intro__title{font-family:"TT Halloween",fantasy;font-weight:400;letter-spacing:.005em;font-size:clamp(58px,11vw,140px);line-height:1.12}
+body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__teacher{color:#e97012;text-shadow:0 2px 0 #762b0a,0 8px 18px #71300f24}
+body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__tiles-word{color:#201713;text-shadow:0 3px 0 #b86122}
+body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__subtitle{color:#5e321a}

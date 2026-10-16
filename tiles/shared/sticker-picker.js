@@ -13,7 +13,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   const catalog=packs.map(pack=>{
     const drawer=document.getElementById(pack.getAttribute('aria-controls'));
     const id=pack.id,name=pack.querySelector('strong')?.textContent||'Stickers';
-    return {id,name,items:[...drawer.querySelectorAll('.sticker-shelf-item')].map(source=>({source,key:source.dataset.stickerSrc||source.dataset.stickerEmoji,name:source.dataset.stickerName||'Sticker',product:entitlement(source),text:normalize([name,source.dataset.stickerName,source.dataset.stickerTags].join(' '))}))};
+    return {id,name,holiday:pack.dataset.holiday,items:[...drawer.querySelectorAll('.sticker-shelf-item')].map(source=>({source,key:source.dataset.stickerSrc||source.dataset.stickerEmoji,name:source.dataset.stickerName||'Sticker',product:entitlement(source),text:normalize([name,source.dataset.stickerName,source.dataset.stickerTags].join(' '))}))};
   });
   panel.querySelector('.asset-shelf__scroll').hidden=true;
   const root=document.createElement('div');root.className='sticker-picker';
@@ -46,7 +46,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
       const section=document.createElement('section'),heading=document.createElement('h3'),grid=document.createElement('div');
       section.className='sticker-picker-pack';
       const toggle=document.createElement('button'),name=document.createElement('span'),total=document.createElement('span'),chevron=document.createElement('span'),body=document.createElement('div'),clip=document.createElement('div');
-      toggle.type='button';toggle.className='sticker-picker-pack-toggle';name.textContent=pack.name;total.textContent=items.length;total.className='sticker-picker-pack-count';chevron.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';chevron.className='sticker-picker-chevron';chevron.setAttribute('aria-hidden','true');toggle.append(name,total,chevron);heading.append(toggle);
+      toggle.type='button';toggle.className='sticker-picker-pack-toggle';name.textContent=pack.name;total.textContent=items.length;total.className='sticker-picker-pack-count';chevron.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';chevron.className='sticker-picker-chevron';chevron.setAttribute('aria-hidden','true');toggle.append(name,total,chevron);if(pack.holiday){const badge=document.createElement('span');badge.className='holiday-badge';badge.textContent='Holiday';badge.title='Halloween';name.append(' ',badge)}heading.append(toggle);
       grid.className='sticker-picker-grid';body.className='sticker-picker-pack-body';body.id='picker-'+pack.id;clip.className='sticker-picker-pack-clip';clip.append(grid);body.append(clip);section.append(heading,body);toggle.setAttribute('aria-controls',body.id);
       const syncExpanded=()=>{const open=!collapsed.has(pack.id);toggle.setAttribute('aria-expanded',String(open));section.classList.toggle('is-collapsed',!open);body.inert=!open};syncExpanded();
       toggle.addEventListener('click',()=>{collapsed.has(pack.id)?collapsed.delete(pack.id):collapsed.add(pack.id);syncExpanded()});

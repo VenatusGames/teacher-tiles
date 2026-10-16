@@ -18,7 +18,7 @@ function migrateLegacyCursorOwnership(){
 
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 
-function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive)}
+function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive||state?.subscriptionOverride)}
 
 function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().has(product)||hasCosmeticSubscription()}
 
@@ -55,7 +55,7 @@ function applyAppCursor(id,{persist=true}={}){
     cursorRoot.style.removeProperty('--teacher-cursor-grab');
   }
   else{
-    const asset=state=>new URL(`assets/cursors/${cursor.runtimeDirectory||''}${cursor.id}-${state}.png?v=20260928-unified`,document.baseURI).href;
+    const asset=state=>new URL(`assets/cursors/${cursor.runtimeDirectory||''}${cursor.id}-${state}.png?v=${cursor.assetVersion||'20260928-unified'}`,document.baseURI).href;
     const defaults={normal:[4,1],point:[10,1],open:[12,12],grab:[12,12]};
     const value=state=>`url("${asset(state)}") ${(cursor.hotspots?.[state]||defaults[state]).join(' ')}`;
     // Decode all states before activating the pack so the first grab cannot
