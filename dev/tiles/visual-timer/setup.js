@@ -28,6 +28,7 @@ function setupTimerSync(m){
 
 function setupTimer(m){
   const pumpkin=m.dataset.type==='halloweentimer';
+  const ghost=pumpkin&&m.dataset.tileSkin==='halloweentimer-ghost';
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
   const updateFace=()=>{if(pumpkin)TeacherTilesHalloween.timerFace(m,m.dataset.pumpkinFace);};updateFace();
   const liquid=document.createElement('div');liquid.className='timer-liquid-fill';liquid.setAttribute('aria-hidden','true');
@@ -38,7 +39,7 @@ function setupTimer(m){
   foreign.setAttribute('clip-path',`url(#${clipId})`);
 
   const setShape=(shape,animate=false)=>{
-    const d=pumpkin?TeacherTilesHalloween.pumpkinPath:shapePaths[shape]||shapePaths.circle;
+    const d=pumpkin?TeacherTilesHalloween.timerPath(m):shapePaths[shape]||shapePaths.circle;
     m.dataset.timerShape=shape;
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);
@@ -61,7 +62,7 @@ function setupTimer(m){
   const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
-  if(pumpkin){colorButton.title='Choose Pumpkin Face';colorButton.setAttribute('aria-label','Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace);}
+  if(pumpkin){colorButton.title=ghost?'Choose Ghost Face':'Choose Pumpkin Face';colorButton.setAttribute('aria-label',ghost?'Choose Ghost Face':'Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace,ghost);}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
   const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
@@ -92,10 +93,11 @@ function setupTimer(m){
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
     if(pumpkin){
-      shapeShelf.setAttribute('aria-label','Pumpkin Faces');
-      for(const [id,face] of Object.entries(TeacherTilesHalloween.faces)){
-        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.faceIcon(id)+'</i><span>'+face.name+'</span>';
-        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
+      shapeShelf.classList.toggle('ghost-face-shelf',ghost);
+      shapeShelf.setAttribute('aria-label',ghost?'Ghost Faces':'Pumpkin Faces');
+      for(const [id,face] of Object.entries(ghost?TeacherTilesHalloween.ghostFaces:TeacherTilesHalloween.faces)){
+        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.faceIcon(id,ghost)+'</i><span>'+face.name+'</span>';
+        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id,ghost);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
       }
       shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
     }

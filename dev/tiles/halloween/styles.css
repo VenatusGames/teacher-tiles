@@ -45,7 +45,7 @@
 .pumpkin-timer-face>div{position:absolute;inset:0}
 .pumpkin-timer-face svg{position:absolute;left:4%;top:15%;width:92%;height:76%;fill:#562e1b;stroke:none}
 .pumpkin-face-faint{opacity:.22}
-.pumpkin-face-filled{mask-image:conic-gradient(from -90deg at 50% 57%,#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0)}
+.pumpkin-face-filled{mask-image:conic-gradient(from -90deg at 50% var(--halloween-fill-y,57%),#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0)}
 .timer-shape-shelf button .pumpkin-face-swatch{display:grid;place-items:center;width:100%;max-width:44px;height:44px;padding:6px;overflow:hidden;border-radius:12px}
 .timer-shape-shelf button .pumpkin-face-swatch svg{position:static;display:block;width:100%;height:100%;fill:#613719;stroke:none;transform:none}
 .pumpkinpatch-module .halloween-heading{text-align:left}
@@ -124,4 +124,11 @@
 @media(prefers-reduced-motion:reduce){.patch-plant:before{transition:none}}
 
 /* Center the sweep on the pumpkin body, below its stem. */
-.halloweentimer-module .shape-fill{background:radial-gradient(circle at 30% 19%,rgba(255,255,255,.40),transparent 31%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(0,0,0,.045)),conic-gradient(from -90deg at 50% 57%,var(--timer) var(--progress,0deg),var(--timer-soft) 0)}
+.halloweentimer-module .shape-fill{background:radial-gradient(circle at 30% 19%,rgba(255,255,255,.40),transparent 31%),linear-gradient(145deg,rgba(255,255,255,.08),rgba(0,0,0,.045)),conic-gradient(from -90deg at 50% var(--halloween-fill-y,57%),var(--timer) var(--progress,0deg),var(--timer-soft) 0)}
+
+/* Ghost keeps the visual timer silhouette, radial fill, and interchangeable faces. */
+.timer-module.halloweentimer-module[data-tile-skin="halloweentimer-ghost"]{--halloween-fill-y:50%;--timer:#d7e9f4;--timer-soft:#f5f7fa}
+.halloweentimer-module[data-tile-skin="halloweentimer-ghost"] .pumpkin-timer-face svg{fill:#34405a}
+.halloweentimer-module[data-tile-skin="halloweentimer-ghost"] .timer-shape-color svg{fill:#34405a}
+.timer-shape-shelf.ghost-face-shelf button .pumpkin-face-swatch{background:#e8eff7}
+.timer-shape-shelf.ghost-face-shelf button .pumpkin-face-swatch svg{fill:#34405a}
