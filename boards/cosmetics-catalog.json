@@ -1,5 +1,6 @@
 {
   "skins": {
+    "pumpkinpatch-graveyard": "tile-skin-pumpkinpatch-graveyard",
     "calculator-glass": "tile-skin-calculator-glass",
     "calculator-retro": "tile-skin-calculator-retro",
     "textbubble-scrap": "tile-skin-textbubble-scrap",
@@ -42,6 +43,9 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "webbed": "theme-webbed",
+    "haunted-house": "theme-haunted-house",
+    "pumpkin": "theme-pumpkin",
     "fireplace": "theme-fireplace",
     "campfire": "theme-campfire",
     "fireflies": "theme-fireflies",

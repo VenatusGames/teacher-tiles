@@ -1,0 +1,124 @@
+.halloween-subscription-dialog{max-width:360px;padding:28px;border:1px solid var(--border);border-radius:24px;background:var(--surface-solid,#fff);color:var(--text);text-align:center;box-shadow:0 22px 80px #0004;font:inherit}.halloween-subscription-dialog::backdrop{background:#18203480;backdrop-filter:blur(4px)}.halloween-subscription-dialog h2{font-size:23px;margin:12px 0}.halloween-subscription-dialog p{line-height:1.6;color:var(--muted)}.halloween-crown{width:60px;height:60px}.halloween-subscription-dialog>div{display:flex;justify-content:center;gap:10px;margin-top:22px}.halloween-subscription-dialog button{padding:10px 20px;border-radius:12px;border:1px solid var(--border);font:inherit;font-weight:700}.halloween-subscription-dialog .primary{background:#f1bd49;color:#50330b;border-color:#dfa523}
+.halloween-locked{position:absolute;inset:35px 8px 45px;z-index:90;border:1px solid #e7c172;border-radius:18px;background:#fff8e9ed;color:#61420c;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;backdrop-filter:blur(6px);font:inherit}.halloween-locked[hidden]{display:none}.halloween-locked span{font-weight:800}.halloween-locked small{font-size:12px}
+.halloweentimer-module .timer-shape-toggle{display:none!important}.halloweentimer-module .timer-shape-svg{visibility:hidden}.halloween-timer-art{position:absolute;inset:0;pointer-events:none}.halloween-timer-base,.halloween-timer-fill{position:absolute;inset:0;background:url('assets/pumpkin-4.png') center/contain no-repeat}.halloween-timer-base{filter:grayscale(1);opacity:.2}.halloween-timer-fill{clip-path:inset(calc((1 - var(--timer-progress-ratio,0))*100%) 0 0);transition:clip-path .1s linear}.halloween-timer-fill>svg{position:absolute;left:16%;top:30%;width:67%;height:57%;fill:#492012;filter:drop-shadow(0 1px 0 #ffd178)}.halloweentimer-module .timer-readout{top:auto!important;bottom:12%;transform:translateX(-50%)!important;background:#fff9e6df;border-radius:13px;padding:5px 14px;min-width:45%;box-shadow:0 2px 8px #5420001a}.halloweentimer-module .timer-remaining{font-size:clamp(16px,9cqw,48px)!important}.halloweentimer-module .timer-status{font-size:clamp(8px,2.7cqw,13px)!important}.halloweentimer-module .timer-shape-color svg{width:25px;height:25px;fill:#613719}.timer-shape-shelf .pumpkin-face-swatch{width:55px;height:55px;background:#f4a33d;border-radius:18px}.pumpkin-face-swatch svg{width:100%;height:100%;fill:#613719}
+.pumpkincarving-module,.pumpkinpatch-module{width:480px;height:410px;min-width:300px;min-height:290px;padding:30px 12px 12px;display:flex;flex-direction:column;gap:8px;container-type:size;overflow:hidden}.halloween-heading{font-size:17px;margin:0 0 2px;text-align:center}.halloween-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:7px;height:35px;flex-shrink:0;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s,height .2s;pointer-events:none}.module:is(:hover,:focus-within) .halloween-toolbar{opacity:1;transform:none;pointer-events:auto}.halloween-toolbar button,.halloween-toolbar select{border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:12px;padding:7px 10px;box-shadow:0 2px 4px #1720330a}.halloween-toolbar button:hover{transform:translateY(-1px);background:var(--surface-soft)}.halloween-toolbar button:disabled{opacity:.4}.module:not(:hover):not(:focus-within) .halloween-toolbar{height:0;margin-top:-8px;overflow:hidden}.halloween-toolbar select{max-width:115px}.carving-stage{position:relative;flex:1;min-height:0;display:grid;place-items:center}.carving-surface{height:100%;width:100%;touch-action:none;cursor:crosshair;user-select:none}.carving-cuts path{fill:#2c1309;stroke:#ffbf53;stroke-width:.6;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #572800)}.carving-trace{fill:#28150d66;stroke:#fff8d7;stroke-width:.6;stroke-dasharray:1.5 1;pointer-events:none}.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts path{fill:#ffed94;stroke:#fdc14f;filter:drop-shadow(0 0 1.2px #ffbc30)}.is-new-cut{animation:pumpkinCarve .45s ease-out}@keyframes pumpkinCarve{from{opacity:.2;stroke-width:2;filter:drop-shadow(0 0 3px #ffd16e)}to{opacity:1;stroke-width:.6}}.carving-hint{position:absolute;bottom:0;font-size:11px;color:var(--muted);opacity:0;transition:opacity .2s;pointer-events:none}.pumpkincarving-module:hover .carving-hint{opacity:1}
+.patch-scene{position:relative;flex:1;min-height:0;overflow:hidden;border-radius:15px;isolation:isolate;background:#97c4d5 url('assets/farm-scene.png') center/100% 100% no-repeat}
+.pumpkinpatch-module[data-tile-skin=pumpkinpatch-graveyard] .patch-scene{background-image:url('assets/graveyard-scene.png');background-color:#1b2439}
+.patch-pumpkins{position:absolute;inset:0}.patch-plant{position:absolute;transform:translate(-50%,-60%);aspect-ratio:1;pointer-events:none}.patch-plant img{position:absolute;inset:-25%;width:150%;height:150%;object-fit:contain;transform-origin:50% 79%;transform:scale(calc(.03 + var(--growth)*.97));filter:drop-shadow(2px 4px 2px #1b211660);transition:transform .4s linear}.patch-plant[data-color=green] img{filter:hue-rotate(55deg) saturate(.55) drop-shadow(2px 4px 2px #1b211660)}.patch-plant[data-color=yellow] img{filter:hue-rotate(19deg) saturate(.8) brightness(1.18) drop-shadow(2px 4px 2px #1b211660)}
+.patch-fog{display:none;position:absolute;inset:30% -50% -10%;z-index:100;pointer-events:none;opacity:.22;background:radial-gradient(ellipse at 30% 65%,#dce7e4 0,transparent 38%),radial-gradient(ellipse at 65% 80%,#e5edef 0,transparent 40%);animation:patchFog 24s ease-in-out infinite alternate}.pumpkinpatch-module[data-tile-skin=pumpkinpatch-graveyard] .patch-fog{display:block}
+.patch-footer{display:flex;align-items:center;gap:10px;font-size:11px;min-height:20px}.patch-status{flex:1;color:var(--muted)}.patch-meter{width:85px;height:9px}.patch-threshold{width:100%}.pumpkinpatch-module .halloween-toolbar{padding-left:115px}.pumpkinpatch-module .halloween-toolbar button{font-size:11px;padding:7px}.patch-settings .tile-setting{display:grid;gap:7px;margin:0}.patch-settings .tile-setting>span{display:flex;justify-content:space-between}.patch-settings select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:12px}.patch-settings input[type=range]{margin:4px 0;accent-color:#6c8fbc}
+@keyframes patchFog{from{transform:translateX(-8%)}to{transform:translateX(15%)}}
+@media(prefers-reduced-motion:reduce){.patch-fog,.is-new-cut{animation:none}.halloween-toolbar,.patch-plant img,.halloween-timer-fill{transition:none}}
+
+.halloweentimer-module .timer-readout{position:absolute;left:50%;right:auto;bottom:2%;min-width:0;width:max-content;max-width:90%;margin:0}
+.halloweentimer-module .timer-stage:before{display:none}
+.halloweentimer-module .timer-remaining{font-size:clamp(17px,calc(var(--timer-visual-size,240px)*.12),52px)!important}
+.halloweentimer-module .timer-status{font-size:clamp(8px,calc(var(--timer-visual-size,240px)*.028),12px)!important}
+.carving-chip{fill:#f29a28;stroke:#ffd27c;stroke-width:.6;transform-box:fill-box;transform-origin:50% 50%;animation:carvingChip .5s ease-in both;pointer-events:none}
+@keyframes carvingChip{to{transform:translateY(12px) rotate(12deg) scale(.8);opacity:0}}
+.pumpkinpatch-module .tile-settings-panel[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.carving-chip{display:none}.patch-trees{animation:none}}
+
+/* Pumpkin content extends into its transparent source margins without cropping the stem. */
+.halloweentimer-module .halloween-timer-art{inset:-9%}
+.halloween-timer-fill{clip-path:none;mask-image:conic-gradient(from 0deg at 50% 55%,#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0);transition:none}
+.halloweentimer-module .timer-shape-color{display:grid;place-items:center;padding:5px}
+.halloweentimer-module .timer-shape-color svg{display:block;width:100%;height:100%;margin:0;transform:none;overflow:visible}
+.timer-shape-shelf .pumpkin-face-swatch{display:grid;place-items:center;flex:none;margin:0 auto;padding:7px;box-sizing:border-box}
+.pumpkin-face-swatch svg{display:block;width:100%;height:100%;margin:0;transform:none}
+.pumpkincarving-module .halloween-heading{text-align:left;margin-left:5px}
+.pumpkincarving-module:not(:hover):not(:focus-within){padding-top:12px}
+.shop-product__preview--patch-scene{position:relative;overflow:hidden}.shop-product__preview--patch-scene>img{width:100%;height:100%;object-fit:cover}.shop-product__preview--patch-scene>.holiday-badge{position:absolute;bottom:10px;left:10px}
+.tile-skins-choice-preview .shop-product__preview--patch-scene{width:100%;height:100%;border-radius:10px}
+
+/* Cut away the pumpkin image and shade the inside walls of the opening. */
+.carving-cavity{fill:#32190d}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{fill:#ffdf85}
+.carving-cuts .carving-cut-shadow,.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-shadow{fill:none;stroke:#110b08;stroke-width:3;filter:blur(.3px)}
+.carving-cuts .carving-cut-rim,.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-rim{fill:none;stroke:#d48832;stroke-width:1.6;filter:none}
+.carving-cuts clipPath path{fill:black;stroke:none;filter:none}
+
+/* Standard visual timer, with a pumpkin silhouette and a face in both fill states. */
+.timer-module.halloweentimer-module[data-shape-color]{--timer:#f3932e;--timer-soft:#fbe4c7}
+.halloweentimer-module .timer-shape-svg{visibility:visible}
+.pumpkin-timer-face{position:absolute;inset:0;pointer-events:none}
+.pumpkin-timer-face>div{position:absolute;inset:0}
+.pumpkin-timer-face svg{position:absolute;left:8%;top:17%;width:84%;height:70%;fill:#562e1b;stroke:none}
+.pumpkin-face-faint{opacity:.22}
+.pumpkin-face-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*1turn),transparent 0)}
+.timer-shape-shelf button .pumpkin-face-swatch{display:grid;place-items:center;width:100%;max-width:44px;height:44px;padding:6px;overflow:hidden;border-radius:12px}
+.timer-shape-shelf button .pumpkin-face-swatch svg{position:static;display:block;width:100%;height:100%;fill:#613719;stroke:none;transform:none}
+.pumpkinpatch-module .halloween-heading{text-align:left}
+.patch-settings [hidden]{display:none!important}
+.pumpkincarving-module:not(:hover):not(:has(:focus-visible)) .halloween-toolbar{height:0;margin-top:-8px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(8px)}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{animation:pumpkinCandle 3.7s ease-in-out infinite}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-shadow{stroke:#d99132;filter:blur(.3px)}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts .carving-cut-rim{stroke:#fff1ad;filter:drop-shadow(0 0 .5px #ffc54d)}
+@keyframes pumpkinCandle{0%,100%{fill:#ffdf85}18%{fill:#ffe9a4}22%{fill:#f9c55a}28%,65%{fill:#ffe49a}70%{fill:#ffd574}74%{fill:#ffeab0}}
+@media(prefers-reduced-motion:reduce){.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{animation:none}}
+
+.timer-module.halloweentimer-module .timer-readout{bottom:8%;border-radius:999px;background:color-mix(in srgb,var(--module-bg,var(--surface)) 70%,transparent)}
+.halloweentimer-module .timer-shape-color svg{stroke:none}
+
+.pumpkin-face-filled svg{filter:drop-shadow(0 2px 1.5px #46200970) drop-shadow(0 5px 4px #46200935)}
+/* Clock sits beneath the pumpkin with a small overlap. */
+.halloweentimer-module .timer-stage{flex-direction:column;gap:0}
+.halloweentimer-module .timer-stage>.timer-readout{position:relative!important;left:auto;right:auto;top:auto!important;bottom:auto;transform:none!important;flex:0 0 auto;margin:0;z-index:2}
+.halloweentimer-module .timer-visual{flex:0 0 auto}
+/* Candlelight: a warm core and small, irregular changes in intensity. */
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cavity{fill:var(--candle-fill);animation:candleIntensity 4.9s ease-in-out infinite}
+.pumpkincarving-module[data-pumpkin-lit=true] .carving-cuts{animation:candleIntensity 4.9s ease-in-out infinite}
+@keyframes candleIntensity{0%,100%{filter:brightness(1)}7%{filter:brightness(.94)}12%{filter:brightness(1.06)}16%{filter:brightness(.98)}29%{filter:brightness(1.03)}34%{filter:brightness(.9)}37%{filter:brightness(1.04)}42%{filter:brightness(.96)}59%{filter:brightness(1.02)}64%{filter:brightness(.93)}68%{filter:brightness(1.06)}79%{filter:brightness(1)}84%{filter:brightness(.95)}91%{filter:brightness(1.04)}}
+.trickortreat-module{width:340px;height:460px;min-width:240px;min-height:300px;padding:28px 16px 12px;display:flex;flex-direction:column;gap:10px;container-type:size;overflow:hidden}
+.trickortreat-module .halloween-heading{text-align:left;flex:none}
+.trick-stage{position:relative;flex:1;min-height:0;display:grid;place-items:center;perspective:900px}
+.trick-door{height:100%;width:auto;aspect-ratio:.55;border:0;background:transparent;padding:0;cursor:pointer;perspective:900px;filter:drop-shadow(0 8px 7px #231a2626);-webkit-tap-highlight-color:transparent}
+.trick-door:disabled{cursor:default;opacity:1}
+.trick-door:focus-visible{outline:3px solid #a87dce;outline-offset:5px;border-radius:3px}
+.trick-door-frame{position:absolute;inset:0;padding:5%;background:linear-gradient(90deg,#b5a48a,#f4e7d1 4%,#c3b39b 6%,#ede0c7 94%,#a7957c 97%,#f1e2cb);box-shadow:inset 0 0 0 1px #573e2733,0 2px 0 #b09b79;display:block}
+.trick-door-frame:before{content:'';position:absolute;inset:3% 5%;background:radial-gradient(ellipse at 50% 70%,#e9a957,#302436 65%);box-shadow:inset 0 0 16px #1e1628}
+.trick-door-leaf{position:absolute;inset:3% 5% 1%;background:linear-gradient(100deg,#ffffff18,transparent 35%,#00000016),var(--door-color,#a83c36);border:2px solid #0003;box-shadow:inset 2px 1px 1px #ffffff44,inset -2px -1px 2px #0003;transform-origin:left center;transition:transform .65s cubic-bezier(.2,.7,.2,1);backface-visibility:hidden}
+.trick-door-panels{position:absolute;inset:6% 12%;display:grid;grid-template-columns:1fr 1fr;gap:7% 12%}
+.trick-door-panels i{background:linear-gradient(135deg,#00000009,#ffffff0b);border:3px solid color-mix(in srgb,var(--door-color) 75%,#492f29);box-shadow:inset 2px 2px 3px #0004,inset -2px -2px 1px #fff3,1px 1px 0 #fff4}
+[data-door-style="2"] .trick-door-panels,[data-door-style="3"] .trick-door-panels{grid-template-columns:1fr}
+[data-door-style="3"] .trick-door-panels i:first-child{border-radius:45% 45% 0 0;background:linear-gradient(90deg,transparent 48%,#b7c7d6 48% 52%,transparent 52%),linear-gradient(0deg,#6794ae 48%,#b7c7d6 48% 52%,#386780 52%);box-shadow:inset 0 3px 9px #182b4766}
+.trick-door-handle{position:absolute;right:5%;top:52%;width:8%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff1be,#bd9148 50%,#6b4b25);box-shadow:1px 3px 2px #0005}
+.trick-door-knocker{position:absolute;left:43%;top:42%;width:14%;height:9%;border:3px solid #cba35f;border-radius:45% 45% 50% 50%;box-shadow:0 2px 2px #0005,inset 0 1px 1px #0005}
+.trick-door-knocker:before{content:'';position:absolute;left:30%;top:-35%;width:40%;height:45%;border-radius:50%;background:#e6c184}
+[data-trick-phase="knocking"] .trick-door-knocker{animation:doorKnock .28s ease-in-out 4}
+[data-trick-phase="opening"] .trick-door-leaf,[data-trick-phase="result"] .trick-door-leaf{transform:rotateY(-78deg)}
+.trick-result{position:absolute;inset:9% 0 5%;padding:clamp(12px,5cqw,24px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:color-mix(in srgb,var(--surface-solid,#fff) 95%,transparent);border:1px solid var(--border);border-radius:22px;box-shadow:0 12px 40px #2815372b;backdrop-filter:blur(10px);animation:trickReveal .5s cubic-bezier(.2,.9,.3,1.2);z-index:2}
+.trick-result[hidden]{display:none}
+.trick-prize{width:min(55cqw,155px);height:min(42cqh,155px);filter:drop-shadow(0 8px 5px #2f183522)}
+.trick-prize svg{width:100%;height:100%}
+.trick-result-title{font-size:clamp(15px,6cqw,25px);text-align:center;line-height:1.2}
+.trick-again{padding:9px 18px;border-radius:11px;border:1px solid var(--border);background:var(--surface-soft);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.trick-again:hover{background:color-mix(in srgb,var(--surface-soft) 80%,#e3b96a);transform:translateY(-1px)}
+.trick-controls{height:30px;flex:none;opacity:0;pointer-events:none;transition:opacity .2s}
+.trickortreat-module:is(:hover,:has(:focus-visible)) .trick-controls{opacity:1;pointer-events:auto}
+@keyframes doorKnock{50%{transform:perspective(70px) rotateX(-38deg)}}
+@keyframes trickReveal{from{opacity:0;transform:translateY(25px) scale(.65)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.pumpkincarving-module[data-pumpkin-lit=true] :is(.carving-cavity,.carving-cuts),[data-trick-phase="knocking"] .trick-door-knocker,.trick-result{animation:none}.trick-door-leaf{transition:none}}
+
+.halloweentimer-module .timer-stage>.timer-readout{margin-top:-18px;padding:6px 16px;max-width:95%}
+.halloweentimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(22px,8.5cqw,44px)!important;line-height:1.05}
+.halloweentimer-module .timer-stage>.timer-readout .timer-status{font-size:clamp(9px,2.4cqw,12px)!important}
+.pumpkincarving-module.carving-pointer-controls:not(:hover) .halloween-toolbar{height:0;margin-top:-8px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(8px)}
+/* Ground each silhouette with a soft contact shadow that grows with it. */
+.patch-plant{--pumpkin-ground:108.5%;--pumpkin-width:76%;--sprite-ground:89%}
+.patch-plant[data-sprite="2"]{--pumpkin-ground:108.2%;--pumpkin-width:96%;--sprite-ground:88.8%}
+.patch-plant[data-sprite="3"]{--pumpkin-ground:91.4%;--pumpkin-width:89%;--sprite-ground:77.6%}
+.patch-plant[data-sprite="4"]{--pumpkin-ground:111.2%;--pumpkin-width:122%;--sprite-ground:90.8%}
+.patch-plant:before{content:'';position:absolute;left:50%;top:var(--pumpkin-ground);width:var(--pumpkin-width);height:17%;border-radius:50%;background:radial-gradient(ellipse,#16100980 0%,#21160740 35%,transparent 72%);transform:translate(-50%,-50%) scale(calc(.03 + var(--growth)*.97));opacity:calc(.25 + var(--growth)*.75);pointer-events:none;transition:transform .4s linear}
+.patch-plant img{transform-origin:50% var(--sprite-ground);filter:contrast(1.06) saturate(1.04) drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(2px 3px 1px #35220c55) drop-shadow(5px 7px 4px #1b211638)}
+.patch-plant[data-color=green] img{filter:hue-rotate(55deg) saturate(.55) contrast(1.06) drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(2px 3px 1px #15200f55) drop-shadow(5px 7px 4px #1b211638)}
+.patch-plant[data-color=yellow] img{filter:hue-rotate(19deg) saturate(.8) brightness(1.18) contrast(1.06) drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(2px 3px 1px #35220c55) drop-shadow(5px 7px 4px #1b211638)}
+.trick-door{position:relative}
+.trick-doorbell{display:none;position:absolute;right:-16%;top:48%;width:11%;height:13%;border-radius:5px;background:linear-gradient(100deg,#d5c5a2,#907c5d);border:1px solid #6c5b43;box-shadow:1px 2px 4px #0003;align-items:center;justify-content:center}
+.trick-doorbell:before,.trick-doorbell:after{content:'';position:absolute;left:45%;width:10%;height:4%;background:#6c5b43;border-radius:50%;top:8%}
+.trick-doorbell:after{top:auto;bottom:8%}
+.trick-doorbell i{display:block;width:65%;aspect-ratio:1;border:2px solid #968b73;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8dd,#d6c79c);box-shadow:0 1px 2px #382d24a0}
+[data-door-hardware="bell"] .trick-doorbell{display:flex}
+[data-door-hardware="bell"] .trick-door-knocker{display:none}
+[data-door-hardware="bell"][data-trick-phase="knocking"] .trick-doorbell i{box-shadow:inset 0 1px 3px #382d2499,0 0 9px #ffdf84;background:#f4df9d;transform:scale(.9)}
+@media(prefers-reduced-motion:reduce){.patch-plant:before{transition:none}}

@@ -8,7 +8,7 @@
     const toggle=document.createElement('button');toggle.type='button';toggle.className='tile-settings-switch timer-finish-toggle';toggle.setAttribute('role','switch');toggle.setAttribute('aria-label','Show Finish Time');toggle.innerHTML='<i aria-hidden="true"></i>';row.append(label,toggle);panel.append(row);
     let state={running:false,left:0,total:0,endAt:0},lastKey='',lastTime='';
     const statuses=[];
-    if(m.dataset.type==='timer')statuses.push(m.querySelector('.timer-status'));
+    if(m.classList.contains('timer-module'))statuses.push(m.querySelector('.timer-status'));
     else for(const number of m.querySelectorAll('.hourglass-countdown,.candle-countdown,.scene-countdown')){
       const status=document.createElement('div');status.className='interactive-timer-status';number.after(status);statuses.push(status);
     }
