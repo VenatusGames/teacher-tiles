@@ -63,7 +63,7 @@ function setupTimer(m){
   const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
-  if(pumpkin){colorButton.title='Choose Pumpkin Face';colorButton.setAttribute('aria-label','Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.svg(m.dataset.pumpkinFace);}
+  if(pumpkin){colorButton.title='Choose Pumpkin Face';colorButton.setAttribute('aria-label','Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace);}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
   const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
@@ -96,8 +96,8 @@ function setupTimer(m){
     if(pumpkin){
       shapeShelf.setAttribute('aria-label','Pumpkin Faces');
       for(const [id,face] of Object.entries(TeacherTilesHalloween.faces)){
-        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.svg(id)+'</i><span>'+face.name+'</span>';
-        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.svg(id);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
+        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.faceIcon(id)+'</i><span>'+face.name+'</span>';
+        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
       }
       shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
     }
@@ -116,7 +116,7 @@ function setupTimer(m){
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
     const shortest=Math.min(stageWidth,stageHeight);
-    const breathingRoom=Math.max(10,Math.min(28,shortest*.055));
+    const breathingRoom=pumpkin?5:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
   };

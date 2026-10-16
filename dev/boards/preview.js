@@ -1,4 +1,4 @@
-import '../tiles/halloween/shared.js?v=20261015';
+import '../tiles/halloween/shared.js?v=20261015-halloween-v2';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
@@ -478,6 +478,7 @@ function applyPreviewState(module, state) {
     module.querySelector('.progress-bar-remaining').textContent='00:00';
     module.querySelector('.progress-bar-end-label').textContent='';
   }
+  if(state.type==='pumpkincarving')module.querySelector('.halloween-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
   const headingSelector=EDITABLE_TILE_HEADINGS[state.type];
   const heading=headingSelector?module.querySelector(headingSelector):null;
   if(heading)heading.setAttribute('contenteditable','true');
