@@ -66,8 +66,12 @@
       m.style.minWidth=Math.max(200,columns*size+(columns-1)*8+horizontal)+'px';
       m.style.minHeight=(rows*size+(rows-1)*8+chrome)+'px';
     }
-    function fitCards(){
-      const width=wall.clientWidth,height=wall.clientHeight,count=cards.length+1;
+    function fitCards(animate=false){
+      const items=[...wall.querySelectorAll('.direction-card')];
+      const before=animate?items.map(el=>el.getBoundingClientRect()):[];
+      const showAdd=matchMedia('(hover: none)').matches||m.matches(':hover')||!!m.querySelector(':focus-visible')||!cards.length;
+      const add=wall.querySelector('.direction-add-card');if(add)add.hidden=!showAdd;
+      const width=wall.clientWidth,height=wall.clientHeight,count=Math.max(1,cards.length+(showAdd?1:0));
       if(!width||!height)return;
       let best=1,score=0;
       for(let cols=1;cols<=count;cols++){
@@ -79,8 +83,20 @@
       wall.style.setProperty('--direction-columns',best);wall.style.setProperty('--direction-rows',Math.ceil(count/best));
       wall.style.setProperty('--direction-text',`${Math.max(14,Math.min(25,score*.13))}px`);
       wall.style.setProperty('--direction-label',`${Math.max(11,Math.min(14,score*.09))}px`);
+      if(animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)items.forEach((el,i)=>{
+        const after=el.getBoundingClientRect(),old=before[i];
+        if(!old.width||!after.width)return;
+        const scale=boardCamera.scale||1;
+        el.getAnimations().forEach(animation=>animation.cancel());
+        el.animate([{transform:`translate(${(old.x-after.x)/scale}px,${(old.y-after.y)/scale}px) scale(${old.width/after.width},${old.height/after.height})`},{transform:'none'}],{duration:220,easing:'ease-out'});
+      });
+
     }
-    const observer=new ResizeObserver(fitCards);observer.observe(wall);
+    const observer=new ResizeObserver(()=>fitCards());observer.observe(wall);
+    const hoverLayout=()=>fitCards(true);
+    const focusLayout=()=>requestAnimationFrame(()=>fitCards(true));
+    m.addEventListener('pointerenter',hoverLayout);m.addEventListener('pointerleave',hoverLayout);
+    m.addEventListener('focusin',focusLayout);m.addEventListener('focusout',focusLayout);
     function render(){
       wall.replaceChildren();updateReadableMinimum();modeInput.value=mode;layoutControl.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layout===layout)));
       cards.forEach((card,i)=>{
@@ -106,7 +122,7 @@
       });
       const add=document.createElement('button');add.type='button';add.className='direction-add-card';add.textContent='+';add.setAttribute('aria-label','Add step');add.title='Add step';add.disabled=cards.length>=20;
       add.addEventListener('click',()=>{cards.push({title:'New step',image:presets[0].image});reshape();render();changed();fitCards()});wall.appendChild(add);
-      requestAnimationFrame(fitCards);
+      requestAnimationFrame(()=>fitCards());
       status.textContent=`${cards.length} steps · Drag to reorder · Double-click a title to edit`;
     }
     for(const preset of presets){const b=document.createElement('button');b.type='button';b.dataset.image=preset.image;b.setAttribute('aria-label',preset.title);const img=document.createElement('img');img.src=preset.image;img.alt='';const text=document.createElement('span');text.textContent=preset.image.endsWith('/67.png')?'Crayon · Pick a color':preset.title;b.append(img,text);b.addEventListener('click',()=>{revision++;save.disabled=false;error.textContent='';selectImage(preset.image);if(editing!==null){cards[editing].image=preset.image;if(!preset.image.endsWith('/67.png'))close();render();changed()}});m.querySelector('.directions-library').appendChild(b)}

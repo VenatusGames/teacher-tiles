@@ -197,4 +197,4 @@ function bindTimerControls(m,onRender,{onFinish}={}){
   };
 }
 
-function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='font'&&['dm','space','mono'].includes(choice.value))||(key==='text'&&['cream','red','orange','gold','green','teal','purple','brown'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
+function cycleData(m,key,values){const choice=m._appearanceChoice;if(choice?.key===key&&(values.includes(choice.value)||(key==='bg'&&choice.value==='orange')||(key==='font'&&['dm','space','mono'].includes(choice.value))||(key==='text'&&['cream','red','orange','gold','green','teal','purple','brown'].includes(choice.value)))){m.dataset[key]=choice.value;return}const current=m.dataset[key]||values[0],i=values.indexOf(current);m.dataset[key]=values[(i+1)%values.length]}
