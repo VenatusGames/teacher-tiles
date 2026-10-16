@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const types=new Set(['halloweentimer','pumpkincarving','pumpkinpatch']);
+  const types=new Set(['halloweentimer','pumpkincarving','pumpkinpatch','trickortreat']);
   const faces={
     classic:{name:'Classic',d:'M25 38 37 23 43 40ZM57 40 64 23 76 38ZM46 47 50 40 54 47ZM24 55Q50 78 77 55L69 71 57 77 56 67 46 67 44 77 31 70Z'},
     happy:{name:'Happy',d:'M26 39Q32 20 40 39Q33 31 26 39ZM60 39Q67 20 74 39Q67 31 60 39ZM26 55Q50 66 75 55Q68 82 50 81Q32 80 26 55Z'},
@@ -45,6 +45,8 @@
     const mask=document.createElementNS(ns,'mask');mask.id=id+'-holes';mask.setAttribute('maskUnits','userSpaceOnUse');mask.setAttribute('x','0');mask.setAttribute('y','0');mask.setAttribute('width','100');mask.setAttribute('height','100');
     const white=document.createElementNS(ns,'rect');white.setAttribute('width','100');white.setAttribute('height','100');white.setAttribute('fill','white');const holes=document.createElementNS(ns,'g');holes.classList.add('carving-mask-holes');holes.setAttribute('fill','black');mask.append(white,holes);defs.append(mask);
     surface.querySelector('image').setAttribute('mask','url(#'+mask.id+')');
+    const light=document.createElementNS(ns,'radialGradient');light.id=id+'-candle';light.setAttribute('cx','50%');light.setAttribute('cy','78%');light.setAttribute('r','85%');
+    for(const [offset,color] of [['0%','#fff6c4'],['45%','#ffcf64'],['100%','#b65315']]){const stop=document.createElementNS(ns,'stop');stop.setAttribute('offset',offset);stop.setAttribute('stop-color',color);light.append(stop);}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(const [attribute,values,duration] of [['cx','50%;47%;52%;49%;54%;50%','3.7s'],['cy','78%;74%;80%;76%;78%','2.9s']]){const drift=document.createElementNS(ns,'animate');drift.setAttribute('attributeName',attribute);drift.setAttribute('values',values);drift.setAttribute('dur',duration);drift.setAttribute('repeatCount','indefinite');light.append(drift);}}defs.append(light);m.style.setProperty('--candle-fill','url(#'+light.id+')');
     const cavity=document.createElementNS(ns,'g');cavity.classList.add('carving-cavity');surface.insertBefore(cavity,surface.querySelector('image'));
     surface.querySelectorAll('.carving-cuts,.carving-trace').forEach(n=>n.setAttribute('clip-path','url(#'+id+')'));
   }
@@ -61,9 +63,10 @@
   function preview(m,state,base=document.baseURI){
     if(state.type==='pumpkincarving'){prepareCarving(m);m.querySelector('.carving-surface image').setAttribute('href',new URL('tiles/halloween/assets/pumpkin-4.png',base).href);}
     if(state.type==='halloweentimer'){
-      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',pumpkinPath));timerFace(m,state.dataset?.pumpkinFace);
+      m.querySelectorAll('.shape-clip path,.shape-outline,.shape-highlight').forEach(p=>p.setAttribute('d',pumpkinPath));timerFace(m,state.dataset?.pumpkinFace);m.querySelector('.timer-stage').prepend(m.querySelector('.timer-readout'));
     }
     if(state.type==='pumpkincarving')renderCuts(m,(Array.isArray(state.special?.cuts)?state.special.cuts:[]).slice(0,100).filter(d=>typeof d==='string'&&d.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(d)));
+    if(state.type==='trickortreat')window.TeacherTilesTrickOrTreat?.preview(m,state.special);
     if(state.type==='pumpkinpatch')for(const p of (Array.isArray(state.special?.plants)?state.special.plants:[]).slice(0,24)){
       const bound=(v,min,max,fallback)=>Math.max(min,Math.min(max,Number(v)||fallback));
       const el=document.createElement('div');el.className='patch-plant';el.style.cssText=`left:${bound(p.x,5,95,50)}%;top:${bound(p.y,35,92,60)}%;width:${bound(p.size,8,24,16)}%;--growth:${bound(p.growth,0,1,.1)}`;el.dataset.color=['green','yellow'].includes(p.color)?p.color:'orange';
