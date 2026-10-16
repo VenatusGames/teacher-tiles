@@ -134,8 +134,10 @@
 .timer-shape-shelf.ghost-face-shelf button .pumpkin-face-swatch svg{fill:#34405a}
 
 /* Anchor the clock to the silhouette rather than reserving a separate row. */
-.halloweentimer-module .timer-visual>.timer-readout{position:absolute!important;left:50%!important;top:calc(87% + 8px)!important;bottom:auto!important;transform:translate(-50%,-50%)!important;margin:0;padding:5px 15px;min-width:0;width:max-content;max-width:96%;z-index:2}
+.halloweentimer-module .timer-visual>.timer-readout{position:absolute!important;left:50%!important;top:auto!important;bottom:0!important;transform:translateX(-50%)!important;margin:0;padding:5px 15px;min-width:0;width:max-content;max-width:96%;z-index:2}
 .halloweentimer-module .timer-visual>.timer-readout .timer-remaining{font-size:clamp(24px,calc(var(--timer-visual-size,240px)*.17),50px)!important;line-height:1.05}
 .halloweentimer-module .timer-visual>.timer-readout .timer-status{font-size:clamp(9px,calc(var(--timer-visual-size,240px)*.04),12px)!important}
 
 .timer-module.halloweentimer-module{padding:10px 10px 6px;gap:0}
+
+.shop-product__preview--ghost-timer>img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:80%;height:80%;object-fit:contain;margin:0}
