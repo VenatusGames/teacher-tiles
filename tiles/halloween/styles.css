@@ -134,8 +134,11 @@
 .timer-shape-shelf.ghost-face-shelf button .pumpkin-face-swatch svg{fill:#34405a}
 
 /* Anchor the clock to the silhouette rather than reserving a separate row. */
-.halloweentimer-module .timer-visual>.timer-readout{position:absolute!important;left:50%!important;top:83%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;margin:0;padding:5px 15px;min-width:0;width:max-content;max-width:96%;z-index:2}
+.halloweentimer-module .timer-visual>.timer-readout{position:absolute!important;left:50%!important;top:87%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;margin:0;padding:5px 15px;min-width:0;width:max-content;max-width:96%;z-index:2}
 .halloweentimer-module .timer-visual>.timer-readout .timer-remaining{font-size:clamp(24px,calc(var(--timer-visual-size,240px)*.17),50px)!important;line-height:1.05}
 .halloweentimer-module .timer-visual>.timer-readout .timer-status{font-size:clamp(9px,calc(var(--timer-visual-size,240px)*.04),12px)!important}
 
-.timer-module.halloweentimer-module{padding:10px 10px 6px;gap:0}
+.timer-module.halloweentimer-module{padding:4px;gap:0}
+
+/* Use the transparent margin inside the artwork rather than adding another inset. */
+.halloweentimer-module .timer-shape-svg,.halloweentimer-module .pumpkin-timer-face{transform:scale(1.09);transform-origin:50% 50%}
