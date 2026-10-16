@@ -46,3 +46,7 @@
 .visual-schedule-module .tile-settings-panel .visual-schedule-row-size-input{grid-area:slider;min-width:0;width:100%;margin:0}
 .visual-schedule-module .tile-settings-panel .visual-schedule-row-size-output{grid-area:output;justify-self:end;font-variant-numeric:tabular-nums;white-space:nowrap}
 .visual-schedule-module .tile-settings-panel .tile-heading-visibility-setting{position:static;margin:0;padding-top:2px}
+
+.visual-schedule-module[data-schedule-times-hidden="true"] .visual-schedule-segment-time,.visual-schedule-module[data-schedule-times-hidden="true"] .visual-schedule-divider{display:none!important}
+
+.visual-schedule-module[data-schedule-times-hidden="true"]{min-width:240px}
