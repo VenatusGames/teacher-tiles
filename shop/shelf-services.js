@@ -92,6 +92,7 @@ function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId='',previewSize=0}={}){
   if(!src&&!emoji)return null;
+  if(window.TeacherTilesPresentations?.active)return window.TeacherTilesPresentations.addSticker({src,emoji,name,aspect},clientX,clientY);
   const isFlag=/flagcdn\.io\/flags\//i.test(src);
   const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
   const p=screenToBoard(clientX,clientY);
