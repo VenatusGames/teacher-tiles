@@ -8,7 +8,8 @@ import '../tiles/lava-lamp/index.js?v=20261012-skins';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20261015-halloween';
+import {renderTimerPreview} from './timer-preview.js?v=20261016-template-preview';
+import '../tiles/visual-directions/index.js?v=20261016-template-preview';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -594,6 +595,40 @@ function applyPreviewState(module, state) {
         hint.textContent = status === "present" ? "Drop students anywhere here" : "Every student is present";
         list.appendChild(hint);
       }
+    }
+  }
+
+  if (state.type === "visualdirections" && special) {
+    const wall = module.querySelector('.directions-wall');
+    const api = window.TeacherTilesVisualDirections;
+    const cards = (Array.isArray(special.cards) ? special.cards : []).filter(c => c && typeof c === 'object').slice(0,20);
+    if (wall) {
+      wall.replaceChildren();
+      const width = Math.max(100, Number(state.transform?.width || 760)-32);
+      const height = Math.max(80, Number(state.transform?.height || 470)-85);
+      const count = Math.max(1,cards.length);
+      let columns=1, best=0;
+      for(let n=1;n<=count;n++) {
+        if(special.layout==='horizontal' && n!==count || special.layout==='vertical' && n!==1)continue;
+        const size=Math.min((width-8*(n-1))/n,(height-8*(Math.ceil(count/n)-1))/Math.ceil(count/n));
+        if(size>best){best=size;columns=n;}
+      }
+      wall.style.setProperty('--direction-columns',columns);
+      wall.style.setProperty('--direction-rows',Math.ceil(count/columns));
+      wall.style.setProperty('--direction-text',Math.max(14,Math.min(25,best*.13))+'px');
+      wall.style.setProperty('--direction-label',Math.max(11,Math.min(14,best*.09))+'px');
+      for(const [index,card] of cards.entries()) {
+        const article=document.createElement('article');article.className='direction-card';
+        const label=document.createElement('span');label.className='direction-step';label.textContent=api.stepLabel(special.mode,index,cards.length);
+        const content=document.createElement('div');content.className='direction-content';
+        const imageBox=document.createElement('span');imageBox.className='direction-image-button';
+        const img=document.createElement('img'),src=api.safeImage(card.image);img.alt='';
+        if(card.image)img.src=src.startsWith('data:')?src:new URL(src,new URL('../',import.meta.url)).href;else img.hidden=true;
+        if(src.endsWith('/67.png') && /^#[0-9a-f]{6}$/i.test(card.color||''))api.colorCrayon(card.color,new URL(src,new URL('../',import.meta.url)).href).then(data=>{img.src=data;}).catch(()=>{});
+        const title=document.createElement('strong');title.textContent=String(card.title||'Step');
+        imageBox.append(img);content.append(imageBox,title);article.append(label,content);wall.append(article);
+      }
+      const status=module.querySelector('.directions-status');if(status)status.textContent='';
     }
   }
 

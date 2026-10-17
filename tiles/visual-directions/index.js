@@ -5,9 +5,9 @@
   const ordinals=['First','Second','Third','Fourth','Fifth','Sixth','Seventh','Eighth','Ninth','Tenth','Eleventh','Twelfth','Thirteenth','Fourteenth','Fifteenth','Sixteenth','Seventeenth','Eighteenth','Nineteenth','Twentieth'];
   const stepLabel=(mode,i,count)=>mode==='ordinals'?ordinals[i]:mode==='sequence'?(i===0?'First':i===count-1?'Last':i===1?'Next':'Then'):String(i+1);
   const crayonCache=new Map();
-  function colorCrayon(color){
+  function colorCrayon(color,source='tiles/visual-directions/assets/67.png'){
     if(crayonCache.has(color))return crayonCache.get(color);
-    const promise=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=canvas.height=540;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,540,540);const pixels=ctx.getImageData(0,0,540,540),rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16));for(let i=0;i<pixels.data.length;i+=4){const shade=(pixels.data[i]+pixels.data[i+1]+pixels.data[i+2])/3;if(shade<25)continue;for(let c=0;c<3;c++)pixels.data[i+c]=Math.min(255,rgb[c]*shade/110)}ctx.putImageData(pixels,0,0);resolve(canvas.toDataURL('image/png'))}catch(e){reject(e)}};img.onerror=reject;img.src='tiles/visual-directions/assets/67.png'});crayonCache.set(color,promise);if(crayonCache.size>30)crayonCache.delete(crayonCache.keys().next().value);return promise;
+    const promise=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=canvas.height=540;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,540,540);const pixels=ctx.getImageData(0,0,540,540),rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16));for(let i=0;i<pixels.data.length;i+=4){const shade=(pixels.data[i]+pixels.data[i+1]+pixels.data[i+2])/3;if(shade<25)continue;for(let c=0;c<3;c++)pixels.data[i+c]=Math.min(255,rgb[c]*shade/110)}ctx.putImageData(pixels,0,0);resolve(canvas.toDataURL('image/png'))}catch(e){reject(e)}};img.onerror=reject;img.src=source});crayonCache.set(color,promise);if(crayonCache.size>30)crayonCache.delete(crayonCache.keys().next().value);return promise;
   }
   function setup(m){
     const wall=m.querySelector('.directions-wall'),form=m.querySelector('.directions-form'),title=m.querySelector('.directions-title'),upload=m.querySelector('.directions-upload'),preview=m.querySelector('.directions-preview'),modeInput=m.querySelector('.directions-mode'),status=m.querySelector('.directions-status'),error=m.querySelector('.directions-error'),save=form.querySelector('[type=submit]');
@@ -135,5 +135,5 @@
     m._boardSetState=state=>{cancelDrag?.();close();cards=(Array.isArray(state?.cards)?state.cards:[]).slice(0,20).filter(c=>c&&typeof c==='object').map(c=>({title:String(c.title||'Step').slice(0,80),image:safeImage(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#4285d4'}));mode=['numbers','ordinals','sequence'].includes(state?.mode)?state.mode:'numbers';layout=['vertical','horizontal','grid'].includes(state?.layout)?state.layout:'grid';render()};
     m._deactivate=()=>{cancelDrag?.();close()};m._cleanup=()=>{cancelDrag?.();close();observer.disconnect();document.removeEventListener('pointerdown',dismissOutside,true)};render();
   }
-  window.TeacherTilesVisualDirections=Object.freeze({setup,stepLabel,safeImage});
+  window.TeacherTilesVisualDirections=Object.freeze({setup,stepLabel,safeImage,colorCrayon});
 })();
