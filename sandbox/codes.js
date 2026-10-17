@@ -56,6 +56,7 @@ export function createCodesPanel(call) {
   const searchable = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const rewardKind = item => item.rewardType === 'coins' ? 'Coin Pack'
     : item.rewardId.startsWith('tile-skin-') ? 'Tile Skin'
+    : item.rewardId.startsWith('presentation-theme-') ? 'Presentation Theme'
     : item.rewardId.startsWith('theme-') ? 'Theme'
     : item.rewardId.startsWith('cursor-') ? 'Cursor Pack' : 'Cosmetic Pack';
   function fillRewards() {

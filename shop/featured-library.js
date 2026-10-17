@@ -9,8 +9,8 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   const pause=root.querySelector('[data-library-pause]');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const compact=matchMedia('(max-width: 650px)');
-  const categories=[['all','All Cosmetics'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['profile-cosmetics','Profiles']];
-  const accents={'themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','profile-cosmetics':'#cd91b3'};
+  const categories=[['all','All Cosmetics'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['presentation-themes','Presentations'],['profile-cosmetics','Profiles']];
+  const accents={'themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','presentation-themes':'#a28ac6','profile-cosmetics':'#cd91b3'};
   let catalog=[],pool=[],cards=[],index=0,filter='all',timer=0,active=false,inView=false,hover=false,paused=motion.matches;
   const count=()=>Math.min(compact.matches?7:12,pool.length);
   function schedule(){
