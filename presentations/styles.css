@@ -14,3 +14,11 @@
 .pres-toolbar svg,.pres-sidebar-bottom svg{width:18px;height:18px}.pres-export-menu{z-index:9}
 
 .pres-menu-chevron{margin-left:auto;font-size:20px;color:#8392a8}.pres-menu [data-shape-choice] svg{fill:#91add533;stroke:#647fa5}
+
+/* Presentation library and file actions. */
+.pres-library-heading{gap:24px;align-items:center}.pres-library-title{display:flex;flex-direction:column;align-items:flex-start;gap:12px}.pres-library-title h1{margin-bottom:0}.pres-library-heading>.pres-limit{margin-left:auto;justify-content:flex-end;text-align:right;max-width:460px}.pres-library-heading .pres-upgrade{justify-content:flex-end;width:100%}
+#presentations-tool .pres-new-presentation{aspect-ratio:1;align-self:start;min-height:220px;width:100%;border:2px dashed #becbdd;border-radius:18px;background:#f6f9fd80;flex-direction:column;gap:14px;color:#677f9e;font-size:15px;transition:background .18s,border-color .18s,transform .18s}
+#presentations-tool .pres-new-presentation:hover{background:#edf3fc;border-color:#7c9cca;transform:translateY(-3px)}.pres-new-presentation svg{width:38px;height:38px;stroke-width:1.5}
+.pres-deck-export-menu{width:270px;z-index:12}.pres-deck-export-menu button{align-items:flex-start!important;flex-direction:column;gap:4px!important}.pres-deck-export-menu strong{font-size:13px}.pres-deck-export-menu small{font-size:11px;color:#7b899d;font-weight:400}
+#presentations-tool.is-file-operation:after{content:'';position:absolute;inset:0;z-index:30;cursor:progress;background:#f5f8fc35}.is-file-operation .pres-notice{position:relative;z-index:31;background:#edf3fc}.is-file-operation .pres-notice:before{content:'';display:inline-block;width:12px;height:12px;border:2px solid #c5d2e3;border-top-color:#647ca8;border-radius:50%;margin-right:10px;vertical-align:middle;animation:pres-spin .7s linear infinite}
+@media(max-width:700px){.pres-library-heading{flex-wrap:wrap;gap:18px}.pres-library-heading>.pres-limit{max-width:none;width:100%;justify-content:flex-end}.pres-library-title{flex-direction:row;align-items:center;width:100%;justify-content:space-between;gap:10px}#presentations-tool .pres-new-presentation{min-height:180px}}
