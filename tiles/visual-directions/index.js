@@ -4,6 +4,19 @@
   const safeImage=value=>typeof value==='string'&&(presets.some(p=>p.image===value)||(/^data:image\/(png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i.test(value)&&value.length<800000))?value:presets[0].image;
   const ordinals=['First','Second','Third','Fourth','Fifth','Sixth','Seventh','Eighth','Ninth','Tenth','Eleventh','Twelfth','Thirteenth','Fourteenth','Fifteenth','Sixteenth','Seventeenth','Eighteenth','Nineteenth','Twentieth'];
   const stepLabel=(mode,i,count)=>mode==='ordinals'?ordinals[i]:mode==='sequence'?(i===0?'First':i===count-1?'Last':i===1?'Next':'Then'):String(i+1);
+  function fitLayout(wall,count,layout='grid',width=wall.clientWidth,height=wall.clientHeight){
+    count=Math.max(1,count);if(!width||!height)return;
+    let columns=1,score=-Infinity;
+    for(let cols=1;cols<=count;cols++){
+      if(layout==='horizontal'&&cols!==count||layout==='vertical'&&cols!==1)continue;
+      const rows=Math.ceil(count/cols),w=(width-8*(cols-1))/cols,h=(height-8*(rows-1))/rows;
+      const value=Math.min(w,h-40);if(value>score){score=value;columns=cols;}
+    }
+    const rows=Math.ceil(count/columns),size=Math.min(width/columns,height/rows);
+    wall.style.setProperty('--direction-columns',columns);wall.style.setProperty('--direction-rows',rows);
+    wall.style.setProperty('--direction-text',Math.max(14,Math.min(36,size*.13))+'px');
+    wall.style.setProperty('--direction-label',Math.max(11,Math.min(18,size*.09))+'px');
+  }
   const crayonCache=new Map();
   function colorCrayon(color,source='tiles/visual-directions/assets/67.png'){
     if(crayonCache.has(color))return crayonCache.get(color);
@@ -69,20 +82,11 @@
     function fitCards(animate=false){
       const items=[...wall.querySelectorAll('.direction-card')];
       const before=animate?items.map(el=>el.getBoundingClientRect()):[];
-      const showAdd=matchMedia('(hover: none)').matches||m.matches(':hover')||!!m.querySelector(':focus-visible')||!cards.length;
+      const showTools=matchMedia('(hover: none)').matches||m.matches(':hover')||!!m.querySelector(':focus-visible');
+      const showAdd=showTools||!cards.length;
+      m.classList.toggle('directions-controls-visible',showTools);status.hidden=!showTools;
       const add=wall.querySelector('.direction-add-card');if(add)add.hidden=!showAdd;
-      const width=wall.clientWidth,height=wall.clientHeight,count=Math.max(1,cards.length+(showAdd?1:0));
-      if(!width||!height)return;
-      let best=1,score=0;
-      for(let cols=1;cols<=count;cols++){
-        if(layout==='horizontal'&&cols!==count||layout==='vertical'&&cols!==1)continue;
-        const rows=Math.ceil(count/cols),w=(width-8*(cols-1))/cols,h=(height-8*(rows-1))/rows;
-        const size=Math.min(w,h);if(size>score){score=size;best=cols}
-      }
-      wall.style.setProperty('--direction-card-size',`${Math.max(1,score)}px`);
-      wall.style.setProperty('--direction-columns',best);wall.style.setProperty('--direction-rows',Math.ceil(count/best));
-      wall.style.setProperty('--direction-text',`${Math.max(14,Math.min(25,score*.13))}px`);
-      wall.style.setProperty('--direction-label',`${Math.max(11,Math.min(14,score*.09))}px`);
+      fitLayout(wall,cards.length+(showAdd?1:0),layout);
       if(animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)items.forEach((el,i)=>{
         const after=el.getBoundingClientRect(),old=before[i];
         if(!old.width||!after.width)return;
@@ -135,5 +139,5 @@
     m._boardSetState=state=>{cancelDrag?.();close();cards=(Array.isArray(state?.cards)?state.cards:[]).slice(0,20).filter(c=>c&&typeof c==='object').map(c=>({title:String(c.title||'Step').slice(0,80),image:safeImage(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#4285d4'}));mode=['numbers','ordinals','sequence'].includes(state?.mode)?state.mode:'numbers';layout=['vertical','horizontal','grid'].includes(state?.layout)?state.layout:'grid';render()};
     m._deactivate=()=>{cancelDrag?.();close()};m._cleanup=()=>{cancelDrag?.();close();observer.disconnect();document.removeEventListener('pointerdown',dismissOutside,true)};render();
   }
-  window.TeacherTilesVisualDirections=Object.freeze({setup,stepLabel,safeImage,colorCrayon});
+  window.TeacherTilesVisualDirections=Object.freeze({setup,stepLabel,safeImage,colorCrayon,fitLayout});
 })();
