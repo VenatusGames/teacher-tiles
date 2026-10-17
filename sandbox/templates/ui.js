@@ -1,6 +1,6 @@
-import '../boards/cosmetics-policy.js?v=20261014-subscription-override';
+import '../boards/cosmetics-policy.js?v=20261016-template-preview';
 import {tagEditor,discoveryShelves} from './discovery.js?v=20260927-tag-30-fix';
-import './contract.js?v=20260927-template-media';
+import './contract.js?v=20261016-template-preview';
 import {tileLabels} from './labels.js';
 const contract=globalThis.TeacherTilesTemplateContract;
 const make=(tag,className,value)=>{const e=document.createElement(tag);if(className)e.className=className;if(value!==undefined)e.textContent=value;return e;};
@@ -29,7 +29,7 @@ let cosmeticsCatalog;
 function inspectCosmetics(snapshot){
  const group=make('details','template-inspect-group template-cosmetics'),summary=make('summary','','Paid & subscriber cosmetics'),body=make('div','template-cosmetics-list');
  group.append(summary,body);body.textContent='Loading cosmetics…';
- if(!cosmeticsCatalog)cosmeticsCatalog=fetch(new URL('../boards/cosmetics-catalog.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Could not load cosmetics');return r.json();}).catch(e=>{cosmeticsCatalog=null;throw e;});
+ if(!cosmeticsCatalog)cosmeticsCatalog=fetch(new URL('../boards/cosmetics-catalog.json?v=20261016-template-preview',import.meta.url)).then(r=>{if(!r.ok)throw Error('Could not load cosmetics');return r.json();}).catch(e=>{cosmeticsCatalog=null;throw e;});
  cosmeticsCatalog.then(catalog=>{
   const requirements=globalThis.TeacherTilesCosmeticsPolicy.policy(catalog).requirements(snapshot),unique=new Map();
   for(const r of requirements){const key=[...r.products].sort().join('|');if(!unique.has(key))unique.set(key,r);}
