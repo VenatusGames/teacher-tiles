@@ -9,7 +9,7 @@ import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
 import {renderTimerPreview} from './timer-preview.js?v=20261016-template-preview';
-import '../tiles/visual-directions/index.js?v=20261016-template-preview';
+import '../tiles/visual-directions/index.js?v=20261016-directions-fit';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -606,17 +606,8 @@ function applyPreviewState(module, state) {
       wall.replaceChildren();
       const width = Math.max(100, Number(state.transform?.width || 760)-32);
       const height = Math.max(80, Number(state.transform?.height || 470)-85);
-      const count = Math.max(1,cards.length);
-      let columns=1, best=0;
-      for(let n=1;n<=count;n++) {
-        if(special.layout==='horizontal' && n!==count || special.layout==='vertical' && n!==1)continue;
-        const size=Math.min((width-8*(n-1))/n,(height-8*(Math.ceil(count/n)-1))/Math.ceil(count/n));
-        if(size>best){best=size;columns=n;}
-      }
-      wall.style.setProperty('--direction-columns',columns);
-      wall.style.setProperty('--direction-rows',Math.ceil(count/columns));
-      wall.style.setProperty('--direction-text',Math.max(14,Math.min(25,best*.13))+'px');
-      wall.style.setProperty('--direction-label',Math.max(11,Math.min(14,best*.09))+'px');
+      module.dataset.directionsLayout=special.layout||'grid';
+      api.fitLayout(wall,cards.length,special.layout,width,height);
       for(const [index,card] of cards.entries()) {
         const article=document.createElement('article');article.className='direction-card';
         const label=document.createElement('span');label.className='direction-step';label.textContent=api.stepLabel(special.mode,index,cards.length);
@@ -628,7 +619,7 @@ function applyPreviewState(module, state) {
         const title=document.createElement('strong');title.textContent=String(card.title||'Step');
         imageBox.append(img);content.append(imageBox,title);article.append(label,content);wall.append(article);
       }
-      const status=module.querySelector('.directions-status');if(status)status.textContent='';
+      const status=module.querySelector('.directions-status');if(status){status.textContent='';status.hidden=true;}
     }
   }
 
@@ -796,7 +787,7 @@ function applyPreviewState(module, state) {
   });
 }
 
-const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
+const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;if(module.dataset.type==='visualdirections'){const wall=module.querySelector('.directions-wall');window.TeacherTilesVisualDirections.fitLayout(wall,wall.children.length,module.dataset.directionsLayout);}const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
 function createMiniObject(item) {
   const state = item?.state || null;
   const type = state?.type || item?.type || "";
