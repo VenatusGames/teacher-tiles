@@ -35,3 +35,12 @@
 @media(max-width:700px){.shop-modal .shop-discovery .shop-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 @media(prefers-reduced-motion:reduce){.shop-navigation button:has(small)>span,.shop-navigation button small{transition:none}}
+
+.presentation-theme-preview{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12%;width:88%;aspect-ratio:16/9;container-type:inline-size;background-size:100% 100%;background-repeat:no-repeat;background-origin:border-box;padding:8%;box-sizing:border-box;border:1px solid #26324912;border-radius:3px;box-shadow:0 12px 28px #26324920;transform:rotate(-2deg);transition:transform .22s ease}
+.presentation-theme-preview>strong{font:700 clamp(12px,9cqw,34px)/1.2 Inter,system-ui;color:#263249;max-width:90%;text-align:left}
+.presentation-theme-preview-lines{width:48%;height:3px;background:var(--presentation-preview-accent);box-shadow:0 7px 0 var(--presentation-preview-accent);opacity:.65}
+.shop-modal .shop-product__preview--presentation{min-height:200px;display:flex;align-items:center;justify-content:center;background:#f3f4f8;padding:16px}
+.shop-modal .shop-product:hover .presentation-theme-preview{transform:rotate(0) translateY(-3px)}
+.shop-category__art--extras .presentation-theme-preview{width:118px;gap:10px;padding:13px}.shop-category__art--extras .presentation-theme-preview>strong{font-size:10px}
+.shop-category__art--extras .presentation-theme-preview-lines{height:2px;box-shadow:0 5px 0 var(--presentation-preview-accent)}
+@media(prefers-reduced-motion:reduce){.presentation-theme-preview{transition:none}}

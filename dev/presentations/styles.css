@@ -31,3 +31,13 @@
 #presentations-tool .pres-notice{position:absolute;top:80px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(850px,90%);z-index:20;border:1px solid #d4dfed;border-radius:12px;box-shadow:0 8px 28px #27344814;transition:opacity .22s,translate .22s;pointer-events:none}#presentations-tool .pres-notice button{pointer-events:auto}.pres-notice.is-fading{opacity:0;translate:0 -6px}
 
 #presentations-tool .pres-object-remove{top:-34px;right:-10px}
+
+/* The picker grows with the catalog without pushing its controls off screen. */
+.pres-theme-dialog{width:min(820px,94vw);max-height:82dvh;display:flex;flex-direction:column;overflow:hidden;padding:20px}
+.pres-theme-dialog.is-expanded{width:min(1200px,96vw);max-height:92dvh}
+.pres-theme-dialog header{flex:none;gap:10px;margin-bottom:16px}.pres-theme-dialog header strong{margin-right:auto}
+.pres-theme-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));overflow:auto;min-height:0;padding:2px 5px 8px 2px;scrollbar-width:thin;scrollbar-color:#bcc7d7 transparent;overscroll-behavior:contain}
+.pres-theme-grid button{position:relative;flex-shrink:0;gap:5px!important}.pres-theme-grid small{font-size:11px;color:#718099;margin-bottom:3px}
+.pres-theme-grid .is-locked small{color:#8268aa}.pres-theme-grid .is-locked .pres-slide:after{content:'Shop';position:absolute;right:6px;top:6px;left:auto;bottom:auto;width:auto;height:auto;padding:4px 7px;background:#fffffff0;color:#6f578e;border:0;border-radius:7px;font:600 10px Inter,system-ui}
+.presentations-open .shop-modal{z-index:59000}
+@media(max-width:480px){.pres-theme-dialog{padding:14px}.pres-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}

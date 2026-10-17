@@ -1,5 +1,5 @@
 import {createSplashScreensPanel} from './splash-screens.js';
-import {createProductManagementPanel} from './product-management.js?v=20261015-bundle-actions';
+import {createProductManagementPanel} from './product-management.js?v=20261016-presentation-themes';
 import {createTileManagementPanel} from './tile-management.js?v=20261013-description';
 import {adminBoardPreview} from './board-preview.js?v=20261016-directions-fit';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
@@ -9,7 +9,7 @@ import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20261015-override-crown';
 import {startSiteActivity} from '../account/site-activity.js';
-import {createCodesPanel} from './codes.js?v=20261012-codes-activity';
+import {createCodesPanel} from './codes.js?v=20261016-presentation-themes';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
