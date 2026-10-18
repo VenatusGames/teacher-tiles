@@ -27,3 +27,7 @@
 .tm-editor .tm-badge{padding:5px 8px 5px 12px;font-size:11px}.tm-badge .tm-tag-remove{position:relative;z-index:1}.tm-choices .tm-badge{padding:8px 12px}
 @keyframes tm-badge-shimmer{0%,58%{left:-80%}85%,100%{left:140%}}
 @media(prefers-reduced-motion:reduce){.tile-management .tm-badge::after{animation:none}}
+
+.tm-grade-shortcuts{display:flex;flex-wrap:wrap;gap:7px;width:100%;padding-bottom:12px;margin-bottom:5px;border-bottom:1px solid #d6dfed}
+.tm-grade-shortcuts .tm-grade-shortcut{border-radius:8px;font-weight:600;background:#eaf0fc}
+[data-portal-theme=dark] .tm-grade-shortcuts{border-bottom-color:#526680}

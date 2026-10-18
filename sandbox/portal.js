@@ -1,6 +1,6 @@
 import {createSplashScreensPanel} from './splash-screens.js';
 import {createProductManagementPanel} from './product-management.js?v=20261017-effects';
-import {createTileManagementPanel} from './tile-management.js?v=20261017-grade-plus';
+import {createTileManagementPanel} from './tile-management.js?v=20261017-grade-shortcuts';
 import {adminBoardPreview} from './board-preview.js?v=20261017-shared-presentations';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20261017-shared-presentations';
