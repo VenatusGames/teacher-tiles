@@ -9,8 +9,8 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   const pause=root.querySelector('[data-library-pause]');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const compact=matchMedia('(max-width: 650px)');
-  const categories=[['all','All Cosmetics'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['presentation-themes','Presentations'],['profile-cosmetics','Profiles']];
-  const accents={'themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','presentation-themes':'#a28ac6','profile-cosmetics':'#cd91b3'};
+  const categories=[['all','All Cosmetics'],['tile-effects','Tile Effects'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['presentation-themes','Presentations'],['profile-cosmetics','Profiles']];
+  const accents={'tile-effects':'#9d8ad7','presentation-transitions':'#a28ac6','themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','presentation-themes':'#a28ac6','profile-cosmetics':'#cd91b3'};
   let catalog=[],pool=[],cards=[],index=0,filter='all',timer=0,active=false,inView=false,hover=false,paused=motion.matches;
   const count=()=>Math.min(compact.matches?7:12,pool.length);
   function schedule(){
@@ -28,6 +28,9 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
     for(let offset=0;offset<count();offset++){
       const source=pool[(index+offset)%pool.length];
       const card=source.cloneNode(true);
+      // Clones must start idle rather than inherit an in-flight preview snapshot.
+      card.querySelectorAll('[data-transition-preview]').forEach(p=>p.replaceWith(window.TeacherTilesPresentationTransitions.preview(p.dataset.transitionPreview)));
+      card.querySelectorAll('[data-effect-preview]').forEach(p=>p.replaceWith(window.TeacherTilesTileEffects.preview(p.dataset.effectPreview)));
       card.hidden=false;card.classList.remove('shop-filter-hidden','is-shop-highlighted','is-purchasing');
       card.classList.add('shop-library-card');
       card.classList.toggle('shop-library-card--showcase',offset===0);

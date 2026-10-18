@@ -240,23 +240,7 @@ function setupSpinner(m){
   }
 
   function fireSpinnerConfetti(){
-    confettiLayer.replaceChildren();
-    const colors=['#ff6b7a','#ffd34e','#69c6ff','#7edc8b','#9d7cff','#ff9c5a'];
-    for(let i=0;i<66;i++){
-      const p=document.createElement('i');
-      p.className='spinner-confetti-piece';
-      const a=Math.random()*Math.PI*2;
-      const d=110+Math.random()*250;
-      p.style.setProperty('--x',`${Math.cos(a)*d}px`);
-      p.style.setProperty('--y',`${Math.sin(a)*d+65}px`);
-      p.style.setProperty('--r',`${Math.round(Math.random()*900-450)}deg`);
-      p.style.setProperty('--confetti',colors[i%colors.length]);
-      p.style.width=`${5+Math.random()*6}px`;
-      p.style.height=`${7+Math.random()*9}px`;
-      p.style.animationDelay=`${Math.random()*.1}s`;
-      confettiLayer.append(p);
-    }
-    setTimeout(()=>confettiLayer.replaceChildren(),1550);
+    window.TeacherTilesTileEffects.launch(confettiLayer);
   }
 
   function dismissWinner(){

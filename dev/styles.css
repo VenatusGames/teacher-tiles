@@ -15422,7 +15422,8 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 .context-menu__item[data-pbis-tracking="true"]{position:relative;padding-right:58px}
 .context-menu__tracking-badge{position:absolute;z-index:2;right:8px;top:8px;height:18px;padding:0 7px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(184,126,17,.24);border-radius:999px;background:linear-gradient(110deg,#fff4c9,#f1c34f 48%,#fff2b8);color:#76500d;font-size:6px!important;line-height:1!important;font-weight:950;letter-spacing:.11em;box-shadow:0 3px 9px rgba(156,102,12,.14)}
 .context-menu__tracking-badge::after{content:"";position:absolute;inset:-4px auto -4px -80%;width:55%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);animation:pbisTrackingShimmer 2.8s ease-in-out infinite}
-@keyframes pbisTrackingShimmer{0%,58%{left:-80%}85%,100%{left:140%}}
+/* Move a fixed-width shine strip without layout work; pauses stay outside the badge. */
+@keyframes pbisTrackingShimmer{0%,58%{transform:translateX(0) skewX(-22deg)}85%,100%{transform:translateX(400%) skewX(-22deg)}}
 
 /* Student View profile workspace. */
 .profile-tool-button+.profile-tool-button{margin-top:8px}.profile-tool-button__icon--students{background:linear-gradient(145deg,#edf6ff,#a9c8e7);color:#315f8d}.profile-tool-button__icon--students svg{width:25px;height:25px}
