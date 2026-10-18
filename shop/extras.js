@@ -21,16 +21,27 @@ function setupShopExtras(modal) {
   for(const skin of skins.catalog)planners.querySelector('.shop-product-grid').append(product(skin,'planner-skin',skins.preview(skin.id)));
   const presentations=page('presentation-themes','Presentation Themes','');
   for(const theme of themes.catalog)presentations.querySelector('.shop-product-grid').append(product(theme,'presentation-theme',themes.preview(theme.id)));
+  const presentationHome=page('presentations','Presentations','');
+  const collections=presentationHome.querySelector('.shop-product-grid');collections.className='shop-presentation-collections';
+  for(const [title,available,art] of [
+    ['Presentation Themes',true,'<rect x="3" y="5" width="22" height="16" rx="3"/><path d="m8 16 4-5 5 7M17 9h3"/><path d="M8 25h20a3 3 0 0 0 3-3V10"/>'],
+    ['Transitions',false,'<rect x="2" y="7" width="12" height="18" rx="3"/><rect x="20" y="7" width="12" height="18" rx="3"/><path d="M11 16h12m-4-4 4 4-4 4"/>'],
+    ['Coming Soon',false,'<path d="M17 7v20M7 17h20"/>'],
+    ['Coming Soon',false,'<path d="M17 7v20M7 17h20"/>']
+  ]){const button=document.createElement('button');button.type='button';button.className='shop-presentation-collection';button.innerHTML='<svg viewBox="0 0 34 34" aria-hidden="true">'+art+'</svg><strong>'+title+'</strong>';
+    if(available)button.dataset.shopOpenPage='presentation-themes';else{button.disabled=true;if(title==='Transitions')button.insertAdjacentHTML('beforeend','<small>Coming Soon</small>');}collections.append(button);
+  }
+  const themesBack=presentations.querySelector('.shop-back');themesBack.dataset.shopOpenPage='presentations';themesBack.setAttribute('aria-label','Back to Presentations');
   const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile. Basic colors · 10 coins. Decorative · 25 coins. Animated · 40 coins.');
   for(const frame of frames.catalog)profiles.querySelector('.shop-product-grid').append(product(frame,'profile-frame',frames.preview(frame.id)));
-  const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentation Themes','Slide Designs & Layouts'],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','Coming Soon']];
+  const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentations',''],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','Coming Soon']];
   for(const [id,title,subtitle] of categories){
     const category=document.createElement('button');category.type='button';category.className='shop-category shop-category--'+id;category.dataset.shopCategory=id;
     category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong></strong><em></em></span>';
     category.querySelector('strong').textContent=title;category.querySelector('em').textContent=subtitle;
     const art=category.querySelector('.shop-category__art');
     if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.slice(0,2))art.append(skins.preview(skin.id));}
-    else if(id==='presentation-themes'){category.dataset.shopOpenPage=id;art.append(themes.preview('pastel-purple'));}
+    else if(id==='presentation-themes'){category.dataset.shopOpenPage='presentations';art.append(themes.preview('pastel-purple'));}
     else if(id==='profile-cosmetics'){category.dataset.shopOpenPage=id;art.append(frames.preview('aurora'));}
     else{category.disabled=true;category.classList.add('shop-category--coming-soon');art.innerHTML=id==='presentation-themes'?'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="10" width="46" height="32" rx="5"/><path d="M32 42v12M22 55l10-7 10 7M19 21h26M19 30h16"/></svg>':'<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="22" width="30" height="30" rx="7"/><path d="m45 7 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8ZM15 8v8M11 12h8M52 40v8M48 44h8"/></svg>';}
     modal.querySelector('.shop-category-grid').append(category);

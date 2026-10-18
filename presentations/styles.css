@@ -50,3 +50,10 @@
 .pres-theme-search{flex:none;width:100%;margin-bottom:12px}.pres-theme-grid button[hidden]{display:none!important}.pres-theme-grid{align-content:start}.pres-theme-empty{font-size:13px;color:#718099;text-align:center;padding:12px}.pres-theme-empty[hidden]{display:none}
 
 .pres-theme-grid{grid-auto-rows:max-content}.pres-theme-grid button{min-height:150px}.pres-theme-grid .pres-slide{flex:none}
+
+/* Presentation playback occupies the display; only aspect-ratio letterboxing remains. */
+#presentations-tool.is-presenting{border:0;border-radius:0;background:#000}
+#presentations-tool.is-presenting .pres-editor{gap:0;padding:0}
+#presentations-tool.is-presenting .pres-canvas-area{background:#000;border:0;padding:0}
+#presentations-tool.is-presenting .pres-canvas{border:0;border-radius:0;outline:0;box-shadow:none}
+#presentations-tool.is-presenting :is(.pres-notice,.pres-theme-dialog,.pres-layout-dialog){display:none!important}

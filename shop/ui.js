@@ -32,7 +32,7 @@ function setupTeacherTilesShop(){
   searchTrigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>';
   navigation.children[0].after(searchTrigger);
   searchTrigger.addEventListener('click',()=>{activeHoliday='';showPage('home');const search=shopHome.querySelector('[data-shop-search]');search.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});search.focus({preventScroll:true});});
-  for(const [id,label,soon] of [['planner-skins','Planners',false],['presentation-themes','Presentations',false],['profile-cosmetics','Profiles',false],['tile-effects','Tile Effects',true]]){
+  for(const [id,label,soon] of [['planner-skins','Planners',false],['presentations','Presentations',false],['profile-cosmetics','Profiles',false],['tile-effects','Tile Effects',true]]){
     const button=document.createElement('button');button.type='button';button.textContent=label;
     if(soon){button.disabled=true;button.setAttribute('aria-label',label+' — Coming Soon');const caption=document.createElement('span');caption.textContent=label;button.replaceChildren(caption);const hint=document.createElement('small');hint.textContent='Coming Soon';hint.setAttribute('aria-hidden','true');button.append(hint);}else button.dataset.shopOpenPage=id;
     navigation.insertBefore(button,redeemTrigger);
