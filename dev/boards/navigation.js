@@ -697,12 +697,22 @@ function normalizeMenuSearch(value=''){
   return value.toLowerCase().replace(/[-‐‑–—]/g,' ').trim().replace(/\s+/g,' ');
 }
 
+function menuItemPassesGrade(item){return window.TeacherTilesTileFilters?.matches(item)??true;}
+function menuCategoryHasMatches(category){
+ if(!window.TeacherTilesTileFilters?.active||category==='all')return true;
+ return menuItems.some(item=>{if(!menuItemPassesGrade(item))return false;const categories=(item.dataset.category||'').split(/\s+/);
+ if(category==='favorites')return menuFavorites.has(menuItemKey(item));
+ if(category.startsWith('favorite:'))return menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category.slice(9);
+ return category==='holidays'?categories.some(c=>c.startsWith('holiday:')):categories.includes(category);});
+}
+
 function renderMenuCategoryPins(){
   const rail=menu.querySelector('.context-menu__category-drawer-grid');
   const sidebar=menu.querySelector('.context-menu__category-drawer'),savedScroll=sidebar.scrollTop;
   const ordered=[...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),...[...menuPinnedCategories].filter(id=>id.startsWith('holiday:')),...['favorites','all'].filter(id=>!menuPinnedCategories.has(id)),...menuCategoryOrder.filter(id=>!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id)),...(!menuPinnedCategories.has('holidays')?['holidays']:[])];
   const fragment=document.createDocumentFragment();
   for(const id of ordered){
+    if(!menuCategoryHasMatches(id))continue;
     let button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);
     if(!button&&id.startsWith('holiday:')){button=document.createElement('button');button.type='button';button.className='context-menu__filter';button.textContent=menuCategoryLabel(id).toUpperCase();button.classList.toggle('is-active',activeMenuCategory===id);button.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(id)})}
     if(!button)continue;
@@ -725,7 +735,7 @@ function renderMenuCategoryPins(){
     if(id==='favorites'){
       const children=document.createElement('div');children.className='context-menu__holiday-children';children.hidden=!menuFavoritesExpanded;
       for(const category of [...menuCategoryOrder,...menuHolidays.map((_,i)=>`holiday:${i}`)].filter(c=>!['all','favorites','holidays'].includes(c))){
-        if(!menuItems.some(item=>menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))continue;
+        if(!menuItems.some(item=>menuItemPassesGrade(item)&&menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))continue;
         const child=document.createElement('button');child.type='button';child.className='context-menu__holiday-child';child.textContent=menuCategoryLabel(category);child.classList.toggle('is-active',activeMenuCategory===`favorite:${category}`);
         child.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(`favorite:${category}`);renderMenuCategoryPins()});children.appendChild(child);
       }
@@ -733,7 +743,7 @@ function renderMenuCategoryPins(){
     }
     if(id==='holidays'){
       const children=document.createElement('div');children.className='context-menu__holiday-children';children.hidden=!menuHolidaysExpanded;
-      for(const [index,name] of menuHolidays.entries()){const child=document.createElement('button');child.type='button';child.className='context-menu__holiday-child';child.textContent=name;child.classList.toggle('is-active',activeMenuCategory===`holiday:${index}`);child.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(`holiday:${index}`);renderMenuCategoryPins()});const row=document.createElement('div');row.className='context-menu__category-row';const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=`holiday:${index}`;pin.setAttribute('aria-pressed',String(menuPinnedCategories.has(`holiday:${index}`)));pin.setAttribute('aria-label',`Pin ${name}`);pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';row.append(pin,child);if(!menuPinnedCategories.has(`holiday:${index}`))children.appendChild(row)}
+      for(const [index,name] of menuHolidays.entries()){if(!menuCategoryHasMatches(`holiday:${index}`))continue;const child=document.createElement('button');child.type='button';child.className='context-menu__holiday-child';child.textContent=name;child.classList.toggle('is-active',activeMenuCategory===`holiday:${index}`);child.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(`holiday:${index}`);renderMenuCategoryPins()});const row=document.createElement('div');row.className='context-menu__category-row';const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=`holiday:${index}`;pin.setAttribute('aria-pressed',String(menuPinnedCategories.has(`holiday:${index}`)));pin.setAttribute('aria-label',`Pin ${name}`);pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';row.append(pin,child);if(!menuPinnedCategories.has(`holiday:${index}`))children.appendChild(row)}
       fragment.appendChild(children);
     }
   }
@@ -768,6 +778,7 @@ function menuSearchRank(item,query){
 }
 
 function applyMenuView(){
+  if(!menuCategoryHasMatches(activeMenuCategory)){setMenuCategory('all');return;}
   const query=normalizeMenuSearch(menuSearch?.value);
   const searching=Boolean(query);
   menu.classList.toggle('is-searching',searching);
@@ -801,7 +812,7 @@ function applyMenuView(){
     for(const category of categories){
       const matches=menuItems.filter(item=>{
         const searchable=[item.querySelector('strong')?.textContent,item.querySelector('small')?.textContent,item.dataset.module,item.dataset.category,item.dataset.searchAliases].join(' ').toLowerCase().replace(/[-‐‑–—]/g,' ');
-        return (!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
+        return menuItemPassesGrade(item)&&(!searching||!included.has(item))&&(item.dataset.category||'').split(/\s+/).includes(category)&&(!favoritesOnly||(menuFavorites.has(menuItemKey(item))&&menuFavoriteCategory(item)===category))&&(!searching||searchable.includes(query));
       });
       const basicsOrder=['sticky','draw','textbubble','richtext','timer','clock','image','calculator'];
       matches.sort((a,b)=>searching
@@ -835,7 +846,7 @@ function applyMenuView(){
   fragment.appendChild(hidden);
   menuNoResults.hidden=visibleCount>0;
   menuNoResults.querySelector('strong').textContent=searching?translateAppText('context.none'):menuCategoryLabel(activeMenuCategory);
-  menuNoResults.querySelector('small').textContent=searching?translateAppText('context.try'):activeMenuCategory.startsWith('holiday:')?'Coming soon':activeMenuCategory==='favorites'?'Star a tile to keep it here.':'No tiles here yet. Explore another category.';
+  menuNoResults.querySelector('small').textContent=window.TeacherTilesTileFilters?.active?'No matching tiles. Try another grade level or clear the filter.':searching?translateAppText('context.try'):activeMenuCategory.startsWith('holiday:')?'Coming soon':activeMenuCategory==='favorites'?'Star a tile to keep it here.':'No tiles here yet. Explore another category.';
   fragment.appendChild(menuNoResults);
   list.replaceChildren(fragment);list.scrollTop=0;
 }
