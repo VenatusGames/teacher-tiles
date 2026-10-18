@@ -5,8 +5,8 @@ export async function readShopCatalog(){
   const doc=new DOMParser().parseFromString(await response.text(),'text/html');
   if(!doc.querySelector('[data-shop-product]'))continue;
   const defaults=new Map([...doc.querySelectorAll('[data-shop-product]')].map(c=>[c.dataset.shopProduct,{name:c.querySelector('h3')?.textContent.trim()||'',description:c.querySelector('p')?.textContent.trim()||'',tags:`${c.dataset.shopHoliday||''} ${c.querySelector('.shop-product__type')?.textContent||''}`}]));
-  await Promise.all([import('../profile/frames-catalog.js'),import('../tiles/lesson-planner/skins.js'),import('./sticker-catalog.js'),import('../presentations/themes.js')]);
-  for(const p of [...(window.TeacherTilesProfileFrames?.catalog||[]),...(window.TeacherTilesPlannerSkins?.catalog||[]),...(window.TeacherTilesStickerPacks||[]),...(window.TeacherTilesPresentationThemes?.catalog||[])])defaults.set(p.productId,{name:p.name,description:p.description,tags:`${p.tags||''} ${p.holiday||''}`});
+  await Promise.all([import('../profile/frames-catalog.js'),import('../tiles/lesson-planner/skins.js'),import('./sticker-catalog.js'),import('../presentations/themes.js'),import('../presentations/catalog.js').then(()=>import('../presentations/transitions.js'))]);
+  for(const p of [...(window.TeacherTilesProfileFrames?.catalog||[]),...(window.TeacherTilesPlannerSkins?.catalog||[]),...(window.TeacherTilesStickerPacks||[]),...(window.TeacherTilesPresentationThemes?.catalog||[]),...(window.TeacherTilesPresentationTransitions?.catalog||[])])defaults.set(p.productId,{name:p.name,description:p.description,tags:`${p.tags||''} ${p.holiday||''}`});
   const banners=[...doc.querySelectorAll('[data-shop-banner]')].map((b,i)=>{
    const art=(b.querySelector('.shop-halloween-art')||b.querySelector('img'))?.cloneNode(true);
    // Resolve image URLs relative to the app, even when the portal is nested.

@@ -45,7 +45,7 @@ function setupTeacherTilesShop(){
   redeemDialog.addEventListener('close',()=>{redeemTrigger.setAttribute('aria-expanded','false');if(!modal.hidden)startBannerTimer()});
   redeemDialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation()});
   redeemDialog.addEventListener('click',event=>{if(event.target!==redeemDialog)return;const rect=redeemDialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)redeemDialog.close()});
-  for(const name of ['themes','stickers','cursors','planner-skins','presentation-themes','profile-cosmetics']){
+  for(const name of ['themes','stickers','cursors','planner-skins','presentation-themes','presentation-transitions','profile-cosmetics']){
     const page=modal.querySelector('[data-shop-page="'+name+'"]');
     if(page.querySelector('[data-shop-browser]'))continue;
     const toolbar=shopHome.querySelector('[data-shop-browser]').cloneNode(true);

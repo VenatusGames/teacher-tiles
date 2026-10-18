@@ -51,7 +51,7 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   }
   function move(amount){if(!pool.length)return;index=(index+amount+pool.length)%pool.length;render()}
   function select(value){
-    filter=value;pool=catalog.filter(source=>filter==='all'||source.closest('[data-shop-page]').dataset.shopPage===filter);index=0;
+    filter=value;pool=catalog.filter(source=>filter==='all'||(source.closest('[data-shop-page]').dataset.shopPage===filter||filter==='presentation-themes'&&source.closest('[data-shop-page]').dataset.shopPage==='presentation-transitions'));index=0;
     filters.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.libraryFilter===filter)));
     render();
   }
