@@ -23,13 +23,13 @@ function setupShopExtras(modal) {
   for(const theme of themes.catalog)presentations.querySelector('.shop-product-grid').append(product(theme,'presentation-theme',themes.preview(theme.id)));
   const presentationHome=page('presentations','Presentations','');
   const collections=presentationHome.querySelector('.shop-product-grid');collections.className='shop-presentation-collections';
-  for(const [title,available,art] of [
-    ['Presentation Themes',true,'<rect x="3" y="5" width="22" height="16" rx="3"/><path d="m8 16 4-5 5 7M17 9h3"/><path d="M8 25h20a3 3 0 0 0 3-3V10"/>'],
-    ['Transitions',false,'<rect x="2" y="7" width="12" height="18" rx="3"/><rect x="20" y="7" width="12" height="18" rx="3"/><path d="M11 16h12m-4-4 4 4-4 4"/>'],
-    ['Coming Soon',false,'<path d="M17 7v20M7 17h20"/>'],
-    ['Coming Soon',false,'<path d="M17 7v20M7 17h20"/>']
-  ]){const button=document.createElement('button');button.type='button';button.className='shop-presentation-collection';button.innerHTML='<svg viewBox="0 0 34 34" aria-hidden="true">'+art+'</svg><strong>'+title+'</strong>';
-    if(available)button.dataset.shopOpenPage='presentation-themes';else{button.disabled=true;if(title==='Transitions')button.insertAdjacentHTML('beforeend','<small>Coming Soon</small>');}collections.append(button);
+  for(const [title,kind] of [['Presentation Themes','themes'],['Transitions','transitions'],['Coming Soon','future'],['Coming Soon','future']]){
+    const button=document.createElement('button');button.type='button';button.className='shop-category shop-presentation-collection';button.dataset.collectionKind=kind;
+    button.innerHTML='<span class="shop-category__art shop-presentation-art" aria-hidden="true"></span><span class="shop-category__copy"><strong>'+title+'</strong>'+(kind==='transitions'?'<em>Coming Soon</em>':'')+'</span>';
+    const art=button.querySelector('.shop-category__art');
+    if(kind==='themes'||kind==='transitions')for(const id of (kind==='themes'?['pastel-blue','pastel-purple','notebook-paper']:['pastel-pink','pastel-blue']))art.append(themes.preview(id));
+    else art.innerHTML='<span class="shop-presentation-placeholder"></span><span class="shop-presentation-placeholder"></span>';
+    if(kind==='themes')button.dataset.shopOpenPage='presentation-themes';else{button.disabled=true;button.classList.add('shop-category--coming-soon');}collections.append(button);
   }
   const themesBack=presentations.querySelector('.shop-back');themesBack.dataset.shopOpenPage='presentations';themesBack.setAttribute('aria-label','Back to Presentations');
   const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile. Basic colors · 10 coins. Decorative · 25 coins. Animated · 40 coins.');

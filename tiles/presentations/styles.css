@@ -36,3 +36,8 @@
 .presentation-duration-input input{width:84px;padding:9px 10px;border:1px solid #dbe2ed;border-radius:9px;background:#f8fafc;color:#273448;font:600 14px Inter,system-ui}
 @media(max-width:480px){.presentation-tile-controls [data-player=settings] span{display:none}}
 .presentation-module.has-tile-settings-open .presentation-tile-controls{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+
+.presentation-module .presentation-playback-panel{position:fixed;inset:auto;margin:0;box-sizing:border-box;width:min(270px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;padding:18px;display:grid;gap:18px;border:1px solid var(--border,#dce3ed);border-radius:15px;background:var(--surface-solid,#fff);color:var(--text,#273448);box-shadow:0 16px 44px #0f172a30;font-family:Inter,system-ui;text-align:left}
+.presentation-playback-panel>strong{font-size:14px}.presentation-playback-panel::backdrop{background:transparent;pointer-events:none}
+.presentation-module.has-playback-open .presentation-tile-controls{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen)>:is(.tile-appearance-toggle,.tile-settings-beside-brush,.tile-skins-toggle,.module-tab-add,.customization-bar){display:none!important}

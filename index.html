@@ -85,7 +85,7 @@
 <link rel="stylesheet" href="account/subscriber-coins.css?v=20261013-monthly">
 <link rel="stylesheet" href="profile/new-patches.css?v=20261013-rose">
 <link rel="stylesheet" href="profile/frames.css?v=20261013-compact">
-<link rel="stylesheet" href="shop/extras.css?v=20261017-presentation-polish">
+<link rel="stylesheet" href="shop/extras.css?v=20261017-playback-filter">
 <link rel="stylesheet" href="shop/featured-library.css?v=20261013-showcase">
 <link rel="stylesheet" href="shop/coins.css?v=20261016-timer-coins">
 <link rel="stylesheet" href="tiles/countdown/styles.css?v=20261003-fit">
@@ -118,7 +118,8 @@
 <script src="app/splash/index.js?v=20261015-preference"></script>
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
 <link rel="stylesheet" href="presentations/styles.css?v=20261017-presentation-polish">
-<link rel="stylesheet" href="tiles/presentations/styles.css?v=20261017-presentation-polish">
+<link rel="stylesheet" href="tiles/presentations/styles.css?v=20261017-playback-filter">
+<link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261017-grade-filter">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -2025,10 +2026,10 @@
 
 
 
-  <div id="context-menu" class="context-menu" role="dialog" aria-label="Add tile" aria-hidden="true">
+  <div id="context-menu" class="context-menu" role="dialog" aria-label="Add Tile" aria-hidden="true">
     <div class="context-menu__header">
       <div class="context-menu__title-row">
-        <div class="context-menu__title" data-i18n="context.addTile">Add tile</div><button type="button" class="context-menu__close" aria-label="Close Add tile">×</button>
+        <div class="context-menu__title" data-i18n="context.addTile">Add Tile</div><button type="button" class="context-menu__filter-toggle" aria-label="Filter tiles" title="Filter tiles" aria-expanded="false" aria-controls="tile-filter-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg></button><button type="button" class="context-menu__close" aria-label="Close Add Tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       </div>
       <div class="context-menu__search-wrap">
         <svg class="context-menu__search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -3910,11 +3911,12 @@
       <span class="presentation-tile-count">0 / 0</span>
       <button type="button" data-player="next" aria-label="Next slide" title="Next slide"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button>
       <button type="button" data-player="play" aria-label="Play slides" title="Play slides"><svg viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></svg></button>
-      <button type="button" data-player="settings" aria-label="Playback settings" title="Playback settings" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="white"/><circle cx="15" cy="17" r="3" fill="white"/></svg><span>Playback</span></button>
+      <button type="button" data-player="settings" aria-label="Playback settings" title="Playback settings" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="white"/><circle cx="15" cy="17" r="3" fill="white"/></svg></button>
       <button type="button" data-player="present" aria-label="Present fullscreen" title="Present fullscreen"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg><span>Present</span></button>
     </div>
     <footer class="presentation-tile-footer"><span class="presentation-connect-badge">ClassConnect</span></footer>
-    <div class="tile-settings-wrap"><button type="button" class="custom-icon tile-settings-toggle" aria-label="Open Presentations settings" aria-expanded="false"></button><div class="tile-settings-panel presentation-playback-panel" hidden aria-label="Presentation playback settings"><strong>Playback Settings</strong><div class="tile-settings-switch-row"><span>Autoplay slides</span><button type="button" class="tile-settings-switch" role="switch" aria-label="Autoplay slides" aria-checked="false" data-player-setting="autoplay"><i></i></button></div><div class="tile-settings-switch-row"><span>Loop slides</span><button type="button" class="tile-settings-switch" role="switch" aria-label="Loop slides" aria-checked="false" data-player-setting="loop"><i></i></button></div><label class="presentation-duration"><span>Time between slides</span><span class="presentation-duration-input"><input type="number" min="2" max="300" step="1" value="5" class="presentation-interval" aria-label="Seconds per slide"><span>seconds</span></span></label></div></div>
+    <div class="tile-settings-wrap"><button type="button" class="custom-icon tile-settings-toggle" aria-label="Open Presentations settings" aria-expanded="false"></button><div class="tile-settings-panel" hidden><strong>Tile Settings</strong></div></div>
+    <div class="presentation-playback-panel" popover="manual" hidden aria-label="Presentation playback settings"><strong>Playback Settings</strong><div class="tile-settings-switch-row"><span>Autoplay slides</span><button type="button" class="tile-settings-switch" role="switch" aria-label="Autoplay slides" aria-checked="false" data-player-setting="autoplay"><i></i></button></div><div class="tile-settings-switch-row"><span>Loop slides</span><button type="button" class="tile-settings-switch" role="switch" aria-label="Loop slides" aria-checked="false" data-player-setting="loop"><i></i></button></div><label class="presentation-duration"><span>Time between slides</span><span class="presentation-duration-input"><input type="number" min="2" max="300" step="1" value="5" class="presentation-interval" aria-label="Seconds per slide"><span>seconds</span></span></label></div>
     <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
   </section>
 </template>
@@ -4632,7 +4634,7 @@
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
 <script src="account/interface-services.js?v=20261015-splash-20261004-snapping"></script>
-<script src="boards/navigation.js?v=20261008-refine"></script>
+<script src="boards/navigation.js?v=20261017-playback-filter"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
 <script src="boards/tile-lifecycle.js?v=20261015-halloween"></script>
@@ -4653,13 +4655,14 @@
 <script src="profile/frames-catalog.js?v=20261013-frame-performance"></script>
 <script src="profile/frames.js?v=20261014-subscription-override"></script>
 <script src="presentations/themes.js?v=20261017-layout-backgrounds"></script>
-<script src="shop/extras.js?v=20261017-presentation-polish"></script>
+<script src="shop/extras.js?v=20261017-playback-filter"></script>
 <script src="shop/featured-library.js?v=20261016-themes"></script>
 <script src="shop/ui.js?v=20261017-presentation-polish"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261001-sync"></script>
-<script src="app.js?v=20261017-shared-presentations"></script>
-<script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261013-description"></script>
+<script src="app.js?v=20261017-playback-filter"></script>
+<script type="module" src="tiles/shared/tile-menu-filters.js?v=20261017-grade-filter"></script>
+<script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261017-playback-filter"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261014-subscription-override"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
@@ -6024,7 +6027,7 @@
   </template>
 
 <script src="tiles/shared/history.js?v=20260921-controls-3"></script>
-<script src="presentations/index.js?v=20261017-presentation-polish"></script>
-<script src="tiles/presentations/index.js?v=20261017-presentation-polish"></script>
+<script src="presentations/index.js?v=20261017-playback-filter"></script>
+<script src="tiles/presentations/index.js?v=20261017-playback-filter"></script>
 </body>
 </html>

@@ -33,7 +33,7 @@ if(menu){
         // Badges are display labels; entitlement and PBIS tracking attributes stay intact.
         changed=true;
       }
-      item.dataset.gradeLevels=Array.isArray(metadata?.grades)?metadata.grades.join(' '):'';
+      const grades=Array.isArray(metadata?.grades)?metadata.grades.join(' '):'';if(item.dataset.gradeLevels!==grades){item.dataset.gradeLevels=grades;changed=true;}
     }
     revision=data.revision;if(changed)menu.refresh();
   }
