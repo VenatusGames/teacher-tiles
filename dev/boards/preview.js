@@ -598,6 +598,10 @@ function applyPreviewState(module, state) {
     }
   }
 
+  if (state.type === "presentation" && special?.previewSrc && /^data:image\/(webp|png|jpeg);base64,/.test(special.previewSrc) && special.previewSrc.length<=40000) {
+    const stage=module.querySelector('.presentation-tile-stage'),empty=module.querySelector('.presentation-tile-empty');
+    if(stage){const image=document.createElement('img');image.src=special.previewSrc;image.alt='Presentation preview';image.className='presentation-tile-cover';stage.append(image);stage.hidden=false;if(empty)empty.hidden=true;}
+  }
   if (state.type === "visualdirections" && special) {
     const wall = module.querySelector('.directions-wall');
     const api = window.TeacherTilesVisualDirections;

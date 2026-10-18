@@ -1,6 +1,6 @@
 import '../boards/cosmetics-policy.js?v=20261016-template-preview';
 import {tagEditor,discoveryShelves} from './discovery.js?v=20260927-tag-30-fix';
-import './contract.js?v=20261016-template-preview';
+import './contract.js?v=20261017-presentation-player';
 import {tileLabels} from './labels.js';
 const contract=globalThis.TeacherTilesTemplateContract;
 const make=(tag,className,value)=>{const e=document.createElement(tag);if(className)e.className=className;if(value!==undefined)e.textContent=value;return e;};
