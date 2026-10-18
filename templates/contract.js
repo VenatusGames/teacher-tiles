@@ -34,6 +34,7 @@
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
+    presentation:s=>({presentationId:'',slideIndex:0,autoplay:false,loop:s.loop===true,interval:num(s.interval,2,300,5)}),
     visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
     halloweentimer:()=>({}),
     pumpkincarving:s=>({cuts:list(s.cuts,100).filter(p=>typeof p==='string'&&p.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(p))}),

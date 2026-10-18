@@ -1097,6 +1097,7 @@ const TILE_AUDIO_HOSTS=Object.freeze({
 
 function setupModuleByType(m,type){
   setupCommon(m);
+  if(type==='presentation')window.TeacherTilesPresentationTile.setup(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
   if(type==='flyswat')window.TeacherTilesFlySwat.setup(m);
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
