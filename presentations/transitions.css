@@ -14,3 +14,8 @@
 @media(max-width:600px){.pres-transition-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.pres-transitions-dialog{top:80px;max-height:calc(100dvh - 95px)}}
 
 .pres-canvas-area{position:relative;isolation:isolate}
+
+.pres-transition-preview-slide{container-type:inline-size;gap:8%;align-items:flex-start}
+.pres-transition-preview-slide>b{font:750 clamp(12px,20cqw,42px)/1 Inter,system-ui;color:currentColor;letter-spacing:-.06em}
+.pres-transition-preview-slide i{width:48%;height:5%;flex-shrink:0}.pres-transition-preview-slide i:last-child{width:32%}
+.pres-transition-preview-dot{right:9%;top:30%;width:27%;border-radius:28% 48% 35% 50%;transform:rotate(-12deg);opacity:.5}

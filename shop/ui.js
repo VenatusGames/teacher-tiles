@@ -112,7 +112,7 @@ function setupTeacherTilesShop(){
     const value=document.createElement('b');
     const chevron=document.createElement('i');
     chevron.setAttribute('aria-hidden','true');
-    chevron.textContent='⌄';
+    chevron.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
     trigger.append(value,chevron);
     const menu=document.createElement('div');
     menu.className='shop-select-menu';

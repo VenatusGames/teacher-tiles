@@ -21,7 +21,13 @@
   const glow=(x,y,r,color,alpha)=>{ctx.globalAlpha=alpha;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.globalAlpha=1;};
   const dot=(x,y,r,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();};
   function paint(ms){
-   ctx.setTransform(canvas.width/400,0,0,canvas.height/300,0,0);ctx.clearRect(0,0,400,300);const t=ms/1000;
+   // Keep particles circular at every tile aspect ratio, including a resize mid-effect.
+   const width=layer.clientWidth||400,height=layer.clientHeight||300;
+   if(canvas.width!==Math.ceil(width*scale)||canvas.height!==Math.ceil(height*scale)){canvas.width=Math.ceil(width*scale);canvas.height=Math.ceil(height*scale);}
+   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+   const fit=Math.min(canvas.width/400,canvas.height/300);
+   ctx.setTransform(fit,0,0,fit,(canvas.width-400*fit)/2,(canvas.height-300*fit)/2);
+   const t=Math.max(0,ms)/1000;
    if(item.kind==='confetti')for(const p of particles){const f=Math.min(1,t/1.4),d=1-Math.pow(1-f,3);ctx.globalAlpha=Math.min(1,t*12)*(1-f*f);ctx.save();ctx.translate(p.x+p.vx*d,p.y+p.vy*d+65*t*t);ctx.rotate(p.angle+p.spin*t);ctx.scale(1,Math.cos(t*9+p.angle)*.5+.7);ctx.fillStyle=p.color;ctx.fillRect(-p.r,-p.r*1.5,p.r*2,p.r*3);ctx.restore();}
    if(item.kind==='fireworks'){
     for(const [x,y,delay]of burstPoints){const age=ms-delay;if(age<0&&age>-350){const u=1+age/350,cy=300+(y-300)*u;ctx.globalAlpha=u;ctx.strokeStyle='#f5c566';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(x,cy+22);ctx.lineTo(x,cy);ctx.stroke();dot(x,cy,2,'#fff8cf');}if(age>=0&&age<300)glow(x,y,35*(1+age/300),colors[0],.45*(1-age/300));}
@@ -42,7 +48,7 @@
   }
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduced){paint(550);finish=setTimeout(stop,400);return stop;}
-  function tick(now){if(!layer.isConnected||document.hidden||layer.closest('[hidden],#asset-shelf[aria-hidden="true"]')||now-start>duration){stop();return;}paint(now-start);frame=requestAnimationFrame(tick);}
+  function tick(now){if(!layer.isConnected||document.hidden||layer.closest('[hidden],#asset-shelf[aria-hidden="true"]')||now-start>duration){stop();return;}paint(Math.max(0,now-start));frame=requestAnimationFrame(tick);}
   frame=requestAnimationFrame(tick);return stop;
  }
  function preview(id){const item=catalog.get(id),box=document.createElement('div');box.className='tile-effect-preview';box.dataset.effectPreview=item.id;box.setAttribute('aria-hidden','true');

@@ -74,3 +74,6 @@
 .theme-picker-options .theme-picker-order{margin:8px 16px 0}
 .theme-picker-options .theme-picker-filter{padding:10px 16px}
 .theme-picker-results .theme-picker-group-title:first-child{margin-top:9px}
+
+.theme-picker .theme-pack-arrow{font-size:0!important;display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px}
+.theme-picker .theme-pack-arrow:before{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);border-radius:1px}
