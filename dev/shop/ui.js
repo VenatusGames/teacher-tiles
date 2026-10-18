@@ -254,7 +254,7 @@ function setupTeacherTilesShop(){
     sort.addEventListener('change',render);
     filter?.addEventListener('change',render);
     render();
-    return render;
+    render.pageName=pageName;return render;
   };
   const refreshShopBrowsers=[...modal.querySelectorAll('[data-shop-browser]')].map(setupShopBrowser);
 
@@ -275,11 +275,14 @@ function setupTeacherTilesShop(){
     coinButton?.classList.toggle('is-loading',Boolean(state.loading));
     coinPacks.forEach(button=>{button.disabled=state.loading||!state.signedIn||button.dataset.checkoutBusy==='true'});
   }
+  const productDisplayState=new WeakMap();
   function syncProducts(){
     const state=accountState();
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
       const isOwned=card.dataset.bundleItems?JSON.parse(card.dataset.bundleItems).every(id=>owned.has(id)):owned.has(card.dataset.shopProduct);
+      const signature=JSON.stringify([isOwned,Boolean(state.subscriptionActive),Boolean(state.subscriptionOverride),Boolean(state.loading),Boolean(state.signedIn),card.classList.contains('is-purchasing'),card.dataset.shopPrice,card.querySelector('h3')?.textContent]);
+      if(productDisplayState.get(card)===signature)return;productDisplayState.set(card,signature);
       markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
       const button=card.querySelector('[data-shop-buy]');
@@ -396,7 +399,7 @@ function setupTeacherTilesShop(){
       page.classList.toggle('is-active',active);
     });
     modal.querySelector('.shop-content')?.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'});
-    refreshShopBrowsers.forEach(render=>render());
+    refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()});
   }
   function showBanner(index,restart=true){
     if(!banners.length)return;
@@ -433,7 +436,7 @@ function setupTeacherTilesShop(){
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
   let managedShop;
-  const managedReady=import('./managed-shop.js?v=20261015-deals-nav').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>render())},replaceBanners:slides=>{
+  const managedReady=import('./managed-shop.js?v=20261015-deals-nav').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
     slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
@@ -684,7 +687,7 @@ function setupTeacherTilesShop(){
       openShop();
       requestAnimationFrame(()=>showCoinCelebration(current,current+added));
     },
-    sync:()=>{syncShop();syncStickerShopPackCounts();refreshShopBrowsers.forEach(render=>render())}
+    sync:()=>{syncShop();syncStickerShopPackCounts();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})}
   };
   syncShop();handleCheckoutReturn();
 }
