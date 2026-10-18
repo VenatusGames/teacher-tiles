@@ -35,7 +35,7 @@ function animate(host,transition,draw,direction=1){
 function preview(id){
  const box=document.createElement('div');box.className='pres-transition-preview';box.dataset.transitionPreview=id;box.setAttribute('aria-hidden','true');
  const stage=document.createElement('div');stage.className='pres-transition-preview-slide';box.append(stage);let alternate=false;
- const draw=()=>{stage.innerHTML='<span class="pres-transition-preview-dot"></span><i></i><i></i>';stage.style.background=alternate?'#e5ddf8':'#dcebf9';stage.style.color=alternate?'#9d85cb':'#7a9fc6';};draw();
+ const draw=()=>{stage.innerHTML='<span class="pres-transition-preview-dot"></span><b aria-hidden="true">Aa</b><i></i><i></i>';stage.style.background=alternate?'#eee5fb':'#e1eefb';stage.style.color=alternate?'#8865bd':'#5485b6';};draw();
  box.play=()=>{alternate=!alternate;animate(stage,{id,duration:850},draw);};return box;
 }
 window.TeacherTilesPresentationTransitions=Object.freeze({all:definitions,catalog:definitions.filter(t=>t.productId),get,between,animate,cancel,preview});
