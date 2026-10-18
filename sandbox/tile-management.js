@@ -1,4 +1,4 @@
-import {loadTileCatalog,gradeOptions,badgeOptions,tileIcon} from '../tiles/shared/tile-catalog.js?v=20261012-badges';
+import {loadTileCatalog,gradeOptions,badgeOptions,tileIcon} from '../tiles/shared/tile-catalog.js?v=20261017-all-grades';
 import {rememberTileMetadata} from '../tiles/shared/tile-metadata-client.js';
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 export function createTileManagementPanel(call){
@@ -6,7 +6,7 @@ export function createTileManagementPanel(call){
   element.innerHTML=`<header class="tm-heading"><div><p class="eyebrow">TILE LIBRARY</p><h1>Tile Management</h1><p>Organize tiles for everyone. New tiles appear here automatically.</p></div><button class="quiet" data-refresh type="button">Refresh</button></header>
     <div class="tm-toolbar"><label class="tm-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input type="search" aria-label="Search Tiles" placeholder="Search tiles, categories, grades, or badges…" maxlength="120"></label><select aria-label="Filter by Category"><option value="">All Categories</option></select></div>
     <p class="tm-status" role="status" aria-live="polite"></p><div class="tm-grid"></div>
-    <dialog class="tm-editor" aria-labelledby="tm-editor-title"><button type="button" class="quiet tm-close" aria-label="Close Tile Editor">×</button><div class="tm-editor-heading"></div><form><section class="tm-description-section"><div class="tm-section-heading"><h3><label for="tm-description">Description</label></h3><button class="tm-link" type="button" data-description-defaults>Restore Default Description</button></div><textarea id="tm-description" class="tm-description-input" rows="3" maxlength="300" aria-describedby="tm-description-count"></textarea><p class="tm-hint" id="tm-description-count"></p></section><section data-tag-section="categories"><div class="tm-section-heading"><h3>Categories</h3><button class="tm-link" type="button" data-defaults>Restore Default Categories</button></div><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><section data-tag-section="grades"><div class="tm-section-heading"><h3>Grade Levels</h3><span>Optional</span></div><p class="tm-hint">Choose individual grades or add a school level.</p><div class="tm-grade-presets" role="group" aria-label="Add School Level"></div><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><section data-tag-section="badges"><div class="tm-section-heading"><h3>Badges</h3><button class="tm-link" type="button" data-badge-defaults>Restore Default Badges</button></div><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><p class="tm-editor-status" role="status" aria-live="polite"></p><footer><span>Description, category, and badge changes apply to all users.</span><button class="primary" type="submit">Save Changes</button></footer></form></dialog>`;
+    <dialog class="tm-editor" aria-labelledby="tm-editor-title"><button type="button" class="quiet tm-close" aria-label="Close Tile Editor">×</button><div class="tm-editor-heading"></div><form><section class="tm-description-section"><div class="tm-section-heading"><h3><label for="tm-description">Description</label></h3><button class="tm-link" type="button" data-description-defaults>Restore Default Description</button></div><textarea id="tm-description" class="tm-description-input" rows="3" maxlength="300" aria-describedby="tm-description-count"></textarea><p class="tm-hint" id="tm-description-count"></p></section><section data-tag-section="categories"><div class="tm-section-heading"><h3>Categories</h3><button class="tm-link" type="button" data-defaults>Restore Default Categories</button></div><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><section data-tag-section="grades"><div class="tm-section-heading"><h3>Grade Levels</h3><span>Optional</span></div><p class="tm-hint">Choose grades or a school level. All Grades appears under every grade filter.</p><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><section data-tag-section="badges"><div class="tm-section-heading"><h3>Badges</h3><button class="tm-link" type="button" data-badge-defaults>Restore Default Badges</button></div><div class="tm-tags"></div><div class="tm-choices" hidden></div></section><p class="tm-editor-status" role="status" aria-live="polite"></p><footer><span>Description, category, and badge changes apply to all users.</span><button class="primary" type="submit">Save Changes</button></footer></form></dialog>`;
   const search=element.querySelector('input'),filter=element.querySelector('select'),grid=element.querySelector('.tm-grid'),status=element.querySelector('.tm-status'),refresh=element.querySelector('[data-refresh]');
   const dialog=element.querySelector('dialog'),form=dialog.querySelector('form'),save=form.querySelector('[type="submit"]'),editorStatus=dialog.querySelector('.tm-editor-status');
   const descriptionInput=dialog.querySelector('.tm-description-input'),descriptionCount=dialog.querySelector('#tm-description-count');
@@ -16,11 +16,6 @@ export function createTileManagementPanel(call){
     {name:'Middle School',range:'6–8',grades:['6','7','8']},
     {name:'High School',range:'9–12',grades:['9','10','11','12']}
   ];
-  for(const level of schoolLevels){
-    const button=el('button','tm-choice',level.name);button.type='button';button.title=`Add grades ${level.range}`;
-    button.onclick=()=>{draft.grades=[...new Set([...draft.grades,...level.grades])];renderTags('grades');updateSave();};
-    dialog.querySelector('.tm-grade-presets').append(button);
-  }
   const request=async data=>{const response=await call('developerTileManagement',data);return response?.data??response;};
   const categoryName=id=>catalog?.categories.find(c=>c.id===id)?.label||id;
   const gradeName=id=>gradeOptions.find(g=>g.id===id)?.label||id;
@@ -65,6 +60,12 @@ export function createTileManagementPanel(call){
     }
     const add=el('button','tm-add');add.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>';add.type='button';add.setAttribute('aria-label',kind==='categories'?'Add Category':kind==='grades'?'Add Grade Level':'Add Badge');add.setAttribute('aria-expanded','false');tags.append(add);
     const available=options.filter(option=>!values.includes(option.id));add.disabled=!available.length;
+    if(kind==='grades')for(const level of schoolLevels){
+      if(level.grades.every(grade=>values.includes(grade)))continue;
+      const button=el('button','tm-choice',level.name);button.type='button';button.title=`Add grades ${level.range}`;
+      button.onclick=()=>{draft.grades=[...new Set([...draft.grades,...level.grades])];renderTags('grades');updateSave();section.querySelector('.tm-add').focus();};
+      choices.append(button);
+    }
     for(const option of available){const button=el('button',kind==='badges'?`tm-choice ${badgeClass(option.id)}`:'tm-choice',option.label);button.type='button';button.onclick=()=>{draft[kind]=[...values,option.id];renderTags(kind);updateSave();section.querySelector('.tm-add').focus();};choices.append(button);}
     add.onclick=()=>{choices.hidden=!choices.hidden;add.setAttribute('aria-expanded',String(!choices.hidden));};
   }

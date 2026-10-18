@@ -774,7 +774,7 @@ menu.addEventListener('click',event=>{
 });
 
 const menuHolidays=['Christmas','Hannukah','Halloween',"Valentine’s Day","St. Patrick’s Day",'Thanksgiving'];
-let menuAllExpanded=true,menuHolidaysExpanded=true,menuFavoritesExpanded=true;
+let menuAllExpanded=true,menuHolidaysExpanded=true;
 
 
 // Categories retain their buttons; pins only change their visual order.
