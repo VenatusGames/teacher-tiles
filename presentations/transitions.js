@@ -5,7 +5,7 @@ const get=id=>definitions.find(t=>t.id===id)||definitions[0];
 function cancel(host){active.get(host)?.();}
 function animate(host,transition,draw,direction=1){
  cancel(host);const t=get(transition?.id);
- if(t.id==='none'||matchMedia('(prefers-reduced-motion: reduce)').matches||!host.childElementCount){draw();return;}
+ if(!host.isConnected||!host.getClientRects().length||t.id==='none'||matchMedia('(prefers-reduced-motion: reduce)').matches||!host.childElementCount){draw();return;}
  const parent=host.parentElement,old=host.cloneNode(true);old.removeAttribute('id');old.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));old.setAttribute('aria-hidden','true');old.inert=true;
  Object.assign(old.style,{position:'absolute',left:host.offsetLeft+'px',top:host.offsetTop+'px',width:host.offsetWidth+'px',height:host.offsetHeight+'px',margin:'0',pointerEvents:'none',zIndex:'2',transform:'none'});
  old.classList.add('pres-transition-outgoing');draw();parent.append(old);
@@ -24,7 +24,9 @@ function animate(host,transition,draw,direction=1){
  const options={duration:Math.max(250,Math.min(2000,Number(transition.duration)||650)),easing:'cubic-bezier(.22,.7,.2,1)',fill:'both'};
  const outgoing=old.animate(t.id==='push'?[{transform:'none'},{transform:`translateX(${-d*100}%)`}]:[{opacity:1},{opacity:t.id==='fade'||t.id==='blur'?0:1}],options);
  const incoming=host.animate(frames[t.id],options);
- const cleanup=()=>{outgoing.cancel();incoming.cancel();old.remove();host.style.zIndex=z;host.style.transformOrigin=origin;active.delete(host);};active.set(host,cleanup);incoming.finished.then(()=>{if(active.get(host)===cleanup)cleanup();},()=>{});
+ // Cancellation and hidden/replaced previews must release their snapshots too.
+ let deadline;const cleanup=()=>{if(active.get(host)!==cleanup)return;active.delete(host);clearTimeout(deadline);outgoing.cancel();incoming.cancel();old.remove();host.style.zIndex=z;host.style.transformOrigin=origin;};active.set(host,cleanup);
+ incoming.finished.then(cleanup,cleanup);outgoing.finished.catch(cleanup);deadline=setTimeout(cleanup,options.duration+120);
 }
 function preview(id){
  const box=document.createElement('div');box.className='pres-transition-preview';box.dataset.transitionPreview=id;box.setAttribute('aria-hidden','true');
