@@ -476,17 +476,18 @@ window.addEventListener('teachertiles:authchange',()=>{if(owner&&uid()!==owner){
 $('#profile-presentations-button')?.addEventListener('click',open);
 // Read-only board players share the renderer and bounded asset cache, not editor state.
 const viewerLoads=new Map();
-async function viewerCall(user,data){if(!user||uid()!==user)throw Error('Sign in to load your presentations.');const response=await window.TeacherTilesAuth.call('presentations',data);if(uid()!==user)throw Error('Your account changed. Choose a presentation again.');return response.data;}
+async function viewerCall(user,data,endpoint='presentations'){if(!user||uid()!==user)throw Error('Sign in to load your presentations.');const response=await window.TeacherTilesAuth.call(endpoint,data);if(uid()!==user)throw Error('Your account changed. Choose a presentation again.');return response.data;}
 async function viewerLibrary(nextCursor=null,refresh=false){
  const user=uid();if(!user)throw Error('Sign in to load your presentations.');
  if(!nextCursor&&!refresh){if(owner===user&&libraryKnown&&Date.now()-loadedAt<LIBRARY_TTL)return {items:libraryRows(items),cursor};
   try{const cached=await Promise.race([local(libraryCacheKey(user)),new Promise(resolve=>setTimeout(resolve,120))]);if(uid()!==user)throw Error('Your account changed.');if(cached?.version===1&&Date.now()-cached.loadedAt<LIBRARY_TTL)return {items:libraryRows(cached.items),cursor:cached.cursor||null};}catch{/* Cloud reads remain available without IndexedDB. */}}
  const result=await viewerCall(user,{action:'list',cursor:nextCursor});return {items:libraryRows(result.items),cursor:result.cursor||null};
 }
-async function viewerLoad(key){
- const user=uid(),cacheKey=user+'/'+key;if(!user)throw Error('Sign in to load your presentations.');
- const read=async hash=>{if(uid()!==user)throw Error('Your account changed.');const k=cacheKey+'/'+hash;if(assets.has(k))return assets.get(k);if(pendingAssets.has(k))return pendingAssets.get(k);const request=viewerCall(user,{action:'asset',id:key,asset:hash}).then(result=>{cacheAsset(k,result.image);return result.image;});pendingAssets.set(k,request);try{return await request;}finally{pendingAssets.delete(k);}};
- if(!viewerLoads.has(cacheKey))viewerLoads.set(cacheKey,viewerCall(user,{action:'load',id:key}));
+async function viewerLoad(key,shared=null){
+ const endpoint=shared?'boardTemplates':'presentations',source=shared?{id:shared.id,templateId:shared.templateId}:{id:key};
+ const user=uid(),cacheKey=user+'/'+(shared?'shared/':'')+key;if(!user)throw Error('Sign in to load your presentations.');
+ const read=async hash=>{if(uid()!==user)throw Error('Your account changed.');const k=cacheKey+'/'+hash;if(assets.has(k))return assets.get(k);if(pendingAssets.has(k))return pendingAssets.get(k);const request=viewerCall(user,{...source,action:shared?'presentation-asset':'asset',asset:hash},endpoint).then(result=>{cacheAsset(k,result.image);return result.image;});pendingAssets.set(k,request);try{return await request;}finally{pendingAssets.delete(k);}};
+ if(!viewerLoads.has(cacheKey))viewerLoads.set(cacheKey,viewerCall(user,{...source,action:shared?'presentation-load':'load'},endpoint));
  let result;try{result=await viewerLoads.get(cacheKey);}finally{viewerLoads.delete(cacheKey);}
  await loadDeckFonts(result.document,read);if(uid()!==user)throw Error('Your account changed.');
  return {title:result.title,cover:result.cover||'',document:result.document,render(host,index){if(uid()!==user)throw Error('Your account changed.');paintSlide(host,result.document.slides[index],result.document.theme,false,read);}};

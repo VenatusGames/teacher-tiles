@@ -34,7 +34,7 @@
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
-    presentation:s=>({presentationId:'',slideIndex:0,autoplay:false,loop:s.loop===true,interval:num(s.interval,2,300,5)}),
+    presentation:s=>{const v=s.sharedPresentation,shared=v&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.id||'')&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.templateId||'')?{id:v.id,templateId:v.templateId,title:text(v.title,100),slideCount:num(v.slideCount,1,500,1),cover:typeof v.cover==='string'&&v.cover.length<=40000?raster(v.cover):''}:null;return {presentationId:'',slideIndex:0,autoplay:s.autoplay===true,loop:s.loop===true,interval:num(s.interval,2,300,5),...(shared?{sharedPresentation:shared,previewSrc:shared.cover}:{})};},
     visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
     halloweentimer:()=>({}),
     pumpkincarving:s=>({cuts:list(s.cuts,100).filter(p=>typeof p==='string'&&p.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(p))}),
@@ -82,7 +82,7 @@
     spreadsheet:s=>{const cells={},pictures={},formats={};for(const [key,value] of Object.entries(s.cells||{}).slice(0,1000))if(/^[A-Z][1-9][0-9]?$/.test(key))cells[key]=text(value,2000);for(const [key,value] of Object.entries(s.pictures||{}).slice(0,100))if(/^[A-Z][1-9][0-9]?$/.test(key)&&raster(value))pictures[key]=raster(value);for(const [key,f] of Object.entries(s.formats||{}).slice(0,1000)){if(!/^[A-Z][1-9][0-9]?$/.test(key)||!f)continue;const out={};for(const k of ['bold','italic','underline','strike'])if(f[k]===true)out[k]=true;for(const k of ['font','color','highlight','align','block'])if(token(f[k]))out[k]=token(f[k]);out.size=num(f.size,10,64,16);formats[key]=out;}return{version:3,rows:num(s.rows,1,99,12),cols:num(s.cols,1,26,6),cells,pictures,formats,columnWidths:list(s.columnWidths,26).map(v=>num(v,48,600,96)),rowHeights:list(s.rowHeights,99).map(v=>num(v,24,240,29))};}
   };
   const rich=new Set(['sticky','richtext','textbubble','essentialquestion']);
-  function sanitize(snapshot,{knownTypes}={}){
+  function sanitize(snapshot,{knownTypes,presentationSources=false}={}){
     if(!snapshot||typeof snapshot!=='object')throw new Error('Choose a board to share.');
     if(snapshot.templateVersion!==undefined&&snapshot.templateVersion!==VERSION)throw new Error('This template format needs a newer app. Refresh before importing.');
     const warnings=new Set(),types=knownTypes?new Set(knownTypes):null;let count=0;
@@ -97,6 +97,7 @@
       if(rich.has(raw.type))out.editables=list(raw.editables,3).map((v,i)=>({index:i,html:html(v.html)}));
       if(adapters[raw.type])out.special=adapters[raw.type](raw.type==='progressbar'?{...raw.special,title:raw.special?.title??list(raw.fields).find(f=>f.index===0)?.value}:raw.special||{});
       else if(!rich.has(raw.type)&&raw.type!=='sticker')warnings.add(`${raw.type}: activity and content reset; layout and appearance kept`);
+      if(raw.type==='presentation'&&presentationSources&&!out.special.sharedPresentation&&/^[a-zA-Z0-9_-]{1,80}$/.test(raw.special?.presentationId||''))out.special.presentationId=raw.special.presentationId;
       if(raw.type==='sticker'){out.sticker={emoji:text(raw.sticker?.emoji,20),src:image(raw.sticker?.src),name:text(raw.sticker?.name,80),aspect:num(raw.sticker?.aspect,.1,10,1)};if(!out.sticker.emoji&&!out.sticker.src){warnings.add('An unavailable sticker was omitted');return null;}}
       if(raw.type==='image'&&raw.special?.src&&!out.special.src)warnings.add('External or oversized image omitted; use an embedded image under 300 KB or an Image Search result');
       if(!tab&&raw.tabs){const items=list(raw.tabs.items,20).map(v=>tile(v,true)).filter(Boolean);if(items.length>1)out.tabs={active:0,items};}
