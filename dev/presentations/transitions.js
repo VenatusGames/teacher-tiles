@@ -2,13 +2,17 @@
 (()=>{'use strict';
 const definitions=window.TeacherTilesPresentationCatalog.transitions,active=new WeakMap();
 const get=id=>definitions.find(t=>t.id===id)||definitions[0];
+// A slide's transition plays as it leaves; reverse navigation reverses the same boundary.
+function between(slides,from,to,direction){return slides[direction<0?to:from]?.transition;}
 function cancel(host){active.get(host)?.();}
 function animate(host,transition,draw,direction=1){
  cancel(host);const t=get(transition?.id);
- if(!host.isConnected||!host.getClientRects().length||t.id==='none'||matchMedia('(prefers-reduced-motion: reduce)').matches||!host.childElementCount){draw();return;}
+ if(!host.isConnected||!host.getClientRects().length||t.id==='none'||matchMedia('(prefers-reduced-motion: reduce)').matches){draw();return;}
  const parent=host.parentElement,old=host.cloneNode(true);old.removeAttribute('id');old.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));old.setAttribute('aria-hidden','true');old.inert=true;
  Object.assign(old.style,{position:'absolute',left:host.offsetLeft+'px',top:host.offsetTop+'px',width:host.offsetWidth+'px',height:host.offsetHeight+'px',margin:'0',pointerEvents:'none',zIndex:'2',transform:'none'});
- old.classList.add('pres-transition-outgoing');draw();parent.append(old);
+ old.classList.add('pres-transition-outgoing');
+ host.querySelectorAll('canvas').forEach((source,i)=>{const target=old.querySelectorAll('canvas')[i];target?.getContext('2d')?.drawImage(source,0,0);});
+ draw();parent.append(old);
  const d=direction<0?-1:1,origin=host.style.transformOrigin,frames={
   fade:[{opacity:0},{opacity:1}],slide:[{transform:`translateX(${d*100}%)`},{transform:'none'}],push:[{transform:`translateX(${d*100}%)`},{transform:'none'}],
   wipe:[{clipPath:`inset(0 ${d>0?'100% 0 0':'0 0 100%'})`},{clipPath:'inset(0 0 0 0)'}],
@@ -34,5 +38,5 @@ function preview(id){
  const draw=()=>{stage.innerHTML='<span class="pres-transition-preview-dot"></span><i></i><i></i>';stage.style.background=alternate?'#e5ddf8':'#dcebf9';stage.style.color=alternate?'#9d85cb':'#7a9fc6';};draw();
  box.play=()=>{alternate=!alternate;animate(stage,{id,duration:850},draw);};return box;
 }
-window.TeacherTilesPresentationTransitions=Object.freeze({all:definitions,catalog:definitions.filter(t=>t.productId),get,animate,cancel,preview});
+window.TeacherTilesPresentationTransitions=Object.freeze({all:definitions,catalog:definitions.filter(t=>t.productId),get,between,animate,cancel,preview});
 })();
