@@ -45,13 +45,14 @@ async function exportFile(format,deck,{asset,render,progress=()=>{}}){
  await document.fonts.ready;const name=filename(deck.title),count=deck.slides.length;
  if(format==='tt'){
   await lib('zip');const zip=new JSZip(),images={};let n=0;
-  for(const key of new Set(deck.slides.flatMap(s=>s.elements.filter(e=>e.asset).map(e=>e.asset)).concat((deck.fonts||[]).map(f=>f.asset)))){
-   progress('Packing image '+(++n)+'…');const src=await asset(key),match=/^data:(?:image|font)\/(png|jpeg|webp|gif|ttf|otf);base64,(.+)$/.exec(src);if(!match)throw Error('An image could not be included.');
+  for(const key of new Set(window.TeacherTilesPresentationObjects.assets(deck))){
+   progress('Packing image '+(++n)+'…');const src=await asset(key),match=/^data:(?:image|font|audio)\/(png|jpeg|webp|gif|ttf|otf|webm|ogg|mp4|mpeg)(?:;codecs=[a-z0-9.-]+)?;base64,(.+)$/.exec(src);if(!match)throw Error('An image could not be included.');
    const path='media/'+key+'.'+match[1];images[key]=path;zip.file(path,match[2],{base64:true});
   }
   zip.file('presentation.json',JSON.stringify({format:'TeacherTilesPresentation',version:1,document:deck,images}));
   download(await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}),name+'.tt');return;
  }
+ deck={...deck,slides:deck.slides.map(s=>({...s,elements:s.elements.filter(e=>e.type!=='tile')}))};
  if(format==='pptx'){
   await lib('zip');await lib('pptx');const pptx=new PptxGenJS();pptx.defineLayout({name:'TT',width:10,height:5.625});pptx.layout='TT';pptx.author='TeacherTiles';pptx.subject=deck.title;pptx.title=deck.title;pptx.lang='en-US';
   for(const [i,s] of deck.slides.entries()){
@@ -60,6 +61,7 @@ async function exportFile(format,deck,{asset,render,progress=()=>{}}){
    for(const e of s.elements){const box={x:e.x/96,y:e.y/96,w:e.w/96,h:e.h/96,rotate:e.rotation||0};
     if(e.type==='text'&&JSON.stringify(e.rich||[]).includes('TTFont_')){const c=await render({...deck,theme:'none',slides:[{background:'#ffffff',elements:[{...e,x:0,y:0,rotation:0}]}]},0,2,true);const crop=document.createElement('canvas');crop.width=Math.ceil(e.w*2);crop.height=Math.ceil(e.h*2);crop.getContext('2d').drawImage(c,0,0);out.addImage({data:crop.toDataURL('image/png'),...box});}
     else if(e.type==='text')out.addText(runsFor(e,deck.theme),{...box,fontFace:'Inter',fontSize:e.fontSize*.75,margin:0,breakLine:false,paraSpaceAfter:0,valign:'top',align:e.align,wrap:true});
+    else if(e.type==='table')out.addTable(e.cells.map((row,r)=>row.map(text=>({text,options:{fill:r===0&&e.header?hex(e.headerFill):hex(e.fill),bold:r===0&&e.header}}))),{...box,fontFace:'Arial',fontSize:e.fontSize*.75,color:hex(e.color),border:{pt:.75,color:hex(e.border)},rowH:e.h/e.rows/96,colW:Array(e.cols).fill(e.w/e.cols/96),margin:.06,autoPage:false});
     else if(e.type==='shape')out.addShape({rectangle:pptx.ShapeType.rect,ellipse:pptx.ShapeType.ellipse,triangle:pptx.ShapeType.triangle,star:pptx.ShapeType.star5,hexagon:pptx.ShapeType.hexagon,heart:pptx.ShapeType.heart}[e.shape],{...box,line:{color:hex(e.color),transparency:100},fill:{color:hex(e.color)}});
     else if(e.emoji){const c=await render({theme:'none',slides:[{background:'#ffffff',elements:[{...e,x:0,y:0,rotation:0}]}]},0,1,true);const crop=document.createElement('canvas');crop.width=e.w;crop.height=e.h;crop.getContext('2d').drawImage(c,0,0);out.addImage({data:crop.toDataURL('image/png'),...box});}
     else{const src=await imageData(e.asset?await asset(e.asset):e.src),img=await media(src),k=Math.min(box.w/img.width,box.h/img.height),w=img.width*k,h=img.height*k;out.addImage({data:src,...box,x:box.x+(box.w-w)/2,y:box.y+(box.h-h)/2,w,h});}
@@ -96,9 +98,9 @@ async function importFile(file,progress=()=>{}){
  if(extension==='tt'){
   const entry=zip.file('presentation.json');if(!entry||entry._data.uncompressedSize>700000)throw Error('Invalid TeacherTiles presentation.');let data;try{data=JSON.parse(await entry.async('string'));}catch{throw Error('Invalid TeacherTiles presentation.');}
   if(data.format!=='TeacherTilesPresentation'||data.version!==1||data.document?.schemaVersion!==1)throw Error('This TeacherTiles file version is not supported.');
-  const images=new Map();let total=0;const refs=new Set((data.document.slides||[]).flatMap(s=>(s.elements||[]).filter(e=>e.type==='image').map(e=>e.asset)).concat((data.document.fonts||[]).map(f=>f.asset)));
+  const images=new Map();let total=0;const refs=new Set(window.TeacherTilesPresentationObjects.assets(data.document));
   if(refs.size>100)throw Error('A presentation can contain up to 100 uploaded images.');
-  for(const key of refs){if(!/^[\w-]{1,80}$/.test(key))throw Error('Invalid image reference.');const path=data.images?.[key];if(typeof path!=='string'||!/^media\/[\w-]+\.(png|jpeg|webp|gif|ttf|otf)$/.test(path))throw Error('Missing presentation image.');const f=zip.file(path);if(!f||f._data.uncompressedSize>6*MB)throw Error('An image is missing or exceeds 6 MB.');total+=f._data.uncompressedSize;if(total>32*MB)throw Error('Images exceed the 32 MB presentation limit.');images.set(key,'data:'+(/\.(ttf|otf)$/.test(path)?'font':'image')+'/'+path.split('.').pop()+';base64,'+await f.async('base64'));}
+  for(const key of refs){if(!/^[\w-]{1,80}$/.test(key))throw Error('Invalid image reference.');const path=data.images?.[key];if(typeof path!=='string'||!/^media\/[\w-]+\.(png|jpeg|webp|gif|ttf|otf|webm|ogg|mp4|mpeg)$/.test(path))throw Error('Missing presentation image.');const f=zip.file(path);if(!f||f._data.uncompressedSize>6*MB)throw Error('An image is missing or exceeds 6 MB.');total+=f._data.uncompressedSize;if(total>32*MB)throw Error('Images exceed the 32 MB presentation limit.');images.set(key,'data:'+(/\.(ttf|otf)$/.test(path)?'font':/\.(webm|ogg|mp4|mpeg)$/.test(path)?'audio':'image')+'/'+path.split('.').pop()+';base64,'+await f.async('base64'));}
   // The server normalizes the document before it is ever rendered by the editor.
   return {document:data.document,images,warnings:[]};
  }
