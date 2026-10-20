@@ -1,6 +1,6 @@
-import {createBulkPatches} from './bulk-patches.js?v=20261013-remove';
+import {createBulkPatches} from './bulk-patches.js?v=20261020-product-polish';
 import {createUsersClient} from './users-cache.js?v=20261014-subscription-override';
-import {createUserDetails} from './user-details.js?v=20261015-override';
+import {createUserDetails} from './user-details.js?v=20261020-product-polish';
 export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261017-badge-shimmer" />
+  <link rel="stylesheet" href="styles.css?v=20261020-product-polish" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -70,10 +70,10 @@
 <link rel="stylesheet" href="tiles/shared/cursor-effects.css?v=20260928-unified">
 <link rel="stylesheet" href="assets/themes/basic-bamboo.css?v=20260928-tinted">
 <link rel="stylesheet" href="tiles/growth-rewards/styles.css?v=20261002-ice-cube">
-  <link rel="stylesheet" href="templates/style.css?v=20261010-gallery-loading">
+  <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261012-planner-skins">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261020-product-polish">
   <link rel="stylesheet" href="profile/tools.css?v=20261010-rounded-panels">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
@@ -83,7 +83,7 @@
 <link rel="stylesheet" href="tiles/lesson-planner/skins.css?v=20261012-group-hover">
 <link rel="stylesheet" href="profile/subscriber-name.css?v=20261013-subscriber-names">
 <link rel="stylesheet" href="account/subscriber-coins.css?v=20261013-monthly">
-<link rel="stylesheet" href="profile/new-patches.css?v=20261013-rose">
+<link rel="stylesheet" href="profile/new-patches.css?v=20261020-product-polish">
 <link rel="stylesheet" href="profile/frames.css?v=20261013-compact">
 <link rel="stylesheet" href="shop/extras.css?v=20261017-shop-effects-polish">
 <link rel="stylesheet" href="shop/featured-library.css?v=20261013-showcase">
@@ -111,7 +111,7 @@
 <script defer src="account/help-tutorials/catalog.js?v=20261004"></script>
 <script defer src="account/help-tutorials/index.js?v=20261004"></script>
 <link rel="stylesheet" href="tiles/shared/tile-menu-metadata.css?v=20261012-badges">
-<link rel="stylesheet" href="shop/managed-shop.css?v=20261015-deals-nav">
+<link rel="stylesheet" href="shop/managed-shop.css?v=20261020-product-polish">
 <link rel="stylesheet" href="changelog/navigation.css?v=20261015">
 <link rel="stylesheet" href="app/splash/styles.css?v=20261015">
 <script src="shop/sticker-catalog.js?v=20261015"></script>
@@ -119,7 +119,7 @@
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
 <link rel="stylesheet" href="shop/tile-effects.css?v=20261017-playback-effects">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
-<link rel="stylesheet" href="presentations/styles.css?v=20261017-presentation-polish">
+<link rel="stylesheet" href="presentations/styles.css?v=20261020-product-polish">
 <link rel="stylesheet" href="tiles/presentations/styles.css?v=20261017-badge-shimmer">
 <link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261017-grade-chips">
 <link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-editor-controls">
@@ -384,10 +384,10 @@
             <div class="lesson-planner-backdrop" aria-hidden="true"></div>
             <section id="lesson-planner-library" class="lesson-planner-library" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-library-title">
               <header class="planner-library-header">
-                <button id="lesson-planner-library-back" class="planner-library-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Profile</strong></button>
+                <button id="lesson-planner-library-back" class="planner-library-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Profile</strong></button>
                 <div class="planner-library-brand">
                   <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-library-title">Your Planners</h2></div>
+                  <div><h2 id="lesson-planner-library-title">Your Planners</h2></div>
                 </div>
                 <div class="planner-library-header__actions">
                   <span id="lesson-planner-library-limit" class="planner-library-limit" aria-live="polite"></span>
@@ -409,10 +409,10 @@
             </section>
             <div class="lesson-planner-window" role="dialog" aria-modal="true" aria-labelledby="lesson-planner-title" hidden aria-hidden="true">
               <header class="lesson-planner-header">
-                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><span aria-hidden="true">←</span><strong>Planners</strong></button>
+                <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Planners</strong></button>
                 <div class="lesson-planner-brand">
                   <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><span>TEACHERTILES PLANNING</span><h2 id="lesson-planner-title">Lesson Planner</h2></div>
+                  <div><h2 id="lesson-planner-title">Lesson Planner</h2></div>
                 </div>
                 <div class="lesson-planner-header__actions">
                   <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-12 5h2m4 0h2m-8 3h2"/></svg><span>Scheduling</span></button>
@@ -4528,8 +4528,8 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20261005-clef"></script>
-<script src="tiles/shared/formatting-toolbar.js?v=20261020-editor-controls"></script>
-<script src="tiles/rich-text/index.js?v=20261020-editor-controls"></script>
+<script src="tiles/shared/formatting-toolbar.js?v=20261020-product-polish"></script>
+<script src="tiles/rich-text/index.js?v=20261020-product-polish"></script>
 <script src="tiles/fly-swat/index.js?v=20261012-teams"></script>
 <script src="tiles/shared/sticker-picker.js?v=20261001-collections"></script>
 <script src="tiles/glitter-jar/index.js?v=20260922-2"></script>
@@ -4559,7 +4559,7 @@
 <script src="tiles/lava-lamp/index.js?v=20261012-skins"></script>
 
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
-<script src="tiles/shared/cursor-picker.js?v=20261001-collections"></script>
+<script src="tiles/shared/cursor-picker.js?v=20261020-product-polish"></script>
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
 <script src="tiles/growth-rewards/index.js?v=20261003"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
@@ -4655,7 +4655,7 @@
 <script src="boards/serialization.js?v=20261001-position-drawer"></script>
 <script src="changelog/ui.js?v=20261015-navigation"></script>
 <script src="shop/ad-rewards.js?v=20261012"></script>
-<script src="tiles/lesson-planner/skins.js?v=20261012-group-hover"></script>
+<script src="tiles/lesson-planner/skins.js?v=20261020-product-polish"></script>
 <script src="profile/frames-art.js?v=20261013-frame-performance"></script>
 <script src="profile/frames-catalog.js?v=20261013-frame-performance"></script>
 <script src="profile/frames.js?v=20261014-subscription-override"></script>
@@ -4663,20 +4663,20 @@
 <script src="presentations/transitions.js?v=20261017-shop-effects-polish"></script>
 <script src="presentations/themes.js?v=20261017-layout-backgrounds"></script>
 <script src="shop/tile-effects-catalog.js?v=20261017-effects"></script>
-<script src="shop/tile-effects.js?v=20261017-grade-shortcuts"></script>
+<script src="shop/tile-effects.js?v=20261020-product-polish"></script>
 <script src="shop/extras.js?v=20261017-grade-shortcuts"></script>
-<script src="shop/featured-library.js?v=20261017-effects-fix"></script>
-<script src="shop/ui.js?v=20261017-shop-effects-polish"></script>
+<script src="shop/featured-library.js?v=20261020-product-polish"></script>
+<script src="shop/ui.js?v=20261020-product-polish"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
 <script src="app.js?v=20261017-playback-filter"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261017-all-grades"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261017-playback-filter"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
-  <script src="tiles/lesson-planner.js?v=20261014-subscription-override"></script>
+  <script src="tiles/lesson-planner.js?v=20261020-product-polish"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261017-shared-presentations"></script>
-<script type="module" src="profile/patches.js?v=20261013-star-inset"></script>
+<script type="module" src="firebase-auth.js?v=20261020-product-polish"></script>
+<script type="module" src="profile/patches.js?v=20261020-product-polish"></script>
 
 
   <template id="ruler-template">
@@ -6036,7 +6036,8 @@
   </template>
 
 <script src="tiles/shared/history.js?v=20260921-controls-3"></script>
-<script src="presentations/index.js?v=20261020-editor-controls"></script>
+<script src="presentations/index.js?v=20261020-product-polish"></script>
 <script src="tiles/presentations/index.js?v=20261020-editor-controls"></script>
+<script src="support/help-navigation.js?v=20261020"></script>
 </body>
 </html>

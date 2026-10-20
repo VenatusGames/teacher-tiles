@@ -5,8 +5,8 @@ import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/acc
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261017-shared-presentations';
-import {createTemplateLibrary} from './templates/ui.js?v=20261017-shared-presentations';
-import {syncAwardedPatches} from './profile/awards.js?v=20261013-star-inset';
+import {createTemplateLibrary} from './templates/ui.js?v=20261020-product-polish';
+import {syncAwardedPatches} from './profile/awards.js?v=20261020-product-polish';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 

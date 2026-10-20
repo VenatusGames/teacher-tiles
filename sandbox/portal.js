@@ -3,13 +3,13 @@ import {createProductManagementPanel} from './product-management.js?v=20261017-e
 import {createTileManagementPanel} from './tile-management.js?v=20261017-grade-shortcuts';
 import {adminBoardPreview} from './board-preview.js?v=20261017-shared-presentations';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
-import {createTemplateLibrary} from '../templates/ui.js?v=20261017-shared-presentations';
+import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polish';
 import {createInsights} from './insights.js?v=20261015-override-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261015-override-crown';
+import {createUsersPanel} from './users.js?v=20261020-product-polish';
 import {startSiteActivity} from '../account/site-activity.js';
-import {createCodesPanel} from './codes.js?v=20261017-effects';
+import {createCodesPanel} from './codes.js?v=20261020-product-polish';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');

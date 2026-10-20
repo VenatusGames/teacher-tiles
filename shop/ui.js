@@ -77,7 +77,7 @@ function setupTeacherTilesShop(){
   const catalogProducts=[...products];
   const featuredLibrary=createShopFeaturedLibrary({modal,sources:catalogProducts,
     mount:card=>{bindProduct(card);products.push(card)},
-    unmount:card=>{const index=products.indexOf(card);if(index>=0)products.splice(index,1)},
+    unmount:card=>{previewVisibility.unobserve(card);const index=products.indexOf(card);if(index>=0)products.splice(index,1)},
     sync:()=>syncProducts(),canRotate:()=>!productPopup&&!redeemDialog.open&&(!coinMenu||coinMenu.hidden)
   });
   const redeemForm=document.getElementById('shop-redeem-form');
@@ -436,7 +436,7 @@ function setupTeacherTilesShop(){
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
   let managedShop;
-  const managedReady=import('./managed-shop.js?v=20261015-deals-nav').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
+  const managedReady=import('./managed-shop.js?v=20261020-product-polish').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
     slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
@@ -612,7 +612,9 @@ function setupTeacherTilesShop(){
     card.querySelectorAll('[data-transition-preview]').forEach(p=>p.replaceWith(window.TeacherTilesPresentationTransitions.preview(p.dataset.transitionPreview)));
     card.querySelectorAll('[data-effect-preview]').forEach(p=>p.replaceWith(window.TeacherTilesTileEffects.preview(p.dataset.effectPreview)));
   }
+  const previewVisibility=new IntersectionObserver(entries=>{for(const {target,isIntersecting} of entries){if(!target.isConnected){previewVisibility.unobserve(target);continue;}target.classList.toggle('is-preview-offscreen',!isIntersecting);}},{root:modal.querySelector('.shop-content')||null,rootMargin:'150px'});
   function bindProduct(card){
+    card.classList.add('is-preview-offscreen');previewVisibility.observe(card);
     card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);
     card.querySelector('[data-shop-buy]')?.addEventListener('click',event=>{event.stopPropagation();tryBuy(card)});
     card.addEventListener('click',event=>{if(!event.target.closest('button,.subscription-access-crown'))openProduct(card.dataset.shopProduct)});
@@ -639,8 +641,9 @@ function setupTeacherTilesShop(){
       const result=await window.TeacherTilesAccount.redeem(code);
       redeemInput.value='';
       const coins=Number(result.coinsAwarded)||0;
-      if(result.status==='already_owned')redeemStatus.textContent='You already own this cosmetic. The code was not used.';
+      if(result.status==='already_owned')redeemStatus.textContent=result.rewardType==='patch'?'You already have this patch. The code was not used.':'You already own this cosmetic. The code was not used.';
       else if(result.duplicate)redeemStatus.textContent='You have already redeemed this code.';
+      else if(result.rewardType==='patch')redeemStatus.textContent='Patch unlocked! Find it in your profile.';
       else if(result.rewardType==='cosmetic')redeemStatus.textContent='Cosmetic unlocked!';
       else if(result.rewardType==='membership_trial')redeemStatus.textContent='Membership trial redeemed. Your membership is being confirmed.';
       else redeemStatus.textContent=`Added ${coins.toLocaleString()} coins to your account.`;

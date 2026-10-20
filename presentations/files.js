@@ -60,7 +60,7 @@ async function exportFile(format,deck,{asset,render,progress=()=>{}}){
    for(const e of s.elements){const box={x:e.x/96,y:e.y/96,w:e.w/96,h:e.h/96,rotate:e.rotation||0};
     if(e.type==='text'&&JSON.stringify(e.rich||[]).includes('TTFont_')){const c=await render({...deck,theme:'none',slides:[{background:'#ffffff',elements:[{...e,x:0,y:0,rotation:0}]}]},0,2,true);const crop=document.createElement('canvas');crop.width=Math.ceil(e.w*2);crop.height=Math.ceil(e.h*2);crop.getContext('2d').drawImage(c,0,0);out.addImage({data:crop.toDataURL('image/png'),...box});}
     else if(e.type==='text')out.addText(runsFor(e,deck.theme),{...box,fontFace:'Inter',fontSize:e.fontSize*.75,margin:0,breakLine:false,paraSpaceAfter:0,valign:'top',align:e.align,wrap:true});
-    else if(e.type==='shape')out.addShape({rectangle:pptx.ShapeType.rect,ellipse:pptx.ShapeType.ellipse,triangle:pptx.ShapeType.triangle}[e.shape],{...box,line:{color:hex(e.color),transparency:100},fill:{color:hex(e.color)}});
+    else if(e.type==='shape')out.addShape({rectangle:pptx.ShapeType.rect,ellipse:pptx.ShapeType.ellipse,triangle:pptx.ShapeType.triangle,star:pptx.ShapeType.star5,hexagon:pptx.ShapeType.hexagon,heart:pptx.ShapeType.heart}[e.shape],{...box,line:{color:hex(e.color),transparency:100},fill:{color:hex(e.color)}});
     else if(e.emoji){const c=await render({theme:'none',slides:[{background:'#ffffff',elements:[{...e,x:0,y:0,rotation:0}]}]},0,1,true);const crop=document.createElement('canvas');crop.width=e.w;crop.height=e.h;crop.getContext('2d').drawImage(c,0,0);out.addImage({data:crop.toDataURL('image/png'),...box});}
     else{const src=await imageData(e.asset?await asset(e.asset):e.src),img=await media(src),k=Math.min(box.w/img.width,box.h/img.height),w=img.width*k,h=img.height*k;out.addImage({data:src,...box,x:box.x+(box.w-w)/2,y:box.y+(box.h-h)/2,w,h});}
    }await nextFrame();
@@ -155,7 +155,7 @@ async function importPowerPoint(zip,name,progress){
    const inherited=placeholder(n,layout)||placeholder(n,master),properties=first(n,'spPr'),xfrm=one(properties,'xfrm')||one(first(inherited,'spPr'),'xfrm'),off=first(xfrm,'off'),ext=first(xfrm,'ext');if(!off||!ext){warning();return;}
    const w=+ext.getAttribute('cx'),h=+ext.getAttribute('cy'),m=matrixFor(xfrm,parent),width=w*Math.hypot(m.a,m.b),height=h*Math.hypot(m.c,m.d),center=new DOMPoint(w/2,h/2).matrixTransform(m),base={id:uid(),x:center.x-width/2,y:center.y-height/2,w:width,h:height,rotation:((Math.atan2(m.b,m.a)*180/Math.PI)%360+360)%360};
    if(![base.x,base.y,base.w,base.h].every(Number.isFinite)||w<=0||h<=0)return;
-   const geom=one(properties,'prstGeom'),shape={rect:'rectangle',ellipse:'ellipse',triangle:'triangle'}[geom?.getAttribute('prst')],fill=first(properties,'solidFill'),blip=one(properties,'blipFill')||first(n,'blipFill');
+   const geom=one(properties,'prstGeom'),shape={rect:'rectangle',ellipse:'ellipse',triangle:'triangle',star5:'star',hexagon:'hexagon',heart:'heart'}[geom?.getAttribute('prst')],fill=first(properties,'solidFill'),blip=one(properties,'blipFill')||first(n,'blipFill');
    if(blip||one(properties,'custGeom')||(first(properties,'ln')&&!first(first(properties,'ln'),'noFill')&&one(first(properties,'ln'),'alpha')?.getAttribute('val')!=='0')||one(fill,'alpha')){const art=await graphic(n,properties,map,m,w,h,color);if(art)slide.elements.push(art);}
    else if(fill&&shape)slide.elements.push({...base,type:'shape',shape,color:color(fill,'#91add5')});else if(fill)warning();
    if(n.localName==='pic')return;

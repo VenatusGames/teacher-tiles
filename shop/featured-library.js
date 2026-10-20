@@ -11,6 +11,7 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   const compact=matchMedia('(max-width: 650px)');
   const categories=[['all','All Cosmetics'],['tile-effects','Tile Effects'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['presentation-themes','Presentations'],['profile-cosmetics','Profiles']];
   const accents={'tile-effects':'#9d8ad7','presentation-transitions':'#a28ac6','themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','presentation-themes':'#a28ac6','profile-cosmetics':'#cd91b3'};
+  let catalogSignature='';
   let catalog=[],pool=[],cards=[],index=0,filter='all',timer=0,active=false,inView=false,hover=false,paused=motion.matches;
   const count=()=>Math.min(compact.matches?7:12,pool.length);
   function schedule(){
@@ -72,6 +73,8 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   return {
     refresh(){
       const owned=new Set(window.TeacherTilesAccount?.state?.ownedProductIds||[]);
+      const signature=JSON.stringify(sources.map(s=>[s.dataset.shopProduct,s.dataset.shopPrice,owned.has(s.dataset.shopProduct),s.querySelector('p')?.textContent]));
+      if(signature===catalogSignature){sync();schedule();return;}catalogSignature=signature;
       // Interleave categories so smaller collections get seen alongside large catalogs.
       const groups=categories.slice(1).map(([category])=>{
         const list=sources.filter(source=>source.closest('[data-shop-page]').dataset.shopPage===category&&!owned.has(source.dataset.shopProduct));

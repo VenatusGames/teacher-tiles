@@ -912,7 +912,7 @@
     const paid = hasPlannerSubscription();
     libraryLimit.textContent = `${planners.length} / ${limit}`;
     libraryLimit.title = `${planners.length} of ${limit} planners used`;
-    libraryPlan.textContent = paid ? 'SUPPORTER · UP TO 10 PLANNERS' : 'FREE · UP TO 2 PLANNERS';
+    libraryPlan.innerHTML = paid ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m3 6 4 4 5-7 5 7 4-4-2 13H5ZM5 16h14"/></svg> SUBSCRIBER · UP TO 10 PLANNERS' : 'FREE · UP TO 2 PLANNERS';
     libraryPlan.classList.toggle('is-subscriber', paid);
     createPlannerButton.disabled = planners.length >= limit;
     createPlannerButton.setAttribute('aria-disabled', String(createPlannerButton.disabled));
