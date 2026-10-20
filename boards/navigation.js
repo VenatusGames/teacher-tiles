@@ -709,6 +709,7 @@ function renderMenuCategoryPins(){
     let button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);
     if(!button&&id.startsWith('holiday:')){button=document.createElement('button');button.type='button';button.className='context-menu__filter';button.textContent=menuCategoryLabel(id).toUpperCase();button.classList.toggle('is-active',activeMenuCategory===id);button.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(id)})}
     if(!button)continue;
+    if(id==='holidays'&&!button.querySelector('.context-menu__holiday-crown')){const crown=document.createElementNS('http://www.w3.org/2000/svg','svg');crown.classList.add('context-menu__holiday-crown');crown.setAttribute('viewBox','0 0 48 48');crown.setAttribute('aria-label','Subscription required');crown.innerHTML='<use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/>';button.append(crown);}
     const row=document.createElement('div');row.className='context-menu__category-row';row.appendChild(button);
     const nested=!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id);
     if(nested){row.classList.add('context-menu__category-row--nested');row.hidden=!menuAllExpanded}
@@ -723,7 +724,7 @@ function renderMenuCategoryPins(){
       pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';
       const pinned=menuPinnedCategories.has(id);pin.setAttribute('aria-pressed',String(pinned));pin.setAttribute('aria-label',`${pinned?'Unpin':'Pin'} ${menuCategoryLabel(id)}`);pin.title=pin.getAttribute('aria-label');row.appendChild(pin);
     }
-    if(id==='all'&&menuPinnedCategories.size){const divider=document.createElement('div');divider.className='context-menu__favorites-divider';divider.setAttribute('role','separator');fragment.appendChild(divider)}
+    if(id==='all'&&fragment.childElementCount){const divider=document.createElement('div');divider.className='context-menu__favorites-divider';divider.setAttribute('role','separator');fragment.appendChild(divider)}
     fragment.appendChild(row);
     if(id==='holidays'){
       const children=document.createElement('div');children.className='context-menu__holiday-children';children.hidden=!menuHolidaysExpanded;

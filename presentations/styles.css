@@ -63,3 +63,11 @@
 .pres-color-popup{margin:0;inset:auto;position:fixed}.pres-color-popup:not(:popover-open){display:none!important}#presentations-tool .pres-color-popup .richtext-color-choice{padding:3px;min-width:0;height:30px;width:30px}#presentations-tool .pres-color-popup .richtext-color-picker-close{width:28px;height:28px;padding:0}#presentations-tool .pres-color-popup input{min-width:0;width:100%;padding:5px}#presentations-tool .pres-color-popup .richtext-spectrum-controls button,#presentations-tool .pres-color-popup .richtext-color-custom button{padding:6px 10px;font-size:12px}.pres-color-popup .richtext-color-hex-wrap{min-width:0}
 
 #presentations-tool:has(.pres-editor:not([hidden])) .pres-header [data-action="import-presentation"]{display:none}
+
+.pres-background-menu{position:fixed;inset:auto;margin:0;width:min(540px,calc(100vw - 24px));max-height:min(560px,calc(100dvh - 24px));overflow:auto;padding:12px;border:1px solid #d6dee8;border-radius:14px;background:#fff;box-shadow:0 12px 40px #26324926}
+.pres-background-menu .pres-layout-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pres-background-menu button{display:flex;flex-direction:column;gap:6px;min-width:0;padding:5px;border:1px solid #d6dee8;border-radius:8px;background:#fff;color:#263249;font:12px Inter,system-ui;cursor:pointer}
+.pres-background-menu button[aria-pressed=true]{border-color:#6a91cd;box-shadow:0 0 0 1px #6a91cd}
+.pres-background-menu .pres-slide{width:100%;aspect-ratio:16/9;border-radius:4px;overflow:hidden}
+.pres-theme-background>select[hidden]{display:none!important}
+.pres-rich :is(s,strike){text-decoration-line:line-through}

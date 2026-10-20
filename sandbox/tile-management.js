@@ -1,4 +1,4 @@
-import {loadTileCatalog,gradeOptions,badgeOptions,tileIcon} from '../tiles/shared/tile-catalog.js?v=20261017-all-grades';
+import {loadTileCatalog,gradeOptions,badgeOptions,tileIcon} from '../tiles/shared/tile-catalog.js?v=20261020-ui-fixes';
 import {rememberTileMetadata} from '../tiles/shared/tile-metadata-client.js';
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 export function createTileManagementPanel(call){
@@ -14,7 +14,7 @@ export function createTileManagementPanel(call){
   const individualGrades=gradeOptions.filter(grade=>grade.id!=='all');
   const expandGrades=grades=>grades.includes('all')?individualGrades.map(grade=>grade.id):[...grades];
   const schoolLevels=[
-    {name:'All Grades',range:'Pre-K–12',grades:individualGrades.map(grade=>grade.id)},
+    {name:'All Grades',range:'Pre-K–Higher-Ed',grades:individualGrades.map(grade=>grade.id)},
     {name:'Elementary',range:'Pre-K–5',grades:['pre-k','k','1','2','3','4','5']},
     {name:'Middle School',range:'6–8',grades:['6','7','8']},
     {name:'High School',range:'9–12',grades:['9','10','11','12']}

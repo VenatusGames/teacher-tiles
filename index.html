@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="tiles/link/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/shared/appearance.css?v=20260928-unified">
-  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20261002-ice-cube">
+  <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20261020-ui-fixes">
   <link rel="icon" href="T.png" type="image/x-icon">
 <link rel="stylesheet" href="tiles/visual-directions/styles.css?v=20261016-directions-fit">
 <link rel="stylesheet" href="tiles/color-picker/styles.css?v=20261008-modern">
@@ -119,10 +119,10 @@
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
 <link rel="stylesheet" href="shop/tile-effects.css?v=20261017-playback-effects">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
-<link rel="stylesheet" href="presentations/styles.css?v=20261020-product-polish">
+<link rel="stylesheet" href="presentations/styles.css?v=20261020-ui-fixes">
 <link rel="stylesheet" href="tiles/presentations/styles.css?v=20261017-badge-shimmer">
-<link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261017-grade-chips">
-<link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-editor-controls">
+<link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261020-ui-fixes">
+<link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-ui-fixes">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -353,7 +353,7 @@
             <div class="profile-tools__head"><h3 id="profile-tools-title">Tools</h3></div>
             <button id="profile-organizations-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-organizations-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--organization" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7.5L12 4v16M12 9h8v11M7.5 9.5h1M7.5 13h1M7.5 16.5h1M15.5 12.5h1M15.5 16h1M2.5 20h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span><strong>Organizations</strong><small>Share boards and PBIS insights with your school or team.</small></span>
+              <span><strong>Organizations<span class="profile-tool-beta">IN BETA</span></strong><small>Share boards and PBIS insights with your school or team.</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
@@ -373,7 +373,7 @@
             </button>
             <button title="Create presentation slides and slidedecks and make them interactive" id="profile-presentations-button" class="profile-tool-button" type="button">
               <span class="profile-tool-button__icon profile-tool-button__icon--presentations" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v5M8 21l4-3 4 3M8 8h8M8 12h5"/></svg></span>
-              <span><strong>Presentations</strong><small>Create and present slides for your classroom</small></span>
+              <span><strong>Presentations<span class="profile-tool-beta">IN BETA</span></strong><small>Create and present slides for your classroom</small></span>
             </button>
             <button title="Create interactive or printable assessments to use physically or in-app with your students" id="profile-assessments-button" class="profile-tool-button profile-tool-button--unavailable" type="button" disabled>
               <span class="profile-tool-button__icon profile-tool-button__icon--assessments" aria-hidden="true"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><g fill="currentColor" font-family="Arial,sans-serif" font-weight="700" font-size="8.5" text-anchor="middle"><text x="9.5" y="12">A</text><text x="18.5" y="12">B</text><text x="9.5" y="21">C</text><text x="18.5" y="21">D</text></g></svg></span>
@@ -832,7 +832,7 @@
 
             <div class="settings-card">
               <div class="settings-card__title">
-                <span class="settings-card__glyph" aria-hidden="true">♪</span>
+                <span class="settings-card__glyph" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4 6 8H3v8h3l5 4zM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg></span>
                 <div><strong data-i18n="settings.sound.title">Sound</strong><small data-i18n="settings.sound.copy">Control TeacherTiles audio.</small></div>
               </div>
               <div class="settings-row settings-row--switch">
@@ -2617,8 +2617,8 @@
         </div>
         <span class="richtext-toolbar-divider" aria-hidden="true"></span>
         <div class="richtext-toolbar-group">
-          <button type="button" data-rich-command="undo" aria-label="Undo text edit" title="Undo">↶</button>
-          <button type="button" data-rich-command="redo" aria-label="Redo text edit" title="Redo">↷</button>
+          <button type="button" data-rich-command="undo" aria-label="Undo text edit" title="Undo"><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/></svg></button>
+          <button type="button" data-rich-command="redo" aria-label="Redo text edit" title="Redo"><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5v6h-6M20 11l-4-4a7 7 0 1 0-1 12"/></svg></button>
           <button type="button" data-rich-command="removeFormat" aria-label="Clear formatting" title="Clear formatting">Tx</button>
         </div>
         <span class="richtext-toolbar-divider" aria-hidden="true"></span>
@@ -2682,7 +2682,7 @@
     </section>
   </template>
 <template id="trickortreat-template"><section class="module trickortreat-module" data-type="trickortreat" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Trick or Treat">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Trick or Treat</h2><div class="trick-stage"><button type="button" class="trick-door" aria-label="Knock on the door"><span class="trick-door-frame"><span class="trick-door-leaf"><span class="trick-door-panels"></span><span class="trick-door-knocker"></span><span class="trick-door-handle"></span></span></span></button><div class="trick-result" hidden role="dialog" aria-label="Trick or Treat Result"><div class="trick-prize" aria-hidden="true"></div><strong class="trick-result-title" role="status"></strong><button type="button" class="trick-again tile-action">Try Again</button></div></div><div class="trick-controls customization-bar"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
-<template id="pumpkincarving-template"><section class="module pumpkincarving-module" data-type="pumpkincarving" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Pumpkin Carving">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Pumpkin Carving</h2><div class="carving-stage"><svg class="carving-surface" viewBox="0 0 100 100" role="img" aria-label="Draw closed shapes on the pumpkin to carve them"><image href="tiles/halloween/assets/pumpkin-4.png" width="100" height="100"/><g class="carving-cuts"></g><path class="carving-trace"/></svg><span class="carving-hint">Drag to carve a shape</span></div><div class="halloween-toolbar"><select class="carving-tool" aria-label="Carving Tool"><option value="freehand">Freehand</option><option value="triangle">Triangle</option><option value="circle">Oval</option></select><button type="button" class="carving-undo">Undo</button><button type="button" class="carving-clear">Clear</button><button type="button" class="carving-light" aria-pressed="false">Light</button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="pumpkincarving-template"><section class="module pumpkincarving-module" data-type="pumpkincarving" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Pumpkin Carving">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Pumpkin Carving</h2><div class="carving-stage"><svg class="carving-surface" viewBox="0 0 100 100" role="img" aria-label="Draw closed shapes on the pumpkin to carve them"><image href="tiles/halloween/assets/pumpkin-4.png" width="100" height="100"/><g class="carving-cuts"></g><path class="carving-trace"/></svg><span class="carving-hint">Drag to carve a shape</span></div><div class="halloween-toolbar"><select class="carving-tool" aria-label="Carving Tool"><option value="freehand">Freehand</option><option value="triangle">Triangle</option><option value="circle">Oval</option></select><button type="button" class="carving-undo"><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/></svg> Undo</button><button type="button" class="carving-clear">Clear</button><button type="button" class="carving-light" aria-pressed="false">Light</button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="pumpkinpatch-template"><section class="module pumpkinpatch-module" data-type="pumpkinpatch" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Pumpkin Patch">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Pumpkin Patch</h2><div class="patch-scene" role="img" aria-label="Pumpkins grow on vines when the classroom is quiet"><div class="patch-pumpkins"></div><div class="patch-fog"></div></div><div class="patch-footer"><span class="patch-status" role="status">Enable the microphone to grow with quiet voices.</span><meter class="patch-meter" min="0" max="100" value="0" aria-label="Room Sound Level"></meter></div><div class="halloween-toolbar"><button type="button" class="patch-reset">Reset</button><button type="button" class="patch-mic" aria-pressed="false">Enable Microphone</button></div><div class="tile-settings-wrap"><button type="button" class="tile-settings-toggle" aria-label="Pumpkin Patch Settings" aria-expanded="false"></button><div class="tile-settings-panel patch-settings" hidden><strong>Pumpkin Patch Settings</strong><div class="tile-setting"><span>Growth Mode</span><div class="tile-mode-switch" role="group" aria-label="Pumpkin growth mode"><button type="button" data-patch-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-patch-mode="microphone" aria-pressed="false">Microphone</button></div><select class="patch-mode" hidden aria-label="Growth Mode"><option value="ambient">No mic</option><option value="microphone">Microphone</option></select></div><label class="tile-setting"><span>Quiet Level <output class="patch-threshold-value">45%</output></span><input class="patch-threshold" aria-label="Quiet Level" type="range" min="15" max="85" value="45"></label></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="timer-template">
     <section class="module timer-module" data-type="timer" data-bg="white" data-font="inter" data-text="dark" data-shape-color="blue">
@@ -3254,8 +3254,8 @@
           <label class="draw-color-wrap" title="Drawing color"><input class="draw-color" type="color" value="#222222"><span class="draw-color-swatch"></span></label>
           <label class="draw-size-wrap" title="Tool size"><span>SIZE</span><input class="draw-size" type="range" min="2" max="42" value="10"></label>
           <div class="draw-history-controls" role="group" aria-label="Drawing history">
-            <button class="draw-undo" type="button" title="Undo drawing" aria-label="Undo drawing" disabled>↶</button>
-            <button class="draw-redo" type="button" title="Redo drawing" aria-label="Redo drawing" disabled>↷</button>
+            <button class="draw-undo" type="button" title="Undo drawing" aria-label="Undo drawing" disabled><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/></svg></button>
+            <button class="draw-redo" type="button" title="Redo drawing" aria-label="Redo drawing" disabled><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5v6h-6M20 11l-4-4a7 7 0 1 0-1 12"/></svg></button>
           </div>
           <button class="draw-clear" type="button" title="Clear all drawings">Clear</button>
         </div>
@@ -4528,12 +4528,12 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20261005-clef"></script>
-<script src="tiles/shared/formatting-toolbar.js?v=20261020-product-polish"></script>
+<script src="tiles/shared/formatting-toolbar.js?v=20261020-ui-fixes"></script>
 <script src="tiles/rich-text/index.js?v=20261020-product-polish"></script>
 <script src="tiles/fly-swat/index.js?v=20261012-teams"></script>
 <script src="tiles/shared/sticker-picker.js?v=20261001-collections"></script>
 <script src="tiles/glitter-jar/index.js?v=20260922-2"></script>
-<script src="tiles/spreadsheet/index.js?v=20260922-controls-2"></script>
+<script src="tiles/spreadsheet/index.js?v=20261020-ui-fixes"></script>
 <script src="tiles/reminders/index.js?v=20260922-refine-3"></script>
 <script src="tiles/shared/theme-picker.js?v=20261014-refined-20261014-20260925-cosmetics-performance-1"></script>
 <script src="tiles/noise-meter/index.js?v=20260922-meter-spacing-4"></script>
@@ -4639,7 +4639,7 @@
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
 <script src="account/interface-services.js?v=20261015-splash-20261004-snapping"></script>
-<script src="boards/navigation.js?v=20261017-unified-favorites"></script>
+<script src="boards/navigation.js?v=20261020-ui-fixes"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
 <script src="boards/tile-lifecycle.js?v=20261015-halloween"></script>
@@ -4665,12 +4665,12 @@
 <script src="shop/tile-effects-catalog.js?v=20261017-effects"></script>
 <script src="shop/tile-effects.js?v=20261020-product-polish"></script>
 <script src="shop/extras.js?v=20261017-grade-shortcuts"></script>
-<script src="shop/featured-library.js?v=20261020-product-polish"></script>
+<script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
 <script src="shop/ui.js?v=20261020-product-polish"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
 <script src="app.js?v=20261017-playback-filter"></script>
-<script type="module" src="tiles/shared/tile-menu-filters.js?v=20261017-all-grades"></script>
+<script type="module" src="tiles/shared/tile-menu-filters.js?v=20261020-ui-fixes"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261017-playback-filter"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-product-polish"></script>
@@ -6036,8 +6036,8 @@
   </template>
 
 <script src="tiles/shared/history.js?v=20260921-controls-3"></script>
-<script src="presentations/index.js?v=20261020-product-polish"></script>
+<script src="presentations/index.js?v=20261020-ui-fixes"></script>
 <script src="tiles/presentations/index.js?v=20261020-editor-controls"></script>
-<script src="support/help-navigation.js?v=20261020"></script>
+<script src="support/help-navigation.js?v=20261020-ui-fixes"></script>
 </body>
 </html>

@@ -1,9 +1,9 @@
-import {gradeOptions} from './tile-catalog.js?v=20261017-all-grades';
+import {gradeOptions} from './tile-catalog.js?v=20261020-ui-fixes';
 const menu=window.TeacherTilesTileMenu;
 if(menu){
  const trigger=menu.element.querySelector('.context-menu__filter-toggle');
  const panel=document.createElement('div');panel.id='tile-filter-panel';panel.className='tile-filter-panel';panel.setAttribute('popover','auto');panel.setAttribute('aria-label','Filter tiles');
- panel.innerHTML='<header><strong>Filter Tiles</strong><button type="button" data-clear>Clear</button></header><section aria-labelledby="tile-filter-grade-heading"><div class="tile-filter-heading"><h3 id="tile-filter-grade-heading">Grade Level</h3><span data-count aria-live="polite"></span></div><p class="tile-filter-hint">Show tiles for any selected grade.</p><div class="tile-filter-grades" role="group" aria-label="Grade Levels"></div></section><div class="tile-filter-coming"><span>Use-Case</span><small>Coming Soon</small></div>';
+ panel.innerHTML='<header><strong>Filter Tiles</strong><button type="button" data-clear>Clear</button><button type="button" data-close aria-label="Close tile filters">×</button></header><section aria-labelledby="tile-filter-grade-heading"><div class="tile-filter-heading"><h3 id="tile-filter-grade-heading">Grade Level</h3><span data-count aria-live="polite"></span></div><p class="tile-filter-hint">Show tiles for any selected grade.</p><div class="tile-filter-grades" role="group" aria-label="Grade Levels"></div></section><div class="tile-filter-coming"><span>Use-Case</span><small>Coming Soon</small></div>';
  const grades=new Set(),gradeButtons=[];
  const group=panel.querySelector('.tile-filter-grades');
  // All Grades is a tile tag, not a grade users need to select.
@@ -27,6 +27,7 @@ if(menu){
  panel.addEventListener('toggle',()=>trigger.setAttribute('aria-expanded',String(panel.matches(':popover-open'))));
  panel.addEventListener('pointerdown',event=>event.stopPropagation());
  panel.addEventListener('keydown',event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();close();trigger.focus();}});
+ panel.querySelector('[data-close]').onclick=()=>{close();trigger.focus();};
  panel.querySelector('[data-clear]').onclick=()=>{grades.clear();update();gradeButtons[0].focus();};
  window.addEventListener('resize',()=>{if(panel.matches(':popover-open'))position();});
  new MutationObserver(()=>{if(!menu.element.classList.contains('is-open'))close();}).observe(menu.element,{attributes:true,attributeFilter:['class']});

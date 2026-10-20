@@ -15,6 +15,7 @@ const paths={
  outdent:'<path d="M4 5h16M11 10h9M11 15h9M4 20h16M8 9l-4 3 4 3"/>',
  undo:'<path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/>',
  redo:'<path d="M20 5v6h-6M20 11l-4-4a7 7 0 1 0-1 12"/>',
+ strikeThrough:'<path d="M17 5c-1-1-3-2-5-2-3 0-5 2-5 4 0 3 4 4 7 5 2 1 3 2 3 4 0 3-3 5-6 5-2 0-4-1-5-2M3 12h18"/>',
  removeFormat:'<path d="M4 5h13M10 5l-3 14M4 19h5m5-5 6 6m0-6-6 6"/>',
  chevron:'<path d="m7 10 5 5 5-5"/>'
 };
@@ -60,19 +61,20 @@ function buildColorPickerContent(colorPicker,mode,{textColor,highlightColor,appl
       const close=document.createElement('button');close.type='button';close.className='richtext-color-picker-close';close.setAttribute('aria-label','Close color picker');close.textContent='×';close.addEventListener('click',closeColorPicker);
       header.append(copy,close);colorPicker.appendChild(header);
 
-      if(mode==='text'){
+      {
+        const currentColor=mode==='text'?textColor:highlightColor;
         const picker=document.createElement('div');picker.className='richtext-spectrum-picker';
-        const area=document.createElement('div');area.className='richtext-spectrum-area';area.setAttribute('role','slider');area.setAttribute('aria-label','Text color saturation and brightness');area.tabIndex=0;
+        const area=document.createElement('div');area.className='richtext-spectrum-area';area.setAttribute('role','slider');area.setAttribute('aria-label',(mode==='text'?'Text':'Highlight')+' color saturation and brightness');area.tabIndex=0;
         const areaKnob=document.createElement('i');areaKnob.className='richtext-spectrum-area-knob';area.appendChild(areaKnob);
-        const hue=document.createElement('div');hue.className='richtext-spectrum-hue';hue.setAttribute('role','slider');hue.setAttribute('aria-label','Text color hue');hue.tabIndex=0;
+        const hue=document.createElement('div');hue.className='richtext-spectrum-hue';hue.setAttribute('role','slider');hue.setAttribute('aria-label',(mode==='text'?'Text':'Highlight')+' color hue');hue.tabIndex=0;
         const hueKnob=document.createElement('i');hueKnob.className='richtext-spectrum-hue-knob';hue.appendChild(hueKnob);
         picker.append(area,hue);
 
-        let state=hexToHsv(textColor);
+        let state=hexToHsv(currentColor);
         const controls=document.createElement('form');controls.className='richtext-spectrum-controls';
         const preview=document.createElement('span');preview.className='richtext-spectrum-preview';preview.setAttribute('aria-hidden','true');
         const fieldWrap=document.createElement('label');fieldWrap.className='richtext-spectrum-hex';fieldWrap.textContent='#';
-        const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.setAttribute('aria-label','Text color hex value');fieldWrap.appendChild(input);
+        const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.setAttribute('aria-label',(mode==='text'?'Text':'Highlight')+' color hex value');fieldWrap.appendChild(input);
         const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';
         controls.append(preview,fieldWrap,apply);
 
@@ -135,39 +137,22 @@ function buildColorPickerContent(colorPicker,mode,{textColor,highlightColor,appl
           if(!/^#[0-9a-f]{6}$/i.test(chosen)){input.classList.add('is-invalid');input.focus();return}
           applyPickerColor(chosen);
         });
-        renderSpectrum();colorPicker.append(picker,controls);
+        renderSpectrum();picker.hidden=true;
+        const expand=document.createElement('button');expand.type='button';expand.className='richtext-spectrum-toggle';expand.textContent='Color picker';expand.setAttribute('aria-expanded','false');expand.onclick=()=>{picker.hidden=!picker.hidden;expand.setAttribute('aria-expanded',String(!picker.hidden));};
 
         const quickLabel=document.createElement('div');quickLabel.className='richtext-color-section-label';quickLabel.textContent='Quick colors';colorPicker.appendChild(quickLabel);
         const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--text';
-        TEXT_COLOR_CHOICES.forEach(value=>{
+        if(mode==='highlight'){const none=document.createElement('button');none.type='button';none.className='richtext-color-choice richtext-color-choice--clear';none.setAttribute('aria-label','No highlight');none.innerHTML='<span aria-hidden="true"></span>';bindPickerChoice(none,'transparent');grid.append(none);}
+        (mode==='text'?TEXT_COLOR_CHOICES:HIGHLIGHT_COLOR_CHOICES).forEach(value=>{
           const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-          button.classList.toggle('is-active',normalizeHexColor(value,value).toLowerCase()===normalizeHexColor(textColor,textColor).toLowerCase());
+          button.classList.toggle('is-active',normalizeHexColor(value,value).toLowerCase()===normalizeHexColor(currentColor,currentColor).toLowerCase());
           const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
         });
-        colorPicker.appendChild(grid);
+        colorPicker.append(grid,controls,expand,picker);
         return;
       }
 
-      const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--highlight';
-      const none=document.createElement('button');none.type='button';none.className='richtext-color-choice richtext-color-choice--clear';none.setAttribute('aria-label','No highlight');none.title='No highlight';none.innerHTML='<span aria-hidden="true"></span>';bindPickerChoice(none,'transparent');grid.appendChild(none);
-      HIGHLIGHT_COLOR_CHOICES.forEach(value=>{
-        const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-        const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
-      });
-      colorPicker.appendChild(grid);
-      const custom=document.createElement('form');custom.className='richtext-color-custom';
-      const preview=document.createElement('span');preview.className='richtext-spectrum-preview';preview.setAttribute('aria-hidden','true');preview.style.background=highlightColor;
-      const label=document.createElement('label');label.textContent='Custom';
-      const fieldWrap=document.createElement('span');fieldWrap.className='richtext-color-hex-wrap';fieldWrap.textContent='#';
-      const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.value=highlightColor.replace('#','').toUpperCase();input.setAttribute('aria-label','Custom highlight hex color');
-      fieldWrap.appendChild(input);label.appendChild(fieldWrap);
-      const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';custom.append(preview,label,apply);
-      custom.addEventListener('submit',event=>{event.preventDefault();const raw=`#${input.value.trim().replace(/^#/,'')}`;if(!/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw)){input.classList.add('is-invalid');input.focus();return}applyPickerColor(raw)});
-      input.addEventListener('input',()=>{
-        input.classList.remove('is-invalid');
-        const raw=`#${input.value.trim().replace(/^#/,'')}`;
-        if(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw))preview.style.background=raw;
-      });colorPicker.appendChild(custom);
+
     }
 function optionPreview(button,kind,value){
  button.classList.add('tt-format-option');button.dataset.previewKind=kind;
