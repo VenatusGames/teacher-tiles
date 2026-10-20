@@ -46,21 +46,21 @@ function setupTallyChart(m){
       const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.disabled=row.count===0;minus.setAttribute('aria-label',`Remove one tally from ${row.label}`);
       const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label',`Add one tally to ${row.label}`);
       const remove=document.createElement('button');remove.type='button';remove.className='tally-chart-remove';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${row.label}`);
-      minus.addEventListener('click',()=>adjust(index,-1));plus.addEventListener('click',()=>adjust(index,1));remove.addEventListener('click',()=>{rows.splice(index,1);renderRows();notifyBoardChanged('tally-remove-category')});
-      color.addEventListener('input',()=>{row.color=color.value;item.style.setProperty('--tally-color',row.color);notifyBoardChanged('tally-color')});
+      minus.addEventListener('click',()=>adjust(index,-1));plus.addEventListener('click',()=>adjust(index,1));remove.addEventListener('click',()=>{rows.splice(index,1);renderRows();(m._presentationChanged||notifyBoardChanged)('tally-remove-category')});
+      color.addEventListener('input',()=>{row.color=color.value;item.style.setProperty('--tally-color',row.color);(m._presentationChanged||notifyBoardChanged)('tally-color')});
       label.addEventListener('input',()=>{row.label=label.value.slice(0,28)});
       actions.append(minus,plus,remove);item.append(category,display,count,actions);list.appendChild(item);
     });
   };
-  const adjust=(index,amount)=>{const row=rows[index];if(!row)return;row.count=Math.max(0,Math.min(999,row.count+amount));renderRows({animate:false});notifyBoardChanged('tally-count')};
+  const adjust=(index,amount)=>{const row=rows[index];if(!row)return;row.count=Math.max(0,Math.min(999,row.count+amount));renderRows({animate:false});(m._presentationChanged||notifyBoardChanged)('tally-count')};
   list.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
-  viewButtons.forEach(button=>button.addEventListener('click',()=>{view=button.dataset.tallyView==='bars'?'bars':'tallies';m.dataset.tallyView=view;viewButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderRows();notifyBoardChanged('tally-view')}));
-  sortButton.addEventListener('click',()=>{sort=sort==='added'?'highest':'added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows();notifyBoardChanged('tally-sort')});
+  viewButtons.forEach(button=>button.addEventListener('click',()=>{view=button.dataset.tallyView==='bars'?'bars':'tallies';m.dataset.tallyView=view;viewButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderRows();(m._presentationChanged||notifyBoardChanged)('tally-view')}));
+  sortButton.addEventListener('click',()=>{sort=sort==='added'?'highest':'added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=sort==='highest'?' Highest First':' Added Order';sortButton.classList.toggle('is-active',sort==='highest');sortButton.setAttribute('aria-pressed',String(sort==='highest'));renderRows();(m._presentationChanged||notifyBoardChanged)('tally-sort')});
   addButton.addEventListener('click',()=>{
-    if(rows.length>=16)return;rows.push({label:`Category ${rows.length+1}`,count:0,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});sort='added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=' Added Order';sortButton.classList.remove('is-active');renderRows();notifyBoardChanged('tally-add-category');
+    if(rows.length>=16)return;rows.push({label:`Category ${rows.length+1}`,count:0,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});sort='added';m.dataset.tallySort=sort;sortButton.lastChild.textContent=' Added Order';sortButton.classList.remove('is-active');renderRows();(m._presentationChanged||notifyBoardChanged)('tally-add-category');
     requestAnimationFrame(()=>{const field=list.lastElementChild?.querySelector('.tally-chart-category input[type="text"]');if(field){enterModuleTextEdit(field);field.select()}});
   });
-  resetButton.addEventListener('click',()=>{rows.forEach(row=>row.count=0);renderRows({animate:false});notifyBoardChanged('tally-reset')});
+  resetButton.addEventListener('click',()=>{rows.forEach(row=>row.count=0);renderRows({animate:false});(m._presentationChanged||notifyBoardChanged)('tally-reset')});
   m.querySelector('.tally-chart-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.tally-chart-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.tally-chart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
