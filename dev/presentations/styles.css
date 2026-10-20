@@ -57,3 +57,9 @@
 #presentations-tool.is-presenting .pres-canvas-area{background:#000;border:0;padding:0}
 #presentations-tool.is-presenting .pres-canvas{border:0;border-radius:0;outline:0;box-shadow:none}
 #presentations-tool.is-presenting :is(.pres-notice,.pres-theme-dialog,.pres-layout-dialog){display:none!important}
+
+@media(max-width:700px){.pres-header{gap:8px;padding-inline:12px}.pres-header .pres-brand strong{display:none}.pres-header [data-action=import-presentation]{font-size:11px}}
+
+.pres-color-popup{margin:0;inset:auto;position:fixed}.pres-color-popup:not(:popover-open){display:none!important}#presentations-tool .pres-color-popup .richtext-color-choice{padding:3px;min-width:0;height:30px;width:30px}#presentations-tool .pres-color-popup .richtext-color-picker-close{width:28px;height:28px;padding:0}#presentations-tool .pres-color-popup input{min-width:0;width:100%;padding:5px}#presentations-tool .pres-color-popup .richtext-spectrum-controls button,#presentations-tool .pres-color-popup .richtext-color-custom button{padding:6px 10px;font-size:12px}.pres-color-popup .richtext-color-hex-wrap{min-width:0}
+
+#presentations-tool:has(.pres-editor:not([hidden])) .pres-header [data-action="import-presentation"]{display:none}

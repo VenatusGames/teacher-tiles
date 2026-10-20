@@ -1,4 +1,4 @@
-import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261013-star';
+import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261020-product-polish';
 import {createAccountTools} from './user-account-tools.js?v=20261011-account-tools';
 export function createUserDetails(call,onDeleted) {
   const dialog=document.createElement('dialog');dialog.className='user-details';dialog.setAttribute('aria-labelledby','user-detail-title');
