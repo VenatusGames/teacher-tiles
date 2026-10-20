@@ -29,3 +29,6 @@ body.theme-flowers-lilac .workspace{background:#e8dff3 url("flowers-lilac.svg?v=
 body.theme-flowers-buttercream{--bg:#f5edcf;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#f5edcf;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#f5edcf}
 body.theme-flowers-buttercream .workspace{background:#f5edcf url("flowers-buttercream.svg?v=20261020-petals") center/300px 320px repeat}
 .theme-card--flowers-buttercream,.theme-pack__sheet--flowers-buttercream,.shop-product__preview--flowers i:nth-child(5){background:#f5edcf url("flowers-buttercream.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+/* Miniature repeating artwork in previews, independent of the full board scale. */
+[class*="theme-card--flowers-"],.shop-product__preview--flowers i{background-size:60px 64px;background-repeat:repeat}
+[class*="theme-pack__sheet--flowers-"],.theme-picker [class*="theme-card--flowers-"].theme-pack-sample{background-size:30px 32px;background-repeat:repeat}
