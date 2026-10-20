@@ -138,7 +138,7 @@ function buildColorPickerContent(colorPicker,mode,{textColor,highlightColor,appl
           applyPickerColor(chosen);
         });
         renderSpectrum();picker.hidden=true;
-        const expand=document.createElement('button');expand.type='button';expand.className='richtext-spectrum-toggle';expand.textContent='Color picker';expand.setAttribute('aria-expanded','false');expand.onclick=()=>{picker.hidden=!picker.hidden;expand.setAttribute('aria-expanded',String(!picker.hidden));};
+        const expand=document.createElement('button');expand.type='button';expand.className='richtext-spectrum-toggle';expand.innerHTML='<span>Color Picker</span>'+icon('chevron');expand.setAttribute('aria-expanded','false');expand.onclick=()=>{picker.hidden=!picker.hidden;expand.setAttribute('aria-expanded',String(!picker.hidden));};
 
         const quickLabel=document.createElement('div');quickLabel.className='richtext-color-section-label';quickLabel.textContent='Quick colors';colorPicker.appendChild(quickLabel);
         const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--text';
@@ -148,7 +148,7 @@ function buildColorPickerContent(colorPicker,mode,{textColor,highlightColor,appl
           button.classList.toggle('is-active',normalizeHexColor(value,value).toLowerCase()===normalizeHexColor(currentColor,currentColor).toLowerCase());
           const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
         });
-        colorPicker.append(grid,controls,expand,picker);
+        const shelf=document.createElement('div');shelf.className='richtext-spectrum-shelf';shelf.append(expand,picker);colorPicker.append(grid,controls,shelf);
         return;
       }
 

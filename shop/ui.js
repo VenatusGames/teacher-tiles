@@ -56,7 +56,7 @@ function setupTeacherTilesShop(){
   }
   const dealsButton=document.createElement('button');dealsButton.type='button';dealsButton.className='shop-deals-trigger';dealsButton.dataset.shopOpenPage='sales-bundles';dealsButton.textContent='Sales & Bundles';dealsButton.hidden=true;navigation.insertBefore(dealsButton,redeemTrigger);
   const dealsPage=document.createElement('section');dealsPage.className='shop-page';dealsPage.dataset.shopPage='sales-bundles';dealsPage.hidden=true;
-  dealsPage.innerHTML='<div class="shop-page-heading"><button type="button" class="shop-back" data-shop-open-page="home" aria-label="Back to Shop Home">←</button><h2>Sales &amp; Bundles</h2></div><div data-deals-mount></div><p data-deals-empty hidden>No sales or bundles are available right now.</p>';
+  dealsPage.innerHTML='<div class="shop-page-heading"><button type="button" class="shop-back" data-shop-open-page="home" aria-label="Back to Shop Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><h2>Sales &amp; Bundles</h2></div><div data-deals-mount></div><p data-deals-empty hidden>No sales or bundles are available right now.</p>';
   modal.querySelector('.shop-content').append(dealsPage);
   const pages=[...modal.querySelectorAll('[data-shop-page]')];
   const pageButtons=[...modal.querySelectorAll('[data-shop-open-page]')];

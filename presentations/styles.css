@@ -71,3 +71,15 @@
 .pres-background-menu .pres-slide{width:100%;aspect-ratio:16/9;border-radius:4px;overflow:hidden}
 .pres-theme-background>select[hidden]{display:none!important}
 .pres-rich :is(s,strike){text-decoration-line:line-through}
+
+.pres-header>[data-action=import-presentation] svg{width:18px;height:18px;flex:none}
+.pres-header>[data-action=close],.pres-header>[data-action=import-presentation],.pres-header>[data-action=save]{flex:none}
+/* One limit treatment for presentations and planners. */
+.pres-limit{font:400 14px/1.4 Inter,system-ui,sans-serif}
+.pres-limit>strong{font:700 13px/1.4 Inter,system-ui,sans-serif;color:#526176}
+.pres-limit>.pres-plan{font:700 10px/1.4 Inter,system-ui,sans-serif;letter-spacing:.5px;border:1px solid #dce4ee;border-radius:999px;padding:7px 10px;display:inline-flex;align-items:center;gap:6px;background:#fff;color:#263249;box-shadow:none}
+.pres-limit>.pres-plan.is-subscriber{color:#91712d;border-color:#e6d5ad;background:#fff9e9}
+.pres-limit>.pres-upgrade{font:400 11px/1.4 Inter,system-ui,sans-serif;color:#91712d}
+.pres-limit>.pres-upgrade[hidden]{display:none}
+.planner-library-entitlement{justify-content:flex-end;text-align:right;max-width:460px}
+.planner-library-entitlement>.pres-upgrade{justify-content:flex-end;width:100%}

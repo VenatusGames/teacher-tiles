@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261020-product-polish" />
+  <link rel="stylesheet" href="styles.css?v=20261020-wide-settings" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -73,7 +73,7 @@
   <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261020-product-polish">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261020-controls-followup">
   <link rel="stylesheet" href="profile/tools.css?v=20261010-rounded-panels">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
@@ -119,10 +119,10 @@
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
 <link rel="stylesheet" href="shop/tile-effects.css?v=20261017-playback-effects">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
-<link rel="stylesheet" href="presentations/styles.css?v=20261020-ui-fixes">
+<link rel="stylesheet" href="presentations/styles.css?v=20261020-controls-followup">
 <link rel="stylesheet" href="tiles/presentations/styles.css?v=20261017-badge-shimmer">
 <link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261020-ui-fixes">
-<link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-ui-fixes">
+<link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-controls-followup">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -311,7 +311,7 @@
               <div id="profile-notification-list" class="profile-notification-list"></div>
             </section>
           </div>
-          <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile">×</button>
+          <button class="profile-panel__close" type="button" data-profile-close aria-label="Close profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
         </div>
       </header>
 
@@ -390,8 +390,7 @@
                   <div><h2 id="lesson-planner-library-title">Your Planners</h2></div>
                 </div>
                 <div class="planner-library-header__actions">
-                  <span id="lesson-planner-library-limit" class="planner-library-limit" aria-live="polite"></span>
-                  <span id="lesson-planner-library-plan" class="planner-library-plan-badge"></span>
+                  <div class="pres-limit planner-library-entitlement"><strong id="lesson-planner-library-limit" aria-live="polite"></strong><span id="lesson-planner-library-plan" class="pres-plan"></span><span id="lesson-planner-library-upgrade" class="pres-upgrade"></span></div>
                   <button id="lesson-planner-create" class="planner-library-create" type="button" aria-label="Create a new planner" title="Create planner"><span aria-hidden="true">+</span></button>
                   <button id="lesson-planner-library-close" class="planner-library-close" type="button" aria-label="Close Lesson Planner">×</button>
                 </div>
@@ -402,7 +401,7 @@
                   <button id="lesson-planner-library-templates" class="planner-library-shortcut" type="button">Templates</button>
                 </div>
                 <section class="planner-library-intro">
-                  <div><span>PLANNER LIBRARY</span><h3>Choose a Planner</h3><p>Keep separate lesson plans for different classes, subjects, or school years.</p></div>
+                  <div><span>PLANNER LIBRARY</span><h3>Choose a Planner</h3></div>
                 </section>
                 <div id="lesson-planner-library-grid" class="planner-library-grid" aria-live="polite"></div>
               </main>
@@ -415,8 +414,8 @@
                   <div><h2 id="lesson-planner-title">Lesson Planner</h2></div>
                 </div>
                 <div class="lesson-planner-header__actions">
-                  <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-12 5h2m4 0h2m-8 3h2"/></svg><span>Scheduling</span></button>
-                  <button id="lesson-planner-templates-button" type="button" aria-label="Templates" title="Templates"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="14" height="17" rx="3"/><path d="M4 7H3v13a2 2 0 0 0 2 2h11M11 8h6m-6 4h6m-6 4h3"/></svg><span>Templates</span></button>
+                  <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><span>Scheduling</span></button>
+                  <button id="lesson-planner-templates-button" type="button" aria-label="Templates" title="Templates"><span>Templates</span></button>
                   <div class="lesson-planner-settings-wrap">
                     <button id="lesson-planner-settings-button" class="lesson-planner-settings-button" type="button" aria-label="Planner settings" title="Planner settings" aria-expanded="false" aria-controls="lesson-planner-settings-menu">
                       <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/><circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/></svg>
@@ -776,7 +775,7 @@
             <strong id="settings-title">Settings</strong>
           </div>
         </div>
-        <button class="settings-panel__close" type="button" data-settings-close aria-label="Close settings">×</button>
+        <button class="settings-panel__close" type="button" data-settings-close aria-label="Close settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       </header>
 
       <div class="settings-panel__layout">
@@ -1618,7 +1617,7 @@
 
         <section class="shop-page" data-shop-page="themes" hidden>
           <div class="shop-page-heading">
-            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
             <div><span>THEME COLLECTIONS</span><h2>Themes</h2><p>Transform the entire look of your TeacherTiles board.</p></div>
           </div>
           <div class="shop-product-grid">
@@ -1659,7 +1658,7 @@
 
         <section class="shop-page" data-shop-page="stickers" hidden>
           <div class="shop-page-heading">
-            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
             <div><span>STICKER COLLECTIONS</span><h2>Sticker Packs</h2><p>Drag them out of your shelf and stick them anywhere.</p></div>
           </div>
           <div class="shop-product-grid shop-product-grid--stickers">
@@ -1699,7 +1698,7 @@
 
         <section class="shop-page" data-shop-page="tile-skins" hidden>
           <div class="shop-page-heading">
-            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
             <div><span>TILE SKIN COLLECTION</span><h2>Tile Skins</h2><p>Give individual tiles a completely different silhouette and style.</p></div>
           </div>
           <div class="shop-browser-toolbar shop-browser-toolbar--products shop-browser-toolbar--tile-skins" data-shop-browser="tile-skins">
@@ -1802,7 +1801,7 @@
 
         <section class="shop-page" data-shop-page="cursors" hidden>
           <div class="shop-page-heading">
-            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button>
+            <button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
             <div><span>CURSOR COLLECTION</span><h2>Cursors</h2><p>Give your mouse pointer a color that matches your board.</p></div>
           </div>
           <div class="shop-product-grid shop-product-grid--cursors">
@@ -1825,7 +1824,7 @@
 
       <aside id="shop-coin-menu" class="shop-coin-menu" hidden aria-hidden="true" aria-label="Purchase coins">
         <div class="shop-coin-menu__head">
-          <button id="shop-coin-menu-close" class="shop-back" type="button" aria-label="Close coin purchasing menu">←</button>
+          <button id="shop-coin-menu-close" class="shop-back" type="button" aria-label="Close coin purchasing menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
           <div><span>COIN STORE</span><h2>Get TeacherTiles Coins</h2><p>Choose a pack and finish your purchase securely with Stripe.</p></div>
         </div>
         <div class="shop-coin-packs">
@@ -4528,7 +4527,7 @@
 <script src="tiles/shared/instrument.js?v=20260912-music-timer-polish-1"></script>
 <script src="tiles/piano/index.js?v=20260912-tile-refinements-2"></script>
 <script src="tiles/music-score/index.js?v=20261005-clef"></script>
-<script src="tiles/shared/formatting-toolbar.js?v=20261020-ui-fixes"></script>
+<script src="tiles/shared/formatting-toolbar.js?v=20261020-controls-followup"></script>
 <script src="tiles/rich-text/index.js?v=20261020-product-polish"></script>
 <script src="tiles/fly-swat/index.js?v=20261012-teams"></script>
 <script src="tiles/shared/sticker-picker.js?v=20261001-collections"></script>
@@ -4664,16 +4663,16 @@
 <script src="presentations/themes.js?v=20261017-layout-backgrounds"></script>
 <script src="shop/tile-effects-catalog.js?v=20261017-effects"></script>
 <script src="shop/tile-effects.js?v=20261020-product-polish"></script>
-<script src="shop/extras.js?v=20261017-grade-shortcuts"></script>
+<script src="shop/extras.js?v=20261020-controls-followup"></script>
 <script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
-<script src="shop/ui.js?v=20261020-product-polish"></script>
+<script src="shop/ui.js?v=20261020-controls-followup"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
 <script src="app.js?v=20261017-playback-filter"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261020-ui-fixes"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261017-playback-filter"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
-  <script src="tiles/lesson-planner.js?v=20261020-product-polish"></script>
+  <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
 <script type="module" src="firebase-auth.js?v=20261020-product-polish"></script>
 <script type="module" src="profile/patches.js?v=20261020-product-polish"></script>
@@ -6036,7 +6035,7 @@
   </template>
 
 <script src="tiles/shared/history.js?v=20260921-controls-3"></script>
-<script src="presentations/index.js?v=20261020-ui-fixes"></script>
+<script src="presentations/index.js?v=20261020-controls-followup"></script>
 <script src="tiles/presentations/index.js?v=20261020-editor-controls"></script>
 <script src="support/help-navigation.js?v=20261020-ui-fixes"></script>
 </body>
