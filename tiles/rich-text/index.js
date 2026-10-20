@@ -200,6 +200,8 @@
   function setup(m){
     const editor=m.querySelector('.richtext-editor');
     const toolbar=m.querySelector('.richtext-toolbar');
+    window.TeacherTilesFormattingToolbar.enhance(toolbar);
+    const clearHighlight=document.createElement('button');clearHighlight.type='button';clearHighlight.className='tt-format-button';clearHighlight.dataset.richCommand='clearHighlight';clearHighlight.setAttribute('aria-label','Remove highlight');clearHighlight.title='Remove highlight';clearHighlight.innerHTML=window.TeacherTilesFormattingToolbar.icon('clearHighlight');toolbar.querySelector('.richtext-highlight').after(clearHighlight);
     const blockSelect=m.querySelector('.richtext-block');
     const fontSelect=m.querySelector('.richtext-font');
     const sizeSelect=m.querySelector('.richtext-size');
@@ -282,12 +284,13 @@
       const trigger=document.createElement('button');
       trigger.type='button';
       trigger.className=`richtext-select-trigger richtext-select-trigger--${kind}`;
+      trigger.setAttribute('aria-label',select.getAttribute('aria-label'));
       trigger.setAttribute('aria-haspopup','listbox');
       trigger.setAttribute('aria-expanded','false');
       trigger.dataset.preserveTextEdit='true';
       const label=document.createElement('span');
       label.className='richtext-select-trigger-label';
-      const chevron=document.createElement('svg');
+      const chevron=document.createElementNS('http://www.w3.org/2000/svg','svg');
       chevron.setAttribute('viewBox','0 0 12 8');
       chevron.setAttribute('aria-hidden','true');
       chevron.innerHTML='<path d="M1.5 1.5 6 6l4.5-4.5"/>';
@@ -306,6 +309,7 @@
         choice.dataset.richSelectValue=option.value;
         choice.setAttribute('role','option');
         choice.textContent=option.textContent;
+        window.TeacherTilesFormattingToolbar.optionPreview(choice,kind,option.value);
         choice.addEventListener('pointerdown',event=>{
           rememberSelection();
           event.preventDefault();
@@ -895,6 +899,7 @@
     toolbar.addEventListener('click',event=>{
       const button=event.target.closest('[data-rich-command]');if(!button)return;
       const command=button.dataset.richCommand;
+      if(command==='clearHighlight'){runHighlight('transparent');return}
       if(command==='removeFormat'){runCommand('removeFormat');return}
       if(command==='undo'||command==='redo'){runCommand(command);return}
       runCommand(command);
