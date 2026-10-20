@@ -32,3 +32,10 @@ body.theme-flowers-buttercream .workspace{background:#f5edcf url("flowers-butter
 /* Miniature repeating artwork in previews, independent of the full board scale. */
 [class*="theme-card--flowers-"],.shop-product__preview--flowers i{background-size:60px 64px;background-repeat:repeat}
 [class*="theme-pack__sheet--flowers-"],.theme-picker [class*="theme-card--flowers-"].theme-pack-sample{background-size:30px 32px;background-repeat:repeat}
+
+/* Flowers have no board grid; match that in every drawer preview. */
+[class*="theme-card--flowers-"] .theme-card__preview::before{content:none}
+.shop-product__preview--flowers i:nth-child(n){background-size:60px 64px;background-repeat:repeat}
+.shop-product__preview--deep i:nth-child(1){transform:translateX(-48px) rotate(-12deg)}
+.shop-product__preview--deep i:nth-child(2){transform:translateX(0) rotate(0)}
+.shop-product__preview--deep i:nth-child(3){transform:translateX(48px) rotate(12deg)}
