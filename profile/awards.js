@@ -1,5 +1,5 @@
-import {manualPatchOptions} from './patch-catalog.js?v=20261020-product-polish';
-import {ensurePlannedPatches} from './patches.js?v=20261020-product-polish';
+import {manualPatchOptions} from './patch-catalog.js?v=20261020-beloved';
+import {ensurePlannedPatches} from './patches.js?v=20261020-beloved';
 export function syncAwardedPatches(user,awards={}) {
   ensurePlannedPatches();
   const created=Date.parse(user?.metadata?.creationTime||'');
