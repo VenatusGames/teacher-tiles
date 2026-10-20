@@ -18,7 +18,7 @@ function launchConfetti(m){window.TeacherTilesTileEffects.launch(m.querySelector
 
 function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
 
-function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
+function timerSyncPeers(m){if(m.dataset.presentationEmbedded==='true')return [m];return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
 
 function celebrateTimerFinish(m){
   if(!m.isConnected)return;

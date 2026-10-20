@@ -348,6 +348,7 @@ function fitTileDisplaySize(m,width,height){
 }
 
 function moduleViewportScale(m){
+  if(m?._presentationViewportScale)return m._presentationViewportScale();
   if(!m)return Math.max(.05,boardCamera.scale||1);
   if(document.fullscreenElement===m)return 1;
   if(isTilePinned(m))return tileUniformScale(m);
