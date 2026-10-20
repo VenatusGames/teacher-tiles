@@ -1,4 +1,4 @@
-import {newPatches} from './patch-catalog.js?v=20261020-beloved';
+import {newPatches} from './patch-catalog.js?v=20261020-beloved-registry';
 const grid = document.querySelector('.profile-badge-grid');
 const tabs = document.querySelector('.profile-patch-tabs');
 
