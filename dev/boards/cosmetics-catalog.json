@@ -72,7 +72,10 @@
     "cardboard": "theme-cardboard",
     "metal": "theme-metal",
     "cosmos": "theme-cosmos",
-    "corkboard": "theme-corkboard"
+    "corkboard": "theme-corkboard",
+    "deep": "theme-deep",
+    "pastels2": "theme-pastels2",
+    "flowers": "theme-flowers"
   },
   "stickers": {
     "1": [
@@ -165,283 +168,283 @@
     "assets/stickers/default/apple.png": [
       ""
     ],
-    "😀": [
+    "\ud83d\ude00": [
       "sticker-emoji"
     ],
-    "😂": [
+    "\ud83d\ude02": [
       "sticker-emoji"
     ],
-    "😍": [
+    "\ud83d\ude0d": [
       "sticker-emoji"
     ],
-    "😎": [
+    "\ud83d\ude0e": [
       "sticker-emoji"
     ],
-    "👍": [
+    "\ud83d\udc4d": [
       "sticker-emoji"
     ],
-    "❤️": [
+    "\u2764\ufe0f": [
       "sticker-emoji",
       "sticker-colored-hearts"
     ],
-    "🎉": [
+    "\ud83c\udf89": [
       "sticker-emoji"
     ],
-    "⭐": [
+    "\u2b50": [
       "sticker-emoji"
     ],
-    "🌸": [
+    "\ud83c\udf38": [
       "sticker-nature-emojis"
     ],
-    "🌻": [
+    "\ud83c\udf3b": [
       "sticker-nature-emojis"
     ],
-    "🌈": [
+    "\ud83c\udf08": [
       "sticker-nature-emojis"
     ],
-    "☀️": [
+    "\u2600\ufe0f": [
       "sticker-nature-emojis",
       "sticker-weather-emojis"
     ],
-    "🌙": [
+    "\ud83c\udf19": [
       "sticker-nature-emojis"
     ],
-    "☁️": [
+    "\u2601\ufe0f": [
       "sticker-nature-emojis",
       "sticker-weather-emojis"
     ],
-    "🌿": [
+    "\ud83c\udf3f": [
       "sticker-nature-emojis"
     ],
-    "🍂": [
+    "\ud83c\udf42": [
       "sticker-nature-emojis"
     ],
-    "🌤️": [
+    "\ud83c\udf24\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "⛅": [
+    "\u26c5": [
       "sticker-weather-emojis"
     ],
-    "🌥️": [
+    "\ud83c\udf25\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🌦️": [
+    "\ud83c\udf26\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🌧️": [
+    "\ud83c\udf27\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "⛈️": [
+    "\u26c8\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🌩️": [
+    "\ud83c\udf29\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🌨️": [
+    "\ud83c\udf28\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "❄️": [
+    "\u2744\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🌫️": [
+    "\ud83c\udf2b\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "💨": [
+    "\ud83d\udca8": [
       "sticker-weather-emojis"
     ],
-    "🌪️": [
+    "\ud83c\udf2a\ufe0f": [
       "sticker-weather-emojis"
     ],
-    "🐶": [
+    "\ud83d\udc36": [
       "sticker-animal-emojis"
     ],
-    "🐱": [
+    "\ud83d\udc31": [
       "sticker-animal-emojis"
     ],
-    "🐼": [
+    "\ud83d\udc3c": [
       "sticker-animal-emojis"
     ],
-    "🦊": [
+    "\ud83e\udd8a": [
       "sticker-animal-emojis"
     ],
-    "🐸": [
+    "\ud83d\udc38": [
       "sticker-animal-emojis"
     ],
-    "🐵": [
+    "\ud83d\udc35": [
       "sticker-animal-emojis"
     ],
-    "🦋": [
+    "\ud83e\udd8b": [
       "sticker-animal-emojis"
     ],
-    "🐝": [
+    "\ud83d\udc1d": [
       "sticker-animal-emojis"
     ],
-    "🥳": [
+    "\ud83e\udd73": [
       "sticker-more-faces"
     ],
-    "🤩": [
+    "\ud83e\udd29": [
       "sticker-more-faces"
     ],
-    "🤔": [
+    "\ud83e\udd14": [
       "sticker-more-faces"
     ],
-    "😭": [
+    "\ud83d\ude2d": [
       "sticker-more-faces"
     ],
-    "😡": [
+    "\ud83d\ude21": [
       "sticker-more-faces"
     ],
-    "😴": [
+    "\ud83d\ude34": [
       "sticker-more-faces"
     ],
-    "🤓": [
+    "\ud83e\udd13": [
       "sticker-more-faces"
     ],
-    "🤪": [
+    "\ud83e\udd2a": [
       "sticker-more-faces"
     ],
-    "😄": [
+    "\ud83d\ude04": [
       "sticker-faces-happy"
     ],
-    "😁": [
+    "\ud83d\ude01": [
       "sticker-faces-happy"
     ],
-    "😊": [
+    "\ud83d\ude0a": [
       "sticker-faces-happy"
     ],
-    "🙂": [
+    "\ud83d\ude42": [
       "sticker-faces-happy"
     ],
-    "😇": [
+    "\ud83d\ude07": [
       "sticker-faces-happy"
     ],
-    "😌": [
+    "\ud83d\ude0c": [
       "sticker-faces-happy"
     ],
-    "☺️": [
+    "\u263a\ufe0f": [
       "sticker-faces-happy"
     ],
-    "🥰": [
+    "\ud83e\udd70": [
       "sticker-faces-happy"
     ],
-    "😛": [
+    "\ud83d\ude1b": [
       "sticker-faces-silly"
     ],
-    "😜": [
+    "\ud83d\ude1c": [
       "sticker-faces-silly"
     ],
-    "😝": [
+    "\ud83d\ude1d": [
       "sticker-faces-silly"
     ],
-    "🤭": [
+    "\ud83e\udd2d": [
       "sticker-faces-silly"
     ],
-    "🤫": [
+    "\ud83e\udd2b": [
       "sticker-faces-silly"
     ],
-    "🤗": [
+    "\ud83e\udd17": [
       "sticker-faces-silly"
     ],
-    "🫠": [
+    "\ud83e\udee0": [
       "sticker-faces-silly"
     ],
-    "🙃": [
+    "\ud83d\ude43": [
       "sticker-faces-silly"
     ],
-    "😟": [
+    "\ud83d\ude1f": [
       "sticker-faces-worried"
     ],
-    "😕": [
+    "\ud83d\ude15": [
       "sticker-faces-worried"
     ],
-    "🙁": [
+    "\ud83d\ude41": [
       "sticker-faces-worried"
     ],
-    "☹️": [
+    "\u2639\ufe0f": [
       "sticker-faces-worried"
     ],
-    "😣": [
+    "\ud83d\ude23": [
       "sticker-faces-worried"
     ],
-    "😖": [
+    "\ud83d\ude16": [
       "sticker-faces-worried"
     ],
-    "😫": [
+    "\ud83d\ude2b": [
       "sticker-faces-worried"
     ],
-    "😩": [
+    "\ud83d\ude29": [
       "sticker-faces-worried"
     ],
-    "😮": [
+    "\ud83d\ude2e": [
       "sticker-faces-big-reactions"
     ],
-    "😯": [
+    "\ud83d\ude2f": [
       "sticker-faces-big-reactions"
     ],
-    "😲": [
+    "\ud83d\ude32": [
       "sticker-faces-big-reactions"
     ],
-    "😳": [
+    "\ud83d\ude33": [
       "sticker-faces-big-reactions"
     ],
-    "🥺": [
+    "\ud83e\udd7a": [
       "sticker-faces-big-reactions"
     ],
-    "😱": [
+    "\ud83d\ude31": [
       "sticker-faces-big-reactions"
     ],
-    "🤯": [
+    "\ud83e\udd2f": [
       "sticker-faces-big-reactions"
     ],
-    "🥶": [
+    "\ud83e\udd76": [
       "sticker-faces-big-reactions"
     ],
-    "❗": [
+    "\u2757": [
       "sticker-symbols"
     ],
-    "❓": [
+    "\u2753": [
       "sticker-symbols"
     ],
-    "✅": [
+    "\u2705": [
       "sticker-symbols"
     ],
-    "❌": [
+    "\u274c": [
       "sticker-symbols"
     ],
-    "💯": [
+    "\ud83d\udcaf": [
       "sticker-symbols"
     ],
-    "⚠️": [
+    "\u26a0\ufe0f": [
       "sticker-symbols"
     ],
-    "➕": [
+    "\u2795": [
       "sticker-symbols"
     ],
-    "➖": [
+    "\u2796": [
       "sticker-symbols"
     ],
-    "🍎": [
+    "\ud83c\udf4e": [
       "sticker-food"
     ],
-    "🍕": [
+    "\ud83c\udf55": [
       "sticker-food"
     ],
-    "🍔": [
+    "\ud83c\udf54": [
       "sticker-food"
     ],
-    "🍟": [
+    "\ud83c\udf5f": [
       "sticker-food"
     ],
-    "🍓": [
+    "\ud83c\udf53": [
       "sticker-food"
     ],
-    "🍩": [
+    "\ud83c\udf69": [
       "sticker-food"
     ],
-    "🍪": [
+    "\ud83c\udf6a": [
       "sticker-food"
     ],
-    "🧁": [
+    "\ud83e\uddc1": [
       "sticker-food"
     ],
     "assets/stickers/jack-o-lanterns/pumpkin-01.webp": [
@@ -480,100 +483,100 @@
     "assets/stickers/jack-o-lanterns/pumpkin-12.webp": [
       "sticker-jack-o-lanterns"
     ],
-    "🍏": [
+    "\ud83c\udf4f": [
       "sticker-food-fruit"
     ],
-    "🍐": [
+    "\ud83c\udf50": [
       "sticker-food-fruit"
     ],
-    "🍊": [
+    "\ud83c\udf4a": [
       "sticker-food-fruit"
     ],
-    "🍋": [
+    "\ud83c\udf4b": [
       "sticker-food-fruit"
     ],
-    "🍌": [
+    "\ud83c\udf4c": [
       "sticker-food-fruit"
     ],
-    "🍉": [
+    "\ud83c\udf49": [
       "sticker-food-fruit"
     ],
-    "🍇": [
+    "\ud83c\udf47": [
       "sticker-food-fruit"
     ],
-    "🫐": [
+    "\ud83e\uded0": [
       "sticker-food-fruit"
     ],
-    "🥕": [
+    "\ud83e\udd55": [
       "sticker-food-vegetables"
     ],
-    "🌽": [
+    "\ud83c\udf3d": [
       "sticker-food-vegetables"
     ],
-    "🥦": [
+    "\ud83e\udd66": [
       "sticker-food-vegetables"
     ],
-    "🥒": [
+    "\ud83e\udd52": [
       "sticker-food-vegetables"
     ],
-    "🫑": [
+    "\ud83e\uded1": [
       "sticker-food-vegetables"
     ],
-    "🍅": [
+    "\ud83c\udf45": [
       "sticker-food-vegetables"
     ],
-    "🍆": [
+    "\ud83c\udf46": [
       "sticker-food-vegetables"
     ],
-    "🥔": [
+    "\ud83e\udd54": [
       "sticker-food-vegetables"
     ],
-    "🌭": [
+    "\ud83c\udf2d": [
       "sticker-food-meals"
     ],
-    "🌮": [
+    "\ud83c\udf2e": [
       "sticker-food-meals"
     ],
-    "🌯": [
+    "\ud83c\udf2f": [
       "sticker-food-meals"
     ],
-    "🥪": [
+    "\ud83e\udd6a": [
       "sticker-food-meals"
     ],
-    "🍝": [
+    "\ud83c\udf5d": [
       "sticker-food-meals"
     ],
-    "🍜": [
+    "\ud83c\udf5c": [
       "sticker-food-meals"
     ],
-    "🍣": [
+    "\ud83c\udf63": [
       "sticker-food-meals"
     ],
-    "🍱": [
+    "\ud83c\udf71": [
       "sticker-food-meals"
     ],
-    "🍦": [
+    "\ud83c\udf66": [
       "sticker-food-sweet-treats"
     ],
-    "🍧": [
+    "\ud83c\udf67": [
       "sticker-food-sweet-treats"
     ],
-    "🍨": [
+    "\ud83c\udf68": [
       "sticker-food-sweet-treats"
     ],
-    "🍰": [
+    "\ud83c\udf70": [
       "sticker-food-sweet-treats"
     ],
-    "🎂": [
+    "\ud83c\udf82": [
       "sticker-food-sweet-treats"
     ],
-    "🍫": [
+    "\ud83c\udf6b": [
       "sticker-food-sweet-treats"
     ],
-    "🍬": [
+    "\ud83c\udf6c": [
       "sticker-food-sweet-treats"
     ],
-    "🍭": [
+    "\ud83c\udf6d": [
       "sticker-food-sweet-treats"
     ],
     "a": [
@@ -756,67 +759,67 @@
     "assets/stickers/quiet-critters/sway-lavender.png": [
       "sticker-quiet-critters"
     ],
-    "🧡": [
+    "\ud83e\udde1": [
       "sticker-colored-hearts"
     ],
-    "💛": [
+    "\ud83d\udc9b": [
       "sticker-colored-hearts"
     ],
-    "💚": [
+    "\ud83d\udc9a": [
       "sticker-colored-hearts"
     ],
-    "💙": [
+    "\ud83d\udc99": [
       "sticker-colored-hearts"
     ],
-    "💜": [
+    "\ud83d\udc9c": [
       "sticker-colored-hearts"
     ],
-    "🤎": [
+    "\ud83e\udd0e": [
       "sticker-colored-hearts"
     ],
-    "🖤": [
+    "\ud83d\udda4": [
       "sticker-colored-hearts"
     ],
-    "🤍": [
+    "\ud83e\udd0d": [
       "sticker-colored-hearts"
     ],
-    "🩷": [
+    "\ud83e\ude77": [
       "sticker-colored-hearts"
     ],
-    "🩵": [
+    "\ud83e\ude75": [
       "sticker-colored-hearts"
     ],
-    "🩶": [
+    "\ud83e\ude76": [
       "sticker-colored-hearts"
     ],
-    "💖": [
+    "\ud83d\udc96": [
       "sticker-decorative-hearts"
     ],
-    "💗": [
+    "\ud83d\udc97": [
       "sticker-decorative-hearts"
     ],
-    "💓": [
+    "\ud83d\udc93": [
       "sticker-decorative-hearts"
     ],
-    "💕": [
+    "\ud83d\udc95": [
       "sticker-decorative-hearts"
     ],
-    "💞": [
+    "\ud83d\udc9e": [
       "sticker-decorative-hearts"
     ],
-    "💝": [
+    "\ud83d\udc9d": [
       "sticker-decorative-hearts"
     ],
-    "💘": [
+    "\ud83d\udc98": [
       "sticker-decorative-hearts"
     ],
-    "💟": [
+    "\ud83d\udc9f": [
       "sticker-decorative-hearts"
     ],
-    "❤️‍🔥": [
+    "\u2764\ufe0f\u200d\ud83d\udd25": [
       "sticker-decorative-hearts"
     ],
-    "❤️‍🩹": [
+    "\u2764\ufe0f\u200d\ud83e\ude79": [
       "sticker-decorative-hearts"
     ],
     "https://flagcdn.io/flags/4x3/ad.svg": [
