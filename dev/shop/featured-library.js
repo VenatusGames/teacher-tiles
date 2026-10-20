@@ -77,7 +77,7 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
       if(signature===catalogSignature){sync();schedule();return;}catalogSignature=signature;
       // Interleave categories so smaller collections get seen alongside large catalogs.
       const groups=categories.slice(1).map(([category])=>{
-        const list=sources.filter(source=>source.closest('[data-shop-page]').dataset.shopPage===category&&!owned.has(source.dataset.shopProduct));
+        const list=sources.filter(source=>(source.closest('[data-shop-page]').dataset.shopPage===category||category==='presentation-themes'&&source.closest('[data-shop-page]').dataset.shopPage==='presentation-transitions')&&!owned.has(source.dataset.shopProduct));
         for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}return list;
       });
       catalog=[];for(let row=0;groups.some(list=>row<list.length);row++)for(const list of groups)if(list[row])catalog.push(list[row]);

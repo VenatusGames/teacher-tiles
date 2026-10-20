@@ -27,3 +27,12 @@
 #presentations-tool .pres-object-tools>[data-format=insertUnorderedList],#presentations-tool .pres-object-tools>[data-format=undo]{margin-left:8px;border-left-color:#d6dee8}
 #presentations-tool .pres-resize:is(:hover,:active){transform:translate(-50%,-50%);box-shadow:none}
 #presentations-tool .pres-resize{transition:background .15s,border-color .15s}
+
+/* Keep font search outside the scrolling option list. */
+.tt-format-menu[data-menu-kind=font]:popover-open{display:flex;flex-direction:column;overflow:hidden}
+.tt-format-menu[data-menu-kind=font]>[role=listbox]{min-height:0;overflow:auto;scrollbar-width:thin}
+#presentations-tool .tt-format-menu input[type=search]{position:relative;flex:none;z-index:1}
+.richtext-spectrum-picker[hidden]{display:none!important}
+.richtext-spectrum-toggle{align-self:flex-start;padding:6px 9px;border:1px solid #d6dee8;border-radius:6px;background:#f4f7fb;color:#354e70;font:600 12px Inter,system-ui;cursor:pointer}
+.richtext-color-picker .richtext-spectrum-controls{padding-top:10px;border-top:1px solid #e1e6ed}
+.tt-history-icon{display:inline-block;width:19px;height:19px;vertical-align:middle;flex:none;pointer-events:none}
