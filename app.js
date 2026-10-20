@@ -1210,12 +1210,7 @@ function setupModuleByType(m,type){
   if(type==='progressbar')setupProgressBar(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
-  window.TeacherTilesFlashcardNavigation?.setup(m);
-  setupTileAudioSettings(m,type);
-  setupEditableTileHeading(m,type);
-  window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
-  setupTileHeadingVisibility(m,type);
-  window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
+  setupTilePresentationControls(m,type);
 }
 
 
@@ -1845,3 +1840,13 @@ window.addEventListener('teachertiles:collectionpreferences',()=>{
 
 // Keep the original catalog elements, including those currently hidden or cloned.
 window.TeacherTilesTileMenu = {element:menu, items:menuItems, refresh(){applyMenuView();renderMenuCategoryPins();}};
+
+// Shared native tile appearance and settings initialization for board and slide hosts.
+function setupTilePresentationControls(m,type){
+  window.TeacherTilesFlashcardNavigation?.setup(m);
+  setupTileAudioSettings(m,type);
+  setupEditableTileHeading(m,type);
+  window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:m._presentationChanged||notifyBoardChanged});
+  setupTileHeadingVisibility(m,type);
+  if(!m.dataset.presentationEmbedded)window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
+}

@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const contract=window.TeacherTilesPresentationObjects;
 const entries=[['clock','Clock'],['colorpicker','Color Picker'],['grapher','Graphing Tool'],['rainbow','Rainbow'],['sticky','Sticky Note'],['tablemaker','Table Maker'],['tallychart','Tally Chart'],['translation','Translation'],['timer','Visual Timer'],['voicememo','Voice Memos']];
-const nativeSizes={grapher:[820,640],tablemaker:[860,600],tallychart:[680,540],clock:[400,240],colorpicker:[440,400],rainbow:[560,430],sticky:[340,300],translation:[480,430],timer:[340,400],voicememo:[440,400]};
+const nativeSizes={grapher:[820,640],tablemaker:[860,600],tallychart:[680,540],clock:[400,240],colorpicker:[440,500],rainbow:[560,430],sticky:[340,300],translation:[480,430],timer:[340,400],voicememo:[440,400]};
 const tileSize=type=>({w:nativeSizes[type][0]*.6,h:nativeSizes[type][1]*.6});
 const active=new Set(),pending=new Set(),audioCache=new Map(),liveMemos=new WeakMap();
 function icon(type){const source=document.querySelector('[data-module="'+type+'"]');const art=source?.querySelector('svg,img');return art?art.outerHTML:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>';}
@@ -14,11 +14,13 @@ function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>
  m.dataset.presentationEmbedded='true';if(!editable)m.querySelectorAll('.module-delete,.module-drag-handle,.resize-handle').forEach(n=>n.remove());
  const state=contract.tile(e).tileState;Object.assign(m.dataset,state.dataset);state.classes.forEach(c=>m.classList.add(c));
  const native=nativeSizes[e.tileType],tileScale=.6;
- m.style.cssText='position:absolute;left:0;top:0;width:'+native[0]+'px;height:'+native[1]+'px;min-width:0;min-height:0;transform-origin:0 0;';
+ const nativeStyle=getComputedStyle(m),minWidth=parseFloat(nativeStyle.minWidth)||100,minHeight=parseFloat(nativeStyle.minHeight)||80;
+ m.style.cssText='position:absolute;left:0;top:0;transform-origin:0 0;';
+ let fittedScale=tileScale;
  let disposed=false,ready=false,last='',capturing=false;
- m._presentationViewportScale=()=>{const slide=el.closest('.pres-slide');return Math.max(.01,tileScale*(slide?slide.getBoundingClientRect().width/960:1));};
+ m._presentationViewportScale=()=>{const slide=el.closest('.pres-slide');return Math.max(.01,fittedScale*(slide?slide.getBoundingClientRect().width/960:1));};
  m.addEventListener('pointerenter',()=>m.classList.add('is-pointer-over'));m.addEventListener('pointerleave',()=>m.classList.remove('is-pointer-over'));m.addEventListener('focusin',()=>m.classList.add('has-keyboard-focus'));m.addEventListener('focusout',()=>m.classList.remove('has-keyboard-focus'));
- const fit=()=>{const slide=el.closest('.pres-slide'),scale=(slide?.clientWidth||960)/960,k=tileScale*scale;m.style.width=e.w/tileScale+'px';m.style.height=e.h/tileScale+'px';m.style.transform='scale('+k+')';m._presentationRefit?.();};
+ const fit=()=>{const slide=el.closest('.pres-slide'),scale=(slide?.clientWidth||960)/960;fittedScale=Math.min(tileScale,e.w/minWidth,e.h/minHeight);m.style.width=e.w/fittedScale+'px';m.style.height=e.h/fittedScale+'px';m.style.transform='scale('+(fittedScale*scale)+')';m._presentationRefit?.();};
  const resize=new ResizeObserver(fit);resize.observe(el);
  const saveAudio=async memo=>{if(memo.asset)return memo;if(!memo.dataUrl||!upload)return {...memo,dataUrl:undefined};const key=scope+'|'+memo.dataUrl;let job=audioCache.get(key);if(!job){job=upload(memo.dataUrl);audioCache.set(key,job);job.catch(()=>audioCache.delete(key));}const asset=await job;return {name:memo.name,duration:memo.duration,asset};};
  function capture(){if(!ready||!editable||capturing)return;const raw={dataset:{...m.dataset},classes:[...m.classList],fields:captureBoardFields(m),special:m._boardGetState?.()||{},timer:m._boardTimerGetState?.(),sticky:m.querySelector('.sticky-editor')?.innerText||'',stickyHtml:m.querySelector('.sticky-editor')?.innerHTML||''};
@@ -30,7 +32,7 @@ function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>
  let tick=0;m._presentationChanged=()=>queueMicrotask(capture);active.add(entry);
  // Initialization is deferred until the module has a measurable, connected host.
  queueMicrotask(async()=>{if(disposed||!el.isConnected)return;
-  try{withBoardChangesSuspended(()=>{if(m.classList.contains('classroom-widget'))setupClassroomTileControls(m);({grapher:setupGrapher,tablemaker:setupTableMaker,tallychart:setupTallyChart,clock:setupClock,sticky:setupSticky,translation:setupTranslation,timer:setupTimer,voicememo:setupVoiceMemo,colorpicker:TeacherTilesColorpicker.setup,rainbow:TeacherTilesRainbow.setup}[e.tileType])(m);restoreBoardFields(m,state.fields,{dispatch:true});if(e.tileType!=='voicememo')m._boardSetState?.(state.special);m._boardTimerSetState?.(state.timer);if(e.tileType==='sticky')m.querySelector('.sticky-editor').innerHTML=state.stickyHtml||'';if(e.tileType==='sticky'&&!state.stickyHtml)m.querySelector('.sticky-editor').textContent=state.sticky;});
+  try{withBoardChangesSuspended(()=>{if(m.classList.contains('classroom-widget'))setupClassroomTileControls(m);({grapher:setupGrapher,tablemaker:setupTableMaker,tallychart:setupTallyChart,clock:setupClock,sticky:setupSticky,translation:setupTranslation,timer:setupTimer,voicememo:setupVoiceMemo,colorpicker:TeacherTilesColorpicker.setup,rainbow:TeacherTilesRainbow.setup}[e.tileType])(m);setupTilePresentationControls(m,e.tileType);restoreBoardFields(m,state.fields,{dispatch:true});if(e.tileType!=='voicememo')m._boardSetState?.(state.special);m._boardTimerSetState?.(state.timer);if(e.tileType==='sticky')m.querySelector('.sticky-editor').innerHTML=state.stickyHtml||'';if(e.tileType==='sticky'&&!state.stickyHtml)m.querySelector('.sticky-editor').textContent=state.sticky;});
    m.querySelector('.timer-sync-toggle')?.remove();m.dataset.timerSync='false';
    if(e.tileType==='voicememo'){const memos=await Promise.all((liveMemos.get(e)||state.special.memos).map(async memo=>({...memo,dataUrl:memo.dataUrl||(memo.asset?await read(memo.asset):'')})));if(disposed)return;m._boardSetState({...state.special,memos});}
    fit();ready=true;last=JSON.stringify(contract.tile(e).tileState);tick=setInterval(capture,600);
