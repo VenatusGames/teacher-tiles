@@ -3,7 +3,7 @@ function setupShopExtras(modal) {
   const skins=window.TeacherTilesPlannerSkins,frames=window.TeacherTilesProfileFrames,themes=window.TeacherTilesPresentationThemes,transitions=window.TeacherTilesPresentationTransitions,effects=window.TeacherTilesTileEffects;
   function page(id,title,description){
     const section=document.createElement('section');section.className='shop-page';section.dataset.shopPage=id;section.hidden=true;
-    section.innerHTML='<div class="shop-page-heading"><button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home">←</button><div><span>COLLECTION</span><h2></h2><p></p></div></div><div class="shop-product-grid shop-product-grid--extras"></div>';
+    section.innerHTML='<div class="shop-page-heading"><button class="shop-back" type="button" data-shop-open-page="home" aria-label="Back to shop home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><div><span>COLLECTION</span><h2></h2><p></p></div></div><div class="shop-product-grid shop-product-grid--extras"></div>';
     section.querySelector('h2').textContent=title;section.querySelector('p').textContent=description;modal.querySelector('.shop-content').append(section);return section;
   }
   function product(item,kind,preview){

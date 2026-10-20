@@ -171,3 +171,6 @@
 @media(max-width:600px){.planner-help-grid{grid-template-columns:1fr}}
 
 .lesson-planner-panel .planner-library-brand h2{font-size:30px;letter-spacing:-.8px}.lesson-planner-panel .planner-library-plan-badge{border:1px solid #dce4ee;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;background:#fff}.lesson-planner-panel .planner-library-plan-badge.is-subscriber{color:#91712d;border-color:#e6d5ad;background:#fff9e9}.planner-library-plan-badge svg{width:19px;height:19px}.lesson-planner-panel :is(.lesson-planner-back,.planner-library-back)>svg{flex:none;width:19px;height:19px}
+
+.lesson-planner-panel .planner-library-intro{margin-bottom:14px}
+.lesson-planner-panel .planner-library-intro h3{margin-bottom:0}
