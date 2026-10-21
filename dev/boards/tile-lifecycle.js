@@ -549,7 +549,7 @@ function setupCommon(m){
   m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=isInteractiveModuleTarget(e.target,m);if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});
   m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();playUiSfx('click');deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
   setupDrag(m);
-  if(!['draw','sticker'].includes(m.dataset.type))setupResize(m)
+  if(m.dataset.type!=='sticker')setupResize(m)
 }
 
 function setupDrag(m){

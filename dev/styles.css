@@ -2649,7 +2649,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
 .context-menu.is-searching .context-menu__category-rail{display:none}
 
 /* Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:430px;
   height:78px;
   min-width:430px;
@@ -2717,7 +2717,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
   cursor:crosshair;
 }
 .board-drawing-canvas.is-active{pointer-events:auto}
-.draw-module{z-index:auto}
+.draw-module:not(.draw-rebuilt){z-index:auto}
 .draw-module .module-delete,.draw-module .module-drag-handle{z-index:2}
 
 /* Keep the drawing toolbar usable above its active drawing surface. */
@@ -2800,7 +2800,7 @@ body:has(.board-drawing-canvas.is-active) .workspace-controls{
 }
 
 /* Artist palette Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:455px;
   height:132px;
   min-width:455px;
@@ -3026,7 +3026,7 @@ body.dark .draw-module::before{
 }
 
 /* Round artist-palette Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:330px!important;
   height:270px!important;
   min-width:330px!important;
@@ -3287,7 +3287,7 @@ body.dark .draw-tool.is-active{
 }
 
 /* Minimal Draw toolbar */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:430px!important;
   height:82px!important;
   min-width:430px!important;
@@ -3473,7 +3473,7 @@ body.dark .draw-tool.is-active{
 }
 
 /* Draw module drag affordance + clearer brush icon */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   padding-top:29px!important;
 }
 
@@ -15754,7 +15754,7 @@ body>.profile-organizations-panel{position:fixed;inset:0;z-index:57700;padding:2
 .magnifier-module[data-tile-skin="magnifier-classic"] .module-drag-handle{border-radius:50%!important}
 
 /* Holstered drawing tools */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:610px!important;
   height:154px!important;
   min-width:610px!important;
