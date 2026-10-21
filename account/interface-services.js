@@ -105,7 +105,7 @@ function releaseBoostedMedia(audio){const nodes=boostedMedia.get(audio);if(nodes
 function playUiSfx(kind='click',volumeScale=1,owner=null){
   if(owner&&!owner.isConnected)return;
   if(kind==='tile-effect'){
-    const effect=window.TeacherTilesTileEffects?.selected()?.kind||'confetti';
+    const effect=window.TeacherTilesTileEffects?.forOwner(owner)?.kind||'confetti';
     if(effect!=='confetti'&&effect!=='money-confetti'){
       playUiSfx('celebration',volumeScale*.75,owner);
       setTimeout(()=>playUiSfx(effect,volumeScale,owner),window.TeacherTilesTileEffects?.celebrationLeadMs??300);
@@ -113,7 +113,7 @@ function playUiSfx(kind='click',volumeScale=1,owner=null){
     }
     kind=effect;
   }
-  if(kind==='confetti-celebration'&&(window.TeacherTilesTileEffects?.selected()?.kind||'confetti')!=='confetti')return;
+  if(kind==='confetti-celebration'&&(window.TeacherTilesTileEffects?.forOwner(owner)?.kind||'confetti')!=='confetti')return;
   const effectiveLevel=kind==='click'?globalUiAudioLevel():tileAudioLevel(owner);
   if(effectiveLevel<=0)return;
   try{

@@ -1,16 +1,34 @@
 /* Global celebration preference. No per-tile state or additional cloud reads. */
 (()=>{'use strict';
  const catalog=window.TeacherTilesTileEffectCatalog,key='teacherTilesActiveTileEffect',running=new Map();
+ const randomKey='teacherTilesRandomTileEffects',celebrations=new WeakMap();
+ let randomEnabled=false,randomBag=[],randomPool='',lastRandom='';
+ const readRandom=()=>{try{randomEnabled=localStorage.getItem(randomKey)==='true'}catch{randomEnabled=false}};readRandom();
+ function setRandom(enabled){randomEnabled=Boolean(enabled);randomBag=[];randomPool='';try{localStorage.setItem(randomKey,String(randomEnabled))}catch{}window.dispatchEvent(new Event('teachertiles:tileeffectchange'));}
+ function nextEffect(){
+  if(!randomEnabled)return selected();
+  const owned=typeof getOwnedShopProducts==='function'?getOwnedShopProducts():new Set(window.TeacherTilesAccount?.state?.ownedProductIds||[]);
+  const pool=catalog.all.filter(item=>!item.productId||owned.has(item.productId)),signature=pool.map(item=>item.id).join('|');
+  if(signature!==randomPool||!randomBag.length){
+   randomPool=signature;randomBag=[...pool];
+   for(let i=randomBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[randomBag[i],randomBag[j]]=[randomBag[j],randomBag[i]];}
+   if(randomBag.length>1&&randomBag.at(-1).id===lastRandom)[randomBag[0],randomBag[randomBag.length-1]]=[randomBag.at(-1),randomBag[0]];
+  }
+  const item=randomBag.pop()||catalog.all[0];lastRandom=item.id;return item;
+ }
+ const forOwner=owner=>owner&&celebrations.get(owner)||selected();
  const accessible=item=>!item.productId||typeof cosmeticIsAccessible==='function'&&cosmeticIsAccessible(item.productId);
  const selected=()=>{let id;try{id=localStorage.getItem(key)}catch{}const item=catalog.get(id);return accessible(item)?item:catalog.all[0];};
- function equip(id){const item=catalog.get(id);if(!accessible(item))return false;try{localStorage.setItem(key,item.id)}catch{}window.dispatchEvent(new Event('teachertiles:tileeffectchange'));return true;}
+ function equip(id){const item=catalog.get(id);if(!accessible(item))return false;try{localStorage.setItem(key,item.id)}catch{}if(randomEnabled)setRandom(false);window.dispatchEvent(new Event('teachertiles:tileeffectchange'));return true;}
  function cancel(layer){running.get(layer)?.();}
  // One reusable bill sprite keeps dozens of spinning notes inexpensive to draw.
  const moneyBill=document.createElement('canvas');moneyBill.width=128;moneyBill.height=64;
  {const g=moneyBill.getContext('2d');g.fillStyle='#dcebb8';g.fillRect(1,1,126,62);g.strokeStyle='#386346';g.lineWidth=2;g.strokeRect(2,2,124,60);g.strokeRect(7,7,114,50);g.fillStyle='#adc78b';g.beginPath();g.ellipse(64,32,20,23,0,0,Math.PI*2);g.fill();g.stroke();g.fillStyle='#32573d';g.textAlign='center';g.textBaseline='middle';g.font='bold 34px Georgia';g.fillText('$',64,34);g.font='bold 15px Georgia';g.fillText('1',20,20);g.fillText('1',108,46);g.lineWidth=1;for(let i=0;i<4;i++){g.beginPath();g.moveTo(17,34+i*4);g.lineTo(36,34+i*4);g.moveTo(92,15+i*4);g.lineTo(111,15+i*4);g.stroke();}}
  const celebrationLeadMs=300;
  function launch(layer,id,ready=false,still=null){
-  if(!layer)return;cancel(layer);const item=id?catalog.get(id):selected(),preview=layer.classList.contains('tile-effect-demo');
+  if(!layer)return;cancel(layer);const preview=layer.classList.contains('tile-effect-demo'),item=id?catalog.get(id):preview?selected():nextEffect();
+  // Choose once for each celebration, so simultaneous tiles retain their own matching sound.
+  if(!preview&&!ready&&still===null)celebrations.set(layer.closest('.module')||layer,item);
   if(still===null&&preview&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   if(!preview&&!['confetti','money-confetti'].includes(item.kind)&&!ready){
     const timer=setTimeout(()=>{if(layer.isConnected)launch(layer,item.id,true);else cancel(layer);},celebrationLeadMs);
@@ -127,7 +145,7 @@
  }
  function picker(panel,unlock){
   const key='teacherTilesEffectFavorites';let query='',view='all',ownedOnly=false,favorites=new Set();const read=()=>{try{favorites=new Set(JSON.parse(localStorage.getItem(key)||'[]'))}catch{favorites=new Set();}};read();
-  panel.innerHTML='<div class="tile-effect-views cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All Effects</button><button type="button" data-view="favorites" aria-pressed="false">Favorites <span></span></button></div><input class="tile-effects-search" type="search" placeholder="Search tile effects" aria-label="Search tile effects"><div class="cursor-picker-filters"><span role="status"></span><label>Owned only <input type="checkbox" role="switch" aria-label="Owned tile effects only"><i aria-hidden="true"></i></label></div><div class="tile-effects-groups"></div>';
+  panel.innerHTML='<div class="tile-effect-views cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All Effects</button><button type="button" data-view="favorites" aria-pressed="false">Favorites <span></span></button></div><input class="tile-effects-search" type="search" placeholder="Search tile effects" aria-label="Search tile effects"><div class="cursor-picker-filters tile-effects-filter-row"><span role="status"></span><label>Random <input data-random type="checkbox" role="switch" aria-label="Random owned tile effects"><i aria-hidden="true"></i></label><label>Owned Only <input data-owned type="checkbox" role="switch" aria-label="Owned tile effects only"><i aria-hidden="true"></i></label></div><div class="tile-effects-groups"></div>';
   const content=panel.querySelector('.tile-effects-groups'),cells=new Map(),sections=[];
   for(const group of [...new Set(catalog.all.map(item=>item.group))]){const section=document.createElement('section'),h=document.createElement('h3'),grid=document.createElement('div');h.textContent=group;grid.className='tile-effects-grid';section.append(h,grid);content.append(section);sections.push(section);
    for(const item of catalog.all.filter(e=>e.group===group)){const cell=document.createElement('div');cell.className='tile-effect-cell';const b=document.createElement('button');b.type='button';b.className='tile-effect-choice';b.dataset.effect=item.id;const name=document.createElement('strong'),detail=document.createElement('small');name.textContent=item.name;b.append(preview(item.id),name,detail);b.onclick=()=>accessible(item)?equip(item.id):unlock(item.productId);
@@ -135,13 +153,13 @@
    }
   }
   const empty=document.createElement('p');empty.className='tile-effects-empty';content.append(empty);
-  function render(){const active=selected().id;let total=0;for(const {item,cell,b,star,detail}of cells.values()){const allowed=accessible(item),favorite=favorites.has(item.id),visible=(!query||item.name.toLowerCase().includes(query))&&(!ownedOnly||allowed)&&(view!=='favorites'||favorite);cell.hidden=!visible;if(visible)total++;b.setAttribute('aria-pressed',String(active===item.id));const text=active===item.id?'Equipped':allowed?'Apply Effect':'50 coins · Shop';if(detail.textContent!==text)detail.textContent=text;const glyph=favorite?'★':'☆';if(star.textContent!==glyph)star.textContent=glyph;star.setAttribute('aria-label',(favorite?'Unfavorite ':'Favorite ')+item.name);star.setAttribute('aria-pressed',String(favorite));const stamp=Boolean(window.TeacherTilesAccount?.state?.ownedProductIds?.includes(item.productId))+':'+allowed+':'+Boolean(window.TeacherTilesAccount?.state?.subscriptionActive)+':'+Boolean(window.TeacherTilesAccount?.state?.subscriptionOverride);const entry=cells.get(item.id);if(entry.stamp!==stamp){entry.stamp=stamp;if(typeof markSubscriptionAccess==='function')markSubscriptionAccess(b,item.productId);}}
+  function render(){panel.querySelector('[data-random]').checked=randomEnabled;const active=randomEnabled?null:selected().id;let total=0;for(const {item,cell,b,star,detail}of cells.values()){const allowed=accessible(item),favorite=favorites.has(item.id),visible=(!query||item.name.toLowerCase().includes(query))&&(!ownedOnly||allowed)&&(view!=='favorites'||favorite);cell.hidden=!visible;if(visible)total++;b.setAttribute('aria-pressed',String(active===item.id));const text=active===item.id?'Equipped':allowed?'Apply Effect':'50 coins · Shop';if(detail.textContent!==text)detail.textContent=text;const glyph=favorite?'★':'☆';if(star.textContent!==glyph)star.textContent=glyph;star.setAttribute('aria-label',(favorite?'Unfavorite ':'Favorite ')+item.name);star.setAttribute('aria-pressed',String(favorite));const stamp=Boolean(window.TeacherTilesAccount?.state?.ownedProductIds?.includes(item.productId))+':'+allowed+':'+Boolean(window.TeacherTilesAccount?.state?.subscriptionActive)+':'+Boolean(window.TeacherTilesAccount?.state?.subscriptionOverride);const entry=cells.get(item.id);if(entry.stamp!==stamp){entry.stamp=stamp;if(typeof markSubscriptionAccess==='function')markSubscriptionAccess(b,item.productId);}}
    for(const section of sections)section.hidden=![...section.querySelectorAll('.tile-effect-cell')].some(c=>!c.hidden);empty.hidden=total>0;empty.textContent=view==='favorites'?'Star an effect to keep it here.':'No tile effects found.';panel.querySelector('[role=status]').textContent=total+' effects';panel.querySelector('[data-view=favorites] span').textContent=favorites.size||'';
   }
-  panel.querySelector('input[type=search]').oninput=e=>{stopPreview();query=e.target.value.trim().toLowerCase();render();};panel.querySelector('[role=switch]').onchange=e=>{stopPreview();ownedOnly=e.target.checked;render();};panel.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{stopPreview();view=b.dataset.view;panel.querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();});
+  panel.querySelector('input[type=search]').oninput=e=>{stopPreview();query=e.target.value.trim().toLowerCase();render();};panel.querySelector('[data-random]').onchange=e=>setRandom(e.target.checked);panel.querySelector('[data-owned]').onchange=e=>{stopPreview();ownedOnly=e.target.checked;render();};panel.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{stopPreview();view=b.dataset.view;panel.querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();});
   for(const event of ['teachertiles:accountchange','teachertiles:shopownershipchange','teachertiles:tileeffectchange'])window.addEventListener(event,()=>{if(!panel.hidden)render();});window.addEventListener('teachertiles:collectionpreferences',()=>{read();if(!panel.hidden)render();});window.addEventListener('storage',e=>{if(e.key===key){read();if(!panel.hidden)render();}});bindPreviews(panel);render();return {render};
  }
  document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const stop of [...running.values()])stop();});
- window.addEventListener('storage',e=>{if(e.key===key)window.dispatchEvent(new Event('teachertiles:tileeffectchange'));});
- window.TeacherTilesTileEffects=Object.freeze({...catalog,selected,equip,launch,cancel,preview,picker,bindPreviews,celebrationLeadMs});
+ window.addEventListener('storage',e=>{if(e.key===randomKey){readRandom();randomBag=[];randomPool='';}if(e.key===key||e.key===randomKey)window.dispatchEvent(new Event('teachertiles:tileeffectchange'));});
+ window.TeacherTilesTileEffects=Object.freeze({...catalog,selected,forOwner,setRandom,isRandom:()=>randomEnabled,equip,launch,cancel,preview,picker,bindPreviews,celebrationLeadMs});
 })();

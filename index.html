@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261020-attendance-corners" />
+  <link rel="stylesheet" href="styles.css?v=20261020-attendance-bottom" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -113,11 +113,11 @@
 <link rel="stylesheet" href="tiles/shared/tile-menu-metadata.css?v=20261012-badges">
 <link rel="stylesheet" href="shop/managed-shop.css?v=20261020-product-polish">
 <link rel="stylesheet" href="changelog/navigation.css?v=20261015">
-<link rel="stylesheet" href="app/splash/styles.css?v=20261020-seasons">
+<link rel="stylesheet" href="app/splash/styles.css?v=20261020-season-motion">
 <script src="shop/sticker-catalog.js?v=20261015"></script>
-<script src="app/splash/index.js?v=20261020-seasons"></script>
+<script src="app/splash/index.js?v=20261020-season-motion"></script>
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
-<link rel="stylesheet" href="shop/tile-effects.css?v=20261017-playback-effects">
+<link rel="stylesheet" href="shop/tile-effects.css?v=20261020-filter-row">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
 <link rel="stylesheet" href="presentations/styles.css?v=20261020-snapping">
 <link rel="stylesheet" href="tiles/presentations/styles.css?v=20261020-snapping">
@@ -4534,7 +4534,7 @@
 <script src="tiles/shared/formatting-toolbar.js?v=20261020-controls-followup"></script>
 <script src="tiles/rich-text/index.js?v=20261020-product-polish"></script>
 <script src="tiles/fly-swat/index.js?v=20261012-teams"></script>
-<script src="tiles/shared/sticker-picker.js?v=20261020-favorites-label"></script>
+<script src="tiles/shared/sticker-picker.js?v=20261020-filter-row"></script>
 <script src="tiles/glitter-jar/index.js?v=20260922-2"></script>
 <script src="tiles/spreadsheet/index.js?v=20261020-ui-fixes"></script>
 <script src="tiles/reminders/index.js?v=20260922-refine-3"></script>
@@ -4562,7 +4562,7 @@
 <script src="tiles/lava-lamp/index.js?v=20261012-skins"></script>
 
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
-<script src="tiles/shared/cursor-picker.js?v=20261020-product-polish"></script>
+<script src="tiles/shared/cursor-picker.js?v=20261020-filter-row"></script>
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
 <script src="tiles/growth-rewards/index.js?v=20261003"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
@@ -4641,7 +4641,7 @@
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
-<script src="account/interface-services.js?v=20261020-money-confetti"></script>
+<script src="account/interface-services.js?v=20261020-random-effects"></script>
 <script src="boards/navigation.js?v=20261020-draw"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
@@ -4666,7 +4666,7 @@
 <script src="presentations/transitions.js?v=20261017-shop-effects-polish"></script>
 <script src="presentations/themes.js?v=20261017-layout-backgrounds"></script>
 <script src="shop/tile-effects-catalog.js?v=20261020-money-confetti"></script>
-<script src="shop/tile-effects.js?v=20261020-money-confetti"></script>
+<script src="shop/tile-effects.js?v=20261020-filter-row"></script>
 <script src="shop/extras.js?v=20261020-category-subtitles"></script>
 <script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
 <script src="shop/ui.js?v=20261020-controls-followup"></script>
@@ -4912,7 +4912,7 @@
         </section>
         <div class="attendance-empty-state"><span aria-hidden="true"><i></i><b></b></span><strong>Load a class to start attendance</strong><small>Choose one of your saved classes above, then move each student magnet from Default to Present.</small></div>
       </div>
-      <footer class="attendance-footer"><span class="attendance-status">Choose a saved class above to begin.</span><span>Place magnets anywhere · D Default · P Present</span></footer>
+      <footer class="attendance-footer"><span class="attendance-status">Choose a saved class above to begin.</span></footer>
       <div class="customization-bar attendance-customization" aria-label="Attendance customization"><button class="custom-icon attendance-bg" type="button" title="Change background color" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon attendance-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon attendance-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>

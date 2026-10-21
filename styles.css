@@ -19367,3 +19367,11 @@ body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-st
 .attendance-board{isolation:isolate}
 .attendance-board>header{border-radius:19px 19px 0 0}
 .attendance-magnet-stage .attendance-student{isolation:isolate;background-clip:padding-box}
+
+/* Reclaim the Attendance toolbar space while its controls are hidden. */
+.attendance-module{transition:padding-bottom .18s ease}
+.attendance-module:not(:hover),
+body.is-board-idle .attendance-module.is-idle-unhovered{padding-bottom:17px}
+body.is-keyboard-navigation .attendance-module:focus-within{padding-bottom:48px}
+@media(hover:none){.attendance-module:not(:hover){padding-bottom:48px}}
+@media(prefers-reduced-motion:reduce){.attendance-module{transition:none}}
