@@ -1,4 +1,4 @@
-import {createCommunityPanel} from './community.js?v=20261021';
+import {createCommunityPanel} from './community.js?v=20261021-event-details';
 import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';
 import {createProductManagementPanel} from './product-management.js?v=20261017-effects';
 import {createTileManagementPanel} from './tile-management.js?v=20261020-availability';

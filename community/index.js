@@ -4,10 +4,16 @@ const pane=document.querySelector('[data-settings-pane="news"]'),eventsRoot=docu
 let feed=null,votes={},loadedAt=0,epoch=0,busy=false,identity='',voteReady=false;
 const uid=()=>window.TeacherTilesAuth?.user?.uid||'';
 const call=async data=>{const r=await window.TeacherTilesAuth.call('communityPolls',data);return r?.data??r};
+const eventDialog=el('dialog','community-event-dialog');eventDialog.setAttribute('aria-labelledby','community-event-title');document.body.append(eventDialog);
+eventDialog.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();eventDialog.close();}});
+eventDialog.addEventListener('click',e=>{if(e.target===eventDialog){const r=eventDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)eventDialog.close();}});
+function openEvent(event){
+ eventDialog.replaceChildren();const header=el('header'),title=el('h2','',''+event.name),close=el('button','settings-panel__close');title.id='community-event-title';close.type='button';close.setAttribute('aria-label','Close Event');close.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';close.onclick=()=>eventDialog.close();header.append(title,close);eventDialog.append(header);const art=eventArt(event);if(art)eventDialog.append(art);const details=el('div','community-event-details');if(eventDates(event))details.append(el('time','',eventDates(event)));if(event.description)details.append(el('p','community-event-description',event.description));if(details.childNodes.length)eventDialog.append(details);eventDialog.showModal();
+}
 function render(){
  if(!feed)return;eventsRoot.replaceChildren();pollsRoot.replaceChildren();
  if(!feed.events.length)eventsRoot.append(el('p','community-empty','No community events are running at this time, check back soon! :)'));
- for(const event of feed.events){const card=el('article','community-card'),body=el('div','community-card-body'),art=eventArt(event);if(art)card.append(art);body.append(el('h4','',event.name));if(eventDates(event))body.append(el('time','',eventDates(event)));card.append(body);eventsRoot.append(card)}
+ for(const event of feed.events){const card=el('article','community-card'),body=el('div','community-card-body'),art=eventArt(event);if(art){const opener=el('button','community-event-open');opener.type='button';opener.setAttribute('aria-label',`View ${event.name} event`);opener.append(art);opener.onclick=()=>openEvent(event);card.append(opener)}body.append(el('h4','',event.name));if(eventDates(event))body.append(el('time','',eventDates(event)));card.append(body);eventsRoot.append(card)}
  if(!feed.polls.length)pollsRoot.append(el('p','community-empty','No community polls are running at this time, check back soon! :)'));
  for(const poll of feed.polls){const card=el('article','community-card'),body=el('div','community-card-body'),art=eventArt(poll);if(art)card.append(art);body.append(el('h4','',poll.question));
  if(poll.state==='ended'){body.append(el('p','community-vote-note','Poll ended'),resultRows(poll,poll.results||{}))}

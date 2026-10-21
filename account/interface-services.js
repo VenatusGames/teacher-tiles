@@ -410,7 +410,7 @@ function setupSettingsHub(){
     if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
     lastFocus=null;
   };
-  const open=()=>{
+  const open=(tab='news')=>{
     if(!modal.hidden){close();return}
     document.getElementById('asset-shelf-close')?.click();
     document.getElementById('shop-close')?.click();
@@ -421,7 +421,7 @@ function setupSettingsHub(){
     settingsToggle.setAttribute('aria-expanded','true');
     updateSettingsControls();
     applyAppLanguage();
-    updateTitle();
+    showTab(tab);
     requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
   };
 
@@ -430,7 +430,8 @@ function setupSettingsHub(){
   document.getElementById('settings-disable-snapping')?.addEventListener('click',()=>applyAppPreferences({disableTileSnapping:!appPreferences.disableTileSnapping},{notify:true}));
   document.getElementById('settings-default-splash')?.addEventListener('click',()=>applyAppPreferences({defaultSplashOnly:!appPreferences.defaultSplashOnly}));
   document.getElementById('settings-square-corners')?.addEventListener('click',()=>applyAppPreferences({squareCorners:!appPreferences.squareCorners}));
-  settingsToggle.addEventListener('click',open);
+  settingsToggle.addEventListener('click',()=>open('news'));
+  document.getElementById('profile-settings-button')?.addEventListener('click',()=>open('settings'));
   closeButtons.forEach(button=>button.addEventListener('click',close));
   tabs.forEach(tab=>tab.addEventListener('click',()=>showTab(tab.dataset.settingsTab)));
   mute?.addEventListener('click',()=>{
