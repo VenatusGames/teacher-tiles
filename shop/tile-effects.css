@@ -25,3 +25,9 @@
 
 .tile-effects-filter-row.cursor-picker-filters{gap:12px;flex-wrap:wrap}
 .tile-effects-filter-row>[role=status]{margin-right:auto}
+
+.tile-effect-lock{display:none;position:absolute;inset:0;place-items:center;background:linear-gradient(transparent,color-mix(in srgb,var(--surface-solid,#fff) 82%,transparent));pointer-events:none}
+.tile-effect-choice.is-cosmetic-locked .tile-effect-lock{display:grid}
+.tile-effect-choice.is-cosmetic-locked .tile-effect-art{filter:saturate(.55)}
+.tile-effect-lock>span{display:flex;align-items:center;gap:7px;background:var(--surface-solid,#fff);color:var(--text,#263249);border:1px solid var(--border,#dce3ed);border-radius:20px;padding:8px 12px;font:700 11px Inter,system-ui,sans-serif;box-shadow:0 2px 7px #17243c12}
+.tile-effect-lock img{width:17px;height:17px;object-fit:contain}
