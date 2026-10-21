@@ -60,7 +60,7 @@ function setupRacer(m){
     renderTrack();
   };
   const showWin=(name,total)=>{
-    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('confetti',1,m);requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
+    winName.textContent=name;winTotal.textContent=String(total);win.hidden=false;launchConfetti(m);playUiSfx('tile-effect',1,m);requestAnimationFrame(()=>winDone.focus({preventScroll:true}));
   };
   const moveStudent=()=>{
     const r=roster(),name=selectedStudent;if(!r||!name)return;
