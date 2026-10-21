@@ -1,0 +1,47 @@
+/* Familiar, quiet editor controls shared by the slide and tile editors. */
+.tt-format-toolbar .tt-format-icon{display:block;width:19px;height:19px;flex:none;pointer-events:none}
+#presentations-tool .tt-format-toolbar .tt-format-button,.richtext-toolbar .tt-format-button{width:32px;height:32px;min-height:32px!important;padding:5px!important;border:1px solid transparent;border-radius:6px;box-shadow:none;background:transparent;flex:none}
+#presentations-tool .tt-format-toolbar .tt-format-button:hover,.richtext-toolbar .tt-format-button:hover{background:#e8edf4;border-color:transparent;box-shadow:none}
+#presentations-tool .tt-format-toolbar [aria-pressed=true],.richtext-toolbar .tt-format-button[aria-pressed=true]{background:#dce9fa!important;color:#245b98;border-color:#b6cdea;box-shadow:none}
+.tt-format-color{position:relative;display:inline-flex;align-items:center;justify-content:flex-start;box-sizing:border-box;width:46px;height:32px;padding:3px 7px!important;border:1px solid transparent;border-radius:6px;cursor:pointer;background:transparent;color:inherit;gap:3px!important;flex:none}
+.tt-format-color>.tt-format-icon:first-child{width:20px;height:20px;margin-top:-3px}.tt-format-color>.tt-format-icon:last-of-type{width:13px;height:13px}
+.tt-format-color:after{content:'';position:absolute;left:8px;bottom:3px;width:18px;height:3px;border-radius:1px;background:var(--format-color,#263249);pointer-events:none}
+.richtext-toolbar .tt-format-color:after{display:none}.richtext-toolbar .tt-format-color{width:46px}.tt-format-color .richtext-color-swatch,.tt-format-color .richtext-highlight-swatch{left:8px;right:auto;width:18px;bottom:3px;border-radius:1px;box-shadow:none}
+#presentations-tool .tt-format-color input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0!important}
+.tt-format-color:hover{background:#e8edf4}.tt-format-color:focus-within{outline:2px solid #7097d5;outline-offset:2px}
+#presentations-tool .pres-align{display:none!important}
+#presentations-tool .tt-format-select,.richtext-toolbar .richtext-select-trigger{height:32px;min-height:32px;padding:0 10px!important;border-radius:6px;box-shadow:none;border:1px solid #d6dee8;display:inline-flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-solid,#fff);font:500 12px/1.3 Inter,system-ui;flex:none}
+.tt-format-select>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tt-format-select[data-select-kind=block]{width:125px}.tt-format-select[data-select-kind=font]{width:155px}.tt-format-select>.tt-format-icon{width:15px!important;height:15px!important}
+.tt-format-menu,.richtext-select-menu{background:var(--surface-solid,#fff);color:var(--text,#263249);border:1px solid #dce3ec;border-radius:10px;padding:6px;box-shadow:0 8px 30px #182b4626;width:248px;max-height:min(380px,calc(100dvh - 24px));overflow:auto;scrollbar-width:thin;box-sizing:border-box}
+.tt-format-menu{position:fixed;inset:auto;margin:0;font:13px Inter,system-ui;max-width:calc(100vw - 16px)}
+#presentations-tool .tt-format-menu input[type=search]{width:100%;position:sticky;top:0;background:#fff;margin-bottom:6px;font-size:13px;padding:9px 10px;border-radius:6px}
+#presentations-tool .tt-format-menu .tt-format-option,.richtext-select-menu .tt-format-option{display:flex;justify-content:flex-start;position:relative;box-sizing:border-box;width:100%;height:auto;min-height:38px!important;padding:9px 30px 9px 12px!important;text-align:left;border:0;border-radius:6px;background:transparent;color:inherit;box-shadow:none;font-size:14px!important;font-weight:400;line-height:1.3;transform:none}
+#presentations-tool .tt-format-menu .tt-format-option[data-preview-kind=block],.richtext-select-menu .tt-format-option[data-preview-kind=block]{font-size:var(--preview-size)!important;line-height:1.3;min-height:42px!important}
+.tt-format-option[data-text-style^=h]{font-weight:650!important}.tt-format-option[data-text-style=blockquote]{font-style:italic}
+#presentations-tool .tt-format-menu .tt-format-option:hover,.richtext-select-menu .tt-format-option:hover{background:#edf2f8}
+#presentations-tool .tt-format-menu .tt-format-option[aria-selected=true],.richtext-select-menu .tt-format-option.is-selected{background:#e8f0fb;color:#245b98;box-shadow:none}
+.tt-format-option[aria-selected=true]:after{content:'';position:absolute;right:13px;width:5px;height:9px;border-right:1.7px solid currentColor;border-bottom:1.7px solid currentColor;transform:rotate(45deg)}
+.tt-format-menu-label{font:600 10px/1.4 Inter,system-ui;color:#788699;padding:10px 12px 4px;letter-spacing:.04em}
+.richtext-select-menu--block,.richtext-select-menu--font{width:248px}.richtext-select-menu--size{width:112px}
+#presentations-tool .pres-object-tools{gap:4px;padding:8px 12px;background:#fafbfd}
+#presentations-tool .pres-object-tools>[data-format=insertUnorderedList],#presentations-tool .pres-object-tools>[data-format=undo]{margin-left:8px;border-left-color:#d6dee8}
+#presentations-tool .pres-resize:is(:hover,:active){transform:translate(-50%,-50%);box-shadow:none}
+#presentations-tool .pres-resize{transition:background .15s,border-color .15s}
+
+/* Keep font search outside the scrolling option list. */
+.tt-format-menu[data-menu-kind=font]:popover-open{display:flex;flex-direction:column;overflow:hidden}
+.tt-format-menu[data-menu-kind=font]>[role=listbox]{min-height:0;overflow:auto;scrollbar-width:thin}
+#presentations-tool .tt-format-menu input[type=search]{position:relative;flex:none;z-index:1}
+.richtext-spectrum-picker[hidden]{display:none!important}
+.richtext-spectrum-toggle{align-self:flex-start;padding:6px 9px;border:1px solid #d6dee8;border-radius:6px;background:#f4f7fb;color:#354e70;font:600 12px Inter,system-ui;cursor:pointer}
+.richtext-color-picker .richtext-spectrum-controls{padding-top:10px;border-top:1px solid #e1e6ed}
+.tt-history-icon{display:inline-block;width:19px;height:19px;vertical-align:middle;flex:none;pointer-events:none}
+
+/* Identical color swatches and disclosure shelves in both text editors. */
+.richtext-color-picker .richtext-color-choice,#presentations-tool .pres-color-popup .richtext-color-choice{display:grid;place-items:center;width:100%;height:auto;min-height:0;aspect-ratio:1;padding:0;gap:0;box-sizing:border-box}
+.richtext-color-picker .richtext-color-choice>span,#presentations-tool .pres-color-popup .richtext-color-choice>span{display:block;flex:none;width:22px;min-width:22px;height:22px;min-height:22px;margin:0;padding:0}
+.richtext-spectrum-shelf{border-top:1px solid #e1e6ed;margin-top:2px;padding-top:3px}
+.richtext-color-picker .richtext-spectrum-toggle,#presentations-tool .pres-color-popup .richtext-spectrum-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:34px;min-height:34px;padding:5px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:inherit;font:600 12px/1.3 Inter,system-ui;cursor:pointer}
+.richtext-spectrum-toggle svg{width:16px;height:16px;flex:none;transition:transform .15s}
+.richtext-spectrum-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+.richtext-spectrum-shelf .richtext-spectrum-picker{padding-top:5px}

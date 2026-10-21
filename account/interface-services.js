@@ -104,14 +104,24 @@ function releaseBoostedMedia(audio){const nodes=boostedMedia.get(audio);if(nodes
 
 function playUiSfx(kind='click',volumeScale=1,owner=null){
   if(owner&&!owner.isConnected)return;
+  if(kind==='tile-effect'){
+    const effect=window.TeacherTilesTileEffects?.forOwner(owner)?.kind||'confetti';
+    if(effect!=='confetti'&&effect!=='money-confetti'){
+      playUiSfx('celebration',volumeScale*.75,owner);
+      setTimeout(()=>playUiSfx(effect,volumeScale,owner),window.TeacherTilesTileEffects?.celebrationLeadMs??300);
+      return;
+    }
+    kind=effect;
+  }
+  if(kind==='confetti-celebration'&&(window.TeacherTilesTileEffects?.forOwner(owner)?.kind||'confetti')!=='confetti')return;
   const effectiveLevel=kind==='click'?globalUiAudioLevel():tileAudioLevel(owner);
   if(effectiveLevel<=0)return;
   try{
-    const prototype=kind==='confetti'?confettiSfxPrototype:kind==='timer-tada'?timerTadaSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
+    const prototype=kind==='money-confetti'?moneyConfettiSfxPrototype:kind==='slime'?slimeSfxPrototype:kind==='rain'?rainSfxPrototype:kind==='smoke'?smokeSfxPrototype:kind==='fireworks'?fireworksSfxPrototype:kind==='explosion'?explosionSfxPrototype:kind==='lightning'?lightningSfxPrototype:kind==='confetti'?confettiSfxPrototype:(kind==='celebration'||kind==='confetti-celebration')?confettiCelebrationSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='intro'?.62:kind==='confetti'?.72:kind==='timer-tada'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
+    const base=kind==='money-confetti'||kind==='slime'||kind==='rain'||kind==='smoke'||kind==='fireworks'||kind==='explosion'||kind==='lightning'?.65:kind==='intro'?.62:kind==='confetti'?.72:(kind==='celebration'||kind==='confetti-celebration')?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
     setBoostedMediaVolume(sound,base*effectiveLevel*Math.max(0,Number(volumeScale)||0));
-    sound.playbackRate=kind==='intro'||kind==='confetti'||kind==='timer-tada'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='money-confetti'||kind==='slime'||kind==='rain'||kind==='smoke'||kind==='fireworks'||kind==='explosion'||kind==='lightning'||kind==='intro'||kind==='confetti'||kind==='confetti-celebration'||kind==='celebration'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     if(owner){
       const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());sounds.add(sound);
@@ -260,7 +270,7 @@ function applyAppLanguage({load=true}={}){
     if(strong)strong.textContent=copy[0];
     if(small)small.textContent=copy[1];
   });
-  settingsToggle?.setAttribute('aria-label',translateAppText('top.settings'));
+  settingsToggle?.setAttribute('aria-label',translateAppText('top.menu'));
   const shelfTitle=document.getElementById('asset-shelf-title');
   if(shelfTitle){
     const stickerPanel=document.getElementById('sticker-shelf-content');
@@ -371,6 +381,10 @@ function setupSettingsHub(){
     const active=tabs.find(tab=>tab.dataset.settingsTab===currentTab);
     const label=active?.lastElementChild?.textContent?.trim();
     if(title&&label)title.textContent=label;
+    const mark=modal.querySelector('.settings-panel__mark');
+    const icon=active?.querySelector('.settings-nav__icon');
+    const symbol=icon?.querySelector('svg');
+    if(mark&&symbol){mark.replaceChildren(symbol.cloneNode(true));mark.style.color=getComputedStyle(icon).color;}
   };
 
   const showTab=name=>{
@@ -396,7 +410,7 @@ function setupSettingsHub(){
     if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
     lastFocus=null;
   };
-  const open=()=>{
+  const open=(tab='news')=>{
     if(!modal.hidden){close();return}
     document.getElementById('asset-shelf-close')?.click();
     document.getElementById('shop-close')?.click();
@@ -407,7 +421,7 @@ function setupSettingsHub(){
     settingsToggle.setAttribute('aria-expanded','true');
     updateSettingsControls();
     applyAppLanguage();
-    updateTitle();
+    showTab(tab);
     requestAnimationFrame(()=>modal.querySelector('.settings-panel__close')?.focus({preventScroll:true}));
   };
 
@@ -416,7 +430,8 @@ function setupSettingsHub(){
   document.getElementById('settings-disable-snapping')?.addEventListener('click',()=>applyAppPreferences({disableTileSnapping:!appPreferences.disableTileSnapping},{notify:true}));
   document.getElementById('settings-default-splash')?.addEventListener('click',()=>applyAppPreferences({defaultSplashOnly:!appPreferences.defaultSplashOnly}));
   document.getElementById('settings-square-corners')?.addEventListener('click',()=>applyAppPreferences({squareCorners:!appPreferences.squareCorners}));
-  settingsToggle.addEventListener('click',open);
+  settingsToggle.addEventListener('click',()=>open('news'));
+  document.getElementById('profile-settings-button')?.addEventListener('click',()=>open('settings'));
   closeButtons.forEach(button=>button.addEventListener('click',close));
   tabs.forEach(tab=>tab.addEventListener('click',()=>showTab(tab.dataset.settingsTab)));
   mute?.addEventListener('click',()=>{

@@ -2649,7 +2649,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
 .context-menu.is-searching .context-menu__category-rail{display:none}
 
 /* Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:430px;
   height:78px;
   min-width:430px;
@@ -2717,7 +2717,7 @@ body.dark .noise-module[data-bg="white"] .noise-vertical-alert-tag,
   cursor:crosshair;
 }
 .board-drawing-canvas.is-active{pointer-events:auto}
-.draw-module{z-index:auto}
+.draw-module:not(.draw-rebuilt){z-index:auto}
 .draw-module .module-delete,.draw-module .module-drag-handle{z-index:2}
 
 /* Keep the drawing toolbar usable above its active drawing surface. */
@@ -2800,7 +2800,7 @@ body:has(.board-drawing-canvas.is-active) .workspace-controls{
 }
 
 /* Artist palette Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:455px;
   height:132px;
   min-width:455px;
@@ -3026,7 +3026,7 @@ body.dark .draw-module::before{
 }
 
 /* Round artist-palette Draw module */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:330px!important;
   height:270px!important;
   min-width:330px!important;
@@ -3287,7 +3287,7 @@ body.dark .draw-tool.is-active{
 }
 
 /* Minimal Draw toolbar */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:430px!important;
   height:82px!important;
   min-width:430px!important;
@@ -3473,7 +3473,7 @@ body.dark .draw-tool.is-active{
 }
 
 /* Draw module drag affordance + clearer brush icon */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   padding-top:29px!important;
 }
 
@@ -15422,7 +15422,8 @@ body>.profile-classes-panel .profile-class-card{width:100%;min-height:92px;paddi
 .context-menu__item[data-pbis-tracking="true"]{position:relative;padding-right:58px}
 .context-menu__tracking-badge{position:absolute;z-index:2;right:8px;top:8px;height:18px;padding:0 7px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(184,126,17,.24);border-radius:999px;background:linear-gradient(110deg,#fff4c9,#f1c34f 48%,#fff2b8);color:#76500d;font-size:6px!important;line-height:1!important;font-weight:950;letter-spacing:.11em;box-shadow:0 3px 9px rgba(156,102,12,.14)}
 .context-menu__tracking-badge::after{content:"";position:absolute;inset:-4px auto -4px -80%;width:55%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);animation:pbisTrackingShimmer 2.8s ease-in-out infinite}
-@keyframes pbisTrackingShimmer{0%,58%{left:-80%}85%,100%{left:140%}}
+/* Move a fixed-width shine strip without layout work; pauses stay outside the badge. */
+@keyframes pbisTrackingShimmer{0%,58%{transform:translateX(0) skewX(-22deg)}85%,100%{transform:translateX(400%) skewX(-22deg)}}
 
 /* Student View profile workspace. */
 .profile-tool-button+.profile-tool-button{margin-top:8px}.profile-tool-button__icon--students{background:linear-gradient(145deg,#edf6ff,#a9c8e7);color:#315f8d}.profile-tool-button__icon--students svg{width:25px;height:25px}
@@ -15753,7 +15754,7 @@ body>.profile-organizations-panel{position:fixed;inset:0;z-index:57700;padding:2
 .magnifier-module[data-tile-skin="magnifier-classic"] .module-drag-handle{border-radius:50%!important}
 
 /* Holstered drawing tools */
-.draw-module{
+.draw-module:not(.draw-rebuilt){
   width:610px!important;
   height:154px!important;
   min-width:610px!important;
@@ -19337,3 +19338,40 @@ body .module>.module-pin[aria-expanded=true]{opacity:1!important;pointer-events:
 .board-mini-object .module-position-drawer,.magnifier-source-clone .module-position-drawer{display:none!important}
 @keyframes tile-position-reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.module>.module-position-drawer{animation:none}}
+
+.help-layout{display:grid;grid-template-columns:170px minmax(0,1fr);gap:24px;align-items:start}.help-navigation{position:sticky;top:0;display:flex;flex-direction:column;gap:7px;padding:4px 0}.help-navigation button{text-align:left;border:1px solid var(--line,#dce3ed);background:var(--surface-solid,#fff);color:var(--text,#334155);padding:10px 12px;border-radius:12px;font:inherit;font-size:12px;font-weight:600;line-height:1.4;cursor:pointer}.help-navigation button:hover,.help-navigation button[aria-current=true]{background:#e8f1fd;border-color:#b5cce9;color:#315f98}.help-content{min-width:0}.help-content>.help-section,.help-content>.help-tutorial-card{scroll-margin-top:15px;margin-bottom:22px}@media(max-width:750px){.help-layout{grid-template-columns:1fr;gap:12px}.help-navigation{position:static;flex-direction:row;flex-wrap:wrap}.help-navigation button{padding:7px 10px}}
+
+/* Shared compact navigation controls. */
+.shop-modal .shop-back,.settings-panel__close,.profile-panel__close,#profile-notification-button{display:inline-grid;place-items:center;flex:0 0 36px;width:36px;height:36px;min-height:36px;padding:7px;box-sizing:border-box;border:1px solid var(--border,#d6dee8);border-radius:10px;background:var(--surface-solid,#fff);color:var(--text,#35465d);box-shadow:0 2px 0 color-mix(in srgb,var(--text,#35465d) 12%,transparent);cursor:pointer;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+.shop-modal .shop-back:hover,.settings-panel__close:hover,.profile-panel__close:hover,#profile-notification-button:hover{background:var(--surface-soft,#f1f5fb);border-color:#a5b9d1;transform:translateY(-1px)}
+.shop-modal .shop-back:active,.settings-panel__close:active,.profile-panel__close:active,#profile-notification-button:active{transform:translateY(1px);box-shadow:none}
+.shop-modal .shop-back svg,.settings-panel__close svg,.profile-panel__close svg,#profile-notification-button>svg{display:block;width:20px;height:20px;flex:none;pointer-events:none}
+.shop-modal .shop-back:focus-visible,.settings-panel__close:focus-visible,.profile-panel__close:focus-visible,#profile-notification-button:focus-visible{outline:2px solid #7ba5df;outline-offset:3px}
+
+/* Let settings content use the wider desktop dialog without widening navigation. */
+@media(min-width:761px){
+ .settings-modal{padding:24px}
+ .settings-panel{width:calc(100vw - 48px);height:calc(100dvh - 48px);min-height:0;max-height:calc(100dvh - 48px)}
+}
+.settings-panel .settings-pane{width:100%;max-width:none}
+
+/* Attendance class controls collapse together, returning their space to the roster. */
+.attendance-module .attendance-class-strip{transition:height .18s ease,flex-basis .18s ease,margin-bottom .18s ease,opacity .15s ease;}
+.attendance-module:not(:hover) .attendance-class-strip,
+body.is-board-idle .attendance-module.is-idle-unhovered .attendance-class-strip{height:0;flex-basis:0;min-height:0;margin-bottom:-9px;opacity:0;visibility:hidden;overflow:hidden;pointer-events:none;}
+body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-strip{height:48px;flex-basis:48px;margin-bottom:0;opacity:1;visibility:visible;overflow:visible;pointer-events:auto;}
+@media(hover:none){.attendance-module:not(:hover) .attendance-class-strip{height:48px;flex-basis:48px;margin-bottom:0;opacity:1;visibility:visible;overflow:visible;pointer-events:auto;}.attendance-module:not(:hover) .attendance-class-strip .tile-class-loader{width:100%;max-width:100%;height:44px;max-height:44px;padding:5px;border-width:1px;opacity:1;visibility:visible;transform:none;pointer-events:auto;}.attendance-module:not(:hover) .attendance-class-strip{grid-template-columns:minmax(135px,.75fr) minmax(245px,1.35fr) auto;}}
+@media(prefers-reduced-motion:reduce){.attendance-module .attendance-class-strip{transition:none}}
+
+/* Keep composited Attendance surfaces inside their rounded outlines. */
+.attendance-board{isolation:isolate}
+.attendance-board>header{border-radius:19px 19px 0 0}
+.attendance-magnet-stage .attendance-student{isolation:isolate;background-clip:padding-box}
+
+/* Reclaim the Attendance toolbar space while its controls are hidden. */
+.attendance-module{transition:padding-bottom .18s ease}
+.attendance-module:not(:hover),
+body.is-board-idle .attendance-module.is-idle-unhovered{padding-bottom:17px}
+body.is-keyboard-navigation .attendance-module:focus-within{padding-bottom:48px}
+@media(hover:none){.attendance-module:not(:hover){padding-bottom:48px}}
+@media(prefers-reduced-motion:reduce){.attendance-module{transition:none}}

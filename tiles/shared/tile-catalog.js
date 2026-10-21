@@ -1,5 +1,5 @@
 // The Add Tile menu is the source of truth: no separate tile registry to maintain.
-export const gradeOptions = [{id:'pre-k',label:'Pre-K'},{id:'k',label:'Kindergarten'},...Array.from({length:12},(_,i)=>({id:String(i+1),label:`Grade ${i+1}`}))];
+export const gradeOptions = [{id:'all',label:'All Grades'},{id:'pre-k',label:'Pre-K'},{id:'k',label:'Kindergarten'},...Array.from({length:12},(_,i)=>({id:String(i+1),label:`Grade ${i+1}`})),{id:'higher-ed',label:'Higher-Ed'}];
 export const badgeOptions = [
   {id:'holiday',label:'Holiday',className:'holiday-badge'},
   {id:'pbis',label:'PBIS',className:'context-menu__tracking-badge'},

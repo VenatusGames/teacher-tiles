@@ -910,9 +910,10 @@
     window.TeacherTilesPlannerSkins.close();
     const limit = plannerLimit();
     const paid = hasPlannerSubscription();
-    libraryLimit.textContent = `${planners.length} / ${limit}`;
+    libraryLimit.textContent = `Planner Limit · ${planners.length} / ${limit}`;
     libraryLimit.title = `${planners.length} of ${limit} planners used`;
-    libraryPlan.textContent = paid ? 'SUPPORTER · UP TO 10 PLANNERS' : 'FREE · UP TO 2 PLANNERS';
+    libraryPlan.innerHTML = paid ? '<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg> SUBSCRIBER · UP TO 10 PLANNERS' : 'FREE · UP TO 2 PLANNERS';
+    const upgrade=document.getElementById('lesson-planner-library-upgrade');upgrade.hidden=paid;upgrade.innerHTML=paid?'':'<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg> 10 planners with a subscription';
     libraryPlan.classList.toggle('is-subscriber', paid);
     createPlannerButton.disabled = planners.length >= limit;
     createPlannerButton.setAttribute('aria-disabled', String(createPlannerButton.disabled));

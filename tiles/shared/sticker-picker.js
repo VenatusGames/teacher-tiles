@@ -17,7 +17,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   });
   panel.querySelector('.asset-shelf__scroll').hidden=true;
   const root=document.createElement('div');root.className='sticker-picker';
-  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All stickers</button><button type="button" data-view="favorites">♡ Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned only</span><input type="checkbox" role="switch" aria-label="Owned only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
+  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All stickers</button><button type="button" data-view="favorites">Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned Only</span><input type="checkbox" role="switch" aria-label="Owned Only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
   panel.append(root);
   const views=root.querySelector('.sticker-picker-views'),filters=root.querySelector('.sticker-picker-filters'),ownedInput=filters.querySelector('input');
   const searchBox=search.closest('.sticker-shelf-search');

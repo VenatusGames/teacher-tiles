@@ -14,11 +14,11 @@ function timerUntilTarget(value,now=new Date()){
   return new Date(Math.min(...targets.map(target=>target.getTime())));
 }
 
-function launchConfetti(m){const layer=m.querySelector('.confetti-layer');if(!layer)return;layer.innerHTML='';const colors=['#ff6b7a','#ffd34e','#69c6ff','#7edc8b','#9d7cff','#ff9c5a'];for(let i=0;i<54;i++){const p=document.createElement('i');p.className='confetti-piece';const a=Math.random()*Math.PI*2,d=90+Math.random()*230;p.style.setProperty('--x',`${Math.cos(a)*d}px`);p.style.setProperty('--y',`${Math.sin(a)*d-50}px`);p.style.setProperty('--r',`${Math.round(Math.random()*760-380)}deg`);p.style.setProperty('--confetti',colors[i%colors.length]);p.style.width=`${6+Math.random()*5}px`;p.style.height=`${8+Math.random()*10}px`;p.style.animationDelay=`${Math.random()*.12}s`;layer.appendChild(p)}setTimeout(()=>layer.innerHTML='',1700)}
+function launchConfetti(m){window.TeacherTilesTileEffects.launch(m.querySelector('.confetti-layer'));}
 
 function timerSyncType(m){return m.classList.contains('interactive-module')?'interactive':'visual'}
 
-function timerSyncPeers(m){return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
+function timerSyncPeers(m){if(m.dataset.presentationEmbedded==='true')return [m];return [...workspace.querySelectorAll(timerSyncType(m)==='interactive'?'.interactive-module':'.timer-module')].filter(tile=>typeof tile._boardTimerGetState==='function')}
 
 function celebrateTimerFinish(m){
   if(!m.isConnected)return;
@@ -28,8 +28,8 @@ function celebrateTimerFinish(m){
     if(end&&timerSyncSoundEnds.get(key)===end)return;
     if(end)timerSyncSoundEnds.set(key,end);
   }
-  playUiSfx('confetti',1,m);
-  playUiSfx('timer-tada',1,m);
+  playUiSfx('tile-effect',1,m);
+  playUiSfx('confetti-celebration',1,m);
 }
 
 function bindTimerControls(m,onRender,{onFinish}={}){

@@ -38,7 +38,7 @@ function setupTranslation(m){
       field.value=language.code;
       search.value=language.name;
       close({restore:false});
-      if(announce){status.textContent='';notifyBoardChanged('translation-language')}
+      if(announce){status.textContent='';(m._presentationChanged||notifyBoardChanged)('translation-language')}
     };
     const render=(query='')=>{
       const normalized=query.trim().toLocaleLowerCase();
@@ -143,7 +143,7 @@ function setupTranslation(m){
       if(!result||/^[\s\-–—_.]+$/.test(result)||/^(testvalue|null|undefined)$/i.test(result))throw new Error('translation-unavailable');
       renderOutput(result);
       status.textContent='Translated';
-      notifyBoardChanged('translation-result');
+      (m._presentationChanged||notifyBoardChanged)('translation-result');
     }catch(error){
       if(error?.name==='AbortError')return;
       status.textContent='Translation is unavailable right now. Try again.';
@@ -162,7 +162,7 @@ function setupTranslation(m){
     targetPicker.set(priorSource);
     if(translatedText){const priorInput=input.value;input.value=translatedText;renderOutput(priorInput);updateCount()}
     status.textContent='Languages swapped';
-    notifyBoardChanged('translation-swap');
+    (m._presentationChanged||notifyBoardChanged)('translation-swap');
   });
 
   if(!SpeechRecognition){
@@ -183,7 +183,7 @@ function setupTranslation(m){
         if(transcript){input.value=transcript.trim();updateCount()}
       };
       recognition.onerror=event=>{status.textContent=event.error==='not-allowed'?'Microphone permission was not granted.':'Speech input could not start.'};
-      recognition.onend=()=>{listening=false;m.classList.remove('is-listening');if(input.value.trim()){status.textContent='Speech captured';notifyBoardChanged('translation-speech')}};
+      recognition.onend=()=>{listening=false;m.classList.remove('is-listening');if(input.value.trim()){status.textContent='Speech captured';(m._presentationChanged||notifyBoardChanged)('translation-speech')}};
       try{recognition.start()}catch{status.textContent='Speech input could not start.'}
     });
   }

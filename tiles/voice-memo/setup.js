@@ -42,7 +42,7 @@ function setupVoiceMemo(m){
       title.maxLength=40;
       title.value=String(memo.name||`Memo ${index+1}`).slice(0,40);
       title.setAttribute('aria-label',`Rename Memo ${index+1}`);
-      title.addEventListener('input',()=>{memo.name=title.value.slice(0,40);notifyBoardChanged('voice-memo-rename')});
+      title.addEventListener('input',()=>{memo.name=title.value.slice(0,40);(m._presentationChanged||notifyBoardChanged)('voice-memo-rename')});
       title.addEventListener('blur',()=>{if(!title.value.trim()){memo.name=`Memo ${index+1}`;title.value=memo.name}});
       duration.textContent=formatDuration(memo.duration||0);
       meta.append(title,duration);
@@ -58,7 +58,7 @@ function setupVoiceMemo(m){
       remove.className='voicememo-remove';
       remove.setAttribute('aria-label',`Delete Memo ${index+1}`);
       remove.textContent='×';
-      remove.addEventListener('click',()=>{memos.splice(index,1);render();message.textContent='Memo deleted.';notifyBoardChanged('voice-memo-delete')});
+      remove.addEventListener('click',()=>{memos.splice(index,1);render();message.textContent='Memo deleted.';(m._presentationChanged||notifyBoardChanged)('voice-memo-delete')});
       row.append(meta,audio,remove);
       list.appendChild(row);
     });
@@ -73,6 +73,7 @@ function setupVoiceMemo(m){
     if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){message.textContent='Audio recording is not supported in this browser.';return}
     try{
       stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+      if(disposed){stopTracks();return;}
       const preferred=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type=>MediaRecorder.isTypeSupported?.(type));
       recorder=new MediaRecorder(stream,preferred?{mimeType:preferred,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000});
       chunks=[];
@@ -93,7 +94,7 @@ function setupVoiceMemo(m){
           memos.push({name:`Memo ${memos.length+1}`,dataUrl:String(reader.result||''),duration});
           render();
           message.textContent='Memo saved and ready to play.';
-          notifyBoardChanged('voice-memo-add');
+          (m._presentationChanged||notifyBoardChanged)('voice-memo-add');
         };
         reader.onerror=()=>{message.textContent='The recording could not be prepared.'};
         reader.readAsDataURL(blob);
