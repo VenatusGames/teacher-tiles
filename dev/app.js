@@ -298,7 +298,7 @@ const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss
 
 const APP_TRANSLATIONS={
   en:{
-    'top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
+    'top.menu':'Menu','top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
     'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
     'context.addTile':'Add Tile','context.all':'TILES','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
@@ -334,7 +334,7 @@ const APP_TRANSLATIONS={
     'boards.new':'New Board','boards.delete':'Delete board','boards.create':'Create new blank board'
   },
   es:{
-    'top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
+    'top.menu':'Menú','top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
     'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TILES','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
