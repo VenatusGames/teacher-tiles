@@ -7,3 +7,23 @@ body .teachertiles-intro[data-splash=halloween]{background:radial-gradient(ellip
 body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__teacher{color:#e97012;text-shadow:0 2px 0 #762b0a,0 8px 18px #71300f24}
 body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__tiles-word{color:#201713;text-shadow:0 3px 0 #b86122}
 body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__subtitle{color:#5e321a}
+
+/* Seasonal backgrounds are shared with the developer portal previews. */
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=fall]{background:radial-gradient(ellipse at 50% 45%,#fff3d8,#e9c194);--splash-teacher:#9f482a;--splash-tiles:#4d362a;--splash-subtitle:#80533b}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=christmas]{background:radial-gradient(ellipse at 50% 45%,#fffaf0,#e3e9d9);--splash-teacher:#b73543;--splash-tiles:#24583e;--splash-subtitle:#4f6651}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=winter]{background:radial-gradient(ellipse at 50% 45%,#f5fcff,#c3dfee 70%,#8fbed7);--splash-teacher:#5489ad;--splash-tiles:#284e72;--splash-subtitle:#466c89}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]{background:radial-gradient(ellipse at 50% 40%,#fff0d0,#ebd0a0);--splash-teacher:#af7435;--splash-tiles:#27777b;--splash-subtitle:#796241}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=valentine]{background:radial-gradient(ellipse at 50% 45%,#fff1f4,#f4c8d6);--splash-teacher:#c34b7a;--splash-tiles:#72314e;--splash-subtitle:#935b70}
+:is(.teachertiles-intro,.splash-card-art):is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{content:'';position:absolute;inset:0;background:var(--splash-pattern) center/500px 400px repeat;opacity:.52;pointer-events:none;mask-image:radial-gradient(ellipse at center,transparent 16%,#000 76%)}
+[data-splash=fall]{--splash-pattern:url('fall.svg')}
+[data-splash=christmas]{--splash-pattern:url('christmas.svg')}
+[data-splash=winter]{--splash-pattern:url('winter.svg')}
+[data-splash=summer]{--splash-pattern:url('summer.svg')}
+[data-splash=valentine]{--splash-pattern:url('valentine.svg')}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]::after{content:'';position:absolute;bottom:-10%;left:-10%;width:120%;height:25%;border-radius:50% 48% 0 0;background:linear-gradient(#a2dcd6,#6bbdbd);box-shadow:0 -5px 0 #ffffff9c,0 -13px 0 #e9f4df80;transform:rotate(-4deg);pointer-events:none}
+body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__teacher,strong span){color:var(--splash-teacher);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
+body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__tiles-word,strong){color:var(--splash-tiles);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
+body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) .teachertiles-intro__subtitle{color:var(--splash-subtitle)}
+.teachertiles-intro[data-splash] .teachertiles-intro__content{position:relative;z-index:1}
+body [data-splash=rainbow] :is(.teachertiles-intro__teacher,strong span){background:linear-gradient(90deg,#e34d5d 0%,#e88734 18%,#d3ad23 34%,#36a56f 50%,#328bd0 67%,#7853c0 83%,#c55299 100%);background-clip:text;-webkit-background-clip:text;color:transparent;text-shadow:none}
+.splash-card-art:is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{background-size:280px 224px;opacity:.7}
