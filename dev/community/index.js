@@ -1,5 +1,5 @@
 import {firebaseConfig} from '../firebase-config.js';
-import {el,eventArt,eventDates,resultRows,eventTitle} from './shared.js?v=20261021-upcoming';
+import {el,eventArt,eventDates,resultRows,eventTitle} from './shared.js?v=20261021-banner-library';
 const pane=document.querySelector('[data-settings-pane="news"]'),eventsRoot=document.getElementById('community-events'),pollsRoot=document.getElementById('community-polls'),status=document.getElementById('community-status');
 let feed=null,votes={},loadedAt=0,epoch=0,busy=false,identity='',voteReady=false;
 const uid=()=>window.TeacherTilesAuth?.user?.uid||'';
