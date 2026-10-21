@@ -5,9 +5,14 @@
  const selected=()=>{let id;try{id=localStorage.getItem(key)}catch{}const item=catalog.get(id);return accessible(item)?item:catalog.all[0];};
  function equip(id){const item=catalog.get(id);if(!accessible(item))return false;try{localStorage.setItem(key,item.id)}catch{}window.dispatchEvent(new Event('teachertiles:tileeffectchange'));return true;}
  function cancel(layer){running.get(layer)?.();}
- function launch(layer,id){
+ const celebrationLeadMs=300;
+ function launch(layer,id,ready=false){
   if(!layer)return;cancel(layer);const item=id?catalog.get(id):selected(),preview=layer.classList.contains('tile-effect-demo');
   if(preview&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!preview&&item.kind!=='confetti'&&!ready){
+    const timer=setTimeout(()=>{if(layer.isConnected)launch(layer,item.id,true);else cancel(layer);},celebrationLeadMs);
+    const stop=()=>{clearTimeout(timer);if(running.get(layer)===stop)running.delete(layer);};running.set(layer,stop);return stop;
+  }
   const canvas=document.createElement('canvas');canvas.className='tile-effect-stage';canvas.setAttribute('aria-hidden','true');
   const w=layer.clientWidth||400,h=layer.clientHeight||300,scale=Math.min(preview?1:1.5,devicePixelRatio||1);canvas.width=Math.ceil(w*scale);canvas.height=Math.ceil(h*scale);layer.replaceChildren(canvas);
   const ctx=canvas.getContext('2d'),duration=item.kind==='confetti'?1700:2800;let frame=0,finish=0,start=performance.now();
@@ -85,5 +90,5 @@
  }
  document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const stop of [...running.values()])stop();});
  window.addEventListener('storage',e=>{if(e.key===key)window.dispatchEvent(new Event('teachertiles:tileeffectchange'));});
- window.TeacherTilesTileEffects=Object.freeze({...catalog,selected,equip,launch,cancel,preview,picker,bindPreviews});
+ window.TeacherTilesTileEffects=Object.freeze({...catalog,selected,equip,launch,cancel,preview,picker,bindPreviews,celebrationLeadMs});
 })();

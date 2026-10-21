@@ -17,7 +17,7 @@ function setupShopExtras(modal) {
     }
     return card;
   }
-  const effectsPage=page('tile-effects','Tile Effects','');
+  const effectsPage=page('tile-effects','Tile Effects','Change the ending effects for certain tiles!');
   for(const item of effects.catalog)effectsPage.querySelector('.shop-product-grid').append(product(item,'tile-effect',effects.preview(item.id)));
   effects.bindPreviews(modal);
   const planners=page('planner-skins','Planner Skins','A personal touch for your planning shelf. Choose a cover for each book.');
@@ -40,7 +40,7 @@ function setupShopExtras(modal) {
     if(kind==='themes')button.dataset.shopOpenPage='presentation-themes';else if(kind==='transitions')button.dataset.shopOpenPage='presentation-transitions';else{button.disabled=true;button.classList.add('shop-category--coming-soon');}collections.append(button);
   }
   const themesBack=presentations.querySelector('.shop-back');themesBack.dataset.shopOpenPage='presentations';themesBack.setAttribute('aria-label','Back to Presentations');
-  const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile. Basic colors · 10 coins. Decorative · 25 coins. Animated · 40 coins.');
+  const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile border.');
   for(const frame of frames.catalog)profiles.querySelector('.shop-product-grid').append(product(frame,'profile-frame',frames.preview(frame.id)));
   const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentations',''],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','']];
   for(const [id,title,subtitle] of categories){
