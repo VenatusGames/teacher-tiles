@@ -19362,3 +19362,8 @@ body.is-board-idle .attendance-module.is-idle-unhovered .attendance-class-strip{
 body.is-keyboard-navigation .attendance-module:focus-within .attendance-class-strip{height:48px;flex-basis:48px;margin-bottom:0;opacity:1;visibility:visible;overflow:visible;pointer-events:auto;}
 @media(hover:none){.attendance-module:not(:hover) .attendance-class-strip{height:48px;flex-basis:48px;margin-bottom:0;opacity:1;visibility:visible;overflow:visible;pointer-events:auto;}.attendance-module:not(:hover) .attendance-class-strip .tile-class-loader{width:100%;max-width:100%;height:44px;max-height:44px;padding:5px;border-width:1px;opacity:1;visibility:visible;transform:none;pointer-events:auto;}.attendance-module:not(:hover) .attendance-class-strip{grid-template-columns:minmax(135px,.75fr) minmax(245px,1.35fr) auto;}}
 @media(prefers-reduced-motion:reduce){.attendance-module .attendance-class-strip{transition:none}}
+
+/* Keep composited Attendance surfaces inside their rounded outlines. */
+.attendance-board{isolation:isolate}
+.attendance-board>header{border-radius:19px 19px 0 0}
+.attendance-magnet-stage .attendance-student{isolation:isolate;background-clip:padding-box}

@@ -5,24 +5,27 @@
  const selected=()=>{let id;try{id=localStorage.getItem(key)}catch{}const item=catalog.get(id);return accessible(item)?item:catalog.all[0];};
  function equip(id){const item=catalog.get(id);if(!accessible(item))return false;try{localStorage.setItem(key,item.id)}catch{}window.dispatchEvent(new Event('teachertiles:tileeffectchange'));return true;}
  function cancel(layer){running.get(layer)?.();}
+ // One reusable bill sprite keeps dozens of spinning notes inexpensive to draw.
+ const moneyBill=document.createElement('canvas');moneyBill.width=128;moneyBill.height=64;
+ {const g=moneyBill.getContext('2d');g.fillStyle='#dcebb8';g.fillRect(1,1,126,62);g.strokeStyle='#386346';g.lineWidth=2;g.strokeRect(2,2,124,60);g.strokeRect(7,7,114,50);g.fillStyle='#adc78b';g.beginPath();g.ellipse(64,32,20,23,0,0,Math.PI*2);g.fill();g.stroke();g.fillStyle='#32573d';g.textAlign='center';g.textBaseline='middle';g.font='bold 34px Georgia';g.fillText('$',64,34);g.font='bold 15px Georgia';g.fillText('1',20,20);g.fillText('1',108,46);g.lineWidth=1;for(let i=0;i<4;i++){g.beginPath();g.moveTo(17,34+i*4);g.lineTo(36,34+i*4);g.moveTo(92,15+i*4);g.lineTo(111,15+i*4);g.stroke();}}
  const celebrationLeadMs=300;
  function launch(layer,id,ready=false,still=null){
   if(!layer)return;cancel(layer);const item=id?catalog.get(id):selected(),preview=layer.classList.contains('tile-effect-demo');
   if(still===null&&preview&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  if(!preview&&item.kind!=='confetti'&&!ready){
+  if(!preview&&!['confetti','money-confetti'].includes(item.kind)&&!ready){
     const timer=setTimeout(()=>{if(layer.isConnected)launch(layer,item.id,true);else cancel(layer);},celebrationLeadMs);
     const stop=()=>{clearTimeout(timer);if(running.get(layer)===stop)running.delete(layer);};running.set(layer,stop);return stop;
   }
   const canvas=document.createElement('canvas');canvas.className='tile-effect-stage';canvas.setAttribute('aria-hidden','true');
   const w=layer.clientWidth||400,h=layer.clientHeight||300,scale=Math.min(preview?1:1.5,devicePixelRatio||1);canvas.width=Math.ceil(w*scale);canvas.height=Math.ceil(h*scale);layer.replaceChildren(canvas);if(item.kind==='slime')canvas.style.borderRadius=getComputedStyle(layer.closest('.module')||layer).borderRadius;
-  const ctx=canvas.getContext('2d'),duration=item.kind==='slime'?5200:item.kind==='confetti'?1700:2800;let frame=0,finish=0,start=performance.now();
+  const ctx=canvas.getContext('2d'),duration=item.kind==='slime'?5200:['confetti','money-confetti'].includes(item.kind)?1700:2800;let frame=0,finish=0,start=performance.now();
   const stop=()=>{cancelAnimationFrame(frame);clearTimeout(finish);canvas.remove();if(running.get(layer)===stop)running.delete(layer);};running.set(layer,stop);
   const rnd=(a,b)=>a+Math.random()*(b-a),colors=item.colors,particles=[];
   const burstPoints=[[114,110,350],[285,90,850],[210,176,1350]];
-  if(item.kind==='confetti')for(let i=0;i<(preview?32:60);i++){const a=rnd(0,Math.PI*2),v=rnd(75,190);particles.push({x:200,y:140,vx:Math.cos(a)*v,vy:Math.sin(a)*v-70,color:colors[i%colors.length],r:rnd(2,5),angle:rnd(0,6),spin:rnd(-8,8)});}
+  if(['confetti','money-confetti'].includes(item.kind))for(let i=0;i<(item.kind==='money-confetti'?(preview?22:40):(preview?32:60));i++){const a=rnd(0,Math.PI*2),v=rnd(75,190);particles.push({x:200,y:140,vx:Math.cos(a)*v,vy:Math.sin(a)*v-70,color:colors[i%colors.length],r:rnd(2,5),angle:rnd(0,6),spin:rnd(-8,8)});}
   if(item.kind==='fireworks')for(const [x,y,delay]of burstPoints)for(let i=0;i<(preview?42:68);i++){const a=rnd(0,Math.PI*2),speed=rnd(35,120);particles.push({x,y,delay,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,color:colors[i%colors.length],size:rnd(1.4,2.4),life:rnd(950,1450)});}
   if(item.kind==='explosion')for(let i=0;i<65;i++){const a=rnd(0,Math.PI*2),speed=rnd(50,190);particles.push({vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,color:colors[i%3],r:rnd(1,3),life:rnd(.7,1.8)});}
-  if(item.kind==='rain')for(let i=0;i<(preview?35:65);i++)particles.push({x:Math.random(),delay:rnd(0,1550),size:rnd(2.5,5.5),depth:rnd(.45,1),color:colors[1]});
+  if(item.kind==='rain')for(let i=0;i<(preview?85:145);i++)particles.push({x:rnd(-.08,1.08),delay:rnd(0,1550),length:rnd(24,64),weight:rnd(.65,1.65),depth:rnd(.3,.85)});
   if(item.kind==='smoke')for(let i=0;i<28;i++)particles.push({x:rnd(-1,1),y:rnd(-1,1),r:rnd(.14,.26),phase:rnd(0,6),color:colors[i%colors.length]});
   // Several irregular, shaded cloud silhouettes avoid repeated stamped cloud icons.
   const smokeArts=[];
@@ -47,7 +50,7 @@
    const fit=Math.min(canvas.width/400,canvas.height/300);
    ctx.setTransform(fit,0,0,fit,(canvas.width-400*fit)/2,(canvas.height-300*fit)/2);
    const t=Math.max(0,ms)/1000;
-   if(item.kind==='confetti')for(const p of particles){const f=Math.min(1,t/1.4),d=1-Math.pow(1-f,3);ctx.globalAlpha=Math.min(1,t*12)*(1-f*f);ctx.save();ctx.translate(p.x+p.vx*d,p.y+p.vy*d+65*t*t);ctx.rotate(p.angle+p.spin*t);ctx.scale(1,Math.cos(t*9+p.angle)*.5+.7);ctx.fillStyle=p.color;ctx.fillRect(-p.r,-p.r*1.5,p.r*2,p.r*3);ctx.restore();}
+   if(['confetti','money-confetti'].includes(item.kind))for(const p of particles){const f=Math.min(1,t/1.4),d=1-Math.pow(1-f,3);ctx.globalAlpha=Math.min(1,t*12)*(1-f*f);ctx.save();ctx.translate(p.x+p.vx*d,p.y+p.vy*d+65*t*t);ctx.rotate(p.angle+p.spin*t);ctx.scale(1,Math.cos(t*9+p.angle)*.5+.7);ctx.fillStyle=p.color;if(item.kind==='money-confetti'){const size=19+p.r*2;ctx.drawImage(moneyBill,-size/2,-size/4,size,size/2);}else ctx.fillRect(-p.r,-p.r*1.5,p.r*2,p.r*3);ctx.restore();}
    if(item.kind==='fireworks'){
     for(const [x,y,delay]of burstPoints){const age=ms-delay;if(age<0&&age>-350){const u=1+age/350,cy=300+(y-300)*u;ctx.globalAlpha=u;ctx.strokeStyle='#f5c566';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(x,cy+22);ctx.lineTo(x,cy);ctx.stroke();dot(x,cy,2,'#fff8cf');}if(age>=0&&age<300)glow(x,y,35*(1+age/300),colors[0],.45*(1-age/300));}
     for(const p of particles){const age=ms-p.delay;if(age<0||age>p.life)continue;const q=age/1000,k=1-Math.exp(-q*2.1),prev=1-Math.exp(-Math.max(0,q-.14)*2.1),x=p.x+p.vx*k,y=p.y+p.vy*k+35*q*q;ctx.globalAlpha=Math.pow(1-age/p.life,.75);ctx.strokeStyle=p.color;ctx.lineWidth=p.size;ctx.beginPath();ctx.moveTo(p.x+p.vx*prev,p.y+p.vy*prev+35*Math.max(0,q-.14)**2);ctx.lineTo(x,y);const brightness=ctx.globalAlpha;ctx.globalAlpha=brightness*.2;ctx.lineWidth=p.size*3;ctx.stroke();ctx.globalAlpha=brightness;ctx.lineWidth=p.size;ctx.stroke();dot(x,y,p.size,p.color);ctx.globalAlpha*=.8;dot(x,y,.55,'#fffbea');}
@@ -65,13 +68,20 @@
    }
    if(item.kind==='rain'||item.kind==='smoke'){
     ctx.setTransform(scale,0,0,scale,0,0);
-    if(item.kind==='rain')for(const p of particles){
-     const u=(ms-p.delay)/950;if(u<0||u>1.2)continue;const x=p.x*width,y=-18+u*(height+25),r=p.size*1.35;
-     ctx.globalAlpha=p.depth*Math.min(1,u*10)*Math.max(0,1-(t-2.3)/.5);ctx.save();ctx.translate(x,y);const trail=ctx.createLinearGradient(0,-r*6,0,0);trail.addColorStop(0,colors[1]+'00');trail.addColorStop(1,colors[1]+'66');ctx.strokeStyle=trail;ctx.lineWidth=r*.45;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,-r*6);ctx.lineTo(0,-r);ctx.stroke();
-     // Rounded, glassy teardrop with a darker rim and a broad curved reflection.
-     const shape=new Path2D();shape.moveTo(0,-r*2);shape.bezierCurveTo(-r*.18,-r*.95,-r*1.06,-r*.18,-r, r*.4);shape.bezierCurveTo(-r*.9,r*1.5,r*.9,r*1.5,r,r*.4);shape.bezierCurveTo(r*1.06,-r*.18,r*.18,-r*.95,0,-r*2);shape.closePath();
-     const sheen=ctx.createLinearGradient(-r,-r,r,r);sheen.addColorStop(0,colors[0]);sheen.addColorStop(.4,colors[1]);sheen.addColorStop(1,colors[2]);ctx.fillStyle=sheen;ctx.fill(shape);ctx.strokeStyle=colors[2]+'66';ctx.lineWidth=.5;ctx.stroke(shape);
-     ctx.strokeStyle='#ffffffbb';ctx.lineWidth=Math.max(1,r*.22);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-r*.12,-r*.8);ctx.quadraticCurveTo(-r*.65,-r*.1,-r*.53,r*.38);ctx.stroke();ctx.fillStyle='#ffffff99';ctx.beginPath();ctx.arc(r*.32,r*.65,r*.14,0,Math.PI*2);ctx.fill();ctx.restore();
+    if(item.kind==='rain'){
+     // Fine wind-slanted streaks, with transparent tails instead of droplet silhouettes.
+     const rainScale=Math.max(.6,Math.min(1.6,Math.min(width,height)/300));
+     ctx.lineCap='round';
+     for(const p of particles){
+      const u=(ms-p.delay)/950;if(u<0||u>1.2)continue;
+      const length=p.length*rainScale,y=-length+u*(height+length*2),x=p.x*width+y*.1;
+      const tailX=x-length*.1,tailY=y-length;
+      ctx.globalAlpha=p.depth*Math.min(1,u*10)*Math.max(0,1-(t-2.3)/.5);
+      const streak=ctx.createLinearGradient(tailX,tailY,x,y);
+      streak.addColorStop(0,colors[1]+'00');streak.addColorStop(.35,colors[1]+'88');streak.addColorStop(.85,colors[1]);streak.addColorStop(1,colors[0]);
+      ctx.strokeStyle=streak;ctx.lineWidth=p.weight*rainScale;
+      ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
+     }
     }
     if(item.kind==='smoke'){
      const spread=1-Math.exp(-t*5),fade=Math.min(1,t*9)*Math.max(0,1-(t-1.2)/1.6),radius=Math.hypot(width,height);
@@ -105,7 +115,7 @@
   else if(item.kind==='lightning')art=`<path d="M77 34l-19-9 9 22-29 8M131 70l23 4-11 15 30 8" fill="none" stroke="${colors[2]}" stroke-width="5" stroke-linejoin="round"/><path d="m105 12-38 55h30l-9 44 48-63h-33l16-36Z" fill="${colors[0]}" stroke="${colors[1]}" stroke-width="5" stroke-linejoin="round"/>`;
   else if(item.kind==='explosion')art='<path d="m100 10 13 32 34-17-9 34 43 10-36 18 12 30-40-14-20 24-13-34-39 16 12-31-37-19 45-8-6-32 27 17Z" fill="#ff9e38"/><circle cx="103" cy="70" r="23" fill="#ffdd74"/>';
   else for(const [cx,cy,r]of [[69,57,36],[135,76,29]])for(let i=0;i<16;i++){const a=i*Math.PI/8;art+=`<path d="M${cx+Math.cos(a)*12} ${cy+Math.sin(a)*12}l${Math.cos(a)*(r-12)} ${Math.sin(a)*(r-12)}" stroke="${colors[i%colors.length]}" stroke-width="2.4" stroke-linecap="round"/>`;}
-  const image=document.createElement('img');image.className='tile-effect-art';image.alt='';image.draggable=false;image.decoding='async';image.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">'+art+'</svg>');const demo=document.createElement('div');demo.className='tile-effect-demo';box.append(image,demo);if(['lightning','rain','smoke','slime'].includes(item.kind)){if(!stillPreviews.has(item.id)){const stop=launch(demo,item.id,true,item.kind==='lightning'?140:item.kind==='rain'?1100:650);stillPreviews.set(item.id,demo.querySelector('canvas').toDataURL());stop();}image.src=stillPreviews.get(item.id);}box.play=()=>launch(box.lastElementChild,item.id);return box;
+  const image=document.createElement('img');image.className='tile-effect-art';image.alt='';image.draggable=false;image.decoding='async';image.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">'+art+'</svg>');const demo=document.createElement('div');demo.className='tile-effect-demo';box.append(image,demo);if(['lightning','rain','smoke','slime','money-confetti'].includes(item.kind)){if(!stillPreviews.has(item.id)){const stop=launch(demo,item.id,true,item.kind==='lightning'?140:item.kind==='rain'?1100:650);stillPreviews.set(item.id,demo.querySelector('canvas').toDataURL());stop();}image.src=stillPreviews.get(item.id);}box.play=()=>launch(box.lastElementChild,item.id);return box;
  }
  let hoverRun=null;
  function stopPreview(){if(!hoverRun)return;clearTimeout(hoverRun.timer);hoverRun.stop?.();hoverRun=null;}
