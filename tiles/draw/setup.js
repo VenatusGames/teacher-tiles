@@ -1,321 +1,46 @@
 function setupDraw(m){
-  const toggle=m.querySelector('.draw-toggle');
-  const toggleLabel=m.querySelector('.draw-toggle-label');
-  const color=m.querySelector('.draw-color');
-  const swatch=m.querySelector('.draw-color-swatch');
-  const size=m.querySelector('.draw-size');
-  const clear=m.querySelector('.draw-clear');
-  const undo=m.querySelector('.draw-undo');
-  const redo=m.querySelector('.draw-redo');
-  const toolButtons=[...m.querySelectorAll('.draw-tool')];
-
-  const canvas=document.createElement('canvas');
-  canvas.className='board-drawing-canvas';
-  const drawScale=Math.min(1,4800/BOARD_WIDTH,3200/BOARD_HEIGHT);
-  canvas.width=Math.max(1,Math.round(BOARD_WIDTH*drawScale));
-  canvas.height=Math.max(1,Math.round(BOARD_HEIGHT*drawScale));
-  canvas.style.width=`${BOARD_WIDTH}px`;
-  canvas.style.height=`${BOARD_HEIGHT}px`;
-  workspace.appendChild(canvas);
-
-  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true})||canvas.getContext('2d');
-  const dpr=drawScale;
-  ctx.scale(dpr,dpr);
-  ctx.lineCap='round';
-  ctx.lineJoin='round';
-
-  const baseCanvas=document.createElement('canvas');
-  baseCanvas.width=canvas.width;
-  baseCanvas.height=canvas.height;
-  const baseCtx=baseCanvas.getContext('2d',{alpha:true})||baseCanvas.getContext('2d');
-
-  let enabled=false;
-  let tool='brush';
-  let drawing=false;
-  let currentStroke=null;
-  let drawActions=[];
-  let drawCursor=0;
-  let baseImageData='';
-  let pendingPoints=[];
-  let drawFrame=0;
-  let imageLoadToken=0;
-
-  const updatePointerMode=()=>{
-    canvas.classList.toggle('is-active',enabled);
-    canvas.style.pointerEvents=enabled?'auto':'none';
-    toggle.classList.toggle('is-on',enabled);
-    toggle.setAttribute('aria-pressed',String(enabled));
-    toggleLabel.textContent=enabled?'ON':'OFF';
-    canvas.dataset.tool=tool;
-  };
-
-  const updateSwatch=()=>{swatch.style.background=color.value};
-  updateSwatch();
-
-  const updateHistoryButtons=()=>{
-    undo.disabled=drawCursor<=0;
-    redo.disabled=drawCursor>=drawActions.length;
-  };
-
-  toggle.addEventListener('click',()=>{enabled=!enabled;updatePointerMode()});
-  color.addEventListener('input',updateSwatch);
-
-  toolButtons.forEach(b=>b.addEventListener('click',()=>{
-    tool=b.dataset.drawTool;
-    toolButtons.forEach(x=>x.classList.toggle('is-active',x===b));
-    canvas.dataset.tool=tool;
-  }));
-
-  const drawSegment=(action,from,to)=>{
-    const dx=to.x-from.x,dy=to.y-from.y;
-    const distance=Math.hypot(dx,dy);
-    const dt=Math.max(1,(to.time||0)-(from.time||0));
-    const speed=distance/dt;
-    const baseSize=Number(action.size)||10;
-    ctx.save();
-
-    if(action.tool==='eraser'){
-      ctx.globalCompositeOperation='destination-out';
-      ctx.globalAlpha=1;
-      ctx.strokeStyle='#000';
-      ctx.lineWidth=Math.max(4,baseSize*1.6);
-      ctx.lineCap='round';
-      ctx.beginPath();
-      ctx.moveTo(from.x,from.y);
-      ctx.lineTo(to.x,to.y);
-      ctx.stroke();
-    }else if(action.tool==='pencil'){
-      ctx.globalCompositeOperation='source-over';
-      ctx.globalAlpha=.9;
-      ctx.strokeStyle=action.color;
-      ctx.lineWidth=Math.max(1,baseSize*.28);
-      ctx.lineCap='round';
-      ctx.beginPath();
-      ctx.moveTo(from.x,from.y);
-      ctx.lineTo(to.x,to.y);
-      ctx.stroke();
-    }else{
-      const speedFactor=clamp(1.15-speed*.18,.58,1.15);
-      const brushWidth=Math.max(2,baseSize*speedFactor);
-      ctx.globalCompositeOperation='source-over';
-      ctx.globalAlpha=.72;
-      ctx.strokeStyle=action.color;
-      ctx.lineWidth=brushWidth;
-      ctx.lineCap='round';
-      ctx.shadowColor=action.color;
-      ctx.shadowBlur=Math.max(.5,brushWidth*.16);
-      ctx.beginPath();
-      ctx.moveTo(from.x,from.y);
-      ctx.quadraticCurveTo(from.x,from.y,to.x,to.y);
-      ctx.stroke();
-      ctx.globalAlpha=.18;
-      ctx.lineWidth=brushWidth*1.35;
-      ctx.shadowBlur=0;
-      ctx.beginPath();
-      ctx.moveTo(from.x,from.y);
-      ctx.lineTo(to.x,to.y);
-      ctx.stroke();
-    }
-    ctx.restore();
-  };
-
-  const renderAction=action=>{
-    if(action.type==='clear'){
-      ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
-      return;
-    }
-    const points=Array.isArray(action.points)?action.points:[];
-    if(points.length===1)drawSegment(action,points[0],{...points[0],x:points[0].x+.01,y:points[0].y+.01,time:points[0].time+1});
-    for(let index=1;index<points.length;index++)drawSegment(action,points[index-1],points[index]);
-  };
-
-  const redraw=()=>{
-    ctx.save();
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
-    if(baseCanvas.width&&baseCanvas.height)ctx.drawImage(baseCanvas,0,0,BOARD_WIDTH,BOARD_HEIGHT);
-    for(let index=0;index<drawCursor;index++)renderAction(drawActions[index]);
-    ctx.restore();
-    updateHistoryButtons();
-  };
-
-  const setHistoryCursor=next=>{
-    drawCursor=clamp(Math.round(Number(next)||0),0,drawActions.length);
-    redraw();
-  };
-
-  const changeHistory=(next,reason)=>{
-    const before=drawCursor;
-    const after=clamp(next,0,drawActions.length);
-    if(before===after)return;
-    setHistoryCursor(after);
-    recordHistory({type:'drawing',el:m,before,after,reason});
-  };
-
-  const pushAction=action=>{
-    if(drawCursor<drawActions.length)drawActions.splice(drawCursor);
-    const before=drawCursor;
-    drawActions.push(action);
-    drawCursor=drawActions.length;
-    updateHistoryButtons();
-    recordHistory({type:'drawing',el:m,before,after:drawCursor});
-  };
-
-  undo.addEventListener('click',()=>changeHistory(drawCursor-1,'draw-undo'));
-  redo.addEventListener('click',()=>changeHistory(drawCursor+1,'draw-redo'));
-  clear.addEventListener('click',()=>{
-    const action={type:'clear'};
-    renderAction(action);
-    pushAction(action);
-  });
-
-  const point=e=>screenToBoard(e.clientX,e.clientY);
-
-  const appendPendingPoint=()=>{
-    drawFrame=0;
-    if(!pendingPoints.length||!drawing||!currentStroke){pendingPoints=[];return}
-    const points=pendingPoints;
-    pendingPoints=[];
-    for(const next of points){
-      const prior=currentStroke.points.at(-1);
-      if(Math.hypot(next.x-prior.x,next.y-prior.y)<.18)continue;
-      currentStroke.points.push(next);
-      drawSegment(currentStroke,prior,next);
-    }
-  };
-
-  const flushPendingPoint=()=>{
-    if(drawFrame){cancelAnimationFrame(drawFrame);drawFrame=0}
-    appendPendingPoint();
-  };
-
-  const down=e=>{
-    if(!enabled||e.button!==0)return;
-    pendingPoints=[];
-    drawing=true;
-    const p=point(e);
-    currentStroke={type:'stroke',tool,color:color.value,size:Number(size.value),points:[{x:p.x,y:p.y,time:performance.now()}]};
-    canvas.setPointerCapture?.(e.pointerId);
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const move=e=>{
-    if(!drawing||!enabled||!currentStroke)return;
-    const events=typeof e.getCoalescedEvents==='function'?e.getCoalescedEvents():[e];
-    for(const event of events){
-      const p=point(event);
-      pendingPoints.push({x:p.x,y:p.y,time:Number(event.timeStamp)||performance.now()});
-    }
-    if(!drawFrame)drawFrame=requestAnimationFrame(appendPendingPoint);
-    e.preventDefault();
-  };
-
-  const up=()=>{
-    if(drawing&&currentStroke){
-      flushPendingPoint();
-      if(currentStroke.points.length===1)renderAction(currentStroke);
-      pushAction(currentStroke);
-    }
-    drawing=false;
-    currentStroke=null;
-  };
-
-  canvas.addEventListener('pointerdown',down);
-  canvas.addEventListener('pointermove',move);
-  canvas.addEventListener('pointerup',up);
-  canvas.addEventListener('pointercancel',up);
-
-  updatePointerMode();
-  updateHistoryButtons();
-  m._setDrawHistoryCursor=setHistoryCursor;
-  m._deactivate=()=>{enabled=false;updatePointerMode();canvas.hidden=true};
-  m._reactivate=()=>{canvas.hidden=false;updatePointerMode()};
-
-  const compactAction=action=>{
-    if(action.type==='clear')return{t:'c'};
-    let priorTime=0;
-    return{
-      t:'s',
-      k:action.tool,
-      c:action.color,
-      z:Number(action.size)||10,
-      p:(action.points||[]).map((p,index)=>{
-        const time=Number(p.time)||0;
-        const delta=index?clamp(Math.round(time-priorTime),1,80):0;
-        priorTime=time;
-        return[Math.round(Number(p.x)*10)/10,Math.round(Number(p.y)*10)/10,delta];
-      })
-    };
-  };
-
-  const expandAction=action=>{
-    if(action?.t==='c'||action?.type==='clear')return{type:'clear'};
-    if(action?.t!=='s'&&action?.type!=='stroke')return null;
-    let time=0;
-    const points=(Array.isArray(action.p)?action.p:action.points||[]).map(point=>{
-      if(Array.isArray(point)){
-        time+=Number(point[2])||0;
-        return{x:Number(point[0])||0,y:Number(point[1])||0,time};
-      }
-      time=Number(point.time)||time+16;
-      return{x:Number(point.x)||0,y:Number(point.y)||0,time};
-    });
-    if(!points.length)return null;
-    return{
-      type:'stroke',
-      tool:action.k||action.tool||'brush',
-      color:action.c||action.color||'#17191d',
-      size:Number(action.z??action.size)||10,
-      points
-    };
-  };
-
-  m._boardGetState=()=>({
-    image:baseImageData,
-    actions:drawActions.slice(0,drawCursor).map(compactAction),
-    tool,
-    color:color.value,
-    size:size.value
-  });
-  m._boardSetState=state=>{
-    if(!state)return;
-    if(state.color){color.value=state.color;updateSwatch()}
-    if(state.size)size.value=String(state.size);
-    if(state.tool){
-      tool=state.tool;
-      toolButtons.forEach(button=>button.classList.toggle('is-active',button.dataset.drawTool===tool));
-      canvas.dataset.tool=tool;
-    }
-    drawActions=(Array.isArray(state.actions)?state.actions:[]).map(expandAction).filter(Boolean);
-    drawCursor=drawActions.length;
-    baseImageData=typeof state.image==='string'?state.image:'';
-    const loadToken=++imageLoadToken;
-    if(state.image){
-      const image=new Image();
-      image.onload=()=>{
-        if(loadToken!==imageLoadToken)return;
-        baseCtx.clearRect(0,0,baseCanvas.width,baseCanvas.height);
-        baseCtx.drawImage(image,0,0,baseCanvas.width,baseCanvas.height);
-        redraw();
-      };
-      image.onerror=()=>{
-        if(loadToken!==imageLoadToken)return;
-        baseCtx.clearRect(0,0,baseCanvas.width,baseCanvas.height);
-        redraw();
-      };
-      image.src=state.image;
-    }else{
-      baseCtx.clearRect(0,0,baseCanvas.width,baseCanvas.height);
-      redraw();
-    }
-  };
-
-  const priorCleanup=m._cleanup;
-  m._cleanup=()=>{
-    if(drawFrame)cancelAnimationFrame(drawFrame);
-    imageLoadToken++;
-    canvas.remove();
-    priorCleanup?.();
-  };
+  const svg=path=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  const tools=[['brush','Pen','<path d="m4 20 1-6L16 3l5 5-11 11-6 1ZM14 5l5 5"/>'],['pencil','Pencil','<path d="m4 20 2-7L16 3l5 5-10 10-7 2ZM6 13l5 5M14 5l5 5"/>'],['highlighter','Highlighter','<path d="m7 15 9-12 6 5-10 11-5-4ZM7 15l-4 5h8M3 22h13"/>'],['eraser','Eraser','<path d="m3 14 9-10 9 8-8 9H9l-6-7ZM8 9l9 8M13 21h8"/>'],['select','Select','<path d="m5 3 14 10-7 1-4 7-3-18Z"/>'],['line','Line','<path d="m4 20 16-16"/>'],['arrow','Arrow','<path d="m4 20 16-16M9 4h11v11"/>'],['rectangle','Rectangle','<rect x="4" y="5" width="16" height="14" rx="1"/>'],['ellipse','Circle','<circle cx="12" cy="12" r="8"/>']];
+  const body=document.createElement('div');body.className='draw-palette';
+  body.innerHTML=`<header><strong>Draw</strong><button type="button" class="draw-toggle" aria-pressed="false">Start Drawing</button></header><div class="draw-tool-grid" role="toolbar" aria-label="Drawing tools">${tools.map(([id,name,path])=>`<button type="button" data-draw-tool="${id}" aria-label="${name}" title="${name}" aria-pressed="${id==='brush'}">${svg(path)}</button>`).join('')}</div><div class="draw-palette-colors" aria-label="Drawing colors"></div><div class="draw-recent-colors" aria-label="Recently used colors"></div><div class="draw-options"><label>Size <input class="draw-size" type="range" min="1" max="60" value="6"><output>6</output></label><label>Opacity <input class="draw-opacity" type="range" min="10" max="100" value="100"><output>100%</output></label><label class="draw-check"><input class="draw-smooth" type="checkbox" checked>Smooth strokes</label><label class="draw-check"><input class="draw-fill" type="checkbox">Fill shape</label><label class="draw-erase-mode" hidden>Eraser <select><option value="pixel">Partial stroke</option><option value="stroke">Whole stroke</option></select></label></div><div class="draw-selection-tools" hidden><button type="button" data-edit="duplicate" title="Duplicate selected drawing">Duplicate</button><button type="button" data-edit="delete" title="Delete selected drawing">Delete</button><button type="button" data-edit="rotate" title="Rotate selected drawing 15 degrees">Rotate</button></div><footer><button type="button" class="draw-undo" aria-label="Undo drawing">${svg('<path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/>')}</button><button type="button" class="draw-redo" aria-label="Redo drawing">${svg('<path d="M20 5v6h-6M20 11l-4-4a7 7 0 1 0-1 12"/>')}</button><button type="button" class="draw-clear">Clear</button><span class="draw-feedback" role="status"></span></footer>`;
+  m.querySelector('.draw-tools')?.remove();m.append(body);m.classList.add('draw-rebuilt');
+  const $=s=>body.querySelector(s),toggle=$('.draw-toggle'),size=$('.draw-size'),opacity=$('.draw-opacity'),smooth=$('.draw-smooth'),fill=$('.draw-fill'),undo=$('.draw-undo'),redo=$('.draw-redo'),selectionTools=$('.draw-selection-tools');
+  let color='#222222',tool='brush',enabled=false,actions=[],cursor=0,selected=-1,gesture=null,frame=0,baseImage=null,baseImageData='',loadToken=0,disposed=false,penUntil=0;
+  const recent=[];
+  const canvas=document.createElement('canvas');canvas.className='board-drawing-canvas';canvas.setAttribute('aria-label','Draw on board');workspace.append(canvas);const ctx=canvas.getContext('2d');
+  let view={x:0,y:0,scale:1,ratio:1};
+  const scene=()=>{const strokes=new Map();let cleared=false;actions.slice(0,cursor).forEach((a,i)=>{if(a.type==='clear'){strokes.clear();cleared=true;}else if(a.type==='edit'){if(a.stroke)strokes.set(a.index,a.stroke);else strokes.delete(a.index);}else strokes.set(i,a);});return {strokes,cleared};};
+  function update(){undo.disabled=cursor===0;redo.disabled=cursor===actions.length;selectionTools.hidden=selected<0;toggle.setAttribute('aria-pressed',String(enabled));toggle.textContent=enabled?'Stop Drawing':'Start Drawing';canvas.style.pointerEvents=enabled?'auto':'none';canvas.classList.toggle('is-active',enabled);canvas.dataset.tool=tool;body.querySelectorAll('[data-draw-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.drawTool===tool)));$('.draw-erase-mode').hidden=tool!=='eraser';fill.closest('label').hidden=!['rectangle','ellipse'].includes(tool);smooth.closest('label').hidden=!['brush','pencil','highlighter'].includes(tool);}
+  function colors(){for(const [selector,values]of [['.draw-palette-colors',['#222222','#ffffff','#d65563','#ef9d50','#e8c74a','#529b76','#568ecc','#9266b5']],['.draw-recent-colors',recent]]){const host=$(selector);host.replaceChildren();for(const value of values){const b=document.createElement('button');b.type='button';b.style.background=value;b.title=value;b.setAttribute('aria-label','Use '+value);b.setAttribute('aria-pressed',String(color===value));b.onclick=()=>{color=value;colors();};host.append(b);}if(selector==='.draw-palette-colors'){const label=document.createElement('label');label.className='draw-custom-color';label.title='Custom color';label.innerHTML='<input type="color" aria-label="Custom drawing color">';label.querySelector('input').value=color;label.querySelector('input').oninput=e=>{color=e.target.value;};label.querySelector('input').onchange=()=>{rememberColor();};host.append(label);}host.hidden=!host.childElementCount;}}
+  function rememberColor(){const i=recent.indexOf(color);if(i>=0)recent.splice(i,1);recent.unshift(color);recent.length=Math.min(6,recent.length);colors();}
+  function renderStroke(a){const ps=a.points||[];if(!ps.length)return;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.globalCompositeOperation=a.tool==='eraser'?'destination-out':'source-over';ctx.globalAlpha=a.tool==='eraser'?1:(a.opacity??1)*(a.tool==='highlighter'?.3:1);ctx.strokeStyle=a.color||'#222222';ctx.fillStyle=a.color||'#222222';const width=Math.max(.5,(a.size||6)*(a.tool==='pencil'?.45:a.tool==='highlighter'?3:a.tool==='eraser'?2:1));ctx.lineWidth=width;
+    if(a.pressure&&a.tool!=='highlighter'&&!a.fill&&ps.length>1){for(let i=1;i<ps.length;i++){ctx.lineWidth=width*(.35+.65*((ps[i].pressure??.5)*2));ctx.beginPath();ctx.moveTo(ps[i-1].x,ps[i-1].y);ctx.lineTo(ps[i].x,ps[i].y);ctx.stroke();}}
+    else{ctx.beginPath();ctx.moveTo(ps[0].x,ps[0].y);if(ps.length===1){ctx.lineTo(ps[0].x+.01,ps[0].y+.01);}else if(a.smooth&&ps.length>2){for(let i=1;i<ps.length-1;i++){const p=ps[i],q=ps[i+1];ctx.quadraticCurveTo(p.x,p.y,(p.x+q.x)/2,(p.y+q.y)/2);}ctx.lineTo(ps.at(-1).x,ps.at(-1).y);}else for(const p of ps.slice(1))ctx.lineTo(p.x,p.y);if(a.fill){ctx.closePath();ctx.fill();}ctx.stroke();}ctx.restore();}
+  const bounds=a=>{const xs=a.points.map(p=>p.x),ys=a.points.map(p=>p.y);return {x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)};};
+  function redraw(){frame=0;if(disposed||!m.isConnected)return;const scale=boardCamera.scale,offset=renderedBoardCameraOffset(),ratio=Math.min(3,devicePixelRatio||1);view={x:-offset.x/scale,y:-offset.y/scale,scale,ratio};const w=Math.ceil(innerWidth*ratio),h=Math.ceil(innerHeight*ratio);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}Object.assign(canvas.style,{position:'absolute',inset:'auto',left:view.x+'px',top:view.y+'px',width:innerWidth/scale+'px',height:innerHeight/scale+'px'});ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);ctx.setTransform(ratio*scale,0,0,ratio*scale,-view.x*ratio*scale,-view.y*ratio*scale);const current=scene();if(baseImage&&!current.cleared)ctx.drawImage(baseImage,0,0,BOARD_WIDTH,BOARD_HEIGHT);for(const [id,a]of current.strokes)renderStroke(gesture?.mode==='transform'&&id===selected?gesture.preview:a);if(gesture?.stroke)renderStroke(gesture.stroke);
+    const chosen=gesture?.mode==='transform'?gesture.preview:current.strokes.get(selected);if(enabled&&chosen){const b=bounds(chosen),pad=6/scale;ctx.save();ctx.strokeStyle='#538bd8';ctx.fillStyle='#fff';ctx.lineWidth=1.5/scale;ctx.setLineDash([4/scale,3/scale]);ctx.strokeRect(b.x-pad,b.y-pad,b.w+2*pad,b.h+2*pad);ctx.setLineDash([]);for(const [x,y]of [[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]]){ctx.fillRect(x-pad/2,y-pad/2,pad,pad);ctx.strokeRect(x-pad/2,y-pad/2,pad,pad);}ctx.restore();}update();}
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(redraw);};
+  function push(a){actions.splice(cursor);const before=cursor;actions.push(a);cursor=actions.length;recordHistory({type:'drawing',el:m,before,after:cursor});notifyBoardChanged('drawing');schedule();}
+  function history(next){const before=cursor;cursor=clamp(next,0,actions.length);selected=-1;gesture=null;if(cursor!==before){recordHistory({type:'drawing',el:m,before,after:cursor});notifyBoardChanged('drawing');}schedule();}
+  function hit(p){const tolerance=8/boardCamera.scale;for(const [id,a]of [...scene().strokes].reverse()){if(a.tool==='eraser')continue;const ps=a.points;if(a.fill){const b=bounds(a);if(p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h)return id;}for(let i=0;i<ps.length;i++){const u=ps[Math.max(0,i-1)],v=ps[i],dx=v.x-u.x,dy=v.y-u.y,t=clamp(((p.x-u.x)*dx+(p.y-u.y)*dy)/(dx*dx+dy*dy||1),0,1);if(Math.hypot(p.x-u.x-t*dx,p.y-u.y-t*dy)<=tolerance+(a.size||6)/2)return id;}}return -1;}
+  function edit(action){const a=scene().strokes.get(selected);if(!a)return;const b=bounds(a),cx=b.x+b.w/2,cy=b.y+b.h/2;if(action==='delete'){push({type:'edit',index:selected,stroke:null});selected=-1;}if(action==='duplicate'){push({...a,points:a.points.map(p=>({...p,x:p.x+20,y:p.y+20}))});selected=cursor-1;}if(action==='rotate'){const angle=Math.PI/12;push({type:'edit',index:selected,stroke:{...a,points:a.points.map(p=>({...p,x:cx+(p.x-cx)*Math.cos(angle)-(p.y-cy)*Math.sin(angle),y:cy+(p.x-cx)*Math.sin(angle)+(p.y-cy)*Math.cos(angle)}))}});}schedule();}
+  function activate(value){if(value)window.dispatchEvent(new CustomEvent('teachertiles:drawing-active',{detail:m}));enabled=value;selected=-1;gesture=null;update();schedule();}
+  const deactivateOther=e=>{if(e.detail!==m)activate(false);};window.addEventListener('teachertiles:drawing-active',deactivateOther);
+  toggle.onclick=()=>activate(!enabled);body.querySelectorAll('[data-draw-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.drawTool;selected=-1;if(!enabled)activate(true);update();schedule();});undo.onclick=()=>history(cursor-1);redo.onclick=()=>history(cursor+1);$('.draw-clear').onclick=()=>{selected=-1;push({type:'clear'});};body.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>edit(b.dataset.edit));
+  for(const input of [size,opacity])input.oninput=()=>{input.nextElementSibling.textContent=input.value+(input===opacity?'%':'');};
+  const point=e=>({...screenToBoard(e.clientX,e.clientY),pressure:e.pointerType==='pen'?e.pressure:.5});
+  function shapePoints(start,end,kind,shift){let dx=end.x-start.x,dy=end.y-start.y;if(shift){if(['line','arrow'].includes(kind)){const angle=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*Math.PI/4,length=Math.hypot(dx,dy);dx=Math.cos(angle)*length;dy=Math.sin(angle)*length;}else{const n=Math.max(Math.abs(dx),Math.abs(dy));dx=Math.sign(dx||1)*n;dy=Math.sign(dy||1)*n;}}const x=start.x+dx,y=start.y+dy;if(kind==='rectangle')return [start,{x,y:start.y},{x,y},{x:start.x,y},start];if(kind==='ellipse')return Array.from({length:65},(_,i)=>({x:start.x+dx/2+Math.cos(i/64*Math.PI*2)*dx/2,y:start.y+dy/2+Math.sin(i/64*Math.PI*2)*dy/2}));if(kind==='arrow'){const a=Math.atan2(dy,dx),n=Math.max(12,Number(size.value)*3);return [start,{x,y},{x:x-Math.cos(a-.5)*n,y:y-Math.sin(a-.5)*n},{x,y},{x:x-Math.cos(a+.5)*n,y:y-Math.sin(a+.5)*n}];}return [start,{x,y}];}
+  canvas.onpointerdown=e=>{if(!enabled||e.button!==0||gesture||e.pointerType==='touch'&&performance.now()<penUntil)return;if(e.pointerType==='pen')penUntil=performance.now()+1200;const p=point(e);e.preventDefault();e.stopPropagation();canvas.setPointerCapture(e.pointerId);
+    if(tool==='select'){let a=scene().strokes.get(selected),corner=-1;if(a){const b=bounds(a);corner=[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]].findIndex(([x,y])=>Math.hypot(p.x-x,p.y-y)<12/boardCamera.scale);}if(corner<0)selected=hit(p);a=scene().strokes.get(selected);if(a)gesture={mode:'transform',pointer:e.pointerId,start:p,original:structuredClone(a),preview:a,corner};schedule();return;}
+    if(tool==='eraser'&&$('.draw-erase-mode select').value==='stroke'){const id=hit(p);if(id>=0)push({type:'edit',index:id,stroke:null});return;}
+    const shape=['line','arrow','rectangle','ellipse'].includes(tool);gesture={pointer:e.pointerId,start:p,shape,stroke:{type:'stroke',tool:shape?'brush':tool,color,size:Number(size.value),opacity:Number(opacity.value)/100,smooth:!shape&&smooth.checked,pressure:!shape&&e.pointerType==='pen',fill:shape&&fill.checked&&['rectangle','ellipse'].includes(tool),points:[p]}};rememberColor();schedule();};
+  canvas.onpointermove=e=>{if(!gesture||gesture.pointer!==e.pointerId)return;if(e.pointerType==='pen')penUntil=performance.now()+1200;e.preventDefault();const p=point(e),g=gesture;if(g.mode==='transform'){const dx=p.x-g.start.x,dy=p.y-g.start.y,b=bounds(g.original);if(g.corner>=0){const left=g.corner%2===0,top=g.corner<2,anchor={x:left?b.x+b.w:b.x,y:top?b.y+b.h:b.y};let sx=Math.max(.05,1+(left?-dx:dx)/Math.max(1,b.w)),sy=Math.max(.05,1+(top?-dy:dy)/Math.max(1,b.h));if(e.shiftKey)sx=sy=Math.max(sx,sy);g.preview={...g.original,points:g.original.points.map(q=>({...q,x:anchor.x+(q.x-anchor.x)*sx,y:anchor.y+(q.y-anchor.y)*sy}))};}else g.preview={...g.original,points:g.original.points.map(q=>({...q,x:q.x+dx,y:q.y+dy}))};}else if(g.shape)g.stroke.points=shapePoints(g.start,p,tool,e.shiftKey);else{const events=e.getCoalescedEvents?.()||[];for(const ev of events.length?events:[e]){const q=point(ev),last=g.stroke.points.at(-1);if(Math.hypot(q.x-last.x,q.y-last.y)>.35/boardCamera.scale)g.stroke.points.push(q);}}schedule();};
+  const finish=(e,cancel=false)=>{if(!gesture||e.pointerId!==gesture.pointer)return;const g=gesture;gesture=null;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);if(!cancel){if(g.mode==='transform'){if(JSON.stringify(g.preview)!==JSON.stringify(g.original))push({type:'edit',index:selected,stroke:g.preview});}else push(g.stroke);}schedule();};canvas.onpointerup=e=>finish(e);canvas.onpointercancel=e=>finish(e,true);
+  const keys=e=>{if(!enabled||isTypingTarget(e.target))return;const command=e.ctrlKey||e.metaKey;if(command&&['z','y','d'].includes(e.key.toLowerCase())){e.preventDefault();e.stopImmediatePropagation();if(e.key.toLowerCase()==='d')edit('duplicate');else history(cursor+(e.key.toLowerCase()==='y'||e.shiftKey?1:-1));}else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();e.stopImmediatePropagation();edit('delete');}else if(e.key==='Escape'){e.preventDefault();activate(false);}};document.addEventListener('keydown',keys,true);
+  const compact=a=>{if(a.type==='clear')return {t:'c'};if(a.type==='edit')return {t:'e',i:a.index,s:a.stroke?compact(a.stroke):null};return {t:'s',k:a.tool,c:a.color,z:a.size,o:a.opacity??1,f:!!a.fill,s:!!a.smooth,v:!!a.pressure,p:a.points.map(p=>[Math.round(p.x*10)/10,Math.round(p.y*10)/10,0,Math.round((p.pressure??.5)*100)/100])};};
+  const expand=a=>{if(a?.t==='c'||a?.type==='clear')return {type:'clear'};if(a?.t==='e')return {type:'edit',index:Number(a.i),stroke:a.s?expand(a.s):null};if(a?.t!=='s'&&a?.type!=='stroke')return null;const points=(a.p||a.points||[]).map(p=>Array.isArray(p)?{x:Number(p[0]),y:Number(p[1]),pressure:Number(p[3]??.5)}:{x:Number(p.x),y:Number(p.y),pressure:Number(p.pressure??.5)}).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));return points.length?{type:'stroke',tool:a.k||a.tool||'brush',color:a.c||a.color||'#222222',size:Number(a.z??a.size)||6,opacity:Number(a.o??1),fill:!!a.f,smooth:!!a.s,pressure:!!a.v,points}:null;};
+  m._setDrawHistoryCursor=next=>{cursor=clamp(Number(next)||0,0,actions.length);selected=-1;gesture=null;schedule();};
+  m._boardGetState=()=>({image:baseImageData,actions:actions.slice(0,cursor).map(compact),tool,color,size:size.value,opacity:opacity.value,smooth:smooth.checked});
+  m._boardSetState=state=>{if(!state)return;actions=(state.actions||[]).map(expand).filter(Boolean);cursor=actions.length;color=state.color||'#222222';size.value=state.size||6;opacity.value=state.opacity||100;smooth.checked=state.smooth!==false;tool=tools.some(t=>t[0]===state.tool)?state.tool:'brush';baseImageData=typeof state.image==='string'?state.image:'';baseImage=null;const token=++loadToken;if(baseImageData){const image=new Image();image.onload=()=>{if(token===loadToken&&!disposed){baseImage=image;schedule();}};image.src=baseImageData;}size.oninput();opacity.oninput();colors();schedule();};
+  const cameraObserver=new MutationObserver(schedule);cameraObserver.observe(workspace,{attributes:true,attributeFilter:['style']});window.addEventListener('resize',schedule);const priorCleanup=m._cleanup,priorDeactivate=m._deactivate,priorReactivate=m._reactivate;m._deactivate=()=>{activate(false);canvas.hidden=true;priorDeactivate?.();};m._reactivate=()=>{canvas.hidden=false;priorReactivate?.();schedule();};m._cleanup=()=>{disposed=true;loadToken++;cancelAnimationFrame(frame);cameraObserver.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('teachertiles:drawing-active',deactivateOther);document.removeEventListener('keydown',keys,true);canvas.remove();priorCleanup?.();};colors();update();redraw();
 }

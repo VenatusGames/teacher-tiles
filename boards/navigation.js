@@ -701,6 +701,7 @@ function menuCategoryHasMatches(category){
 }
 
 function renderMenuCategoryPins(){
+  menuPinnedCategories.delete('holidays');
   const rail=menu.querySelector('.context-menu__category-drawer-grid');
   const sidebar=menu.querySelector('.context-menu__category-drawer'),savedScroll=sidebar.scrollTop;
   const ordered=[...menuCategoryOrder.filter(id=>menuPinnedCategories.has(id)),...[...menuPinnedCategories].filter(id=>id.startsWith('holiday:')),...['favorites','all'].filter(id=>!menuPinnedCategories.has(id)),...menuCategoryOrder.filter(id=>!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id)),...(!menuPinnedCategories.has('holidays')?['holidays']:[])];
@@ -720,7 +721,7 @@ function renderMenuCategoryPins(){
       const disclosure=document.createElement('button');disclosure.type='button';disclosure.className='context-menu__disclosure';disclosure.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg>';disclosure.setAttribute('aria-expanded',String(expanded));disclosure.setAttribute('aria-label',`${expanded?'Collapse':'Expand'} ${menuCategoryLabel(id)}`);
       disclosure.addEventListener('click',event=>{event.stopPropagation();if(id==='all')menuAllExpanded=!menuAllExpanded;else menuHolidaysExpanded=!menuHolidaysExpanded;renderMenuCategoryPins()});row.appendChild(disclosure);
     }
-    if(id!=='all'){
+    if(!['all','holidays'].includes(id)){
       const pin=document.createElement('button');pin.type='button';pin.className='context-menu__pin';pin.dataset.categoryPin=id;
       pin.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 7 4 4H6l4-4zM12 14v7"/></svg>';
       const pinned=menuPinnedCategories.has(id);pin.setAttribute('aria-pressed',String(pinned));pin.setAttribute('aria-label',`${pinned?'Unpin':'Pin'} ${menuCategoryLabel(id)}`);pin.title=pin.getAttribute('aria-label');row.appendChild(pin);
