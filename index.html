@@ -124,7 +124,9 @@
 <link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261020-ui-fixes">
 <link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-controls-followup">
 <link rel="stylesheet" href="assets/themes/extra-packs.css?v=20261020-pack-preview-fix">
-<link rel="stylesheet" href="tiles/draw/styles.css?v=20261020-drawer-overlay"></head>
+<link rel="stylesheet" href="tiles/draw/styles.css?v=20261020-drawer-overlay"><link rel="stylesheet" href="community/styles.css?v=20261021">
+<script type="module" src="community/index.js?v=20261021"></script>
+</head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
     <div class="teachertiles-intro__content">
@@ -801,7 +803,7 @@
             <span class="settings-nav__icon settings-nav__icon--news" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M4.5 13.5h3l8 4V6.5l-8 4h-3zM7.5 13.5l1.4 5h2.7l-1.3-4.1M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span data-i18n="settings.tab.news">News</span>
+            <span data-i18n="settings.tab.news">Community</span>
           </button>
           <button class="settings-nav__item" type="button" data-settings-tab="announcements" aria-selected="false">
             <span class="settings-nav__icon settings-nav__icon--announcements" aria-hidden="true">
@@ -963,16 +965,15 @@
             </div>
           </section>
 
-          <section class="settings-pane settings-pane--updates" data-settings-pane="news" hidden>
-            <div class="settings-page-heading settings-updates-heading">
-              <span>WHAT'S NEW</span>
-              <h2>News from TeacherTiles</h2>
-              <p>Product stories, classroom ideas, and what’s coming next.</p>
-            </div>
-            <div class="settings-feed-shell">
-              <div id="news-content" class="changelog-content settings-feed-content">
-                <div class="changelog-loading">Loading news…</div>
+          <section class="settings-pane settings-pane--community" data-settings-pane="news" hidden>
+            <div class="settings-page-heading"><h2>Community</h2></div>
+            <div class="community-layout">
+              <div class="community-left">
+                <section class="community-section"><h3>Running Events</h3><div id="community-events" class="community-list"></div></section>
+                <section class="community-section"><h3>Polls</h3><div id="community-polls" class="community-list"></div></section>
+                <div id="community-status" class="community-status" role="status"></div>
               </div>
+              <section class="community-news"><h3>News from TeacherTiles</h3><div class="settings-feed-shell"><div id="news-content" class="changelog-content settings-feed-content"><div class="changelog-loading">Loading news…</div></div></div></section>
             </div>
           </section>
 
@@ -4672,7 +4673,7 @@
 <script src="shop/ui.js?v=20261020-controls-followup"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
-<script src="app.js?v=20261020-money-confetti"></script>
+<script src="app.js?v=20261021-community"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261020-ui-fixes"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
