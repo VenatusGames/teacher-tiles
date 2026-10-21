@@ -10,20 +10,38 @@ body .teachertiles-intro[data-splash=halloween] .teachertiles-intro__subtitle{co
 
 /* Seasonal backgrounds are shared with the developer portal previews. */
 body :is(.teachertiles-intro,.splash-card-art)[data-splash=fall]{background:radial-gradient(ellipse at 50% 45%,#fff3d8,#e9c194);--splash-teacher:#9f482a;--splash-tiles:#4d362a;--splash-subtitle:#80533b}
-body :is(.teachertiles-intro,.splash-card-art)[data-splash=christmas]{background:radial-gradient(ellipse at 50% 45%,#fffaf0,#e3e9d9);--splash-teacher:#b73543;--splash-tiles:#24583e;--splash-subtitle:#4f6651}
 body :is(.teachertiles-intro,.splash-card-art)[data-splash=winter]{background:radial-gradient(ellipse at 50% 45%,#f5fcff,#c3dfee 70%,#8fbed7);--splash-teacher:#5489ad;--splash-tiles:#284e72;--splash-subtitle:#466c89}
 body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]{background:radial-gradient(ellipse at 50% 40%,#fff0d0,#ebd0a0);--splash-teacher:#af7435;--splash-tiles:#27777b;--splash-subtitle:#796241}
 body :is(.teachertiles-intro,.splash-card-art)[data-splash=valentine]{background:radial-gradient(ellipse at 50% 45%,#fff1f4,#f4c8d6);--splash-teacher:#c34b7a;--splash-tiles:#72314e;--splash-subtitle:#935b70}
-:is(.teachertiles-intro,.splash-card-art):is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{content:'';position:absolute;inset:0;background:var(--splash-pattern) center/500px 400px repeat;opacity:.52;pointer-events:none;mask-image:radial-gradient(ellipse at center,transparent 16%,#000 76%)}
+:is(.teachertiles-intro,.splash-card-art):is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{content:'';position:absolute;inset:0;background:var(--splash-pattern) center/500px 400px repeat;opacity:.52;pointer-events:none;mask-image:radial-gradient(ellipse at center,transparent 16%,#000 76%)}
 [data-splash=fall]{--splash-pattern:url('fall.svg')}
-[data-splash=christmas]{--splash-pattern:url('christmas.svg')}
 [data-splash=winter]{--splash-pattern:url('winter.svg')}
 [data-splash=summer]{--splash-pattern:url('summer.svg')}
 [data-splash=valentine]{--splash-pattern:url('valentine.svg')}
 body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]::after{content:'';position:absolute;bottom:-10%;left:-10%;width:120%;height:25%;border-radius:50% 48% 0 0;background:linear-gradient(#a2dcd6,#6bbdbd);box-shadow:0 -5px 0 #ffffff9c,0 -13px 0 #e9f4df80;transform:rotate(-4deg);pointer-events:none}
-body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__teacher,strong span){color:var(--splash-teacher);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
-body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__tiles-word,strong){color:var(--splash-tiles);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
-body :is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) .teachertiles-intro__subtitle{color:var(--splash-subtitle)}
+body :is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__teacher,strong span){color:var(--splash-teacher);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
+body :is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__tiles-word,strong){color:var(--splash-tiles);text-shadow:0 2px 0 #ffffff70,0 6px 18px #45342115}
+body :is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) .teachertiles-intro__subtitle{color:var(--splash-subtitle)}
 .teachertiles-intro[data-splash] .teachertiles-intro__content{position:relative;z-index:1}
 body [data-splash=rainbow] :is(.teachertiles-intro__teacher,strong span){background:linear-gradient(90deg,#e34d5d 0%,#e88734 18%,#d3ad23 34%,#36a56f 50%,#328bd0 67%,#7853c0 83%,#c55299 100%);background-clip:text;-webkit-background-clip:text;color:transparent;text-shadow:none}
-.splash-card-art:is([data-splash=fall],[data-splash=christmas],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{background-size:280px 224px;opacity:.7}
+.splash-card-art:is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine])::before{background-size:280px 224px;opacity:.7}
+@font-face{font-family:TT Autumn;src:url('../../assets/fonts/lora/lora.ttf') format('truetype');font-weight:400 700;font-display:swap}
+@font-face{font-family:TT Winter;src:url('../../assets/fonts/quicksand/quicksand.ttf') format('truetype');font-weight:300 700;font-display:swap}
+@font-face{font-family:TT Summer;src:url('../../assets/fonts/pacifico/pacifico.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:TT Valentine;src:url('../../assets/fonts/caveat/caveat.ttf') format('truetype');font-weight:400 700;font-display:swap}
+[data-splash=fall]{--splash-font:'TT Autumn',Georgia,serif;--splash-weight:600}
+[data-splash=winter]{--splash-font:'TT Winter',sans-serif;--splash-weight:600}
+[data-splash=summer]{--splash-font:'TT Summer',cursive;--splash-weight:400}
+[data-splash=valentine]{--splash-font:'TT Valentine',cursive;--splash-weight:700}
+body :is([data-splash=fall],[data-splash=winter],[data-splash=summer],[data-splash=valentine]) :is(.teachertiles-intro__title,strong){font-family:var(--splash-font);font-weight:var(--splash-weight);letter-spacing:-.035em;line-height:1.25}
+body [data-splash=valentine] .teachertiles-intro__title{font-size:clamp(58px,11vw,138px)}
+body [data-splash=summer] .teachertiles-intro__title{font-size:clamp(44px,8.2vw,105px)}
+body .splash-card-art[data-splash=summer] strong{font-size:32px}
+body .splash-card-art[data-splash=valentine] strong{font-size:46px}
+:is(.teachertiles-intro,.splash-card-art):is([data-splash=fall],[data-splash=winter],[data-splash=valentine])::before{--drift-height:400px;background-position:0 0;animation:splash-soft-fall 28s linear infinite}
+.splash-card-art:is([data-splash=fall],[data-splash=winter],[data-splash=valentine])::before{--drift-height:224px;animation-duration:22s}
+@keyframes splash-soft-fall{0%{background-position:0 0}50%{background-position:18px calc(var(--drift-height)/2)}100%{background-position:0 var(--drift-height)}}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]{background-image:url('sand-grain.svg'),radial-gradient(ellipse at 50% 40%,#f7e3b7,#dec18d);background-size:180px 180px,100% 100%}
+body :is(.teachertiles-intro,.splash-card-art)[data-splash=summer]::after{height:29%;bottom:-11%;background:linear-gradient(180deg,#c7eeeb 0%,#89d0cd 12%,#51acb7 100%);box-shadow:0 -3px 0 #fffdf1db,0 -9px 0 #e3f4ec94,0 -17px 0 #b3996830;animation:splash-shoreline 5.5s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes splash-shoreline{0%,100%{transform:translate3d(-2%,15%,0) rotate(-3deg) scaleX(1.02)}48%{transform:translate3d(2%,-22%,0) rotate(1deg) scaleX(1.06)}}
+@media(prefers-reduced-motion:reduce){:is(.teachertiles-intro,.splash-card-art)::before,:is(.teachertiles-intro,.splash-card-art)::after{animation:none!important}}

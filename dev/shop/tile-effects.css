@@ -22,3 +22,6 @@
 .tile-effects-grid>[hidden],.tile-effects-groups>[hidden]{display:none!important}.tile-effect-views{margin:0 0 14px}.tile-effect-views button{cursor:pointer;color:var(--text)}.tile-effects-empty{font-size:13px;color:var(--muted)}
 .tile-effect-preview *{pointer-events:none}.tile-effect-art{object-fit:contain}.tile-effect-stage{contain:strict}
 @media(hover:none){.tile-effect-favorite{opacity:1}}
+
+.tile-effects-filter-row.cursor-picker-filters{gap:12px;flex-wrap:wrap}
+.tile-effects-filter-row>[role=status]{margin-right:auto}
