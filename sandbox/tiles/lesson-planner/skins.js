@@ -34,7 +34,7 @@
         const r=control.getBoundingClientRect();
         const dx=Math.max(r.left-event.clientX,0,event.clientX-r.right);
         const dy=Math.max(r.top-event.clientY,0,event.clientY-r.bottom);
-        return Math.hypot(dx,dy)<hoverRadius;
+        return Math.hypot(dx,dy)<(control===button?108:hoverRadius);
       };
       const nearTop=topTools.some(nearby);
       topTools.forEach(control=>control.classList.toggle('is-near-pointer',nearTop));

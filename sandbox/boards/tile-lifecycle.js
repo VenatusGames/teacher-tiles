@@ -549,7 +549,7 @@ function setupCommon(m){
   m.addEventListener('pointerdown',e=>{bringToFront(m);const interactive=isInteractiveModuleTarget(e.target,m);if(!e.shiftKey&&!interactive&&!selectedModules.has(m))clearSelection()});
   m.querySelector('.module-delete').addEventListener('click',e=>{e.stopPropagation();playUiSfx('click');deleteModules(selectedModules.has(m)?[...selectedModules]:[m])});
   setupDrag(m);
-  if(!['draw','sticker'].includes(m.dataset.type))setupResize(m)
+  if(m.dataset.type!=='sticker')setupResize(m)
 }
 
 function setupDrag(m){
@@ -752,7 +752,7 @@ function setupResize(m){
   if(tabbed)m.classList.add('is-tabbed-tile');
   m.style.setProperty('min-width',m._resizeMinimum.width+'px','important');
   m.style.setProperty('min-height',m._resizeMinimum.height+'px','important');
-  for(const d of ['t','r','b','l'])if(!m.querySelector('[data-resize="'+d+'"]')){const h=document.createElement('div');h.className='resize-handle resize-handle--'+d;h.dataset.resize=d;m.appendChild(h);}
+  for(const d of (m.dataset.type==='draw'?['tl','tr','bl','br','t','r','b','l']:['t','r','b','l']))if(!m.querySelector('[data-resize="'+d+'"]')){const h=document.createElement('div');h.className='resize-handle resize-handle--'+d;h.dataset.resize=d;m.appendChild(h);}
   m.querySelectorAll('[data-resize]').forEach(h=>h.addEventListener('pointerdown',e=>{
     if(isTileLocked(m)||e.button!==0)return;e.preventDefault();e.stopPropagation();
     const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);

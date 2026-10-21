@@ -12,6 +12,7 @@ if(menu){
     let changed=false;
     for(const item of menu.items){
       const metadata=data.tiles[tileKey(item)];
+      const disabled=String(metadata?.disabled===true);if(item.dataset.tileDisabled!==disabled){item.dataset.tileDisabled=disabled;changed=true;}
       const description=typeof metadata?.description==='string'?metadata.description:defaultDescriptions.get(item);
       let summary=item.querySelector('small');
       if((summary?.textContent||'')!==description){
@@ -33,7 +34,7 @@ if(menu){
         // Badges are display labels; entitlement and PBIS tracking attributes stay intact.
         changed=true;
       }
-      item.dataset.gradeLevels=Array.isArray(metadata?.grades)?metadata.grades.join(' '):'';
+      const grades=Array.isArray(metadata?.grades)?metadata.grades.join(' '):'';if(item.dataset.gradeLevels!==grades){item.dataset.gradeLevels=grades;changed=true;}
     }
     revision=data.revision;if(changed)menu.refresh();
   }

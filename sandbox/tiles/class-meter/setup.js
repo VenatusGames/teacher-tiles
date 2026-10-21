@@ -106,7 +106,7 @@ function setupClassMeter(m){
     m.classList.add('is-meter-filled');
     popup.hidden=false;
     launchConfetti(m);
-    playUiSfx('confetti',1,m);
+    playUiSfx('tile-effect',1,m);
     clearTimeout(celebrationTimer);
     celebrationTimer=setTimeout(()=>{
       celebrating=false;

@@ -9,8 +9,9 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   const pause=root.querySelector('[data-library-pause]');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const compact=matchMedia('(max-width: 650px)');
-  const categories=[['all','All Cosmetics'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['profile-cosmetics','Profiles']];
-  const accents={'themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','profile-cosmetics':'#cd91b3'};
+  const categories=[['all','All Cosmetics'],['tile-effects','Tile Effects'],['themes','Themes'],['tile-skins','Tile Skins'],['stickers','Stickers'],['cursors','Cursors'],['planner-skins','Planners'],['presentation-themes','Presentations'],['profile-cosmetics','Profiles']];
+  const accents={'tile-effects':'#9d8ad7','presentation-transitions':'#a28ac6','themes':'#809adc','tile-skins':'#a58bd0','stickers':'#dc9b72','cursors':'#7eafb2','planner-skins':'#85aa91','presentation-themes':'#a28ac6','profile-cosmetics':'#cd91b3'};
+  let catalogSignature='';
   let catalog=[],pool=[],cards=[],index=0,filter='all',timer=0,active=false,inView=false,hover=false,paused=motion.matches;
   const count=()=>Math.min(compact.matches?7:12,pool.length);
   function schedule(){
@@ -28,6 +29,9 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
     for(let offset=0;offset<count();offset++){
       const source=pool[(index+offset)%pool.length];
       const card=source.cloneNode(true);
+      // Clones must start idle rather than inherit an in-flight preview snapshot.
+      card.querySelectorAll('[data-transition-preview]').forEach(p=>p.replaceWith(window.TeacherTilesPresentationTransitions.preview(p.dataset.transitionPreview)));
+      card.querySelectorAll('[data-effect-preview]').forEach(p=>p.replaceWith(window.TeacherTilesTileEffects.preview(p.dataset.effectPreview)));
       card.hidden=false;card.classList.remove('shop-filter-hidden','is-shop-highlighted','is-purchasing');
       card.classList.add('shop-library-card');
       card.classList.toggle('shop-library-card--showcase',offset===0);
@@ -51,7 +55,7 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   }
   function move(amount){if(!pool.length)return;index=(index+amount+pool.length)%pool.length;render()}
   function select(value){
-    filter=value;pool=catalog.filter(source=>filter==='all'||source.closest('[data-shop-page]').dataset.shopPage===filter);index=0;
+    filter=value;pool=catalog.filter(source=>filter==='all'||(source.closest('[data-shop-page]').dataset.shopPage===filter||filter==='presentation-themes'&&source.closest('[data-shop-page]').dataset.shopPage==='presentation-transitions'));index=0;
     filters.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.libraryFilter===filter)));
     render();
   }
@@ -69,9 +73,11 @@ function createShopFeaturedLibrary({modal, sources, mount, unmount, sync, canRot
   return {
     refresh(){
       const owned=new Set(window.TeacherTilesAccount?.state?.ownedProductIds||[]);
+      const signature=JSON.stringify(sources.map(s=>[s.dataset.shopProduct,s.dataset.shopPrice,owned.has(s.dataset.shopProduct),s.querySelector('p')?.textContent]));
+      if(signature===catalogSignature){sync();schedule();return;}catalogSignature=signature;
       // Interleave categories so smaller collections get seen alongside large catalogs.
       const groups=categories.slice(1).map(([category])=>{
-        const list=sources.filter(source=>source.closest('[data-shop-page]').dataset.shopPage===category&&!owned.has(source.dataset.shopProduct));
+        const list=sources.filter(source=>(source.closest('[data-shop-page]').dataset.shopPage===category||category==='presentation-themes'&&source.closest('[data-shop-page]').dataset.shopPage==='presentation-transitions')&&!owned.has(source.dataset.shopProduct));
         for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}return list;
       });
       catalog=[];for(let row=0;groups.some(list=>row<list.length);row++)for(const list of groups)if(list[row])catalog.push(list[row]);

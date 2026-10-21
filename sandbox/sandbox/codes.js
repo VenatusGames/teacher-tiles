@@ -7,13 +7,13 @@ export function createCodesPanel(call) {
     <div class="codes-toolbar">
       <input id="codes-search" type="search" placeholder="Search by a label, reward, or code word" maxlength="40">
       <select id="codes-status"><option value="active">Active</option><option value="all">All</option><option value="inactive">Disabled</option><option value="deleted">Deleted</option></select>
-      <select id="codes-reward"><option value="all">All Rewards</option><option value="coins">Coin Packs</option><option value="cosmetic">Cosmetics</option><option value="membership_trial">Membership Trials</option></select>
+      <select id="codes-reward"><option value="all">All Rewards</option><option value="coins">Coin Packs</option><option value="cosmetic">Cosmetics</option><option value="patch">Patches</option><option value="membership_trial">Membership Trials</option></select>
       <button id="codes-refresh" class="quiet" type="button">Refresh</button>
     </div>
     <p id="codes-status-text" class="codes-status" role="status" aria-live="polite"></p>
     <div class="codes-table-wrap"><table class="codes-table"><thead><tr><th>Code</th><th>Reward</th><th>Status</th><th>Uses</th><th>Expires</th><th></th></tr></thead><tbody id="codes-list"></tbody></table></div><button id="codes-more" type="button" class="quiet" hidden>Load More</button>
     <dialog id="codes-create" class="codes-dialog"><form method="dialog" id="codes-create-form"><button class="codes-dialog-close quiet" type="button" data-codes-create-close aria-label="Close">×</button><p class="eyebrow">NEW REDEMPTION CODE</p><h2>Generate TT Code</h2>
-      <label>Reward Type<select id="codes-create-type"><option value="coins">Coin Pack</option><option value="cosmetic">Specific Cosmetic</option><option value="membership_trial">Membership Trial</option></select></label>
+      <label>Reward Type<select id="codes-create-type"><option value="coins">Coin Pack</option><option value="cosmetic">Specific Cosmetic</option><option value="patch">Patch</option><option value="membership_trial">Membership Trial</option></select></label>
       <section id="codes-create-reward-wrap" class="codes-reward-picker" aria-labelledby="codes-reward-heading">
         <div class="codes-reward-heading"><span id="codes-reward-heading">Choose a Reward</span><span id="codes-reward-count" role="status"></span></div>
         <label class="codes-reward-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="codes-reward-search" type="search" aria-label="Search Rewards" placeholder="Search rewards…" autocomplete="off"></label>
@@ -22,6 +22,7 @@ export function createCodesPanel(call) {
         <p id="codes-selected-reward" class="codes-selected-reward" role="status">Choose a reward above.</p>
       </section>
       <label id="codes-create-days-wrap" hidden>Trial Length (Days)<input id="codes-create-days" type="number" min="1" max="365" value="30"></label>
+      <label>Custom Code (Optional)<input id="codes-create-custom" maxlength="12" placeholder="TT-XXXX-XXXX" pattern="(?:[Tt][Tt]-)?[A-Za-z0-9]{4}-?[A-Za-z0-9]{4}" autocomplete="off"><small>Eight letters or numbers. Leave blank to generate a random code.</small></label>
       <label>Internal Label <input id="codes-create-label" maxlength="120" placeholder="Optional campaign / purpose"></label>
       <div class="codes-create-fields"><label>Use Limit <input id="codes-create-limit" type="number" min="1" max="100000" placeholder="Unlimited"></label>
       <label>Expires <input id="codes-create-expires" type="datetime-local"></label></div>
@@ -54,15 +55,18 @@ export function createCodesPanel(call) {
   }
   const rewardOptions = q('codes-reward-options'), rewardSearch = q('codes-reward-search');
   const searchable = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const rewardKind = item => item.rewardType === 'coins' ? 'Coin Pack'
+  const rewardKind = item => item.rewardType === 'patch' ? 'Patch' : item.rewardType === 'coins' ? 'Coin Pack'
     : item.rewardId.startsWith('tile-skin-') ? 'Tile Skin'
+    : item.rewardId.startsWith('tile-effect-') ? 'Tile Effect'
+    : item.rewardId.startsWith('presentation-transition-') ? 'Presentation Transition'
+    : item.rewardId.startsWith('presentation-theme-') ? 'Presentation Theme'
     : item.rewardId.startsWith('theme-') ? 'Theme'
     : item.rewardId.startsWith('cursor-') ? 'Cursor Pack' : 'Cosmetic Pack';
   function fillRewards() {
     const trial = type.value === 'membership_trial';
     q('codes-create-days-wrap').hidden = !trial;
     q('codes-create-reward-wrap').hidden = trial;
-    const options = catalog?.[type.value === 'coins' ? 'coins' : 'cosmetics'] || [];
+    const options = catalog?.[type.value === 'coins' ? 'coins' : type.value === 'patch' ? 'patches' : 'cosmetics'] || [];
     const selected = options.find(item => item.rewardId === reward.value);
     if (!selected) reward.value = '';
     const terms = searchable(rewardSearch.value).split(' ').filter(Boolean);
@@ -90,7 +94,7 @@ export function createCodesPanel(call) {
     }
     q('codes-reward-count').textContent = catalog ? `${visible.length} of ${options.length}` : '';
     q('codes-selected-reward').textContent = selected ? `Selected: ${selected.name}` : 'Choose a reward above.';
-    rewardSearch.placeholder = type.value === 'coins' ? 'Search coin packs…' : 'Search cosmetics by name or type…';
+    rewardSearch.placeholder = type.value === 'coins' ? 'Search coin packs…' : type.value === 'patch' ? 'Search patches…' : 'Search cosmetics by name or type…';
     form.querySelector('[type="submit"]').disabled = creating || !catalog || (!trial && !selected);
   }
   rewardSearch.oninput = fillRewards;
@@ -166,7 +170,7 @@ export function createCodesPanel(call) {
       fillRewards();
       q('codes-create-days').min = catalog.trials.minDays;
       q('codes-create-days').max = catalog.trials.maxDays;
-      q('codes-create-status').textContent = catalog.catalogVersion === 3 ? '' : 'The deployed reward catalog is outdated and may be missing skins. Deploy the current dev backend, then reopen this menu.';
+      q('codes-create-status').textContent = catalog.catalogVersion >= 4 && Array.isArray(catalog.patches) ? '' : 'The deployed reward catalog is missing patch rewards. Publish the current dev backend, then reopen this menu.';
     } catch (error) {
       q('codes-create-status').textContent = err(error);
       q('codes-catalog-retry').hidden = false;
@@ -187,10 +191,10 @@ export function createCodesPanel(call) {
     event.preventDefault();
     if (creating || !catalog || type.disabled || !form.reportValidity()) return;
     const trial = type.value === 'membership_trial';
-    if (!trial && !catalog[type.value === 'coins' ? 'coins' : 'cosmetics'].some(item => item.rewardId === reward.value)) return;
+    if (!trial && !catalog[type.value === 'coins' ? 'coins' : type.value === 'patch' ? 'patches' : 'cosmetics'].some(item => item.rewardId === reward.value)) return;
     const expires = q('codes-create-expires').value;
     const payload = {
-      action:'create', rewardType:type.value,
+      action:'create', rewardType:type.value, customCode:q('codes-create-custom').value.trim(),
       rewardId:trial ? catalog.trials.rewardId : reward.value,
       ...(trial ? {trialDays:Number(q('codes-create-days').value)} : {}),
       maxRedemptions:q('codes-create-limit').value ? Number(q('codes-create-limit').value) : null,

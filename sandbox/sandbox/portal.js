@@ -1,15 +1,16 @@
-import {createSplashScreensPanel} from './splash-screens.js';
-import {createProductManagementPanel} from './product-management.js?v=20261015-bundle-actions';
-import {createTileManagementPanel} from './tile-management.js?v=20261013-description';
-import {adminBoardPreview} from './board-preview.js?v=20261016-directions-fit';
+import {createCommunityPanel} from './community.js?v=20261021-banner-library';
+import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';
+import {createProductManagementPanel} from './product-management.js?v=20261021-banner-library';
+import {createTileManagementPanel} from './tile-management.js?v=20261020-availability';
+import {adminBoardPreview} from './board-preview.js?v=20261017-shared-presentations';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
-import {createTemplateLibrary} from '../templates/ui.js?v=20261016-template-preview';
+import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polish';
 import {createInsights} from './insights.js?v=20261015-override-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261015-override-crown';
+import {createUsersPanel} from './users.js?v=20261020-product-polish';
 import {startSiteActivity} from '../account/site-activity.js';
-import {createCodesPanel} from './codes.js?v=20261012-codes-activity';
+import {createCodesPanel} from './codes.js?v=20261020-product-polish';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
@@ -25,15 +26,16 @@ const tileManagement=createTileManagementPanel((name,data)=>call(name,data));hom
 const productManagement=createProductManagementPanel((name,data)=>call(name,data));home.parentElement.append(productManagement.element);
 const splashScreens=createSplashScreensPanel((name,data)=>call(name,data));home.parentElement.append(splashScreens.element);
 document.getElementById('live-management-toggle').onclick=()=>{const menu=document.getElementById('live-management-submenu');menu.hidden=!menu.hidden;document.getElementById('live-management-toggle').setAttribute('aria-expanded',String(!menu.hidden))};
+const communityEvents=createCommunityPanel((name,data)=>call(name,data),'events'),communityPolls=createCommunityPanel((name,data)=>call(name,data),'polls');home.parentElement.append(communityEvents.element,communityPolls.element);
 let view="overview";
-function navigate(next){view=next;splashScreens.element.hidden=next!=='splashes';if(next==='splashes')splashScreens.load();document.getElementById('portal-current-view').textContent=({overview:'Overview',users:'Users',templates:'Board Templates',codes:'TT Codes',bugs:'Tickets',tiles:'Tile Management',products:'Product Management',splashes:'Splash Screens'})[next]||'Overview';productManagement.element.hidden=next!=='products';if(next==='products')productManagement.load(true);tileManagement.element.hidden=next!=='tiles';if(next==='tiles')tileManagement.load();bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
+function navigate(next){view=next;communityEvents.element.hidden=next!=='events';communityPolls.element.hidden=next!=='polls';if(next==='events')communityEvents.load();if(next==='polls')communityPolls.load();splashScreens.element.hidden=next!=='splashes';if(next==='splashes')splashScreens.load();document.getElementById('portal-current-view').textContent=({overview:'Overview',users:'Users',templates:'Board Templates',codes:'TT Codes',bugs:'Tickets',tiles:'Tile Management',products:'Product Management',splashes:'Splash Screens',events:'Events',polls:'Polls'})[next]||'Overview';productManagement.element.hidden=next!=='products';if(next==='products')productManagement.load(true);tileManagement.element.hidden=next!=='tiles';if(next==='tiles')tileManagement.load();bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
 document.querySelectorAll("[data-portal-view]").forEach(link=>link.onclick=event=>{event.preventDefault();if(authorized)navigate(link.dataset.portalView)});
 let auth,sdk,call,pending=false,generation=0,lastCheck=0,authorized=false;
 function lock(message){showPortal(false);authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}
 function busy(value){pending=value;signIn.disabled=retry.disabled=value||!auth;signOut.disabled=value;}
 async function check(user){
   const attempt=++generation;lastCheck=Date.now();
-  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
+  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
   busy(true);lock('Signed in. Verifying sandbox access…');
   try{
     const access=await verifyAccess(user,call,{sandbox:true});
@@ -43,7 +45,7 @@ async function check(user){
     document.getElementById('portal-email').textContent=user.email||'';
     document.getElementById('portal-role').textContent=access.role==='owner'?'Owner':'Administrator';
     authorized=true;showPortal(true);login.hidden=true;navigate(view);void insights.load();signOut.hidden=false;
-  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();lock(accessError(error));}}
+  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();lock(accessError(error));}}
   finally{if(attempt===generation)busy(false);}
 }
 signIn.onclick=async()=>{

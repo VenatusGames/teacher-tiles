@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const fields={'teachertiles.sticker-favorites.v1':'stickers','teacherTilesCursorFavorites':'cursors','teacherTiles.tileFavorites.v1':'tiles','teacherTiles.categoryPins.v1':'categories','teachertiles.sticker-usage.v1':'usage'};
+  const fields={'teacherTilesEffectFavorites':'tileEffects','teachertiles.sticker-favorites.v1':'stickers','teacherTilesCursorFavorites':'cursors','teacherTiles.tileFavorites.v1':'tiles','teacherTiles.categoryPins.v1':'categories','teachertiles.sticker-usage.v1':'usage'};
   const prefix='teachertiles.collections.v1.';
   const parse=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
   const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};

@@ -6,3 +6,9 @@
 .profile-badge--first-100:not(.profile-badge--locked) .profile-badge__medallion{color:#fff2f5}
 .profile-badge--alpha-tester:not(.profile-badge--locked) .profile-badge__medallion{color:#f7ebff}
 .profile-badge--connected:not(.profile-badge--locked) .profile-badge__medallion{color:#e8fff7}
+
+.profile-badge--tiktok:not(.profile-badge--locked){--patch-high:#343244;--patch-low:#11101c;--braid-light:#77758c;--braid-mid:#38364d;--braid-dark:#161423;color:#fff}.profile-badge--tiktok .profile-badge__medallion img{width:43px;height:49px;object-fit:contain;filter:drop-shadow(0 1px 2px #0008)}.profile-badge--tiktok.profile-badge--locked .profile-badge__medallion img{filter:grayscale(1);opacity:.5}
+
+.profile-badge--beloved .profile-badge__medallion svg{width:52px;height:52px;color:#68727b;stroke:currentColor}
+.profile-badge--beloved:not(.profile-badge--locked){--patch-high:#ed94b2;--patch-low:#a13260;--braid-light:#ffe0ec;--braid-mid:#d5789a;--braid-dark:#782748;color:#fff0f6}
+.profile-badge--beloved:not(.profile-badge--locked) .profile-badge__medallion svg{color:inherit}

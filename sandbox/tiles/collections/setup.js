@@ -106,7 +106,7 @@ function setupCollections(m){
     persistProgress();
     renderFilledState();
     launchConfetti(m);
-    playUiSfx('confetti',1,m);
+    playUiSfx('tile-effect',1,m);
   }
 
   function starPath(r,target=ctx){target.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.46:r,px=Math.cos(a)*rad,py=Math.sin(a)*rad;i?target.lineTo(px,py):target.moveTo(px,py)}target.closePath()}

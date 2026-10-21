@@ -12,8 +12,6 @@
   const MAX_IMAGE_DATA_URL=800000;
   const IMAGE_TYPES=new Set(['image/png','image/jpeg','image/webp']);
   const XHTML_NS='http://www.w3.org/1999/xhtml';
-  const TEXT_COLOR_CHOICES=['#17191d','#ffffff','#5d6470','#244d78','#1d4ed8','#087e8b','#287442','#92700c','#b54708','#b42332','#8b4055','#7543a8'];
-  const HIGHLIGHT_COLOR_CHOICES=['#fff2a8','#ffe0a6','#ffd4bf','#ffcdd8','#eadcff','#dce8ff','#d4f2df','#cff0ee','#e2e8f0'];
   const IMAGE_LAYOUTS=new Set(['block','wrap-left','wrap-right','free']);
   const limit=(value,min,max)=>Math.max(min,Math.min(max,value));
 
@@ -38,26 +36,6 @@
     const short=raw.match(/^#([0-9a-f]{3})$/i);
     if(short)return '#'+short[1].split('').map(char=>char+char).join('').toLowerCase();
     return /^#[0-9a-f]{6}$/i.test(raw)?raw.toLowerCase():fallback;
-  }
-  function hexToHsv(value){
-    const hex=normalizeHexColor(value,'#17191d').slice(1);
-    const r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255;
-    const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;
-    let h=0;
-    if(delta){
-      if(max===r)h=60*(((g-b)/delta)%6);
-      else if(max===g)h=60*((b-r)/delta+2);
-      else h=60*((r-g)/delta+4);
-    }
-    if(h<0)h+=360;
-    return{h,s:max?delta/max:0,v:max};
-  }
-  function hsvToHex(h,s,v){
-    const hue=((Number(h)%360)+360)%360,sat=limit(Number(s)||0,0,1),val=limit(Number(v)||0,0,1);
-    const c=val*sat,x=c*(1-Math.abs((hue/60)%2-1)),s0=val-c;
-    let r=0,g=0,b=0;
-    if(hue<60){r=c;g=x}else if(hue<120){r=x;g=c}else if(hue<180){g=c;b=x}else if(hue<240){g=x;b=c}else if(hue<300){r=x;b=c}else{r=c;b=x}
-    return '#'+[r+s0,g+s0,b+s0].map(channel=>Math.round(channel*255).toString(16).padStart(2,'0')).join('');
   }
   function imageNumeric(value,fallback=0){
     const number=Number(value);return Number.isFinite(number)?number:fallback;
@@ -200,6 +178,8 @@
   function setup(m){
     const editor=m.querySelector('.richtext-editor');
     const toolbar=m.querySelector('.richtext-toolbar');
+    window.TeacherTilesFormattingToolbar.enhance(toolbar);
+    const clearHighlight=document.createElement('button');clearHighlight.type='button';clearHighlight.className='tt-format-button';clearHighlight.dataset.richCommand='clearHighlight';clearHighlight.setAttribute('aria-label','Remove highlight');clearHighlight.title='Remove highlight';clearHighlight.innerHTML=window.TeacherTilesFormattingToolbar.icon('clearHighlight');toolbar.querySelector('.richtext-highlight').after(clearHighlight);
     const blockSelect=m.querySelector('.richtext-block');
     const fontSelect=m.querySelector('.richtext-font');
     const sizeSelect=m.querySelector('.richtext-size');
@@ -282,12 +262,13 @@
       const trigger=document.createElement('button');
       trigger.type='button';
       trigger.className=`richtext-select-trigger richtext-select-trigger--${kind}`;
+      trigger.setAttribute('aria-label',select.getAttribute('aria-label'));
       trigger.setAttribute('aria-haspopup','listbox');
       trigger.setAttribute('aria-expanded','false');
       trigger.dataset.preserveTextEdit='true';
       const label=document.createElement('span');
       label.className='richtext-select-trigger-label';
-      const chevron=document.createElement('svg');
+      const chevron=document.createElementNS('http://www.w3.org/2000/svg','svg');
       chevron.setAttribute('viewBox','0 0 12 8');
       chevron.setAttribute('aria-hidden','true');
       chevron.innerHTML='<path d="M1.5 1.5 6 6l4.5-4.5"/>';
@@ -306,6 +287,7 @@
         choice.dataset.richSelectValue=option.value;
         choice.setAttribute('role','option');
         choice.textContent=option.textContent;
+        window.TeacherTilesFormattingToolbar.optionPreview(choice,kind,option.value);
         choice.addEventListener('pointerdown',event=>{
           rememberSelection();
           event.preventDefault();
@@ -485,133 +467,7 @@
       }
       closeColorPicker();
     };
-    const bindPickerChoice=(button,value)=>{
-      button.dataset.richPickerColor=value;
-      button.addEventListener('pointerdown',event=>{
-        event.preventDefault();
-        event.stopPropagation();
-        applyPickerColor(value);
-      });
-    };
-    const buildColorPicker=mode=>{
-      colorPicker.replaceChildren();colorPicker.dataset.mode=mode;
-      const header=document.createElement('header');
-      const copy=document.createElement('div');
-      const eyebrow=document.createElement('small');eyebrow.textContent='RICH TEXT';
-      const title=document.createElement('strong');title.textContent=mode==='text'?'Text color':'Highlight';
-      copy.append(eyebrow,title);
-      const close=document.createElement('button');close.type='button';close.className='richtext-color-picker-close';close.setAttribute('aria-label','Close color picker');close.textContent='×';close.addEventListener('click',closeColorPicker);
-      header.append(copy,close);colorPicker.appendChild(header);
-
-      if(mode==='text'){
-        const picker=document.createElement('div');picker.className='richtext-spectrum-picker';
-        const area=document.createElement('div');area.className='richtext-spectrum-area';area.setAttribute('role','slider');area.setAttribute('aria-label','Text color saturation and brightness');area.tabIndex=0;
-        const areaKnob=document.createElement('i');areaKnob.className='richtext-spectrum-area-knob';area.appendChild(areaKnob);
-        const hue=document.createElement('div');hue.className='richtext-spectrum-hue';hue.setAttribute('role','slider');hue.setAttribute('aria-label','Text color hue');hue.tabIndex=0;
-        const hueKnob=document.createElement('i');hueKnob.className='richtext-spectrum-hue-knob';hue.appendChild(hueKnob);
-        picker.append(area,hue);
-
-        let state=hexToHsv(textColor);
-        const controls=document.createElement('form');controls.className='richtext-spectrum-controls';
-        const preview=document.createElement('span');preview.className='richtext-spectrum-preview';preview.setAttribute('aria-hidden','true');
-        const fieldWrap=document.createElement('label');fieldWrap.className='richtext-spectrum-hex';fieldWrap.textContent='#';
-        const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.setAttribute('aria-label','Text color hex value');fieldWrap.appendChild(input);
-        const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';
-        controls.append(preview,fieldWrap,apply);
-
-        const renderSpectrum=({syncInput=true}={})=>{
-          const hex=hsvToHex(state.h,state.s,state.v);
-          area.style.setProperty('--richtext-picker-hue',String(state.h));
-          areaKnob.style.left=`${state.s*100}%`;areaKnob.style.top=`${(1-state.v)*100}%`;
-          hueKnob.style.left=`${state.h/360*100}%`;preview.style.background=hex;
-          if(syncInput)input.value=hex.slice(1).toUpperCase();
-          area.setAttribute('aria-valuetext',hex);hue.setAttribute('aria-valuenow',String(Math.round(state.h)));
-        };
-        const setAreaPoint=event=>{
-          const rect=area.getBoundingClientRect();
-          state.s=limit((event.clientX-rect.left)/Math.max(1,rect.width),0,1);
-          state.v=1-limit((event.clientY-rect.top)/Math.max(1,rect.height),0,1);
-          renderSpectrum();
-        };
-        const beginArea=event=>{
-          if(event.button!==undefined&&event.button!==0)return;
-          event.preventDefault();area.setPointerCapture?.(event.pointerId);setAreaPoint(event);
-          const move=moveEvent=>{if(moveEvent.pointerId===event.pointerId)setAreaPoint(moveEvent)};
-          const stop=upEvent=>{if(upEvent.pointerId!==event.pointerId)return;area.removeEventListener('pointermove',move);area.removeEventListener('pointerup',stop);area.removeEventListener('pointercancel',stop)};
-          area.addEventListener('pointermove',move);area.addEventListener('pointerup',stop);area.addEventListener('pointercancel',stop);
-        };
-        const setHuePoint=event=>{
-          const rect=hue.getBoundingClientRect();
-          state.h=limit((event.clientX-rect.left)/Math.max(1,rect.width),0,1)*360;
-          renderSpectrum();
-        };
-        const beginHue=event=>{
-          if(event.button!==undefined&&event.button!==0)return;
-          event.preventDefault();hue.setPointerCapture?.(event.pointerId);setHuePoint(event);
-          const move=moveEvent=>{if(moveEvent.pointerId===event.pointerId)setHuePoint(moveEvent)};
-          const stop=upEvent=>{if(upEvent.pointerId!==event.pointerId)return;hue.removeEventListener('pointermove',move);hue.removeEventListener('pointerup',stop);hue.removeEventListener('pointercancel',stop)};
-          hue.addEventListener('pointermove',move);hue.addEventListener('pointerup',stop);hue.addEventListener('pointercancel',stop);
-        };
-        area.addEventListener('pointerdown',beginArea);hue.addEventListener('pointerdown',beginHue);
-        area.addEventListener('keydown',event=>{
-          const step=event.shiftKey?.05:.015;
-          if(event.key==='ArrowLeft'){state.s=limit(state.s-step,0,1)}
-          else if(event.key==='ArrowRight'){state.s=limit(state.s+step,0,1)}
-          else if(event.key==='ArrowUp'){state.v=limit(state.v+step,0,1)}
-          else if(event.key==='ArrowDown'){state.v=limit(state.v-step,0,1)}
-          else return;
-          event.preventDefault();renderSpectrum();
-        });
-        hue.addEventListener('keydown',event=>{
-          if(!['ArrowLeft','ArrowRight'].includes(event.key))return;
-          event.preventDefault();state.h=(state.h+(event.key==='ArrowRight'?(event.shiftKey?15:3):-(event.shiftKey?15:3))+360)%360;renderSpectrum();
-        });
-        input.addEventListener('input',()=>{
-          input.classList.remove('is-invalid');
-          const raw=`#${input.value.trim().replace(/^#/,'')}`;
-          if(/^#[0-9a-f]{6}$/i.test(raw)){state=hexToHsv(raw);renderSpectrum({syncInput:false});preview.style.background=raw}
-        });
-        controls.addEventListener('submit',event=>{
-          event.preventDefault();
-          const raw=`#${input.value.trim().replace(/^#/,'')}`;
-          const chosen=/^#[0-9a-f]{6}$/i.test(raw)?raw:hsvToHex(state.h,state.s,state.v);
-          if(!/^#[0-9a-f]{6}$/i.test(chosen)){input.classList.add('is-invalid');input.focus();return}
-          applyPickerColor(chosen);
-        });
-        renderSpectrum();colorPicker.append(picker,controls);
-
-        const quickLabel=document.createElement('div');quickLabel.className='richtext-color-section-label';quickLabel.textContent='Quick colors';colorPicker.appendChild(quickLabel);
-        const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--text';
-        TEXT_COLOR_CHOICES.forEach(value=>{
-          const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-          button.classList.toggle('is-active',normalizeHexColor(value,value).toLowerCase()===normalizeHexColor(textColor,textColor).toLowerCase());
-          const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
-        });
-        colorPicker.appendChild(grid);
-        return;
-      }
-
-      const grid=document.createElement('div');grid.className='richtext-color-grid richtext-color-grid--highlight';
-      const none=document.createElement('button');none.type='button';none.className='richtext-color-choice richtext-color-choice--clear';none.setAttribute('aria-label','No highlight');none.title='No highlight';none.innerHTML='<span aria-hidden="true"></span>';bindPickerChoice(none,'transparent');grid.appendChild(none);
-      HIGHLIGHT_COLOR_CHOICES.forEach(value=>{
-        const button=document.createElement('button');button.type='button';button.className='richtext-color-choice';button.style.setProperty('--choice-color',value);button.setAttribute('aria-label',value);button.title=value;
-        const dot=document.createElement('span');dot.setAttribute('aria-hidden','true');button.appendChild(dot);bindPickerChoice(button,value);grid.appendChild(button);
-      });
-      colorPicker.appendChild(grid);
-      const custom=document.createElement('form');custom.className='richtext-color-custom';
-      const preview=document.createElement('span');preview.className='richtext-spectrum-preview';preview.setAttribute('aria-hidden','true');preview.style.background=highlightColor;
-      const label=document.createElement('label');label.textContent='Custom';
-      const fieldWrap=document.createElement('span');fieldWrap.className='richtext-color-hex-wrap';fieldWrap.textContent='#';
-      const input=document.createElement('input');input.type='text';input.inputMode='text';input.maxLength=6;input.autocomplete='off';input.spellcheck=false;input.value=highlightColor.replace('#','').toUpperCase();input.setAttribute('aria-label','Custom highlight hex color');
-      fieldWrap.appendChild(input);label.appendChild(fieldWrap);
-      const apply=document.createElement('button');apply.type='submit';apply.textContent='Apply';custom.append(preview,label,apply);
-      custom.addEventListener('submit',event=>{event.preventDefault();const raw=`#${input.value.trim().replace(/^#/,'')}`;if(!/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw)){input.classList.add('is-invalid');input.focus();return}applyPickerColor(raw)});
-      input.addEventListener('input',()=>{
-        input.classList.remove('is-invalid');
-        const raw=`#${input.value.trim().replace(/^#/,'')}`;
-        if(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(raw))preview.style.background=raw;
-      });colorPicker.appendChild(custom);
-    };
+    const buildColorPicker=mode=>window.TeacherTilesFormattingToolbar.buildColorPickerContent(colorPicker,mode,{textColor,highlightColor,applyPickerColor,closeColorPicker});
     const openColorPicker=(mode,anchorButton)=>{
       rememberSelection();closeRichSelect();if(!exportMenu?.hidden)closeExportMenu();syncColorPickerHost();
       if(!colorPicker.hidden&&colorPickerMode===mode){closeColorPicker();return}
@@ -895,6 +751,7 @@
     toolbar.addEventListener('click',event=>{
       const button=event.target.closest('[data-rich-command]');if(!button)return;
       const command=button.dataset.richCommand;
+      if(command==='clearHighlight'){runHighlight('transparent');return}
       if(command==='removeFormat'){runCommand('removeFormat');return}
       if(command==='undo'||command==='redo'){runCommand(command);return}
       runCommand(command);
