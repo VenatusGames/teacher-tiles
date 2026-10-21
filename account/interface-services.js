@@ -270,7 +270,7 @@ function applyAppLanguage({load=true}={}){
     if(strong)strong.textContent=copy[0];
     if(small)small.textContent=copy[1];
   });
-  settingsToggle?.setAttribute('aria-label',translateAppText('top.settings'));
+  settingsToggle?.setAttribute('aria-label',translateAppText('top.menu'));
   const shelfTitle=document.getElementById('asset-shelf-title');
   if(shelfTitle){
     const stickerPanel=document.getElementById('sticker-shelf-content');
@@ -381,6 +381,10 @@ function setupSettingsHub(){
     const active=tabs.find(tab=>tab.dataset.settingsTab===currentTab);
     const label=active?.lastElementChild?.textContent?.trim();
     if(title&&label)title.textContent=label;
+    const mark=modal.querySelector('.settings-panel__mark');
+    const icon=active?.querySelector('.settings-nav__icon');
+    const symbol=icon?.querySelector('svg');
+    if(mark&&symbol){mark.replaceChildren(symbol.cloneNode(true));mark.style.color=getComputedStyle(icon).color;}
   };
 
   const showTab=name=>{

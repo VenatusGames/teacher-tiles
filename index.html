@@ -201,12 +201,9 @@
       <span class="upcoming-control__tooltip"><strong>Collaborate</strong><small>Coming soon</small></span>
     </button>
     <button id="fullscreen-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Enter fullscreen"><svg class="workspace-fullscreen-icon workspace-fullscreen-icon--enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg><svg class="workspace-fullscreen-icon workspace-fullscreen-icon--exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M15 20v-5h5M9 20v-5H4"/></svg><span class="upcoming-control__tooltip"><strong data-i18n="top.fullscreen">Fullscreen</strong></span></button>
-    <button id="settings-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open settings" aria-expanded="false">
-      <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88L9.6 3.8Z" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
-        <circle cx="12" cy="12.72" r="2.65" fill="none" stroke="currentColor" stroke-width="1.65"/>
-      </svg>
-      <span class="upcoming-control__tooltip"><strong data-i18n="top.settings">Settings</strong></span>
+    <button id="settings-toggle" class="workspace-control workspace-tooltip-control" type="button" aria-label="Open menu" aria-expanded="false">
+      <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="upcoming-control__tooltip"><strong data-i18n="top.menu">Menu</strong></span>
     </button>
   </div>
 
@@ -783,22 +780,6 @@
 
       <div class="settings-panel__layout">
         <nav class="settings-nav" aria-label="Settings categories">
-          <button class="settings-nav__item is-active" type="button" data-settings-tab="settings" aria-selected="true">
-            <span class="settings-nav__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88l.55-2.05Z" fill="none" stroke="currentColor" stroke-width="1.55"/><circle cx="12" cy="12.72" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-            </span>
-            <span data-i18n="settings.tab.settings">Settings</span>
-          </button>
-          <button class="settings-nav__item" type="button" data-settings-tab="help" aria-selected="false">
-            <span class="settings-nav__icon settings-nav__icon--help" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="8.1" fill="none" stroke="currentColor" stroke-width="3.1"/>
-                <circle cx="12" cy="12" r="3.65" fill="none" stroke="currentColor" stroke-width="1.45"/>
-                <path d="M6.2 6.2 9.4 9.4M14.6 14.6l3.2 3.2M17.8 6.2l-3.2 3.2M9.4 14.6l-3.2 3.2" fill="none" stroke="currentColor" stroke-width="3.25" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span data-i18n="settings.tab.help">Help</span>
-          </button>
           <button class="settings-nav__item" type="button" data-settings-tab="news" aria-selected="false">
             <span class="settings-nav__icon settings-nav__icon--news" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M4.5 13.5h3l8 4V6.5l-8 4h-3zM7.5 13.5l1.4 5h2.7l-1.3-4.1M17.7 9.1c.8.8 1.3 1.8 1.3 2.9s-.5 2.1-1.3 2.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -810,6 +791,16 @@
               <svg viewBox="0 0 24 24"><path d="M6 4.5h9.5L19 8v11.5H6zM15.5 4.5V8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <span data-i18n="settings.tab.announcements">Updates</span>
+          </button>
+          <button class="settings-nav__item" type="button" data-settings-tab="help" aria-selected="false">
+            <span class="settings-nav__icon settings-nav__icon--help" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8.1" fill="none" stroke="currentColor" stroke-width="3.1"/>
+                <circle cx="12" cy="12" r="3.65" fill="none" stroke="currentColor" stroke-width="1.45"/>
+                <path d="M6.2 6.2 9.4 9.4M14.6 14.6l3.2 3.2M17.8 6.2l-3.2 3.2M9.4 14.6l-3.2 3.2" fill="none" stroke="currentColor" stroke-width="3.25" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span data-i18n="settings.tab.help">Help</span>
           </button>
           <button class="settings-nav__item" type="button" data-settings-tab="bug-reports" aria-selected="false"><span class="settings-nav__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="13" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 7V4h6v3M3 10h4M17 10h4M3 16h4M17 16h4M12 10v7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span>Support</span></button>
           <button class="settings-nav__item" type="button" data-settings-tab="contact" aria-selected="false">
@@ -823,6 +814,12 @@
               <svg viewBox="0 0 24 24"><path d="M6 3.8h9.2L19 7.6v12.6H6zM15.2 3.8v3.8H19M9 11h7M9 14h7M9 17h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m8.7 7.4 1.1 1.1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <span data-i18n="settings.tab.terms">Terms &amp; Conditions</span>
+          </button>
+          <button class="settings-nav__item is-active" type="button" data-settings-tab="settings" aria-selected="true">
+            <span class="settings-nav__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9.6 3.8h4.8l.55 2.05c.55.2 1.08.5 1.55.88l2.05-.58 2.4 4.15-1.52 1.49c.05.3.07.61.07.93s-.02.63-.07.93l1.52 1.49-2.4 4.15-2.05-.58c-.47.38-1 .68-1.55.88l-.55 2.05H9.6l-.55-2.05a7 7 0 0 1-1.55-.88l-2.05.58-2.4-4.15 1.52-1.49a5.6 5.6 0 0 1 0-1.86L3.05 10.3l2.4-4.15 2.05.58c.47-.38 1-.68 1.55-.88l.55-2.05Z" fill="none" stroke="currentColor" stroke-width="1.55"/><circle cx="12" cy="12.72" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span data-i18n="settings.tab.settings">Settings</span>
           </button>
         </nav>
 
@@ -4642,7 +4639,7 @@
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20260930-tile-refactor"></script>
-<script src="account/interface-services.js?v=20261020-random-effects"></script>
+<script src="account/interface-services.js?v=20261021-menu"></script>
 <script src="boards/navigation.js?v=20261020-draw"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
@@ -4667,13 +4664,13 @@
 <script src="presentations/transitions.js?v=20261017-shop-effects-polish"></script>
 <script src="presentations/themes.js?v=20261017-layout-backgrounds"></script>
 <script src="shop/tile-effects-catalog.js?v=20261020-money-confetti"></script>
-<script src="shop/tile-effects.js?v=20261020-filter-row"></script>
+<script src="shop/tile-effects.js?v=20261021-random-access"></script>
 <script src="shop/extras.js?v=20261020-category-subtitles"></script>
 <script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
 <script src="shop/ui.js?v=20261020-controls-followup"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
-<script src="app.js?v=20261021-community"></script>
+<script src="app.js?v=20261021-menu"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261020-ui-fixes"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>

@@ -7,8 +7,7 @@
  function setRandom(enabled){randomEnabled=Boolean(enabled);randomBag=[];randomPool='';try{localStorage.setItem(randomKey,String(randomEnabled))}catch{}window.dispatchEvent(new Event('teachertiles:tileeffectchange'));}
  function nextEffect(){
   if(!randomEnabled)return selected();
-  const owned=typeof getOwnedShopProducts==='function'?getOwnedShopProducts():new Set(window.TeacherTilesAccount?.state?.ownedProductIds||[]);
-  const pool=catalog.all.filter(item=>!item.productId||owned.has(item.productId)),signature=pool.map(item=>item.id).join('|');
+  const pool=catalog.all.filter(accessible),signature=pool.map(item=>item.id).join('|');
   if(signature!==randomPool||!randomBag.length){
    randomPool=signature;randomBag=[...pool];
    for(let i=randomBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[randomBag[i],randomBag[j]]=[randomBag[j],randomBag[i]];}
