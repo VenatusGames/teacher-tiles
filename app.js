@@ -194,6 +194,7 @@ const fireworksSfxPrototype=new Audio('assets/ui/tile-effect-fireworks.mp3');
 fireworksSfxPrototype.preload='none';
 const explosionSfxPrototype=new Audio('assets/ui/tile-effect-explosion.mp3');
 explosionSfxPrototype.preload='none';
+const slimeSfxPrototype=new Audio('assets/ui/tile-effect-slime.mp3');slimeSfxPrototype.preload='none';
 const rainSfxPrototype=new Audio('assets/ui/tile-effect-rain.mp3');rainSfxPrototype.preload='none';
 const smokeSfxPrototype=new Audio('assets/ui/tile-effect-smoke.mp3');smokeSfxPrototype.preload='none';
 const lightningSfxPrototype=new Audio('assets/ui/tile-effect-lightning.mp3');

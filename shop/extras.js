@@ -42,7 +42,7 @@ function setupShopExtras(modal) {
   const themesBack=presentations.querySelector('.shop-back');themesBack.dataset.shopOpenPage='presentations';themesBack.setAttribute('aria-label','Back to Presentations');
   const profiles=page('profile-cosmetics','Profile Cosmetics','Frame your profile border.');
   for(const frame of frames.catalog)profiles.querySelector('.shop-product-grid').append(product(frame,'profile-frame',frames.preview(frame.id)));
-  const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentations',''],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','']];
+  const categories=[['planner-skins','Planner Skins','Covers for Your Plans'],['presentation-themes','Presentations','Cosmetics for your Presentations'],['profile-cosmetics','Profile Cosmetics','Frames for Your Profile'],['tile-effects','Tile Effects','Effects for your Tiles']];
   for(const [id,title,subtitle] of categories){
     const category=document.createElement('button');category.type='button';category.className='shop-category shop-category--'+id;category.dataset.shopCategory=id;
     category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong></strong><em></em></span>';
