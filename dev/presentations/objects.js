@@ -60,10 +60,10 @@ function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>
    let moved=false;const target=handle||m;target.setPointerCapture(event.pointerId);m.classList.add(edge?'is-resizing':'is-dragging');
    const paint=()=>{Object.assign(el.style,{left:e.x/9.6+'%',top:e.y/5.4+'%',width:e.w/9.6+'%',height:e.h/5.4+'%'});fit();};
    const move=ev=>{if(ev.pointerId!==event.pointerId)return;const dx=(ev.clientX-sx)/scale,dy=(ev.clientY-sy)/scale;if(!moved&&Math.abs(dx)+Math.abs(dy)<2)return;if(!moved){checkpoint();moved=true;}
-    if(!edge){e.x=Math.max(0,Math.min(960-e.w,start.x+dx));e.y=Math.max(0,Math.min(540-e.h,start.y+dy));}
+    if(!edge){const snapped=slide._snapMove?.([{...e,...start}],dx,dy)||{dx,dy};e.x=Math.max(0,Math.min(960-e.w,start.x+snapped.dx));e.y=Math.max(0,Math.min(540-e.h,start.y+snapped.dy));}
     else{let w=Math.max(100,start.w+(edge.includes('r')?dx:edge.includes('l')?-dx:0)),h=Math.max(80,start.h+(edge.includes('b')?dy:edge.includes('t')?-dy:0));if(ev.shiftKey){const k=Math.max(w/start.w,h/start.h);w=start.w*k;h=start.h*k;}w=Math.min(960,w);h=Math.min(540,h);e.x=Math.max(0,Math.min(960-w,edge.includes('l')?start.x+start.w-w:start.x));e.y=Math.max(0,Math.min(540-h,edge.includes('t')?start.y+start.h-h:start.y));e.w=w;e.h=h;}paint();
    };
-   const finish=cancelled=>{target.removeEventListener('pointermove',move);target.removeEventListener('pointerup',up);target.removeEventListener('pointercancel',cancel);if(target.hasPointerCapture(event.pointerId))target.releasePointerCapture(event.pointerId);m.classList.remove('is-dragging','is-resizing');if(cancelled){Object.assign(e,start);paint();}else if(moved){capture();commit();}};
+   const finish=cancelled=>{slide._clearSnap?.();target.removeEventListener('pointermove',move);target.removeEventListener('pointerup',up);target.removeEventListener('pointercancel',cancel);if(target.hasPointerCapture(event.pointerId))target.releasePointerCapture(event.pointerId);m.classList.remove('is-dragging','is-resizing');if(cancelled){Object.assign(e,start);paint();}else if(moved){capture();commit();}};
    const up=()=>finish(false),cancel=()=>finish(true);target.addEventListener('pointermove',move);target.addEventListener('pointerup',up);target.addEventListener('pointercancel',cancel);
   });
  }
