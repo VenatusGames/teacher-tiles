@@ -42,7 +42,7 @@ export function setupManagedShop({modal,products,catalogProducts,bindProduct,syn
   if(next)expiry=setTimeout(apply,Math.min(next-now()+50,2147483647));
   if(bannerRevision!==settings.revision){
    const slides=originalBanners.filter(b=>!settings.banners.hidden.includes(b.id)&&!(settings.banners.removed||[]).includes(b.id)).map(b=>b.node.cloneNode(true));
-   for(const b of settings.banners.custom){if(b.active===false)continue;const slide=document.createElement('article');slide.className='shop-banner__slide';slide.dataset.shopBanner='';const button=document.createElement('button');button.type='button';button.className='shop-banner-link';button.dataset.shopBannerTarget=b.target;button.setAttribute('aria-label',b.title);const img=document.createElement('img');img.src=b.url;img.alt=b.title;slide.append(button,img);slides.push(slide)}
+   for(const b of settings.banners.custom){if(b.active===false)continue;const slide=document.createElement('article');slide.className='shop-banner__slide';slide.dataset.shopBanner='';const button=document.createElement('button');button.type='button';button.className='shop-banner-link';button.dataset.shopBannerTarget=b.target;button.setAttribute('aria-label',b.title);const img=document.createElement('img');img.src=b.url.startsWith('banners/')?new URL('../'+b.url,import.meta.url).href:b.url;img.alt=b.title;slide.append(button,img);slides.push(slide)}
    replaceBanners(slides);bannerRevision=settings.revision;
   }
   sync();requestAnimationFrame(updateArrows);
