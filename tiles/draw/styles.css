@@ -30,3 +30,8 @@
 .draw-rebuilt .draw-smooth{appearance:none;-webkit-appearance:none;width:30px;height:18px;flex:none;border:0;border-radius:999px;background:#a5acb8;position:relative;cursor:pointer;transition:background .15s}.draw-smooth::after{content:"";position:absolute;left:3px;top:3px;width:12px;height:12px;border-radius:50%;background:white;transition:transform .15s}.draw-rebuilt .draw-smooth:checked{background:#7298ca}.draw-smooth:checked::after{transform:translateX(12px)}.draw-smooth:focus-visible{outline:2px solid #7298ca;outline-offset:3px}
 
 .draw-active-notice{margin:0;font-size:11px;line-height:1.4;color:var(--muted)}
+
+/* Drawer panels overlay the palette instead of pushing controls down. */
+.draw-settings-drawer,.draw-custom-colors{position:relative}
+.draw-settings-drawer[open],.draw-custom-colors[open]{z-index:100}
+.draw-settings-drawer[open]>.draw-options,.draw-custom-colors[open]>.draw-color-editor{position:absolute;bottom:calc(100% + 8px);left:0;right:0;z-index:101;margin:0;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-solid,#fff);box-shadow:0 8px 24px #0f172a26}
