@@ -785,11 +785,11 @@ let menuAllExpanded=true,menuHolidaysExpanded=true;
 
 // Categories retain their buttons; pins only change their visual order.
 const menuPinnedCategories=new Set();
-try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>(menuCategoryOrder.includes(id)||/^holiday:[0-5]$/.test(id))&&id!=='all').forEach(id=>menuPinnedCategories.add(id))}catch{}
+try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>(menuCategoryOrder.includes(id)||/^holiday:[0-5]$/.test(id))&&!['all','holidays'].includes(id)).forEach(id=>menuPinnedCategories.add(id))}catch{}
 
 menu.addEventListener('click',event=>{
   const pin=event.target.closest('[data-category-pin]');if(!pin)return;
-  event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;
+  event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;if(['all','holidays'].includes(id))return;
   if(menuPinnedCategories.has(id))menuPinnedCategories.delete(id);else menuPinnedCategories.add(id);
   try{window.TeacherTilesCollectionPreferences.write('teacherTiles.categoryPins.v1',JSON.stringify([...menuPinnedCategories]))}catch{}
   renderMenuCategoryPins();
