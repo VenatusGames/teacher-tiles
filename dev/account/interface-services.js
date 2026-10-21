@@ -104,16 +104,24 @@ function releaseBoostedMedia(audio){const nodes=boostedMedia.get(audio);if(nodes
 
 function playUiSfx(kind='click',volumeScale=1,owner=null){
   if(owner&&!owner.isConnected)return;
-  if(kind==='tile-effect'){const effect=window.TeacherTilesTileEffects?.selected()?.kind||'confetti';kind=effect;}
+  if(kind==='tile-effect'){
+    const effect=window.TeacherTilesTileEffects?.selected()?.kind||'confetti';
+    if(effect!=='confetti'){
+      playUiSfx('celebration',volumeScale*.75,owner);
+      setTimeout(()=>playUiSfx(effect,volumeScale,owner),window.TeacherTilesTileEffects?.celebrationLeadMs??300);
+      return;
+    }
+    kind=effect;
+  }
   if(kind==='confetti-celebration'&&(window.TeacherTilesTileEffects?.selected()?.kind||'confetti')!=='confetti')return;
   const effectiveLevel=kind==='click'?globalUiAudioLevel():tileAudioLevel(owner);
   if(effectiveLevel<=0)return;
   try{
-    const prototype=kind==='fireworks'?fireworksSfxPrototype:kind==='explosion'?explosionSfxPrototype:kind==='lightning'?lightningSfxPrototype:kind==='confetti'?confettiSfxPrototype:kind==='confetti-celebration'?confettiCelebrationSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
+    const prototype=kind==='fireworks'?fireworksSfxPrototype:kind==='explosion'?explosionSfxPrototype:kind==='lightning'?lightningSfxPrototype:kind==='confetti'?confettiSfxPrototype:(kind==='celebration'||kind==='confetti-celebration')?confettiCelebrationSfxPrototype:kind==='money'?moneySfxPrototype:kind==='hole-punch'?holePunchSfxPrototype:kind==='sticker-place'?stickerPlaceSfxPrototype:uiSfxPrototype;
     const sound=prototype.cloneNode();
-    const base=kind==='fireworks'||kind==='explosion'||kind==='lightning'?.65:kind==='intro'?.62:kind==='confetti'?.72:kind==='confetti-celebration'?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
+    const base=kind==='fireworks'||kind==='explosion'||kind==='lightning'?.65:kind==='intro'?.62:kind==='confetti'?.72:(kind==='celebration'||kind==='confetti-celebration')?.16:kind==='money'?.5:kind==='hole-punch'?.12:kind==='sticker-place'?.28:kind==='collection'?.18:.11;
     setBoostedMediaVolume(sound,base*effectiveLevel*Math.max(0,Number(volumeScale)||0));
-    sound.playbackRate=kind==='fireworks'||kind==='explosion'||kind==='lightning'||kind==='intro'||kind==='confetti'||kind==='confetti-celebration'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
+    sound.playbackRate=kind==='fireworks'||kind==='explosion'||kind==='lightning'||kind==='intro'||kind==='confetti'||kind==='confetti-celebration'||kind==='celebration'||kind==='money'||kind==='hole-punch'||kind==='sticker-place'?1:kind==='collection'?.92:1.35;
     sound.currentTime=0;
     if(owner){
       const sounds=owner._activeTileSounds||(owner._activeTileSounds=new Set());sounds.add(sound);
