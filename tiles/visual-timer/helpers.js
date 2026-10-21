@@ -28,8 +28,8 @@ function celebrateTimerFinish(m){
     if(end&&timerSyncSoundEnds.get(key)===end)return;
     if(end)timerSyncSoundEnds.set(key,end);
   }
-  playUiSfx('confetti',1,m);
-  playUiSfx('timer-tada',1,m);
+  playUiSfx('tile-effect',1,m);
+  playUiSfx('confetti-celebration',1,m);
 }
 
 function bindTimerControls(m,onRender,{onFinish}={}){

@@ -266,8 +266,8 @@ function setupSpinner(m){
     m.classList.add('spinner-pop');
 
     fireSpinnerConfetti();
-    playUiSfx('confetti',1,m);
-    playUiSfx('timer-tada',1,m);
+    playUiSfx('tile-effect',1,m);
+    playUiSfx('confetti-celebration',1,m);
   }
 
   async function spin(){
