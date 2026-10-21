@@ -692,9 +692,9 @@ function normalizeMenuSearch(value=''){
   return value.toLowerCase().replace(/[-‐‑–—]/g,' ').trim().replace(/\s+/g,' ');
 }
 
-function menuItemPassesGrade(item){return window.TeacherTilesTileFilters?.matches(item)??true;}
+function menuItemPassesGrade(item){return item.dataset.tileDisabled!=='true'&&(window.TeacherTilesTileFilters?.matches(item)??true);}
 function menuCategoryHasMatches(category){
- if(!window.TeacherTilesTileFilters?.active||category==='all')return true;
+ if(category==='all'||(!window.TeacherTilesTileFilters?.active&&!menuItems.some(item=>item.dataset.tileDisabled==='true')))return true;
  return menuItems.some(item=>{if(!menuItemPassesGrade(item))return false;const categories=(item.dataset.category||'').split(/\s+/);
  if(category==='favorites')return menuFavorites.has(menuItemKey(item));
  return category==='holidays'?categories.some(c=>c.startsWith('holiday:')):categories.includes(category);});

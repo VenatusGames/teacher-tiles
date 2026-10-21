@@ -12,6 +12,7 @@ if(menu){
     let changed=false;
     for(const item of menu.items){
       const metadata=data.tiles[tileKey(item)];
+      const disabled=String(metadata?.disabled===true);if(item.dataset.tileDisabled!==disabled){item.dataset.tileDisabled=disabled;changed=true;}
       const description=typeof metadata?.description==='string'?metadata.description:defaultDescriptions.get(item);
       let summary=item.querySelector('small');
       if((summary?.textContent||'')!==description){
