@@ -1,5 +1,6 @@
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
-import '../tiles/halloween/shared.js?v=20261016-clock-above-6';
+import '../tiles/halloween/shared.js?v=20261021-thanksgiving';
+import '../tiles/thanksgiving/shared.js?v=20261021-thanksgiving';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
@@ -8,7 +9,7 @@ import '../tiles/lava-lamp/index.js?v=20261012-skins';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20261016-template-preview';
+import {renderTimerPreview} from './timer-preview.js?v=20261021-thanksgiving';
 import '../tiles/visual-directions/index.js?v=20261016-directions-fit';
 const EDITABLE_TILE_HEADINGS={
   wordoftheday:'.widget-title',
@@ -469,12 +470,13 @@ function applyPreviewState(module, state) {
   if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);
   if(state.type==='lavalamp'){window.TeacherTilesLavaLamp.render(module,state.special||{});module.querySelector('.lava-heading').classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
+  if(window.TeacherTilesThanksgiving?.types.has(state.type))window.TeacherTilesThanksgiving.preview(module,state,new URL('../',import.meta.url));
   if(window.TeacherTilesHalloween?.types.has(state.type))window.TeacherTilesHalloween.preview(module,state,new URL('../',import.meta.url));
-  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer') {
+  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer' || state.type === 'thanksgivingtimer') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
   }
-  if(state.type==='progressbar'){
+  if(state.type==='progressbar'||state.type==='cookafeast'){
     const title=module.querySelector('.progress-bar-title');
     if(title){const heading=document.createElement('div');heading.className=title.className;heading.textContent=state.special?.title??title.value;heading.style.cssText='border:0;background:transparent;box-shadow:none';title.replaceWith(heading);}
     module.querySelector('.progress-bar-remaining').textContent='00:00';

@@ -1,4 +1,7 @@
 export const tileLabels={
+  "thankfulturkey":"Thankful Turkey",
+  "thanksgivingtimer":"Thanksgiving Timers",
+  "cookafeast":"Cook-A-Feast",
   "presentation": "Presentations",
   "tenssticks": "Tens Sticks",
   "tensblock": "Base-Ten Block",
