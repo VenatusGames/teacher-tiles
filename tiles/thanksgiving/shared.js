@@ -25,9 +25,12 @@ function turkeyArt(host,feathers=[],animate=false,onRead){
  const fan=host.querySelector('.turkey-feathers'),artId=++featherArtId,colors=['#e8a749','#e47e3f','#bd5a3c','#d4b44e','#d18b55','#a6ad62'];
  // Start at the front. New tiers grow behind the earlier feathers.
  feathers.map((label,i)=>({label,i})).reverse().forEach(({label,i})=>{
-  const row=Math.floor(i/10),count=Math.min(10,feathers.length-row*10),column=i%10;
-  const fullness=(Math.min(10,feathers.length)-1)/9,step=30-10*fullness,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
-  const angle=(column-(count-1)/2)*step+offset,length=270+40*fullness+row*110,labelInset=55,labelLength=68;
+  // Alternate seven/eight centered feathers so full rows sit between their neighbors.
+  // A 70-degree limit keeps even the outermost feathers pointing above the feet.
+  const row=i<7?0:i<15?1:i<22?2:3,start=[0,7,15,22][row],capacity=row%2?8:7;
+  const count=Math.min(capacity,feathers.length-start),column=i-start;
+  const fullness=(Math.min(7,feathers.length)-1)/6,step=row?20:30-10*fullness;
+  const angle=(column-(count-1)/2)*step,length=270+40*fullness+row*110,labelInset=55,labelLength=68;
   // Keep broad, rounded feathers at every count; spacing and staggered tiers make room for captions.
   const widthScale=1.3+row*.15;
   const radians=angle*Math.PI/180,halfWidth=48*widthScale;
