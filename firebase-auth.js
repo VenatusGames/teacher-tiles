@@ -4,9 +4,9 @@ import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261016-template-preview';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261016-directions-fit';
-import {createTemplateLibrary} from './templates/ui.js?v=20261016-template-preview';
-import {syncAwardedPatches} from './profile/awards.js?v=20261013-star-inset';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261017-shared-presentations';
+import {createTemplateLibrary} from './templates/ui.js?v=20261020-product-polish';
+import {syncAwardedPatches} from './profile/awards.js?v=20261020-product-polish';
 import {startSiteActivity} from './account/site-activity.js';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -723,7 +723,7 @@ function publishShopAccount(patch = {}) {
 async function callShopFunction(name, data = {}) {
   if (!currentUser) throw new Error("Sign in to use the TeacherTiles shop.");
   if (!cloudFunctions || !functionsSdk) throw new Error("The TeacherTiles shop is still loading. Try again in a moment.");
-  const callable = functionsSdk.httpsCallable(cloudFunctions, name);
+  const callable = functionsSdk.httpsCallable(cloudFunctions, name, name==='boardTemplates'&&data.action==='submit'?{timeout:300000}:{});
   return (await callable(data)).data || {};
 }
 
@@ -3698,6 +3698,7 @@ async function handleSignOut() {
 
   try {
     await window.TeacherTilesLessonPlanner?.flushCloud?.();
+    await window.TeacherTilesPresentations?.flush?.();
     await saveCurrentBoard({ immediate: true });
     await authSdk.signOut(auth);
     setStatus("Signed out.");

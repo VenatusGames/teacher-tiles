@@ -1,4 +1,5 @@
 export const tileLabels={
+  "presentation": "Presentations",
   "tenssticks": "Tens Sticks",
   "tensblock": "Base-Ten Block",
   "lavalamp": "Lava Lamp",

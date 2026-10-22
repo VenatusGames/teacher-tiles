@@ -190,10 +190,20 @@ applyTileDeleteVisibilityPreference();
 let uiSfxMuted=appPreferences.uiMuted;
 const uiSfxPrototype=new Audio('assets/ui/pop.mp3');
 uiSfxPrototype.preload='auto';
+const fireworksSfxPrototype=new Audio('assets/ui/tile-effect-fireworks.mp3');
+fireworksSfxPrototype.preload='none';
+const explosionSfxPrototype=new Audio('assets/ui/tile-effect-explosion.mp3');
+explosionSfxPrototype.preload='none';
+const slimeSfxPrototype=new Audio('assets/ui/tile-effect-slime.mp3');slimeSfxPrototype.preload='none';
+const moneyConfettiSfxPrototype=new Audio('assets/ui/tile-effect-money-confetti.mp3');moneyConfettiSfxPrototype.preload='none';
+const rainSfxPrototype=new Audio('assets/ui/tile-effect-rain.mp3');rainSfxPrototype.preload='none';
+const smokeSfxPrototype=new Audio('assets/ui/tile-effect-smoke.mp3');smokeSfxPrototype.preload='none';
+const lightningSfxPrototype=new Audio('assets/ui/tile-effect-lightning.mp3');
+lightningSfxPrototype.preload='none';
 const confettiSfxPrototype=new Audio('assets/ui/confetti-pop.mp3');
 confettiSfxPrototype.preload='auto';
-const timerTadaSfxPrototype=new Audio('assets/ui/timer-tada.mp3');
-timerTadaSfxPrototype.preload='auto';
+const confettiCelebrationSfxPrototype=new Audio('assets/ui/confetti-celebration.mp3');
+confettiCelebrationSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
 const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
@@ -288,12 +298,12 @@ const formatCountdown=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),ss
 
 const APP_TRANSLATIONS={
   en:{
-    'top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
+    'top.menu':'Menu','top.settings':'Settings','top.help':'Help','top.news':'News','top.fullscreen':'Fullscreen','top.profile':'Profile','top.themes':'Themes','top.stickers':'Stickers','top.shop':'Shop','top.boards':'Boards',
     'warning.signin':'Sign-in to save your board & more!','hint.addTile':'Right-click anywhere to add a tile',
     'boards.title':'Boards','boards.back':'Back to Board','boards.loading':'Loading boards…',
-    'context.addTile':'Add tile','context.all':'TILES','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
+    'context.addTile':'Add Tile','context.all':'TILES','context.search':'Search tiles...','context.none':'No tiles found','context.try':'Try another search.',
     'context.cat.text':'TEXT','context.cat.media':'MEDIA','context.cat.tools':'TOOLS','context.cat.language':'LANGUAGE','context.cat.geography':'GEOGRAPHY','context.cat.accessibility':'ACCESSIBILITY','context.cat.time':'TIME','context.cat.audio':'AUDIO','context.cat.games':'GAMES','context.cat.literacy':'LITERACY','context.cat.math':'MATH','context.cat.science':'SCIENCE','context.cat.planning':'PLANNING','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'News','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Settings & Help','settings.tab.settings':'Settings','settings.tab.help':'Help','settings.tab.news':'Community','settings.tab.announcements':'Updates','settings.tab.contact':'Contact Us','settings.tab.terms':'Terms & Conditions',
     'settings.preferences.kicker':'Preferences','settings.preferences.title':'Make TeacherTiles yours.','settings.preferences.copy':'These preferences are stored with the current board and sync in the same autosave.',
     'settings.sound.title':'Sound','settings.sound.copy':'Control TeacherTiles audio.','settings.mute.title':'Mute UI Sounds','settings.mute.copy':'Silence button clicks and interface effects.',
     'settings.masterVolume.title':'Master Volume','settings.masterVolume.copy':'Controls the overall volume of all TeacherTiles audio.','settings.volume.title':'UI Volume','settings.volume.copy':'Adjust the volume of interface sound effects.',
@@ -324,12 +334,12 @@ const APP_TRANSLATIONS={
     'boards.new':'New Board','boards.delete':'Delete board','boards.create':'Create new blank board'
   },
   es:{
-    'top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
+    'top.menu':'Menú','top.settings':'Ajustes','top.help':'Ayuda','top.news':'Noticias','top.fullscreen':'Pantalla completa','top.profile':'Perfil','top.themes':'Temas','top.stickers':'Pegatinas','top.shop':'Tienda','top.boards':'Tableros',
     'warning.signin':'¡Inicia sesión para guardar tu tablero y mucho más!','hint.addTile':'Haz clic derecho en cualquier lugar para añadir un tile',
     'boards.title':'Tableros','boards.back':'Volver al tablero','boards.loading':'Cargando tableros…',
     'context.addTile':'Añadir tile','context.all':'TILES','context.search':'Buscar tiles...','context.none':'No se encontraron tiles','context.try':'Prueba otra búsqueda.',
     'context.cat.text':'TEXTO','context.cat.media':'MULTIMEDIA','context.cat.tools':'HERRAMIENTAS','context.cat.language':'IDIOMAS','context.cat.geography':'GEOGRAFÍA','context.cat.accessibility':'ACCESIBILIDAD','context.cat.time':'TIEMPO','context.cat.audio':'AUDIO','context.cat.games':'JUEGOS','context.cat.literacy':'LECTOESCRITURA','context.cat.math':'MATEMÁTICAS','context.cat.science':'CIENCIAS','context.cat.planning':'PLANIFICACIÓN','context.cat.pbis':'PBIS','context.cat.sel':'SEL','context.cat.classconnect':'CLASS CONNECT','context.cat.favorites':'FAVORITES','context.cat.basics':'BASICS',
-    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Noticias','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
+    'settings.eyebrow':'TEACHERTILES','settings.title':'Ajustes y ayuda','settings.tab.settings':'Ajustes','settings.tab.help':'Ayuda','settings.tab.news':'Comunidad','settings.tab.announcements':'Actualizaciones','settings.tab.contact':'Contáctanos','settings.tab.terms':'Términos y condiciones',
     'settings.preferences.kicker':'Preferencias','settings.preferences.title':'Haz TeacherTiles a tu manera.','settings.preferences.copy':'Estas preferencias se guardan con el tablero actual y se sincronizan en el mismo autoguardado.',
     'settings.sound.title':'Sonido','settings.sound.copy':'Controla el audio de TeacherTiles.','settings.mute.title':'Silenciar sonidos de la interfaz','settings.mute.copy':'Silencia los clics de botones y los efectos de la interfaz.',
     'settings.masterVolume.title':'Volumen maestro','settings.masterVolume.copy':'Controla el volumen general de todo el audio de TeacherTiles.','settings.volume.title':'Volumen de la interfaz','settings.volume.copy':'Ajusta el volumen de los efectos de sonido de la interfaz.',
@@ -774,16 +784,16 @@ menu.addEventListener('click',event=>{
 });
 
 const menuHolidays=['Christmas','Hannukah','Halloween',"Valentine’s Day","St. Patrick’s Day",'Thanksgiving'];
-let menuAllExpanded=true,menuHolidaysExpanded=true,menuFavoritesExpanded=true;
+let menuAllExpanded=true,menuHolidaysExpanded=true;
 
 
 // Categories retain their buttons; pins only change their visual order.
 const menuPinnedCategories=new Set();
-try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>(menuCategoryOrder.includes(id)||/^holiday:[0-5]$/.test(id))&&id!=='all').forEach(id=>menuPinnedCategories.add(id))}catch{}
+try{const saved=JSON.parse(localStorage.getItem('teacherTiles.categoryPins.v1')||'[]');if(Array.isArray(saved))saved.filter(id=>(menuCategoryOrder.includes(id)||/^holiday:[0-5]$/.test(id))&&!['all','holidays'].includes(id)).forEach(id=>menuPinnedCategories.add(id))}catch{}
 
 menu.addEventListener('click',event=>{
   const pin=event.target.closest('[data-category-pin]');if(!pin)return;
-  event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;
+  event.preventDefault();event.stopPropagation();const id=pin.dataset.categoryPin;if(['all','holidays'].includes(id))return;
   if(menuPinnedCategories.has(id))menuPinnedCategories.delete(id);else menuPinnedCategories.add(id);
   try{window.TeacherTilesCollectionPreferences.write('teacherTiles.categoryPins.v1',JSON.stringify([...menuPinnedCategories]))}catch{}
   renderMenuCategoryPins();
@@ -1002,6 +1012,7 @@ const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const ADDITIONAL_STICKER_PACKS=window.TeacherTilesStickerPacks;
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window',
@@ -1030,6 +1041,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+'deep':'theme-deep','pastels2':'theme-pastels2','flowers':'theme-flowers',
   'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
   'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
   outer:'theme-outer-space',frosted:'theme-frosted-window',
@@ -1097,6 +1109,7 @@ const TILE_AUDIO_HOSTS=Object.freeze({
 
 function setupModuleByType(m,type){
   setupCommon(m);
+  if(type==='presentation')window.TeacherTilesPresentationTile.setup(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
   if(type==='flyswat')window.TeacherTilesFlySwat.setup(m);
   if(type==='seatingchart')window.TeacherTilesSeating.setup(m);
@@ -1209,12 +1222,7 @@ function setupModuleByType(m,type){
   if(type==='progressbar')setupProgressBar(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
-  window.TeacherTilesFlashcardNavigation?.setup(m);
-  setupTileAudioSettings(m,type);
-  setupEditableTileHeading(m,type);
-  window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:notifyBoardChanged});
-  setupTileHeadingVisibility(m,type);
-  window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
+  setupTilePresentationControls(m,type);
 }
 
 
@@ -1512,6 +1520,7 @@ const TEACHERTILES_THEMES=new Set([
   "basic-red","basic-orange","basic-yellow","basic-green","basic-blue","basic-indigo","basic-violet","bamboo-yellow","bamboo-brown","bamboo-green",
   'underwater-ocean','rainy-window','underwater-ocean-light','rainy-window-light',
   'light','dark','gray',
+'deep-midnight-blue','deep-aurora-purple','deep-cosmic-depths','pastels2-peach','pastels2-apricot','pastels2-mint','pastels2-aqua','pastels2-blush','flowers-rose','flowers-sage','flowers-sky','flowers-lilac','flowers-buttercream',
   'pastel-red','pastel-yellow','pastel-green','pastel-blue','pastel-lilac',
   'polka-berry','polka-sunshine','polka-mint','polka-sky','polka-lavender',
   'programmer-green','programmer-red','programmer-yellow','programmer-blue',
@@ -1523,6 +1532,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+'theme-deep-midnight-blue','theme-deep-aurora-purple','theme-deep-cosmic-depths','theme-pastels2-peach','theme-pastels2-apricot','theme-pastels2-mint','theme-pastels2-aqua','theme-pastels2-blush','theme-flowers-rose','theme-flowers-sage','theme-flowers-sky','theme-flowers-lilac','theme-flowers-buttercream',
   'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
   'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
   "theme-outer-space-light","theme-outer-space","theme-frosted-window-light","theme-frosted-window",
@@ -1542,6 +1552,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+['deep-','theme-deep'],['pastels2-','theme-pastels2'],['flowers-','theme-flowers'],
   ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
   ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
   ['outer-space','theme-outer-space'],['frosted-window','theme-frosted-window'],
@@ -1553,6 +1564,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',
   'outer-space-theme-pack':'theme-outer-space','outer-space-theme-fan':'theme-outer-space','frosted-window-theme-pack':'theme-frosted-window','frosted-window-theme-fan':'theme-frosted-window',
@@ -1844,3 +1856,13 @@ window.addEventListener('teachertiles:collectionpreferences',()=>{
 
 // Keep the original catalog elements, including those currently hidden or cloned.
 window.TeacherTilesTileMenu = {element:menu, items:menuItems, refresh(){applyMenuView();renderMenuCategoryPins();}};
+
+// Shared native tile appearance and settings initialization for board and slide hosts.
+function setupTilePresentationControls(m,type){
+  window.TeacherTilesFlashcardNavigation?.setup(m);
+  setupTileAudioSettings(m,type);
+  setupEditableTileHeading(m,type);
+  window.TeacherTilesAppearance.setup(m,{fonts:FONT_OPTIONS,onChange:m._presentationChanged||notifyBoardChanged});
+  setupTileHeadingVisibility(m,type);
+  if(!m.dataset.presentationEmbedded)window.TeacherTilesSkins.setup(m,{catalog:TILE_SKIN_CATALOG,owned:tileSkinIsOwned,apply:applyTileSkinToModule});
+}

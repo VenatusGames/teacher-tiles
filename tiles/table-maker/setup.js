@@ -33,6 +33,7 @@ function setupTableMaker(m){
   }));
   const displayLabel=value=>String(value||'Untitled').trim().slice(0,12)||'Untitled';
   const animateEditorSize=(targetWidth,targetHeight)=>{
+    if(m.dataset.presentationEmbedded==='true')return;
     const width=Math.max(COMPACT_WIDTH,Math.round(Number(targetWidth)||m.offsetWidth));
     const height=Math.max(COMPACT_HEIGHT,Math.round(Number(targetHeight)||m.offsetHeight));
     if(Math.abs(m.offsetWidth-width)<1&&Math.abs(m.offsetHeight-height)<1)return;
@@ -171,10 +172,10 @@ function setupTableMaker(m){
       const label=document.createElement('input');label.type='text';label.maxLength=28;label.value=row.label;label.placeholder=`Category ${index+1}`;label.setAttribute('aria-label',`Label for row ${index+1}`);
       const value=document.createElement('input');value.type='number';value.min='0';value.max='999999';value.step='any';value.value=String(row.value);value.setAttribute('aria-label',`Value for ${row.label}`);
       const remove=document.createElement('button');remove.type='button';remove.className='table-maker-remove-row';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${row.label}`);
-      color.addEventListener('input',()=>{row.color=color.value;renderChart();notifyBoardChanged('table-maker-color')});
+      color.addEventListener('input',()=>{row.color=color.value;renderChart();(m._presentationChanged||notifyBoardChanged)('table-maker-color')});
       label.addEventListener('input',()=>{row.label=label.value.slice(0,28);renderChart()});
       value.addEventListener('input',()=>{row.value=Math.max(0,Math.min(999999,Number(value.value)||0));renderChart()});
-      remove.addEventListener('click',()=>{rows.splice(index,1);renderEditor();renderChart();notifyBoardChanged('table-maker-remove-row')});
+      remove.addEventListener('click',()=>{rows.splice(index,1);renderEditor();renderChart();(m._presentationChanged||notifyBoardChanged)('table-maker-remove-row')});
       item.append(color,label,value,remove);dataRows.appendChild(item);
     });
     addRowButton.disabled=rows.length>=12;
@@ -182,14 +183,14 @@ function setupTableMaker(m){
   };
   typeButtons.forEach(button=>button.addEventListener('click',()=>{
     chartType=['bar','line','pie','donut'].includes(button.dataset.chartType)?button.dataset.chartType:'bar';
-    m.dataset.chartType=chartType;typeButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderChart();notifyBoardChanged('table-maker-type');
+    m.dataset.chartType=chartType;typeButtons.forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});renderChart();(m._presentationChanged||notifyBoardChanged)('table-maker-type');
   }));
-  dataToggle.addEventListener('click',()=>{setEditorOpen(!editorOpen,{resize:true});notifyBoardChanged('table-maker-editor')});
-  m.querySelector('.table-maker-editor-close').addEventListener('click',()=>{setEditorOpen(false,{resize:true});notifyBoardChanged('table-maker-editor')});
+  dataToggle.addEventListener('click',()=>{setEditorOpen(!editorOpen,{resize:true});(m._presentationChanged||notifyBoardChanged)('table-maker-editor')});
+  m.querySelector('.table-maker-editor-close').addEventListener('click',()=>{setEditorOpen(false,{resize:true});(m._presentationChanged||notifyBoardChanged)('table-maker-editor')});
   dataRows.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   addRowButton.addEventListener('click',()=>{
     if(rows.length>=12)return;
-    rows.push({label:`Category ${rows.length+1}`,value:10,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});renderEditor();renderChart();notifyBoardChanged('table-maker-add-row');
+    rows.push({label:`Category ${rows.length+1}`,value:10,color:TABLE_MAKER_COLORS[rows.length%TABLE_MAKER_COLORS.length]});renderEditor();renderChart();(m._presentationChanged||notifyBoardChanged)('table-maker-add-row');
     requestAnimationFrame(()=>{const field=dataRows.lastElementChild?.querySelector('input[type="text"]');if(field){enterModuleTextEdit(field);field.select()}});
   });
   m.querySelector('.table-maker-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));

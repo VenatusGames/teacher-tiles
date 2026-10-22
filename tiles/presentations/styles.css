@@ -1,0 +1,43 @@
+.presentation-module{width:620px;height:410px;min-width:300px;min-height:230px;display:flex;flex-direction:column;padding:14px;gap:9px;container-type:inline-size}
+.presentation-tile-heading{flex:none;padding:0 10px;color:#64748b;font-size:13px;line-height:24px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.presentation-tile-viewport{position:relative;flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;background:#eef1f5}
+.presentation-tile-stage{flex:none;max-width:100%;max-height:100%;font-family:Inter,Arial,sans-serif}
+.presentation-tile-stage .pres-object{cursor:inherit;pointer-events:none}
+.presentation-tile-cover{width:100%;height:100%;object-fit:contain}
+.presentation-tile-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:16px;text-align:center;color:#697a91;font-size:13px}
+.presentation-tile-empty>svg{width:44px;height:44px;color:#91a6c1}.presentation-tile-message{font-size:11px;max-width:320px;line-height:1.5}
+.presentation-tile-controls{position:absolute;left:50%;bottom:46px;transform:translate(-50%,6px);z-index:6;display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #e1e6ef;border-radius:13px;background:#fffffff2;box-shadow:0 4px 20px #1e293b1c;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap}
+.presentation-module:hover .presentation-tile-controls,.presentation-tile-controls:has(:focus-visible){opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.presentation-tile-controls button{height:32px;min-width:30px;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px;border:0;border-radius:8px;background:transparent;color:#526580;font:600 11px Inter,system-ui;cursor:pointer}
+.presentation-tile-controls button:hover{background:#eaf0f8;color:#334d70}.presentation-tile-controls button:disabled{opacity:.35;cursor:default}.presentation-tile-controls svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;fill:none}.presentation-tile-count{font:600 11px Inter,system-ui;color:#6b7b91;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+.presentation-tile-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;min-height:20px;padding:0 6px}.presentation-tile-footer small{font-size:clamp(7px,1.7cqw,10px);color:#8691a3}
+.presentation-connect-badge{position:relative;overflow:hidden;border:1px solid #fca5a5;border-radius:999px;padding:3px 7px;font:700 8px Inter,system-ui;color:#7f1d1d;background:linear-gradient(110deg,#fee2e2,#f87171,#fecaca);white-space:nowrap}
+.presentation-connect-badge:after{content:'';position:absolute;inset:-4px auto -4px -80%;width:55%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,#ffffff80,transparent);animation:pbisTrackingShimmer 2.8s ease-in-out infinite;pointer-events:none}
+.presentation-module:fullscreen,.presentation-module.is-tile-fullscreen{padding:18px;background:#151c29}.presentation-module:is(:fullscreen,.is-tile-fullscreen) .presentation-tile-heading{color:#ced8e7}.presentation-module:is(:fullscreen,.is-tile-fullscreen) .presentation-tile-viewport{background:#151c29}
+.presentation-library-picker{width:min(720px,92vw);max-height:82dvh;border:1px solid #dce3ed;border-radius:22px;padding:22px;box-shadow:0 24px 90px #172c4b30;color:#34445b;background:#fff;font:14px Inter,system-ui}
+.presentation-library-picker[open]{display:flex;flex-direction:column;gap:16px}.presentation-library-picker::backdrop{background:#1b2b4659;backdrop-filter:blur(4px)}
+.presentation-library-picker header,.presentation-library-picker footer{display:flex;align-items:center;justify-content:space-between;flex:none;gap:12px}.presentation-library-picker header strong{font-size:18px}.presentation-library-picker button{border:1px solid #dfe6ef;border-radius:10px;background:#f9fbfe;color:#51637d;padding:9px 12px;font:600 12px Inter,system-ui;cursor:pointer;transition:background .15s,border-color .15s}.presentation-library-picker button:hover{background:#edf3fb;border-color:#a8bedc}.presentation-library-picker header button{font-size:23px;padding:0 10px;background:white}.presentation-library-picker input{flex:none;border:1px solid #dfe6ef;border-radius:11px;padding:11px 14px;background:#f7f9fc;font:13px Inter,system-ui}.presentation-picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;overflow:auto;min-height:0;padding:2px;scrollbar-width:thin;scrollbar-color:#c6d1e0 transparent;overscroll-behavior:contain}.presentation-library-picker .presentation-picker-card{display:flex;flex-direction:column;gap:8px;padding:7px;text-align:left;min-width:0;background:white}.presentation-picker-cover{width:100%;aspect-ratio:16/9;border-radius:6px;background:#edf1f6;overflow:hidden}.presentation-picker-cover img{width:100%;height:100%;object-fit:contain}.presentation-picker-card strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}.presentation-picker-card small{font-size:11px;color:#8793a5}.presentation-library-picker p{margin:0;font-size:12px;color:#7d8ca1}.presentation-library-picker p:empty{display:none}.presentation-library-picker [hidden],.presentation-module [hidden]{display:none!important}
+@media(max-width:520px){.presentation-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.presentation-library-picker{padding:16px}}
+@media(prefers-reduced-motion:reduce){.presentation-connect-badge:after{animation:none}.presentation-tile-controls{transition:none}}
+
+.presentation-tile-heading{display:flex;align-items:center;flex-wrap:wrap;column-gap:12px;line-height:20px;white-space:normal}.presentation-tile-heading strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}.presentation-tile-heading small{font:400 9px Inter,system-ui;color:#8691a3}.presentation-tile-footer{justify-content:flex-end}
+
+.board-mini-object .presentation-module .tile-settings-wrap,.board-mini-object .presentation-tile-controls{display:none!important}
+
+.presentation-module:is(:fullscreen,.is-tile-fullscreen){padding:0!important;gap:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#000!important}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen) :is(.presentation-tile-heading,.presentation-tile-footer){display:none!important}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen) .presentation-tile-viewport{width:100%;height:100%;border:0;border-radius:0;background:#000}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen) .presentation-tile-stage{border:0;border-radius:0;outline:0;box-shadow:none}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen) .presentation-tile-controls{bottom:18px}
+.presentation-module .presentation-playback-panel{gap:18px!important}
+.presentation-playback-panel .tile-settings-switch-row{font:600 13px Inter,system-ui}
+.presentation-duration{display:grid;gap:9px;font:600 13px Inter,system-ui}
+.presentation-duration-input{display:flex;align-items:center;gap:9px;font-weight:400;color:#64748b}
+.presentation-duration-input input{width:84px;padding:9px 10px;border:1px solid #dbe2ed;border-radius:9px;background:#f8fafc;color:#273448;font:600 14px Inter,system-ui}
+@media(max-width:480px){.presentation-tile-controls [data-player=settings] span{display:none}}
+.presentation-module.has-tile-settings-open .presentation-tile-controls{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+
+.presentation-module .presentation-playback-panel{position:fixed;inset:auto;margin:0;box-sizing:border-box;width:min(270px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;padding:18px;display:grid;gap:18px;border:1px solid var(--border,#dce3ed);border-radius:15px;background:var(--surface-solid,#fff);color:var(--text,#273448);box-shadow:0 16px 44px #0f172a30;font-family:Inter,system-ui;text-align:left}
+.presentation-playback-panel>strong{font-size:14px}.presentation-playback-panel::backdrop{background:transparent;pointer-events:none}
+.presentation-module.has-playback-open .presentation-tile-controls{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.presentation-module:is(:fullscreen,.is-tile-fullscreen)>:is(.tile-appearance-toggle,.tile-settings-beside-brush,.tile-skins-toggle,.module-tab-add,.customization-bar){display:none!important}

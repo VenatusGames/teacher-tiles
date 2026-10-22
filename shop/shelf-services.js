@@ -80,7 +80,7 @@ function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
   else if(next==='gray')document.body.classList.add('theme-gray');
   else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  const darkTheme=["webbed", "haunted-house", "fireplace", "campfire", "fireflies", "beach", "christmas-tree"].includes(next)||next==='outer-space'||next==='frosted-window'||next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
+  const darkTheme=["webbed", "haunted-house", "fireplace", "campfire", "fireflies", "beach", "christmas-tree"].includes(next)||next==='outer-space'||next==='frosted-window'||next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('deep-')||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   applyMaterialThemeArtwork(next);
@@ -92,6 +92,7 @@ function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId='',previewSize=0}={}){
   if(!src&&!emoji)return null;
+  if(window.TeacherTilesPresentations?.active)return window.TeacherTilesPresentations.addSticker({src,emoji,name,aspect},clientX,clientY);
   const isFlag=/flagcdn\.io\/flags\//i.test(src);
   const isTextSticker=Boolean(emoji&&/^[A-Za-z0-9]+$/.test(emoji));
   const p=screenToBoard(clientX,clientY);
@@ -239,6 +240,7 @@ function setupCollectionShelf(){
   const themePanel=document.getElementById('theme-shelf-content');
   const stickerPanel=document.getElementById('sticker-shelf-content');
   const cursorsPanel=document.getElementById('cursors-shelf-content');
+  const effectsButton=document.getElementById('tile-effects-shelf-toggle'),effectsPanel=document.createElement('div');effectsPanel.id='tile-effects-shelf-content';effectsPanel.className='asset-shelf__content';effectsPanel.hidden=true;cursorsPanel.after(effectsPanel);
   const cursorsGrid=document.getElementById('cursors-shelf-grid');
   const cursorsStatus=document.getElementById('cursors-shelf-status');
   const stickerSearch=document.getElementById('sticker-shelf-search');
@@ -305,6 +307,7 @@ function setupCollectionShelf(){
 
   const cursorPicker=window.TeacherTilesCursorPicker.create({panel:cursorsPanel,catalog:CURSOR_CATALOG,packs:[{name:'Default',productId:''},{name:'Colored Cursors',productId:CURSOR_COLOR_PACK_PRODUCT_ID},...window.TeacherTilesCursorPacks],owned:cosmeticIsAccessible,active:()=>cursorById(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default').id,apply:applyAppCursor,unlock:product=>{closeShelf();window.TeacherTilesShop?.openProduct(product)}});
   const renderCursorShelf=()=>cursorPicker.render();
+  const effectPicker=window.TeacherTilesTileEffects.picker(effectsPanel,product=>{closeShelf();window.TeacherTilesShop?.openProduct(product)});
 
   const positionThemeFan=()=>{
     if(!activePack||!activeFan||!activeFan.classList.contains('is-open'))return;
@@ -432,6 +435,7 @@ function setupCollectionShelf(){
     themeButton.setAttribute('aria-expanded',String(activeShelf==='themes'));
     stickerButton.setAttribute('aria-expanded',String(activeShelf==='stickers'));
     cursorsButton.setAttribute('aria-expanded',String(activeShelf==='cursors'));
+    effectsButton.classList.toggle('is-active',activeShelf==='effects');effectsButton.setAttribute('aria-expanded',String(activeShelf==='effects'));
     bottomTray?.classList.toggle('has-shelf-open',Boolean(activeShelf));
     const customize=document.getElementById('customize-toggle');customize?.setAttribute('aria-expanded',String(Boolean(activeShelf)&&activeShelf!=='stickers'));customize?.classList.toggle('is-active',Boolean(activeShelf)&&activeShelf!=='stickers');
   };
@@ -458,6 +462,7 @@ function setupCollectionShelf(){
     const themes=type==='themes';
     const stickers=type==='stickers';
     const cursors=type==='cursors';
+    effectsPanel.hidden=type!=='effects';effectsPanel.classList.toggle('is-active',type==='effects');shelf.classList.toggle('is-effects-mode',type==='effects');if(type==='effects')effectPicker.render();
     themePanel.hidden=!themes;
     stickerPanel.hidden=!stickers;
     cursorsPanel.hidden=!cursors;
@@ -468,7 +473,7 @@ function setupCollectionShelf(){
     shelf.classList.toggle('is-theme-mode',themes);
     shelf.classList.toggle('is-cursors-mode',cursors);
     if(cursors)renderCursorShelf();
-    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):'Cursors';
+    title.textContent=themes?(window.TeacherTilesI18n?.t('top.themes')||'Themes'):stickers?(window.TeacherTilesI18n?.t('top.stickers')||'Stickers'):type==='effects'?'Tile Effects':'Cursors';
     shelf.inert=false;
     shelf.classList.add('is-open');
     shelf.setAttribute('aria-hidden','false');
@@ -480,6 +485,7 @@ function setupCollectionShelf(){
   themeButton.addEventListener('click',e=>{e.stopPropagation();openShelf('themes')});
   stickerButton.addEventListener('click',e=>{e.stopPropagation();if(activeShelf==='stickers')closeShelf();else openShelf('stickers')});
   cursorsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('cursors')});
+  effectsButton.addEventListener('click',e=>{e.stopPropagation();openShelf('effects')});
   closeButton.addEventListener('click',closeShelf);
   packs.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleThemeFan(pack)}));
   stickerPacks.forEach(pack=>pack.addEventListener('click',e=>{e.stopPropagation();if(requireCosmetic(pack))toggleStickerPack(pack)}));
@@ -522,7 +528,7 @@ function setupCollectionShelf(){
   window.addEventListener('resize',positionThemeFan,{passive:true});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeShelf){closeShelf();document.getElementById('customize-toggle')?.focus()}});
   document.addEventListener('pointerdown',e=>{
-    if(!activeShelf||['stickers','themes','cursors'].includes(activeShelf))return;
+    if(!activeShelf||['stickers','themes','cursors','effects'].includes(activeShelf))return;
     const target=e.target;
     if(!(target instanceof Element))return;
     if(target.closest('#asset-shelf,.theme-fan,.workspace-upcoming-controls'))return;
@@ -729,7 +735,7 @@ function setupCustomizeLauncher(){
   const toggle=document.getElementById('customize-toggle');
   const shelf=document.getElementById('asset-shelf');
   const tabs=document.createElement('nav');tabs.className='collection-category-tabs';tabs.setAttribute('aria-label','Customization categories');
-  for(const [id,label] of [['theme-shelf-toggle','Themes'],['cursors-shelf-toggle','Cursors']]){
+  for(const [id,label] of [['theme-shelf-toggle','Themes'],['cursors-shelf-toggle','Cursors'],['tile-effects-shelf-toggle','Tile Effects']]){
     const button=document.getElementById(id);button.className='collection-category-tab';
     button.querySelector('.upcoming-control__tooltip').remove();
     const text=document.createElement('span');text.textContent=label;button.append(text);tabs.append(button);

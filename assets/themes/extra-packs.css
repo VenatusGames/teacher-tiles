@@ -1,0 +1,41 @@
+body.theme-deep-midnight-blue{--bg:#17243f;--text:#edf0fa;--muted:#b2b8ca;--surface:#282c3b;--surface-solid:#282c3b;--surface-soft:#34394b;--border:#ffffff25;--grid:#ffffff0d;--accent:#b1bfea;--timer:#8faac8;--timer-soft:#17243f}
+.theme-card--deep-midnight-blue,.theme-pack__sheet--deep-midnight-blue,.shop-product__preview--deep i:nth-child(1){background:#17243f;color:#edf0fa}
+body.theme-deep-aurora-purple{--bg:#45315f;--text:#edf0fa;--muted:#b2b8ca;--surface:#282c3b;--surface-solid:#282c3b;--surface-soft:#34394b;--border:#ffffff25;--grid:#ffffff0d;--accent:#b1bfea;--timer:#8faac8;--timer-soft:#45315f}
+.theme-card--deep-aurora-purple,.theme-pack__sheet--deep-aurora-purple,.shop-product__preview--deep i:nth-child(2){background:#45315f;color:#edf0fa}
+body.theme-deep-cosmic-depths{--bg:#1c1b24;--text:#edf0fa;--muted:#b2b8ca;--surface:#282c3b;--surface-solid:#282c3b;--surface-soft:#34394b;--border:#ffffff25;--grid:#ffffff0d;--accent:#b1bfea;--timer:#8faac8;--timer-soft:#1c1b24}
+.theme-card--deep-cosmic-depths,.theme-pack__sheet--deep-cosmic-depths,.shop-product__preview--deep i:nth-child(3){background:#1c1b24;color:#edf0fa}
+body.theme-pastels2-peach{--bg:#f4d2bc;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#f4d2bc;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#f4d2bc}
+.theme-card--pastels2-peach,.theme-pack__sheet--pastels2-peach,.shop-product__preview--pastels2 i:nth-child(1){background:#f4d2bc;color:#303b40}
+body.theme-pastels2-apricot{--bg:#f3bc87;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#f3bc87;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#f3bc87}
+.theme-card--pastels2-apricot,.theme-pack__sheet--pastels2-apricot,.shop-product__preview--pastels2 i:nth-child(2){background:#f3bc87;color:#303b40}
+body.theme-pastels2-mint{--bg:#cbb29f;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#cbb29f;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#cbb29f}
+.theme-card--pastels2-mint,.theme-pack__sheet--pastels2-mint,.shop-product__preview--pastels2 i:nth-child(3){background:#cbb29f;color:#303b40}
+body.theme-pastels2-aqua{--bg:#c9e9e9;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#c9e9e9;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#c9e9e9}
+.theme-card--pastels2-aqua,.theme-pack__sheet--pastels2-aqua,.shop-product__preview--pastels2 i:nth-child(4){background:#c9e9e9;color:#303b40}
+body.theme-pastels2-blush{--bg:#efd1df;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#efd1df;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#efd1df}
+.theme-card--pastels2-blush,.theme-pack__sheet--pastels2-blush,.shop-product__preview--pastels2 i:nth-child(5){background:#efd1df;color:#303b40}
+body.theme-flowers-rose{--bg:#f3dce5;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#f3dce5;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#f3dce5}
+body.theme-flowers-rose .workspace{background:#f3dce5 url("flowers-rose.svg?v=20261020-petals") center/300px 320px repeat}
+.theme-card--flowers-rose,.theme-pack__sheet--flowers-rose,.shop-product__preview--flowers i:nth-child(1){background:#f3dce5 url("flowers-rose.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+body.theme-flowers-sage{--bg:#e1ebd9;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#e1ebd9;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#e1ebd9}
+body.theme-flowers-sage .workspace{background:#e1ebd9 url("flowers-sage.svg?v=20261020-petals") center/300px 320px repeat}
+.theme-card--flowers-sage,.theme-pack__sheet--flowers-sage,.shop-product__preview--flowers i:nth-child(2){background:#e1ebd9 url("flowers-sage.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+body.theme-flowers-sky{--bg:#dcebf4;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#dcebf4;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#dcebf4}
+body.theme-flowers-sky .workspace{background:#dcebf4 url("flowers-sky.svg?v=20261020-petals") center/300px 320px repeat}
+.theme-card--flowers-sky,.theme-pack__sheet--flowers-sky,.shop-product__preview--flowers i:nth-child(3){background:#dcebf4 url("flowers-sky.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+body.theme-flowers-lilac{--bg:#e8dff3;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#e8dff3;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#e8dff3}
+body.theme-flowers-lilac .workspace{background:#e8dff3 url("flowers-lilac.svg?v=20261020-petals") center/300px 320px repeat}
+.theme-card--flowers-lilac,.theme-pack__sheet--flowers-lilac,.shop-product__preview--flowers i:nth-child(4){background:#e8dff3 url("flowers-lilac.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+body.theme-flowers-buttercream{--bg:#f5edcf;--text:#303b40;--muted:#717a80;--surface:#fffdfb;--surface-solid:#fffdfb;--surface-soft:#f5edcf;--border:#24364825;--grid:#2933400a;--accent:#69818b;--timer:#8faac8;--timer-soft:#f5edcf}
+body.theme-flowers-buttercream .workspace{background:#f5edcf url("flowers-buttercream.svg?v=20261020-petals") center/300px 320px repeat}
+.theme-card--flowers-buttercream,.theme-pack__sheet--flowers-buttercream,.shop-product__preview--flowers i:nth-child(5){background:#f5edcf url("flowers-buttercream.svg?v=20261020-petals") center/300px 320px repeat;color:#303b40}
+/* Miniature repeating artwork in previews, independent of the full board scale. */
+[class*="theme-card--flowers-"],.shop-product__preview--flowers i{background-size:60px 64px;background-repeat:repeat}
+[class*="theme-pack__sheet--flowers-"],.theme-picker [class*="theme-card--flowers-"].theme-pack-sample{background-size:30px 32px;background-repeat:repeat}
+
+/* Flowers have no board grid; match that in every drawer preview. */
+[class*="theme-card--flowers-"] .theme-card__preview::before{content:none}
+.shop-product__preview--flowers i:nth-child(n){background-size:60px 64px;background-repeat:repeat}
+.shop-product__preview--deep i:nth-child(1){transform:translateX(-48px) rotate(-12deg)}
+.shop-product__preview--deep i:nth-child(2){transform:translateX(0) rotate(0)}
+.shop-product__preview--deep i:nth-child(3){transform:translateX(48px) rotate(12deg)}
