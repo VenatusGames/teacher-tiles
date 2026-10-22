@@ -63,8 +63,18 @@
 @keyframes feast-shake{0%,75%,100%{transform:rotate(0)}80%,90%{transform:rotate(-.7deg) translateX(-1px)}85%,95%{transform:rotate(.7deg) translateX(1px)}}
 @media(prefers-reduced-motion:reduce){.turkey-body.is-bouncing,.is-cooking .feast-oven>svg{animation:none!important}}
 
-.turkey-feathers [data-feather-index]{cursor:pointer;outline:none}.turkey-feathers [data-feather-index]:is(:hover,:focus-visible)>g>path:first-child{filter:brightness(1.09);stroke:#fff;stroke-width:5}
+.turkey-feathers [data-feather-index]{cursor:pointer;outline:none}.turkey-feathers [data-feather-index]:is(:hover,:focus-visible)>g>path:first-of-type{filter:brightness(1.09);stroke:#fff;stroke-width:5}
 .thankful-feather-reader{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:color-mix(in srgb,var(--module-bg,#fff) 65%,transparent);border-radius:18px;backdrop-filter:blur(2px)}
 .thankful-feather-card{position:relative;width:96%;aspect-ratio:630/300;filter:drop-shadow(0 12px 12px #57371c30)}
 .thankful-feather-card svg{display:block;width:100%;height:100%}.thankful-feather-card p{position:absolute;inset:16% 15%;display:flex;align-items:center;justify-content:center;margin:0;font:800 clamp(20px,3.5cqw,32px)/1.3 Inter,sans-serif;color:#352116;text-align:center;text-wrap:balance;overflow-wrap:anywhere;text-shadow:0 1px 0 #fff5df80}
 .thankful-feather-reader>button{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,#fff);color:var(--text);font:24px/1 Inter,sans-serif;cursor:pointer;box-shadow:0 3px 8px #17203312}
+
+/* A visible warm oven window, coil and lamp switch on only while cooking. */
+.feast-window{transition:fill 1.8s ease;fill:#44362e}.feast-heating-coil,.feast-interior-light{opacity:0;transition:opacity 1.5s ease}
+.is-cooking .feast-window{fill:#c76420;animation:feast-window-heat 4s ease-in-out infinite alternate}
+.is-cooking .feast-heating-coil{opacity:1;filter:drop-shadow(0 0 5px #ffb34c);animation:feast-coil-heat 3s ease-in-out infinite alternate}
+.is-cooking .feast-interior-light{opacity:1;filter:drop-shadow(0 0 10px #ffed9a)}
+.is-cooking .feast-oven-door{opacity:1}.is-cooking .feast-oven-glow{opacity:.9}
+@keyframes feast-window-heat{from{fill:#a8491d}to{fill:#e48c29}}
+@keyframes feast-coil-heat{from{stroke:#ff9141;opacity:.8}to{stroke:#ffe79b;opacity:1}}
+@media(prefers-reduced-motion:reduce){.is-cooking .feast-window,.is-cooking .feast-heating-coil{animation:none}.feast-window,.feast-heating-coil,.feast-interior-light{transition:none}}

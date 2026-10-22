@@ -8,7 +8,7 @@ function setupTeacherTilesShop(){
   // Explicit seasonal metadata also powers search and the Halloween collection.
   modal.querySelectorAll('[data-shop-product][data-shop-holiday]').forEach(card=>{
     const badge=document.createElement('span');badge.className='holiday-badge shop-holiday-badge';badge.textContent='Holiday';
-    badge.title=card.dataset.shopHoliday==='halloween'?'Halloween':'Christmas';
+    badge.title=({halloween:'Halloween',thanksgiving:'Thanksgiving',christmas:'Christmas'})[card.dataset.shopHoliday]||'Holiday';
     card.querySelector('.shop-product__preview')?.append(badge);
   });
   let activeHoliday='';

@@ -1,0 +1,27 @@
+/* Autumn artwork shared by boards, shop cards, and saved board previews. */
+body:is(.theme-autumn-forest,.theme-autumn-forest-light){--grid:transparent;--bg:#ba8b50;background:#ba8b50}
+body:is(.theme-autumn-forest,.theme-autumn-forest-light) .workspace{z-index:1;background:none!important}
+.theme-card--autumn-forest .theme-card__preview,.board-preview-theme-autumn-forest,.theme-pack__sheet--autumn-forest{background:url("../../assets/themes/autumn-forest.webp") center/cover!important}
+.theme-card--autumn-forest .theme-card__copy{background:#33251e;color:#fff2dd}
+.theme-card--autumn-forest-light .theme-card__preview,.board-preview-theme-autumn-forest-light,.theme-pack__sheet--autumn-forest-light{background:url("../../assets/themes/autumn-forest.webp") center/cover!important}
+.theme-card--autumn-forest-light .theme-card__copy{background:#fff9ed;color:#4d3528}
+.autumn-theme-shop--autumn-forest{background:url("../../assets/themes/autumn-forest.webp") center/cover!important}
+body:is(.theme-feast,.theme-feast-light){--grid:transparent;--bg:#9d633f;background:#9d633f}
+body:is(.theme-feast,.theme-feast-light) .workspace{z-index:1;background:none!important}
+.theme-card--feast .theme-card__preview,.board-preview-theme-feast,.theme-pack__sheet--feast{background:url("../../assets/themes/feast.webp") center/cover!important}
+.theme-card--feast .theme-card__copy{background:#33251e;color:#fff2dd}
+.theme-card--feast-light .theme-card__preview,.board-preview-theme-feast-light,.theme-pack__sheet--feast-light{background:url("../../assets/themes/feast.webp") center/cover!important}
+.theme-card--feast-light .theme-card__copy{background:#fff9ed;color:#4d3528}
+.autumn-theme-shop--feast{background:url("../../assets/themes/feast.webp") center/cover!important}
+body:is(.theme-leaves,.theme-leaves-light){--grid:transparent;--bg:#804228;background:#804228}
+body:is(.theme-leaves,.theme-leaves-light) .workspace{z-index:1;background:none!important}
+.theme-card--leaves .theme-card__preview,.board-preview-theme-leaves,.theme-pack__sheet--leaves{background:linear-gradient(#24170a80,#24170a80),url("../../assets/themes/autumn-leaves.webp") center/cover!important}
+.theme-card--leaves .theme-card__copy{background:#33251e;color:#fff2dd}
+.theme-card--leaves-light .theme-card__preview,.board-preview-theme-leaves-light,.theme-pack__sheet--leaves-light{background:url("../../assets/themes/autumn-leaves.webp") center/cover!important}
+.theme-card--leaves-light .theme-card__copy{background:#fff9ed;color:#4d3528}
+.autumn-theme-shop--leaves{background:url("../../assets/themes/autumn-leaves.webp") center/cover!important}
+body.theme-leaves{background:linear-gradient(#24170a80,#24170a80),url('../../assets/themes/autumn-leaves.webp') center/900px fixed}body.theme-leaves-light{background:#c88a49 url('../../assets/themes/autumn-leaves.webp') center/900px fixed}
+.autumn-theme-preview{position:relative;overflow:hidden}.autumn-preview-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.autumn-theme-preview>.shop-animated-badge{z-index:1}
+.autumn-cursor-preview{display:flex!important;align-items:center;justify-content:center;gap:6px;padding:16px!important;overflow:hidden}
+.shop-modal .autumn-cursor-preview img{position:static!important;width:clamp(32px,18%,62px)!important;height:auto!important;object-fit:contain;transform:rotate(-8deg)}
+.shop-modal .autumn-cursor-preview img:nth-child(even){transform:translateY(8px) rotate(8deg)}

@@ -1,5 +1,6 @@
 (() => {
   const catalog = Object.freeze([
+    Object.freeze({id:'autumn',productId:'planner-skin-autumn',name:'Autumn Planner',description:'Warm autumn leaves, a cream title plaque, and antique gold rings.',price:250}),
     Object.freeze({id:'floral',productId:'planner-skin-floral',name:'Garden Bloom',description:'Pastel botanical flowers, golden rings, and a framed plaque for your planner title.',price:250}),
     Object.freeze({id:'leather',productId:'planner-skin-leather',name:'Classic Leather',description:'Warm textured leather, fine stitching, an embossed title, and a matching clasp.',price:250}),
     Object.freeze({id:'striped',productId:'planner-skin-striped',name:'Ribbon Stripes',description:'Burgundy and blush stripes, golden corners, and a mint title plaque.',price:250}),
