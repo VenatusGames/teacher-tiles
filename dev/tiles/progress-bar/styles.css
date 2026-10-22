@@ -27,3 +27,13 @@
 .bar-style-sample[data-style="striped"]{background:repeating-linear-gradient(120deg,#fff4 0 6px,transparent 6px 12px),var(--bar-sample-color)}
 .bar-style-sample[data-style="segmented"]{background:repeating-linear-gradient(90deg,transparent 0 10px,#fff 10px 12px),var(--bar-sample-color);border-radius:6px}
 .bar-style-sample[data-style="soft"]{background:var(--bar-sample-color);box-shadow:inset 0 2px 6px #fff8;border-radius:10px}
+
+/* Hover controls overlay the existing footprint; the bar lifts to make room. */
+.module.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]){height:190px;min-height:190px;padding:24px 18px 18px}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-hover{position:absolute;left:130px;right:18px;bottom:12px;grid-template-rows:1fr;transform:translateY(8px);transition:opacity .18s,transform .22s}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-controls{padding:0;flex-wrap:nowrap}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-stage{transition:transform .22s;min-height:54px}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]):is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open,.has-bar-shelf-open) .progress-bar-stage{transform:translateY(-22px)}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]):is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open,.has-bar-shelf-open) .progress-bar-hover{transform:translateY(0)}
+@container (max-width:580px){.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-controls>button:not(.progress-bar-drawer-toggle){width:34px;padding:0}.progress-bar-module:not(.cookafeast-module) .progress-bar-controls>button:not(.progress-bar-drawer-toggle)>span{display:none}.progress-bar-module:not(.cookafeast-module) .progress-bar-end-time{width:80px}.progress-bar-module:not(.cookafeast-module) .progress-bar-end-control>span{display:none}}
+@media(prefers-reduced-motion:reduce){.progress-bar-module .progress-bar-stage,.progress-bar-module .progress-bar-hover{transition:none!important}}

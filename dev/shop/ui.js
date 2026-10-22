@@ -11,6 +11,8 @@ function setupTeacherTilesShop(){
     badge.title=({halloween:'Halloween',thanksgiving:'Thanksgiving',christmas:'Christmas'})[card.dataset.shopHoliday]||'Holiday';
     card.querySelector('.shop-product__preview')?.append(badge);
   });
+  const thanksgivingProducts=new Set(["theme-autumn-forest", "theme-feast", "theme-leaves", "cursor-leaf-pack", "cursor-candy-corn-pack", "cursor-veggie-pack", "planner-skin-autumn", "tile-effect-windy-leaves", "tile-effect-green-windy-leaves", "tile-effect-brown-windy-leaves", "sticker-thankful-turkeys", "sticker-thanksgiving-pies"]);
+  modal.querySelectorAll('[data-shop-product]').forEach(card=>{if(thanksgivingProducts.has(card.dataset.shopProduct))card.dataset.shopSeason='thanksgiving';});
   let activeHoliday='';
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
@@ -193,9 +195,9 @@ function setupTeacherTilesShop(){
       const terms=shopBrowserClean(search.value).split(/\s+/).filter(Boolean);
       const mode=sort.value;
       const tileType=filter?.value||'all';
-      if(holidayFilter)holidayFilter.hidden=!activeHoliday;
+      if(holidayFilter){holidayFilter.hidden=!activeHoliday;const name=activeHoliday==='thanksgiving'?'Fall & Thanksgiving':'Halloween';holidayFilter.textContent=name+' ×';holidayFilter.setAttribute('aria-label','Remove '+name+' filter');}
       if(pageName==='home'&&(terms.length||activeHoliday||mode!=='featured')){
-        const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
+        const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday||item.dataset.shopSeason===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
           if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
           if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
@@ -439,7 +441,7 @@ function setupTeacherTilesShop(){
   const managedReady=import('./managed-shop.js?v=20261021-bundles-first').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
-    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
+    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'||target==='thanksgiving'){activeHoliday=target;shopHome.querySelector('[data-shop-search]').value='';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
     modal.querySelector('.shop-banner').hidden=!slides.length;showBanner(0);startBannerTimer();
   }});if(!modal.hidden)return managedShop.refresh()}).catch(error=>console.warn('Shop management could not initialize',error));
   function openShop(){
@@ -602,8 +604,8 @@ function setupTeacherTilesShop(){
   modal.querySelectorAll('[data-shop-banner-target]').forEach(button=>button.addEventListener('click',()=>{
     const target=button.dataset.shopBannerTarget;
     if(target==='membership'){window.TeacherTilesShop.openMembership();return}
-    if(target==='halloween'){
-      activeHoliday='halloween';shopHome.querySelector('[data-shop-search]').value='';showPage('home');
+    if(target==='halloween'||target==='thanksgiving'){
+      activeHoliday=target;shopHome.querySelector('[data-shop-search]').value='';showPage('home');
       shopHome.querySelector('.shop-holiday-filter')?.focus({preventScroll:true});
     }else showPage(target);
   }));

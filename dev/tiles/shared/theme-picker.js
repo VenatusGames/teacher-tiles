@@ -57,7 +57,7 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
         const matching=visible.filter(group=>group.kind===key);
         const title=groupTitles[key];title.hidden=!matching.length;results.append(title);
         // Keep the familiar color progression (Pastel, Basic, Polka Dot).
-        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>name==='Pastel'?0:name==='Basic'?1:2;const order=rank(a.name)-rank(b.name);if(order)return order;}return a.name.localeCompare(b.name);}).forEach(group=>results.append(group.section));
+        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>name==='Pastel'?0:name==='Basic'?1:['Deep Colors','Pastels II'].includes(name)?2:3;const order=rank(a.name)-rank(b.name);if(order)return order;}return a.name.localeCompare(b.name);}).forEach(group=>results.append(group.section));
       }
     }else visible.sort(compare).forEach(group=>results.append(group.section));
     const filtered=owned.checked||category.value!=='all'||sort.value!=='organized';

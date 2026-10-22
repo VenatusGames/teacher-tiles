@@ -26,13 +26,14 @@ function turkeyArt(host,feathers=[],animate=false,onRead){
  // Start at the front. New tiers grow behind the earlier feathers.
  feathers.map((label,i)=>({label,i})).reverse().forEach(({label,i})=>{
   const row=Math.floor(i/10),count=Math.min(10,feathers.length-row*10),column=i%10;
-  const angle=count===1?0:-64+column*128/(count-1),length=300+row*140;
-  const radians=angle*Math.PI/180,halfWidth=48*Math.min(1,length/420);
+  const fullness=(Math.min(10,feathers.length)-1)/9,step=13,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
+  const angle=(column-(count-1)/2)*step+offset,length=290+60*fullness+row*140,widthScale=1.2-.5*(count-1)/9;
+  const radians=angle*Math.PI/180,halfWidth=48*widthScale;
   for(const x of [-halfWidth,halfWidth])for(const y of [-length,8]){const px=380+x*Math.cos(radians)-y*Math.sin(radians),py=480+x*Math.sin(radians)+y*Math.cos(radians);extent.left=Math.min(extent.left,px);extent.right=Math.max(extent.right,px);extent.top=Math.min(extent.top,py);extent.bottom=Math.max(extent.bottom,py);}
   const g=document.createElementNS(ns,'g');g.setAttribute('transform',`translate(380 480) rotate(${angle})`);g.dataset.featherRow=String(row);
   const inner=document.createElementNS(ns,'g');if(animate&&i===feathers.length-1)inner.classList.add('turkey-feather-new');
   inner.innerHTML=`<path d="M0 8C-12-55-48-${length-110}-40-${length-60}C-36-${length-20}-15-${length} 0-${length}C15-${length} 36-${length-20} 40-${length-60}C48-${length-110} 12-55 0 8Z" fill="${colors[i%colors.length]}" stroke="#fff5df" stroke-width="3"/><path d="M0-8V-${length-20}" stroke="#7b452c" stroke-width="1.5" opacity=".16"/>`;
-  inner.firstElementChild.setAttribute('transform',`scale(${Math.min(1,length/420)},1)`);
+  inner.firstElementChild.setAttribute('transform',`scale(${widthScale},1)`);
   const text=document.createElementNS(ns,'text');text.setAttribute('transform',`translate(0 ${-length+104}) rotate(${angle<0?90:-90})`);text.setAttribute('text-anchor','middle');text.setAttribute('fill','#352116');text.setAttribute('font-family','Inter, sans-serif');text.setAttribute('font-weight','800');text.setAttribute('font-size','22');text.setAttribute('stroke','#fff4da');text.setAttribute('stroke-width','2.5');text.setAttribute('paint-order','stroke');text.setAttribute('stroke-linejoin','round');
   const visible=[label.length>12?label.slice(0,11).trimEnd()+'…':label];
   visible.forEach((line,j)=>{const t=document.createElementNS(ns,'tspan');t.setAttribute('x','0');t.setAttribute('y',String((j-(visible.length-1)/2)*21+6));if(line.length>5){t.setAttribute('textLength','68');t.setAttribute('lengthAdjust','spacingAndGlyphs');}t.textContent=line;text.append(t);});
@@ -45,9 +46,9 @@ function turkeyArt(host,feathers=[],animate=false,onRead){
 }
 function setupTurkey(m){
  let feathers=[];const host=m.querySelector('.thankful-turkey-art'),form=m.querySelector('.thankful-turkey-form'),input=form.querySelector('input'),message=m.querySelector('.thankful-turkey-message');
- const render=(animate=false)=>{turkeyArt(host,feathers,animate,openFeather);message.textContent=feathers.length?`${feathers.length} thankful ${feathers.length===1?'feather':'feathers'}`:'What are you thankful for?';input.disabled=feathers.length>=30;form.querySelector('button').disabled=input.disabled;input.placeholder=input.disabled?'A full heart! Undo or reset to add more.':'I’m thankful for…';m.querySelector('[data-turkey-undo]').disabled=!feathers.length;};
- let returnFeather=null;
- const closeFeather=(restoreFocus=false)=>{host.querySelector('.thankful-feather-reader')?.remove();if(restoreFocus&&returnFeather?.isConnected)returnFeather.focus({preventScroll:true});returnFeather=null;};
+ const render=(animate=false)=>{closeFeather();turkeyArt(host,feathers,animate,openFeather);message.textContent=feathers.length?`${feathers.length} thankful ${feathers.length===1?'feather':'feathers'}`:'What are you thankful for?';input.disabled=feathers.length>=30;form.querySelector('button').disabled=input.disabled;input.placeholder=input.disabled?'A full heart! Undo or reset to add more.':'I’m thankful for…';m.querySelector('[data-turkey-undo]').disabled=!feathers.length;};
+ let returnFeather=null,readerResize=null;
+ const closeFeather=(restoreFocus=false)=>{readerResize?.disconnect();readerResize=null;host.querySelector('.thankful-feather-reader')?.remove();if(restoreFocus&&returnFeather?.isConnected)returnFeather.focus({preventScroll:true});returnFeather=null;};
  function openFeather(label,color,source,angle){
   closeFeather();returnFeather=source;
   const reader=document.createElement('div');reader.className='thankful-feather-reader';reader.setAttribute('role','dialog');reader.setAttribute('aria-label','Thankful feather');
@@ -55,6 +56,7 @@ function setupTurkey(m){
   reader.querySelector('p').textContent=label;host.append(reader);reader.addEventListener('pointerdown',e=>e.stopPropagation());reader.addEventListener('click',e=>{if(e.target===reader)closeFeather(true);});reader.querySelector('button').onclick=()=>closeFeather(true);
   const card=reader.querySelector('.thankful-feather-card'),from=source.getBoundingClientRect(),to=card.getBoundingClientRect();
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches)card.animate([{transform:`translate(${from.left+from.width/2-to.left-to.width/2}px,${from.top+from.height/2-to.top-to.height/2}px) rotate(${angle+(angle<0?90:-90)}deg) scale(.35)`},{transform:'translate(0,0) rotate(0) scale(1)'}],{duration:430,easing:'cubic-bezier(.2,.8,.2,1)'});
+  const text=reader.querySelector('p');const fit=()=>{let size=Math.min(80,card.clientWidth*.13);text.style.fontSize=size+'px';while(size>24&&(text.scrollHeight>text.clientHeight+1||text.scrollWidth>text.clientWidth+1)){size-=2;text.style.fontSize=size+'px';}};readerResize=new ResizeObserver(fit);readerResize.observe(card);fit();
   reader.querySelector('button').focus({preventScroll:true});
  }
  const outsideFeather=e=>{if(!host.querySelector('.thankful-feather-reader')?.contains(e.target)&&!e.target.closest?.('[data-feather-index]'))closeFeather();};
