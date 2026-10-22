@@ -55,3 +55,9 @@
 .shop-modal .shop-category__tile-skin--calendar>.tile-skin-art{transform:translate(-50%,-50%) scale(.57)}
 @media(max-width:1100px){.shop-modal .shop-category__art--tiles{gap:2px}.shop-modal .shop-category__tile-skin{width:48px;flex-basis:48px;height:90px}}
 @media(max-width:520px){.shop-modal .shop-category__art--stickers b{font-size:43px}.shop-modal .shop-category__art--stickers b:nth-child(1){transform:translate(-44px,10px) rotate(-12deg)}.shop-modal .shop-category__art--stickers b:nth-child(2){transform:translate(0,-10px) rotate(6deg)}.shop-modal .shop-category__art--stickers b:nth-child(3){transform:translate(44px,10px) rotate(14deg)}.shop-modal .shop-category__art--cursors{gap:14px 5px}.shop-modal .shop-category__art--tiles{display:grid;grid-template-columns:repeat(2,58px);gap:3px}.shop-modal .shop-category__tile-skin{width:58px;height:46px}.shop-modal .shop-category__tile-skin:nth-child(n){transform:none}.shop-modal .shop-category__tile-skin>.tile-skin-art,.shop-modal .shop-category__tile-skin>.classic-magnifier-art{transform:translate(-50%,-50%) scale(.3)}}
+
+/* A crown is local to its cosmetic, never a page-level overlay. */
+:has(>.subscription-access-crown){isolation:isolate}
+.subscription-access-crown{z-index:2}
+.theme-pack__chevron{font-size:0!important;width:18px;height:18px;display:grid;place-items:center}
+.theme-pack__chevron:before{content:'';display:block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);border-radius:1px}

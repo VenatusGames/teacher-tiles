@@ -90,6 +90,7 @@ function setupClock(m){
     }
   };
 
+  if(m.dataset.presentationEmbedded==='true')m._presentationRefit=refit;
   const ro=new ResizeObserver(refit);
   ro.observe(m);
   ro.observe(display);

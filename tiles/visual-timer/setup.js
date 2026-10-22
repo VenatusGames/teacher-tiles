@@ -13,10 +13,10 @@ function setupTimerSync(m){
   toggle.addEventListener('click',()=>{
     const enabled=m.dataset.timerSync!=='true';
     for(const peer of timerSyncPeers(m)){peer.dataset.timerSync=String(enabled);peer._refreshTimerSync?.()}
-    if(enabled)publish();notifyBoardChanged('timer-sync');
+    if(enabled)publish();(m._presentationChanged||notifyBoardChanged)('timer-sync');
   });
-  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-clear,.timer-set,[data-add-seconds]')){publish();notifyBoardChanged('timer-controls')}});
-  m.addEventListener('change',event=>{if(event.target instanceof Element&&event.target.closest('.timer-until')){publish();notifyBoardChanged('timer-controls')}});
+  m.addEventListener('click',event=>{if(event.target.closest('.timer-start,.timer-reset,.timer-clear,.timer-set,[data-add-seconds]')){publish();(m._presentationChanged||notifyBoardChanged)('timer-controls')}});
+  m.addEventListener('change',event=>{if(event.target instanceof Element&&event.target.closest('.timer-until')){publish();(m._presentationChanged||notifyBoardChanged)('timer-controls')}});
   queueMicrotask(()=>{
     if(!m.isConnected)return;
     const peer=timerSyncPeers(m).find(tile=>tile!==m&&tile.dataset.timerSync==='true');
@@ -54,7 +54,7 @@ function setupTimer(m){
     ],{duration:330,easing:'cubic-bezier(.2,.8,.2,1)'});
   };
 
-  shapeSelect.addEventListener('change',()=>{setShape(shapeSelect.value,true);notifyBoardChanged('timer-shape')});
+  shapeSelect.addEventListener('change',()=>{setShape(shapeSelect.value,true);(m._presentationChanged||notifyBoardChanged)('timer-shape')});
   const shapeButton=document.createElement('button');shapeButton.type='button';shapeButton.className='custom-icon timer-shape-toggle';shapeButton.setAttribute('aria-label','Choose timer shape');shapeButton.setAttribute('aria-expanded','false');shapeButton.title='Choose timer shape';
   m.querySelector('.timer-shape-color').after(shapeButton);
   shapeSelect.closest('.timer-shape-setting').hidden=true;
@@ -97,7 +97,7 @@ function setupTimer(m){
       shapeShelf.setAttribute('aria-label',ghost?'Ghost Faces':'Pumpkin Faces');
       for(const [id,face] of Object.entries(ghost?TeacherTilesHalloween.ghostFaces:TeacherTilesHalloween.faces)){
         const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',face.name);b.setAttribute('aria-pressed',String((m.dataset.pumpkinFace||'classic')===id));b.innerHTML='<i class="pumpkin-face-swatch">'+TeacherTilesHalloween.faceIcon(id,ghost)+'</i><span>'+face.name+'</span>';
-        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id,ghost);closeShapes();notifyBoardChanged('pumpkin-face')};shapeShelf.append(b);
+        b.onclick=()=>{m.dataset.pumpkinFace=id;updateFace();colorButton.innerHTML=TeacherTilesHalloween.faceIcon(id,ghost);closeShapes();(m._presentationChanged||notifyBoardChanged)('pumpkin-face')};shapeShelf.append(b);
       }
       shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
     }
@@ -106,7 +106,7 @@ function setupTimer(m){
       const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String((m.dataset.shapeColor||'blue')===value));
       const swatch=document.createElement('i');swatch.className='timer-shelf-swatch';swatch.style.background=color;swatch.setAttribute('aria-hidden','true');
       const label=document.createElement('span');label.textContent=neon?window.TeacherTilesNeonColorLabels[value]:value[0].toUpperCase()+value.slice(1);button.append(swatch,label);
-      button.addEventListener('click',()=>{m.dataset.shapeColor=value;notifyBoardChanged('timer-color');closeShapes();colorButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
+      button.addEventListener('click',()=>{m.dataset.shapeColor=value;(m._presentationChanged||notifyBoardChanged)('timer-color');closeShapes();colorButton.focus({preventScroll:true})});shapeShelf.appendChild(button);
     }
     shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();
   });

@@ -295,3 +295,9 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-modal .shop-coins-button__copy{transition:transform .16s ease}
 .shop-modal .shop-coins-button:is(:hover,:focus-visible) .shop-coins-button__copy{transform:translateX(-3px)}
 @media(prefers-reduced-motion:reduce){.shop-modal .shop-coins-button__copy{transition:none}}
+
+/* Product decorations stay below menus, even on hovered/transformed cards. */
+.shop-product,.shop-search-result,.shop-featured-card{isolation:isolate}
+.shop-modal .shop-browser-toolbar{z-index:10}
+.shop-select-button i{background:transparent;border-radius:0;flex:0 0 18px}
+.shop-select-button i svg{display:block;width:18px;height:18px}

@@ -146,3 +146,5 @@ body.is-board-idle .richtext-module:not(:has(.richtext-editor.module-text-edit-a
   outline:2px solid #60a5fa;
   outline-offset:2px;
 }
+
+.richtext-editor :is(s,strike){text-decoration-line:line-through}
