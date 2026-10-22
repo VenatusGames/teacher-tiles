@@ -21,7 +21,7 @@ body:is(.theme-leaves,.theme-leaves-light) .workspace{z-index:1;background:none!
 .theme-card--leaves-light .theme-card__copy{background:#fff9ed;color:#4d3528}
 .autumn-theme-shop--leaves{background:url("../../assets/themes/autumn-leaves.webp") center/cover!important}
 body.theme-leaves{background:linear-gradient(#24170a80,#24170a80),url('../../assets/themes/autumn-leaves.webp') center/900px fixed}body.theme-leaves-light{background:#c88a49 url('../../assets/themes/autumn-leaves.webp') center/900px fixed}
-.autumn-theme-preview{position:relative;overflow:hidden}.autumn-preview-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.autumn-theme-preview>.shop-animated-badge{z-index:1}
+.autumn-theme-preview{overflow:hidden}.shop-product__preview.autumn-theme-preview{position:relative}.theme-card__preview.autumn-theme-preview{position:absolute;display:block}.theme-card__preview.autumn-theme-preview::before{display:none}.autumn-preview-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.autumn-theme-preview>.shop-animated-badge{z-index:1}
 .autumn-cursor-preview{display:flex!important;align-items:center;justify-content:center;gap:6px;padding:16px!important;overflow:hidden}
 .shop-modal .autumn-cursor-preview img{position:static!important;width:clamp(32px,18%,62px)!important;height:auto!important;object-fit:contain;transform:rotate(-8deg)}
 .shop-modal .autumn-cursor-preview img:nth-child(even){transform:translateY(8px) rotate(8deg)}

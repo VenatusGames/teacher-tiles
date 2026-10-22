@@ -48,7 +48,7 @@ function setupShopExtras(modal) {
     category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong></strong><em></em></span>';
     category.querySelector('strong').textContent=title;category.querySelector('em').textContent=subtitle;
     const art=category.querySelector('.shop-category__art');
-    if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.slice(0,2))art.append(skins.preview(skin.id));}
+    if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.filter(skin=>['floral','leather'].includes(skin.id)))art.append(skins.preview(skin.id));}
     else if(id==='presentation-themes'){category.dataset.shopOpenPage='presentations';art.classList.add('shop-presentation-showcase');art.append(transitions.preview('iris'));}
     else if(id==='tile-effects'){category.dataset.shopOpenPage=id;art.classList.add('shop-category-art-pair');art.append(effects.preview('rainbow-fireworks'),effects.preview('gold-confetti'));}
     else if(id==='profile-cosmetics'){category.dataset.shopOpenPage=id;art.append(frames.preview('aurora'));}
