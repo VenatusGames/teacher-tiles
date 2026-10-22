@@ -21,6 +21,7 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   bringToFront(m);
   m._isBoardRestore=Boolean(boardState);
   setupModuleByType(m,type);
+  if(!boardState)window.TeacherTilesTileFilters?.applyDefault(m);
   m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
   if(boardState)applyBoardPostSetupState(m,boardState);
   if(window.TeacherTilesHalloween?.types.has(type))TeacherTilesHalloween.guard(m);
