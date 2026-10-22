@@ -26,7 +26,8 @@ export function setupManagedShop({modal,products,catalogProducts,bindProduct,syn
   if(signature===appliedSignature){sync();return;}appliedSignature=signature;clearTimeout(expiry);
   for(const c of managed){let i=products.indexOf(c);if(i>=0)products.splice(i,1);i=catalogProducts.indexOf(c);if(i>=0)catalogProducts.splice(i,1);c.remove()}managed=[];deals.replaceChildren();
   for(const card of products){const base=originals.get(card.dataset.shopProduct);if(base)decorate(card,{...base,...settings.products[card.dataset.shopProduct],description:settings.products[card.dataset.shopProduct]?.description??base.description})}
-  for(const source of catalogProducts){const base=originals.get(source.dataset.shopProduct);if(!base)continue;const p={...base,...settings.products[source.dataset.shopProduct]};if(!active(p))continue;const card=source.cloneNode(true);card.hidden=false;card.classList.remove('shop-filter-hidden');bindProduct(card);products.push(card);managed.push(card);deals.append(card)}
+  const saleCards=document.createDocumentFragment();
+  for(const source of catalogProducts){const base=originals.get(source.dataset.shopProduct);if(!base)continue;const p={...base,...settings.products[source.dataset.shopProduct]};if(!active(p))continue;const card=source.cloneNode(true);card.hidden=false;card.classList.remove('shop-filter-hidden');bindProduct(card);products.push(card);managed.push(card);saleCards.append(card)}
   for(const [id,p] of Object.entries(settings.bundles||{})){
    if(!p.active)continue;const card=document.createElement('article');card.className='shop-product';card.dataset.shopProduct=id;card.dataset.bundleItems=JSON.stringify(p.items);
    card.innerHTML='<div class="shop-product__preview shop-bundle-preview"></div><div class="shop-product__body"><div><span class="shop-product__type">COSMETIC BUNDLE</span><h3></h3><p></p><small class="shop-bundle-includes"></small></div><button class="shop-buy" type="button" data-shop-buy></button></div>';
@@ -35,6 +36,7 @@ export function setupManagedShop({modal,products,catalogProducts,bindProduct,syn
    for(const item of p.items.slice(0,4)){const art=catalogProducts.find(c=>c.dataset.shopProduct===item)?.querySelector('.shop-product__preview')?.cloneNode(true);if(art){art.removeAttribute('aria-hidden');card.querySelector('.shop-bundle-preview').append(art)}}
    decorate(card,p);bindProduct(card);products.push(card);catalogProducts.push(card);managed.push(card);deals.append(card);
   }
+  deals.append(saleCards);
   saleSection.hidden=!deals.children.length;
   if(empty)empty.hidden=!!deals.children.length;
   if(dealsButton)dealsButton.hidden=![...Object.values(settings.products||{}),...Object.values(settings.bundles||{}).filter(b=>b.active)].some(active);
