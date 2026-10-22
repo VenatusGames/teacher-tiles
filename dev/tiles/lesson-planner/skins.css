@@ -127,3 +127,7 @@
 [data-planner-skin="autumn"] .planner-book-cover-label .planner-book-embossed-title{color:#694227;text-shadow:none;font-weight:700}
 [data-planner-skin="autumn"] :is(.planner-book-elastic,.planner-book-loop){display:none}
 [data-planner-skin="autumn"] .planner-book-binding>span{border-color:#b38b46;border-top-color:#ffe2a0;background:linear-gradient(#ffdf9c, #b38b46 45%, transparent 46%)}
+
+/* Autumn uses the selected planner color on its title plaque, keeping the leaf artwork intact. */
+[data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{background:var(--planner-book-color,#fff5db);color:var(--planner-book-ink,#694227);border-color:color-mix(in srgb,var(--planner-book-ink,#694227) 55%,#ac7838)}
+[data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label :is(.planner-book-embossed-title,small){color:inherit}
