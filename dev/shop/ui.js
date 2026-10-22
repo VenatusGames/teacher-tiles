@@ -438,14 +438,15 @@ function setupTeacherTilesShop(){
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
   let managedShop;
-  const managedReady=import('./managed-shop.js?v=20261021-bundles-first').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
+  const managedReady=import('./managed-shop.js?v=20261021-autumn-finish').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
     slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'||target==='thanksgiving'){activeHoliday=target;shopHome.querySelector('[data-shop-search]').value='';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
     modal.querySelector('.shop-banner').hidden=!slides.length;showBanner(0);startBannerTimer();
   }});if(!modal.hidden)return managedShop.refresh()}).catch(error=>console.warn('Shop management could not initialize',error));
   function openShop(){
-    void managedReady.then(()=>managedShop?.refresh());
+    const banner=modal.querySelector('.shop-banner');banner.classList.add('is-loading');banner.setAttribute('aria-busy','true');
+    void managedReady.then(()=>managedShop?managedShop.refresh():(banner.hidden=true));
     lastFocus=document.activeElement;
     const shelf=document.getElementById('asset-shelf');
     if(shelf?.classList.contains('is-open'))document.getElementById('asset-shelf-close')?.click();
