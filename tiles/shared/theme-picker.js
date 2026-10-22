@@ -14,13 +14,17 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
   function position(){if(!active)return;const shelf=panel.closest('.asset-shelf__shell').getBoundingClientRect(),anchor=active.heading.getBoundingClientRect();const narrow=innerWidth<760,width=narrow?Math.min(500,innerWidth-32):Math.min(540,innerWidth-shelf.right-32);fan.style.width=width+'px';fan.style.left=(narrow?16:shelf.right+14)+'px';fan.style.top=Math.max(16,Math.min(anchor.top,innerHeight-fan.offsetHeight-20))+'px'}
   function open(group){if(active===group){close();return}close();active=group;group.heading.setAttribute('aria-expanded','true');fan.querySelector('h3').textContent=group.name;stage.replaceChildren(...group.cards.filter(item=>!item.card.hidden).map(item=>item.card));[...stage.children].forEach((card,i)=>{card.style.setProperty('--fan-index',i);card.style.setProperty('--fan-angle',((i%3)-1)*3+'deg')});fan.showPopover();position();stage.querySelector('button')?.focus({preventScroll:true})}
   fan.querySelector('header button').onclick=close;
+  const artworkObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){entry.target._loadArtwork?.();artworkObserver.unobserve(entry.target)}}},{root:results,rootMargin:'100px'});
   const groups=packs.map((pack,index)=>{
     const sourceFan=document.getElementById(pack.getAttribute('aria-controls')),name=pack.querySelector('strong')?.textContent||'Themes';const section=document.createElement('section');section.className='theme-picker-pack';const heading=document.createElement('button');heading.type='button';heading.className='theme-picker-pack-heading';heading.setAttribute('aria-expanded','false');heading.innerHTML='<span class="theme-pack-stack" aria-hidden="true"></span><span class="theme-pack-label"><strong></strong><small></small></span><span class="theme-pack-arrow" aria-hidden="true">›</span>';heading.querySelector('strong').textContent=name;if(pack.dataset.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title=({halloween:'Halloween',christmas:'Christmas',thanksgiving:'Thanksgiving'})[pack.dataset.holiday]||'Holiday';heading.querySelector('.theme-pack-label').append(holiday)}const badge=heading.querySelector('small');section.append(heading);results.append(section);
     const kind=pack.id==='default-theme-pack'?'default':pack.dataset.holiday?'holiday':sourceFan.querySelector('.animated-theme-preview')?'animated':'solid';
+    section.dataset.kind=kind;
     const animated=Boolean(sourceFan.querySelector('.animated-theme-preview'))&&pack.id!=='pumpkin-theme-pack';
-    const cards=[...sourceFan.querySelectorAll('[data-theme-choice]')].map((source,i)=>{const card=source.cloneNode(true);card.removeAttribute('id');card.classList.remove('is-cosmetic-locked');const product=entitlement(source);card.dataset.entitlement=product;card.querySelectorAll('.subscription-access-crown').forEach(el=>el.remove());card.title=source.querySelector('strong')?.textContent||card.dataset.themeChoice;card.onclick=()=>{if(!owns(product)){requestAccess(card);return}apply(card.dataset.themeChoice);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)card.animate([{transform:'rotate(0deg) scale(1)'},{transform:'rotate(0deg) scale(1.07)',filter:'brightness(1.12)'},{transform:'rotate(0deg) scale(1)'}],{duration:360,easing:'ease-out'});refresh()};
-      if(i<3){const sample=document.createElement('span');sample.className=source.className+' theme-pack-sample';sample.style.setProperty('--sample',i);sample.innerHTML=source.innerHTML;sample.querySelectorAll('.theme-card__check,.subscription-access-crown').forEach(el=>el.remove());heading.querySelector('.theme-pack-stack').append(sample)}
+    const cards=[...sourceFan.querySelectorAll('[data-theme-choice]')].map(source=>{const card=source.cloneNode(true);card.removeAttribute('id');card.classList.remove('is-cosmetic-locked');const product=entitlement(source);card.dataset.entitlement=product;card.querySelectorAll('.subscription-access-crown').forEach(el=>el.remove());card.title=source.querySelector('strong')?.textContent||card.dataset.themeChoice;card.onclick=()=>{if(!owns(product)){requestAccess(card);return}apply(card.dataset.themeChoice);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)card.animate([{transform:'rotate(0deg) scale(1)'},{transform:'rotate(0deg) scale(1.07)',filter:'brightness(1.12)'},{transform:'rotate(0deg) scale(1)'}],{duration:360,easing:'ease-out'});refresh()};
+
       return {card,product,text:(name+' '+card.textContent+' '+card.dataset.themeChoice+' '+(pack.dataset.holiday||'')+' '+categories[kind]).toLowerCase()};});
+    section._loadArtwork=()=>{const stack=heading.querySelector('.theme-pack-stack');if(stack.childElementCount)return;[...sourceFan.querySelectorAll('[data-theme-choice]')].slice(0,3).forEach((source,i)=>{const sample=document.createElement('span');sample.className=source.className+' theme-pack-sample';sample.style.setProperty('--sample',i);sample.innerHTML=source.innerHTML;sample.querySelectorAll('.theme-card__check,.subscription-access-crown').forEach(el=>el.remove());stack.append(sample)});};
+    heading.addEventListener('focus',section._loadArtwork);artworkObserver.observe(section);
     const products=[...new Set(cards.map(item=>item.product).filter(Boolean))];
     const product=products.length===1?products[0]:'';
     if(product)heading.dataset.entitlement=product;
@@ -49,22 +53,28 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
       total+=visible;
       group.heading.classList.toggle('has-selected-theme',group.cards.some(item=>item.card.dataset.themeChoice===document.body.dataset.theme));
     }
-    const visible=groups.filter(group=>!group.section.hidden);
+    const visible=groups.filter(group=>!group.section.hidden),ordered=[];
     Object.values(groupTitles).forEach(title=>title.hidden=true);
     const compare=(a,b)=>sort.value==='owned'?(Number(!a.product||owns(a.product))-Number(!b.product||owns(b.product)))*-1||a.name.localeCompare(b.name):a.name.localeCompare(b.name);
     if(sort.value==='organized'){
       for(const key of Object.keys(categories)){
         const matching=visible.filter(group=>group.kind===key);
-        const title=groupTitles[key];title.hidden=!matching.length;results.append(title);
+        const title=groupTitles[key];title.hidden=!matching.length;ordered.push(title);
         // Keep the familiar color progression (Pastel, Basic, Polka Dot).
-        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>name==='Pastel'?0:name==='Basic'?1:['Deep Colors','Pastels II'].includes(name)?2:3;const order=rank(a.name)-rank(b.name);if(order)return order;}return a.name.localeCompare(b.name);}).forEach(group=>results.append(group.section));
+        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>name==='Pastel'?0:name==='Basic'?1:['Deep Colors','Pastels II'].includes(name)?2:3;const order=rank(a.name)-rank(b.name);if(order)return order;}return a.name.localeCompare(b.name);}).forEach(group=>ordered.push(group.section));
       }
-    }else visible.sort(compare).forEach(group=>results.append(group.section));
+    }else visible.sort(compare).forEach(group=>ordered.push(group.section));
+    // Keep unchanged packs in place instead of detaching every preview on refresh.
+    ordered.forEach((node,i)=>{if(results.children[i]!==node)results.insertBefore(node,results.children[i]||null)});
+    empty.hidden=total>0;
+    for(const chip of shortcuts.children)chip.setAttribute('aria-pressed',String(chip.dataset.category===category.value));
     const filtered=owned.checked||category.value!=='all'||sort.value!=='organized';
     filterToggle.classList.toggle('has-active-filters',filtered);
     filterToggle.setAttribute('aria-label',filtered?'Filters (active)':'Filters');
     count.textContent=total?total+(total===1?' theme · ':' themes · ')+groups.filter(g=>!g.section.hidden).length+(groups.filter(g=>!g.section.hidden).length===1?' pack':' packs'):'No matching themes';const selected=groups.flatMap(g=>g.cards).find(item=>item.card.dataset.themeChoice===document.body.dataset.theme);applied.textContent=selected?'✓ '+selected.card.title+' is applied':'Open a pack to explore';if(active){if(active.section.hidden||Boolean(active.product&&!owns(active.product)))close();else{const cards=active.cards.filter(item=>!item.card.hidden).map(item=>item.card);if(cards.length!==stage.children.length||cards.some((card,i)=>stage.children[i]!==card))stage.replaceChildren(...cards);position()}}
   }
+  const shortcuts=document.createElement('nav');shortcuts.className='theme-picker-shortcuts';shortcuts.setAttribute('aria-label','Theme categories');for(const [value,label] of [['all','All'],['solid','Themes'],['animated','Animated'],['holiday','Holiday']]){const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.category=value;button.onclick=()=>{category.value=value;category.dispatchEvent(new Event('change'))};shortcuts.append(button)}root.insertBefore(shortcuts,filterOptions);
+  const empty=document.createElement('p');empty.className='theme-picker-empty';empty.textContent='No matching themes. Try another search or filter.';results.append(empty);
   category.addEventListener('change',()=>{close();refresh();results.scrollTop=0});sort.addEventListener('change',()=>{close();refresh();results.scrollTop=0});
   search.addEventListener('input',refresh);owned.addEventListener('change',refresh);for(const event of ['teachertiles:accountchange','teachertiles:shopownershipchange','teachertiles:themechange'])window.addEventListener(event,refresh);
   document.addEventListener('pointerdown',e=>{if(active&&!fan.contains(e.target)&&!active.heading.contains(e.target))close()});fan.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();const button=active?.heading;close();button?.focus()}});window.addEventListener('resize',position);results.addEventListener('scroll',close,{passive:true});refresh();return {refresh,close,open(){setFiltersOpen(false);refresh();search.focus({preventScroll:true})}};

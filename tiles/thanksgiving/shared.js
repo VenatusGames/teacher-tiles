@@ -26,8 +26,8 @@ function turkeyArt(host,feathers=[],animate=false,onRead){
  // Start at the front. New tiers grow behind the earlier feathers.
  feathers.map((label,i)=>({label,i})).reverse().forEach(({label,i})=>{
   const row=Math.floor(i/10),count=Math.min(10,feathers.length-row*10),column=i%10;
-  const fullness=(Math.min(10,feathers.length)-1)/9,step=18-7*fullness,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
-  const angle=(column-(count-1)/2)*step+offset,length=270+40*fullness+row*76,labelInset=row?48:86,labelLength=row?56:68;
+  const fullness=(Math.min(10,feathers.length)-1)/9,step=30-19*fullness,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
+  const angle=(column-(count-1)/2)*step+offset,length=270+40*fullness+row*76,labelInset=row?48:64+22*fullness,labelLength=row?56:68;
   // Reserve a clear strip for the caption, even at its innermost end where neighbors converge.
   const captionRadius=length-labelInset-labelLength/2-10;
   const safeWidth=(captionRadius*Math.sin(step*Math.PI/180)-17)/48;

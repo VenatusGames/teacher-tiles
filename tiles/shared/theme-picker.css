@@ -77,3 +77,36 @@
 
 .theme-picker .theme-pack-arrow{font-size:0!important;display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px}
 .theme-picker .theme-pack-arrow:before{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);border-radius:1px}
+
+/* Compact pack gallery: two packs per row, with artwork painted only near the viewport. */
+.asset-shelf.is-theme-mode .asset-shelf__shell{width:min(380px,calc(100vw - 24px))}
+.theme-picker-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:8px;padding:0 14px 14px;scrollbar-gutter:stable}
+.theme-picker-results .theme-picker-group-title{grid-column:1/-1;margin:10px 2px 0}
+.theme-picker-pack{margin:0;content-visibility:auto;contain-intrinsic-size:auto 132px;border:1px solid var(--border);border-radius:15px;background:var(--surface-soft)}
+.theme-picker-pack-heading{position:relative;flex-direction:column;justify-content:center;gap:3px;min-height:132px;padding:8px 7px;overflow:hidden}
+.theme-pack-stack{width:82px;height:72px;perspective:none}
+.theme-pack-label{flex:none;align-items:center;gap:3px;width:100%;text-align:center}
+.theme-pack-label strong{font-size:11px;line-height:1.25;overflow-wrap:anywhere}
+.theme-pack-label small{font-size:10px}
+.theme-pack-label .holiday-badge{position:absolute;top:7px;left:6px;font-size:8px;padding:2px 4px}
+.theme-picker .theme-pack-arrow{position:absolute;right:9px;top:58px;opacity:.55}
+.theme-picker-pack-heading.has-selected-theme{box-shadow:inset 0 0 0 2px #6984c8}
+.theme-picker .theme-pack-sample{box-shadow:0 2px 4px #101b2420}
+.theme-picker-shortcuts{display:flex;gap:5px;padding:6px 16px 10px;flex:none}
+.theme-picker-shortcuts button{flex:1;min-width:0;padding:7px 4px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--muted);font:600 11px var(--site-font-family,Inter,sans-serif);cursor:pointer}
+.theme-picker-shortcuts button[aria-pressed=true]{background:color-mix(in srgb,#6984c8 15%,var(--surface-solid));color:var(--text);border-color:#6984c8}
+.theme-picker-shortcuts button:focus-visible,.theme-picker-pack-heading:focus-visible{outline:2px solid #6984c8;outline-offset:-3px}
+.theme-picker-empty{grid-column:1/-1;padding:20px 8px;font-size:12px;text-align:center;color:var(--muted)}
+.theme-picker-empty[hidden]{display:none}
+/* Resting and offscreen packs are still previews, without continuously repainting animations. */
+.theme-picker-pack *,.theme-picker-pack *::before,.theme-picker-pack *::after{animation-play-state:paused!important}
+.theme-picker-pack-heading:is(:hover,:focus-visible) *,.theme-picker-pack-heading:is(:hover,:focus-visible) *::before,.theme-picker-pack-heading:is(:hover,:focus-visible) *::after{animation-play-state:running!important}
+@media(prefers-reduced-motion:reduce){.theme-picker-pack *{animation:none!important}}
+
+.theme-pack-stack{height:78px}
+.theme-picker .theme-pack-sample{transform:rotate(calc(-12deg + var(--sample)*9deg)) scale(.85);transform-origin:50% 35%}
+.theme-picker-pack-heading:hover .theme-pack-sample,.theme-picker-pack-heading[aria-expanded=true] .theme-pack-sample{transform:translateX(calc(var(--sample)*3px)) rotate(calc(-19deg + var(--sample)*15deg)) translateY(-4px) scale(.85)}
+.theme-picker-pack[data-kind="default"]{grid-column:1/-1;contain-intrinsic-size:auto 92px}
+.theme-picker-pack[data-kind="default"] .theme-picker-pack-heading{flex-direction:row;justify-content:flex-start;min-height:92px;padding:7px 18px;gap:16px}
+.theme-picker-pack[data-kind="default"] .theme-pack-label{width:auto;align-items:flex-start;text-align:left}
+.theme-picker-pack[data-kind="default"] .theme-pack-arrow{top:36px}
