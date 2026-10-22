@@ -1,4 +1,4 @@
-function setupProgressBar(m){
+function setupProgressBar(m,{onRender,onFinish}={}){
   const remaining=m.querySelector('.progress-bar-remaining');
   const endLabel=m.querySelector('.progress-bar-end-label');
   const track=m.querySelector('.progress-bar-track');
@@ -156,7 +156,9 @@ function setupProgressBar(m){
       completed=true;
       running=false;
       celebrateTimerFinish(m);
+      onFinish?.();
     }
+    onRender?.({progress,running,completed});
   };
 
   const targetFromInput=()=>{

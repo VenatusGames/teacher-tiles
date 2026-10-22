@@ -1090,18 +1090,18 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
-  'timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
+  'thanksgivingtimer','cookafeast','timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
   'flyswat','quietcritters','trickortreat','pumpkinpatch','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
   pumpkinpatch:'Pumpkin Patch',trickortreat:'Trick or Treat',
-  halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  thanksgivingtimer:'Thanksgiving Timers',cookafeast:'Cook-A-Feast',halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
   rainbowbreath:'Rainbow Breath',meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
 const TILE_AUDIO_HOSTS=Object.freeze({
   pumpkinpatch:'.halloween-toolbar',trickortreat:'.trick-controls',
-  halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
+  thanksgivingtimer:'.timer-customization',cookafeast:'.progress-bar-customization',halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
   money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
   rainbowbreath:'.meditation-controls',meditation:'.meditation-controls',robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
 });
@@ -1143,7 +1143,7 @@ function setupModuleByType(m,type){
   if(type==='link')window.TeacherTilesLink.setup(m);
   if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover','boombox'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
-  if(type==='timer'||type==='halloweentimer')setupTimer(m);
+  if(type==='timer'||type==='halloweentimer'||type==='thanksgivingtimer')setupTimer(m);
   if(type==='pumpkincarving')window.TeacherTilesPumpkinCarving.setup(m);
   if(type==='pumpkinpatch')window.TeacherTilesPumpkinPatch.setup(m);
   if(type==='trickortreat')window.TeacherTilesTrickOrTreat.setup(m);
@@ -1220,6 +1220,8 @@ function setupModuleByType(m,type){
   if(type==='visualschedule')setupVisualSchedule(m);
   if(type==='lessonplannertile')setupLessonPlannerTile(m);
   if(type==='progressbar')setupProgressBar(m);
+  if(type==='thankfulturkey')TeacherTilesThanksgiving.setupTurkey(m);
+  if(type==='cookafeast')TeacherTilesThanksgiving.setupFeast(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
   setupTilePresentationControls(m,type);

@@ -1,5 +1,6 @@
 function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   if(!boardState&&window.TeacherTilesHalloween?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess();return null;}
+  if(!boardState&&window.TeacherTilesThanksgiving?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess('Thanksgiving');return null;}
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
@@ -23,6 +24,7 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
   if(boardState)applyBoardPostSetupState(m,boardState);
   if(window.TeacherTilesHalloween?.types.has(type))TeacherTilesHalloween.guard(m);
+  if(window.TeacherTilesThanksgiving?.types.has(type))TeacherTilesHalloween.guard(m,'Thanksgiving');
   delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
   return m;
