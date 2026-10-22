@@ -1,0 +1,18 @@
+/* Shared modern controls for Progress Bar and Cook-A-Feast. */
+.module.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]){height:270px;min-height:270px}
+.progress-bar-module .progress-bar-customization{display:none!important}
+.progress-bar-hover{display:grid;grid-template-rows:0fr;flex:none;opacity:0;transition:grid-template-rows .22s ease,opacity .18s ease;margin:0;pointer-events:none}
+.progress-bar-hover-inner{overflow:hidden;min-height:0}
+.progress-bar-module:is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open) .progress-bar-hover{grid-template-rows:1fr;opacity:1;pointer-events:auto}
+.progress-bar-module .progress-bar-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;position:static;min-height:36px;height:auto;flex:none;opacity:1!important;pointer-events:inherit;transform:none!important;padding:4px 0 40px;margin:0}
+.progress-bar-controls>[hidden]{display:none!important}
+.progress-bar-module .progress-bar-controls>button,.progress-bar-module .progress-bar-end-control{height:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);font:600 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 2px 4px #17203309;white-space:nowrap}
+.progress-bar-module .progress-bar-controls>button:hover{background:var(--surface-soft);border-color:color-mix(in srgb,var(--border),#5c8dc7 35%)}
+.progress-bar-module .progress-bar-controls>button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.progress-bar-module .progress-bar-controls>button svg{display:block;width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linejoin:round;stroke-linecap:round;flex:none}
+.progress-bar-module .progress-bar-set-end svg{fill:currentColor;stroke:none}
+.progress-bar-module .progress-bar-end-control{padding:0 7px;gap:5px}.progress-bar-module .progress-bar-end-control>span{font-size:11px;letter-spacing:0;text-transform:none}
+.progress-bar-module .progress-bar-end-time{width:102px;min-width:0;height:30px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;color:inherit;font:inherit}
+.progress-bar-setting{display:grid;gap:6px}.progress-bar-setting select{width:100%;min-height:36px;padding:7px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);font:inherit}
+.progress-bar-module .progress-bar-heading:has(.progress-bar-title.tile-heading-hidden){grid-template-columns:1fr}.progress-bar-module .progress-bar-heading:has(.progress-bar-title.tile-heading-hidden) .progress-bar-time-readout{justify-self:end}
+@media(prefers-reduced-motion:reduce){.progress-bar-hover{transition:none}}

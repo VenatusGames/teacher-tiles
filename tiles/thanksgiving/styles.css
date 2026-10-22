@@ -2,14 +2,14 @@
 .thanksgivingtimer-module .timer-shape-svg{visibility:hidden}
 .pie-timer-art,.pie-timer-filled{position:absolute;inset:0;pointer-events:none}
 .pie-timer-art>svg,.pie-timer-filled>svg{display:block;width:100%;height:100%;overflow:visible}
-.pie-timer-filled{mask-image:conic-gradient(#000 calc(var(--timer-progress-ratio,0)*360deg),transparent 0)}
+.pie-timer-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*360deg),transparent 0)}
 .thanksgivingtimer-module .timer-readout{z-index:2}
 .thanksgivingtimer-module .timer-shape-color svg{width:27px;height:27px}
 .pie-choice-art{display:block;width:54px;height:54px;margin:auto}.pie-choice-art svg{width:100%;height:100%}
-.module.thankfulturkey-module{width:430px;height:460px;min-width:300px;min-height:350px;padding:24px 18px 14px;display:flex;flex-direction:column;gap:4px}
+.module.thankfulturkey-module{width:760px;height:680px;min-width:420px;min-height:420px;padding:24px 18px 14px;display:flex;flex-direction:column;gap:4px}
 .thanksgiving-heading{font-size:19px;font-weight:750;margin:0;text-align:left;flex:none}
 .thankful-turkey-art{flex:1;min-height:0;display:grid;place-items:center}.thankful-turkey-art>svg{height:100%;width:100%;max-height:100%;overflow:visible}
-.turkey-sway{transform-origin:210px 325px;animation:thankful-sway 4.5s ease-in-out infinite}
+.turkey-sway{transform-origin:380px 540px;animation:thankful-sway 4.5s ease-in-out infinite}
 .turkey-eyes{transform-box:fill-box;transform-origin:center;animation:thankful-blink 6s infinite}
 .turkey-feather-new{animation:thankful-feather .65s cubic-bezier(.2,.8,.2,1.2) both}
 .thankful-turkey-message,.feast-caption{font-size:12px;color:var(--text-soft,#806e5e);text-align:center;margin:0;flex:none}
@@ -43,3 +43,28 @@
 .thankful-turkey-art{position:relative;display:block}
 .thankful-turkey-art>svg{position:absolute;inset:0}
 .module.thanksgivingtimer-module{min-width:320px;min-height:470px}
+
+/* Pie overlays are independent of the elapsed wedge: no seam through the cream or crust. */
+.pie-timer-top{position:absolute;inset:0;pointer-events:none}.pie-timer-top>svg{display:block;width:100%;height:100%}
+.pie-timer-art>svg,.pie-timer-filled>svg{overflow:hidden;border-radius:50%}
+.timer-shape-shelf.pie-style-shelf{grid-template-columns:repeat(3,minmax(0,1fr))}
+.timer-shape-shelf.pie-style-shelf button{min-width:0;overflow:hidden}
+.timer-shape-shelf.pie-style-shelf button .pie-choice-art{display:block;position:relative;flex:none;width:48px;max-width:100%;height:48px;margin:0 auto;padding:0;overflow:hidden}
+.timer-shape-shelf.pie-style-shelf button .pie-choice-art svg{position:static;display:block;width:100%;height:100%;margin:0;transform:none;stroke:none;stroke-width:0;fill:none}
+.thanksgivingtimer-module .timer-shape-color{display:grid;place-items:center;padding:4px!important}
+.thanksgivingtimer-module .timer-shape-color>svg{position:static;width:100%;height:100%;margin:0;transform:none;stroke:none;stroke-width:0}
+.thanksgivingtimer-module .timer-stage{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px}
+.thanksgivingtimer-module .timer-stage>.timer-readout{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;margin:0!important;flex:none;min-width:0;padding:6px 18px;width:max-content;max-width:95%;border-radius:999px}
+.thanksgivingtimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,10.3cqw,54px)!important;line-height:1.05}
+.thanksgivingtimer-module .timer-visual{flex:none}
+.turkey-body.is-bouncing{transform-box:fill-box;transform-origin:50% 100%;animation:thankful-bounce .65s cubic-bezier(.2,.7,.3,1) both}
+.is-cooking .feast-oven>svg{transform-origin:50% 90%;animation:feast-shake 1.7s ease-in-out infinite}
+@keyframes thankful-bounce{0%,100%{transform:translateY(0) scale(1)}18%{transform:translateY(3px) scale(1.04,.94)}48%{transform:translateY(-22px) scale(.98,1.02)}75%{transform:translateY(0) scale(1.03,.96)}}
+@keyframes feast-shake{0%,75%,100%{transform:rotate(0)}80%,90%{transform:rotate(-.7deg) translateX(-1px)}85%,95%{transform:rotate(.7deg) translateX(1px)}}
+@media(prefers-reduced-motion:reduce){.turkey-body.is-bouncing,.is-cooking .feast-oven>svg{animation:none!important}}
+
+.turkey-feathers [data-feather-index]{cursor:pointer;outline:none}.turkey-feathers [data-feather-index]:is(:hover,:focus-visible)>g>path:first-child{filter:brightness(1.09);stroke:#fff;stroke-width:5}
+.thankful-feather-reader{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:color-mix(in srgb,var(--module-bg,#fff) 65%,transparent);border-radius:18px;backdrop-filter:blur(2px)}
+.thankful-feather-card{position:relative;width:96%;aspect-ratio:630/300;filter:drop-shadow(0 12px 12px #57371c30)}
+.thankful-feather-card svg{display:block;width:100%;height:100%}.thankful-feather-card p{position:absolute;inset:16% 15%;display:flex;align-items:center;justify-content:center;margin:0;font:800 clamp(20px,3.5cqw,32px)/1.3 Inter,sans-serif;color:#352116;text-align:center;text-wrap:balance;overflow-wrap:anywhere;text-shadow:0 1px 0 #fff5df80}
+.thankful-feather-reader>button{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,#fff);color:var(--text);font:24px/1 Inter,sans-serif;cursor:pointer;box-shadow:0 3px 8px #17203312}

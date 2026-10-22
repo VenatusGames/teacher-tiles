@@ -126,7 +126,8 @@
 <link rel="stylesheet" href="assets/themes/extra-packs.css?v=20261020-pack-preview-fix">
 <link rel="stylesheet" href="tiles/draw/styles.css?v=20261020-drawer-overlay"><link rel="stylesheet" href="community/styles.css?v=20261021-events-loading">
 <script type="module" src="community/index.js?v=20261021-events-loading"></script>
-<link rel="stylesheet" href="tiles/thanksgiving/styles.css?v=20261021-thanksgiving">
+<link rel="stylesheet" href="tiles/thanksgiving/styles.css?v=20261021-thanksgiving-polish">
+<link rel="stylesheet" href="tiles/progress-bar/styles.css?v=20261021-thanksgiving-polish">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -2687,7 +2688,7 @@
 <template id="trickortreat-template"><section class="module trickortreat-module" data-type="trickortreat" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Trick or Treat">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Trick or Treat</h2><div class="trick-stage"><button type="button" class="trick-door" aria-label="Knock on the door"><span class="trick-door-frame"><span class="trick-door-leaf"><span class="trick-door-panels"></span><span class="trick-door-knocker"></span><span class="trick-door-handle"></span></span></span></button><div class="trick-result" hidden role="dialog" aria-label="Trick or Treat Result"><div class="trick-prize" aria-hidden="true"></div><strong class="trick-result-title" role="status"></strong><button type="button" class="trick-again tile-action">Try Again</button></div></div><div class="trick-controls customization-bar"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="pumpkincarving-template"><section class="module pumpkincarving-module" data-type="pumpkincarving" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Pumpkin Carving">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Pumpkin Carving</h2><div class="carving-stage"><svg class="carving-surface" viewBox="0 0 100 100" role="img" aria-label="Draw closed shapes on the pumpkin to carve them"><image href="tiles/halloween/assets/pumpkin-4.png" width="100" height="100"/><g class="carving-cuts"></g><path class="carving-trace"/></svg><span class="carving-hint">Drag to carve a shape</span></div><div class="halloween-toolbar"><select class="carving-tool" aria-label="Carving Tool"><option value="freehand">Freehand</option><option value="triangle">Triangle</option><option value="circle">Oval</option></select><button type="button" class="carving-undo"><svg class="tt-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/></svg> Undo</button><button type="button" class="carving-clear">Clear</button><button type="button" class="carving-light" aria-pressed="false">Light</button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="pumpkinpatch-template"><section class="module pumpkinpatch-module" data-type="pumpkinpatch" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Pumpkin Patch">×</button><div class="module-drag-handle"></div><h2 class="halloween-heading">Pumpkin Patch</h2><div class="patch-scene" role="img" aria-label="Pumpkins grow on vines when the classroom is quiet"><div class="patch-pumpkins"></div><div class="patch-fog"></div></div><div class="patch-footer"><span class="patch-status" role="status">Enable the microphone to grow with quiet voices.</span><meter class="patch-meter" min="0" max="100" value="0" aria-label="Room Sound Level"></meter></div><div class="halloween-toolbar"><button type="button" class="patch-reset">Reset</button><button type="button" class="patch-mic" aria-pressed="false">Enable Microphone</button></div><div class="tile-settings-wrap"><button type="button" class="tile-settings-toggle" aria-label="Pumpkin Patch Settings" aria-expanded="false"></button><div class="tile-settings-panel patch-settings" hidden><strong>Pumpkin Patch Settings</strong><div class="tile-setting"><span>Growth Mode</span><div class="tile-mode-switch" role="group" aria-label="Pumpkin growth mode"><button type="button" data-patch-mode="ambient" aria-pressed="true" class="is-active">No mic</button><button type="button" data-patch-mode="microphone" aria-pressed="false">Microphone</button></div><select class="patch-mode" hidden aria-label="Growth Mode"><option value="ambient">No mic</option><option value="microphone">Microphone</option></select></div><label class="tile-setting"><span>Quiet Level <output class="patch-threshold-value">45%</output></span><input class="patch-threshold" aria-label="Quiet Level" type="range" min="15" max="85" value="45"></label></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
-<template id="thankfulturkey-template"><section class="module thankfulturkey-module" data-type="thankfulturkey" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Thankful Turkey">×</button><div class="module-drag-handle"></div><h2 class="thanksgiving-heading">Thankful Turkey</h2><div class="thankful-turkey-art"></div><p class="thankful-turkey-message" aria-live="polite"></p><div class="thankful-turkey-tools"><div><form class="thankful-turkey-form"><input maxlength="60" aria-label="Something you are thankful for" placeholder="I’m thankful for…" autocomplete="off"><button type="submit">Add Feather</button></form><div class="thankful-turkey-actions"><button type="button" data-turkey-undo>Undo Feather</button><button type="button" data-turkey-reset>Reset</button></div></div></div><div class="customization-bar"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+<template id="thankfulturkey-template"><section class="module thankfulturkey-module" data-type="thankfulturkey" data-tile-heading-hidden="true" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Thankful Turkey">×</button><div class="module-drag-handle"></div><h2 class="thanksgiving-heading">Thankful Turkey</h2><div class="thankful-turkey-art"></div><p class="thankful-turkey-message" aria-live="polite"></p><div class="thankful-turkey-tools"><div><form class="thankful-turkey-form"><input maxlength="60" aria-label="Something you are thankful for" placeholder="I’m thankful for…" autocomplete="off"><button type="submit">Add Feather</button></form><div class="thankful-turkey-actions"><button type="button" data-turkey-undo>Undo Feather</button><button type="button" data-turkey-reset>Reset</button></div></div></div><div class="customization-bar"></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="thanksgivingtimer-template">
     <section class="module timer-module thanksgivingtimer-module" data-type="thanksgivingtimer" data-pie-flavor="pumpkin" data-bg="white" data-font="inter" data-text="dark" data-shape-color="blue">
       <button class="module-delete" aria-label="Delete Thanksgiving Timer">×</button><div class="module-drag-handle"></div><div class="confetti-layer" aria-hidden="true"></div>
@@ -4625,9 +4626,9 @@
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
-  <script src="tiles/shared/settings.js?v=20261015-halloween-v6"></script>
+  <script src="tiles/shared/settings.js?v=20261021-thanksgiving-polish"></script>
 <script src="tiles/shared/skins.js?v=20261015-halloween-v6"></script>
-<script src="tiles/shared/appearance.js?v=20261016-ghost-orange"></script>
+<script src="tiles/shared/appearance.js?v=20261021-thanksgiving-polish"></script>
   <script src="tiles/visual-directions/index.js?v=20261016-directions-fit"></script>
   <script src="tiles/color-picker/index.js?v=20261020-presentations"></script>
 <script src="tiles/shared/tabs.js?v=20261001-position-drawer"></script>
@@ -4672,12 +4673,12 @@
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
 <script src="tiles/growth-rewards/index.js?v=20261003"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/thanksgiving/shared.js?v=20261021-thanksgiving"></script>
+<script src="tiles/thanksgiving/shared.js?v=20261021-thanksgiving-polish"></script>
 <script src="tiles/halloween/shared.js?v=20261021-thanksgiving"></script>
 <script src="tiles/halloween/carving.js?v=20261015-halloween-v6"></script>
 <script src="tiles/halloween/trick-or-treat.js?v=20261015-trick-v2"></script>
 <script src="tiles/halloween/patch.js?v=20261015-patch-sticker"></script>
-<script src="tiles/visual-timer/setup.js?v=20261021-thanksgiving"></script>
+<script src="tiles/visual-timer/setup.js?v=20261021-thanksgiving-polish"></script>
 <script src="tiles/interactive-timers/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/clock/setup.js?v=20261020-presentations"></script>
 <script src="tiles/writing-lines/setup.js?v=20261006-buttons"></script>
@@ -4719,7 +4720,7 @@
 <script src="tiles/shapes/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/date/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/calendar/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/progress-bar/setup.js?v=20261021-thanksgiving"></script>
+<script src="tiles/progress-bar/setup.js?v=20261021-thanksgiving-polish"></script>
 <script src="tiles/visual-schedule/setup.js?v=20261016-compact-times"></script>
 <script src="tiles/lesson-planner/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/table-maker/setup.js?v=20261020-data-tiles"></script>
@@ -4752,7 +4753,7 @@
 <script src="boards/navigation.js?v=20261020-draw"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
 <script src="tiles/shared/control-services.js?v=20260930-tile-refactor"></script>
-<script src="boards/tile-lifecycle.js?v=20261021-thanksgiving"></script>
+<script src="boards/tile-lifecycle.js?v=20261021-grade-defaults"></script>
 <script src="tiles/visual-timer/helpers.js?v=20261020-effect-sounds"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/media-helpers.js?v=20260930-tile-refactor"></script>
@@ -4779,13 +4780,13 @@
 <script src="shop/ui.js?v=20261021-bundles-first"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261017-playback-effects"></script>
-<script src="app.js?v=20261021-thanksgiving"></script>
-<script type="module" src="tiles/shared/tile-menu-filters.js?v=20261021-beta"></script>
+<script src="app.js?v=20261021-thanksgiving-polish"></script>
+<script type="module" src="tiles/shared/tile-menu-filters.js?v=20261021-grade-defaults"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261021-thanksgiving"></script>
+<script type="module" src="firebase-auth.js?v=20261021-thanksgiving-polish"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 
@@ -5174,11 +5175,11 @@
       <div class="highfrequency-controls">
         <label class="highfrequency-grade-control">
           <span>Grade Level</span>
-          <select class="highfrequency-grade" aria-label="Choose high frequency word grade level">
+          <select class="highfrequency-grade" data-tile-grade-select aria-label="Choose high frequency word grade level">
             <option value="k">Kindergarten</option>
             <option value="1">Grade 1</option>
             <option value="2">Grade 2</option>
-            <option value="3plus">Grade 3+</option>
+            <option value="3plus" data-grade-levels="3 4 5 6 7 8 9 10 11 12">Grade 3+</option>
           </select>
         </label>
         <button class="highfrequency-settings-button" type="button">Settings</button>
@@ -5270,11 +5271,11 @@
       <div class="robothfw-controls">
         <label class="robothfw-grade-control">
           <span>Pack</span>
-          <select class="robothfw-grade" aria-label="Choose Robot HFW word pack">
+          <select class="robothfw-grade" data-tile-grade-select aria-label="Choose Robot HFW word pack">
             <option value="k">Kindergarten</option>
             <option value="1">Grade 1</option>
             <option value="2">Grade 2</option>
-            <option value="3plus">Grade 3+</option>
+            <option value="3plus" data-grade-levels="3 4 5 6 7 8 9 10 11 12">Grade 3+</option>
           </select>
         </label>
         <button class="robothfw-settings-button" type="button">Edit Words</button>

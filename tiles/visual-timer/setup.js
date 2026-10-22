@@ -46,7 +46,7 @@ function setupTimer(m){
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);
     highlight?.setAttribute('d',d);
-    if(readout){if(pumpkin)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
+    if(readout){if(pumpkin||pie)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
     requestAnimationFrame(sizeVisual);
     if(animate&&visual?.animate)visual.animate([
       {transform:'scale(1) rotate(0deg)'},
@@ -96,7 +96,7 @@ function setupTimer(m){
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
     if(pie){
-      shapeShelf.setAttribute('aria-label','Pie Styles');
+      shapeShelf.classList.add('pie-style-shelf');shapeShelf.setAttribute('aria-label','Pie Styles');
       for(const [id,option] of Object.entries(TeacherTilesThanksgiving.pies)){
         const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',option.name);b.setAttribute('aria-pressed',String(m.dataset.pieFlavor===id));b.innerHTML='<i class="pie-choice-art">'+TeacherTilesThanksgiving.pieArt(id)+'</i><span>'+option.name+'</span>';
         b.onclick=()=>{m.dataset.pieFlavor=id;TeacherTilesThanksgiving.timerArt(m);colorButton.innerHTML=TeacherTilesThanksgiving.pieArt(id);closeShapes();(m._presentationChanged||notifyBoardChanged)('pie-style')};shapeShelf.append(b);
@@ -126,13 +126,13 @@ function setupTimer(m){
     if(!stage)return;
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
-    const shortest=Math.min(stageWidth,Math.max(0,pumpkin?(stageHeight-(readout?.offsetHeight||70)-10)/(ghost?.93:.94):stageHeight));
-    const breathingRoom=pumpkin?0:Math.max(10,Math.min(28,shortest*.055));
+    const shortest=Math.min(stageWidth,Math.max(0,(pumpkin||pie)?(stageHeight-(readout?.offsetHeight||70)-(pie?18:10))/(pie?1:ghost?.93:.94):stageHeight));
+    const breathingRoom=(pumpkin||pie)?0:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
-    if(pumpkin){
+    if(pumpkin||pie){
       stage.style.setProperty('--timer-visual-size',`${size}px`);
-      const spareHeight=stageHeight-(size*(ghost?.93:.94)+(readout?.offsetHeight||70)+10);
+      const spareHeight=stageHeight-(size*(pie?1:ghost?.93:.94)+(readout?.offsetHeight||70)+(pie?18:10));
       stage.style.setProperty('--halloween-clock-lift',`${Math.min(24,Math.max(0,spareHeight/2))}px`);
     }
   };

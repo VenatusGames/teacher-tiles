@@ -1,6 +1,6 @@
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
 import '../tiles/halloween/shared.js?v=20261021-thanksgiving';
-import '../tiles/thanksgiving/shared.js?v=20261021-thanksgiving';
+import '../tiles/thanksgiving/shared.js?v=20261021-thanksgiving-polish';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
@@ -12,6 +12,7 @@ import '../tiles/interactive-timers/garden-rocket.js';
 import {renderTimerPreview} from './timer-preview.js?v=20261021-thanksgiving';
 import '../tiles/visual-directions/index.js?v=20261016-directions-fit';
 const EDITABLE_TILE_HEADINGS={
+  thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
   colorpicker:'.widget-title',
