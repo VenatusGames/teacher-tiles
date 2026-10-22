@@ -78,7 +78,10 @@
     "corkboard": "theme-corkboard",
     "deep": "theme-deep",
     "pastels2": "theme-pastels2",
-    "flowers": "theme-flowers"
+    "flowers": "theme-flowers",
+    "autumn-forest": "theme-autumn-forest",
+    "feast": "theme-feast",
+    "leaves": "theme-leaves"
   },
   "stickers": {
     "1": [

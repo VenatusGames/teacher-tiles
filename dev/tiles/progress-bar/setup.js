@@ -27,7 +27,7 @@ function setupProgressBar(m,{onRender,onFinish}={}){
   let targetAt=initializedAt+60*60*1000;
   let activeIconSlot=null;
   let interval=0;
-  let styleSelect,orientationSelect;
+  let orientationSelect;
   let completed=false;
   let running=false;
 
@@ -247,15 +247,15 @@ function setupProgressBar(m,{onRender,onFinish}={}){
     orientationButton.title=vertical?'Switch to horizontal':'Switch to vertical';
     const style=styles.find(option=>option.key===m.dataset.barStyle)||styles[0];
     m.dataset.barStyle=style.key;
-    styleButton.textContent=style.label;
-    if(styleSelect)styleSelect.value=style.key;
+    styleButton.dataset.selectedStyle=style.key;
+
     if(orientationSelect)orientationSelect.value=vertical?'vertical':'horizontal';
   };
 
   m.querySelector('.progress-bar-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.progress-bar-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));
   m.querySelector('.progress-bar-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
-  m.querySelector('.progress-bar-color').addEventListener('click',()=>cycleData(m,'barColor',colors));
+
 
   setEndButton.addEventListener('click',start);
   resetButton.addEventListener('click',reset);
@@ -271,7 +271,7 @@ function setupProgressBar(m,{onRender,onFinish}={}){
   orientationButton.addEventListener('click',()=>{
     setOrientation(m.dataset.orientation==='vertical'?'horizontal':'vertical');
   });
-  styleButton.addEventListener('click',cycleStyle);
+
 
   iconStart.addEventListener('click',()=>openPicker(iconStart));
   iconEnd.addEventListener('click',()=>openPicker(iconEnd));
@@ -288,13 +288,13 @@ function setupProgressBar(m,{onRender,onFinish}={}){
   // The same floating settings and appearance drawers used by the other board tiles.
   const settings=m.querySelector('.tile-settings-panel')||createStandardTileSettingsPanel(m,m.dataset.type);
   const addSelect=(label,options)=>{const row=document.createElement('label');row.className='tile-setting progress-bar-setting';const caption=document.createElement('span');caption.textContent=label;const select=document.createElement('select');select.setAttribute('aria-label',label);for(const [value,text] of options){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}row.append(caption,select);settings.append(row);return select;};
-  styleSelect=addSelect('Bar Style',styles.map(s=>[s.key,s.label]));
-  styleSelect.addEventListener('change',()=>{m.dataset.barStyle=styleSelect.value;syncVisualControls();notifyBoardChanged('progress-bar-style');});
+
   if(m.dataset.type!=='cookafeast'){
     orientationSelect=addSelect('Orientation',[['horizontal','Horizontal'],['vertical','Vertical']]);
     orientationSelect.addEventListener('change',()=>{setOrientation(orientationSelect.value);notifyBoardChanged('progress-bar-orientation');});
   }
-  orientationButton.hidden=true;styleButton.hidden=true;
+  orientationButton.hidden=true;
+  setupProgressBarDrawers(m,{styles,colors,onStyle:()=>syncVisualControls()});
   setEndButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span>Start</span>';
   resetButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 1 1 0 6M4 3v6h6"/></svg><span>Reset</span>';
   const hover=document.createElement('div');hover.className='progress-bar-hover';const inner=document.createElement('div');inner.className='progress-bar-hover-inner';m.querySelector('.progress-bar-controls').before(hover);inner.append(m.querySelector('.progress-bar-controls'));hover.append(inner);

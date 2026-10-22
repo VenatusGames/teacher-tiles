@@ -20,7 +20,7 @@ function addHeadingToggle(m,heading){
     if(!panel||panel.querySelector('.tile-heading-visibility-setting'))return;
     const row=document.createElement('div');
     row.className='tile-settings-switch-row tile-heading-visibility-setting';
-    const label=document.createElement('span');label.textContent='Show heading';
+    const label=document.createElement('span');label.textContent='Show Heading';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='tile-settings-switch';toggle.setAttribute('role','switch');
     const knob=document.createElement('i');knob.setAttribute('aria-hidden','true');toggle.append(knob);row.append(label,toggle);
     const resetScale=panel.querySelector('.tile-reset-scale');

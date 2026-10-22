@@ -120,3 +120,10 @@
 
 /* Keep the paired tools together while either menu is open or keyboard focused. */
 .lesson-planner-panel .planner-book-card:has(:is(.planner-book-customize,.planner-book-settings):is([aria-expanded="true"],:focus-visible)) :is(.planner-book-customize,.planner-book-settings){opacity:1;pointer-events:auto;transform:none}
+
+[data-planner-skin="autumn"] .planner-book-art{--book-cover:#a85d35}
+[data-planner-skin="autumn"] .planner-book-cover{background:#b16a38 url('../../assets/themes/autumn-leaves.webp') center/cover;border-color:#875432;box-shadow:inset 3px 0 6px #fff4,inset -4px 0 8px #4e281944}
+[data-planner-skin="autumn"] .planner-book-cover-label{inset:30% 16% 26%;padding:8px;background:#fff5dbeF;border:3px double #ac7838;border-radius:4px;color:#694227;box-shadow:0 3px 6px #48281733;justify-content:center}
+[data-planner-skin="autumn"] .planner-book-cover-label .planner-book-embossed-title{color:#694227;text-shadow:none;font-weight:700}
+[data-planner-skin="autumn"] :is(.planner-book-elastic,.planner-book-loop){display:none}
+[data-planner-skin="autumn"] .planner-book-binding>span{border-color:#b38b46;border-top-color:#ffe2a0;background:linear-gradient(#ffdf9c, #b38b46 45%, transparent 46%)}

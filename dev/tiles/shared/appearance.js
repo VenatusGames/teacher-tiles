@@ -142,7 +142,7 @@
     for(const original of m.querySelectorAll('button')){
       const classes=[...original.classList];let key=null;
       if(original.classList.contains('sticky-color-cycle'))key='color';
-      else if(original.classList.contains('progress-bar-color'))key='barColor';
+      else if(original.classList.contains('progress-bar-color'))continue;
       else if(original.querySelector('.icon-font'))key='font';
       else if(original.querySelector('.icon-text-color'))key='text';
       else if(classes.some(c=>/(?:-|__)bg$/.test(c))&&original.querySelector('.icon-palette'))key='bg';

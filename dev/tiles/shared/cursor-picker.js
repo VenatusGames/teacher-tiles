@@ -15,7 +15,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
       const section=document.createElement('section');section.className='cursor-picker-pack';
       const header=document.createElement('button');header.type='button';header.className='cursor-picker-pack-heading';header.setAttribute('aria-expanded',String(!closed.has(pack.productId)));
       const name=document.createElement('strong');name.textContent=pack.name;header.append(name);
-      if(pack.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title='Halloween';header.append(holiday)}
+      if(pack.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title=pack.holiday==='thanksgiving'?'Thanksgiving':'Halloween';header.append(holiday)}
       if(!accessible){const badge=document.createElement('span');badge.className='cursor-picker-lock';badge.innerHTML=lock();header.append(badge)}
       const count=document.createElement('span');count.textContent=String(choices.length);header.append(count);const arrow=document.createElement('span');arrow.className='cursor-picker-chevron';arrow.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';header.append(arrow);
       const body=document.createElement('div');body.className='cursor-picker-pack-body';body.hidden=closed.has(pack.productId);

@@ -80,7 +80,7 @@ function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
   else if(next==='gray')document.body.classList.add('theme-gray');
   else if(next!=='light')document.body.classList.add(`theme-${next}`);
   document.body.dataset.theme=next;
-  const darkTheme=["webbed", "haunted-house", "fireplace", "campfire", "fireflies", "beach", "christmas-tree"].includes(next)||next==='outer-space'||next==='frosted-window'||next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('deep-')||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
+  const darkTheme=["autumn-forest","feast","leaves","webbed", "haunted-house", "fireplace", "campfire", "fireflies", "beach", "christmas-tree"].includes(next)||next==='outer-space'||next==='frosted-window'||next==='underwater-ocean'||next==='rainy-window'||next==='dark'||next.startsWith('deep-')||next.startsWith('programmer-')||next.startsWith('cosmos-')||next.startsWith('metal-');
   if(darkTheme&&next!=='dark')document.body.classList.add('dark');
   document.documentElement.style.colorScheme=darkTheme?'dark':'light';
   applyMaterialThemeArtwork(next);

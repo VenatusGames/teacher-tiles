@@ -196,6 +196,7 @@ const explosionSfxPrototype=new Audio('assets/ui/tile-effect-explosion.mp3');
 explosionSfxPrototype.preload='none';
 const slimeSfxPrototype=new Audio('assets/ui/tile-effect-slime.mp3');slimeSfxPrototype.preload='none';
 const moneyConfettiSfxPrototype=new Audio('assets/ui/tile-effect-money-confetti.mp3');moneyConfettiSfxPrototype.preload='none';
+const leavesSfxPrototype=new Audio('assets/ui/tile-effect-windy-leaves.wav');leavesSfxPrototype.preload='none';
 const rainSfxPrototype=new Audio('assets/ui/tile-effect-rain.mp3');rainSfxPrototype.preload='none';
 const smokeSfxPrototype=new Audio('assets/ui/tile-effect-smoke.mp3');smokeSfxPrototype.preload='none';
 const lightningSfxPrototype=new Audio('assets/ui/tile-effect-lightning.mp3');
@@ -1012,6 +1013,8 @@ const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const ADDITIONAL_STICKER_PACKS=window.TeacherTilesStickerPacks;
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
+
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
@@ -1041,6 +1044,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+'autumn-forest':'theme-autumn-forest','feast':'theme-feast','leaves':'theme-leaves',
 'deep':'theme-deep','pastels2':'theme-pastels2','flowers':'theme-flowers',
   'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
   'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
@@ -1518,6 +1522,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+'autumn-forest','autumn-forest-light','feast','feast-light','leaves','leaves-light',
   'webbed-light','webbed','haunted-house-light','haunted-house','pumpkin-orange','pumpkin-yellow',
   'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
   "outer-space-light","outer-space","frosted-window-light","frosted-window",
@@ -1536,6 +1541,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+'theme-autumn-forest','theme-autumn-forest-light','theme-feast','theme-feast-light','theme-leaves','theme-leaves-light',
 'theme-deep-midnight-blue','theme-deep-aurora-purple','theme-deep-cosmic-depths','theme-pastels2-peach','theme-pastels2-apricot','theme-pastels2-mint','theme-pastels2-aqua','theme-pastels2-blush','theme-flowers-rose','theme-flowers-sage','theme-flowers-sky','theme-flowers-lilac','theme-flowers-buttercream',
   'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
   'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
@@ -1556,6 +1562,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+['autumn-forest','theme-autumn-forest'],['feast','theme-feast'],['leaves','theme-leaves'],
 ['deep-','theme-deep'],['pastels2-','theme-pastels2'],['flowers-','theme-flowers'],
   ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
   ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
@@ -1568,6 +1575,8 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
+
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',

@@ -1,6 +1,6 @@
 import {createBannerPicker,bannerUrl} from './banner-picker.js?v=20261021';
 import {createProductPicker} from './product-picker.js?v=20261015-picker';
-import {readShopCatalog} from '../shop/catalog-reader.js?v=20261017-effects';
+import {readShopCatalog} from '../shop/catalog-reader.js?v=20261021-autumn';
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
 const group=id=>id.startsWith('tile-effect-')?'Tile Effects':id.startsWith('presentation-transition-')?'Presentation Transitions':id.startsWith('presentation-theme-')?'Presentation Themes':id.startsWith('profile-frame')?'Profile Cosmetics':id.startsWith('planner-')?'Planner Skins':id.startsWith('theme-')?'Themes':id.startsWith('sticker-')?'Stickers':id.startsWith('cursor-')?'Cursors':'Tile Skins';
 export function createProductManagementPanel(call){
