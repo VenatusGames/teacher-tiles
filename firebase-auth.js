@@ -4,7 +4,7 @@ import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261021-thanksgiving-polish2';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
-import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261021-compact-theme-packs';
+import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261021-broad-feathers';
 import {createTemplateLibrary} from './templates/ui.js?v=20261021-thanksgiving-polish';
 import {syncAwardedPatches} from './profile/awards.js?v=20261020-product-polish';
 import {startSiteActivity} from './account/site-activity.js';
