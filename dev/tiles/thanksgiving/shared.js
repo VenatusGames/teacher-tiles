@@ -26,12 +26,10 @@ function turkeyArt(host,feathers=[],animate=false,onRead){
  // Start at the front. New tiers grow behind the earlier feathers.
  feathers.map((label,i)=>({label,i})).reverse().forEach(({label,i})=>{
   const row=Math.floor(i/10),count=Math.min(10,feathers.length-row*10),column=i%10;
-  const fullness=(Math.min(10,feathers.length)-1)/9,step=30-19*fullness,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
-  const angle=(column-(count-1)/2)*step+offset,length=270+40*fullness+row*76,labelInset=row?48:64+22*fullness,labelLength=row?56:68;
-  // Reserve a clear strip for the caption, even at its innermost end where neighbors converge.
-  const captionRadius=length-labelInset-labelLength/2-10;
-  const safeWidth=(captionRadius*Math.sin(step*Math.PI/180)-17)/48;
-  const widthScale=count===1?1.2:Math.min(1.2-.4*(count-1)/9,Math.max(.38,safeWidth));
+  const fullness=(Math.min(10,feathers.length)-1)/9,step=30-10*fullness,offset=row===0?0:((row%2===1)===(count%2===0)?step/2:0);
+  const angle=(column-(count-1)/2)*step+offset,length=270+40*fullness+row*110,labelInset=55,labelLength=68;
+  // Keep broad, rounded feathers at every count; spacing and staggered tiers make room for captions.
+  const widthScale=1.3+row*.15;
   const radians=angle*Math.PI/180,halfWidth=48*widthScale;
   for(const x of [-halfWidth,halfWidth])for(const y of [-length,8]){const px=380+x*Math.cos(radians)-y*Math.sin(radians),py=480+x*Math.sin(radians)+y*Math.cos(radians);extent.left=Math.min(extent.left,px);extent.right=Math.max(extent.right,px);extent.top=Math.min(extent.top,py);extent.bottom=Math.max(extent.bottom,py);}
   const g=document.createElementNS(ns,'g');g.setAttribute('transform',`translate(380 480) rotate(${angle})`);g.dataset.featherRow=String(row);
