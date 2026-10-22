@@ -313,3 +313,21 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-card,.shop-banner:has(.shop-banner-link:focus-visible) .shop-thanksgiving-card{transform:translateY(-4%);border-color:#ffcd81}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-turkey{transform:rotate(-2deg) translateY(-2%)}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-cta>span{translate:3px 0}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-wind img{animation:shop-autumn-leaf 3s ease-in-out infinite alternate;animation-delay:calc(var(--leaf)*-.3s)}
 @keyframes shop-autumn-leaf{to{translate:18px 13px;rotate:18deg}}
 @media(prefers-reduced-motion:reduce){.shop-thanksgiving-art *{animation:none!important;transition:none!important}}
+
+/* Never expose default/inactive slides while live banner settings are loading. */
+.shop-banner.is-loading>:is(.shop-banner__track,.shop-banner__dots,.shop-banner__arrow){visibility:hidden}
+.shop-banner.is-loading::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,var(--surface-soft) 25%,var(--surface-solid) 45%,var(--surface-soft) 65%);background-size:200% 100%;animation:shop-banner-loading 1.4s ease-in-out infinite}
+@keyframes shop-banner-loading{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.shop-banner.is-loading::after{animation:none}}
+/* A warm woodland backdrop with clear space around each featured cosmetic. */
+.shop-thanksgiving-art{background:radial-gradient(ellipse at 18% 75%,#9d532a88,transparent 55%),linear-gradient(115deg,#371d18,#33251b 62%,#4a331c)}
+.shop-thanksgiving-art::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#331c16b8,#281f1780),url('../assets/themes/autumn-forest.webp') center 60%/cover;opacity:.48;pointer-events:none}
+.shop-thanksgiving-title{left:2%;top:8%;width:34%;text-align:center}
+.shop-thanksgiving-title strong{font-size:4.5cqw;line-height:1.1}
+.shop-thanksgiving-cards{left:40%;top:11%;width:54%;height:48%}
+.shop-thanksgiving-art img.shop-thanksgiving-turkey{left:5%;bottom:3%;width:27%;height:59%}
+.shop-thanksgiving-extras img:nth-child(1){left:32%;top:45%;width:8%;height:23%;transform:rotate(-20deg)}
+.shop-thanksgiving-extras img:nth-child(2){right:3%;top:62%;width:9%;height:25%;transform:rotate(14deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(3){left:44%;top:63%;width:9%;height:24%;transform:rotate(-6deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:59%;top:63%;width:12%;height:29%;transform:rotate(-8deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:73%;top:63%;width:12%;height:29%;transform:rotate(8deg)}

@@ -25,3 +25,8 @@ body.theme-leaves{background:linear-gradient(#24170a80,#24170a80),url('../../ass
 .autumn-cursor-preview{display:flex!important;align-items:center;justify-content:center;gap:6px;padding:16px!important;overflow:hidden}
 .shop-modal .autumn-cursor-preview img{position:static!important;width:clamp(32px,18%,62px)!important;height:auto!important;object-fit:contain;transform:rotate(-8deg)}
 .shop-modal .autumn-cursor-preview img:nth-child(even){transform:translateY(8px) rotate(8deg)}
+
+/* Solid card surfaces match the other theme packs, including the miniature stacks. */
+:is(.theme-card--autumn-forest,.theme-card--feast,.theme-card--leaves){background:#33251e;color:#fff2dd;border-color:#684a36}
+:is(.theme-card--autumn-forest-light,.theme-card--feast-light,.theme-card--leaves-light){background:#fff3de;color:#4d3528;border-color:#d4b58c}
+body:is(.theme-leaves,.theme-leaves-light){transition:color .2s}
