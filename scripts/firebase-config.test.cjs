@@ -1,0 +1,9 @@
+"use strict";
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {mergeFirebaseConfig,writeFirebaseConfig}=require('./write-firebase-config.cjs');
+const committed={projectId:'teachertiles-6739b',authDomain:'auth.teachertiles.com',apiKey:'old-key'};
+const live={projectId:committed.projectId,authDomain:'teachertiles-6739b.firebaseapp.com',apiKey:'injected-key'};
+test('live and sandbox preserve the custom auth domain when Actions contains a default domain',()=>{const result=mergeFirebaseConfig(committed,live);assert.equal(result.authDomain,'auth.teachertiles.com');assert.equal(result.apiKey,'injected-key');assert.equal(live.authDomain,'teachertiles-6739b.firebaseapp.com')});
+test('dev keeps its own project and auth domain',()=>{const dev={...live,projectId:'teachertiles-dev',authDomain:'teachertiles-dev.firebaseapp.com'};assert.deepEqual(mergeFirebaseConfig(committed,dev),dev)});
+test('explicit custom overrides are respected and missing auth domain uses matching source',()=>{assert.equal(mergeFirebaseConfig(committed,{...live,authDomain:'new-auth.teachertiles.com'}).authDomain,'new-auth.teachertiles.com');assert.equal(mergeFirebaseConfig(committed,{...live,authDomain:undefined}).authDomain,committed.authDomain)});
+test('writer reads original before replacing it and fails safely on malformed config',t=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tt-auth-config-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const file=path.join(dir,'firebase-config.js');fs.writeFileSync(file,'export const firebaseConfig = '+JSON.stringify(committed)+';');writeFirebaseConfig(file,JSON.stringify(live));assert.match(fs.readFileSync(file,'utf8'),/auth\.teachertiles\.com/);const before=fs.readFileSync(file,'utf8');assert.throws(()=>writeFirebaseConfig(file,'{}'));assert.equal(fs.readFileSync(file,'utf8'),before)});
