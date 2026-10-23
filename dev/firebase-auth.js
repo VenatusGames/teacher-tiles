@@ -1,4 +1,7 @@
-import {createAnnouncementNotifications} from './support/announcements.js?v=20261022';
+// Carry the deployed entry-point version through to this imported module.
+const announcementModuleUrl=new URL('./support/announcements.js',import.meta.url);
+announcementModuleUrl.search=new URL(import.meta.url).search||'?v=20261022-live';
+const {createAnnouncementNotifications}=await import(announcementModuleUrl.href);
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
 import {setupSubscriptionManagement} from './profile/subscription.js?v=20261015-gift';
 import {createTicketNotifications} from './support/notifications.js';
@@ -4153,4 +4156,7 @@ setupSubscriptionManagement(callShopFunction,()=>currentUser?.uid||"",()=>shopAc
 const supportUi=setupBugReports(profileCall);
 ticketInbox=createTicketNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);
 
-announcementInbox=createAnnouncementNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);
+announcementInbox=createAnnouncementNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox,{
+  subscribe:(next,error)=>firestoreSdk.onSnapshot(firestoreSdk.doc(db,'_siteConfig','announcements'),snapshot=>next(snapshot.data()||{items:{}}),error),
+  readReceipts:async uid=>(await firestoreSdk.getDocFromServer(firestoreSdk.doc(db,'_announcementReceipts',uid))).data()?.read||{}
+});
