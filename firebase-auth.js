@@ -59,6 +59,12 @@ const organizationListView = document.getElementById("organization-list-view");
 const organizationEditorView = document.getElementById("organization-editor-view");
 const organizationCreateDialog = document.getElementById("organization-create-dialog");
 const organizationCreateFeedback = document.getElementById("organization-create-feedback");
+const organizationDetailsDialog = document.getElementById("organization-details-dialog");
+const organizationDetailsForm = document.getElementById("organization-details-form");
+const organizationDetailsPreview = document.getElementById("organization-details-preview");
+const organizationDetailsFeedback = document.getElementById("organization-details-feedback");
+const organizationDetailsSave = document.getElementById("organization-details-save");
+const organizationDetailsEdit = document.getElementById("organization-details-edit");
 const organizationCreateForm = document.getElementById("organization-create-form");
 const organizationCreateName = document.getElementById("organization-create-name");
 const organizationListElement = document.getElementById("organization-list");
@@ -825,10 +831,11 @@ function syncOrganizationLogoPicker({ syncCustom = true } = {}) {
   if (syncCustom && organizationCustomLogo) {
     organizationCustomLogo.value = ORGANIZATION_LOGO_OPTIONS.includes(logo) ? "" : logo;
   }
-  if (organizationEditorLogo) organizationEditorLogo.textContent = logo;
+  if (organizationDetailsPreview) organizationDetailsPreview.textContent = logo;
 }
 
 function setOrganizationLogoEditable(editable) {
+  if (organizationDetailsEdit) organizationDetailsEdit.hidden = !editable;
   organizationLogoOptions?.querySelectorAll("button").forEach(button => button.disabled = !editable);
   if (organizationCustomLogo) organizationCustomLogo.disabled = !editable;
   if (organizationLogoEditor) organizationLogoEditor.classList.toggle("is-read-only", !editable);
@@ -1096,9 +1103,12 @@ function renderOrganizationList() {
   organizationListElement.replaceChildren();
   if (organizationCount) organizationCount.textContent = `${organizationMemberships.length} ${organizationMemberships.length === 1 ? "organization" : "organizations"}`;
   organizationMemberships.forEach(item => {
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("article");
     card.className = "organization-card";
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "organization-card__open";
+    open.setAttribute("aria-label", `Open ${item.name}`);
     const icon = document.createElement("span");
     icon.className = "organization-card__icon";
     icon.textContent = normalizeOrganizationLogo(item.logo);
@@ -1111,8 +1121,22 @@ function renderOrganizationList() {
     copy.append(title, detail);
     const arrow = document.createElement("i");
     arrow.textContent = "›";
-    card.append(icon, copy, arrow);
-    card.addEventListener("click", () => openOrganizationEditor(item));
+    open.append(icon, copy, arrow);
+    open.addEventListener("click", () => openOrganizationEditor(item));
+    card.append(open);
+    if (item.membership?.role === "Owner") {
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "organization-card__edit organization-edit-button";
+      edit.textContent = document.getElementById("profile-nickname-edit")?.textContent.trim() || "✎";
+      edit.setAttribute("aria-label", `Edit ${item.name}`);
+      edit.title = "Edit Organization";
+      edit.addEventListener("click", event => {
+        if (event.detail > 0) organizationDetailsDialog.addEventListener("close", () => { if (document.activeElement === edit) edit.blur(); }, { once: true });
+        openOrganizationDetails(item);
+      });
+      card.append(edit);
+    }
     organizationListElement.appendChild(card);
   });
   const add = document.createElement("button");
@@ -1337,12 +1361,29 @@ async function refreshOrganizationEditor({ force = false } = {}) {
   return request;
 }
 
+function openOrganizationDetails(item = activeOrganization) {
+  if (!currentUser || organizationBusy || !item || organizationDetailsDialog.open) return;
+  if (item.id === activeOrganization?.id ? currentOrganizationRole() !== "Owner" : item.membership?.role !== "Owner") return;
+  if (activeOrganization?.id !== item.id) { activeOrganizationMembers = []; activeOrganizationInvites = []; }
+  activeOrganization = item;
+  organizationLogoDraft = normalizeOrganizationLogo(item.logo);
+  organizationNameInput.value = item.name;
+  organizationNameInput.disabled = false;
+  setOrganizationLogoEditable(true);
+  organizationDangerZone.hidden = false;
+  setOrganizationFeedback(organizationDetailsFeedback);
+  syncOrganizationLogoPicker();
+  organizationDetailsDialog.showModal();
+  organizationNameInput.focus();
+}
+
 async function openOrganizationEditor(item) {
   activeOrganization = item;
   organizationLogoDraft = normalizeOrganizationLogo(item.logo);
   const initialRole = item.membership?.role || "Member";
   if (organizationNameInput) organizationNameInput.value = item.name;
   if (organizationEditorTitle) organizationEditorTitle.textContent = item.name;
+  if (organizationEditorLogo) organizationEditorLogo.textContent = normalizeOrganizationLogo(item.logo);
   if (organizationNameInput) organizationNameInput.disabled = initialRole !== "Owner";
   setOrganizationLogoEditable(initialRole === "Owner");
   if (organizationDangerZone) organizationDangerZone.hidden = initialRole !== "Owner";
@@ -1385,40 +1426,37 @@ async function removeOrganizationMember(member) {
 }
 
 async function saveOrganizationDetails() {
-  if (!activeOrganization || currentOrganizationRole() !== "Owner" || !organizationNameInput) return;
-  const name = organizationNameInput.value.trim();
+  if (!activeOrganization || currentOrganizationRole() !== "Owner" || !organizationNameInput) return false;
+  const target = activeOrganization, uid = currentUser?.uid;
+  const feedback = organizationDetailsDialog.open ? organizationDetailsFeedback : organizationEditorFeedback;
+  const name = organizationNameInput.value.trim().slice(0, 80);
   const logo = normalizeOrganizationLogo(organizationLogoDraft);
   if (!name) {
-    setOrganizationFeedback(organizationEditorFeedback, "Enter an organization name.", true);
+    setOrganizationFeedback(feedback, "Enter an organization name.", true);
     organizationNameInput.focus();
-    return;
+    return false;
   }
-  if (name === activeOrganization.name && logo === normalizeOrganizationLogo(activeOrganization.logo)) return;
+  if (name === target.name && logo === normalizeOrganizationLogo(target.logo)) return true;
   try {
-    await firestoreSdk.updateDoc(organizationDocument(activeOrganization.id), {
-      name,
-      logo,
-      updatedAt: firestoreSdk.serverTimestamp()
-    });
-    activeOrganization.name = name;
-    activeOrganization.logo = logo;
+    await firestoreSdk.updateDoc(organizationDocument(target.id), { name, logo, updatedAt: firestoreSdk.serverTimestamp() });
+    if (currentUser?.uid !== uid || activeOrganization?.id !== target.id) return false;
+    target.name = name;
+    target.logo = logo;
     if (organizationEditorTitle) organizationEditorTitle.textContent = name;
     if (organizationEditorLogo) organizationEditorLogo.textContent = logo;
-    const cachedItem = organizationMemberships.find(item => item.id === activeOrganization.id);
-    if (cachedItem) {
-      cachedItem.name = name;
-      cachedItem.logo = logo;
-    }
+    const cachedItem = organizationMemberships.find(item => item.id === target.id);
+    if (cachedItem) { cachedItem.name = name; cachedItem.logo = logo; }
     renderOrganizationList();
-    setOrganizationFeedback(organizationEditorFeedback, "Organization changes saved.");
+    setOrganizationFeedback(feedback, "Organization changes saved.");
+    return true;
   } catch (error) {
     console.error("TeacherTiles could not save the organization", error);
-    setOrganizationFeedback(organizationEditorFeedback, "The organization changes could not be saved.", true);
+    setOrganizationFeedback(feedback, "The organization changes could not be saved. Please try again.", true);
+    return false;
   }
 }
 
 async function closeOrganizationEditor() {
-  await saveOrganizationDetails();
   setOrganizationEditorOpen(false);
   renderOrganizationList();
 }
@@ -1438,7 +1476,8 @@ async function deleteActiveOrganization() {
   if (!confirm(`Permanently delete ${organizationName}? Its members and pending invitations will also be removed.`)) return;
   organizationBusy = true;
   if (organizationDelete) organizationDelete.disabled = true;
-  setOrganizationFeedback(organizationEditorFeedback, `Deleting ${organizationName}…`);
+  const feedback = organizationDetailsDialog.open ? organizationDetailsFeedback : organizationEditorFeedback;
+  setOrganizationFeedback(feedback, `Deleting ${organizationName}…`);
   try {
     const memberQuery = firestoreSdk.query(
       firestoreSdk.collection(db, "organizationMembers"),
@@ -1462,13 +1501,14 @@ async function deleteActiveOrganization() {
     finalBatch.delete(organizationDocument(organizationId));
     await finalBatch.commit();
     organizationDetailCache.delete(organizationId);
+    organizationDetailsDialog.close();
     organizationIndexLoadedAt = 0;
     setOrganizationEditorOpen(false);
     await loadOrganizationIndex({ force: true });
     setOrganizationFeedback(organizationFeedback, `${organizationName} was deleted.`);
   } catch (error) {
     console.error("TeacherTiles could not delete the organization", error);
-    setOrganizationFeedback(organizationEditorFeedback, organizationErrorMessage(error, "The organization could not be deleted. Please try again."), true);
+    setOrganizationFeedback(feedback, organizationErrorMessage(error, "The organization could not be deleted. Please try again."), true);
   } finally {
     organizationBusy = false;
     if (organizationDelete) organizationDelete.disabled = false;
@@ -1495,6 +1535,7 @@ async function openOrganizationsPanel() {
 function closeOrganizationsPanel({ reopenProfile = false } = {}) {
   if (!organizationPanel || organizationPanel.hidden) return;
   organizationCreateDialog?.close();
+  organizationDetailsDialog?.close();
   organizationPanel.hidden = true;
   organizationPanel.setAttribute("aria-hidden", "true");
   organizationButton?.setAttribute("aria-expanded", "false");
@@ -3791,7 +3832,7 @@ async function initializeFirebaseAuth() {
 
     window.TeacherTilesAuth=Object.freeze({
       get user(){return auth.currentUser},
-      signIn:handleSignIn,signOut:handleSignOut,
+      signIn:handleSignIn,signOut:handleSignOut,openProfile,
       refresh:()=>handleAccountAuthChange(auth.currentUser),
       call:(name,data={})=>functionsSdk.httpsCallable(cloudFunctions,name,{timeout:15000})(data)
     });
@@ -3857,10 +3898,28 @@ organizationInviteForm?.addEventListener("submit", inviteToOrganization);
 organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
 organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
 organizationDelete?.addEventListener("click", deleteActiveOrganization);
-organizationNameInput?.addEventListener("keydown", event => {
-  if (event.key !== "Enter") return;
+organizationDetailsEdit?.addEventListener("click", event => {
+  if (event.detail > 0) organizationDetailsDialog.addEventListener("close", () => { if (document.activeElement === organizationDetailsEdit) organizationDetailsEdit.blur(); }, { once: true });
+  openOrganizationDetails();
+});
+organizationDetailsForm?.addEventListener("submit", async event => {
   event.preventDefault();
-  saveOrganizationDetails();
+  if (organizationBusy || currentOrganizationRole() !== "Owner") return;
+  organizationBusy = true;
+  organizationDetailsSave.disabled = true;
+  try { if (await saveOrganizationDetails()) organizationDetailsDialog.close(); }
+  finally { organizationBusy = false; organizationDetailsSave.disabled = false; }
+});
+organizationDetailsDialog?.querySelectorAll('[data-organization-details-close]').forEach(button => button.addEventListener('click', () => { if (!organizationBusy) organizationDetailsDialog.close(); }));
+organizationDetailsDialog?.addEventListener('cancel', event => { if (organizationBusy) event.preventDefault(); });
+organizationDetailsDialog?.addEventListener('keydown', event => event.stopPropagation());
+organizationDetailsDialog?.addEventListener('close', () => {
+  if (activeOrganization) {
+    organizationLogoDraft = normalizeOrganizationLogo(activeOrganization.logo);
+    organizationNameInput.value = activeOrganization.name;
+    syncOrganizationLogoPicker();
+  }
+  if (!organizationListView.hidden) { activeOrganization = null; activeOrganizationMembers = []; activeOrganizationInvites = []; }
 });
 organizationCustomLogo?.addEventListener("input", () => {
   if (currentOrganizationRole() !== "Owner") return;
