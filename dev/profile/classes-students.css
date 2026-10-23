@@ -137,3 +137,10 @@ body.classes-tool-open{overflow:hidden}
 .cs-reward-balance{margin:0;color:var(--muted,#637187);font-size:14px;line-height:1.5}
 @media(hover:none){.cs-class-card>.cs-card-edit{opacity:1;pointer-events:auto;transform:none}}
 @media(max-width:480px){.cs-class-card{min-height:240px;padding:32px 10px 20px}.cs-class-open>.cs-avatar{width:86px;height:86px;font-size:42px}.cs-class-open>.cs-card-name{font-size:18px}.cs-class-open>small{font-size:13px}.cs-detail-stats{grid-template-columns:minmax(0,1fr)}}
+
+.cs-class-info>div{min-width:0}.cs-class-info-edit.profile-panel__close{flex:none;width:32px;height:32px;padding:5px}.cs-class-info-edit>span:empty{display:none}
+.cs-class-modules{display:flex;align-items:stretch;flex-wrap:wrap;gap:9px}
+.cs-class-coming-soon{display:grid;grid-template-columns:20px auto;gap:3px 7px;text-align:left;color:var(--muted,#637187)!important;cursor:default}
+.cs-class-coming-soon>.cs-icon{grid-row:1/3}.cs-class-coming-soon>small{grid-column:2;font-size:9px;font-weight:500}
+.cs-class-coming-soon:disabled{opacity:.65;box-shadow:none;background:var(--surface-soft,#f4f6fa)}
+@media(max-width:800px){.cs-class-modules{flex:1 1 100%}.cs-class-modules>.cs-button{flex:1}}
