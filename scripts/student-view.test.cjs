@@ -8,10 +8,10 @@ await page.goto('https://tiles.test/dev/board.html');await page.waitForFunction(
 
 
 await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify([{id:'old-class',name:'Homeroom',logo:'🦉',students:['Alice','Ben'],starChart:{wholeClassStars:8,studentStars:{'student:alice':12}},punchcards:{studentPoints:{'student:alice':3},studentProgress:{'student:alice':4}},racer:{studentWins:{'student:alice':2},positions:{'student:alice':56}},eggHatching:{studentPoints:{'student:alice':7}},flowerPots:{studentPoints:{'student:alice':5}}}]));document.querySelector('#profile-classes-button').click();});
-assert.equal(await page.locator('#profile-student-view-button').count(),0);assert(await page.getByRole('dialog',{name:'Student View',exact:true}).isVisible());
+assert.equal(await page.locator('#profile-student-view-button').count(),0);assert(await page.getByRole('dialog',{name:'Class View',exact:true}).isVisible());
 
 await page.getByRole('button',{name:'New Class',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Club');await page.getByRole('button',{name:'Use 🚀',exact:true}).click();await page.getByRole('button',{name:'Create Class',exact:true}).click();assert(await page.getByRole('button',{name:'Open Science Club',exact:true}).isVisible());
-await page.getByRole('button',{name:'Edit Science Club',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Explorers');await page.getByRole('button',{name:'Save Changes',exact:true}).click();
+await page.getByRole('button',{name:'Open Science Club',exact:true}).hover();await page.getByRole('button',{name:'Edit Science Club',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Explorers');await page.getByRole('button',{name:'Save Changes',exact:true}).click();
 await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();await page.getByRole('button',{name:"Open Alice's student profile",exact:true}).click();
 assert.equal(await page.locator('.cs-detail .cs-stat').count(),0);
 assert(await page.getByRole('button',{name:'Assessments Coming soon',exact:true}).isDisabled());
