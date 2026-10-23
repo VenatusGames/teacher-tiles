@@ -52,7 +52,7 @@ body.classes-tool-open{overflow:hidden}
 .cs-grid.cs-students-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:24px 18px}
 .cs-student-card{min-height:150px;padding:12px 8px;gap:12px;justify-content:flex-start;border:0;border-radius:14px;background:transparent;box-shadow:none;animation:none;transition:none}
 .cs-student-card:hover{background:transparent;box-shadow:none;transform:none}
-.cs-student-card>.cs-avatar{width:96px;height:96px;border-radius:50%;font-size:42px;transition:transform .2s ease,box-shadow .2s ease}
+.cs-student-card>.cs-avatar{width:96px;height:96px;border:3px solid hsl(var(--avatar-hue) 35% 75%);border-radius:24px;font-size:42px;transition:transform .2s ease,box-shadow .2s ease}
 .cs-student-card:is(:hover,:focus-visible)>.cs-avatar{transform:translateY(-3px) scale(1.04);box-shadow:0 6px 16px #24345314}
 .cs-student-card>.cs-card-name{font-size:15px;line-height:1.4}
 .cs-students-grid>.cs-add-card{min-height:150px;padding:16px 10px}
