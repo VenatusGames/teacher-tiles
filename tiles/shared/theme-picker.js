@@ -33,6 +33,9 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
     heading.onclick=()=>{if(group.product&&!owns(group.product)){requestAccess(heading);return}open(group)};
     return group;
   });
+  // Keep numbered editions beside their original pack, including Pastel / Pastels II.
+  const family=name=>name.toLowerCase().replace(/\s+pack$/,'').replace(/\s+(?:[ivx]+|\d+)$/,'').replace(/^pastels?\b/,'pastel');
+  const compareNames=(a,b)=>family(a.name).localeCompare(family(b.name),undefined,{numeric:true})||a.name.localeCompare(b.name,undefined,{numeric:true});
   function refresh(){const terms=search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);let total=0;
     for(const group of groups){
       let visible=0;
@@ -56,13 +59,13 @@ window.createThemePicker=function({panel,packs,owns,entitlement,requestAccess,ap
     }
     const visible=groups.filter(group=>!group.section.hidden),ordered=[];
     Object.values(groupTitles).forEach(title=>title.hidden=true);
-    const compare=(a,b)=>sort.value==='owned'?(Number(!a.product||owns(a.product))-Number(!b.product||owns(b.product)))*-1||a.name.localeCompare(b.name):a.name.localeCompare(b.name);
+    const compare=(a,b)=>sort.value==='owned'?(Number(!a.product||owns(a.product))-Number(!b.product||owns(b.product)))*-1||compareNames(a,b):compareNames(a,b);
     if(sort.value==='organized'){
       for(const key of Object.keys(categories)){
         const matching=visible.filter(group=>group.kind===key);
         const title=groupTitles[key];title.hidden=!matching.length;ordered.push(title);
         // Keep the familiar color progression (Pastel, Basic, Polka Dot).
-        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>name==='Pastel'?0:name==='Basic'?1:['Deep Colors','Pastels II'].includes(name)?2:3;const order=rank(a.name)-rank(b.name);if(order)return order;}return a.name.localeCompare(b.name);}).forEach(group=>ordered.push(group.section));
+        matching.sort((a,b)=>{if(key==='default')return a.index-b.index;if(key==='solid'){const rank=name=>family(name)==='pastel'?0:family(name)==='basic'?1:2;const order=rank(a.name)-rank(b.name);if(order)return order;}return compareNames(a,b);}).forEach(group=>ordered.push(group.section));
       }
     }else visible.sort(compare).forEach(group=>ordered.push(group.section));
     // Keep unchanged packs in place instead of detaching every preview on refresh.
