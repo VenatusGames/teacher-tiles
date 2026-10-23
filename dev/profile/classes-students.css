@@ -121,3 +121,19 @@ body.classes-tool-open{overflow:hidden}
 .cs-pbis-disclosure .cs-toggle>i:after{width:14px;height:14px;margin:2px}
 .cs-pbis-disclosure .cs-toggle input:checked+i:after{transform:translateX(12px)}
 .cs-pbis-disclosure[open]>.cs-pbis-options{animation:classCardEnter .18s ease-out}
+
+/* Class library controls follow the raised corner controls used on tiles. */
+.cs-class-card{position:relative;min-height:255px;padding:28px 18px 22px}
+.cs-class-open>.cs-avatar{width:96px;height:96px;font-size:46px;border-radius:27px}
+.cs-class-open>.cs-card-name{font-size:20px}
+.cs-class-open>small{font-size:14px}
+.cs-class-card>.cs-card-edit{position:absolute;top:10px;right:10px;width:34px;height:34px;min-height:34px;padding:6px;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s;z-index:1}
+.cs-class-card:is(:hover,:focus-within)>.cs-card-edit{opacity:1;pointer-events:auto;transform:none}
+.cs-card-edit>span:empty{display:none}.cs-card-edit .cs-edit-pencil{width:22px;height:22px;font-size:22px}
+.cs-stat-icon{color:var(--text,#243047)}.cs-stat-icon>svg{width:28px;height:28px;fill:currentColor}
+.cs-stat-icon>svg[fill="none"]{fill:none}
+.cs-stat-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.cs-stat-actions>.cs-button{margin:0;padding:6px 8px;min-height:30px}
+.cs-reward-balance{margin:0;color:var(--muted,#637187);font-size:14px;line-height:1.5}
+@media(hover:none){.cs-class-card>.cs-card-edit{opacity:1;pointer-events:auto;transform:none}}
+@media(max-width:480px){.cs-class-card{min-height:240px;padding:32px 10px 20px}.cs-class-open>.cs-avatar{width:86px;height:86px;font-size:42px}.cs-class-open>.cs-card-name{font-size:18px}.cs-class-open>small{font-size:13px}.cs-detail-stats{grid-template-columns:minmax(0,1fr)}}

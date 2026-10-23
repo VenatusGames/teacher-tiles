@@ -5,8 +5,8 @@ function setupClassesStudents(){
   const icons={pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>',pet:'<ellipse cx="12" cy="16" rx="5" ry="4"/><ellipse cx="5" cy="10" rx="2" ry="2.5"/><ellipse cx="10" cy="5" rx="2" ry="2.5"/><ellipse cx="16" cy="5" rx="2" ry="2.5"/><ellipse cx="20" cy="11" rx="2" ry="2.5"/>',back:'<path d="m14 6-6 6 6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>'};
   const icon=name=>{const span=el('span','cs-icon');span.setAttribute('aria-hidden','true');if(name==='edit'){span.classList.add('cs-edit-pencil');span.textContent=document.getElementById('profile-nickname-edit')?.textContent.trim()||'✎';return span;}span.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plus}</svg>`;return span;};
   const button=(label,action,cls='cs-button',symbol)=>{const b=el('button',cls);b.type='button';if(symbol)b.append(icon(symbol));b.append(el('span','',label));b.onclick=action;return b;};
-  const panel=el('dialog','cs-tool');panel.id='profile-classes-panel';panel.setAttribute('aria-label','Student View');
-  const top=el('header','cs-topbar'),brand=el('div','cs-brand');brand.append(el('strong','','Student View'),el('span','profile-tool-beta','BETA'));
+  const panel=el('dialog','cs-tool');panel.id='profile-classes-panel';panel.setAttribute('aria-label','Class View');
+  const top=el('header','cs-topbar'),brand=el('div','cs-brand');brand.append(el('strong','','Class View'),el('span','profile-tool-beta','BETA'));
   const topActions=el('div','cs-top-actions'),saveStatus=el('span','cs-save-status','Saved on this device');saveStatus.setAttribute('role','status');
   const exit=button('Back to Board',()=>panel.close(),'cs-button','back');topActions.append(saveStatus,exit);top.append(brand,topActions);
   const content=el('main','cs-content'),classHeader=el('section','cs-class-header'),heading=el('div','cs-list-heading'),titleBox=el('div'),title=el('h1'),subtitle=el('p');titleBox.append(title,subtitle);
@@ -36,7 +36,7 @@ function setupClassesStudents(){
   const current=()=>readClassRosters().find(c=>c.id===activeClass);
   function commit(change){
     try{
-      if(scope!==(window.TeacherTilesClassScope||'local'))throw new Error('Your account changed. Reopen Student View to continue.');
+      if(scope!==(window.TeacherTilesClassScope||'local'))throw new Error('Your account changed. Reopen Class View to continue.');
       const classes=readClassRosters();change(classes);
       // Leave room for encrypted base64 overhead and future PBIS progress in the existing class document.
       if(new TextEncoder().encode(JSON.stringify(classes)).length>600000)throw new Error('Your class photo storage is full. Remove a photo or use an emoji to save this change.');
@@ -87,7 +87,7 @@ function setupClassesStudents(){
       const classes=readClassRosters().filter(c=>c.name.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const c of classes){
         const card=el('article','cs-class-card'),open=button('',()=>openClass(c.id),'cs-class-open');open.setAttribute('aria-label',`Open ${c.name}`);open.replaceChildren(avatar(c),el('strong','cs-card-name',c.name),el('small','',`${c.students.length} ${c.students.length===1?'student':'students'}`));
-        const edit=button('Edit Class',()=>editClass(c.id),'cs-button cs-card-edit','edit');edit.setAttribute('aria-label',`Edit ${c.name}`);card.append(open,edit);grid.append(card);
+        const edit=button('',()=>editClass(c.id),'cs-card-edit profile-panel__close','edit');edit.setAttribute('aria-label',`Edit ${c.name}`);edit.title='Edit Class';card.append(open,edit);grid.append(card);
       }
       grid.append(addCard('New Class',()=>editClass()));
       if(!classes.length)grid.append(el('p','cs-empty',search.value?'No classes match your search.':'Create your first class to get started.'));
@@ -169,9 +169,50 @@ function setupClassesStudents(){
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Emoji',()=>{settings.close();editClass(c.id);},'cs-button','edit'),button('Delete Class',()=>{if(!confirm(`Delete ${c.name}, its roster, and all saved PBIS history?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}settings.close();openClass('');},'cs-button cs-danger'));
     body.append(pbisGroup,error,actions);settings.append(body);settings.showModal();
   }
+  function rewardIcon(stat){
+    const modules={eggPoints:'egghatching',flowerPoints:'flowerpots',stars:'starchart',punchcardPoints:'punchcards',raceWins:'racer',meterWins:'classmeter',jarsFilled:'collections'};
+    const holder=el('span','cs-stat-icon');holder.setAttribute('aria-hidden','true');
+    const source=document.querySelector(`.context-menu__item[data-module="${modules[stat.id]}"] .context-menu__icon svg`);
+    holder.append(source?source.cloneNode(true):icon('pbis'));return holder;
+  }
+  function setStatValue(target,stat,name,value){
+    const key=starChartStudentKey(name),whole=!name;
+    if(stat.id==='stars'){if(whole)target.starChart.wholeClassStars=value;else target.starChart.studentStars[key]=value;}
+    else if(stat.id==='punchcardPoints'){if(whole)target.punchcards.wholeClassPoints=value;else target.punchcards.studentPoints[key]=value;}
+    else if(stat.id==='eggPoints'||stat.id==='flowerPoints')target[stat.id==='eggPoints'?'eggHatching':'flowerPots'].studentPoints[key]=value;
+    else if(stat.id==='raceWins')target.racer.studentWins[key]=value;
+    else if(stat.id==='meterWins')target.classMeter.wins=value;
+    else if(stat.id==='jarsFilled')target.collectionJar.jarsFilled=value;
+  }
+  function checkRewardTarget(target,c,stat,name){
+    if(target.id!==c.id||(name&&!target.students.includes(name)))throw new Error('This profile is no longer available. Reopen it to continue.');
+    if(!statsFor(target,!name).some(s=>s.id===stat.id))throw new Error('This reward is turned off in Class Settings.');
+  }
+  function adjustStat(stat,c,name,redeem=false){
+    const action=redeem?'Redeem':'Add';modalHeader(editor,`${action} ${stat.label}`);
+    const form=el('form','cs-form'),amount=field('Amount','1',4),error=el('p','cs-error');error.setAttribute('role','alert');
+    amount.input.type='number';amount.input.min='1';amount.input.max='9999';amount.input.step='1';
+    const balance=el('p','cs-reward-balance',`${name||c.name} · Current balance: ${statValue(stat,c,name)}`);
+    const actions=el('div','cs-form-actions'),save=button(action,null,'cs-button cs-primary');save.type='submit';
+    actions.append(button('Cancel',()=>editor.close()),save);form.append(balance,amount.holder,error,actions);editor.append(form);
+    form.onsubmit=e=>{
+      e.preventDefault();const quantity=Number(amount.input.value);
+      if(!Number.isSafeInteger(quantity)||quantity<1||quantity>9999){error.textContent='Enter a whole number from 1 to 9999.';return;}
+      const result=updateClass(target=>{
+        checkRewardTarget(target,c,stat,name);
+        // Read the latest earned balance; leave in-progress tile rewards untouched.
+        const current=statValue(stat,target,name),next=current+(redeem?-quantity:quantity);
+        if(next<0)throw new Error(`Only ${current} available to redeem.`);
+        if(next>9999)throw new Error('The balance cannot exceed 9999.');
+        setStatValue(target,stat,name,next);
+      });
+      if(result!==true){error.textContent=result;return;}editor.close();renderDetail();
+    };
+    editor.showModal();amount.input.focus();amount.input.select();
+  }
   function resetStat(stat,c,name){
     if(!confirm(`Reset ${stat.label} for ${name||c.name}? This cannot be undone.`))return;
-    const result=updateClass(target=>{const key=starChartStudentKey(name),whole=!name;if(stat.id==='stars'){if(whole)target.starChart.wholeClassStars=0;else target.starChart.studentStars[key]=0;}else if(stat.id==='punchcardPoints'){if(whole)target.punchcards.wholeClassPoints=0;else target.punchcards.studentPoints[key]=0;}else if(stat.id==='eggPoints'||stat.id==='flowerPoints')target[stat.id==='eggPoints'?'eggHatching':'flowerPots'].studentPoints[key]=0;else if(stat.id==='raceWins')target.racer.studentWins[key]=0;else if(stat.id==='meterWins')target.classMeter.wins=0;else if(stat.id==='jarsFilled')target.collectionJar.jarsFilled=0;});
+    const result=updateClass(target=>{checkRewardTarget(target,c,stat,name);setStatValue(target,stat,name,0);});
     if(result!==true)notify(result);else renderDetail();
   }
   function renderDetail(animate=false){
@@ -207,9 +248,11 @@ function setupClassesStudents(){
         const row=el('article','cs-stat'),count=statValue(stat,c,name),label=el('h4','',stat.label),value=el('strong','cs-stat-value',String(count));
         row.style.setProperty('--stat-hue',[38,265,150,205,340,22,180][index%7]);
         row.setAttribute('aria-label',stat.label);value.setAttribute('aria-live','polite');
-        const symbol=el('span','cs-stat-icon',stat.icon);symbol.setAttribute('aria-hidden','true');
+        const symbol=rewardIcon(stat),actions=el('div','cs-stat-actions');
+        const add=button('Add',()=>adjustStat(stat,c,name),'cs-button'),redeem=button('Redeem',()=>adjustStat(stat,c,name,true),'cs-button');
+        add.setAttribute('aria-label',`Add ${stat.label}`);redeem.setAttribute('aria-label',`Redeem ${stat.label}`);add.dataset.detailFocus='add-'+stat.id;redeem.dataset.detailFocus='redeem-'+stat.id;redeem.disabled=!count;add.disabled=count>=9999;
         const reset=button('Reset',()=>resetStat(stat,c,name),'cs-button');reset.disabled=!count;reset.setAttribute('aria-label',`Reset ${stat.label}`);reset.dataset.detailFocus='reset-'+stat.id;
-        row.append(symbol,value,label,el('p','cs-stat-description',name?stat.description:stat.wholeClassDescription||stat.description),reset);stats.append(row);
+        actions.append(add,redeem,reset);row.append(symbol,value,label,el('p','cs-stat-description',name?stat.description:stat.wholeClassDescription||stat.description),actions);stats.append(row);
       }
       if(!stats.children.length)stats.append(el('p','cs-muted','No reward types selected in Class Settings.'));
       body.append(stats);
