@@ -45,7 +45,7 @@ function setupClassesStudents(){
   }
   const updateClass=change=>commit(classes=>{const c=classes.find(c=>c.id===activeClass);if(!c)throw new Error('This class is no longer available.');change(c);});
   function avatar(c,name,large=false){
-    const profile=name?c.studentProfiles?.[starChartStudentKey(name)]:null,v=studentProfileVisual(name||c.name,c.id),node=el('span','cs-avatar'+(large?' cs-avatar-large':''));node.style.setProperty('--avatar-hue',v.hue);node.setAttribute('aria-hidden','true');
+    const profile=name?c.studentProfiles?.[starChartStudentKey(name)]:{image:c.logoImage},v=studentProfileVisual(name||c.name,c.id),node=el('span','cs-avatar'+(large?' cs-avatar-large':''));node.style.setProperty('--avatar-hue',v.hue);node.setAttribute('aria-hidden','true');
     if(profile?.image){const img=el('img');img.src=profile.image;img.alt='';img.decoding='async';img.loading='lazy';node.append(img);}else if(name&&!profile?.emoji){node.classList.add('cs-avatar-initials');node.append(el('span','cs-initials',v.initials));}else node.textContent=name?profile.emoji:normalizeClassLogo(c.logo);return node;
   }
   const statsFor=(c,whole=false)=>c.pbisEnabled===false?[]:PBIS_STUDENT_STAT_DEFINITIONS.filter(s=>c.pbisStats?.[s.id]!==false&&(!s.wholeClassOnly||whole)&&(!s.studentOnly||!whole));
@@ -58,9 +58,12 @@ function setupClassesStudents(){
     title.textContent=c?'Students':'Your Classes';subtitle.textContent=c?`${c.students.length} ${c.students.length===1?'student':'students'}`:'';subtitle.hidden=!c;grid.classList.toggle('cs-students-grid',Boolean(c));search.placeholder=c?'Search students':'Search classes';search.setAttribute('aria-label',search.placeholder);
     if(c){
       const back=button('All Classes',()=>openClass(''),'cs-button cs-back','back');
-      const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));info.append(avatar(c),copy);
+      const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));const edit=button('',()=>editClass(c.id),'cs-class-info-edit profile-panel__close','edit');edit.setAttribute('aria-label','Edit Class');edit.title='Edit Class';info.append(avatar(c),copy,edit);
       const rewards=button('PBIS',()=>showDetail(null),'cs-button cs-class-pbis','pbis');rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
-      const configure=button('Class Settings',showSettings,'cs-button','settings');classHeader.append(back,info,rewards,configure);
+      const modules=el('div','cs-class-modules');
+      for(const [label,symbol] of [['Assessment','assessment'],['ClassConnect','connect']]){const b=button(label,null,'cs-button cs-class-coming-soon',symbol);b.disabled=true;b.append(el('small','','Coming soon'));modules.append(b);}
+      modules.append(rewards);
+      const configure=button('Class Settings',showSettings,'cs-button','settings');classHeader.append(back,info,modules,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const [index,name] of names.entries()){
         const entry=el('div','cs-student-entry'),key=starChartStudentKey(name);let suppressClick=false;
@@ -117,12 +120,16 @@ function setupClassesStudents(){
   }
   function editClass(id=''){
     const c=readClassRosters().find(c=>c.id===id);if(id&&!c)return;modalHeader(editor,c?'Edit Class':'New Class');
-    const form=el('form','cs-form'),name=field('Class name',c?.name||'',50),preview=el('div','cs-form-preview');let emoji=c?.logo||'👥';preview.textContent=emoji;
+    const form=el('form','cs-form'),name=field('Class name',c?.name||'',50),preview=el('div','cs-form-preview');let emoji=c?.logo||'👥',image=c?.logoImage||'';
+    const paint=()=>{preview.replaceChildren();if(image){const img=el('img');img.src=image;img.alt='Class image preview';preview.append(img);}else preview.textContent=emoji;};paint();
     const error=el('p','cs-error');error.setAttribute('role','alert');const actions=el('div','cs-form-actions'),save=button(c?'Save Changes':'Create Class',null,'cs-button cs-primary');save.type='submit';actions.append(button('Cancel',()=>editor.close()),save);
-    form.append(preview,name.holder,emojiPicker(emoji,value=>{emoji=value||'👥';preview.textContent=emoji;}),error,actions);editor.append(form);
-    form.onsubmit=e=>{e.preventDefault();const clean=name.input.value.trim().replace(/\s+/g,' ');if(!clean){error.textContent='Enter a class name.';return;}
-      const result=commit(classes=>{if(c){const target=classes.find(v=>v.id===id);if(!target)throw new Error('This class is no longer available.');target.name=clean;target.logo=emoji;}else classes.push({id:classRosterId(),name:clean,logo:emoji,students:[],studentProfiles:{},pbisEnabled:true,pbisStats:readStudentViewStatPreferences()});});
-      if(result!==true){error.textContent=result;return;}editor.close();render();notify(c?'Class updated':'Class created');};editor.showModal();name.input.focus();
+    const picker=emojiPicker(image?'':emoji,value=>{photoTask++;emoji=value||'👥';image='';file.value='';save.disabled=false;error.textContent='';paint();}),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif';file.hidden=true;file.setAttribute('aria-label','Upload class image');
+    const photoActions=el('div','cs-photo-actions');photoActions.append(button('Upload Image',()=>file.click()),button('Use Emoji',()=>{photoTask++;image='';file.value='';save.disabled=false;error.textContent='';paint();picker.querySelectorAll('[data-emoji]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.emoji===emoji)));}),file);
+    form.append(preview,name.holder,picker,photoActions,el('small','cs-muted','Images are cropped to a square and resized automatically.'),error,actions);editor.append(form);
+    file.onchange=async()=>{const chosen=file.files?.[0];if(!chosen)return;const task=++photoTask;save.disabled=true;error.textContent='Resizing image…';try{const data=await compactPhoto(chosen);if(task!==photoTask||!editor.open)return;image=data;paint();picker.querySelectorAll('[data-emoji]').forEach(b=>b.setAttribute('aria-pressed','false'));error.textContent='';}catch(e){if(task===photoTask)error.textContent=e.message;}finally{if(task===photoTask)save.disabled=false;}};
+    form.onsubmit=e=>{e.preventDefault();if(save.disabled)return;const clean=name.input.value.trim().replace(/\s+/g,' ');if(!clean){error.textContent='Enter a class name.';return;}
+      const result=commit(classes=>{if(c){const target=classes.find(v=>v.id===id);if(!target)throw new Error('This class is no longer available.');target.name=clean;target.logo=emoji;target.logoImage=image;}else classes.push({id:classRosterId(),name:clean,logo:emoji,logoImage:image,students:[],studentProfiles:{},pbisEnabled:true,pbisStats:readStudentViewStatPreferences()});});
+      if(result!==true){error.textContent=result;return;}editor.close();render();renderDetail();notify(c?'Class updated':'Class created');};editor.showModal();name.input.focus();
   }
   async function compactPhoto(file){
     if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type))throw new Error('Choose a PNG, JPG, WebP, or GIF image.');if(file.size>12*1024*1024)throw new Error('Choose an image smaller than 12 MB.');
@@ -166,7 +173,7 @@ function setupClassesStudents(){
     body.append(toggle('Show Add Student',c.showAddStudent!==false,(enabled,input)=>{const result=updateClass(target=>target.showAddStudent=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Show the + outline at the end of the student list.'));
     pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
-    const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Emoji',()=>{settings.close();editClass(c.id);},'cs-button','edit'),button('Delete Class',()=>{if(!confirm(`Delete ${c.name}, its roster, and all saved PBIS history?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}settings.close();openClass('');},'cs-button cs-danger'));
+    const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Logo',()=>{settings.close();editClass(c.id);},'cs-button','edit'),button('Delete Class',()=>{if(!confirm(`Delete ${c.name}, its roster, and all saved PBIS history?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}settings.close();openClass('');},'cs-button cs-danger'));
     body.append(pbisGroup,error,actions);settings.append(body);settings.showModal();
   }
   function rewardIcon(stat){

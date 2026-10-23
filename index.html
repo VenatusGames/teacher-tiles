@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261020-attendance-bottom" />
+  <link rel="stylesheet" href="styles.css?v=20261023-class-logos" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -75,7 +75,8 @@
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
   <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261020-controls-followup">
   <link rel="stylesheet" href="profile/tools.css?v=20261022-left-assessments">
-<link rel="stylesheet" href="profile/classes-students.css?v=20261023-class-rewards">
+<link rel="stylesheet" href="profile/organizations.css?v=20261023-class-view">
+<link rel="stylesheet" href="profile/classes-students.css?v=20261023-class-logos">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
@@ -130,7 +131,7 @@
 <link rel="stylesheet" href="tiles/thanksgiving/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/progress-bar/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/shared/autumn-themes.css?v=20261021-autumn-finish">
-<link rel="stylesheet" href="support/announcements.css?v=20261022">
+<link rel="stylesheet" href="support/announcements.css?v=20261023-read-countdown">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -359,12 +360,12 @@
             <div class="profile-tools__head"><h3 id="profile-tools-title">Tools</h3></div>
             <button id="profile-organizations-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-organizations-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--organization" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V7.5L12 4v16M12 9h8v11M7.5 9.5h1M7.5 13h1M7.5 16.5h1M15.5 12.5h1M15.5 16h1M2.5 20h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              <span><strong>Organizations<span class="profile-tool-beta">BETA</span></strong><small>Share boards and PBIS insights with your school or team.</small></span>
+              <span><strong>Organizations<span class="profile-tool-beta">BETA</span></strong><small>Create and share boards, classes, tiles, and insights with your school or team. Coming soon!</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-classes-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="profile-classes-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--book" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 11.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-5.1 0-8.3 2.7-8.3 6.1 0 1 .8 1.9 1.9 1.9h12.8c1 0 1.9-.8 1.9-1.9 0-3.4-3.2-6.1-8.3-6.1Z" fill="currentColor"/></svg></span>
-              <span><strong>Class View<span class="profile-tool-beta">BETA</span></strong><small>Your classes, student profiles, and PBIS rewards</small></span>
+              <span><strong>Class View<span class="profile-tool-beta">BETA</span></strong><small>Create and manage your classes, student profiles, and more</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button id="profile-lesson-planner-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="lesson-planner-panel">
@@ -562,9 +563,9 @@
             <div class="organization-window" role="dialog" aria-modal="true" aria-labelledby="profile-organizations-title">
               <section id="organization-list-view" class="organization-view organization-list-view">
                 <header class="organization-window__header">
-                  <button id="profile-organizations-back" class="tool-window-back" type="button" aria-label="Back to profile"><span aria-hidden="true">←</span><strong>Back</strong></button>
-                  <div><span>TEACHERTILES ORGANIZATIONS</span><h3 id="profile-organizations-title">Organizations</h3><p>Create a shared space and invite collaborators by Google-account email.</p></div>
-                  <button id="profile-organizations-close" type="button" aria-label="Close Organizations">×</button>
+                  <button id="profile-organizations-back" class="tool-window-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Back to Profile</strong></button>
+                  <div><h3 id="profile-organizations-title">Organizations<span class="profile-tool-beta">BETA</span></h3></div>
+                  <button id="profile-organizations-close" class="profile-panel__close" type="button" aria-label="Close Organizations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
                 </header>
                 <div class="organization-list-body">
                   <p class="organization-development-note">Note: Many of the features of organizations are still a work-in-progress and are not yet implemented. Stay tuned for future updates and functionality!</p>
@@ -577,18 +578,19 @@
                     <label><span>New organization</span><input id="organization-create-name" type="text" maxlength="80" placeholder="Organization name, e.g. Lincoln Middle School" autocomplete="organization" required></label>
                     <button type="submit">Create Organization</button>
                   </form>
-                  <div class="organization-section-heading"><div><span>YOUR ORGANIZATIONS</span><h4>Shared spaces</h4></div><small id="organization-count">0 organizations</small></div>
+                  <div class="organization-section-heading organization-library-heading"><div><h4>Your Organizations</h4></div><small id="organization-count">0 organizations</small></div>
                   <div id="organization-list" class="organization-list"></div>
                 </div>
               </section>
 
               <section id="organization-editor-view" class="organization-view organization-editor-view" hidden>
                 <header class="organization-editor__header">
-                  <button id="organization-editor-back" class="tool-window-back" type="button" aria-label="Back to organizations"><span aria-hidden="true">←</span><strong>Organizations</strong></button>
+                  <button id="organization-editor-back" class="tool-window-back" type="button" aria-label="Back to organizations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Organizations</strong></button>
                   <label><span>ORGANIZATION NAME</span><input id="organization-name" type="text" maxlength="80" aria-label="Organization name"></label>
                   <button id="organization-editor-done" type="button">Done</button>
                 </header>
                 <div class="organization-editor__body">
+                  <p class="organization-development-note">Note: Many of the features of organizations are still a work-in-progress and are not yet implemented. Stay tuned for future updates and functionality!</p>
                   <div class="organization-editor-summary"><span id="organization-editor-logo" class="organization-editor-summary__icon" aria-hidden="true">🏫</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><span id="organization-current-role" class="organization-role-tag">Member</span></div>
                   <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
                   <section id="organization-logo-editor" class="organization-logo-editor" aria-labelledby="organization-logo-title">
@@ -4669,8 +4671,8 @@
 <script src="tiles/spinner/carnival.js?v=20261006-carnival"></script>
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
-<script src="profile/classroom-services.js?v=20261022-student-edit-settings"></script>
-<script src="profile/classes-students.js?v=20261023-class-rewards"></script>
+<script src="profile/classroom-services.js?v=20261023-class-logos"></script>
+<script src="profile/classes-students.js?v=20261023-class-logos"></script>
 <script src="account/interface-services.js?v=20261021-autumn"></script>
 <script src="boards/navigation.js?v=20261020-draw"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>
@@ -4708,7 +4710,7 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261022-live-announcements"></script>
+<script type="module" src="firebase-auth.js?v=20261023-read-countdown"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 
@@ -6072,7 +6074,7 @@
 <script src="presentations/objects-contract.js?v=20261020-data-tiles"></script>
 <script src="presentations/objects.js?v=20261020-snapping"></script>
 <script src="presentations/snapping.js?v=20261020"></script>
-<script src="presentations/index.js?v=20261020-snapping"></script>
+<script src="presentations/index.js?v=20261023-class-logos"></script>
 <script src="tiles/presentations/index.js?v=20261020-snapping"></script>
 <script src="support/help-navigation.js?v=20261020-ui-fixes"></script>
 </body>

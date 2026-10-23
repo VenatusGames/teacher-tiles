@@ -103,6 +103,7 @@ function readClassRosters(){
         id:String(item.id||`class-${index+1}`),
         name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
         logo:normalizeClassLogo(item.logo),
+        logoImage:normalizeProfileImage(item.logoImage),
         students,
         pbisEnabled:item.pbisEnabled!==false,
         showAddStudent:item.showAddStudent!==false,
@@ -377,11 +378,14 @@ function normalizeClassPbisPreferences(value){
   return Object.fromEntries(PBIS_STUDENT_STAT_DEFINITIONS.map(stat=>[stat.id,saved[stat.id]!==false]));
 }
 const STUDENT_PROFILE_IMAGE_MAX_LENGTH=48000;
+function normalizeProfileImage(image){
+  return typeof image==='string'&&image.length<=STUDENT_PROFILE_IMAGE_MAX_LENGTH&&/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(image)?image:'';
+}
 function normalizeStudentProfiles(value,students){
   const source=value&&typeof value==='object'?value:{};
   return Object.fromEntries(students.map(name=>{
     const key=starChartStudentKey(name),profile=source[key]||{};
-    const image=typeof profile.image==='string'&&profile.image.length<=STUDENT_PROFILE_IMAGE_MAX_LENGTH&&/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(profile.image)?profile.image:'';
+    const image=normalizeProfileImage(profile.image);
     return [key,{emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image}];
   }));
 }

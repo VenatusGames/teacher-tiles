@@ -15,7 +15,7 @@ await page.getByRole('button',{name:'Open Science Club',exact:true}).hover();awa
 await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();await page.getByRole('button',{name:"Open Alice's student profile",exact:true}).click();
 assert.equal(await page.locator('.cs-detail .cs-stat').count(),0);
 assert(await page.getByRole('button',{name:'Assessments Coming soon',exact:true}).isDisabled());
-assert(await page.getByRole('button',{name:'ClassConnect Coming soon',exact:true}).isDisabled());
+assert(await page.locator('.cs-detail').getByRole('button',{name:'ClassConnect Coming soon',exact:true}).isDisabled());
 await page.getByRole('button',{name:'Extras',exact:true}).click();
 assert(await page.getByRole('button',{name:'Student Pets Coming soon',exact:true}).isDisabled());
 await page.getByRole('button',{name:'Student Profile',exact:true}).click();

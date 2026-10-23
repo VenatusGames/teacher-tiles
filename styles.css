@@ -19375,3 +19375,7 @@ body.is-board-idle .attendance-module.is-idle-unhovered{padding-bottom:17px}
 body.is-keyboard-navigation .attendance-module:focus-within{padding-bottom:48px}
 @media(hover:none){.attendance-module:not(:hover){padding-bottom:48px}}
 @media(prefers-reduced-motion:reduce){.attendance-module{transition:none}}
+
+.pres-brand>.profile-tool-beta{margin:0;flex:none}
+#profile-organizations-title{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+#profile-organizations-title>.profile-tool-beta{margin:0;flex:none}
