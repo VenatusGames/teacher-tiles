@@ -3370,7 +3370,18 @@ function createBoardCard(board) {
     beginBoardRename(card, board, title);
   });
 
-  card.append(openButton, meta, renameButton, deleteButton);
+  const collaborateButton = document.createElement("button");
+  collaborateButton.type = "button";
+  collaborateButton.className = "board-card__collaborate";
+  collaborateButton.setAttribute("aria-label", `Collaborate on ${board.name} — Coming soon`);
+  collaborateButton.setAttribute("aria-disabled", "true");
+  collaborateButton.innerHTML = '<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7.5" r="3.25"/><path d="M3 20v-1.5a6 6 0 0 1 12 0V20M19 7v6m-3-3h6"/></svg><span class="board-card__collaborate-tooltip"><strong>Collaborate</strong><small>Coming soon</small></span>';
+  collaborateButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+
+  card.append(openButton, meta, collaborateButton, renameButton, deleteButton);
   if (boardHasConflict(board)) {
     const review = document.createElement('button');review.type='button';review.className='board-card__conflict';review.textContent='! Review conflict';review.setAttribute('aria-label','Review conflicting versions of '+board.name);
     review.addEventListener('click',event=>{event.stopPropagation();openBoardConflictReview(board.id)});card.append(review);

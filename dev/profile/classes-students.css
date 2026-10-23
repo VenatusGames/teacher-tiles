@@ -144,3 +144,11 @@ body.classes-tool-open{overflow:hidden}
 .cs-class-coming-soon>.cs-icon{grid-row:1/3}.cs-class-coming-soon>small{grid-column:2;font-size:9px;font-weight:500}
 .cs-class-coming-soon:disabled{opacity:.65;box-shadow:none;background:var(--surface-soft,#f4f6fa)}
 @media(max-width:800px){.cs-class-modules{flex:1 1 100%}.cs-class-modules>.cs-button{flex:1}}
+
+/* Class card edit buttons use tile corner chrome, without the raised bottom edge. */
+.cs-class-card>.cs-card-edit{top:9px;right:9px;display:grid;place-items:center;width:28px;height:28px;min-height:28px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text)!important;box-shadow:0 3px 10px #0f172a18}
+.cs-card-edit .cs-edit-pencil{width:20px;height:20px;font-size:20px}
+.cs-class-card>.cs-card-edit:hover{background:var(--surface-soft);transform:translateY(-1px)}
+.cs-class-card>.cs-card-edit:active{transform:translateY(0)}
+.cs-class-header>.cs-button.cs-class-settings{flex:0 0 38px;width:38px;height:38px;min-height:38px;padding:8px;gap:0;margin-left:auto}
+.cs-class-settings>span:empty{display:none}

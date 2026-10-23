@@ -14404,7 +14404,8 @@ body.dark .signed-out-save-warning{
 .board-card{position:relative}
 .board-card__open{display:block;width:100%;min-width:0;border:0;background:transparent;color:inherit;padding:0;text-align:left}
 .board-card__delete,
-.board-card__rename{
+.board-card__rename,
+.board-card__collaborate{
   position:absolute;
   z-index:5;
   top:10px;
@@ -16732,8 +16733,6 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__favorites-hint{font-size:11px;line-height:1.5;color:var(--muted);margin:6px 0 10px}
 @media(prefers-reduced-motion:reduce){#context-menu .context-menu__connect-badge::after{animation:none!important}}
 
-.workspace-control.collaborate-control:disabled{color:color-mix(in srgb,var(--text) 40%,var(--surface));background:var(--surface-soft);cursor:not-allowed;transform:none}
-.collaborate-control>svg{fill:none;opacity:.65}
 
 /* Category pins reveal only in their own hover area. */
 #context-menu .context-menu__category-row:has(.context-menu__pin){display:flex;align-items:center;gap:2px}
@@ -19379,3 +19378,15 @@ body.is-keyboard-navigation .attendance-module:focus-within{padding-bottom:48px}
 .pres-brand>.profile-tool-beta{margin:0;flex:none}
 #profile-organizations-title{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
 #profile-organizations-title>.profile-tool-beta{margin:0;flex:none}
+
+/* Collaboration is scoped to a saved board and remains a coming-soon control. */
+.board-card__collaborate{left:10px;cursor:default}
+.board-card__collaborate>svg{width:17px;height:17px;fill:none}
+.board-card:hover .board-card__collaborate,.board-card:focus-within .board-card__collaborate{opacity:1;transform:none}
+.board-card__collaborate:hover{background:color-mix(in srgb,var(--accent) 82%,#1b1f24)}
+.board-card__collaborate-tooltip{position:absolute;top:calc(100% + 8px);left:0;display:grid;gap:3px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);box-shadow:0 5px 16px #0f172a22;white-space:nowrap;text-align:left;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s}
+.board-card__collaborate-tooltip strong{font-size:12px;font-weight:650}.board-card__collaborate-tooltip small{font-size:10px;color:var(--muted)}
+.board-card__collaborate:is(:hover,:focus-visible) .board-card__collaborate-tooltip{opacity:1;visibility:visible}
+.board-card.is-renaming .board-card__collaborate{opacity:0;pointer-events:none}
+@media(hover:none),(pointer:coarse){.board-card__collaborate{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.board-card__collaborate,.board-card__collaborate-tooltip{transition:none}}
