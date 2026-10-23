@@ -81,3 +81,10 @@
 
 /* Notification titles must not inherit the profile header size on phones. */
 .profile-notification-card .profile-notification-card__copy>strong{font-size:13px;line-height:1.4;letter-spacing:normal}
+
+/* Shared return control on profile tool libraries. */
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:none;width:max-content;min-width:0;height:40px;padding:0 13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);color:var(--text);font-family:inherit;font-size:13px;font-weight:650;line-height:1;box-shadow:none;cursor:pointer}
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back strong{font-size:inherit;font-weight:inherit}
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back svg{width:19px;height:19px;flex:none}
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back:hover{background:var(--surface-solid);border-color:#aabed4}
+@media(max-width:600px){:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back{width:36px;height:36px;padding:7px;gap:0}:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back>strong,.cs-tool .profile-tool-back>span:last-child{display:none}}

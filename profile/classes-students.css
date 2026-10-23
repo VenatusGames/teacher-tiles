@@ -152,3 +152,8 @@ body.classes-tool-open{overflow:hidden}
 .cs-class-card>.cs-card-edit:active{transform:translateY(0)}
 .cs-class-header>.cs-button.cs-class-settings{flex:0 0 38px;width:38px;height:38px;min-height:38px;padding:8px;gap:0;margin-left:auto}
 .cs-class-settings>span:empty{display:none}
+
+.cs-top-brand{display:flex;align-items:center;gap:16px;min-width:0}
+.cs-tool-close.profile-panel__close{display:grid;place-items:center;flex:none;width:36px;height:36px;padding:7px}
+.cs-tool-close>span:empty{display:none}
+@media(max-width:600px){.cs-top-brand{gap:10px}.cs-topbar{gap:10px}}
