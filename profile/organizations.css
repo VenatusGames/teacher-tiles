@@ -18,7 +18,6 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-window .tool-window-back{min-height:38px;height:auto;padding:10px 14px;border-radius:11px;font-size:12px;font-weight:650;gap:7px}
 .organization-window .tool-window-back strong{font-weight:650}
 .organization-window .tool-window-back svg{width:20px;height:20px;flex:none}
-.organization-window #profile-organizations-close{width:36px;height:36px;border-radius:10px;background:var(--surface-solid);padding:7px;box-shadow:0 2px 0 var(--border);display:grid;place-items:center}
 #profile-organizations-close svg{width:20px;height:20px}
 .organization-window .organization-editor__header{grid-template-columns:auto minmax(0,1fr) auto}
 .organization-editor__header>label{max-width:540px}
@@ -86,6 +85,8 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-create-dialog .cs-error:not(.is-error){color:var(--muted)}
 @media(max-width:600px){.organization-window .organization-add-card{min-height:225px;padding:24px 10px}}
 
-.organization-window .organization-window__header{grid-template-columns:auto minmax(0,1fr) 36px}
+.organization-window .organization-window__header{grid-template-columns:auto minmax(0,1fr) auto}
 .organization-window #profile-organizations-back{grid-column:1}
 .organization-window__header>div{grid-column:2}
+
+@media(max-width:600px){.organization-window #profile-organizations-title{flex-wrap:wrap}}

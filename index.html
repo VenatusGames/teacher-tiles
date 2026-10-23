@@ -73,10 +73,10 @@
   <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261023-profile-navigation">
-  <link rel="stylesheet" href="profile/tools.css?v=20261023-profile-navigation">
-<link rel="stylesheet" href="profile/organizations.css?v=20261023-profile-navigation">
-<link rel="stylesheet" href="profile/classes-students.css?v=20261023-notification-class-polish">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261023-tool-navigation">
+  <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
+<link rel="stylesheet" href="profile/organizations.css?v=20261023-tool-navigation">
+<link rel="stylesheet" href="profile/classes-students.css?v=20261023-class-bar-edit">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
@@ -390,7 +390,7 @@
                 <div class="planner-library-header__actions">
                   <div class="pres-limit planner-library-entitlement"><strong id="lesson-planner-library-limit" aria-live="polite"></strong><span id="lesson-planner-library-plan" class="pres-plan"></span><span id="lesson-planner-library-upgrade" class="pres-upgrade"></span></div>
                   <button id="lesson-planner-create" class="planner-library-create" type="button" aria-label="Create a new planner" title="Create planner"><span aria-hidden="true">+</span></button>
-                  <button id="lesson-planner-library-close" class="planner-library-close" type="button" aria-label="Close Lesson Planner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                  <button id="lesson-planner-library-close" class="planner-library-close profile-tool-exit" type="button">Back to Board</button>
                 </div>
               </header>
               <main class="planner-library-body">
@@ -432,7 +432,7 @@
                       </div>
                     </div>
                   </div>
-                  <button id="lesson-planner-close" type="button" aria-label="Close Lesson Planner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                  <button id="lesson-planner-close" class="profile-tool-exit" type="button">Back to Board</button>
                 </div>
               </header>
               <section class="lesson-planner-toolbar" aria-label="Calendar controls">
@@ -561,7 +561,7 @@
                 <header class="organization-window__header">
                   <button id="profile-organizations-back" class="tool-window-back profile-tool-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Profile</strong></button>
                   <div><h3 id="profile-organizations-title">Organizations<span class="profile-tool-beta">BETA</span></h3></div>
-                  <button id="profile-organizations-close" class="profile-panel__close" type="button" aria-label="Close Organizations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+                  <button id="profile-organizations-close" class="profile-tool-exit" type="button">Back to Board</button>
                 </header>
                 <div class="organization-list-body">
                   <p class="organization-development-note">Note: Many of the features of organizations are still a work-in-progress and are not yet implemented. Stay tuned for future updates and functionality!</p>
@@ -4673,7 +4673,7 @@
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20261023-class-logos"></script>
-<script src="profile/classes-students.js?v=20261023-notification-class-polish"></script>
+<script src="profile/classes-students.js?v=20261023-class-bar-edit"></script>
 <script src="account/interface-services.js?v=20261021-autumn"></script>
 <script src="boards/navigation.js?v=20261020-draw"></script>
 <script src="shop/cosmetic-services.js?v=20261014-subscription-override"></script>

@@ -82,9 +82,12 @@
 /* Notification titles must not inherit the profile header size on phones. */
 .profile-notification-card .profile-notification-card__copy>strong{font-size:13px;line-height:1.4;letter-spacing:normal}
 
-/* Shared return control on profile tool libraries. */
-:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:none;width:max-content;min-width:0;height:40px;padding:0 13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);color:var(--text);font-family:inherit;font-size:13px;font-weight:650;line-height:1;box-shadow:none;cursor:pointer}
+/* Tool navigation follows the Presentations Back to Board button. */
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) :is(.profile-tool-back,.profile-tool-exit){display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;width:max-content;min-width:0;height:auto;min-height:34px;padding:7px 12px;box-sizing:border-box;border:1px solid #dfe5ed;border-radius:10px;background:#fff;color:#273448;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:650;line-height:normal;white-space:nowrap;box-shadow:none;cursor:pointer;transition:background .15s,box-shadow .15s,transform .15s}
 :is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back strong{font-size:inherit;font-weight:inherit}
 :is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back svg{width:19px;height:19px;flex:none}
-:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back:hover{background:var(--surface-solid);border-color:#aabed4}
-@media(max-width:600px){:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back{width:36px;height:36px;padding:7px;gap:0}:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back>strong,.cs-tool .profile-tool-back>span:last-child{display:none}}
+/* Shared hover, press and keyboard feedback. */
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) :is(.profile-tool-back,.profile-tool-exit):hover{background:#edf2fa;border-color:#becde2;box-shadow:0 3px 10px #28405b0a;transform:none}
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) :is(.profile-tool-back,.profile-tool-exit):active{transform:translateY(1px)}
+:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) :is(.profile-tool-back,.profile-tool-exit):focus-visible{outline:2px solid #7097d5;outline-offset:3px}
+@media(max-width:600px){:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back{width:34px;padding:7px;gap:0}:is(.cs-tool,.organization-window,.lesson-planner-panel,#presentations-tool) .profile-tool-back>strong,.cs-tool .profile-tool-back>span:last-child{display:none}}
