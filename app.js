@@ -99,7 +99,7 @@ document.addEventListener('pointerout',event=>{
 });
 
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
+
 
 const STUDENT_VIEW_STATS_KEY='teachertiles-student-view-stats-v1';
 const studentViewStatsStorageKey=()=>`${STUDENT_VIEW_STATS_KEY}:${window.TeacherTilesClassScope||'local'}`;
@@ -155,7 +155,7 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
 ]);
 
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupStudentView,{once:true});else setupStudentView();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupClassesStudents,{once:true});else setupClassesStudents();
 
 const TRANSLATION_LANGUAGES=[
   {code:'en',name:'English',nativeName:'English',speech:'en-US'},
