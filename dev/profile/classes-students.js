@@ -13,7 +13,7 @@ function setupClassesStudents(){
   const searchLabel=el('label','cs-search'),search=el('input');search.type='search';searchLabel.append(icon('search'),search);heading.append(titleBox,searchLabel);
   const grid=el('div','cs-grid');content.append(classHeader,heading,grid);panel.append(top,content);document.body.append(panel);
   const editor=el('dialog','cs-modal'),settings=el('dialog','cs-modal cs-settings'),detail=el('dialog','cs-modal cs-detail');document.body.append(editor,settings,detail);
-  let activeClass='',activeStudent=null,scope=window.TeacherTilesClassScope||'local',photoTask=0;
+  let visibleStudents=new Set(),activeClass='',activeStudent=null,scope=window.TeacherTilesClassScope||'local',photoTask=0;
   const notice=el('p','cs-notice');notice.setAttribute('role','status');panel.append(notice);let noticeTimer;
   function notify(message){clearTimeout(noticeTimer);notice.textContent=message;notice.classList.add('is-visible');noticeTimer=setTimeout(()=>notice.classList.remove('is-visible'),5000);}
   const current=()=>readClassRosters().find(c=>c.id===activeClass);
@@ -39,17 +39,21 @@ function setupClassesStudents(){
   title.tabIndex=-1;
   function render(){
     const c=current();if(activeClass&&!c)activeClass='';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
-    title.textContent=c?'Students':'Your Classes';subtitle.textContent=c?`${c.students.length} ${c.students.length===1?'student':'students'}`:'One place for your classes and student profiles';search.placeholder=c?'Search students':'Search classes';search.setAttribute('aria-label',search.placeholder);
+    title.textContent=c?'Students':'Your Classes';subtitle.textContent=c?`${c.students.length} ${c.students.length===1?'student':'students'}`:'';subtitle.hidden=!c;grid.classList.toggle('cs-students-grid',Boolean(c));search.placeholder=c?'Search students':'Search classes';search.setAttribute('aria-label',search.placeholder);
     if(c){
       const back=button('All Classes',()=>openClass(''),'cs-button cs-back','back');
       const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));info.append(avatar(c),copy);
       const rewards=button('',()=>showDetail(null),'cs-class-rewards');rewards.replaceChildren(rewardSummary(c,null));rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
       const configure=button('Class Settings',showSettings,'cs-button','settings');classHeader.append(back,info,rewards,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
-      for(const name of names){const card=button('',()=>showDetail(name),'cs-student-card');card.setAttribute('aria-label',`Open ${name}'s student profile`);card.replaceChildren(avatar(c,name),el('strong','cs-card-name',name),rewardSummary(c,name));grid.append(card);}
+      for(const [index,name] of names.entries()){const card=button('',()=>showDetail(name),'cs-student-card');card.setAttribute('aria-label',`Open ${name}'s student profile`);card.replaceChildren(avatar(c,name),el('strong','cs-card-name',name));
+        if(!visibleStudents.has(c.id+':'+starChartStudentKey(name))){card.classList.add('is-entering');card.style.setProperty('--student-enter-delay',Math.min(index,6)*35+'ms');}
+        grid.append(card);}
+      visibleStudents=new Set(names.map(name=>c.id+':'+starChartStudentKey(name)));
       grid.append(addCard('Add Student',()=>editStudent()));
       if(!names.length)grid.append(el('p','cs-empty',c.students.length?'No students match your search.':'Add your first student using a first name or nickname.'));
     }else{
+      visibleStudents.clear();
       const classes=readClassRosters().filter(c=>c.name.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const c of classes){
         const card=el('article','cs-class-card'),open=button('',()=>openClass(c.id),'cs-class-open');open.setAttribute('aria-label',`Open ${c.name}`);open.replaceChildren(avatar(c),el('strong','cs-card-name',c.name),el('small','',`${c.students.length} ${c.students.length===1?'student':'students'}`));
