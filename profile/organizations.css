@@ -115,3 +115,30 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-details-dialog #organization-delete{padding:8px 12px;border:1px solid color-mix(in srgb,#b74450 25%,var(--border));border-radius:10px;background:var(--surface-solid);color:#b74450;font:inherit;font-size:12px;cursor:pointer}
 @media(hover:none){.organization-card__edit,#organization-details-edit{opacity:1;pointer-events:auto}}
 @media(max-width:600px){.organization-window .organization-editor-summary{grid-template-columns:60px minmax(0,1fr) auto}.organization-window .organization-editor-summary>.organization-role-tag{grid-column:2}.organization-details-dialog .cs-form-actions{flex-wrap:wrap}}
+
+/* Separate invitation and member-management windows. */
+.organization-people-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}
+.organization-people-actions svg{width:20px;height:20px;flex:none}
+.organization-people-dialog{width:min(580px,calc(100vw - 28px))}
+.organization-manage-dialog{width:min(820px,calc(100vw - 28px))}
+.organization-people-dialog .cs-modal-header{position:sticky;top:0;z-index:2;background:var(--surface-solid)}
+.organization-people-body{padding:24px}
+.organization-people-body>.cs-form{padding:0}
+.organization-people-dialog .cs-muted{font-size:13px;line-height:1.6;margin:0}
+.organization-people-dialog .cs-error:not(.is-error){color:var(--muted)}
+.organization-people-dialog .cs-error.is-error{color:#b74450}
+.organization-people-dialog .organization-pending-section{margin-top:24px;padding-top:16px}
+.organization-people-dialog .organization-section-heading{margin:0 0 14px}.organization-people-dialog .organization-section-heading h4{font-size:17px;margin:0}.organization-people-dialog .organization-section-heading span{display:none}.organization-people-dialog .organization-section-heading small{font-size:12px;color:var(--muted)}
+.organization-people-dialog .organization-pending-list{display:grid;gap:10px}
+.organization-people-dialog .organization-pending-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft)}
+.organization-people-dialog .organization-pending-card>div{min-width:0}.organization-people-dialog .organization-pending-card strong{font-size:13px;white-space:normal;overflow-wrap:anywhere}.organization-people-dialog .organization-pending-card small{font-size:11px}
+.organization-people-dialog .organization-pending-card button{flex:none;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.organization-manage-list{display:grid;gap:12px;margin-top:18px}
+.organization-manage-dialog .organization-member-card{grid-template-columns:64px minmax(0,1fr) auto;padding:14px;gap:14px;border-radius:14px;background:var(--surface-soft);min-height:100px}
+.organization-manage-dialog .organization-member-avatar{width:54px;height:54px;border:1px solid var(--border);border-radius:15px;font-size:23px}
+.organization-manage-dialog .organization-member-copy strong{font-size:15px;white-space:normal;overflow-wrap:anywhere}.organization-manage-dialog .organization-member-copy small{font-size:12px;white-space:normal;overflow-wrap:anywhere}
+.organization-manage-dialog .organization-member-actions{gap:8px}
+.organization-manage-dialog .organization-member-role{height:36px;padding:0 28px 0 10px;border-radius:10px;font:inherit;font-size:12px;cursor:pointer}
+.organization-manage-dialog .organization-member-remove{width:auto;min-height:36px;padding:7px 10px;border:1px solid color-mix(in srgb,#b74450 25%,var(--border));border-radius:10px;background:var(--surface-solid);color:#b74450;font:inherit;font-size:12px;cursor:pointer}
+.organization-people-footer{display:flex;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border);background:var(--surface-solid)}
+@media(max-width:560px){.organization-people-body{padding:18px}.organization-manage-dialog .organization-member-card{grid-template-columns:64px minmax(0,1fr)}.organization-manage-dialog .organization-member-actions{grid-column:1/-1;justify-content:flex-end;flex-wrap:wrap}.organization-people-dialog .organization-pending-card{flex-wrap:wrap}.organization-people-dialog .organization-pending-card button{margin-left:auto}.organization-people-actions>.cs-button{flex:1}}

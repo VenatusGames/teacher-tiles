@@ -75,7 +75,7 @@
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
   <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261023-tool-navigation">
   <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
-<link rel="stylesheet" href="profile/organizations.css?v=20261023-owner-edit-navigation">
+<link rel="stylesheet" href="profile/organizations.css?v=20261023-organization-members">
 <link rel="stylesheet" href="profile/classes-students.css?v=20261023-owner-edit-navigation">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
@@ -586,21 +586,42 @@
                   <div class="organization-editor-summary"><span id="organization-editor-logo" class="organization-editor-summary__icon" aria-hidden="true">🏫</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><button id="organization-details-edit" type="button" class="organization-edit-button" aria-label="Edit Organization" title="Edit Organization">✎</button><span id="organization-current-role" class="organization-role-tag">Member</span></div>
                   <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
 
-                  <form id="organization-invite-form" class="organization-invite-form">
-                    <div><label for="organization-invite-email">Invite a Google account</label><p>They will see an invitation when they sign in to TeacherTiles with this email.</p></div>
-                    <input id="organization-invite-email" type="email" maxlength="180" placeholder="teacher@example.com" autocomplete="email" required>
-                    <button type="submit">Send Invite</button>
-                  </form>
+                  <div class="organization-people-actions">
+                    <button id="organization-invite-button" type="button" class="cs-button cs-primary" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m4-14v8m-4-4h8"/></svg>Invite</button>
+                    <button id="organization-manage-button" type="button" class="cs-button" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m3-17a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5v2"/></svg>Manage Members</button>
+                  </div>
                   <div class="organization-section-heading"><div><span>PEOPLE</span><h4>Organization members</h4></div><small id="organization-member-count"></small></div>
                   <div id="organization-member-list" class="organization-member-list"></div>
-                  <section id="organization-pending-section" class="organization-pending-section" hidden>
-                    <div class="organization-section-heading"><div><span>PENDING</span><h4>Invited accounts</h4></div><small id="organization-pending-count"></small></div>
-                    <div id="organization-pending-list" class="organization-pending-list"></div>
-                  </section>
+
 
                 </div>
               </section>
             </div>
+            <dialog id="organization-invite-dialog" class="cs-modal organization-people-dialog" aria-labelledby="organization-invite-title">
+              <header class="cs-modal-header"><h2 id="organization-invite-title">Invite Members</h2><button type="button" class="cs-close profile-panel__close" data-organization-people-close aria-label="Close Invite Members"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+              <div class="organization-people-body">
+                <form id="organization-invite-form" class="cs-form">
+                  <p class="cs-muted">Invite someone using their Google account email. Their invitation will appear when they sign in to TeacherTiles.</p>
+                  <label class="cs-field" for="organization-invite-email"><span>Email address</span><input id="organization-invite-email" type="email" maxlength="180" placeholder="teacher@example.com" autocomplete="email" required></label>
+                  <small class="cs-muted">New invitations join as Member. Owners can change roles in Manage Members.</small>
+                  <p id="organization-invite-feedback" class="cs-error" role="status" hidden></p>
+                  <div class="cs-form-actions"><button type="button" class="cs-button" data-organization-people-close>Cancel</button><button type="submit" class="cs-button cs-primary">Send Invite</button></div>
+                </form>
+                  <section id="organization-pending-section" class="organization-pending-section" hidden>
+                    <div class="organization-section-heading"><div><span>PENDING</span><h4>Invited accounts</h4></div><small id="organization-pending-count"></small></div>
+                    <div id="organization-pending-list" class="organization-pending-list"></div>
+                  </section>
+              </div>
+            </dialog>
+            <dialog id="organization-manage-dialog" class="cs-modal organization-people-dialog organization-manage-dialog" aria-labelledby="organization-manage-title">
+              <header class="cs-modal-header"><h2 id="organization-manage-title">Manage Members</h2><button type="button" class="cs-close profile-panel__close" data-organization-people-close aria-label="Close Manage Members"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+              <div class="organization-people-body">
+                <p id="organization-manage-note" class="cs-muted"></p>
+                <p id="organization-manage-feedback" class="cs-error" role="status" hidden></p>
+                <div id="organization-manage-list" class="organization-manage-list"></div>
+              </div>
+              <footer class="organization-people-footer"><button type="button" class="cs-button" data-organization-people-close>Done</button></footer>
+            </dialog>
             <dialog id="organization-details-dialog" class="cs-modal organization-details-dialog" aria-labelledby="organization-details-title">
               <header class="cs-modal-header"><h2 id="organization-details-title">Edit Organization</h2><button type="button" class="cs-close profile-panel__close" data-organization-details-close aria-label="Close Edit Organization"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
               <form id="organization-details-form" class="cs-form">
@@ -613,7 +634,7 @@
                   </section>
                 <p id="organization-details-feedback" class="cs-error" role="status" hidden></p>
                 <section id="organization-danger-zone" class="organization-danger-zone">
-                    <div><strong>Delete organization</strong><p>Permanently removes this organization, its memberships, and all pending invitations.</p></div>
+                    <div><strong>Delete Organization</strong><p>Permanently removes this organization, its memberships, and all pending invitations.</p></div>
                     <button id="organization-delete" type="button">Delete Organization</button>
                   </section>
                 <div class="cs-form-actions"><button type="button" class="cs-button" data-organization-details-close>Cancel</button><button id="organization-details-save" type="submit" class="cs-button cs-primary">Save Changes</button></div>
@@ -4722,7 +4743,7 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261023-owner-edit-navigation"></script>
+<script type="module" src="firebase-auth.js?v=20261023-organization-members"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 

@@ -85,6 +85,14 @@ const organizationLogoEditor = document.getElementById("organization-logo-editor
 const organizationLogoOptions = document.getElementById("organization-logo-options");
 const organizationCustomLogo = document.getElementById("organization-custom-logo");
 const organizationInviteForm = document.getElementById("organization-invite-form");
+const organizationInviteButton = document.getElementById("organization-invite-button");
+const organizationManageButton = document.getElementById("organization-manage-button");
+const organizationInviteDialog = document.getElementById("organization-invite-dialog");
+const organizationManageDialog = document.getElementById("organization-manage-dialog");
+const organizationInviteFeedback = document.getElementById("organization-invite-feedback");
+const organizationManageFeedback = document.getElementById("organization-manage-feedback");
+const organizationManageList = document.getElementById("organization-manage-list");
+const organizationManageNote = document.getElementById("organization-manage-note");
 const organizationInviteEmail = document.getElementById("organization-invite-email");
 const organizationMemberCount = document.getElementById("organization-member-count");
 const organizationMemberList = document.getElementById("organization-member-list");
@@ -1195,6 +1203,8 @@ function setOrganizationEditorOpen(open) {
   organizationListView.hidden = open;
   organizationEditorView.hidden = !open;
   if (!open) {
+    organizationInviteDialog?.close();
+    organizationManageDialog?.close();
     activeOrganization = null;
     activeOrganizationMembers = [];
     activeOrganizationInvites = [];
@@ -1208,9 +1218,42 @@ function canRemoveOrganizationMember(member) {
   return role === "Owner" || (role === "Admin" && member.role === "Member");
 }
 
+function canChangeOrganizationMemberRole(member) {
+  return canEditOrganizationRoles() && member?.uid !== currentUser?.uid && member?.uid !== activeOrganization?.ownerId;
+}
+
+function syncOrganizationPeopleControls() {
+  const allowed = Boolean(activeOrganization && canInviteOrganizationMembers());
+  if (organizationInviteButton) organizationInviteButton.hidden = !allowed;
+  if (organizationManageButton) organizationManageButton.hidden = !allowed;
+  if (organizationManageNote) organizationManageNote.textContent = currentOrganizationRole() === "Owner"
+    ? "Assign Owner, Admin, or Member roles, or remove members. Your own role and the founding owner's role are protected."
+    : "Admins can remove Members. Only Owners can change roles.";
+  if (!allowed) { organizationInviteDialog?.close(); organizationManageDialog?.close(); }
+}
+
+function openOrganizationPeopleDialog(kind) {
+  if (organizationBusy || !activeOrganization || !canInviteOrganizationMembers()) return;
+  const dialog = kind === "invite" ? organizationInviteDialog : organizationManageDialog;
+  if (!dialog || dialog.open) return;
+  syncOrganizationPeopleControls();
+  if (kind === "invite") {
+    organizationInviteForm.reset();
+    organizationInviteForm.hidden = false;
+    setOrganizationFeedback(organizationInviteFeedback);
+    renderOrganizationPendingInvites();
+  } else {
+    setOrganizationFeedback(organizationManageFeedback);
+    renderOrganizationMembers();
+  }
+  dialog.showModal();
+  if (kind === "invite") organizationInviteEmail.focus();
+  else dialog.querySelector('[data-organization-people-close]')?.focus();
+}
+
 function renderOrganizationMembers() {
   if (!organizationMemberList) return;
-  organizationMemberList.replaceChildren();
+  syncOrganizationPeopleControls();
   if (organizationMemberCount) organizationMemberCount.textContent = `${activeOrganizationMembers.length} ${activeOrganizationMembers.length === 1 ? "person" : "people"}`;
   const currentRole = currentOrganizationRole();
   if (organizationCurrentRole) {
@@ -1218,7 +1261,10 @@ function renderOrganizationMembers() {
     organizationCurrentRole.dataset.role = currentRole;
   }
   if (organizationEditorMeta) organizationEditorMeta.textContent = `${activeOrganizationMembers.length} ${activeOrganizationMembers.length === 1 ? "member" : "members"} · You are ${currentRole}`;
-  activeOrganizationMembers.forEach(member => {
+  for (const [list, management] of [[organizationMemberList, false], [organizationManageList, true]]) {
+    if (!list) continue;
+    list.replaceChildren();
+    activeOrganizationMembers.forEach(member => {
     const card = document.createElement("article");
     card.className = `organization-member-card${member.uid === currentUser?.uid ? " is-current" : ""}`;
     const avatarWrap = document.createElement("div");
@@ -1241,9 +1287,10 @@ function renderOrganizationMembers() {
     copy.append(name, email);
     const actions = document.createElement("div");
     actions.className = "organization-member-actions";
-    if (canEditOrganizationRoles() && member.uid !== currentUser?.uid) {
+    if (management && canChangeOrganizationMemberRole(member)) {
       const select = document.createElement("select");
       select.className = "organization-member-role";
+      select.disabled = organizationBusy;
       select.setAttribute("aria-label", `Role for ${member.displayName || member.email}`);
       ["Owner", "Admin", "Member"].forEach(role => {
         const option = document.createElement("option");
@@ -1255,18 +1302,21 @@ function renderOrganizationMembers() {
       select.addEventListener("change", () => updateOrganizationMemberRole(member, select.value));
       actions.appendChild(select);
     }
-    if (canRemoveOrganizationMember(member)) {
+    if (management && canRemoveOrganizationMember(member)) {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "organization-member-remove";
-      remove.textContent = "×";
+      remove.textContent = "Remove";
+      remove.disabled = organizationBusy;
       remove.setAttribute("aria-label", `Remove ${member.displayName || member.email}`);
       remove.addEventListener("click", () => removeOrganizationMember(member));
       actions.appendChild(remove);
     }
-    card.append(avatarWrap, copy, actions);
-    organizationMemberList.appendChild(card);
-  });
+    card.append(avatarWrap, copy);
+    if (management) card.append(actions);
+    list.appendChild(card);
+    });
+  }
 }
 
 function renderOrganizationPendingInvites() {
@@ -1287,15 +1337,17 @@ function renderOrganizationPendingInvites() {
     cancel.type = "button";
     cancel.textContent = "Cancel Invite";
     cancel.addEventListener("click", async () => {
+      if (organizationBusy || !canInviteOrganizationMembers()) return;
+      organizationBusy = true;
       cancel.disabled = true;
       try {
         await firestoreSdk.deleteDoc(organizationInviteDocument(invite.id));
         await refreshOrganizationEditor({ force: true });
       } catch (error) {
         console.error("TeacherTiles could not cancel the organization invitation", error);
-        setOrganizationFeedback(organizationEditorFeedback, "The invitation could not be canceled.", true);
+        setOrganizationFeedback(organizationInviteFeedback, "The invitation could not be canceled.", true);
         cancel.disabled = false;
-      }
+      } finally { organizationBusy = false; }
     });
     card.append(copy, cancel);
     organizationPendingList.appendChild(card);
@@ -1379,6 +1431,9 @@ function openOrganizationDetails(item = activeOrganization) {
 
 async function openOrganizationEditor(item) {
   activeOrganization = item;
+  activeOrganizationMembers = [];
+  activeOrganizationInvites = [];
+  syncOrganizationPeopleControls();
   organizationLogoDraft = normalizeOrganizationLogo(item.logo);
   const initialRole = item.membership?.role || "Member";
   if (organizationNameInput) organizationNameInput.value = item.name;
@@ -1395,34 +1450,38 @@ async function openOrganizationEditor(item) {
 }
 
 async function updateOrganizationMemberRole(member, role) {
-  if (!activeOrganization || !canEditOrganizationRoles() || !["Owner", "Admin", "Member"].includes(role)) return;
-  setOrganizationFeedback(organizationEditorFeedback, `Updating ${member.displayName || member.email}…`);
+  if (organizationBusy || !activeOrganization || !canChangeOrganizationMemberRole(member) || !["Owner", "Admin", "Member"].includes(role)) return;
+  organizationBusy = true;
+  renderOrganizationMembers();
+  setOrganizationFeedback(organizationManageFeedback, `Updating ${member.displayName || member.email}…`);
   try {
     await firestoreSdk.updateDoc(organizationMemberDocument(activeOrganization.id, member.uid), {
       role,
       updatedAt: firestoreSdk.serverTimestamp()
     });
     await refreshOrganizationEditor({ force: true });
-    setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} is now ${role}.`);
+    setOrganizationFeedback(organizationManageFeedback, `${member.displayName || member.email} is now ${role}.`);
   } catch (error) {
     console.error("TeacherTiles could not update the organization role", error);
-    setOrganizationFeedback(organizationEditorFeedback, "That role could not be updated.", true);
+    setOrganizationFeedback(organizationManageFeedback, "That role could not be updated.", true);
     await refreshOrganizationEditor({ force: true });
-  }
+  } finally { organizationBusy = false; renderOrganizationMembers(); }
 }
 
 async function removeOrganizationMember(member) {
-  if (!activeOrganization || !canRemoveOrganizationMember(member)) return;
+  if (organizationBusy || !activeOrganization || !canRemoveOrganizationMember(member)) return;
   if (!confirm(`Remove ${member.displayName || member.email} from ${activeOrganization.name}?`)) return;
-  setOrganizationFeedback(organizationEditorFeedback, `Removing ${member.displayName || member.email}…`);
+  organizationBusy = true;
+  renderOrganizationMembers();
+  setOrganizationFeedback(organizationManageFeedback, `Removing ${member.displayName || member.email}…`);
   try {
     await firestoreSdk.deleteDoc(organizationMemberDocument(activeOrganization.id, member.uid));
     await refreshOrganizationEditor({ force: true });
-    setOrganizationFeedback(organizationEditorFeedback, `${member.displayName || member.email} was removed.`);
+    setOrganizationFeedback(organizationManageFeedback, `${member.displayName || member.email} was removed.`);
   } catch (error) {
     console.error("TeacherTiles could not remove the organization member", error);
-    setOrganizationFeedback(organizationEditorFeedback, "That member could not be removed.", true);
-  }
+    setOrganizationFeedback(organizationManageFeedback, "That member could not be removed.", true);
+  } finally { organizationBusy = false; renderOrganizationMembers(); }
 }
 
 async function saveOrganizationDetails() {
@@ -1607,21 +1666,21 @@ async function inviteToOrganization(event) {
   const email = normalizeOrganizationEmail(organizationInviteEmail.value);
   if (!email || !email.includes("@")) return;
   if (email === normalizeOrganizationEmail(currentUser?.email)) {
-    setOrganizationFeedback(organizationEditorFeedback, "You are already in this organization.", true);
+    setOrganizationFeedback(organizationInviteFeedback, "You are already in this organization.", true);
     return;
   }
   if (activeOrganizationMembers.some(member => normalizeOrganizationEmail(member.email) === email)) {
-    setOrganizationFeedback(organizationEditorFeedback, "That Google account is already a member.", true);
+    setOrganizationFeedback(organizationInviteFeedback, "That Google account is already a member.", true);
     return;
   }
   if (activeOrganizationInvites.some(invite => normalizeOrganizationEmail(invite.email) === email)) {
-    setOrganizationFeedback(organizationEditorFeedback, "That Google account already has a pending invitation.", true);
+    setOrganizationFeedback(organizationInviteFeedback, "That Google account already has a pending invitation.", true);
     return;
   }
   organizationBusy = true;
   const submit = organizationInviteForm?.querySelector('button[type="submit"]');
   if (submit) submit.disabled = true;
-  setOrganizationFeedback(organizationEditorFeedback, `Inviting ${email}…`);
+  setOrganizationFeedback(organizationInviteFeedback, `Inviting ${email}…`);
   try {
     const reference = firestoreSdk.doc(firestoreSdk.collection(db, "organizationInvites"));
     await firestoreSdk.setDoc(reference, {
@@ -1637,10 +1696,10 @@ async function inviteToOrganization(event) {
     });
     organizationInviteEmail.value = "";
     await refreshOrganizationEditor({ force: true });
-    setOrganizationFeedback(organizationEditorFeedback, `Invitation sent to ${email}.`);
+    setOrganizationFeedback(organizationInviteFeedback, `Invitation sent to ${email}.`);
   } catch (error) {
     console.error("TeacherTiles could not invite the Google account", error);
-    setOrganizationFeedback(organizationEditorFeedback, "The invitation could not be sent. Please try again.", true);
+    setOrganizationFeedback(organizationInviteFeedback, "The invitation could not be sent. Please try again.", true);
   } finally {
     organizationBusy = false;
     if (submit) submit.disabled = false;
@@ -3895,6 +3954,17 @@ organizationCreateDialog?.addEventListener('cancel', event => { if (organization
 organizationCreateDialog?.addEventListener('keydown', event => event.stopPropagation());
 organizationCreateDialog?.addEventListener('close', () => { if (!organizationPanel.hidden && !organizationListView.hidden) organizationListElement?.querySelector('.organization-add-card')?.focus({preventScroll:true}); });
 organizationInviteForm?.addEventListener("submit", inviteToOrganization);
+organizationInviteButton?.addEventListener("click", () => openOrganizationPeopleDialog("invite"));
+organizationManageButton?.addEventListener("click", () => openOrganizationPeopleDialog("manage"));
+for (const dialog of [organizationInviteDialog, organizationManageDialog]) {
+  dialog?.querySelectorAll('[data-organization-people-close]').forEach(button => button.addEventListener('click', () => { if (!organizationBusy) dialog.close(); }));
+  dialog?.addEventListener('cancel', event => { if (organizationBusy) event.preventDefault(); });
+  dialog?.addEventListener('keydown', event => event.stopPropagation());
+  dialog?.addEventListener('close', () => {
+    if (!organizationEditorView.hidden && !organizationPanel.hidden) (dialog === organizationInviteDialog ? organizationInviteButton : organizationManageButton)?.focus({preventScroll:true});
+  });
+}
+
 organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
 organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
 organizationDelete?.addEventListener("click", deleteActiveOrganization);

@@ -7,7 +7,7 @@ const firestoreSdk={updateDoc:async(ref,data)=>{if(window.fail)throw Error('offl
 function organizationDocument(id){return id}function openOrganizationCreate(){}async function refreshOrganizationEditor(){setOrganizationLogoEditable(currentOrganizationRole()==='Owner')}
 async function loadOrganizationIndex(){organizationMemberships=organizationMemberships.filter(i=>!deletes.includes(i.id));renderOrganizationList()}
 `+
-section('function normalizeOrganizationLogo(','function canInviteOrganizationMembers(')+
+section('function normalizeOrganizationLogo(','function closeNotificationMenu(')+section('function syncOrganizationPeopleControls()','function openOrganizationPeopleDialog(')+
 section('function renderOrganizationList()','async function loadOrganizationIndex(')+section('function setOrganizationEditorOpen(','function canRemoveOrganizationMember(')+
 section('function openOrganizationDetails(','async function updateOrganizationMemberRole(')+section('async function saveOrganizationDetails()','async function openOrganizationsPanel(')+
 section('organizationDelete?.addEventListener','organizationCustomLogo?.addEventListener("focus"')+
