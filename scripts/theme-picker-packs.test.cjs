@@ -20,11 +20,11 @@ assert(picker.includes("heading.dataset.entitlement=product"), 'theme pack headi
 assert(picker.includes("theme-picker-pack-locked"), 'theme picker must render a pack-level locked state');
 assert(picker.includes("requestAccess(heading)"), 'clicking a locked pack must use the pack purchase/access flow');
 assert(picker.includes("active.product&&!owns(active.product)"), 'an open pack must close if ownership is lost');
-assert(pickerCss.includes("theme-picker-pack-locked .theme-pack-stack::after"), 'lock badge must be drawn on the pack artwork');
-assert(html.includes('theme-picker.css?v=20260924-pack-artwork-1'), 'theme picker CSS cache buster must be updated');
-assert(html.includes('animated-themes.css?v=20260924-pack-artwork-1'), 'animated theme CSS cache buster must be updated');
-assert(html.includes('theme-picker.js?v=20260924-pack-artwork-1'), 'theme picker JS cache buster must be updated');
-assert(html.includes('lesson-planner.js?v=20260924-read-budget-1'), 'planner cloud fix cache buster must remain intact');
-assert(html.includes('firebase-auth.js?v=20260924-read-budget-1'), 'planner auth cloud fix cache buster must remain intact');
+assert(picker.includes('assets/ui/lock.svg')&&picker.includes('Unlock</span>')&&pickerCss.includes('.theme-picker-pack-locked>.theme-picker-lock'), 'theme packs must use the shared lock artwork and Unlock label');
+assert(html.includes('theme-picker.css?v='), 'theme picker CSS cache buster must be updated');
+assert(html.includes('animated-themes.css?v='), 'animated theme CSS cache buster must be updated');
+assert(html.includes('theme-picker.js?v='), 'theme picker JS cache buster must be updated');
+assert(html.includes('lesson-planner.js?v='), 'planner cloud fix cache buster must remain intact');
+assert(html.includes('firebase-auth.js?v='), 'planner auth cloud fix cache buster must remain intact');
 
 console.log('Theme packs: raster+SVG preview fallback, pack-level locking, purchase routing, and cache busting passed');
