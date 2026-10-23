@@ -128,7 +128,7 @@ body.classes-tool-open{overflow:hidden}
 .cs-class-open>.cs-card-name{font-size:20px}
 .cs-class-open>small{font-size:14px}
 .cs-class-card>.cs-card-edit{position:absolute;top:10px;right:10px;width:34px;height:34px;min-height:34px;padding:6px;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s,transform .15s;z-index:1}
-.cs-class-card:is(:hover,:focus-within)>.cs-card-edit{opacity:1;pointer-events:auto;transform:none}
+.cs-class-card:is(:hover,:has(:focus-visible))>.cs-card-edit{opacity:1;pointer-events:auto;transform:none}
 .cs-card-edit>span:empty{display:none}.cs-card-edit .cs-edit-pencil{width:22px;height:22px;font-size:22px}
 .cs-stat-icon{color:var(--text,#243047)}.cs-stat-icon>svg{width:28px;height:28px;fill:currentColor}
 .cs-stat-icon>svg[fill="none"]{fill:none}
@@ -146,7 +146,7 @@ body.classes-tool-open{overflow:hidden}
 @media(max-width:800px){.cs-class-modules{flex:1 1 100%}.cs-class-modules>.cs-button{flex:1}}
 
 /* Class card edit buttons use tile corner chrome, without the raised bottom edge. */
-.cs-class-card>.cs-card-edit{top:9px;right:9px;display:grid;place-items:center;width:28px;height:28px;min-height:28px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text)!important;box-shadow:0 3px 10px #0f172a18}
+.cs-class-card>.cs-card-edit{top:9px;right:9px;display:grid;place-items:center;width:31px;height:31px;min-height:31px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text)!important;box-shadow:0 3px 10px #0f172a18}
 .cs-card-edit .cs-edit-pencil{width:20px;height:20px;font-size:20px}
 .cs-class-card>.cs-card-edit:hover{background:var(--surface-soft);transform:translateY(-1px)}
 .cs-class-card>.cs-card-edit:active{transform:translateY(0)}

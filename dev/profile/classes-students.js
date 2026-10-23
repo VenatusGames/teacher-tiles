@@ -91,7 +91,7 @@ function setupClassesStudents(){
       const classes=readClassRosters().filter(c=>c.name.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const c of classes){
         const card=el('article','cs-class-card'),open=button('',()=>openClass(c.id),'cs-class-open');open.setAttribute('aria-label',`Open ${c.name}`);open.replaceChildren(avatar(c),el('strong','cs-card-name',c.name),el('small','',`${c.students.length} ${c.students.length===1?'student':'students'}`));
-        const edit=button('',()=>editClass(c.id),'cs-card-edit','edit');edit.setAttribute('aria-label',`Edit ${c.name}`);edit.title='Edit Class';card.append(open,edit);grid.append(card);
+        const edit=button('',e=>{if(e.detail>0)editor.addEventListener('close',()=>{if(document.activeElement===edit)edit.blur();},{once:true});editClass(c.id);},'cs-card-edit','edit');edit.setAttribute('aria-label',`Edit ${c.name}`);edit.title='Edit Class';card.append(open,edit);grid.append(card);
       }
       grid.append(addCard('New Class',()=>editClass()));
       if(!classes.length)grid.append(el('p','cs-empty',search.value?'No classes match your search.':'Create your first class to get started.'));
