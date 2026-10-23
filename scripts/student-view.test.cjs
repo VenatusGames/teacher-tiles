@@ -63,6 +63,8 @@ await alicia.dispatchEvent('pointerup');
 await alicia.hover();await page.mouse.down();await page.waitForTimeout(720);await page.mouse.up();
 assert(await page.getByRole('button',{name:'Remove Alicia',exact:true}).isVisible());
 assert(!(await page.locator('.cs-detail').isVisible()));
+assert.equal(await alicia.evaluate(e=>getComputedStyle(e).animationName),'none');
+await page.emulateMedia({reducedMotion:'no-preference'});assert.equal(await alicia.evaluate(e=>getComputedStyle(e).animationName),'studentDeleteWiggle');
 page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Remove Alicia',exact:true}).click();
 assert(await alicia.isVisible());
 await page.keyboard.press('Escape');assert(!(await page.getByRole('button',{name:'Remove Alicia',exact:true}).isVisible()));
@@ -79,5 +81,33 @@ await page.getByRole('button',{name:'Edit students',exact:true}).click();assert.
 await page.getByRole('button',{name:"Open Ben's student profile",exact:true}).click();
 assert(await page.locator('.cs-detail .cs-initials').isVisible());await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();
 assert.equal(await page.locator('.cs-class-pbis').innerText(),'PBIS');
-assert.deepEqual(errors,[]);console.log('PASS: old rosters, create/edit classes, student rename preserves all rewards, 256px photo persistence, PBIS navigation and toggles, live rewards, long-press cancellation, confirmed removal with reward cleanup, reload and mobile bounds.');
+
+// Dismiss edit mode on outside input and after inactivity; normal clicks resume.
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),2);
+await page.locator('.cs-list-heading h1').click();
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),0);
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+await page.getByRole('button',{name:"Open Ben's student profile",exact:true}).dispatchEvent('click');
+assert.equal(await page.locator('.cs-student-remove:visible').count(),0);assert(!(await page.locator('.cs-detail').isVisible()));
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+await page.waitForTimeout(8250);
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),0);
+assert.equal(await page.getByRole('button',{name:'Edit students',exact:true}).getAttribute('aria-pressed'),'false');
+// Per-class visibility persists and reward options collapse without changing preferences.
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();
+await page.getByRole('switch',{name:'Show Add Student',exact:true}).uncheck();
+assert.equal(await page.evaluate(()=>readClassRosters()[0].showAddStudent),false);
+assert.equal(await page.evaluate(()=>readClassRosters()[1].showAddStudent),true);
+const summary=page.locator('.cs-pbis-disclosure>summary');await summary.click();
+assert(!(await page.getByRole('switch',{name:'Stars',exact:true}).isVisible()));
+await summary.click();assert(await page.getByRole('switch',{name:'Stars',exact:true}).isChecked());
+assert(await page.getByRole('switch',{name:'Stars',exact:true}).evaluate(e=>e.getBoundingClientRect().width<document.querySelector('[aria-label="Enable PBIS"]').getBoundingClientRect().width));
+assert.equal(await page.locator('.cs-settings .cs-edit-pencil').textContent(),await page.locator('#profile-nickname-edit').textContent());
+await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();
+assert.equal(await page.getByRole('button',{name:'Add Student',exact:true}).count(),0);
+await page.getByRole('button',{name:'Back to Board',exact:true}).click();await page.reload();await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(()=>{document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');document.querySelector('#profile-classes-button').click();});
+await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Add Student',exact:true}).count(),0);
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();await page.getByRole('switch',{name:'Show Add Student',exact:true}).check();await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();assert(await page.getByRole('button',{name:'Add Student',exact:true}).isVisible());
+assert.deepEqual(errors,[]);console.log('PASS: old rosters, create/edit classes, student rename preserves all rewards, 256px photo persistence, PBIS navigation and toggles, live rewards, long-press cancellation, confirmed removal with reward cleanup, wiggle and idle/outside dismissal, persistent Add Student visibility, collapsible reward controls, reload and mobile bounds.');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});
