@@ -2,7 +2,7 @@
 function setupClassesStudents(){
   const opener=document.getElementById('profile-classes-button');if(!opener)return;
   const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
-  const icons={back:'<path d="m14 6-6 6 6 6"/>',edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2.1 2.1 0 0 0-3-3L5 16z"/>',plus:'<path d="M12 5v14M5 12h14"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>'};
+  const icons={pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>',pet:'<ellipse cx="12" cy="16" rx="5" ry="4"/><ellipse cx="5" cy="10" rx="2" ry="2.5"/><ellipse cx="10" cy="5" rx="2" ry="2.5"/><ellipse cx="16" cy="5" rx="2" ry="2.5"/><ellipse cx="20" cy="11" rx="2" ry="2.5"/>',back:'<path d="m14 6-6 6 6 6"/>',edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2.1 2.1 0 0 0-3-3L5 16z"/>',plus:'<path d="M12 5v14M5 12h14"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>'};
   const icon=name=>{const span=el('span','cs-icon');span.setAttribute('aria-hidden','true');span.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plus}</svg>`;return span;};
   const button=(label,action,cls='cs-button',symbol)=>{const b=el('button',cls);b.type='button';if(symbol)b.append(icon(symbol));b.append(el('span','',label));b.onclick=action;return b;};
   const panel=el('dialog','cs-tool');panel.id='profile-classes-panel';panel.setAttribute('aria-label','Student View');
@@ -63,7 +63,7 @@ function setupClassesStudents(){
       if(!classes.length)grid.append(el('p','cs-empty',search.value?'No classes match your search.':'Create your first class to get started.'));
     }
   }
-  function modalHeader(dialog,label){dialog.replaceChildren();dialog.setAttribute('aria-label',label);const head=el('header','cs-modal-header'),h=el('h2','',label),close=button('',()=>dialog.close(),'cs-close','close');close.setAttribute('aria-label',`Close ${label}`);head.append(h,close);dialog.append(head);}
+  function modalHeader(dialog,label){dialog.replaceChildren();dialog.setAttribute('aria-label',label);const head=el('header','cs-modal-header'),h=el('h2','',label),close=button('',()=>dialog.close(),'cs-close profile-panel__close','close');close.setAttribute('aria-label',`Close ${label}`);head.append(h,close);dialog.append(head);}
   function field(label,value,max){const holder=el('label','cs-field'),input=el('input');input.type='text';input.required=true;input.maxLength=max;input.value=value;input.setAttribute('aria-label',label);holder.append(el('span','',label),input);return{holder,input};}
   function emojiPicker(selected,onChange){
     const box=el('fieldset','cs-emoji-picker');box.append(el('legend','','Choose an emoji'));const choices=el('div','cs-emoji-options');
@@ -116,13 +116,50 @@ function setupClassesStudents(){
     const result=updateClass(target=>{const key=starChartStudentKey(name),whole=!name;if(stat.id==='stars'){if(whole)target.starChart.wholeClassStars=0;else target.starChart.studentStars[key]=0;}else if(stat.id==='punchcardPoints'){if(whole)target.punchcards.wholeClassPoints=0;else target.punchcards.studentPoints[key]=0;}else if(stat.id==='eggPoints'||stat.id==='flowerPoints')target[stat.id==='eggPoints'?'eggHatching':'flowerPots'].studentPoints[key]=0;else if(stat.id==='raceWins')target.racer.studentWins[key]=0;else if(stat.id==='meterWins')target.classMeter.wins=0;else if(stat.id==='jarsFilled')target.collectionJar.jarsFilled=0;});
     if(result!==true)notify(result);else renderDetail();
   }
-  function renderDetail(){
-    if(!detail.open||!activeStudent)return;const c=current(),name=activeStudent.name;if(!c||(name&&!c.students.includes(name))){detail.close();return;}modalHeader(detail,name?'Student Profile':'Whole-Class Rewards');
-    const hero=el('div','cs-detail-hero');hero.append(avatar(c,name,true),el('p','cs-muted',name?c.name:'Whole class'),el('h3','',name||c.name));detail.append(hero);
-    if(c.pbisEnabled){const stats=el('div','cs-detail-stats');for(const stat of statsFor(c,!name)){const row=el('div','cs-stat'),copy=el('div'),count=statValue(stat,c,name);copy.append(el('strong','',stat.label),el('small','',name?stat.description:stat.wholeClassDescription||stat.description));const reset=button('Reset',()=>resetStat(stat,c,name),'cs-button');reset.disabled=!count;row.append(el('span','cs-stat-icon',stat.icon),copy,el('strong','cs-stat-value',String(count)),reset);stats.append(row);}if(!stats.children.length)stats.append(el('p','cs-muted','No reward types selected in Class Settings.'));detail.append(stats);}
-    if(name)detail.append(button('Edit Student',()=>editStudent(name),'cs-button cs-detail-edit','edit'));
+  function renderDetail(animate=false){
+    if(!detail.open||!activeStudent)return;
+    const c=current(),name=activeStudent.name;
+    if(!c||(name&&!c.students.includes(name))){detail.close();return;}
+    const focusKey=detail.contains(document.activeElement)?document.activeElement.dataset.detailFocus:null;
+    const scroll=detail.scrollTop;
+    modalHeader(detail,name?'Student Profile':'Whole-Class Rewards');
+    const layout=el('div','cs-profile-layout'),hero=el('aside','cs-detail-hero');
+    hero.append(avatar(c,name,true),el('h3','',name||c.name),el('p','cs-muted',name?c.name:'Whole class'));
+    if(name){const edit=button('Edit Student',()=>editStudent(name),'cs-button cs-detail-edit','edit');edit.dataset.detailFocus='edit';hero.append(edit);}
+    const body=el('section','cs-profile-body'+(animate?' is-entering':''));
+    const view=activeStudent.view||'home';
+    function navigate(next){activeStudent.view=next;renderDetail(true);detail.querySelector('.cs-profile-title')?.focus({preventScroll:true});}
+    const title=el('h3','cs-profile-title',view==='pbis'?'PBIS Rewards':view==='extras'?'Extras':'Student Profile');title.tabIndex=-1;
+    if(name&&view!=='home'){const back=button('Student Profile',()=>navigate('home'),'cs-button cs-profile-back','back');back.dataset.detailFocus='back';body.append(back);}
+    body.append(title);
+    function sectionButton(label,symbol,action,status=''){
+      const b=button('',action,'cs-profile-section',symbol),copy=el('span','cs-section-copy');
+      b.lastElementChild.remove();copy.append(el('strong','',label));if(status)copy.append(el('small','cs-section-status',status));b.append(copy);
+      b.dataset.detailFocus=symbol;b.disabled=!action;return b;
+    }
+    if(view==='home'){
+      const sections=el('div','cs-profile-sections');
+      sections.append(sectionButton('PBIS','pbis',c.pbisEnabled?()=>navigate('pbis'):null,c.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras')));
+      body.append(sections);
+    }else if(view==='extras'){
+      const sections=el('div','cs-profile-sections');sections.append(sectionButton('Student Pets','pet',null,'Coming soon'));body.append(sections);
+    }else if(c.pbisEnabled){
+      const stats=el('div','cs-detail-stats');stats.setAttribute('aria-label','PBIS rewards');
+      for(const [index,stat] of statsFor(c,!name).entries()){
+        const row=el('article','cs-stat'),count=statValue(stat,c,name),label=el('h4','',stat.label),value=el('strong','cs-stat-value',String(count));
+        row.style.setProperty('--stat-hue',[38,265,150,205,340,22,180][index%7]);
+        row.setAttribute('aria-label',stat.label);value.setAttribute('aria-live','polite');
+        const symbol=el('span','cs-stat-icon',stat.icon);symbol.setAttribute('aria-hidden','true');
+        const reset=button('Reset',()=>resetStat(stat,c,name),'cs-button');reset.disabled=!count;reset.setAttribute('aria-label',`Reset ${stat.label}`);reset.dataset.detailFocus='reset-'+stat.id;
+        row.append(symbol,value,label,el('p','cs-stat-description',name?stat.description:stat.wholeClassDescription||stat.description),reset);stats.append(row);
+      }
+      if(!stats.children.length)stats.append(el('p','cs-muted','No reward types selected in Class Settings.'));
+      body.append(stats);
+    }else body.append(el('p','cs-muted','PBIS is turned off in Class Settings. Your saved progress is kept.'));
+    layout.append(hero,body);detail.append(layout);detail.scrollTop=scroll;
+    if(focusKey&&!animate)Array.from(detail.querySelectorAll('[data-detail-focus]')).find(b=>b.dataset.detailFocus===focusKey)?.focus({preventScroll:true});
   }
-  function showDetail(name){activeStudent={name};detail.showModal();renderDetail();detail.querySelector('.cs-close')?.focus();}
+  function showDetail(name){activeStudent={name,view:name?'home':'pbis'};detail.showModal();renderDetail();detail.scrollTop=0;detail.querySelector('.cs-close')?.focus();}
   search.addEventListener('input',render);
   opener.addEventListener('click',()=>{document.querySelector('[data-profile-close]')?.click();scope=window.TeacherTilesClassScope||'local';activeClass='';search.value='';render();panel.showModal();opener.setAttribute('aria-expanded','true');document.body.classList.add('classes-tool-open');});
   panel.addEventListener('close',()=>{for(const d of [editor,settings,detail])if(d.open)d.close();flushPbisCloudSave();document.body.classList.remove('classes-tool-open');opener.setAttribute('aria-expanded','false');document.getElementById('profile-toggle')?.focus({preventScroll:true});});
