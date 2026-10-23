@@ -1,3 +1,4 @@
+import {createAnnouncementNotifications} from './support/announcements.js?v=20261022';
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
 import {setupSubscriptionManagement} from './profile/subscription.js?v=20261015-gift';
 import {createTicketNotifications} from './support/notifications.js';
@@ -81,7 +82,7 @@ const organizationPendingCount = document.getElementById("organization-pending-c
 const organizationPendingList = document.getElementById("organization-pending-list");
 const organizationDangerZone = document.getElementById("organization-danger-zone");
 const organizationDelete = document.getElementById("organization-delete");
-let ticketInbox;
+let ticketInbox,announcementInbox;
 const notificationButton = document.getElementById("profile-notification-button");
 const notificationCount = document.getElementById("profile-notification-count");
 const notificationMenu = document.getElementById("profile-notification-menu");
@@ -981,20 +982,23 @@ function renderNotificationInbox() {
   if (!notificationList) return;
   notificationList.replaceChildren();
   const reminders = window.TeacherTilesReminders?.inbox() || [];
-  const count = organizationInvites.length + reminders.length+(ticketInbox?.count||0);
+  const otherCount = organizationInvites.length + reminders.length+(ticketInbox?.count||0);
+  const count=otherCount+(announcementInbox?.count||0);
   if (notificationCount) {
+    notificationCount.classList.toggle('announcement-dot',!otherCount&&Boolean(announcementInbox?.count));
     notificationCount.textContent = count > 99 ? "99+" : String(count);
     notificationCount.hidden = count === 0;
   }
   if (notificationSummary) notificationSummary.textContent = count ? `${count} new` : "All caught up";
   notificationButton?.setAttribute("aria-label", count ? `Open notifications, ${count} pending` : "Open notifications");
-  if (!count) {
+  if (!count&&!announcementInbox?.size) {
     const empty = document.createElement("div");
     empty.className = "profile-notification-empty";
     empty.textContent = currentUser ? "You do not have any new notifications." : "Sign in to view notifications.";
     notificationList.appendChild(empty);
     return;
   }
+  announcementInbox?.render(notificationList);
   ticketInbox?.render(notificationList);
   reminders.forEach(item => {
     const card=document.createElement('article');card.className='profile-notification-card';
@@ -1650,6 +1654,7 @@ function closeOtherSurfaces({ keepBoards = false } = {}) {
 }
 
 function openProfile() {
+  void announcementInbox?.refresh();
   if (!modal.hidden) return;
   closeOtherSurfaces();
   if (currentUser) void refreshOrganizationInvites();
@@ -3561,7 +3566,7 @@ async function renderUser(user) {
   window.TeacherTilesClassScope = user?.uid || "local";
   window.dispatchEvent(new CustomEvent("teachertiles:classeschange", { detail: { userId: user?.uid || "" } }));
   nicknameUi.load(user);
-  supportUi.reset();ticketInbox?.reset();if(user)void ticketInbox?.refresh();
+  supportUi.reset();ticketInbox?.reset();announcementInbox?.reset();if(user){void ticketInbox?.refresh();void announcementInbox?.refresh();}
   authReady = true;
   loadingState.hidden = true;
   signedInState.hidden = !user;
@@ -3863,6 +3868,7 @@ organizationCustomLogo?.addEventListener("paste", event => {
   organizationCustomLogo.dispatchEvent(new Event("input", { bubbles: true }));
 });
 notificationButton?.addEventListener("click", event => {
+  void announcementInbox?.refresh();
   void ticketInbox?.refresh();
   event.stopPropagation();
   if (!notificationMenu) return;
@@ -4146,3 +4152,5 @@ const nicknameUi=setupNickname(profileCall);
 setupSubscriptionManagement(callShopFunction,()=>currentUser?.uid||"",()=>shopAccountState.subscriptionActive);
 const supportUi=setupBugReports(profileCall);
 ticketInbox=createTicketNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);
+
+announcementInbox=createAnnouncementNotifications(profileCall,()=>currentUser?.uid,renderNotificationInbox);
