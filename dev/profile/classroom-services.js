@@ -375,11 +375,12 @@ function normalizeClassPbisPreferences(value){
   const saved=value&&typeof value==='object'?value:readStudentViewStatPreferences();
   return Object.fromEntries(PBIS_STUDENT_STAT_DEFINITIONS.map(stat=>[stat.id,saved[stat.id]!==false]));
 }
+const STUDENT_PROFILE_IMAGE_MAX_LENGTH=48000;
 function normalizeStudentProfiles(value,students){
   const source=value&&typeof value==='object'?value:{};
   return Object.fromEntries(students.map(name=>{
     const key=starChartStudentKey(name),profile=source[key]||{};
-    const image=typeof profile.image==='string'&&profile.image.length<=10000&&/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(profile.image)?profile.image:'';
+    const image=typeof profile.image==='string'&&profile.image.length<=STUDENT_PROFILE_IMAGE_MAX_LENGTH&&/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(profile.image)?profile.image:'';
     return [key,{emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image}];
   }));
 }
