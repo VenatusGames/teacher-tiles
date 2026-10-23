@@ -8,7 +8,8 @@ function setupClassesStudents(){
   const panel=el('dialog','cs-tool');panel.id='profile-classes-panel';panel.setAttribute('aria-label','Class View');
   const top=el('header','cs-topbar'),brand=el('div','cs-brand');brand.append(el('strong','','Class View'),el('span','profile-tool-beta','BETA'));
   const topActions=el('div','cs-top-actions'),saveStatus=el('span','cs-save-status','Saved on this device');saveStatus.setAttribute('role','status');
-  const exit=button('Back to Board',()=>panel.close(),'cs-button','back');topActions.append(saveStatus,exit);top.append(brand,topActions);
+  const profileBack=button('Profile',()=>{panel.addEventListener('close',()=>window.TeacherTilesAuth?.openProfile?.(),{once:true});panel.close();},'profile-tool-back','back');profileBack.setAttribute('aria-label','Back to profile');
+  const exit=button('',()=>panel.close(),'cs-tool-close profile-panel__close','close');exit.setAttribute('aria-label','Close Class View');exit.title='Close Class View';topActions.append(saveStatus,exit);const topBrand=el('div','cs-top-brand');topBrand.append(profileBack,brand);top.append(topBrand,topActions);
   const content=el('main','cs-content'),classHeader=el('section','cs-class-header'),heading=el('div','cs-list-heading'),titleBox=el('div'),title=el('h1'),subtitle=el('p');titleBox.append(title,subtitle);
   const searchLabel=el('label','cs-search'),search=el('input');search.type='search';searchLabel.append(icon('search'),search);const listActions=el('div','cs-list-actions'),editRoster=button('Edit',e=>{e.stopPropagation();if(editMode||revealedStudent)endDeletion();else{editMode=true;syncDeletion();armDeletionIdle();}},'cs-button cs-roster-edit','edit');editRoster.setAttribute('aria-label','Edit students');listActions.append(searchLabel,editRoster);heading.append(titleBox,listActions);
   const grid=el('div','cs-grid');content.append(classHeader,heading,grid);panel.append(top,content);document.body.append(panel);
@@ -54,7 +55,7 @@ function setupClassesStudents(){
   function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});}
   title.tabIndex=-1;
   function render(){
-    cancelHold();const c=current();if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
+    cancelHold();const c=current();profileBack.hidden=Boolean(c);if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
     title.textContent=c?'Students':'Your Classes';subtitle.textContent=c?`${c.students.length} ${c.students.length===1?'student':'students'}`:'';subtitle.hidden=!c;grid.classList.toggle('cs-students-grid',Boolean(c));search.placeholder=c?'Search students':'Search classes';search.setAttribute('aria-label',search.placeholder);
     if(c){
       const back=button('All Classes',()=>openClass(''),'cs-button cs-back','back');

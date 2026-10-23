@@ -108,3 +108,6 @@
 
 .pres-toolbar .pres-snapping{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.pres-snapping i{width:29px;height:17px;background:#a5acb8;border-radius:999px;position:relative;transition:background .15s}.pres-snapping i::after{content:"";position:absolute;top:3px;left:3px;width:11px;height:11px;border-radius:50%;background:white;transition:transform .15s}.pres-snapping[aria-checked=true] i{background:#6c95ce}.pres-snapping[aria-checked=true] i::after{transform:translateX(12px)}
 .pres-slide>.pres-snap-guides{position:absolute;inset:0;width:100%;height:100%;z-index:10000;pointer-events:none;overflow:visible}.pres-snap-guides line{stroke:#d555bc;stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:4 3}.pres-snap-guides text{fill:#b83698;stroke:white;stroke-width:3;paint-order:stroke;font:12px system-ui,sans-serif;text-anchor:middle}
+
+#presentations-tool:has(.pres-library[hidden]) .pres-header>.profile-tool-back{display:none}
+@media(max-width:700px){#presentations-tool .pres-header{flex-wrap:wrap;height:auto;min-height:64px}#presentations-tool .pres-header>.pres-brand{gap:6px}}

@@ -57,6 +57,8 @@ const organizationBack = document.getElementById("profile-organizations-back");
 const organizationClose = document.getElementById("profile-organizations-close");
 const organizationListView = document.getElementById("organization-list-view");
 const organizationEditorView = document.getElementById("organization-editor-view");
+const organizationCreateDialog = document.getElementById("organization-create-dialog");
+const organizationCreateFeedback = document.getElementById("organization-create-feedback");
 const organizationCreateForm = document.getElementById("organization-create-form");
 const organizationCreateName = document.getElementById("organization-create-name");
 const organizationListElement = document.getElementById("organization-list");
@@ -1093,19 +1095,6 @@ function renderOrganizationList() {
   if (!organizationListElement) return;
   organizationListElement.replaceChildren();
   if (organizationCount) organizationCount.textContent = `${organizationMemberships.length} ${organizationMemberships.length === 1 ? "organization" : "organizations"}`;
-  if (!organizationMemberships.length) {
-    const empty = document.createElement("div");
-    empty.className = "organization-empty";
-    const copy = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = "No organizations yet";
-    const detail = document.createElement("p");
-    detail.textContent = "Create one above or accept an invitation from your notifications.";
-    copy.append(title, detail);
-    empty.appendChild(copy);
-    organizationListElement.appendChild(empty);
-    return;
-  }
   organizationMemberships.forEach(item => {
     const card = document.createElement("button");
     card.type = "button";
@@ -1126,6 +1115,13 @@ function renderOrganizationList() {
     card.addEventListener("click", () => openOrganizationEditor(item));
     organizationListElement.appendChild(card);
   });
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "organization-add-card cs-add-card";
+  add.setAttribute("aria-label", "New Organization");
+  add.innerHTML = '<span class="cs-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>New Organization</span>';
+  add.addEventListener("click", openOrganizationCreate);
+  organizationListElement.appendChild(add);
 }
 
 async function loadOrganizationIndex({ force = false } = {}) {
@@ -1498,12 +1494,21 @@ async function openOrganizationsPanel() {
 
 function closeOrganizationsPanel({ reopenProfile = false } = {}) {
   if (!organizationPanel || organizationPanel.hidden) return;
+  organizationCreateDialog?.close();
   organizationPanel.hidden = true;
   organizationPanel.setAttribute("aria-hidden", "true");
   organizationButton?.setAttribute("aria-expanded", "false");
   setOrganizationEditorOpen(false);
   if (reopenProfile) openProfile();
   else toggle?.focus({ preventScroll: true });
+}
+
+function openOrganizationCreate() {
+  if (!currentUser || organizationBusy || !organizationCreateDialog || organizationCreateDialog.open) return;
+  organizationCreateForm.reset();
+  setOrganizationFeedback(organizationCreateFeedback);
+  organizationCreateDialog.showModal();
+  organizationCreateName.focus();
 }
 
 async function createOrganization(event) {
@@ -1514,7 +1519,7 @@ async function createOrganization(event) {
   organizationBusy = true;
   const submit = organizationCreateForm?.querySelector('button[type="submit"]');
   if (submit) submit.disabled = true;
-  setOrganizationFeedback(organizationFeedback, `Creating ${name}…`);
+  setOrganizationFeedback(organizationCreateFeedback, `Creating ${name}…`);
   try {
     const reference = firestoreSdk.doc(firestoreSdk.collection(db, "organizations"));
     const batch = firestoreSdk.writeBatch(db);
@@ -1540,6 +1545,7 @@ async function createOrganization(event) {
     });
     await batch.commit();
     organizationCreateName.value = "";
+    organizationCreateDialog?.close();
     organizationIndexLoadedAt = 0;
     await loadOrganizationIndex({ force: true });
     const created = organizationMemberships.find(item => item.id === reference.id);
@@ -1547,7 +1553,7 @@ async function createOrganization(event) {
     if (created) await openOrganizationEditor(created);
   } catch (error) {
     console.error("TeacherTiles could not create the organization", error);
-    setOrganizationFeedback(organizationFeedback, organizationErrorMessage(error, "The organization could not be created. Please try again."), true);
+    setOrganizationFeedback(organizationCreateFeedback, organizationErrorMessage(error, "The organization could not be created. Please try again."), true);
   } finally {
     organizationBusy = false;
     if (submit) submit.disabled = false;
@@ -3843,6 +3849,10 @@ organizationBack?.addEventListener("click", () => closeOrganizationsPanel({ reop
 organizationClose?.addEventListener("click", () => closeOrganizationsPanel());
 organizationPanel?.querySelector(".organization-window__backdrop")?.addEventListener("click", () => closeOrganizationsPanel());
 organizationCreateForm?.addEventListener("submit", createOrganization);
+organizationCreateDialog?.querySelectorAll('[data-organization-create-close]').forEach(button => button.addEventListener('click', () => { if (!organizationBusy) organizationCreateDialog.close(); }));
+organizationCreateDialog?.addEventListener('cancel', event => { if (organizationBusy) event.preventDefault(); });
+organizationCreateDialog?.addEventListener('keydown', event => event.stopPropagation());
+organizationCreateDialog?.addEventListener('close', () => { if (!organizationPanel.hidden && !organizationListView.hidden) organizationListElement?.querySelector('.organization-add-card')?.focus({preventScroll:true}); });
 organizationInviteForm?.addEventListener("submit", inviteToOrganization);
 organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
 organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
