@@ -105,6 +105,7 @@ function readClassRosters(){
         logo:normalizeClassLogo(item.logo),
         students,
         pbisEnabled:item.pbisEnabled!==false,
+        showAddStudent:item.showAddStudent!==false,
         pbisStats:normalizeClassPbisPreferences(item.pbisStats),
         studentProfiles:normalizeStudentProfiles(item.studentProfiles,students),
         starChart:normalizeStarChartProgress(item.starChart,students),

@@ -2,19 +2,34 @@
 function setupClassesStudents(){
   const opener=document.getElementById('profile-classes-button');if(!opener)return;
   const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
-  const icons={pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>',pet:'<ellipse cx="12" cy="16" rx="5" ry="4"/><ellipse cx="5" cy="10" rx="2" ry="2.5"/><ellipse cx="10" cy="5" rx="2" ry="2.5"/><ellipse cx="16" cy="5" rx="2" ry="2.5"/><ellipse cx="20" cy="11" rx="2" ry="2.5"/>',back:'<path d="m14 6-6 6 6 6"/>',edit:'<path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7M16 3a2.1 2.1 0 0 1 3 3l-9 9-4 1 1-4Z M14.5 4.5l3 3"/>',plus:'<path d="M12 5v14M5 12h14"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>'};
-  const icon=name=>{const span=el('span','cs-icon');span.setAttribute('aria-hidden','true');span.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plus}</svg>`;return span;};
+  const icons={pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>',pet:'<ellipse cx="12" cy="16" rx="5" ry="4"/><ellipse cx="5" cy="10" rx="2" ry="2.5"/><ellipse cx="10" cy="5" rx="2" ry="2.5"/><ellipse cx="16" cy="5" rx="2" ry="2.5"/><ellipse cx="20" cy="11" rx="2" ry="2.5"/>',back:'<path d="m14 6-6 6 6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>'};
+  const icon=name=>{const span=el('span','cs-icon');span.setAttribute('aria-hidden','true');if(name==='edit'){span.classList.add('cs-edit-pencil');span.textContent=document.getElementById('profile-nickname-edit')?.textContent.trim()||'✎';return span;}span.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plus}</svg>`;return span;};
   const button=(label,action,cls='cs-button',symbol)=>{const b=el('button',cls);b.type='button';if(symbol)b.append(icon(symbol));b.append(el('span','',label));b.onclick=action;return b;};
   const panel=el('dialog','cs-tool');panel.id='profile-classes-panel';panel.setAttribute('aria-label','Student View');
   const top=el('header','cs-topbar'),brand=el('div','cs-brand');brand.append(el('strong','','Student View'),el('span','profile-tool-beta','BETA'));
   const topActions=el('div','cs-top-actions'),saveStatus=el('span','cs-save-status','Saved on this device');saveStatus.setAttribute('role','status');
   const exit=button('Back to Board',()=>panel.close(),'cs-button','back');topActions.append(saveStatus,exit);top.append(brand,topActions);
   const content=el('main','cs-content'),classHeader=el('section','cs-class-header'),heading=el('div','cs-list-heading'),titleBox=el('div'),title=el('h1'),subtitle=el('p');titleBox.append(title,subtitle);
-  const searchLabel=el('label','cs-search'),search=el('input');search.type='search';searchLabel.append(icon('search'),search);const listActions=el('div','cs-list-actions'),editRoster=button('Edit',()=>{editMode=!editMode;revealedStudent='';render();},'cs-button cs-roster-edit','edit');editRoster.setAttribute('aria-label','Edit students');listActions.append(searchLabel,editRoster);heading.append(titleBox,listActions);
+  const searchLabel=el('label','cs-search'),search=el('input');search.type='search';searchLabel.append(icon('search'),search);const listActions=el('div','cs-list-actions'),editRoster=button('Edit',e=>{e.stopPropagation();if(editMode||revealedStudent)endDeletion();else{editMode=true;syncDeletion();armDeletionIdle();}},'cs-button cs-roster-edit','edit');editRoster.setAttribute('aria-label','Edit students');listActions.append(searchLabel,editRoster);heading.append(titleBox,listActions);
   const grid=el('div','cs-grid');content.append(classHeader,heading,grid);panel.append(top,content);document.body.append(panel);
   const editor=el('dialog','cs-modal'),settings=el('dialog','cs-modal cs-settings'),detail=el('dialog','cs-modal cs-detail');document.body.append(editor,settings,detail);
-  let editMode=false,revealedStudent='',holdTimer=0;
+  let editMode=false,revealedStudent='',holdTimer=0,deletionIdleTimer=0;
   const cancelHold=()=>{clearTimeout(holdTimer);holdTimer=0;};
+  function syncDeletion(){
+    editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));
+    editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';
+    grid.querySelectorAll('.cs-student-entry').forEach(entry=>{
+      const active=editMode||entry.dataset.studentKey===revealedStudent;
+      entry.classList.toggle('is-removable',active);entry.querySelector('.cs-student-remove').hidden=!active;
+    });
+  }
+  function endDeletion(){
+    cancelHold();clearTimeout(deletionIdleTimer);deletionIdleTimer=0;editMode=false;revealedStudent='';syncDeletion();
+  }
+  function armDeletionIdle(){
+    clearTimeout(deletionIdleTimer);deletionIdleTimer=0;
+    if(editMode||revealedStudent)deletionIdleTimer=setTimeout(endDeletion,8000);
+  }
   let visibleStudents=new Set(),activeClass='',activeStudent=null,scope=window.TeacherTilesClassScope||'local',photoTask=0;
   const notice=el('p','cs-notice');notice.setAttribute('role','status');panel.append(notice);let noticeTimer;
   function notify(message){clearTimeout(noticeTimer);notice.textContent=message;notice.classList.add('is-visible');noticeTimer=setTimeout(()=>notice.classList.remove('is-visible'),5000);}
@@ -36,10 +51,10 @@ function setupClassesStudents(){
   const statsFor=(c,whole=false)=>c.pbisEnabled===false?[]:PBIS_STUDENT_STAT_DEFINITIONS.filter(s=>c.pbisStats?.[s.id]!==false&&(!s.wholeClassOnly||whole)&&(!s.studentOnly||!whole));
   const statValue=(s,c,name)=>{if(!name)return s.wholeClassValue?.(c)||0;const key=starChartStudentKey(name),map={eggPoints:c.eggHatching?.studentPoints,flowerPoints:c.flowerPots?.studentPoints,stars:c.starChart?.studentStars,punchcardPoints:c.punchcards?.studentPoints,raceWins:c.racer?.studentWins};return normalizeStarChartCount(map[s.id]?.[key]);};
   function addCard(label,action){const b=button(label,action,'cs-add-card','plus');b.setAttribute('aria-label',label);return b;}
-  function openClass(id){editMode=false;revealedStudent='';activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});}
+  function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});}
   title.tabIndex=-1;
   function render(){
-    cancelHold();const c=current();if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode));editRoster.lastElementChild.textContent=editMode?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
+    cancelHold();const c=current();if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
     title.textContent=c?'Students':'Your Classes';subtitle.textContent=c?`${c.students.length} ${c.students.length===1?'student':'students'}`:'';subtitle.hidden=!c;grid.classList.toggle('cs-students-grid',Boolean(c));search.placeholder=c?'Search students':'Search classes';search.setAttribute('aria-label',search.placeholder);
     if(c){
       const back=button('All Classes',()=>openClass(''),'cs-button cs-back','back');
@@ -49,13 +64,14 @@ function setupClassesStudents(){
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const [index,name] of names.entries()){
         const entry=el('div','cs-student-entry'),key=starChartStudentKey(name);let suppressClick=false;
-        const card=button('',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return;}if(!editMode)showDetail(name);},'cs-student-card');
+        const card=button('',e=>{if(suppressClick){e.preventDefault();e.stopPropagation();suppressClick=false;return;}if(editMode||revealedStudent){endDeletion();return;}showDetail(name);},'cs-student-card');
         card.setAttribute('aria-label',`Open ${name}'s student profile`);card.replaceChildren(avatar(c,name),el('strong','cs-card-name',name));
-        const remove=button('',()=>removeStudent(c.id,name),'cs-student-remove profile-panel__close','close');remove.setAttribute('aria-label',`Remove ${name}`);remove.title=`Remove ${name}`;remove.hidden=!editMode&&revealedStudent!==key;
+        entry.dataset.studentKey=key;entry.classList.toggle('is-removable',editMode||revealedStudent===key);
+        const remove=button('',e=>{e.stopPropagation();clearTimeout(deletionIdleTimer);removeStudent(c.id,name);armDeletionIdle();},'cs-student-remove profile-panel__close','close');remove.setAttribute('aria-label',`Remove ${name}`);remove.title=`Remove ${name}`;remove.hidden=!editMode&&revealedStudent!==key;
         let origin=null;
         card.addEventListener('pointerdown',e=>{
           if(e.button!==0||!e.isPrimary)return;cancelHold();suppressClick=false;origin={x:e.clientX,y:e.clientY};
-          holdTimer=setTimeout(()=>{holdTimer=0;if(!card.isConnected||current()?.id!==c.id)return;suppressClick=true;revealedStudent=key;grid.querySelectorAll('.cs-student-remove').forEach(b=>b.hidden=!editMode);remove.hidden=false;entry.classList.add('is-removable');},650);
+          holdTimer=setTimeout(()=>{holdTimer=0;if(!card.isConnected||current()?.id!==c.id)return;suppressClick=true;revealedStudent=key;syncDeletion();armDeletionIdle();},650);
         });
         card.addEventListener('pointermove',e=>{if(origin&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)>10)cancelHold();});
         for(const event of ['pointerup','pointercancel','pointerleave','lostpointercapture'])card.addEventListener(event,cancelHold);
@@ -64,8 +80,8 @@ function setupClassesStudents(){
         entry.append(card,remove);grid.append(entry);
       }
       visibleStudents=new Set(names.map(name=>c.id+':'+starChartStudentKey(name)));
-      grid.append(addCard('Add Student',()=>editStudent()));
-      if(!names.length)grid.append(el('p','cs-empty',c.students.length?'No students match your search.':'Add your first student using a first name or nickname.'));
+      if(c.showAddStudent!==false)grid.append(addCard('Add Student',()=>editStudent()));
+      if(!names.length)grid.append(el('p','cs-empty',c.students.length?'No students match your search.':c.showAddStudent===false?'Turn on Show Add Student in Class Settings to add your first student.':'Add your first student using a first name or nickname.'));
     }else{
       visibleStudents.clear();
       const classes=readClassRosters().filter(c=>c.name.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
@@ -142,11 +158,16 @@ function setupClassesStudents(){
   function toggle(label,checked,action,description=''){
     const row=el('label','cs-toggle'),copy=el('span');copy.append(el('strong','',label));if(description)copy.append(el('small','',description));const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('role','switch');input.setAttribute('aria-label',label);input.onchange=()=>action(input.checked,input);const track=el('i');track.setAttribute('aria-hidden','true');row.append(copy,input,track);return row;
   }
-  function showSettings(){const c=current();if(!c)return;modalHeader(settings,'Class Settings');const body=el('div','cs-settings-body'),statOptions=el('fieldset','cs-pbis-options'),error=el('p','cs-error');error.setAttribute('role','alert');statOptions.append(el('legend','','Show PBIS rewards'));statOptions.hidden=!c.pbisEnabled;
-    body.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}statOptions.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'));
+  function showSettings(){
+    const c=current();if(!c)return;modalHeader(settings,'Class Settings');
+    const body=el('div','cs-settings-body'),pbisGroup=el('div','cs-pbis-group'),disclosure=el('details','cs-pbis-disclosure'),statOptions=el('fieldset','cs-pbis-options'),error=el('p','cs-error');
+    error.setAttribute('role','alert');statOptions.setAttribute('aria-label','PBIS reward types');disclosure.open=true;disclosure.hidden=!c.pbisEnabled;
+    const summary=el('summary','','Reward Types');disclosure.append(summary,statOptions);
+    body.append(toggle('Show Add Student',c.showAddStudent!==false,(enabled,input)=>{const result=updateClass(target=>target.showAddStudent=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Show the + outline at the end of the student list.'));
+    pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Emoji',()=>{settings.close();editClass(c.id);},'cs-button','edit'),button('Delete Class',()=>{if(!confirm(`Delete ${c.name}, its roster, and all saved PBIS history?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}settings.close();openClass('');},'cs-button cs-danger'));
-    body.append(statOptions,error,actions);settings.append(body);settings.showModal();
+    body.append(pbisGroup,error,actions);settings.append(body);settings.showModal();
   }
   function resetStat(stat,c,name){
     if(!confirm(`Reset ${stat.label} for ${name||c.name}? This cannot be undone.`))return;
@@ -200,13 +221,15 @@ function setupClassesStudents(){
   search.addEventListener('input',render);
   opener.addEventListener('click',()=>{document.querySelector('[data-profile-close]')?.click();scope=window.TeacherTilesClassScope||'local';activeClass='';editMode=false;revealedStudent='';search.value='';render();panel.showModal();opener.setAttribute('aria-expanded','true');document.body.classList.add('classes-tool-open');});
   content.addEventListener('scroll',cancelHold,{passive:true});
-  window.addEventListener('blur',cancelHold);
-  panel.addEventListener('close',()=>{cancelHold();editMode=false;revealedStudent='';for(const d of [editor,settings,detail])if(d.open)d.close();flushPbisCloudSave();document.body.classList.remove('classes-tool-open');opener.setAttribute('aria-expanded','false');document.getElementById('profile-toggle')?.focus({preventScroll:true});});
-  panel.addEventListener('cancel',e=>{e.preventDefault();if(editMode||revealedStudent){editMode=false;revealedStudent='';render();return;}if(activeClass)openClass('');else panel.close();});
+  window.addEventListener('blur',()=>{cancelHold();if(panel.open)endDeletion();});
+  panel.addEventListener('click',e=>{if((editMode||revealedStudent)&&!e.target.closest('.cs-student-remove,.cs-roster-edit'))endDeletion();});
+  for(const event of ['pointerdown','pointermove','keydown','input','wheel'])panel.addEventListener(event,()=>{if(editMode||revealedStudent)armDeletionIdle();},{passive:true});
+  panel.addEventListener('close',()=>{endDeletion();for(const d of [editor,settings,detail])if(d.open)d.close();flushPbisCloudSave();document.body.classList.remove('classes-tool-open');opener.setAttribute('aria-expanded','false');document.getElementById('profile-toggle')?.focus({preventScroll:true});});
+  panel.addEventListener('cancel',e=>{e.preventDefault();if(editMode||revealedStudent){endDeletion();return;}if(activeClass)openClass('');else panel.close();});
   for(const d of [panel,editor,settings,detail])d.addEventListener('keydown',e=>e.stopPropagation());
   for(const d of [editor,settings,detail])d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();});
   editor.addEventListener('close',()=>photoTask++);detail.addEventListener('close',()=>activeStudent=null);
-  function refresh(){if(!panel.open)return;const next=window.TeacherTilesClassScope||'local';if(scope!==next){scope=next;activeClass='';editMode=false;revealedStudent='';for(const d of [editor,settings,detail])if(d.open)d.close();saveStatus.textContent='Saved on this device';}render();if(!editor.open)renderDetail();}
+  function refresh(){if(!panel.open)return;const next=window.TeacherTilesClassScope||'local';if(scope!==next){scope=next;activeClass='';endDeletion();for(const d of [editor,settings,detail])if(d.open)d.close();saveStatus.textContent='Saved on this device';}render();if(!editor.open)renderDetail();}
   for(const event of ['teachertiles:classeschange','teachertiles:starchartchange','teachertiles:classmeterchange','teachertiles:collectionchange','teachertiles:punchcardchange','teachertiles:racerchange'])window.addEventListener(event,refresh);
   window.addEventListener('teachertiles:classsavestatus',event=>{if(event.detail?.scope!==scope)return;saveStatus.textContent=({saving:'Saving…',saved:'Saved',error:'Saved on this device · sync pending'})[event.detail.status]||'';});
 }
