@@ -1,3 +1,7 @@
+const CLASS_GRADE_LEVELS=Object.freeze(['Pre-K','K','1','2','3','4','5','6','7','8','9','10','11','12','Higher-Ed']);
+function normalizeClassGradeLevel(value){return CLASS_GRADE_LEVELS.includes(String(value))?String(value):'';}
+function defaultClassPbisEnabled(gradeLevel){return gradeLevel!=='Higher-Ed'&&!(Number(gradeLevel)>=7);}
+
 function normalizeClassLogo(value){
   const logo=String(value||'').trim();
   return logo?Array.from(logo).slice(0,8).join(''):'👥';
@@ -104,8 +108,9 @@ function readClassRosters(){
         name:String(item.name||`Class ${index+1}`).trim().slice(0,50)||`Class ${index+1}`,
         logo:normalizeClassLogo(item.logo),
         logoImage:normalizeProfileImage(item.logoImage),
+        gradeLevel:normalizeClassGradeLevel(item.gradeLevel),
         students,
-        pbisEnabled:item.pbisEnabled!==false,
+        pbisEnabled:typeof item.pbisEnabled==='boolean'?item.pbisEnabled:defaultClassPbisEnabled(normalizeClassGradeLevel(item.gradeLevel)),
         showAddStudent:item.showAddStudent!==false,
         pbisStats:normalizeClassPbisPreferences(item.pbisStats),
         studentProfiles:normalizeStudentProfiles(item.studentProfiles,students),

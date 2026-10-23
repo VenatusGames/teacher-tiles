@@ -90,3 +90,28 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-window__header>div{grid-column:2}
 
 @media(max-width:600px){.organization-window #profile-organizations-title{flex-wrap:wrap}}
+
+/* Organization identity editing uses the same popup and corner controls as classes. */
+.organization-window .organization-card{position:relative}
+.organization-card__open{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:center}
+.organization-card__open>i{display:none}
+.organization-edit-button{display:grid;place-items:center;flex:none;width:36px;height:36px;min-height:36px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font-size:20px;line-height:1;box-shadow:0 3px 10px #0f172a18;cursor:pointer}
+.organization-edit-button:hover{background:var(--surface-soft)}
+.organization-card__edit{position:absolute;top:9px;right:9px;width:31px;height:31px;min-height:31px;opacity:0;pointer-events:none;transition:opacity .15s,background .15s}
+.organization-card:is(:hover,:has(:focus-visible))>.organization-card__edit{opacity:1;pointer-events:auto}
+.organization-window .organization-editor-summary{grid-template-columns:72px minmax(0,1fr) auto auto}
+#organization-details-edit{opacity:0;pointer-events:none;transition:opacity .15s}
+.organization-editor-summary:is(:hover,:has(:focus-visible)) #organization-details-edit{opacity:1;pointer-events:auto}
+.organization-editor-heading{margin:0;font-size:20px;font-weight:650}
+.organization-details-dialog .organization-logo-editor{display:flex;flex-direction:column;gap:16px;padding:0;margin:0;border:0;background:none}
+.organization-details-dialog .organization-logo-editor>div:first-child{display:none}
+.organization-details-dialog .organization-logo-options{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.organization-details-dialog .organization-logo-options button{width:100%;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);font-size:24px;cursor:pointer}
+.organization-details-dialog .organization-logo-options button[aria-pressed=true]{border-color:#738bc8;background:#738bc81a}
+.organization-details-dialog .organization-logo-editor>label{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;font-size:12px;font-weight:650}.organization-details-dialog .organization-logo-editor>label>span{font-size:12px;letter-spacing:normal;text-transform:none}
+.organization-details-dialog .organization-logo-editor input{width:100%;padding:11px 12px;min-height:42px;border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);font:inherit;font-size:14px}
+.organization-details-dialog .organization-danger-zone{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:0;padding:14px;border:1px solid color-mix(in srgb,#b74450 25%,var(--border));border-radius:12px;background:var(--surface-solid)}
+.organization-details-dialog .organization-danger-zone p{font-size:12px;line-height:1.5;color:var(--muted);margin:5px 0}
+.organization-details-dialog #organization-delete{padding:8px 12px;border:1px solid color-mix(in srgb,#b74450 25%,var(--border));border-radius:10px;background:var(--surface-solid);color:#b74450;font:inherit;font-size:12px;cursor:pointer}
+@media(hover:none){.organization-card__edit,#organization-details-edit{opacity:1;pointer-events:auto}}
+@media(max-width:600px){.organization-window .organization-editor-summary{grid-template-columns:60px minmax(0,1fr) auto}.organization-window .organization-editor-summary>.organization-role-tag{grid-column:2}.organization-details-dialog .cs-form-actions{flex-wrap:wrap}}
