@@ -101,3 +101,23 @@ body.classes-tool-open{overflow:hidden}
 .cs-class-pbis{color:#7b66ac!important}.cs-modal-header>.cs-profile-back{margin:0;flex:none}.cs-modal-header:has(>.cs-profile-back)>h2{flex:1;min-width:0}
 @media(max-width:620px){.cs-list-actions{width:100%}.cs-list-actions .cs-search{width:auto}.cs-modal-header>.cs-profile-back{font-size:0!important;padding:7px;width:36px;height:36px}.cs-modal-header>.cs-profile-back>span:last-child{display:none}}
 @media(max-width:480px){.cs-student-remove.profile-panel__close{left:calc(50% + 30px)}}
+
+.cs-student-entry.is-removable>.cs-student-card{animation:studentDeleteWiggle .24s ease-in-out infinite alternate;transform-origin:50% 60%}
+.cs-student-entry.is-removable:nth-child(even)>.cs-student-card{animation-direction:alternate-reverse}
+@keyframes studentDeleteWiggle{from{transform:rotate(-1.5deg)}to{transform:rotate(1.5deg)}}
+
+.cs-edit-pencil{display:inline-grid;place-items:center;font-family:inherit;font-size:21px;font-weight:400;line-height:1}
+.cs-card-edit .cs-edit-pencil{font-size:18px}
+.cs-pbis-group{border-top:1px solid var(--border,#dce2eb)}
+.cs-pbis-disclosure{margin:0 0 4px 16px;padding-left:16px;border-left:2px solid var(--border,#dce2eb)}
+.cs-pbis-disclosure>summary{display:flex;align-items:center;gap:9px;list-style:none;cursor:pointer;padding:10px 0;font-size:12px;font-weight:650;color:var(--muted,#637187)}
+.cs-pbis-disclosure>summary::-webkit-details-marker{display:none}
+.cs-pbis-disclosure>summary:after{content:'';width:6px;height:6px;border-right:1.7px solid currentColor;border-bottom:1.7px solid currentColor;transform:rotate(-45deg);transition:transform .18s}
+.cs-pbis-disclosure[open]>summary:after{transform:rotate(45deg)}
+.cs-pbis-disclosure .cs-pbis-options{padding:0;border:0;margin:0}
+.cs-pbis-disclosure .cs-toggle{padding:10px 0;gap:12px}
+.cs-pbis-disclosure .cs-toggle strong{font-size:12px;font-weight:600}.cs-pbis-disclosure .cs-toggle small{font-size:10px;line-height:1.4}
+.cs-pbis-disclosure .cs-toggle>i,.cs-pbis-disclosure .cs-toggle input{width:30px;height:18px}
+.cs-pbis-disclosure .cs-toggle>i:after{width:14px;height:14px;margin:2px}
+.cs-pbis-disclosure .cs-toggle input:checked+i:after{transform:translateX(12px)}
+.cs-pbis-disclosure[open]>.cs-pbis-options{animation:classCardEnter .18s ease-out}
