@@ -97,7 +97,7 @@ export function createAnnouncementNotifications(call,getUid,onChange,realtime=nu
    card.classList.toggle('is-unread',!item.read);const copy=node('div','profile-notification-card__copy'),title=node('strong','',item.title),meta=node('small','',`TeacherTiles announcement${item.read?' · Read':' · New'}`),open=node('button','reminder-dismiss','View announcement');open.type='button';open.onclick=()=>view(item);
    const actions=node('div','announcement-actions'),mark=node('button','reminder-dismiss',item.read?'Read':'Mark as Read'),status=node('small','announcement-read-status');status.setAttribute('role','status');mark.type='button';mark.disabled=item.read;
    mark.onclick=async()=>{mark.disabled=true;mark.textContent='Saving…';status.textContent='';try{await markRead(item)}catch(error){status.textContent=error.message}finally{if(mark.isConnected){mark.disabled=item.read||(viewed.get(item.id)||0)>=item.revision;mark.textContent=mark.disabled?'Read':'Mark as Read'}}};
-   actions.append(open,mark);copy.append(title,meta,actions,status);card.append(symbol,copy,timer);container.append(card);
+   const heading=node('div','announcement-heading');heading.append(title,timer);actions.append(open,mark);copy.append(heading,meta,actions,status);card.append(symbol,copy);container.append(card);
   }
   updateCountdowns();
  }
