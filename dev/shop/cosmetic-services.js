@@ -25,7 +25,7 @@ function cosmeticIsAccessible(product){return !product||getOwnedShopProducts().h
 function markSubscriptionAccess(element,product){
   element.querySelector(':scope > .subscription-access-crown')?.remove();
   if(!product||!hasCosmeticSubscription()||getOwnedShopProducts().has(product))return;
-  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title='Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>';element.append(crown);
+  const crown=document.createElement('span');crown.className='subscription-access-crown';crown.title=window.TeacherTilesAccount?.state?.districtPremium?'Unlocked via Organization Seat':'Unlocked via subscription';crown.setAttribute('aria-label',crown.title);crown.tabIndex=0;crown.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>';element.append(crown);
 }
 
 function tileSkinIsOwned(skin){return Boolean(skin&&(skin.free===true||cosmeticIsAccessible(skin.productId)))}
