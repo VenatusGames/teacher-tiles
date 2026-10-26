@@ -189,3 +189,8 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-seat-warning{position:absolute;top:0;right:0;display:grid;place-items:center;width:23px;height:23px;border:2px solid var(--surface-solid,#fff);border-radius:50%;background:#cf3545;color:#fff;font-size:14px;font-weight:800;box-shadow:0 2px 5px #0002}
 .organization-seat-tooltip{display:none;position:absolute;top:28px;right:-12px;z-index:5;width:max-content;max-width:200px;padding:8px 10px;border-radius:8px;background:#792936;color:#fff;font-size:11px;font-weight:600;line-height:1.4;pointer-events:none}
 .organization-seat-warning:hover .organization-seat-tooltip,.organization-member-card:focus-visible .organization-seat-tooltip{display:block}
+
+.organization-seat-crown{position:absolute;top:-3px;right:-3px;display:grid;place-items:center;width:30px;height:30px;border:2px solid var(--surface-solid,#fff);border-radius:50%;background:#fff4d8;box-shadow:0 2px 5px #0002}
+.organization-seat-crown>svg{display:block;width:24px;height:24px}
+.organization-seat-crown .organization-seat-tooltip{top:34px;background:#61471c}
+.organization-seat-crown:hover .organization-seat-tooltip{display:block}
