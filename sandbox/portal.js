@@ -1,6 +1,6 @@
 import {createOrganizationsPanel} from './organizations.js?v=20261025-district-seats';
 import {createAnnouncementsPanel} from './announcements.js?v=20261022';
-import {createCommunityPanel} from './community.js?v=20261021-banner-library';
+import {createCommunityPanel} from './community.js?v=20261025-poll-controls';
 import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';
 import {createProductManagementPanel} from './product-management.js?v=20261021-autumn-finish';
 import {createTileManagementPanel} from './tile-management.js?v=20261020-availability';
