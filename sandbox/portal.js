@@ -1,4 +1,4 @@
-import {createOrganizationsPanel} from './organizations.js?v=20261025';
+import {createOrganizationsPanel} from './organizations.js?v=20261025-district-badge';
 import {createAnnouncementsPanel} from './announcements.js?v=20261022';
 import {createCommunityPanel} from './community.js?v=20261021-banner-library';
 import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';
@@ -18,6 +18,7 @@ const signIn=document.getElementById('portal-signin'),retry=document.getElementB
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
 function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar-actions').append(signOut);else document.querySelector('.access-actions').append(signOut);}
 const usersPanel=createUsersPanel((name,data)=>call(name,data),()=>auth?.currentUser?.uid);
+document.getElementById('people-groups-toggle').onclick=()=>{const toggle=document.getElementById('people-groups-toggle'),menu=document.getElementById('people-groups-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 document.getElementById('community-toggle').onclick=()=>{const toggle=document.getElementById('community-toggle'),menu=document.getElementById('community-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 const templatesElement=document.createElement('section');templatesElement.id='portal-templates';templatesElement.hidden=true;home.parentElement.append(templatesElement);
 const templates=createTemplateLibrary({element:templatesElement,call:(name,data)=>call(name,data),getUid:()=>authorized?auth?.currentUser?.uid:null,admin:true,renderPreview:adminBoardPreview});

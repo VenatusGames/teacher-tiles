@@ -152,14 +152,27 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-member-search{display:flex;flex-direction:column;gap:7px;max-width:440px;margin:16px 0 24px;color:var(--muted);font-size:12px;font-weight:600}
 .organization-member-search input{width:100%;min-width:0;padding:11px 14px;border:1px solid var(--border);border-radius:11px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:14px}
 .organization-member-card{position:relative}
-.organization-member-edit{position:absolute;right:8px;top:8px;width:32px;height:32px;min-height:32px;opacity:0;pointer-events:none;transition:opacity .16s}
-.organization-member-card:is(:hover,:focus-within) .organization-member-edit{opacity:1;pointer-events:auto}
-#organization-member-list .organization-member-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px;background:var(--surface-solid);border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 18px #18284418;position:absolute;top:40px;right:8px;z-index:3}
-#organization-member-list .organization-member-actions :is(select,button){font:inherit;font-size:12px;min-height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface-solid);color:var(--text);padding:6px 9px}
-.organization-district-badge{display:inline-flex;align-items:center;align-self:center;gap:5px;border:1px solid #b5c8ed;border-radius:7px;padding:4px 8px;background:#e9effc;color:#35588b;font-size:11px;font-weight:750;line-height:1.3;letter-spacing:.02em}
-.organization-district-badge::before{content:'▥';font-size:14px}
 .organization-card__copy .organization-district-badge{margin-top:10px}
 .organization-test-label{color:#9b6c25;font-size:10px}
 .organization-card__icon img,.organization-editor-summary__icon img,#organization-details-preview img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-@media(hover:none){.organization-member-edit{opacity:1;pointer-events:auto}}
 @media(max-width:700px){.organization-editor-summary>.organization-people-actions{flex-basis:100%;margin:0}.organization-member-search{max-width:none}}
+
+#organization-member-list>button.organization-member-card{font:inherit;color:inherit;cursor:pointer;transition:transform .16s,box-shadow .16s}
+#organization-member-list>button.organization-member-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px #24345312}
+#organization-member-list>button.organization-member-card:focus-visible{outline:3px solid #738bc8;outline-offset:3px}
+.organization-member-dialog{width:min(760px,calc(100vw - 28px));max-height:90dvh;padding:0;overflow:auto}
+.organization-member-profile-content{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:310px}
+.organization-member-profile-hero{display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 22px;background:var(--surface-soft);border-right:1px solid var(--border);min-width:0}
+.organization-member-profile-hero .organization-member-avatar{width:120px;height:120px;flex:none;border-radius:28px;border:2px solid #b9cadc;font-size:52px;box-shadow:0 6px 16px #24345318}
+.organization-member-profile-hero h3{margin:0;font-size:24px;line-height:1.25;letter-spacing:-.03em;overflow-wrap:anywhere;text-align:center}
+.organization-member-profile-hero p{margin:0;color:var(--muted);font-size:12px;max-width:100%;overflow-wrap:anywhere;text-align:center}
+.organization-member-profile-hero .organization-role-tag{height:auto;padding:5px 10px;font-size:11px}
+.organization-member-profile-settings{padding:28px;min-width:0}
+.organization-member-profile-settings h3{font-size:18px;margin:0 0 10px}
+.organization-member-profile-settings p{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.organization-member-profile-role{display:flex;flex-direction:column;gap:8px;margin:24px 0 18px;font-size:12px;font-weight:650}
+.organization-member-profile-role select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:14px}
+.organization-member-profile-settings .organization-member-remove{width:auto;height:auto;min-height:38px;border:1px solid #b7445040;border-radius:10px;padding:9px 14px;background:var(--surface-solid);color:#b74450;font:inherit;font-size:12px;cursor:pointer}
+.organization-member-profile-feedback{margin:0;padding:14px 24px;border-top:1px solid var(--border);font-size:13px}.organization-member-profile-feedback.is-error{color:#b74450}
+@media(max-width:600px){.organization-member-profile-content{grid-template-columns:1fr}.organization-member-profile-hero{border-right:0;border-bottom:1px solid var(--border);padding:24px}.organization-member-profile-settings{padding:24px}}
+@media(prefers-reduced-motion:reduce){#organization-member-list>button.organization-member-card{transition:none}}

@@ -79,7 +79,10 @@ const organizationNameInput = document.getElementById("organization-name");
 const organizationEditorTitle = document.getElementById("organization-editor-title");
 const organizationEditorMeta = document.getElementById("organization-editor-meta");
 const organizationEditorLogo = document.getElementById("organization-editor-logo");
-const organizationCurrentRole = document.getElementById("organization-current-role");
+const organizationMemberDialog = document.getElementById('organization-member-dialog');
+const organizationMemberProfileContent = document.getElementById('organization-member-profile-content');
+const organizationMemberProfileFeedback = document.getElementById('organization-member-profile-feedback');
+const organizationMemberProfileClose = document.getElementById('organization-member-profile-close');
 const organizationEditorFeedback = document.getElementById("organization-editor-feedback");
 const organizationLogoEditor = document.getElementById("organization-logo-editor");
 const organizationLogoOptions = document.getElementById("organization-logo-options");
@@ -148,6 +151,7 @@ const organizationDetailPromises = new Map();
 let organizationLogoDraft = "🏫";
 let organizationLogoFreshFocus = false;
 let organizationImageDraft = "", organizationPhotoTask = 0;
+let organizationProfileMemberUid = "";
 const organizationTestMembers = new Map();
 const organizationMemberSearch = document.getElementById('organization-member-search');
 const organizationManageSearch = document.getElementById('organization-manage-search');
@@ -1101,7 +1105,6 @@ function renderOrganizationInvitations() {
     const detail = document.createElement("small");
     detail.textContent = `${invite.invitedByName || "An owner"} invited ${currentUser?.email || "your Google account"} as a Member.`;
     copy.append(title, detail);
-    if(item.isDistrict){const badge=document.createElement('span');badge.className='organization-district-badge';badge.textContent='District';copy.append(badge);}
     card.append(copy, buildInvitationActions(invite));
     organizationInvitationList.appendChild(card);
   });
@@ -1167,6 +1170,12 @@ function renderOrganizationList() {
     const detail = document.createElement("small");
     detail.textContent = `Your role: ${item.membership.role}`;
     copy.append(title, detail);
+    if (item.isDistrict) {
+      const badge = document.createElement('span');
+      badge.className = 'organization-district-badge';
+      badge.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/ui/district.svg?v=20261025#district"/></svg><span>District</span>';
+      copy.append(badge);
+    }
     const arrow = document.createElement("i");
     arrow.textContent = "›";
     open.append(icon, copy, arrow);
@@ -1245,6 +1254,7 @@ function setOrganizationEditorOpen(open) {
   if (!open) {
     organizationInviteDialog?.close();
     organizationManageDialog?.close();
+    organizationMemberDialog?.close();
     activeOrganization = null;
     activeOrganizationMembers = [];
     activeOrganizationInvites = [];
@@ -1292,45 +1302,7 @@ function openOrganizationPeopleDialog(kind) {
   else dialog.querySelector('[data-organization-people-close]')?.focus();
 }
 
-function renderOrganizationMembers() {
-  if (!organizationMemberList) return;
-  syncOrganizationPeopleControls();
-  const members = visibleOrganizationMembers();
-  if (organizationMemberCount) organizationMemberCount.textContent = `${members.length} ${members.length === 1 ? "person" : "people"}`;
-  const badge=document.getElementById('organization-district-badge');if(badge)badge.hidden=!activeOrganization?.isDistrict;
-  const currentRole = currentOrganizationRole();
-  if (organizationCurrentRole) {
-    organizationCurrentRole.textContent = currentRole;
-    organizationCurrentRole.dataset.role = currentRole;
-  }
-  if (organizationEditorMeta) organizationEditorMeta.textContent = `${members.length} ${members.length === 1 ? "member" : "members"} · You are ${currentRole}`;
-  for (const [list, management] of [[organizationMemberList, false], [organizationManageList, true]]) {
-    if (!list) continue;
-    list.replaceChildren();
-    const search = (management ? organizationManageSearch : organizationMemberSearch)?.value.trim().toLowerCase() || '';
-    const filtered = members.filter(member => [member.displayName,member.email,member.role].some(value => String(value||'').toLowerCase().includes(search)));
-    if (!filtered.length) {const empty=document.createElement('p');empty.className='cs-muted';empty.textContent='No members match your search.';list.append(empty);}
-    filtered.forEach(member => {
-    const card = document.createElement("article");
-    card.className = `organization-member-card${member.uid === currentUser?.uid ? " is-current" : ""}`;
-    const avatarWrap = document.createElement("div");
-    avatarWrap.className = "organization-member-avatar-wrap";
-    const avatar = document.createElement("span");
-    avatar.className = "organization-member-avatar";
-    if (member.photoURL) {
-      const image = document.createElement("img");
-      image.src = member.photoURL;
-      image.alt = "";
-      avatar.appendChild(image);
-    } else avatar.textContent = (member.displayName?.trim()[0] || member.email?.trim()[0] || "T").toUpperCase();
-    avatarWrap.append(avatar, roleTag(member.role));
-    const copy = document.createElement("div");
-    copy.className = "organization-member-copy";
-    const name = document.createElement("strong");
-    name.textContent = `${member.displayName || "Teacher"}${member.uid === currentUser?.uid ? " (You)" : ""}`;
-    const email = document.createElement("small");
-    email.textContent = member.email || "Google account";
-    copy.append(name, email);
+function organizationMemberActions(member) {
     const actions = document.createElement("div");
     actions.className = "organization-member-actions";
     if (canChangeOrganizationMemberRole(member)) {
@@ -1358,19 +1330,94 @@ function renderOrganizationMembers() {
       remove.addEventListener("click", () => removeOrganizationMember(member));
       actions.appendChild(remove);
     }
+    return actions;
+}
+function organizationMemberActionFeedback() {
+  return organizationMemberDialog?.open ? organizationMemberProfileFeedback : organizationManageDialog.open ? organizationManageFeedback : organizationEditorFeedback;
+}
+function openOrganizationMemberProfile(member) {
+  if (organizationBusy || !activeOrganization || !member || !organizationMemberDialog) return;
+  organizationProfileMemberUid = member.uid;
+  setOrganizationFeedback(organizationMemberProfileFeedback);
+  renderOrganizationMemberProfile();
+  if (!organizationMemberProfileContent.childElementCount) return;
+  if (!organizationMemberDialog.open) organizationMemberDialog.showModal();
+  organizationMemberProfileClose.focus();
+}
+function renderOrganizationMemberProfile() {
+  if (!organizationMemberProfileContent || !organizationProfileMemberUid) return;
+  const member = activeOrganization && visibleOrganizationMembers().find(item => item.uid === organizationProfileMemberUid);
+  organizationMemberProfileContent.replaceChildren();
+  if (!member) { organizationMemberDialog.close(); return; }
+  const hero=document.createElement('aside');hero.className='organization-member-profile-hero';
+  const avatar=document.createElement('span');avatar.className='organization-member-avatar';
+  if(member.photoURL){const image=document.createElement('img');image.src=member.photoURL;image.alt='';avatar.append(image);}
+  else avatar.textContent=(member.displayName?.trim()[0]||member.email?.trim()[0]||'T').toUpperCase();
+  const name=document.createElement('h3');name.textContent=member.displayName||'Teacher';
+  const email=document.createElement('p');email.textContent=member.email||'Google account';
+  hero.append(avatar,name,email,roleTag(member.role));
+  const panel=document.createElement('section');panel.className='organization-member-profile-settings';
+  const title=document.createElement('h3');title.textContent='Organization Membership';
+  const organization=document.createElement('p');organization.className='cs-muted';organization.textContent=activeOrganization.name;
+  const actions=organizationMemberActions(member);
+  panel.append(title,organization);
+  if(actions.childElementCount){
+    if(actions.querySelector('select')){const label=document.createElement('label');label.className='organization-member-profile-role';label.append('Role',actions.querySelector('select'));panel.append(label);}
+    panel.append(actions);
+  }else{const note=document.createElement('p');note.className='cs-muted';note.textContent=member.uid===currentUser?.uid?'This is your organization membership.':canInviteOrganizationMembers()?'This member’s role is protected.':'View this member’s organization details here.';panel.append(note);}
+  if(member.testMember){const note=document.createElement('p');note.className='organization-test-label';note.textContent='Test member · Changes stay on this device';panel.append(note);}
+  organizationMemberProfileContent.append(hero,panel);
+}
+
+function renderOrganizationMembers() {
+  if (!organizationMemberList) return;
+  syncOrganizationPeopleControls();
+  const members = visibleOrganizationMembers();
+  if (organizationMemberCount) organizationMemberCount.textContent = `${members.length} ${members.length === 1 ? "person" : "people"}`;
+  const badge=document.getElementById('organization-district-badge');if(badge)badge.hidden=!activeOrganization?.isDistrict;
+  const currentRole = currentOrganizationRole();
+  if (organizationEditorMeta) organizationEditorMeta.textContent = `${members.length} ${members.length === 1 ? "member" : "members"} · You are ${currentRole}`;
+  for (const [list, management] of [[organizationMemberList, false], [organizationManageList, true]]) {
+    if (!list) continue;
+    list.replaceChildren();
+    const search = (management ? organizationManageSearch : organizationMemberSearch)?.value.trim().toLowerCase() || '';
+    const filtered = members.filter(member => [member.displayName,member.email,member.role].some(value => String(value||'').toLowerCase().includes(search)));
+    if (!filtered.length) {const empty=document.createElement('p');empty.className='cs-muted';empty.textContent='No members match your search.';list.append(empty);}
+    filtered.forEach(member => {
+    const card = document.createElement(management ? "article" : "button");
+    card.className = `organization-member-card${member.uid === currentUser?.uid ? " is-current" : ""}`;
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "organization-member-avatar-wrap";
+    const avatar = document.createElement("span");
+    avatar.className = "organization-member-avatar";
+    if (member.photoURL) {
+      const image = document.createElement("img");
+      image.src = member.photoURL;
+      image.alt = "";
+      avatar.appendChild(image);
+    } else avatar.textContent = (member.displayName?.trim()[0] || member.email?.trim()[0] || "T").toUpperCase();
+    avatarWrap.append(avatar, roleTag(member.role));
+    const copy = document.createElement("div");
+    copy.className = "organization-member-copy";
+    const name = document.createElement("strong");
+    name.textContent = `${member.displayName || "Teacher"}${member.uid === currentUser?.uid ? " (You)" : ""}`;
+    const email = document.createElement("small");
+    email.textContent = member.email || "Google account";
+    copy.append(name, email);
     card.append(avatarWrap, copy);
-    if (management) card.append(actions);
-    else if (actions.childElementCount) {
-      const edit=document.createElement('button');edit.type='button';edit.className='organization-member-edit organization-edit-button';edit.textContent='✎';edit.setAttribute('aria-label',`Edit ${member.displayName || member.email}`);edit.setAttribute('aria-expanded','false');
-      actions.hidden=true;
-      edit.onclick=()=>{actions.hidden=!actions.hidden;edit.setAttribute('aria-expanded',String(!actions.hidden));if(!actions.hidden)actions.querySelector('select,button')?.focus();};
-      card.addEventListener('focusout',()=>{requestAnimationFrame(()=>{if(!card.contains(document.activeElement)){actions.hidden=true;edit.setAttribute('aria-expanded','false');}})});
-      card.append(edit,actions);
+    if (management) card.append(organizationMemberActions(member));
+    else {
+      card.type='button';
+      card.dataset.memberUid=member.uid;
+      card.setAttribute('aria-label', `Open profile for ${member.displayName || member.email}`);
+      card.setAttribute('aria-haspopup', 'dialog');
+      card.addEventListener('click',()=>openOrganizationMemberProfile(member));
     }
     if(member.testMember){const label=document.createElement('small');label.className='organization-test-label';label.textContent='Test member';copy.append(label);}
     list.appendChild(card);
     });
   }
+  renderOrganizationMemberProfile();
 }
 
 function renderOrganizationPendingInvites() {
@@ -1513,17 +1560,17 @@ async function updateOrganizationMemberRole(member, role) {
   if(member.testMember){member.role=role;renderOrganizationMembers();return;}
   organizationBusy = true;
   renderOrganizationMembers();
-  setOrganizationFeedback(organizationManageFeedback, `Updating ${member.displayName || member.email}…`);
+  setOrganizationFeedback(organizationMemberActionFeedback(), `Updating ${member.displayName || member.email}…`);
   try {
     await firestoreSdk.updateDoc(organizationMemberDocument(activeOrganization.id, member.uid), {
       role,
       updatedAt: firestoreSdk.serverTimestamp()
     });
     await refreshOrganizationEditor({ force: true });
-    setOrganizationFeedback(organizationManageFeedback, `${member.displayName || member.email} is now ${role}.`);
+    setOrganizationFeedback(organizationMemberActionFeedback(), `${member.displayName || member.email} is now ${role}.`);
   } catch (error) {
     console.error("TeacherTiles could not update the organization role", error);
-    setOrganizationFeedback(organizationManageDialog.open ? organizationManageFeedback : organizationEditorFeedback, "That role could not be updated.", true);
+    setOrganizationFeedback(organizationMemberActionFeedback(), "That role could not be updated.", true);
     await refreshOrganizationEditor({ force: true });
   } finally { organizationBusy = false; renderOrganizationMembers(); }
 }
@@ -1534,14 +1581,14 @@ async function removeOrganizationMember(member) {
   if(member.testMember){const key=currentUser.uid+':'+activeOrganization.id;organizationTestMembers.set(key,(organizationTestMembers.get(key)||[]).filter(m=>m.uid!==member.uid));renderOrganizationMembers();return;}
   organizationBusy = true;
   renderOrganizationMembers();
-  setOrganizationFeedback(organizationManageFeedback, `Removing ${member.displayName || member.email}…`);
+  setOrganizationFeedback(organizationMemberActionFeedback(), `Removing ${member.displayName || member.email}…`);
   try {
     await firestoreSdk.deleteDoc(organizationMemberDocument(activeOrganization.id, member.uid));
     await refreshOrganizationEditor({ force: true });
-    setOrganizationFeedback(organizationManageFeedback, `${member.displayName || member.email} was removed.`);
+    setOrganizationFeedback(organizationMemberActionFeedback(), `${member.displayName || member.email} was removed.`);
   } catch (error) {
     console.error("TeacherTiles could not remove the organization member", error);
-    setOrganizationFeedback(organizationManageDialog.open ? organizationManageFeedback : organizationEditorFeedback, "That member could not be removed.", true);
+    setOrganizationFeedback(organizationMemberActionFeedback(), "That member could not be removed.", true);
   } finally { organizationBusy = false; renderOrganizationMembers(); }
 }
 
@@ -4025,6 +4072,17 @@ for (const dialog of [organizationInviteDialog, organizationManageDialog]) {
     if (!organizationEditorView.hidden && !organizationPanel.hidden) (dialog === organizationInviteDialog ? organizationInviteButton : organizationManageButton)?.focus({preventScroll:true});
   });
 }
+
+organizationMemberProfileClose?.addEventListener('click',()=>{if(!organizationBusy)organizationMemberDialog.close();});
+organizationMemberDialog?.addEventListener('cancel',event=>{if(organizationBusy)event.preventDefault();});
+organizationMemberDialog?.addEventListener('keydown',event=>event.stopPropagation());
+organizationMemberDialog?.addEventListener('close',()=>{
+  const uid=organizationProfileMemberUid;organizationProfileMemberUid='';
+  if(!organizationEditorView.hidden&&!organizationPanel.hidden){
+    const card=Array.from(organizationMemberList.querySelectorAll('[data-member-uid]')).find(item=>item.dataset.memberUid===uid);
+    (card||organizationMemberSearch)?.focus({preventScroll:true});
+  }
+});
 
 organizationEditorBack?.addEventListener("click", closeOrganizationEditor);
 organizationEditorDone?.addEventListener("click", closeOrganizationEditor);
