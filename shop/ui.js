@@ -283,7 +283,7 @@ function setupTeacherTilesShop(){
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
       const isOwned=card.dataset.bundleItems?JSON.parse(card.dataset.bundleItems).every(id=>owned.has(id)):owned.has(card.dataset.shopProduct);
-      const signature=JSON.stringify([isOwned,Boolean(state.subscriptionActive),Boolean(state.subscriptionOverride),Boolean(state.loading),Boolean(state.signedIn),card.classList.contains('is-purchasing'),card.dataset.shopPrice,card.querySelector('h3')?.textContent]);
+      const signature=JSON.stringify([isOwned,Boolean(state.subscriptionActive),Boolean(state.subscriptionOverride),Boolean(state.districtPremium),Boolean(state.loading),Boolean(state.signedIn),card.classList.contains('is-purchasing'),card.dataset.shopPrice,card.querySelector('h3')?.textContent]);
       if(productDisplayState.get(card)===signature)return;productDisplayState.set(card,signature);
       markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
@@ -297,7 +297,7 @@ function setupTeacherTilesShop(){
   function syncMembership(){
     const state=accountState(),active=Boolean(state.subscriptionActive||state.subscriptionOverride);
     membershipCard?.classList.toggle('is-subscription-active',active);
-    if(membershipTitle)membershipTitle.textContent=active?'Subscription Active!':membershipDefaultTitle;
+    if(membershipTitle)membershipTitle.textContent=active?(state.districtPremium?'Subscription Active (Through Organization!)':'Subscription Active!'):membershipDefaultTitle;
     for(const selector of ['.shop-membership-price','.shop-membership-card__foot']){
       const element=membershipCard?.querySelector(selector);if(element)element.hidden=active;
     }

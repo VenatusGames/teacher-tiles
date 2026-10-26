@@ -992,7 +992,7 @@ async function acceptOrganizationInvite(invite) {
     await loadOrganizationIndex({ force: true });
     // Apply a newly assigned District seat immediately after joining.
     if(organizationMemberships.some(item=>item.id===invite.organizationId&&item.isDistrict)){
-      refreshShopAccount().catch(error=>console.warn('Could not refresh District Premium access',error));
+      await refreshShopAccount().catch(error=>console.warn('Could not refresh District Premium access',error));
     }
   } catch (error) {
     console.error("TeacherTiles could not accept the organization invitation", error);
@@ -1244,7 +1244,7 @@ async function loadOrganizationIndex({ force = false } = {}) {
         return { id: organizationSnapshot.id, ...organizationSnapshot.data(), membership };
       }));
       if (currentUser?.uid !== requestedUid) return organizationMemberships;
-      organizationMemberships = items.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+      organizationMemberships = items.filter(Boolean).sort((a, b) => Number(b.isDistrict === true) - Number(a.isDistrict === true) || a.name.localeCompare(b.name));
       organizationIndexLoadedAt = Date.now();
       renderOrganizationList();
       return organizationMemberships;
@@ -1429,7 +1429,7 @@ function districtSeatedMembers() {
   const count=Number.isSafeInteger(activeOrganization.premiumSeatCount)?Math.max(0,activeOrganization.premiumSeatCount):0;
   const ranks={Owner:0,Admin:1,Member:2};
   const time=value=>({seconds:value?.seconds??value?._seconds??0,nanos:value?.nanoseconds??value?._nanoseconds??0});
-  const members=activeOrganizationMembers.filter(m=>m.joinedAt&&ranks[m.role]!==undefined).slice().sort((a,b)=>{
+  const members=activeOrganizationMembers.filter(m=>!m.testMember&&m.joinedAt&&ranks[m.role]!==undefined).slice().sort((a,b)=>{
     const x=time(a.joinedAt),y=time(b.joinedAt);
     return ranks[a.role]-ranks[b.role]||x.seconds-y.seconds||x.nanos-y.nanos||(a.uid<b.uid?-1:a.uid>b.uid?1:0);
   });
@@ -1473,11 +1473,16 @@ function renderOrganizationMembers() {
     email.textContent = member.email || "Google account";
     copy.append(name, email);
     card.append(avatarWrap, copy);
-    if(seated&&!member.testMember&&!seated.has(member.uid)){
-      const warning=document.createElement('span');warning.className='organization-seat-warning';warning.textContent='!';
-      warning.title='Does not have premium seat!';warning.setAttribute('aria-label','Does not have premium seat!');
-      const tooltip=document.createElement('span');tooltip.className='organization-seat-tooltip';tooltip.textContent=warning.title;
-      warning.append(tooltip);avatarWrap.append(warning);
+    if(seated||member.testMember){
+      const assigned=!member.testMember&&seated?.has(member.uid);
+      const indicator=document.createElement('span');
+      indicator.className=assigned?'organization-seat-crown':'organization-seat-warning';
+      indicator.title=assigned?'Premium seat assigned':'Does not have premium seat!';
+      indicator.setAttribute('role','img');indicator.setAttribute('aria-label',indicator.title);
+      if(assigned)indicator.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/></svg>';
+      else indicator.textContent='!';
+      const tooltip=document.createElement('span');tooltip.className='organization-seat-tooltip';tooltip.textContent=indicator.title;
+      indicator.append(tooltip);avatarWrap.append(indicator);
     }
     if (management) card.append(organizationMemberActions(member));
     else {
