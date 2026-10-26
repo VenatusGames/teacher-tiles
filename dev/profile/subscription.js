@@ -32,12 +32,14 @@ export function setupSubscriptionManagement(call,getUserId,getSubscriptionAccess
   const resetConfirmation=()=>{selected=null;confirm.hidden=true;};
   const setBusy=value=>{busy=value;dialog.setAttribute('aria-busy',String(value));dialog.querySelectorAll('[data-cancel-subscription],[data-confirm],[data-keep],[data-refresh]').forEach(button=>button.disabled=value);};
   const node=(tag,className,text)=>{const element=document.createElement(tag);if(className)element.className=className;if(text!==undefined)element.textContent=text;return element;};
-  const gifted=()=>window.TeacherTilesAccount?.state?.subscriptionOverride===true;
+  const gifted=()=>{const state=window.TeacherTilesAccount?.state;return state?.subscriptionOverride===true&&!(state.districtPremium&&state.subscriptionActive);};
   function renderGift(){
     resultData=null;details.replaceChildren();resetConfirmation();say('');setBusy(false);
     dialog.querySelector('footer').hidden=true;
     const card=node('section','subscription-empty subscription-gift');
-    card.append(node('h3','','You have been gifted a subscription by TeacherTiles! Lucky you!'));details.append(card);
+    const district=window.TeacherTilesAccount?.state?.districtPremium;
+    card.append(node('h3','',district?'Your District provides your Premium subscription.':'You have been gifted a subscription by TeacherTiles! Lucky you!'));
+    if(district)card.append(node('p','','Your access is provided through a District Premium seat. Contact your district administrator for help.'));details.append(card);
   }
   function render(result){
     if(gifted()){renderGift();return}
