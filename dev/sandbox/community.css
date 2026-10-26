@@ -5,3 +5,7 @@
 .community-editor .community-upcoming-toggle{display:flex;justify-content:space-between;margin:14px 0}.community-editor .community-upcoming-toggle input{width:36px;flex:0 0 36px;padding:0}
 
 .announcements-intro{color:var(--muted);font-size:14px;line-height:1.6}.announcement-admin-card .community-card-body h3{margin:4px 0 10px;overflow-wrap:anywhere}.announcement-admin-card small{display:block;color:var(--muted);font-size:12px;line-height:1.7}.announcement-admin-message{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;line-height:1.6}.announcement-editor textarea{resize:vertical;min-height:140px}.announcement-editor [data-hint]{line-height:1.6;color:var(--muted)}.announcements-more{margin-top:20px}
+
+.community-admin-visibility{display:block;margin-bottom:12px;color:var(--muted)}
+.community-manager button.community-delete{color:#aa3444;border-color:#aa344440;background:var(--surface-solid)}
+.community-manager button.community-delete:hover{background:#aa344410}
