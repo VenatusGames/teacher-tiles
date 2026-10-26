@@ -1,8 +1,8 @@
 import {createDailyActivityChart} from './daily-activity-chart.js?v=20261012';
 export const MEMBERSHIP_VIEWS={
- paid:{key:'paidSubscribers',title:'Paid Subscribers',label:'Paid',noun:'paid',description:'Active paid subscriptions',detail:'Personal paid plans only · trials and organization seats excluded.'},
- trials:{key:'trialSubscribers',title:'Trial Subscribers',label:'Trials',noun:'trial',description:'Trials, free permanent access, and dev testing',detail:'Trials and free overrides · organization-only access excluded.'},
- org:{key:'orgSubscribers',title:'Organization Subscribers',label:'Org',noun:'organization',description:'Premium provided through organization seats',detail:'Unique seated members without a personal paid plan or trial.'}
+ paid:{key:'paidSubscribers',title:'Paid Subscribers',label:'Paid',noun:'paid',description:'Active paid subscriptions',detail:'Personal paid plans · active dev-console previews excluded.'},
+ trials:{key:'trialSubscribers',title:'Trial Subscribers',label:'Trials',noun:'trial',description:'Trials, free permanent access, and dev testing',detail:'Trials, dev-console previews, and free overrides · organization-only access excluded.'},
+ org:{key:'orgSubscribers',title:'Organization Subscribers',label:'Org',noun:'organization',description:'Premium provided through organization seats',detail:'Unique seated members without a personal plan or active dev-console preview.'}
 };
 const NS = 'http://www.w3.org/2000/svg';
 const number = value => Number(value).toLocaleString();

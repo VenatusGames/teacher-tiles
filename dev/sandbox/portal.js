@@ -7,7 +7,7 @@ import {createTileManagementPanel} from './tile-management.js?v=20261020-availab
 import {adminBoardPreview} from './board-preview.js?v=20261021-balanced-feather-rows';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polish';
-import {createInsights} from './insights.js?v=20261025-org-subs';
+import {createInsights} from './insights.js?v=20261025-preview-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20261020-product-polish';
