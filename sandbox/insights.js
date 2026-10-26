@@ -1,4 +1,4 @@
-import {createTrendCharts,MEMBERSHIP_VIEWS} from './insight-trends.js?v=20261025-org-subs';
+import {createTrendCharts,MEMBERSHIP_VIEWS} from './insight-trends.js?v=20261025-preview-trials';
 export function createInsights(call){
  const root=document.getElementById('developer-insights');
  root.innerHTML=`<div class="insights-header"><div><h2>At a Glance</h2><p id="insights-status" role="status">Loading a current snapshot…</p></div><button class="quiet" id="insights-refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/></svg>Refresh Insights</button></div>

@@ -1473,7 +1473,7 @@ function renderOrganizationMembers() {
     email.textContent = member.email || "Google account";
     copy.append(name, email);
     card.append(avatarWrap, copy);
-    if(seated||member.testMember){
+    if(seated){
       const assigned=!member.testMember&&seated?.has(member.uid);
       const indicator=document.createElement('span');
       indicator.className=assigned?'organization-seat-crown':'organization-seat-warning';

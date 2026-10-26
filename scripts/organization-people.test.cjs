@@ -50,7 +50,7 @@ await page.evaluate(()=>setRole('Member'));assert(!(await manager.isVisible()));
 await page.getByRole('button',{name:'Open profile for Admin Teacher',exact:true}).click();assert(await profile.isVisible());assert.equal(await profile.getByRole('combobox').count(),0);assert.equal(await profile.getByRole('button',{name:'Remove Admin Teacher',exact:true}).count(),0);await page.getByRole('button',{name:'Close Member Profile',exact:true}).click();
 await page.evaluate(()=>{setRole('Owner');window.TeacherTilesAdminAccess={developer:true};window.TeacherTilesSandbox={testMembersEnabled:true};window.dispatchEvent(new Event('teachertiles:testmemberschange'));});
 assert.equal(await page.locator('#organization-member-list>.organization-member-card').count(),13);
-assert.equal(await page.locator('#organization-member-list .organization-seat-warning').count(),10,'Test members show unassigned warnings even outside a District');
+assert.equal(await page.locator('#organization-member-list .organization-seat-warning').count(),0,'Regular organizations show no seat warnings, including test members');
 await page.evaluate(()=>{activeOrganization.isDistrict=true;activeOrganization.premiumSeatCount=100;renderOrganizationMembers();});
 assert.equal(await page.locator('#organization-member-list .organization-seat-warning').count(),10,'Test members never receive available real seats');assert.equal(await page.locator('#organization-member-list .organization-seat-crown').count(),3);
 await page.evaluate(()=>{activeOrganization.isDistrict=false;renderOrganizationMembers();});
