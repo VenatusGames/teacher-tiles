@@ -4,6 +4,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{chr
 
 await page.addScriptTag({content:section('const organizationButton =','let ticketInbox')+section('let organizationImageDraft =','const ORGANIZATION_LOGO_OPTIONS')+
 `let currentUser={uid:'me',email:'me@example.com',displayName:'Me'},db={},organizationBusy=false,organizationMemberships=[],activeOrganization={id:'school',name:'Our School',logo:'🏫',ownerId:'founder',membership:{role:'Owner'}},activeOrganizationMembers=[],activeOrganizationInvites=[],organizationLogoDraft='🏫';const ORGANIZATION_LOGO_OPTIONS=['🏫'];
+const organizationDetailCache=new Map();let organizationIndexLoadedAt=123;function renderOrganizationList(){}
 window.members=[{uid:'me',displayName:'Me',email:'me@example.com',role:'Owner'},{uid:'founder',displayName:'Founder',email:'founder@example.com',role:'Owner'},{uid:'admin',displayName:'Admin Teacher',email:'admin@example.com',role:'Admin'},{uid:'member',displayName:'Member Teacher',email:'member@example.com',role:'Member'}];window.invites=[];window.calls={writes:0,refresh:0};window.fail=false;
 function organizationMemberDocument(_id,uid){return uid}function organizationInviteDocument(id){return id}
 const firestoreSdk={serverTimestamp:()=>123,collection:()=>({}),doc:()=>({id:'invite'+invites.length}),setDoc:async(ref,data)=>{if(fail)throw Error('offline');calls.writes++;invites.push({...data,id:ref.id})},updateDoc:async(uid,data)=>{if(fail)throw Error('offline');calls.writes++;members.find(m=>m.uid===uid).role=data.role},deleteDoc:async id=>{if(fail)throw Error('offline');calls.writes++;members=members.filter(m=>m.uid!==id);invites=invites.filter(i=>i.id!==id)}};
@@ -46,5 +47,25 @@ await page.locator('#organization-member-search').fill('');await page.getByRole(
 await page.getByRole('button',{name:'Close Manage Members',exact:true}).click();await page.evaluate(()=>{window.TeacherTilesSandbox.testMembersEnabled=false;window.dispatchEvent(new Event('teachertiles:testmemberschange'));});assert.equal(await page.locator('#organization-member-list>.organization-member-card').count(),3);
 await page.setViewportSize({width:1200,height:850});await page.waitForTimeout(400);await page.screenshot({path:process.env.TEMP+'/organization-members-desktop.png'});await page.setViewportSize({width:390,height:844});assert(await page.locator('.organization-editor-summary').evaluate(e=>e.scrollWidth<=e.clientWidth));await page.screenshot({path:process.env.TEMP+'/organization-members-mobile.png'});
 await page.getByRole('button',{name:'Open profile for Admin Teacher',exact:true}).click();page.once('dialog',d=>d.dismiss());await profile.getByRole('button',{name:'Remove Admin Teacher',exact:true}).click();assert(await profile.isVisible());page.once('dialog',d=>d.accept());await profile.getByRole('button',{name:'Remove Admin Teacher',exact:true}).click();await page.waitForFunction(()=>members.length===2);assert(!(await profile.isVisible()));
+// Settings remain available to every role; membership changes stay guarded and recoverable.
+await page.setViewportSize({width:1200,height:850});
+const settingsButton=page.getByRole('button',{name:'Organization Settings',exact:true});
+const settings=page.getByRole('dialog',{name:'Organization Settings',exact:true});
+const leave=page.getByRole('button',{name:'Leave Organization',exact:true});
+const manageBox=await page.locator('#organization-manage-button').boundingBox(),gearBox=await settingsButton.boundingBox();assert(gearBox.x>manageBox.x+manageBox.width);assert.equal(gearBox.width,38);
+const settingsReads=await page.evaluate(()=>calls.refresh);
+await settingsButton.click();assert(await settings.isVisible());assert(!(await leave.isDisabled()));assert.equal(await page.evaluate(()=>calls.refresh),settingsReads);
+page.once('dialog',d=>d.dismiss());const leaveWrites=await page.evaluate(()=>calls.writes);await leave.click();assert.equal(await page.evaluate(()=>calls.writes),leaveWrites);assert(await settings.isVisible());
+await page.keyboard.press('Escape');assert(!(await settings.isVisible()));
+await page.evaluate(()=>{activeOrganization.isDistrict=true;});
+for(const role of ['Owner','Admin','Member']){
+ await page.evaluate(role=>setRole(role),role);await settingsButton.click();assert(await leave.isDisabled());assert.match(await page.locator('#organization-settings-note').textContent(),/District/);
+ await page.evaluate(()=>leaveActiveOrganization());assert.equal(await page.evaluate(()=>calls.writes),leaveWrites);
+ await page.getByRole('button',{name:'Close Organization Settings',exact:true}).click();
+}
+await page.evaluate(()=>{activeOrganization.isDistrict=false;activeOrganization.ownerId='me';});await settingsButton.click();assert(await leave.isDisabled());assert.match(await page.locator('#organization-settings-note').textContent(),/founding owner/);await page.keyboard.press('Escape');
+await page.evaluate(()=>{activeOrganization.ownerId='founder';fail=true;});await settingsButton.click();page.once('dialog',d=>d.accept());await leave.click();assert.match(await page.locator('#organization-settings-feedback').textContent(),/Could not leave/);assert(!(await leave.isDisabled()));assert(await settings.isVisible());
+await page.setViewportSize({width:390,height:844});assert(await settings.evaluate(e=>e.scrollWidth<=e.clientWidth));await page.screenshot({path:process.env.TEMP+'/organization-settings-mobile.png'});
+await page.evaluate(()=>{fail=false;organizationMemberships=[activeOrganization];organizationDetailCache.set('school',{});});page.once('dialog',d=>d.accept());await leave.click();await page.waitForFunction(()=>!organizationListView.hidden);assert(!(await settings.isVisible()));assert.equal(await page.evaluate(()=>activeOrganization),null);assert.equal(await page.evaluate(()=>organizationMemberships.length),0);assert.equal(await page.evaluate(()=>organizationDetailCache.has('school')),false);assert.equal(await page.evaluate(()=>organizationIndexLoadedAt),0);assert.equal(await page.evaluate(()=>calls.writes),leaveWrites+1);
 assert.deepEqual(errors,[]);console.log('PASS: Invite popup validation/send/retry/pending cancellation, clean main member cards, cached Manage Members, Owner/Admin/Member permissions, protected founder/self, role save/retry, confirmed removal, permission revocation and mobile layout.');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

@@ -171,8 +171,16 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-member-profile-settings h3{font-size:18px;margin:0 0 10px}
 .organization-member-profile-settings p{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
 .organization-member-profile-role{display:flex;flex-direction:column;gap:8px;margin:24px 0 18px;font-size:12px;font-weight:650}
-.organization-member-profile-role select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:14px}
+.organization-member-profile-role select{box-sizing:border-box;width:100%;min-width:0;height:44px;min-height:44px;padding:0 36px 0 12px;line-height:normal;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:inherit;font-size:14px}
 .organization-member-profile-settings .organization-member-remove{width:auto;height:auto;min-height:38px;border:1px solid #b7445040;border-radius:10px;padding:9px 14px;background:var(--surface-solid);color:#b74450;font:inherit;font-size:12px;cursor:pointer}
 .organization-member-profile-feedback{margin:0;padding:14px 24px;border-top:1px solid var(--border);font-size:13px}.organization-member-profile-feedback.is-error{color:#b74450}
 @media(max-width:600px){.organization-member-profile-content{grid-template-columns:1fr}.organization-member-profile-hero{border-right:0;border-bottom:1px solid var(--border);padding:24px}.organization-member-profile-settings{padding:24px}}
 @media(prefers-reduced-motion:reduce){#organization-member-list>button.organization-member-card{transition:none}}
+
+.organization-people-actions>.cs-button.organization-settings-button{flex:0 0 38px;width:38px;height:38px;min-height:38px;padding:8px;gap:0;align-self:center}
+.organization-settings-button svg{width:20px;height:20px;flex:none}
+.organization-settings-dialog{width:min(500px,calc(100vw - 28px))}
+.organization-settings-dialog h3{margin:0 0 10px;font-size:16px}
+.organization-settings-dialog .cs-muted{line-height:1.6;margin:0 0 20px}
+.organization-settings-dialog .organization-leave-button{color:#b74450;border-color:#b7445050}
+.organization-settings-dialog .organization-leave-button:disabled{opacity:.5;cursor:not-allowed}

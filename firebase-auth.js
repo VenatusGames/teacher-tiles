@@ -90,6 +90,11 @@ const organizationCustomLogo = document.getElementById("organization-custom-logo
 const organizationInviteForm = document.getElementById("organization-invite-form");
 const organizationInviteButton = document.getElementById("organization-invite-button");
 const organizationManageButton = document.getElementById("organization-manage-button");
+const organizationSettingsButton = document.getElementById('organization-settings-button');
+const organizationSettingsDialog = document.getElementById('organization-settings-dialog');
+const organizationSettingsNote = document.getElementById('organization-settings-note');
+const organizationSettingsFeedback = document.getElementById('organization-settings-feedback');
+const organizationLeaveButton = document.getElementById('organization-leave-button');
 const organizationInviteDialog = document.getElementById("organization-invite-dialog");
 const organizationManageDialog = document.getElementById("organization-manage-dialog");
 const organizationInviteFeedback = document.getElementById("organization-invite-feedback");
@@ -1255,6 +1260,7 @@ function setOrganizationEditorOpen(open) {
     organizationInviteDialog?.close();
     organizationManageDialog?.close();
     organizationMemberDialog?.close();
+    organizationSettingsDialog?.close();
     activeOrganization = null;
     activeOrganizationMembers = [];
     activeOrganizationInvites = [];
@@ -1281,6 +1287,48 @@ function syncOrganizationPeopleControls() {
     ? "Assign Owner, Admin, or Member roles, or remove members. Your own role and the founding owner's role are protected."
     : "Admins can assign Admin or Member roles and remove Members. Only Owners can assign Owner.";
   if (!allowed) { organizationInviteDialog?.close(); organizationManageDialog?.close(); }
+}
+
+function organizationLeaveRestriction() {
+  if (!activeOrganization || !currentOrganizationMembership()) return 'Your organization membership is unavailable.';
+  if (activeOrganization.isDistrict) return 'You cannot leave a District organization. Contact your organization administrator for help.';
+  if (activeOrganization.ownerId === currentUser?.uid) return 'As the founding owner, you cannot leave while this organization exists.';
+  return '';
+}
+
+function openOrganizationSettings() {
+  if (organizationBusy || !activeOrganization || !organizationSettingsDialog) return;
+  const restriction = organizationLeaveRestriction();
+  organizationSettingsNote.textContent = restriction || 'Leaving removes your access to this organization. You will need a new invitation to rejoin.';
+  organizationLeaveButton.disabled = Boolean(restriction);
+  setOrganizationFeedback(organizationSettingsFeedback);
+  if (!organizationSettingsDialog.open) organizationSettingsDialog.showModal();
+  organizationSettingsDialog.querySelector('[data-organization-settings-close]')?.focus();
+}
+
+async function leaveActiveOrganization() {
+  if (organizationBusy || organizationLeaveRestriction()) return;
+  const target = activeOrganization;
+  if (!confirm(`Leave ${target.name}? You will need a new invitation to rejoin.`)) return;
+  organizationBusy = true;
+  organizationLeaveButton.disabled = true;
+  setOrganizationFeedback(organizationSettingsFeedback, 'Leaving organization…');
+  try {
+    // Firestore rules check the current District flag and founding owner before deleting.
+    await firestoreSdk.deleteDoc(organizationMemberDocument(target.id, currentUser.uid));
+    organizationDetailCache.delete(target.id);
+    organizationMemberships = organizationMemberships.filter(item => item.id !== target.id);
+    organizationIndexLoadedAt = 0;
+    setOrganizationEditorOpen(false);
+    renderOrganizationList();
+    setOrganizationFeedback(organizationFeedback, `You left ${target.name}.`);
+  } catch (error) {
+    setOrganizationFeedback(organizationSettingsFeedback,
+      'Could not leave this organization. It may now be a District organization, or your membership may have changed. Reopen the organization or try again.', true);
+  } finally {
+    organizationBusy = false;
+    organizationLeaveButton.disabled = Boolean(organizationLeaveRestriction());
+  }
 }
 
 function openOrganizationPeopleDialog(kind) {
@@ -4064,6 +4112,16 @@ organizationCreateDialog?.addEventListener('close', () => { if (!organizationPan
 organizationInviteForm?.addEventListener("submit", inviteToOrganization);
 organizationInviteButton?.addEventListener("click", () => openOrganizationPeopleDialog("invite"));
 organizationManageButton?.addEventListener("click", () => openOrganizationPeopleDialog("manage"));
+organizationSettingsButton?.addEventListener('click', openOrganizationSettings);
+organizationLeaveButton?.addEventListener('click', leaveActiveOrganization);
+organizationSettingsDialog?.querySelector('[data-organization-settings-close]')?.addEventListener('click', () => {
+  if (!organizationBusy) organizationSettingsDialog.close();
+});
+organizationSettingsDialog?.addEventListener('cancel', event => { if (organizationBusy) event.preventDefault(); });
+organizationSettingsDialog?.addEventListener('keydown', event => event.stopPropagation());
+organizationSettingsDialog?.addEventListener('close', () => {
+  if (!organizationEditorView.hidden && !organizationPanel.hidden) organizationSettingsButton?.focus({preventScroll:true});
+});
 for (const dialog of [organizationInviteDialog, organizationManageDialog]) {
   dialog?.querySelectorAll('[data-organization-people-close]').forEach(button => button.addEventListener('click', () => { if (!organizationBusy) dialog.close(); }));
   dialog?.addEventListener('cancel', event => { if (organizationBusy) event.preventDefault(); });
