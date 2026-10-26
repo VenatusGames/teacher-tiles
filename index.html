@@ -75,7 +75,7 @@
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
   <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261023-tool-navigation">
   <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
-<link rel="stylesheet" href="profile/organizations.css?v=20261023-organization-members">
+<link rel="stylesheet" href="profile/organizations.css?v=20261025-organization-management">
 <link rel="stylesheet" href="profile/classes-students.css?v=20261023-owner-edit-navigation">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
@@ -583,15 +583,14 @@
                 </header>
                 <div class="organization-editor__body">
                   <p class="organization-development-note">Note: Many of the features of organizations are still a work-in-progress and are not yet implemented. Stay tuned for future updates and functionality!</p>
-                  <div class="organization-editor-summary"><span id="organization-editor-logo" class="organization-editor-summary__icon" aria-hidden="true">🏫</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><button id="organization-details-edit" type="button" class="organization-edit-button" aria-label="Edit Organization" title="Edit Organization">✎</button><span id="organization-current-role" class="organization-role-tag">Member</span></div>
-                  <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
-
-                  <div class="organization-people-actions">
+                  <div class="organization-editor-summary"><span id="organization-editor-logo" class="organization-editor-summary__icon" aria-hidden="true">🏫</span><div><strong id="organization-editor-title">Organization</strong><small id="organization-editor-meta">Loading members…</small></div><button id="organization-details-edit" type="button" class="organization-edit-button" aria-label="Edit Organization" title="Edit Organization">✎</button><span id="organization-district-badge" class="organization-district-badge" hidden>District</span><span id="organization-current-role" class="organization-role-tag">Member</span>                  <div class="organization-people-actions">
                     <button id="organization-invite-button" type="button" class="cs-button cs-primary" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m4-14v8m-4-4h8"/></svg>Invite</button>
                     <button id="organization-manage-button" type="button" class="cs-button" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m3-17a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5v2"/></svg>Manage Members</button>
-                  </div>
+                  </div></div>
+                  <p id="organization-editor-feedback" class="organization-feedback" hidden></p>
+
                   <div class="organization-section-heading"><div><span>PEOPLE</span><h4>Organization members</h4></div><small id="organization-member-count"></small></div>
-                  <div id="organization-member-list" class="organization-member-list"></div>
+                  <label class="organization-member-search"><span>Find a member</span><input id="organization-member-search" type="search" placeholder="Search name, email, or role" aria-label="Search organization members"></label><div id="organization-member-list" class="organization-member-list"></div>
 
 
                 </div>
@@ -618,7 +617,7 @@
               <div class="organization-people-body">
                 <p id="organization-manage-note" class="cs-muted"></p>
                 <p id="organization-manage-feedback" class="cs-error" role="status" hidden></p>
-                <div id="organization-manage-list" class="organization-manage-list"></div>
+                <label class="organization-member-search"><span>Find a member</span><input id="organization-manage-search" type="search" placeholder="Search name, email, or role" aria-label="Search members to manage"></label><div id="organization-manage-list" class="organization-manage-list"></div>
               </div>
               <footer class="organization-people-footer"><button type="button" class="cs-button" data-organization-people-close>Done</button></footer>
             </dialog>
@@ -628,8 +627,8 @@
                 <div id="organization-details-preview" class="cs-form-preview" aria-hidden="true">🏫</div>
                 <label class="cs-field"><span>Organization name</span><input id="organization-name" type="text" maxlength="80" aria-label="Organization name" required></label>
                 <section id="organization-logo-editor" class="organization-logo-editor" aria-labelledby="organization-logo-title">
-                    <div><span>ORGANIZATION LOGO</span><h4 id="organization-logo-title">Choose a symbol</h4><p>Pick a preset or enter your own emoji or short symbol.</p></div>
-                    <div id="organization-logo-options" class="organization-logo-options" role="group" aria-label="Organization logo symbols"></div>
+                    <div><span>ORGANIZATION LOGO</span><h4 id="organization-logo-title">Choose a symbol</h4><p>Upload an image, pick a preset, or enter your own symbol.</p></div>
+                    <div class="cs-photo-actions"><button id="organization-logo-upload" type="button" class="cs-button">Upload Image</button><button id="organization-logo-reset" type="button" class="cs-button">Use Symbol</button><input id="organization-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden aria-label="Upload organization image"></div><div id="organization-logo-options" class="organization-logo-options" role="group" aria-label="Organization logo symbols"></div>
                     <label><span>Custom symbol</span><input id="organization-custom-logo" type="text" maxlength="16" placeholder="🏫" aria-label="Custom organization logo symbol"></label>
                   </section>
                 <p id="organization-details-feedback" class="cs-error" role="status" hidden></p>
@@ -4743,7 +4742,7 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261023-organization-members"></script>
+<script type="module" src="firebase-auth.js?v=20261025-organization-management"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 
