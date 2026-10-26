@@ -184,3 +184,8 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-settings-dialog .cs-muted{line-height:1.6;margin:0 0 20px}
 .organization-settings-dialog .organization-leave-button{color:#b74450;border-color:#b7445050}
 .organization-settings-dialog .organization-leave-button:disabled{opacity:.5;cursor:not-allowed}
+
+.organization-member-avatar-wrap{position:relative}
+.organization-seat-warning{position:absolute;top:0;right:0;display:grid;place-items:center;width:23px;height:23px;border:2px solid var(--surface-solid,#fff);border-radius:50%;background:#cf3545;color:#fff;font-size:14px;font-weight:800;box-shadow:0 2px 5px #0002}
+.organization-seat-tooltip{display:none;position:absolute;top:28px;right:-12px;z-index:5;width:max-content;max-width:200px;padding:8px 10px;border-radius:8px;background:#792936;color:#fff;font-size:11px;font-weight:600;line-height:1.4;pointer-events:none}
+.organization-seat-warning:hover .organization-seat-tooltip,.organization-member-card:focus-visible .organization-seat-tooltip{display:block}

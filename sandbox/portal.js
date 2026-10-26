@@ -1,4 +1,4 @@
-import {createOrganizationsPanel} from './organizations.js?v=20261025-district-badge';
+import {createOrganizationsPanel} from './organizations.js?v=20261025-district-seats';
 import {createAnnouncementsPanel} from './announcements.js?v=20261022';
 import {createCommunityPanel} from './community.js?v=20261021-banner-library';
 import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';

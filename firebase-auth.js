@@ -3,7 +3,7 @@ const announcementModuleUrl=new URL('./support/announcements.js',import.meta.url
 announcementModuleUrl.search=new URL(import.meta.url).search||'?v=20261022-live';
 const {createAnnouncementNotifications}=await import(announcementModuleUrl.href);
 import {createSubscriberCoinNotice} from './account/subscriber-coins.js?v=20261013-monthly';
-import {setupSubscriptionManagement} from './profile/subscription.js?v=20261015-gift';
+import {setupSubscriptionManagement} from './profile/subscription.js?v=20261025-district';
 import {createTicketNotifications} from './support/notifications.js';
 import {boardCosmetics,cosmeticAccessDialog,openCosmeticShop} from './boards/access.js?v=20261021-thanksgiving-polish2';
 import {setupNickname} from './profile/nickname.js?v=20260926-edit';
@@ -211,7 +211,7 @@ const shopAccountState = {
   coinBalance: 0,
   ownedProductIds: [],
   subscriptionActive: false,
-  subscriptionOverride: false
+  subscriptionOverride: false, districtPremium: false
 };
 
 const boardApi = () => window.TeacherTilesBoard || null;
@@ -749,7 +749,8 @@ function publishShopAccount(patch = {}) {
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
       subscriptionActive: Boolean(shopAccountState.subscriptionActive),
-      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride)
+      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride),
+      districtPremium: Boolean(shopAccountState.districtPremium)
     }
   }));
 }
@@ -766,7 +767,7 @@ let shopAccessCheckedAt=0,shopAccessRequest=null;
 async function ensureShopAccess(){if(!shopAccountState.ready||Date.now()-shopAccessCheckedAt>300000){if(!shopAccessRequest)shopAccessRequest=refreshShopAccount().finally(()=>{shopAccessRequest=null;});await shopAccessRequest;}return shopAccountState;}
 async function refreshShopAccount() {
   if (!currentUser) {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false, districtPremium: false });
     return { ...shopAccountState };
   }
 
@@ -783,7 +784,8 @@ async function refreshShopAccount() {
         ownedProductIds: account.ownedProductIds,
         patchAwards: account.patchAwards || {},
         subscriptionActive: Boolean(account.subscriptionActive),
-        subscriptionOverride: Boolean(account.subscriptionOverride)
+        subscriptionOverride: Boolean(account.subscriptionOverride),
+        districtPremium: Boolean(account.districtPremium)
       });
       subscriberCoinNotice.update(uid,account.subscriptionCoinNotice,account.coinBalance);
     }
@@ -803,7 +805,8 @@ function applyReturnedShopAccount(result) {
       coinBalance: result.coinBalance,
       ownedProductIds: result.ownedProductIds,
       subscriptionActive: "subscriptionActive" in result ? Boolean(result.subscriptionActive) : shopAccountState.subscriptionActive,
-      subscriptionOverride: "subscriptionOverride" in result ? Boolean(result.subscriptionOverride) : shopAccountState.subscriptionOverride
+      subscriptionOverride: "subscriptionOverride" in result ? Boolean(result.subscriptionOverride) : shopAccountState.subscriptionOverride,
+      districtPremium: "districtPremium" in result ? Boolean(result.districtPremium) : shopAccountState.districtPremium
     });
   }
   return result;
@@ -987,6 +990,10 @@ async function acceptOrganizationInvite(invite) {
     setOrganizationFeedback(organizationFeedback, `You joined ${invite.organizationName || "the organization"}.`);
     organizationIndexLoadedAt = 0;
     await loadOrganizationIndex({ force: true });
+    // Apply a newly assigned District seat immediately after joining.
+    if(organizationMemberships.some(item=>item.id===invite.organizationId&&item.isDistrict)){
+      refreshShopAccount().catch(error=>console.warn('Could not refresh District Premium access',error));
+    }
   } catch (error) {
     console.error("TeacherTiles could not accept the organization invitation", error);
     setOrganizationFeedback(organizationFeedback, "The invitation could not be accepted. Please try again.", true);
@@ -1417,10 +1424,23 @@ function renderOrganizationMemberProfile() {
   organizationMemberProfileContent.append(hero,panel);
 }
 
+function districtSeatedMembers() {
+  if (!activeOrganization?.isDistrict) return null;
+  const count=Number.isSafeInteger(activeOrganization.premiumSeatCount)?Math.max(0,activeOrganization.premiumSeatCount):0;
+  const ranks={Owner:0,Admin:1,Member:2};
+  const time=value=>({seconds:value?.seconds??value?._seconds??0,nanos:value?.nanoseconds??value?._nanoseconds??0});
+  const members=activeOrganizationMembers.filter(m=>m.joinedAt&&ranks[m.role]!==undefined).slice().sort((a,b)=>{
+    const x=time(a.joinedAt),y=time(b.joinedAt);
+    return ranks[a.role]-ranks[b.role]||x.seconds-y.seconds||x.nanos-y.nanos||(a.uid<b.uid?-1:a.uid>b.uid?1:0);
+  });
+  return new Set(members.slice(0,count).map(m=>m.uid));
+}
+
 function renderOrganizationMembers() {
   if (!organizationMemberList) return;
   syncOrganizationPeopleControls();
   const members = visibleOrganizationMembers();
+  const seated = districtSeatedMembers();
   if (organizationMemberCount) organizationMemberCount.textContent = `${members.length} ${members.length === 1 ? "person" : "people"}`;
   const badge=document.getElementById('organization-district-badge');if(badge)badge.hidden=!activeOrganization?.isDistrict;
   const currentRole = currentOrganizationRole();
@@ -1453,6 +1473,12 @@ function renderOrganizationMembers() {
     email.textContent = member.email || "Google account";
     copy.append(name, email);
     card.append(avatarWrap, copy);
+    if(seated&&!member.testMember&&!seated.has(member.uid)){
+      const warning=document.createElement('span');warning.className='organization-seat-warning';warning.textContent='!';
+      warning.title='Does not have premium seat!';warning.setAttribute('aria-label','Does not have premium seat!');
+      const tooltip=document.createElement('span');tooltip.className='organization-seat-tooltip';tooltip.textContent=warning.title;
+      warning.append(tooltip);avatarWrap.append(warning);
+    }
     if (management) card.append(organizationMemberActions(member));
     else {
       card.type='button';
@@ -1536,7 +1562,13 @@ async function refreshOrganizationEditor({ force = false } = {}) {
         firestoreSdk.collection(db, "organizationMembers"),
         firestoreSdk.where("organizationId", "==", organizationId)
       );
-      const memberSnapshot = await firestoreSdk.getDocs(memberQuery);
+      const [memberSnapshot, latestOrganization] = await Promise.all([
+        firestoreSdk.getDocs(memberQuery), firestoreSdk.getDoc(organizationDocument(organizationId))
+      ]);
+      if(currentUser?.uid!==requestedUid)return;
+      if(activeOrganization?.id===organizationId&&latestOrganization.exists()){
+        Object.assign(activeOrganization,latestOrganization.data());
+      }
       const members = memberSnapshot.docs.map(item => ({ id: item.id, ...item.data() }));
       const ownMembership = members.find(member => member.uid === currentUser.uid) || activeOrganization.membership;
       let invites = [];
@@ -3807,7 +3839,7 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
-  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false,subscriptionOverride:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
+  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false,subscriptionOverride:false,districtPremium:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
   subscriberCoinNotice.reset(user?.uid||"");
   currentUser = user || null;window.TeacherTilesProfileFrames?.setUser(user?.uid||'',firestoreSdk,db);if(!user)window.TeacherTilesTheme?.hideBoard();
@@ -3903,7 +3935,7 @@ async function renderUser(user) {
       await initializeBoardsForUser(user);
     }
   } else {
-    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false });
+    publishShopAccount({ ready: true, loading: false, signedIn: false, coinBalance: 0, ownedProductIds: [], subscriptionActive: false, subscriptionOverride: false, districtPremium: false });
     clearTimeout(localBoardSaveTimer);
     clearAllCloudBoardSaveTimers();
     activeBoardId = "";
@@ -4417,7 +4449,8 @@ window.TeacherTilesAccount = {
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
       subscriptionActive: Boolean(shopAccountState.subscriptionActive),
-      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride)
+      subscriptionOverride: Boolean(shopAccountState.subscriptionOverride),
+      districtPremium: Boolean(shopAccountState.districtPremium)
     };
   },
   owns(productId) {
