@@ -1,5 +1,5 @@
 import './cosmetics-policy.js?v=20261016-template-preview';
-const catalog=await fetch(new URL('./cosmetics-catalog.json?v=20261026-date-skins',import.meta.url)).then(r=>{if(!r.ok)throw Error('Cosmetic catalog could not load.');return r.json();});
+const catalog=await fetch(new URL('./cosmetics-catalog.json?v=20261026-ruler-skins',import.meta.url)).then(r=>{if(!r.ok)throw Error('Cosmetic catalog could not load.');return r.json();});
 export const boardCosmetics=globalThis.TeacherTilesCosmeticsPolicy.policy(catalog);
 
 const nextTask=()=>new Promise(resolve=>setTimeout(resolve,0));
