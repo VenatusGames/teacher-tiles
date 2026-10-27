@@ -9,6 +9,10 @@
     "pumpkinpatch"
   ],
   "skins": {
+    "ruler-clear": "tile-skin-ruler-clear",
+    "ruler-metal": "tile-skin-ruler-metal",
+    "ruler-rainbow": "tile-skin-ruler-rainbow",
+
     "date-desk": "tile-skin-date-desk",
     "date-botanical": "tile-skin-date-botanical",
     "date-midnight": "tile-skin-date-midnight",
