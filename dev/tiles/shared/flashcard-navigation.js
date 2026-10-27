@@ -1,4 +1,7 @@
 (()=>{'use strict';
+let pointerInteraction=true;
+document.addEventListener('pointerdown',()=>{pointerInteraction=true;},{capture:true,passive:true});
+document.addEventListener('keydown',()=>{pointerInteraction=false;},{capture:true});
 // One listener for the active fullscreen tile, never for the whole board or an editor.
 window.addEventListener('keydown',event=>{
   const m=document.fullscreenElement;
@@ -23,15 +26,17 @@ function enhanceSelect(m,select){
   trigger.setAttribute('aria-label',select.getAttribute('aria-label')||'Choose a set');trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
   trigger.innerHTML='<span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>';
   const caption=trigger.firstElementChild,menu=document.createElement('div');menu.className='flashcard-select-menu';menu.setAttribute('popover','auto');menu.setAttribute('role','listbox');menu.setAttribute('aria-label',trigger.getAttribute('aria-label'));
-  menu.id='flashcard-select-'+(++selectSequence);trigger.setAttribute('aria-controls',menu.id);
+  menu.id='flashcard-select-'+(++selectSequence);trigger.setAttribute('aria-controls',menu.id);trigger.popoverTargetElement=menu;
   select.hidden=true;select.after(trigger);m.append(menu);
   const open=()=>menu.matches(':popover-open');
   const close=()=>{if(open())menu.hidePopover();};
   function sync(){caption.textContent=select.selectedOptions[0]?.textContent||'No sets yet';trigger.disabled=select.disabled||!select.options.length;trigger.title=caption.textContent;for(const b of menu.querySelectorAll('[role=option]'))b.setAttribute('aria-selected',String(b.dataset.value===select.value));}
   function position(){if(!open())return;const r=trigger.getBoundingClientRect();const width=Math.min(Math.max(r.width,220),innerWidth-16);menu.style.width=width+'px';menu.style.maxHeight=Math.min(300,innerHeight-16)+'px';menu.style.left=Math.max(8,Math.min(r.left,innerWidth-width-8))+'px';const h=menu.offsetHeight;menu.style.top=Math.max(8,Math.min(r.bottom+6+h<=innerHeight-8?r.bottom+6:r.top-h-6,innerHeight-h-8))+'px';}
   function render(){menu.replaceChildren();for(const child of select.children){const group=child.tagName==='OPTGROUP'?child:null;if(group){const title=document.createElement('div');title.className='flashcard-select-group';title.textContent=group.label;menu.append(title);}for(const option of group?[...group.children]:[child]){if(option.hidden)continue;const b=document.createElement('button');b.type='button';b.setAttribute('role','option');b.dataset.value=option.value;b.textContent=option.textContent;b.disabled=option.disabled||Boolean(group?.disabled);b.onclick=e=>{e.stopPropagation();select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));sync();close();trigger.focus({preventScroll:true});};menu.append(b);}}sync();}
-  function show(){if(trigger.disabled)return;render();menu.showPopover();m.classList.add('flashcard-select-open');trigger.setAttribute('aria-expanded','true');position();(menu.querySelector('[aria-selected=true]:not(:disabled)')||menu.querySelector('button:not(:disabled)'))?.focus({preventScroll:true});}
-  trigger.onclick=e=>{e.preventDefault();e.stopPropagation();open()?close():show();};
+  function show(){if(!trigger.disabled&&!open())trigger.click();}
+  // The native invoker prevents light-dismiss from closing then reopening on the same click.
+  trigger.onclick=e=>e.stopPropagation();
+  menu.addEventListener('beforetoggle',e=>{if(e.newState==='open'){render();m.classList.add('flashcard-select-open');queueMicrotask(()=>{if(open()){position();(menu.querySelector('[aria-selected=true]:not(:disabled)')||menu.querySelector('button:not(:disabled)'))?.focus({preventScroll:true});}});}});
   trigger.onkeydown=e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();e.stopPropagation();show();}};
   let typed='',typeTimer=0;
   menu.onkeydown=e=>{const buttons=[...menu.querySelectorAll('button:not(:disabled)')],at=buttons.indexOf(document.activeElement);let target;
@@ -43,7 +48,7 @@ function enhanceSelect(m,select){
     else if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&e.key!==' '){typed+=e.key.toLowerCase();clearTimeout(typeTimer);typeTimer=setTimeout(()=>typed='',600);target=buttons.find(b=>b.textContent.toLowerCase().startsWith(typed));}
     if(target){e.preventDefault();target.focus({preventScroll:true});target.scrollIntoView({block:'nearest'});}e.stopPropagation();
   };
-  menu.addEventListener('toggle',()=>{const isOpen=open();trigger.setAttribute('aria-expanded',String(isOpen));m.classList.toggle('flashcard-select-open',isOpen);});
+  menu.addEventListener('toggle',()=>{const isOpen=open();trigger.setAttribute('aria-expanded',String(isOpen));m.classList.toggle('flashcard-select-open',isOpen);if(isOpen)position();else if(pointerInteraction&&document.activeElement===trigger)trigger.blur();});
   menu.addEventListener('pointerdown',e=>e.stopPropagation());
   menu.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
   const observer=new MutationObserver(()=>{sync();if(open()){render();position();}});observer.observe(select,{subtree:true,childList:true,characterData:true,attributes:true});
