@@ -8,20 +8,7 @@ function setupDate(m){
   const weekdayBtn=m.querySelector('.date-weekday-toggle');
   const yearBtn=m.querySelector('.date-year-toggle');
 
-  const options=m.querySelector('.date-options');options.classList.add('date-display-menu');options.setAttribute('popover','auto');
-  const heading=document.createElement('strong');heading.className='date-display-menu-title';heading.textContent='Date Display';options.prepend(heading);
-  const trigger=document.createElement('button');trigger.type='button';trigger.className='date-display-toggle';trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-haspopup','dialog');trigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18"/></svg><span>Display</span>';
-  options.setAttribute('role','dialog');options.setAttribute('aria-label','Date display options');m.append(trigger);
-  const closeButton=document.createElement('button');closeButton.type='button';closeButton.className='date-display-menu-close';closeButton.setAttribute('aria-label','Close date display options');closeButton.textContent='×';options.prepend(closeButton);
-  const close=()=>{if(options.matches(':popover-open'))options.hidePopover();};
-  function positionOptions(){if(!options.matches(':popover-open'))return;const r=trigger.getBoundingClientRect();options.style.left=Math.max(8,Math.min(r.right-options.offsetWidth,innerWidth-options.offsetWidth-8))+'px';options.style.top=Math.max(8,Math.min(r.top-options.offsetHeight-8,innerHeight-options.offsetHeight-8))+'px';}
-  trigger.onclick=()=>{if(options.matches(':popover-open')){close();return;}options.showPopover();positionOptions();};
-  closeButton.onclick=()=>{close();trigger.focus({preventScroll:true});};
-  options.addEventListener('toggle',()=>{const open=options.matches(':popover-open');trigger.setAttribute('aria-expanded',String(open));m.classList.toggle('date-display-open',open);});
-  options.addEventListener('pointerdown',e=>e.stopPropagation());
-  options.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
-  options.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){close();trigger.focus({preventScroll:true});}});
-  window.addEventListener('resize',positionOptions);window.addEventListener('scroll',positionOptions,true);
+  TeacherTilesDisplayMenu.setup(m,{panel:m.querySelector('.date-options'),title:'Date Display',icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18"/>'});
   let fitFrame=0;
 
   const fit=()=>{
@@ -128,7 +115,6 @@ function setupDate(m){
 
   const prior=m._cleanup;
   m._cleanup=()=>{
-    close();window.removeEventListener('resize',positionOptions);window.removeEventListener('scroll',positionOptions,true);
     prior?.();
     clearInterval(id);
     cancelAnimationFrame(fitFrame);

@@ -14,11 +14,14 @@ for(const skin of skins){
  assert.equal(await tile.getAttribute('data-tile-skin'),skin.id);
  for(const [w,h] of [[260,170],[430,260],[800,450]]){
   await tile.evaluate((m,[w,h])=>{m.style.width=w+'px';m.style.height=h+'px'},[w,h]);await page.waitForTimeout(200);
-  await tile.hover();await tile.locator('.date-display-toggle').click();assert(await tile.locator('.date-display-menu').evaluate(e=>e.matches(':popover-open')));
+  await page.mouse.move(1300,900);await page.waitForTimeout(200);
+  const faceBefore=await tile.locator('.date-face').boundingBox();await tile.hover();await page.waitForTimeout(220);const faceAfter=await tile.locator('.date-face').boundingBox();assert.deepEqual(faceAfter,faceBefore,'Date artwork stays stable on hover');
+  await tile.locator('.tile-display-toggle').click();assert(await tile.locator('.tile-display-menu').evaluate(e=>e.matches(':popover-open')));
+  await tile.locator('.tile-display-toggle').click();assert.equal(await tile.locator('.tile-display-menu').evaluate(e=>e.matches(':popover-open')),false);await tile.locator('.tile-display-toggle').click();
   for(const cls of ['date-style','date-layout','date-weekday-toggle','date-year-toggle']){
    const b=tile.locator('.'+cls);if(await b.isVisible())await b.click();
   }
-  await tile.locator('.date-display-menu-close').click();await page.mouse.move(1300,900);await page.waitForTimeout(240);
+  await tile.locator('.tile-display-menu-close').click();await page.mouse.move(1300,900);await page.waitForTimeout(240);
   assert(await tile.locator('.date-display').evaluate(d=>{const box=d.getBoundingClientRect();return [...d.children].filter(e=>!e.hidden).every(el=>{const r=el.getBoundingClientRect();return r.left>=box.left-1&&r.right<=box.right+1&&r.top>=box.top-1&&r.bottom<=box.bottom+1})}),skin.id+' fits '+w+'x'+h);
  }
  await page.evaluate(()=>TeacherTilesBoard.load(TeacherTilesBoard.capture()));assert.equal(await tile.getAttribute('data-tile-skin'),skin.id);
@@ -31,6 +34,7 @@ for(const type of ['abc','numberflashcards','cvcword','highfrequency','customfla
  await page.evaluate(type=>{const m=createModule(type,350,150);m.style.width='400px';m.style.height='400px';if(type==='customflashcards')m._boardSetState({activeSetId:'first',sets:[{id:'first',name:'First set with a very long descriptive name to test wrapping',cards:[{id:'a',text:'One'}]},{id:'second',name:'Second set',cards:[{id:'b',text:'Two'}]}]})},type);
  const m=page.locator('#workspace .flashcard-module'),trigger=m.locator('.flashcard-select-trigger'),menu=m.locator('.flashcard-select-menu');
  await m.hover();await page.waitForTimeout(250);await trigger.click();assert(await menu.evaluate(e=>e.matches(':popover-open')));
+ await trigger.click();assert.equal(await menu.evaluate(e=>e.matches(':popover-open')),false,type+' second click closes');assert.equal(await trigger.getAttribute('aria-expanded'),'false');await trigger.click();
  assert(await menu.evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight}));
  await menu.getByRole('option').nth(1).click();assert.equal(await trigger.locator('span').textContent(),await m.locator('select').first().evaluate(e=>e.selectedOptions[0].textContent));
  await trigger.focus();await page.keyboard.press('ArrowDown');await page.keyboard.press('End');await page.keyboard.press('Enter');
@@ -43,8 +47,20 @@ for(const type of ['abc','numberflashcards','cvcword','highfrequency','customfla
  if(type==='customflashcards'){await m.evaluate(m=>m._boardSetState({activeSetId:'new',sets:[{id:'new',name:'Updated set',cards:[{id:'c',text:'New'}]}]}));assert.equal(await trigger.locator('span').textContent(),'Updated set');}
  await m.evaluate(m=>{m._cleanup?.();m.remove()});assert.equal(await page.locator('.flashcard-select-menu').count(),0);
 }
+// Clock controls use the same drawer, including analog/digital switching.
+await page.evaluate(()=>createModule('clock',350,200));
+const clock=page.locator('#workspace .clock-module'),clockTrigger=clock.locator('.tile-display-toggle'),clockMenu=clock.locator('.tile-display-menu');
+await clock.hover();await clockTrigger.click();assert(await clockMenu.evaluate(e=>e.matches(':popover-open')));
+await clockTrigger.click();assert.equal(await clockMenu.evaluate(e=>e.matches(':popover-open')),false);
+await clockTrigger.click();await clockMenu.locator('[data-clock-choice="analog"]').click();assert.equal(await clock.getAttribute('data-clock-mode'),'analog');assert.equal(await clockMenu.locator('.clock-toggle-seconds').isVisible(),false);
+await clockMenu.locator('[data-clock-choice="digital"]').click();await clockMenu.locator('.clock-toggle-seconds').click();assert((await clock.getAttribute('class')).includes('show-seconds'));
+await clockMenu.locator('.clock-toggle-period').click();assert((await clock.getAttribute('class')).includes('hide-period'));
+await page.keyboard.press('Escape');assert.equal(await clockMenu.evaluate(e=>e.matches(':popover-open')),false);
+await clockTrigger.click();await page.mouse.click(1200,850);assert.equal(await clockMenu.evaluate(e=>e.matches(':popover-open')),false);
+await page.evaluate(()=>TeacherTilesBoard.load(TeacherTilesBoard.capture()));assert((await clock.getAttribute('class')).includes('show-seconds'));assert((await clock.getAttribute('class')).includes('hide-period'));
+await clock.evaluate(m=>{m._cleanup?.();m.remove()});
 await page.evaluate(skins=>{boardCamera.x=boardCamera.y=0;boardCamera.scale=1;applyBoardCamera();skins.forEach((s,i)=>{const m=createModule('date',100,100,{tileSkin:s.id});Object.assign(m.style,{left:(40+i*450)+'px',top:'90px',width:'420px',height:'310px'})});const m=createModule('highfrequency',200,500);Object.assign(m.style,{left:'400px',top:'470px',width:'530px',height:'420px'});},skins);
 await page.locator('#workspace .highfrequency-module').hover();await page.waitForTimeout(250);await page.locator('#workspace .flashcard-select-trigger').click();await page.waitForTimeout(200);
 if(process.env.DATE_SKINS_SCREENSHOT)await page.screenshot({path:process.env.DATE_SKINS_SCREENSHOT});
-assert.deepEqual(errors,[]);console.log('Date skins, resizing, display controls, save/restore, preview, and all five flashcard menus passed.');
+assert.deepEqual(errors,[]);console.log('Date skins, resizing, Date/Clock drawer toggles, save/restore, preview, and all five flashcard dropdown toggles passed.');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});
