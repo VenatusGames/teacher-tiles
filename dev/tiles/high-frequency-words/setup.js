@@ -39,9 +39,9 @@ function setupHighFrequencyWords(m){
   const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureWordSize=word=>{
-    const cardRect=card.getBoundingClientRect();
-    const maxWidth=Math.max(90,cardRect.width-36);
-    const maxHeight=Math.max(54,cardRect.height-40);
+    const cardRect=flashcardContentBox(card);
+    const maxWidth=Math.max(90,cardRect.width);
+    const maxHeight=Math.max(54,cardRect.height);
 
     measurer.textContent=word;
     const computed=getComputedStyle(wordEl);
@@ -57,7 +57,7 @@ function setupHighFrequencyWords(m){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
 
-      const rect=measurer.getBoundingClientRect();
+      const rect={width:measurer.offsetWidth,height:measurer.offsetHeight};
       if(rect.width<=maxWidth+1&&rect.height<=maxHeight+1){
         best=mid;
         low=mid+1;

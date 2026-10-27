@@ -12,7 +12,7 @@
     function render(){
       drawer.replaceChildren();const header=document.createElement('header'),title=document.createElement('strong'),x=document.createElement('button');title.textContent='Tile Skins';x.type='button';x.textContent='×';x.setAttribute('aria-label','Close Skins');x.onclick=()=>close(true);header.append(title,x);drawer.append(header);
       const grid=document.createElement('div');grid.className='tile-skins-drawer-grid';drawer.append(grid);grid.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
-      for(const skin of [null,...catalog.filter(s=>s.tileType===m.dataset.type)]){
+      for(const skin of [null,...catalog.filter(s=>tileSkinSupportsType(s,m.dataset.type))]){
         const id=skin?.id||'',locked=skin&&!owned(skin),selected=(m.dataset.tileSkin||'')===id,card=document.createElement('button');card.type='button';card.className='tile-skins-choice';card.classList.toggle('is-locked',!!locked);card.setAttribute('aria-pressed',String(selected));card.title=skin?.description||'Original tile appearance';
         const preview=document.createElement('span');preview.className='tile-skins-choice-preview';
         const source=skin&&document.querySelector(`.shop-product[data-shop-product="${skin.productId}"] .shop-product__preview`);

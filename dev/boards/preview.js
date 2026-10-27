@@ -1,3 +1,4 @@
+import {renderFlashcardPreview} from './flashcard-preview.js?v=20261026';
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
 import '../tiles/halloween/shared.js?v=20261021-thanksgiving';
 import '../tiles/thanksgiving/shared.js?v=20261021-balanced-feather-rows';
@@ -466,6 +467,7 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  renderFlashcardPreview(module,state);
   if(state.type==='popsiclesticks'&&state.dataset?.tileSkin==='popsicle-gumball')window.TeacherTilesGumball.preview(module,state.special||{});
   if(state.type==='tenssticks'){window.TeacherTilesTensSticks.render(module,state.special||{});const area=module.querySelector('.tens-workspace');const w=Number(state.transform?.width)||700,h=Number(state.transform?.height)||460;area.style.transform=`translate(-50%,-50%) scale(${Math.min((w-34)/640,(h-143)/340)})`;}
   if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);

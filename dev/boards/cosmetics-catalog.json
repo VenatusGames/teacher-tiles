@@ -9,6 +9,17 @@
     "pumpkinpatch"
   ],
   "skins": {
+    "flashcard-blocks": "tile-skin-flashcard-blocks",
+    "flashcard-storybook": "tile-skin-flashcard-storybook",
+    "flashcard-grid": "tile-skin-flashcard-grid",
+    "flashcard-arcade": "tile-skin-flashcard-arcade",
+    "flashcard-notebook": "tile-skin-flashcard-notebook",
+    "flashcard-letter-tiles": "tile-skin-flashcard-letter-tiles",
+    "flashcard-library": "tile-skin-flashcard-library",
+    "flashcard-spotlight": "tile-skin-flashcard-spotlight",
+    "flashcard-photo": "tile-skin-flashcard-photo",
+    "flashcard-index": "tile-skin-flashcard-index",
+
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
     "sticky-pinned": "tile-skin-sticky-pinned",

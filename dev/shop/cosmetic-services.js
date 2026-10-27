@@ -16,6 +16,8 @@ function migrateLegacyCursorOwnership(){
   try{localStorage.setItem(SHOP_OWNED_PRODUCTS_KEY,JSON.stringify([...owned]))}catch{}
 }
 
+function tileSkinSupportsType(skin,type){return Boolean(skin&&(skin.tileType===type||skin.tileTypes?.includes(type)))}
+
 function tileSkinById(id){return TILE_SKIN_CATALOG.find(skin=>skin.id===id)||null}
 
 function hasCosmeticSubscription(){const state=window.TeacherTilesAccount?.state;return Boolean(state?.subscriptionActive||state?.subscriptionOverride)}
@@ -95,7 +97,7 @@ function restoreTileEdit(m,snapshot){
 
 function applyTileSkinToModule(m,id,{record=true}={}){
   const type=m.dataset.type,skin=id?tileSkinById(id):null;
-  if(!m.isConnected||(id&&(!skin||skin.tileType!==type||!tileSkinIsOwned(skin))))return m;
+  if(!m.isConnected||(id&&(!skin||!tileSkinSupportsType(skin,type)||!tileSkinIsOwned(skin))))return m;
   const before=m.dataset.tileSkin||'';if(before===id)return m;
   const snapshot=serializeBoardModule(m);if(!snapshot)return m;
   if(id)snapshot.dataset.tileSkin=id;else delete snapshot.dataset.tileSkin;
@@ -126,6 +128,6 @@ function applyTileSkinToModule(m,id,{record=true}={}){
 
 function applyNewModuleTileSkin(m,type,requestedSkinId=''){
   const requested=tileSkinById(requestedSkinId);
-  const skin=requested?.tileType===type&&tileSkinIsOwned(requested)?requested:null;
+  const skin=tileSkinSupportsType(requested,type)&&tileSkinIsOwned(requested)?requested:null;
   if(skin)m.dataset.tileSkin=skin.id;
 }
