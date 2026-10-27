@@ -38,7 +38,7 @@ for(const type of types){
  assert(restH>hoverH+50,`${type} should expand on unhover: ${hoverH} -> ${restH}`);
  assert.equal(await tile.locator('.flashcard-tools').evaluate(e=>getComputedStyle(e).visibility),'hidden');
  // Mouse-click focus must not leave the controls stuck visible.
- await tile.hover();await tile.locator('select').first().focus();await page.mouse.move(1100,900);await page.waitForTimeout(350);
+ await tile.hover();await tile.locator('.flashcard-select-trigger').focus();await page.mouse.move(1100,900);await page.waitForTimeout(350);
  await page.evaluate(()=>document.activeElement.blur());
  await tile.hover();await tile.locator('.tile-skins-toggle').click();
  assert.equal(await page.locator('.tile-skins-choice').count(),11);
@@ -57,7 +57,7 @@ for(const type of types){
  await page.keyboard.press('ArrowRight');await page.waitForTimeout(220);assert.equal(await tile.evaluate(m=>m._boardGetState().cardNavigation.index),2);
  await page.keyboard.press('ArrowLeft');await page.waitForTimeout(220);assert.equal(await tile.evaluate(m=>m._boardGetState().cardNavigation.index),1);
  // Dropdown keyboard input must not change the card.
- await tile.hover();await tile.locator('select').first().focus();await page.keyboard.press('ArrowLeft');assert.equal(await tile.evaluate(m=>m._boardGetState().cardNavigation.index),1);
+ await tile.hover();await tile.locator('.flashcard-select-trigger').focus();await page.keyboard.press('ArrowLeft');assert.equal(await tile.evaluate(m=>m._boardGetState().cardNavigation.index),1);
  await page.evaluate(()=>document.activeElement.blur());
  if(type==='customflashcards'){
   await page.keyboard.press('Space');await page.keyboard.press('Space');await page.waitForTimeout(250);

@@ -167,6 +167,16 @@ function setupWritingLines(m){
   setMode(m.dataset.writingMode==='type');
   fitAll();
 
+  // Keep all lines when a skin rebuilds the tile, even with Typing switched off.
+  m._boardGetState=()=>({lines:entries.map(entry=>entry.textContent||''),mode:m.dataset.writingMode,lineCount:Number(m.dataset.lineCount)||3,preferredHeight});
+  m._boardSetState=state=>{
+    if(!state)return;
+    if(Array.isArray(state.lines))entries.forEach((entry,index)=>entry.textContent=String(state.lines[index]||''));
+    if(Number.isFinite(state.preferredHeight))preferredHeight=Math.max(140,Math.min(4000,state.preferredHeight));
+    setLineCount(state.lineCount??m.dataset.lineCount);
+    setMode((state.mode??m.dataset.writingMode)==='type');
+  };
+
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();

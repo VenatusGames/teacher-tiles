@@ -1,0 +1,29 @@
+/* The face reserves space only while its controls are visible. */
+.date-module .date-face{position:absolute;inset:26px 12px 12px;transition:bottom .18s ease;border-radius:18px}
+.date-module .date-display{inset:8px;overflow:hidden}
+.date-module:is(:hover,:has(:focus-visible),.date-display-open) .date-face{bottom:56px}
+.date-module :is(.date-options button,.date-display-toggle){display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:32px;height:32px;padding:6px 10px;border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:10px;background:var(--module-bg,#fff);color:var(--module-text,#17191d);font:600 12px/1.3 Inter,system-ui,sans-serif;box-shadow:0 2px 5px #1720330d;cursor:pointer;transition:background .15s,border-color .15s}
+.date-module :is(.date-options button,.date-display-toggle):hover{background:color-mix(in srgb,var(--module-bg,#fff) 90%,#79abe6);border-color:#a6c5e8}
+.date-module :is(.date-options button,.date-display-toggle).is-active{background:color-mix(in srgb,var(--module-bg,#fff) 88%,#79abe6);border-color:#a6c5e8}
+.date-module :is(.date-options button,.date-display-toggle):active{box-shadow:none}
+.date-module :is(.date-options button,.date-display-toggle):focus-visible{outline:2px solid #5a8dcc;outline-offset:2px}
+.date-module :is(.date-options,.date-display-toggle) svg{flex:none;width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.date-module[data-tile-skin^="date-"] .date-face{background:var(--date-art) center/100% 100% no-repeat;box-shadow:0 4px 10px #17203315}
+.date-module[data-tile-skin^="date-"] .date-display{inset:24% 9% 12%}
+.date-module[data-tile-skin^="date-"][data-text="dark"] .date-display{color:var(--date-ink)}
+.date-module[data-tile-skin="date-desk"]{--date-art:url("assets/desk.svg");--date-ink:#634b41}
+.date-module[data-tile-skin="date-botanical"]{--date-art:url("assets/botanical.svg");--date-ink:#3d5c48}
+.date-module[data-tile-skin="date-midnight"]{--date-art:url("assets/midnight.svg");--date-ink:#f0e6cf}
+@container(max-width:350px){.date-module .date-options{gap:4px}.date-module :is(.date-options button,.date-display-toggle){padding:5px 7px;font-size:11px}.date-module :is(.date-options,.date-display-toggle) svg{display:none}}
+@media(hover:none){.date-module .date-face{bottom:56px}.date-module .date-options{visibility:visible;opacity:1;pointer-events:auto;transform:none}}
+@media(prefers-reduced-motion:reduce){.date-module .date-face,.date-module .date-options{transition:none}}
+
+.date-module .date-display-toggle{position:absolute;right:12px;bottom:9px;z-index:52;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
+.date-module:is(:hover,:has(:focus-visible),.date-display-open) .date-display-toggle{opacity:1;visibility:visible;pointer-events:auto}
+.date-module .date-options.date-display-menu{position:fixed;inset:auto;left:0;top:0;bottom:auto;transform:none;width:min(290px,calc(100vw - 16px));box-sizing:border-box;margin:0;padding:14px;border:1px solid var(--border,#dce2e9);border-radius:14px;background:var(--surface-solid,#fff);color:var(--text,#202938);box-shadow:0 12px 32px #14233a26;gap:8px;opacity:1;visibility:visible;pointer-events:auto;transition:none}
+.date-module .date-display-menu:not(:popover-open){display:none}
+.date-module .date-display-menu:popover-open{display:grid;grid-template-columns:1fr 1fr}
+.date-display-menu-title{grid-column:1/-1;text-align:left;font:650 13px/28px Inter,system-ui,sans-serif;padding-right:28px}
+.date-module .date-options .date-display-menu-close{position:absolute;right:10px;top:10px;width:28px;min-height:28px;height:28px;padding:0;font:22px/1 Inter,system-ui,sans-serif;box-shadow:none;background:var(--surface-soft,#f1f5f9)}
+.date-display-menu::backdrop{background:transparent}
+@media(hover:none){.date-module .date-display-toggle{opacity:1;visibility:visible;pointer-events:auto}}
