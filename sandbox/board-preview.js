@@ -1,4 +1,4 @@
-import {createBoardPreview,setPreviewTemplates} from '../boards/preview.js?v=20261021-balanced-feather-rows';
+import {createBoardPreview,setPreviewTemplates} from '../boards/preview.js?v=20261026-flashcards';
 let assets;
 function loadAssets(){
   return assets ||= fetch(new URL('../board.html',import.meta.url)).then(async response=>{

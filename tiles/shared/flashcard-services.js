@@ -1,3 +1,9 @@
+// Measure in layout pixels so board zoom and fullscreen use the same safe content area.
+function flashcardContentBox(card){
+  const style=getComputedStyle(card);
+  return {width:Math.max(1,card.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)),height:Math.max(1,card.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom))};
+}
+
 function shuffleFlashcardDeck(values){
   const deck=[...values];
   for(let index=deck.length-1;index>0;index--){
