@@ -9,6 +9,16 @@
     "pumpkinpatch"
   ],
   "skins": {
+    "date-desk": "tile-skin-date-desk",
+    "date-botanical": "tile-skin-date-botanical",
+    "date-midnight": "tile-skin-date-midnight",
+
+    "writinglines-blocks": "tile-skin-writinglines-blocks",
+    "writinglines-storybook": "tile-skin-writinglines-storybook",
+    "writinglines-notebook": "tile-skin-writinglines-notebook",
+    "writinglines-arcade": "tile-skin-writinglines-arcade",
+    "writinglines-index": "tile-skin-writinglines-index",
+
     "flashcard-blocks": "tile-skin-flashcard-blocks",
     "flashcard-storybook": "tile-skin-flashcard-storybook",
     "flashcard-grid": "tile-skin-flashcard-grid",

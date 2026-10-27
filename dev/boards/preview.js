@@ -497,6 +497,44 @@ function applyPreviewState(module, state) {
     editable.removeAttribute("contenteditable");
   }
 
+  if(state.type==='date'){
+    const now=new Date(),numeric=module.dataset.dateStyle==='numbers',horizontal=module.dataset.dateLayout==='horizontal';
+    const weekday=module.querySelector('.date-weekday'),main=module.querySelector('.date-main'),year=module.querySelector('.date-year'),display=module.querySelector('.date-display');
+    const showWeekday=module.dataset.showWeekday!=='false',showYear=module.dataset.showYear!=='false';
+    module.classList.toggle('is-numeric',numeric);module.classList.toggle('is-horizontal',horizontal);
+    weekday.hidden=!showWeekday;year.hidden=numeric||!showYear;
+    const day=new Intl.DateTimeFormat([],{weekday:'long'}).format(now);
+    weekday.textContent=horizontal&&!numeric?day+',':day.toUpperCase();
+    main.textContent=numeric?new Intl.DateTimeFormat([],{month:'2-digit',day:'2-digit',year:'numeric'}).format(now):new Intl.DateTimeFormat([],{month:'long',day:'numeric'}).format(now)+(horizontal&&showYear?',':'');
+    year.textContent=String(now.getFullYear());
+    requestAnimationFrame(()=>{
+      if(!module.isConnected)return;
+      const parts=[weekday,main,year].filter(el=>!el.hidden);let lo=4,hi=700,best=4;
+      for(let i=0;i<18;i++){
+        const size=(lo+hi)/2;module.style.setProperty('--date-size',size+'px');const gap=parseFloat(getComputedStyle(display).gap)||0;
+        const w=horizontal?parts.reduce((sum,el)=>sum+el.scrollWidth,0)+gap*(parts.length-1):Math.max(...parts.map(el=>el.scrollWidth));
+        const h=horizontal?Math.max(...parts.map(el=>el.scrollHeight)):parts.reduce((sum,el)=>sum+el.scrollHeight,0)+gap*(parts.length-1);
+        if(w<=display.clientWidth&&h<=display.clientHeight){best=size;lo=size;}else hi=size;
+      }
+      module.style.setProperty('--date-size',best*.97+'px');
+    });
+  }
+
+  if(state.type==='writinglines'){
+    const rows=[...module.querySelectorAll('.writinglines-row')],paper=module.querySelector('.writinglines-paper');
+    const count=Math.max(1,Math.min(4,Number(special?.lineCount??state.dataset?.lineCount)||3));
+    module.dataset.lineCount=String(count);
+    rows.forEach((row,index)=>{row.hidden=index>=count;const entry=row.querySelector('.writinglines-entry');if(Array.isArray(special?.lines))entry.textContent=String(special.lines[index]||'');entry.removeAttribute('contenteditable');});
+    requestAnimationFrame(()=>{
+      if(!module.isConnected||!paper)return;
+      const style=getComputedStyle(paper),height=Math.max(1,paper.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom));
+      paper.style.setProperty('--writing-row-height',(height/count)+'px');
+      const width=paper.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-10;
+      const scale=Math.min(1,...rows.slice(0,count).map(row=>width/Math.max(1,row.querySelector('.writinglines-entry').scrollWidth)));
+      paper.style.setProperty('--writing-row-height',(height/count*Math.max(.22,scale))+'px');
+    });
+  }
+
   if(heading){if(typeof special?.title==='string')heading.textContent=special.title;heading.removeAttribute('contenteditable');}
   if (state.type === "image" && special) {
     const image = module.querySelector(".image-display");
