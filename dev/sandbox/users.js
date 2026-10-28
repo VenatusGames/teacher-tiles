@@ -1,4 +1,4 @@
-import {createUserSort} from './user-sort.js?v=20261028-sort-menu';
+import {createUserSort} from './user-sort.js?v=20261028-sort-position';
 import {createBulkPatches} from './bulk-patches.js?v=20261020-product-polish';
 import {createUsersClient} from './users-cache.js?v=20261014-subscription-override';
 import {createUserDetails} from './user-details.js?v=20261020-product-polish';
