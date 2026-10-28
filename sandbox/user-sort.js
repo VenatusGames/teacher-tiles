@@ -12,8 +12,11 @@ export function createUserSort(select){
  function sync(){const label=select.selectedOptions[0]?.textContent||'Default Order';button.querySelector('span').textContent=label;button.setAttribute('aria-label','Sort by: '+label);choices.forEach(item=>item.setAttribute('aria-checked',String(item.dataset.value===select.value)));}
  function position(){const r=button.getBoundingClientRect();menu.style.left=Math.max(12,Math.min(r.left,innerWidth-menu.offsetWidth-12))+'px';menu.style.top=Math.max(12,Math.min(r.bottom+8,innerHeight-menu.offsetHeight-12))+'px';}
  const close=()=>{if(menu.matches(':popover-open'))menu.hidePopover();};
- menu.addEventListener('beforetoggle',event=>{if(event.newState==='open')queueMicrotask(()=>{if(menu.matches(':popover-open')){position();choices.find(item=>item.dataset.value===select.value)?.focus();}});});
- menu.addEventListener('toggle',()=>button.setAttribute('aria-expanded',String(menu.matches(':popover-open'))));
+ // Native button activation can run microtasks before the popover is visible.
+ // Seed its anchor immediately, then measure and clamp after it actually opens.
+ menu.addEventListener('beforetoggle',event=>{if(event.newState==='open'){const r=button.getBoundingClientRect();menu.style.left=r.left+'px';menu.style.top=(r.bottom+8)+'px';}});
+ menu.addEventListener('toggle',()=>{const open=menu.matches(':popover-open');button.setAttribute('aria-expanded',String(open));if(open){position();if(!menu.contains(document.activeElement))choices.find(item=>item.dataset.value===select.value)?.focus({preventScroll:true});}});
+ const resizeObserver=new ResizeObserver(()=>{if(menu.matches(':popover-open'))position();});resizeObserver.observe(menu);resizeObserver.observe(button);
  button.addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();if(!menu.matches(':popover-open'))button.click();else choices.find(item=>item.dataset.value===select.value)?.focus();}});
  menu.addEventListener('keydown',event=>{const index=choices.indexOf(document.activeElement);let next;if(event.key==='ArrowDown')next=(index+1)%choices.length;else if(event.key==='ArrowUp')next=(index-1+choices.length)%choices.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=choices.length-1;else if(event.key==='Tab'){close();return;}else return;event.preventDefault();choices[next].focus();});
  window.addEventListener('resize',close);window.addEventListener('scroll',event=>{if(!menu.contains(event.target))close();},true);select.addEventListener('change',sync);sync();
