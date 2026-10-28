@@ -65,3 +65,5 @@
 
 .insight-subscribers .insight-card-top{flex-wrap:wrap}
 @media(max-width:600px){.insight-subscribers{grid-column:1/-1}}
+
+.users-sort{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#61738a}.users-sort select{min-width:152px;padding:9px 12px;border:1px solid #d8e2ef;border-radius:10px;background:#fff;color:#314862;font:inherit;cursor:pointer}.users-sort select:focus-visible{outline:2px solid #78a5e8;outline-offset:2px}

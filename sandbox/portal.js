@@ -10,7 +10,7 @@ import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polis
 import {createInsights} from './insights.js?v=20261025-preview-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261020-product-polish';
+import {createUsersPanel} from './users.js?v=20261028-user-sorting';
 import {startSiteActivity} from '../account/site-activity.js';
 import {createCodesPanel} from './codes.js?v=20261020-product-polish';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
