@@ -1,3 +1,4 @@
+import {createUserSort} from './user-sort.js?v=20261028-sort-menu';
 import {createBulkPatches} from './bulk-patches.js?v=20261020-product-polish';
 import {createUsersClient} from './users-cache.js?v=20261014-subscription-override';
 import {createUserDetails} from './user-details.js?v=20261020-product-polish';
@@ -6,6 +7,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
   const search=document.getElementById('users-search'),sort=document.getElementById('users-sort');
+  const sortMenu=createUserSort(sort);
   const online=document.getElementById('users-online-filter'),subscribers=document.getElementById('users-subscriber-filter'),selected=new Set();
   const selectionToggle=document.getElementById('users-selection-toggle');
   function setSelectionMode(enabled){element.classList.toggle('is-selecting-users',enabled);selectionToggle.setAttribute('aria-pressed',String(enabled));selectionToggle.textContent=enabled?'Cancel Selection':'Select Users';if(!enabled){selected.clear();list.querySelectorAll('.user-select').forEach(input=>input.checked=false);}bulk.update();}
@@ -50,5 +52,5 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   searchButton.onclick=submitSearch;search.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitSearch();}};
   search.addEventListener('search',()=>{if(!search.value)submitSearch();});
   refresh.onclick=()=>{client.invalidate();clear();void load();};more.onclick=()=>load(true);
-  return {element,load,clear,reset(){setSelectionMode(false);bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';sort.value='default';}};
+  return {element,load,clear,reset(){setSelectionMode(false);bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';sort.value='default';sortMenu.reset();}};
 }
