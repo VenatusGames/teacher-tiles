@@ -442,6 +442,7 @@ function setupCollectionShelf(){
 
   const closeShelf=()=>{
     themePicker?.close();
+    cursorPicker.close();
     if(!activeShelf)return;
     activeShelf=null;
     closeThemeFan();
@@ -456,6 +457,7 @@ function setupCollectionShelf(){
   const openShelf=type=>{
     if(activeShelf===type)return;
     themePicker?.close();
+    cursorPicker.close();
     activeShelf=type;
     closeThemeFan();
     if(type!=='stickers')closeStickerPack();

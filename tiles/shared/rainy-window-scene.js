@@ -1,8 +1,13 @@
 /* Original blurred city lights, with refracting glass beads and broken rain residue. */
 (()=>{'use strict';
  const random=i=>{const n=Math.sin(i*127.1+72.9)*43758.5453;return n-Math.floor(n)};
- const beads=Array.from({length:680},(_,i)=>({u:random(i+1),v:random(i+911),r:.45+random(i+1751)**2*3.1,shape:.82+random(i+2031)*.38}));
- const runners=Array.from({length:38},(_,i)=>({u:random(i+221),phase:random(i+501),duration:24+random(i+821)*24,r:2.1+random(i+1221)*1.8}));
+ const beads=Array.from({length:340},(_,i)=>({u:random(i+1),v:random(i+911),r:1.2+random(i+1751)**1.6*6.2+(i%19===0?3:0),shape:.82+random(i+2031)*.38}));
+ // Most foreground drops cling for 18–46 seconds before releasing. A separate
+ // faster group keeps rain sliding past while the larger beads stay on the glass.
+ const runners=Array.from({length:36},(_,i)=>({u:random(i+221),phase:random(i+501),
+   hold:i<24?18+random(i+821)*28:1+random(i+821)*4,
+   travel:i<24?9+random(i+921)*9:2.5+random(i+921)*3,
+   start:random(i+1021)*.82,r:(i<24?5:3.8)+random(i+1221)*5.5,slow:i<24}));
  const backgroundRandom=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};
  const backgroundCache=new Map();
  function prepare(){return Promise.resolve();}
@@ -30,7 +35,10 @@
      const scene=sceneFor(w,h),sample=r*6,sx=Math.max(0,Math.min(w-sample,x-sample/2)),sy=Math.max(0,Math.min(h-sample,y-sample/2));
      g.globalAlpha*=.72;g.scale(1,-1);g.drawImage(scene,sx,sy,sample,sample,-r,-ry,r*2,ry*2);
    }
-   g.restore();g.lineWidth=Math.max(.35,r*.1);g.strokeStyle='#07111765';g.stroke();
+   const rim=g.createRadialGradient(-r*.2,-ry*.25,r*.15,0,0,r*1.15);
+   rim.addColorStop(0,'#c7e6ef00');rim.addColorStop(.65,'#bad5dc08');rim.addColorStop(1,'#06162050');
+   g.fillStyle=rim;g.fillRect(-r,-ry,r*2,ry*2);
+   g.restore();g.lineWidth=Math.max(.45,r*.075);g.strokeStyle='#07111765';g.stroke();
    g.beginPath();g.ellipse(0,ry*.1,r*.72,ry*.72,0,.15,1.9);g.strokeStyle='#d8e5e567';g.stroke();
    g.fillStyle='#e9f2ee83';g.beginPath();g.ellipse(-r*.38,-ry*.44,Math.max(.3,r*.15),Math.max(.3,r*.1),-.5,0,Math.PI*2);g.fill();g.restore();
  }
@@ -40,26 +48,37 @@
    for(const d of beads){const p=point(d.u,d.v,w,h);bead(g,p.x,p.y,d.r*scale,d.shape,w,h);}
    const mist=g.createLinearGradient(0,0,w,0);mist.addColorStop(0,'#b3cbd413');mist.addColorStop(.2,'#b3cbd400');mist.addColorStop(.8,'#b3cbd400');mist.addColorStop(1,'#b3cbd41c');g.fillStyle=mist;g.fillRect(0,0,w,h);
  }
- function progress(phase){const s=phase*7,k=Math.floor(s),f=s-k;return (k+f*f*(3-2*f))/7;}
+ function progress(p,slow){
+   if(!slow)return p*p;
+   // Surface tension briefly catches a slow drop twice during its descent.
+   const segment=Math.min(2,Math.floor(p*3)),f=Math.min(1,(p*3-segment)/.76);
+   return (segment+f*f*(3-2*f))/3;
+ }
  function trailPoint(d,i,v,w,h){return point(d.u+Math.sin(v*32+i)*.0012+Math.sin(v*77+i*.7)*.0006,v,w,h);}
  function draw(g,w,h,_theme,t){
    const scale=Math.max(w/1600,h/1000);
-   g.save();g.strokeStyle='#c0d1d117';g.lineWidth=Math.max(.35,.55*scale);g.beginPath();
-   for(let i=0;i<110;i++){const x=random(i+3401)*w,y=(random(i+4501)*h+t*(170+random(i+5101)*90)*scale)%(h+40*scale)-40*scale;g.moveTo(x,y);g.lineTo(x-2*scale,y+(12+random(i+6001)*17)*scale);}g.stroke();
+   g.save();g.strokeStyle='#c0d1d110';g.lineWidth=Math.max(.35,.55*scale);g.beginPath();
+   for(let i=0;i<70;i++){const x=random(i+3401)*w,y=(random(i+4501)*h+t*(170+random(i+5101)*90)*scale)%(h+40*scale)-40*scale;g.moveTo(x,y);g.lineTo(x-2*scale,y+(12+random(i+6001)*17)*scale);}g.stroke();
    for(let i=0;i<runners.length;i++){
-     const d=runners[i],phase=(t/d.duration+d.phase)%1,p=progress(phase),v=p*1.12-.06;
-     // Small stationary beads remain where the moving drop has passed, fading separately.
-     // There is deliberately no continuous luminous tail attached to the drop.
-     for(let j=0;j<27;j++){
-       const site=(j+.25+random(i*31+j+7401)*.5)/27,age=((p-site+1)%1)*d.duration;
-       if(age>11)continue;
-       const spot=trailPoint(d,i,site*1.12-.06,w,h),r=(.35+random(i*31+j+8201)*.8)*scale*spot.size;
-       g.globalAlpha=Math.min(1,(11-age)/4)*.7;
-       bead(g,spot.x+(random(i*31+j+9101)-.5)*2*scale,spot.y,r,1.1,w,h);
-       if(j%3===0){g.fillStyle='#c7dadb29';g.fillRect(spot.x-.3*scale,spot.y+2*scale,Math.max(.35,.5*scale),2.5*scale);}
+     const d=runners[i],cycle=d.hold+d.travel,elapsed=(t+d.phase*cycle)%cycle;
+     const moving=elapsed>=d.hold,q=Math.max(0,(elapsed-d.hold)/d.travel),p=progress(q,d.slow);
+     const v=d.start+p*(1.08-d.start);
+     // Residue stays at the point of contact, including after the runner exits.
+     // Sample its passage time, so pauses don't make the trail slide with it.
+     for(let j=0;j<22;j++){
+       const site=(j+.3)/22,age=(elapsed-(d.hold+site*d.travel)+cycle)%cycle;
+       if(age>16)continue;
+       const spot=trailPoint(d,i,d.start+progress(site,d.slow)*(1.08-d.start),w,h);
+       const r=(.9+random(i*31+j+8201)*1.5)*scale;
+       g.globalAlpha=Math.min(1,(16-age)/6)*.64;
+       bead(g,spot.x+(random(i*31+j+9101)-.5)*3*scale,spot.y,r,1.05,w,h);
      }
-     g.globalAlpha=1;const pos=trailPoint(d,i,v,w,h),speed=Math.sin((phase*7%1)*Math.PI);
-     bead(g,pos.x,pos.y,d.r*scale*pos.size,1+speed*.22,w,h);
+     const pos=trailPoint(d,i,v,w,h),growth=moving?1:.78+.22*elapsed/d.hold;
+     // A short squash on arrival reads as water catching the pane, not a splash.
+     const impact=Math.sin(elapsed*13)*Math.exp(-elapsed*5)*.16;
+     const speed=moving?Math.max(0,(progress(Math.min(1,q+.001),d.slow)-p)/.001):0;
+     g.globalAlpha=Math.min(1,elapsed/.22);
+     bead(g,pos.x,pos.y,d.r*scale*growth*(1+impact),1.02-impact+Math.min(.27,speed*.1),w,h);
    }
    g.restore();
  }
