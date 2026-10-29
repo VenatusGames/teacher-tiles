@@ -1254,6 +1254,7 @@ function setupModuleByType(m,type){
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
   setupTilePresentationControls(m,type);
+  window.TeacherTilesMathControls.setup(m);
 }
 
 
