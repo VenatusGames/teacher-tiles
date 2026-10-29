@@ -1,6 +1,10 @@
 {
   "images": [
     {
+      "path": "banners/holidaybanner26.png",
+      "name": "holidaybanner26"
+    },
+    {
       "path": "banners/thanksgiving.png",
       "name": "thanksgiving"
     },

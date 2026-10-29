@@ -1,7 +1,7 @@
 /* One favorite control for cosmetic drawers, including keyboard and touch states. */
 :is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{position:absolute;right:6px;top:6px;z-index:2;display:grid;place-items:center;box-sizing:border-box;width:28px;min-width:28px;height:28px;min-height:28px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:var(--muted,#6b7585);box-shadow:0 1px 3px #1523340c;opacity:0;visibility:hidden;pointer-events:none;transform:none;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
 :is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;pointer-events:none}
-:is(.asset-shelf,.theme-pack-fan) :is(.cursor-picker-cell,.tile-effect-cell,.theme-picker-cell):is(:hover,:has(:focus-visible))>.cosmetic-favorite,:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+:is(.asset-shelf,.theme-pack-fan) :is(.cursor-picker-cell,.tile-effect-cell,.theme-picker-cell,.sticker-picker-cell):is(:hover,:has(:focus-visible))>.cosmetic-favorite,:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
 :is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true]{color:#ad7818;background:color-mix(in srgb,#f5c85a 15%,var(--surface-solid,#fff));border-color:color-mix(in srgb,#c69a37 46%,var(--border))}
 :is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true] svg{fill:#f4c75c;stroke:#ad7818}
 :is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite:hover{border-color:#92a9c8;background:color-mix(in srgb,#98b6e5 12%,var(--surface-solid,#fff))}
@@ -16,22 +16,22 @@
 @media(hover:none){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{opacity:1;visibility:visible;pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{transition:none}}
 
-/* Cosmetic shelf navigation uses the current outlined, pressable app buttons. */
-.asset-shelf :is(.collection-category-tabs,.cursor-picker-views){padding:0;gap:8px;border:0;border-radius:0;background:none}
-.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle){box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:38px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:600 12px/1.25 var(--site-font-family,Inter,system-ui,sans-serif);box-shadow:0 2px 0 color-mix(in srgb,var(--text) 12%,transparent);cursor:pointer;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+/* Cosmetic shelf navigation matches the compact tile-corner controls. */
+.asset-shelf :is(.collection-category-tabs,.cursor-picker-views,.sticker-picker-views){padding:0;gap:8px;border:0;border-radius:0;background:none}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.sticker-picker-views button,.theme-picker-filter-toggle){box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:38px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:600 12px/1.25 var(--site-font-family,Inter,system-ui,sans-serif);box-shadow:0 3px 10px #0f172a18;cursor:pointer;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
 .asset-shelf .collection-category-tab{min-height:40px;padding-inline:6px}
-.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):hover{background:var(--surface-soft);border-color:color-mix(in srgb,var(--text) 22%,var(--border))}
-.asset-shelf :is(.collection-category-tab.is-active,.cursor-picker-views button[aria-pressed=true],.theme-picker-filter-toggle[aria-expanded=true],.theme-picker-filter-toggle.has-active-filters){background:color-mix(in srgb,#93c5fd 22%,var(--surface-solid));border-color:#7fa9d4;color:var(--text);box-shadow:inset 0 0 0 1px #9bc3e866,0 2px 0 #7299d433}
-.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):active{transform:translateY(1px);box-shadow:none}
-.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):focus-visible{outline:2px solid #7299d4;outline-offset:2px}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.sticker-picker-views button,.theme-picker-filter-toggle):hover{transform:translateY(-1px);background:var(--surface-soft);border-color:color-mix(in srgb,var(--text) 22%,var(--border))}
+.asset-shelf :is(.collection-category-tab.is-active,.cursor-picker-views button[aria-pressed=true],.sticker-picker-views button[aria-pressed=true],.theme-picker-filter-toggle[aria-expanded=true],.theme-picker-filter-toggle.has-active-filters){background:color-mix(in srgb,#93c5fd 22%,var(--surface-solid));border-color:#7fa9d4;color:var(--text);box-shadow:0 3px 10px #0f172a18}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.sticker-picker-views button,.theme-picker-filter-toggle):active{transform:translateY(0)}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.sticker-picker-views button,.theme-picker-filter-toggle):focus-visible{outline:2px solid #7299d4;outline-offset:2px}
 
-/* The Tile Effects search field is the shared search style for all three shelves. */
+/* The Tile Effects search field is the shared search style for all cosmetic shelves. */
 .asset-shelf :is(.theme-picker-toolbar .theme-picker-search,.cursor-picker-search-field){padding:0;border:0;border-radius:12px;background:none;box-shadow:none;gap:0}
 .asset-shelf .theme-picker-search>span,.asset-shelf .cursor-picker-search-field>svg{display:none}
-.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search){box-sizing:border-box;width:100%;min-width:0;height:45px;min-height:45px;margin:0;padding:11px 14px;border:1px solid var(--border,#dce3ed);border-radius:12px;background:var(--surface-solid,#fff);color:var(--text,#263249);font:400 16px/21px Inter,system-ui,sans-serif;box-shadow:none;outline:none;transition:border-color .15s,box-shadow .15s}
-.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search):focus{border-color:#7299d4;box-shadow:0 0 0 2px #7299d422}
-.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search)::placeholder{font-size:14px;font-weight:720;color:color-mix(in srgb,var(--muted) 75%,transparent);opacity:1}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search,#sticker-shelf-search){box-sizing:border-box;width:100%;min-width:0;height:45px;min-height:45px;margin:0;padding:11px 14px 11px 40px;border:1px solid var(--border,#dce3ed);border-radius:12px;background:var(--surface-solid,#fff) url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%238893a3" stroke-width="1.8" stroke-linecap="round"%3E%3Ccircle cx="10.5" cy="10.5" r="6.5"/%3E%3Cpath d="m15.5 15.5 5 5"/%3E%3C/svg%3E') no-repeat 14px center/17px 17px;color:var(--text,#263249);font:400 16px/21px Inter,system-ui,sans-serif;box-shadow:none;outline:none;transition:border-color .15s,box-shadow .15s}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search,#sticker-shelf-search):focus{border-color:#7299d4;box-shadow:0 0 0 2px #7299d422}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search,#sticker-shelf-search)::placeholder{font-size:14px;font-weight:720;color:color-mix(in srgb,var(--muted) 75%,transparent);opacity:1}
 .asset-shelf .theme-picker-filter-toggle{min-height:45px;flex:none}
 .asset-shelf .theme-picker-toolbar{margin-top:0}
 .asset-shelf .cursor-picker-views{margin-bottom:14px}
-@media(prefers-reduced-motion:reduce){.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle,.theme-picker-search input,.cursor-picker-search,.tile-effects-search){transition:none}}
+@media(prefers-reduced-motion:reduce){.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.sticker-picker-views button,.theme-picker-filter-toggle,.theme-picker-search input,.cursor-picker-search,.tile-effects-search,#sticker-shelf-search){transition:none}}

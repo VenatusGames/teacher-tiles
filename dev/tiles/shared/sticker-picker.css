@@ -8,8 +8,10 @@
 .asset-shelf.is-sticker-mode .asset-shelf__eyebrow{display:none}
 .asset-shelf.is-sticker-mode #asset-shelf-title{font-size:25px;letter-spacing:-.04em}
 .asset-shelf.is-sticker-mode .asset-shelf__close{position:absolute;right:18px;top:20px}
-.asset-shelf.is-sticker-mode .asset-shelf__header .sticker-shelf-search{display:grid;width:100%;height:auto;min-height:46px;margin:0;grid-template-columns:22px minmax(0,1fr) 24px;gap:8px;padding:10px 12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:13px;box-sizing:border-box}
-.asset-shelf.is-sticker-mode #sticker-shelf-search{width:100%;min-width:0;font-size:14px}
+.asset-shelf.is-sticker-mode .asset-shelf__header .sticker-shelf-search{position:relative;display:block;width:100%;height:45px;min-height:45px;margin:0;padding:0;background:none;border:0;border-radius:12px;box-shadow:none;box-sizing:border-box}
+.asset-shelf.is-sticker-mode .sticker-shelf-search__icon{display:none}
+.asset-shelf.is-sticker-mode #sticker-shelf-search{padding-right:44px}
+.asset-shelf.is-sticker-mode #sticker-shelf-search-clear{position:absolute;right:10px;top:10px}
 .asset-shelf.is-sticker-mode .sticker-shelf-search__status{display:block;grid-column:1/-1;justify-self:start;font-size:11px;padding-left:2px}
 .asset-shelf.is-sticker-mode .asset-shelf__body{padding:0;overflow:hidden}
 #sticker-shelf-content>.asset-shelf__scroll[hidden]{display:none}
@@ -30,16 +32,12 @@
 .sticker-picker .sticker-shelf-emoji{font-size:32px;line-height:1;filter:none}
 .sticker-picker .sticker-shelf-item.is-cosmetic-locked{opacity:.8;filter:none}
 .sticker-picker .sticker-shelf-item.is-cosmetic-locked::after{content:'🔒';position:absolute;top:auto;right:auto;bottom:2px;left:3px;width:14px;height:14px;background:var(--surface-solid);font-size:8px;color:var(--muted)}
-.sticker-picker-favorite{position:absolute;right:-2px;top:-3px;z-index:2;width:23px;height:23px;padding:0;border:1px solid var(--border);border-radius:50%;background:var(--surface-solid);font-size:15px!important;line-height:20px;opacity:0;transform:scale(.8);transition:opacity .15s,transform .15s}
-.sticker-picker-cell:hover .sticker-picker-favorite,.sticker-picker-cell:focus-within .sticker-picker-favorite,.sticker-picker-favorite[aria-pressed=true]{opacity:1;transform:scale(1)}
-.sticker-picker-favorite[aria-pressed=true]{color:#bd7a15}
 .sticker-picker footer{display:flex;flex-direction:column;gap:4px;padding:12px 20px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
 .sticker-picker footer strong{font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sticker-picker-empty{text-align:center;padding:45px 18px;color:var(--muted);font-size:13px;line-height:1.6}
 .sticker-picker-empty strong{display:block;color:var(--text);font-size:17px}
 .sticker-picker-empty button{border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);padding:10px 15px;font-size:12px}
 .sticker-picker button:focus-visible,.sticker-picker select:focus-visible{outline:2px solid #7785df;outline-offset:2px}
-@media(hover:none){.sticker-picker-favorite{opacity:1;transform:none}}
 @media(max-width:380px){.sticker-picker-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.asset-shelf.is-sticker-mode,.asset-shelf.is-sticker-mode *{transition:none!important}}
 
@@ -69,7 +67,6 @@
 .asset-shelf.is-sticker-mode .asset-shelf__heading>.sticker-picker-views{margin:2px 0 0;flex-shrink:0}
 .asset-shelf.is-sticker-mode .asset-shelf__heading>.sticker-picker-filters{padding:0 2px;justify-content:space-between;min-height:24px}
 .asset-shelf:not(.is-sticker-mode) .asset-shelf__heading>:is(.sticker-picker-views,.sticker-picker-filters){display:none}
-.asset-shelf__heading .sticker-picker-views button{font:inherit;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
 .sticker-picker-pack{position:relative}
 .sticker-picker-usage-hint{grid-column:1/-1;margin:0;padding:0 2px 6px;font-size:12px;line-height:1.5;color:var(--muted)}
 .sticker-picker-pack-lock{position:absolute;inset:0;z-index:2;display:grid;place-items:center;padding:44px 12px 4px;border:0;border-radius:inherit;background:color-mix(in srgb,var(--surface-solid) 62%,transparent);backdrop-filter:blur(1px);cursor:pointer}
