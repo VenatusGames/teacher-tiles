@@ -448,12 +448,18 @@
 @media(hover:none){.module.starchart-module .starchart-whole-remove{opacity:1;pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){.module.starchart-module :is(.starchart-whole-badge,.starchart-whole-remove){transition:none}}
 
-/* Overview stars stay on one line; overflow is represented by labeled bundles. */
-.module.starchart-module.is-showing-all-students .starchart-student-stars .starchart-star-stage{display:flex;flex-wrap:nowrap;gap:5px;min-height:48px}
-.module.starchart-module.is-showing-all-students .starchart-student-grid .starchart-star-token{--star-size:40px}
+/* Overview rows keep their height while stars fit into five or more columns. */
+.module.starchart-module.is-showing-all-students:not(:fullscreen):not(.is-tile-fullscreen){container-type:inline-size}
+.module.starchart-module.is-showing-all-students .starchart-student-grid{flex:none;height:auto}
+.module.starchart-module.is-showing-all-students .starchart-student-stars .starchart-star-stage{display:grid;grid-template-columns:repeat(var(--star-columns,5),var(--overview-star-size,28px));grid-auto-rows:var(--overview-star-size,28px);align-content:center;justify-content:start;gap:2px;height:64px;min-height:64px;padding:0;box-sizing:border-box}
+.module.starchart-module.is-showing-all-students .starchart-student-grid .starchart-star-token{--star-size:var(--overview-star-size,28px)}
+.module.starchart-module.is-showing-all-students .starchart-star-empty{grid-column:1/-1}
 .module.starchart-module .starchart-star-token{display:inline-block;cursor:default;isolation:isolate}
 .module.starchart-module .starchart-star-token:is(:hover,:active){transform:none;z-index:auto;filter:drop-shadow(0 2px 2px #85570633)}
-.module.starchart-module .starchart-star-token.is-bundle::before{content:'★';position:absolute;z-index:-1;left:-3px;top:-3px;font-size:var(--star-size);line-height:1;opacity:.3;transform:rotate(-12deg)}
 .module.starchart-module .starchart-star-token>small{white-space:nowrap}
-
-.module.starchart-module .starchart-star-token.is-bundle>small{display:grid}
+.module.starchart-module.is-showing-all-students .starchart-student-grid .starchart-star-token>small{font-size:clamp(6px,calc(var(--overview-star-size,28px)*.28),9px)!important;min-width:0;height:clamp(9px,calc(var(--overview-star-size,28px)*.4),15px);padding:0 2px}
+.module.starchart-module .starchart-subtract-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;min-width:0;gap:6px;flex:1}
+.module.starchart-module .starchart-subtract-form input{grid-column:1/-1;box-sizing:border-box;width:100%;min-width:96px;max-width:100%;height:40px;min-height:40px;padding:8px 12px;font:600 16px/22px var(--module-font,Inter,sans-serif);font-variant-numeric:tabular-nums;appearance:textfield}
+.module.starchart-module .starchart-subtract-form input::-webkit-inner-spin-button,.module.starchart-module .starchart-subtract-form input::-webkit-outer-spin-button{appearance:none;margin:0}
+.module.starchart-module .starchart-subtract-form button{min-width:0;min-height:34px;height:auto;padding:7px 5px;font-size:12px;line-height:18px;white-space:nowrap}
+.module.starchart-module .starchart-subtract-reset{background:var(--module-bg,#fff);color:#b84355;border:1px solid #b8435555}
