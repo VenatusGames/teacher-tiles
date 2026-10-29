@@ -738,8 +738,8 @@ function renderMenuCategoryPins(){
 }
 
 function syncMenuResetSize(){
-  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||580,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||500;
-  menuResetSize.hidden=Math.abs(width-580)<1&&Math.abs(height-500)<1;
+  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||620,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||530;
+  menuResetSize.hidden=Math.abs(width-620)<1&&Math.abs(height-530)<1;
 }
 
 function sizeTileMenu(width,height){

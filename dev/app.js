@@ -804,8 +804,8 @@ renderMenuCategoryPins();
 
 // A keyboard-accessible corner grip resizes the catalog without changing board zoom.
 const menuResizeGrip=document.createElement('button');menuResizeGrip.type='button';menuResizeGrip.className='context-menu__resize';menuResizeGrip.setAttribute('aria-label','Resize Add tile menu');menuResizeGrip.title='Drag to resize. Arrow keys adjust size.';menu.appendChild(menuResizeGrip);
-const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset Scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
-menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
+const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.setAttribute('aria-label','Reset Scale');menuResetSize.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M3 3l6 6M16 21h5v-5m0 5-6-6M21 8V3h-5m5 0-6 6M3 16v5h5m-5 0 6-6"/></svg>';menuResetSize.title='Reset Scale';menuResetSize.hidden=true;
+menu.querySelector('.context-menu__actions').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
 
 menuResetSize.addEventListener('click',event=>{
   event.stopPropagation();menu.style.removeProperty('--tile-menu-width');menu.style.removeProperty('--tile-menu-height');
