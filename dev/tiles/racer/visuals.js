@@ -7,23 +7,17 @@
   }
   function layout(container){
     const tracks=[...container.querySelectorAll('.racer-track')];if(!tracks.length)return;
-    const hostWidth=container.parentElement?.clientWidth||parseFloat(container.closest('.module')?.style.width)||680;
-    const height=container.clientHeight||440,maxCount=Math.max(...tracks.map(t=>t.querySelectorAll('.racer-standee').length));
-    // Exceptionally large rosters can scroll across the hills rather than leave the tile bounds.
-    const width=Math.max(hostWidth,maxCount*40+34);
-    container.style.minWidth=width>hostWidth?width+'px':'0';
-    const large=hostWidth>=1000;
-    const token=Math.max(32,Math.min(large?94:64,(width-34)/Math.max(1,maxCount)-8));
+    const width=container.parentElement?.clientWidth||parseFloat(container.closest('.module')?.style.width)||680;
+    const height=container.clientHeight||440;
+    container.style.minWidth='0';
+    const large=width>=1000;
+    const token=large?94:64;
     const avatar=Math.max(20,Math.min(large?58:40,token-12,height/tracks.length*.68-36));
     container.style.setProperty('--racer-token-width',token+'px');container.style.setProperty('--racer-avatar-size',avatar+'px');
     tracks.forEach(track=>{
       const nodes=[...track.querySelectorAll('.racer-standee')],edge=token/2+10,room=width-2*edge;
-      const spacing=token+7,cluster=Math.min(room*.5,Math.max(0,nodes.length-1)*spacing),travel=room-cluster;
-      const positions=nodes.map((node,i)=>({node,x:edge+(nodes.length>1?i*cluster/(nodes.length-1):0)+travel*Number(node.dataset.progress||0)})).sort((a,b)=>a.x-b.x);
-      // Keep cards separate when students catch one another, without changing saved distance.
-      for(let i=1;i<positions.length;i++)positions[i].x=Math.max(positions[i].x,positions[i-1].x+spacing);
-      if(positions.length){positions.at(-1).x=Math.min(width-edge,positions.at(-1).x);for(let i=positions.length-2;i>=0;i--)positions[i].x=Math.min(positions[i].x,positions[i+1].x-spacing);}
-      positions.forEach(({node,x})=>{const t=x/width;node.style.left=`${t*100}%`;node.style.top=`${84.375-62.5*t*(1-t)}%`;});
+      // Students share the same start and finish on each track, including overlapping ties.
+      nodes.forEach(node=>{const x=edge+room*Number(node.dataset.progress||0),t=x/width;node.style.left=`${t*100}%`;node.style.top=`${84.375-62.5*t*(1-t)}%`;});
     });
   }
   function render(container,roster,progress={},keyFor=name=>'student:'+name.trim().toLowerCase()){
@@ -31,9 +25,13 @@
     const previous=new Map([...container.querySelectorAll('.racer-standee')].map(n=>[n.dataset.student,n]));
     if(container.querySelectorAll('.racer-track').length!==count){
       container.replaceChildren();
+      const scene=document.createElementNS('http://www.w3.org/2000/svg','svg');scene.classList.add('racer-course-art');scene.setAttribute('viewBox','0 0 1000 600');scene.setAttribute('preserveAspectRatio','none');scene.setAttribute('aria-hidden','true');
+      const colors=['#e0eac3','#d0e2ad','#bdd69b','#a9c88a'];
+      scene.innerHTML=Array.from({length:count},(_,i)=>{const h=600/count,y=i*h+135/160*h,control=i*h+35/160*h,curve=`M0 ${y}Q500 ${control} 1000 ${y}`;return `<path fill="${colors[i]}" d="${curve}V600H0Z"/><path class="racer-hill-edge" d="${curve}"/><path class="racer-hill-path" d="${curve}"/><path class="racer-hill-dashes" d="${curve}"/>`;}).join('');
+      container.append(scene);
       for(let i=0;i<count;i++){
         const track=document.createElement('div');track.className='racer-track';track.style.setProperty('--hill-index',i);
-        track.innerHTML='<svg class="racer-hill-art" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true"><path class="racer-hill-ground" d="M0 135Q500 35 1000 135V160H0Z"/><path class="racer-hill-edge" d="M0 135Q500 35 1000 135"/><path class="racer-hill-path" d="M0 135Q500 35 1000 135"/><path class="racer-hill-dashes" d="M0 135Q500 35 1000 135"/></svg><span class="racer-track-flag" aria-hidden="true"></span>';
+        track.innerHTML='<span class="racer-track-flag" aria-hidden="true"></span>';
         container.append(track);
       }
     }
