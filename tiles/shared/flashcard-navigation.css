@@ -51,9 +51,9 @@
 .flashcard-select-menu button:disabled{opacity:.4;cursor:default}
 .flashcard-select-group{padding:7px 11px 3px;font-size:11px;font-weight:650;opacity:.6}
 
-/* Ease the visible text into the room reclaimed by the collapsing controls.
+/* Ease visible text in both directions as the controls expand and collapse.
    Measurement clones stay instant so font fitting remains accurate. */
-.flashcard-module:not(:hover):not(:has(:focus-visible)):not(.flashcard-select-open) :is(.abc-letter,.cvcword-word,.highfrequency-word,.customflashcards-text):not([aria-hidden="true"]){transition:font-size .3s cubic-bezier(.2,.7,.25,1)}
+.flashcard-module :is(.abc-letter,.cvcword-word,.highfrequency-word,.customflashcards-text):not([aria-hidden="true"]){transition:font-size .3s cubic-bezier(.2,.7,.25,1)}
 @media(prefers-reduced-motion:reduce){
  .flashcard-module :is(.abc-letter,.cvcword-word,.highfrequency-word,.customflashcards-text){transition:none!important}
 }
