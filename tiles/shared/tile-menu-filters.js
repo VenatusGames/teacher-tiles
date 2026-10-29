@@ -45,6 +45,7 @@ if(menu){
  panel.querySelector('[data-close]').onclick=()=>{close();trigger.focus();};
  panel.querySelector('[data-clear]').onclick=()=>{grades.clear();update();gradeButtons[0].focus();};
  window.addEventListener('resize',()=>{if(panel.matches(':popover-open'))position();});
+ new ResizeObserver(()=>{if(panel.matches(':popover-open'))position();}).observe(menu.element);
  new MutationObserver(()=>{if(!menu.element.classList.contains('is-open'))close();}).observe(menu.element,{attributes:true,attributeFilter:['class']});
  menu.element.querySelector('.context-menu__title-row').addEventListener('pointerdown',event=>{if(!event.target.closest('button'))close();});
  update();
