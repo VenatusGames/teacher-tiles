@@ -103,8 +103,9 @@ function normalizeSeatingChart(value,students){
   const names=new Set(students),used=new Set();
   const bounded=(n,min,max)=>Math.max(min,Math.min(max,Number(n)||0));
   return {layout:['rows','groups','horseshoe'].includes(value.layout)?value.layout:'rows',desks:value.desks.filter(d=>d&&typeof d==='object').slice(0,80).map(d=>{
-    const name=names.has(d.name)&&!used.has(d.name)?d.name:'';if(name)used.add(name);
-    return {name,kind:['desk','table','teacher'].includes(d.kind)?d.kind:'desk',x:bounded(d.x,0,100),y:bounded(d.y,10,100),angle:[0,90,180,270].includes(d.angle)?d.angle:0,pinned:!!d.pinned&&(!d.name||!!name)};
+    const kind=['desk','table','teacher','large','square','crescent','trapezoid'].includes(d.kind)?d.kind:'desk';
+    const name=kind==='desk'&&names.has(d.name)&&!used.has(d.name)?d.name:'';if(name)used.add(name);
+    return {name,kind,x:bounded(d.x,-100,100),y:bounded(d.y,-100,100),angle:[0,90,180,270].includes(d.angle)?d.angle:0,pinned:kind==='desk'&&!!d.pinned&&(!d.name||!!name)};
   })};
 }
 

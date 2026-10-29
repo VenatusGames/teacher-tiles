@@ -22,7 +22,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   const defaults=clean(await state());
   // Real keyboard movement, rotation, fixed assignment, and extra furniture.
   await page.locator('.seating-room .seating-desk').first().focus();await page.keyboard.press('Shift+ArrowRight');await page.keyboard.press('ArrowDown');
-  await page.evaluate(()=>{testChart.querySelector('.seating-room .seating-desk').click();testChart.querySelector('.seating-rotate').click();testChart.querySelector('.seating-pin').click();testChart.querySelector('.seating-kind').value='teacher';testChart.querySelector('.seating-add').click()});
+  await page.evaluate(()=>{testChart.querySelector('.seating-room .seating-desk').click();testChart.querySelector('.seating-rotate').click();testChart.querySelector('.seating-pin').click();testChart.querySelector('.seating-furniture-option[data-kind=teacher]').click()});
   const custom=clean(await state());assert.notDeepEqual(custom,defaults);
   assert.equal(custom.desks[0].angle,90);assert(custom.desks[0].pinned);assert.equal(custom.desks.length,4);
   await page.evaluate(()=>{testChart.querySelector('.seating-change-class').click();loadSeatingClass('seating-b');testChart.querySelector('.seating-clear').click();testChart.querySelector('.seating-change-class').click();loadSeatingClass('seating-a')});
