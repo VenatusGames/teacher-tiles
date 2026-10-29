@@ -10026,10 +10026,17 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
   color:inherit;
   display:grid;
   place-items:center;
-  font-size:clamp(11px,2.1cqw,18px);
+  container-type:size;
   font-weight:850;
   cursor:pointer;
   transition:transform .12s ease,background .14s ease,border-color .14s ease;
+}
+
+/* Size numbers to the actual cell, including the height reclaimed on unhover. */
+.hundreds-cell>span{
+  font-size:min(44cqw,68cqh);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
 }
 
 .hundreds-cell:hover{

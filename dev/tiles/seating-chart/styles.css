@@ -15,3 +15,23 @@
 .seating-chart-module .seating-editor{gap:6px}
 .seating-chart-module .seating-editor .tile-action{font-size:12px;padding-inline:10px}
 @media(prefers-reduced-motion:reduce){.seating-chart-module :is(.tile-action,.tile-setting select){transition:none}}
+
+/* The room reclaims all editing space when its hover shelf closes. */
+.module.seating-chart-module{--seating-footer-space:52px;padding-bottom:14px;transition:padding-bottom .22s ease}
+.seating-chart-module .seating-dashboard{gap:0;padding-bottom:0;transition:padding-bottom .22s ease}
+.seating-chart-module .seating-room{min-height:0;margin-top:9px}
+.seating-chart-module .seating-editor[hidden]{display:none!important}
+.seating-chart-module .seating-hover-tools{display:grid;grid-template-rows:0fr;flex:none;margin-top:0;opacity:0;visibility:hidden;pointer-events:none;transition:grid-template-rows .22s ease,margin-top .22s ease,opacity .15s ease,visibility .22s}
+.seating-chart-module .seating-hover-clip{min-height:0;overflow:hidden}
+.seating-chart-module .seating-hover-content{display:flex;flex-direction:column;gap:8px;padding:3px 2px}
+.module.seating-chart-module:is(.is-seating-controls-open,.has-tile-settings-open,.is-appearance-open){padding-bottom:var(--seating-footer-space)}
+.seating-chart-module:is(.is-seating-controls-open,.has-tile-settings-open,.is-appearance-open) .seating-hover-tools{grid-template-rows:1fr;margin-top:8px;opacity:1;visibility:visible;pointer-events:auto}
+.seating-chart-module .seating-controls{position:absolute;left:10px;bottom:9px;right:auto;transform:none}
+.module.seating-chart-module:is(.is-seating-controls-open,.has-tile-settings-open,.is-appearance-open)>.pbis-footer-actions{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.module.seating-chart-module .pbis-footer-actions .seating-change-class{opacity:1;transition:background .15s,border-color .15s}
+.module.seating-chart-module .pbis-footer-actions .seating-change-class:hover{background:color-mix(in srgb,var(--module-bg,#fff) 84%,var(--module-text,#17191d) 16%)}
+@media(hover:none){
+ .module.seating-chart-module{padding-bottom:var(--seating-footer-space)}
+ .seating-chart-module .seating-hover-tools{grid-template-rows:1fr;margin-top:8px;opacity:1;visibility:visible;pointer-events:auto}
+}
+@media(prefers-reduced-motion:reduce){.module.seating-chart-module,.seating-chart-module :is(.seating-hover-tools,.pbis-footer-actions,.seating-dashboard){transition:none}}
