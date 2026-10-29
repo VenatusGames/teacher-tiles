@@ -3,6 +3,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   const storageKey='teachertiles.sticker-favorites.v1';
   const readFavorites=()=>{try{const value=JSON.parse(localStorage.getItem(storageKey)||'[]');return new Set(Array.isArray(value)?value.filter(v=>typeof v==='string'):[])}catch{return new Set()}};
   let favorites=readFavorites(),view='all',available=false;
+  const controls=window.TeacherTilesCollectionControls;
   const collapsed=new Set();
   const packCache=new Map();
   let scheduledRender=0;
@@ -17,7 +18,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   });
   panel.querySelector('.asset-shelf__scroll').hidden=true;
   const root=document.createElement('div');root.className='sticker-picker';
-  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All stickers</button><button type="button" data-view="favorites">Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned Only</span><input type="checkbox" role="switch" aria-label="Owned Only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
+  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All Stickers</button><button type="button" data-view="favorites">Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned Only</span><input type="checkbox" role="switch" aria-label="Owned Only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
   panel.append(root);
   const views=root.querySelector('.sticker-picker-views'),filters=root.querySelector('.sticker-picker-filters'),ownedInput=filters.querySelector('input');
   const searchBox=search.closest('.sticker-shelf-search');
@@ -56,9 +57,8 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
         bindDrag(button,shell);
         button.addEventListener('click',e=>{if(performance.now()<(button._stickerDragUntil||0))return;if(!owns(item.product)){if(e.detail===0)requestAccess(button);return}const image=button.querySelector('img'),rect=shell.getBoundingClientRect();place({src:button.dataset.stickerSrc||'',emoji:button.dataset.stickerEmoji||'',name:item.name,aspect:image?.naturalWidth&&image?.naturalHeight?image.naturalWidth/image.naturalHeight:1},Math.min(innerWidth-80,rect.right+(innerWidth-rect.right)/2),innerHeight/2,{previewSize:button.dataset.stickerEmoji?132:146});footer.textContent=`${item.name} added`});
         button.addEventListener('pointerenter',()=>footer.textContent=item.name);button.addEventListener('focus',()=>footer.textContent=item.name);
-        const favorite=document.createElement('button');favorite.type='button';favorite.className='sticker-picker-favorite';
-        const sync=()=>{const saved=favorites.has(item.key);favorite.textContent=saved?'★':'☆';favorite.setAttribute('aria-pressed',String(saved));favorite.setAttribute('aria-label',`${saved?'Unfavorite':'Favorite'} ${item.name}`)};sync();
-        favorite.addEventListener('click',()=>{favorites.has(item.key)?favorites.delete(item.key):favorites.add(item.key);try{window.TeacherTilesCollectionPreferences.write(storageKey,JSON.stringify([...favorites]))}catch{}sync();scheduleRender();views.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';if(view==='favorites'){render();views.querySelector('[data-view="favorites"]').focus()}});
+        const favorite=controls.favoriteButton(item.name,favorites.has(item.key),()=>{favorites.has(item.key)?favorites.delete(item.key):favorites.add(item.key);try{window.TeacherTilesCollectionPreferences.write(storageKey,JSON.stringify([...favorites]))}catch{}controls.updateFavorite(favorite,item.name,favorites.has(item.key));scheduleRender();views.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';if(view==='favorites'){render();views.querySelector('[data-view="favorites"]').focus()}});
+        favorite.classList.add('sticker-picker-favorite');
         cell.append(button,favorite);grid.append(cell);
       }
       if(pack.id==='most-used'){
