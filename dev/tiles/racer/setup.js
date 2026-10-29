@@ -6,16 +6,8 @@ function setupRacer(m){
   let activeClassId='',selectedStudent='';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
   const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};
-  const curveY=t=>54-40*t*(1-t);
   const keyFor=name=>starChartStudentKey(name);
-  const studentIndex=(r,name)=>Math.max(0,r.students.indexOf(name));
-  const tierFor=index=>index%6;
-  const groupFor=index=>Math.floor(index/6)%5;
-  const positionFor=(r,name,p)=>{
-    const index=studentIndex(r,name),t=Math.max(0,Math.min(1,(p.positions[keyFor(name)]||0)/100));
-    const x=Math.max(4.7,Math.min(95.3,6+t*88+(groupFor(index)-2)*.32));
-    return{x,y:curveY(t),tier:tierFor(index),t};
-  };
+  stage.classList.add('racer-lane-view');
   const updateStatus=()=>{
     const r=roster();if(!r){status.textContent='';return}
     const p=progress(),finishers=r.students.filter(name=>p.finished[keyFor(name)]).length;
@@ -24,7 +16,7 @@ function setupRacer(m){
   const buildStandee=name=>{
     const r=roster(),visual=studentProfileVisual(name,r?.id||'');
     const node=document.createElement('button');node.type='button';node.className='racer-standee';node.dataset.student=name;node.setAttribute('aria-label',`Select ${name}`);
-    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
+    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-lane-track" aria-hidden="true"><i></i><b></b></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
     node.style.setProperty('--racer-hue',String(visual.hue));
     node.querySelector('.racer-character strong').textContent=name;
     node.addEventListener('click',()=>{selectedStudent=name;studentSelect.value=name;renderSelection()});
@@ -44,8 +36,10 @@ function setupRacer(m){
     r.students.forEach(name=>{
       let node=[...racers.children].find(child=>child.dataset.student===name);
       if(!node){node=buildStandee(name);racers.append(node);requestAnimationFrame(()=>node.classList.add('is-ready'))}
-      const pos=positionFor(r,name,p),key=keyFor(name),wins=p.studentWins[key]||0;
-      node.style.left=`${pos.x}%`;node.style.top=`${pos.y}%`;node.style.setProperty('--racer-stick-height',`${18+pos.tier*14}px`);node.style.zIndex=String(20+pos.tier);
+      const key=keyFor(name),wins=p.studentWins[key]||0,percent=Math.round(p.positions[key]||0);
+      node.style.setProperty('--racer-progress',`${percent}%`);
+      node.querySelector('.racer-lane-track b').textContent=`${percent}%`;
+      node.querySelector('.racer-character small').textContent=`${wins} ${wins===1?'win':'wins'}`;
       node.classList.toggle('is-finished',Boolean(p.finished[key]));node.title=`${name} • ${Math.round(p.positions[key]||0)}% • ${wins} Race ${wins===1?'Win':'Wins'}`;
       const mark=node.querySelector('.racer-winner-mark');if(mark)mark.title=`${wins} Race ${wins===1?'Win':'Wins'}`;
     });
