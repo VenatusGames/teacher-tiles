@@ -12,6 +12,15 @@
   function setup(m){
     const room=m.querySelector('.seating-room'),status=m.querySelector('.seating-status'),assignment=m.querySelector('.seating-assignment'),layoutSelect=m.querySelector('.seating-layout');
     const editor=m.querySelector('.seating-editor'),importPanel=m.querySelector('.seating-class-import'),dashboard=m.querySelector('.seating-dashboard');
+    const changeClass=m.querySelector('.seating-change-class');
+    changeClass.classList.remove('tile-action');changeClass.classList.add('pbis-change-class');
+    movePbisClassActionsToFooter(m);
+    const footer=m.querySelector('.pbis-footer-actions');
+    footer.prepend(m.querySelector('.seating-randomize'),m.querySelector('.seating-reset'));
+    const tools=document.createElement('div'),clip=document.createElement('div'),content=document.createElement('div');
+    tools.className='seating-hover-tools';clip.className='seating-hover-clip';content.className='seating-hover-content';
+    room.after(tools);tools.append(clip);clip.append(content);content.append(editor,status);
+    window.TeacherTilesMathControls.bindHover(m,'is-seating-controls-open');
     let names=[],desks=[],selected='',className='',classId='',classLogo='👥',classReady=false,serial=0,cancelDrag=null;
     let scope=window.TeacherTilesClassScope||'local';
     const saveLayout=()=>{if(classReady&&classId&&scope===(window.TeacherTilesClassScope||'local'))writeClassSeatingChart(classId,{layout:layoutSelect.value,desks},m);};

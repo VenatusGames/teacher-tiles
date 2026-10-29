@@ -27,12 +27,16 @@
     }
     if(m.dataset.type==='grapher')m.querySelector('.grapher-point-row').append(m.querySelector('.grapher-clear-points'));
     m.querySelectorAll('.math-hover-group .primary').forEach(button=>{button.classList.remove('primary');button.classList.add('math-primary')});
+    bindHover(m);
+  }
+  function bindHover(m,openClass='is-math-controls-open'){
+    m.tabIndex=0;
     let hovered=false,dragging=false,keyboard=false;
     const controller=new AbortController(),options={signal:controller.signal};
     const refresh=()=>{
       const focus=document.activeElement,inside=m.contains(focus);
       const editing=inside&&focus.matches('input:not([type=checkbox]):not([type=radio]),textarea,[contenteditable=true]');
-      m.classList.toggle('is-math-controls-open',hovered||dragging||editing||(inside&&(keyboard||focus.matches(':focus-visible'))));
+      m.classList.toggle(openClass,hovered||dragging||editing||(inside&&(keyboard||focus.matches(':focus-visible'))));
     };
     m.addEventListener('pointerenter',()=>{hovered=true;refresh()},options);
     m.addEventListener('pointerleave',()=>{
@@ -42,7 +46,7 @@
       if(!keyboard&&m.contains(focus)&&focus.matches('button,select'))focus.blur();
       refresh();
     },options);
-    m.addEventListener('pointerdown',()=>{keyboard=false;dragging=true;refresh()},options);
+    m.addEventListener('pointerdown',()=>{keyboard=false;dragging=true;refresh()},{...options,capture:true});
     const release=()=>{if(dragging){dragging=false;refresh()}};
     window.addEventListener('pointerup',release,options);window.addEventListener('pointercancel',release,options);
     m.addEventListener('keydown',()=>{keyboard=true;refresh()},options);
@@ -53,5 +57,5 @@
     },{...options,capture:true});
     const cleanup=m._cleanup;m._cleanup=()=>{controller.abort();cleanup?.()};
   }
-  window.TeacherTilesMathControls=Object.freeze({setup});
+  window.TeacherTilesMathControls=Object.freeze({setup,bindHover});
 })();

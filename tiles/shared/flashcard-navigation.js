@@ -69,7 +69,7 @@ function setup(m){
     setControls.before(shelf);shelf.append(setControls);setControls.classList.add('flashcard-set-controls');
   }
   const selectors=[...m.querySelectorAll('.flashcard-set-controls select')].map(select=>enhanceSelect(m,select));
-  card.title='Next card · In fullscreen: Space / Right Arrow to advance, Left Arrow to go back';
+  card.removeAttribute('title');
   m._flashcardNavigate=delta=>{
     if(delta<0){previous.click();return;}
     if(get().completed){card.querySelector('.flashcard-shuffle')?.click();return;}
