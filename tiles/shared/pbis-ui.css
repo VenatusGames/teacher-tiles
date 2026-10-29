@@ -140,27 +140,17 @@
 .prizeboard-module:is(:fullscreen,.is-tile-fullscreen) .prize-card-open>img{height:200px}
 .prizeboard-module:is(:fullscreen,.is-tile-fullscreen) .prize-card-copy{padding:18px 100px 18px 18px}
 .prizeboard-module:is(:fullscreen,.is-tile-fullscreen) .prize-card-cost{height:42px;min-width:66px;right:16px;bottom:18px}
-/* Separate racing lanes keep names and progress visible even at the starting line. */
-.racer-module .racer-lane-view{display:flex;flex-direction:column;min-height:0;padding:4px;border:0;background:none;overflow:hidden}
-.racer-lane-view>.racer-track-art{display:none}
-.racer-module .racer-lane-view .racer-standees{position:relative;inset:auto;flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-auto-rows:minmax(76px,1fr);gap:8px;overflow:auto;overscroll-behavior:contain;padding:2px;pointer-events:auto}
-.racer-module .racer-lane-view .racer-standee{position:relative;inset:auto;width:100%;min-width:0;min-height:76px;padding:8px 12px;display:grid;grid-template-columns:minmax(120px,27%) minmax(0,1fr);align-items:center;gap:16px;border:1px solid var(--border);border-radius:13px;background:color-mix(in srgb,var(--module-bg,#fff) 95%,hsl(var(--racer-hue) 65% 65%));transform:none;filter:none;opacity:1;transition:border-color .15s,background .15s}
-.racer-module .racer-lane-view .racer-standee.is-selected{border-color:#72a5df;box-shadow:inset 0 0 0 1px #72a5df}
-.racer-module .racer-lane-view .racer-character{width:100%;min-width:0;min-height:0;padding:0;display:grid;grid-template-columns:30px minmax(0,1fr);gap:2px 8px;align-items:center;border:0;border-radius:0;background:none;box-shadow:none;text-align:left}
-.racer-module .racer-lane-view .racer-face{grid-row:1/3;margin:0}
-.racer-module .racer-lane-view .racer-character strong{font-size:var(--pbis-body);max-width:100%;font-weight:650;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
-.racer-module .racer-lane-view .racer-character small{font-size:var(--pbis-small);font-weight:400;margin:0;letter-spacing:normal;opacity:.8}
-.racer-lane-track{position:relative;display:block;height:10px;margin:18px 12px 18px 0;border-radius:8px;background:color-mix(in srgb,var(--module-text,#17191d) 10%,var(--module-bg,#fff))}
-.racer-lane-track>i{display:block;width:var(--racer-progress,0%);height:100%;border-radius:inherit;background:hsl(var(--racer-hue) 50% 58%);transition:width .65s cubic-bezier(.2,.76,.2,1)}
-.racer-lane-track>b{position:absolute;top:50%;left:clamp(22px,var(--racer-progress),calc(100% - 22px));transform:translate(-50%,-50%);min-width:44px;padding:7px 5px;border:2px solid var(--module-bg,#fff);border-radius:10px;background:hsl(var(--racer-hue) 60% 88%);color:#243345;font-size:var(--pbis-small);font-weight:700;box-shadow:0 2px 5px #17203319;transition:left .65s cubic-bezier(.2,.76,.2,1)}
-.racer-module .racer-lane-view .racer-winner-mark{right:3px;top:3px;width:18px;height:18px;font-size:10px;box-shadow:none}
-.racer-module .racer-lane-view .racer-status{position:static;inset:auto;flex:none;margin:8px 0 0;padding:4px;background:none;transform:none;font-weight:500;text-align:center}
+/* Preserve the shared race course, with readable selected racers and controls. */
 .racer-module .racer-move{color:var(--module-text,var(--text))!important}
-.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-lane-view .racer-standees{grid-auto-rows:minmax(90px,1fr)}
-.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-lane-view .racer-standee{grid-template-columns:minmax(220px,23%) minmax(0,1fr)}
-.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-lane-track>b{min-width:58px}
+.racer-module .racer-stage{min-height:180px}
+.racer-module .racer-character strong{font-weight:650;white-space:normal;overflow-wrap:anywhere}
+.racer-module .racer-standee.is-selected{z-index:90!important}
+.racer-module .racer-standee:is(:hover,:focus-visible){z-index:100!important}
+.racer-module .racer-standee.is-selected .racer-character{outline:2px solid #5a8dcc;outline-offset:2px}
+.racer-module .racer-status{display:block;max-width:calc(100% - 24px);padding:7px 12px;font-weight:550;white-space:normal;text-align:center;line-height:1.35;background:var(--module-bg,#fff);border:1px solid var(--border);border-radius:10px}
+.racer-module :is(.racer-start-label,.racer-finish strong){font-size:var(--pbis-small);font-weight:650;letter-spacing:.03em;opacity:.8}
+.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-finish-flag{width:42px;height:30px}
 .module.pbis-tile:fullscreen>.module-drag-handle{display:none!important}
-@media(prefers-reduced-motion:reduce){.racer-lane-track>i,.racer-lane-track>b{transition:none}}
 /* Compact balance rows at board size; large values on the presentation surface. */
 .module.pbisconsole-module{height:610px}
 .pbisconsole-module .pbisconsole-stat{grid-template-columns:minmax(0,1fr) auto auto;padding:10px;min-height:64px}

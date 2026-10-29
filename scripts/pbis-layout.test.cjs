@@ -17,8 +17,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  if(type==='prizeboard')await page.evaluate(()=>testTile._boardSetState({...testTile._boardGetState(),prizes:[{id:'p1',scope:'student',title:'Choose a class game',description:'Pick the game for our next break',cost:5,costStat:'studentStars'},{id:'p2',scope:'student',title:'Reading buddy',description:'Choose a partner',cost:10,costStat:'studentStars'}]}));
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-'+type+'-default.png')});
  if(type==='racer'){
- const rows=await tile.locator('.racer-standee').evaluateAll(nodes=>nodes.map(n=>({top:n.offsetTop,height:n.offsetHeight})));
- assert(rows.every((r,i)=>!i||r.top>=rows[i-1].top+rows[i-1].height),'racer names never overlap');
+ assert(await tile.locator('.racer-track-art').isVisible(),'shared race course is visible');
+ assert.equal(await tile.locator('.racer-lane-track').count(),0,'no separate progress lanes');
+ assert.equal(await tile.locator('.racer-standees .racer-standee').count(),12,'whole class stays on one course');
  await tile.locator('.racer-move').click();assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.positions['student:alex']),10);
  }
  if(type==='starchart'){
