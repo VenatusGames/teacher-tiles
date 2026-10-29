@@ -1,17 +1,9 @@
 /* Original blurred city lights, with refracting glass beads and broken rain residue. */
 (()=>{'use strict';
  const random=i=>{const n=Math.sin(i*127.1+72.9)*43758.5453;return n-Math.floor(n)};
- const beads=Array.from({length:340},(_,i)=>({u:random(i+1),v:random(i+911),r:1.2+random(i+1751)**1.6*6.2+(i%19===0?3:0),shape:.82+random(i+2031)*.38}));
- // Most foreground drops cling for 18–46 seconds before releasing. A separate
- // faster group keeps rain sliding past while the larger beads stay on the glass.
- const runners=Array.from({length:36},(_,i)=>({u:random(i+221),phase:random(i+501),
-   hold:i<24?18+random(i+821)*28:1+random(i+821)*4,
-   travel:i<24?9+random(i+921)*9:2.5+random(i+921)*3,
-   start:random(i+1021)*.82,r:(i<24?5:3.8)+random(i+1221)*5.5,slow:i<24}));
  const backgroundRandom=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)};
  const backgroundCache=new Map();
  function prepare(){return Promise.resolve();}
- function point(u,v,w,h){return {x:u*w,y:v*h,size:1};}
  function sceneFor(w,h){
    const key=w+'x'+h;if(backgroundCache.has(key))return backgroundCache.get(key);
    const canvas=document.createElement('canvas');canvas.width=Math.ceil(w);canvas.height=Math.ceil(h);const bg=canvas.getContext('2d');
@@ -23,64 +15,84 @@
    if(backgroundCache.size>=3)backgroundCache.delete(backgroundCache.keys().next().value);
    backgroundCache.set(key,canvas);return canvas;
  }
- function bead(g,x,y,r,shape,w,h){
-   if(r<.55){g.fillStyle='#dce8e72c';g.fillRect(x,y,.6,.8);return;}
-   const ry=r*shape;
-   g.save();g.translate(x,y);g.beginPath();
-   g.moveTo(-r*.12,-ry);g.bezierCurveTo(-r*.82,-ry,-r*1.08,-ry*.2,-r*.9,ry*.36);
-   g.bezierCurveTo(-r*.72,ry*1.08,r*.6,ry*1.13,r*.9,ry*.4);
-   g.bezierCurveTo(r*1.1,-ry*.22,r*.66,-ry*1.02,-r*.12,-ry);g.closePath();
-   g.save();g.clip();
-   if(r>1){
-     const scene=sceneFor(w,h),sample=r*6,sx=Math.max(0,Math.min(w-sample,x-sample/2)),sy=Math.max(0,Math.min(h-sample,y-sample/2));
-     g.globalAlpha*=.72;g.scale(1,-1);g.drawImage(scene,sx,sy,sample,sample,-r,-ry,r*2,ry*2);
-   }
-   const rim=g.createRadialGradient(-r*.2,-ry*.25,r*.15,0,0,r*1.15);
-   rim.addColorStop(0,'#c7e6ef00');rim.addColorStop(.65,'#bad5dc08');rim.addColorStop(1,'#06162050');
-   g.fillStyle=rim;g.fillRect(-r,-ry,r*2,ry*2);
-   g.restore();g.lineWidth=Math.max(.45,r*.075);g.strokeStyle='#07111765';g.stroke();
-   g.beginPath();g.ellipse(0,ry*.1,r*.72,ry*.72,0,.15,1.9);g.strokeStyle='#d8e5e567';g.stroke();
-   g.fillStyle='#e9f2ee83';g.beginPath();g.ellipse(-r*.38,-ry*.44,Math.max(.3,r*.15),Math.max(.3,r*.1),-.5,0,Math.PI*2);g.fill();g.restore();
+ // Each board/preview owns its rain, so a shop preview cannot change the board.
+ const panes=new WeakMap();
+ const outline=new Path2D('M-.16 -1 C-.73 -.98 -1.04 -.38 -.91 .29 C-.82 .92 -.38 1.05 .15 1.02 C.77 1 .99 .61 .9 .12 C.85 -.42 .53 -1.04 -.16 -1 Z');
+ function water(g,scene,d){
+   const r=d.visibleR,ry=r*(d.speed>0?1.16:1.02),x=d.x,y=d.y;
+   g.save();g.translate(x,y);g.scale(r,ry);g.save();g.clip(outline);
+   // Slightly displace the scene through the water rather than lighting a sphere.
+   const sample=r*1.65,sx=Math.max(0,Math.min(scene.width-sample,x-sample/2+1)),sy=Math.max(0,Math.min(scene.height-sample,y-sample/2-r*.18));
+   g.drawImage(scene,sx,sy,sample,sample,-1,-1,2,2);
+   const shading=g.createLinearGradient(0,-1,0,1);shading.addColorStop(0,'#0a1a2218');shading.addColorStop(.5,'#a1bec000');shading.addColorStop(1,'#d2e2e51e');g.fillStyle=shading;g.fillRect(-1,-1,2,2);g.restore();
+   // Broken, low-contrast menisci; no dark outline, white dot, or drop shadow.
+   g.lineWidth=.6/Math.max(r,.5);g.strokeStyle='#dce8e72b';g.beginPath();g.moveTo(-.83,.4);g.bezierCurveTo(-.66,.96,.18,1.12,.65,.78);g.stroke();
+   g.strokeStyle='#0c202327';g.beginPath();g.moveTo(-.72,-.58);g.bezierCurveTo(-.3,-1,.3,-1,.61,-.65);g.stroke();g.restore();
  }
- function paint(g,w,h){
-   g.drawImage(sceneFor(w,h),0,0,w,h);
-   const scale=Math.max(w/1600,h/1000);
-   for(const d of beads){const p=point(d.u,d.v,w,h);bead(g,p.x,p.y,d.r*scale,d.shape,w,h);}
-   const mist=g.createLinearGradient(0,0,w,0);mist.addColorStop(0,'#b3cbd413');mist.addColorStop(.2,'#b3cbd400');mist.addColorStop(.8,'#b3cbd400');mist.addColorStop(1,'#b3cbd41c');g.fillStyle=mist;g.fillRect(0,0,w,h);
+ function paint(g,w,h){g.drawImage(sceneFor(w,h),0,0,w,h)}
+ function makePane(w,h){
+   const state={w,h,scale:Math.max(w/1600,h/1000),last:null,seed:0,drops:[],tracks:[],spawn:0};
+   state.rand=()=>random(++state.seed+8121);
+   for(let i=0;i<215;i++)spawn(state,i<28?'slow':i<38?'fast':'bead',true);
+   return state;
  }
- function progress(p,slow){
-   if(!slow)return p*p;
-   // Surface tension briefly catches a slow drop twice during its descent.
-   const segment=Math.min(2,Math.floor(p*3)),f=Math.min(1,(p*3-segment)/.76);
-   return (segment+f*f*(3-2*f))/3;
+ function spawn(s,kind,initial=false){
+   const rnd=s.rand,scale=s.scale,r=(kind==='bead'?1.6+rnd()**1.7*5.8:5.5+rnd()*5.5)*scale;
+   const x=rnd()*s.w,y=initial?rnd()*s.h:kind==='fast'?-20*scale:rnd()*s.h*.92;
+   if(s.drops.some(d=>!d.dead&&Math.hypot(d.x-x,d.y-y)<d.r+r+2*scale))return;
+   s.drops.push({x,y,r,visibleR:initial?r:r*.65,kind,dead:false,speed:kind==='fast'?130*scale:0,
+     wait:kind==='slow'?18+rnd()*28:kind==='fast'?0:80+rnd()*140,
+     age:initial?.3:0,life:Infinity,wander:rnd()*6.28,trail:0});
  }
- function trailPoint(d,i,v,w,h){return point(d.u+Math.sin(v*32+i)*.0012+Math.sin(v*77+i*.7)*.0006,v,w,h);}
- function draw(g,w,h,_theme,t){
-   const scale=Math.max(w/1600,h/1000);
-   g.save();g.strokeStyle='#c0d1d110';g.lineWidth=Math.max(.35,.55*scale);g.beginPath();
-   for(let i=0;i<70;i++){const x=random(i+3401)*w,y=(random(i+4501)*h+t*(170+random(i+5101)*90)*scale)%(h+40*scale)-40*scale;g.moveTo(x,y);g.lineTo(x-2*scale,y+(12+random(i+6001)*17)*scale);}g.stroke();
-   for(let i=0;i<runners.length;i++){
-     const d=runners[i],cycle=d.hold+d.travel,elapsed=(t+d.phase*cycle)%cycle;
-     const moving=elapsed>=d.hold,q=Math.max(0,(elapsed-d.hold)/d.travel),p=progress(q,d.slow);
-     const v=d.start+p*(1.08-d.start);
-     // Residue stays at the point of contact, including after the runner exits.
-     // Sample its passage time, so pauses don't make the trail slide with it.
-     for(let j=0;j<22;j++){
-       const site=(j+.3)/22,age=(elapsed-(d.hold+site*d.travel)+cycle)%cycle;
-       if(age>16)continue;
-       const spot=trailPoint(d,i,d.start+progress(site,d.slow)*(1.08-d.start),w,h);
-       const r=(.9+random(i*31+j+8201)*1.5)*scale;
-       g.globalAlpha=Math.min(1,(16-age)/6)*.64;
-       bead(g,spot.x+(random(i*31+j+9101)-.5)*3*scale,spot.y,r,1.05,w,h);
+ function step(s,dt){
+   const scale=s.scale,bucketSize=36*scale,buckets=new Map();
+   let residueCount=s.drops.filter(d=>d.kind==='residue').length;
+   for(const d of s.drops){const key=Math.floor(d.x/bucketSize)+','+Math.floor(d.y/bucketSize);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(d)}
+   for(const d of s.drops){
+     if(d.dead)continue;d.age+=dt;d.wait-=dt;if(d.age>d.life){d.dead=true;continue}
+     const ox=d.x,oy=d.y;
+     if(d.wait<=0){
+       const target=(d.kind==='fast'?260:55+Math.max(0,d.r/scale-6)*11)*scale;
+       d.speed+=(target-d.speed)*Math.min(1,dt*2.2);d.y+=d.speed*dt;d.x+=Math.sin(d.y/(85*scale)+d.wander)*d.speed*dt*.035;
      }
-     const pos=trailPoint(d,i,v,w,h),growth=moving?1:.78+.22*elapsed/d.hold;
-     // A short squash on arrival reads as water catching the pane, not a splash.
-     const impact=Math.sin(elapsed*13)*Math.exp(-elapsed*5)*.16;
-     const speed=moving?Math.max(0,(progress(Math.min(1,q+.001),d.slow)-p)/.001):0;
-     g.globalAlpha=Math.min(1,elapsed/.22);
-     bead(g,pos.x,pos.y,d.r*scale*growth*(1+impact),1.02-impact+Math.min(.27,speed*.1),w,h);
+     // Swept collision catches beads between frames, including fast runners.
+     const range=d.r+17*scale;
+     for(let bx=Math.floor((d.x-range)/bucketSize);bx<=Math.floor((d.x+range)/bucketSize);bx++){
+       for(let by=Math.floor((oy-range)/bucketSize);by<=Math.floor((d.y+range)/bucketSize);by++){
+         for(const other of buckets.get(bx+','+by)||[]){
+           if(other===d||other.dead)continue;
+           const nearestY=Math.max(oy,Math.min(d.y,other.y));
+           if(Math.hypot(d.x-other.x,nearestY-other.y)>(d.r+other.r)*.88)continue;
+           other.dead=true;const area=d.r*d.r+other.r*other.r;
+           d.r=Math.min(17*scale,Math.sqrt(area));
+           if(d.speed===0){d.wait=Math.min(d.wait,1.5);d.kind='slow'}
+         }
+       }
+     }
+     d.visibleR+=(d.r-d.visibleR)*Math.min(1,dt*7);
+     if(d.speed>8*scale){
+       s.tracks.push({x:ox,y:oy,x2:d.x,y2:d.y,r:d.r*.3,life:7});
+       d.trail+=d.y-oy;
+       if(d.trail>35*scale&&residueCount<160){d.trail=0;residueCount++;s.drops.push({x:ox+Math.sin(d.wander)*scale,y:oy-2*d.r,r:1.3*scale,visibleR:1.3*scale,kind:'residue',speed:0,wait:Infinity,age:0,life:14,wander:0,dead:false,trail:0})}
+     }
+     if(d.y>s.h+30*scale)d.dead=true;
    }
-   g.restore();
+   s.drops=s.drops.filter(d=>!d.dead);
+   for(const track of s.tracks)track.life-=dt;s.tracks=s.tracks.filter(p=>p.life>0).slice(-900);
+   s.spawn+=dt;
+   if(s.spawn>.55){s.spawn=0;if(s.drops.length<260)spawn(s,'bead');if(s.drops.filter(d=>d.kind==='slow').length<28)spawn(s,'slow');if(s.drops.filter(d=>d.kind==='fast').length<10)spawn(s,'fast')}
+ }
+ function draw(g,w,h,_theme,t){
+   let s=panes.get(g);if(!s||s.w!==w||s.h!==h||t<s.last){s=makePane(w,h);panes.set(g,s)}
+   // Bound catch-up after tab suspension; normal animation steps stay continuous.
+   let elapsed=s.last===null?0:Math.min(.25,Math.max(0,t-s.last));s.last=t;
+   while(elapsed>0){const dt=Math.min(1/60,elapsed);step(s,dt);elapsed-=dt}
+   const scene=sceneFor(w,h);g.save();g.lineCap='round';
+   for(const p of s.tracks){g.lineWidth=Math.max(.4,p.r);g.strokeStyle=`rgba(170,194,198,${.025*p.life/7})`;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x2,p.y2);g.stroke()}
+   for(const d of s.drops){g.globalAlpha=d.kind==='residue'?Math.min(1,(d.life-d.age)/5)*.55:Math.min(1,d.age/.3);water(g,scene,d)}
+   g.globalAlpha=1;
+   // A single reflection over all water places it on the far side of the pane.
+   const glaze=g.createLinearGradient(0,0,w,h*.4);glaze.addColorStop(0,'#b9d0d208');glaze.addColorStop(.38,'#b9d0d200');glaze.addColorStop(.53,'#dae9e609');glaze.addColorStop(.68,'#b9d0d200');glaze.addColorStop(1,'#b9d0d204');g.fillStyle=glaze;g.fillRect(0,0,w,h);g.restore();
  }
  window.TeacherTilesRainyWindowScene={themes:['rainy-window'],prepare,paint,draw};
 })();

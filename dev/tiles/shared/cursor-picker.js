@@ -4,7 +4,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
   const key='teacherTilesCursorFavorites',controls=window.TeacherTilesCollectionControls;
   const readFavorites=()=>{try{favorites=new Set(JSON.parse(localStorage.getItem(key)||'[]'))}catch{favorites=new Set()}};readFavorites();
   const lock='<img src="assets/ui/lock.svg?v=20260927-gold" alt="">';
-  panel.innerHTML='<div class="cursor-picker"><div class="cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All Cursors</button><button type="button" data-view="favorites" aria-pressed="false">Favorites <span></span></button></div><label class="cursor-picker-search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="cursor-picker-search" type="search" aria-label="Search cursors" placeholder="Search cursors or packs…"></label><div class="cursor-picker-filters"><span role="status" aria-live="polite"></span><label>Owned Only <input type="checkbox" role="switch" aria-label="Owned cursors only"><i aria-hidden="true"></i></label></div><div class="cursor-picker-results"><div class="cursor-pack-grid"></div><div class="cursor-favorites-grid" hidden></div><p class="cursor-picker-empty" hidden></p></div></div>';
+  panel.innerHTML='<div class="cursor-picker"><div class="cursor-picker-views"><button type="button" data-view="all" aria-pressed="true">All Cursors</button><button type="button" data-view="favorites" aria-pressed="false">Favorites</button></div><label class="cursor-picker-search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="cursor-picker-search" type="search" aria-label="Search cursors" placeholder="Search cursors or packs…"></label><div class="cursor-picker-filters"><span role="status" aria-live="polite"></span><label>Owned Only <input type="checkbox" role="switch" aria-label="Owned cursors only"><i aria-hidden="true"></i></label></div><div class="cursor-picker-results"><div class="cursor-pack-grid"></div><div class="cursor-favorites-grid" hidden></div><p class="cursor-picker-empty" hidden></p></div></div>';
   const root=panel.querySelector('.cursor-picker'),results=root.querySelector('.cursor-picker-results'),status=root.querySelector('[role="status"]');
   const packGrid=root.querySelector('.cursor-pack-grid'),favoriteGrid=root.querySelector('.cursor-favorites-grid'),empty=root.querySelector('.cursor-picker-empty');
   const fan=document.createElement('div');fan.className='cursor-pack-fan';fan.id='cursor-pack-options';fan.setAttribute('popover','manual');fan.setAttribute('role','dialog');fan.setAttribute('aria-labelledby','cursor-pack-title');
@@ -31,13 +31,19 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
     // Reuse the shop's actual cursor artwork, without cloning shop controls or animation layers.
     const source=pack.productId?document.querySelector(`[data-shop-product="${CSS.escape(pack.productId)}"] .shop-product__preview`):null;
     const sources=source?[...source.querySelectorAll('img')]:[];
-    const samples=sources.length?sources:members;
-    const indices=[...new Set([0,Math.floor((samples.length-1)/2),samples.length-1])];
-    indices.forEach((index,i)=>{const sample=samples[index];if(!sample)return;const image=document.createElement('img');image.src=sample instanceof HTMLImageElement?sample.getAttribute('src'):`assets/cursors/${sample.id}-normal.png?v=${sample.assetVersion||'20260927-packs'}`;image.alt='';image.draggable=false;image.loading='lazy';image.decoding='async';image.style.setProperty('--sample',i-(indices.length-1)/2);if(pack.productId==='cursor-pixel-pack')image.className='is-pixel-art';preview.append(image)});
+    if(source){
+      const art=source.cloneNode(false);art.removeAttribute('id');art.classList.add('cursor-shop-preview');
+      for(const original of sources){const image=original.cloneNode(true);image.removeAttribute('id');image.loading='lazy';image.decoding='async';image.draggable=false;art.append(image)}
+      preview.append(art);
+      const resize=new ResizeObserver(()=>preview.style.setProperty('--pack-art-scale',String(preview.clientWidth/300)));resize.observe(preview);
+    }else{
+      const image=document.createElement('img');image.src='assets/cursors/default-normal.png';image.alt='';image.style.setProperty('--sample',0);preview.append(image);
+    }
     const cells=members.map(cursor=>{
       const cell=document.createElement('div');cell.className='cursor-picker-cell';
       const choice=document.createElement('button');choice.type='button';choice.className='cursor-picker-choice';choice.dataset.cursorChoice=cursor.id;
-      const art=document.createElement('span');art.className='cursor-picker-art';const img=document.createElement('img');img.src=`assets/cursors/${cursor.id}-normal.png?v=${cursor.assetVersion||'20260927-packs'}`;img.alt='';img.draggable=false;img.loading='lazy';img.decoding='async';if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';art.append(img);
+      const art=document.createElement('span');art.className='cursor-picker-art';const img=document.createElement('img');const display=sources.find(image=>{const name=image.getAttribute('src').split('/').pop().split('?')[0];return name===cursor.id+'-normal-preview.png'||name===cursor.id+'-preview.png'||name===cursor.id+'-normal.png'});
+      img.src=pack.productId==='cursor-color-pack'?`assets/cursors/display/${cursor.id}-normal.svg?v=20261029`:display?.getAttribute('src')||`assets/cursors/${cursor.id}-normal.png?v=${cursor.assetVersion||'20260927-packs'}`;img.alt='';img.draggable=false;img.loading='lazy';img.decoding='async';if(cursor.id.startsWith('pixel-'))img.className='is-pixel-art';art.append(img);
       const label=document.createElement('span');label.className='cursor-picker-name';label.textContent=cursor.name;
       const detail=document.createElement('small');choice.append(art,label,detail);choice.onclick=()=>owned(pack.productId)?apply(cursor.id):unlock(pack.productId);
       const favorite=controls.favoriteButton(cursor.name,favorites.has(cursor.id),()=>{
@@ -50,7 +56,6 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
     section.append(heading);packGrid.append(section);const group={pack,section,heading,cells,count:heading.querySelector('small')};heading.onclick=()=>open(group);return group;
   });
   function render(){
-    root.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';
     const selected=active(),visibleFavorites=[];let total=0,packCount=0;
     for(const group of groups){
       const {pack,section,heading,count,cells}=group,accessible=owned(pack.productId);let matches=0;

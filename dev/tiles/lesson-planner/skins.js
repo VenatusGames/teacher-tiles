@@ -1,5 +1,6 @@
 (() => {
   const catalog = Object.freeze([
+    Object.freeze({id:'thanksgiving',productId:'planner-skin-thanksgiving',name:'Thanksgiving Planner',description:'A cream harvest cover with a woven cornucopia, pumpkins, pears, autumn leaves, and warm bronze rings.',price:250,holiday:'thanksgiving'}),
     Object.freeze({id:'autumn',productId:'planner-skin-autumn',name:'Autumn Planner',description:'Warm autumn leaves, a cream title plaque, and antique gold rings.',price:250}),
     Object.freeze({id:'floral',productId:'planner-skin-floral',name:'Garden Bloom',description:'Pastel botanical flowers, golden rings, and a framed plaque for your planner title.',price:250}),
     Object.freeze({id:'leather',productId:'planner-skin-leather',name:'Classic Leather',description:'Warm textured leather, fine stitching, an embossed title, and a matching clasp.',price:250}),
@@ -15,7 +16,7 @@
   const accessible = skin => !skin || cosmeticIsAccessible(skin.productId);
   const equipped = id => {const skin=catalog.find(item=>item.id===id);return skin&&accessible(skin)?skin.id:'';};
   let closeActive = null;
-  function preview(id,title='My Planner',color=null) {
+  function preview(id,title=id==='thanksgiving'?'Thanksgiving Planner':'My Planner',color=null) {
     const host=document.createElement('span');host.className='planner-skin-preview';host.dataset.plannerSkin=id||'';host.setAttribute('aria-hidden','true');
     host.innerHTML='<span class="planner-book-art"><span class="planner-book-loop"></span><span class="planner-book-cover"><span class="planner-book-cover-label"><b class="planner-book-embossed-title"></b><small>LESSON PLANNER</small></span><span class="planner-book-elastic"></span></span><span class="planner-book-binding">'+'<span></span>'.repeat(12)+'</span></span>';
     host.dataset.plannerColor=color?.id||'default';
@@ -55,7 +56,7 @@
         const id=skin?.id||'',locked=!accessible(skin),selected=equipped(planner.skin)===id;
         const choice=document.createElement('button');choice.type='button';choice.className='tile-skins-choice';choice.dataset.plannerSkinChoice=id;choice.classList.toggle('is-locked',locked);choice.setAttribute('aria-pressed',String(selected));
         const art=document.createElement('span');art.className='tile-skins-choice-preview';art.append(preview(id,planner.name,colorForSkin?.(id)));
-        const name=document.createElement('strong');name.textContent=skin?.name||'Default';const status=document.createElement('small');status.textContent=locked?'Locked · 250 Coins':selected?'Applied':'Apply Skin';choice.append(art,name,status);
+        const name=document.createElement('strong');name.textContent=skin?.name||'Default';const status=document.createElement('small');status.textContent=locked?'Locked · 250 Coins':selected?'Applied':'Apply Skin';choice.append(art,name);if(skin?.holiday){const badge=document.createElement('span');badge.className='holiday-badge planner-skin-holiday-badge';badge.textContent='Holiday';badge.title='Thanksgiving';choice.append(badge)}choice.append(status);
         choice.addEventListener('click',()=>{close();if(locked){openShop(skin.productId);return;}planner.skin=id;save();render();document.querySelector(`[data-planner-id="${CSS.escape(planner.id)}"] .planner-book-skins`)?.focus({preventScroll:true});});
         drawer.querySelector('.tile-skins-drawer-grid').append(choice);if(skin)markSubscriptionAccess(choice,skin.productId);
       }
