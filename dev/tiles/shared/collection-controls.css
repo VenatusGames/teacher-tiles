@@ -15,3 +15,23 @@
 :is(.asset-shelf,.theme-pack-fan) .cursor-picker-filters input:checked+i::before{transform:translateX(14px)}
 @media(hover:none){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{opacity:1;visibility:visible;pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{transition:none}}
+
+/* Cosmetic shelf navigation uses the current outlined, pressable app buttons. */
+.asset-shelf :is(.collection-category-tabs,.cursor-picker-views){padding:0;gap:8px;border:0;border-radius:0;background:none}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle){box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:38px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid);color:var(--text);font:600 12px/1.25 var(--site-font-family,Inter,system-ui,sans-serif);box-shadow:0 2px 0 color-mix(in srgb,var(--text) 12%,transparent);cursor:pointer;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s}
+.asset-shelf .collection-category-tab{min-height:40px;padding-inline:6px}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):hover{background:var(--surface-soft);border-color:color-mix(in srgb,var(--text) 22%,var(--border))}
+.asset-shelf :is(.collection-category-tab.is-active,.cursor-picker-views button[aria-pressed=true],.theme-picker-filter-toggle[aria-expanded=true],.theme-picker-filter-toggle.has-active-filters){background:color-mix(in srgb,#93c5fd 22%,var(--surface-solid));border-color:#7fa9d4;color:var(--text);box-shadow:inset 0 0 0 1px #9bc3e866,0 2px 0 #7299d433}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):active{transform:translateY(1px);box-shadow:none}
+.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle):focus-visible{outline:2px solid #7299d4;outline-offset:2px}
+
+/* The Tile Effects search field is the shared search style for all three shelves. */
+.asset-shelf :is(.theme-picker-toolbar .theme-picker-search,.cursor-picker-search-field){padding:0;border:0;border-radius:12px;background:none;box-shadow:none;gap:0}
+.asset-shelf .theme-picker-search>span,.asset-shelf .cursor-picker-search-field>svg{display:none}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search){box-sizing:border-box;width:100%;min-width:0;height:45px;min-height:45px;margin:0;padding:11px 14px;border:1px solid var(--border,#dce3ed);border-radius:12px;background:var(--surface-solid,#fff);color:var(--text,#263249);font:400 16px/21px Inter,system-ui,sans-serif;box-shadow:none;outline:none;transition:border-color .15s,box-shadow .15s}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search):focus{border-color:#7299d4;box-shadow:0 0 0 2px #7299d422}
+.asset-shelf :is(.theme-picker-search input,.cursor-picker-search-field .cursor-picker-search,.tile-effects-search)::placeholder{font-size:14px;font-weight:720;color:color-mix(in srgb,var(--muted) 75%,transparent);opacity:1}
+.asset-shelf .theme-picker-filter-toggle{min-height:45px;flex:none}
+.asset-shelf .theme-picker-toolbar{margin-top:0}
+.asset-shelf .cursor-picker-views{margin-bottom:14px}
+@media(prefers-reduced-motion:reduce){.asset-shelf :is(.collection-category-tab,.cursor-picker-views button,.theme-picker-filter-toggle,.theme-picker-search input,.cursor-picker-search,.tile-effects-search){transition:none}}
