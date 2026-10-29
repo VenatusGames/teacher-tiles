@@ -150,9 +150,10 @@ function setupGrapher(m){
 
   svg.addEventListener('click',event=>{
     if(event.target.closest?.('.grapher-point'))return;
-    const rect=svg.getBoundingClientRect();
-    const px=(event.clientX-rect.left)/rect.width*W;
-    const py=(event.clientY-rect.top)/rect.height*H;
+    // Account for the SVG letterboxing as the controls expand or collapse.
+    const matrix=svg.getScreenCTM();if(!matrix)return;
+    const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(matrix.inverse());
+    const px=point.x,py=point.y;
     if(px<pad||px>W-pad||py<pad||py>H-pad)return;
     addPoint(unmapX(px),unmapY(py));
   });
