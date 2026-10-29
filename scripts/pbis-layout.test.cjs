@@ -106,8 +106,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.waitForTimeout(250);assert.equal(await page.locator('.starchart-flying-star').count(),0,'award flight cleans up');
 
  await tile.locator('.starchart-student-total').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'non-star row content awards a star');
- await tile.locator('.starchart-star-token').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124,'star click removes one');
- await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('4');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
+ await tile.locator('.starchart-star-token').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'earned stars cannot remove points');
+ await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('5');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
  await tile.locator('.starchart-search').fill('');
  await page.mouse.move(4,4);await page.waitForTimeout(200);assert.equal(await tile.locator('.starchart-subtract-toggle').last().evaluate(e=>getComputedStyle(e).visibility),'hidden');
  const originalSize=await tile.evaluate(e=>({width:e.offsetWidth,height:e.offsetHeight}));
@@ -117,6 +117,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert(await tile.evaluate(e=>e.offsetWidth>=1000),'overview expands to readable column widths');
  assert(await tile.locator('.starchart-class-name').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)===13),'class label stays subtle');
  assert.equal(await tile.locator('.starchart-student-avatar').count(),12);
+ assert(await tile.locator('.starchart-student-row').nth(1).locator('.starchart-star-token.is-bundle>small').isVisible(),'bundled single stars show their value');
+ const compactHeight=await tile.locator('.starchart-student-row').first().evaluate(e=>e.offsetHeight);
+ await page.evaluate(()=>{window.starCompactBackup=JSON.parse(JSON.stringify(readClassRosters()));const c=readClassRosters()[0];c.starChart.studentStars['student:alex']=9999;localStorage.setItem(classRostersStorageKey(),JSON.stringify([c]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(350);
+ assert.equal(await tile.locator('.starchart-student-row').first().evaluate(e=>e.offsetHeight),compactHeight,'large totals cannot grow overview rows');
+ assert.equal(await tile.locator('.starchart-student-row').first().locator('.starchart-star-token').count(),3,'overview has at most three large star bundles');
+ assert.equal(await tile.locator('.starchart-student-row').first().locator('.starchart-star-token').evaluateAll(ns=>ns.reduce((sum,n)=>sum+Number(n.dataset.bundleValue),0)),9999,'bundles represent the exact total');
+ await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify(starCompactBackup));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(350);
+
  assert(await tile.locator('.starchart-student-name>strong').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=14)),'overview names stay readable');
  assert.equal(await tile.locator('.starchart-student-avatar img').count(),1);
  assert.equal(await tile.locator('.starchart-student-avatar').nth(1).textContent(),'🐻');
@@ -165,9 +173,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const metric=await tile.evaluate(m=>{const r=m.getBoundingClientRect();return {w:r.width,h:r.height,scroll:m.scrollHeight,client:m.clientHeight}});assert.equal(metric.w,1440);assert.equal(metric.h,1000);console.log(type,metric);
  if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.hover();await tile.locator('.pbis-scope-toggle').click();
  await tile.locator('.starchart-whole-add').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class portrait awards a star');
- await tile.locator('.starchart-whole-bundles .starchart-star-token').last().click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class earned star removes one');
- await tile.locator('.starchart-whole-card').hover();await tile.locator('.starchart-whole-remove').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'34','whole-class remove button removes one');
- await tile.locator('.starchart-whole-count').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class card content awards one');
+ await tile.locator('.starchart-whole-bundles .starchart-star-token').last().click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class earned stars cannot remove points');
+ await tile.locator('.starchart-whole-card').hover();await tile.locator('.starchart-whole-remove').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class remove button removes one');
+ await tile.locator('.starchart-whole-count').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class card content awards one');
  await page.waitForTimeout(750);await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
  if(type==='pbisconsole'){await tile.locator('[data-pbisconsole-view=class]').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-console-class-full.png')});}
  await page.setViewportSize({width:1100,height:720});await page.waitForTimeout(150);
