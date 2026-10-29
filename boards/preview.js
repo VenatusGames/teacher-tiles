@@ -1,3 +1,4 @@
+import '../tiles/racer/visuals.js?v=20261028-hill-race';
 import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';
 import {renderFlashcardPreview} from './flashcard-preview.js?v=20261026';
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
@@ -295,29 +296,12 @@ function applyPbisPreviewState(module, state, special) {
   }
 
   if (state.type === "racer") {
+    module.classList.add('pbis-tile');
+    const header=module.querySelector('.racer-header');
+    if(header){header.classList.add('pbis-class-footer');header.querySelector('.pbis-change-class')?.remove();module.append(header);}
     const progress = roster.racer || {};
     const standees = module.querySelector(".racer-standees");
-    if (standees) {
-      standees.replaceChildren();
-      for (const [index, name] of (roster.students || []).slice(0, 10).entries()) {
-        const key = previewStudentKey(name);
-        const percent = Math.max(0, Math.min(100, Number(progress.positions?.[key]) || 0));
-        const t = percent / 100;
-        const standee = document.createElement("span");
-        standee.className = `racer-standee is-ready${progress.finished?.[key] ? " is-finished" : ""}`;
-        standee.style.left = `${6 + t * 88}%`;
-        standee.style.top = `${54 - 40 * t * (1 - t)}%`;
-        standee.style.zIndex = String(20 + index % 6);
-        standee.style.setProperty("--racer-hue", String((index * 47 + 195) % 360));
-        const character = document.createElement("span");
-        character.className = "racer-character";
-        const label = document.createElement("strong");
-        label.textContent = name;
-        character.append(label);
-        standee.append(character);
-        standees.append(standee);
-      }
-    }
+    if (standees) window.TeacherTilesRacerVisuals.render(standees,roster,progress,previewStudentKey);
     const finishers = (roster.students || []).filter(name => progress.finished?.[previewStudentKey(name)]).length;
     setPreviewText(module, ".racer-status", finishers ? `${finishers} ${finishers === 1 ? "finisher" : "finishers"}` : "Race in progress");
   }
@@ -836,7 +820,7 @@ function applyPreviewState(module, state) {
   });
 }
 
-const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;if(module.dataset.type==='visualdirections'){const wall=module.querySelector('.directions-wall');window.TeacherTilesVisualDirections.fitLayout(wall,wall.children.length,module.dataset.directionsLayout);}const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
+const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;if(module.dataset.type==='visualdirections'){const wall=module.querySelector('.directions-wall');window.TeacherTilesVisualDirections.fitLayout(wall,wall.children.length,module.dataset.directionsLayout);}if(module.dataset.type==='racer')window.TeacherTilesRacerVisuals.layout(module.querySelector('.racer-standees'));const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
 function createMiniObject(item) {
   const state = item?.state || null;
   const type = state?.type || item?.type || "";

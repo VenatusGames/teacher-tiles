@@ -200,9 +200,10 @@ function setupStarChart(m){
       const exactNumber=document.createElement('b');exactNumber.textContent=count.toLocaleString();
       exact.append(exactNumber,document.createTextNode(` ${count===1?'star':'stars'} total`));
       const avatar=document.createElement('span');avatar.className='starchart-student-avatar';avatar.setAttribute('aria-hidden','true');
-      const profile=roster.studentProfiles?.[key];
+      const profile=roster.studentProfiles?.[key],visual=studentProfileVisual(name,roster.id);
+      avatar.style.setProperty('--avatar-hue',visual.hue);
       if(profile?.image){const image=document.createElement('img');image.src=profile.image;image.alt='';image.decoding='async';avatar.append(image);}
-      else avatar.textContent=profile?.emoji||name.trim().slice(0,1).toLocaleUpperCase();
+      else avatar.textContent=profile?.emoji||visual.initials;
       exact.className='starchart-student-total';
       nameButton.append(avatar,label);
 
@@ -211,7 +212,8 @@ function setupStarChart(m){
 
       const subtractToggle=document.createElement('button');
       subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
-      subtractToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><small>Remove</small>';
+      subtractToggle.title='Remove Stars';
+      subtractToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>';
       const stars=document.createElement('div');stars.className='starchart-student-stars';stars.append(starStage,exact);
       main.append(nameButton,stars,subtractToggle);
 

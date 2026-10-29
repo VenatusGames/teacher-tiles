@@ -141,8 +141,9 @@ function movePbisClassHeaderToFooter(m,selector){
 function movePbisClassActionsToFooter(m){
   let actions=m.querySelector('.pbis-footer-actions');
   if(!actions){actions=document.createElement('div');actions.className='pbis-footer-actions';actions.dataset.skipBoardSave='';m.append(actions);}
-  const change=m.querySelector('.pbis-change-class'),reset=m.querySelector('.growth-reset');
-  if(reset){reset.textContent='Reset';actions.append(reset);}
+  const change=m.querySelector('.pbis-change-class'),reset=m.querySelector('.growth-reset,.racer-reset');
+  if(m.dataset.type==='starchart'){const scope=m.querySelector('.pbis-scope-toggle');if(scope)actions.append(scope);}
+  if(reset){reset.textContent='Reset';reset.setAttribute('aria-label',m.dataset.type==='racer'?'Reset Race':'Reset Progress');actions.append(reset);}
   if(change){
     change.classList.add('custom-icon','pbis-footer-change');
     change.setAttribute('aria-label','Change Class');change.title='Change Class';

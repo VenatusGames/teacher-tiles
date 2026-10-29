@@ -5,7 +5,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.route('**/*',r=>{const u=new URL(r.request().url()),f=path.join(process.cwd(),decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(u.hostname!=='tiles.test'||!fs.existsSync(f)||!fs.statSync(f).isFile())return r.abort();return r.fulfill(f.endsWith('index.html')?{contentType:'text/html',body:fs.readFileSync(f,'utf8').replace(/<script[^>]+src="(?:firebase-auth|sandbox\/board-gate)[^"]*"[^>]*><\/script>/g,'')}:{path:f})});
  await page.goto('http://tiles.test/');await page.waitForTimeout(4500);
  await page.evaluate(()=>{document.querySelector('#profile-modal').hidden=true;localStorage.setItem(classRostersStorageKey(),JSON.stringify([{id:'pbis-test',name:'Maple Classroom',logo:'🍁',studentProfiles:{'student:alex':{image:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII='},'student:benjamin':{emoji:'🐻'}},students:['Alex','Benjamin','Charlotte','Daniel','Elena','Francisco','Grace','Harper','Isabelle','Jackson','Kai','Luciana'],starChart:{studentStars:{'student:alex':123,'student:benjamin':5},wholeClassStars:35}}]));});
- const types=['starchart','classmeter','collections','prizeboard','pbisconsole','punchcards','racer','egghatching','flowerpots'];
+ const types=process.env.PBIS_TEST_TYPES?process.env.PBIS_TEST_TYPES.split(','):['starchart','classmeter','collections','prizeboard','pbisconsole','punchcards','racer','egghatching','flowerpots'];
  for(const type of types){
  await page.evaluate(type=>{document.querySelectorAll('#workspace .module').forEach(m=>{m._cleanup?.();m.remove()});const p=screenToBoard(560,100);window.testTile=createModule(type,p.x,p.y,{record:false});},type);
  await page.waitForTimeout(200);
@@ -30,20 +30,41 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  if(type==='racer'){
  assert(await tile.locator('.racer-character').first().evaluate(e=>e.offsetWidth<88),'smaller standees');
  assert.equal(await tile.locator('.racer-student-avatar img').count(),1);
- assert.equal(await tile.locator('.racer-student-avatar').nth(1).textContent(),'🐻');
- assert.equal(await tile.locator('.racer-student-avatar').nth(2).textContent(),'C');
- assert(await tile.locator('.racer-character').first().evaluate(e=>Math.abs(e.offsetWidth-e.offsetHeight)<2),'square standees');
+ assert.equal(await tile.locator('.racer-standee[data-student=Benjamin] .racer-student-avatar').textContent(),'🐻');
+ assert.equal(await tile.locator('.racer-standee[data-student=Charlotte] .racer-student-avatar').textContent(),'C');
+ assert(await tile.locator('.racer-student-avatar').first().evaluate(e=>Math.abs(e.offsetWidth-e.offsetHeight)<2),'square student portraits');
  await tile.hover();await page.waitForTimeout(300);const hoverHeight=await tile.locator('.racer-stage').evaluate(e=>e.clientHeight);
  await page.mouse.move(4,4);await page.waitForTimeout(350);
  assert(await tile.locator('.racer-controls').evaluate(e=>e.clientHeight===0),'racer controls collapse');
  assert(await tile.locator('.racer-stage').evaluate((e,h)=>e.clientHeight>h+30,hoverHeight),'course reclaims toolbar space');
  await tile.hover();await page.waitForTimeout(300);
- assert(await tile.locator('.racer-track-art').isVisible(),'shared race course is visible');
- assert.equal(await tile.locator('.racer-lane-track').count(),0,'no separate progress lanes');
+ assert(await tile.locator('.racer-course-scroll').isVisible(),'shared hill race course is visible');
+ assert.equal(await tile.locator('.racer-track').count(),4,'twelve students spread across four hill tracks');
+ assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const rs=[...t.querySelectorAll('.racer-standee')].map(n=>n.getBoundingClientRect()).sort((a,b)=>a.left-b.left);return rs.every((r,i)=>i===0||r.left>=rs[i-1].right)})),'standees have room at the start');
+ assert(await tile.locator('.racer-rider-name').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=12)),'racer names stay readable');
+ assert.equal(await tile.locator('.racer-controls .racer-reset').count(),0,'Reset is outside distance controls');
+ assert(await tile.locator('.pbis-footer-actions .racer-reset').isVisible(),'Reset sits in bottom-right controls');
+ assert.equal(await tile.locator('.racer-move').textContent(),'Add Distance');
  assert.equal(await tile.locator('.racer-standees .racer-standee').count(),12,'whole class stays on one course');
  await tile.locator('.racer-move').click();assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.positions['student:alex']),10);
  await page.evaluate(()=>{const r=readClassRosters()[0],p=normalizeRacerProgress(r.racer,r.students);r.students.forEach((n,i)=>p.positions[starChartStudentKey(n)]=i*8);localStorage.setItem(classRostersStorageKey(),JSON.stringify([{...r,racer:p}]));window.dispatchEvent(new Event('teachertiles:classeschange'))});
  await page.waitForTimeout(800);await tile.screenshot({path:path.join(process.env.TEMP,'pbis-racer-course.png')});
+ await tile.locator('.racer-distance').fill('100');await tile.locator('.racer-move').click();await page.waitForTimeout(650);
+ assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.studentWins['student:alex']),1,'finish awards one Race Win');
+ await tile.locator('.racer-win-done').click();assert(await tile.locator('.racer-move').isDisabled(),'finished racer cannot award twice');
+ page.once('dialog',dialog=>dialog.accept());await tile.locator('.racer-reset').click();
+ assert(await page.evaluate(()=>{const r=readClassRosters()[0].racer;return r.studentWins['student:alex']===1&&Object.values(r.positions).every(n=>n===0)}),'reset clears distance and retains Race Wins');
+ await page.evaluate(async()=>{const {createMiniObject}=await import('/boards/preview.js?v=20261028-hill-race');const frame=document.createElement('div');frame.id='race-preview-test';frame.style.cssText='position:fixed;left:0;top:0;width:360px;height:310px;z-index:99999;background:white';const r=readClassRosters()[0];frame.append(createMiniObject({w:1,h:1,state:{type:'racer',special:{activeClassId:r.id,previewRoster:r},transform:{width:720,height:620}}}));document.body.append(frame)});
+ await page.waitForTimeout(250);assert.equal(await page.locator('#race-preview-test .racer-track').count(),4,'saved preview uses the hill layout');
+ assert.equal(await page.locator('#race-preview-test .racer-standee').count(),12,'preview retains every racer');
+ await page.locator('#race-preview-test').screenshot({path:path.join(process.env.TEMP,'pbis-racer-preview.png')});await page.evaluate(()=>document.querySelector('#race-preview-test').remove());
+ await page.evaluate(()=>{window.raceRosterBackup=readClassRosters();const r={...raceRosterBackup[0],students:Array.from({length:30},(_,i)=>'Student '+(i+1))};localStorage.setItem(classRostersStorageKey(),JSON.stringify([r]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(750);
+ assert.equal(await tile.locator('.racer-standee').count(),30);
+ assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const rs=[...t.querySelectorAll('.racer-standee')].map(n=>n.getBoundingClientRect()).sort((a,b)=>a.left-b.left);return rs.every((r,i)=>i===0||r.left>=rs[i-1].right-1)})),'thirty students stay separated across four hills');
+ assert(await tile.locator('.racer-standees').evaluate(e=>{const b=e.getBoundingClientRect();return [...e.querySelectorAll('.racer-standee')].every(n=>{const r=n.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1})}),'all thirty racers stay in the course bounds');
+ await tile.screenshot({path:path.join(process.env.TEMP,'pbis-racer-thirty.png')});
+ await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify(raceRosterBackup));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(750);
+
  }
  if(type==='punchcards'){
  await tile.locator('.punchcard-hole').first().click();await page.waitForTimeout(300);
@@ -71,7 +92,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.starchart-student-name .starchart-student-total').count(),0);
  assert.equal(await tile.locator('.starchart-student-stars .starchart-student-total').count(),12);
  assert(await tile.locator('.starchart-student-name').first().evaluate(e=>e.offsetWidth===e.offsetHeight),'square award buttons');
- assert(await tile.locator('.pbis-scope-toggle').evaluate(e=>!!e.closest('.customization-bar')));
+ assert(await tile.locator('.pbis-scope-toggle').evaluate(e=>!!e.closest('.pbis-footer-actions')),'Star Chart mode is beside Change Class');
+ assert.equal(await tile.locator('.starchart-subtract-toggle small').count(),0,'Remove has a single uncluttered icon');
+ assert(await tile.locator('.starchart-student-name').first().evaluate(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'),'no extra colored portrait holder');
+ assert(await tile.locator('.starchart-student-avatar').last().evaluate(e=>e.style.getPropertyValue('--avatar-hue')===String(studentProfileVisual('Luciana','pbis-test').hue)),'initial palette matches Class View');
  await tile.locator('.starchart-search').fill('alex');assert.equal(await tile.locator('.starchart-student-row:visible').count(),1);
  await tile.locator('.starchart-student-name').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124);
  await tile.locator('.starchart-student-total').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'non-star row content awards a star');
@@ -128,11 +152,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.class-roster-picker select').selectOption('pbis-test');await tile.locator('.class-roster-picker button').click();
  await page.evaluate(()=>document.exitFullscreen());await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>({width:testTile.style.width,height:testTile.style.height})),before,type+' restores board size');await page.setViewportSize({width:1440,height:1000});
  }
+ if(types.includes('flowerpots')){
  // A standard 30-student class fits the growth tiles while keeping names readable.
  await page.evaluate(()=>{const classes=readClassRosters();classes[0].students=Array.from({length:30},(_,i)=>'Student '+i);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));testTile._boardSetState({activeClassId:'pbis-test',showAll:true})});await page.waitForTimeout(200);
  assert(await tileFont());
  assert(await page.locator('.flowerpots-module .growth-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'30 growth students fit at default size');
  async function tileFont(){return page.locator('.flowerpots-module .growth-student strong').evaluateAll(ns=>ns.length===30&&ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=14))}
+ }
  // Shared picker also appears in non-PBIS roster tools.
  for(const type of ['attendance','groupmaker','spinner','popsiclesticks']){
   await page.evaluate(type=>{const p=screenToBoard(560,100);window.other=createModule(type,p.x,p.y,{record:false})},type);
