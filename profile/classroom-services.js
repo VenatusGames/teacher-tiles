@@ -269,7 +269,10 @@ function attachClassRosterLoader(anchor,onLoad){
   row.className='tile-class-loader class-roster-picker';
   const module=anchor.closest('.module');
   const pbisTypes=['starchart','classmeter','collections','prizeboard','pbisconsole','punchcards','racer','egghatching','flowerpots'];
-  if(module&&pbisTypes.includes(module.dataset.type))module.classList.add('pbis-tile');
+  if(module&&pbisTypes.includes(module.dataset.type)){
+    module.classList.add('pbis-tile');
+    if(!module.classList.contains('growth-module'))movePbisClassActionsToFooter(module);
+  }
   const intro=anchor.parentElement;
   if([...intro.classList].some(name=>name.endsWith('-import'))){
     intro.classList.add('class-roster-intro');

@@ -47,7 +47,7 @@
     const reset=document.createElement('button');reset.type='button';reset.className='growth-reset';reset.textContent='Reset progress';
     reset.title=eggs?'Start current eggs over; keep earned PBIS points':'Start current flowers over; keep earned PBIS points';
     m.querySelector('.growth-header').insertBefore(reset,m.querySelector('.growth-change'));
-    const headerActions=document.createElement('div');headerActions.className='growth-header-actions';headerActions.append(reset,m.querySelector('.growth-change'));header.append(headerActions);
+    movePbisClassActionsToFooter(m);
     reset.onclick=()=>{const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r[kind],r.students);for(const key of Object.keys(progress.studentProgress))progress.studentProgress[key]=0;completed.clear();writeClassGrowth(r.id,kind,progress);window.dispatchEvent(new CustomEvent('teachertiles:growthreset',{detail:{classId:r.id,kind}}));};
     const onReset=event=>{if(event.detail?.classId===activeClassId&&event.detail?.kind===kind){completed.clear();grid.querySelectorAll('.growth-particle').forEach(p=>p.remove());render();}};
     window.addEventListener('teachertiles:growthreset',onReset);

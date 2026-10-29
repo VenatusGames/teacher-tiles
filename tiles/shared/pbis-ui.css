@@ -311,3 +311,65 @@
 .module:has(>.pbis-class-footer)>.customization-bar{position:absolute;left:10px;right:auto;bottom:9px;transform:none;justify-content:flex-start;flex-wrap:nowrap}
 .module:has(>.pbis-class-footer):is(:hover,:has(:focus-visible))>.customization-bar{opacity:1;visibility:visible;pointer-events:auto}
 .module.punchcard-module .pbis-class-footer{max-width:calc(100% - 330px)}
+
+/* Class actions share the same compact, bottom-right hover shelf on every PBIS tile. */
+.module.pbis-tile>.pbis-footer-actions{position:absolute;right:52px;bottom:9px;z-index:5;display:flex;align-items:center;gap:6px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px);transition:opacity .16s ease,transform .2s ease,visibility .2s}
+.module.pbis-tile:is(:hover,:has(.pbis-footer-actions :focus-visible))>.pbis-footer-actions{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.module.pbis-tile .pbis-footer-actions button{box-sizing:border-box;min-height:34px;height:34px;min-width:34px;padding:7px 10px;font-size:12px;line-height:18px;opacity:1;visibility:visible;pointer-events:auto;translate:none}
+.module.pbis-tile .pbis-footer-actions .pbis-footer-change{width:34px;padding:7px}
+.module.pbis-tile:has(.class-roster-intro:not([hidden]))>.pbis-footer-actions{display:none}
+.module.pbis-tile .pbis-class-footer{transition:right .2s ease;max-width:calc(100% - 270px)}
+.module.pbis-tile:has(.pbis-footer-actions):is(:hover,:has(.pbis-footer-actions :focus-visible)) .pbis-class-footer{right:96px}
+/* Search slides up out of the roster; pointer focus cannot leave it stuck open. */
+.module.starchart-module .starchart-student-toolbar{flex:none;min-height:0;max-height:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-12px);transition:max-height .22s ease,opacity .15s ease,transform .22s ease,visibility .22s}
+.module.starchart-module:is(:hover,:has(.starchart-student-toolbar :focus-visible)) .starchart-student-toolbar{max-height:100px;opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.module.starchart-module .starchart-subtract-toggle{box-sizing:border-box;align-self:center;justify-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:40px;min-width:40px;height:40px;min-height:40px;aspect-ratio:1;padding:3px}
+.module.starchart-module .starchart-subtract-toggle small{font-size:9px;line-height:11px}
+/* A continuous race course, with a quieter landscape and smaller profile standees. */
+.racer-module .racer-stage{background:linear-gradient(180deg,#eef7fb,#fbfcf4 65%);border-color:#d3dfd8;border-radius:18px;box-shadow:inset 0 1px 0 #fff}
+.racer-scenery .racer-clouds{fill:#fff;opacity:.8}
+.racer-scenery .racer-far-hill{fill:#e2edda}
+.racer-scenery .racer-near-hill{fill:#d2e3bf}
+.racer-scenery .racer-grass{fill:none;stroke:#9eb98c;stroke-width:2;stroke-linecap:round;opacity:.5}
+.racer-module .racer-track-shadow{stroke:#99b28b;stroke-width:46;opacity:.5}
+.racer-module .racer-track-edge{fill:none;stroke:#fff7e7;stroke-width:41;stroke-linecap:round}
+.racer-module .racer-track-surface{fill:none;stroke:#c58c67;stroke-width:33;stroke-linecap:round}
+.racer-module .racer-track-line{stroke:#fff5de;stroke-width:2;stroke-dasharray:12 12;opacity:.9}
+.racer-module :is(.racer-start-line,.racer-finish-line){stroke:#fffaf1;stroke-width:4;stroke-dasharray:none}
+.racer-module :is(.racer-standee,.racer-character){width:76px}
+.racer-module .racer-character{border-width:1.5px;border-radius:11px;padding:5px;gap:3px;background:linear-gradient(155deg,#fff,hsl(var(--racer-hue) 55% 89%));box-shadow:inset 0 1px 0 #fff,0 3px 7px #273f351a}
+.racer-module .racer-student-avatar{width:40px;font-size:25px;border-radius:7px}
+.racer-module .racer-character strong{font-weight:650;font-size:12px;max-width:100%}
+.racer-module .racer-stick{width:7px;background:linear-gradient(90deg,#b68c5e,#e6c69c 50%,#bd9669)}
+.racer-module .racer-standee{filter:drop-shadow(0 4px 4px #31473320)}
+.racer-module .racer-standee::after{content:'';position:absolute;bottom:-4px;left:25%;width:50%;height:7px;z-index:-1;border-radius:50%;background:#344a3626}
+.racer-module .racer-standee:is(:hover,.is-selected){transform:translate(-50%,-100%) scale(1.04)}
+.racer-module .racer-standee.is-selected .racer-character{outline-color:#5b86b0;outline-width:2px}
+.racer-module .racer-finish{top:35%;gap:4px}
+.racer-module .racer-finish-flag{position:relative;box-shadow:0 2px 3px #253c3426}
+.racer-module .racer-finish-flag::before{content:'';position:absolute;left:-3px;top:-3px;bottom:-14px;width:3px;border-radius:3px;background:#53685b}
+.racer-module .racer-status{border-color:#c4d4b9;box-shadow:0 2px 5px #263c3008;background:#ffffffdf;color:#354737}
+.racer-module:is(:fullscreen,.is-tile-fullscreen) :is(.racer-character,.racer-standee){width:clamp(94px,8cqw,140px)}
+.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-character strong{font-size:clamp(14px,1.25cqw,18px)}
+@media(hover:none){
+ .module.pbis-tile>.pbis-footer-actions{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+ .module.pbis-tile:has(.pbis-footer-actions) .pbis-class-footer{right:96px}
+ .module.starchart-module .starchart-student-toolbar{max-height:100px;opacity:1;visibility:visible;pointer-events:auto;transform:none}
+}
+@media(prefers-reduced-motion:reduce){.module.pbis-tile :is(.pbis-footer-actions,.pbis-class-footer,.starchart-student-toolbar){transition:none}}
+
+/* Bottom shelves move the activity up while open and return that room on unhover. */
+.module.pbis-tile:is(.punchcard-module,.starchart-module){padding-bottom:28px!important;transition:padding-bottom .22s ease}
+.module.pbis-tile:is(.punchcard-module,.starchart-module):is(:hover,:has(.customization-bar :focus-visible),:has(.pbis-footer-actions :focus-visible),:has(.punchcard-reset:focus-visible)){padding-bottom:52px!important}
+.module.punchcard-module .punchcard-reset{flex:none;min-height:0;height:0;max-height:0;padding-block:0;margin-top:0;border-width:0;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(10px);transition:height .22s ease,max-height .22s ease,padding .22s ease,margin .22s ease,opacity .15s ease,transform .22s ease,visibility .22s}
+.module.punchcard-module:is(:hover,:has(.punchcard-reset:focus-visible)) .punchcard-reset{height:34px;max-height:34px;padding-block:7px;margin-top:7px;border-width:1px;opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.module.punchcard-module .punchcard-reset:disabled{display:none}
+.module.pbis-tile .pbis-footer-change:hover{background:color-mix(in srgb,var(--module-bg,#fff) 84%,var(--module-text,#17191d) 16%)}
+.racer-course-mark{position:absolute;top:61%;transform:translateX(-50%);font-size:11px;font-weight:600;color:#58764f;line-height:1.2;pointer-events:none}
+.racer-course-mark::before{content:'';position:absolute;width:1px;height:7px;left:50%;top:-10px;background:#98af89}
+.racer-course-mark--quarter{left:28%}.racer-course-mark--half{left:50%;top:58%}.racer-course-mark--three-quarter{left:72%}
+@media(hover:none){
+ .module.pbis-tile:is(.punchcard-module,.starchart-module){padding-bottom:52px!important}
+ .module.punchcard-module .punchcard-reset{height:34px;max-height:34px;padding-block:7px;margin-top:7px;border-width:1px;opacity:1;visibility:visible;pointer-events:auto;transform:none}
+}
+@media(prefers-reduced-motion:reduce){.module.pbis-tile:is(.punchcard-module,.starchart-module),.module.punchcard-module .punchcard-reset{transition:none}}

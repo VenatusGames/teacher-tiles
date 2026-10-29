@@ -141,7 +141,7 @@
 <link rel="stylesheet" href="support/announcements.css?v=20261023-notification-class-polish">
 <link rel="stylesheet" href="shop/browse-performance.css?v=20261028-scroll">
 <link rel="stylesheet" href="shop/theme-previews.css?v=20261028-shop-previews">
-<link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261028-pbis-content">
+<link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261028-pbis-actions">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -3738,11 +3738,20 @@
         </header>
         <div class="racer-stage" data-skip-board-save>
           <svg class="racer-track-art" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+            <g class="racer-scenery" aria-hidden="true">
+              <g class="racer-clouds"><path d="M130 59a19 19 0 0 1 30-16 25 25 0 0 1 45 10 15 15 0 0 1 0 30h-73a12 12 0 0 1-2-24Z"/><path d="M690 48a16 16 0 0 1 26-12 23 23 0 0 1 42 12 13 13 0 0 1 0 26h-68a13 13 0 0 1 0-26Z"/></g>
+              <path class="racer-far-hill" d="M0 166Q170 100 350 158T700 147T1000 152V360H0Z"/>
+              <path class="racer-near-hill" d="M0 217Q260 166 510 215T1000 202V360H0Z"/>
+              <path class="racer-grass" d="m95 274-4-7m4 7 4-9m322 23-4-7m4 7 4-9m425-8-4-7m4 7 4-9m-580 24-4-7m4 7 4-9m460 27-4-7m4 7 4-9"/>
+            </g>
             <path class="racer-track-shadow" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-track-edge" d="M60 194 Q500 122 940 194"/>
+            <path class="racer-track-surface" d="M60 194 Q500 122 940 194"/>
             <path class="racer-track-line" d="M60 194 Q500 122 940 194"/>
-            <path class="racer-start-line" d="M60 166v56"/>
-            <path class="racer-finish-line" d="M940 148v78"/>
+            <path class="racer-start-line" d="M60 176v36"/>
+            <path class="racer-finish-line" d="M940 176v36"/>
           </svg>
+          <span class="racer-course-mark racer-course-mark--quarter" aria-hidden="true">25%</span><span class="racer-course-mark racer-course-mark--half" aria-hidden="true">50%</span><span class="racer-course-mark racer-course-mark--three-quarter" aria-hidden="true">75%</span>
           <div class="racer-start-label">START</div>
           <div class="racer-finish"><span class="racer-finish-flag" aria-hidden="true"></span><strong>FINISH</strong></div>
           <div class="racer-standees"></div>
@@ -4665,7 +4674,7 @@
 <script src="tiles/coinflip/index.js?v=20260927-packs"></script>
 <script src="tiles/shared/cursor-picker.js?v=20261028-shop-previews"></script>
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
-<script src="tiles/growth-rewards/index.js?v=20261028-pbis-content"></script>
+<script src="tiles/growth-rewards/index.js?v=20261028-pbis-actions"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/thanksgiving/shared.js?v=20261021-balanced-feather-rows"></script>
 <script src="tiles/halloween/shared.js?v=20261021-thanksgiving"></script>
@@ -4745,12 +4754,12 @@
 <script src="tiles/spinner/carnival.js?v=20261006-carnival"></script>
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
-<script src="profile/classroom-services.js?v=20261028-pbis"></script>
+<script src="profile/classroom-services.js?v=20261028-pbis-actions"></script>
 <script src="profile/classes-students.js?v=20261023-owner-edit-navigation"></script>
 <script src="account/interface-services.js?v=20261021-autumn"></script>
 <script src="boards/navigation.js?v=20261028-menu-sizing"></script>
 <script src="shop/cosmetic-services.js?v=20261026-shared-flashcards"></script>
-<script src="tiles/shared/control-services.js?v=20261028-pbis-content"></script>
+<script src="tiles/shared/control-services.js?v=20261028-pbis-actions"></script>
 <script src="boards/tile-lifecycle.js?v=20261021-grade-defaults"></script>
 <script src="tiles/visual-timer/helpers.js?v=20261020-effect-sounds"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>

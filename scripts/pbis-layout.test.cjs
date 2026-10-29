@@ -11,10 +11,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.waitForTimeout(200);
  const tile=page.locator('.pbis-tile').last();
  assert(await tile.locator('.class-roster-intro').isVisible(),type+' loader');
+ assert(!(await tile.locator('.pbis-footer-actions').isVisible()),type+' hides Change Class until loaded');
  assert.equal(await tile.locator('.class-roster-picker button').evaluate(e=>getComputedStyle(e).fontSize),'13px');
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-'+type+'-load.png')});
  await tile.locator('.class-roster-picker select').selectOption('pbis-test');await tile.locator('.class-roster-picker button').click();await page.waitForTimeout(300);
  if(type==='prizeboard')await page.evaluate(()=>testTile._boardSetState({...testTile._boardGetState(),prizes:[{id:'p1',scope:'student',title:'Choose a class game',description:'Pick the game for our next break',cost:5,costStat:'studentStars'},{id:'p2',scope:'student',title:'Reading buddy',description:'Choose a partner',cost:10,costStat:'studentStars'}]}));
+ await tile.hover();await page.waitForTimeout(250);
+ assert(await tile.locator('.pbis-footer-actions .pbis-change-class').evaluate(e=>{const m=e.closest('.module').getBoundingClientRect(),r=e.getBoundingClientRect();return r.top>m.top+m.height*.8&&r.left>m.left+m.width*.65&&r.right<m.right&&r.bottom<m.bottom}),type+' Change Class is bottom right');
+ if(type==='egghatching'||type==='flowerpots')assert(await tile.locator('.pbis-footer-actions .growth-reset').evaluate(e=>{const m=e.closest('.module').getBoundingClientRect(),r=e.getBoundingClientRect();return r.top>m.top+m.height*.8&&r.left>m.left+m.width*.65}),'growth Reset is bottom right');
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-'+type+'-default.png')});
  if(['classmeter','collections','racer','punchcards'].includes(type)){
  assert(await tile.locator('.pbis-class-footer').isVisible(),'class footer visible');
@@ -24,6 +28,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  if(type==='classmeter'||type==='collections')assert((await tile.locator('.pbis-class-footer').textContent()).includes('Fills'),'Fills capitalization');
  if(type==='punchcards')assert(await tile.locator('.punchcard-card').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'normal punchcard contents fit without scroll');
  if(type==='racer'){
+ assert(await tile.locator('.racer-character').first().evaluate(e=>e.offsetWidth<88),'smaller standees');
  assert.equal(await tile.locator('.racer-student-avatar img').count(),1);
  assert.equal(await tile.locator('.racer-student-avatar').nth(1).textContent(),'🐻');
  assert.equal(await tile.locator('.racer-student-avatar').nth(2).textContent(),'C');
@@ -37,14 +42,32 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.racer-lane-track').count(),0,'no separate progress lanes');
  assert.equal(await tile.locator('.racer-standees .racer-standee').count(),12,'whole class stays on one course');
  await tile.locator('.racer-move').click();assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.positions['student:alex']),10);
+ await page.evaluate(()=>{const r=readClassRosters()[0],p=normalizeRacerProgress(r.racer,r.students);r.students.forEach((n,i)=>p.positions[starChartStudentKey(n)]=i*8);localStorage.setItem(classRostersStorageKey(),JSON.stringify([{...r,racer:p}]));window.dispatchEvent(new Event('teachertiles:classeschange'))});
+ await page.waitForTimeout(800);await tile.screenshot({path:path.join(process.env.TEMP,'pbis-racer-course.png')});
  }
  if(type==='punchcards'){
- await tile.hover();const toggle=tile.locator('.pbis-scope-toggle');
+ await tile.locator('.punchcard-hole').first().click();await page.waitForTimeout(300);
+ const hoveredCard=await tile.locator('.punchcard-card').evaluate(e=>e.clientHeight);
+ await page.mouse.move(4,4);await page.waitForTimeout(350);
+ assert(await tile.locator('.punchcard-reset').evaluate(e=>e.clientHeight===0),'punchcard reset collapses');
+ assert(await tile.locator('.punchcard-card').evaluate((e,h)=>e.clientHeight>h+40,hoveredCard),'punchcard reclaims bottom controls space');
+ assert(await tile.locator('.punchcard-card').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'unhovered punchcard has no overflow');
+ await tile.screenshot({path:path.join(process.env.TEMP,'pbis-punchcards-unhover.png')});
+ await tile.hover();await page.waitForTimeout(300);
+ await tile.screenshot({path:path.join(process.env.TEMP,'pbis-punchcards-hover.png')});
+ const toggle=tile.locator('.pbis-scope-toggle');
  assert(await toggle.evaluate(e=>!!e.closest('.customization-bar')));
  await toggle.click();assert.equal(await page.evaluate(()=>testTile._boardGetState().scope),'class');
  await toggle.click();assert.equal(await page.evaluate(()=>testTile._boardGetState().scope),'student');
  }
  if(type==='starchart'){
+ const searchHeight=await tile.locator('.starchart-student-grid').evaluate(e=>e.clientHeight);
+ await page.mouse.move(4,4);await page.waitForTimeout(300);
+ assert(await tile.locator('.starchart-student-toolbar').evaluate(e=>e.clientHeight===0),'search collapses on unhover');
+ assert(await tile.locator('.starchart-student-grid').evaluate((e,h)=>e.clientHeight>h+20,searchHeight),'roster reclaims search space');
+ await tile.hover();await page.waitForTimeout(300);
+ assert.equal(await tile.evaluate(e=>parseFloat(getComputedStyle(e).paddingBottom)),52,'star chart reserves bottom controls space only on hover');
+ assert(await tile.locator('.starchart-subtract-toggle').first().evaluate(e=>e.offsetWidth===e.offsetHeight),'square Remove button');
  assert.equal(await tile.locator('.starchart-student-name .starchart-student-total').count(),0);
  assert.equal(await tile.locator('.starchart-student-stars .starchart-student-total').count(),12);
  assert(await tile.locator('.starchart-student-name').first().evaluate(e=>e.offsetWidth===e.offsetHeight),'square award buttons');
@@ -56,7 +79,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('4');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
  await tile.locator('.starchart-search').fill('');
  await page.mouse.move(4,4);await page.waitForTimeout(200);assert.equal(await tile.locator('.starchart-subtract-toggle').last().evaluate(e=>getComputedStyle(e).visibility),'hidden');
- await tile.locator('.starchart-show-all').click();await page.waitForTimeout(150);assert(await tile.evaluate(e=>e.offsetHeight<=740),'show all stays compact');
+ await tile.hover();await page.waitForTimeout(250);await tile.locator('.starchart-show-all').click();await page.waitForTimeout(150);assert(await tile.evaluate(e=>e.offsetHeight<=740),'show all stays compact');
  assert.equal(await tile.locator('.starchart-student-avatar').count(),12);
  assert(await tile.locator('.starchart-student-name>strong').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=14)),'overview names stay readable');
  assert.equal(await tile.locator('.starchart-student-avatar img').count(),1);
@@ -98,6 +121,11 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  if(type==='classmeter')assert(await tile.locator('.classmeter-meter').evaluate(e=>e.getBoundingClientRect().width<innerWidth*.7),'meter has side margins');
 
  assert(await tile.evaluate(m=>m.scrollWidth<=m.clientWidth+2),type+' smaller fullscreen has no horizontal overflow');
+ await tile.hover();await page.waitForTimeout(250);
+ await tile.locator('.pbis-footer-change').click();
+ assert(await tile.locator('.class-roster-intro').isVisible(),type+' Change Class opens picker');
+ assert(!(await tile.locator('.pbis-footer-actions').isVisible()),type+' hides footer actions after changing class');
+ await tile.locator('.class-roster-picker select').selectOption('pbis-test');await tile.locator('.class-roster-picker button').click();
  await page.evaluate(()=>document.exitFullscreen());await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>({width:testTile.style.width,height:testTile.style.height})),before,type+' restores board size');await page.setViewportSize({width:1440,height:1000});
  }
  // A standard 30-student class fits the growth tiles while keeping names readable.
