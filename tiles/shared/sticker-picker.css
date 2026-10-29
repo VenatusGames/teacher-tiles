@@ -81,3 +81,7 @@
 .sticker-picker-pack.is-collapsed{contain-intrinsic-size:auto 47px}
 .sticker-picker-pack-lock{backdrop-filter:none}
 .asset-shelf.is-sticker-mode .asset-shelf__shell{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* Sticker previews are smaller than other cosmetics: keep the star in the corner. */
+.asset-shelf .sticker-picker-cell>.sticker-picker-favorite{top:1px;right:1px;width:20px;min-width:20px;height:20px;min-height:20px;padding:3px;border-radius:6px}
+.asset-shelf .sticker-picker-cell>.sticker-picker-favorite svg{width:12px;height:12px}

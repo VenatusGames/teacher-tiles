@@ -53,7 +53,7 @@
       const el=document.createElement(preview?'div':'button');if(!preview)el.type='button';
       el.className=`seating-desk seating-${desk.kind}${preview?' seating-placement-preview':''}`;el.dataset.id=desk.id;
       el.innerHTML=furniture.art(desk.kind);placeElement(el,desk);
-      const label=document.createElement('span');label.textContent=desk.name||(desk.kind==='desk'?'Empty':furniture.catalog[desk.kind].name);label.style.transform=`rotate(${-desk.angle}deg)`;el.append(label);
+      if(desk.kind==='desk'){const label=document.createElement('span');label.textContent=desk.name||'Empty';label.style.transform=`rotate(${-desk.angle}deg)`;el.append(label);}
       el.setAttribute('aria-label',`${desk.name||furniture.catalog[desk.kind].name}${desk.pinned?', assignment locked':''}. Drag to move or use arrow keys`);
       return el;
     }

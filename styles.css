@@ -17120,7 +17120,6 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   .wordy-guess-count,
   .worldmap-zoom-controls,
   .grapher-clear-points,
-  .hundreds-controls,
   .money-total-wrap,
   .weather-unit-toggle,
   .temperature-unit-toggle,
@@ -17143,7 +17142,6 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
   .wordy-guess-count,
   .worldmap-zoom-controls,
   .grapher-clear-points,
-  .hundreds-controls,
   .money-total-wrap,
   .weather-unit-toggle,
   .temperature-unit-toggle,
@@ -17165,7 +17163,7 @@ body.is-board-idle .workspace .module.is-idle-unhovered>:is(.module-fullscreen,.
 @media(prefers-reduced-motion:reduce){
   .module :is(
     .translation-mark,.voicememo-count,.wordy-guess-count,.worldmap-zoom-controls,
-    .grapher-clear-points,.hundreds-controls,.money-total-wrap,.weather-unit-toggle,
+    .grapher-clear-points,.money-total-wrap,.weather-unit-toggle,
     .temperature-unit-toggle,.collection-change-class,.starchart-change-class,
     .classmeter-change-class,.prizeboard-change-class,.pbisconsole-change-class,
     .punchcard-change-class,.racer-change-class,.calendar-prev,.calendar-next
