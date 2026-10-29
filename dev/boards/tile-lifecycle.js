@@ -212,7 +212,7 @@ function isInteractiveModuleTarget(target,m){
   if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
-  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
+  if(target.closest('button,summary,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
     if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='not-allowed'||cursor.includes('resize'))return true;
@@ -222,7 +222,7 @@ function isInteractiveModuleTarget(target,m){
 
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
-  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
+  if(target.closest('summary,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
   const action=target.closest('button,[role="button"]');
   return !action||(m.dataset.tileSkin==='stoplight-freestanding'&&action.classList.contains('stoplight-stage'));
 }
