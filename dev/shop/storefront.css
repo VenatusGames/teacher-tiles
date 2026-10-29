@@ -331,3 +331,9 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(3){left:44%;top:63%;width:9%;height:24%;transform:rotate(-6deg)}
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:59%;top:63%;width:12%;height:29%;transform:rotate(-8deg)}
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:73%;top:63%;width:12%;height:29%;transform:rotate(8deg)}
+
+/* Both seasonal planners sit together in the live Thanksgiving banner. */
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(3){left:43%;top:63%;width:9%;height:29%;transform:rotate(-5deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:53%;top:63%;width:9%;height:29%;transform:rotate(4deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:64%;top:63%;width:11%;height:29%;transform:rotate(-8deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(6){left:77%;top:63%;width:11%;height:29%;transform:rotate(8deg)}
