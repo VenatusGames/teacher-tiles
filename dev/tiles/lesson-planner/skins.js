@@ -52,7 +52,7 @@
       const events=new AbortController();
       const close=(focus=false)=>{events.abort();drawer.remove();button.setAttribute('aria-expanded','false');if(closeActive===close)closeActive=null;if(focus&&button.isConnected)button.focus({preventScroll:true});};closeActive=close;
       const position=()=>{if(!card.isConnected){close();return;}const r=button.getBoundingClientRect(),d=drawer.getBoundingClientRect();drawer.style.left=Math.max(8,Math.min(innerWidth-d.width-8,r.left))+'px';drawer.style.top=Math.max(8,Math.min(innerHeight-d.height-8,r.top-d.height-8))+'px';};
-      for(const skin of [null,...catalog]){
+      for(const skin of [null,...[...catalog].sort((a,b)=>a.name.localeCompare(b.name,'en',{sensitivity:'base'}))]){
         const id=skin?.id||'',locked=!accessible(skin),selected=equipped(planner.skin)===id;
         const choice=document.createElement('button');choice.type='button';choice.className='tile-skins-choice';choice.dataset.plannerSkinChoice=id;choice.classList.toggle('is-locked',locked);choice.setAttribute('aria-pressed',String(selected));
         const art=document.createElement('span');art.className='tile-skins-choice-preview';art.append(preview(id,planner.name,colorForSkin?.(id)));
