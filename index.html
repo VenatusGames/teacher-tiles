@@ -79,11 +79,11 @@
   <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261023-tool-navigation">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261028-tool-chrome">
   <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
-<link rel="stylesheet" href="profile/organizations.css?v=20261026-seat-crowns">
+<link rel="stylesheet" href="profile/organizations.css?v=20261028-tool-logo">
 <link rel="stylesheet" href="profile/district-badge.css?v=20261025">
-<link rel="stylesheet" href="profile/classes-students.css?v=20261023-owner-edit-navigation">
+<link rel="stylesheet" href="profile/classes-students.css?v=20261028-tool-logo">
 <link rel="stylesheet" href="tiles/classroom-jobs/styles.css?v=20261002-ice-cube">
 <link rel="stylesheet" href="account/site-appearance.css?v=20261002-sidebar-restore">
 <link rel="stylesheet" href="shop/redemption.css?v=20261003-compact">
@@ -141,7 +141,7 @@
 <link rel="stylesheet" href="support/announcements.css?v=20261023-notification-class-polish">
 <link rel="stylesheet" href="shop/browse-performance.css?v=20261028-scroll">
 <link rel="stylesheet" href="shop/theme-previews.css?v=20261028-shop-previews">
-<link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261028-star-fit">
+<link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261028-larger-stars">
 <link rel="stylesheet" href="tiles/racer/hill-course.css?v=20261028-fanned-standees">
 </head>
 <body>
@@ -571,7 +571,7 @@
               <section id="organization-list-view" class="organization-view organization-list-view">
                 <header class="organization-window__header">
                   <button id="profile-organizations-back" class="tool-window-back profile-tool-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Profile</strong></button>
-                  <div><h3 id="profile-organizations-title">Organizations<span class="profile-tool-beta">BETA</span></h3></div>
+                  <div><h3 id="profile-organizations-title"><svg class="organization-tool-logo" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20V7.5L12 4v16M12 9h8v11M7.5 9.5h1M7.5 13h1M7.5 16.5h1M15.5 12.5h1M15.5 16h1M2.5 20h19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Organizations<span class="profile-tool-beta">BETA</span></h3></div>
                   <button id="profile-organizations-close" class="profile-tool-exit" type="button">Back to Board</button>
                 </header>
                 <div class="organization-list-body">
@@ -3528,14 +3528,16 @@
         </section>
 
         <section class="starchart-whole-view" hidden aria-label="Whole class stars" data-skip-board-save>
-          <div class="starchart-whole-badge" aria-hidden="true">★</div>
-          <strong class="starchart-whole-class-name">Class</strong>
-          <div class="starchart-whole-count"><span>★</span><b>0</b></div>
-          <p>stars earned together</p>
-          <div class="starchart-whole-bundles" aria-label="Whole class star bundles"></div>
-          <div class="starchart-whole-actions">
-            <button class="starchart-whole-remove" type="button" aria-label="Remove a whole class star">−</button>
-            <button class="starchart-whole-add" type="button">Award a star <span aria-hidden="true">★</span></button>
+          <div class="starchart-whole-card">
+            <button class="starchart-whole-add" type="button" aria-label="Award a star to the whole class" title="Award a Star">
+              <span class="starchart-whole-badge" aria-hidden="true">★</span>
+              <strong class="starchart-whole-class-name">Class</strong>
+            </button>
+            <div class="starchart-whole-stars">
+              <div class="starchart-whole-bundles" aria-label="Whole class star bundles"></div>
+              <div class="starchart-whole-count"><b>0</b> stars total</div>
+            </div>
+            <button class="starchart-whole-remove" type="button" aria-label="Remove a whole class star" title="Remove a Star"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button>
           </div>
         </section>
       </div>
@@ -4674,7 +4676,7 @@
 <script src="tiles/stopwatch/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/magnifier/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/draw/setup.js?v=20261020-drawer-overlay"></script>
-<script src="tiles/star-chart/setup.js?v=20261028-star-fit"></script>
+<script src="tiles/star-chart/setup.js?v=20261028-larger-stars"></script>
 <script src="tiles/class-meter/setup.js?v=20261028-pbis-content"></script>
 <script src="tiles/prize-board/setup.js?v=20261028-pbis"></script>
 <script src="tiles/pbis-console/setup.js?v=20261028-pbis-refinement"></script>
@@ -4741,7 +4743,7 @@
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20260930-tile-refactor"></script>
 <script src="profile/classroom-services.js?v=20261028-pbis-hill-actions"></script>
-<script src="profile/classes-students.js?v=20261023-owner-edit-navigation"></script>
+<script src="profile/classes-students.js?v=20261028-tool-logo"></script>
 <script src="account/interface-services.js?v=20261021-autumn"></script>
 <script src="boards/navigation.js?v=20261028-menu-sizing"></script>
 <script src="shop/cosmetic-services.js?v=20261026-shared-flashcards"></script>
@@ -4779,7 +4781,7 @@
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261028-fanned-standees"></script>
+<script type="module" src="firebase-auth.js?v=20261028-larger-stars"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 

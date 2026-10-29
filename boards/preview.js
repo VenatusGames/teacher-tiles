@@ -221,7 +221,12 @@ function applyPbisPreviewState(module, state, special) {
     setPreviewText(module, ".starchart-whole-badge", roster.logo || "★");
     setPreviewText(module, ".starchart-whole-count b", previewCount(progress.wholeClassStars));
     const bundles = module.querySelector(".starchart-whole-bundles");
-    if (bundles) bundles.textContent = "★".repeat(Math.min(12, previewCount(progress.wholeClassStars)));
+    if (roster.logoImage) {const badge=module.querySelector('.starchart-whole-badge');if(badge){const image=document.createElement('img');image.src=roster.logoImage;image.alt='';badge.replaceChildren(image);}}
+    if (bundles) {
+      bundles.replaceChildren();let remaining=previewCount(progress.wholeClassStars);
+      for(const [level,weight] of [[3,1000],[2,100],[1,10],[0,1]]){const amount=Math.floor(remaining/weight);remaining%=weight;for(let i=0;i<amount;i++){const star=document.createElement('span');star.className=`starchart-star-token starchart-star-token--level-${level}`;const icon=document.createElement('span');icon.textContent='★';star.append(icon);if(weight>1){const label=document.createElement('small');label.textContent=weight===1000?'1K':String(weight);star.append(label);}bundles.append(star);}}
+      if(!bundles.childNodes.length){const empty=document.createElement('span');empty.className='starchart-star-empty';empty.textContent='No stars yet';bundles.append(empty);}
+    }
     const grid = module.querySelector(".starchart-student-grid");
     if (grid) {
       grid.replaceChildren();

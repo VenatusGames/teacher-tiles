@@ -238,7 +238,9 @@ function setupStarChart(m){
     if(!hasClass)return;
     className.textContent=roster.name;
     wholeClassName.textContent=roster.name;
-    wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
+    wholeClassLogo.replaceChildren();
+    wholeClassLogo.style.setProperty('--avatar-hue',String(studentProfileVisual(roster.name,roster.id).hue));
+    if(roster.logoImage){const image=document.createElement('img');image.src=roster.logoImage;image.alt='';wholeClassLogo.append(image);}else wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
     wholeCount.textContent=String(progress.wholeClassStars);
     wholeRemove.disabled=progress.wholeClassStars===0;
     renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
@@ -306,6 +308,7 @@ function setupStarChart(m){
     persistProgress();
     animateStarAward(source,'__whole__');
   });
+  wholeView.querySelector('.starchart-whole-card').addEventListener('click',event=>{if(!event.target.closest('button'))wholeAdd.click()});
   wholeRemove.addEventListener('click',()=>{
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
     persistProgress();

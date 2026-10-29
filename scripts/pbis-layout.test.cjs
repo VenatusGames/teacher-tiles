@@ -163,7 +163,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.prize-card-open').first().click();assert(await tile.locator('.prize-modal-overlay').isVisible(),'prize detail opens above fullscreen');await tile.locator('.prize-modal-close').click();
  }
  const metric=await tile.evaluate(m=>{const r=m.getBoundingClientRect();return {w:r.width,h:r.height,scroll:m.scrollHeight,client:m.clientHeight}});assert.equal(metric.w,1440);assert.equal(metric.h,1000);console.log(type,metric);
- if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.hover();await tile.locator('.pbis-scope-toggle').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
+ if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.hover();await tile.locator('.pbis-scope-toggle').click();
+ await tile.locator('.starchart-whole-add').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class portrait awards a star');
+ await tile.locator('.starchart-whole-bundles .starchart-star-token').last().click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class earned star removes one');
+ await tile.locator('.starchart-whole-card').hover();await tile.locator('.starchart-whole-remove').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'34','whole-class remove button removes one');
+ await tile.locator('.starchart-whole-count').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class card content awards one');
+ await page.waitForTimeout(750);await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
  if(type==='pbisconsole'){await tile.locator('[data-pbisconsole-view=class]').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-console-class-full.png')});}
  await page.setViewportSize({width:1100,height:720});await page.waitForTimeout(150);
  if(type==='punchcards')assert(await tile.locator('.punchcard-card').evaluate(e=>{const r=e.getBoundingClientRect();return Math.abs(r.width/r.height-1.75)<.05&&e.scrollHeight<=e.clientHeight+2}),'fullscreen card ratio and no scrollbar');
