@@ -30,7 +30,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
         cell.append(choice,favorite);grid.append(cell);
       }
       body.append(grid);
-      if(!accessible){grid.inert=true;const cover=document.createElement('button');cover.type='button';cover.className='cursor-picker-unlock';cover.innerHTML='<span>'+lock()+'Unlock pack</span>';cover.onclick=()=>unlock(pack.productId);body.append(cover)}
+      if(!accessible){grid.inert=true;const cover=document.createElement('button');cover.type='button';cover.className='cursor-picker-unlock';cover.innerHTML='<span>'+lock()+'Unlock Pack</span>';cover.onclick=()=>unlock(pack.productId);body.append(cover)}
       header.onclick=()=>{body.hidden=!body.hidden;body.hidden?closed.add(pack.productId):closed.delete(pack.productId);header.setAttribute('aria-expanded',String(!body.hidden))};
       section.append(header,body);sections.push(section);
     }
