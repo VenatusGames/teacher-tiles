@@ -1,7 +1,7 @@
 /* One favorite control for cosmetic drawers, including keyboard and touch states. */
 .asset-shelf .cosmetic-favorite{position:absolute;right:6px;top:6px;z-index:2;display:grid;place-items:center;box-sizing:border-box;width:28px;min-width:28px;height:28px;min-height:28px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:var(--muted,#6b7585);box-shadow:0 1px 3px #1523340c;opacity:0;visibility:hidden;pointer-events:none;transform:none;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
 .asset-shelf .cosmetic-favorite svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;pointer-events:none}
-.asset-shelf :is(.cursor-picker-cell,.tile-effect-cell):is(:hover,:focus-within)>.cosmetic-favorite,.asset-shelf .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.asset-shelf :is(.cursor-picker-cell,.tile-effect-cell):is(:hover,:has(:focus-visible))>.cosmetic-favorite,.asset-shelf .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
 .asset-shelf .cosmetic-favorite[aria-pressed=true]{color:#ad7818;background:color-mix(in srgb,#f5c85a 15%,var(--surface-solid,#fff));border-color:color-mix(in srgb,#c69a37 46%,var(--border))}
 .asset-shelf .cosmetic-favorite[aria-pressed=true] svg{fill:#f4c75c;stroke:#ad7818}
 .asset-shelf .cosmetic-favorite:hover{border-color:#92a9c8;background:color-mix(in srgb,#98b6e5 12%,var(--surface-solid,#fff))}

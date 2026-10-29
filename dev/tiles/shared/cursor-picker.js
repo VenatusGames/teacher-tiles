@@ -19,10 +19,10 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
     fan.style.width=width+'px';fan.style.left=(beside?shelf.right+14:Math.max(16,(innerWidth-width)/2))+'px';
     fan.style.top=Math.max(16,Math.min(beside?anchor.top:72,innerHeight-fan.offsetHeight-16))+'px';
   }
-  function open(group){if(opened===group){close(true);return}close();opened=group;group.heading.setAttribute('aria-expanded','true');fan.querySelector('h3').textContent=group.pack.name;render();fan.showPopover();position();stage.querySelector('button')?.focus({preventScroll:true})}
+  function open(group){if(opened===group){close(true);return}close();opened=group;group.heading.setAttribute('aria-expanded','true');fan.querySelector('h3').textContent=group.pack.name;render();fan.showPopover();position();fan.querySelector('.cursor-pack-close').focus({preventScroll:true})}
   fan.querySelector('.cursor-pack-close').onclick=()=>close(true);unlockButton.onclick=()=>{if(opened)unlock(opened.pack.productId)};
   const groups=packs.map(pack=>{
-    const section=document.createElement('section');section.className='cursor-picker-pack';
+    const section=document.createElement('section');section.className='cursor-picker-pack';if(!pack.productId)section.dataset.kind='default';
     const heading=document.createElement('button');heading.type='button';heading.className='cursor-picker-pack-heading';heading.setAttribute('aria-expanded','false');heading.setAttribute('aria-controls',fan.id);
     heading.innerHTML='<span class="cursor-pack-preview" aria-hidden="true"></span><span class="cursor-pack-label"><strong></strong><small></small></span><span class="cursor-picker-lock" aria-hidden="true"><span>'+lock+'Unlock</span></span>';
     heading.querySelector('strong').textContent=pack.name;
@@ -53,7 +53,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
       });favorite.classList.add('cursor-picker-favorite');cell.append(choice,favorite);
       return {cursor,cell,choice,detail,favorite,text:(pack.name+' '+cursor.name+' '+(pack.holiday||'')).toLowerCase(),show:true};
     });
-    section.append(heading);packGrid.append(section);const group={pack,section,heading,cells,count:heading.querySelector('small')};heading.onclick=()=>open(group);return group;
+    section.append(heading);packGrid.append(section);const group={pack,section,heading,cells,count:heading.querySelector('small')};if(!pack.productId){heading.removeAttribute('aria-expanded');heading.removeAttribute('aria-controls');heading.onclick=()=>{close();apply('default');render()}}else heading.onclick=()=>open(group);return group;
   });
   function render(){
     const selected=active(),visibleFavorites=[];let total=0,packCount=0;
@@ -66,8 +66,8 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
         const equipped=selected===cursor.id;choice.setAttribute('aria-pressed',String(equipped));choice.setAttribute('aria-label',(accessible?'Use ':'Unlock ')+pack.name+' '+cursor.name);choice.classList.toggle('is-cosmetic-locked',!accessible);
         detail.textContent=equipped?'Equipped':accessible?'Apply Cursor':'Unlock Pack';controls.updateFavorite(favorite,cursor.name,favorites.has(cursor.id));
       }
-      section.hidden=!matches;if(matches)packCount++;total+=matches;count.textContent=matches+(matches===1?' cursor':' cursors');
-      heading.classList.toggle('is-cursor-pack-locked',!accessible);heading.classList.toggle('has-selected-cursor',cells.some(item=>item.cursor.id===selected));heading.setAttribute('aria-label','Open '+pack.name+' pack'+(accessible?'':' (locked)'));
+      section.hidden=!matches;if(matches&&pack.productId)packCount++;total+=matches;count.textContent=matches+(matches===1?' cursor':' cursors');
+      heading.classList.toggle('is-cursor-pack-locked',!accessible);heading.classList.toggle('has-selected-cursor',cells.some(item=>item.cursor.id===selected));heading.setAttribute('aria-label',pack.productId?'Open '+pack.name+' pack'+(accessible?'':' (locked)'):'Use Default cursor');if(!pack.productId){count.textContent=selected==='default'?'Equipped':'Use your device cursor';heading.setAttribute('aria-pressed',String(selected==='default'))}
     }
     packGrid.hidden=view!=='all';favoriteGrid.hidden=view!=='favorites';
     if(opened&&(view!=='all'||opened.section.hidden))close();
@@ -80,7 +80,8 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
   root.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>{close();view=button.dataset.view;root.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));render();results.scrollTop=0});
   document.addEventListener('pointerdown',event=>{if(opened&&!fan.contains(event.target)&&!opened.heading.contains(event.target))close()});
   fan.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();close(true)}});
-  results.addEventListener('scroll',()=>close(),{passive:true});window.addEventListener('resize',position);
+  // Browser focus/scroll anchoring can scroll on open; only user scrolling dismisses.
+  results.addEventListener('wheel',()=>close(),{passive:true});results.addEventListener('touchmove',()=>close(),{passive:true});results.addEventListener('scroll',position,{passive:true});window.addEventListener('resize',position);
   window.addEventListener('teachertiles:collectionpreferences',()=>{readFavorites();render()});
   return {render,close};
 }

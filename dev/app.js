@@ -1036,6 +1036,7 @@ const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const ADDITIONAL_STICKER_PACKS=window.TeacherTilesStickerPacks;
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.flatMap(p=>[[p.id+'-theme-pack',p.productId],[p.id+'-theme-fan',p.productId]])),
 'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
 
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
@@ -1067,6 +1068,7 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.map(p=>[p.id,p.productId])),
 'autumn-forest':'theme-autumn-forest','feast':'theme-feast','leaves':'theme-leaves',
 'deep':'theme-deep','pastels2':'theme-pastels2','flowers':'theme-flowers',
   'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
@@ -1545,6 +1547,7 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  ...window.TeacherTilesMotionScenes.choices.map(v=>v.id),
 'autumn-forest','autumn-forest-light','feast','feast-light','leaves','leaves-light',
   'webbed-light','webbed','haunted-house-light','haunted-house','pumpkin-orange','pumpkin-yellow',
   'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
@@ -1564,6 +1567,7 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  ...window.TeacherTilesMotionScenes.choices.map(v=>'theme-'+v.id),
 'theme-autumn-forest','theme-autumn-forest-light','theme-feast','theme-feast-light','theme-leaves','theme-leaves-light',
 'theme-deep-midnight-blue','theme-deep-aurora-purple','theme-deep-cosmic-depths','theme-pastels2-peach','theme-pastels2-apricot','theme-pastels2-mint','theme-pastels2-aqua','theme-pastels2-blush','theme-flowers-rose','theme-flowers-sage','theme-flowers-sky','theme-flowers-lilac','theme-flowers-buttercream',
   'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
@@ -1585,6 +1589,7 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ...window.TeacherTilesMotionScenes.packs.map(p=>[p.id,p.productId]),
 ['autumn-forest','theme-autumn-forest'],['feast','theme-feast'],['leaves','theme-leaves'],
 ['deep-','theme-deep'],['pastels2-','theme-pastels2'],['flowers-','theme-flowers'],
   ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
@@ -1598,6 +1603,7 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.flatMap(p=>[[p.id+'-theme-pack',p.productId],[p.id+'-theme-fan',p.productId]])),
 'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
 
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
