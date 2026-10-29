@@ -9,7 +9,7 @@
   {id:'clouds',name:'Clouds',price:450,description:'Soft, sunlit clouds drift gently across an open blue sky.',variants:[['','Clouds','#82bae2','#ffffff']]},
   {id:'stripes',name:'Stripes',price:250,animated:false,description:'Alternating light and dark vertical stripes in Blue, Sage, Rose, Lilac, Gold, and Peach.',variants:[['blue','Blue','#e9f1f9','#bdd2e8'],['sage','Sage','#e4efe6','#b8d0be'],['rose','Rose','#f8e4ec','#e1b6c6'],['lilac','Lilac','#efe8f8','#c8bcdf'],['gold','Gold','#fcf3d5','#e6d29a'],['peach','Peach','#f9e8d9','#e4b795']]}
  ].map(p=>Object.freeze({...p,productId:'theme-'+p.id,animated:p.animated!==false}));
- const choices=packs.flatMap(p=>p.variants.map(([suffix,label,bg,accent,secondary])=>Object.freeze({id:p.id+(suffix?'-'+suffix:''),name:p.variants.length>1?p.name+' — '+label:p.name,kind:p.id,bg,accent,secondary,dark:!!p.dark,animated:p.animated,productId:p.productId})));
+ const choices=packs.flatMap(p=>p.variants.map(([suffix,label,bg,accent,secondary])=>Object.freeze({id:p.id+(suffix?'-'+suffix:''),name:label,kind:p.id,bg,accent,secondary,dark:!!p.dark,animated:p.animated,productId:p.productId})));
  const byId=new Map(choices.map(v=>[v.id,v])),random=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)},TAU=Math.PI*2;
  const alpha=(hex,a)=>hex+Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0');
  const clouds=new Map(),logoColors=new Map();let logo,logoReady;

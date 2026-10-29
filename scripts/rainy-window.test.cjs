@@ -14,10 +14,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
    state.drops=[make(100,9,0,18)];state.spawn=-100;for(let i=0;i<300;i++)__rainTest.step(state,1/30);
    const clings=state.drops[0].y===100;
    for(let i=0;i<300;i++)__rainTest.step(state,1/30);const releases=state.drops[0].y>100;
+   const residue=state.drops.filter(d=>d.kind==='residue');
+   const leavesBeads=residue.length>0&&residue.every(d=>d.speed===0&&d.r>=1.8)&&residue.some(d=>d.visibleR>1.5);
    const isolated=originalPreview===JSON.stringify(preview.drops);
    scene.draw(g,1600,1000,'rainy-window',-1);const rebuilt=__rainTest.panes.get(g)!==state;
    for(let i=0;i<600;i++){scene.paint(g,1600,1000);scene.draw(g,1600,1000,'rainy-window',i/30)}
-   const live=__rainTest.panes.get(g),bounded=live.tracks.length<=900&&live.drops.filter(d=>d.kind==='residue').length<=160;
-   return {swept,clings,releases,isolated,rebuilt,bounded};
+   const live=__rainTest.panes.get(g),bounded=live.tracks.length<=900&&live.drops.filter(d=>d.kind==='residue').length<=500;
+   return {swept,clings,releases,leavesBeads,isolated,rebuilt,bounded};
  });for(const [name,value]of Object.entries(result))assert(value,name);console.log('PASS swept droplet merging, long cling then release, isolated preview state, rewind and bounded residue');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

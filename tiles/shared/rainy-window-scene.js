@@ -26,7 +26,7 @@
    g.drawImage(scene,sx,sy,sample,sample,-1,-1,2,2);
    const shading=g.createLinearGradient(0,-1,0,1);shading.addColorStop(0,'#0a1a2218');shading.addColorStop(.5,'#a1bec000');shading.addColorStop(1,'#d2e2e51e');g.fillStyle=shading;g.fillRect(-1,-1,2,2);g.restore();
    // Broken, low-contrast menisci; no dark outline, white dot, or drop shadow.
-   g.lineWidth=.6/Math.max(r,.5);g.strokeStyle='#dce8e72b';g.beginPath();g.moveTo(-.83,.4);g.bezierCurveTo(-.66,.96,.18,1.12,.65,.78);g.stroke();
+   g.lineWidth=(d.kind==='residue'?.85:.6)/Math.max(r,.5);g.strokeStyle=d.kind==='residue'?'#dce8e796':'#dce8e72b';g.beginPath();g.moveTo(-.83,.4);g.bezierCurveTo(-.66,.96,.18,1.12,.65,.78);g.stroke();
    g.strokeStyle='#0c202327';g.beginPath();g.moveTo(-.72,-.58);g.bezierCurveTo(-.3,-1,.3,-1,.61,-.65);g.stroke();g.restore();
  }
  function paint(g,w,h){g.drawImage(sceneFor(w,h),0,0,w,h)}
@@ -73,7 +73,7 @@
      if(d.speed>8*scale){
        s.tracks.push({x:ox,y:oy,x2:d.x,y2:d.y,r:d.r*.3,life:7});
        d.trail+=d.y-oy;
-       if(d.trail>35*scale&&residueCount<160){d.trail=0;residueCount++;s.drops.push({x:ox+Math.sin(d.wander)*scale,y:oy-2*d.r,r:(1.1+s.rand()*1.2)*scale,visibleR:.7*scale,kind:'residue',speed:0,wait:Infinity,age:0,life:14,wander:0,dead:false,trail:0})}
+       if(d.trail>(d.nextResidue||35*scale)&&residueCount<500){d.trail=0;d.nextResidue=(22+s.rand()*38)*scale;residueCount++;s.drops.push({x:ox+(s.rand()-.5)*d.r*.45,y:oy-2*d.r,r:Math.max(.85,(1.8+s.rand()*1.3)*scale),visibleR:.7*scale,kind:'residue',speed:0,wait:Infinity,age:0,life:8,wander:0,dead:false,trail:0})}
      }
      if(d.y>s.h+30*scale)d.dead=true;
    }
@@ -89,13 +89,16 @@
    while(elapsed>0){const dt=Math.min(1/60,elapsed);step(s,dt);elapsed-=dt}
    const scene=sceneFor(w,h);g.save();g.lineCap='round';
    // Soft distant rainfall sits beneath the fogged pane and its water droplets.
-   g.strokeStyle='#dbe8ec16';g.lineWidth=Math.max(.6,1.3*s.scale);g.beginPath();
-   for(let i=0;i<115;i++){const x=random(i+940)*w,y=(random(i+1940)*h+t*(240+random(i)*180)*s.scale)%(h+60*s.scale)-30*s.scale;g.moveTo(x,y);g.lineTo(x-6*s.scale,y+24*s.scale)}g.stroke();
+   g.save();g.filter='blur('+Math.max(1.4,2.4*s.scale)+'px)';
+   g.strokeStyle='#dbe8ec0a';g.lineWidth=Math.max(.5,.9*s.scale);g.beginPath();
+   for(let i=0;i<75;i++){const x=random(i+940)*w,y=(random(i+1940)*h+t*(240+random(i)*180)*s.scale)%(h+60*s.scale)-30*s.scale;g.moveTo(x,y);g.lineTo(x-6*s.scale,y+24*s.scale)}g.stroke();g.restore();
+   // The distant streaks are veiled by condensation before any foreground water.
+   g.fillStyle='#91a9b508';g.fillRect(0,0,w,h);
    for(const p of s.tracks){g.lineWidth=Math.max(.4,p.r);g.strokeStyle=`rgba(170,194,198,${.025*p.life/7})`;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x2,p.y2);g.stroke()}
    // As the original fine trail fades, beads of water gently emerge along its path.
    for(const d of s.drops){
-     const beadFade=Math.max(0,Math.min(1,(d.age-.3)/2.5));
-     g.globalAlpha=d.kind==='residue'?beadFade*beadFade*(3-2*beadFade)*Math.min(1,(d.life-d.age)/5)*.55:Math.min(1,d.age/.3);water(g,scene,d);
+     const beadFade=Math.max(0,Math.min(1,(d.age-.1)/1.2));
+     g.globalAlpha=d.kind==='residue'?beadFade*beadFade*(3-2*beadFade)*Math.min(1,(d.life-d.age)/2)*.85:Math.min(1,d.age/.3);water(g,scene,d);
    }
    g.globalAlpha=1;
    // A single reflection over all water places it on the far side of the pane.
