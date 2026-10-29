@@ -71,18 +71,14 @@
      }
      d.visibleR+=(d.r-d.visibleR)*Math.min(1,dt*7);
      if(d.speed>8*scale){
-       // Keep a connected channel at the full width of the water, not a thin tail.
-       if(!d.channel||d.channel.life<=0){d.channel={points:[{x:ox,y:oy,age:0}],r:d.r,life:12};s.tracks.push(d.channel)}
-       const last=d.channel.points.at(-1);
-       if(Math.hypot(d.x-last.x,d.y-last.y)>6*scale){d.channel.points.push({x:d.x,y:d.y,age:0});d.channel.points=d.channel.points.slice(-360)}
-       d.channel.r=Math.max(d.channel.r,d.r);d.channel.life=12;
+       s.tracks.push({x:ox,y:oy,x2:d.x,y2:d.y,r:d.r*.3,life:7});
        d.trail+=d.y-oy;
-       if(d.trail>35*scale&&residueCount<160){d.trail=0;residueCount++;s.drops.push({x:ox+Math.sin(d.wander)*scale,y:oy-2*d.r,r:1.3*scale,visibleR:1.3*scale,kind:'residue',speed:0,wait:Infinity,age:0,life:14,wander:0,dead:false,trail:0})}
+       if(d.trail>35*scale&&residueCount<160){d.trail=0;residueCount++;s.drops.push({x:ox+Math.sin(d.wander)*scale,y:oy-2*d.r,r:(1.1+s.rand()*1.2)*scale,visibleR:.7*scale,kind:'residue',speed:0,wait:Infinity,age:0,life:14,wander:0,dead:false,trail:0})}
      }
      if(d.y>s.h+30*scale)d.dead=true;
    }
    s.drops=s.drops.filter(d=>!d.dead);
-   for(const track of s.tracks){track.life-=dt;for(const point of track.points)point.age+=dt;track.points=track.points.filter(p=>p.age<12)}s.tracks=s.tracks.filter(p=>p.life>0&&p.points.length).slice(-90);
+   for(const track of s.tracks)track.life-=dt;s.tracks=s.tracks.filter(p=>p.life>0).slice(-900);
    s.spawn+=dt;
    if(s.spawn>.55){s.spawn=0;if(s.drops.length<260)spawn(s,'bead');if(s.drops.filter(d=>d.kind==='slow').length<28)spawn(s,'slow');if(s.drops.filter(d=>d.kind==='fast').length<10)spawn(s,'fast')}
  }
@@ -92,19 +88,15 @@
    let elapsed=s.last===null?0:Math.min(.25,Math.max(0,t-s.last));s.last=t;
    while(elapsed>0){const dt=Math.min(1/60,elapsed);step(s,dt);elapsed-=dt}
    const scene=sceneFor(w,h);g.save();g.lineCap='round';
-   // Soft distant rainfall sits beneath the fogged pane and its water channels.
+   // Soft distant rainfall sits beneath the fogged pane and its water droplets.
    g.strokeStyle='#dbe8ec16';g.lineWidth=Math.max(.6,1.3*s.scale);g.beginPath();
    for(let i=0;i<115;i++){const x=random(i+940)*w,y=(random(i+1940)*h+t*(240+random(i)*180)*s.scale)%(h+60*s.scale)-30*s.scale;g.moveTo(x,y);g.lineTo(x-6*s.scale,y+24*s.scale)}g.stroke();
-   for(const p of s.tracks){
-     if(p.points.length<2)continue;
-     const first=p.points[0],last=p.points.at(-1),fade=point=>Math.pow(Math.max(0,1-point.age/12),1.4);
-     g.beginPath();g.moveTo(first.x,first.y);for(let i=1;i<p.points.length;i++)g.lineTo(p.points[i].x,p.points[i].y);
-     const edge=g.createLinearGradient(0,first.y,0,Math.max(first.y+1,last.y));edge.addColorStop(0,`rgba(21,43,50,${fade(first)*.28})`);edge.addColorStop(1,`rgba(21,43,50,${fade(last)*.28})`);
-     g.lineWidth=p.r*2.5;g.strokeStyle=edge;g.stroke();
-     const channel=g.createLinearGradient(0,first.y,0,Math.max(first.y+1,last.y));channel.addColorStop(0,`rgba(130,158,163,${fade(first)*.9})`);channel.addColorStop(1,`rgba(130,158,163,${fade(last)*.9})`);
-     g.lineWidth=p.r*2.15;g.strokeStyle=channel;g.stroke();
+   for(const p of s.tracks){g.lineWidth=Math.max(.4,p.r);g.strokeStyle=`rgba(170,194,198,${.025*p.life/7})`;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x2,p.y2);g.stroke()}
+   // As the original fine trail fades, beads of water gently emerge along its path.
+   for(const d of s.drops){
+     const beadFade=Math.max(0,Math.min(1,(d.age-.3)/2.5));
+     g.globalAlpha=d.kind==='residue'?beadFade*beadFade*(3-2*beadFade)*Math.min(1,(d.life-d.age)/5)*.55:Math.min(1,d.age/.3);water(g,scene,d);
    }
-   for(const d of s.drops){g.globalAlpha=d.kind==='residue'?Math.min(1,(d.life-d.age)/5)*.55:Math.min(1,d.age/.3);water(g,scene,d)}
    g.globalAlpha=1;
    // A single reflection over all water places it on the far side of the pane.
    const glaze=g.createLinearGradient(0,0,w,h*.4);glaze.addColorStop(0,'#b9d0d208');glaze.addColorStop(.38,'#b9d0d200');glaze.addColorStop(.53,'#dae9e609');glaze.addColorStop(.68,'#b9d0d200');glaze.addColorStop(1,'#b9d0d204');g.fillStyle=glaze;g.fillRect(0,0,w,h);g.restore();
