@@ -28,6 +28,11 @@ function setupDraw(m){
     details.addEventListener('toggle',()=>{if(details.open)body.querySelectorAll('details').forEach(other=>{if(other!==details&&!other.contains(details)&&!details.contains(other))other.open=false;});queueLayout();});
     details.querySelector('summary').addEventListener('pointerdown',event=>{bringToFront(m);event.stopPropagation();});
   });
+  // Capture outside presses before the board or drawing canvas handles them.
+  const dismissDrawers=event=>body.querySelectorAll('details[open]').forEach(details=>{
+    if(!event||!details.contains(event.target))details.open=false;
+  });
+  document.addEventListener('pointerdown',dismissDrawers,true);
   queueLayout();
   const $=s=>body.querySelector(s),size=$('.draw-size'),opacity=$('.draw-opacity'),smooth=$('.draw-smooth'),fill=$('.draw-fill'),undo=$('.draw-undo'),redo=$('.draw-redo'),selectionTools=$('.draw-selection-tools');
   let color='#222222',tool='brush',enabled=false,actions=[],cursor=0,selected=-1,gesture=null,frame=0,baseImage=null,baseImageData='',loadToken=0,disposed=false,penUntil=0;
@@ -81,5 +86,5 @@ function setupDraw(m){
   m._setDrawHistoryCursor=next=>{cursor=clamp(Number(next)||0,0,actions.length);selected=-1;gesture=null;schedule();};
   m._boardGetState=()=>({image:baseImageData,actions:actions.slice(0,cursor).map(compact),tool,color,size:size.value,opacity:opacity.value,smooth:smooth.checked});
   m._boardSetState=state=>{if(!state)return;actions=(state.actions||[]).map(expand).filter(Boolean);cursor=actions.length;color=state.color||'#222222';size.value=state.size||6;opacity.value=state.opacity||100;smooth.checked=state.smooth!==false;tool=tools.some(t=>t[0]===state.tool)?state.tool:'brush';baseImageData=typeof state.image==='string'?state.image:'';baseImage=null;const token=++loadToken;if(baseImageData){const image=new Image();image.onload=()=>{if(token===loadToken&&!disposed){baseImage=image;schedule();}};image.src=baseImageData;}size.oninput();opacity.oninput();colors();schedule();};
-  const cameraObserver=new MutationObserver(schedule);cameraObserver.observe(workspace,{attributes:true,attributeFilter:['style']});window.addEventListener('resize',schedule);const priorCleanup=m._cleanup,priorDeactivate=m._deactivate,priorReactivate=m._reactivate;m._deactivate=()=>{activate(false);canvas.hidden=true;priorDeactivate?.();};m._reactivate=()=>{canvas.hidden=false;priorReactivate?.();schedule();};m._cleanup=()=>{layoutObserver.disconnect();cancelAnimationFrame(layoutFrame);disposed=true;loadToken++;cancelAnimationFrame(frame);cameraObserver.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('teachertiles:drawing-active',deactivateOther);document.removeEventListener('keydown',keys,true);canvas.remove();priorCleanup?.();};colors();update();redraw();
+  const cameraObserver=new MutationObserver(schedule);cameraObserver.observe(workspace,{attributes:true,attributeFilter:['style']});window.addEventListener('resize',schedule);const priorCleanup=m._cleanup,priorDeactivate=m._deactivate,priorReactivate=m._reactivate;m._deactivate=()=>{dismissDrawers();activate(false);canvas.hidden=true;priorDeactivate?.();};m._reactivate=()=>{canvas.hidden=false;priorReactivate?.();schedule();};m._cleanup=()=>{document.removeEventListener('pointerdown',dismissDrawers,true);layoutObserver.disconnect();cancelAnimationFrame(layoutFrame);disposed=true;loadToken++;cancelAnimationFrame(frame);cameraObserver.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('teachertiles:drawing-active',deactivateOther);document.removeEventListener('keydown',keys,true);canvas.remove();priorCleanup?.();};colors();update();redraw();
 }
