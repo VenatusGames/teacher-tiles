@@ -4,6 +4,7 @@ function setupPunchcards(m){
   const scopeToggle=m.querySelector('.pbis-scope-toggle'),studentWrap=m.querySelector('.punchcard-student-wrap'),studentSelect=m.querySelector('.punchcard-student');
   const card=m.querySelector('.punchcard-card'),cardName=m.querySelector('.punchcard-name'),cardType=m.querySelector('.punchcard-type'),holes=m.querySelector('.punchcard-holes'),points=m.querySelector('.punchcard-points-value');
   const reset=m.querySelector('.punchcard-reset'),complete=m.querySelector('.punchcard-complete'),completeName=m.querySelector('.punchcard-complete-name'),completePoints=m.querySelector('.punchcard-complete-points'),completeDone=m.querySelector('.punchcard-complete-done');
+  movePbisClassHeaderToFooter(m,'.punchcard-header');
   let activeClassId='',scope='student',student='',busy=false;
   scopeToggle.hidden=true;
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;

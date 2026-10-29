@@ -3,6 +3,7 @@ function setupRacer(m){
   const className=m.querySelector('.racer-class-name'),classLogo=m.querySelector('.racer-class-logo'),changeClass=m.querySelector('.racer-change-class');
   const stage=m.querySelector('.racer-stage'),racers=m.querySelector('.racer-standees'),studentSelect=m.querySelector('.racer-student'),distanceInput=m.querySelector('.racer-distance'),moveButton=m.querySelector('.racer-move'),reset=m.querySelector('.racer-reset');
   const status=m.querySelector('.racer-status'),win=m.querySelector('.racer-win'),winName=m.querySelector('.racer-win-name'),winTotal=m.querySelector('.racer-win-total'),winDone=m.querySelector('.racer-win-done');
+  movePbisClassHeaderToFooter(m,'.racer-header');
   let activeClassId='',selectedStudent='';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
   const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};

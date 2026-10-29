@@ -276,3 +276,38 @@
 .module.starchart-module.is-showing-all-students:not(:fullscreen):not(.is-tile-fullscreen) .starchart-student-row__main{grid-template-columns:72px minmax(0,1fr) 42px}
 .module.starchart-module.is-showing-all-students:not(:fullscreen):not(.is-tile-fullscreen) .starchart-student-name{width:72px;height:72px}
 .module.starchart-module.is-showing-all-students:not(:fullscreen):not(.is-tile-fullscreen) .starchart-student-avatar{width:32px;height:32px}
+/* Growth cards leave their space to the artwork and student names. */
+.module.growth-module .growth-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px;min-height:32px;margin:0 0 8px}
+.module.growth-module .growth-heading{margin:0;font-size:16px;white-space:normal}
+.module.growth-module .growth-header>.growth-class{margin:0;text-align:center;font-size:13px;font-weight:500;line-height:1.3;opacity:.65;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.growth-header-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;min-width:0}
+.module.growth-module .growth-header-actions button{padding:5px 7px;font-size:11px;white-space:nowrap}
+.module.growth-module .growth-grid.show-all .growth-art{width:100%;max-width:none}
+.module.growth-module .growth-grid.show-all .growth-student{padding:5px 7px;gap:4px}
+.module.starchart-module .starchart-student-row{cursor:pointer}
+/* Class identity and fill tallies live in the bottom corner beside tile controls. */
+.module.pbis-tile .pbis-class-footer{position:absolute;left:auto;top:auto;right:52px;bottom:10px;width:max-content;max-width:calc(100% - 220px);height:auto;min-height:0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;padding:0;margin:0;border:0;background:none;box-shadow:none;z-index:2;pointer-events:none}
+.module.pbis-tile .pbis-class-footer>span,.module.pbis-tile .pbis-class-footer small{display:none}
+.module.pbis-tile .pbis-class-footer>div{min-width:0;max-width:100%}
+.module.pbis-tile .pbis-class-footer :is(.classmeter-class-name,.collection-class-name,.racer-class-name,.punchcard-class-name){display:block;font-size:11px;font-weight:500;line-height:1.3;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.65}
+.module.pbis-tile .pbis-class-footer .pbis-header-actions{min-width:0;gap:0;translate:none}
+.module.pbis-tile .pbis-class-footer :is(.classmeter-win-count,.collection-win-count){font-size:11px;gap:4px}
+.module.pbis-tile .pbis-class-footer :is(.classmeter-win-count,.collection-win-count) :is(span,strong,b){font-size:11px;font-weight:500}
+.module.pbis-tile .customization-bar .pbis-footer-change{width:34px;min-width:34px;height:34px;min-height:34px;padding:7px;opacity:1;visibility:visible;pointer-events:auto;translate:none}
+.pbis-footer-change svg{display:block;width:18px;height:18px}
+.module:is(.classmeter-module,.collections-module,.racer-module) .customization-bar{justify-content:flex-start}
+.module.punchcard-module .pbis-class-footer{max-width:calc(100% - 310px)}
+.module:has(:is(.classmeter-dashboard,.collection-dashboard,.racer-dashboard,.punchcard-dashboard)[hidden]) :is(.pbis-class-footer,.pbis-footer-change){display:none!important}
+.racer-module .racer-dashboard{grid-template-rows:minmax(0,1fr) auto}
+/* Card contents fit their frame without introducing an internal scroll surface. */
+.module.punchcard-module .punchcard-card{overflow:visible;min-height:0}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-card{padding:12px 16px}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-card__top{flex:none}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-holes{min-height:0;gap:8px;margin:10px 0;flex:1}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-hole{width:clamp(24px,min(9cqw,9cqh),54px)}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-card__footer{font-size:10px;gap:5px;flex:none;flex-wrap:wrap;line-height:1.2}
+.module.punchcard-module:not(:fullscreen):not(.is-tile-fullscreen) .punchcard-name{font-size:clamp(18px,4cqw,26px);line-height:1.15}
+@container(max-width:500px){.module.growth-module .growth-header{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.module.growth-module .growth-header-actions{grid-column:1/-1}.module.growth-module .growth-header>.growth-class{text-align:right}}
+.module:has(>.pbis-class-footer)>.customization-bar{position:absolute;left:10px;right:auto;bottom:9px;transform:none;justify-content:flex-start;flex-wrap:nowrap}
+.module:has(>.pbis-class-footer):is(:hover,:has(:focus-visible))>.customization-bar{opacity:1;visibility:visible;pointer-events:auto}
+.module.punchcard-module .pbis-class-footer{max-width:calc(100% - 330px)}

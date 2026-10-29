@@ -129,3 +129,17 @@ function setupTileAudioSettings(m,type){
   setTileAudioState(m,tileAudioState(m),{notify:false});
   refresh();
 }
+
+// Keep class identity readable without reserving an entire activity header.
+function movePbisClassHeaderToFooter(m,selector){
+  const header=m.querySelector(selector),change=header.querySelector('.pbis-change-class');
+  header.classList.add('pbis-class-footer');
+  if(change){
+    change.classList.add('custom-icon','pbis-footer-change');change.setAttribute('aria-label','Change Class');change.title='Change Class';
+    change.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v3"/></svg>';
+    let toolbar=m.querySelector('.customization-bar');
+    if(!toolbar){toolbar=document.createElement('div');toolbar.className='customization-bar';m.append(toolbar);}
+    toolbar.append(change);
+  }
+  m.append(header);
+}

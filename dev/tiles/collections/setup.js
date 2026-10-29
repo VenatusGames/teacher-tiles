@@ -3,7 +3,8 @@ function setupCollections(m){
   const canvas=m.querySelector('.collection-canvas'),ctx=canvas.getContext('2d'),fillHandle=m.querySelector('.collection-fill-line-handle'),add=m.querySelector('.collection-add'),typeBtn=m.querySelector('.collection-type'),typeLabel=m.querySelector('.collection-type-label'),picker=m.querySelector('.collection-picker'),pickerButtons=[...m.querySelectorAll('[data-collection-type]')],countEl=m.querySelector('.collection-count'),bgBtn=m.querySelector('.collection-bg');
   const filledBanner=m.querySelector('.collection-filled-banner'),restart=m.querySelector('.collection-restart'),bannerRestart=m.querySelector('.collection-banner-restart'),settingsToggle=m.querySelector('.collection-settings-toggle'),settings=m.querySelector('.collection-settings'),jarsFilledEl=m.querySelector('.collection-jars-filled'),emptyCurrent=m.querySelector('.collection-empty-current'),addFill=m.querySelector('.collection-add-fill'),removeFill=m.querySelector('.collection-remove-fill'),resetFills=m.querySelector('.collection-reset-fills');
   const headerActions=document.createElement('div');headerActions.className='pbis-header-actions';changeClass.before(headerActions);
-  const fillCounter=document.createElement('span');fillCounter.className='collection-win-count';fillCounter.innerHTML='<span aria-hidden="true">🏆</span><strong><b>0</b> fills</strong>';headerActions.append(fillCounter,changeClass);
+  const fillCounter=document.createElement('span');fillCounter.className='collection-win-count';fillCounter.innerHTML='<span aria-hidden="true">🏆</span><strong><b>0</b> Fills</strong>';headerActions.append(fillCounter,changeClass);
+  movePbisClassHeaderToFooter(m,'.collection-class-header');
   const types=[
     {id:'pompom',label:'Pom Poms'},{id:'candy',label:'Candies'},{id:'star',label:'Stars'},
     {id:'jellybean',label:'Jellybeans'},{id:'fruit',label:'Fruits'},{id:'coin',label:'Coins'}
