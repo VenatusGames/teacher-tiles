@@ -131,3 +131,16 @@
 /* Autumn uses the selected planner color on its title plaque, keeping the leaf artwork intact. */
 [data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{background:var(--planner-book-color,#fff5db);color:var(--planner-book-ink,#694227);border-color:color-mix(in srgb,var(--planner-book-ink,#694227) 55%,#ac7838)}
 [data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label :is(.planner-book-embossed-title,small){color:inherit}
+
+/* Thanksgiving stationery: the editable title stays above the printed harvest art. */
+@font-face{font-family:'TT Planner Script';src:url('../../assets/fonts/pacifico/pacifico.ttf') format('truetype');font-weight:400;font-display:swap}
+[data-planner-skin="thanksgiving"] .planner-book-art{--book-cover:#f8f0db;border-radius:3px 6px 6px 3px}
+[data-planner-skin="thanksgiving"] .planner-book-cover{background:#fbf5e5 url('assets/thanksgiving.webp?v=20261029') center/100% 100% no-repeat;border-color:#cdbd96;border-radius:3px 6px 6px 3px;box-shadow:inset 2px 0 4px #75472112,inset -2px 0 3px #75472118}
+[data-planner-skin="thanksgiving"] .planner-book-art::before{border-radius:3px 6px 6px 3px}
+[data-planner-skin="thanksgiving"] .planner-book-cover::after{display:none}
+[data-planner-skin="thanksgiving"] .planner-book-cover-label{inset:2% 7% 85% 12%;padding:0;background:none;border:0;border-radius:0;box-shadow:none;justify-content:center;color:#704923}
+[data-planner-skin="thanksgiving"] .planner-book-cover-label .planner-book-embossed-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:'TT Planner Script',Georgia,serif!important;font-size:clamp(7px,8cqi,19px)!important;font-weight:400;line-height:1.05;letter-spacing:0;margin:0;text-shadow:none;text-wrap:balance}
+[data-planner-skin="thanksgiving"] :is(.planner-book-cover-label small,.planner-book-loop,.planner-book-elastic){display:none}
+[data-planner-skin="thanksgiving"] .planner-book-binding>span{border-color:#61432c;border-top-color:#bd976d;border-bottom-color:#48311e;background:linear-gradient(#c7aa84 0 22%,#725137 23% 40%,transparent 41%)}
+[data-planner-skin="thanksgiving"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:color-mix(in srgb,var(--planner-book-color) 65%,#51351f)}
+.planner-skin-holiday-badge{font-size:9px;justify-self:center;margin:2px 0}
