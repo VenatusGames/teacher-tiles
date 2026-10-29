@@ -166,3 +166,5 @@ body.classes-tool-open{overflow:hidden}
 .cs-field select{font-family:inherit}.cs-class-open>.cs-class-grade{margin-top:-6px;font-size:12px;font-weight:600}.cs-field>.cs-muted{font-weight:400;line-height:1.4}
 
 .cs-form-actions:has(.cs-danger){flex-wrap:wrap}.cs-form-actions>.cs-danger{margin-right:auto}
+
+.cs-brand>.cs-tool-logo{display:block;flex:none;width:33px;height:33px;color:#7b2cbf}

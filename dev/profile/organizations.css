@@ -194,3 +194,6 @@ body>.profile-organizations-panel{padding:0;background:var(--surface-solid,#fff)
 .organization-seat-crown>svg{display:block;width:24px;height:24px}
 .organization-seat-crown .organization-seat-tooltip{top:34px;background:#61471c}
 .organization-seat-crown:hover .organization-seat-tooltip{display:block}
+
+.organization-window #profile-organizations-title{display:flex;align-items:center}
+#profile-organizations-title>.organization-tool-logo{display:block;flex:none;width:33px;height:33px;color:#277158}
