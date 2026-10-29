@@ -4,7 +4,7 @@
     const intro=m.querySelector('.growth-import'),panel=m.querySelector('.growth-dashboard'),grid=m.querySelector('.growth-grid');
     let goalInput=m.querySelector('.growth-goal');
     const header=m.querySelector('.growth-header'),heading=m.querySelector('.growth-heading'),classLabel=m.querySelector('.growth-class');
-    m.insertBefore(header,heading);header.prepend(heading);panel.append(classLabel);
+    m.insertBefore(header,heading);header.prepend(heading);heading.after(classLabel);
     let activeClassId='',goal=5,showAll=true;const completed=new Set();
     const roster=()=>readClassRosters().find(r=>r.id===activeClassId);
     const goalValue=()=>goal;
@@ -15,14 +15,14 @@
     };
     function render(){
       const r=roster(),focus=document.activeElement?.dataset.student;
-      intro.hidden=Boolean(r);panel.hidden=!r;header.classList.toggle('has-class',Boolean(r));if(!r){grid.replaceChildren();return;}
+      intro.hidden=Boolean(r);panel.hidden=!r;header.classList.toggle('has-class',Boolean(r));classLabel.hidden=!r;if(!r){grid.replaceChildren();return;}
       const names=new Set(r.students);for(const card of [...grid.children])if(!names.has(card.dataset.student))card.remove();
       m.querySelector('.growth-class').textContent=r.name;
       const progress=normalizePunchcardProgress(r[kind],r.students);
       if(!r.students.length){const empty=document.createElement('p');empty.textContent='Add students to this class to begin.';grid.append(empty)}
       for(const name of r.students){const key=starChartStudentKey(name),step=Math.min(goalValue()-1,progress.studentProgress[key]||0),done=completed.has(key),card=[...grid.children].find(c=>c.dataset.student===name)||document.createElement('button');card.type='button';card.classList.add('growth-student');card.classList.toggle('is-complete',done);card.dataset.student=name;card.setAttribute('aria-label',`${name}: ${done?'Point earned':step+' of '+goalValue()+' clicks'}, ${progress.studentPoints[key]||0} PBIS points. ${eggs?'Crack egg':'Water flower'}.`);
         const signature=goalValue()+':'+step+':'+done+':'+(progress.studentPoints[key]||0);if(card.dataset.signature===signature)continue;card.dataset.signature=signature;card.replaceChildren();
-        const visual=document.createElement('span');visual.className='growth-art';visual.innerHTML=art(step,done);const label=document.createElement('strong');label.textContent=name;const count=document.createElement('small');count.textContent=done?'+1 PBIS point':`${step} / ${goalValue()} · ${progress.studentPoints[key]||0} points`;card.append(visual,label,count);if(done){const hint=document.createElement('span');hint.className='growth-restart';hint.textContent='Click to start again';card.append(hint);}card.onclick=()=>advance(name);if(!card.isConnected)grid.append(card);if(focus===name)card.focus({preventScroll:true});
+        const visual=document.createElement('span');visual.className='growth-art';visual.innerHTML=art(step,done);const label=document.createElement('strong');label.textContent=name;card.append(visual,label);card.onclick=()=>advance(name);if(!card.isConnected)grid.append(card);if(focus===name)card.focus({preventScroll:true});
       }
       fit();
     }
@@ -47,6 +47,7 @@
     const reset=document.createElement('button');reset.type='button';reset.className='growth-reset';reset.textContent='Reset progress';
     reset.title=eggs?'Start current eggs over; keep earned PBIS points':'Start current flowers over; keep earned PBIS points';
     m.querySelector('.growth-header').insertBefore(reset,m.querySelector('.growth-change'));
+    const headerActions=document.createElement('div');headerActions.className='growth-header-actions';headerActions.append(reset,m.querySelector('.growth-change'));header.append(headerActions);
     reset.onclick=()=>{const r=roster();if(!r)return;const progress=normalizePunchcardProgress(r[kind],r.students);for(const key of Object.keys(progress.studentProgress))progress.studentProgress[key]=0;completed.clear();writeClassGrowth(r.id,kind,progress);window.dispatchEvent(new CustomEvent('teachertiles:growthreset',{detail:{classId:r.id,kind}}));};
     const onReset=event=>{if(event.detail?.classId===activeClassId&&event.detail?.kind===kind){completed.clear();grid.querySelectorAll('.growth-particle').forEach(p=>p.remove());render();}};
     window.addEventListener('teachertiles:growthreset',onReset);

@@ -296,14 +296,13 @@ function setupStarChart(m){
     const target=event.target instanceof Element?event.target:null;
     const row=target?.closest('[data-student-key]');
     if(!row||!activeClassId)return;
-    if(target.closest('[data-subtract-toggle],[data-subtract-cancel]'))return;
+    if(target.closest('[data-subtract-toggle],.starchart-subtract-panel'))return;
     const action=target.closest('[data-star-action]');
-    if(!action)return;
     const key=row.dataset.studentKey;
     const current=normalizeStarChartCount(progress.studentStars[key]);
-    const adding=action.dataset.starAction==='add';
+    const adding=action?.dataset.starAction!=='remove';
     if(!adding&&!current)return;
-    const source=adding?action.getBoundingClientRect():null;
+    const source=adding?(action||row).getBoundingClientRect():null;
     progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
     persistProgress();
     if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());

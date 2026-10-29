@@ -8,6 +8,7 @@ function setupClassMeter(m){
   const percent=m.querySelector('.classmeter-percent');
   const winCount=m.querySelector('.classmeter-win-count b');
   const headerActions=document.createElement('div');headerActions.className='pbis-header-actions';changeClass.before(headerActions);headerActions.append(m.querySelector('.classmeter-win-count'),changeClass);
+  movePbisClassHeaderToFooter(m,'.classmeter-header');
   const fillButton=m.querySelector('.classmeter-fill');
   const decreaseButton=m.querySelector('.classmeter-decrease');
   const orientationButton=m.querySelector('.classmeter-orientation');

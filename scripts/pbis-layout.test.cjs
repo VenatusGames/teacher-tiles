@@ -16,6 +16,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.class-roster-picker select').selectOption('pbis-test');await tile.locator('.class-roster-picker button').click();await page.waitForTimeout(300);
  if(type==='prizeboard')await page.evaluate(()=>testTile._boardSetState({...testTile._boardGetState(),prizes:[{id:'p1',scope:'student',title:'Choose a class game',description:'Pick the game for our next break',cost:5,costStat:'studentStars'},{id:'p2',scope:'student',title:'Reading buddy',description:'Choose a partner',cost:10,costStat:'studentStars'}]}));
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-'+type+'-default.png')});
+ if(['classmeter','collections','racer','punchcards'].includes(type)){
+ assert(await tile.locator('.pbis-class-footer').isVisible(),'class footer visible');
+ assert(await tile.locator('.pbis-class-footer').evaluate(e=>{const m=e.closest('.module').getBoundingClientRect(),r=e.getBoundingClientRect();return r.top>m.top+m.height*.8&&r.right<=m.right}),'class footer stays in bottom corner');
+ assert.equal(await tile.locator('.pbis-class-footer .pbis-change-class').count(),0);
+ }
+ if(type==='classmeter'||type==='collections')assert((await tile.locator('.pbis-class-footer').textContent()).includes('Fills'),'Fills capitalization');
+ if(type==='punchcards')assert(await tile.locator('.punchcard-card').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'normal punchcard contents fit without scroll');
  if(type==='racer'){
  assert.equal(await tile.locator('.racer-student-avatar img').count(),1);
  assert.equal(await tile.locator('.racer-student-avatar').nth(1).textContent(),'🐻');
@@ -44,6 +51,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert(await tile.locator('.pbis-scope-toggle').evaluate(e=>!!e.closest('.customization-bar')));
  await tile.locator('.starchart-search').fill('alex');assert.equal(await tile.locator('.starchart-student-row:visible').count(),1);
  await tile.locator('.starchart-student-name').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124);
+ await tile.locator('.starchart-student-total').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'non-star row content awards a star');
+ await tile.locator('.starchart-star-token').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124,'star click removes one');
  await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('4');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
  await tile.locator('.starchart-search').fill('');
  await page.mouse.move(4,4);await page.waitForTimeout(200);assert.equal(await tile.locator('.starchart-subtract-toggle').last().evaluate(e=>getComputedStyle(e).visibility),'hidden');
@@ -59,6 +68,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  }
  if(type==='egghatching'||type==='flowerpots'){
  assert(await tile.locator('.growth-show-all').isChecked(),'show all defaults on');
+ assert.equal(await tile.locator('.growth-student small,.growth-restart').count(),0,'growth cards show only artwork and names');
+ assert(await tile.locator('.growth-header').evaluate(e=>{const h=e.querySelector('.growth-heading').getBoundingClientRect(),c=e.querySelector('.growth-class').getBoundingClientRect();return Math.abs((h.top+h.bottom)/2-(c.top+c.bottom)/2)<3}),'heading and centered class share one line');
  assert(await tile.locator('.growth-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'12 students fit without scroll');
  await tile.locator('.growth-goal').evaluate(e=>{e.value='3';e.dispatchEvent(new Event('change',{bubbles:true}))});
  assert.equal(await page.evaluate(()=>testTile._boardGetState().goal),3);
