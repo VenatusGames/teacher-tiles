@@ -1,17 +1,17 @@
 /* One favorite control for cosmetic drawers, including keyboard and touch states. */
-.asset-shelf .cosmetic-favorite{position:absolute;right:6px;top:6px;z-index:2;display:grid;place-items:center;box-sizing:border-box;width:28px;min-width:28px;height:28px;min-height:28px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:var(--muted,#6b7585);box-shadow:0 1px 3px #1523340c;opacity:0;visibility:hidden;pointer-events:none;transform:none;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
-.asset-shelf .cosmetic-favorite svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;pointer-events:none}
-.asset-shelf :is(.cursor-picker-cell,.tile-effect-cell):is(:hover,:has(:focus-visible))>.cosmetic-favorite,.asset-shelf .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
-.asset-shelf .cosmetic-favorite[aria-pressed=true]{color:#ad7818;background:color-mix(in srgb,#f5c85a 15%,var(--surface-solid,#fff));border-color:color-mix(in srgb,#c69a37 46%,var(--border))}
-.asset-shelf .cosmetic-favorite[aria-pressed=true] svg{fill:#f4c75c;stroke:#ad7818}
-.asset-shelf .cosmetic-favorite:hover{border-color:#92a9c8;background:color-mix(in srgb,#98b6e5 12%,var(--surface-solid,#fff))}
-.asset-shelf .cosmetic-favorite:focus-visible{outline:2px solid #7299d4;outline-offset:2px}
-.asset-shelf .cursor-picker-views{box-sizing:border-box;padding:4px;gap:4px;border:1px solid var(--border);background:var(--surface-soft);border-radius:12px}
-.asset-shelf .cursor-picker-views button{box-sizing:border-box;min-height:34px;border:1px solid transparent;border-radius:8px;font:600 12px var(--site-font-family,Inter,sans-serif);color:var(--muted)}
-.asset-shelf .cursor-picker-views button[aria-pressed=true]{border-color:color-mix(in srgb,#7299d4 36%,var(--border));color:var(--text);background:color-mix(in srgb,#9cbbe8 13%,var(--surface-solid));box-shadow:0 1px 3px #17203308}
-.asset-shelf .cursor-picker-filters i{pointer-events:none;box-sizing:border-box;flex:none;width:36px;height:22px;padding:3px}
-.asset-shelf .cursor-picker-filters i::before{width:16px;height:16px}
-.asset-shelf .cursor-picker-filters input{width:36px;height:22px;margin:0;cursor:pointer}
-.asset-shelf .cursor-picker-filters input:checked+i::before{transform:translateX(14px)}
-@media(hover:none){.asset-shelf .cosmetic-favorite{opacity:1;visibility:visible;pointer-events:auto}}
-@media(prefers-reduced-motion:reduce){.asset-shelf .cosmetic-favorite{transition:none}}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{position:absolute;right:6px;top:6px;z-index:2;display:grid;place-items:center;box-sizing:border-box;width:28px;min-width:28px;height:28px;min-height:28px;padding:5px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:var(--muted,#6b7585);box-shadow:0 1px 3px #1523340c;opacity:0;visibility:hidden;pointer-events:none;transform:none;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;pointer-events:none}
+:is(.asset-shelf,.theme-pack-fan) :is(.cursor-picker-cell,.tile-effect-cell,.theme-picker-cell):is(:hover,:has(:focus-visible))>.cosmetic-favorite,:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true]{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true]{color:#ad7818;background:color-mix(in srgb,#f5c85a 15%,var(--surface-solid,#fff));border-color:color-mix(in srgb,#c69a37 46%,var(--border))}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite[aria-pressed=true] svg{fill:#f4c75c;stroke:#ad7818}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite:hover{border-color:#92a9c8;background:color-mix(in srgb,#98b6e5 12%,var(--surface-solid,#fff))}
+:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite:focus-visible{outline:2px solid #7299d4;outline-offset:2px}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-views{box-sizing:border-box;padding:4px;gap:4px;border:1px solid var(--border);background:var(--surface-soft);border-radius:12px}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-views button{box-sizing:border-box;min-height:34px;border:1px solid transparent;border-radius:8px;font:600 12px var(--site-font-family,Inter,sans-serif);color:var(--muted)}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-views button[aria-pressed=true]{border-color:color-mix(in srgb,#7299d4 36%,var(--border));color:var(--text);background:color-mix(in srgb,#9cbbe8 13%,var(--surface-solid));box-shadow:0 1px 3px #17203308}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-filters i{pointer-events:none;box-sizing:border-box;flex:none;width:36px;height:22px;padding:3px}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-filters i::before{width:16px;height:16px}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-filters input{width:36px;height:22px;margin:0;cursor:pointer}
+:is(.asset-shelf,.theme-pack-fan) .cursor-picker-filters input:checked+i::before{transform:translateX(14px)}
+@media(hover:none){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{opacity:1;visibility:visible;pointer-events:auto}}
+@media(prefers-reduced-motion:reduce){:is(.asset-shelf,.theme-pack-fan) .cosmetic-favorite{transition:none}}

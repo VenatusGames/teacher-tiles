@@ -18,8 +18,8 @@ assert(animatedCss.includes("url('../../assets/themes/underwater-ocean.svg')"), 
 assert(animatedCss.includes("url('../../assets/themes/rainy-window.svg')"), 'rainy-window SVG remains as a fallback');
 assert(picker.includes("heading.dataset.entitlement=product"), 'theme pack heading must carry the pack entitlement');
 assert(picker.includes("theme-picker-pack-locked"), 'theme picker must render a pack-level locked state');
-assert(picker.includes("requestAccess(heading)"), 'clicking a locked pack must use the pack purchase/access flow');
-assert(picker.includes("active.product&&!owns(active.product)"), 'an open pack must close if ownership is lost');
+assert(picker.includes("if(!owns(product)){requestAccess(card);return}"), 'locked variations must still use the purchase/access flow');
+assert(picker.includes("heading.onclick=()=>open(group)"), 'packs remain browsable so locked variations can be favorited');
 assert(picker.includes('assets/ui/lock.svg')&&picker.includes('Unlock</span>')&&pickerCss.includes('.theme-picker-pack-locked>.theme-picker-lock'), 'theme packs must use the shared lock artwork and Unlock label');
 assert(html.includes('theme-picker.css?v='), 'theme picker CSS cache buster must be updated');
 assert(html.includes('animated-themes.css?v='), 'animated theme CSS cache buster must be updated');

@@ -131,3 +131,21 @@
 .theme-picker-pack-locked>.theme-picker-lock,.theme-picker-locked>.theme-picker-lock{display:flex}
 .theme-picker-lock>span{display:flex;align-items:center;gap:7px;background:var(--surface-solid,#fff);color:var(--text,#263249);border:1px solid var(--border,#dce3ed);border-radius:20px;padding:8px 12px;font:700 11px Inter,system-ui,sans-serif;box-shadow:0 2px 7px #17243c12}
 .theme-picker-lock img{width:17px;height:17px;object-fit:contain}
+
+/* Favorites are individual variants; pack previews never contain favorite controls. */
+.theme-picker-views{flex:none;margin:0 16px 14px}
+.theme-picker-cell{position:relative;min-width:0;height:148px}
+.theme-picker-cell[hidden],.theme-favorites-grid[hidden]{display:none!important}
+.theme-pack-fan .theme-picker-cell{transform:rotate(var(--fan-angle));transform-origin:0 80%;transition:transform .2s;animation:themeCardUnfold .5s cubic-bezier(.16,.8,.24,1) both;animation-delay:calc(var(--fan-index)*45ms)}
+.theme-pack-fan .theme-picker-cell:hover,.theme-pack-fan .theme-picker-cell:focus-within{transform:translateY(-7px) rotate(0deg);z-index:2}
+.theme-picker .theme-picker-cell>.theme-card{height:100%;transform:none;animation:none}
+.theme-favorites-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:10px 3px}
+.theme-favorites-grid .theme-card__preview{height:85px}
+.theme-favorites-grid .theme-card__copy strong{font-size:11px}
+.theme-favorites-grid .theme-card:hover{box-shadow:0 5px 13px #14223b26}
+@media(max-width:760px){.theme-pack-fan .theme-picker-cell{height:126px}}
+@media(prefers-reduced-motion:reduce){.theme-picker-cell{animation:none!important;transition:none!important}}
+
+/* Anchor filters to their toolbar even when the Favorites row changes height. */
+.theme-picker-toolbar{position:relative}
+.theme-picker-options{top:calc(100% + 8px);left:0;right:0;max-height:min(360px,60vh)}
