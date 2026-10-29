@@ -22,7 +22,9 @@
       if(!r.students.length){const empty=document.createElement('p');empty.textContent='Add students to this class to begin.';grid.append(empty)}
       for(const name of r.students){const key=starChartStudentKey(name),step=Math.min(goalValue()-1,progress.studentProgress[key]||0),done=completed.has(key),card=[...grid.children].find(c=>c.dataset.student===name)||document.createElement('button');card.type='button';card.classList.add('growth-student');card.classList.toggle('is-complete',done);card.dataset.student=name;card.setAttribute('aria-label',`${name}: ${done?'Point earned':step+' of '+goalValue()+' clicks'}, ${progress.studentPoints[key]||0} PBIS points. ${eggs?'Crack egg':'Water flower'}.`);
         const signature=goalValue()+':'+step+':'+done+':'+(progress.studentPoints[key]||0);if(card.dataset.signature===signature)continue;card.dataset.signature=signature;card.replaceChildren();
-        const visual=document.createElement('span');visual.className='growth-art';visual.innerHTML=art(step,done);const label=document.createElement('strong');label.textContent=name;card.append(visual,label);card.onclick=()=>advance(name);if(!card.isConnected)grid.append(card);if(focus===name)card.focus({preventScroll:true});
+        const visual=document.createElement('span');visual.className='growth-art';visual.innerHTML=art(step,done);const label=document.createElement('strong');label.textContent=name;
+        const total=progress.studentPoints[key]||0,badge=document.createElement('span');badge.className='growth-win-count';badge.textContent=String(total);badge.dataset.digits=String(total).length;badge.title=`${total} total ${total===1?'win':'wins'}`;badge.setAttribute('aria-hidden','true');
+        card.append(visual,label,badge);card.onclick=()=>advance(name);if(!card.isConnected)grid.append(card);if(focus===name)card.focus({preventScroll:true});
       }
       fit();
     }
