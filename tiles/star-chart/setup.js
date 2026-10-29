@@ -5,7 +5,7 @@ function setupStarChart(m){
   const wholeClassName=m.querySelector('.starchart-whole-class-name');
   const wholeClassLogo=m.querySelector('.starchart-whole-badge');
   const changeClass=m.querySelector('.starchart-change-class');
-  const modeButtons=[...m.querySelectorAll('[data-starchart-mode]')];
+  const modeToggle=m.querySelector('.pbis-scope-toggle');
   const studentView=m.querySelector('.starchart-student-view');
   const wholeView=m.querySelector('.starchart-whole-view');
   const studentGrid=m.querySelector('.starchart-student-grid');
@@ -204,7 +204,7 @@ function setupStarChart(m){
       if(profile?.image){const image=document.createElement('img');image.src=profile.image;image.alt='';image.decoding='async';avatar.append(image);}
       else avatar.textContent=profile?.emoji||name.trim().slice(0,1).toLocaleUpperCase();
       exact.className='starchart-student-total';
-      nameButton.append(avatar,label,exact);
+      nameButton.append(avatar,label);
 
       const starStage=document.createElement('div');starStage.className='starchart-star-stage';starStage.setAttribute('aria-label',`${count} stars earned by ${name}`);
       renderStarBundles(starStage,count,name);
@@ -212,7 +212,8 @@ function setupStarChart(m){
       const subtractToggle=document.createElement('button');
       subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
       subtractToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><small>Remove</small>';
-      main.append(nameButton,starStage,subtractToggle);
+      const stars=document.createElement('div');stars.className='starchart-student-stars';stars.append(starStage,exact);
+      main.append(nameButton,stars,subtractToggle);
 
       const panel=document.createElement('div');panel.className='starchart-subtract-panel';panel.hidden=true;
       const prompt=document.createElement('span');prompt.textContent=`Take stars away from ${name}`;
@@ -246,6 +247,7 @@ function setupStarChart(m){
     const hasClass=Boolean(roster&&activeClassId);
     importView.hidden=hasClass;
     dashboard.hidden=!hasClass;
+    modeToggle.hidden=!hasClass;
     if(!hasClass)return;
     className.textContent=roster.name;
     wholeClassName.textContent=roster.name;
@@ -254,11 +256,9 @@ function setupStarChart(m){
     wholeRemove.disabled=progress.wholeClassStars===0;
     renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
     const mode=progress.mode==='whole'?'whole':'student';
-    modeButtons.forEach(button=>{
-      const active=button.dataset.starchartMode===mode;
-      button.classList.toggle('is-active',active);
-      button.setAttribute('aria-selected',String(active));
-    });
+    modeToggle.textContent=mode==='whole'?'Whole Class':'Student';
+    modeToggle.setAttribute('aria-pressed',String(mode==='whole'));
+    modeToggle.setAttribute('aria-label',mode==='whole'?'Whole Class mode: switch to Student':'Student mode: switch to Whole Class');
     studentView.hidden=mode!=='student';
     wholeView.hidden=mode!=='whole';
     renderStudentGrid();
@@ -286,13 +286,11 @@ function setupStarChart(m){
     if(saved)progress=saved;
   };
 
-  modeButtons.forEach(button=>button.addEventListener('click',()=>{
-    const mode=button.dataset.starchartMode==='whole'?'whole':'student';
-    if(progress.mode===mode)return;
-    progress.mode=mode;
+  modeToggle.addEventListener('click',()=>{
+    progress.mode=progress.mode==='whole'?'student':'whole';
     persistProgress();
     notifyBoardChanged('star-chart-mode');
-  }));
+  });
 
   studentGrid.addEventListener('click',event=>{
     const target=event.target instanceof Element?event.target:null;

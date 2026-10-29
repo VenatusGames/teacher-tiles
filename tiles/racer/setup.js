@@ -24,7 +24,7 @@ function setupRacer(m){
   const buildStandee=name=>{
     const r=roster(),visual=studentProfileVisual(name,r?.id||'');
     const node=document.createElement('button');node.type='button';node.className='racer-standee';node.dataset.student=name;node.setAttribute('aria-label',`Select ${name}`);
-    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
+    node.innerHTML='<span class="racer-character"><span class="racer-student-avatar" aria-hidden="true"></span><strong></strong></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
     node.style.setProperty('--racer-hue',String(visual.hue));
     node.querySelector('.racer-character strong').textContent=name;
     node.addEventListener('click',()=>{selectedStudent=name;studentSelect.value=name;renderSelection()});
@@ -46,6 +46,12 @@ function setupRacer(m){
       let node=[...racers.children].find(child=>child.dataset.student===name);
       if(!node){node=buildStandee(name);racers.append(node);requestAnimationFrame(()=>node.classList.add('is-ready'))}
       const pos=positionFor(r,name,p),key=keyFor(name),wins=p.studentWins[key]||0;
+      const profile=r.studentProfiles?.[key],image=profile?.image||'',symbol=profile?.emoji||name.trim().slice(0,1).toLocaleUpperCase();
+      if(node._profileImage!==image||node._profileSymbol!==symbol){
+        const avatar=node.querySelector('.racer-student-avatar');avatar.replaceChildren();
+        if(image){const img=document.createElement('img');img.src=image;img.alt='';img.decoding='async';avatar.append(img);}else avatar.textContent=symbol;
+        node._profileImage=image;node._profileSymbol=symbol;
+      }
       // Keep the original shared course and staggered standees within the stage as text grows.
       const edge=node.offsetWidth*.58+8,trackWidth=stage.clientWidth;
       const left=Math.max(edge,Math.min(trackWidth-edge,trackWidth*pos.x/100));

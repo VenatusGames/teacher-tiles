@@ -17,12 +17,31 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  if(type==='prizeboard')await page.evaluate(()=>testTile._boardSetState({...testTile._boardGetState(),prizes:[{id:'p1',scope:'student',title:'Choose a class game',description:'Pick the game for our next break',cost:5,costStat:'studentStars'},{id:'p2',scope:'student',title:'Reading buddy',description:'Choose a partner',cost:10,costStat:'studentStars'}]}));
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-'+type+'-default.png')});
  if(type==='racer'){
+ assert.equal(await tile.locator('.racer-student-avatar img').count(),1);
+ assert.equal(await tile.locator('.racer-student-avatar').nth(1).textContent(),'🐻');
+ assert.equal(await tile.locator('.racer-student-avatar').nth(2).textContent(),'C');
+ assert(await tile.locator('.racer-character').first().evaluate(e=>Math.abs(e.offsetWidth-e.offsetHeight)<2),'square standees');
+ await tile.hover();await page.waitForTimeout(300);const hoverHeight=await tile.locator('.racer-stage').evaluate(e=>e.clientHeight);
+ await page.mouse.move(4,4);await page.waitForTimeout(350);
+ assert(await tile.locator('.racer-controls').evaluate(e=>e.clientHeight===0),'racer controls collapse');
+ assert(await tile.locator('.racer-stage').evaluate((e,h)=>e.clientHeight>h+30,hoverHeight),'course reclaims toolbar space');
+ await tile.hover();await page.waitForTimeout(300);
  assert(await tile.locator('.racer-track-art').isVisible(),'shared race course is visible');
  assert.equal(await tile.locator('.racer-lane-track').count(),0,'no separate progress lanes');
  assert.equal(await tile.locator('.racer-standees .racer-standee').count(),12,'whole class stays on one course');
  await tile.locator('.racer-move').click();assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.positions['student:alex']),10);
  }
+ if(type==='punchcards'){
+ await tile.hover();const toggle=tile.locator('.pbis-scope-toggle');
+ assert(await toggle.evaluate(e=>!!e.closest('.customization-bar')));
+ await toggle.click();assert.equal(await page.evaluate(()=>testTile._boardGetState().scope),'class');
+ await toggle.click();assert.equal(await page.evaluate(()=>testTile._boardGetState().scope),'student');
+ }
  if(type==='starchart'){
+ assert.equal(await tile.locator('.starchart-student-name .starchart-student-total').count(),0);
+ assert.equal(await tile.locator('.starchart-student-stars .starchart-student-total').count(),12);
+ assert(await tile.locator('.starchart-student-name').first().evaluate(e=>e.offsetWidth===e.offsetHeight),'square award buttons');
+ assert(await tile.locator('.pbis-scope-toggle').evaluate(e=>!!e.closest('.customization-bar')));
  await tile.locator('.starchart-search').fill('alex');assert.equal(await tile.locator('.starchart-student-row:visible').count(),1);
  await tile.locator('.starchart-student-name').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124);
  await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('4');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
@@ -61,7 +80,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.prize-card-open').first().click();assert(await tile.locator('.prize-modal-overlay').isVisible(),'prize detail opens above fullscreen');await tile.locator('.prize-modal-close').click();
  }
  const metric=await tile.evaluate(m=>{const r=m.getBoundingClientRect();return {w:r.width,h:r.height,scroll:m.scrollHeight,client:m.clientHeight}});assert.equal(metric.w,1440);assert.equal(metric.h,1000);console.log(type,metric);
- if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.locator('[data-starchart-mode=whole]').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
+ if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.hover();await tile.locator('.pbis-scope-toggle').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
  if(type==='pbisconsole'){await tile.locator('[data-pbisconsole-view=class]').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-console-class-full.png')});}
  await page.setViewportSize({width:1100,height:720});await page.waitForTimeout(150);
  if(type==='punchcards')assert(await tile.locator('.punchcard-card').evaluate(e=>{const r=e.getBoundingClientRect();return Math.abs(r.width/r.height-1.75)<.05&&e.scrollHeight<=e.clientHeight+2}),'fullscreen card ratio and no scrollbar');
