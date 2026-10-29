@@ -17,3 +17,6 @@ body.is-board-idle .module:not(.is-skins-open)>.tile-skins-toggle{opacity:0;poin
 /* Keep short skin lists compact without reserving empty columns. */
 .tile-skins-drawer:has(>.tile-skins-drawer-grid>.tile-skins-choice:only-child){--tile-skins-width:180px;--tile-skins-columns:1}
 .tile-skins-drawer:has(>.tile-skins-drawer-grid>.tile-skins-choice:nth-child(2):last-child){--tile-skins-width:310px;--tile-skins-columns:2}
+
+/* Popovers stay above tile fullscreen and ignore the browser default centering. */
+.tile-skins-drawer[popover]{margin:0;inset:auto}

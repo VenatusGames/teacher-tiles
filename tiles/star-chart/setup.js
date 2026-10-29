@@ -35,10 +35,12 @@ function setupStarChart(m){
   let showAllFrame=0;
   const flyingStars=new Set();
   const awardFrames=new Set();
+  const studentRows=new Map();
+  let awardFrame=0;
   const pendingAwards=new Map();
   const displayedCount=(key,total)=>Math.max(0,normalizeStarChartCount(total)-(pendingAwards.get(key)||0));
   const clearAwards=()=>{
-    awardFrames.forEach(flight=>cancelAnimationFrame(flight.frame));awardFrames.clear();
+    cancelAnimationFrame(awardFrame);awardFrame=0;awardFrames.clear();
     flyingStars.forEach(star=>star.remove());flyingStars.clear();pendingAwards.clear();
   };
   const bundleLevels=[
@@ -85,9 +87,13 @@ function setupStarChart(m){
 
   const renderStarBundles=(container,total,ownerLabel)=>{
     const count=normalizeStarChartCount(total);
-    container.replaceChildren();
+    if(container.dataset.total===String(count)&&container._starOwner===ownerLabel)return;
+    container._starOwner=ownerLabel;
+    container.querySelector('.is-award-slot')?.remove();
+    const previous=[...container.children];let position=0;
     container.dataset.total=String(count);
     if(!count){
+      container.replaceChildren();
       const empty=document.createElement('span');
       empty.className='starchart-star-empty';
       empty.textContent='No stars yet';
@@ -101,6 +107,8 @@ function setupStarChart(m){
       for(let index=0;index<quantity&&remaining>0;index++){
         const value=level.weight;
         remaining-=value;
+        const old=previous[position++];
+        if(old?.dataset.bundleValue===String(value))continue;
         const token=document.createElement('span');
         token.className=`starchart-star-token starchart-star-token--level-${level.level}`;
         if(value>level.weight)token.classList.add('is-bundle');
@@ -110,9 +118,10 @@ function setupStarChart(m){
         token.title=`${represented}${value>1?' grouped together':''}`;
         const icon=document.createElement('span');icon.textContent='★';icon.setAttribute('aria-hidden','true');
         const badge=document.createElement('small');badge.textContent=value>=1000&&value%1000===0?`${value/1000}K`:value.toLocaleString();badge.setAttribute('aria-hidden','true');
-        token.append(icon,badge);container.append(token);
+        token.append(icon,badge);if(old)old.replaceWith(token);else container.append(token);
       }
     });
+    previous.slice(position).forEach(node=>node.remove());
   };
 
   const tokenCount=(total,whole=false)=>{
@@ -121,12 +130,14 @@ function setupStarChart(m){
     return count;
   };
   const reserveLandingSlot=(container,count,key)=>{
-    if(!pendingAwards.has(key)||tokenCount(count+1,key==='__whole__')<=tokenCount(count,key==='__whole__'))return;
+    const existing=container.querySelector('.is-award-slot');
+    if(!pendingAwards.has(key)||tokenCount(count+1)<=tokenCount(count)){existing?.remove();return;}
+    if(existing)return;
     container.querySelector('.starchart-star-empty')?.remove();
     const slot=document.createElement('span');slot.className='starchart-star-token is-award-slot';slot.style.visibility='hidden';slot.setAttribute('aria-hidden','true');container.append(slot);
   };
   const landingTargetFor=(studentKey,includePending=true)=>{
-    const container=studentKey==='__whole__'?wholeBundles:[...studentGrid.querySelectorAll('[data-student-key]')].find(row=>row.dataset.studentKey===studentKey)?.querySelector('.starchart-star-stage');
+    const container=studentKey==='__whole__'?wholeBundles:studentRows.get(studentKey)?.stage;
     if(!container)return null;
     const tokens=container.querySelectorAll('.starchart-star-token');
     const total=studentKey==='__whole__'?progress.wholeClassStars:progress.studentStars[studentKey];
@@ -134,28 +145,64 @@ function setupStarChart(m){
     return tokens[Math.min(tokens.length,tokenCount(next,studentKey==='__whole__'))-1]||container;
   };
 
-  const animateStarAward=(sourceRect,studentKey,complete)=>{
-    if(!sourceRect||!landingTargetFor(studentKey)||matchMedia('(prefers-reduced-motion: reduce)').matches){complete();return;}
-    const star=document.createElement('span');star.className='starchart-flying-star';star.textContent='★';star.setAttribute('aria-hidden','true');
-    const startX=sourceRect.left+sourceRect.width*.65,startY=sourceRect.top+sourceRect.height*.5;
-    (document.fullscreenElement===m?m:document.body).append(star);flyingStars.add(star);
-    const flight={frame:0},started=performance.now();awardFrames.add(flight);
-    const finish=()=>{awardFrames.delete(flight);flyingStars.delete(star);star.remove();complete()};
-    const tick=now=>{
-      // Resolve the live destination every frame: hover shelves and roster updates can move it.
-      const target=landingTargetFor(studentKey);if(!target?.isConnected){finish();return;}
-      const rect=target.getBoundingClientRect(),p=Math.min(1,(now-started)/620),t=p*p*(3-2*p);
+  // One read phase followed by one transform-only write phase for all concurrent stars.
+  const tickAwards=now=>{
+    awardFrame=0;
+    const targets=new Map(),finished=[];
+    for(const flight of awardFrames){
+      if(targets.has(flight.key))continue;
+      const target=landingTargetFor(flight.key);
+      targets.set(flight.key,target?.isConnected?target.getBoundingClientRect():null);
+    }
+    for(const flight of awardFrames){
+      const rect=targets.get(flight.key),age=Math.min(1,(now-flight.started)/620);
+      if(!rect){finished.push(flight);continue;}
       const endX=rect.left+rect.width/2,endY=rect.top+rect.height/2;
-      const controlY=Math.min(startY,endY)-Math.min(44,Math.abs(endX-startX)*.22+20);
-      const x=startX+(endX-startX)*t,y=(1-t)*(1-t)*startY+2*(1-t)*t*controlY+t*t*endY;
-      star.style.left=`${x}px`;star.style.top=`${y}px`;
-      star.style.opacity=String(Math.min(1,p/.12));
-      star.style.transform=`translate(-50%,-50%) scale(${.7+Math.sin(p*Math.PI)*.4}) rotate(${-18+36*t}deg)`;
-      if(p<1){flight.frame=requestAnimationFrame(tick);return;}
-      finish();
-      landingTargetFor(studentKey,false)?.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.18)',filter:'brightness(1.18)',offset:.35},{transform:'scale(1)',filter:'brightness(1)'}],{duration:360,easing:'cubic-bezier(.2,.7,.3,1)'});
-    };
-    flight.frame=requestAnimationFrame(tick);
+      if(!flight.path){
+        const rise=Math.min(44,Math.abs(endX-flight.x)*.22+20);
+        flight.path={x:flight.x,y:flight.y,cx:flight.x+(endX-flight.x)*.25,cy:Math.min(flight.y,endY)-rise,ex:endX,ey:endY,start:flight.started,end:flight.started+620};
+      }
+      let path=flight.path;
+      const sample=()=>{
+        const duration=path.end-path.start,t=Math.min(1,(now-path.start)/duration),u=1-t;
+        return {t,x:u*u*u*path.x+3*u*u*t*path.cx+(3*u*t*t+t*t*t)*path.ex,y:u*u*u*path.y+3*u*u*t*path.cy+(3*u*t*t+t*t*t)*path.ey,
+          vx:(3*u*u*(path.cx-path.x)+6*u*t*(path.ex-path.cx))/duration,vy:(3*u*u*(path.cy-path.y)+6*u*t*(path.ey-path.cy))/duration};
+      };
+      let point=sample();
+      if(Math.hypot(endX-path.ex,endY-path.ey)>1){
+        // Continue from the current position and velocity when a row slides or stars regroup.
+        // Retargeting must never teleport every in-flight star to the new layout.
+        const duration=Math.max(90,path.end-now);
+        path=flight.path={x:point.x,y:point.y,cx:point.x+point.vx*duration/3,cy:point.y+point.vy*duration/3,ex:endX,ey:endY,start:now,end:now+duration};
+        point=sample();
+      }
+      if(point.t>=1){finished.push(flight);continue;}
+      flight.star.style.opacity=String(Math.min(1,age/.12));
+      flight.star.style.transform=`translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%) scale(${.7+Math.sin(age*Math.PI)*.4}) rotate(${-18+36*age}deg)`;
+    }
+    const landed=new Set();
+    for(const flight of finished){
+      awardFrames.delete(flight);flyingStars.delete(flight.star);flight.star.remove();
+      flight.complete();landed.add(flight.key);
+    }
+    if(finished.length){
+      renderCounts();
+      for(const key of landed){
+        const target=landingTargetFor(key,false);if(!target)continue;
+        target._awardPop?.cancel();
+        target._awardPop=target.animate([{transform:'scale(1)'},{transform:'scale(1.18)',offset:.35},{transform:'scale(1)'}],{duration:240,easing:'cubic-bezier(.2,.7,.3,1)'});
+      }
+    }
+    if(awardFrames.size)awardFrame=requestAnimationFrame(tickAwards);
+  };
+  const animateStarAward=(sourceRect,studentKey,complete)=>{
+    if(!sourceRect||!landingTargetFor(studentKey)||matchMedia('(prefers-reduced-motion: reduce)').matches){complete();renderCounts();return;}
+    const star=document.createElement('span');star.className='starchart-flying-star';star.textContent='★';star.setAttribute('aria-hidden','true');
+    const x=sourceRect.left+sourceRect.width*.65,y=sourceRect.top+sourceRect.height*.5;
+    star.style.cssText=`left:0;top:0;opacity:0;will-change:transform,opacity;transform:translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+    (document.fullscreenElement===m?m:document.body).append(star);flyingStars.add(star);
+    awardFrames.add({star,key:studentKey,x,y,started:performance.now(),complete});
+    if(!awardFrame)awardFrame=requestAnimationFrame(tickAwards);
   };
 
   const setSubtractPanelOpen=(card,open)=>{
@@ -189,7 +236,7 @@ function setupStarChart(m){
     const focused=document.activeElement;
     const focusedKey=studentGrid.contains(focused)?focused.closest('[data-student-key]')?.dataset.studentKey:null;
     const focusedAction=focused?.dataset.starAction;
-    studentGrid.replaceChildren();
+    studentGrid.replaceChildren();studentRows.clear();
     const students=roster?.students||[];
     studentGrid.style.setProperty('--starchart-student-count',String(students.length));
     noStudents.hidden=students.length>0;
@@ -254,10 +301,31 @@ function setupStarChart(m){
       });
       form.append(input,takeAway,reset,cancel);panel.append(prompt,form);
       row.append(main,panel);studentGrid.append(row);
+      studentRows.set(key,{stage:starStage,total:exact,remove:subtractToggle,input,name,signature:`${count}:${pendingAwards.has(key)}`});
       starLayoutObserver.observe(starStage);fitOverviewStars(starStage);
       if(focusedKey===key&&focusedAction)row.querySelector(`[data-star-action="${focusedAction}"]`)?.focus({preventScroll:true});
     });
     filterStudents();
+  };
+
+  // Preserve portraits, focused inputs, and existing stars on score-only updates.
+  const renderCounts=()=>{
+    if(!roster)return;
+    const shownWhole=displayedCount('__whole__',progress.wholeClassStars);
+    wholeCount.textContent=String(shownWhole);wholeRemove.disabled=progress.wholeClassStars===0;
+    renderStarBundles(wholeBundles,shownWhole,roster.name);
+    reserveLandingSlot(wholeBundles,shownWhole,'__whole__');
+    for(const [key,row] of studentRows){
+      const count=displayedCount(key,progress.studentStars[key]),signature=`${count}:${pendingAwards.has(key)}`;
+      if(row.signature===signature)continue;
+      row.signature=signature;
+      row.total.querySelector('b').textContent=count.toLocaleString();
+      row.total.lastChild.textContent=` ${count===1?'star':'stars'} total`;
+      row.remove.disabled=count===0;row.input.max=String(count);
+      row.stage.setAttribute('aria-label',`${count} stars earned by ${row.name}`);
+      renderStarBundles(row.stage,count,row.name);reserveLandingSlot(row.stage,count,key);
+      fitOverviewStars(row.stage);
+    }
   };
 
   const render=()=>{
@@ -271,18 +339,13 @@ function setupStarChart(m){
     wholeClassLogo.replaceChildren();
     wholeClassLogo.style.setProperty('--avatar-hue',String(studentProfileVisual(roster.name,roster.id).hue));
     if(roster.logoImage){const image=document.createElement('img');image.src=roster.logoImage;image.alt='';wholeClassLogo.append(image);}else wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
-    const shownWhole=displayedCount('__whole__',progress.wholeClassStars);
-    wholeCount.textContent=String(shownWhole);
-    wholeRemove.disabled=progress.wholeClassStars===0;
-    renderStarBundles(wholeBundles,shownWhole,roster.name);
-    reserveLandingSlot(wholeBundles,shownWhole,'__whole__');
     const mode=progress.mode==='whole'?'whole':'student';
     modeToggle.textContent=mode==='whole'?'Whole Class':'Student';
     modeToggle.setAttribute('aria-pressed',String(mode==='whole'));
     modeToggle.setAttribute('aria-label',mode==='whole'?'Whole Class mode: switch to Student':'Student mode: switch to Whole Class');
     studentView.hidden=mode!=='student';
     wholeView.hidden=mode!=='whole';
-    renderStudentGrid();
+    renderStudentGrid();renderCounts();
     if(showAllStudents)scheduleShowAllSize();
   };
 
@@ -318,7 +381,6 @@ function setupStarChart(m){
     animateStarAward(source,key,()=>{
       if(activeClassId!==classId||!pendingAwards.has(key))return;
       const left=pendingAwards.get(key)-1;if(left)pendingAwards.set(key,left);else pendingAwards.delete(key);
-      render();
     });
   };
 
@@ -377,9 +439,11 @@ function setupStarChart(m){
   };
   const handleStarChartChange=event=>{
     if(event.detail?.classId!==activeClassId)return;
-    const next=currentRoster();
-    if(!next)return;
-    syncRosterProgress(next);
+    const fresh=normalizeStarChartProgress(event.detail.progress,roster?.students||[]);
+    if([...pendingAwards.keys()].some(key=>(key==='__whole__'?fresh.wholeClassStars:fresh.studentStars[key]||0)<(key==='__whole__'?progress.wholeClassStars:progress.studentStars[key]||0)))clearAwards();
+    const modeChanged=fresh.mode!==progress.mode;
+    progress=fresh;
+    if(modeChanged||studentView.hidden!==(progress.mode!=='student'))render();else renderCounts();
   };
   window.addEventListener('teachertiles:classeschange',handleClassesChange);
   window.addEventListener('teachertiles:starchartchange',handleStarChartChange);

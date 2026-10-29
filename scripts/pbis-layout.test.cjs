@@ -106,7 +106,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.is-award-slot').first().evaluate(e=>getComputedStyle(e).visibility),'hidden','landing position reserves space without showing the star');
  assert.equal(await page.evaluate(()=>starAwardSounds.length),1,'one supplied sound per award');
  await page.mouse.move(4,4);await page.waitForTimeout(480);
- assert(await page.evaluate(()=>{const star=document.querySelector('.starchart-flying-star'),tokens=testTile.querySelector('.starchart-star-stage').querySelectorAll('.starchart-star-token'),target=tokens[tokens.length-1].getBoundingClientRect();return !star||Math.hypot(parseFloat(star.style.left)-(target.left+target.width/2),parseFloat(star.style.top)-(target.top+target.height/2))<45}),'award flight follows destination after unhover');
+ assert(await page.evaluate(()=>{const star=document.querySelector('.starchart-flying-star'),tokens=testTile.querySelector('.starchart-star-stage').querySelectorAll('.starchart-star-token'),target=tokens[tokens.length-1].getBoundingClientRect();return !star||Math.hypot((star.getBoundingClientRect().left+star.getBoundingClientRect().width/2)-(target.left+target.width/2),(star.getBoundingClientRect().top+star.getBoundingClientRect().height/2)-(target.top+target.height/2))<45}),'award flight follows destination after unhover');
  await page.waitForTimeout(250);assert.equal(await page.locator('.starchart-flying-star').count(),0,'award flight cleans up');
  assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'124','star becomes visible on landing');
 
