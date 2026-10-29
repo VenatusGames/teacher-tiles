@@ -91,3 +91,10 @@
 .cursor-shop-preview.autumn-cursor-preview img{position:static!important;width:clamp(32px,18%,62px)!important;height:auto!important;object-fit:contain;transform:rotate(-8deg)}
 .cursor-shop-preview.autumn-cursor-preview img:nth-child(even){transform:translateY(8px) rotate(8deg)}
 .cursor-picker-pack-heading:is(:hover,[aria-expanded=true]) .cursor-shop-preview img{transform:translateY(-4px)!important}
+
+/* Default is a compact, one-click reset above the two-column pack grid. */
+.cursor-picker-pack[data-kind="default"]{grid-column:1/-1;contain-intrinsic-size:auto 88px}
+.cursor-picker-pack[data-kind="default"] .cursor-picker-pack-heading{flex-direction:row;align-items:center;justify-content:flex-start;min-height:88px;padding:8px 18px;gap:16px}
+.cursor-picker-pack[data-kind="default"] .cursor-pack-preview{width:54px;height:64px;flex:none}
+.cursor-picker-pack[data-kind="default"] .cursor-pack-preview>img{inset:8px auto auto 3px;width:42px;height:48px;transform:none!important}
+.cursor-picker-pack[data-kind="default"] .cursor-pack-label{width:auto;align-items:flex-start;text-align:left}

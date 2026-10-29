@@ -2,11 +2,11 @@
 (()=>{
   const shop=document.getElementById('shop-modal'),motion=matchMedia('(prefers-reduced-motion: reduce)');
   const themes=new Set(['underwater-ocean','rainy-window','outer-space','frosted-window',
-    ...TeacherTilesNatureScenes.themes,...TeacherTilesHalloweenScenes.themes,...TeacherTilesAutumnScenes.themes]);
+    ...TeacherTilesMotionScenes.themes,...TeacherTilesNatureScenes.themes,...TeacherTilesHalloweenScenes.themes,...TeacherTilesAutumnScenes.themes]);
   let current=null,frame=0,timer=0;
   function stop(){cancelAnimationFrame(frame);clearTimeout(timer);frame=timer=0;current?.canvas.remove();current=null;}
   function scene(host){
-    const name=host.dataset.autumnScene||[...host.classList].find(c=>c.startsWith('animated-theme-shop--'))?.replace('animated-theme-shop--','');
+    const name=host.dataset.motionScene||host.dataset.autumnScene||[...host.classList].find(c=>c.startsWith('animated-theme-shop--'))?.replace('animated-theme-shop--','');
     return name==='underwater'?'underwater-ocean':name;
   }
   function available(host){return host.isConnected&&!document.hidden&&!motion.matches&&!host.closest('[hidden]')&&shop.getAttribute('aria-hidden')!=='true'&&host.matches(':hover');}

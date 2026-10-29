@@ -78,6 +78,13 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "drifting-dots": "theme-drifting-dots",
+    "screensaver": "theme-screensaver",
+    "matrix": "theme-matrix",
+    "soap-bubbles": "theme-soap-bubbles",
+    "aurora": "theme-aurora",
+    "clouds": "theme-clouds",
+    "stripes": "theme-stripes",
     "webbed": "theme-webbed",
     "haunted-house": "theme-haunted-house",
     "pumpkin": "theme-pumpkin",

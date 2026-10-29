@@ -9,7 +9,7 @@ await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.
 await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(TeacherTilesCursorPacks.map(p=>p.productId)));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'))});
 await page.evaluate(()=>document.getElementById('cursors-shelf-toggle').click());
 await page.waitForTimeout(450);
-await page.locator('.cursor-picker-pack-heading').filter({hasText:'Default'}).click();await page.waitForTimeout(250);await page.evaluate(()=>document.activeElement.blur());
+await page.locator('.cursor-picker-pack-heading').filter({hasText:'Colored Cursors'}).click();await page.waitForTimeout(250);
 const favorite=page.locator('.cursor-picker-cell').first().locator('.cursor-picker-favorite');
 await page.mouse.move(1400,100);await page.waitForTimeout(200);
 assert.equal(await favorite.evaluate(el=>getComputedStyle(el).opacity),'0');
@@ -18,7 +18,7 @@ assert.equal(await favorite.evaluate(el=>getComputedStyle(el).opacity),'1');
 assert.equal(await favorite.evaluate(el=>getComputedStyle(el).borderRadius),'9px');
 await favorite.click();await page.mouse.move(1400,100);await page.waitForTimeout(200);
 assert.equal(await page.locator('.cursor-picker-favorite').first().getAttribute('aria-pressed'),'true');
-assert.equal(await page.locator('.cursor-picker-name').first().innerText(),'Default');
+assert.equal(await page.locator('.cursor-picker-name').first().innerText(),'Electric Blue');
 assert((await page.locator('.cursor-picker-choice').first().boundingBox()).height<=150);
 assert((await page.locator('.cursor-picker-choice img').first().boundingBox()).width===56);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/compact-cursor-shelf.png'});
@@ -32,7 +32,7 @@ assert.equal(await page.evaluate(()=>document.body.classList.contains('has-custo
 releaseGrab.resolve();
 await page.waitForFunction(()=>document.documentElement.style.getPropertyValue('--teacher-cursor-grab').includes('gauntlet-copper-grab'));
 assert.equal(await page.evaluate(()=>document.body.classList.contains('has-custom-cursor')),true);
-await page.evaluate(()=>document.getElementById('cursors-shelf-toggle').click());await page.locator('.cursor-picker-pack-heading').filter({hasText:'Default'}).click();
+await page.evaluate(()=>document.getElementById('cursors-shelf-toggle').click());await page.locator('.cursor-picker-pack-heading').filter({hasText:'Colored Cursors'}).click();
 for(const selector of ['.cursor-picker-choice img','.cursor-picker-choice span','.cursor-pack-close svg path']){
  const cursor=await page.locator(selector).first().evaluate(el=>getComputedStyle(el).cursor);
  assert(cursor.includes('gauntlet-copper-point.png'),selector+' must inherit the finger cursor');
