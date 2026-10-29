@@ -1,4 +1,4 @@
-import '../tiles/racer/visuals.js?v=20261028-hill-race';
+import '../tiles/racer/visuals.js?v=20261028-continuous-hills';
 import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';
 import {renderFlashcardPreview} from './flashcard-preview.js?v=20261026';
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';

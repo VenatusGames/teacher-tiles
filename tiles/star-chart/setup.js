@@ -31,6 +31,7 @@ function setupStarChart(m){
   let progress=normalizeStarChartProgress(null,[]);
   let showAllStudents=false;
   let collapsedHeight=Math.max(380,m.offsetHeight||560);
+  let collapsedWidth=Math.max(380,m.offsetWidth||700);
   let showAllFrame=0;
   const animationTimers=new Set();
   const flyingStars=new Set();
@@ -47,13 +48,16 @@ function setupStarChart(m){
     showAllFrame=0;
     if(document.fullscreenElement===m)return;
     if(!showAllStudents||progress.mode!=='student'||studentView.hidden||studentGrid.hidden){
-      if(showAllStudents)m.style.height=`${collapsedHeight}px`;
+      if(showAllStudents){m.style.height=`${collapsedHeight}px`;m.style.width=`${collapsedWidth}px`;}
       return;
     }
-    // Compact columns make a class overview useful without growing a board-sized tile.
+    // Three readable columns, with enough height for every row and the hover controls.
+    m.style.width=`${Math.max(1000,collapsedWidth)}px`;
     m.style.height=`${collapsedHeight}px`;
-    const desired=collapsedHeight-studentGrid.clientHeight+studentGrid.scrollHeight+4;
-    m.style.height=`${Math.min(740,Math.max(collapsedHeight,desired))}px`;
+    const toolbar=m.querySelector('.starchart-student-toolbar');
+    const hoverRoom=Math.max(0,52-parseFloat(getComputedStyle(m).paddingBottom))+Math.max(0,36-toolbar.clientHeight);
+    const desired=collapsedHeight-studentGrid.clientHeight+studentGrid.scrollHeight+hoverRoom+6;
+    m.style.height=`${Math.min(BOARD_HEIGHT,Math.max(collapsedHeight,Math.ceil(desired)))}px`;
   };
 
   const scheduleShowAllSize=()=>{
@@ -63,7 +67,7 @@ function setupStarChart(m){
 
   const setShowAllStudents=(show,{notify=false,captureHeight=true}={})=>{
     const next=Boolean(show);
-    if(next&&!showAllStudents&&captureHeight)collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);
+    if(next&&!showAllStudents&&captureHeight){collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);collapsedWidth=Math.max(380,m.offsetWidth||collapsedWidth);}
     showAllStudents=next;
     m.classList.toggle('is-showing-all-students',showAllStudents);
     showAllButton.setAttribute('aria-pressed',String(showAllStudents));
@@ -71,7 +75,7 @@ function setupStarChart(m){
     else{
       if(showAllFrame)cancelAnimationFrame(showAllFrame);
       showAllFrame=0;
-      if(document.fullscreenElement!==m)m.style.height=`${collapsedHeight}px`;
+      if(document.fullscreenElement!==m){m.style.height=`${collapsedHeight}px`;m.style.width=`${collapsedWidth}px`;}
     }
     if(notify)notifyBoardChanged('star-chart-show-all');
   };
@@ -354,9 +358,10 @@ function setupStarChart(m){
   window.addEventListener('teachertiles:classeschange',handleClassesChange);
   window.addEventListener('teachertiles:starchartchange',handleStarChartChange);
 
-  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight});
+  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight,collapsedWidth});
   m._boardSetState=state=>{
     if(Number.isFinite(Number(state?.collapsedHeight)))collapsedHeight=clamp(Number(state.collapsedHeight),380,BOARD_HEIGHT);
+    if(Number.isFinite(Number(state?.collapsedWidth)))collapsedWidth=clamp(Number(state.collapsedWidth),380,BOARD_WIDTH);
     setShowAllStudents(Boolean(state?.showAllStudents),{captureHeight:false});
     const classId=String(state?.classId||'');
     if(!classId)return;
@@ -365,9 +370,12 @@ function setupStarChart(m){
   const lastClassId=localStorage.getItem(starChartLastClassStorageKey())||'';
   if(!lastClassId||!loadClass(lastClassId))render();
 
+  let lastWidth=m.clientWidth;
+  const overviewResize=new ResizeObserver(()=>{const width=m.clientWidth;if(width===lastWidth)return;lastWidth=width;if(showAllStudents)scheduleShowAllSize();});
+  overviewResize.observe(m);
   const prior=m._cleanup;
   m._cleanup=()=>{
-    prior?.();detachRosterLoader();
+    prior?.();detachRosterLoader();overviewResize.disconnect();
     animationTimers.forEach(clearTimeout);animationTimers.clear();
     flyingStars.forEach(star=>star.remove());flyingStars.clear();
     if(showAllFrame)cancelAnimationFrame(showAllFrame);

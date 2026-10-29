@@ -40,7 +40,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.hover();await page.waitForTimeout(300);
  assert(await tile.locator('.racer-course-scroll').isVisible(),'shared hill race course is visible');
  assert.equal(await tile.locator('.racer-track').count(),4,'twelve students spread across four hill tracks');
- assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const rs=[...t.querySelectorAll('.racer-standee')].map(n=>n.getBoundingClientRect()).sort((a,b)=>a.left-b.left);return rs.every((r,i)=>i===0||r.left>=rs[i-1].right)})),'standees have room at the start');
+ assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const ns=[...t.querySelectorAll('.racer-standee')];return ns.every(n=>n.style.left===ns[0].style.left)})),'racers overlap at a shared starting gate');
+ assert.equal(await tile.locator('.racer-course-art').count(),1,'all hills share one landscape');
+ assert.equal(await tile.locator('.racer-track svg').count(),0,'no separate hill panels');
  assert(await tile.locator('.racer-rider-name').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=12)),'racer names stay readable');
  assert.equal(await tile.locator('.racer-controls .racer-reset').count(),0,'Reset is outside distance controls');
  assert(await tile.locator('.pbis-footer-actions .racer-reset').isVisible(),'Reset sits in bottom-right controls');
@@ -60,7 +62,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.locator('#race-preview-test').screenshot({path:path.join(process.env.TEMP,'pbis-racer-preview.png')});await page.evaluate(()=>document.querySelector('#race-preview-test').remove());
  await page.evaluate(()=>{window.raceRosterBackup=readClassRosters();const r={...raceRosterBackup[0],students:Array.from({length:30},(_,i)=>'Student '+(i+1))};localStorage.setItem(classRostersStorageKey(),JSON.stringify([r]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(750);
  assert.equal(await tile.locator('.racer-standee').count(),30);
- assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const rs=[...t.querySelectorAll('.racer-standee')].map(n=>n.getBoundingClientRect()).sort((a,b)=>a.left-b.left);return rs.every((r,i)=>i===0||r.left>=rs[i-1].right-1)})),'thirty students stay separated across four hills');
+ assert(await tile.locator('.racer-track').evaluateAll(ts=>ts.every(t=>{const ns=[...t.querySelectorAll('.racer-standee')];return ns.every(n=>n.style.left===ns[0].style.left)})),'thirty students use the shared starts');
  assert(await tile.locator('.racer-standees').evaluate(e=>{const b=e.getBoundingClientRect();return [...e.querySelectorAll('.racer-standee')].every(n=>{const r=n.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1})}),'all thirty racers stay in the course bounds');
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-racer-thirty.png')});
  await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify(raceRosterBackup));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(750);
@@ -103,7 +105,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await tile.locator('.starchart-subtract-toggle').first().click();await tile.locator('.starchart-subtract-form input').first().fill('4');await tile.locator('.starchart-subtract-form button[type=submit]').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),120);
  await tile.locator('.starchart-search').fill('');
  await page.mouse.move(4,4);await page.waitForTimeout(200);assert.equal(await tile.locator('.starchart-subtract-toggle').last().evaluate(e=>getComputedStyle(e).visibility),'hidden');
- await tile.hover();await page.waitForTimeout(250);await tile.locator('.starchart-show-all').click();await page.waitForTimeout(150);assert(await tile.evaluate(e=>e.offsetHeight<=740),'show all stays compact');
+ const originalSize=await tile.evaluate(e=>({width:e.offsetWidth,height:e.offsetHeight}));
+ await page.evaluate(()=>{const p=screenToBoard(120,100);testTile.style.left=p.x+'px'});
+ await tile.hover();await page.waitForTimeout(250);await tile.locator('.starchart-show-all').click();await page.waitForTimeout(250);
+ assert(await tile.locator('.starchart-student-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length===3),'exactly three columns');
+ assert(await tile.evaluate(e=>e.offsetWidth>=1000),'overview expands to readable column widths');
+ assert(await tile.locator('.starchart-class-name').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)===13),'class label stays subtle');
  assert.equal(await tile.locator('.starchart-student-avatar').count(),12);
  assert(await tile.locator('.starchart-student-name>strong').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).fontSize)>=14)),'overview names stay readable');
  assert.equal(await tile.locator('.starchart-student-avatar img').count(),1);
@@ -111,6 +118,15 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.starchart-student-avatar').nth(2).textContent(),'C');
  assert(await tile.locator('.starchart-student-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'12 students fit in compact overview');
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-overview.png')});
+ await page.evaluate(()=>{window.starRosterBackup=readClassRosters();const r={...starRosterBackup[0],students:Array.from({length:30},(_,i)=>'Student '+(i+1))};localStorage.setItem(classRostersStorageKey(),JSON.stringify([r]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(400);
+ assert(await tile.evaluate(e=>e.offsetHeight>1000),'thirty-student overview expands beyond the old height limit');
+ assert(await tile.locator('.starchart-student-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'all thirty students fit without an internal scrollbar');
+ assert.equal(await tile.locator('.starchart-student-row:visible').count(),30);
+ await tile.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-thirty.png')});
+ await tile.locator('.starchart-show-all').evaluate(e=>e.click());await page.waitForTimeout(100);
+ assert.deepEqual(await tile.evaluate(e=>({width:e.offsetWidth,height:e.offsetHeight})),originalSize,'turning overview off restores original size');
+ await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify(starRosterBackup));window.dispatchEvent(new Event('teachertiles:classeschange'))});
+ await tile.locator('.starchart-show-all').evaluate(e=>e.click());await page.waitForTimeout(250);
 
  }
  if(type==='egghatching'||type==='flowerpots'){
@@ -150,7 +166,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert(await tile.locator('.class-roster-intro').isVisible(),type+' Change Class opens picker');
  assert(!(await tile.locator('.pbis-footer-actions').isVisible()),type+' hides footer actions after changing class');
  await tile.locator('.class-roster-picker select').selectOption('pbis-test');await tile.locator('.class-roster-picker button').click();
- await page.evaluate(()=>document.exitFullscreen());await page.waitForTimeout(200);assert.deepEqual(await page.evaluate(()=>({width:testTile.style.width,height:testTile.style.height})),before,type+' restores board size');await page.setViewportSize({width:1440,height:1000});
+ await page.evaluate(()=>document.exitFullscreen());await page.waitForTimeout(200);const expectedSize=type==='starchart'?await page.evaluate(()=>{const s=testTile._boardGetState();return{width:s.collapsedWidth+'px',height:s.collapsedHeight+'px'}}):before;
+ assert.deepEqual(await page.evaluate(()=>({width:testTile.style.width,height:testTile.style.height})),expectedSize,type+' restores the current mode board size');await page.setViewportSize({width:1440,height:1000});
  }
  if(types.includes('flowerpots')){
  // A standard 30-student class fits the growth tiles while keeping names readable.
