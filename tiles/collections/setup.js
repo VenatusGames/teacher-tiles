@@ -217,12 +217,12 @@ function setupCollections(m){
     return true;
   };
 
-  const updateFillLineFromPointer=e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),scale=boardCamera.scale||1,y=(e.clientY-r.top)/scale,j=jarBounds().j;progress.fillLine=clamp((y-j.y)/j.h,.24,.72);fillArmedAt=performance.now()+250;fillReachedAt=0;positionFillHandle()};
+  const updateFillLineFromPointer=e=>{if(progress.filled)return;const r=canvas.getBoundingClientRect(),scale=r.height/canvas.clientHeight||1,y=(e.clientY-r.top)/scale,j=jarBounds().j;progress.fillLine=clamp((y-j.y)/j.h,.24,.72);fillArmedAt=performance.now()+250;fillReachedAt=0;positionFillHandle()};
   fillHandle.addEventListener('pointerdown',e=>{if(progress.filled)return;e.preventDefault();e.stopPropagation();draggingFillLine=true;m.classList.add('is-moving-fill-line');try{fillHandle.setPointerCapture(e.pointerId)}catch{}updateFillLineFromPointer(e)});
   fillHandle.addEventListener('pointermove',e=>{if(!draggingFillLine)return;e.preventDefault();updateFillLineFromPointer(e)});
   const finishFillLineDrag=e=>{if(!draggingFillLine)return;draggingFillLine=false;m.classList.remove('is-moving-fill-line');try{if(e&&fillHandle.hasPointerCapture(e.pointerId))fillHandle.releasePointerCapture(e.pointerId)}catch{}persistProgress()};
   fillHandle.addEventListener('pointerup',finishFillLineDrag);fillHandle.addEventListener('pointercancel',finishFillLineDrag);fillHandle.addEventListener('lostpointercapture',()=>{if(draggingFillLine){draggingFillLine=false;m.classList.remove('is-moving-fill-line');persistProgress()}});
-  canvas.addEventListener('pointerdown',e=>{if(progress.filled||draggingFillLine)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/boardCamera.scale,y=(e.clientY-r.top)/boardCamera.scale,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
+  canvas.addEventListener('pointerdown',e=>{if(progress.filled||draggingFillLine)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*canvas.clientWidth/r.width,y=(e.clientY-r.top)*canvas.clientHeight/r.height,[l,rr]=wallsAt(y),b=jarBounds();if(x>=l&&x<=rr&&y>b.top&&y<b.floor+8)addItem()});
   add.addEventListener('click',()=>addItem());
   typeBtn.addEventListener('click',e=>{e.stopPropagation();togglePicker()});
   picker.addEventListener('click',e=>{const b=e.target.closest('[data-collection-type]');if(!b)return;const i=types.findIndex(t=>t.id===b.dataset.collectionType);if(i>=0){typeIndex=i;renderType();persistProgress();closePicker()}});

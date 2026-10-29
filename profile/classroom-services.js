@@ -266,7 +266,20 @@ function classRosterId(){
 function attachClassRosterLoader(anchor,onLoad){
   if(!anchor||typeof onLoad!=='function')return()=>{};
   const row=document.createElement('div');
-  row.className='tile-class-loader';
+  row.className='tile-class-loader class-roster-picker';
+  const module=anchor.closest('.module');
+  const pbisTypes=['starchart','classmeter','collections','prizeboard','pbisconsole','punchcards','racer','egghatching','flowerpots'];
+  if(module&&pbisTypes.includes(module.dataset.type))module.classList.add('pbis-tile');
+  const intro=anchor.parentElement;
+  if([...intro.classList].some(name=>name.endsWith('-import'))){
+    intro.classList.add('class-roster-intro');
+    let mark=intro.querySelector('[class$="import__mark"]');
+    if(!mark){mark=document.createElement('div');intro.prepend(mark)}
+    mark.classList.add('class-roster-intro__icon');mark.setAttribute('aria-hidden','true');
+    const icon=document.querySelector(`#context-menu [data-module="${CSS.escape(module?.dataset.type||'')}"] .context-menu__icon svg`);
+    if(icon)mark.replaceChildren(icon.cloneNode(true));
+    const title=intro.querySelector(':scope>strong');if(title)title.textContent='Load a Class';
+  }
   const select=document.createElement('select');
   select.setAttribute('aria-label','Choose a saved class roster');
   const load=document.createElement('button');

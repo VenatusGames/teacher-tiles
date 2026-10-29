@@ -15,6 +15,16 @@ function setupStarChart(m){
   const wholeAdd=m.querySelector('.starchart-whole-add');
   const wholeRemove=m.querySelector('.starchart-whole-remove');
   const showAllButton=m.querySelector('.starchart-show-all');
+  const search=document.createElement('input');search.type='search';search.className='starchart-search';search.placeholder='Find a student';search.setAttribute('aria-label','Find a student');
+  m.querySelector('.starchart-student-toolbar').prepend(search);
+  const filterStudents=()=>{
+    const query=search.value.trim().toLocaleLowerCase();let visible=0;
+    studentGrid.querySelectorAll('.starchart-student-row').forEach(row=>{row.hidden=!row.querySelector('strong').textContent.toLocaleLowerCase().includes(query);if(!row.hidden)visible++});
+    noStudents.hidden=visible>0;
+    noStudents.textContent=roster?.students?.length?'No students match your search.':'Add students in Class View to begin awarding stars.';
+    if(showAllStudents)scheduleShowAllSize();
+  };
+  search.addEventListener('input',filterStudents);
   let activeClassId='';
   let pendingClassId='';
   let roster=null;
@@ -35,6 +45,7 @@ function setupStarChart(m){
 
   const syncShowAllSize=()=>{
     showAllFrame=0;
+    if(document.fullscreenElement===m)return;
     if(!showAllStudents||progress.mode!=='student'||studentView.hidden||studentGrid.hidden){
       if(showAllStudents)m.style.height=`${collapsedHeight}px`;
       return;
@@ -61,7 +72,7 @@ function setupStarChart(m){
     else{
       if(showAllFrame)cancelAnimationFrame(showAllFrame);
       showAllFrame=0;
-      m.style.height=`${collapsedHeight}px`;
+      if(document.fullscreenElement!==m)m.style.height=`${collapsedHeight}px`;
     }
     if(notify)notifyBoardChanged('star-chart-show-all');
   };
@@ -120,7 +131,7 @@ function setupStarChart(m){
       flash.setAttribute('aria-hidden','true');
       flash.style.left=`${targetRect.left+targetRect.width*.5}px`;
       flash.style.top=`${targetRect.top+targetRect.height*.5}px`;
-      document.body.append(flash);
+      (document.fullscreenElement===m?m:document.body).append(flash);
       flyingStars.add(flash);
       scheduleAnimation(()=>{flyingStars.delete(flash);flash.remove()},520);
     };
@@ -138,7 +149,7 @@ function setupStarChart(m){
     const dy=endY-startY;
     star.style.left=`${startX}px`;
     star.style.top=`${startY}px`;
-    document.body.append(star);
+    (document.fullscreenElement===m?m:document.body).append(star);
     flyingStars.add(star);
     const animation=star.animate([
       {opacity:0,transform:'translate(-50%,-50%) scale(.15) rotate(-35deg)'},
@@ -166,6 +177,9 @@ function setupStarChart(m){
   };
 
   const renderStudentGrid=()=>{
+    const focused=document.activeElement;
+    const focusedKey=studentGrid.contains(focused)?focused.closest('[data-student-key]')?.dataset.studentKey:null;
+    const focusedAction=focused?.dataset.starAction;
     studentGrid.replaceChildren();
     const students=roster?.students||[];
     studentGrid.style.setProperty('--starchart-student-count',String(students.length));
@@ -193,7 +207,7 @@ function setupStarChart(m){
 
       const subtractToggle=document.createElement('button');
       subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
-      subtractToggle.innerHTML='<span aria-hidden="true">−#</span><small>Subtract</small>';
+      subtractToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><small>Remove</small>';
       main.append(nameButton,starStage,subtractToggle);
 
       const panel=document.createElement('div');panel.className='starchart-subtract-panel';panel.hidden=true;
@@ -219,7 +233,9 @@ function setupStarChart(m){
       });
       form.append(input,takeAway,cancel);panel.append(prompt,form);
       row.append(main,panel);studentGrid.append(row);
+      if(focusedKey===key&&focusedAction)row.querySelector(`[data-star-action="${focusedAction}"]`)?.focus({preventScroll:true});
     });
+    filterStudents();
   };
 
   const render=()=>{
@@ -250,6 +266,7 @@ function setupStarChart(m){
     if(!next){
       activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
     }
+    if(activeClassId!==next.id)search.value='';
     activeClassId=next.id;
     pendingClassId='';
     localStorage.setItem(starChartLastClassStorageKey(),activeClassId);

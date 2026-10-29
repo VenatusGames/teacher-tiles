@@ -30,7 +30,10 @@
       grid.classList.toggle('show-all',showAll);if(!showAll)return;
       const n=grid.children.length;if(!n)return;let cols=1,best=0;
       for(let c=1;c<=n;c++){const scale=Math.min((grid.clientWidth-8*(c-1))/c/100,(grid.clientHeight-8*(Math.ceil(n/c)-1))/Math.ceil(n/c)/120);if(scale>best){best=scale;cols=c;}}
-      grid.style.setProperty('--growth-cols',cols);grid.style.setProperty('--growth-scale',Math.max(.05,Math.min(1.3,best)));
+      // Keep names readable: use scrolling cards when fitting the roster would shrink them.
+      const fits=best>=1;
+      grid.classList.toggle('show-all',fits);
+      grid.style.setProperty('--growth-cols',cols);grid.style.setProperty('--growth-scale',Math.max(1,Math.min(document.fullscreenElement===m?2.6:1.6,best)));
     }
     function burst(name){const card=[...grid.children].find(c=>c.dataset.student===name),art=card?.querySelector('.growth-art');if(!art)return;
       for(let i=0;i<10;i++){const p=document.createElement('i');p.className='growth-particle '+(eggs?'shell':'water');p.style.setProperty('--dx',(Math.random()*70-35)+'px');p.style.setProperty('--dy',(20+Math.random()*40)+'px');p.style.setProperty('--turn',(Math.random()*240-120)+'deg');p.style.animationDelay=i*15+'ms';art.append(p);p.addEventListener('animationend',()=>p.remove(),{once:true});}
