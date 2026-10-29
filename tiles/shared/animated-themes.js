@@ -1,5 +1,5 @@
 (()=>{'use strict';
-  const canvas=document.createElement('canvas');canvas.className='animated-board-backdrop';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;document.body.prepend(canvas);
+  function createRenderer(canvas,preview=false){
   const ctx=canvas.getContext('2d'),background=document.createElement('canvas'),bg=background.getContext('2d'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const providers=[window.TeacherTilesNatureScenes,window.TeacherTilesHalloweenScenes,window.TeacherTilesAutumnScenes].filter(Boolean);
   const provider=theme=>providers.find(scene=>scene.themes.includes(theme));
@@ -67,5 +67,22 @@
   function tick(now){frame=0;if(!theme||document.hidden||reduced.matches)return;if(now-last>=32){time+=Math.min((now-last)/1000,.06);last=now;draw()}frame=requestAnimationFrame(tick)}
   function resize(){width=Math.max(1,innerWidth);height=Math.max(1,innerHeight);const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(theme){paintBackground();draw()}}
   function sync(){cancelAnimationFrame(frame);frame=0;const selected=document.body.dataset.theme,base=selected?.replace(/-light$/,'');const next=['underwater-ocean','rainy-window','outer-space','frosted-window',...(nature?.themes||[])].includes(base)?base:'';if(next!==theme){theme=next;time=0}canvas.hidden=!theme;if(!theme)return;resize();if(nature?.themes.includes(theme)){const requested=theme;nature.prepare(requested).then(()=>{if(theme===requested){paintBackground();draw()}})}last=performance.now();if(!document.hidden&&!reduced.matches)frame=requestAnimationFrame(tick)}
+  // A preview owns its canvas and cached backdrop; it never changes board state.
+  if(preview)return {
+    async prepare(next){if(nature.themes.includes(next))await nature.prepare(next)},
+    render(next,w,h,t){
+      w=Math.max(1,Math.round(w));h=Math.max(1,Math.round(h));
+      if(theme!==next||width!==w||height!==h){
+        theme=next;width=w;height=h;const dpr=Math.min(devicePixelRatio||1,1.5);
+        canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+        ctx.setTransform(dpr,0,0,dpr,0,0);paintBackground();
+      }
+      time=t;draw();
+    }
+  };
   window.addEventListener('teachertiles:themechange',sync);window.addEventListener('resize',resize);document.addEventListener('visibilitychange',sync);reduced.addEventListener('change',sync);sync();
+  }
+  const canvas=document.createElement('canvas');canvas.className='animated-board-backdrop';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;document.body.prepend(canvas);
+  createRenderer(canvas);
+  window.TeacherTilesThemePreview={create:canvas=>createRenderer(canvas,true)};
 })();
