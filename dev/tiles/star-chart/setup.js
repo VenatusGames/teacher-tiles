@@ -74,6 +74,7 @@ function setupStarChart(m){
     showAllStudents=next;
     m.classList.toggle('is-showing-all-students',showAllStudents);
     showAllButton.setAttribute('aria-pressed',String(showAllStudents));
+    if(roster)renderStudentGrid();
     if(showAllStudents)scheduleShowAllSize();
     else{
       if(showAllFrame)cancelAnimationFrame(showAllFrame);
@@ -95,22 +96,24 @@ function setupStarChart(m){
       return;
     }
 
-    let remaining=count;
+    let remaining=count,shown=0;
+    const compact=showAllStudents&&container!==wholeBundles,limit=compact?3:Infinity;
     bundleLevels.forEach(level=>{
       const quantity=Math.floor(remaining/level.weight);
-      remaining%=level.weight;
-      for(let index=0;index<quantity;index++){
-        const token=document.createElement('button');
-        token.type='button';
+      for(let index=0;index<quantity&&remaining>0&&shown<limit;index++){
+        // The last visible star holds any overflow, keeping overview rows stable.
+        const value=shown===limit-1?remaining:level.weight;
+        remaining-=value;shown++;
+        const token=document.createElement('span');
         token.className=`starchart-star-token starchart-star-token--level-${level.level}`;
-        token.dataset.starAction='remove';
-        token.dataset.bundleValue=String(level.weight);
-        const represented=level.weight===1?'1 star':`${level.weight.toLocaleString()} stars`;
-        token.setAttribute('aria-label',`${represented} for ${ownerLabel}. Remove one star.`);
-        token.title=`${represented} combined · click to remove 1`;
+        if(value>level.weight)token.classList.add('is-bundle');
+        token.dataset.bundleValue=String(value);
+        const represented=value===1?'1 star':`${value.toLocaleString()} stars`;
+        token.setAttribute('role','img');token.setAttribute('aria-label',`${represented} for ${ownerLabel}`);
+        token.title=`${represented}${value>1?' grouped together':''}`;
         const icon=document.createElement('span');icon.textContent='★';icon.setAttribute('aria-hidden','true');
-        const value=document.createElement('small');value.textContent=level.label;value.setAttribute('aria-hidden','true');
-        token.append(icon,value);container.append(token);
+        const badge=document.createElement('small');badge.textContent=value>=1000&&value%1000===0?`${value/1000}K`:value.toLocaleString();badge.setAttribute('aria-hidden','true');
+        token.append(icon,badge);container.append(token);
       }
     });
   };
@@ -285,14 +288,12 @@ function setupStarChart(m){
     const target=event.target instanceof Element?event.target:null;
     const row=target?.closest('[data-student-key]');
     if(!row||!activeClassId)return;
-    if(target.closest('[data-subtract-toggle],.starchart-subtract-panel'))return;
+    if(target.closest('[data-subtract-toggle],.starchart-subtract-panel,.starchart-star-token'))return;
     const action=target.closest('[data-star-action]');
     const key=row.dataset.studentKey;
     const current=normalizeStarChartCount(progress.studentStars[key]);
-    const adding=action?.dataset.starAction!=='remove';
-    if(!adding&&!current)return;
-    const source=adding?(action||row).getBoundingClientRect():null;
-    progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
+    const source=(action||row).getBoundingClientRect();
+    progress.studentStars[key]=normalizeStarChartCount(current+1);
     persistProgress();
     if(source)animateStarAward(source,key);
   });
@@ -308,13 +309,8 @@ function setupStarChart(m){
     persistProgress();
     animateStarAward(source,'__whole__');
   });
-  wholeView.querySelector('.starchart-whole-card').addEventListener('click',event=>{if(!event.target.closest('button'))wholeAdd.click()});
+  wholeView.querySelector('.starchart-whole-card').addEventListener('click',event=>{if(!event.target.closest('button,.starchart-star-token'))wholeAdd.click()});
   wholeRemove.addEventListener('click',()=>{
-    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
-    persistProgress();
-  });
-  wholeBundles.addEventListener('click',event=>{
-    if(!event.target.closest('.starchart-star-token')||!progress.wholeClassStars)return;
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
     persistProgress();
   });
