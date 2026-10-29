@@ -34,6 +34,9 @@ function setupPbisConsole(m){
         const input=row.querySelector('input');
         row.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{const amount=Math.max(1,Math.round(Number(input.value)||1));if(button.dataset.op==='clear')adjustPbisBalance(activeClassId,def.id,0,{mode:'set'});else adjustPbisBalance(activeClassId,def.id,button.dataset.op==='add'?amount:-amount);render();notifyBoardChanged('pbis-console-class-adjust')}));
       }
+      const modules={studentEggPoints:'egghatching',studentFlowerPoints:'flowerpots',studentStars:'starchart',classStars:'starchart',studentPunchcardPoints:'punchcards',classPunchcardPoints:'punchcards',studentRaceWins:'racer',meterWins:'classmeter',meterFill:'classmeter',jarsFilled:'collections',jarItems:'collections'};
+      const symbol=document.querySelector(`.context-menu__item[data-module="${modules[def.id]}"] .context-menu__icon svg`);
+      if(symbol)row.querySelector('.pbisconsole-stat-copy>span').replaceChildren(symbol.cloneNode(true));
       stats.append(row);
     });
   };

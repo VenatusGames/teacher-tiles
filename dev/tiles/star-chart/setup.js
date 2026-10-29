@@ -50,11 +50,10 @@ function setupStarChart(m){
       if(showAllStudents)m.style.height=`${collapsedHeight}px`;
       return;
     }
+    // Compact columns make a class overview useful without growing a board-sized tile.
     m.style.height=`${collapsedHeight}px`;
-    const availableGridHeight=studentGrid.clientHeight;
-    const fullGridHeight=studentGrid.scrollHeight;
-    const desired=fullGridHeight<=availableGridHeight+1?collapsedHeight:Math.ceil(collapsedHeight-availableGridHeight+fullGridHeight+4);
-    m.style.height=`${clamp(desired,collapsedHeight,Math.max(collapsedHeight,BOARD_HEIGHT-m.offsetTop))}px`;
+    const desired=collapsedHeight-studentGrid.clientHeight+studentGrid.scrollHeight+4;
+    m.style.height=`${Math.min(740,Math.max(collapsedHeight,desired))}px`;
   };
 
   const scheduleShowAllSize=()=>{
@@ -200,7 +199,12 @@ function setupStarChart(m){
       const exact=document.createElement('span');
       const exactNumber=document.createElement('b');exactNumber.textContent=count.toLocaleString();
       exact.append(exactNumber,document.createTextNode(` ${count===1?'star':'stars'} total`));
-      nameButton.append(label,exact);
+      const avatar=document.createElement('span');avatar.className='starchart-student-avatar';avatar.setAttribute('aria-hidden','true');
+      const profile=roster.studentProfiles?.[key];
+      if(profile?.image){const image=document.createElement('img');image.src=profile.image;image.alt='';image.decoding='async';avatar.append(image);}
+      else avatar.textContent=profile?.emoji||name.trim().slice(0,1).toLocaleUpperCase();
+      exact.className='starchart-student-total';
+      nameButton.append(avatar,label,exact);
 
       const starStage=document.createElement('div');starStage.className='starchart-star-stage';starStage.setAttribute('aria-label',`${count} stars earned by ${name}`);
       renderStarBundles(starStage,count,name);
