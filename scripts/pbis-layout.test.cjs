@@ -99,11 +99,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.starchart-subtract-toggle small').count(),0,'Remove has a single uncluttered icon');
  assert(await tile.locator('.starchart-student-name').first().evaluate(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'),'no extra colored portrait holder');
  assert(await tile.locator('.starchart-student-avatar').last().evaluate(e=>e.style.getPropertyValue('--avatar-hue')===String(studentProfileVisual('Luciana','pbis-test').hue)),'initial palette matches Class View');
+ await page.evaluate(()=>{window.starAwardSounds=[];const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){if(this.src.includes('/star-award.mp3')){starAwardSounds.push(this.src);return Promise.resolve()}return play.call(this)}});
  await tile.locator('.starchart-search').fill('alex');assert.equal(await tile.locator('.starchart-student-row:visible').count(),1);
  await tile.locator('.starchart-student-name').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),124);
+ assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'123','new star is hidden while flying');
+ assert.equal(await tile.locator('.is-award-slot').first().evaluate(e=>getComputedStyle(e).visibility),'hidden','landing position reserves space without showing the star');
+ assert.equal(await page.evaluate(()=>starAwardSounds.length),1,'one supplied sound per award');
  await page.mouse.move(4,4);await page.waitForTimeout(480);
  assert(await page.evaluate(()=>{const star=document.querySelector('.starchart-flying-star'),tokens=testTile.querySelector('.starchart-star-stage').querySelectorAll('.starchart-star-token'),target=tokens[tokens.length-1].getBoundingClientRect();return !star||Math.hypot(parseFloat(star.style.left)-(target.left+target.width/2),parseFloat(star.style.top)-(target.top+target.height/2))<45}),'award flight follows destination after unhover');
  await page.waitForTimeout(250);assert.equal(await page.locator('.starchart-flying-star').count(),0,'award flight cleans up');
+ assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'124','star becomes visible on landing');
 
  await tile.locator('.starchart-student-total').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'non-star row content awards a star');
  await tile.locator('.starchart-star-token').first().click();assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),125,'earned stars cannot remove points');
@@ -117,11 +122,13 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert(await tile.evaluate(e=>e.offsetWidth>=1000),'overview expands to readable column widths');
  assert(await tile.locator('.starchart-class-name').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)===13),'class label stays subtle');
  assert.equal(await tile.locator('.starchart-student-avatar').count(),12);
- assert(await tile.locator('.starchart-student-row').nth(1).locator('.starchart-star-token.is-bundle>small').isVisible(),'bundled single stars show their value');
+ assert.equal(await tile.locator('.starchart-student-row').nth(1).locator('.starchart-star-token').count(),5,'five earned stars remain five visible stars');
+ assert(await tile.locator('.starchart-star-stage').nth(1).evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length>=5),'at least five stars fit across');
  const compactHeight=await tile.locator('.starchart-student-row').first().evaluate(e=>e.offsetHeight);
  await page.evaluate(()=>{window.starCompactBackup=JSON.parse(JSON.stringify(readClassRosters()));const c=readClassRosters()[0];c.starChart.studentStars['student:alex']=9999;localStorage.setItem(classRostersStorageKey(),JSON.stringify([c]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(350);
  assert.equal(await tile.locator('.starchart-student-row').first().evaluate(e=>e.offsetHeight),compactHeight,'large totals cannot grow overview rows');
- assert.equal(await tile.locator('.starchart-student-row').first().locator('.starchart-star-token').count(),3,'overview has at most three large star bundles');
+ assert.equal(await tile.locator('.starchart-student-row').first().locator('.starchart-star-token').count(),36,'large totals keep all denomination stars without the three-star cap');
+ assert(await tile.locator('.starchart-star-stage').first().evaluate(e=>{const r=e.getBoundingClientRect();return [...e.children].every(n=>{const b=n.getBoundingClientRect();return b.bottom<=r.bottom+1&&b.right<=r.right+1})}),'every scaled row stays inside its star area');
  assert.equal(await tile.locator('.starchart-student-row').first().locator('.starchart-star-token').evaluateAll(ns=>ns.reduce((sum,n)=>sum+Number(n.dataset.bundleValue),0)),9999,'bundles represent the exact total');
  await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify(starCompactBackup));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(350);
 
@@ -130,12 +137,29 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  assert.equal(await tile.locator('.starchart-student-avatar').nth(1).textContent(),'🐻');
  assert.equal(await tile.locator('.starchart-student-avatar').nth(2).textContent(),'C');
  assert(await tile.locator('.starchart-student-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'12 students fit in compact overview');
+ await tile.locator('.starchart-student-row').first().hover();
+ await tile.locator('.starchart-subtract-toggle').first().click();
+ const removeInput=tile.locator('.starchart-subtract-form input').first();await removeInput.fill('9999');
+ assert(await removeInput.evaluate(e=>{const c=getComputedStyle(e);return e.clientWidth>=96&&e.clientHeight-parseFloat(c.paddingTop)-parseFloat(c.paddingBottom)>=parseFloat(c.fontSize)}),'Remove Stars keeps typed numbers fully visible');
+ assert.equal(await tile.locator('.starchart-subtract-form button[type=submit]').first().textContent(),'Take Away');
+ await tile.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-remove.png')});
+ await tile.locator('.starchart-subtract-reset').first().click();
+ assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alex']),0,'Reset removes every star');
+ assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'0');
+ await tile.locator('.starchart-student-name').first().click();
+ assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'0','first-ever star waits for landing');
+ await page.waitForTimeout(750);assert.equal(await tile.locator('.starchart-star-stage').first().getAttribute('data-total'),'1');
+ await page.evaluate(()=>writeClassStarChart('pbis-test',starCompactBackup[0].starChart));
+
  await tile.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-overview.png')});
  await page.mouse.move(4,4);await page.waitForTimeout(400);
- assert(await tile.evaluate(e=>{const rows=[...e.querySelectorAll('.starchart-student-row:not([hidden])')],bottom=Math.max(...rows.map(r=>r.getBoundingClientRect().bottom));return e.getBoundingClientRect().bottom-bottom<50}),'overview has no unused bottom viewport');
- await tile.hover();await page.waitForTimeout(350);
+ assert(await tile.evaluate(e=>{const rows=[...e.querySelectorAll('.starchart-student-row:not([hidden])')],bottom=Math.max(...rows.map(r=>r.getBoundingClientRect().bottom));return e.getBoundingClientRect().bottom-bottom>=0&&e.getBoundingClientRect().bottom-bottom<50}),'overview has no unused bottom viewport');
+ await tile.hover();
+ const hoverHeights=await tile.evaluate(e=>new Promise(resolve=>{const heights=[];let frame=0;const tick=()=>{heights.push(e.getBoundingClientRect().height);if(++frame<24)requestAnimationFrame(tick);else resolve(heights)};requestAnimationFrame(tick)}));
+ assert(hoverHeights.every((height,i)=>!i||height>=hoverHeights[i-1]-.6),'overview hover grows smoothly without a second collapse/reflow');
 
  await page.evaluate(()=>{window.starRosterBackup=readClassRosters();const r={...starRosterBackup[0],students:Array.from({length:30},(_,i)=>'Student '+(i+1))};localStorage.setItem(classRostersStorageKey(),JSON.stringify([r]));window.dispatchEvent(new Event('teachertiles:classeschange'))});await page.waitForTimeout(400);
+
  assert(await tile.evaluate(e=>e.offsetHeight>1000),'thirty-student overview expands beyond the old height limit');
  assert(await tile.locator('.starchart-student-grid').evaluate(e=>e.scrollHeight<=e.clientHeight+2),'all thirty students fit without an internal scrollbar');
  assert.equal(await tile.locator('.starchart-student-row:visible').count(),30);
@@ -172,10 +196,28 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  }
  const metric=await tile.evaluate(m=>{const r=m.getBoundingClientRect();return {w:r.width,h:r.height,scroll:m.scrollHeight,client:m.clientHeight}});assert.equal(metric.w,1440);assert.equal(metric.h,1000);console.log(type,metric);
  if(type==='starchart'){assert(parseFloat(await tile.locator('.starchart-student-name strong').first().evaluate(e=>getComputedStyle(e).fontSize))>=16);await tile.hover();await tile.locator('.pbis-scope-toggle').click();
- await tile.locator('.starchart-whole-add').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class portrait awards a star');
+ await tile.locator('.starchart-whole-add').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class star waits for landing');await page.waitForTimeout(750);assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class portrait awards a star');
  await tile.locator('.starchart-whole-bundles .starchart-star-token').last().click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class earned stars cannot remove points');
  await tile.locator('.starchart-whole-card').hover();await tile.locator('.starchart-whole-remove').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'35','whole-class remove button removes one');
- await tile.locator('.starchart-whole-count').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class card content awards one');
+ await tile.locator('.starchart-whole-count').click();await page.waitForTimeout(750);assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','whole-class card content awards one');
+ const soundBefore=await page.evaluate(()=>starAwardSounds.length);
+ await page.evaluate(()=>{window.starAwardBackup=JSON.parse(JSON.stringify(readClassRosters()[0].starChart));for(let i=0;i<3;i++)testTile.querySelector('.starchart-whole-add').click()});
+ assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','rapid awards remain hidden during flights');
+ assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.wholeClassStars),39,'rapid awards save immediately');
+ await page.waitForTimeout(800);
+ assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'39','all rapid awards land');
+ assert.equal(await page.evaluate(()=>starAwardSounds.length),soundBefore+3,'rapid awards each play the supplied sound');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await tile.locator('.starchart-whole-add').click();assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'40','reduced motion reveals immediately');
+ await page.evaluate(()=>setTileAudioState(testTile,{enabled:false}));
+ const mutedBefore=await page.evaluate(()=>starAwardSounds.length);
+ await tile.locator('.starchart-whole-add').click();assert.equal(await page.evaluate(()=>starAwardSounds.length),mutedBefore,'star audio respects tile mute');
+ await page.evaluate(()=>{setTileAudioState(testTile,{enabled:true});writeClassStarChart('pbis-test',starAwardBackup)});
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await page.evaluate(()=>{testTile.querySelector('.starchart-whole-add').click();writeClassStarChart('pbis-test',starAwardBackup)});
+ assert.equal(await page.locator('.starchart-flying-star').count(),0,'external score reduction cancels pending flights');
+ assert.equal(await tile.locator('.starchart-whole-count b').textContent(),'36','external reset does not leave hidden points');
+
  await page.waitForTimeout(750);await page.screenshot({path:path.join(process.env.TEMP,'pbis-starchart-whole-full.png')});}
  if(type==='pbisconsole'){await tile.locator('[data-pbisconsole-view=class]').click();await page.screenshot({path:path.join(process.env.TEMP,'pbis-console-class-full.png')});}
  await page.setViewportSize({width:1100,height:720});await page.waitForTimeout(150);

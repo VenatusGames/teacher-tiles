@@ -207,6 +207,8 @@ const confettiCelebrationSfxPrototype=new Audio('assets/ui/confetti-celebration.
 confettiCelebrationSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
+const starAwardSfxPrototype=new Audio('assets/ui/star-award.mp3');
+starAwardSfxPrototype.preload='none';
 const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
 holePunchSfxPrototype.preload='auto';
 const stickerPlaceSfxPrototype=new Audio('assets/ui/sticker-place.wav?v=20260904-2');
