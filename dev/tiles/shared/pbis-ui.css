@@ -409,3 +409,8 @@
 .module.punchcard-module:is(:fullscreen,.is-tile-fullscreen) .punchcard-student-wrap>span{font-size:14px}
 @media(hover:none){.module.punchcard-module .punchcard-student-wrap{max-height:48px;margin-bottom:8px;opacity:1;visibility:visible;pointer-events:auto;transform:none}}
 @media(prefers-reduced-motion:reduce){.module.punchcard-module .punchcard-student-wrap{transition:none}}
+
+/* Default punchcards use a landscape card silhouette. Saved custom sizes still apply. */
+.module.punchcard-module{width:640px;height:430px;min-width:460px;min-height:390px}
+
+.module.starchart-module.is-showing-all-students:not(:fullscreen):not(.is-tile-fullscreen){min-height:220px}

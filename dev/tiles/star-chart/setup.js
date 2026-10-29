@@ -33,8 +33,8 @@ function setupStarChart(m){
   let collapsedHeight=Math.max(380,m.offsetHeight||560);
   let collapsedWidth=Math.max(380,m.offsetWidth||700);
   let showAllFrame=0;
-  const animationTimers=new Set();
   const flyingStars=new Set();
+  const awardFrames=new Set();
   const bundleLevels=[
     {weight:1000,level:3,label:'1K'},
     {weight:100,level:2,label:'100'},
@@ -54,10 +54,13 @@ function setupStarChart(m){
     // Three readable columns, with enough height for every row and the hover controls.
     m.style.width=`${Math.max(1000,collapsedWidth)}px`;
     m.style.height=`${collapsedHeight}px`;
-    const toolbar=m.querySelector('.starchart-student-toolbar');
-    const hoverRoom=Math.max(0,52-parseFloat(getComputedStyle(m).paddingBottom))+Math.max(0,36-toolbar.clientHeight);
-    const desired=collapsedHeight-studentGrid.clientHeight+studentGrid.scrollHeight+hoverRoom+6;
-    m.style.height=`${Math.min(BOARD_HEIGHT,Math.max(collapsedHeight,Math.ceil(desired)))}px`;
+    const overhead=m.offsetHeight-studentGrid.clientHeight;
+    // Measure the rows themselves, not scrollHeight (which includes unused viewport space).
+    const oldFlex=studentGrid.style.flex,oldHeight=studentGrid.style.height;
+    studentGrid.style.flex='none';studentGrid.style.height='max-content';
+    const contentHeight=studentGrid.offsetHeight;
+    studentGrid.style.flex=oldFlex;studentGrid.style.height=oldHeight;
+    m.style.height=`${Math.min(BOARD_HEIGHT,Math.max(220,Math.ceil(overhead+contentHeight+2)))}px`;
   };
 
   const scheduleShowAllSize=()=>{
@@ -78,12 +81,6 @@ function setupStarChart(m){
       if(document.fullscreenElement!==m){m.style.height=`${collapsedHeight}px`;m.style.width=`${collapsedWidth}px`;}
     }
     if(notify)notifyBoardChanged('star-chart-show-all');
-  };
-
-  const scheduleAnimation=(callback,delay)=>{
-    const timer=setTimeout(()=>{animationTimers.delete(timer);callback()},delay);
-    animationTimers.add(timer);
-    return timer;
   };
 
   const renderStarBundles=(container,total,ownerLabel)=>{
@@ -125,44 +122,28 @@ function setupStarChart(m){
     return tokens[tokens.length-1]||container;
   };
 
-  const animateStarAward=(sourceRect,targetRect)=>{
-    const popLanding=()=>{
-      if(!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-      const flash=document.createElement('span');
-      flash.className='starchart-landing-flash';
-      flash.textContent='★';
-      flash.setAttribute('aria-hidden','true');
-      flash.style.left=`${targetRect.left+targetRect.width*.5}px`;
-      flash.style.top=`${targetRect.top+targetRect.height*.5}px`;
-      (document.fullscreenElement===m?m:document.body).append(flash);
-      flyingStars.add(flash);
-      scheduleAnimation(()=>{flyingStars.delete(flash);flash.remove()},520);
+  const animateStarAward=(sourceRect,studentKey)=>{
+    if(!sourceRect||!landingTargetFor(studentKey)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const star=document.createElement('span');star.className='starchart-flying-star';star.textContent='★';star.setAttribute('aria-hidden','true');
+    const startX=sourceRect.left+sourceRect.width*.65,startY=sourceRect.top+sourceRect.height*.5;
+    (document.fullscreenElement===m?m:document.body).append(star);flyingStars.add(star);
+    const flight={frame:0},started=performance.now();awardFrames.add(flight);
+    const finish=()=>{awardFrames.delete(flight);flyingStars.delete(star);star.remove()};
+    const tick=now=>{
+      // Resolve the live destination every frame: hover shelves and roster updates can move it.
+      const target=landingTargetFor(studentKey);if(!target?.isConnected){finish();return;}
+      const rect=target.getBoundingClientRect(),p=Math.min(1,(now-started)/620),t=p*p*(3-2*p);
+      const endX=rect.left+rect.width/2,endY=rect.top+rect.height/2;
+      const controlY=Math.min(startY,endY)-Math.min(44,Math.abs(endX-startX)*.22+20);
+      const x=startX+(endX-startX)*t,y=(1-t)*(1-t)*startY+2*(1-t)*t*controlY+t*t*endY;
+      star.style.left=`${x}px`;star.style.top=`${y}px`;
+      star.style.opacity=String(Math.min(1,p/.12)*(1-Math.max(0,(p-.86)/.14)));
+      star.style.transform=`translate(-50%,-50%) scale(${.7+Math.sin(p*Math.PI)*.4}) rotate(${-18+36*t}deg)`;
+      if(p<1){flight.frame=requestAnimationFrame(tick);return;}
+      target.animate([{transform:'scale(1)',filter:'brightness(1)'},{transform:'scale(1.18)',filter:'brightness(1.18)',offset:.35},{transform:'scale(1)',filter:'brightness(1)'}],{duration:360,easing:'cubic-bezier(.2,.7,.3,1)'});
+      finish();
     };
-    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-
-    const star=document.createElement('span');
-    star.className='starchart-flying-star';
-    star.textContent='★';
-    star.setAttribute('aria-hidden','true');
-    const startX=sourceRect.left+Math.min(sourceRect.width*.78,sourceRect.width-10);
-    const startY=sourceRect.top+sourceRect.height*.5;
-    const endX=targetRect.left+targetRect.width*.5;
-    const endY=targetRect.top+targetRect.height*.5;
-    const dx=endX-startX;
-    const dy=endY-startY;
-    star.style.left=`${startX}px`;
-    star.style.top=`${startY}px`;
-    (document.fullscreenElement===m?m:document.body).append(star);
-    flyingStars.add(star);
-    const animation=star.animate([
-      {opacity:0,transform:'translate(-50%,-50%) scale(.15) rotate(-35deg)'},
-      {offset:.18,opacity:1,transform:'translate(-50%,-50%) scale(1.45) rotate(35deg)'},
-      {offset:.7,opacity:1,transform:`translate(calc(-50% + ${dx*.8}px),calc(-50% + ${dy-34}px)) scale(1.05) rotate(285deg)`},
-      {opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.62) rotate(390deg)`}
-    ],{duration:620,easing:'cubic-bezier(.2,.78,.24,1)',fill:'forwards'});
-    scheduleAnimation(popLanding,455);
-    const removeFlyingStar=()=>{flyingStars.delete(star);star.remove()};
-    animation.finished.then(removeFlyingStar,removeFlyingStar);
+    flight.frame=requestAnimationFrame(tick);
   };
 
   const setSubtractPanelOpen=(card,open)=>{
@@ -311,7 +292,7 @@ function setupStarChart(m){
     const source=adding?(action||row).getBoundingClientRect():null;
     progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
     persistProgress();
-    if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());
+    if(source)animateStarAward(source,key);
   });
 
   studentGrid.addEventListener('wheel',event=>{
@@ -323,7 +304,7 @@ function setupStarChart(m){
     const source=wholeAdd.getBoundingClientRect();
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
     persistProgress();
-    animateStarAward(source,landingTargetFor('__whole__')?.getBoundingClientRect());
+    animateStarAward(source,'__whole__');
   });
   wholeRemove.addEventListener('click',()=>{
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
@@ -373,10 +354,16 @@ function setupStarChart(m){
   let lastWidth=m.clientWidth;
   const overviewResize=new ResizeObserver(()=>{const width=m.clientWidth;if(width===lastWidth)return;lastWidth=width;if(showAllStudents)scheduleShowAllSize();});
   overviewResize.observe(m);
+  const fitAfterShelf=event=>{if(showAllStudents&&((event.target===m&&event.propertyName==='padding-bottom')||(event.target===m.querySelector('.starchart-student-toolbar')&&event.propertyName==='max-height')))scheduleShowAllSize()};
+  const fitOnInteraction=()=>{if(showAllStudents)scheduleShowAllSize()};
+  for(const type of ['pointerenter','pointerleave','focusin','focusout'])m.addEventListener(type,fitOnInteraction);
+  m.addEventListener('transitionend',fitAfterShelf);
   const prior=m._cleanup;
   m._cleanup=()=>{
     prior?.();detachRosterLoader();overviewResize.disconnect();
-    animationTimers.forEach(clearTimeout);animationTimers.clear();
+    awardFrames.forEach(flight=>cancelAnimationFrame(flight.frame));awardFrames.clear();
+    m.removeEventListener('transitionend',fitAfterShelf);
+    for(const type of ['pointerenter','pointerleave','focusin','focusout'])m.removeEventListener(type,fitOnInteraction);
     flyingStars.forEach(star=>star.remove());flyingStars.clear();
     if(showAllFrame)cancelAnimationFrame(showAllFrame);
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);

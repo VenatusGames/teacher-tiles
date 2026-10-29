@@ -15,9 +15,16 @@
     const avatar=Math.max(20,Math.min(large?58:40,token-12,height/tracks.length*.68-36));
     container.style.setProperty('--racer-token-width',token+'px');container.style.setProperty('--racer-avatar-size',avatar+'px');
     tracks.forEach(track=>{
-      const nodes=[...track.querySelectorAll('.racer-standee')],edge=token/2+10,room=width-2*edge;
-      // Students share the same start and finish on each track, including overlapping ties.
-      nodes.forEach(node=>{const x=edge+room*Number(node.dataset.progress||0),t=x/width;node.style.left=`${t*100}%`;node.style.top=`${84.375-62.5*t*(1-t)}%`;});
+      const nodes=[...track.querySelectorAll('.racer-standee')],edge=token/2+26,room=width-2*edge;
+      // Keep progress anchored to the course; fan nearby standees without changing distance.
+      const ordered=nodes.map(node=>({node,x:edge+room*Number(node.dataset.progress||0)})).sort((a,b)=>a.x-b.x),groups=[];
+      for(const item of ordered){const group=groups[groups.length-1];if(group&&item.x-group[group.length-1].x<token*.55)group.push(item);else groups.push([item]);}
+      for(const group of groups)group.forEach(({node,x},i)=>{
+        const fan=group.length>1?(i/(group.length-1)-.5)*2:0,t=x/width;
+        node.style.left=`${t*100}%`;node.style.top=`${84.375-62.5*t*(1-t)}%`;
+        node.style.setProperty('--racer-fan-angle',`${fan*12}deg`);
+        node.style.setProperty('--racer-fan-offset',`${fan*10}px`);
+      });
     });
   }
   function render(container,roster,progress={},keyFor=name=>'student:'+name.trim().toLowerCase()){
