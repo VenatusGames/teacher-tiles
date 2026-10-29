@@ -201,15 +201,7 @@ function setupHighFrequencyWords(m){
 
   gradeSelect.addEventListener('change',()=>setGrade(gradeSelect.value));
 
-  settingsButton.addEventListener('click',()=>{
-    renderSettings();
-    settings.hidden=false;
-  });
-
-  settingsClose.addEventListener('click',()=>{settings.hidden=true;});
-  settings.addEventListener('pointerdown',event=>{
-    if(event.target===settings)settings.hidden=true;
-  });
+  setupFlashcardWordDrawer(m,{button:settingsButton,drawer:settings,closeButton:settingsClose,options:wordOptions,render:renderSettings});
 
   enableAll.addEventListener('click',()=>{
     const grade=m.dataset.hfwGrade||'k';

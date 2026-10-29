@@ -498,9 +498,8 @@ function setupRobotHfw(m){
 
   robot.addEventListener('click',popRobot);
   gradeSelect.addEventListener('change',()=>setGrade(gradeSelect.value));
-  settingsButton.addEventListener('click',()=>{renderSettings();settings.hidden=false});
-  settingsClose.addEventListener('click',()=>{settings.hidden=true});
-  settings.addEventListener('pointerdown',event=>{if(event.target===settings)settings.hidden=true});
+  setupFlashcardWordDrawer(m,{button:settingsButton,drawer:settings,closeButton:settingsClose,options:wordOptions,render:renderSettings});
+
   enableAll.addEventListener('click',()=>{
     const grade=m.dataset.hfwGrade||'k';enabledByGrade[grade]=new Set(HIGH_FREQUENCY_WORD_SETS[grade]);resetRound(true);
   });
