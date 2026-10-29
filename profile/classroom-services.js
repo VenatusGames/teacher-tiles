@@ -97,6 +97,30 @@ function normalizeRacerProgress(value,students=[]){
   return{positions,studentWins,finished};
 }
 
+// Seating layouts share the existing account-scoped, encrypted class storage.
+function normalizeSeatingChart(value,students){
+  if(!value||!Array.isArray(value.desks))return null;
+  const names=new Set(students),used=new Set();
+  const bounded=(n,min,max)=>Math.max(min,Math.min(max,Number(n)||0));
+  return {layout:['rows','groups','horseshoe'].includes(value.layout)?value.layout:'rows',desks:value.desks.filter(d=>d&&typeof d==='object').slice(0,80).map(d=>{
+    const name=names.has(d.name)&&!used.has(d.name)?d.name:'';if(name)used.add(name);
+    return {name,kind:['desk','table','teacher'].includes(d.kind)?d.kind:'desk',x:bounded(d.x,0,100),y:bounded(d.y,10,100),angle:[0,90,180,270].includes(d.angle)?d.angle:0,pinned:!!d.pinned&&(!d.name||!!name)};
+  })};
+}
+
+function writeClassSeatingChart(classId,value,source){
+  const classes=readClassRosters(),roster=classes.find(item=>item.id===classId);
+  if(!roster)return null;
+  const chart=normalizeSeatingChart(value,roster.students);
+  if(JSON.stringify(chart)===JSON.stringify(roster.seatingChart))return chart;
+  roster.seatingChart=chart;
+  markPbisLocalDirty(classes);
+  localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
+  window.dispatchEvent(new CustomEvent('teachertiles:seatingchange',{detail:{classId,chart,source}}));
+  schedulePbisCloudSave();
+  return chart;
+}
+
 function readClassRosters(){
   try{
     const value=JSON.parse(localStorage.getItem(classRostersStorageKey())||'[]');
@@ -114,6 +138,7 @@ function readClassRosters(){
         showAddStudent:item.showAddStudent!==false,
         pbisStats:normalizeClassPbisPreferences(item.pbisStats),
         studentProfiles:normalizeStudentProfiles(item.studentProfiles,students),
+        seatingChart:normalizeSeatingChart(item.seatingChart,students),
         starChart:normalizeStarChartProgress(item.starChart,students),
         classMeter:normalizeClassMeterProgress(item.classMeter),
         collectionJar:normalizeCollectionProgress(item.collectionJar),

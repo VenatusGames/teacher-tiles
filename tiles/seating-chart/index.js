@@ -13,7 +13,9 @@
     const room=m.querySelector('.seating-room'),status=m.querySelector('.seating-status'),assignment=m.querySelector('.seating-assignment'),layoutSelect=m.querySelector('.seating-layout');
     const editor=m.querySelector('.seating-editor'),importPanel=m.querySelector('.seating-class-import'),dashboard=m.querySelector('.seating-dashboard');
     let names=[],desks=[],selected='',className='',classId='',classLogo='👥',classReady=false,serial=0,cancelDrag=null;
-    const changed=()=>notifyBoardChanged('seating-chart');
+    let scope=window.TeacherTilesClassScope||'local';
+    const saveLayout=()=>{if(classReady&&classId&&scope===(window.TeacherTilesClassScope||'local'))writeClassSeatingChart(classId,{layout:layoutSelect.value,desks},m);};
+    const changed=()=>{saveLayout();notifyBoardChanged('seating-chart');};
     const selectedDesk=()=>desks.find(d=>d.id===selected);
     function dimensions(count,kind){
       count=Math.max(1,count);const cols=Math.ceil(Math.sqrt(count*1.5));
@@ -53,26 +55,43 @@
     function updateEditor(){
       const desk=selectedDesk();editor.hidden=!desk;
       assignment.replaceChildren(new Option('Empty seat',''));names.forEach(name=>assignment.add(new Option(name,name)));assignment.value=desk?.name||'';
-      assignment.disabled=!desk||desk.kind==='teacher';m.querySelector('.seating-pin').textContent=desk?.pinned?'Unlock student':'Keep student';
+      assignment.disabled=!desk||desk.kind==='teacher';m.querySelector('.seating-pin').textContent=desk?.pinned?'Unlock Student':'Keep Student';
     }
     function arrange(){const positions=layout(desks.length,layoutSelect.value);desks.forEach((d,i)=>Object.assign(d,positions[i],{angle:0}));render();changed();}
+    function restoreLayout(value){
+      const chart=normalizeSeatingChart(value,names);if(!chart)return false;
+      layoutSelect.value=chart.layout;
+      desks=chart.desks.map(d=>{const [w,h]=dimensions(chart.desks.length,d.kind);return {...d,id:`seat-${++serial}`,x:limit(d.x,0,100-w),y:limit(d.y,10,100-h)};});
+      selected='';return true;
+    }
+    function defaultLayout(){
+      cancelDrag?.();layoutSelect.value='rows';
+      const positions=layout(names.length,'rows');desks=names.map((name,i)=>({id:`seat-${++serial}`,name,kind:'desk',angle:0,pinned:false,...positions[i]}));selected='';
+    }
     function load(students,roster){
+      cancelDrag?.();saveLayout();scope=window.TeacherTilesClassScope||'local';
       names=normalizeRosterNames(students).slice(0,80);className=String(roster.name||'').slice(0,80);classId=roster.id;classLogo=normalizeClassLogo(roster.logo);classReady=true;
-      const positions=layout(names.length,layoutSelect.value);desks=names.map((name,i)=>({id:`seat-${++serial}`,name,kind:'desk',angle:0,pinned:false,...positions[i]}));selected='';render();changed();
+      if(!restoreLayout(readClassRosters().find(r=>r.id===classId)?.seatingChart))defaultLayout();
+      render();changed();
     }
     const detach=attachClassRosterLoader(m.querySelector('.seating-loader-anchor'),load);
-    m.querySelector('.seating-change-class').addEventListener('click',()=>{cancelDrag?.();classId='';classReady=false;className='';names=[];desks=[];selected='';render();changed();});
+    m.querySelector('.seating-change-class').addEventListener('click',()=>{cancelDrag?.();saveLayout();classId='';classReady=false;className='';names=[];desks=[];selected='';render();changed();});
     function syncClass(){
-      if(!classId)return;
+      if(!classId||scope!==(window.TeacherTilesClassScope||'local'))return;
       const roster=readClassRosters().find(r=>r.id===classId);
       if(!roster){classReady=false;render();return;}
       names=normalizeRosterNames(roster.students).slice(0,80);className=roster.name;classLogo=normalizeClassLogo(roster.logo);classReady=true;
-      desks.forEach(d=>{if(d.name&&!names.includes(d.name)){d.name='';d.pinned=false;}});
+      if(roster.seatingChart)restoreLayout(roster.seatingChart);
+      else desks.forEach(d=>{if(d.name&&!names.includes(d.name)){d.name='';d.pinned=false;}});
       // Keep teacher-created desk locations and locked assignments when the
       // shared class roster changes. New students can be placed in empty desks.
       render();
     }
+    const syncLayout=event=>{if(event.detail?.classId===classId&&event.detail.source!==m){cancelDrag?.();syncClass();}};
     window.addEventListener('teachertiles:classeschange',syncClass);
+    window.addEventListener('teachertiles:seatingchange',syncLayout);
+    m.querySelector('.seating-reset').addEventListener('click',()=>{defaultLayout();render();changed();});
+    layoutSelect.addEventListener('change',changed);
     m.querySelector('.seating-arrange').addEventListener('click',arrange);
     m.querySelector('.seating-randomize').addEventListener('click',()=>{
       const pinned=new Set(desks.filter(d=>d.pinned).map(d=>d.name));const available=shuffle(names.filter(n=>!pinned.has(n)));
@@ -93,7 +112,7 @@
       className=String(s?.className||'').slice(0,80);classId=String(s?.classId||'').slice(0,160);classReady=!classId&&names.length>0;selected='';
       if(classId)syncClass();else render();
     };
-    const prior=m._cleanup;m._cleanup=()=>{cancelDrag?.();detach();window.removeEventListener('teachertiles:classeschange',syncClass);prior?.();};render();
+    const prior=m._cleanup;m._cleanup=()=>{cancelDrag?.();detach();window.removeEventListener('teachertiles:classeschange',syncClass);window.removeEventListener('teachertiles:seatingchange',syncLayout);prior?.();};render();
   }
   window.TeacherTilesSeating=Object.freeze({setup,layout,shuffle});
 })();
