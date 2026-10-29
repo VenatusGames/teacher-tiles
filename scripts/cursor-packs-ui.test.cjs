@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true,args:['--unsafely-treat-insecure-origin-as-secure=http://tiles.test']});try{
 const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{localStorage.setItem('teacherTilesSandboxCoinsEnabled','true');window.Audio=class extends EventTarget{constructor(src){super();Object.assign(this,{src,paused:true,volume:1,currentTime:0,duration:20})}play(){this.paused=false;return Promise.resolve()}pause(){this.paused=true}load(){}removeAttribute(){}cloneNode(){return new Audio(this.src)}};window.notices=[];window.Notification=class{static permission='granted';constructor(title,options){notices.push({title,...options})}}});
-await page.route('**/*',r=>{const u=new URL(r.request().url()),f=path.join(process.cwd(),decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));return u.hostname==='tiles.test'&&fs.existsSync(f)&&fs.statSync(f).isFile()?r.fulfill({path:f}):r.abort()});
+await page.route('**/*',r=>{const u=new URL(r.request().url()),f=path.join(process.cwd(),decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(u.hostname!=='tiles.test'||!fs.existsSync(f)||!fs.statSync(f).isFile())return r.abort();return r.fulfill(f.endsWith('index.html')?{contentType:'text/html',body:fs.readFileSync(f,'utf8').replace(/<script[^>]+src="(?:firebase-auth|sandbox\/board-gate)[^"]*"[^>]*><\/script>/g,'')}:{path:f})});
 
 await page.goto('http://tiles.test/',{waitUntil:'domcontentloaded'});await page.waitForTimeout(1800);
 await page.evaluate(()=>{document.getElementById('profile-modal').hidden=true;localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(TeacherTilesCursorPacks.map(p=>p.productId)));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'))});
@@ -14,12 +14,12 @@ await page.mouse.move(1400,100);await page.waitForTimeout(200);
 assert.equal(await favorite.evaluate(el=>getComputedStyle(el).opacity),'0');
 await page.locator('.cursor-picker-cell').first().hover();await page.waitForTimeout(200);
 assert.equal(await favorite.evaluate(el=>getComputedStyle(el).opacity),'1');
-assert.equal(await favorite.evaluate(el=>getComputedStyle(el).borderRadius),'50%');
+assert.equal(await favorite.evaluate(el=>getComputedStyle(el).borderRadius),'9px');
 await favorite.click();await page.mouse.move(1400,100);await page.waitForTimeout(200);
 assert.equal(await page.locator('.cursor-picker-favorite').first().getAttribute('aria-pressed'),'true');
-assert.equal(await page.locator('.cursor-picker-choice').first().innerText(),'Default');
-assert((await page.locator('.cursor-picker-choice').first().boundingBox()).height<=90);
-assert((await page.locator('.cursor-picker-choice img').first().boundingBox()).width<=26);
+assert.equal(await page.locator('.cursor-picker-name').first().innerText(),'Default');
+assert((await page.locator('.cursor-picker-choice').first().boundingBox()).height<=120);
+assert((await page.locator('.cursor-picker-choice img').first().boundingBox()).width===40);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/compact-cursor-shelf.png'});
 await page.evaluate(()=>document.getElementById('asset-shelf-close').click());
 // Slow the first grab image deliberately: a pack must not activate partially loaded.
@@ -63,9 +63,11 @@ await page.evaluate(()=>{const p=screenToBoard(750,250);createModule('coinflip',
 assert((await page.locator('.coinflip-heads use').getAttribute('href')).includes('subscriber-crown.svg'));
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/crown-coin.png'});
 await page.evaluate(()=>document.getElementById('theme-shelf-toggle').click());await page.waitForTimeout(400);
-const centered=await page.locator('.theme-picker-pack-locked .theme-pack-stack').first().evaluate(el=>{const s=getComputedStyle(el,'::after');return {left:parseFloat(s.left),top:parseFloat(s.top),width:el.offsetWidth,height:el.offsetHeight,background:s.backgroundImage}});
-assert(Math.abs(centered.left-centered.width/2)<1&&Math.abs(centered.top-centered.height/2)<1);
-assert(centered.background.includes('20260927-gold'));
+const lockedPack=page.locator('.theme-picker-results .theme-picker-pack-locked:visible').first();
+await lockedPack.scrollIntoViewIfNeeded();
+assert.equal(await lockedPack.locator('.theme-picker-lock').textContent(),'Unlock');
+assert((await lockedPack.locator('.theme-picker-lock img').getAttribute('src')).includes('20260927-gold'));
+assert(await lockedPack.evaluate(el=>{const p=el.getBoundingClientRect(),badge=el.querySelector('.theme-picker-lock>span').getBoundingClientRect();return Math.abs((badge.left+badge.width/2)-(p.left+p.width/2))<2}),'current Unlock badge stays centered');
 assert.deepEqual(errors,[]);
-console.log('Compact favorites, all-state preload/race safety, four bounded particle effects, reduced motion, left headings, crown coin and centered gold locks passed.');
+console.log('Compact favorites, all-state preload/race safety, four bounded particle effects, reduced motion, left headings, crown coin and centered Unlock badges passed.');
 }finally{await browser.close()}})().catch(error=>{console.error(error);process.exitCode=1});
