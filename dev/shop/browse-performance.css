@@ -1,0 +1,28 @@
+/* Isolate preview paints from the rest of the shop. */
+.shop-content .shop-product__preview{contain:layout paint style}
+.shop-content .shop-category.is-preview-offscreen .shop-category__art,
+.shop-content .shop-category.is-preview-offscreen .shop-category__art *,
+.shop-content .shop-category.is-preview-offscreen .shop-category__art::before,
+.shop-content .shop-category.is-preview-offscreen .shop-category__art::after,
+.shop-content .shop-category.is-preview-offscreen .shop-category__art *::before,
+.shop-content .shop-category.is-preview-offscreen .shop-category__art *::after{animation-play-state:paused!important}
+/* Reserve the actual grid height, keeping headings and pack controls live. */
+.sticker-picker-pack{content-visibility:visible;contain-intrinsic-size:none}
+.sticker-picker-results,.theme-picker-results{contain:layout paint style}
+.theme-picker-pack{content-visibility:visible;contain-intrinsic-size:none}
+/* Scrolling under the pointer must not start dozens of preview animations.
+   Keyboard navigation and all click/drag targets stay available. */
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art),
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art) *,
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art)::before,
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art)::after,
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art) *::before,
+.is-browse-scrolling :is(.theme-pack-stack,.shop-product__preview,.shop-category__art) *::after{animation-play-state:paused!important;transition:none!important}
+.theme-picker-results.is-browse-scrolling .theme-picker-pack-heading:not([aria-expanded=true]) .theme-pack-sample{transform:rotate(calc(-12deg + var(--sample)*9deg))}
+.shop-modal .shop-content.is-browse-scrolling .shop-product{transform:none;box-shadow:0 2px 7px #15263c06;transition:none}
+.shop-modal .shop-content.is-browse-scrolling .shop-product__preview{filter:none}
+.sticker-picker-results.is-browse-scrolling .sticker-shelf-item{transform:none;transition:none}
+.sticker-picker-results.is-browse-scrolling .sticker-picker-favorite:not([aria-pressed=true]):not(:focus-visible){opacity:0;transition:none}
+
+.sticker-picker-grid[style]{content-visibility:auto;contain-intrinsic-block-size:auto calc(var(--sticker-rows)*65px - 5px)}
+@media(max-width:380px){.sticker-picker-grid[style]{contain-intrinsic-block-size:auto calc(var(--sticker-rows-narrow)*65px - 5px)}}

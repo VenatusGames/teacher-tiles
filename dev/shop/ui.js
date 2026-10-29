@@ -616,7 +616,10 @@ function setupTeacherTilesShop(){
     card.querySelectorAll('[data-effect-preview]').forEach(p=>p.replaceWith(window.TeacherTilesTileEffects.preview(p.dataset.effectPreview)));
   }
   const previewVisibility=new IntersectionObserver(entries=>{for(const {target,isIntersecting} of entries){if(!target.isConnected){previewVisibility.unobserve(target);continue;}target.classList.toggle('is-preview-offscreen',!isIntersecting);}},{root:modal.querySelector('.shop-content')||null,rootMargin:'150px'});
+  // Category artwork also animates; pause it when the category leaves the viewport.
+  modal.querySelectorAll('.shop-category').forEach(card=>{card.classList.add('is-preview-offscreen');previewVisibility.observe(card)});
   function bindProduct(card){
+    card.querySelectorAll('img').forEach(window.prepareShopPreviewImage);
     card.classList.add('is-preview-offscreen');previewVisibility.observe(card);
     card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);
     card.querySelector('[data-shop-buy]')?.addEventListener('click',event=>{event.stopPropagation();tryBuy(card)});
