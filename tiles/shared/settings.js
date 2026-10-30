@@ -20,21 +20,21 @@ function addHeadingToggle(m,heading){
     if(!panel||panel.querySelector('.tile-heading-visibility-setting'))return;
     const row=document.createElement('div');
     row.className='tile-settings-switch-row tile-heading-visibility-setting';
-    const label=document.createElement('span');label.textContent='Show heading';
+    const label=document.createElement('span');label.textContent='Show Heading';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='tile-settings-switch';toggle.setAttribute('role','switch');
     const knob=document.createElement('i');knob.setAttribute('aria-hidden','true');toggle.append(knob);row.append(label,toggle);
     const resetScale=panel.querySelector('.tile-reset-scale');
     if(resetScale)panel.insertBefore(row,resetScale);else panel.append(row);
     const apply=()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true'&&(!['countdown','lavalamp','pumpkincarving'].includes(m.dataset.type)||m.dataset.tileHeadingHidden==='false');
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(!['countdown','lavalamp','pumpkincarving','thankfulturkey'].includes(m.dataset.type)||m.dataset.tileHeadingHidden==='false');
       heading.classList.toggle('tile-heading-hidden',!visible);
       heading.setAttribute('aria-hidden',String(!visible));
       toggle.setAttribute('aria-checked',String(visible));
       toggle.setAttribute('aria-label',visible?'Hide tile heading':'Show tile heading');
     };
     toggle.addEventListener('click',()=>{
-      const visible=m.dataset.tileHeadingHidden!=='true'&&(!['countdown','lavalamp','pumpkincarving'].includes(m.dataset.type)||m.dataset.tileHeadingHidden==='false');
-      if(visible)m.dataset.tileHeadingHidden='true';else if(['countdown','lavalamp','pumpkincarving'].includes(m.dataset.type))m.dataset.tileHeadingHidden='false';else delete m.dataset.tileHeadingHidden;
+      const visible=m.dataset.tileHeadingHidden!=='true'&&(!['countdown','lavalamp','pumpkincarving','thankfulturkey'].includes(m.dataset.type)||m.dataset.tileHeadingHidden==='false');
+      if(visible)m.dataset.tileHeadingHidden='true';else if(['countdown','lavalamp','pumpkincarving','thankfulturkey'].includes(m.dataset.type))m.dataset.tileHeadingHidden='false';else delete m.dataset.tileHeadingHidden;
       apply();
       if(typeof notifyBoardChanged==='function')notifyBoardChanged('tile-heading-visibility');
     });

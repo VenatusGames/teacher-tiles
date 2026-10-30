@@ -1,5 +1,6 @@
 function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   if(!boardState&&window.TeacherTilesHalloween?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess();return null;}
+  if(!boardState&&window.TeacherTilesThanksgiving?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess('Thanksgiving');return null;}
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
@@ -20,9 +21,11 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   bringToFront(m);
   m._isBoardRestore=Boolean(boardState);
   setupModuleByType(m,type);
+  if(!boardState)window.TeacherTilesTileFilters?.applyDefault(m);
   m._defaultTileSize={width:m.offsetWidth,height:m.offsetHeight};
   if(boardState)applyBoardPostSetupState(m,boardState);
   if(window.TeacherTilesHalloween?.types.has(type))TeacherTilesHalloween.guard(m);
+  if(window.TeacherTilesThanksgiving?.types.has(type))TeacherTilesHalloween.guard(m,'Thanksgiving');
   delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
   return m;
@@ -209,7 +212,7 @@ function isInteractiveModuleTarget(target,m){
   if(m.dataset.type==='interactive'&&target.closest('.hourglass-stage,.candle-stage,.timer-story-stage'))return false;
   const textField=findModuleTextEditTarget(target,m);
   if(textField)return isImmediateModuleInput(textField)||textField.classList.contains('module-text-edit-active');
-  if(target.closest('button,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
+  if(target.closest('button,summary,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="button"],[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return true;
   for(let el=target;el&&el!==m;el=el.parentElement){
     const cursor=getComputedStyle(el).cursor||'';
     if(cursor==='pointer'||cursor==='text'||cursor==='crosshair'||cursor==='not-allowed'||cursor.includes('resize'))return true;
@@ -219,7 +222,7 @@ function isInteractiveModuleTarget(target,m){
 
 function isFloatingTileSkinDragSurface(target,m){
   if(!(target instanceof Element)||!m||!FLOATING_TILE_SKIN_IDS.has(m.dataset.tileSkin))return false;
-  if(target.closest('input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
+  if(target.closest('summary,input,select,textarea,[contenteditable],[draggable="true"],iframe,audio,video,canvas,a,label,[role="slider"],[role="textbox"],[data-resize],[data-sticker-resize],.resize-handle,.sticker-rotate-handle,.module-delete,.module-fullscreen,.module-pin,.ruler-handle'))return false;
   const action=target.closest('button,[role="button"]');
   return !action||(m.dataset.tileSkin==='stoplight-freestanding'&&action.classList.contains('stoplight-stage'));
 }

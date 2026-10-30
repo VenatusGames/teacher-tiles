@@ -99,7 +99,7 @@ document.addEventListener('pointerout',event=>{
 });
 
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupProfileClasses,{once:true});else setupProfileClasses();
+
 
 const STUDENT_VIEW_STATS_KEY='teachertiles-student-view-stats-v1';
 const studentViewStatsStorageKey=()=>`${STUDENT_VIEW_STATS_KEY}:${window.TeacherTilesClassScope||'local'}`;
@@ -155,7 +155,7 @@ const PBIS_STUDENT_STAT_DEFINITIONS=Object.freeze([
 ]);
 
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupStudentView,{once:true});else setupStudentView();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupClassesStudents,{once:true});else setupClassesStudents();
 
 const TRANSLATION_LANGUAGES=[
   {code:'en',name:'English',nativeName:'English',speech:'en-US'},
@@ -196,6 +196,7 @@ const explosionSfxPrototype=new Audio('assets/ui/tile-effect-explosion.mp3');
 explosionSfxPrototype.preload='none';
 const slimeSfxPrototype=new Audio('assets/ui/tile-effect-slime.mp3');slimeSfxPrototype.preload='none';
 const moneyConfettiSfxPrototype=new Audio('assets/ui/tile-effect-money-confetti.mp3');moneyConfettiSfxPrototype.preload='none';
+const leavesSfxPrototype=new Audio('assets/ui/tile-effect-windy-leaves.wav');leavesSfxPrototype.preload='none';
 const rainSfxPrototype=new Audio('assets/ui/tile-effect-rain.mp3');rainSfxPrototype.preload='none';
 const smokeSfxPrototype=new Audio('assets/ui/tile-effect-smoke.mp3');smokeSfxPrototype.preload='none';
 const lightningSfxPrototype=new Audio('assets/ui/tile-effect-lightning.mp3');
@@ -206,6 +207,8 @@ const confettiCelebrationSfxPrototype=new Audio('assets/ui/confetti-celebration.
 confettiCelebrationSfxPrototype.preload='auto';
 const moneySfxPrototype=new Audio('assets/ui/coin-drop.mp3');
 moneySfxPrototype.preload='auto';
+const starAwardSfxPrototype=new Audio('assets/ui/star-award.mp3');
+starAwardSfxPrototype.preload='none';
 const holePunchSfxPrototype=new Audio('assets/ui/hole-punch.mp3');
 holePunchSfxPrototype.preload='auto';
 const stickerPlaceSfxPrototype=new Audio('assets/ui/sticker-place.wav?v=20260904-2');
@@ -803,8 +806,8 @@ renderMenuCategoryPins();
 
 // A keyboard-accessible corner grip resizes the catalog without changing board zoom.
 const menuResizeGrip=document.createElement('button');menuResizeGrip.type='button';menuResizeGrip.className='context-menu__resize';menuResizeGrip.setAttribute('aria-label','Resize Add tile menu');menuResizeGrip.title='Drag to resize. Arrow keys adjust size.';menu.appendChild(menuResizeGrip);
-const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.textContent='Reset Scale';menuResetSize.title='Restore the default menu size';menuResetSize.hidden=true;
-menu.querySelector('.context-menu__title-row').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
+const menuResetSize=document.createElement('button');menuResetSize.type='button';menuResetSize.className='context-menu__reset-size';menuResetSize.setAttribute('aria-label','Reset Scale');menuResetSize.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M3 3l6 6M16 21h5v-5m0 5-6-6M21 8V3h-5m5 0-6 6M3 16v5h5m-5 0 6-6"/></svg>';menuResetSize.title='Reset Scale';menuResetSize.hidden=true;
+menu.querySelector('.context-menu__actions').insertBefore(menuResetSize,menu.querySelector('.context-menu__close'));
 
 menuResetSize.addEventListener('click',event=>{
   event.stopPropagation();menu.style.removeProperty('--tile-menu-width');menu.style.removeProperty('--tile-menu-height');
@@ -902,6 +905,27 @@ window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(
 menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b||b.disabled||b.dataset.comingSoon==='true')return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
+  Object.freeze({"id":"ruler-clear","productId":"tile-skin-ruler-clear","tileType":"ruler","tileLabel":"Ruler","name":"No Background","description":"The classic ruler floats directly on your board without a tile background.","tags":"ruler measurement No Background","released":85,"preview":"tiles/ruler/assets/clear-preview.svg"}),
+  Object.freeze({"id":"ruler-metal","productId":"tile-skin-ruler-metal","tileType":"ruler","tileLabel":"Ruler","name":"Brushed Metal","description":"A silver ruler with brushed metal texture and crisp dark measurement marks.","tags":"ruler measurement Brushed Metal","released":86,"preview":"tiles/ruler/assets/metal-preview.svg"}),
+  Object.freeze({"id":"ruler-rainbow","productId":"tile-skin-ruler-rainbow","tileType":"ruler","tileLabel":"Ruler","name":"Rainbow Acrylic","description":"A pastel rainbow ruler with a glossy acrylic finish and clear measurement marks.","tags":"ruler measurement Rainbow Acrylic","released":87,"preview":"tiles/ruler/assets/rainbow-preview.svg"}),
+  Object.freeze({"id":"date-desk","productId":"tile-skin-date-desk","tileType":"date","tileLabel":"Date","name":"Desk Calendar","description":"A coral desk calendar with cream pages and silver binding rings.","tags":"date calendar Desk Calendar","released":82,"preview":"tiles/date/assets/desk-preview.svg"}),
+  Object.freeze({"id":"date-botanical","productId":"tile-skin-date-botanical","tileType":"date","tileLabel":"Date","name":"Botanical Calendar","description":"A soft sage calendar framed by delicate leafy corners.","tags":"date calendar Botanical Calendar","released":83,"preview":"tiles/date/assets/botanical-preview.svg?v=3"}),
+  Object.freeze({"id":"date-midnight","productId":"tile-skin-date-midnight","tileType":"date","tileLabel":"Date","name":"Midnight Calendar","description":"A midnight-blue calendar with a golden moon and subtle star details.","tags":"date calendar Midnight Calendar","released":84,"preview":"tiles/date/assets/midnight-preview.svg"}),
+  Object.freeze({"id":"writinglines-blocks","productId":"tile-skin-writinglines-blocks","tileType":"writinglines","tileLabel":"Writing Lines","name":"Alphabet Blocks","description":"Warm wood edging with colorful block corners for your handwriting practice.","tags":"writing lines handwriting Alphabet Blocks","released":77,"preview":"tiles/writing-lines/assets/blocks-preview.svg"}),
+  Object.freeze({"id":"writinglines-storybook","productId":"tile-skin-writinglines-storybook","tileType":"writinglines","tileLabel":"Writing Lines","name":"Storybook","description":"Sage book covers and a warm illustrated page for every writing line.","tags":"writing lines handwriting Storybook","released":78,"preview":"tiles/writing-lines/assets/storybook-preview.svg"}),
+  Object.freeze({"id":"writinglines-notebook","productId":"tile-skin-writinglines-notebook","tileType":"writinglines","tileLabel":"Writing Lines","name":"Spiral Notebook","description":"Cream notebook paper with a red margin and tidy spiral binding.","tags":"writing lines handwriting Spiral Notebook","released":79,"preview":"tiles/writing-lines/assets/notebook-preview.svg"}),
+  Object.freeze({"id":"writinglines-arcade","productId":"tile-skin-writinglines-arcade","tileType":"writinglines","tileLabel":"Writing Lines","name":"Arcade","description":"A midnight writing board with cyan and violet arcade trim.","tags":"writing lines handwriting Arcade","released":80,"preview":"tiles/writing-lines/assets/arcade-preview.svg"}),
+  Object.freeze({"id":"writinglines-index","productId":"tile-skin-writinglines-index","tileType":"writinglines","tileLabel":"Writing Lines","name":"Index Cards","description":"Crisp ivory cardstock with colorful stacked edges and clear writing guides.","tags":"writing lines handwriting Index Cards","released":81,"preview":"tiles/writing-lines/assets/index-preview.svg"}),
+  Object.freeze({"id":"flashcard-blocks","productId":"tile-skin-flashcard-blocks","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Alphabet Blocks","description":"Colorful wooden edges frame a clean flashcard.","tags":"ABC Alphabet Blocks flashcards","released":67,"preview":"tiles/shared/flashcard-art/flashcard-blocks-preview.svg"}),
+  Object.freeze({"id":"flashcard-storybook","productId":"tile-skin-flashcard-storybook","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Storybook","description":"An illustrated sage book frame with warm paper pages.","tags":"ABC Storybook flashcards","released":68,"preview":"tiles/shared/flashcard-art/flashcard-storybook-preview.svg"}),
+  Object.freeze({"id":"flashcard-grid","productId":"tile-skin-flashcard-grid","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Counting Grid","description":"Blue graph paper with a counting-bead border.","tags":"Number Flashcards Counting Grid flashcards","released":69,"preview":"tiles/shared/flashcard-art/flashcard-grid-preview.svg"}),
+  Object.freeze({"id":"flashcard-arcade","productId":"tile-skin-flashcard-arcade","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Arcade","description":"A midnight arcade display with cyan and violet trim.","tags":"Number Flashcards Arcade flashcards","released":70,"preview":"tiles/shared/flashcard-art/flashcard-arcade-preview.svg"}),
+  Object.freeze({"id":"flashcard-notebook","productId":"tile-skin-flashcard-notebook","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Phonics Notebook","description":"Cream notebook paper, blue rules, and a red margin.","tags":"CVC Word Phonics Notebook flashcards","released":71,"preview":"tiles/shared/flashcard-art/flashcard-notebook-preview.svg"}),
+  Object.freeze({"id":"flashcard-letter-tiles","productId":"tile-skin-flashcard-letter-tiles","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Letter Tiles","description":"A mint learning board with a warm letter-tile frame.","tags":"CVC Word Letter Tiles flashcards","released":72,"preview":"tiles/shared/flashcard-art/flashcard-letter-tiles-preview.svg"}),
+  Object.freeze({"id":"flashcard-library","productId":"tile-skin-flashcard-library","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Library Card","description":"A classic library pocket with ruled ivory cardstock.","tags":"High Frequency Words Library Card flashcards","released":73,"preview":"tiles/shared/flashcard-art/flashcard-library-preview.svg"}),
+  Object.freeze({"id":"flashcard-spotlight","productId":"tile-skin-flashcard-spotlight","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Spotlight","description":"Deep blue stage lighting and a soft golden frame.","tags":"High Frequency Words Spotlight flashcards","released":74,"preview":"tiles/shared/flashcard-art/flashcard-spotlight-preview.svg"}),
+  Object.freeze({"id":"flashcard-photo","productId":"tile-skin-flashcard-photo","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Photo Frame","description":"A taped photo frame with a clean space for pictures and words.","tags":"Custom Flashcards Photo Frame flashcards","released":75,"preview":"tiles/shared/flashcard-art/flashcard-photo-preview.svg"}),
+  Object.freeze({"id":"flashcard-index","productId":"tile-skin-flashcard-index","tileType":"flashcards","tileTypes":Object.freeze(["abc","numberflashcards","cvcword","highfrequency","customflashcards"]),"tileLabel":"Flashcard Tile","name":"Index Cards","description":"Crisp ruled cards with colorful stacked edges.","tags":"Custom Flashcards Index Cards flashcards","released":76,"preview":"tiles/shared/flashcard-art/flashcard-index-preview.svg"}),
   Object.freeze({"id": "sticky-taped", "productId": "tile-skin-sticky-taped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Taped Up", "description": "A softly textured strip of tape holds your note on the board.", "tags": "Sticky Note Taped Up", "released": 21}),
   Object.freeze({"id": "sticky-ripped", "productId": "tile-skin-sticky-ripped", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Ripped-Edge", "description": "A paper note with a naturally torn bottom edge.", "tags": "Sticky Note Ripped-Edge", "released": 22}),
   Object.freeze({"id": "sticky-pinned", "productId": "tile-skin-sticky-pinned", "tileType": "sticky", "tileLabel": "Sticky Note", "name": "Pinned", "description": "A glossy red thumbtack pins your note in place.", "tags": "Sticky Note Pinned", "released": 23}),
@@ -1012,6 +1036,9 @@ const ACTIVE_CURSOR_KEY='teacherTilesActiveCursor';
 const SHOP_OWNED_PRODUCTS_KEY='teacherTilesOwnedShopPacks';
 const ADDITIONAL_STICKER_PACKS=window.TeacherTilesStickerPacks;
 const COLLECTION_PACK_PRODUCTS=Object.freeze({
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.flatMap(p=>[[p.id+'-theme-pack',p.productId],[p.id+'-theme-fan',p.productId]])),
+'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
+
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','campfire-theme-pack':'theme-campfire','fireflies-theme-pack':'theme-fireflies','beach-theme-pack':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree',
@@ -1041,6 +1068,8 @@ const COLLECTION_PACK_PRODUCTS=Object.freeze({
   ...Object.fromEntries(ADDITIONAL_STICKER_PACKS.map(pack=>[`${pack.id}-sticker-pack`,pack.productId]))
 });
 const THEME_CHOICE_PRODUCTS=Object.freeze({
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.map(p=>[p.id,p.productId])),
+'autumn-forest':'theme-autumn-forest','feast':'theme-feast','leaves':'theme-leaves',
 'deep':'theme-deep','pastels2':'theme-pastels2','flowers':'theme-flowers',
   'webbed':'theme-webbed','haunted-house':'theme-haunted-house','pumpkin':'theme-pumpkin',
   'fireplace':'theme-fireplace','campfire':'theme-campfire','fireflies':'theme-fireflies','beach':'theme-beach','christmas':'theme-christmas-tree',
@@ -1090,18 +1119,18 @@ applyAppCursor(localStorage.getItem(ACTIVE_CURSOR_KEY)||'default',{persist:false
 
 
 const TILE_AUDIO_SETTING_TYPES=new Set([
-  'timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
+  'thanksgivingtimer','cookafeast','timer','halloweentimer','interactive','classmeter','racer','punchcards','collections','money','shapemanipulatives','spinner',
   'flyswat','quietcritters','trickortreat','pumpkinpatch','robothfw','chime','transitionbell','meditation','rainbowbreath','squishy'
 ]);
 const TILE_AUDIO_TITLES=Object.freeze({
   pumpkinpatch:'Pumpkin Patch',trickortreat:'Trick or Treat',
-  halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
+  thanksgivingtimer:'Thanksgiving Timers',cookafeast:'Cook-A-Feast',halloweentimer:'Halloween Timer',squishy:'Squishy',timer:'Visual Timer',interactive:'Interactive Timers',classmeter:'Class Meter',racer:'Racer',punchcards:'Punchcards',
   collections:'Collections',money:'Money',shapemanipulatives:'Shape Manipulatives',spinner:'Spinner',flyswat:'Fly Swat',
   rainbowbreath:'Rainbow Breath',meditation:'Meditation',quietcritters:'Quiet Critters',robothfw:'Robot HFW',chime:'Chime',transitionbell:'Transition Bell'
 });
 const TILE_AUDIO_HOSTS=Object.freeze({
   pumpkinpatch:'.halloween-toolbar',trickortreat:'.trick-controls',
-  halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
+  thanksgivingtimer:'.timer-customization',cookafeast:'.progress-bar-customization',halloweentimer:'.timer-customization',timer:'.timer-customization',interactive:'.interactive-customization',racer:'.racer-customization',punchcards:'.punchcard-customization',
   money:'.money-customization',shapemanipulatives:'.shape-manipulatives-customization',spinner:'.spinner-customization',
   rainbowbreath:'.meditation-controls',meditation:'.meditation-controls',robothfw:'.robothfw-customization',chime:'.chime-controls',transitionbell:'.transition-bell-controls'
 });
@@ -1143,7 +1172,7 @@ function setupModuleByType(m,type){
   if(type==='link')window.TeacherTilesLink.setup(m);
   if(m.classList.contains('classroom-widget')||['dice','seatingchart','fishtank','sleepymonster','quietcritters','butterflygarden','backgroundremover','boombox'].includes(type))setupClassroomTileControls(m);
   if(type==='sticky')setupSticky(m);
-  if(type==='timer'||type==='halloweentimer')setupTimer(m);
+  if(type==='timer'||type==='halloweentimer'||type==='thanksgivingtimer')setupTimer(m);
   if(type==='pumpkincarving')window.TeacherTilesPumpkinCarving.setup(m);
   if(type==='pumpkinpatch')window.TeacherTilesPumpkinPatch.setup(m);
   if(type==='trickortreat')window.TeacherTilesTrickOrTreat.setup(m);
@@ -1220,9 +1249,12 @@ function setupModuleByType(m,type){
   if(type==='visualschedule')setupVisualSchedule(m);
   if(type==='lessonplannertile')setupLessonPlannerTile(m);
   if(type==='progressbar')setupProgressBar(m);
+  if(type==='thankfulturkey')TeacherTilesThanksgiving.setupTurkey(m);
+  if(type==='cookafeast')TeacherTilesThanksgiving.setupFeast(m);
   if(type==='date')setupDate(m);
   if(type==='calendar')setupCalendar(m);
   setupTilePresentationControls(m,type);
+  window.TeacherTilesMathControls.setup(m);
 }
 
 
@@ -1320,6 +1352,7 @@ const LUNCH_COUNT_ICONS=[
 
 
 const EDITABLE_TILE_HEADINGS={
+  thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
   colorpicker:'.widget-title',
@@ -1389,6 +1422,7 @@ const EDITABLE_TILE_HEADINGS={
 };
 
 const TILE_HEADING_VISIBILITY_SELECTORS={
+  cookafeast:'.progress-bar-title',
   ...EDITABLE_TILE_HEADINGS,
   essentialquestion:'.widget-title',
   popsiclesticks:'.popsicle-sticks-title',
@@ -1514,6 +1548,8 @@ workspace.addEventListener('drop',e=>{if(e.target.closest('.image-module'))retur
 
 const THEME_STORAGE_KEY='modular-space-theme';
 const TEACHERTILES_THEMES=new Set([
+  ...window.TeacherTilesMotionScenes.choices.map(v=>v.id),
+'autumn-forest','autumn-forest-light','feast','feast-light','leaves','leaves-light',
   'webbed-light','webbed','haunted-house-light','haunted-house','pumpkin-orange','pumpkin-yellow',
   'fireplace-light','fireplace','campfire-light','campfire','fireflies-light','fireflies','beach-light','beach','christmas-tree-light','christmas-tree',
   "outer-space-light","outer-space","frosted-window-light","frosted-window",
@@ -1532,6 +1568,8 @@ const TEACHERTILES_THEMES=new Set([
   'corkboard-red','corkboard-blue','corkboard-green','corkboard-gold'
 ]);
 const THEME_BODY_CLASSES=[
+  ...window.TeacherTilesMotionScenes.choices.map(v=>'theme-'+v.id),
+'theme-autumn-forest','theme-autumn-forest-light','theme-feast','theme-feast-light','theme-leaves','theme-leaves-light',
 'theme-deep-midnight-blue','theme-deep-aurora-purple','theme-deep-cosmic-depths','theme-pastels2-peach','theme-pastels2-apricot','theme-pastels2-mint','theme-pastels2-aqua','theme-pastels2-blush','theme-flowers-rose','theme-flowers-sage','theme-flowers-sky','theme-flowers-lilac','theme-flowers-buttercream',
   'theme-webbed-light','theme-webbed','theme-haunted-house-light','theme-haunted-house','theme-pumpkin-orange','theme-pumpkin-yellow',
   'theme-fireplace-light','theme-fireplace','theme-campfire-light','theme-campfire','theme-fireflies-light','theme-fireflies','theme-beach-light','theme-beach','theme-christmas-tree-light','theme-christmas-tree',
@@ -1552,6 +1590,8 @@ const THEME_BODY_CLASSES=[
 
 
 const THEME_ENTITLEMENT_PREFIXES=[
+  ...window.TeacherTilesMotionScenes.packs.map(p=>[p.id,p.productId]),
+['autumn-forest','theme-autumn-forest'],['feast','theme-feast'],['leaves','theme-leaves'],
 ['deep-','theme-deep'],['pastels2-','theme-pastels2'],['flowers-','theme-flowers'],
   ['webbed','theme-webbed'],['haunted-house','theme-haunted-house'],['pumpkin','theme-pumpkin'],
   ['fireplace','theme-fireplace'],['campfire','theme-campfire'],['fireflies','theme-fireflies'],['beach','theme-beach'],['christmas-tree','theme-christmas-tree'],
@@ -1564,6 +1604,9 @@ const THEME_ENTITLEMENT_PREFIXES=[
   ['metal-','theme-metal'],['cosmos-','theme-cosmos'],['corkboard-','theme-corkboard']
 ];
 const SHELF_ENTITLEMENTS={
+  ...Object.fromEntries(window.TeacherTilesMotionScenes.packs.flatMap(p=>[[p.id+'-theme-pack',p.productId],[p.id+'-theme-fan',p.productId]])),
+'autumn-forest-theme-pack':'theme-autumn-forest','autumn-forest-theme-fan':'theme-autumn-forest','feast-theme-pack':'theme-feast','feast-theme-fan':'theme-feast','leaves-theme-pack':'theme-leaves','leaves-theme-fan':'theme-leaves',
+
 'deep-theme-pack':'theme-deep','deep-theme-fan':'theme-deep','pastels2-theme-pack':'theme-pastels2','pastels2-theme-fan':'theme-pastels2','flowers-theme-pack':'theme-flowers','flowers-theme-fan':'theme-flowers',
   'webbed-theme-pack':'theme-webbed','webbed-theme-fan':'theme-webbed','haunted-house-theme-pack':'theme-haunted-house','haunted-house-theme-fan':'theme-haunted-house','pumpkin-theme-pack':'theme-pumpkin','pumpkin-theme-fan':'theme-pumpkin',
   'fireplace-theme-pack':'theme-fireplace','fireplace-theme-fan':'theme-fireplace','campfire-theme-pack':'theme-campfire','campfire-theme-fan':'theme-campfire','fireflies-theme-pack':'theme-fireflies','fireflies-theme-fan':'theme-fireflies','beach-theme-pack':'theme-beach','beach-theme-fan':'theme-beach','christmas-tree-theme-pack':'theme-christmas-tree','christmas-tree-theme-fan':'theme-christmas-tree',

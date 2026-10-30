@@ -5,8 +5,8 @@
 .lesson-planner-panel :is(.lesson-planner-window,.lesson-planner-library){font-family:inherit;background:var(--planner-paper);box-shadow:0 20px 80px #15223530;animation:planner-surface-in .24s cubic-bezier(.2,.7,.3,1)}
 .lesson-planner-panel :is(.lesson-planner-header,.planner-library-header){background:var(--surface-solid);border-color:var(--planner-line);gap:16px}
 .lesson-planner-panel :is(.lesson-planner-brand,.planner-library-brand){justify-content:flex-start}
-.lesson-planner-panel :is(.lesson-planner-brand__mark,.planner-library-brand__mark){width:39px;height:39px;border:1px solid var(--planner-line);border-radius:12px;background:var(--surface-soft);color:var(--text);box-shadow:none}
-.lesson-planner-panel :is(.lesson-planner-brand__mark,.planner-library-brand__mark) svg{width:23px;height:23px}
+.lesson-planner-panel :is(.lesson-planner-brand__mark,.planner-library-brand__mark){width:33px;height:33px;flex:none;border:0;border-radius:0;background:none;color:#94620a;box-shadow:none}
+.lesson-planner-panel :is(.lesson-planner-brand__mark,.planner-library-brand__mark) svg{width:33px;height:33px}
 .lesson-planner-panel :is(.lesson-planner-brand,.planner-library-brand) h2{font-size:22px;font-weight:650;line-height:1.25;letter-spacing:-.025em}
 .lesson-planner-panel :is(.lesson-planner-brand,.planner-library-brand)>div>span{font-size:9px;letter-spacing:.11em;font-weight:550;color:var(--muted)}
 .lesson-planner-panel :is(.lesson-planner-back,.planner-library-back,.lesson-planner-header__actions>button,.planner-library-shortcut,.lesson-planner-date-nav>button,.lesson-planner-schedule-library__actions button,.lesson-planner-template-item__actions button,.lesson-planner-schedule-item__actions button){border:1px solid var(--planner-line);border-radius:10px;background:var(--surface-solid);color:var(--text);font-size:12px;font-weight:550;box-shadow:0 1px 3px #15263c05;transition:background .16s,border-color .16s,transform .16s}
@@ -140,7 +140,7 @@
 .lesson-planner-panel .lesson-planner-date-nav>button:not(.lesson-planner-today){font-size:22px;font-weight:400;line-height:1}
 .lesson-planner-panel .planner-book-open:focus-visible{outline:none}
 .lesson-planner-panel .planner-book-open:focus-visible .planner-book-art{outline:2px solid #749ac4;outline-offset:4px}
-@media(max-width:560px){.lesson-planner-panel .lesson-planner-header{grid-template-columns:34px minmax(0,1fr) auto;padding-inline:8px;gap:7px}.lesson-planner-panel .lesson-planner-back{width:32px;height:34px}.lesson-planner-panel .lesson-planner-header__actions{gap:4px}.lesson-planner-panel .lesson-planner-header__actions>button,.lesson-planner-panel .lesson-planner-header__actions>button:last-child,.lesson-planner-panel .lesson-planner-settings-button{width:30px!important;min-width:30px!important;height:34px;padding:0}.lesson-planner-panel .lesson-planner-brand{min-width:0}.lesson-planner-panel .lesson-planner-brand h2{font-size:15px;overflow:hidden;text-overflow:ellipsis}.lesson-planner-panel .lesson-planner-settings-wrap{min-width:0}}
+@media(max-width:560px){.lesson-planner-panel .lesson-planner-header{grid-template-columns:34px minmax(0,1fr) auto;padding-inline:8px;gap:7px}.lesson-planner-panel .lesson-planner-back{width:32px;height:34px}.lesson-planner-panel .lesson-planner-header__actions{gap:4px}.lesson-planner-panel .lesson-planner-header__actions>button:not(.profile-tool-exit),.lesson-planner-panel .lesson-planner-settings-button{width:30px!important;min-width:30px!important;height:34px;padding:0}.lesson-planner-panel .lesson-planner-brand{min-width:0}.lesson-planner-panel .lesson-planner-brand h2{font-size:15px;overflow:hidden;text-overflow:ellipsis}.lesson-planner-panel .lesson-planner-settings-wrap{min-width:0}}
 
 .lesson-planner-panel :is(#lesson-planner-scheduling-button,#lesson-planner-templates-button){display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .lesson-planner-panel :is(#lesson-planner-scheduling-button,#lesson-planner-templates-button)::before{content:none}
@@ -174,3 +174,18 @@
 
 .lesson-planner-panel .planner-library-intro{margin-bottom:14px}
 .lesson-planner-panel .planner-library-intro h3{margin-bottom:0}
+
+.lesson-planner-panel .planner-library-header{grid-template-columns:auto minmax(0,1fr) auto;gap:12px}
+@media(max-width:600px){.lesson-planner-panel .planner-library-header{gap:9px}.lesson-planner-panel .planner-library-brand h2{font-size:22px}}
+
+/* Keep the library title and exit clear of the account limit on narrow screens. */
+@media(max-width:600px){.lesson-planner-panel .lesson-planner-library{grid-template-rows:auto minmax(0,1fr)}.lesson-planner-panel .planner-library-header{height:auto;min-height:76px;padding:12px;row-gap:10px}.lesson-planner-panel .planner-library-header__actions{display:contents}.lesson-planner-panel .planner-library-brand{grid-column:2;grid-row:1;justify-content:flex-start}.lesson-planner-panel #lesson-planner-library-close{grid-column:3;grid-row:1}.lesson-planner-panel .planner-library-entitlement{grid-column:1/-1;grid-row:2;justify-content:flex-end;gap:6px}}
+
+/* Planner controls use the same flat, outlined chrome as the other tools. */
+.lesson-planner-panel .lesson-planner-header__actions .lesson-planner-settings-button{display:grid;place-items:center;width:38px;min-width:38px;height:38px;padding:8px;border:1px solid var(--planner-line);border-radius:10px;background:var(--surface-solid);color:var(--text);box-shadow:0 1px 3px #15263c05;transform:none;transition:background .16s,border-color .16s}
+.lesson-planner-panel .lesson-planner-settings-button:is(:hover,[aria-expanded="true"]){background:var(--surface-soft);border-color:#aabed4;box-shadow:0 1px 3px #15263c05;transform:none}
+.lesson-planner-panel .lesson-planner-view-tabs{height:36px;gap:6px;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.lesson-planner-panel .lesson-planner-view-tabs button{height:36px;min-width:58px;padding:0 13px;border:1px solid var(--planner-line);border-radius:9px;background:var(--surface-solid);color:var(--text);font-size:12px;font-weight:550;box-shadow:0 1px 3px #15263c05;transform:none;transition:background .16s,border-color .16s,color .16s}
+.lesson-planner-panel .lesson-planner-view-tabs button:hover{background:var(--surface-soft);border-color:#aabed4}
+.lesson-planner-panel .lesson-planner-view-tabs button:is(.is-active,[aria-selected="true"]){background:color-mix(in srgb,#7fa9d5 16%,var(--surface-solid));border-color:#adc5dd;color:var(--text);box-shadow:0 1px 3px #15263c05}
+@media(max-width:560px){.lesson-planner-panel .lesson-planner-view-tabs{gap:4px}.lesson-planner-panel .lesson-planner-view-tabs button{min-width:48px;padding-inline:9px}}

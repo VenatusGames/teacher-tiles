@@ -301,3 +301,39 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-modal .shop-browser-toolbar{z-index:10}
 .shop-select-button i{background:transparent;border-radius:0;flex:0 0 18px}
 .shop-select-button i svg{display:block;width:18px;height:18px}
+
+/* Thanksgiving uses the same title / theme cards / scattered cosmetics layout as Halloween. */
+.shop-thanksgiving-art{position:absolute;inset:0;overflow:hidden;border-radius:inherit;container-type:inline-size;background:radial-gradient(ellipse at 20% 90%,#985322 0%,#40291c 30%,transparent 65%),radial-gradient(ellipse at 85% 35%,#6d4929,transparent 62%),#191817;color:#fff3df}
+.shop-thanksgiving-title{position:absolute;left:5.1%;top:7%;width:32%;z-index:1}.shop-thanksgiving-title strong{display:block;font:800 4.8cqw/1.1 Georgia,serif;letter-spacing:-.035em;text-shadow:0 3px 0 #301306,0 5px 16px #0009}.shop-thanksgiving-title strong::first-line{color:#f9bd6b}
+.shop-thanksgiving-cards{position:absolute;left:39%;top:12%;width:55%;height:48%;display:flex;gap:4%}.shop-thanksgiving-card{position:relative;flex:1;min-width:0;border:.23cqw solid #c98238;border-radius:1.2cqw;background:center/cover;box-shadow:0 1.3cqw 2.2cqw #0009;overflow:hidden;transition:transform .3s ease,border-color .3s ease}.shop-thanksgiving-card span{position:absolute;bottom:0;left:0;right:0;padding:1.1cqw .3cqw;background:#241911f5;color:#ffe1ac;text-align:center;font:800 1.35cqw/1.2 Inter,sans-serif;white-space:nowrap;border-top:1px solid #e8a75b55}.shop-thanksgiving-card--forest{transform:rotate(-4deg) translateY(3%);background-image:url('../assets/themes/autumn-forest.webp')}.shop-thanksgiving-card--feast{transform:translateY(-3%);background-image:url('../assets/themes/feast.webp')}.shop-thanksgiving-card--leaves{transform:rotate(4deg) translateY(3%);background-image:url('../assets/themes/autumn-leaves.webp')}
+.shop-thanksgiving-art img.shop-thanksgiving-turkey{position:absolute;left:3%;bottom:0;width:30%;height:64%;object-fit:contain;filter:drop-shadow(0 8px 12px #0008);transition:transform .4s ease}
+.shop-thanksgiving-extras{position:absolute;inset:0;pointer-events:none}.shop-thanksgiving-art .shop-thanksgiving-extras img{position:absolute;width:7%;height:19%;object-fit:contain;filter:drop-shadow(0 3px 4px #0008)}.shop-thanksgiving-extras img:nth-child(1){left:33%;top:6%;transform:rotate(-18deg)}.shop-thanksgiving-extras img:nth-child(2){right:1%;top:56%;transform:rotate(18deg)}.shop-thanksgiving-extras img:nth-child(3){left:34%;top:60%;transform:rotate(-12deg)}.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:45%;top:61%;width:9%;height:26%;transform:rotate(-6deg)}.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:63%;top:64%;width:12%;height:29%;transform:rotate(-8deg)}.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(6){left:74%;top:64%;width:12%;height:29%;transform:rotate(8deg)}.shop-thanksgiving-extras img:nth-child(7){left:55%;top:64%;transform:rotate(4deg)}.shop-thanksgiving-extras img:nth-child(8){left:85%;top:63%;transform:rotate(14deg)}
+.shop-thanksgiving-cta{position:absolute;right:5%;bottom:2%;display:inline-flex;align-items:center;gap:1.2cqw;padding:.5cqw 1cqw;border-radius:1cqw;background:linear-gradient(#ffc066,#f3a13f);color:#28170e;box-shadow:inset 0 1px #ffe5af,0 4px 12px #0004;font:850 1.2cqw Inter,sans-serif}.shop-thanksgiving-cta>span{font-size:1.8cqw;line-height:1;transition:translate .25s}
+.shop-thanksgiving-wind{position:absolute;inset:0;pointer-events:none}.shop-thanksgiving-art .shop-thanksgiving-wind img{position:absolute;left:calc(var(--leaf)*12%);top:-4%;width:4%;height:13%;opacity:.28;transform:rotate(calc(var(--leaf)*43deg))}
+.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-card,.shop-banner:has(.shop-banner-link:focus-visible) .shop-thanksgiving-card{transform:translateY(-4%);border-color:#ffcd81}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-turkey{transform:rotate(-2deg) translateY(-2%)}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-cta>span{translate:3px 0}.shop-banner:has(.shop-banner-link:hover) .shop-thanksgiving-wind img{animation:shop-autumn-leaf 3s ease-in-out infinite alternate;animation-delay:calc(var(--leaf)*-.3s)}
+@keyframes shop-autumn-leaf{to{translate:18px 13px;rotate:18deg}}
+@media(prefers-reduced-motion:reduce){.shop-thanksgiving-art *{animation:none!important;transition:none!important}}
+
+/* Never expose default/inactive slides while live banner settings are loading. */
+.shop-banner.is-loading>:is(.shop-banner__track,.shop-banner__dots,.shop-banner__arrow){visibility:hidden}
+.shop-banner.is-loading::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,var(--surface-soft) 25%,var(--surface-solid) 45%,var(--surface-soft) 65%);background-size:200% 100%;animation:shop-banner-loading 1.4s ease-in-out infinite}
+@keyframes shop-banner-loading{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.shop-banner.is-loading::after{animation:none}}
+/* A warm woodland backdrop with clear space around each featured cosmetic. */
+.shop-thanksgiving-art{background:radial-gradient(ellipse at 18% 75%,#9d532a88,transparent 55%),linear-gradient(115deg,#371d18,#33251b 62%,#4a331c)}
+.shop-thanksgiving-art::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#331c16b8,#281f1780),url('../assets/themes/autumn-forest.webp') center 60%/cover;opacity:.48;pointer-events:none}
+.shop-thanksgiving-title{left:2%;top:8%;width:34%;text-align:center}
+.shop-thanksgiving-title strong{font-size:4.5cqw;line-height:1.1}
+.shop-thanksgiving-cards{left:40%;top:11%;width:54%;height:48%}
+.shop-thanksgiving-art img.shop-thanksgiving-turkey{left:5%;bottom:3%;width:27%;height:59%}
+.shop-thanksgiving-extras img:nth-child(1){left:32%;top:45%;width:8%;height:23%;transform:rotate(-20deg)}
+.shop-thanksgiving-extras img:nth-child(2){right:3%;top:62%;width:9%;height:25%;transform:rotate(14deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(3){left:44%;top:63%;width:9%;height:24%;transform:rotate(-6deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:59%;top:63%;width:12%;height:29%;transform:rotate(-8deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:73%;top:63%;width:12%;height:29%;transform:rotate(8deg)}
+
+/* Both seasonal planners sit together in the live Thanksgiving banner. */
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(3){left:43%;top:63%;width:9%;height:29%;transform:rotate(-5deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:53%;top:63%;width:9%;height:29%;transform:rotate(4deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:64%;top:63%;width:11%;height:29%;transform:rotate(-8deg)}
+.shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(6){left:77%;top:63%;width:11%;height:29%;transform:rotate(8deg)}

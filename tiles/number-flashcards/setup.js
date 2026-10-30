@@ -23,9 +23,9 @@ function setupNumberFlashcards(m){
   const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureValueSize=value=>{
-    const rect=card.getBoundingClientRect();
-    const maxWidth=Math.max(80,rect.width-18);
-    const maxHeight=Math.max(80,rect.height-18);
+    const rect=flashcardContentBox(card);
+    const maxWidth=Math.max(80,rect.width);
+    const maxHeight=Math.max(80,rect.height);
     measurer.textContent=value;
     let low=28;
     let high=Math.max(36,Math.min(720,Math.floor(maxHeight*1.35)));
@@ -33,7 +33,7 @@ function setupNumberFlashcards(m){
     while(low<=high){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
-      const measured=measurer.getBoundingClientRect();
+      const measured={width:measurer.offsetWidth,height:measurer.offsetHeight};
       if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){best=mid;low=mid+1}
       else high=mid-1;
     }

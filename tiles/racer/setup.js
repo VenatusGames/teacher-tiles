@@ -1,56 +1,38 @@
 function setupRacer(m){
   const importView=m.querySelector('.racer-import'),dashboard=m.querySelector('.racer-dashboard'),loaderAnchor=m.querySelector('.racer-loader-anchor');
   const className=m.querySelector('.racer-class-name'),classLogo=m.querySelector('.racer-class-logo'),changeClass=m.querySelector('.racer-change-class');
-  const stage=m.querySelector('.racer-stage'),racers=m.querySelector('.racer-standees'),studentSelect=m.querySelector('.racer-student'),distanceInput=m.querySelector('.racer-distance'),moveButton=m.querySelector('.racer-move'),reset=m.querySelector('.racer-reset');
+  const racers=m.querySelector('.racer-standees'),studentSelect=m.querySelector('.racer-student'),distanceInput=m.querySelector('.racer-distance'),moveButton=m.querySelector('.racer-move'),reset=m.querySelector('.racer-reset');
   const status=m.querySelector('.racer-status'),win=m.querySelector('.racer-win'),winName=m.querySelector('.racer-win-name'),winTotal=m.querySelector('.racer-win-total'),winDone=m.querySelector('.racer-win-done');
+  movePbisClassHeaderToFooter(m,'.racer-header');
   let activeClassId='',selectedStudent='';
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
   const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};
-  const curveY=t=>54-40*t*(1-t);
   const keyFor=name=>starChartStudentKey(name);
-  const studentIndex=(r,name)=>Math.max(0,r.students.indexOf(name));
-  const tierFor=index=>index%6;
-  const groupFor=index=>Math.floor(index/6)%5;
-  const positionFor=(r,name,p)=>{
-    const index=studentIndex(r,name),t=Math.max(0,Math.min(1,(p.positions[keyFor(name)]||0)/100));
-    const x=Math.max(4.7,Math.min(95.3,6+t*88+(groupFor(index)-2)*.32));
-    return{x,y:curveY(t),tier:tierFor(index),t};
-  };
   const updateStatus=()=>{
     const r=roster();if(!r){status.textContent='';return}
     const p=progress(),finishers=r.students.filter(name=>p.finished[keyFor(name)]).length;
-    status.textContent=finishers?`${finishers} ${finishers===1?'finisher':'finishers'} • Race continues until you reset`:'Move a student forward to begin the race';
-  };
-  const buildStandee=name=>{
-    const r=roster(),visual=studentProfileVisual(name,r?.id||'');
-    const node=document.createElement('button');node.type='button';node.className='racer-standee';node.dataset.student=name;node.setAttribute('aria-label',`Select ${name}`);
-    node.innerHTML='<span class="racer-character"><span class="racer-face"><i></i><b></b></span><strong></strong><small>RACER</small></span><span class="racer-stick" aria-hidden="true"></span><span class="racer-winner-mark" aria-hidden="true">★</span>';
-    node.style.setProperty('--racer-hue',String(visual.hue));
-    node.querySelector('.racer-character strong').textContent=name;
-    node.addEventListener('click',()=>{selectedStudent=name;studentSelect.value=name;renderSelection()});
-    return node;
+    status.textContent=selectedStudent?`${selectedStudent} · ${Math.round(p.positions[keyFor(selectedStudent)]||0)}% · ${p.studentWins[keyFor(selectedStudent)]||0} race wins`:finishers?`${finishers} ${finishers===1?'finisher':'finishers'} • Race continues until you reset`:'Move a student forward to begin the race';
   };
   const renderSelection=()=>{
     const r=roster();if(!r)return;
     const p=progress(),key=keyFor(selectedStudent),done=Boolean(p.finished[key]);
-    racers.querySelectorAll('.racer-standee').forEach(node=>node.classList.toggle('is-selected',node.dataset.student===selectedStudent));
+    racers.querySelectorAll('.racer-standee').forEach(node=>{const selected=node.dataset.student===selectedStudent;node.classList.toggle('is-selected',selected);node.setAttribute('aria-pressed',String(selected))});
+    updateStatus();
     moveButton.disabled=!selectedStudent||done;distanceInput.disabled=!selectedStudent||done;
-    moveButton.textContent=done?'Finished':'Add distance';
+    moveButton.textContent=done?'Finished':'Add Distance';
   };
   const renderTrack=()=>{
     const r=roster();if(!r)return;
-    const p=progress(),wanted=new Set(r.students);
-    racers.querySelectorAll('.racer-standee').forEach(node=>{if(!wanted.has(node.dataset.student))node.remove()});
-    r.students.forEach(name=>{
-      let node=[...racers.children].find(child=>child.dataset.student===name);
-      if(!node){node=buildStandee(name);racers.append(node);requestAnimationFrame(()=>node.classList.add('is-ready'))}
-      const pos=positionFor(r,name,p),key=keyFor(name),wins=p.studentWins[key]||0;
-      node.style.left=`${pos.x}%`;node.style.top=`${pos.y}%`;node.style.setProperty('--racer-stick-height',`${18+pos.tier*14}px`);node.style.zIndex=String(20+pos.tier);
-      node.classList.toggle('is-finished',Boolean(p.finished[key]));node.title=`${name} • ${Math.round(p.positions[key]||0)}% • ${wins} Race ${wins===1?'Win':'Wins'}`;
-      const mark=node.querySelector('.racer-winner-mark');if(mark)mark.title=`${wins} Race ${wins===1?'Win':'Wins'}`;
-    });
-    updateStatus();renderSelection();
+    window.TeacherTilesRacerVisuals.render(racers,r,progress(),keyFor);
+    renderSelection();
   };
+  racers.addEventListener('click',event=>{
+    const node=event.target.closest('.racer-standee');if(!node||!racers.contains(node))return;
+    selectedStudent=node.dataset.student;studentSelect.value=selectedStudent;renderSelection();
+    notifyBoardChanged('racer-student');
+  });
+  // Scrolling a large class must not pan or zoom the board behind the tile.
+  m.querySelector('.racer-course-scroll').addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
   const render=()=>{
     const r=roster();if(!r)return;
     className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);
@@ -89,7 +71,7 @@ function setupRacer(m){
   m.querySelector('.racer-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
   const refresh=()=>{if(activeClassId&&!roster())setClass('');else render()};
   ['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.addEventListener(name,refresh));
-  const ro=new ResizeObserver(renderTrack);ro.observe(stage);
+  const ro=new ResizeObserver(()=>window.TeacherTilesRacerVisuals.layout(racers));ro.observe(racers);
   m._boardGetState=()=>({activeClassId,selectedStudent});
   m._boardSetState=state=>{selectedStudent=String(state?.selectedStudent||'');setClass(String(state?.activeClassId||''))};
   const prior=m._cleanup;m._cleanup=()=>{prior?.();detach();ro.disconnect();['teachertiles:classeschange','teachertiles:racerchange'].forEach(name=>window.removeEventListener(name,refresh))};

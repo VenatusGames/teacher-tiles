@@ -2,8 +2,9 @@ import {firebaseConfig} from '../firebase-config.js';
 import {el,eventArt,eventDates,resultRows,eventTitle} from './shared.js?v=20261021-banner-library';
 const pane=document.querySelector('[data-settings-pane="news"]'),eventsRoot=document.getElementById('community-events'),pollsRoot=document.getElementById('community-polls'),status=document.getElementById('community-status');
 let feed=null,votes={},loadedAt=0,epoch=0,busy=false,identity='',voteReady=false;
-const eventLoading=el('div','community-events-loading','Loading events…');eventLoading.setAttribute('role','status');eventLoading.hidden=true;eventsRoot.before(eventLoading);
-function setEventsLoading(loading){eventLoading.hidden=!loading;eventsRoot.setAttribute('aria-busy',String(loading));}
+const eventLoading=el('div','community-loading community-events-loading','Loading events…');eventLoading.setAttribute('role','status');eventLoading.hidden=true;eventsRoot.before(eventLoading);
+const pollLoading=el('div','community-loading community-polls-loading','Loading Polls');pollLoading.setAttribute('role','status');pollLoading.hidden=true;pollsRoot.before(pollLoading);
+function setFeedLoading(loading){eventLoading.hidden=!loading;pollLoading.hidden=!loading;eventsRoot.setAttribute('aria-busy',String(loading));pollsRoot.setAttribute('aria-busy',String(loading));}
 eventsRoot.tabIndex=0;eventsRoot.setAttribute('role','region');eventsRoot.setAttribute('aria-label','Running events');
 const uid=()=>window.TeacherTilesAuth?.user?.uid||'';
 const call=async data=>{const r=await window.TeacherTilesAuth.call('communityPolls',data);return r?.data??r};
@@ -24,11 +25,11 @@ function render(){
  card.append(body);pollsRoot.append(card)}
 }
 async function vote(pollId,optionId,options){if(!uid()||votes[pollId])return;const token=epoch,user=uid();options.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Submitting vote…';try{const result=await call({action:'vote',pollId,optionId});if(token!==epoch||user!==uid())return;votes[pollId]=result.optionId;status.textContent='Your vote is recorded.';render()}catch(e){if(token!==epoch)return;status.textContent=e.message||'Unable to submit your vote. Please try again.';loadedAt=0;render();if(String(e.code).includes('failed-precondition'))void load(true)}}
-async function load(force=false){const user=uid();if(busy||!force&&feed&&Date.now()-loadedAt<30000&&identity===user)return;const token=++epoch;identity=user;busy=true;votes={};voteReady=false;status.textContent='Loading community…';setEventsLoading(true);render();try{
- const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/communityFeed`,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('Community could not load. Please try again.');const next=await response.json();if(token!==epoch)return;feed=next;setEventsLoading(false);render();
+async function load(force=false){const user=uid();if(busy||!force&&feed&&Date.now()-loadedAt<30000&&identity===user)return;const token=++epoch;identity=user;busy=true;votes={};voteReady=false;status.textContent='Loading community…';setFeedLoading(true);render();try{
+ const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/communityFeed`,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('Community could not load. Please try again.');const next=await response.json();if(token!==epoch)return;feed=next;setFeedLoading(false);render();
  if(user){const result=await call({action:'status'});if(token!==epoch||user!==uid())return;votes=result.votes||{}}voteReady=true;loadedAt=Date.now();status.textContent='';render();
  }catch(e){if(token!==epoch)return;status.replaceChildren(document.createTextNode(e.message||'Community could not load. '));const retry=el('button','community-retry','Retry');retry.type='button';retry.onclick=()=>load(true);status.append(' ',retry);if(!feed){eventsRoot.replaceChildren();pollsRoot.replaceChildren()}}
- finally{if(token===epoch){busy=false;setEventsLoading(false)}}}
+ finally{if(token===epoch){busy=false;setFeedLoading(false)}}}
 window.addEventListener('teachertiles:settings-tab',e=>{if(e.detail?.name==='news')void load()});
 const modal=document.getElementById('settings-modal');new MutationObserver(()=>{if(!modal.hidden&&!pane.hidden)void load()}).observe(modal,{attributes:true,attributeFilter:['hidden']});
-for(const event of ['teachertiles:accountchange','teachertiles:authready'])window.addEventListener(event,()=>{if(identity===uid())return;epoch++;busy=false;setEventsLoading(false);identity=uid();votes={};voteReady=false;loadedAt=0;render();if(!modal.hidden&&!pane.hidden)void load(true)});
+for(const event of ['teachertiles:accountchange','teachertiles:authready'])window.addEventListener(event,()=>{if(identity===uid())return;epoch++;busy=false;setFeedLoading(false);identity=uid();votes={};voteReady=false;loadedAt=0;render();if(!modal.hidden&&!pane.hidden)void load(true)});

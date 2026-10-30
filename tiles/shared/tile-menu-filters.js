@@ -13,7 +13,22 @@ if(menu){
   group.append(button);gradeButtons.push(button);
  }
  menu.element.append(panel);
- window.TeacherTilesTileFilters=Object.freeze({get active(){return grades.size>0;},matches(item){return !grades.size||(item.dataset.gradeLevels||'').split(/\s+/).some(grade=>grade==='all'||grades.has(grade));}});
+ window.TeacherTilesTileFilters=Object.freeze({
+  get active(){return grades.size>0;},
+  matches(item){return !grades.size||(item.dataset.gradeLevels||'').split(/\s+/).some(grade=>grade==='all'||grades.has(grade));},
+  applyDefault(module){
+   if(grades.size!==1)return;
+   const [grade]=grades;
+   // Only explicitly marked grade controls participate; unrelated selectors keep their defaults.
+   for(const select of module.querySelectorAll('select[data-tile-grade-select]')){
+    const options=[...select.options].filter(option=>!option.disabled);
+    const option=options.find(option=>option.value===grade)||options.find(option=>(option.dataset.gradeLevels||'').split(/\s+/).includes(grade));
+    if(!option||select.disabled||select.value===option.value)continue;
+    select.value=option.value;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+   }
+  }
+ });
  function position(){const r=trigger.getBoundingClientRect();panel.style.left=Math.max(8,Math.min(r.right-panel.offsetWidth,innerWidth-panel.offsetWidth-8))+'px';panel.style.top=Math.max(8,Math.min(r.bottom+8,innerHeight-panel.offsetHeight-8))+'px';}
  function update(){
   const active=grades.size>0;trigger.classList.toggle('is-active',active);
@@ -30,6 +45,7 @@ if(menu){
  panel.querySelector('[data-close]').onclick=()=>{close();trigger.focus();};
  panel.querySelector('[data-clear]').onclick=()=>{grades.clear();update();gradeButtons[0].focus();};
  window.addEventListener('resize',()=>{if(panel.matches(':popover-open'))position();});
+ new ResizeObserver(()=>{if(panel.matches(':popover-open'))position();}).observe(menu.element);
  new MutationObserver(()=>{if(!menu.element.classList.contains('is-open'))close();}).observe(menu.element,{attributes:true,attributeFilter:['class']});
  menu.element.querySelector('.context-menu__title-row').addEventListener('pointerdown',event=>{if(!event.target.closest('button'))close();});
  update();

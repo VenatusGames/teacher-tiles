@@ -2,6 +2,8 @@ import {firebaseConfig} from '../firebase-config.js';
 export function setupManagedShop({modal,products,catalogProducts,bindProduct,sync,openProduct,replaceBanners,getPage=()=>'home'}){
  const originals=new Map(catalogProducts.map(c=>[c.dataset.shopProduct,{price:Number(c.dataset.shopPrice),description:c.querySelector('p')?.textContent||''}]));
  const originalBanners=[...modal.querySelectorAll('[data-shop-banner]')].map((node,i)=>({node:node.cloneNode(true),id:`default-${node.querySelector('[data-shop-banner-target]')?.dataset.shopBannerTarget||i}`}));
+ const banner=modal.querySelector('.shop-banner');
+ const ready=()=>{banner.classList.remove('is-loading');banner.removeAttribute('aria-busy')};
  let settings=null,lastFetch=0,pending=null,expiry=0,offset=0,bannerRevision=-1;
  const saleSection=document.createElement('section');saleSection.className='shop-managed-deals';saleSection.hidden=true;saleSection.innerHTML='<header><h2>Sales & Bundles</h2><nav aria-label="Browse sales and bundles"><button type="button" data-deal-step="-1" aria-label="Previous offers"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></button><button type="button" data-deal-step="1" aria-label="Next offers"><svg viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></svg></button></nav></header><div class="shop-product-grid"></div>';
  const homeAnchor=document.createComment('Sales and bundles home position');modal.querySelector('.shop-featured-library').before(homeAnchor,saleSection);
@@ -43,15 +45,18 @@ export function setupManagedShop({modal,products,catalogProducts,bindProduct,syn
   const next=Object.values({...settings.products,...settings.bundles}).flatMap(p=>p.sale?[p.sale.startsAt,p.sale.endsAt]:[]).filter(t=>t>now()).sort((a,b)=>a-b)[0];
   if(next)expiry=setTimeout(apply,Math.min(next-now()+50,2147483647));
   if(bannerRevision!==settings.revision){
-   const slides=originalBanners.filter(b=>!settings.banners.hidden.includes(b.id)&&!(settings.banners.removed||[]).includes(b.id)).map(b=>b.node.cloneNode(true));
-   for(const b of settings.banners.custom){if(b.active===false)continue;const slide=document.createElement('article');slide.className='shop-banner__slide';slide.dataset.shopBanner='';const button=document.createElement('button');button.type='button';button.className='shop-banner-link';button.dataset.shopBannerTarget=b.target;button.setAttribute('aria-label',b.title);const img=document.createElement('img');img.src=b.url.startsWith('banners/')?new URL('../'+b.url,import.meta.url).href:b.url;img.alt=b.title;slide.append(button,img);slides.push(slide)}
+   const slides=originalBanners.filter(b=>!settings.banners.hidden.includes(b.id)&&!(settings.banners.removed||[]).includes(b.id)).map(b=>{const node=b.node.cloneNode(true);node.dataset.bannerId=b.id;return node});
+   for(const b of settings.banners.custom){if(b.active===false)continue;const slide=document.createElement('article');slide.className='shop-banner__slide';slide.dataset.shopBanner='';slide.dataset.bannerId=b.id;const button=document.createElement('button');button.type='button';button.className='shop-banner-link';button.dataset.shopBannerTarget=b.target;button.setAttribute('aria-label',b.title);const img=document.createElement('img');img.src=b.url.startsWith('banners/')?new URL('../'+b.url,import.meta.url).href:b.url;img.alt=b.title;slide.append(button,img);slides.push(slide)}
+   const order=new Map((settings.banners.order||[]).map((id,i)=>[id,i]));
+   slides.sort((a,b)=>(order.get(a.dataset.bannerId)??Infinity)-(order.get(b.dataset.bannerId)??Infinity));
    replaceBanners(slides);bannerRevision=settings.revision;
   }
   sync();requestAnimationFrame(updateArrows);
  }
  async function refresh(force=false){
-  if(pending)return pending;if(!force&&Date.now()-lastFetch<30000){apply();return}
-  pending=(async()=>{try{const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/shopManagement`,{signal:AbortSignal.timeout(10000),cache:'no-cache'});if(!response.ok)throw Error('Shop management unavailable');const data=await response.json();if(!Number.isSafeInteger(data.revision)||!data.products||!data.bundles||!data.banners)throw Error('Invalid shop configuration');settings=data;offset=Number(data.serverTime)-Date.now()||0;lastFetch=Date.now();apply()}catch(e){console.warn('Live shop settings could not load',e)}finally{pending=null}})();return pending;
+  if(pending)return pending;if(!force&&Date.now()-lastFetch<30000){apply();ready();return}
+  banner.classList.add('is-loading');banner.setAttribute('aria-busy','true');
+  pending=(async()=>{try{const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/shopManagement`,{signal:AbortSignal.timeout(10000),cache:'no-cache'});if(!response.ok)throw Error('Shop management unavailable');const data=await response.json();if(!Number.isSafeInteger(data.revision)||!data.products||!data.bundles||!data.banners)throw Error('Invalid shop configuration');settings=data;offset=Number(data.serverTime)-Date.now()||0;lastFetch=Date.now();apply()}catch(e){console.warn('Live shop settings could not load',e);if(!settings)banner.hidden=true;}finally{ready();pending=null}})();return pending;
  }
  return {refresh,setPage};
 }

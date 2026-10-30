@@ -1,0 +1,16 @@
+.date-module .date-face{position:absolute;inset:26px 12px 12px;transition:bottom .18s ease;border-radius:18px}
+.date-module .date-display{inset:8px;overflow:hidden}
+.date-module:is(:hover,:has(:focus-visible),.tile-display-open) .date-face{bottom:56px}
+.date-module[data-tile-skin^="date-"] .date-face{background:var(--date-art) center/100% 100% no-repeat;box-shadow:0 4px 10px #17203315}
+.date-module[data-tile-skin="date-desk"]{--date-art:url("assets/desk.svg?v=2");--date-ink:#634b41}
+.date-module[data-tile-skin="date-botanical"]{--date-art:url("assets/botanical.svg?v=3");--date-ink:#3d5c48}
+.date-module[data-tile-skin="date-midnight"]{--date-art:url("assets/midnight.svg?v=2");--date-ink:#f0e6cf}
+/* Skins fill the face at any aspect ratio. Keep their reading area stable on hover. */
+.date-module[data-tile-skin^="date-"] .date-face{inset:0;overflow:hidden;border-radius:18px;transition:none}
+.date-module[data-tile-skin^="date-"] .date-display{inset:24% 9% max(44px,12%);overflow:hidden}
+.date-module[data-tile-skin^="date-"][data-text="dark"] .date-display{color:var(--date-ink)}
+@media(hover:none){.date-module:not([data-tile-skin]) .date-face{bottom:56px}}
+@media(prefers-reduced-motion:reduce){.date-module .date-face{transition:none}}
+
+/* The artwork itself is the tile surface; do not frame it with the default white card. */
+.date-module[data-tile-skin^="date-"]{background:transparent!important;border-color:transparent;box-shadow:none!important}

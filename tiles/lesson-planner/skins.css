@@ -120,3 +120,27 @@
 
 /* Keep the paired tools together while either menu is open or keyboard focused. */
 .lesson-planner-panel .planner-book-card:has(:is(.planner-book-customize,.planner-book-settings):is([aria-expanded="true"],:focus-visible)) :is(.planner-book-customize,.planner-book-settings){opacity:1;pointer-events:auto;transform:none}
+
+[data-planner-skin="autumn"] .planner-book-art{--book-cover:#a85d35}
+[data-planner-skin="autumn"] .planner-book-cover{background:#b16a38 url('../../assets/themes/autumn-leaves.webp') center/cover;border-color:#875432;box-shadow:inset 3px 0 6px #fff4,inset -4px 0 8px #4e281944}
+[data-planner-skin="autumn"] .planner-book-cover-label{inset:30% 16% 26%;padding:8px;background:#fff5dbeF;border:3px double #ac7838;border-radius:4px;color:#694227;box-shadow:0 3px 6px #48281733;justify-content:center}
+[data-planner-skin="autumn"] .planner-book-cover-label .planner-book-embossed-title{color:#694227;text-shadow:none;font-weight:700}
+[data-planner-skin="autumn"] :is(.planner-book-elastic,.planner-book-loop){display:none}
+[data-planner-skin="autumn"] .planner-book-binding>span{border-color:#b38b46;border-top-color:#ffe2a0;background:linear-gradient(#ffdf9c, #b38b46 45%, transparent 46%)}
+
+/* Autumn uses the selected planner color on its title plaque, keeping the leaf artwork intact. */
+[data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{background:var(--planner-book-color,#fff5db);color:var(--planner-book-ink,#694227);border-color:color-mix(in srgb,var(--planner-book-ink,#694227) 55%,#ac7838)}
+[data-planner-skin="autumn"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label :is(.planner-book-embossed-title,small){color:inherit}
+
+/* Thanksgiving stationery: the editable title stays above the printed harvest art. */
+@font-face{font-family:'TT Planner Script';src:url('../../assets/fonts/pacifico/pacifico.ttf') format('truetype');font-weight:400;font-display:swap}
+[data-planner-skin="thanksgiving"] .planner-book-art{--book-cover:#f8f0db;border-radius:3px 6px 6px 3px}
+[data-planner-skin="thanksgiving"] .planner-book-cover{background:#fbf5e5 url('assets/thanksgiving.webp?v=20261029') center/100% 100% no-repeat;border-color:#cdbd96;border-radius:3px 6px 6px 3px;box-shadow:inset 2px 0 4px #75472112,inset -2px 0 3px #75472118}
+[data-planner-skin="thanksgiving"] .planner-book-art::before{border-radius:3px 6px 6px 3px}
+[data-planner-skin="thanksgiving"] .planner-book-cover::after{display:none}
+[data-planner-skin="thanksgiving"] .planner-book-cover-label{inset:2% 7% 85% 12%;padding:0;background:none;border:0;border-radius:0;box-shadow:none;justify-content:center;color:#704923}
+[data-planner-skin="thanksgiving"] .planner-book-cover-label .planner-book-embossed-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:'TT Planner Script',Georgia,serif!important;font-size:clamp(7px,8cqi,19px)!important;font-weight:400;line-height:1.05;letter-spacing:0;margin:0;text-shadow:none;text-wrap:balance}
+[data-planner-skin="thanksgiving"] :is(.planner-book-cover-label small,.planner-book-loop,.planner-book-elastic){display:none}
+[data-planner-skin="thanksgiving"] .planner-book-binding>span{border-color:#61432c;border-top-color:#bd976d;border-bottom-color:#48311e;background:linear-gradient(#c7aa84 0 22%,#725137 23% 40%,transparent 41%)}
+[data-planner-skin="thanksgiving"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:color-mix(in srgb,var(--planner-book-color) 65%,#51351f)}
+.planner-skin-holiday-badge{font-size:9px;justify-self:center;margin:2px 0}
