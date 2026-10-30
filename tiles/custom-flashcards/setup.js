@@ -55,9 +55,9 @@ function setupCustomFlashcards(m){
   };
 
   const measureTextSize=(value,hasImage)=>{
-    const rect=card.getBoundingClientRect();
-    const maxWidth=Math.max(100,rect.width-48);
-    const maxHeight=Math.max(44,hasImage?rect.height*.28:rect.height-48);
+    const rect=flashcardContentBox(card);
+    const maxWidth=Math.max(100,rect.width);
+    const maxHeight=Math.max(44,hasImage?rect.height*.28:rect.height);
     const computed=getComputedStyle(textEl);
     measurer.textContent=value||' ';
     measurer.style.width=`${maxWidth}px`;
@@ -71,7 +71,7 @@ function setupCustomFlashcards(m){
     while(low<=high){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
-      const measured=measurer.getBoundingClientRect();
+      const measured={width:Math.max(measurer.offsetWidth,measurer.scrollWidth),height:measurer.offsetHeight};
       if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
         best=mid;
         low=mid+1;

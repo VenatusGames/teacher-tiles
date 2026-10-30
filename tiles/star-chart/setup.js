@@ -5,7 +5,7 @@ function setupStarChart(m){
   const wholeClassName=m.querySelector('.starchart-whole-class-name');
   const wholeClassLogo=m.querySelector('.starchart-whole-badge');
   const changeClass=m.querySelector('.starchart-change-class');
-  const modeButtons=[...m.querySelectorAll('[data-starchart-mode]')];
+  const modeToggle=m.querySelector('.pbis-scope-toggle');
   const studentView=m.querySelector('.starchart-student-view');
   const wholeView=m.querySelector('.starchart-whole-view');
   const studentGrid=m.querySelector('.starchart-student-grid');
@@ -15,15 +15,34 @@ function setupStarChart(m){
   const wholeAdd=m.querySelector('.starchart-whole-add');
   const wholeRemove=m.querySelector('.starchart-whole-remove');
   const showAllButton=m.querySelector('.starchart-show-all');
+  const search=document.createElement('input');search.type='search';search.className='starchart-search';search.placeholder='Find a student';search.setAttribute('aria-label','Find a student');
+  m.querySelector('.starchart-student-toolbar').prepend(search);
+  const filterStudents=()=>{
+    const query=search.value.trim().toLocaleLowerCase();let visible=0;
+    studentGrid.querySelectorAll('.starchart-student-row').forEach(row=>{row.hidden=!row.querySelector('strong').textContent.toLocaleLowerCase().includes(query);if(!row.hidden)visible++});
+    noStudents.hidden=visible>0;
+    noStudents.textContent=roster?.students?.length?'No students match your search.':'Add students in Class View to begin awarding stars.';
+    if(showAllStudents)scheduleShowAllSize();
+  };
+  search.addEventListener('input',filterStudents);
   let activeClassId='';
   let pendingClassId='';
   let roster=null;
   let progress=normalizeStarChartProgress(null,[]);
   let showAllStudents=false;
   let collapsedHeight=Math.max(380,m.offsetHeight||560);
+  let collapsedWidth=Math.max(380,m.offsetWidth||700);
   let showAllFrame=0;
-  const animationTimers=new Set();
   const flyingStars=new Set();
+  const awardFrames=new Set();
+  const studentRows=new Map();
+  let awardFrame=0;
+  const pendingAwards=new Map();
+  const displayedCount=(key,total)=>Math.max(0,normalizeStarChartCount(total)-(pendingAwards.get(key)||0));
+  const clearAwards=()=>{
+    cancelAnimationFrame(awardFrame);awardFrame=0;awardFrames.clear();
+    flyingStars.forEach(star=>star.remove());flyingStars.clear();pendingAwards.clear();
+  };
   const bundleLevels=[
     {weight:1000,level:3,label:'1K'},
     {weight:100,level:2,label:'100'},
@@ -35,15 +54,14 @@ function setupStarChart(m){
 
   const syncShowAllSize=()=>{
     showAllFrame=0;
+    if(document.fullscreenElement===m)return;
     if(!showAllStudents||progress.mode!=='student'||studentView.hidden||studentGrid.hidden){
-      if(showAllStudents)m.style.height=`${collapsedHeight}px`;
+      if(showAllStudents){m.style.height=`${collapsedHeight}px`;m.style.width=`${collapsedWidth}px`;}
       return;
     }
-    m.style.height=`${collapsedHeight}px`;
-    const availableGridHeight=studentGrid.clientHeight;
-    const fullGridHeight=studentGrid.scrollHeight;
-    const desired=fullGridHeight<=availableGridHeight+1?collapsedHeight:Math.ceil(collapsedHeight-availableGridHeight+fullGridHeight+4);
-    m.style.height=`${clamp(desired,collapsedHeight,Math.max(collapsedHeight,BOARD_HEIGHT-m.offsetTop))}px`;
+    // Natural height follows the shelf and padding together, without a second resize on landing.
+    m.style.width=`${Math.max(1000,collapsedWidth)}px`;
+    m.style.height='auto';
   };
 
   const scheduleShowAllSize=()=>{
@@ -53,30 +71,29 @@ function setupStarChart(m){
 
   const setShowAllStudents=(show,{notify=false,captureHeight=true}={})=>{
     const next=Boolean(show);
-    if(next&&!showAllStudents&&captureHeight)collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);
+    if(next&&!showAllStudents&&captureHeight){collapsedHeight=Math.max(380,m.offsetHeight||collapsedHeight);collapsedWidth=Math.max(380,m.offsetWidth||collapsedWidth);}
     showAllStudents=next;
     m.classList.toggle('is-showing-all-students',showAllStudents);
     showAllButton.setAttribute('aria-pressed',String(showAllStudents));
+    if(roster)renderStudentGrid();
     if(showAllStudents)scheduleShowAllSize();
     else{
       if(showAllFrame)cancelAnimationFrame(showAllFrame);
       showAllFrame=0;
-      m.style.height=`${collapsedHeight}px`;
+      if(document.fullscreenElement!==m){m.style.height=`${collapsedHeight}px`;m.style.width=`${collapsedWidth}px`;}
     }
     if(notify)notifyBoardChanged('star-chart-show-all');
   };
 
-  const scheduleAnimation=(callback,delay)=>{
-    const timer=setTimeout(()=>{animationTimers.delete(timer);callback()},delay);
-    animationTimers.add(timer);
-    return timer;
-  };
-
   const renderStarBundles=(container,total,ownerLabel)=>{
     const count=normalizeStarChartCount(total);
-    container.replaceChildren();
+    if(container.dataset.total===String(count)&&container._starOwner===ownerLabel)return;
+    container._starOwner=ownerLabel;
+    container.querySelector('.is-award-slot')?.remove();
+    const previous=[...container.children];let position=0;
     container.dataset.total=String(count);
     if(!count){
+      container.replaceChildren();
       const empty=document.createElement('span');
       empty.className='starchart-star-empty';
       empty.textContent='No stars yet';
@@ -87,68 +104,105 @@ function setupStarChart(m){
     let remaining=count;
     bundleLevels.forEach(level=>{
       const quantity=Math.floor(remaining/level.weight);
-      remaining%=level.weight;
-      for(let index=0;index<quantity;index++){
-        const token=document.createElement('button');
-        token.type='button';
+      for(let index=0;index<quantity&&remaining>0;index++){
+        const value=level.weight;
+        remaining-=value;
+        const old=previous[position++];
+        if(old?.dataset.bundleValue===String(value))continue;
+        const token=document.createElement('span');
         token.className=`starchart-star-token starchart-star-token--level-${level.level}`;
-        token.dataset.starAction='remove';
-        token.dataset.bundleValue=String(level.weight);
-        const represented=level.weight===1?'1 star':`${level.weight.toLocaleString()} stars`;
-        token.setAttribute('aria-label',`${represented} for ${ownerLabel}. Remove one star.`);
-        token.title=`${represented} combined · click to remove 1`;
+        if(value>level.weight)token.classList.add('is-bundle');
+        token.dataset.bundleValue=String(value);
+        const represented=value===1?'1 star':`${value.toLocaleString()} stars`;
+        token.setAttribute('role','img');token.setAttribute('aria-label',`${represented} for ${ownerLabel}`);
+        token.title=`${represented}${value>1?' grouped together':''}`;
         const icon=document.createElement('span');icon.textContent='★';icon.setAttribute('aria-hidden','true');
-        const value=document.createElement('small');value.textContent=level.label;value.setAttribute('aria-hidden','true');
-        token.append(icon,value);container.append(token);
+        const badge=document.createElement('small');badge.textContent=value>=1000&&value%1000===0?`${value/1000}K`:value.toLocaleString();badge.setAttribute('aria-hidden','true');
+        token.append(icon,badge);if(old)old.replaceWith(token);else container.append(token);
       }
     });
+    previous.slice(position).forEach(node=>node.remove());
   };
 
-  const landingTargetFor=studentKey=>{
-    const container=studentKey==='__whole__'?wholeBundles:[...studentGrid.querySelectorAll('[data-student-key]')].find(row=>row.dataset.studentKey===studentKey)?.querySelector('.starchart-star-stage');
+  const tokenCount=(total,whole=false)=>{
+    let remaining=total,count=0;
+    for(const level of bundleLevels){count+=Math.floor(remaining/level.weight);remaining%=level.weight;}
+    return count;
+  };
+  const reserveLandingSlot=(container,count,key)=>{
+    const existing=container.querySelector('.is-award-slot');
+    if(!pendingAwards.has(key)||tokenCount(count+1)<=tokenCount(count)){existing?.remove();return;}
+    if(existing)return;
+    container.querySelector('.starchart-star-empty')?.remove();
+    const slot=document.createElement('span');slot.className='starchart-star-token is-award-slot';slot.style.visibility='hidden';slot.setAttribute('aria-hidden','true');container.append(slot);
+  };
+  const landingTargetFor=(studentKey,includePending=true)=>{
+    const container=studentKey==='__whole__'?wholeBundles:studentRows.get(studentKey)?.stage;
     if(!container)return null;
     const tokens=container.querySelectorAll('.starchart-star-token');
-    return tokens[tokens.length-1]||container;
+    const total=studentKey==='__whole__'?progress.wholeClassStars:progress.studentStars[studentKey];
+    const next=displayedCount(studentKey,total)+(includePending&&pendingAwards.has(studentKey)?1:0);
+    return tokens[Math.min(tokens.length,tokenCount(next,studentKey==='__whole__'))-1]||container;
   };
 
-  const animateStarAward=(sourceRect,targetRect)=>{
-    const popLanding=()=>{
-      if(!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-      const flash=document.createElement('span');
-      flash.className='starchart-landing-flash';
-      flash.textContent='★';
-      flash.setAttribute('aria-hidden','true');
-      flash.style.left=`${targetRect.left+targetRect.width*.5}px`;
-      flash.style.top=`${targetRect.top+targetRect.height*.5}px`;
-      document.body.append(flash);
-      flyingStars.add(flash);
-      scheduleAnimation(()=>{flyingStars.delete(flash);flash.remove()},520);
-    };
-    if(!sourceRect||!targetRect||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-
-    const star=document.createElement('span');
-    star.className='starchart-flying-star';
-    star.textContent='★';
-    star.setAttribute('aria-hidden','true');
-    const startX=sourceRect.left+Math.min(sourceRect.width*.78,sourceRect.width-10);
-    const startY=sourceRect.top+sourceRect.height*.5;
-    const endX=targetRect.left+targetRect.width*.5;
-    const endY=targetRect.top+targetRect.height*.5;
-    const dx=endX-startX;
-    const dy=endY-startY;
-    star.style.left=`${startX}px`;
-    star.style.top=`${startY}px`;
-    document.body.append(star);
-    flyingStars.add(star);
-    const animation=star.animate([
-      {opacity:0,transform:'translate(-50%,-50%) scale(.15) rotate(-35deg)'},
-      {offset:.18,opacity:1,transform:'translate(-50%,-50%) scale(1.45) rotate(35deg)'},
-      {offset:.7,opacity:1,transform:`translate(calc(-50% + ${dx*.8}px),calc(-50% + ${dy-34}px)) scale(1.05) rotate(285deg)`},
-      {opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.62) rotate(390deg)`}
-    ],{duration:620,easing:'cubic-bezier(.2,.78,.24,1)',fill:'forwards'});
-    scheduleAnimation(popLanding,455);
-    const removeFlyingStar=()=>{flyingStars.delete(star);star.remove()};
-    animation.finished.then(removeFlyingStar,removeFlyingStar);
+  // One read phase followed by one transform-only write phase for all concurrent stars.
+  const tickAwards=now=>{
+    awardFrame=0;
+    const targets=new Map(),finished=[];
+    for(const flight of awardFrames){
+      if(targets.has(flight.key))continue;
+      const target=landingTargetFor(flight.key);
+      targets.set(flight.key,target?.isConnected?target.getBoundingClientRect():null);
+    }
+    for(const flight of awardFrames){
+      const rect=targets.get(flight.key),age=Math.min(1,(now-flight.started)/620);
+      if(!rect){finished.push(flight);continue;}
+      const endX=rect.left+rect.width/2,endY=rect.top+rect.height/2;
+      if(!flight.path){
+        const rise=Math.min(44,Math.abs(endX-flight.x)*.22+20);
+        flight.path={x:flight.x,y:flight.y,cx:flight.x+(endX-flight.x)*.25,cy:Math.min(flight.y,endY)-rise,ex:endX,ey:endY,start:flight.started,end:flight.started+620};
+      }
+      let path=flight.path;
+      const sample=()=>{
+        const duration=path.end-path.start,t=Math.min(1,(now-path.start)/duration),u=1-t;
+        return {t,x:u*u*u*path.x+3*u*u*t*path.cx+(3*u*t*t+t*t*t)*path.ex,y:u*u*u*path.y+3*u*u*t*path.cy+(3*u*t*t+t*t*t)*path.ey,
+          vx:(3*u*u*(path.cx-path.x)+6*u*t*(path.ex-path.cx))/duration,vy:(3*u*u*(path.cy-path.y)+6*u*t*(path.ey-path.cy))/duration};
+      };
+      let point=sample();
+      if(Math.hypot(endX-path.ex,endY-path.ey)>1){
+        // Continue from the current position and velocity when a row slides or stars regroup.
+        // Retargeting must never teleport every in-flight star to the new layout.
+        const duration=Math.max(90,path.end-now);
+        path=flight.path={x:point.x,y:point.y,cx:point.x+point.vx*duration/3,cy:point.y+point.vy*duration/3,ex:endX,ey:endY,start:now,end:now+duration};
+        point=sample();
+      }
+      if(point.t>=1){finished.push(flight);continue;}
+      flight.star.style.opacity=String(Math.min(1,age/.12));
+      flight.star.style.transform=`translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%) scale(${.7+Math.sin(age*Math.PI)*.4}) rotate(${-18+36*age}deg)`;
+    }
+    const landed=new Set();
+    for(const flight of finished){
+      awardFrames.delete(flight);flyingStars.delete(flight.star);flight.star.remove();
+      flight.complete();landed.add(flight.key);
+    }
+    if(finished.length){
+      renderCounts();
+      for(const key of landed){
+        const target=landingTargetFor(key,false);if(!target)continue;
+        target._awardPop?.cancel();
+        target._awardPop=target.animate([{transform:'scale(1)'},{transform:'scale(1.18)',offset:.35},{transform:'scale(1)'}],{duration:240,easing:'cubic-bezier(.2,.7,.3,1)'});
+      }
+    }
+    if(awardFrames.size)awardFrame=requestAnimationFrame(tickAwards);
+  };
+  const animateStarAward=(sourceRect,studentKey,complete)=>{
+    if(!sourceRect||!landingTargetFor(studentKey)||matchMedia('(prefers-reduced-motion: reduce)').matches){complete();renderCounts();return;}
+    const star=document.createElement('span');star.className='starchart-flying-star';star.textContent='★';star.setAttribute('aria-hidden','true');
+    const x=sourceRect.left+sourceRect.width*.65,y=sourceRect.top+sourceRect.height*.5;
+    star.style.cssText=`left:0;top:0;opacity:0;will-change:transform,opacity;transform:translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+    (document.fullscreenElement===m?m:document.body).append(star);flyingStars.add(star);
+    awardFrames.add({star,key:studentKey,x,y,started:performance.now(),complete});
+    if(!awardFrame)awardFrame=requestAnimationFrame(tickAwards);
   };
 
   const setSubtractPanelOpen=(card,open)=>{
@@ -165,8 +219,24 @@ function setupStarChart(m){
     if(showAllStudents)scheduleShowAllSize();
   };
 
+  const fitOverviewStars=stage=>{
+    if(!showAllStudents||!stage.isConnected)return;
+    const width=stage.clientWidth,count=stage.querySelectorAll('.starchart-star-token').length;if(!width||!count)return;
+    let bestSize=0,columns=5;
+    for(let cols=5;cols<=Math.max(5,count);cols++){
+      const rows=Math.ceil(count/cols),size=Math.min(40,(width-(cols-1)*2)/cols,(64-(rows-1)*2)/rows);
+      if(size>bestSize){bestSize=size;columns=cols;}
+    }
+    stage.style.setProperty('--star-columns',String(columns));
+    stage.style.setProperty('--overview-star-size',`${Math.max(1,Math.floor(bestSize*10)/10)}px`);
+  };
+  const starLayoutObserver=new ResizeObserver(entries=>entries.forEach(entry=>fitOverviewStars(entry.target)));
   const renderStudentGrid=()=>{
-    studentGrid.replaceChildren();
+    starLayoutObserver.disconnect();
+    const focused=document.activeElement;
+    const focusedKey=studentGrid.contains(focused)?focused.closest('[data-student-key]')?.dataset.studentKey:null;
+    const focusedAction=focused?.dataset.starAction;
+    studentGrid.replaceChildren();studentRows.clear();
     const students=roster?.students||[];
     studentGrid.style.setProperty('--starchart-student-count',String(students.length));
     noStudents.hidden=students.length>0;
@@ -174,7 +244,7 @@ function setupStarChart(m){
 
     students.forEach(name=>{
       const key=starChartStudentKey(name);
-      const count=normalizeStarChartCount(progress.studentStars[key]);
+      const count=displayedCount(key,progress.studentStars[key]);
       const row=document.createElement('article');
       row.className='starchart-student-row';
       row.dataset.studentKey=key;
@@ -186,21 +256,32 @@ function setupStarChart(m){
       const exact=document.createElement('span');
       const exactNumber=document.createElement('b');exactNumber.textContent=count.toLocaleString();
       exact.append(exactNumber,document.createTextNode(` ${count===1?'star':'stars'} total`));
-      nameButton.append(label,exact);
+      const avatar=document.createElement('span');avatar.className='starchart-student-avatar';avatar.setAttribute('aria-hidden','true');
+      const profile=roster.studentProfiles?.[key],visual=studentProfileVisual(name,roster.id);
+      avatar.style.setProperty('--avatar-hue',visual.hue);
+      if(profile?.image){const image=document.createElement('img');image.src=profile.image;image.alt='';image.decoding='async';avatar.append(image);}
+      else avatar.textContent=profile?.emoji||visual.initials;
+      exact.className='starchart-student-total';
+      nameButton.append(avatar,label);
 
       const starStage=document.createElement('div');starStage.className='starchart-star-stage';starStage.setAttribute('aria-label',`${count} stars earned by ${name}`);
       renderStarBundles(starStage,count,name);
+      reserveLandingSlot(starStage,count,key);
 
       const subtractToggle=document.createElement('button');
       subtractToggle.type='button';subtractToggle.className='starchart-subtract-toggle';subtractToggle.dataset.subtractToggle='';subtractToggle.disabled=count===0;subtractToggle.setAttribute('aria-expanded','false');subtractToggle.setAttribute('aria-label',`Subtract multiple stars from ${name}`);
-      subtractToggle.innerHTML='<span aria-hidden="true">−#</span><small>Subtract</small>';
-      main.append(nameButton,starStage,subtractToggle);
+      subtractToggle.title='Remove Stars';
+      subtractToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>';
+      const stars=document.createElement('div');stars.className='starchart-student-stars';stars.append(starStage,exact);
+      main.append(nameButton,stars,subtractToggle);
 
       const panel=document.createElement('div');panel.className='starchart-subtract-panel';panel.hidden=true;
       const prompt=document.createElement('span');prompt.textContent=`Take stars away from ${name}`;
       const form=document.createElement('form');form.className='starchart-subtract-form';
       const input=document.createElement('input');input.type='number';input.min='1';input.max=String(count);input.step='1';input.value='1';input.inputMode='numeric';input.setAttribute('aria-label',`Number of stars to subtract from ${name}`);
-      const takeAway=document.createElement('button');takeAway.type='submit';takeAway.textContent='Take away';
+      const takeAway=document.createElement('button');takeAway.type='submit';takeAway.textContent='Take Away';
+      const reset=document.createElement('button');reset.type='button';reset.className='starchart-subtract-reset';reset.textContent='Reset';reset.title='Reset stars to 0';reset.setAttribute('aria-label',`Reset stars for ${name} to zero`);
+      reset.addEventListener('click',event=>{event.stopPropagation();if(!activeClassId)return;clearAwards();progress.studentStars[key]=0;persistProgress()});
       const cancel=document.createElement('button');cancel.type='button';cancel.className='starchart-subtract-cancel';cancel.dataset.subtractCancel='';cancel.textContent='Cancel';
       subtractToggle.addEventListener('click',event=>{
         event.stopPropagation();
@@ -213,43 +294,67 @@ function setupStarChart(m){
         const currentValue=normalizeStarChartCount(progress.studentStars[key]);
         const requestedValue=Math.round(Number(input.value));
         if(!currentValue||!Number.isFinite(requestedValue)||requestedValue<1)return;
+        clearAwards();
         progress.studentStars[key]=normalizeStarChartCount(currentValue-Math.min(currentValue,requestedValue));
         persistProgress();
         if(showAllStudents)scheduleShowAllSize();
       });
-      form.append(input,takeAway,cancel);panel.append(prompt,form);
+      form.append(input,takeAway,reset,cancel);panel.append(prompt,form);
       row.append(main,panel);studentGrid.append(row);
+      studentRows.set(key,{stage:starStage,total:exact,remove:subtractToggle,input,name,signature:`${count}:${pendingAwards.has(key)}`});
+      starLayoutObserver.observe(starStage);fitOverviewStars(starStage);
+      if(focusedKey===key&&focusedAction)row.querySelector(`[data-star-action="${focusedAction}"]`)?.focus({preventScroll:true});
     });
+    filterStudents();
+  };
+
+  // Preserve portraits, focused inputs, and existing stars on score-only updates.
+  const renderCounts=()=>{
+    if(!roster)return;
+    const shownWhole=displayedCount('__whole__',progress.wholeClassStars);
+    wholeCount.textContent=String(shownWhole);wholeRemove.disabled=progress.wholeClassStars===0;
+    renderStarBundles(wholeBundles,shownWhole,roster.name);
+    reserveLandingSlot(wholeBundles,shownWhole,'__whole__');
+    for(const [key,row] of studentRows){
+      const count=displayedCount(key,progress.studentStars[key]),signature=`${count}:${pendingAwards.has(key)}`;
+      if(row.signature===signature)continue;
+      row.signature=signature;
+      row.total.querySelector('b').textContent=count.toLocaleString();
+      row.total.lastChild.textContent=` ${count===1?'star':'stars'} total`;
+      row.remove.disabled=count===0;row.input.max=String(count);
+      row.stage.setAttribute('aria-label',`${count} stars earned by ${row.name}`);
+      renderStarBundles(row.stage,count,row.name);reserveLandingSlot(row.stage,count,key);
+      fitOverviewStars(row.stage);
+    }
   };
 
   const render=()=>{
     const hasClass=Boolean(roster&&activeClassId);
     importView.hidden=hasClass;
     dashboard.hidden=!hasClass;
+    modeToggle.hidden=!hasClass;
     if(!hasClass)return;
     className.textContent=roster.name;
     wholeClassName.textContent=roster.name;
-    wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
-    wholeCount.textContent=String(progress.wholeClassStars);
-    wholeRemove.disabled=progress.wholeClassStars===0;
-    renderStarBundles(wholeBundles,progress.wholeClassStars,roster.name);
+    wholeClassLogo.replaceChildren();
+    wholeClassLogo.style.setProperty('--avatar-hue',String(studentProfileVisual(roster.name,roster.id).hue));
+    if(roster.logoImage){const image=document.createElement('img');image.src=roster.logoImage;image.alt='';wholeClassLogo.append(image);}else wholeClassLogo.textContent=normalizeClassLogo(roster.logo);
     const mode=progress.mode==='whole'?'whole':'student';
-    modeButtons.forEach(button=>{
-      const active=button.dataset.starchartMode===mode;
-      button.classList.toggle('is-active',active);
-      button.setAttribute('aria-selected',String(active));
-    });
+    modeToggle.textContent=mode==='whole'?'Whole Class':'Student';
+    modeToggle.setAttribute('aria-pressed',String(mode==='whole'));
+    modeToggle.setAttribute('aria-label',mode==='whole'?'Whole Class mode: switch to Student':'Student mode: switch to Whole Class');
     studentView.hidden=mode!=='student';
     wholeView.hidden=mode!=='whole';
-    renderStudentGrid();
+    renderStudentGrid();renderCounts();
     if(showAllStudents)scheduleShowAllSize();
   };
 
   const loadClass=(classId,{notify=false}={})=>{
     const next=readClassRosters().find(item=>item.id===classId);
     if(!next){
-      activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
+      clearAwards();activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
     }
+    if(activeClassId!==next.id){clearAwards();search.value='';}
     activeClassId=next.id;
     pendingClassId='';
     localStorage.setItem(starChartLastClassStorageKey(),activeClassId);
@@ -265,29 +370,35 @@ function setupStarChart(m){
     if(saved)progress=saved;
   };
 
-  modeButtons.forEach(button=>button.addEventListener('click',()=>{
-    const mode=button.dataset.starchartMode==='whole'?'whole':'student';
-    if(progress.mode===mode)return;
-    progress.mode=mode;
+  const awardStar=(key,source)=>{
+    const whole=key==='__whole__',current=normalizeStarChartCount(whole?progress.wholeClassStars:progress.studentStars[key]),next=normalizeStarChartCount(current+1);
+    if(!activeClassId||next===current)return;
+    const classId=activeClassId;
+    pendingAwards.set(key,(pendingAwards.get(key)||0)+1);
+    if(whole)progress.wholeClassStars=next;else progress.studentStars[key]=next;
+    // Save immediately; only the visible total is held back while the star travels.
+    persistProgress();playUiSfx('star-award',1,m);
+    animateStarAward(source,key,()=>{
+      if(activeClassId!==classId||!pendingAwards.has(key))return;
+      const left=pendingAwards.get(key)-1;if(left)pendingAwards.set(key,left);else pendingAwards.delete(key);
+    });
+  };
+
+  modeToggle.addEventListener('click',()=>{
+    clearAwards();
+    progress.mode=progress.mode==='whole'?'student':'whole';
     persistProgress();
     notifyBoardChanged('star-chart-mode');
-  }));
+  });
 
   studentGrid.addEventListener('click',event=>{
     const target=event.target instanceof Element?event.target:null;
     const row=target?.closest('[data-student-key]');
     if(!row||!activeClassId)return;
-    if(target.closest('[data-subtract-toggle],[data-subtract-cancel]'))return;
+    if(target.closest('[data-subtract-toggle],.starchart-subtract-panel,.starchart-star-token'))return;
     const action=target.closest('[data-star-action]');
-    if(!action)return;
     const key=row.dataset.studentKey;
-    const current=normalizeStarChartCount(progress.studentStars[key]);
-    const adding=action.dataset.starAction==='add';
-    if(!adding&&!current)return;
-    const source=adding?action.getBoundingClientRect():null;
-    progress.studentStars[key]=normalizeStarChartCount(current+(adding?1:-1));
-    persistProgress();
-    if(source)animateStarAward(source,landingTargetFor(key)?.getBoundingClientRect());
+    awardStar(key,(action||row).getBoundingClientRect());
   });
 
   studentGrid.addEventListener('wheel',event=>{
@@ -296,21 +407,16 @@ function setupStarChart(m){
   showAllButton.addEventListener('click',()=>setShowAllStudents(!showAllStudents,{notify:true}));
 
   wholeAdd.addEventListener('click',()=>{
-    const source=wholeAdd.getBoundingClientRect();
-    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars+1);
-    persistProgress();
-    animateStarAward(source,landingTargetFor('__whole__')?.getBoundingClientRect());
+    awardStar('__whole__',wholeAdd.getBoundingClientRect());
   });
+  wholeView.querySelector('.starchart-whole-card').addEventListener('click',event=>{if(!event.target.closest('button,.starchart-star-token'))wholeAdd.click()});
   wholeRemove.addEventListener('click',()=>{
-    progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
-    persistProgress();
-  });
-  wholeBundles.addEventListener('click',event=>{
-    if(!event.target.closest('.starchart-star-token')||!progress.wholeClassStars)return;
+    clearAwards();
     progress.wholeClassStars=normalizeStarChartCount(progress.wholeClassStars-1);
     persistProgress();
   });
   changeClass.addEventListener('click',()=>{
+    clearAwards();
     activeClassId='';pendingClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();notifyBoardChanged('star-chart-class');
   });
 
@@ -319,24 +425,33 @@ function setupStarChart(m){
   m.querySelector('.starchart-text-color').addEventListener('click',()=>cycleData(m,'text',['dark','soft','blue','rose','white','cream']));
 
   const detachRosterLoader=attachClassRosterLoader(m.querySelector('.starchart-loader-anchor'),(_names,selectedRoster)=>loadClass(selectedRoster.id,{notify:true}));
+  const syncRosterProgress=next=>{
+    const fresh=normalizeStarChartProgress(next.starChart,next.students);
+    // A reset/removal from another tile cancels flights instead of hiding the new score.
+    if([...pendingAwards.keys()].some(key=>(key==='__whole__'?fresh.wholeClassStars:fresh.studentStars[key]||0)<(key==='__whole__'?progress.wholeClassStars:progress.studentStars[key]||0)))clearAwards();
+    roster=next;progress=fresh;render();
+  };
   const handleClassesChange=()=>{
     if(!activeClassId){if(pendingClassId)loadClass(pendingClassId);return}
     const next=currentRoster();
-    if(!next){activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();return}
-    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+    if(!next){clearAwards();activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);localStorage.removeItem(starChartLastClassStorageKey());render();return}
+    syncRosterProgress(next);
   };
   const handleStarChartChange=event=>{
     if(event.detail?.classId!==activeClassId)return;
-    const next=currentRoster();
-    if(!next)return;
-    roster=next;progress=normalizeStarChartProgress(next.starChart,next.students);render();
+    const fresh=normalizeStarChartProgress(event.detail.progress,roster?.students||[]);
+    if([...pendingAwards.keys()].some(key=>(key==='__whole__'?fresh.wholeClassStars:fresh.studentStars[key]||0)<(key==='__whole__'?progress.wholeClassStars:progress.studentStars[key]||0)))clearAwards();
+    const modeChanged=fresh.mode!==progress.mode;
+    progress=fresh;
+    if(modeChanged||studentView.hidden!==(progress.mode!=='student'))render();else renderCounts();
   };
   window.addEventListener('teachertiles:classeschange',handleClassesChange);
   window.addEventListener('teachertiles:starchartchange',handleStarChartChange);
 
-  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight});
+  m._boardGetState=()=>({classId:activeClassId,showAllStudents,collapsedHeight,collapsedWidth});
   m._boardSetState=state=>{
     if(Number.isFinite(Number(state?.collapsedHeight)))collapsedHeight=clamp(Number(state.collapsedHeight),380,BOARD_HEIGHT);
+    if(Number.isFinite(Number(state?.collapsedWidth)))collapsedWidth=clamp(Number(state.collapsedWidth),380,BOARD_WIDTH);
     setShowAllStudents(Boolean(state?.showAllStudents),{captureHeight:false});
     const classId=String(state?.classId||'');
     if(!classId)return;
@@ -345,10 +460,13 @@ function setupStarChart(m){
   const lastClassId=localStorage.getItem(starChartLastClassStorageKey())||'';
   if(!lastClassId||!loadClass(lastClassId))render();
 
+  let lastWidth=m.clientWidth;
+  const overviewResize=new ResizeObserver(()=>{const width=m.clientWidth;if(width===lastWidth)return;lastWidth=width;if(showAllStudents)scheduleShowAllSize();});
+  overviewResize.observe(m);
   const prior=m._cleanup;
   m._cleanup=()=>{
-    prior?.();detachRosterLoader();
-    animationTimers.forEach(clearTimeout);animationTimers.clear();
+    prior?.();detachRosterLoader();overviewResize.disconnect();starLayoutObserver.disconnect();
+    clearAwards();
     flyingStars.forEach(star=>star.remove());flyingStars.clear();
     if(showAllFrame)cancelAnimationFrame(showAllFrame);
     window.removeEventListener('teachertiles:classeschange',handleClassesChange);

@@ -1,0 +1,9 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE);
+(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage();await page.setContent('<button id="profile-manage-subscription">Manage Subscription</button>');
+ const source=fs.readFileSync('profile/subscription.js','utf8').replaceAll('export function','function');
+ await page.addScriptTag({content:source+`;window.TeacherTilesAccount={state:{subscriptionOverride:true,districtPremium:true,subscriptionActive:false}};window.calls=[];setupSubscriptionManagement(async name=>{calls.push(name);return {subscriptions:[],accessWithoutBilling:true}},()=>"me");`});
+ await page.getByRole('button',{name:'Manage Subscription',exact:true}).click();assert.match(await page.locator('.subscription-details').textContent(),/District provides/);assert.equal(await page.evaluate(()=>calls.length),0);
+ await page.evaluate(()=>{TeacherTilesAccount.state.subscriptionActive=true;window.dispatchEvent(new Event('teachertiles:accountchange'));});await page.waitForFunction(()=>calls.includes('getSubscriptionDetails'));assert(!(await page.locator('footer').isHidden()));assert.doesNotMatch(await page.locator('.subscription-details').textContent(),/gifted/);
+ await page.evaluate(()=>{TeacherTilesAccount.state={subscriptionOverride:true,districtPremium:false,subscriptionActive:false};window.dispatchEvent(new Event('teachertiles:accountchange'));});assert.match(await page.locator('.subscription-details').textContent(),/gifted a subscription/);
+ console.log('PASS District subscription messaging, personal billing remains accessible, gifted message preserved.');
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

@@ -74,6 +74,7 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.deve
           <span><strong>Owned shop items</strong><small>Remove every purchased theme, sticker pack, and Tile Skin.</small></span>
           <button id="sandbox-reset-owned-items" type="button">Reset owned items</button>
         </div>
+        <label class="sandbox-dev-setting" for="sandbox-test-members"><span><strong>Test Members</strong><small>Add 10 local dummy members to each organization. Nothing is saved online.</small></span><span class="sandbox-switch"><input id="sandbox-test-members" type="checkbox"><i aria-hidden="true"></i></span></label>
         <div id="sandbox-dev-console-status" class="sandbox-dev-console__status" role="status" aria-live="polite"></div>
       </div>
     </div>`;
@@ -99,8 +100,13 @@ if(window.TeacherTilesAdminAccess?.required&&window.TeacherTilesAdminAccess.deve
   const setStatus=message=>{status.textContent=message};
   const coinsEnabled=()=>localStorage.getItem(SANDBOX_COIN_TOGGLE_KEY)==='true';
   const subscriptionEnabled=()=>localStorage.getItem(SANDBOX_SUBSCRIPTION_TOGGLE_KEY)==='true';
-  window.TeacherTilesSandbox={get coinsEnabled(){return coinsEnabled()},get subscriptionEnabled(){return subscriptionEnabled()}};
+  const testMembersToggle=consoleRoot.querySelector('#sandbox-test-members');
+  const testMembersKey='teacherTilesTestMembers:'+(window.TeacherTilesAuth?.user?.uid||'local');
+  testMembersToggle.checked=sessionStorage.getItem(testMembersKey)==='true';
+  testMembersToggle.onchange=()=>{sessionStorage.setItem(testMembersKey,String(testMembersToggle.checked));window.dispatchEvent(new Event('teachertiles:testmemberschange'));};
+  window.TeacherTilesSandbox={get testMembersEnabled(){return testMembersToggle.checked},get coinsEnabled(){return coinsEnabled()},get subscriptionEnabled(){return subscriptionEnabled()}};
 
+  window.dispatchEvent(new Event('teachertiles:testmemberschange'));
   const syncSandboxAccount=()=>{
     const state=window.TeacherTilesAccount?.state;
     if(!state)return;

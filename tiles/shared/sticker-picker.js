@@ -3,6 +3,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   const storageKey='teachertiles.sticker-favorites.v1';
   const readFavorites=()=>{try{const value=JSON.parse(localStorage.getItem(storageKey)||'[]');return new Set(Array.isArray(value)?value.filter(v=>typeof v==='string'):[])}catch{return new Set()}};
   let favorites=readFavorites(),view='all',available=false;
+  const controls=window.TeacherTilesCollectionControls;
   const collapsed=new Set();
   const packCache=new Map();
   let scheduledRender=0;
@@ -17,7 +18,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
   });
   panel.querySelector('.asset-shelf__scroll').hidden=true;
   const root=document.createElement('div');root.className='sticker-picker';
-  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All stickers</button><button type="button" data-view="favorites">Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned Only</span><input type="checkbox" role="switch" aria-label="Owned Only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
+  root.innerHTML=`<div class="sticker-picker-views" aria-label="Sticker collection"><button type="button" data-view="all">All Stickers</button><button type="button" data-view="favorites">Favorites <span></span></button></div><div class="sticker-picker-filters"><label class="sticker-picker-owned"><span>Owned Only</span><input type="checkbox" role="switch" aria-label="Owned Only"><i aria-hidden="true"></i></label></div><div class="sticker-picker-results" tabindex="-1" aria-label="Stickers"></div><footer><strong>Make it yours</strong><span>Click to add · Drag to place · ☆ to favorite</span></footer>`;
   panel.append(root);
   const views=root.querySelector('.sticker-picker-views'),filters=root.querySelector('.sticker-picker-filters'),ownedInput=filters.querySelector('input');
   const searchBox=search.closest('.sticker-shelf-search');
@@ -46,19 +47,18 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
       const section=document.createElement('section'),heading=document.createElement('h3'),grid=document.createElement('div');
       section.className='sticker-picker-pack';
       const toggle=document.createElement('button'),name=document.createElement('span'),total=document.createElement('span'),chevron=document.createElement('span'),body=document.createElement('div'),clip=document.createElement('div');
-      toggle.type='button';toggle.className='sticker-picker-pack-toggle';name.textContent=pack.name;total.textContent=items.length;total.className='sticker-picker-pack-count';chevron.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';chevron.className='sticker-picker-chevron';chevron.setAttribute('aria-hidden','true');toggle.append(name,total,chevron);if(pack.holiday){const badge=document.createElement('span');badge.className='holiday-badge';badge.textContent='Holiday';badge.title='Halloween';name.append(' ',badge)}heading.append(toggle);
-      grid.className='sticker-picker-grid';body.className='sticker-picker-pack-body';body.id='picker-'+pack.id;clip.className='sticker-picker-pack-clip';clip.append(grid);body.append(clip);section.append(heading,body);toggle.setAttribute('aria-controls',body.id);
+      toggle.type='button';toggle.className='sticker-picker-pack-toggle';name.textContent=pack.name;total.textContent=items.length;total.className='sticker-picker-pack-count';chevron.innerHTML='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';chevron.className='sticker-picker-chevron';chevron.setAttribute('aria-hidden','true');toggle.append(name,total,chevron);if(pack.holiday){const badge=document.createElement('span');badge.className='holiday-badge';badge.textContent='Holiday';badge.title=({halloween:'Halloween',thanksgiving:'Thanksgiving',christmas:'Christmas'})[pack.holiday]||'Holiday';name.append(' ',badge)}heading.append(toggle);
+      grid.className='sticker-picker-grid';if(items.length){grid.style.setProperty('--sticker-rows',Math.ceil(items.length/6));grid.style.setProperty('--sticker-rows-narrow',Math.ceil(items.length/5));}body.className='sticker-picker-pack-body';body.id='picker-'+pack.id;clip.className='sticker-picker-pack-clip';clip.append(grid);body.append(clip);section.append(heading,body);toggle.setAttribute('aria-controls',body.id);
       const syncExpanded=()=>{const open=!collapsed.has(pack.id);toggle.setAttribute('aria-expanded',String(open));section.classList.toggle('is-collapsed',!open);body.inert=!open};syncExpanded();
       toggle.addEventListener('click',()=>{collapsed.has(pack.id)?collapsed.delete(pack.id):collapsed.add(pack.id);syncExpanded()});
       for(const item of items){
         const cell=document.createElement('div');cell.className='sticker-picker-cell';
-        const button=item.source.cloneNode(true);delete button.dataset.stickerDragReady;button.removeAttribute('id');button.classList.remove('is-search-hidden','is-dragging','is-cosmetic-locked');button.dataset.entitlement=item.product;button.querySelectorAll('.subscription-crown,.subscription-access-crown').forEach(el=>el.remove());button.setAttribute('aria-label',`${accessible(item.product)?'Add':'Unlock'} ${item.name}`);button.title=item.name;button.tabIndex=0;
+        const button=item.source.cloneNode(true);delete button.dataset.stickerDragReady;button.removeAttribute('id');button.classList.remove('is-search-hidden','is-dragging','is-cosmetic-locked');button.dataset.entitlement=item.product;button.querySelectorAll('img').forEach(window.prepareShopPreviewImage);button.querySelectorAll('.subscription-crown,.subscription-access-crown').forEach(el=>el.remove());button.setAttribute('aria-label',`${accessible(item.product)?'Add':'Unlock'} ${item.name}`);button.title=item.name;button.tabIndex=0;
         bindDrag(button,shell);
         button.addEventListener('click',e=>{if(performance.now()<(button._stickerDragUntil||0))return;if(!owns(item.product)){if(e.detail===0)requestAccess(button);return}const image=button.querySelector('img'),rect=shell.getBoundingClientRect();place({src:button.dataset.stickerSrc||'',emoji:button.dataset.stickerEmoji||'',name:item.name,aspect:image?.naturalWidth&&image?.naturalHeight?image.naturalWidth/image.naturalHeight:1},Math.min(innerWidth-80,rect.right+(innerWidth-rect.right)/2),innerHeight/2,{previewSize:button.dataset.stickerEmoji?132:146});footer.textContent=`${item.name} added`});
         button.addEventListener('pointerenter',()=>footer.textContent=item.name);button.addEventListener('focus',()=>footer.textContent=item.name);
-        const favorite=document.createElement('button');favorite.type='button';favorite.className='sticker-picker-favorite';
-        const sync=()=>{const saved=favorites.has(item.key);favorite.textContent=saved?'★':'☆';favorite.setAttribute('aria-pressed',String(saved));favorite.setAttribute('aria-label',`${saved?'Unfavorite':'Favorite'} ${item.name}`)};sync();
-        favorite.addEventListener('click',()=>{favorites.has(item.key)?favorites.delete(item.key):favorites.add(item.key);try{window.TeacherTilesCollectionPreferences.write(storageKey,JSON.stringify([...favorites]))}catch{}sync();scheduleRender();views.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';if(view==='favorites'){render();views.querySelector('[data-view="favorites"]').focus()}});
+        const favorite=controls.favoriteButton(item.name,favorites.has(item.key),()=>{favorites.has(item.key)?favorites.delete(item.key):favorites.add(item.key);try{window.TeacherTilesCollectionPreferences.write(storageKey,JSON.stringify([...favorites]))}catch{}controls.updateFavorite(favorite,item.name,favorites.has(item.key));scheduleRender();views.querySelector('[data-view="favorites"] span').textContent=favorites.size||'';if(view==='favorites'){render();views.querySelector('[data-view="favorites"]').focus()}});
+        favorite.classList.add('sticker-picker-favorite');
         cell.append(button,favorite);grid.append(cell);
       }
       if(pack.id==='most-used'){
@@ -68,7 +68,7 @@ window.createStickerPicker=function({panel,packs,search,clear,status,shell,bindD
       const locked=items.length>0&&items.every(item=>!accessible(item.product));
       if(locked){
         section.classList.add('is-pack-locked');grid.inert=true;
-        const lock=document.createElement('button');lock.type='button';lock.className='sticker-picker-pack-lock';lock.dataset.entitlement=items[0].product;lock.setAttribute('aria-label','Unlock '+pack.name+' sticker pack');lock.innerHTML='<span><img src="assets/ui/lock.svg?v=20260927-gold" alt="">Unlock pack</span>';lock.addEventListener('click',()=>requestAccess(lock));section.append(lock);
+        const lock=document.createElement('button');lock.type='button';lock.className='sticker-picker-pack-lock';lock.dataset.entitlement=items[0].product;lock.setAttribute('aria-label','Unlock '+pack.name+' sticker pack');lock.innerHTML='<span><img src="assets/ui/lock.svg?v=20260927-gold" alt="">Unlock Pack</span>';lock.addEventListener('click',()=>requestAccess(lock));section.append(lock);
         const badge=document.createElement('span');badge.className='sticker-picker-pack-lock-mark';badge.innerHTML='<img src="assets/ui/lock.svg?v=20260927-gold" alt="">';badge.setAttribute('aria-hidden','true');toggle.insertBefore(badge,total);
       }
       packCache.set(pack.id,{signature,section});

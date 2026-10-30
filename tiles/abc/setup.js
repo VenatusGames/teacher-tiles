@@ -42,9 +42,9 @@ function setupABC(m){
   const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const measureLetterSize=letter=>{
-    const rect=card.getBoundingClientRect();
-    const maxWidth=Math.max(80,rect.width-12);
-    const maxHeight=Math.max(80,rect.height-14);
+    const rect=flashcardContentBox(card);
+    const maxWidth=Math.max(80,rect.width);
+    const maxHeight=Math.max(80,rect.height);
 
     measurer.textContent=letter;
 
@@ -55,7 +55,7 @@ function setupABC(m){
     while(low<=high){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
-      const measured=measurer.getBoundingClientRect();
+      const measured={width:measurer.offsetWidth,height:measurer.offsetHeight};
 
       if(measured.width<=maxWidth+1&&measured.height<=maxHeight+1){
         best=mid;

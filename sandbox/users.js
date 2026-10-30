@@ -1,3 +1,4 @@
+import {createUserSort} from './user-sort.js?v=20261028-sort-position';
 import {createBulkPatches} from './bulk-patches.js?v=20261020-product-polish';
 import {createUsersClient} from './users-cache.js?v=20261014-subscription-override';
 import {createUserDetails} from './user-details.js?v=20261020-product-polish';
@@ -5,13 +6,14 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
   const status=document.getElementById('users-status'),more=document.getElementById('users-more'),refresh=document.getElementById('users-refresh');
-  const search=document.getElementById('users-search');
+  const search=document.getElementById('users-search'),sort=document.getElementById('users-sort');
+  const sortMenu=createUserSort(sort);
   const online=document.getElementById('users-online-filter'),subscribers=document.getElementById('users-subscriber-filter'),selected=new Set();
   const selectionToggle=document.getElementById('users-selection-toggle');
   function setSelectionMode(enabled){element.classList.toggle('is-selecting-users',enabled);selectionToggle.setAttribute('aria-pressed',String(enabled));selectionToggle.textContent=enabled?'Cancel Selection':'Select Users';if(!enabled){selected.clear();list.querySelectorAll('.user-select').forEach(input=>input.checked=false);}bulk.update();}
   selectionToggle.onclick=()=>setSelectionMode(!element.classList.contains('is-selecting-users'));
   const bulk=createBulkPatches(document.getElementById('bulk-patch-tool'),call,selected,()=>{client.invalidate();if(!element.hidden){clear();void load();}},()=>setSelectionMode(true));
-  online.onchange=subscribers.onchange=()=>{clear();void load();};
+  sort.onchange=online.onchange=subscribers.onchange=()=>{clear();void load();};
   const details=createUserDetails(call,()=>{clear();void load();});
   const searchButton=document.getElementById('users-search-submit');
   let query='';
@@ -40,7 +42,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   async function load(append=false){
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
-    try{const response=await call('listDeveloperUsers',{query,onlineOnly:online.checked,subscribersOnly:subscribers.checked,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
+    try{const response=await call('listDeveloperUsers',{query,sort:sort.value,onlineOnly:online.checked,subscribersOnly:subscribers.checked,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
       for(const user of response.data.users){if(online.checked&&(!user.lastSeen||Date.now()-user.lastSeen>=360000))continue;list.append(row(user));}
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
     }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
@@ -50,5 +52,5 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   searchButton.onclick=submitSearch;search.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitSearch();}};
   search.addEventListener('search',()=>{if(!search.value)submitSearch();});
   refresh.onclick=()=>{client.invalidate();clear();void load();};more.onclick=()=>load(true);
-  return {element,load,clear,reset(){setSelectionMode(false);bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';}};
+  return {element,load,clear,reset(){setSelectionMode(false);bulk.reset();online.checked=subscribers.checked=false;client.clearSession();clear();query='';search.value='';sort.value='default';sortMenu.reset();}};
 }

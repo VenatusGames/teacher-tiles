@@ -20,12 +20,12 @@ assert(await page.locator('[data-test-deck] header .flashcard-counter').count())
 await page.locator('[data-test-deck]').evaluate(m=>{m._cleanup?.();m.remove()});
 }
 await page.evaluate(()=>document.getElementById('cursors-shelf-toggle').click());await page.waitForTimeout(450);
-assert.equal(await page.locator('.cursor-picker-pack').count(),8);assert.equal(await page.locator('.cursor-picker-unlock').count(),7);
+const expectedPacks=await page.evaluate(()=>TeacherTilesCursorPacks.length+2);assert.equal(await page.locator('.cursor-picker-pack').count(),expectedPacks);assert.equal(await page.locator('.cursor-picker-pack-heading.is-cursor-pack-locked').count(),expectedPacks-1);
 await page.screenshot({path:'C:/Users/Jack/.codex/visualizations/2026/09/21/01a0c154-6a92-74e3-80e0-b301d930cec6/cursor-drawer-revised.png'});
-await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('melon');assert.equal(await page.locator('.cursor-picker-choice').count(),1);await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('');
+await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('melon');await page.locator('.cursor-picker-pack-heading:visible').click();assert.equal(await page.locator('.cursor-picker-choice:visible').count(),1);await page.getByRole('searchbox',{name:'Search cursors',exact:true}).fill('');
 await page.evaluate(()=>{localStorage.setItem('teacherTilesOwnedShopPacks',JSON.stringify(['cursor-pixel-pack','cursor-soft-pack','cursor-fluid-pack','cursor-color-pack']));window.dispatchEvent(new CustomEvent('teachertiles:shopownershipchange'))});
-await page.locator('[data-cursor-choice="soft-lavender"]').click();assert.equal(await page.evaluate(()=>document.body.dataset.appCursor),'soft-lavender');assert(await page.locator('#asset-shelf.is-open').count());
-await page.locator('.cursor-picker-pack-heading').filter({hasText:'Soft Cursors'}).click();assert(await page.locator('.cursor-picker-pack').filter({hasText:'Soft Cursors'}).locator('.cursor-picker-pack-body').evaluate(el=>el.hidden));
+await page.locator('.cursor-picker-pack-heading').filter({hasText:'Soft Cursors'}).click();await page.locator('[data-cursor-choice="soft-lavender"]').click();await page.waitForFunction(()=>document.body.dataset.appCursor==='soft-lavender');assert.equal(await page.evaluate(()=>document.body.dataset.appCursor),'soft-lavender');assert(await page.locator('#asset-shelf.is-open').count());
+await page.locator('.cursor-picker-pack-heading').filter({hasText:'Soft Cursors'}).click();assert.equal(await page.locator('.cursor-picker-pack-heading').filter({hasText:'Soft Cursors'}).getAttribute('aria-expanded'),'false');
 await page.evaluate(()=>document.getElementById('asset-shelf-close').click());
 await page.evaluate(()=>{const p=screenToBoard(750,250);window.coin=createModule('coinflip',p.x,p.y)});await page.locator('.coinflip-coin').click();await page.waitForTimeout(220);
 assert(await page.locator('.coinflip-body').evaluate(el=>el.getAnimations().length===1));assert.equal(await page.locator('.coinflip-face').count(),2);assert.equal(await page.locator('.coinflip-tails img').evaluate(el=>el.naturalWidth>0),true);await page.waitForTimeout(1000);

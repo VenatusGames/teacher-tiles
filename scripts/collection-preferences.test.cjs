@@ -7,6 +7,10 @@ const wait=()=>new Promise(r=>setImmediate(r));const fav='teachertiles.sticker-f
 a.api.write(fav,'[]');b.api.write('teacherTilesCursorFavorites','["pixel"]');a.api.write(usage,'{"cat":5}');b.api.write(usage,'{"cat":5}');await a.api.flush();await b.api.flush();assert.equal(cloud.get('users/one/private/collectionPreferences').usage.cat,6);assert.equal(cloud.get('users/one/private/collectionPreferences').stickers.cat,false);
 const c=browser({[fav]:'["cat"]',[usage]:'{"cat":4}'});c.api.setUser('one',sdk,{});await wait();await c.api.flush();assert.equal(c.data.get(fav),'[]','legacy cannot resurrect removed favorites');assert.equal(JSON.parse(c.data.get(usage)).cat,6,'legacy counts not duplicated');
 a.api.setUser('two',sdk,{});await wait();assert.equal(a.data.get(fav),'[]');assert.equal(a.data.get('teacherTilesCursorFavorites'),'[]');a.api.setUser('one',sdk,{});await wait();assert.equal(a.data.get('teacherTilesCursorFavorites'),'["pixel"]');
+a.api.write('teacherTilesThemeFavorites','["matrix-green","stripes-blue"]');await a.api.flush();
+const themes=browser();themes.api.setUser('one',sdk,{});await wait();assert.equal(themes.data.get('teacherTilesThemeFavorites'),'["matrix-green","stripes-blue"]','theme variations sync across browsers');
+themes.api.write('teacherTilesThemeFavorites','["stripes-blue"]');await themes.api.flush();assert.equal(cloud.get('users/one/private/collectionPreferences').themes['matrix-green'],false,'unfavoriting syncs');
+themes.api.setUser('two',sdk,{});await wait();assert.equal(themes.data.get('teacherTilesThemeFavorites'),'[]','theme favorites are account isolated');
 const original=sdk.runTransaction;let failed=true;
 sdk.runTransaction=async(db,fn)=>{const result=await original(db,fn);if(failed){failed=false;throw Error('Simulated lost acknowledgement')}return result};
 a.api.write(usage,'{"cat":7}');await a.api.flush();await a.api.flush();assert.equal(cloud.get('users/one/private/collectionPreferences').usage.cat,7,'retry cannot double-count');sdk.runTransaction=original;

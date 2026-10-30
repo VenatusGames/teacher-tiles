@@ -1,11 +1,39 @@
 {
   "subscriptionOnlyTiles": [
+    "thankfulturkey",
+    "thanksgivingtimer",
+    "cookafeast",
     "halloweentimer",
     "trickortreat",
     "pumpkincarving",
     "pumpkinpatch"
   ],
   "skins": {
+    "ruler-clear": "tile-skin-ruler-clear",
+    "ruler-metal": "tile-skin-ruler-metal",
+    "ruler-rainbow": "tile-skin-ruler-rainbow",
+
+    "date-desk": "tile-skin-date-desk",
+    "date-botanical": "tile-skin-date-botanical",
+    "date-midnight": "tile-skin-date-midnight",
+
+    "writinglines-blocks": "tile-skin-writinglines-blocks",
+    "writinglines-storybook": "tile-skin-writinglines-storybook",
+    "writinglines-notebook": "tile-skin-writinglines-notebook",
+    "writinglines-arcade": "tile-skin-writinglines-arcade",
+    "writinglines-index": "tile-skin-writinglines-index",
+
+    "flashcard-blocks": "tile-skin-flashcard-blocks",
+    "flashcard-storybook": "tile-skin-flashcard-storybook",
+    "flashcard-grid": "tile-skin-flashcard-grid",
+    "flashcard-arcade": "tile-skin-flashcard-arcade",
+    "flashcard-notebook": "tile-skin-flashcard-notebook",
+    "flashcard-letter-tiles": "tile-skin-flashcard-letter-tiles",
+    "flashcard-library": "tile-skin-flashcard-library",
+    "flashcard-spotlight": "tile-skin-flashcard-spotlight",
+    "flashcard-photo": "tile-skin-flashcard-photo",
+    "flashcard-index": "tile-skin-flashcard-index",
+
     "sticky-taped": "tile-skin-sticky-taped",
     "sticky-ripped": "tile-skin-sticky-ripped",
     "sticky-pinned": "tile-skin-sticky-pinned",
@@ -50,6 +78,13 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "drifting-dots": "theme-drifting-dots",
+    "screensaver": "theme-screensaver",
+    "matrix": "theme-matrix",
+    "soap-bubbles": "theme-soap-bubbles",
+    "aurora": "theme-aurora",
+    "clouds": "theme-clouds",
+    "stripes": "theme-stripes",
     "webbed": "theme-webbed",
     "haunted-house": "theme-haunted-house",
     "pumpkin": "theme-pumpkin",
@@ -75,7 +110,10 @@
     "corkboard": "theme-corkboard",
     "deep": "theme-deep",
     "pastels2": "theme-pastels2",
-    "flowers": "theme-flowers"
+    "flowers": "theme-flowers",
+    "autumn-forest": "theme-autumn-forest",
+    "feast": "theme-feast",
+    "leaves": "theme-leaves"
   },
   "stickers": {
     "1": [
@@ -1577,6 +1615,48 @@
     ],
     "https://flagcdn.io/flags/4x3/zw.svg": [
       "sticker-country-flags"
+    ],
+    "assets/stickers/thankful-turkeys/classic.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/golden.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/winking.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/happy.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/cozy.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/blushing.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/harvest.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thankful-turkeys/sleepy.svg": [
+      "sticker-thankful-turkeys"
+    ],
+    "assets/stickers/thanksgiving-pies/pumpkin.svg": [
+      "sticker-thanksgiving-pies"
+    ],
+    "assets/stickers/thanksgiving-pies/apple.svg": [
+      "sticker-thanksgiving-pies"
+    ],
+    "assets/stickers/thanksgiving-pies/cherry.svg": [
+      "sticker-thanksgiving-pies"
+    ],
+    "assets/stickers/thanksgiving-pies/blueberry.svg": [
+      "sticker-thanksgiving-pies"
+    ],
+    "assets/stickers/thanksgiving-pies/pecan.svg": [
+      "sticker-thanksgiving-pies"
+    ],
+    "assets/stickers/thanksgiving-pies/lemon.svg": [
+      "sticker-thanksgiving-pies"
     ]
   },
   "tiles": {}

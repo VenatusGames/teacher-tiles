@@ -1,14 +1,16 @@
-import {createCommunityPanel} from './community.js?v=20261021-banner-library';
+import {createOrganizationsPanel} from './organizations.js?v=20261025-district-seats';
+import {createAnnouncementsPanel} from './announcements.js?v=20261022';
+import {createCommunityPanel} from './community.js?v=20261025-poll-controls';
 import {createSplashScreensPanel} from './splash-screens.js?v=20261020-season-motion';
-import {createProductManagementPanel} from './product-management.js?v=20261021-banner-library';
+import {createProductManagementPanel} from './product-management.js?v=20261021-autumn-finish';
 import {createTileManagementPanel} from './tile-management.js?v=20261020-availability';
-import {adminBoardPreview} from './board-preview.js?v=20261017-shared-presentations';
+import {adminBoardPreview} from './board-preview.js?v=20261026-ruler-skins';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polish';
-import {createInsights} from './insights.js?v=20261015-override-trials';
+import {createInsights} from './insights.js?v=20261025-preview-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261020-product-polish';
+import {createUsersPanel} from './users.js?v=20261028-sort-position';
 import {startSiteActivity} from '../account/site-activity.js';
 import {createCodesPanel} from './codes.js?v=20261020-product-polish';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
@@ -16,6 +18,7 @@ const signIn=document.getElementById('portal-signin'),retry=document.getElementB
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
 function showPortal(visible){shell.hidden=!visible;shell.inert=!visible;accessScreen.hidden=visible;if(visible)document.querySelector('.portal-topbar-actions').append(signOut);else document.querySelector('.access-actions').append(signOut);}
 const usersPanel=createUsersPanel((name,data)=>call(name,data),()=>auth?.currentUser?.uid);
+document.getElementById('people-groups-toggle').onclick=()=>{const toggle=document.getElementById('people-groups-toggle'),menu=document.getElementById('people-groups-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 document.getElementById('community-toggle').onclick=()=>{const toggle=document.getElementById('community-toggle'),menu=document.getElementById('community-submenu');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));};
 const templatesElement=document.createElement('section');templatesElement.id='portal-templates';templatesElement.hidden=true;home.parentElement.append(templatesElement);
 const templates=createTemplateLibrary({element:templatesElement,call:(name,data)=>call(name,data),getUid:()=>authorized?auth?.currentUser?.uid:null,admin:true,renderPreview:adminBoardPreview});
@@ -27,15 +30,17 @@ const productManagement=createProductManagementPanel((name,data)=>call(name,data
 const splashScreens=createSplashScreensPanel((name,data)=>call(name,data));home.parentElement.append(splashScreens.element);
 document.getElementById('live-management-toggle').onclick=()=>{const menu=document.getElementById('live-management-submenu');menu.hidden=!menu.hidden;document.getElementById('live-management-toggle').setAttribute('aria-expanded',String(!menu.hidden))};
 const communityEvents=createCommunityPanel((name,data)=>call(name,data),'events'),communityPolls=createCommunityPanel((name,data)=>call(name,data),'polls');home.parentElement.append(communityEvents.element,communityPolls.element);
+const announcements=createAnnouncementsPanel((name,data)=>call(name,data));home.parentElement.append(announcements.element);
+const organizations=createOrganizationsPanel((name,data)=>call(name,data)),districts=createOrganizationsPanel((name,data)=>call(name,data),{districtOnly:true});home.parentElement.append(organizations.element,districts.element);
 let view="overview";
-function navigate(next){view=next;communityEvents.element.hidden=next!=='events';communityPolls.element.hidden=next!=='polls';if(next==='events')communityEvents.load();if(next==='polls')communityPolls.load();splashScreens.element.hidden=next!=='splashes';if(next==='splashes')splashScreens.load();document.getElementById('portal-current-view').textContent=({overview:'Overview',users:'Users',templates:'Board Templates',codes:'TT Codes',bugs:'Tickets',tiles:'Tile Management',products:'Product Management',splashes:'Splash Screens',events:'Events',polls:'Polls'})[next]||'Overview';productManagement.element.hidden=next!=='products';if(next==='products')productManagement.load(true);tileManagement.element.hidden=next!=='tiles';if(next==='tiles')tileManagement.load();bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
+function navigate(next){view=next;organizations.element.hidden=next!=='organizations';districts.element.hidden=next!=='districts';if(next==='organizations')organizations.load();if(next==='districts')districts.load();announcements.element.hidden=next!=='announcements';if(next==='announcements')announcements.load();communityEvents.element.hidden=next!=='events';communityPolls.element.hidden=next!=='polls';if(next==='events')communityEvents.load();if(next==='polls')communityPolls.load();splashScreens.element.hidden=next!=='splashes';if(next==='splashes')splashScreens.load();document.getElementById('portal-current-view').textContent=({organizations:'Organizations',districts:'Districts',overview:'Overview',users:'Users',templates:'Board Templates',codes:'TT Codes',bugs:'Tickets',tiles:'Tile Management',products:'Product Management',splashes:'Splash Screens',events:'Events',polls:'Polls',announcements:'Announcements'})[next]||'Overview';productManagement.element.hidden=next!=='products';if(next==='products')productManagement.load(true);tileManagement.element.hidden=next!=='tiles';if(next==='tiles')tileManagement.load();bugs.element.hidden=next!=='bugs';if(next==='bugs')bugs.load();templatesElement.hidden=next!=="templates";if(next==="templates")templates.load();codes.element.hidden=next!=="codes";if(next==="codes")codes.load();home.hidden=next!=="overview";usersPanel.element.hidden=next!=="users";document.querySelectorAll("[data-portal-view]").forEach(link=>{link.classList.toggle("selected",link.dataset.portalView===next);if(link.dataset.portalView===next)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")});if(next==="users")usersPanel.load();}
 document.querySelectorAll("[data-portal-view]").forEach(link=>link.onclick=event=>{event.preventDefault();if(authorized)navigate(link.dataset.portalView)});
 let auth,sdk,call,pending=false,generation=0,lastCheck=0,authorized=false;
 function lock(message){showPortal(false);authorized=false;home.hidden=true;login.hidden=false;status.textContent=message;signOut.hidden=!auth?.currentUser;}
 function busy(value){pending=value;signIn.disabled=retry.disabled=value||!auth;signOut.disabled=value;}
 async function check(user){
   const attempt=++generation;lastCheck=Date.now();
-  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
+  if(!user){usersPanel.reset();templates.reset();bugs.reset();insights.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();announcements.reset();organizations.reset();districts.reset();view='overview';lock('Sign in with an administrator or beta-enabled account.');busy(false);return;}
   busy(true);lock('Signed in. Verifying sandbox access…');
   try{
     const access=await verifyAccess(user,call,{sandbox:true});
@@ -45,7 +50,7 @@ async function check(user){
     document.getElementById('portal-email').textContent=user.email||'';
     document.getElementById('portal-role').textContent=access.role==='owner'?'Owner':'Administrator';
     authorized=true;showPortal(true);login.hidden=true;navigate(view);void insights.load();signOut.hidden=false;
-  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();lock(accessError(error));}}
+  }catch(error){if(attempt===generation){usersPanel.reset();templates.reset();bugs.reset();codes.reset();tileManagement.reset();productManagement.reset();splashScreens.reset();communityEvents.reset();communityPolls.reset();announcements.reset();organizations.reset();districts.reset();lock(accessError(error));}}
   finally{if(attempt===generation)busy(false);}
 }
 signIn.onclick=async()=>{

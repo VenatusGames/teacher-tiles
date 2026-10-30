@@ -9,6 +9,8 @@ function setupClock(m){
   const secondsBtn=m.querySelector('.clock-toggle-seconds');
   const periodBtn=m.querySelector('.clock-toggle-period');
   const modeBtn=m.querySelector('.clock-toggle-mode');
+  const options=document.createElement('div');options.append(modeBtn,secondsBtn,periodBtn);m.append(options);
+  const {trigger:displayTrigger}=TeacherTilesDisplayMenu.setup(m,{panel:options,title:'Clock Display',icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'});
   const hourHand=m.querySelector('.analog-hour');
   const minuteHand=m.querySelector('.analog-minute');
   const secondHand=m.querySelector('.analog-second');
@@ -40,18 +42,19 @@ function setupClock(m){
     modeBtn.dataset.mode=analog?'analog':'digital';
     modeChoices.forEach(button=>{
       const active=button.dataset.clockChoice===(analog?'analog':'digital');
-      button.hidden=active;
+      button.hidden=false;
       button.classList.toggle('is-active',active);
       button.setAttribute('aria-pressed',String(active));
     });
     secondsBtn.hidden=analog;
     periodBtn.hidden=analog;
+    displayTrigger.hidden=modeBtn.hidden&&secondsBtn.hidden&&periodBtn.hidden;
   };
 
   modeChoices.forEach(button=>button.addEventListener('click',()=>{
     m.dataset.clockMode=button.dataset.clockChoice==='analog'?'analog':'digital';
     syncModeControls();
-    refit();
+    refit();notifyBoardChanged('clock-display');
   }));
 
   secondsBtn.addEventListener('click',()=>{
@@ -59,14 +62,14 @@ function setupClock(m){
     const active=m.classList.contains('show-seconds');
     secondsBtn.classList.toggle('is-active',active);
     secondsBtn.setAttribute('aria-pressed',String(active));
-    refit();
+    refit();notifyBoardChanged('clock-display');
   });
   periodBtn.addEventListener('click',()=>{
     m.classList.toggle('hide-period');
     const active=!m.classList.contains('hide-period');
     periodBtn.classList.toggle('is-active',active);
     periodBtn.setAttribute('aria-pressed',String(active));
-    refit();
+    refit();notifyBoardChanged('clock-display');
   });
 
   const formatter=new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit',hour12:true});

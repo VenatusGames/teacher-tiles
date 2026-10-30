@@ -7,7 +7,7 @@ function setupShopExtras(modal) {
     section.querySelector('h2').textContent=title;section.querySelector('p').textContent=description;modal.querySelector('.shop-content').append(section);return section;
   }
   function product(item,kind,preview){
-    const card=document.createElement('article');card.className='shop-product shop-product--'+kind;card.dataset.shopProduct=item.productId;card.dataset.shopPrice=item.price;
+    const card=document.createElement('article');card.className='shop-product shop-product--'+kind;card.dataset.shopProduct=item.productId;card.dataset.shopPrice=item.price;if(item.holiday)card.dataset.shopHoliday=item.holiday;
     card.innerHTML='<div class="shop-product__preview" aria-hidden="true"></div><div class="shop-product__body"><div><span class="shop-product__type"></span><h3></h3><p></p></div><button class="shop-buy" type="button" data-shop-buy><span class="shop-coin-icon shop-coin-icon--small" aria-hidden="true"><img src="assets/shop/coin.png" alt=""></span><strong></strong></button></div>';
     card.querySelector('h3').textContent=item.name;card.querySelector('p').textContent=item.description;card.querySelector('.shop-buy strong').textContent=item.price;
     card.querySelector('.shop-product__type').textContent=kind==='tile-effect'?'TILE EFFECT':kind==='presentation-transition'?'PRESENTATION TRANSITION':kind==='presentation-theme'?'PRESENTATION THEME':kind==='planner-skin'?'PLANNER SKIN':item.tier==='animated'?'ANIMATED PROFILE FRAME':'PROFILE FRAME';
@@ -48,7 +48,7 @@ function setupShopExtras(modal) {
     category.innerHTML='<span class="shop-category__art shop-category__art--extras" aria-hidden="true"></span><span class="shop-category__copy"><strong></strong><em></em></span>';
     category.querySelector('strong').textContent=title;category.querySelector('em').textContent=subtitle;
     const art=category.querySelector('.shop-category__art');
-    if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.slice(0,2))art.append(skins.preview(skin.id));}
+    if(id==='planner-skins'){category.dataset.shopOpenPage=id;for(const skin of skins.catalog.filter(skin=>['floral','leather'].includes(skin.id)))art.append(skins.preview(skin.id));}
     else if(id==='presentation-themes'){category.dataset.shopOpenPage='presentations';art.classList.add('shop-presentation-showcase');art.append(transitions.preview('iris'));}
     else if(id==='tile-effects'){category.dataset.shopOpenPage=id;art.classList.add('shop-category-art-pair');art.append(effects.preview('rainbow-fireworks'),effects.preview('gold-confetti'));}
     else if(id==='profile-cosmetics'){category.dataset.shopOpenPage=id;art.append(frames.preview('aurora'));}
