@@ -59,6 +59,7 @@ const plannerNames = [
   'normalizePlanner','normalizePlannerState','mergeById','mergePlannerStates'
 ];
 const plannerSandbox = {
+  window: {},
   console,
   Date,
   Math,
@@ -76,11 +77,13 @@ const plannerSandbox = {
   PAID_PLANNER_LIMIT: 10
 };
 vm.createContext(plannerSandbox);
+vm.runInContext(plannerSource.match(/const normalizeCoverColor = [^\n]+/)[0], plannerSandbox);
+vm.runInContext(fs.readFileSync('tiles/lesson-planner/skins.js', 'utf8'), plannerSandbox);
 vm.runInContext(plannerNames.map(name => functionSource(plannerSource, name)).join('\n'), plannerSandbox);
 
 const cloud = {
   planners: [{
-    id: 'planner-1', name: 'Cloud planner', color: 'sky', scheduleId: 'schedule-1', settings: { showWeekends: false },
+    id: 'planner-1', name: 'Cloud planner', skin: 'thanksgiving', color: 'sky', scheduleId: 'schedule-1', settings: { showWeekends: false },
     blocks: [{ id: 'shared', label: 'Cloud edit', date: '2026-09-24', start: '08:00', end: '09:00', color: 'sky', description: '', scheduleId: '' },
              { id: 'cloud-only', label: 'Cloud only', date: '2026-09-25', start: '09:00', end: '10:00', color: 'sky', description: '', scheduleId: '' }]
   }],
@@ -108,6 +111,7 @@ const legacyLocal = {
 const migrated = plannerSandbox.mergePlannerStates(legacyLocal, cloud);
 const migratedPlanner = migrated.planners.find(item => item.id === 'planner-1');
 assert.equal(migratedPlanner.name, 'Cloud planner', 'cloud wins matching planner metadata during legacy migration');
+assert.equal(migratedPlanner.skin, 'thanksgiving', 'Thanksgiving skin survives cloud normalization and migration');
 assert.equal(migratedPlanner.blocks.find(item => item.id === 'shared').label, 'Cloud edit', 'cloud wins matching lesson during legacy migration');
 assert(migratedPlanner.blocks.some(item => item.id === 'local-only'), 'local-only lesson survives migration');
 assert(migrated.planners.some(item => item.id === 'planner-local'), 'local-only planner survives migration');

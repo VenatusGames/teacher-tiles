@@ -3,7 +3,37 @@ function setupDraw(m){
   const tools=[['brush','Pen','<path d="m4 20 1-6L16 3l5 5-11 11-6 1ZM14 5l5 5"/>'],['pencil','Pencil','<path d="m4 20 2-7L16 3l5 5-10 10-7 2ZM6 13l5 5M14 5l5 5"/>'],['highlighter','Highlighter','<path d="m7 15 9-12 6 5-10 11-5-4ZM7 15l-4 5h8M3 22h13"/>'],['eraser','Eraser','<path d="m14 3 7 7a2 2 0 0 1 0 3l-7 7H8l-5-5a2 2 0 0 1 0-3l8-9a2 2 0 0 1 3 0ZM7 8l9 9M8 20h13"/>'],['select','Move drawing','<path fill="currentColor" stroke="none" d="M11.3 1.3a1 1 0 0 1 1.4 0l4 4A1 1 0 0 1 16 7h-2v3h3V8a1 1 0 0 1 1.7-.7l4 4a1 1 0 0 1 0 1.4l-4 4A1 1 0 0 1 17 16v-2h-3v3h2a1 1 0 0 1 .7 1.7l-4 4a1 1 0 0 1-1.4 0l-4-4A1 1 0 0 1 8 17h2v-3H7v2a1 1 0 0 1-1.7.7l-4-4a1 1 0 0 1 0-1.4l4-4A1 1 0 0 1 7 8v2h3V7H8a1 1 0 0 1-.7-1.7Z"/>'],['line','Line','<path d="m4 20 16-16"/>'],['arrow','Arrow','<path d="m4 20 16-16M9 4h11v11"/>'],['rectangle','Rectangle','<rect x="4" y="5" width="16" height="14" rx="1"/>'],['ellipse','Circle','<circle cx="12" cy="12" r="8"/>']];
   const body=document.createElement('div');body.className='draw-palette';
   body.innerHTML=`<header><strong>Draw</strong></header><div class="draw-tool-grid" role="toolbar" aria-label="Drawing tools">${tools.map(([id,name,path])=>`<button type="button" data-draw-tool="${id}" aria-label="${name}" title="${name}" aria-pressed="${id==='brush'}">${svg(path)}</button>`).join('')}</div><p class="draw-active-notice" role="status" hidden>Draw Tool Active, Click Again to Toggle</p><section class="draw-color-section"><div class="draw-color-heading"><strong>Color</strong><span class="draw-color-value"></span></div><div class="draw-palette-colors" aria-label="Drawing colors"></div><div class="draw-recent-colors" aria-label="Recently used colors"></div><details class="draw-custom-colors"><summary>Custom Color<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4"/></svg></summary><div class="draw-color-editor"><input type="color" aria-label="Pick drawing color"><label>Hex<input class="draw-color-hex" type="text" maxlength="7" spellcheck="false" aria-label="Drawing color hex code"></label></div></details></section><details class="draw-settings-drawer"><summary>Drawing Settings<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4"/></svg></summary><div class="draw-options"><label>Size <input class="draw-size" type="range" min="1" max="60" value="6"><output>6</output></label><label>Opacity <input class="draw-opacity" type="range" min="10" max="100" value="100"><output>100%</output></label><label class="draw-check"><input class="draw-smooth" type="checkbox" role="switch" checked><span>Smooth Strokes</span></label><label class="draw-check"><input class="draw-fill" type="checkbox">Fill shape</label><label class="draw-erase-mode" hidden>Eraser <select><option value="pixel">Partial stroke</option><option value="stroke">Whole stroke</option></select></label></div></details><div class="draw-selection-tools" hidden><button type="button" data-edit="duplicate" title="Duplicate selected drawing">Duplicate</button><button type="button" data-edit="delete" title="Delete selected drawing">Delete</button><button type="button" data-edit="rotate" title="Rotate selected drawing 15 degrees">Rotate</button></div><footer><button type="button" class="draw-undo" aria-label="Undo drawing">${svg('<path d="M4 5v6h6M4 11l4-4a7 7 0 1 1 1 12"/>')}</button><button type="button" class="draw-redo" aria-label="Redo drawing">${svg('<path d="M20 5v6h-6M20 11l-4-4a7 7 0 1 0-1 12"/>')}</button><button type="button" class="draw-clear">Clear</button><span class="draw-feedback" role="status"></span></footer>`;
-  m.querySelector('.draw-tools')?.remove();m.append(body);m.classList.add('draw-rebuilt');m.style.width='340px';m.style.height='440px';m.style.setProperty('min-width','300px','important');m.style.setProperty('min-height','410px','important');m._resizeMinimum={width:300,height:410};
+  const controls=document.createElement('div');controls.className='draw-controls-row';
+  const colorDrawer=document.createElement('details');colorDrawer.className='draw-colors-drawer';
+  colorDrawer.innerHTML=`<summary><span class="draw-current-color" aria-hidden="true"></span><span>Color</span>${svg('<path d="m8 10 4 4 4-4"/>')}</summary>`;
+  const colorSection=body.querySelector('.draw-color-section'),settingsDrawer=body.querySelector('.draw-settings-drawer');
+  colorSection.before(controls);colorDrawer.append(colorSection);controls.append(colorDrawer,settingsDrawer);
+  m.querySelector('.draw-tools')?.remove();m.append(body);m.classList.add('draw-rebuilt');m.style.width='320px';m.style.height='260px';m.style.setProperty('min-width','280px','important');m.style.setProperty('min-height','220px','important');m._resizeMinimum={width:280,height:220};
+  // Fit the controls at every saved/resized width; drawers overlay instead of scrolling.
+  let layoutFrame=0;
+  function fitPalette(){
+    layoutFrame=0;if(!m.isConnected)return;
+    const tileStyle=getComputedStyle(m),paletteStyle=getComputedStyle(body);
+    const px=value=>parseFloat(value)||0;
+    const rows=[...body.children].filter(el=>getComputedStyle(el).display!=='none'&&getComputedStyle(el).position!=='absolute');
+    const content=rows.reduce((height,el)=>{const style=getComputedStyle(el);return height+el.offsetHeight+(el.tagName==='FOOTER'?0:px(style.marginTop))+px(style.marginBottom);},0);
+    const minimum=Math.max(220,Math.ceil(content+Math.max(0,rows.length-1)*px(paletteStyle.rowGap)+px(paletteStyle.paddingTop)+px(paletteStyle.paddingBottom)+px(tileStyle.paddingTop)+px(tileStyle.paddingBottom)+px(tileStyle.borderTopWidth)+px(tileStyle.borderBottomWidth)));
+    const fitted=parseFloat(m.style.height)<=m._resizeMinimum.height+1;
+    if(m._resizeMinimum.height!==minimum){m._resizeMinimum.height=minimum;m.style.setProperty('min-height',minimum+'px','important');}
+    if(fitted||parseFloat(m.style.height)<minimum)m.style.height=minimum+'px';
+  }
+  const queueLayout=()=>{if(!layoutFrame)layoutFrame=requestAnimationFrame(fitPalette);};
+  const layoutObserver=new ResizeObserver(queueLayout);layoutObserver.observe(body);[...body.children].forEach(el=>layoutObserver.observe(el));
+  body.querySelectorAll('details').forEach(details=>{
+    details.addEventListener('toggle',()=>{if(details.open)body.querySelectorAll('details').forEach(other=>{if(other!==details&&!other.contains(details)&&!details.contains(other))other.open=false;});queueLayout();});
+    details.querySelector('summary').addEventListener('pointerdown',event=>{bringToFront(m);event.stopPropagation();});
+  });
+  // Capture outside presses before the board or drawing canvas handles them.
+  const dismissDrawers=event=>body.querySelectorAll('details[open]').forEach(details=>{
+    if(!event||!details.contains(event.target))details.open=false;
+  });
+  document.addEventListener('pointerdown',dismissDrawers,true);
+  queueLayout();
   const $=s=>body.querySelector(s),size=$('.draw-size'),opacity=$('.draw-opacity'),smooth=$('.draw-smooth'),fill=$('.draw-fill'),undo=$('.draw-undo'),redo=$('.draw-redo'),selectionTools=$('.draw-selection-tools');
   let color='#222222',tool='brush',enabled=false,actions=[],cursor=0,selected=-1,gesture=null,frame=0,baseImage=null,baseImageData='',loadToken=0,disposed=false,penUntil=0;
   const recent=[];
@@ -13,6 +43,7 @@ function setupDraw(m){
   function update(){$('.draw-active-notice').hidden=!enabled;undo.disabled=cursor===0;redo.disabled=cursor===actions.length;selectionTools.hidden=selected<0;canvas.style.pointerEvents=enabled?'auto':'none';canvas.classList.toggle('is-active',enabled);canvas.dataset.tool=tool;body.querySelectorAll('[data-draw-tool]').forEach(b=>b.setAttribute('aria-pressed',String(enabled&&b.dataset.drawTool===tool)));$('.draw-erase-mode').hidden=tool!=='eraser';fill.closest('label').hidden=!['rectangle','ellipse'].includes(tool);smooth.closest('label').hidden=!['brush','pencil','highlighter'].includes(tool);}
   const swatches=[['Ink','#222222'],['White','#ffffff'],['Slate','#64748b'],['Red','#d65563'],['Orange','#ef9d50'],['Yellow','#e8c74a'],['Green','#529b76'],['Blue','#568ecc'],['Purple','#9266b5'],['Pink','#e69bc0'],['Brown','#967052'],['Teal','#4aaca5']];
   function colors(){
+    body.style.setProperty('--draw-current-color',color);
     $('.draw-color-value').textContent=color.toUpperCase();
     $('.draw-color-editor input[type=color]').value=color;
     $('.draw-color-hex').value=color.toUpperCase();
@@ -22,7 +53,7 @@ function setupDraw(m){
       host.hidden=!host.childElementCount;
     }
   }
-  $('.draw-color-editor input[type=color]').oninput=e=>{color=e.target.value;$('.draw-color-hex').value=color.toUpperCase();$('.draw-color-value').textContent=color.toUpperCase();};
+  $('.draw-color-editor input[type=color]').oninput=e=>{color=e.target.value;body.style.setProperty('--draw-current-color',color);$('.draw-color-hex').value=color.toUpperCase();$('.draw-color-value').textContent=color.toUpperCase();};
   $('.draw-color-editor input[type=color]').onchange=()=>rememberColor();
   $('.draw-color-hex').onchange=e=>{const value=e.target.value.trim();if(/^#?[0-9a-f]{6}$/i.test(value)){color=('#'+value.replace('#','')).toLowerCase();rememberColor();}else colors();};
   function rememberColor(){const i=recent.indexOf(color);if(i>=0)recent.splice(i,1);recent.unshift(color);recent.length=Math.min(6,recent.length);colors();}
@@ -55,5 +86,5 @@ function setupDraw(m){
   m._setDrawHistoryCursor=next=>{cursor=clamp(Number(next)||0,0,actions.length);selected=-1;gesture=null;schedule();};
   m._boardGetState=()=>({image:baseImageData,actions:actions.slice(0,cursor).map(compact),tool,color,size:size.value,opacity:opacity.value,smooth:smooth.checked});
   m._boardSetState=state=>{if(!state)return;actions=(state.actions||[]).map(expand).filter(Boolean);cursor=actions.length;color=state.color||'#222222';size.value=state.size||6;opacity.value=state.opacity||100;smooth.checked=state.smooth!==false;tool=tools.some(t=>t[0]===state.tool)?state.tool:'brush';baseImageData=typeof state.image==='string'?state.image:'';baseImage=null;const token=++loadToken;if(baseImageData){const image=new Image();image.onload=()=>{if(token===loadToken&&!disposed){baseImage=image;schedule();}};image.src=baseImageData;}size.oninput();opacity.oninput();colors();schedule();};
-  const cameraObserver=new MutationObserver(schedule);cameraObserver.observe(workspace,{attributes:true,attributeFilter:['style']});window.addEventListener('resize',schedule);const priorCleanup=m._cleanup,priorDeactivate=m._deactivate,priorReactivate=m._reactivate;m._deactivate=()=>{activate(false);canvas.hidden=true;priorDeactivate?.();};m._reactivate=()=>{canvas.hidden=false;priorReactivate?.();schedule();};m._cleanup=()=>{disposed=true;loadToken++;cancelAnimationFrame(frame);cameraObserver.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('teachertiles:drawing-active',deactivateOther);document.removeEventListener('keydown',keys,true);canvas.remove();priorCleanup?.();};colors();update();redraw();
+  const cameraObserver=new MutationObserver(schedule);cameraObserver.observe(workspace,{attributes:true,attributeFilter:['style']});window.addEventListener('resize',schedule);const priorCleanup=m._cleanup,priorDeactivate=m._deactivate,priorReactivate=m._reactivate;m._deactivate=()=>{dismissDrawers();activate(false);canvas.hidden=true;priorDeactivate?.();};m._reactivate=()=>{canvas.hidden=false;priorReactivate?.();schedule();};m._cleanup=()=>{document.removeEventListener('pointerdown',dismissDrawers,true);layoutObserver.disconnect();cancelAnimationFrame(layoutFrame);disposed=true;loadToken++;cancelAnimationFrame(frame);cameraObserver.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('teachertiles:drawing-active',deactivateOther);document.removeEventListener('keydown',keys,true);canvas.remove();priorCleanup?.();};colors();update();redraw();
 }

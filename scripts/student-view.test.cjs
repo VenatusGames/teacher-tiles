@@ -1,0 +1,113 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const root=process.cwd();
+(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.route('**/*',r=>{const u=new URL(r.request().url());if(u.pathname.endsWith('firebase-auth.js'))return r.fulfill({body:'',contentType:'text/javascript'});if(u.pathname.includes('board-gate'))return r.abort();if(u.pathname.endsWith('/shopManagement'))return r.fulfill({json:{revision:0,products:{},bundles:{},sales:{},banners:{hidden:[],removed:[],custom:[]},serverTime:Date.now()}});if(u.hostname!=='tiles.test')return r.abort();let local=decodeURIComponent(u.pathname.replace(/^\/dev/,'')||'/');if(local==='/board.html')local='/index.html';const f=path.join(root,local);return fs.existsSync(f)&&fs.statSync(f).isFile()?r.fulfill({path:f}):r.fulfill({status:404,body:''});});
+await page.goto('https://tiles.test/dev/board.html');await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(()=>{document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');window.TeacherTilesAuth={user:null,call:async()=>({})};window.TeacherTilesSandbox={subscriptionEnabled:true};});
+
+
+
+await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify([{id:'old-class',name:'Homeroom',logo:'🦉',students:['Alice','Ben'],starChart:{wholeClassStars:8,studentStars:{'student:alice':12}},punchcards:{studentPoints:{'student:alice':3},studentProgress:{'student:alice':4}},racer:{studentWins:{'student:alice':2},positions:{'student:alice':56}},eggHatching:{studentPoints:{'student:alice':7}},flowerPots:{studentPoints:{'student:alice':5}}}]));document.querySelector('#profile-classes-button').click();});
+assert.equal(await page.locator('#profile-student-view-button').count(),0);assert(await page.getByRole('dialog',{name:'Class View',exact:true}).isVisible());
+
+await page.getByRole('button',{name:'New Class',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Club');await page.getByRole('button',{name:'Use 🚀',exact:true}).click();await page.getByRole('button',{name:'Create Class',exact:true}).click();assert(await page.getByRole('button',{name:'Open Science Club',exact:true}).isVisible());
+await page.getByRole('button',{name:'Open Science Club',exact:true}).hover();await page.getByRole('button',{name:'Edit Science Club',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Explorers');await page.getByRole('button',{name:'Save Changes',exact:true}).click();
+await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();await page.getByRole('button',{name:"Open Alice's student profile",exact:true}).click();
+assert.equal(await page.locator('.cs-detail .cs-stat').count(),0);
+assert(await page.getByRole('button',{name:'Assessments Coming soon',exact:true}).isDisabled());
+assert(await page.locator('.cs-detail').getByRole('button',{name:'ClassConnect Coming soon',exact:true}).isDisabled());
+await page.getByRole('button',{name:'Extras',exact:true}).click();
+assert(await page.getByRole('button',{name:'Student Pets Coming soon',exact:true}).isDisabled());
+await page.getByRole('button',{name:'Student Profile',exact:true}).click();
+await page.getByRole('button',{name:'PBIS View rewards',exact:true}).click();
+assert.equal(await page.locator('.cs-detail .cs-stat').filter({hasText:'Stars'}).locator('.cs-stat-value').textContent(),'12');
+assert(await page.locator('.cs-detail .cs-modal-header .cs-profile-back').isVisible());
+await page.getByRole('button',{name:'Edit Student',exact:true}).click();await page.getByRole('textbox',{name:'Student first name or nickname',exact:true}).fill('Alicia');await page.getByRole('button',{name:'Use 🦋',exact:true}).click();await page.getByRole('button',{name:'Save Changes',exact:true}).click();
+assert.equal(await page.locator('.cs-detail-hero h3').textContent(),'Alicia');assert.equal(await page.locator('.cs-detail .cs-stat').filter({hasText:'Stars'}).locator('.cs-stat-value').textContent(),'12');
+await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();
+await page.getByRole('button',{name:'Add Student',exact:true}).click();await page.getByRole('textbox',{name:'Student first name or nickname',exact:true}).fill('Charlie');
+const photo=await page.screenshot({clip:{x:0,y:0,width:512,height:512}});await page.locator('input[type=file][aria-label="Upload student image"]').setInputFiles({name:'student.png',mimeType:'image/png',buffer:photo});await page.waitForFunction(()=>document.querySelector('.cs-form-preview img'));await page.locator('.cs-form:visible button[type=submit]').click();
+assert(await page.getByRole('button',{name:"Open Charlie's student profile",exact:true}).locator('img').isVisible());
+assert.equal(await page.getByRole('button',{name:"Open Charlie's student profile",exact:true}).locator('img').evaluate(img=>img.naturalWidth),256);
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();await page.getByRole('switch',{name:'Enable PBIS',exact:true}).uncheck();assert(!(await page.locator('.cs-pbis-options').isVisible()));await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();assert.equal(await page.locator('.cs-student-card .cs-reward-summary>strong').count(),0);
+await page.getByRole('button',{name:"Open Alicia's student profile",exact:true}).click();assert.equal(await page.locator('.cs-detail .cs-stat').count(),0);assert(await page.getByRole('button',{name:'PBIS Off in Class Settings',exact:true}).isDisabled());await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();await page.getByRole('switch',{name:'Enable PBIS',exact:true}).check();await page.getByRole('switch',{name:'Race Wins',exact:true}).uncheck();await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();
+
+const stored=await page.evaluate(()=>readClassRosters().find(c=>c.id==='old-class'));assert.equal(stored.starChart.studentStars['student:alicia'],12);assert.equal(stored.punchcards.studentProgress['student:alicia'],4);assert.equal(stored.racer.positions['student:alicia'],56);assert.equal(stored.eggHatching.studentPoints['student:alicia'],7);assert.equal(stored.flowerPots.studentPoints['student:alicia'],5);assert.equal(stored.pbisStats.raceWins,false);assert(stored.studentProfiles['student:charlie'].image.startsWith('data:image/webp;'));
+await page.evaluate(()=>writeClassStarChart('old-class',{...readClassRosters()[0].starChart,wholeClassStars:10}));assert.equal(await page.evaluate(()=>readClassRosters()[0].studentProfiles['student:charlie'].image.length),stored.studentProfiles['student:charlie'].image.length);
+await page.setViewportSize({width:390,height:844});assert(await page.locator('.cs-tool').evaluate(e=>e.scrollWidth<=innerWidth));assert(await page.locator('.cs-content').evaluate(e=>e.scrollWidth<=e.clientWidth));
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();
+await page.getByRole('button',{name:"Open Alicia's student profile",exact:true}).click();
+await page.getByRole('button',{name:'PBIS View rewards',exact:true}).click();
+assert.equal(await page.locator('.cs-detail .cs-stat').filter({hasText:'Race Wins'}).count(),0);
+await page.evaluate(()=>writeClassStarChart('old-class',{...readClassRosters()[0].starChart,studentStars:{'student:alicia':19}}));
+assert.equal(await page.locator('.cs-detail .cs-stat').filter({hasText:'Stars'}).locator('.cs-stat-value').textContent(),'19');
+assert(await page.locator('.cs-detail').evaluate(e=>e.scrollWidth<=e.clientWidth));
+await page.emulateMedia({reducedMotion:'reduce'});
+await page.getByRole('button',{name:'Student Profile',exact:true}).click();
+assert.equal(await page.locator('.cs-profile-body').evaluate(e=>getComputedStyle(e).animationName),'none');
+await page.keyboard.press('Escape');assert.equal(await page.locator('.cs-detail').isVisible(),false);
+await page.getByRole('button',{name:'View whole-class PBIS rewards',exact:true}).click();
+assert.equal(await page.locator('.cs-detail .cs-stat').filter({hasText:'Stars'}).locator('.cs-stat-value').textContent(),'10');
+await page.getByRole('button',{name:'Close Whole-Class Rewards',exact:true}).click();
+await page.getByRole('button',{name:'Back to Board',exact:true}).click();await page.reload();await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(()=>{document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');document.querySelector('#profile-classes-button').click();});await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();assert(await page.getByRole('button',{name:"Open Charlie's student profile",exact:true}).locator('img').isVisible());
+assert.equal(await page.evaluate(()=>readClassRosters()[0].pbisStats.raceWins),false);
+
+// A short click still opens the profile; moving/scrolling cancels a hold.
+await page.setViewportSize({width:1500,height:1000});
+const alicia=page.getByRole('button',{name:"Open Alicia's student profile",exact:true});
+await alicia.dispatchEvent('pointerdown',{button:0,isPrimary:true,clientX:100,clientY:100});
+await alicia.dispatchEvent('pointermove',{clientX:130,clientY:130});await page.waitForTimeout(700);
+assert(!(await page.getByRole('button',{name:'Remove Alicia',exact:true}).isVisible()));
+await alicia.dispatchEvent('pointerup');
+await alicia.hover();await page.mouse.down();await page.waitForTimeout(720);await page.mouse.up();
+assert(await page.getByRole('button',{name:'Remove Alicia',exact:true}).isVisible());
+assert(!(await page.locator('.cs-detail').isVisible()));
+assert.equal(await alicia.evaluate(e=>getComputedStyle(e).animationName),'none');
+await page.emulateMedia({reducedMotion:'no-preference'});assert.equal(await alicia.evaluate(e=>getComputedStyle(e).animationName),'studentDeleteWiggle');
+page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Remove Alicia',exact:true}).click();
+assert(await alicia.isVisible());
+await page.keyboard.press('Escape');assert(!(await page.getByRole('button',{name:'Remove Alicia',exact:true}).isVisible()));
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+assert.equal(await page.getByRole('button',{name:'Edit students',exact:true}).getAttribute('aria-pressed'),'true');
+assert.equal(await page.locator('.cs-student-remove:visible').count(),3);
+page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Remove Alicia',exact:true}).click();
+const afterDelete=await page.evaluate(()=>JSON.parse(localStorage.getItem(classRostersStorageKey()))[0]);
+assert.deepEqual(afterDelete.students,['Ben','Charlie']);
+assert.equal(afterDelete.studentProfiles['student:alicia'],undefined);
+for(const [kind,fields] of [['starChart',['studentStars']],['punchcards',['studentPoints','studentProgress']],['eggHatching',['studentPoints','studentProgress']],['flowerPots',['studentPoints','studentProgress']],['racer',['positions','studentWins','finished']]])for(const field of fields)assert.equal(afterDelete[kind][field]['student:alicia'],undefined);
+assert.equal(afterDelete.starChart.wholeClassStars,10);assert.equal(afterDelete.studentProfiles['student:charlie'].image,stored.studentProfiles['student:charlie'].image);
+await page.getByRole('button',{name:'Edit students',exact:true}).click();assert.equal(await page.locator('.cs-student-remove:visible').count(),0);
+await page.getByRole('button',{name:"Open Ben's student profile",exact:true}).click();
+assert(await page.locator('.cs-detail .cs-initials').isVisible());await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();
+assert.equal(await page.locator('.cs-class-pbis').innerText(),'PBIS');
+
+// Dismiss edit mode on outside input and after inactivity; normal clicks resume.
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),2);
+await page.locator('.cs-list-heading h1').click();
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),0);
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+await page.getByRole('button',{name:"Open Ben's student profile",exact:true}).dispatchEvent('click');
+assert.equal(await page.locator('.cs-student-remove:visible').count(),0);assert(!(await page.locator('.cs-detail').isVisible()));
+await page.getByRole('button',{name:'Edit students',exact:true}).click();
+await page.waitForTimeout(8250);
+assert.equal(await page.locator('.cs-student-entry.is-removable').count(),0);
+assert.equal(await page.getByRole('button',{name:'Edit students',exact:true}).getAttribute('aria-pressed'),'false');
+// Per-class visibility persists and reward options collapse without changing preferences.
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();
+await page.getByRole('switch',{name:'Show Add Student',exact:true}).uncheck();
+assert.equal(await page.evaluate(()=>readClassRosters()[0].showAddStudent),false);
+assert.equal(await page.evaluate(()=>readClassRosters()[1].showAddStudent),true);
+const summary=page.locator('.cs-pbis-disclosure>summary');await summary.click();
+assert(!(await page.getByRole('switch',{name:'Stars',exact:true}).isVisible()));
+await summary.click();assert(await page.getByRole('switch',{name:'Stars',exact:true}).isChecked());
+assert(await page.getByRole('switch',{name:'Stars',exact:true}).evaluate(e=>e.getBoundingClientRect().width<document.querySelector('[aria-label="Enable PBIS"]').getBoundingClientRect().width));
+assert.equal(await page.locator('.cs-settings .cs-edit-pencil').textContent(),await page.locator('#profile-nickname-edit').textContent());
+await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();
+assert.equal(await page.getByRole('button',{name:'Add Student',exact:true}).count(),0);
+await page.getByRole('button',{name:'Back to Board',exact:true}).click();await page.reload();await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(()=>{document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');document.querySelector('#profile-classes-button').click();});
+await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Add Student',exact:true}).count(),0);
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();await page.getByRole('switch',{name:'Show Add Student',exact:true}).check();await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();assert(await page.getByRole('button',{name:'Add Student',exact:true}).isVisible());
+assert.deepEqual(errors,[]);console.log('PASS: old rosters, create/edit classes, student rename preserves all rewards, 256px photo persistence, PBIS navigation and toggles, live rewards, long-press cancellation, confirmed removal with reward cleanup, wiggle and idle/outside dismissal, persistent Add Student visibility, collapsible reward controls, reload and mobile bounds.');
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

@@ -30,12 +30,11 @@ function setupCVCWord(m){
   const completion=createFlashcardCompletePopup(card,()=>resetDeck({animate:true}));
 
   const getAvailableSpace=()=>{
-    const cardRect=card.getBoundingClientRect();
-    const labelRect=vowelLabel.getBoundingClientRect();
+    const cardRect=flashcardContentBox(card);
 
     return {
-      maxWidth:Math.max(80,cardRect.width-34),
-      maxHeight:Math.max(48,cardRect.height-38)
+      maxWidth:Math.max(80,cardRect.width),
+      maxHeight:Math.max(48,cardRect.height-20)
     };
   };
 
@@ -55,7 +54,7 @@ function setupCVCWord(m){
       const mid=Math.floor((low+high)/2);
       measurer.style.fontSize=`${mid}px`;
 
-      const rect=measurer.getBoundingClientRect();
+      const rect={width:measurer.offsetWidth,height:measurer.offsetHeight};
       const fitsWidth=rect.width<=maxWidth+1;
       const fitsHeight=rect.height<=maxHeight+1;
 

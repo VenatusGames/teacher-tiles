@@ -8,9 +8,11 @@ function setupTeacherTilesShop(){
   // Explicit seasonal metadata also powers search and the Halloween collection.
   modal.querySelectorAll('[data-shop-product][data-shop-holiday]').forEach(card=>{
     const badge=document.createElement('span');badge.className='holiday-badge shop-holiday-badge';badge.textContent='Holiday';
-    badge.title=card.dataset.shopHoliday==='halloween'?'Halloween':'Christmas';
+    badge.title=({halloween:'Halloween',thanksgiving:'Thanksgiving',christmas:'Christmas'})[card.dataset.shopHoliday]||'Holiday';
     card.querySelector('.shop-product__preview')?.append(badge);
   });
+  const thanksgivingProducts=new Set(["theme-autumn-forest", "theme-feast", "theme-leaves", "cursor-leaf-pack", "cursor-candy-corn-pack", "cursor-veggie-pack", "planner-skin-autumn", "tile-effect-windy-leaves", "tile-effect-green-windy-leaves", "tile-effect-brown-windy-leaves", "sticker-thankful-turkeys", "sticker-thanksgiving-pies"]);
+  modal.querySelectorAll('[data-shop-product]').forEach(card=>{if(thanksgivingProducts.has(card.dataset.shopProduct))card.dataset.shopSeason='thanksgiving';});
   let activeHoliday='';
   const shopHome=modal.querySelector('[data-shop-page="home"]');
   shopHome.querySelector('.shop-banner').after(shopHome.querySelector('.shop-membership-grid'));
@@ -193,9 +195,9 @@ function setupTeacherTilesShop(){
       const terms=shopBrowserClean(search.value).split(/\s+/).filter(Boolean);
       const mode=sort.value;
       const tileType=filter?.value||'all';
-      if(holidayFilter)holidayFilter.hidden=!activeHoliday;
+      if(holidayFilter){holidayFilter.hidden=!activeHoliday;const name=activeHoliday==='thanksgiving'?'Fall & Thanksgiving':'Halloween';holidayFilter.textContent=name+' ×';holidayFilter.setAttribute('aria-label','Remove '+name+' filter');}
       if(pageName==='home'&&(terms.length||activeHoliday||mode!=='featured')){
-        const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
+        const matched=catalogProducts.filter(item=>(!activeHoliday||item.dataset.shopHoliday===activeHoliday||item.dataset.shopSeason===activeHoliday)&&terms.every(term=>searchText(item).includes(term))).sort((a,b)=>{
           if(mode==='name-asc')return nameOf(a).localeCompare(nameOf(b));
           if(mode==='name-desc')return nameOf(b).localeCompare(nameOf(a));
           if(mode==='price-asc')return Number(a.dataset.shopPrice||0)-Number(b.dataset.shopPrice||0)||nameOf(a).localeCompare(nameOf(b));
@@ -281,7 +283,7 @@ function setupTeacherTilesShop(){
     const owned=new Set(state.ownedProductIds||[]);
     products.forEach(card=>{
       const isOwned=card.dataset.bundleItems?JSON.parse(card.dataset.bundleItems).every(id=>owned.has(id)):owned.has(card.dataset.shopProduct);
-      const signature=JSON.stringify([isOwned,Boolean(state.subscriptionActive),Boolean(state.subscriptionOverride),Boolean(state.loading),Boolean(state.signedIn),card.classList.contains('is-purchasing'),card.dataset.shopPrice,card.querySelector('h3')?.textContent]);
+      const signature=JSON.stringify([isOwned,Boolean(state.subscriptionActive),Boolean(state.subscriptionOverride),Boolean(state.districtPremium),Boolean(state.loading),Boolean(state.signedIn),card.classList.contains('is-purchasing'),card.dataset.shopPrice,card.querySelector('h3')?.textContent]);
       if(productDisplayState.get(card)===signature)return;productDisplayState.set(card,signature);
       markSubscriptionAccess(card,card.dataset.shopProduct);
       card.classList.toggle('is-owned',isOwned);
@@ -295,7 +297,7 @@ function setupTeacherTilesShop(){
   function syncMembership(){
     const state=accountState(),active=Boolean(state.subscriptionActive||state.subscriptionOverride);
     membershipCard?.classList.toggle('is-subscription-active',active);
-    if(membershipTitle)membershipTitle.textContent=active?'Subscription Active!':membershipDefaultTitle;
+    if(membershipTitle)membershipTitle.textContent=active?(state.districtPremium?'Subscription Active (Through Organization!)':'Subscription Active!'):membershipDefaultTitle;
     for(const selector of ['.shop-membership-price','.shop-membership-card__foot']){
       const element=membershipCard?.querySelector(selector);if(element)element.hidden=active;
     }
@@ -436,14 +438,15 @@ function setupTeacherTilesShop(){
     if(restoreFocus)coinButton?.focus({preventScroll:true});
   }
   let managedShop;
-  const managedReady=import('./managed-shop.js?v=20261021-bundles-first').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
+  const managedReady=import('./managed-shop.js?v=20261021-autumn-finish').then(({setupManagedShop})=>{managedShop=setupManagedShop({modal,products,catalogProducts,bindProduct,openProduct,getPage:()=>activePage,sync:()=>{syncShop();refreshShopBrowsers.forEach(render=>{if(render.pageName===activePage)render()})},replaceBanners:slides=>{
     stopBannerTimer();const track=modal.querySelector('.shop-banner__track'),dotParent=dots[0]?.parentElement;
     track.replaceChildren(...slides);banners=slides;dots=[];if(dotParent)dotParent.replaceChildren();
-    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'){activeHoliday='halloween';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
+    slides.forEach((slide,i)=>{const button=slide.querySelector('[data-shop-banner-target]');if(button)button.onclick=()=>{const target=button.dataset.shopBannerTarget;if(target==='membership')window.TeacherTilesShop.openMembership();else if(target==='halloween'||target==='thanksgiving'){activeHoliday=target;shopHome.querySelector('[data-shop-search]').value='';showPage('home')}else showPage(target)};if(dotParent){const dot=document.createElement('button');dot.type='button';dot.dataset.shopBannerDot=String(i);dot.setAttribute('aria-label',`Show banner ${i+1}`);dot.onclick=()=>showBanner(i);dotParent.append(dot);dots.push(dot)}});
     modal.querySelector('.shop-banner').hidden=!slides.length;showBanner(0);startBannerTimer();
   }});if(!modal.hidden)return managedShop.refresh()}).catch(error=>console.warn('Shop management could not initialize',error));
   function openShop(){
-    void managedReady.then(()=>managedShop?.refresh());
+    const banner=modal.querySelector('.shop-banner');banner.classList.add('is-loading');banner.setAttribute('aria-busy','true');
+    void managedReady.then(()=>managedShop?managedShop.refresh():(banner.hidden=true));
     lastFocus=document.activeElement;
     const shelf=document.getElementById('asset-shelf');
     if(shelf?.classList.contains('is-open'))document.getElementById('asset-shelf-close')?.click();
@@ -602,8 +605,8 @@ function setupTeacherTilesShop(){
   modal.querySelectorAll('[data-shop-banner-target]').forEach(button=>button.addEventListener('click',()=>{
     const target=button.dataset.shopBannerTarget;
     if(target==='membership'){window.TeacherTilesShop.openMembership();return}
-    if(target==='halloween'){
-      activeHoliday='halloween';shopHome.querySelector('[data-shop-search]').value='';showPage('home');
+    if(target==='halloween'||target==='thanksgiving'){
+      activeHoliday=target;shopHome.querySelector('[data-shop-search]').value='';showPage('home');
       shopHome.querySelector('.shop-holiday-filter')?.focus({preventScroll:true});
     }else showPage(target);
   }));
@@ -613,7 +616,10 @@ function setupTeacherTilesShop(){
     card.querySelectorAll('[data-effect-preview]').forEach(p=>p.replaceWith(window.TeacherTilesTileEffects.preview(p.dataset.effectPreview)));
   }
   const previewVisibility=new IntersectionObserver(entries=>{for(const {target,isIntersecting} of entries){if(!target.isConnected){previewVisibility.unobserve(target);continue;}target.classList.toggle('is-preview-offscreen',!isIntersecting);}},{root:modal.querySelector('.shop-content')||null,rootMargin:'150px'});
+  // Category artwork also animates; pause it when the category leaves the viewport.
+  modal.querySelectorAll('.shop-category').forEach(card=>{card.classList.add('is-preview-offscreen');previewVisibility.observe(card)});
   function bindProduct(card){
+    card.querySelectorAll('img').forEach(window.prepareShopPreviewImage);
     card.classList.add('is-preview-offscreen');previewVisibility.observe(card);
     card.tabIndex=0;card.setAttribute('aria-label',`View ${card.querySelector('h3')?.textContent||'product'}`);
     card.querySelector('[data-shop-buy]')?.addEventListener('click',event=>{event.stopPropagation();tryBuy(card)});

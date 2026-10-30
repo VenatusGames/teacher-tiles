@@ -3,6 +3,10 @@
     {
       "path": "banners/thanksgiving.png",
       "name": "thanksgiving"
+    },
+    {
+      "path": "banners/thanksgiving-shop.svg",
+      "name": "thanksgiving shop"
     }
   ]
 }

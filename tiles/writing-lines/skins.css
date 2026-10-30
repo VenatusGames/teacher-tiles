@@ -1,0 +1,11 @@
+/* Frame artwork never supplies writing guides: the live rows remain responsive. */
+.writinglines-module[data-tile-skin^="writinglines-"] .writinglines-paper{background:var(--writing-skin-art) center/100% 100% no-repeat!important;border:0;border-radius:18px;padding:clamp(8px,4cqh,24px) clamp(18px,6cqw,40px) clamp(8px,4cqh,24px) clamp(22px,8cqw,48px);box-shadow:0 4px 12px #17203312}
+.writinglines-module[data-tile-skin^="writinglines-"][data-text="dark"] .writinglines-entry{color:var(--writing-skin-ink)}
+.writinglines-module[data-tile-skin^="writinglines-"] .writinglines-guide--top{border-top-color:var(--writing-skin-rule)}
+.writinglines-module[data-tile-skin^="writinglines-"] .writinglines-guide--mid{border-top-color:var(--writing-skin-rule);opacity:.8}
+.writinglines-module[data-tile-skin^="writinglines-"] .writinglines-guide--base{border-top-color:var(--writing-skin-baseline)}
+.writinglines-module[data-tile-skin="writinglines-blocks"]{--writing-skin-art:url("assets/blocks.svg");--writing-skin-ink:#33465d;--writing-skin-rule:#a99a7d;--writing-skin-baseline:#76909f}
+.writinglines-module[data-tile-skin="writinglines-storybook"]{--writing-skin-art:url("assets/storybook.svg");--writing-skin-ink:#36534b;--writing-skin-rule:#9eaf98;--writing-skin-baseline:#7b9680}
+.writinglines-module[data-tile-skin="writinglines-notebook"]{--writing-skin-art:url("assets/notebook.svg");--writing-skin-ink:#374759;--writing-skin-rule:#8eacc0;--writing-skin-baseline:#648da9}
+.writinglines-module[data-tile-skin="writinglines-arcade"]{--writing-skin-art:url("assets/arcade.svg");--writing-skin-ink:#c8faff;--writing-skin-rule:#6b98aa;--writing-skin-baseline:#91cfdf}
+.writinglines-module[data-tile-skin="writinglines-index"]{--writing-skin-art:url("assets/index.svg");--writing-skin-ink:#35536a;--writing-skin-rule:#9eafb5;--writing-skin-baseline:#7397a7}

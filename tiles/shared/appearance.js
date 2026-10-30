@@ -2,6 +2,7 @@
   'use strict';
   const backgrounds={white:'#ffffff',cream:'#fff5dc',orange:'#ffdfc2',blue:'#dfeeff',pink:'#ffe0ea',green:'#e1f5e5',lavender:'#eee3ff',charcoal:'#25282e'};
   const texts={dark:'#17191d',soft:'#5d6470',blue:'#244d78',rose:'#8b4055',white:'#f7f8fa',cream:'#fff0d6',red:'#b42332',orange:'#b54708',gold:'#92700c',green:'#287442',teal:'#087e8b',purple:'#7543a8',brown:'#79523b'};
+  const barColors={blue:'#74b4f0',green:'#74c69d',amber:'#e9b44c',rose:'#ed8ba3',purple:'#ac8de3',aqua:'#65ccd1'};
   const notes={yellow:'#fff2aa',pink:'#ffdbe5',blue:'#dbeeff',green:'#ddf4df',lavender:'#eadfff'};
   const fontNames={lexend:'Lexend',pacifico:'Pacifico',calibri:'Calibri',inter:'Inter',poppins:'Poppins',nunito:'Nunito',quicksand:'Quicksand',oswald:'Oswald',lora:'Lora',merriweather:'Merriweather',playfair:'Playfair Display',caveat:'Caveat',phantom:'Phantom Guardians',dm:'DM Sans',space:'Space Grotesk',mono:'Roboto Mono'};
   let active=null,frame=0,hideTimer=0,keyboard=false;
@@ -111,7 +112,7 @@
       button.setAttribute('aria-label',control.label);button.title=control.label;button.setAttribute('aria-expanded','false');
       const icon=control.original.querySelector('.icon-font,.icon-palette,.icon-text-color');
       if(icon)button.appendChild(icon.cloneNode(true));
-      else if(control.key==='color'){const palette=document.createElement('span');palette.className='icon-palette';palette.setAttribute('aria-hidden','true');button.appendChild(palette)}
+      else if(['color','barColor'].includes(control.key)){const palette=document.createElement('span');palette.className='icon-palette';palette.setAttribute('aria-hidden','true');button.appendChild(palette)}
       else button.textContent=control.key==='font'?'Aa':'◉';
       button.addEventListener('click',()=>showPicker(control));rail.appendChild(button);
     });
@@ -141,15 +142,16 @@
     for(const original of m.querySelectorAll('button')){
       const classes=[...original.classList];let key=null;
       if(original.classList.contains('sticky-color-cycle'))key='color';
+      else if(original.classList.contains('progress-bar-color'))continue;
       else if(original.querySelector('.icon-font'))key='font';
       else if(original.querySelector('.icon-text-color'))key='text';
       else if(classes.some(c=>/(?:-|__)bg$/.test(c))&&original.querySelector('.icon-palette'))key='bg';
       if(!key||controls.some(control=>control.key===key))continue;
-      const colors=key==='bg'?backgrounds:key==='text'?texts:notes;
+      const colors=key==='bg'?backgrounds:key==='text'?texts:key==='barColor'?barColors:notes;
       const values=key==='font'?[...fonts]:Object.keys(colors);
       // Keep legacy saved font values selectable as well.
       if(m.dataset[key]&&fontNames[m.dataset[key]]&&!values.includes(m.dataset[key])&&key==='font')values.push(m.dataset[key]);
-      controls.push({key,original,values,colors,label:key==='font'?'Font':key==='text'?'Text color':'Tile color'});
+      controls.push({key,original,values,colors,label:key==='font'?'Font':key==='text'?'Text color':key==='barColor'?'Bar color':'Tile color'});
       original.classList.add('tile-appearance-original');original.setAttribute('aria-hidden','true');original.tabIndex=-1;
     }
     m.querySelector('.image-customization')?.classList.add('tile-appearance-original');

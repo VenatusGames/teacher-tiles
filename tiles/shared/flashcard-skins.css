@@ -1,0 +1,17 @@
+/* The card artwork is shared with shop previews; no images or card text are rasterized. */
+.module.flashcard-module[data-tile-skin] .flashcard-surface{background:var(--flashcard-art) center/100% 100% no-repeat;border:0;border-radius:18px;color:var(--flashcard-ink);box-shadow:0 5px 15px #17203316}
+.module.flashcard-module[data-tile-skin] .flashcard-surface>[class$="-card-accent"]{display:none}
+.module.flashcard-module[data-tile-skin] .cvcword-vowel-label{background:var(--flashcard-paper);color:var(--flashcard-ink)}
+.module.flashcard-module[data-tile-skin] .flashcard-complete{background:var(--flashcard-paper);color:var(--flashcard-ink)}
+.module.flashcard-module[data-tile-skin="flashcard-blocks"]{--flashcard-art:url("flashcard-art/flashcard-blocks.svg");--flashcard-ink:#33465d;--flashcard-paper:#fff6e6}
+.module.flashcard-module[data-tile-skin="flashcard-storybook"]{--flashcard-art:url("flashcard-art/flashcard-storybook.svg");--flashcard-ink:#36534b;--flashcard-paper:#eef3e7}
+.module.flashcard-module[data-tile-skin="flashcard-grid"]{--flashcard-art:url("flashcard-art/flashcard-grid.svg");--flashcard-ink:#265e8b;--flashcard-paper:#e7f2fa}
+.module.flashcard-module[data-tile-skin="flashcard-arcade"]{--flashcard-art:url("flashcard-art/flashcard-arcade.svg");--flashcard-ink:#c8faff;--flashcard-paper:#192842}
+.module.flashcard-module[data-tile-skin="flashcard-notebook"]{--flashcard-art:url("flashcard-art/flashcard-notebook.svg");--flashcard-ink:#374759;--flashcard-paper:#f4eada}
+.module.flashcard-module[data-tile-skin="flashcard-letter-tiles"]{--flashcard-art:url("flashcard-art/flashcard-letter-tiles.svg");--flashcard-ink:#355952;--flashcard-paper:#e5f2ea}
+.module.flashcard-module[data-tile-skin="flashcard-library"]{--flashcard-art:url("flashcard-art/flashcard-library.svg");--flashcard-ink:#654733;--flashcard-paper:#eee1cd}
+.module.flashcard-module[data-tile-skin="flashcard-spotlight"]{--flashcard-art:url("flashcard-art/flashcard-spotlight.svg");--flashcard-ink:#fff1c4;--flashcard-paper:#1b2840}
+.module.flashcard-module[data-tile-skin="flashcard-photo"]{--flashcard-art:url("flashcard-art/flashcard-photo.svg");--flashcard-ink:#46495e;--flashcard-paper:#eee9f3}
+.module.flashcard-module[data-tile-skin="flashcard-index"]{--flashcard-art:url("flashcard-art/flashcard-index.svg");--flashcard-ink:#35536a;--flashcard-paper:#e6f1f3}
+
+.module.flashcard-module:is([data-tile-skin="flashcard-arcade"],[data-tile-skin="flashcard-spotlight"]) .abc-letter.is-vowel{color:#ff98b1}

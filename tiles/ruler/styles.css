@@ -1,0 +1,32 @@
+.module.ruler-module{padding:28px 18px 14px;gap:8px;transition:padding-bottom .2s ease}
+.module.ruler-module:is(:hover,:has(:focus-visible)){padding-bottom:48px}
+.ruler-module .ruler-stage{min-height:0;flex:1 1 0;cursor:crosshair}
+.ruler-module .ruler-face{min-height:0!important;height:calc(100% - 34px)}
+.ruler-module .ruler-tools{display:grid;grid-template-rows:0fr;flex:none;opacity:0;visibility:hidden;pointer-events:none;margin-top:-8px;transform:translateY(8px);transition:grid-template-rows .2s,opacity .16s,visibility .16s,transform .2s,margin-top .2s}
+.ruler-module:is(:hover,:has(:focus-visible)) .ruler-tools{grid-template-rows:1fr;opacity:1;visibility:visible;pointer-events:auto;margin-top:0;transform:none}
+.ruler-tools-clip{min-height:0;overflow:hidden}
+.ruler-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px}
+.ruler-module .ruler-point-readouts,.ruler-module .ruler-controls{display:flex;gap:6px;flex:none}
+.ruler-module .ruler-unit-toggle{display:flex;gap:3px;padding:0;background:transparent}
+.ruler-module :is(.ruler-point-readout,.ruler-unit-toggle button,.ruler-reset){display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:0!important;min-height:32px;height:32px;padding:6px 9px;border:1px solid var(--border,#dce2e9);border-radius:10px;background:var(--surface-solid,#fff);color:var(--text,#17191d);font:600 12px/1.3 Inter,system-ui,sans-serif;opacity:1;box-shadow:0 2px 5px #1720330d;cursor:pointer;transition:background .15s,border-color .15s}
+.ruler-module .ruler-point-readout{min-width:85px!important}
+.ruler-module .ruler-point-readout strong{font:600 11px/1.3 Inter,system-ui,sans-serif}
+.ruler-module :is(.ruler-point-readout,.ruler-unit-toggle button,.ruler-reset):hover{border-color:#9ebfe5;background:color-mix(in srgb,var(--surface-solid,#fff) 90%,#79abe6)}
+.ruler-module :is(.ruler-point-readout,.ruler-unit-toggle button).is-active{border-color:#a6c5e8;background:color-mix(in srgb,var(--surface-solid,#fff) 85%,#79abe6)}
+.ruler-module :is(.ruler-point-readout,.ruler-unit-toggle button,.ruler-reset):focus-visible{outline:2px solid #5a8dcc;outline-offset:1px}
+.ruler-reset svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ruler-module .ruler-hint{opacity:0;transition:opacity .16s}
+.ruler-module:is(:hover,:has(:focus-visible)) .ruler-hint{opacity:.5}
+.ruler-module.has-appearance-controls .ruler-customization{display:none}
+.ruler-module[data-tile-skin="ruler-clear"]{background:transparent!important;border-color:transparent;box-shadow:none!important;backdrop-filter:none}
+.ruler-module[data-tile-skin="ruler-metal"] .ruler-face{border-color:#8795a4;background:repeating-linear-gradient(0deg,#ffffff20 0 1px,#3441510a 1px 3px),linear-gradient(105deg,#cbd3da,#f3f6f8 24%,#bac5cf 55%,#e7edf2 82%,#a8b5c0);box-shadow:inset 0 2px #fff,inset 0 -5px 0 #6e7d8b55,0 5px 12px #26394a26}
+.ruler-module[data-tile-skin="ruler-metal"] :is(.ruler-tick,.ruler-scale-label){stroke:#2e4050}
+.ruler-module[data-tile-skin="ruler-metal"] .ruler-scale-label{fill:#2e4050;stroke:none}
+.ruler-module[data-tile-skin="ruler-rainbow"] .ruler-face{border-color:#a19ac1;background:linear-gradient(175deg,#ffffff77,transparent 36% 72%,#ffffff55),linear-gradient(90deg,#f3a8b4,#f7c49e 20%,#f4e5a3 40%,#acd8bd 60%,#a9d5ed 80%,#c5b1e6);box-shadow:inset 0 2px #ffffffb3,inset 0 -5px #a195bb40,0 5px 12px #5b557b20}
+.ruler-module[data-tile-skin="ruler-rainbow"] .ruler-tick{stroke:#3b3657}
+.ruler-module[data-tile-skin="ruler-rainbow"] .ruler-scale-label{fill:#3b3657}
+.module.ruler-preview{padding-bottom:14px!important}
+.ruler-preview :is(.ruler-point-readouts,.ruler-controls,.ruler-customization,.ruler-hint){display:none!important}
+@container(max-width:560px){.ruler-module :is(.ruler-point-readout,.ruler-unit-toggle button,.ruler-reset){padding:5px 6px;font-size:11px}.ruler-module .ruler-point-readout{min-width:77px!important}.ruler-toolbar{gap:5px}.ruler-module .ruler-hint{font-size:9px}}
+@media(hover:none){.module.ruler-module{padding-bottom:48px}.ruler-module .ruler-tools{grid-template-rows:1fr;opacity:1;visibility:visible;pointer-events:auto;margin-top:0;transform:none}.ruler-module .ruler-hint{opacity:.5}}
+@media(prefers-reduced-motion:reduce){.module.ruler-module,.ruler-module .ruler-tools,.ruler-module .ruler-hint{transition:none}}
