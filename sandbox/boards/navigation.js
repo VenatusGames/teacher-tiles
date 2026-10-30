@@ -435,7 +435,7 @@ function centerBoardCamera(){
   applyBoardCamera();
 }
 
-function isSpaceTypingTarget(target){const field=target instanceof Element?target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])'):null;return !!field&&!(field.dataset.textEditMode==='double'&&!field.classList.contains('module-text-edit-active'))&&(!(field instanceof HTMLInputElement)||!['button','submit','reset','checkbox','radio','range','color','file','image','hidden'].includes(field.type))}
+function isSpaceTypingTarget(target){if(target instanceof Element&&target.closest('summary'))return true;const field=target instanceof Element?target.closest('input,textarea,[contenteditable]:not([contenteditable="false"])'):null;return !!field&&!(field.dataset.textEditMode==='double'&&!field.classList.contains('module-text-edit-active'))&&(!(field instanceof HTMLInputElement)||!['button','submit','reset','checkbox','radio','range','color','file','image','hidden'].includes(field.type))}
 
 function beginBoardPan(e){
   closeMenu();
@@ -738,8 +738,8 @@ function renderMenuCategoryPins(){
 }
 
 function syncMenuResetSize(){
-  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||580,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||500;
-  menuResetSize.hidden=Math.abs(width-580)<1&&Math.abs(height-500)<1;
+  const width=parseFloat(menu.style.getPropertyValue('--tile-menu-width'))||620,height=parseFloat(menu.style.getPropertyValue('--tile-menu-height'))||530;
+  menuResetSize.hidden=Math.abs(width-620)<1&&Math.abs(height-530)<1;
 }
 
 function sizeTileMenu(width,height){

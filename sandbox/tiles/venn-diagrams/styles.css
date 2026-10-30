@@ -47,7 +47,7 @@
 .venn-module:has(.venn-entry:focus-within) .venn-stage,
 .venn-module:has(.venn-customization:focus-within) .venn-stage,
 .venn-module.has-tile-settings-open .venn-stage{
-  bottom:108px;
+  bottom:116px;
 }
 .venn-circle{
   position:absolute;
@@ -143,7 +143,7 @@
   position:absolute;
   z-index:35;
   left:50%;
-  bottom:10px;
+  bottom:52px;
   width:min(94%,650px);
   display:flex;
   align-items:center;
@@ -172,5 +172,8 @@
 .venn-customization .custom-icon{background:color-mix(in srgb,var(--module-bg,#fff) 78%,var(--module-text,#17191d) 10%);color:var(--module-text,#17191d);border-color:color-mix(in srgb,var(--module-text,#17191d) 16%,transparent)}
 .venn-customization .tile-settings-panel{right:0;left:auto}
 @container (max-width:520px){.venn-region-picker{max-width:155px}.venn-region-button{min-width:27px;padding:0 5px}.venn-hint{font-size:8px}}
-@container (max-height:380px){.venn-stage{top:35px;bottom:3px}.venn-module:hover .venn-stage,.venn-module:has(.venn-entry:focus-within) .venn-stage,.venn-module:has(.venn-customization:focus-within) .venn-stage,.venn-module.has-tile-settings-open .venn-stage{bottom:78px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
+@container (max-height:380px){.venn-stage{top:35px;bottom:3px}.venn-module:hover .venn-stage,.venn-module:has(.venn-entry:focus-within) .venn-stage,.venn-module:has(.venn-customization:focus-within) .venn-stage,.venn-module.has-tile-settings-open .venn-stage{bottom:104px}.venn-customization{bottom:52px;padding:2px;gap:4px}.venn-customization .custom-icon{width:31px;height:31px;min-height:31px}.venn-hint{display:none}}
 @media(prefers-reduced-motion:reduce){.venn-stage,.venn-circle,.venn-heading,.venn-item,.venn-entry,.venn-hint{transition:none}}
+
+/* Appearance and settings now live in the shared bottom-left buttons. */
+.venn-module.has-appearance-controls .venn-customization{display:none}

@@ -124,3 +124,9 @@
 .trend-card-heading:has(.membership-trend-tabs){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px}
 .trend-card-heading:has(.membership-trend-tabs)>:first-child{grid-row:1/3}
 #developer-insights .membership-trend-tabs{grid-column:2;justify-self:end}
+
+#people-groups-submenu{margin:6px 0 8px 23px;padding-left:9px;border-left:1px solid var(--portal-line,#e0e7f3)}
+#people-groups-submenu[hidden]{display:none}
+#people-groups-submenu :is(a,button){font-size:12px;min-height:38px;padding:9px 12px}
+#people-groups-toggle[aria-expanded=true] .nav-chevron{transform:rotate(180deg)}
+@media(max-width:700px){#people-groups-submenu{position:absolute;top:100%;left:0;width:200px;margin:5px 0 0;padding:6px;z-index:20;border:1px solid var(--portal-line,#e0e7f3);border-radius:12px;background:var(--pt-surface,#fff);box-shadow:0 12px 30px #24344b18}#people-groups-submenu :is(a,button){width:100%;font-size:12px;text-align:left}}

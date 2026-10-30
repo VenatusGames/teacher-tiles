@@ -28,6 +28,8 @@ function setupTimerSync(m){
 
 function setupTimer(m){
   const pumpkin=m.dataset.type==='halloweentimer';
+  const pie=m.dataset.type==='thanksgivingtimer';
+  if(pie)TeacherTilesThanksgiving.timerArt(m);
   const ghost=pumpkin&&m.dataset.tileSkin==='halloweentimer-ghost';
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
   const updateFace=()=>{if(pumpkin)TeacherTilesHalloween.timerFace(m,m.dataset.pumpkinFace);};updateFace();
@@ -44,7 +46,7 @@ function setupTimer(m){
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);
     highlight?.setAttribute('d',d);
-    if(readout){if(pumpkin)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
+    if(readout){if(pumpkin||pie)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
     requestAnimationFrame(sizeVisual);
     if(animate&&visual?.animate)visual.animate([
       {transform:'scale(1) rotate(0deg)'},
@@ -63,6 +65,7 @@ function setupTimer(m){
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
   if(pumpkin){colorButton.title=ghost?'Choose Ghost Face':'Choose Pumpkin Face';colorButton.setAttribute('aria-label',ghost?'Choose Ghost Face':'Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace,ghost);}
+  if(pie){colorButton.title='Choose Pie';colorButton.setAttribute('aria-label','Choose Pie');colorButton.innerHTML=TeacherTilesThanksgiving.pieArt(m.dataset.pieFlavor);}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
   const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
@@ -92,6 +95,14 @@ function setupTimer(m){
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
+    if(pie){
+      shapeShelf.classList.add('pie-style-shelf');shapeShelf.setAttribute('aria-label','Pie Styles');
+      for(const [id,option] of Object.entries(TeacherTilesThanksgiving.pies)){
+        const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',option.name);b.setAttribute('aria-pressed',String(m.dataset.pieFlavor===id));b.innerHTML='<i class="pie-choice-art">'+TeacherTilesThanksgiving.pieArt(id)+'</i><span>'+option.name+'</span>';
+        b.onclick=()=>{m.dataset.pieFlavor=id;TeacherTilesThanksgiving.timerArt(m);colorButton.innerHTML=TeacherTilesThanksgiving.pieArt(id);closeShapes();(m._presentationChanged||notifyBoardChanged)('pie-style')};shapeShelf.append(b);
+      }
+      shapeShelf.hidden=false;colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
+    }
     if(pumpkin){
       shapeShelf.classList.toggle('ghost-face-shelf',ghost);
       shapeShelf.setAttribute('aria-label',ghost?'Ghost Faces':'Pumpkin Faces');
@@ -115,13 +126,13 @@ function setupTimer(m){
     if(!stage)return;
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
-    const shortest=Math.min(stageWidth,Math.max(0,pumpkin?(stageHeight-(readout?.offsetHeight||70)-10)/(ghost?.93:.94):stageHeight));
-    const breathingRoom=pumpkin?0:Math.max(10,Math.min(28,shortest*.055));
+    const shortest=Math.min(stageWidth,Math.max(0,(pumpkin||pie)?(stageHeight-(readout?.offsetHeight||70)-(pie?18:10))/(pie?1:ghost?.93:.94):stageHeight));
+    const breathingRoom=(pumpkin||pie)?0:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
-    if(pumpkin){
+    if(pumpkin||pie){
       stage.style.setProperty('--timer-visual-size',`${size}px`);
-      const spareHeight=stageHeight-(size*(ghost?.93:.94)+(readout?.offsetHeight||70)+10);
+      const spareHeight=stageHeight-(size*(pie?1:ghost?.93:.94)+(readout?.offsetHeight||70)+(pie?18:10));
       stage.style.setProperty('--halloween-clock-lift',`${Math.min(24,Math.max(0,spareHeight/2))}px`);
     }
   };
@@ -155,7 +166,7 @@ function setupTimer(m){
   controls?.addEventListener('pointerenter',keepSettingsOpen);
   controls?.addEventListener('pointerleave',releaseSettings);
 
-  const initialShape=shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
+  const initialShape=!pie&&shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
   shapeSelect.value=initialShape;refreshShape();
   setShape(initialShape);
   let visualFrame=0;
@@ -166,7 +177,7 @@ function setupTimer(m){
   };
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     cancelAnimationFrame(visualFrame);paintProgress(progress);
-    if(running&&(pumpkin||['timer-solid','timer-liquid'].includes(m.dataset.tileSkin))){
+    if(running&&(pumpkin||pie||['timer-solid','timer-liquid'].includes(m.dataset.tileSkin))){
       const started=performance.now();
       const animate=now=>{
         if(!m.isConnected)return;

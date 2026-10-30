@@ -1,10 +1,12 @@
 function setupPunchcards(m){
   const importView=m.querySelector('.punchcard-import'),dashboard=m.querySelector('.punchcard-dashboard'),loaderAnchor=m.querySelector('.punchcard-loader-anchor');
   const className=m.querySelector('.punchcard-class-name'),classLogo=m.querySelector('.punchcard-class-logo'),changeClass=m.querySelector('.punchcard-change-class');
-  const tabs=[...m.querySelectorAll('[data-punchcard-scope]')],studentWrap=m.querySelector('.punchcard-student-wrap'),studentSelect=m.querySelector('.punchcard-student');
+  const scopeToggle=m.querySelector('.pbis-scope-toggle'),studentWrap=m.querySelector('.punchcard-student-wrap'),studentSelect=m.querySelector('.punchcard-student');
   const card=m.querySelector('.punchcard-card'),cardName=m.querySelector('.punchcard-name'),cardType=m.querySelector('.punchcard-type'),holes=m.querySelector('.punchcard-holes'),points=m.querySelector('.punchcard-points-value');
   const reset=m.querySelector('.punchcard-reset'),complete=m.querySelector('.punchcard-complete'),completeName=m.querySelector('.punchcard-complete-name'),completePoints=m.querySelector('.punchcard-complete-points'),completeDone=m.querySelector('.punchcard-complete-done');
+  movePbisClassHeaderToFooter(m,'.punchcard-header');
   let activeClassId='',scope='student',student='',busy=false;
+  scopeToggle.hidden=true;
   const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
   const targetKey=()=>starChartStudentKey(student);
   const currentProgress=()=>{
@@ -27,8 +29,10 @@ function setupPunchcards(m){
     writeClassPunchcards(activeClassId,progress);flushPbisCloudSave();notifyBoardChanged('punchcard-complete');
   };
   const render=()=>{
-    const r=roster();if(!r)return;
-    tabs.forEach(tab=>{const active=tab.dataset.punchcardScope===scope;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    const r=roster();scopeToggle.hidden=!r;if(!r)return;
+    scopeToggle.textContent=scope==='class'?'Whole Class':'Student';
+    scopeToggle.setAttribute('aria-pressed',String(scope==='class'));
+    scopeToggle.setAttribute('aria-label',scope==='class'?'Whole Class mode: switch to Student':'Student mode: switch to Whole Class');
     studentWrap.hidden=scope!=='student';
     const prior=student;studentSelect.replaceChildren(new Option(r.students.length?'Choose a student…':'No students in this class',''));r.students.forEach(name=>studentSelect.add(new Option(name,name)));
     student=r.students.includes(prior)?prior:(r.students[0]||'');studentSelect.value=student;
@@ -73,11 +77,11 @@ function setupPunchcards(m){
     if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);student=r.students.includes(student)?student:(r.students[0]||'')}
     render();
   };
-  tabs.forEach(tab=>tab.addEventListener('click',()=>{scope=tab.dataset.punchcardScope==='class'?'class':'student';complete.hidden=true;render();notifyBoardChanged('punchcard-scope')}));
+  scopeToggle.addEventListener('click',()=>{scope=scope==='class'?'student':'class';complete.hidden=true;render();notifyBoardChanged('punchcard-scope')});
   studentSelect.addEventListener('change',()=>{student=studentSelect.value;complete.hidden=true;render();notifyBoardChanged('punchcard-student')});
   reset.addEventListener('click',()=>{const target=scope==='class'?roster()?.name:student;if(!target||currentProgress()===0)return;if(!confirm(`Reset the current Punchcard for ${target}?`))return;persistProgress(0);render()});
   completeDone.addEventListener('click',()=>{complete.hidden=true;render()});
-  changeClass.addEventListener('click',()=>{activeClassId='';student='';complete.hidden=true;importView.hidden=false;dashboard.hidden=true;notifyBoardChanged('punchcard-class')});
+  changeClass.addEventListener('click',()=>{activeClassId='';student='';complete.hidden=true;importView.hidden=false;dashboard.hidden=true;scopeToggle.hidden=true;notifyBoardChanged('punchcard-class')});
   const detach=attachClassRosterLoader(loaderAnchor,(_,r)=>{setClass(r.id);notifyBoardChanged('punchcard-class')});
   m.querySelector('.punchcard-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
   m.querySelector('.punchcard-font').addEventListener('click',()=>cycleData(m,'font',FONT_OPTIONS));

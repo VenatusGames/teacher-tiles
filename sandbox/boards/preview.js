@@ -1,5 +1,9 @@
+import '../tiles/racer/visuals.js?v=20261028-fanned-standees';
+import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';
+import {renderFlashcardPreview} from './flashcard-preview.js?v=20261026';
 import '../tiles/halloween/trick-or-treat.js?v=20261015-trick-v2';
-import '../tiles/halloween/shared.js?v=20261016-clock-above-6';
+import '../tiles/halloween/shared.js?v=20261021-thanksgiving';
+import '../tiles/thanksgiving/shared.js?v=20261021-balanced-feather-rows';
 import '../tiles/countdown/index.js?v=20261003';
 import '../tiles/popsicle-sticks/gumball.js?v=20261008';
 import '../tiles/tens-sticks/index.js?v=20261008';
@@ -8,9 +12,10 @@ import '../tiles/lava-lamp/index.js?v=20261012-skins';
 import '../tiles/interactive-timers/hourglass.js';
 import '../tiles/interactive-timers/wonders.js?v=20261002-ice-cube';
 import '../tiles/interactive-timers/garden-rocket.js';
-import {renderTimerPreview} from './timer-preview.js?v=20261016-template-preview';
+import {renderTimerPreview} from './timer-preview.js?v=20261021-thanksgiving';
 import '../tiles/visual-directions/index.js?v=20261016-directions-fit';
 const EDITABLE_TILE_HEADINGS={
+  thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
   colorpicker:'.widget-title',
@@ -216,7 +221,12 @@ function applyPbisPreviewState(module, state, special) {
     setPreviewText(module, ".starchart-whole-badge", roster.logo || "★");
     setPreviewText(module, ".starchart-whole-count b", previewCount(progress.wholeClassStars));
     const bundles = module.querySelector(".starchart-whole-bundles");
-    if (bundles) bundles.textContent = "★".repeat(Math.min(12, previewCount(progress.wholeClassStars)));
+    if (roster.logoImage) {const badge=module.querySelector('.starchart-whole-badge');if(badge){const image=document.createElement('img');image.src=roster.logoImage;image.alt='';badge.replaceChildren(image);}}
+    if (bundles) {
+      bundles.replaceChildren();let remaining=previewCount(progress.wholeClassStars);
+      for(const [level,weight] of [[3,1000],[2,100],[1,10],[0,1]]){const amount=Math.floor(remaining/weight);remaining%=weight;for(let i=0;i<amount;i++){const star=document.createElement('span');star.className=`starchart-star-token starchart-star-token--level-${level}`;const icon=document.createElement('span');icon.textContent='★';star.append(icon);if(weight>1){const label=document.createElement('small');label.textContent=weight===1000?'1K':String(weight);star.append(label);}bundles.append(star);}}
+      if(!bundles.childNodes.length){const empty=document.createElement('span');empty.className='starchart-star-empty';empty.textContent='No stars yet';bundles.append(empty);}
+    }
     const grid = module.querySelector(".starchart-student-grid");
     if (grid) {
       grid.replaceChildren();
@@ -291,29 +301,12 @@ function applyPbisPreviewState(module, state, special) {
   }
 
   if (state.type === "racer") {
+    module.classList.add('pbis-tile');
+    const header=module.querySelector('.racer-header');
+    if(header){header.classList.add('pbis-class-footer');header.querySelector('.pbis-change-class')?.remove();module.append(header);}
     const progress = roster.racer || {};
     const standees = module.querySelector(".racer-standees");
-    if (standees) {
-      standees.replaceChildren();
-      for (const [index, name] of (roster.students || []).slice(0, 10).entries()) {
-        const key = previewStudentKey(name);
-        const percent = Math.max(0, Math.min(100, Number(progress.positions?.[key]) || 0));
-        const t = percent / 100;
-        const standee = document.createElement("span");
-        standee.className = `racer-standee is-ready${progress.finished?.[key] ? " is-finished" : ""}`;
-        standee.style.left = `${6 + t * 88}%`;
-        standee.style.top = `${54 - 40 * t * (1 - t)}%`;
-        standee.style.zIndex = String(20 + index % 6);
-        standee.style.setProperty("--racer-hue", String((index * 47 + 195) % 360));
-        const character = document.createElement("span");
-        character.className = "racer-character";
-        const label = document.createElement("strong");
-        label.textContent = name;
-        character.append(label);
-        standee.append(character);
-        standees.append(standee);
-      }
-    }
+    if (standees) window.TeacherTilesRacerVisuals.render(standees,roster,progress,previewStudentKey);
     const finishers = (roster.students || []).filter(name => progress.finished?.[previewStudentKey(name)]).length;
     setPreviewText(module, ".racer-status", finishers ? `${finishers} ${finishers === 1 ? "finisher" : "finishers"}` : "Race in progress");
   }
@@ -464,17 +457,20 @@ function applyPreviewState(module, state) {
     field.tabIndex = -1;
   }
 
+  renderFlashcardPreview(module,state);
+  if(state.type==='ruler')window.TeacherTilesRulerVisuals.preview(module,state.special||{});
   if(state.type==='popsiclesticks'&&state.dataset?.tileSkin==='popsicle-gumball')window.TeacherTilesGumball.preview(module,state.special||{});
   if(state.type==='tenssticks'){window.TeacherTilesTensSticks.render(module,state.special||{});const area=module.querySelector('.tens-workspace');const w=Number(state.transform?.width)||700,h=Number(state.transform?.height)||460;area.style.transform=`translate(-50%,-50%) scale(${Math.min((w-34)/640,(h-143)/340)})`;}
   if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);
   if(state.type==='lavalamp'){window.TeacherTilesLavaLamp.render(module,state.special||{});module.querySelector('.lava-heading').classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
+  if(window.TeacherTilesThanksgiving?.types.has(state.type))window.TeacherTilesThanksgiving.preview(module,state,new URL('../',import.meta.url));
   if(window.TeacherTilesHalloween?.types.has(state.type))window.TeacherTilesHalloween.preview(module,state,new URL('../',import.meta.url));
-  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer') {
+  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer' || state.type === 'thanksgivingtimer') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
   }
-  if(state.type==='progressbar'){
+  if(state.type==='progressbar'||state.type==='cookafeast'){
     const title=module.querySelector('.progress-bar-title');
     if(title){const heading=document.createElement('div');heading.className=title.className;heading.textContent=state.special?.title??title.value;heading.style.cssText='border:0;background:transparent;box-shadow:none';title.replaceWith(heading);}
     module.querySelector('.progress-bar-remaining').textContent='00:00';
@@ -490,6 +486,44 @@ function applyPreviewState(module, state) {
     if (!editable) continue;
     editable.textContent = plainTextFromSavedHtml(saved.html);
     editable.removeAttribute("contenteditable");
+  }
+
+  if(state.type==='date'){
+    const now=new Date(),numeric=module.dataset.dateStyle==='numbers',horizontal=module.dataset.dateLayout==='horizontal';
+    const weekday=module.querySelector('.date-weekday'),main=module.querySelector('.date-main'),year=module.querySelector('.date-year'),display=module.querySelector('.date-display');
+    const showWeekday=module.dataset.showWeekday!=='false',showYear=module.dataset.showYear!=='false';
+    module.classList.toggle('is-numeric',numeric);module.classList.toggle('is-horizontal',horizontal);
+    weekday.hidden=!showWeekday;year.hidden=numeric||!showYear;
+    const day=new Intl.DateTimeFormat([],{weekday:'long'}).format(now);
+    weekday.textContent=horizontal&&!numeric?day+',':day.toUpperCase();
+    main.textContent=numeric?new Intl.DateTimeFormat([],{month:'2-digit',day:'2-digit',year:'numeric'}).format(now):new Intl.DateTimeFormat([],{month:'long',day:'numeric'}).format(now)+(horizontal&&showYear?',':'');
+    year.textContent=String(now.getFullYear());
+    requestAnimationFrame(()=>{
+      if(!module.isConnected)return;
+      const parts=[weekday,main,year].filter(el=>!el.hidden);let lo=4,hi=700,best=4;
+      for(let i=0;i<18;i++){
+        const size=(lo+hi)/2;module.style.setProperty('--date-size',size+'px');const gap=parseFloat(getComputedStyle(display).gap)||0;
+        const w=horizontal?parts.reduce((sum,el)=>sum+el.scrollWidth,0)+gap*(parts.length-1):Math.max(...parts.map(el=>el.scrollWidth));
+        const h=horizontal?Math.max(...parts.map(el=>el.scrollHeight)):parts.reduce((sum,el)=>sum+el.scrollHeight,0)+gap*(parts.length-1);
+        if(w<=display.clientWidth&&h<=display.clientHeight){best=size;lo=size;}else hi=size;
+      }
+      module.style.setProperty('--date-size',best*.97+'px');
+    });
+  }
+
+  if(state.type==='writinglines'){
+    const rows=[...module.querySelectorAll('.writinglines-row')],paper=module.querySelector('.writinglines-paper');
+    const count=Math.max(1,Math.min(4,Number(special?.lineCount??state.dataset?.lineCount)||3));
+    module.dataset.lineCount=String(count);
+    rows.forEach((row,index)=>{row.hidden=index>=count;const entry=row.querySelector('.writinglines-entry');if(Array.isArray(special?.lines))entry.textContent=String(special.lines[index]||'');entry.removeAttribute('contenteditable');});
+    requestAnimationFrame(()=>{
+      if(!module.isConnected||!paper)return;
+      const style=getComputedStyle(paper),height=Math.max(1,paper.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom));
+      paper.style.setProperty('--writing-row-height',(height/count)+'px');
+      const width=paper.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-10;
+      const scale=Math.min(1,...rows.slice(0,count).map(row=>width/Math.max(1,row.querySelector('.writinglines-entry').scrollWidth)));
+      paper.style.setProperty('--writing-row-height',(height/count*Math.max(.22,scale))+'px');
+    });
   }
 
   if(heading){if(typeof special?.title==='string')heading.textContent=special.title;heading.removeAttribute('contenteditable');}
@@ -791,7 +825,7 @@ function applyPreviewState(module, state) {
   });
 }
 
-const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;if(module.dataset.type==='visualdirections'){const wall=module.querySelector('.directions-wall');window.TeacherTilesVisualDirections.fitLayout(wall,wall.children.length,module.dataset.directionsLayout);}const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
+const previewResize=new ResizeObserver(entries=>{for(const {target} of entries){if(!target.isConnected){previewResize.unobserve(target);continue;}const module=target.querySelector(':scope > .module');if(!module)continue;if(module.dataset.type==='visualdirections'){const wall=module.querySelector('.directions-wall');window.TeacherTilesVisualDirections.fitLayout(wall,wall.children.length,module.dataset.directionsLayout);}if(module.dataset.type==='racer')window.TeacherTilesRacerVisuals.layout(module.querySelector('.racer-standees'));const w=parseFloat(module.style.width),h=parseFloat(module.style.height),scale=Math.min(target.clientWidth/w,target.clientHeight/h);if(Number.isFinite(scale)&&scale>0){module.style.transform='scale('+scale+')';module.style.visibility='visible';}}});
 function createMiniObject(item) {
   const state = item?.state || null;
   const type = state?.type || item?.type || "";

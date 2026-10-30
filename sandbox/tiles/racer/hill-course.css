@@ -1,0 +1,41 @@
+/* A whole-class race across staggered rolling hills, with readable photo standees. */
+.module.racer-module{height:620px;min-height:450px}
+.module.racer-module .racer-stage{display:flex;flex-direction:column;min-height:180px;padding:8px 0 0;overflow:hidden;border:1px solid #c7d6c0;border-radius:16px;background:linear-gradient(#edf7fb,#f3f8e9);color:#3e5035;box-shadow:inset 0 1px 0 #fff}
+.racer-marquee{height:23px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#6b7d5c;font:650 10px/1.2 var(--module-font,Inter,sans-serif);letter-spacing:.08em}
+.racer-marquee>span{display:flex;align-items:center;gap:6px}.racer-marquee-flags{color:#c4a454;font-size:15px}
+.racer-marquee i{width:18px;height:13px;border:1px solid #68705b;border-radius:2px;background:conic-gradient(#56634b 25%,#fffbed 0 50%,#56634b 0 75%,#fffbed 0) 0 0/8px 8px;transform:skewY(-7deg)}
+.racer-course-scroll{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;position:relative;scrollbar-width:thin;scrollbar-color:#abc38e #e5edcc;overscroll-behavior:contain}
+.module.racer-module .racer-standees{position:relative;inset:auto;display:grid;grid-template-rows:repeat(var(--racer-tracks,4),minmax(0,1fr));width:100%;height:100%;padding:0;pointer-events:auto;background:#edf7fb}
+.racer-track{position:relative;min-height:0;isolation:isolate;--hill-color:#e0eac3}
+.racer-track:nth-child(2){--hill-color:#d0e2ad}.racer-track:nth-child(3){--hill-color:#bdd69b}.racer-track:nth-child(4){--hill-color:#a9c88a}
+.racer-course-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.racer-hill-ground{fill:var(--hill-color)}
+.racer-hill-edge{fill:none;stroke:#a6b78a;stroke-width:23}
+.racer-hill-path{fill:none;stroke:#f3dfb2;stroke-width:18}
+.racer-hill-dashes{fill:none;stroke:#b5a17a;stroke-width:1.5;stroke-dasharray:8 10}
+.racer-track-flag{position:absolute;left:95%;top:60%;width:16px;height:12px;background:conic-gradient(#687a52 25%,#fffbed 0 50%,#687a52 0 75%,#fffbed 0) 0 0/7px 7px;transform:skewY(-6deg);border-radius:1px}
+.racer-track-flag::before{content:'';position:absolute;left:-2px;top:-1px;width:2px;height:28px;background:#7e855f;border-radius:2px}
+.module.racer-module .racer-standee{position:absolute;width:var(--racer-token-width,64px);height:auto;padding:0;border:0;border-radius:0;background:none;color:#35402d!important;opacity:1;transform:translate(-50%,-100%) translateX(var(--racer-fan-offset,0px)) rotate(var(--racer-fan-angle,0deg));transform-origin:50% 100%;filter:drop-shadow(0 3px 3px #52663b20);transition:left .65s cubic-bezier(.2,.7,.25,1),top .65s cubic-bezier(.2,.7,.25,1),transform .35s ease;z-index:2}
+.module.racer-module .racer-standee:is(.is-ready,:hover,.is-selected,:focus-visible){transform:translate(-50%,-100%) translateX(var(--racer-fan-offset,0px)) rotate(var(--racer-fan-angle,0deg))}
+.module.racer-module .racer-standee::after{content:'';position:absolute;bottom:-3px;left:25%;width:50%;height:5px;border-radius:50%;background:#3b573b25;z-index:-1}
+.module.racer-module .racer-character{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:auto;min-height:0;aspect-ratio:auto;gap:3px;padding:4px 3px;border:1px solid hsl(var(--avatar-hue) 28% 68%);border-radius:8px;background:linear-gradient(#fffef8,hsl(var(--avatar-hue) 35% 93%));box-shadow:inset 0 1px 0 #fff;overflow:hidden;outline:none}
+.module.racer-module .racer-student-avatar{display:grid;place-items:center;flex:none;width:var(--racer-avatar-size,38px);height:var(--racer-avatar-size,38px);aspect-ratio:1;border-radius:7px;overflow:hidden;background:linear-gradient(145deg,hsl(var(--avatar-hue) 60% 95%),hsl(var(--avatar-hue) 45% 86%));color:hsl(var(--avatar-hue) 35% 33%);font-size:calc(var(--racer-avatar-size,38px)*.6);font-weight:750}
+.module.racer-module .racer-rider-name{max-width:100%;font-size:12px;line-height:1.2;font-weight:650;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.module.racer-module .racer-stick{position:relative;display:block;width:6px;height:10px;z-index:-1;margin:-1px auto 0;background:linear-gradient(90deg,#b58c58,#dfbd86,#bb9665);box-shadow:none}
+.module.racer-module .racer-standee:is(:hover,:focus-visible) .racer-character{border-color:#5b88ab;box-shadow:0 0 0 2px #7da5c145;outline:none}
+.module.racer-module .racer-standee.is-selected .racer-character{outline:2px solid #5c8fac;outline-offset:1px}
+.module.racer-module .racer-winner-mark{right:-4px;top:-6px;width:19px;height:19px;font-size:12px;border-width:1px;box-shadow:0 2px 4px #79572226}
+.module.racer-module .racer-standee.is-finished .racer-character{border-color:#bd963d;background:#fff3cd}
+.module.racer-module .racer-status{position:static;flex:none;left:auto;bottom:auto;transform:none;max-width:100%;margin:0;padding:7px 8px;border:0;border-radius:0;background:#eef4e4;box-shadow:none;backdrop-filter:none;color:#60734e;opacity:1;display:block;font-size:11px;font-weight:500;line-height:1.3}
+.racer-empty{position:absolute;inset:25% 10%;margin:0;display:grid;place-items:center;text-align:center;font-size:14px;color:#60734e}
+.module.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-marquee{height:30px;font-size:13px}
+.module.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-rider-name{font-size:14px}
+.module.racer-module:is(:fullscreen,.is-tile-fullscreen) .racer-status{font-size:14px}
+.module.racer-module .racer-controls{grid-template-columns:minmax(130px,1fr) 84px auto;gap:8px;border-radius:12px;background:var(--module-bg,var(--surface-solid))}
+.module.racer-module .racer-controls label>span{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;opacity:.75}
+.module.racer-module .racer-controls :is(select,input){height:36px;min-height:36px;border:1px solid var(--border);border-radius:9px;background-color:var(--module-bg,var(--surface-solid));font:500 13px var(--module-font,Inter,sans-serif)}
+.module.racer-module .racer-controls select{appearance:none;padding:0 30px 0 10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23778493' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-position:right 8px center;background-repeat:no-repeat;background-size:16px}
+.module.racer-module .racer-controls .racer-move{height:36px;min-height:36px;padding:0 12px;border:1px solid #adc5dd;border-radius:9px;background:color-mix(in srgb,#7fa9d5 16%,var(--module-bg,#fff));color:var(--module-text,var(--text))!important;font-size:13px;font-weight:600;box-shadow:0 1px 3px #1b33530d}
+.module.racer-module .pbis-footer-actions .racer-reset{grid-column:auto;min-height:34px;height:34px!important;font-size:12px;padding:7px 10px;color:var(--module-text,var(--text))!important;border:1px solid var(--border)!important;background:var(--module-bg,var(--surface-solid));border-radius:10px;box-shadow:0 2px 5px #1720330d}
+.module.racer-module:has(.pbis-footer-actions):is(:hover,:has(.pbis-footer-actions :focus-visible)) .pbis-class-footer{right:154px}
+@media(prefers-reduced-motion:reduce){.module.racer-module .racer-standee{transition:none}}

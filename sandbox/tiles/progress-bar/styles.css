@@ -1,0 +1,39 @@
+/* Shared modern controls for Progress Bar and Cook-A-Feast. */
+.module.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]){height:270px;min-height:270px}
+.progress-bar-module .progress-bar-customization{display:none!important}
+.progress-bar-hover{display:grid;grid-template-rows:0fr;flex:none;opacity:0;transition:grid-template-rows .22s ease,opacity .18s ease;margin:0;pointer-events:none}
+.progress-bar-hover-inner{overflow:hidden;min-height:0}
+.progress-bar-module:is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open) .progress-bar-hover{grid-template-rows:1fr;opacity:1;pointer-events:auto}
+.progress-bar-module .progress-bar-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;position:static;min-height:36px;height:auto;flex:none;opacity:1!important;pointer-events:inherit;transform:none!important;padding:4px 0 40px;margin:0}
+.progress-bar-controls>[hidden]{display:none!important}
+.progress-bar-module .progress-bar-controls>button,.progress-bar-module .progress-bar-end-control{height:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);font:600 12px/1.2 Inter,system-ui,sans-serif;box-shadow:0 2px 4px #17203309;white-space:nowrap}
+.progress-bar-module .progress-bar-controls>button:hover{background:var(--surface-soft);border-color:color-mix(in srgb,var(--border),#5c8dc7 35%)}
+.progress-bar-module .progress-bar-controls>button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.progress-bar-module .progress-bar-controls>button svg{display:block;width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linejoin:round;stroke-linecap:round;flex:none}
+.progress-bar-module .progress-bar-set-end svg{fill:currentColor;stroke:none}
+.progress-bar-module .progress-bar-end-control{padding:0 7px;gap:5px}.progress-bar-module .progress-bar-end-control>span{font-size:11px;letter-spacing:0;text-transform:none}
+.progress-bar-module .progress-bar-end-time{width:102px;min-width:0;height:30px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;color:inherit;font:inherit}
+.progress-bar-setting{display:grid;gap:6px}.progress-bar-setting select{width:100%;min-height:36px;padding:7px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);font:inherit}
+.progress-bar-module .progress-bar-heading:has(.progress-bar-title.tile-heading-hidden){grid-template-columns:1fr}.progress-bar-module .progress-bar-heading:has(.progress-bar-title.tile-heading-hidden) .progress-bar-time-readout{justify-self:end}
+@media(prefers-reduced-motion:reduce){.progress-bar-hover{transition:none}}
+.progress-bar-module .progress-bar-drawer-toggle{width:34px;padding:5px!important;flex:none}
+.progress-bar-color-dot{display:block;width:20px;height:20px;border-radius:50%;background:var(--bar-color,#74b4f0);box-shadow:inset 0 0 0 1px #0002}
+.progress-bar-module.has-bar-shelf-open .progress-bar-hover{grid-template-rows:1fr;opacity:1;pointer-events:auto}
+.progress-bar-choice-shelf{margin:0;border:1px solid var(--border);grid-template-columns:repeat(3,minmax(0,1fr));z-index:150000}
+.progress-bar-choice-shelf:not([hidden]){display:grid}.progress-bar-choice-shelf:popover-open{position:fixed}
+.progress-bar-choice-shelf button{display:grid;place-items:center;gap:7px;min-width:0}
+.bar-color-sample{width:32px;height:32px;background:var(--bar-sample-color);border-radius:50%;box-shadow:inset 0 0 0 1px #0002}
+.bar-style-sample{display:block;width:60px;height:25px;border-radius:20px;background:linear-gradient(#fff8,transparent 55%,#0001),var(--bar-sample-color);box-shadow:inset 0 0 0 1px #0002}
+.bar-style-sample[data-style="striped"]{background:repeating-linear-gradient(120deg,#fff4 0 6px,transparent 6px 12px),var(--bar-sample-color)}
+.bar-style-sample[data-style="segmented"]{background:repeating-linear-gradient(90deg,transparent 0 10px,#fff 10px 12px),var(--bar-sample-color);border-radius:6px}
+.bar-style-sample[data-style="soft"]{background:var(--bar-sample-color);box-shadow:inset 0 2px 6px #fff8;border-radius:10px}
+
+/* Hover controls overlay the existing footprint; the bar lifts to make room. */
+.module.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]){height:190px;min-height:190px;padding:24px 18px 18px}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-hover{position:absolute;left:130px;right:18px;bottom:12px;grid-template-rows:1fr;transform:translateY(8px);transition:opacity .18s,transform .22s}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-controls{padding:0;flex-wrap:nowrap}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-stage{transition:transform .22s;min-height:54px}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]):is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open,.has-bar-shelf-open) .progress-bar-stage{transform:translateY(-22px)}
+.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]):is(:hover,:has(:focus-visible),.has-tile-settings-open,.is-appearance-open,.has-bar-shelf-open) .progress-bar-hover{transform:translateY(0)}
+@container (max-width:580px){.progress-bar-module:not(.cookafeast-module):not([data-orientation="vertical"]) .progress-bar-controls>button:not(.progress-bar-drawer-toggle){width:34px;padding:0}.progress-bar-module:not(.cookafeast-module) .progress-bar-controls>button:not(.progress-bar-drawer-toggle)>span{display:none}.progress-bar-module:not(.cookafeast-module) .progress-bar-end-time{width:80px}.progress-bar-module:not(.cookafeast-module) .progress-bar-end-control>span{display:none}}
+@media(prefers-reduced-motion:reduce){.progress-bar-module .progress-bar-stage,.progress-bar-module .progress-bar-hover{transition:none!important}}

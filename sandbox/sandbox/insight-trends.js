@@ -1,4 +1,9 @@
 import {createDailyActivityChart} from './daily-activity-chart.js?v=20261012';
+export const MEMBERSHIP_VIEWS={
+ paid:{key:'paidSubscribers',title:'Paid Subscribers',label:'Paid',noun:'paid',description:'Active paid subscriptions',detail:'Personal paid plans · active dev-console previews excluded.'},
+ trials:{key:'trialSubscribers',title:'Trial Subscribers',label:'Trials',noun:'trial',description:'Trials, free permanent access, and dev testing',detail:'Trials, dev-console previews, and free overrides · organization-only access excluded.'},
+ org:{key:'orgSubscribers',title:'Organization Subscribers',label:'Org',noun:'organization',description:'Premium provided through organization seats',detail:'Unique seated members without a personal plan or active dev-console preview.'}
+};
 const NS = 'http://www.w3.org/2000/svg';
 const number = value => Number(value).toLocaleString();
 const stamp = at => new Date(at).toLocaleString(undefined, {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
@@ -19,11 +24,11 @@ export function createTrendCharts(root) {
   grid.replaceChildren();
   root.querySelector('.trend-footnote').textContent=onlineMode==='daily'?'Daily totals come from site activity, independent of portal visits. Days before tracking began are unavailable; today is still accumulating. Membership charts use saved snapshots.':'Snapshots are recorded on refresh, at most once every 15 minutes. Gaps mean no recorded observation, not zero users.';
   const start=asOf-days*86400000,inRange=points.filter(p=>p.at>=start&&p.at<=asOf);
-  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],[membershipKind==='paid'?'paidSubscribers':'trialSubscribers',membershipKind==='paid'?'Paid Subscribers':'Trial Subscribers',membershipKind==='paid'?'Active paid subscriptions · trials excluded':'Trials, free permanent access, and dev testing · paid plans excluded']]) {
+  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],[MEMBERSHIP_VIEWS[membershipKind].key,MEMBERSHIP_VIEWS[membershipKind].title,MEMBERSHIP_VIEWS[membershipKind].detail]]) {
    if(key==='online'&&onlineMode==='daily'){grid.append(createDailyActivityChart({rows:dailyRows,days,style,loaded,tabs:activityTabs()}));continue;}
    const visible=inRange.filter(p=>Number.isFinite(p[key]));
    const card=node('article','trend-card trend-'+key);
-   const head=node('div','trend-card-heading'),copy=node('div','');copy.append(node('h3','',title),node('p','',description));if(key!=='online'){const tabs=node('div','portal-segments membership-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Subscription trend type');for(const [kind,label] of [['paid','Paid'],['trials','Trials']]){const button=node('button','',label);button.type='button';button.dataset.membershipKind=kind;button.setAttribute('aria-pressed',String(kind===membershipKind));tabs.append(button);}tabs.classList.add('membership-trend-tabs');head.append(tabs);}
+   const head=node('div','trend-card-heading'),copy=node('div','');copy.append(node('h3','',title),node('p','',description));if(key!=='online'){const tabs=node('div','portal-segments membership-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Subscription trend type');for(const [kind,label] of Object.entries(MEMBERSHIP_VIEWS).map(([kind,view])=>[kind,view.label])){const button=node('button','',label);button.type='button';button.dataset.membershipKind=kind;button.setAttribute('aria-pressed',String(kind===membershipKind));tabs.append(button);}tabs.classList.add('membership-trend-tabs');head.append(tabs);}
    const summary=node('div','trend-summary');summary.append(node('strong','',visible.length?number(visible.at(-1)[key]):'—'),node('span','','Latest snapshot'));head.prepend(copy,summary);if(key==='online')head.append(activityTabs());card.append(head);
    const plot=node('div','trend-plot'),tooltip=node('div','trend-tooltip');tooltip.hidden=true;tooltip.setAttribute('role','tooltip');
    const show=(element,point)=>{tooltip.replaceChildren(node('strong','',`${number(point[key])} ${title.toLowerCase()}`),node('span','',stamp(point.at)));tooltip.hidden=false;const a=element.getBoundingClientRect(),b=plot.getBoundingClientRect();tooltip.style.left=Math.max(95,Math.min(b.width-95,a.left-b.left+a.width/2))+'px';};
@@ -66,5 +71,5 @@ export function createTrendCharts(root) {
  }
  root.querySelectorAll('[data-range],[data-style]').forEach(button=>button.onclick=()=>{if(button.dataset.range)days=Number(button.dataset.range);else style=button.dataset.style;root.querySelectorAll('[data-range]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.range)===days)));root.querySelectorAll('[data-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.style===style)));render();});
  render();
- return {setMembershipKind(kind){membershipKind=kind;render();},update(data){dailyRows=(Array.isArray(data.dailyOnline)?data.dailyOnline:[]).filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(row.day)).slice().sort((a,b)=>a.day.localeCompare(b.day));asOf=data.asOf;points=(Array.isArray(data.history)?data.history:[{at:data.asOf,online:data.online,paidSubscribers:data.paidSubscribers,trialSubscribers:data.trialSubscribers}]).slice().sort((a,b)=>a.at-b.at);loaded=true;render();},reset(){points=[];dailyRows=[];onlineMode='snapshots';loaded=false;render();}};
+ return {setMembershipKind(kind){membershipKind=kind;render();},update(data){dailyRows=(Array.isArray(data.dailyOnline)?data.dailyOnline:[]).filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(row.day)).slice().sort((a,b)=>a.day.localeCompare(b.day));asOf=data.asOf;points=(Array.isArray(data.history)?data.history:[{at:data.asOf,online:data.online,paidSubscribers:data.paidSubscribers,trialSubscribers:data.trialSubscribers,orgSubscribers:data.orgSubscribers}]).slice().sort((a,b)=>a.at-b.at);loaded=true;render();},reset(){points=[];dailyRows=[];onlineMode='snapshots';loaded=false;render();}};
 }

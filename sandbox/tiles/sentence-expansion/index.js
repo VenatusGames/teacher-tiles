@@ -10,10 +10,11 @@ function setup(m){
   const sourceLine=m.querySelector('.sentence-source'),draftLine=m.querySelector('.sentence-draft'),bottom=m.querySelector('.sentence-bottom');
   function fitLine(line,limit){
     if(!line.clientWidth||limit<=0)return;
-    line.style.removeProperty('font-size');
+    line.style.removeProperty('font-size');line.style.overflow='hidden';
     const maximum=parseFloat(getComputedStyle(line).fontSize);
     const fits=()=>line.scrollHeight<=limit+1&&line.scrollWidth<=line.clientWidth+1;
-    if(!fits()){let low=1,high=maximum;for(let i=0;i<12;i++){const size=(low+high)/2;line.style.fontSize=size+'px';if(fits())low=size;else high=size}line.style.fontSize=low+'px'}
+    if(!fits()){let low=Math.min(maximum,m.matches(':fullscreen')?28:18),high=maximum;for(let i=0;i<12;i++){const size=(low+high)/2;line.style.fontSize=size+'px';if(fits())low=size;else high=size}line.style.fontSize=low+'px'}
+    if(!fits())line.style.overflow='auto';
     line.scrollTop=line.scrollLeft=0;
   }
   function fitText(){fitFrame=0;if(disposed||!m.isConnected)return;

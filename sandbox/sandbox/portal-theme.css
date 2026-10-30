@@ -118,3 +118,5 @@
 .portal-topbar-actions:has(.portal-clock){gap:20px}
 @media(max-width:700px){.portal-sidebar-footer{margin-top:0;gap:0}.portal-sidebar-footer .portal-theme-toggle{width:auto;align-self:flex-start}.portal-sidebar-footer .portal-theme-toggle i{margin-left:5px}.portal-topbar{height:auto;min-height:78px;flex-wrap:wrap;gap:12px;padding-block:14px}.portal-topbar-actions:has(.portal-clock){gap:12px;margin-left:auto}}
 @media(max-width:400px){.portal-clock-date{font-size:10px}.portal-clock-time{font-size:14px}}
+
+[data-portal-theme=dark] .trend-orgSubscribers{--series:#7ac6c9}

@@ -1,8 +1,11 @@
 #context-menu .context-menu__title{margin-right:auto}
-#context-menu :is(.context-menu__filter-toggle,.context-menu__close){display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;padding:6px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,var(--surface));color:var(--muted);box-shadow:0 2px 5px #15263c08;cursor:pointer;transition:background .15s,color .15s}
-#context-menu .context-menu__filter-toggle{margin-right:7px}
-#context-menu :is(.context-menu__filter-toggle,.context-menu__close):hover{background:var(--surface-soft);color:var(--text)}
-#context-menu :is(.context-menu__filter-toggle,.context-menu__close) svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#context-menu :is(.context-menu__filter-toggle,.context-menu__reset-size,.context-menu__close){display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;padding:6px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,var(--surface));color:var(--muted);box-shadow:0 2px 5px #15263c08;cursor:pointer;transition:background .15s,color .15s}
+#context-menu .context-menu__actions{display:flex;align-items:center;gap:7px;flex:none;margin-left:auto}
+#context-menu .context-menu__actions>button{margin:0}
+#context-menu .context-menu__reset-size[hidden]{display:none}
+#context-menu .context-menu__title{min-width:0}
+#context-menu :is(.context-menu__filter-toggle,.context-menu__reset-size,.context-menu__close):hover{background:var(--surface-soft);color:var(--text)}
+#context-menu :is(.context-menu__filter-toggle,.context-menu__reset-size,.context-menu__close) svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #context-menu .context-menu__filter-toggle circle{fill:var(--surface-solid,var(--surface))}
 #context-menu .context-menu__filter-toggle.is-active{background:#e7efff;border-color:#b3c9eb;color:#375b93}
 .tile-filter-panel{position:fixed;inset:auto;margin:0;padding:18px;width:min(350px,calc(100vw - 16px));box-sizing:border-box;max-height:calc(100dvh - 16px);overflow:auto;border:1px solid var(--border);border-radius:15px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 14px 40px #172c4b26;font:13px Inter,system-ui;text-align:left}

@@ -1,0 +1,5 @@
+.shop-product__preview:has(.shop-theme-preview-canvas){position:relative}
+.shop-theme-preview-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.shop-theme-preview-canvas~.shop-animated-badge,.shop-product__preview:has(.shop-theme-preview-canvas)>.shop-animated-badge{z-index:1}
+/* Fall scenes are static in both the pack stacks and opened drawer cards. */
+:is(#asset-shelf,.theme-pack-fan,.theme-fan) .autumn-preview-canvas{display:none}

@@ -1,7 +1,6 @@
 function setupRuler(m){
   const stage=m.querySelector('.ruler-stage');
   const face=m.querySelector('.ruler-face');
-  const svg=m.querySelector('.ruler-svg');
   const measurement=m.querySelector('.ruler-measurement');
   const handles={
     a:m.querySelector('[data-ruler-handle="a"]'),
@@ -14,6 +13,12 @@ function setupRuler(m){
   const selectButtons=[...m.querySelectorAll('[data-ruler-select]')];
   const unitButtons=[...m.querySelectorAll('[data-ruler-unit-option]')];
   const resetButton=m.querySelector('.ruler-reset');
+  const shelf=document.createElement('div');shelf.className='ruler-tools';
+  const clip=document.createElement('div');clip.className='ruler-tools-clip';
+  const toolbar=document.createElement('div');toolbar.className='ruler-toolbar';
+  const readoutRow=m.querySelector('.ruler-point-readouts');readoutRow.before(shelf);shelf.append(clip);clip.append(toolbar);toolbar.append(readoutRow,m.querySelector('.ruler-controls'));
+  resetButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg><span>Reset</span>';
+
 
   let unit='in';
   let a=0;
@@ -26,26 +31,7 @@ function setupRuler(m){
     ?{max:30,divisions:10}
     :{max:12,divisions:8};
 
-  const formatInches=value=>{
-    const eighths=Math.round(value*8);
-    const whole=Math.floor(eighths/8);
-    const remainder=eighths%8;
-    if(!remainder)return`${whole} in`;
-
-    const divisor=remainder%4===0?4:remainder%2===0?2:1;
-    const numerator=remainder/divisor;
-    const denominator=8/divisor;
-
-    return whole
-      ?`${whole} ${numerator}/${denominator} in`
-      :`${numerator}/${denominator} in`;
-  };
-
-  const formatValue=value=>{
-    if(unit==='in')return formatInches(value);
-    const rounded=Math.round(value*10)/10;
-    return`${Number(rounded.toFixed(1))} cm`;
-  };
+  const formatValue=value=>TeacherTilesRulerVisuals.formatValue(unit,value);
 
   const valueFromFraction=fraction=>{
     const {max,divisions}=config();
@@ -56,73 +42,7 @@ function setupRuler(m){
   const renderScale=()=>{
     cancelAnimationFrame(scaleFrame);
     scaleFrame=requestAnimationFrame(()=>{
-      const {max,divisions}=config();
-      const total=max*divisions;
-
-      const width=Math.max(320,Math.round(face.clientWidth||stage.clientWidth||760));
-      const height=Math.max(82,Math.round(face.clientHeight||98));
-      const baseline=height;
-      const labelY=Math.max(17,Math.round(height*.22));
-
-      svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
-      svg.replaceChildren();
-
-      const make=(tag,attrs={})=>{
-        const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
-        Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)));
-        return el;
-      };
-
-      const cmLabelEvery=width<590?5:width<820?2:1;
-
-      for(let step=0;step<=total;step++){
-        const x=step/total*width;
-        const fraction=step/divisions;
-        const isMajor=step%divisions===0;
-
-        let tickHeight;
-        if(unit==='in'){
-          const eighth=step%8;
-          tickHeight=isMajor
-            ?Math.round(height*.55)
-            :eighth===4
-              ?Math.round(height*.40)
-              :eighth%2===0
-                ?Math.round(height*.30)
-                :Math.round(height*.22);
-        }else{
-          const tenth=step%10;
-          tickHeight=isMajor
-            ?Math.round(height*.55)
-            :tenth===5
-              ?Math.round(height*.38)
-              :Math.round(height*.23);
-        }
-
-        svg.appendChild(make('line',{
-          x1:x,
-          x2:x,
-          y1:baseline-tickHeight,
-          y2:baseline,
-          class:isMajor?'ruler-tick ruler-tick--major':'ruler-tick'
-        }));
-
-        const showLabel=isMajor&&(
-          unit==='in'||
-          Math.round(fraction)%cmLabelEvery===0
-        );
-
-        if(showLabel){
-          const label=make('text',{
-            x,
-            y:labelY,
-            'text-anchor':step===0?'start':step===total?'end':'middle',
-            class:'ruler-scale-label'
-          });
-          label.textContent=String(Math.round(fraction));
-          svg.appendChild(label);
-        }
-      }
+      TeacherTilesRulerVisuals.drawScale(m,unit);
     });
   };
 
@@ -140,8 +60,10 @@ function setupRuler(m){
 
     selectButtons.forEach(button=>{
       button.classList.toggle('is-active',button.dataset.rulerSelect===active);
+      button.setAttribute('aria-pressed',String(button.dataset.rulerSelect===active));
     });
 
+    unitButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rulerUnitOption===unit)));
     readouts.a.textContent=formatValue(aValue);
     readouts.b.textContent=formatValue(bValue);
     measurement.textContent=formatValue(distance);
@@ -191,6 +113,7 @@ function setupRuler(m){
     const stop=event=>{
       if(dragging!==which)return;
       dragging=null;
+      notifyBoardChanged('ruler-measurement');
       try{handle.releasePointerCapture(event.pointerId)}catch{}
     };
 
@@ -202,10 +125,11 @@ function setupRuler(m){
     if(event.button!==0||event.target.closest('.ruler-handle'))return;
     event.preventDefault();
     setHandleFromClient(active,event.clientX);
+    notifyBoardChanged('ruler-measurement');
   });
 
   selectButtons.forEach(button=>{
-    button.addEventListener('click',()=>select(button.dataset.rulerSelect));
+    button.addEventListener('click',()=>{select(button.dataset.rulerSelect);notifyBoardChanged('ruler-point')});
   });
 
   unitButtons.forEach(button=>{
@@ -219,6 +143,7 @@ function setupRuler(m){
 
       renderScale();
       render();
+      notifyBoardChanged('ruler-units');
     });
   });
 
@@ -227,6 +152,7 @@ function setupRuler(m){
     b=1;
     active='a';
     render();
+    notifyBoardChanged('ruler-reset');
   });
 
   m.querySelector('.ruler-bg').addEventListener('click',()=>cycleData(m,'bg',['white','cream','blue','pink','green','lavender','charcoal']));
@@ -244,7 +170,7 @@ function setupRuler(m){
     if(!state)return;
     unit=state.unit==='cm'?'cm':'in';
     a=clamp(Number(state.a)||0,0,1);
-    b=clamp(Number(state.b)??1,0,1);
+    b=Number.isFinite(Number(state.b))?clamp(Number(state.b),0,1):1;
     active=state.active==='b'?'b':'a';
     m.dataset.rulerUnit=unit;
     unitButtons.forEach(item=>item.classList.toggle('is-active',item.dataset.rulerUnitOption===unit));
