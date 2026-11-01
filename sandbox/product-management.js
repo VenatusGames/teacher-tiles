@@ -32,7 +32,7 @@ export function createProductManagementPanel(call){
    else if(tab==='sales'){
     const active=p.endsAt>Date.now();card.classList.add('pm-sale-card');card.append(el('span','pm-badge',active?'Active':'Ended'),el('strong','',p.name),el('p','',`${Object.keys(p.prices).length} Products · ${active?'Ends':'Ended'} ${new Date(p.endsAt).toLocaleString()}`));
     const actions=el('div','pm-sale-actions'),editButton=el('button','quiet',active?'Edit Sale':'Restart Sale');editButton.type='button';editButton.onclick=()=>editSale(p);actions.append(editButton);
-    if(active){const end=el('button','quiet','End Sale');end.type='button';end.onclick=()=>endSale(p);actions.append(end)}card.append(actions);
+    if(active){const end=el('button','quiet','End Sale');end.type='button';end.onclick=()=>endSale(p);actions.append(end)}const remove=el('button','quiet pm-bundle-delete','Delete Sale');remove.type='button';remove.onclick=()=>deleteSale(p);actions.append(remove);card.append(actions);
    }
    else{card.append(el('strong','',p.name),el('span','pm-price',`${live(p)?p.sale.price:p.price} Coins`),el('p','',p.description??defaults.get(p.id)?.description??'Default Shop Description'));if(live(p))card.append(el('span','pm-badge',`Sale Ends ${new Date(p.sale.endsAt).toLocaleDateString()}`));if(p.active===false)card.append(el('span','pm-badge','Hidden'));if(tab==='bundles'){
     card.classList.add('pm-bundle-card');
@@ -83,6 +83,13 @@ export function createProductManagementPanel(call){
   busy=true;const token=epoch;grid.querySelectorAll('.pm-bundle-actions button').forEach(b=>b.disabled=true);status.textContent='Deleting Bundle…';
   try{const next=await request({action:'deleteBundle',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render();status.textContent='Bundle Deleted.'}
   catch(e){if(token===epoch){render();status.textContent=e.message||'Unable to delete this bundle.'}}
+  finally{if(token===epoch)busy=false}
+ }
+ async function deleteSale(p){
+  if(busy||!confirm(`Delete “${p.name}” from sale history? Its discounts will end. Purchased cosmetics are kept. This cannot be undone.`))return;
+  busy=true;const token=epoch;grid.querySelectorAll('.pm-sale-actions button').forEach(b=>b.disabled=true);status.textContent='Deleting Sale…';
+  try{const next=await request({action:'deleteSale',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render();status.textContent='Sale Deleted.'}
+  catch(e){if(token===epoch){render();status.textContent=e.message||'Unable to delete this sale.'}}
   finally{if(token===epoch)busy=false}
  }
  async function endSale(p){if(busy||!confirm(`End “${p.name}” and restore regular prices?`))return;busy=true;const token=epoch;try{const next=await request({action:'endSale',id:p.id,expectedRevision:config.revision});if(token!==epoch)return;config=next;render()}catch(e){if(token===epoch)status.textContent=e.message}finally{if(token===epoch)busy=false}}
