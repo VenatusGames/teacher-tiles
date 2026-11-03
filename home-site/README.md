@@ -6,4 +6,4 @@ Board links, the Add Tile catalog source, and the shared catalog reader resolve 
 
 Native demonstrations remain isolated and memory-only; they reset after 20 seconds out of view. The review-only banner, approval dialog, and local preview launcher are not part of this deployment. Reduced-motion preferences disable decorative motion; highlighted headings sweep into view during normal motion.
 
-Contact: teachertiles@gmail.com. The form prepares a user-reviewed email rather than submitting messages automatically.
+Contact: teachertiles@gmail.com. The form submits through the Firebase `contactEmail` endpoint, including school, role, and interest details in the message.
