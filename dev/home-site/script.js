@@ -51,5 +51,24 @@ $('#open-library').addEventListener('click',()=>openLibrary());$('#tile-search')
 async function refreshCatalog(){if(loading)return;loading=true;if($('#refresh-catalog'))$('#refresh-catalog').disabled=true;try{const next=await fetchCatalog({fallback:!catalog});({tileIcon:iconRenderer}=await getReader());const nextSignature=JSON.stringify([next.categories,next.tiles]);catalog=next;if(signature!==nextSignature){signature=nextSignature;renderCatalog()}lastRefresh=Date.now();if($('#catalog-status'))$('#catalog-status').textContent=`${next.source==='app'?'Current app catalog':'Bundled fallback catalog'} · ${next.tiles.length} available tiles · checked ${new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}${next.source==='fallback'?'. Live source unavailable; retry to reconnect.':''}`;}catch(error){if($('#catalog-status'))$('#catalog-status').textContent=catalog?'Could not refresh. Keeping the last valid catalog.':'The tile library could not load. Please try Refresh Catalog.';if(!catalog)$('#catalog-summary').textContent='Explore the classroom tools in TeacherTiles.'}finally{loading=false;if($('#refresh-catalog'))$('#refresh-catalog').disabled=false}}
 $('#refresh-catalog')?.addEventListener('click',refreshCatalog);refreshCatalog();setInterval(()=>{if(!document.hidden&&Date.now()-lastRefresh>300000)refreshCatalog()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastRefresh>300000)refreshCatalog()});
 
-// No form service and no background submission: compose an email for the teacher to review.
-let inquiry='';$('#contact-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;const data=new FormData(form);inquiry=`Name: ${data.get('name')}\nEmail: ${data.get('email')}\nSchool / organization: ${data.get('organization')||'Not specified'}\nRole: ${data.get('role')||'Not specified'}\nInterest: ${data.get('interest')}\n\n${data.get('message')}`;const subject=`TeacherTiles inquiry: ${data.get('interest')}`;location.href=`mailto:teachertiles@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inquiry)}`;$('#form-status').textContent='Your email draft is ready. If your mail app didn’t open, copy your inquiry and email it to teachertiles@gmail.com.';$('#copy-inquiry').hidden=false});$('#copy-inquiry').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(inquiry);$('#form-status').textContent='Copied. Paste your inquiry into an email to teachertiles@gmail.com.'}catch{const file=new Blob([inquiry],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='TeacherTiles-inquiry.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);$('#form-status').textContent='Your inquiry was saved as a text file to copy into your email.'}});
+$('#contact-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const form=event.currentTarget,button=form.querySelector('[type="submit"]'),status=$('#form-status');
+  if(button.disabled||!form.reportValidity())return;
+  const data=new FormData(form);
+  const message=`School / organization: ${data.get('organization')||'Not specified'}\nRole: ${data.get('role')||'Not specified'}\nInterest: ${data.get('interest')}\n\n${String(data.get('message')||'').trim()}`;
+  if(message.length>5000){status.textContent='Please shorten your message so it and your school details fit within 5,000 characters.';return;}
+  const fields=[...form.querySelectorAll('input,select,textarea')];
+  button.disabled=true;fields.forEach(field=>field.disabled=true);status.textContent='Sending your message…';
+  try{
+    const {firebaseConfig}=await import('../firebase-config.js');
+    const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/contactEmail`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:String(data.get('name')||'').trim(),email:String(data.get('email')||'').trim(),subject:`TeacherTiles inquiry: ${data.get('interest')}`,message})
+    });
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||result?.success!==true)throw new Error(result?.message||'Message could not be sent. Please try again in a moment.');
+    form.reset();status.textContent='Message sent. Thank you!';
+  }catch(error){status.textContent=error.message||'Message could not be sent. Please try again in a moment.';}
+  finally{button.disabled=false;fields.forEach(field=>field.disabled=false);}
+});
