@@ -12,3 +12,5 @@
 .announcement-actions>.reminder-dismiss:hover:not(:disabled){background:var(--surface-soft)}
 .announcement-actions>.reminder-dismiss:disabled{opacity:.55;cursor:default}
 .announcement-read-status:empty{display:none}.announcement-card .announcement-read-status{color:var(--muted);margin-top:7px}
+
+.announcement-card .announcement-message{margin:9px 0 0;font-size:13px;line-height:1.6;color:var(--text)}

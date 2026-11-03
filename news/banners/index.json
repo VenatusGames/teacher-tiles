@@ -1,0 +1,16 @@
+{
+  "images": [
+    {
+      "path": "news/banners/basdemo.png",
+      "name": "basdemo"
+    },
+    {
+      "path": "news/banners/basdemo1.png",
+      "name": "basdemo1"
+    },
+    {
+      "path": "news/banners/basdemo2.png",
+      "name": "basdemo2"
+    }
+  ]
+}

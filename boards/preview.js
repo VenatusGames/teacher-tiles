@@ -511,10 +511,17 @@ function applyPreviewState(module, state) {
     });
   }
 
+  if(state.type==='timestables'&&special?.chartMode){
+    module.classList.add('is-chart-mode');
+    window.TeacherTilesTimesTables?.renderChart(module.querySelector('.times-grid'));
+    module.querySelector('.times-summary').textContent='0–12 Multiplication Chart';
+  }
+
   if(state.type==='writinglines'){
     const rows=[...module.querySelectorAll('.writinglines-row')],paper=module.querySelector('.writinglines-paper');
-    const count=Math.max(1,Math.min(4,Number(special?.lineCount??state.dataset?.lineCount)||3));
+    const count=Math.max(1,Math.min(12,Number(special?.lineCount??state.dataset?.lineCount)||3));
     module.dataset.lineCount=String(count);
+    paper?.style.setProperty('--writing-line-count',String(count));
     rows.forEach((row,index)=>{row.hidden=index>=count;const entry=row.querySelector('.writinglines-entry');if(Array.isArray(special?.lines))entry.textContent=String(special.lines[index]||'');entry.removeAttribute('contenteditable');});
     requestAnimationFrame(()=>{
       if(!module.isConnected||!paper)return;

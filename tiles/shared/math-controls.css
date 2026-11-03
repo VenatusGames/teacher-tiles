@@ -52,9 +52,3 @@
 .math-modern-tile .pattern-maker-controls{grid-template-columns:minmax(100px,1fr) 66px auto}
 .math-modern-tile .pattern-maker-apply{grid-column:auto}
 .math-modern-tile .pattern-maker-board{justify-content:safe center}
-.math-modern-tile .times-practice{appearance:none;position:relative;flex:none;width:36px;height:22px;margin:0 6px 0 0;border:0;border-radius:99px;background:#8a929e;cursor:pointer;vertical-align:middle}
-.math-modern-tile .times-practice::before{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0002;transition:transform .15s}
-.math-modern-tile .times-practice:checked{background:#2885d4}
-.math-modern-tile .times-practice:checked::before{transform:translateX(14px)}
-
-@media(prefers-reduced-motion:reduce){.math-modern-tile .times-practice::before{transition:none}}
