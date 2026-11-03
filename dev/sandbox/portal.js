@@ -1,4 +1,4 @@
-import {createNewsPanel} from './news.js?v=20261103-modules';
+import {createNewsPanel} from './news.js?v=20261103-news-folders';
 import {createOrganizationsPanel} from './organizations.js?v=20261025-district-seats';
 import {createAnnouncementsPanel} from './announcements.js?v=20261031-delete';
 import {createCommunityPanel} from './community.js?v=20261031-delete';
@@ -7,7 +7,7 @@ import {createProductManagementPanel} from './product-management.js?v=20261031-d
 import {createTileManagementPanel} from './tile-management.js?v=20261020-availability';
 import {adminBoardPreview} from './board-preview.js?v=20261026-ruler-skins';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
-import {createTemplateLibrary} from '../templates/ui.js?v=20261020-product-polish';
+import {createTemplateLibrary} from '../templates/ui.js?v=20261103-news-folders';
 import {createInsights} from './insights.js?v=20261025-preview-trials';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';

@@ -3,3 +3,5 @@
 .news-prose{overflow-wrap:anywhere}.news-prose img{max-width:100%;height:auto}.news-prose :is(s,strike){text-decoration:line-through}.news-post>.news-prose+.news-prose{margin-top:1.5em}
 
 .news-prose h1{font-size:2em}.news-prose h2{font-size:1.5em}.news-prose h3{font-size:1.2em}
+
+.news-photo{margin:0 0 22px}.news-photo>img{display:block;width:100%;height:auto;border-radius:14px}.news-photo>figcaption{padding:10px 0;font-size:13px;color:var(--muted,#64748b)}

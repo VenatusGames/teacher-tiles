@@ -6,7 +6,9 @@ const fs=require('node:fs'),path=require('node:path');
 function buildSite(target,branch){
   if(!['main','sandbox','dev'].includes(branch))throw Error('Choose main, sandbox or dev for the site build.');
   const root=path.resolve(target);
+  require('./build-news.cjs').buildNews(root);
   require('./build-banners.cjs').buildBanners(root);
+  require('./build-banners.cjs').buildBanners(root,'news/banners');
   const app=fs.readFileSync(path.join(root,'index.html'),'utf8');
   if(!app.includes('id="workspace"'))throw Error('Expected the board source in index.html. Build from a fresh deployment copy.');
   if(branch==='main'){

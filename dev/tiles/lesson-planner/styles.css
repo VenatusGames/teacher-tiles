@@ -189,3 +189,8 @@
 .lesson-planner-panel .lesson-planner-view-tabs button:hover{background:var(--surface-soft);border-color:#aabed4}
 .lesson-planner-panel .lesson-planner-view-tabs button:is(.is-active,[aria-selected="true"]){background:color-mix(in srgb,#7fa9d5 16%,var(--surface-solid));border-color:#adc5dd;color:var(--text);box-shadow:0 1px 3px #15263c05}
 @media(max-width:560px){.lesson-planner-panel .lesson-planner-view-tabs{gap:4px}.lesson-planner-panel .lesson-planner-view-tabs button{min-width:48px;padding-inline:9px}}
+
+/* Hiding the time grid also returns its ruler column to the lesson area. */
+.lesson-planner-panel .lesson-planner-schedule.is-no-time-slots :is(.lesson-planner-times,.lesson-planner-time-corner,.lesson-planner-now-line){display:none}
+.lesson-planner-panel .lesson-planner-schedule.is-no-time-slots :is(.lesson-planner-schedule__head,.lesson-planner-schedule__body){grid-template-columns:repeat(var(--planner-days),minmax(0,1fr))!important}
+.lesson-planner-panel .lesson-planner-schedule.is-no-time-slots .lesson-planner-day-column{background-image:none}
