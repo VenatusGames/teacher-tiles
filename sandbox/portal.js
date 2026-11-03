@@ -1,4 +1,4 @@
-import {createNewsPanel} from './news.js?v=20261103';
+import {createNewsPanel} from './news.js?v=20261103-modules';
 import {createOrganizationsPanel} from './organizations.js?v=20261025-district-seats';
 import {createAnnouncementsPanel} from './announcements.js?v=20261031-delete';
 import {createCommunityPanel} from './community.js?v=20261031-delete';
