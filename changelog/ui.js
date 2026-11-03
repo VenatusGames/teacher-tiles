@@ -169,23 +169,15 @@ function setupChangelog(){
       contactStatus.textContent='Sending your message…';
 
       try{
-        const payload=new FormData();
-        payload.append('name',name);
-        payload.append('email',email);
-        payload.append('subject',subject);
-        payload.append('message',message);
-        payload.append('_subject',`TeacherTiles Contact: ${subject}`);
-        payload.append('_template','table');
-        payload.append('_captcha','false');
-
-        const response=await fetch('https://formsubmit.co/ajax/teachertiles@gmail.com',{
+        const {firebaseConfig}=await import('../firebase-config.js');
+        const response=await fetch(`https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/contactEmail`,{
           method:'POST',
-          headers:{Accept:'application/json'},
-          body:payload
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({name,email,subject,message})
         });
 
         const result=await response.json().catch(()=>null);
-        if(!response.ok||result?.success===false){
+        if(!response.ok||result?.success!==true){
           throw new Error(result?.message||'Message could not be sent.');
         }
 
