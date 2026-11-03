@@ -1,6 +1,6 @@
 import '../tiles/shared/formatting-toolbar.js?v=20261020-controls-followup';
-import {renderText,readText,htmlText,model,loadFont} from '../news/document.js?v=20261103-modules';
-import {el} from '../news/shared.js?v=20261103-modules';
+import {renderText,readText,htmlText,model,loadFont} from '../news/runtime/document.js?v=20261103-news-folders';
+import {el} from '../news/runtime/shared.js?v=20261103-news-folders';
 export function richEditor(content,onchange){
  const wrapper=el('div','news-rich-editor'),bar=el('div','news-format-bar'),body=el('div','news-prose news-writing'),fmt=window.TeacherTilesFormattingToolbar;
  body.contentEditable='true';body.setAttribute('role','textbox');body.setAttribute('aria-label','Text section');body.setAttribute('aria-multiline','true');body.spellcheck=true;body.append(renderText(content));bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','Text formatting');wrapper.append(bar,body);

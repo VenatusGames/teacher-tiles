@@ -1,0 +1,8 @@
+import {orderNews} from './order.js?v=20261103-news-folders';
+import {postArticle,el} from './shared.js?v=20261103-news-folders';
+import {loadNewsFiles,mergeNewsFiles} from './portable.js?v=20261103-news-folders';
+import {firebaseConfig} from '../../firebase-config.js';
+let cached=null,until=0,pending=null;
+const cleanups=new WeakMap(),renders=new WeakMap();
+async function fetchNews(){if(cached&&Date.now()<until)return cached;if(pending)return pending;pending=(async()=>{const [response,files]=await Promise.all([fetch('https://us-central1-'+firebaseConfig.projectId+'.cloudfunctions.net/newsFeed',{signal:AbortSignal.timeout(10000)}),loadNewsFiles()]);if(!response.ok)throw Error('News unavailable');const result=await response.json();if(result.schemaVersion!==2)throw Error('News is being updated');cached=orderNews(mergeNewsFiles(files,result.posts,result.fileOverrides).filter(p=>p.published!==false&&!p.archived),result.order);until=Date.now()+60000;return cached;})();try{return await pending;}finally{pending=null;}}
+export async function renderNews(target){const token=Symbol();renders.set(target,token);cleanups.get(target)?.();target.replaceChildren(el('p','','Loading News…'));try{const posts=await fetchNews();if(renders.get(target)!==token)return;target.replaceChildren();const dispose=[];for(const post of posts){const view=postArticle(post);target.append(view.element);dispose.push(view.dispose);}cleanups.set(target,()=>dispose.forEach(fn=>fn()));if(!posts.length)target.append(el('p','','No news posts yet.'));}catch{if(renders.get(target)!==token)return;target.replaceChildren(el('p','','News could not load. Reopen Community to retry.'));}}

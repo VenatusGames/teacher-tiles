@@ -36,6 +36,7 @@
   const settingsButton = document.getElementById('lesson-planner-settings-button');
   const settingsMenu = document.getElementById('lesson-planner-settings-menu');
   const showWeekendsToggle = document.getElementById('lesson-planner-show-weekends');
+  const showTimeSlotLinesToggle = document.getElementById('lesson-planner-show-time-slots');
   const templatesPanel = document.getElementById('lesson-planner-templates');
   const templateForm = document.getElementById('lesson-planner-template-form');
   const templateName = document.getElementById('lesson-planner-template-name');
@@ -189,8 +190,8 @@
   }
 
   function syncPlannerSettingsUi() {
-    if (!showWeekendsToggle) return;
-    showWeekendsToggle.checked = plannerShowsWeekends();
+    if (showWeekendsToggle) showWeekendsToggle.checked = plannerShowsWeekends();
+    if (showTimeSlotLinesToggle) showTimeSlotLinesToggle.checked = activePlanner()?.settings?.showTimeSlotLines !== false;
   }
 
   function closeSettingsMenu() {
@@ -399,7 +400,7 @@
       skinColors: Object.fromEntries(window.TeacherTilesPlannerSkins.catalog.map(skin=>[skin.id,normalizeCoverColor(planner.skinColors?.[skin.id])])),
       blocks: Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [],
       scheduleId: String(planner.scheduleId || ''),
-      settings: { showWeekends: planner.settings?.showWeekends === true },
+      settings: { showWeekends: planner.settings?.showWeekends === true, showTimeSlotLines: planner.settings?.showTimeSlotLines !== false },
       calendar: window.TeacherTilesTeachingCalendar.normalize(planner.calendar)
     };
     const legacySchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
@@ -825,7 +826,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, scheduleId: '', settings: { showWeekends: false } }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, scheduleId: '', settings: { showWeekends: false, showTimeSlotLines: true } }] : [];
   }
 
   function readActivePlannerId() {
@@ -1090,7 +1091,7 @@
       skinColors: {},
       blocks: [],
       scheduleId: planningLibrary.schedules[0]?.id || '',
-      settings: { showWeekends: false }
+      settings: { showWeekends: false, showTimeSlotLines: true }
     };
     planners.push(planner);
     activePlannerId = planner.id;
@@ -1613,6 +1614,7 @@
 
   function renderSchedule(dates) {
     const schedule = make('section', `lesson-planner-schedule lesson-planner-schedule--${dates.length === 1 ? 'day' : 'week'}`);
+    schedule.classList.toggle('is-no-time-slots', activePlanner()?.settings?.showTimeSlotLines === false);
     const head = make('header', 'lesson-planner-schedule__head');
     head.style.setProperty('--planner-days', dates.length);
     head.append(make('span', 'lesson-planner-time-corner', 'TIME'));
@@ -1625,6 +1627,7 @@
       button.querySelector('span').textContent = weekdayLong.format(date).slice(0, 3).toUpperCase();
       button.querySelector('strong').textContent = String(date.getDate());
       button.addEventListener('click', () => { selectedDate = atNoon(date); renderAll(); });
+      const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit)button.append(make('small','planner-unit-day',`Day ${unit}`));
       head.append(button);
     });
 
@@ -1886,6 +1889,7 @@
       dayButton.setAttribute('aria-label', fullDate.format(date));
       dayButton.addEventListener('click', () => { selectedDate = atNoon(date); currentDate = atNoon(date); renderAll(); });
       cell.append(dayButton);
+      const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit)cell.append(make('small','planner-unit-day',`Day ${unit}`));
       const dayBlocks = blocksForDate(date);
       dayBlocks.slice(0, 3).forEach(block => cell.append(lessonBlockButton(block, true)));
       if (dayBlocks.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${dayBlocks.length - 3} more`));
@@ -1914,6 +1918,7 @@
         const date = atNoon(new Date(year, month, day));
         const button = make('button', 'lesson-planner-year-day', String(day));
         button.type = 'button';
+        const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit){button.append(make('small','planner-unit-day',`Day ${unit}`));button.title=`Day ${unit}`;}
         button.classList.toggle('is-non-teaching',!isTeachingDate(date));
         button.classList.toggle('has-lessons', blocksForDate(date).length > 0);
         button.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
@@ -2116,6 +2121,16 @@
   libraryTemplatesButton?.addEventListener('click', openTemplates);
   settingsButton?.addEventListener('click', event => { event.stopPropagation(); toggleSettingsMenu(); });
   settingsMenu?.addEventListener('click', event => event.stopPropagation());
+  showTimeSlotLinesToggle?.addEventListener('change', () => {
+    const planner = activePlanner();
+    if (!planner) return;
+    planner.settings ||= { showWeekends: false };
+    planner.settings.showTimeSlotLines = showTimeSlotLinesToggle.checked;
+    savePlanners();
+    const scrollTop = canvas.scrollTop;
+    renderAll();
+    canvas.scrollTop = scrollTop;
+  });
   showWeekendsToggle?.addEventListener('change', () => {
     const planner = activePlanner();
     if (!planner) return;

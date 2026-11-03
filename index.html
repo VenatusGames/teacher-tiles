@@ -81,7 +81,7 @@
   <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261028-tool-chrome">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261103-display-settings">
   <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
 <link rel="stylesheet" href="profile/organizations.css?v=20261028-tool-logo">
 <link rel="stylesheet" href="profile/district-badge.css?v=20261025">
@@ -142,13 +142,13 @@
 <link rel="stylesheet" href="tiles/thanksgiving/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/progress-bar/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/shared/autumn-themes.css?v=20261021-autumn-finish">
-<link rel="stylesheet" href="support/announcements.css?v=20261023-notification-class-polish">
+<link rel="stylesheet" href="support/announcements.css?v=20261103-inline-body">
 <link rel="stylesheet" href="shop/browse-performance.css?v=20261028-scroll">
 <link rel="stylesheet" href="shop/theme-previews.css?v=20261028-shop-previews">
 <link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261029-seating-footer">
 <link rel="stylesheet" href="tiles/racer/hill-course.css?v=20261028-fanned-standees">
-<link rel="stylesheet" href="news/styles.css?v=20261103-modules">
-<link rel="stylesheet" href="tiles/lesson-planner/tools.css?v=20261103-followup">
+<link rel="stylesheet" href="news/runtime/styles.css?v=20261103-news-folders">
+<link rel="stylesheet" href="tiles/lesson-planner/tools.css?v=20261103-display-settings">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -383,7 +383,7 @@
             </button>
             <button id="profile-lesson-planner-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="lesson-planner-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-              <span><strong>Lesson Planner</strong><small>Organize lessons for the day, week, or school year</small></span>
+              <span><strong>Lesson Planner<span class="profile-tool-beta">BETA</span></strong><small>Organize lessons for the day, week, or school year</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button title="Create presentation slides and slidedecks and make them interactive" id="profile-presentations-button" class="profile-tool-button" type="button">
@@ -402,7 +402,7 @@
                 <button id="lesson-planner-library-back" class="planner-library-back profile-tool-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Profile</strong></button>
                 <div class="planner-library-brand">
                   <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><h2 id="lesson-planner-library-title">Your Planners</h2></div>
+                  <div><h2 id="lesson-planner-library-title">Your Planners<span class="profile-tool-beta">BETA</span></h2></div>
                 </div>
                 <div class="planner-library-header__actions">
                   <div class="pres-limit planner-library-entitlement"><strong id="lesson-planner-library-limit" aria-live="polite"></strong><span id="lesson-planner-library-plan" class="pres-plan"></span><span id="lesson-planner-library-upgrade" class="pres-upgrade"></span></div>
@@ -426,7 +426,7 @@
                 <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Planners</strong></button>
                 <div class="lesson-planner-brand">
                   <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><h2 id="lesson-planner-title">Lesson Planner</h2></div>
+                  <div><h2 id="lesson-planner-title">Lesson Planner</h2><span class="profile-tool-beta">BETA</span></div>
                 </div>
                 <div class="lesson-planner-header__actions">
                   <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><span>Scheduling</span></button>
@@ -444,6 +444,11 @@
                         <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
                           <span><strong>Show Weekends in Week View</strong><small>Include Saturday and Sunday columns when using Week view.</small></span>
                           <input id="lesson-planner-show-weekends" type="checkbox">
+                          <i aria-hidden="true"><b></b></i>
+                        </label>
+                        <label class="lesson-planner-settings-toggle" for="lesson-planner-show-time-slots">
+                          <span><strong>Show Time Slot Lines</strong><small>Show the time ruler, grid lines, and current-time marker in Day and Week views.</small></span>
+                          <input id="lesson-planner-show-time-slots" type="checkbox" checked>
                           <i aria-hidden="true"><b></b></i>
                         </label>
                       </div>
@@ -4701,8 +4706,8 @@
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
 <script src="tiles/growth-rewards/index.js?v=20261028-three-column-overview"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/thanksgiving/shared.js?v=20261021-balanced-feather-rows"></script>
-<script src="tiles/halloween/shared.js?v=20261021-thanksgiving"></script>
+<script src="tiles/thanksgiving/shared.js?v=20261103-news-folders"></script>
+<script src="tiles/halloween/shared.js?v=20261103-news-folders"></script>
 <script src="tiles/halloween/carving.js?v=20261015-halloween-v6"></script>
 <script src="tiles/halloween/trick-or-treat.js?v=20261015-trick-v2"></script>
 <script src="tiles/halloween/patch.js?v=20261015-patch-sticker"></script>
@@ -4798,7 +4803,7 @@
 <script src="tiles/shared/flashcard-services.js?v=20261026-fit"></script>
 <script src="tiles/shared/flashcard-word-drawer.js?v=20261029"></script>
 <script src="boards/serialization.js?v=20261001-position-drawer"></script>
-<script src="changelog/ui.js?v=20261103-news-modules"></script>
+<script src="changelog/ui.js?v=20261103-news-folders"></script>
 <script src="shop/ad-rewards.js?v=20261028-five-coins"></script>
 <script src="tiles/lesson-planner/skins.js?v=20261029-sorted"></script>
 <script src="profile/frames-art.js?v=20261013-frame-performance"></script>
@@ -4811,7 +4816,7 @@
 <script src="shop/tile-effects.js?v=20261028-favorites-label"></script>
 <script src="shop/extras.js?v=20261029-thanksgiving-planner"></script>
 <script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
-<script src="shop/ui.js?v=20261028-scroll"></script>
+<script src="shop/ui.js?v=20261103-news-folders"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261029-theme-favorites"></script>
 <script src="tiles/shared/math-controls.js?v=20261029-shared-hover"></script>
@@ -4820,12 +4825,12 @@
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
   <script src="tiles/lesson-planner/text-format.js?v=20261103-followup"></script>
-<script src="tiles/lesson-planner/calendar-core.js?v=20261103-followup"></script>
-<script src="tiles/lesson-planner/print.js?v=20261103-followup"></script>
-<script src="tiles/lesson-planner/tools.js?v=20261103-followup"></script>
-<script src="tiles/lesson-planner.js?v=20261103-planner-followup"></script>
+<script src="tiles/lesson-planner/calendar-core.js?v=20261103-school-year"></script>
+<script src="tiles/lesson-planner/print.js?v=20261103-school-year"></script>
+<script src="tiles/lesson-planner/tools.js?v=20261103-display-settings"></script>
+<script src="tiles/lesson-planner.js?v=20261103-display-settings"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261028-larger-stars"></script>
+<script type="module" src="firebase-auth.js?v=20261103-inline-announcements"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 

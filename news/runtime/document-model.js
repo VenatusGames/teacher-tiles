@@ -1,7 +1,7 @@
 /* Bounded rich-news contract. Keep frontend/backend copies identical. */
 (function(root){'use strict';
 const tags=new Set('p div br h1 h2 h3 blockquote b strong i em u s strike span ul ol li pre code a img'.split(' '));
-const safeURL=v=>typeof v==='string'&&v.length<2000&&(/^https?:\/\/[^\s<>]+$/i.test(v)||/^banners\/[a-z0-9%._/ -]+$/i.test(v))?v:'';
+const safeURL=v=>typeof v==='string'&&v.length<2000&&(/^https?:\/\/[^\s<>]+$/i.test(v)||/^(?:news\/)?banners\/[a-z0-9%._/ -]+$/i.test(v))?v:'';
 function styles(raw={}){const out={};for(const [k,v] of Object.entries(raw)){if(typeof v!=='string')continue;
  if(['color','backgroundColor'].includes(k)&&(/^(#[0-9a-f]{3,8}|transparent)$/i.test(v)||/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/.test(v)))out[k]=v;
  if(k==='fontFamily'&&/^[a-zA-Z][a-zA-Z0-9 -]{0,70}$/.test(v))out[k]=v;

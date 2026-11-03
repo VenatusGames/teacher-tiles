@@ -1,0 +1,46 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'C:/Users/Jack/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=path.resolve(__dirname,'..'),{changeNews,publicNews}=require(path.join(root,'../teachertiles-functions-dev/functions/news-policy')),{buildNews}=require('./build-news.cjs'),model=require('../news/runtime/portable-model');
+const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'tt-news-transfer-'));fs.mkdirSync(path.join(fixture,'news/posts'),{recursive:true});
+const blank=()=>({revision:0,schemaVersion:2,posts:{}});
+const artwork=color=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240"><rect width="600" height="240" fill="'+color+'"/><circle cx="300" cy="120" r="75" fill="#fff"/></svg>';
+(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
+ const context=await browser.newContext({viewport:{width:1440,height:1050}}),errors=[];let config=blank(),files=[],originalImages=true,feedCalls=0;
+ context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));
+ await context.exposeFunction('newsCall',async(_name,input)=>{if(input.action==='list')return {config:structuredClone(config)};config=changeNews(config,input);return {config:structuredClone(config)};});
+ await context.route('**/*',route=>{const u=new URL(route.request().url()),name=decodeURIComponent(u.pathname.replace(/^\/(dev|live)/,''));
+  if(u.pathname.endsWith('/newsFeed')){feedCalls++;return route.fulfill({json:publicNews(config)});}
+  if(u.hostname!=='tiles.test')return route.abort();
+  if(name==='/fixture')return route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><meta charset="utf-8">'+['sandbox/portal.css','sandbox/portal-theme.css','sandbox/community.css','sandbox/tile-management.css','sandbox/banner-picker.css','tiles/rich-text/styles.css','tiles/shared/formatting-toolbar.css','sandbox/news.css','news/runtime/styles.css'].map(f=>'<link rel="stylesheet" href="'+f+'">').join('')+'</head><body class="developer-portal" style="padding:24px"><main id="fixture"></main></body></html>'});
+  if(name==='/news/generated/posts.json')return route.fulfill({json:{version:1,files}});
+  if(name==='/banners/index.json')throw Error('News must not use the shared shop/event image library');
+  if(name==='/news/banners/index.json')return route.fulfill({json:{images:[{name:'Blue artwork',path:'news/banners/blue.svg'},{name:'Orange artwork',path:'news/banners/orange.svg'}]}});
+  if(['/news/banners/blue.svg','/news/banners/orange.svg'].includes(name))return originalImages?route.fulfill({contentType:'image/svg+xml',body:artwork(name.includes('blue')?'#5c83ce':'#e9a15b')}):route.fulfill({status:404,body:''});
+  const generated=path.join(fixture,name),source=path.join(root,name),file=fs.existsSync(generated)&&fs.statSync(generated).isFile()?generated:source;
+  return fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.fulfill({status:404,body:''});
+ });
+ const page=await context.newPage();page.on('dialog',d=>d.accept());
+ async function open(branch){await page.goto('https://tiles.test/'+branch+'/fixture');await page.evaluate(async()=>{const {createNewsPanel}=await import(new URL('sandbox/news.js',location.href));window.panel=createNewsPanel(window.newsCall);document.querySelector('#fixture').append(panel.element);panel.element.hidden=false;await panel.load();});}
+ async function feed(){const reader=await context.newPage();await reader.goto('https://tiles.test/live/fixture');const result=await reader.evaluate(async()=>{const {renderNews}=await import(new URL('news/runtime/feed.js',location.href));const target=document.querySelector('#fixture');await renderNews(target);await renderNews(target);return {text:target.innerText,count:target.querySelectorAll('.news-post').length};});await reader.close();return result;}
+ await open('dev');await page.getByRole('button',{name:'New Post',exact:true}).click();await page.locator('[name=title]').fill('A portable community update');await page.locator('[name=published]').check();
+ await page.locator('.news-writing').evaluate(e=>{e.innerHTML='<h2 style="font-family:Georgia;font-size:28px;color:#123456">A rich heading</h2><p><strong>Bold news</strong> and <u>underlined news</u></p>';e.dispatchEvent(new Event('input',{bubbles:true}));});
+ await page.getByRole('button',{name:'+ Photo Gallery',exact:true}).click();
+ for(let i=0;i<2;i++){await page.getByRole('button',{name:'Add Image',exact:true}).click();await page.getByRole('button',{name:'Select Image',exact:true}).last().click();await page.locator('.banner-picker-option:visible').nth(i).click();await page.getByLabel('Image caption',{exact:true}).last().fill('Gallery image '+(i+1));}
+ await page.getByRole('button',{name:'+ Text Section',exact:true}).click();await page.locator('.news-writing').last().fill('Thank you for being part of our community.');
+ await page.getByRole('button',{name:'+ Photo',exact:true}).click();await page.getByRole('button',{name:'Select Image',exact:true}).last().click();assert.equal(await page.getByRole('searchbox',{name:'Search news images'}).count(),1);await page.locator('.banner-picker-option:visible').first().click();await page.getByLabel('Image caption',{exact:true}).last().fill('Standalone photo caption');await page.locator('.news-block').last().getByRole('button',{name:'Move module up',exact:true}).click();
+ const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Save Post',exact:true}).click();const download=await downloadEvent,source=fs.readFileSync(await download.path(),'utf8'),bundle=model.parse(source);
+ assert.equal(download.suggestedFilename(),bundle.post.id+'.ttn');assert.equal(bundle.assets.length,2);assert.deepEqual(bundle.post.blocks.map(b=>b.type),['text','gallery','photo','text']);assert.match(JSON.stringify(bundle.post),/Georgia/);
+ await page.getByRole('button',{name:'Preview',exact:true}).click();assert.equal(await page.locator('[data-preview] .news-photo').count(),1);assert.equal(await page.locator('[data-preview] .news-photo button').count(),0);const originalText=await page.locator('[data-preview] .news-post').innerText();await page.screenshot({path:path.join(os.tmpdir(),'news-ttn-source.png')});
+ // Copy only the .ttn file into a different branch with no original gallery images.
+ fs.writeFileSync(path.join(fixture,'news/posts',download.suggestedFilename()),source);files=buildNews(fixture);config=blank();originalImages=false;
+ await open('live');assert.equal(await page.locator('.news-library-item').count(),1);await page.locator('.news-library-item').click();await page.getByRole('button',{name:'Preview',exact:true}).click();
+ assert.equal(await page.locator('[data-preview] .news-post').innerText(),originalText);await page.waitForFunction(()=>[...document.querySelectorAll('[data-preview] img')].every(img=>img.complete&&img.naturalWidth>0));
+ assert.match(await page.locator('[data-preview] img').first().getAttribute('src'),/\/live\/banners\/news-assets\//);await page.screenshot({path:path.join(os.tmpdir(),'news-ttn-destination.png')});
+ assert.equal((await feed()).count,1);assert.equal(feedCalls,1);
+ await page.getByRole('button',{name:'Archive Post',exact:true}).click();await page.getByRole('button',{name:'Unarchive Post',exact:true}).waitFor();assert.equal((await feed()).count,0);
+ await open('live');await page.getByRole('button',{name:'Archived',exact:true}).click();await page.locator('.news-library-item').click();await page.getByRole('button',{name:'Unarchive Post',exact:true}).click();await page.getByRole('button',{name:'Archive Post',exact:true}).waitFor();assert.equal((await feed()).count,1);
+ await page.locator('[name=title]').fill('Edited after transfer');const revisedDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Save Post',exact:true}).click();await revisedDownload;assert.match((await feed()).text,/Edited after transfer/);
+ await page.getByRole('button',{name:'Delete Post',exact:true}).click();await page.getByText('Post deleted.',{exact:true}).first().waitFor();assert.equal((await feed()).count,0);await open('live');assert.equal(await page.locator('.news-library-item').count(),0);
+ bundle.post.title='Replacement file version';fs.writeFileSync(path.join(fixture,'news/posts',download.suggestedFilename()),JSON.stringify(bundle));files=buildNews(fixture);await open('live');assert.equal(await page.locator('.news-library-item').count(),1);assert.match((await feed()).text,/Replacement file version/);
+ assert.deepEqual(errors,[]);console.log('Portable News browser: save/download, bundled SVG galleries, branch-relative image relocation, automatic portal/feed discovery, matching rich layout, editing, archive/unarchive/delete and replacement-file versions passed.');
+}finally{await browser.close();if(path.dirname(path.resolve(fixture))!==path.resolve(os.tmpdir())||!path.basename(fixture).startsWith('tt-news-transfer-'))throw Error('Unsafe fixture path');fs.rmSync(fixture,{recursive:true,force:true});}})().catch(e=>{console.error(e);process.exitCode=1;});

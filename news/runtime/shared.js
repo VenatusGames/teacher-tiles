@@ -1,5 +1,5 @@
-import {renderText} from './document.js?v=20261103-modules';
-const root=new URL('../',import.meta.url);
+import {renderText} from './document.js?v=20261103-news-folders';
+const root=new URL('../../',import.meta.url);
 export const el=(tag,cls='',text)=>{const n=document.createElement(tag);n.className=cls;if(text!==undefined)n.textContent=text;return n};
 export function safeUrl(value){try{const url=new URL(value,root);return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return ''}}
 function galleryView(post){const article=el('div');let dispose=()=>{};
@@ -10,6 +10,6 @@ function galleryView(post){const article=el('div');let dispose=()=>{};
 export function postArticle(post){
  const article=el('article','news-post'),header=el('header'),time=el('time','',new Date((post.publishedAt||new Date().toISOString().slice(0,10))+'T12:00:00').toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})),dispose=[];
  time.dateTime=post.publishedAt||'';header.append(time,el('h2','',post.title||'Untitled Post'));article.append(header);
- for(const block of post.blocks||[]){if(block.type==='text'){const content=el('div','news-prose');content.append(renderText(block.content));article.append(content);}else if(block.type==='gallery'&&block.images.length){const view=galleryView({title:post.title,gallery:block.images});article.append(view.element);dispose.push(view.dispose);}}
+ for(const block of post.blocks||[]){if(block.type==='text'){const content=el('div','news-prose');content.append(renderText(block.content));article.append(content);}else if(block.type==='photo'&&block.images?.length){const figure=el('figure','news-photo'),img=el('img');img.src=safeUrl(block.images[0].image);img.alt=block.images[0].caption||post.title||'Article photo';img.loading='lazy';img.decoding='async';figure.append(img);if(block.images[0].caption)figure.append(el('figcaption','',block.images[0].caption));article.append(figure);}else if(block.type==='gallery'&&block.images.length){const view=galleryView({title:post.title,gallery:block.images});article.append(view.element);dispose.push(view.dispose);}}
  return {element:article,dispose:()=>dispose.forEach(fn=>fn())};
 }
