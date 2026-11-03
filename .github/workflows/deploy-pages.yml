@@ -45,7 +45,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          # Normal publishes only need the triggering commit, not every branch's history.
+          fetch-depth: 1
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -132,6 +133,11 @@ jobs:
           fi
 
           for branch in "${branches[@]}"; do
+            # Seeding also builds other branches; fetch only their tips when needed.
+            # Keep the triggering branch pinned to GITHUB_SHA from checkout.
+            if test "${branch}" != "${GITHUB_REF_NAME}"; then
+              git fetch --no-tags --depth 1 origin "+refs/heads/${branch}:refs/remotes/origin/${branch}"
+            fi
             dir="$(site_dir "${branch}")"
             build_branch "${branch}" "${RUNNER_TEMP}/build/${branch}"
             printf '%s\t%s\n' "${branch}" "${dir}" >> "${RUNNER_TEMP}/targets.tsv"
