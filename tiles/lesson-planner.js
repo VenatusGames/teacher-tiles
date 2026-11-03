@@ -36,6 +36,7 @@
   const settingsButton = document.getElementById('lesson-planner-settings-button');
   const settingsMenu = document.getElementById('lesson-planner-settings-menu');
   const showWeekendsToggle = document.getElementById('lesson-planner-show-weekends');
+  const showTimeSlotLinesToggle = document.getElementById('lesson-planner-show-time-slots');
   const templatesPanel = document.getElementById('lesson-planner-templates');
   const templateForm = document.getElementById('lesson-planner-template-form');
   const templateName = document.getElementById('lesson-planner-template-name');
@@ -54,6 +55,7 @@
   const startInput = document.getElementById('lesson-planner-start');
   const endInput = document.getElementById('lesson-planner-end');
   const descriptionInput = document.getElementById('lesson-planner-description');
+  const notesEditor=window.TeacherTilesLessonText.editor(descriptionInput);
   const descriptionCount = document.getElementById('lesson-planner-description-count');
   const editorContext = document.getElementById('lesson-planner-editor-context');
   const editorContextLabel = document.getElementById('lesson-planner-editor-context-label');
@@ -188,8 +190,8 @@
   }
 
   function syncPlannerSettingsUi() {
-    if (!showWeekendsToggle) return;
-    showWeekendsToggle.checked = plannerShowsWeekends();
+    if (showWeekendsToggle) showWeekendsToggle.checked = plannerShowsWeekends();
+    if (showTimeSlotLinesToggle) showTimeSlotLinesToggle.checked = activePlanner()?.settings?.showTimeSlotLines !== false;
   }
 
   function closeSettingsMenu() {
@@ -242,6 +244,7 @@
       end,
       color: COLORS.some(color => color.id === block.color) ? block.color : COLORS[0].id,
       description: String(block.description || '').slice(0, 4000),
+      descriptionHtml: window.TeacherTilesLessonText.sanitize(block.descriptionHtml||''),
       scheduleId: String(block.scheduleId || '').slice(0, 80)
     };
   }
@@ -397,7 +400,8 @@
       skinColors: Object.fromEntries(window.TeacherTilesPlannerSkins.catalog.map(skin=>[skin.id,normalizeCoverColor(planner.skinColors?.[skin.id])])),
       blocks: Array.isArray(planner.blocks) ? planner.blocks.map(normalizeBlock).filter(Boolean).slice(0, 2500) : [],
       scheduleId: String(planner.scheduleId || ''),
-      settings: { showWeekends: planner.settings?.showWeekends === true }
+      settings: { showWeekends: planner.settings?.showWeekends === true, showTimeSlotLines: planner.settings?.showTimeSlotLines !== false },
+      calendar: window.TeacherTilesTeachingCalendar.normalize(planner.calendar)
     };
     const legacySchedule = Array.isArray(planner.schedule) ? planner.schedule.map(normalizeScheduleItem).filter(Boolean).slice(0, 120) : [];
     const legacyTemplates = Array.isArray(planner.templates) ? planner.templates.map(normalizeTemplate).filter(Boolean).slice(0, 100) : [];
@@ -822,7 +826,7 @@
       if (Array.isArray(parsed)) return parsed.map(normalizePlanner).filter(Boolean).slice(0, PAID_PLANNER_LIMIT);
     } catch {}
     const legacy = readLegacyBlocks();
-    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, scheduleId: '', settings: { showWeekends: false } }] : [];
+    return legacy.length ? [{ id: 'planner-migrated-default', name: 'My Planner', color: COLORS[0].id, blocks: legacy, scheduleId: '', settings: { showWeekends: false, showTimeSlotLines: true } }] : [];
   }
 
   function readActivePlannerId() {
@@ -879,7 +883,10 @@
     return blocks.filter(block => block.date === key).sort((a, b) => a.start.localeCompare(b.start));
   }
 
+  function isTeachingDate(value){return window.TeacherTilesTeachingCalendar.teaching(typeof value==='string'?value:dateKey(value),activePlanner()?.calendar);}
+
   function scheduleForDate(date) {
+    if(!isTeachingDate(date))return [];
     const target = typeof date === 'string' ? fromDateKey(date) : atNoon(date);
     const schedule = activeSavedSchedule()?.blocks || [];
     const weekday = target.getDay();
@@ -1084,7 +1091,7 @@
       skinColors: {},
       blocks: [],
       scheduleId: planningLibrary.schedules[0]?.id || '',
-      settings: { showWeekends: false }
+      settings: { showWeekends: false, showTimeSlotLines: true }
     };
     planners.push(planner);
     activePlannerId = planner.id;
@@ -1460,7 +1467,7 @@
     agendaList.replaceChildren();
     if (!dayBlocks.length) {
       const empty = make('div', 'lesson-planner-agenda__empty');
-      empty.innerHTML = '<span aria-hidden="true">✎</span><strong>Open Space</strong><small>Add a lesson block for this day.</small>';
+      empty.innerHTML = isTeachingDate(selectedDate)?'<span aria-hidden="true">✎</span><strong>Open Space</strong><small>Add a lesson block for this day.</small>':'<strong>Non-Teaching Day</strong><small>Use Teaching Calendar to make this day plannable.</small>';
       agendaList.append(empty);
       return;
     }
@@ -1522,7 +1529,7 @@
         ghost.style.left=`${x+14}px`;ghost.style.top=`${y+14}px`;
         clearTarget();
         const hit=document.elementFromPoint(x,y)?.closest('[data-lesson-drop-date]');
-        if(hit&&canvas.contains(hit)){
+        if(hit&&canvas.contains(hit)&&isTeachingDate(hit.dataset.lessonDropDate)){
           target=hit;target.classList.add('is-lesson-drop-target');
           let start=minutes(block.start);
           if(hit.classList.contains('lesson-planner-day-column')){
@@ -1598,7 +1605,7 @@
       button.innerHTML = '<strong></strong><small></small><p></p>';
       button.querySelector('strong').textContent = block.label;
       button.querySelector('small').textContent = `${timeLabel(block.start)}–${timeLabel(block.end)}`;
-      button.querySelector('p').textContent = block.description;
+      button.querySelector('p').innerHTML = window.TeacherTilesLessonText.html(block);
     }
     attachLessonDrag(button,block);
     button.addEventListener('click', event => { event.stopPropagation(); openEditor(block); });
@@ -1607,6 +1614,7 @@
 
   function renderSchedule(dates) {
     const schedule = make('section', `lesson-planner-schedule lesson-planner-schedule--${dates.length === 1 ? 'day' : 'week'}`);
+    schedule.classList.toggle('is-no-time-slots', activePlanner()?.settings?.showTimeSlotLines === false);
     const head = make('header', 'lesson-planner-schedule__head');
     head.style.setProperty('--planner-days', dates.length);
     head.append(make('span', 'lesson-planner-time-corner', 'TIME'));
@@ -1619,6 +1627,7 @@
       button.querySelector('span').textContent = weekdayLong.format(date).slice(0, 3).toUpperCase();
       button.querySelector('strong').textContent = String(date.getDate());
       button.addEventListener('click', () => { selectedDate = atNoon(date); renderAll(); });
+      const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit)button.append(make('small','planner-unit-day',`Day ${unit}`));
       head.append(button);
     });
 
@@ -1680,6 +1689,8 @@
     dates.forEach(date => {
       const column = make('div', 'lesson-planner-day-column');
       column.dataset.lessonDropDate = dateKey(date);
+      column.classList.toggle('is-non-teaching',!isTeachingDate(date));
+      if(!isTeachingDate(date))column.append(make('span','planner-non-teaching-label','Non-Teaching Day'));
       column.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
       const daySchedule = scheduleForDate(date).slice().sort((a,b) => minutes(a.start) - minutes(b.start) || minutes(a.end) - minutes(b.end));
       const scheduleGeometry = daySchedule.map(item => {
@@ -1869,6 +1880,7 @@
       const date = addDays(start, index);
       const cell = make('article', 'lesson-planner-month-day');
       cell.dataset.lessonDropDate=dateKey(date);
+      cell.classList.toggle('is-non-teaching',!isTeachingDate(date));
       cell.classList.toggle('is-outside', date.getMonth() !== month);
       cell.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
       cell.classList.toggle('is-selected', dateKey(date) === dateKey(selectedDate));
@@ -1877,6 +1889,7 @@
       dayButton.setAttribute('aria-label', fullDate.format(date));
       dayButton.addEventListener('click', () => { selectedDate = atNoon(date); currentDate = atNoon(date); renderAll(); });
       cell.append(dayButton);
+      const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit)cell.append(make('small','planner-unit-day',`Day ${unit}`));
       const dayBlocks = blocksForDate(date);
       dayBlocks.slice(0, 3).forEach(block => cell.append(lessonBlockButton(block, true)));
       if (dayBlocks.length > 3) cell.append(make('small', 'lesson-planner-month-day__more', `+${dayBlocks.length - 3} more`));
@@ -1905,6 +1918,8 @@
         const date = atNoon(new Date(year, month, day));
         const button = make('button', 'lesson-planner-year-day', String(day));
         button.type = 'button';
+        const unit=window.TeacherTilesTeachingCalendar.unitDay(dateKey(date),activePlanner()?.calendar);if(unit){button.append(make('small','planner-unit-day',`Day ${unit}`));button.title=`Day ${unit}`;}
+        button.classList.toggle('is-non-teaching',!isTeachingDate(date));
         button.classList.toggle('has-lessons', blocksForDate(date).length > 0);
         button.classList.toggle('is-today', dateKey(date) === dateKey(new Date()));
         {const count=blocksForDate(date).length;button.setAttribute('aria-label',`${fullDate.format(date)}${count?`, ${count} lesson blocks`:''}`);}
@@ -2008,6 +2023,7 @@
   function openEditor(block = null, prefill = {}) {
     editingId = block?.id || '';
     const date = block?.date || prefill.date || dateKey(selectedDate);
+    if(!block&&!isTeachingDate(date)){bookTools.openCalendar?.();return;}
     const start = block?.start || prefill.start || '08:00';
     const end = block?.end || prefill.end || '09:00';
     const section = (block?.scheduleId || prefill.scheduleId)
@@ -2016,9 +2032,10 @@
     editingScheduleId = section?.id || block?.scheduleId || prefill.scheduleId || '';
     labelInput.value = block?.label || prefill.label || '';
     dateInput.value = date;
+    dateInput.setCustomValidity('');
     startInput.value = start;
     endInput.value = end;
-    descriptionInput.value = block?.description || '';
+    notesEditor.set(block?.description||'',block?.descriptionHtml||'');
     descriptionCount.textContent = String(descriptionInput.value.length);
     renderTemplatePicker();
     templatePicker.value = '';
@@ -2104,6 +2121,16 @@
   libraryTemplatesButton?.addEventListener('click', openTemplates);
   settingsButton?.addEventListener('click', event => { event.stopPropagation(); toggleSettingsMenu(); });
   settingsMenu?.addEventListener('click', event => event.stopPropagation());
+  showTimeSlotLinesToggle?.addEventListener('change', () => {
+    const planner = activePlanner();
+    if (!planner) return;
+    planner.settings ||= { showWeekends: false };
+    planner.settings.showTimeSlotLines = showTimeSlotLinesToggle.checked;
+    savePlanners();
+    const scrollTop = canvas.scrollTop;
+    renderAll();
+    canvas.scrollTop = scrollTop;
+  });
   showWeekendsToggle?.addEventListener('change', () => {
     const planner = activePlanner();
     if (!planner) return;
@@ -2163,9 +2190,9 @@
   templatePicker.addEventListener('change', () => {
     const template = planningLibrary.templates.find(item => item.id === templatePicker.value);
     if (!template) return;
-    descriptionInput.value = template.description;
+    notesEditor.set(template.description);
     descriptionCount.textContent = String(descriptionInput.value.length);
-    descriptionInput.focus({ preventScroll: true });
+    notesEditor.focus();
   });
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
   panel.addEventListener('keydown', event => {
@@ -2232,7 +2259,7 @@
     const updateDropPreview = () => {
       clearDropPreview();
       const column = document.elementFromPoint(x, y)?.closest('.lesson-planner-day-column');
-      if (!column || !canvas.contains(column)) return;
+      if (!column || !canvas.contains(column)||!isTeachingDate(column.dataset.lessonDropDate)) return;
       const dropDate = column.dataset.lessonDropDate;
       const date = fromDateKey(dropDate);
       const dragLessonDuration = 10;
@@ -2323,9 +2350,11 @@
     refreshEditorScheduleContext();
   });
   endInput.addEventListener('change', refreshEditorScheduleContext);
-  dateInput.addEventListener('change', refreshEditorScheduleContext);
+  dateInput.addEventListener('change',()=>{dateInput.setCustomValidity('');refreshEditorScheduleContext()});
   form.addEventListener('submit', event => {
     event.preventDefault();
+    if(!isTeachingDate(dateInput.value)){dateInput.setCustomValidity('This is a Non-Teaching Day. Choose another date or update Teaching Calendar.');dateInput.reportValidity();return;}
+    dateInput.setCustomValidity('');
     const start = startInput.value;
     const end = endInput.value;
     if (minutes(end) <= minutes(start)) {
@@ -2337,7 +2366,7 @@
     const saved = normalizeBlock({
       id: editingId || `lesson-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       label: labelInput.value.trim(), date: dateInput.value, start, end,
-      color: editorColor, description: descriptionInput.value.trim(), scheduleId: editingScheduleId
+      color: editorColor, description: descriptionInput.value.trim(), descriptionHtml:notesEditor.html(), scheduleId: editingScheduleId
     });
     if (!saved) return;
     const existing = blocks.findIndex(block => block.id === saved.id);
@@ -2386,12 +2415,21 @@
     getSchedules: plannerId => {const planner=planners.find(item=>item.id===(plannerId||activePlannerId));const schedule=planner?planningLibrary.schedules.find(item=>item.id===planner.scheduleId):null;return schedule?schedule.blocks.map(item=>({...item})):[]},
     getSavedSchedules: () => planningLibrary.schedules.map(schedule => ({...schedule,blocks:schedule.blocks.map(item=>({...item}))})),
     getTemplates: () => planningLibrary.templates.map(item => ({...item})),
-    getPlanners: () => planners.map(planner => {const schedule=planningLibrary.schedules.find(item=>item.id===planner.scheduleId);return { ...planner, blocks: planner.blocks.map(block => ({ ...block })), schedule:(schedule?.blocks||[]).map(item=>({...item})), templates:planningLibrary.templates.map(item=>({...item})) }}),
+    getPlanners: () => planners.map(planner => {const schedule=planningLibrary.schedules.find(item=>item.id===planner.scheduleId);return { ...planner, calendar:structuredClone(planner.calendar), blocks: planner.blocks.map(block => ({ ...block })), schedule:(schedule?.blocks||[]).map(item=>({...item})), templates:planningLibrary.templates.map(item=>({...item})) }}),
     getActivePlannerId: () => activePlannerId,
     flushCloud: flushPlannerCloudSave,
     refreshCloud: refreshPlannerCloudFromCloud,
     open: openPlanner,
     close: () => closePlanner(false)
+  });
+  const bookTools=window.setupPlannerBookTools({
+    snapshot:()=>{const planner=activePlanner();return planner?{planner:structuredClone(planner),blocks:blocks.map(b=>({...b})),schedule:structuredClone(activeSavedSchedule()?.blocks||[]),date:dateKey(selectedDate)}:null},
+    closeSettings:closeSettingsMenu,
+    applyCalendar:(base,calendar,nextBlocks)=>{
+      const planner=activePlanner();
+      if(!planner||planner.id!==base.planner.id||JSON.stringify(blocks)!==JSON.stringify(base.blocks)||JSON.stringify(planner.calendar)!==JSON.stringify(base.planner.calendar))throw Error('This planner changed. Reopen Teaching Calendar before saving.');
+      planner.calendar=window.TeacherTilesTeachingCalendar.normalize(calendar);blocks=nextBlocks.map(b=>({...b}));saveBlocks();renderAll();
+    }
   });
   const initialPlannerUserId = String(window.TeacherTilesAuth?.user?.uid || '');
   if (initialPlannerUserId) void syncPlannerCloudAccount(initialPlannerUserId);

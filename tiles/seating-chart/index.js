@@ -17,6 +17,9 @@
     movePbisClassActionsToFooter(m);
     const footer=m.querySelector('.pbis-footer-actions');
     footer.prepend(m.querySelector('.seating-randomize'),m.querySelector('.seating-reset'));
+    const printButton=document.createElement('button');printButton.type='button';printButton.className='seating-print tile-action';printButton.title='Print Seating Chart';printButton.setAttribute('aria-label','Print Seating Chart');printButton.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 17H3V9h18v8h-3M6 14h12v7H6zM17 11h1"/></svg>';
+    printButton.onclick=()=>{if(classReady)window.TeacherTilesSeatingPrint.open({className,desks:desks.map(d=>({...d})),sizeOf,aspect:room.clientHeight/Math.max(1,room.clientWidth)})};footer.prepend(printButton);
+
     const layoutWrap=document.createElement('div');layoutWrap.className='seating-layout-wrap';layoutWrap.dataset.skipBoardSave='';
     layoutWrap.innerHTML='<button type="button" class="seating-layout-toggle tile-action" aria-expanded="false" title="Layout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Layout</span></button><div class="seating-layout-panel" hidden><header><strong>Layout</strong><button type="button" class="custom-icon seating-layout-close" aria-label="Close Layout">×</button></header><small>Arrange student desks. Furniture stays in place.</small></div>';
     footer.prepend(layoutWrap);

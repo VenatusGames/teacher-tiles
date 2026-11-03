@@ -1,0 +1,19 @@
+/* Bounded rich-news contract. Keep frontend/backend copies identical. */
+(function(root){'use strict';
+const tags=new Set('p div br h1 h2 h3 blockquote b strong i em u s strike span ul ol li pre code a img'.split(' '));
+const safeURL=v=>typeof v==='string'&&v.length<2000&&(/^https?:\/\/[^\s<>]+$/i.test(v)||/^(?:news\/)?banners\/[a-z0-9%._/ -]+$/i.test(v))?v:'';
+function styles(raw={}){const out={};for(const [k,v] of Object.entries(raw)){if(typeof v!=='string')continue;
+ if(['color','backgroundColor'].includes(k)&&(/^(#[0-9a-f]{3,8}|transparent)$/i.test(v)||/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/.test(v)))out[k]=v;
+ if(k==='fontFamily'&&/^[a-zA-Z][a-zA-Z0-9 -]{0,70}$/.test(v))out[k]=v;
+ if(k==='fontSize'&&/^\d+(\.\d+)?px$/.test(v)&&parseFloat(v)>=6&&parseFloat(v)<=96)out[k]=v;
+ if(k==='textAlign'&&['left','center','right','justify'].includes(v))out[k]=v;
+ if(k==='fontWeight'&&/^(bold|normal|[1-9]00)$/.test(v))out[k]=v;
+ if(k==='fontStyle'&&['normal','italic'].includes(v))out[k]=v;
+ if(k==='textDecorationLine'&&/^(none|underline|line-through|underline line-through|line-through underline)$/.test(v))out[k]=v;
+ if(k==='marginLeft'&&/^\d+px$/.test(v)&&parseInt(v)<=160)out[k]=v;
+ }return out;}
+function clean(nodes){let count=0,chars=0;function visit(list,depth){if(!Array.isArray(list)||depth>24)throw Error('Text formatting is too deeply nested.');return list.flatMap(n=>{if(++count>8000)throw Error('This text section has too much formatting.');if(typeof n==='string'){chars+=n.length;if(chars>50000)throw Error('Keep each text section under 50,000 characters.');return [n];}if(!n||typeof n!=='object'||!tags.has(n.tag))return [];const out={tag:n.tag,children:visit(n.children||[],depth+1)},style=styles(n.style);if(Object.keys(style).length)out.style=style;if(n.tag==='a'){const href=safeURL(n.href);if(href)out.href=href;}if(n.tag==='img'){const src=safeURL(n.src);if(!src)return [];out.src=src;out.alt=String(n.alt||'').slice(0,300);}return [out];});}return visit(nodes,0);}
+function inline(text,depth=0){if(depth>6)return [text];const out=[],pattern=/!\[([^\]]*)\]\(([^\s)]+)\)|\[([^\]]+)\]\(([^\s)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|\x60([^\x60]+)\x60/g;let last=0;for(const m of text.matchAll(pattern)){if(m.index>last)out.push(text.slice(last,m.index));if(m[1]!==undefined)out.push({tag:'img',src:m[2],alt:m[1],children:[]});else if(m[3]!==undefined)out.push({tag:'a',href:m[4],children:inline(m[3],depth+1)});else out.push({tag:m[5]?'strong':m[6]?'em':'code',children:inline(m[5]||m[6]||m[7],depth+1)});last=m.index+m[0].length;}if(last<text.length)out.push(text.slice(last));return out;}
+function markdown(text){const out=[];let para=[],list=null,code=null;const flush=()=>{if(para.length){out.push({tag:'p',children:para.flatMap((v,i)=>[...(i?[{tag:'br',children:[]}]:[]),...inline(v)])});para=[];}list=null;};for(const line of String(text||'').replace(/\r/g,'').split('\n')){if(line.startsWith('\x60\x60\x60')){flush();if(code!==null){out.push({tag:'pre',children:[{tag:'code',children:[code.join('\n')]}]});code=null;}else code=[];continue;}if(code!==null){code.push(line);continue;}const h=line.match(/^(#{1,3})\s+(.+)$/),li=line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)$/);if(h){flush();out.push({tag:'h'+h[1].length,children:inline(h[2])});}else if(li){if(para.length)flush();const tag=/^\s*\d/.test(line)?'ol':'ul';if(!list||list.tag!==tag){list={tag,children:[]};out.push(list);}list.children.push({tag:'li',children:inline(li[1])});}else if(line.startsWith('> ')){flush();out.push({tag:'blockquote',children:inline(line.slice(2))});}else if(!line.trim())flush();else{list=null;para.push(line);}}flush();if(code!==null)out.push({tag:'pre',children:[code.join('\n')]});return clean(out);}
+const api={clean,styles,safeURL,markdown,tags};if(typeof module!=='undefined')module.exports=api;else root.TeacherTilesNewsDocument=api;
+})(globalThis);

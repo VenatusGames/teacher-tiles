@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261029-hundreds-controls-position" />
+  <link rel="stylesheet" href="styles.css?v=20261103-resize-edge-direction" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="tiles/vocabulary/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/word-web/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/venn-diagrams/styles.css?v=20261026-input-clearance">
-  <link rel="stylesheet" href="tiles/times-tables/styles.css?v=20261002-ice-cube">
+  <link rel="stylesheet" href="tiles/times-tables/styles.css?v=20261103-times-chart">
   <link rel="stylesheet" href="tiles/google/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/link/styles.css?v=20261002-ice-cube">
   <link rel="stylesheet" href="tiles/background-remover/styles.css?v=20261002-ice-cube">
@@ -48,7 +48,7 @@
 <link rel="stylesheet" href="tiles/shared/object-skins.css?v=20261026-ruler-skins">
 <link rel="stylesheet" href="tiles/spinner/styles.css?v=20261006-modern">
 <link rel="stylesheet" href="tiles/group-maker/styles.css?v=20261006-controls">
-<link rel="stylesheet" href="tiles/writing-lines/styles.css?v=20261006-buttons">
+<link rel="stylesheet" href="tiles/writing-lines/styles.css?v=20261103-writing-fullscreen">
 <link rel="stylesheet" href="tiles/ruler/styles.css?v=20261026-ruler-skins">
 <link rel="stylesheet" href="tiles/date/styles.css?v=20261026-skin-frame">
 <link rel="stylesheet" href="tiles/shared/display-menu.css?v=20261026-display-fix">
@@ -81,7 +81,7 @@
   <link rel="stylesheet" href="templates/style.css?v=20261020-product-polish">
 <link rel="stylesheet" href="support/ticket-thread.css?v=20260926-ticket-actions">
   <link rel="stylesheet" href="profile/subscription.css?v=20261011-trial-notice">
-  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261028-tool-chrome">
+  <link rel="stylesheet" href="tiles/lesson-planner/styles.css?v=20261103-display-settings">
   <link rel="stylesheet" href="profile/tools.css?v=20261023-tool-navigation">
 <link rel="stylesheet" href="profile/organizations.css?v=20261028-tool-logo">
 <link rel="stylesheet" href="profile/district-badge.css?v=20261025">
@@ -129,7 +129,7 @@
 <script src="app/splash/index.js?v=20261020-season-motion"></script>
 <link rel="stylesheet" href="tiles/halloween/styles.css?v=20261016-clock-lift-8">
 <link rel="stylesheet" href="shop/tile-effects.css?v=20261028-collection-controls">
-<link rel="stylesheet" href="tiles/shared/math-controls.css?v=20261029-math-ui">
+<link rel="stylesheet" href="tiles/shared/math-controls.css?v=20261103-times-chart">
 <link rel="stylesheet" href="tiles/shared/collection-controls.css?v=20261029-flat-shelf-controls">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
 <link rel="stylesheet" href="presentations/styles.css?v=20261023-profile-navigation">
@@ -142,11 +142,13 @@
 <link rel="stylesheet" href="tiles/thanksgiving/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/progress-bar/styles.css?v=20261021-thanksgiving-polish2">
 <link rel="stylesheet" href="tiles/shared/autumn-themes.css?v=20261021-autumn-finish">
-<link rel="stylesheet" href="support/announcements.css?v=20261023-notification-class-polish">
+<link rel="stylesheet" href="support/announcements.css?v=20261103-inline-body">
 <link rel="stylesheet" href="shop/browse-performance.css?v=20261028-scroll">
 <link rel="stylesheet" href="shop/theme-previews.css?v=20261028-shop-previews">
 <link rel="stylesheet" href="tiles/shared/pbis-ui.css?v=20261029-seating-footer">
 <link rel="stylesheet" href="tiles/racer/hill-course.css?v=20261028-fanned-standees">
+<link rel="stylesheet" href="news/runtime/styles.css?v=20261103-news-captions">
+<link rel="stylesheet" href="tiles/lesson-planner/tools.css?v=20261103-display-settings">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -381,7 +383,7 @@
             </button>
             <button id="profile-lesson-planner-button" class="profile-tool-button" type="button" aria-expanded="false" aria-controls="lesson-planner-panel">
               <span class="profile-tool-button__icon profile-tool-button__icon--planner" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-              <span><strong>Lesson Planner</strong><small>Organize lessons for the day, week, or school year</small></span>
+              <span><strong>Lesson Planner<span class="profile-tool-beta">BETA</span></strong><small>Organize lessons for the day, week, or school year</small></span>
               <i aria-hidden="true">›</i>
             </button>
             <button title="Create presentation slides and slidedecks and make them interactive" id="profile-presentations-button" class="profile-tool-button" type="button">
@@ -400,7 +402,7 @@
                 <button id="lesson-planner-library-back" class="planner-library-back profile-tool-back" type="button" aria-label="Back to profile"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Profile</strong></button>
                 <div class="planner-library-brand">
                   <span class="planner-library-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><h2 id="lesson-planner-library-title">Your Planners</h2></div>
+                  <div><h2 id="lesson-planner-library-title">Your Planners<span class="profile-tool-beta">BETA</span></h2></div>
                 </div>
                 <div class="planner-library-header__actions">
                   <div class="pres-limit planner-library-entitlement"><strong id="lesson-planner-library-limit" aria-live="polite"></strong><span id="lesson-planner-library-plan" class="pres-plan"></span><span id="lesson-planner-library-upgrade" class="pres-upgrade"></span></div>
@@ -424,7 +426,7 @@
                 <button id="lesson-planner-back" class="lesson-planner-back" type="button" aria-label="Back to planners"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><strong>Planners</strong></button>
                 <div class="lesson-planner-brand">
                   <span class="lesson-planner-brand__mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.75" width="15" height="18.5" rx="2.5"/><path d="M3 6h4M3 10h4M3 14h4M3 18h4M10 8h6M10 11h6"/></svg></span>
-                  <div><h2 id="lesson-planner-title">Lesson Planner</h2></div>
+                  <div><h2 id="lesson-planner-title">Lesson Planner</h2><span class="profile-tool-beta">BETA</span></div>
                 </div>
                 <div class="lesson-planner-header__actions">
                   <button id="lesson-planner-scheduling-button" type="button" aria-label="Scheduling" title="Scheduling"><span>Scheduling</span></button>
@@ -442,6 +444,11 @@
                         <label class="lesson-planner-settings-toggle" for="lesson-planner-show-weekends">
                           <span><strong>Show Weekends in Week View</strong><small>Include Saturday and Sunday columns when using Week view.</small></span>
                           <input id="lesson-planner-show-weekends" type="checkbox">
+                          <i aria-hidden="true"><b></b></i>
+                        </label>
+                        <label class="lesson-planner-settings-toggle" for="lesson-planner-show-time-slots">
+                          <span><strong>Show Time Slot Lines</strong><small>Show the time ruler, grid lines, and current-time marker in Day and Week views.</small></span>
+                          <input id="lesson-planner-show-time-slots" type="checkbox" checked>
                           <i aria-hidden="true"><b></b></i>
                         </label>
                       </div>
@@ -2962,7 +2969,7 @@
   </section>
 </template>
 
-<template id="timestables-template"><section class="module classroom-widget times-tables-module" data-type="timestables" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Times Tables">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Times Tables</h2></header><p class="times-summary widget-status"></p><div class="times-grid widget-scroll" aria-label="Multiplication facts"></div><div class="customization-bar widget-controls"><button class="tile-action times-hide" type="button">Hide Answers</button><button class="tile-action times-reveal" type="button">Reveal All</button><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-label="Open Times Tables settings" title="Times Tables settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg></button><div class="tile-settings-panel" hidden><strong>Times Tables settings</strong><label class="tile-setting"><span>Fact families</span></label><div class="times-families" role="group" aria-label="Fact families"></div><div class="times-range"><label class="tile-setting">From ×<input class="times-from" type="number" min="0" max="20" value="1"></label><label class="tile-setting">Through ×<input class="times-to" type="number" min="0" max="20" value="12"></label></div><label class="tile-setting tile-check"><input class="times-practice" type="checkbox"> Practice with hidden answers</label></div></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
+<template id="timestables-template"><section class="module classroom-widget times-tables-module" data-type="timestables" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Times Tables">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Times Tables</h2></header><p class="times-summary widget-status"></p><div class="times-grid widget-scroll" aria-label="Multiplication facts"></div><div class="customization-bar widget-controls"><button class="tile-action times-hide" type="button">Hide Answers</button><button class="tile-action times-reveal" type="button">Reveal All</button><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-label="Open Times Tables settings" title="Times Tables settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg></button><div class="tile-settings-panel" hidden><strong>Times Tables Settings</strong><div class="tile-setting tile-settings-switch-row"><span>Chart Mode</span><button type="button" class="tile-settings-switch times-chart-toggle" role="switch" aria-label="Chart Mode" aria-checked="false"><i aria-hidden="true"></i></button></div><div class="times-family-settings"><label class="tile-setting"><span>Fact Families</span></label><div class="times-families" role="group" aria-label="Fact Families"></div><div class="times-range"><label class="tile-setting">From ×<input class="times-from" type="number" min="0" max="20" value="1"></label><label class="tile-setting">Through ×<input class="times-to" type="number" min="0" max="20" value="12"></label></div></div><!-- Preserve the saved form-field index for older boards. --><input class="times-practice-legacy" type="checkbox" hidden tabindex="-1" aria-hidden="true"></div></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="google-template"><section class="module classroom-widget google-module" data-type="google" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Google">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Google</h2></header><div class="google-content"><span class="google-symbol" aria-hidden="true">G</span><p>Where will your curiosity take you?</p><form class="google-form"><input class="google-query" type="search" maxlength="500" placeholder="Search Google…" aria-label="Search Google" required><button class="tile-action tile-action--primary" type="submit">Search</button></form><small>Google results open in a new tab.</small><a class="google-last-search widget-status" target="_blank" rel="noopener noreferrer" hidden></a></div><div class="customization-bar widget-controls"><button class="custom-icon tile-bg" type="button" aria-label="Change background color" title="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="link-template"><section class="module classroom-widget link-module" data-type="link" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Link">×</button><div class="module-drag-handle"></div><header class="widget-heading"><h2 class="widget-title">Link</h2></header><a class="link-target" target="_blank" rel="noopener noreferrer" draggable="false" tabindex="0"><img class="link-image" alt="" hidden draggable="false"><span class="link-caption">Add a link</span></a><input class="link-file" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="customization-bar widget-controls"><button class="custom-icon tile-font" type="button" aria-label="Change font" title="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button class="custom-icon tile-text" type="button" aria-label="Change text color" title="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><div class="tile-settings-wrap"><button class="custom-icon tile-settings-toggle" type="button" aria-label="Open Link settings" title="Link settings" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 3-.6 3-2 1-2.8-1-2 3.5 2.2 2v2L1.6 16l2 3.5 2.8-1 2 1L9 22h4l.6-2.5 2-1 2.8 1 2-3.5-2.2-2.5v-2l2.2-2-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12.5" r="3"/></svg></button><div class="tile-settings-panel" hidden><strong>Link settings</strong><form class="link-form"><label class="tile-setting">Website address<input class="link-url" type="text" inputmode="url" maxlength="4096" placeholder="https://example.com" required></label><label class="tile-setting">Link text / image description<input class="link-label" type="text" maxlength="100" placeholder="My class website"></label><button class="tile-action tile-action--primary" type="submit">Save link</button></form><button class="tile-action link-upload" type="button">Upload image</button><button class="tile-action link-remove-image" type="button">Remove image</button><small>Without an image, this tile displays a text link.</small><div class="link-status widget-status" role="status"></div></div></div></div><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div><div class="resize-handle resize-handle--t" data-resize="t"></div><div class="resize-handle resize-handle--b" data-resize="b"></div><div class="resize-handle resize-handle--l" data-resize="l"></div><div class="resize-handle resize-handle--r" data-resize="r"></div></section></template>
 <template id="dice-template">
@@ -3302,6 +3309,54 @@
             <span class="writinglines-guide writinglines-guide--mid"></span>
             <span class="writinglines-guide writinglines-guide--base"></span>
             <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 4" data-line="3"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 5" data-line="4"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 6" data-line="5"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 7" data-line="6"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 8" data-line="7"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 9" data-line="8"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 10" data-line="9"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 11" data-line="10"></div>
+          </div>
+          <div class="writinglines-row">
+            <span class="writinglines-guide writinglines-guide--top"></span>
+            <span class="writinglines-guide writinglines-guide--mid"></span>
+            <span class="writinglines-guide writinglines-guide--base"></span>
+            <div class="writinglines-entry" contenteditable="true" spellcheck="false" role="textbox" aria-label="Writing line 12" data-line="11"></div>
           </div>
         </div>
       </div>
@@ -3654,19 +3709,19 @@
         <header class="prizeboard-header">
           <span class="prizeboard-class-logo" aria-hidden="true">👥</span>
           <div><strong class="prizeboard-class-name">Class</strong><small>PRIZE BOARD</small></div>
-          <button class="prizeboard-change-class pbis-change-class" type="button">Change class</button>
+          <button class="prizeboard-change-class pbis-change-class" type="button">Change Class</button>
         </header>
-        <div class="prizeboard-tabs" role="tablist" aria-label="Prize categories">
+        <div class="prizeboard-tabs" role="tablist" aria-label="Prize Categories">
           <button type="button" data-prize-scope="student" role="tab">Prizes</button>
           <button type="button" data-prize-scope="class" role="tab">Whole Class Prizes</button>
         </div>
         <div class="prizeboard-grid" data-skip-board-save></div>
-        <button class="prizeboard-add" type="button"><span aria-hidden="true">＋</span> Add prize</button>
+        <button class="prizeboard-add" type="button"><span aria-hidden="true">＋</span> Add Prize</button>
       </div>
       <div class="prizeboard-customization customization-bar">
-        <button class="custom-icon prizeboard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
-        <button class="custom-icon prizeboard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
-        <button class="custom-icon prizeboard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon prizeboard-bg" type="button" title="Change Tile Background" aria-label="Change Tile Background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon prizeboard-font" type="button" title="Change Font" aria-label="Change Font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon prizeboard-text-color" type="button" title="Change Text Color" aria-label="Change Text Color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
@@ -4615,7 +4670,6 @@
   </template>
 
   <script src="changelog/data.js"></script>
-  <script src="news/data.js"></script>
   <script src="tiles/image-search/index.js?v=20260905-3"></script>
   <script src="tiles/interactive-timers/hourglass.js?v=20260905-2"></script>
   <script src="tiles/interactive-timers/garden-rocket.js?v=20260905-1"></script>
@@ -4625,7 +4679,8 @@
   <script src="tiles/dice/index.js?v=20260905-scaling-1"></script>
   <script src="tiles/random-number/index.js?v=20260924-7"></script>
   <script src="tiles/seating-chart/furniture.js?v=20261029-furniture-layout"></script>
-  <script src="tiles/seating-chart/index.js?v=20261029-furniture-no-labels"></script>
+  <script src="tiles/seating-chart/print.js?v=20261103"></script>
+<script src="tiles/seating-chart/index.js?v=20261103-print"></script>
   <script src="tiles/fish-tank/index.js?v=20260928-space-snow"></script>
   <script src="tiles/sleepy-monster/index.js?v=20260912-reset-1"></script>
   <script src="tiles/quiet-critters/index.js?v=20260922-refine-3"></script>
@@ -4642,7 +4697,7 @@
   <script src="tiles/vocabulary/index.js?v=20260905-1"></script>
   <script src="tiles/word-web/index.js?v=20260928-space-snow"></script>
   <script src="tiles/venn-diagrams/index.js?v=20260912-venn-5"></script>
-  <script src="tiles/times-tables/index.js?v=20260905-1"></script>
+  <script src="tiles/times-tables/index.js?v=20261103-times-chart"></script>
   <script src="tiles/google/index.js?v=20260908-polish-1"></script>
   <script src="tiles/link/index.js?v=20260905-daily-fixes-2"></script>
   <script src="tiles/background-remover/index.js?v=20260910-background-remover-2"></script>
@@ -4699,8 +4754,8 @@
 <script src="tiles/classroom-jobs/index.js?v=20260930-job-capacity"></script>
 <script src="tiles/growth-rewards/index.js?v=20261028-three-column-overview"></script>
 <script src="tiles/sticky/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/thanksgiving/shared.js?v=20261021-balanced-feather-rows"></script>
-<script src="tiles/halloween/shared.js?v=20261021-thanksgiving"></script>
+<script src="tiles/thanksgiving/shared.js?v=20261103-news-captions"></script>
+<script src="tiles/halloween/shared.js?v=20261103-news-captions"></script>
 <script src="tiles/halloween/carving.js?v=20261015-halloween-v6"></script>
 <script src="tiles/halloween/trick-or-treat.js?v=20261015-trick-v2"></script>
 <script src="tiles/halloween/patch.js?v=20261015-patch-sticker"></script>
@@ -4708,13 +4763,13 @@
 <script src="tiles/interactive-timers/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/display-menu.js?v=20261026-display-fix"></script>
 <script src="tiles/clock/setup.js?v=20261026-display-fix"></script>
-<script src="tiles/writing-lines/setup.js?v=20261026-skins"></script>
+<script src="tiles/writing-lines/setup.js?v=20261103-writing-fullscreen"></script>
 <script src="tiles/stopwatch/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/magnifier/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/draw/setup.js?v=20261029-outside-dismiss"></script>
 <script src="tiles/star-chart/setup.js?v=20261029-star-fullscreen"></script>
 <script src="tiles/class-meter/setup.js?v=20261028-pbis-content"></script>
-<script src="tiles/prize-board/setup.js?v=20261028-pbis"></script>
+<script src="tiles/prize-board/setup.js?v=20261103-board-geometry"></script>
 <script src="tiles/pbis-console/setup.js?v=20261028-pbis-refinement"></script>
 <script src="tiles/racer/visuals.js?v=20261028-fanned-standees"></script>
 <script src="tiles/racer/setup.js?v=20261028-fanned-standees"></script>
@@ -4730,7 +4785,7 @@
 <script src="tiles/youtube/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/ambience-video/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/window-share/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/text-bubble/setup.js?v=20261012-skins"></script>
+<script src="tiles/text-bubble/setup.js?v=20261103-board-geometry"></script>
 <script src="tiles/dictionary/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/translation/setup.js?v=20261020-presentations"></script>
 <script src="tiles/attendance/setup.js?v=20260930-tile-refactor"></script>
@@ -4781,10 +4836,10 @@
 <script src="profile/classroom-services.js?v=20261029-furniture-layout"></script>
 <script src="profile/classes-students.js?v=20261028-tool-logo"></script>
 <script src="account/interface-services.js?v=20261028-star-landing"></script>
-<script src="boards/navigation.js?v=20261029-summary-controls"></script>
+<script src="boards/navigation.js?v=20261103-board-geometry"></script>
 <script src="shop/cosmetic-services.js?v=20261026-shared-flashcards"></script>
 <script src="tiles/shared/control-services.js?v=20261028-pbis-hill-actions"></script>
-<script src="boards/tile-lifecycle.js?v=20261029-summary-controls"></script>
+<script src="boards/tile-lifecycle.js?v=20261103-resize-edge-direction"></script>
 <script src="tiles/visual-timer/helpers.js?v=20261020-effect-sounds"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/media-helpers.js?v=20260930-tile-refactor"></script>
@@ -4796,7 +4851,7 @@
 <script src="tiles/shared/flashcard-services.js?v=20261026-fit"></script>
 <script src="tiles/shared/flashcard-word-drawer.js?v=20261029"></script>
 <script src="boards/serialization.js?v=20261001-position-drawer"></script>
-<script src="changelog/ui.js?v=20261103-contact-smtp"></script>
+<script src="changelog/ui.js?v=20261103-news-captions"></script>
 <script src="shop/ad-rewards.js?v=20261028-five-coins"></script>
 <script src="tiles/lesson-planner/skins.js?v=20261029-sorted"></script>
 <script src="profile/frames-art.js?v=20261013-frame-performance"></script>
@@ -4809,17 +4864,21 @@
 <script src="shop/tile-effects.js?v=20261028-favorites-label"></script>
 <script src="shop/extras.js?v=20261029-thanksgiving-planner"></script>
 <script src="shop/featured-library.js?v=20261020-ui-fixes"></script>
-<script src="shop/ui.js?v=20261028-scroll"></script>
+<script src="shop/ui.js?v=20261103-news-captions"></script>
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261029-theme-favorites"></script>
 <script src="tiles/shared/math-controls.js?v=20261029-shared-hover"></script>
-<script src="app.js?v=20261029-math-ui"></script>
+<script src="app.js?v=20261103-board-geometry"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261028-menu-sizing"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
-  <script src="tiles/lesson-planner.js?v=20261020-controls-followup"></script>
+  <script src="tiles/lesson-planner/text-format.js?v=20261103-followup"></script>
+<script src="tiles/lesson-planner/calendar-core.js?v=20261103-school-year"></script>
+<script src="tiles/lesson-planner/print.js?v=20261103-school-year"></script>
+<script src="tiles/lesson-planner/tools.js?v=20261103-display-settings"></script>
+<script src="tiles/lesson-planner.js?v=20261103-display-settings"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261028-larger-stars"></script>
+<script type="module" src="firebase-auth.js?v=20261103-times-chart"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 

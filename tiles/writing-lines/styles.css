@@ -17,3 +17,7 @@
 @container(max-width:420px){.writinglines-module .writinglines-control-label{display:none}.writinglines-module .writinglines-customization>.custom-icon{padding:0 8px}}
 @media(hover:none){.writinglines-module .writinglines-customization{opacity:1;visibility:visible;pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){.writinglines-module .writinglines-customization,.writinglines-module .writinglines-customization>.custom-icon{transition:none}}
+
+/* Fullscreen rows share the available sheet, independent of the saved tile height. */
+.writinglines-module:fullscreen{padding:48px clamp(16px,3vw,48px) 56px!important}
+.writinglines-module:fullscreen .writinglines-entry{top:auto;bottom:calc(24cqh * (1 - var(--writing-text-scale,1)));height:calc(100cqh * var(--writing-text-scale,1));font-size:calc(100cqh * var(--writing-text-scale,1))!important}
