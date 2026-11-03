@@ -19403,5 +19403,5 @@ body{position:fixed;inset:0;overflow:clip}
 .textbubble-text{display:block!important;align-content:center}
 .textbubble-text *{font-size:inherit!important;line-height:inherit!important}
 .textbubble-text :is(p,div,h1,h2,h3,h4,h5,h6,blockquote){margin:0!important}
-.tile-resize-limit{display:none;position:absolute;inset:0;z-index:30;pointer-events:none;box-sizing:border-box;border:0 solid rgba(229,72,77,.25);border-radius:inherit}
+.tile-resize-limit{display:none;position:absolute;inset:0;z-index:30;pointer-events:none;box-sizing:border-box;border:0 solid rgba(229,72,77,.4);border-radius:inherit}
 .module.is-resize-threshold>.tile-resize-limit{display:block}
