@@ -760,12 +760,14 @@ function setupResize(m){
     if(isTileLocked(m)||e.button!==0)return;e.preventDefault();e.stopPropagation();
     const before=captureModuleTransform(m),d=h.dataset.resize,sx=e.clientX,sy=e.clientY,sl=m.offsetLeft,st=m.offsetTop,sw=tileDisplayWidth(m),sh=tileDisplayHeight(m);
     const minimum=m._resizeMinimum,mw=minimum.width*.85,mh=minimum.height*.85,viewportScale=moduleViewportScale(m)/tileUniformScale(m);
+    clearTimeout(m._resizeLimitTimer);m.classList.remove('is-resize-threshold');
     m.classList.add('is-resizing');clearSnapGroupMember(m);bringToFront(m);h.setPointerCapture(e.pointerId);
     const move=ev=>{
       const dx=(ev.clientX-sx)/viewportScale,dy=(ev.clientY-sy)/viewportScale;
       const horizontal=d.includes('l')||d.includes('r'),vertical=d.includes('t')||d.includes('b');
-      let w=Math.max(mw,d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw);
-      let height=Math.max(mh,d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh);
+      const requestedW=d.includes('r')?sw+dx:d.includes('l')?sw-dx:sw;
+      const requestedH=d.includes('b')?sh+dy:d.includes('t')?sh-dy:sh;
+      let w=Math.max(mw,requestedW),height=Math.max(mh,requestedH);
       // Keep both axes independent, but prevent extreme strips in either direction.
       if(horizontal&&!vertical)w=clamp(w,Math.max(mw,height/3),Math.max(mw,height*3));
       else if(vertical&&!horizontal)height=clamp(height,Math.max(mh,w/3),Math.max(mh,w*3));
@@ -774,15 +776,18 @@ function setupResize(m){
       const left=d.includes('l')?sl+sw-w:sl,top=d.includes('t')?st+sh-height:st;
       Object.assign(m.style,{left:clamp(left,0,Math.max(0,BOARD_WIDTH-w))+'px',top:clamp(top,0,Math.max(0,BOARD_HEIGHT-height))+'px'});
       fitTileDisplaySize(m,w,height);
+      m.classList.toggle('is-resize-threshold',(horizontal&&requestedW<sw&&(requestedW<=mw+.1||requestedW<tileDisplayWidth(m)-1))||(vertical&&requestedH<sh&&(requestedH<=mh+.1||requestedH<tileDisplayHeight(m)-1)));
     };
+    let finished=false;
     const finish=cancelled=>{
+      if(finished)return;finished=true;
       if(cancelled)applyModuleTransform(m,before);
       else{m._syncTransientResize?.();m._afterModuleResize?.();recordTransformHistory([m],new Map([[m,before]]));}
-      m.classList.remove('is-resizing');if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
-      updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);
+      m.classList.remove('is-resizing');m._resizeLimitTimer=setTimeout(()=>m.classList.remove('is-resize-threshold'),250);if(isTilePinned(m))capturePinnedTileScreenAnchor(m);
+      updateWorkspaceEmptyState();h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);h.removeEventListener('lostpointercapture',end);
     };
     const end=()=>finish(false),cancel=()=>finish(true);
-    h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',cancel);
+    h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',cancel);h.addEventListener('lostpointercapture',end);
   }));
 }
 

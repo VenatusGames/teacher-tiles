@@ -19395,3 +19395,12 @@ body.is-keyboard-navigation .attendance-module:focus-within{padding-bottom:48px}
 .board-card.is-renaming .board-card__collaborate{opacity:0;pointer-events:none}
 @media(hover:none),(pointer:coarse){.board-card__collaborate{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.board-card__collaborate,.board-card__collaborate-tooltip{transition:none}}
+
+/* The board camera owns navigation. A fixed, non-scrolling page prevents focus,
+   selection and browser resizing from introducing a second scroll offset. */
+body{position:fixed;inset:0;overflow:clip}
+/* Text Bubble is fitted as a whole, including pasted or restored markup. */
+.textbubble-text{display:block!important;align-content:center}
+.textbubble-text *{font-size:inherit!important;line-height:inherit!important}
+.textbubble-text :is(p,div,h1,h2,h3,h4,h5,h6,blockquote){margin:0!important}
+.module.is-resize-threshold{outline:3px solid #e5484d!important;outline-offset:2px;}

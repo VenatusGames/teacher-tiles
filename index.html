@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261029-hundreds-controls-position" />
+  <link rel="stylesheet" href="styles.css?v=20261103-board-geometry" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -3661,19 +3661,19 @@
         <header class="prizeboard-header">
           <span class="prizeboard-class-logo" aria-hidden="true">👥</span>
           <div><strong class="prizeboard-class-name">Class</strong><small>PRIZE BOARD</small></div>
-          <button class="prizeboard-change-class pbis-change-class" type="button">Change class</button>
+          <button class="prizeboard-change-class pbis-change-class" type="button">Change Class</button>
         </header>
-        <div class="prizeboard-tabs" role="tablist" aria-label="Prize categories">
+        <div class="prizeboard-tabs" role="tablist" aria-label="Prize Categories">
           <button type="button" data-prize-scope="student" role="tab">Prizes</button>
           <button type="button" data-prize-scope="class" role="tab">Whole Class Prizes</button>
         </div>
         <div class="prizeboard-grid" data-skip-board-save></div>
-        <button class="prizeboard-add" type="button"><span aria-hidden="true">＋</span> Add prize</button>
+        <button class="prizeboard-add" type="button"><span aria-hidden="true">＋</span> Add Prize</button>
       </div>
       <div class="prizeboard-customization customization-bar">
-        <button class="custom-icon prizeboard-bg" type="button" title="Change tile background" aria-label="Change tile background"><span class="icon-palette" aria-hidden="true"></span></button>
-        <button class="custom-icon prizeboard-font" type="button" title="Change font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button>
-        <button class="custom-icon prizeboard-text-color" type="button" title="Change text color" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button>
+        <button class="custom-icon prizeboard-bg" type="button" title="Change Tile Background" aria-label="Change Tile Background"><span class="icon-palette" aria-hidden="true"></span></button>
+        <button class="custom-icon prizeboard-font" type="button" title="Change Font" aria-label="Change Font"><span class="icon-font" aria-hidden="true">Aa</span></button>
+        <button class="custom-icon prizeboard-text-color" type="button" title="Change Text Color" aria-label="Change Text Color"><span class="icon-text-color" aria-hidden="true">A</span></button>
       </div>
       <div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div>
     </section>
@@ -4721,7 +4721,7 @@
 <script src="tiles/draw/setup.js?v=20261029-outside-dismiss"></script>
 <script src="tiles/star-chart/setup.js?v=20261029-star-fullscreen"></script>
 <script src="tiles/class-meter/setup.js?v=20261028-pbis-content"></script>
-<script src="tiles/prize-board/setup.js?v=20261028-pbis"></script>
+<script src="tiles/prize-board/setup.js?v=20261103-board-geometry"></script>
 <script src="tiles/pbis-console/setup.js?v=20261028-pbis-refinement"></script>
 <script src="tiles/racer/visuals.js?v=20261028-fanned-standees"></script>
 <script src="tiles/racer/setup.js?v=20261028-fanned-standees"></script>
@@ -4737,7 +4737,7 @@
 <script src="tiles/youtube/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/ambience-video/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/window-share/setup.js?v=20260930-tile-refactor"></script>
-<script src="tiles/text-bubble/setup.js?v=20261012-skins"></script>
+<script src="tiles/text-bubble/setup.js?v=20261103-board-geometry"></script>
 <script src="tiles/dictionary/setup.js?v=20260930-tile-refactor"></script>
 <script src="tiles/translation/setup.js?v=20261020-presentations"></script>
 <script src="tiles/attendance/setup.js?v=20260930-tile-refactor"></script>
@@ -4788,10 +4788,10 @@
 <script src="profile/classroom-services.js?v=20261029-furniture-layout"></script>
 <script src="profile/classes-students.js?v=20261028-tool-logo"></script>
 <script src="account/interface-services.js?v=20261028-star-landing"></script>
-<script src="boards/navigation.js?v=20261029-summary-controls"></script>
+<script src="boards/navigation.js?v=20261103-board-geometry"></script>
 <script src="shop/cosmetic-services.js?v=20261026-shared-flashcards"></script>
 <script src="tiles/shared/control-services.js?v=20261028-pbis-hill-actions"></script>
-<script src="boards/tile-lifecycle.js?v=20261029-summary-controls"></script>
+<script src="boards/tile-lifecycle.js?v=20261103-board-geometry"></script>
 <script src="tiles/visual-timer/helpers.js?v=20261020-effect-sounds"></script>
 <script src="tiles/prize-board/helpers.js?v=20260930-tile-refactor"></script>
 <script src="tiles/shared/media-helpers.js?v=20260930-tile-refactor"></script>
@@ -4820,7 +4820,7 @@
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261029-theme-favorites"></script>
 <script src="tiles/shared/math-controls.js?v=20261029-shared-hover"></script>
-<script src="app.js?v=20261029-math-ui"></script>
+<script src="app.js?v=20261103-board-geometry"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261028-menu-sizing"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
