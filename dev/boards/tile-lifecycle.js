@@ -309,8 +309,8 @@ function shiftTileControlsAwayFromOptions(m){
 
 function layoutTileOptionControls(m){
   if(!m?.isConnected)return;
-  const del=m.querySelector(':scope>.module-delete'),full=m.querySelector(':scope>.module-fullscreen'),pin=m.querySelector(':scope>.module-pin');
-  if(!del||!full||!pin)return;
+  const del=m.querySelector(':scope>.module-delete'),pin=m.querySelector(':scope>.module-pin');
+  if(!del||!pin)return;
 
   // The universal corner cluster is always authoritative. Other tile controls move around it.
   if(document.fullscreenElement===m){
@@ -418,6 +418,7 @@ function restoreTileFullscreenGeometry(m){
 
 function ensureTileFullscreenControl(m){
   let button=m.querySelector(':scope>.module-fullscreen');
+  if(['magnifier','draw'].includes(m.dataset.type)){button?.remove();return null;}
   if(button)return button;
   const del=m.querySelector(':scope>.module-delete');
   if(!del)return null;
@@ -780,8 +781,8 @@ function setupResize(m){
       fitTileDisplaySize(m,w,height);
       const widthLimited=horizontal&&requestedW<sw&&(requestedW<=mw+.1||requestedW<tileDisplayWidth(m)-1);
       const heightLimited=vertical&&requestedH<sh&&(requestedH<=mh+.1||requestedH<tileDisplayHeight(m)-1);
-      // A corner can hit one axis before the other: mark only the blocked edges.
-      limitBorder.style.borderWidth=[heightLimited&&d.includes('t'),widthLimited&&d.includes('r'),heightLimited&&d.includes('b'),widthLimited&&d.includes('l')].map(blocked=>blocked?'3px':'0px').join(' ');
+      // Mark the opposing edge for each blocked axis, independently at corners.
+      limitBorder.style.borderWidth=[heightLimited&&d.includes('b'),widthLimited&&d.includes('l'),heightLimited&&d.includes('t'),widthLimited&&d.includes('r')].map(blocked=>blocked?'3px':'0px').join(' ');
       m.classList.toggle('is-resize-threshold',widthLimited||heightLimited);
     };
     let finished=false;
