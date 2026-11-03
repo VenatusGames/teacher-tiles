@@ -54,6 +54,7 @@
   const startInput = document.getElementById('lesson-planner-start');
   const endInput = document.getElementById('lesson-planner-end');
   const descriptionInput = document.getElementById('lesson-planner-description');
+  const notesEditor=window.TeacherTilesLessonText.editor(descriptionInput);
   const descriptionCount = document.getElementById('lesson-planner-description-count');
   const editorContext = document.getElementById('lesson-planner-editor-context');
   const editorContextLabel = document.getElementById('lesson-planner-editor-context-label');
@@ -242,6 +243,7 @@
       end,
       color: COLORS.some(color => color.id === block.color) ? block.color : COLORS[0].id,
       description: String(block.description || '').slice(0, 4000),
+      descriptionHtml: window.TeacherTilesLessonText.sanitize(block.descriptionHtml||''),
       scheduleId: String(block.scheduleId || '').slice(0, 80)
     };
   }
@@ -1602,7 +1604,7 @@
       button.innerHTML = '<strong></strong><small></small><p></p>';
       button.querySelector('strong').textContent = block.label;
       button.querySelector('small').textContent = `${timeLabel(block.start)}–${timeLabel(block.end)}`;
-      button.querySelector('p').textContent = block.description;
+      button.querySelector('p').innerHTML = window.TeacherTilesLessonText.html(block);
     }
     attachLessonDrag(button,block);
     button.addEventListener('click', event => { event.stopPropagation(); openEditor(block); });
@@ -2028,7 +2030,7 @@
     dateInput.setCustomValidity('');
     startInput.value = start;
     endInput.value = end;
-    descriptionInput.value = block?.description || '';
+    notesEditor.set(block?.description||'',block?.descriptionHtml||'');
     descriptionCount.textContent = String(descriptionInput.value.length);
     renderTemplatePicker();
     templatePicker.value = '';
@@ -2173,9 +2175,9 @@
   templatePicker.addEventListener('change', () => {
     const template = planningLibrary.templates.find(item => item.id === templatePicker.value);
     if (!template) return;
-    descriptionInput.value = template.description;
+    notesEditor.set(template.description);
     descriptionCount.textContent = String(descriptionInput.value.length);
-    descriptionInput.focus({ preventScroll: true });
+    notesEditor.focus();
   });
   panel.querySelector('.lesson-planner-backdrop').addEventListener('click', () => closePlanner(false));
   panel.addEventListener('keydown', event => {
@@ -2349,7 +2351,7 @@
     const saved = normalizeBlock({
       id: editingId || `lesson-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       label: labelInput.value.trim(), date: dateInput.value, start, end,
-      color: editorColor, description: descriptionInput.value.trim(), scheduleId: editingScheduleId
+      color: editorColor, description: descriptionInput.value.trim(), descriptionHtml:notesEditor.html(), scheduleId: editingScheduleId
     });
     if (!saved) return;
     const existing = blocks.findIndex(block => block.id === saved.id);
@@ -2406,7 +2408,7 @@
     close: () => closePlanner(false)
   });
   const bookTools=window.setupPlannerBookTools({
-    snapshot:()=>{const planner=activePlanner();return planner?{planner:structuredClone(planner),blocks:blocks.map(b=>({...b})),date:dateKey(selectedDate)}:null},
+    snapshot:()=>{const planner=activePlanner();return planner?{planner:structuredClone(planner),blocks:blocks.map(b=>({...b})),schedule:structuredClone(activeSavedSchedule()?.blocks||[]),date:dateKey(selectedDate)}:null},
     closeSettings:closeSettingsMenu,
     applyCalendar:(base,calendar,nextBlocks)=>{
       const planner=activePlanner();
