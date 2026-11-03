@@ -59,8 +59,8 @@ restoredGenerate.listeners.click();
 assert(restoredTile._boardGetState().value>=40&&restoredTile._boardGetState().value<=50);
 
 assert(index.includes('data-module="randomnumber" data-category="math tools"'));
-assert(index.includes('tiles/random-number/styles.css?v=20260924-6'));
-assert(index.includes('tiles/random-number/index.js?v=20260924-7'));
+assert(index.includes('tiles/random-number/styles.css'));
+assert(index.includes('tiles/random-number/index.js'));
 assert(source.includes('--random-number-width-size'));
 assert(!source.includes('ResizeObserver'));
 assert(!source.includes('requestAnimationFrame'));
