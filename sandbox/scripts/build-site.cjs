@@ -6,7 +6,9 @@ const fs=require('node:fs'),path=require('node:path');
 function buildSite(target,branch){
   if(!['main','sandbox','dev'].includes(branch))throw Error('Choose main, sandbox or dev for the site build.');
   const root=path.resolve(target);
+  require('./build-news.cjs').buildNews(root);
   require('./build-banners.cjs').buildBanners(root);
+  require('./build-banners.cjs').buildBanners(root,'news/banners');
   const app=fs.readFileSync(path.join(root,'index.html'),'utf8');
   if(!app.includes('id="workspace"'))throw Error('Expected the board source in index.html. Build from a fresh deployment copy.');
   if(branch==='main'){
@@ -18,6 +20,12 @@ function buildSite(target,branch){
   }else{
     // Branch identity determines access rules, never the presence of a copied folder.
     require(path.join(root,'sandbox','build.cjs')).buildSandbox(root);
+    // Keep the protected dev portal; expose the reviewed homepage alongside it.
+    if(branch==='dev'){
+      const home=fs.readFileSync(path.join(root,'home-site','index.html'),'utf8');
+      if(!home.includes('home-site/script.js'))throw Error('Missing dev homepage assets.');
+      fs.writeFileSync(path.join(root,'home.html'),home.replace('<head>','<head>\n  <meta name="robots" content="noindex,nofollow">'));
+    }
     const board=fs.readFileSync(path.join(root,'board.html'),'utf8');
     const portal=fs.readFileSync(path.join(root,'index.html'),'utf8');
     if(!board.includes('sandbox/board-gate.js')||!portal.includes('id="portal-access-screen"'))throw Error('Expected the protected developer portal and board.');
