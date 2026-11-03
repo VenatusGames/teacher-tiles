@@ -1,0 +1,22 @@
+[
+  {
+    "id": "file-2.md",
+    "sourceFile": "2.md",
+    "title": "First Live TeacherTiles Demo",
+    "body": "## Bethlehem Area School District Inservice \nWe had a great time today (11/3) showcasing the app and demoing its features live to some teachers. We got some great feedback and are proud to be launching TeacherTiles out to more educators! Please share us with your friends and fellow colleagues! Interested in having us come teach your teachers how to use TeacherTiles! Reach out to us! \n\nteachertiles@gmail.com\n\n- TT-Jack & TT-Gavin",
+    "published": true,
+    "archived": false,
+    "publishedAt": "2026-11-03",
+    "gallery": []
+  },
+  {
+    "id": "file-1.md",
+    "sourceFile": "1.md",
+    "title": "TeacherTiles Roadmap",
+    "body": "![TeacherTiles Screenshot](https://i.imgur.com/mKxPGmd.jpeg)\n\n## Upcoming & Planned Features Roadmap!\n- Board Collaboration - Live share your board with colleagues in your organization.\n- Better Organization Features\n- Grade Specific/Use Case Sorting of Tiles. Set the app for what you want to use it for.\n- District Support + Student Rostering\n- Gradebook Systems\n- Lesson Plan Live Sharing with Colleagues \n- Student Connect Tiles & Student Facing Site\n- Holiday Themed Tiles & Content\n- More Skins & Cosmetics\n- More Tiles!\n- More Features & Improvements!",
+    "published": true,
+    "archived": false,
+    "publishedAt": "2026-11-03",
+    "gallery": []
+  }
+]
