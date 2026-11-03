@@ -154,7 +154,7 @@ jobs:
               root = (temp / 'build' / branch).resolve()
               # Root-absolute URLs include the branch's site folder, e.g. /wigs/assets/app.js.
               url_prefix = f'/{site_dir}/' if site_dir else '/'
-              for index in [root / 'index.html', root / 'board.html']:
+              for index in [root / 'index.html', root / 'board.html', root / 'home.html']:
                   if not index.is_file():
                       continue
                   html = index.read_text(encoding='utf-8')

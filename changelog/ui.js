@@ -72,7 +72,7 @@ function setupChangelog(){
   };
 
   async function loadFeed(kind){
-    if(kind==='news'){if(!newsContent.hasChildNodes())newsContent.innerHTML='<div class="changelog-loading">Loading News…</div>';const {renderNews}=await import('../news/runtime/feed.js?v=20261103-news-folders');await renderNews(newsContent);return;}
+    if(kind==='news'){if(!newsContent.hasChildNodes())newsContent.innerHTML='<div class="changelog-loading">Loading News…</div>';const {renderNews}=await import('../news/runtime/feed.js?v=20261103-news-captions');await renderNews(newsContent);return;}
     const isNews=kind==='news';
     const content=isNews?newsContent:changelogContent;
     const folder=isNews?'news':'changelog';
