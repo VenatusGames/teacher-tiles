@@ -1334,10 +1334,10 @@ const PRIZE_STAT_OPTIONS=Object.freeze([
   Object.freeze({id:'studentStars',label:'Student Stars',icon:'★',scope:'student'}),
   Object.freeze({id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●',scope:'student'}),
   Object.freeze({id:'studentRaceWins',label:'Race Wins',icon:'🏁',scope:'student'}),
-  Object.freeze({id:'classStars',label:'Whole-class Stars',icon:'★',scope:'class'}),
+  Object.freeze({id:'classStars',label:'Whole-Class Stars',icon:'★',scope:'class'}),
   Object.freeze({id:'meterWins',label:'Class Meter Wins',icon:'🏆',scope:'class'}),
   Object.freeze({id:'jarsFilled',label:'Jars Filled',icon:'🫙',scope:'class'}),
-  Object.freeze({id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●',scope:'class'})
+  Object.freeze({id:'classPunchcardPoints',label:'Whole-Class Punchcard Points',icon:'●',scope:'class'})
 ]);
 
 
