@@ -421,7 +421,8 @@ function applyBoardCamera(){
 }
 
 function screenToBoard(clientX,clientY){
-  return{x:(clientX-boardCamera.x)/boardCamera.scale,y:(clientY-boardCamera.y)/boardCamera.scale};
+  const rendered=renderedBoardCameraOffset();
+  return{x:(clientX-rendered.x)/boardCamera.scale,y:(clientY-rendered.y)/boardCamera.scale};
 }
 
 function visibleBoardBounds(){

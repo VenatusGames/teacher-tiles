@@ -7,6 +7,8 @@ function setupWritingLines(m){
   const countLabel=countBtn?.querySelector('span');
   const clear=m.querySelector('.writinglines-clear');
   const resizeHandles=[...m.querySelectorAll('[data-resize]')];
+  const maxLines=12;
+  let disposed=false;
   let fitFrame=0;
   let preferredHeight=m.offsetHeight;
   let userSizingHeight=false;
@@ -15,8 +17,11 @@ function setupWritingLines(m){
   const visibleEntries=()=>entries.filter(entry=>!entry.closest('.writinglines-row')?.hidden);
 
   const fitAll=()=>{
+    if(disposed)return;
     cancelAnimationFrame(fitFrame);
     fitFrame=requestAnimationFrame(()=>{
+      if(disposed||!m.isConnected||!paper?.clientHeight)return;
+      const fullscreen=document.fullscreenElement===m;
       const activeRows=visibleRows();
       const activeEntries=visibleEntries();
       if(!paper||!activeRows.length)return;
@@ -26,11 +31,12 @@ function setupWritingLines(m){
       const borderY=Math.max(0,paper.offsetHeight-paper.clientHeight);
       const moduleChrome=Math.max(0,m.offsetHeight-paper.offsetHeight);
 
-      const targetModuleHeight=userSizingHeight?m.offsetHeight:preferredHeight;
+      const targetModuleHeight=fullscreen||userSizingHeight?m.offsetHeight:preferredHeight;
       const targetPaperOuter=Math.max(10,targetModuleHeight-moduleChrome);
       const targetPaperInner=Math.max(10,targetPaperOuter-borderY-padY);
       const baseRowHeight=targetPaperInner/activeRows.length;
 
+      paper.style.setProperty('--writing-text-scale','1');
       paper.style.setProperty('--writing-row-height',`${baseRowHeight}px`);
 
       const innerWidth=Math.max(10,
@@ -49,6 +55,7 @@ function setupWritingLines(m){
       });
 
       sharedScale=Math.max(.22,Math.min(1,sharedScale));
+      if(fullscreen){paper.style.setProperty('--writing-text-scale',String(sharedScale));return;}
       const finalRowHeight=baseRowHeight*sharedScale;
       paper.style.setProperty('--writing-row-height',`${finalRowHeight}px`);
 
@@ -63,8 +70,9 @@ function setupWritingLines(m){
   };
 
   const setLineCount=count=>{
-    const next=Math.max(1,Math.min(4,Number(count)||3));
+    const next=Math.max(1,Math.min(maxLines,Math.round(Number(count)||3)));
     m.dataset.lineCount=String(next);
+    paper.style.setProperty('--writing-line-count',String(next));
     rows.forEach((row,index)=>{
       row.hidden=index>=next;
     });
@@ -90,7 +98,8 @@ function setupWritingLines(m){
 
   countBtn?.addEventListener('click',()=>{
     const current=Number(m.dataset.lineCount)||3;
-    const next=current>=4?1:current+1;
+    const limit=document.fullscreenElement===m?maxLines:Math.max(4,current);
+    const next=current>=limit?1:current+1;
     setLineCount(next);
     setMode(m.dataset.writingMode==='type');
   });
@@ -155,6 +164,7 @@ function setupWritingLines(m){
     handle.addEventListener('pointercancel',finish,true);
   });
 
+  document.addEventListener('fullscreenchange',fitAll);
   const resizeObserver=new ResizeObserver(fitAll);
   resizeObserver.observe(m);
   if(paper)resizeObserver.observe(paper);
@@ -179,7 +189,9 @@ function setupWritingLines(m){
 
   const prior=m._cleanup;
   m._cleanup=()=>{
+    disposed=true;
     prior?.();
+    document.removeEventListener('fullscreenchange',fitAll);
     cancelAnimationFrame(fitFrame);
     resizeObserver.disconnect();
   };
