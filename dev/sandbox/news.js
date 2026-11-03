@@ -1,8 +1,8 @@
-import {orderNews} from '../news/runtime/order.js?v=20261103-news-folders';
-import {loadNewsFiles,mergeNewsFiles,fileOverrides,downloadNewsFile} from '../news/runtime/portable.js?v=20261103-news-folders';
-import {postArticle,el} from '../news/runtime/shared.js?v=20261103-news-folders';
-import {richEditor} from './news-rich-editor.js?v=20261103-news-folders';
-import {createBannerPicker} from './banner-picker.js?v=20261103-news-folders';
+import {orderNews} from '../news/runtime/order.js?v=20261103-news-captions';
+import {loadNewsFiles,mergeNewsFiles,fileOverrides,downloadNewsFile} from '../news/runtime/portable.js?v=20261103-news-captions';
+import {postArticle,el} from '../news/runtime/shared.js?v=20261103-news-captions';
+import {richEditor} from './news-rich-editor.js?v=20261103-news-captions';
+import {createBannerPicker} from './banner-picker.js?v=20261103-news-captions';
 const uid=()=>crypto.randomUUID();
 const button=(label,fn,cls='quiet')=>{const b=el('button',cls,label);b.type='button';b.onclick=fn;return b;};
 export function createNewsPanel(call){

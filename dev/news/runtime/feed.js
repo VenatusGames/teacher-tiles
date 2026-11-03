@@ -1,6 +1,6 @@
-import {orderNews} from './order.js?v=20261103-news-folders';
-import {postArticle,el} from './shared.js?v=20261103-news-folders';
-import {loadNewsFiles,mergeNewsFiles} from './portable.js?v=20261103-news-folders';
+import {orderNews} from './order.js?v=20261103-news-captions';
+import {postArticle,el} from './shared.js?v=20261103-news-captions';
+import {loadNewsFiles,mergeNewsFiles} from './portable.js?v=20261103-news-captions';
 import {firebaseConfig} from '../../firebase-config.js';
 let cached=null,until=0,pending=null;
 const cleanups=new WeakMap(),renders=new WeakMap();

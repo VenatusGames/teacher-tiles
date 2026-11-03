@@ -1,6 +1,18 @@
 {
   "images": [
     {
+      "path": "banners/news-assets/8a56942b073c78cc16c151122b7b2cd7b67d67d1b1cab06d08cb5d7b22012987.png",
+      "name": "8a56942b073c78cc16c151122b7b2cd7b67d67d1b1cab06d08cb5d7b22012987"
+    },
+    {
+      "path": "banners/news-assets/f876b5318ab0e91a33ffbb82c84740f312b4362c395a1cfe0e1bac8f5c034c57.png",
+      "name": "f876b5318ab0e91a33ffbb82c84740f312b4362c395a1cfe0e1bac8f5c034c57"
+    },
+    {
+      "path": "banners/news-assets/fb94977e38e0b240b595a1e4797b0999a91273efe18dadc73041835996ced1cf.png",
+      "name": "fb94977e38e0b240b595a1e4797b0999a91273efe18dadc73041835996ced1cf"
+    },
+    {
       "path": "banners/holidaybanner26.png",
       "name": "holidaybanner26"
     },

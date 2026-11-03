@@ -1,81 +1,55 @@
-"use strict";
-const HOME_SITE_URL = new URL(".", document.currentScript.src);
-const CONTACT_EMAIL = "teachertiles@gmail.com";
-const menu = document.querySelector(".menu-toggle");
-const nav = document.querySelector("#site-nav");
-function closeMenu() { menu.setAttribute("aria-expanded", "false"); nav.classList.remove("is-open"); }
-menu.addEventListener("click", () => {
-  const open = menu.getAttribute("aria-expanded") !== "true";
-  menu.setAttribute("aria-expanded", String(open)); nav.classList.toggle("is-open", open);
-});
-nav.addEventListener("click", (event) => { if (event.target.closest("a")) closeMenu(); });
-document.addEventListener("keydown", (event) => { if (event.key === "Escape" && nav.classList.contains("is-open")) { closeMenu(); menu.focus(); } });
-document.addEventListener("click", (event) => { if (!event.target.closest(".site-header")) closeMenu(); });
-window.matchMedia("(min-width: 901px)").addEventListener("change", closeMenu);
-document.querySelector("#year").textContent = String(new Date().getFullYear());
+import {fetchCatalog,getReader,renderIcon} from './catalog-client.js';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const appRoot=new URL('../',import.meta.url);$$('a[href="/board.html"]').forEach(link=>{link.href=new URL('board.html',appRoot).href});
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');let motionPaused=reduced.matches;
+function syncMotion(){document.body.classList.toggle('motion-paused',motionPaused);$$('[data-motion-toggle]').forEach(button=>{button.disabled=reduced.matches;button.textContent=reduced.matches?'Reduced Motion':motionPaused?'Resume Motion ▷':'Pause Motion Ⅱ';button.setAttribute('aria-pressed',String(motionPaused))});document.body.classList.toggle('js-motion',!motionPaused)}
+syncMotion();$$('[data-motion-toggle]').forEach(button=>button.addEventListener('click',()=>{motionPaused=!motionPaused;syncMotion()}));reduced.addEventListener('change',event=>{motionPaused=event.matches;syncMotion()});
+const revealObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('visible');revealObserver.unobserve(entry.target)}},{threshold:.07});$$('.reveal').forEach(el=>revealObserver.observe(el));
+const highlightObserver=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('highlight-visible',entry.isIntersecting)},{threshold:.7,rootMargin:'0px 0px -45px 0px'});$$('.marker').forEach(el=>highlightObserver.observe(el));
+function updateHeader(){document.body.classList.toggle('scrolled',scrollY>45)}updateHeader();addEventListener('scroll',updateHeader,{passive:true});
+$('.menu-toggle').addEventListener('click',()=>{const open=$('#navigation').classList.toggle('is-open');$('.menu-toggle').setAttribute('aria-expanded',String(open))});$$('#navigation a').forEach(a=>a.addEventListener('click',()=>{$('#navigation').classList.remove('is-open');$('.menu-toggle').setAttribute('aria-expanded','false')}));
+const scene=$('.hero-scene');scene.addEventListener('pointermove',event=>{if(motionPaused||event.pointerType==='touch')return;const box=scene.getBoundingClientRect();scene.style.setProperty('--mouse-x',`${((event.clientX-box.left)/box.width-.5)*14}px`);scene.style.setProperty('--mouse-y',`${((event.clientY-box.top)/box.height-.5)*12}px`)});scene.addEventListener('pointerleave',()=>{scene.style.setProperty('--mouse-x','0px');scene.style.setProperty('--mouse-y','0px')});
+function showDialog(dialog){dialog.showModal();document.documentElement.style.overflow='hidden'}
+$$('dialog').forEach(dialog=>{dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();dialog.close()}});dialog.addEventListener('close',()=>{document.documentElement.style.overflow=''});dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const b=dialog.getBoundingClientRect();if(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom)dialog.close()})});
+$('#year').textContent=new Date().getFullYear();
 
-const catalog = window.TEACHER_TILES_CATALOG;
-const tileMap = new Map(catalog.tiles.map(tile => [tile.id, tile]));
-const titleCase = text => text.split(' ').map(word => ['PBIS','SEL','ABC'].includes(word) ? word : word[0] + word.slice(1).toLowerCase()).join(' ');
-const categoryNames = new Map(catalog.categories.map(category => [category.id, titleCase(category.name)]));
-const boardModes={morning:'Morning Routine',lesson:'Lesson Time',mindfulness:'Mindfulness',planningboard:'Planning'};
-const canvas=document.querySelector('#board-canvas');let currentMode='morning';let actualSize=false;
-function makeFrame(mode){const frame=document.createElement('iframe');frame.className='native-board';frame.title=mode==='planning'?'Try the Lesson Planner':mode==='stars'?'Try the Star Chart':mode==='meter'?'Try the Class Meter':`Interactive ${boardModes[mode]} Board`;frame.setAttribute('sandbox','allow-scripts allow-same-origin');frame.setAttribute('allow','fullscreen');frame.src=new URL(`demo/index.html?mode=${mode}`, HOME_SITE_URL).href;return frame;}
-const demos=new Map();
-function loadDemo(container,mode){const prior=demos.get(container);clearTimeout(prior?.timer);const frame=makeFrame(mode);container.replaceChildren(frame);demos.set(container,{frame,mode,timer:null,visible:prior?.visible??false});}
-function showBoard(mode){currentMode=mode;actualSize=false;canvas.dataset.mode=mode;canvas.style.height="";document.querySelector('#board-name').textContent=boardModes[mode];document.querySelector('#demo-fit').textContent='View at 100%';document.querySelector('#demo-fit').setAttribute('aria-pressed','false');loadDemo(canvas,mode);document.querySelectorAll('[data-mode]').forEach(button=>{if(button.tagName==='BUTTON')button.setAttribute('aria-pressed',String(button.dataset.mode===mode))});}
-document.querySelectorAll('.board-modes button').forEach(button=>button.addEventListener('click',()=>showBoard(button.dataset.mode)));showBoard('morning');
-document.querySelector('#demo-reset').addEventListener('click',()=>showBoard(currentMode));
-document.querySelector('#demo-fit').addEventListener('click',event=>{actualSize=!actualSize;demos.get(canvas).frame.contentWindow.postMessage({type:'demo-zoom',actual:actualSize},'*');event.currentTarget.textContent=actualSize?'Fit Board':'View at 100%';event.currentTarget.setAttribute('aria-pressed',String(actualSize));});
-// Unload after 20 seconds out of view. Reentering creates a fresh, memory-only app instance.
-const demoObserver=new IntersectionObserver(entries=>{for(const entry of entries){const container=entry.target;let state=demos.get(container);if(!state){if(entry.isIntersecting)loadDemo(container,container.dataset.demo);else continue;state=demos.get(container)}state.visible=entry.isIntersecting;clearTimeout(state.timer);if(entry.isIntersecting){if(!state.frame?.isConnected){if(container===canvas)showBoard(state.mode);else loadDemo(container,state.mode)}}else state.timer=setTimeout(()=>{state.frame?.remove();state.frame=null;},20000)}},{threshold:0});
-demoObserver.observe(canvas);document.querySelectorAll('.live-feature').forEach(el=>demoObserver.observe(el));
-document.querySelectorAll('[data-pbis]').forEach(button=>button.addEventListener('click',()=>{const host=document.querySelector('.pbis-visual .live-feature');host.dataset.demo=button.dataset.pbis;loadDemo(host,button.dataset.pbis);document.querySelectorAll('[data-pbis]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));}));
-window.addEventListener('message',event=>{const state=[...demos.values()].find(s=>s.frame?.contentWindow===event.source);if(!state)return;if(event.data?.type==='demo-height'&&state.frame.parentElement===canvas&&innerWidth<700&&Number.isFinite(event.data.height))canvas.style.height=Math.max(500,Math.min(1600,event.data.height))+'px';if(event.data?.type==='demo-scroll'&&Number.isFinite(event.data.delta))window.scrollBy({top:Math.max(-1200,Math.min(1200,event.data.delta)),behavior:'instant'});});
-function nativeIcon(tile){const holder=document.createElement('span');holder.className='native-icon';holder.setAttribute('aria-hidden','true');holder.innerHTML=tile.icon;return holder;}
-function loop(track,group){const copy=group.cloneNode(true);copy.setAttribute('aria-hidden','true');copy.inert=true;track.append(group,copy)}
-const categories=document.createElement('div');categories.className='category-group';catalog.categories.filter(category=>! ["favorites","all"].includes(category.id)).forEach(category=>{const chip=document.createElement('span');chip.className='category-chip';chip.textContent=categoryNames.get(category.id);categories.append(chip)});loop(document.querySelector('#category-list'),categories);
-const tickerGroup=document.createElement('div');tickerGroup.className='ticker-group';
-catalog.tiles.forEach(tile=>{const card=document.createElement('article');card.className='ticker-card';const text=document.createElement('div');const name=document.createElement('h3');name.textContent=tile.name;const description=document.createElement('p');description.textContent=tile.description;text.append(name,description);card.append(nativeIcon(tile),text);tickerGroup.append(card)});loop(document.querySelector('#ticker-track'),tickerGroup);document.querySelector('#ticker-track').style.setProperty('--ticker-duration',`${catalog.tiles.length*7}s`);
-const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');let paused=reducedMotion.matches;
-function updateMotion(){document.querySelectorAll('.marquee').forEach(el=>el.classList.toggle('is-paused',paused));const button=document.querySelector('#motion-toggle');button.textContent=paused?'Resume Motion':'Pause Motion';button.setAttribute('aria-pressed',String(paused))}
-document.querySelector('#motion-toggle').addEventListener('click',()=>{paused=!paused;updateMotion()});reducedMotion.addEventListener('change',()=>{paused=reducedMotion.matches;updateMotion()});updateMotion();
-document.querySelectorAll('[data-featured-tools]').forEach(list=>{list.dataset.featuredTools.split(',').forEach(id=>{const tile=tileMap.get(id);const item=document.createElement('div');item.className='featured-tool';const text=document.createElement('div');const name=document.createElement('h3');name.textContent=tile.name;const description=document.createElement('p');description.textContent=tile.description;text.append(name,description);item.append(nativeIcon(tile),text);list.append(item)})});
-document.querySelectorAll('dialog').forEach(dialog=>{dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close()})});
+// Mount real, memory-only app demos near the viewport, and dispose them after 20s away.
+const demoRoots=$$('[data-demo]'),timers=new Map();let actualSize=false;
+function mountDemo(root,force=false){if(root.querySelector('iframe')&&!force)return;clearTimeout(timers.get(root));const iframe=document.createElement('iframe');iframe.title=`Interactive TeacherTiles ${root.dataset.demo} example`;iframe.setAttribute('sandbox','allow-scripts allow-same-origin');iframe.setAttribute('allow','fullscreen');iframe.src=new URL(`demo/index.html?mode=${encodeURIComponent(root.dataset.demo)}`,import.meta.url);root.replaceChildren(iframe)}
+function unmountLater(root){clearTimeout(timers.get(root));timers.set(root,setTimeout(()=>{root.replaceChildren();if(root.id==='board-canvas'){actualSize=false;$('#demo-fit').textContent='View at 100%';$('#demo-fit').setAttribute('aria-pressed','false')}},20000))}
+const demoObserver=new IntersectionObserver(entries=>{for(const entry of entries){entry.target.dataset.visible=String(entry.isIntersecting);if(entry.isIntersecting){clearTimeout(timers.get(entry.target));mountDemo(entry.target)}else unmountLater(entry.target)}},{rootMargin:'100px',threshold:0});demoRoots.forEach(root=>demoObserver.observe(root));
+function chooseDemo(root,mode){root.dataset.demo=mode;root.style.height='';mountDemo(root,true)}
+$$('[data-mode]').forEach(button=>button.addEventListener('click',()=>{$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));$('#board-name').textContent=button.querySelector('strong').textContent;actualSize=false;$('#demo-fit').textContent='View at 100%';$('#demo-fit').setAttribute('aria-pressed','false');chooseDemo($('#board-canvas'),button.dataset.mode)}));
+$('#demo-reset').addEventListener('click',()=>{actualSize=false;$('#demo-fit').textContent='View at 100%';$('#demo-fit').setAttribute('aria-pressed','false');mountDemo($('#board-canvas'),true)});
+$('#demo-fit').addEventListener('click',()=>{actualSize=!actualSize;$('#board-canvas iframe')?.contentWindow.postMessage({type:'demo-zoom',actual:actualSize},location.origin);$('#demo-fit').textContent=actualSize?'Fit Board':'View at 100%';$('#demo-fit').setAttribute('aria-pressed',String(actualSize))});
+$$('[data-planning]').forEach(button=>button.addEventListener('click',()=>{$$('[data-planning]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));chooseDemo($('#planning-preview'),button.dataset.planning)}));
+$$('[data-pbis]').forEach(button=>button.addEventListener('click',()=>{$$('[data-pbis]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));chooseDemo($('#pbis-preview'),button.dataset.pbis);$('.pbis-stage .stage-note').textContent=button.dataset.pbis==='stars'?'Click a student to celebrate a little win.':'Build toward a shared goal, one little win at a time.'}));
+addEventListener('message',event=>{if(event.origin!==location.origin)return;const root=demoRoots.find(el=>el.querySelector('iframe')?.contentWindow===event.source);if(!root)return;const data=event.data;if(data?.type==='demo-ready'){root.querySelector('iframe').classList.add('is-ready')}if(data?.type==='demo-height'&&Number.isFinite(data.height)){root.style.height=`${Math.min(2100,Math.max(300,data.height))}px`}if(data?.type==='demo-scroll'&&Number.isFinite(data.delta)&&!$('dialog[open]'))window.scrollBy({top:Math.max(-1000,Math.min(1000,data.delta)),behavior:'instant'})});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){demoRoots.forEach(unmountLater)}else demoRoots.filter(root=>root.dataset.visible==='true').forEach(root=>{clearTimeout(timers.get(root));mountDemo(root)})});
 
-const contactForm = document.querySelector("#contact-form");
-const inquiryText = document.querySelector("#inquiry-text");
-const inquiryStatus = document.querySelector("#inquiry-status");
-const hasInbox = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CONTACT_EMAIL);
-if (hasInbox) {
-  document.querySelector("#contact-submit").textContent = "Start the conversation";
-  document.querySelector("#form-note").textContent = `Opens your email app with your message ready to send to ${CONTACT_EMAIL}.`;
+// Both moving strips and the searchable library are rebuilt from the same current catalog.
+let catalog=null,iconRenderer=null,loading=false,lastRefresh=0,signature='';
+function toolById(id){return catalog?.tiles.find(tile=>tile.id===id)}
+function iconFor(tile){return renderIcon(tile,iconRenderer)}
+function tileCard(tile,{interactive=false}={}){const card=document.createElement(interactive?'button':'article');card.className='tile-card';if(interactive){card.type='button';card.addEventListener('click',()=>openLibrary(tile.name));card.setAttribute('aria-label',`Explore ${tile.name}`)}const icon=document.createElement('span');icon.className='catalog-icon';icon.append(iconFor(tile));const body=document.createElement('div'),name=document.createElement('h3'),description=document.createElement('p');name.textContent=tile.name;description.textContent=tile.description;body.append(name,description);card.append(icon,body);return card}
+function renderCatalog(){
+  const categoryGroup=document.createElement('div');categoryGroup.className='category-group';for(const category of catalog.categories){const item=document.createElement('span');item.textContent=category.label;categoryGroup.append(item)}
+  const categoryClone=categoryGroup.cloneNode(true);categoryClone.setAttribute('aria-hidden','true');$('#category-track').replaceChildren(categoryGroup,categoryClone);$('#category-track').style.setProperty('--category-speed',`${Math.max(45,catalog.categories.length*5)}s`);
+  // Feature useful classroom staples first; every available tile follows once.
+  const priorities=['timer','clock','visualschedule','abc','lessonplannertile','starchart','attendance','calendar','chime','fishtank'];const sorted=[...catalog.tiles].sort((a,b)=>{const ai=priorities.indexOf(a.id),bi=priorities.indexOf(b.id);return(ai<0?999:ai)-(bi<0?999:bi)||a.name.localeCompare(b.name)});
+  const group=document.createElement('div');group.className='tile-group';for(const tile of sorted)group.append(tileCard(tile,{interactive:true}));const clone=group.cloneNode(true);clone.setAttribute('aria-hidden','true');clone.querySelectorAll('button').forEach(button=>{button.tabIndex=-1;button.addEventListener('mousedown',event=>event.preventDefault());button.addEventListener('click',()=>openLibrary(button.querySelector('h3').textContent))});$('#tile-track').replaceChildren(group,clone);$('#tile-track').style.setProperty('--tile-speed',`${Math.max(75,sorted.length*8)}s`);
+  $('#catalog-summary').textContent=`${catalog.tiles.length} classroom tools, and room to grow. Find your favorites. Bring them together.`;
+  const select=$('#tile-category'),previous=select.value;select.replaceChildren(new Option('All Categories','all'));for(const category of catalog.categories)select.add(new Option(category.label,category.id));if([...select.options].some(option=>option.value===previous))select.value=previous;
+  $$('[data-tool-icon]').forEach(el=>{const tile=toolById(el.dataset.toolIcon);if(tile)el.replaceChildren(iconFor(tile))});
+  $$('[data-hero-tool]').forEach(el=>{const tile=toolById(el.dataset.heroTool);if(tile)el.querySelector('.hero-tool-icon').replaceChildren(iconFor(tile))});
+  $$('[data-featured-tools]').forEach(el=>{el.replaceChildren();for(const id of el.dataset.featuredTools.split(',')){const tile=toolById(id);if(!tile)continue;const item=document.createElement('span');item.append(iconFor(tile),document.createTextNode(tile.name));el.append(item)}});
+  renderLibrary();
 }
-contactForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (!contactForm.reportValidity()) return;
-  const fields = new FormData(contactForm);
-  const inquiry = ["TeacherTiles inquiry", "", `Name: ${fields.get("name")}`, `Email: ${fields.get("email")}`, `School / organization: ${fields.get("organization") || "Not provided"}`, `Role: ${fields.get("role") || "Not provided"}`, `Interest: ${fields.get("interest")}`, "", fields.get("message")].join("\n");
-  if (hasInbox) {
-    const subject = `TeacherTiles: ${fields.get("interest")}`;
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inquiry)}`;
-    document.querySelector("#form-status").textContent = "Review your message and choose Send in your email app. If it doesn’t open, copy your inquiry below and email teachertiles@gmail.com.";
-    document.querySelector("#prepare-copy").hidden = false;
-  }
-  inquiryText.value = inquiry; inquiryStatus.textContent = "";
-  if (!hasInbox) document.querySelector("#inquiry-dialog").showModal();
-});
-document.querySelector("#prepare-copy").addEventListener("click", () => { document.querySelector("#inquiry-dialog").showModal(); });
-document.querySelector("#copy-inquiry").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText(inquiryText.value); inquiryStatus.textContent = "Copied. Your inquiry is ready to paste into an email."; }
-  catch { inquiryText.focus(); inquiryText.select(); inquiryStatus.textContent = "Select and copy the text above, or save it as a text file."; }
-});
-document.querySelector("#download-inquiry").addEventListener("click", () => {
-  const url = URL.createObjectURL(new Blob([inquiryText.value], {type:"text/plain;charset=utf-8"}));
-  const link = document.createElement("a"); link.href = url; link.download = "TeacherTiles-inquiry.txt"; document.body.append(link); link.click(); link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000); inquiryStatus.textContent = "Your inquiry file is ready. Nothing has been sent.";
-});
-document.querySelector("[data-general-contact]").addEventListener("click", () => { contactForm.elements.interest.value = "General question or feedback"; });
+function renderLibrary(){if(!catalog)return;const query=$('#tile-search').value.trim().toLowerCase(),category=$('#tile-category').value;const tiles=catalog.tiles.filter(tile=>(category==='all'||tile.categories.includes(category))&&`${tile.name} ${tile.description}`.toLowerCase().includes(query));$('#library-results').replaceChildren(...tiles.map(tile=>tileCard(tile)));$('#library-result-count').textContent=`${tiles.length} ${tiles.length===1?'tile':'tiles'}${query?' matching your search':''}`;$('.library-empty').hidden=tiles.length>0}
+function openLibrary(query=''){$('#tile-search').value=query;$('#tile-category').value='all';renderLibrary();showDialog($('#library-dialog'))}
+$('#open-library').addEventListener('click',()=>openLibrary());$('#tile-search').addEventListener('input',renderLibrary);$('#tile-category').addEventListener('change',renderLibrary);
+async function refreshCatalog(){if(loading)return;loading=true;if($('#refresh-catalog'))$('#refresh-catalog').disabled=true;try{const next=await fetchCatalog({fallback:!catalog});({tileIcon:iconRenderer}=await getReader());const nextSignature=JSON.stringify([next.categories,next.tiles]);catalog=next;if(signature!==nextSignature){signature=nextSignature;renderCatalog()}lastRefresh=Date.now();if($('#catalog-status'))$('#catalog-status').textContent=`${next.source==='app'?'Current app catalog':'Bundled fallback catalog'} · ${next.tiles.length} available tiles · checked ${new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}${next.source==='fallback'?'. Live source unavailable; retry to reconnect.':''}`;}catch(error){if($('#catalog-status'))$('#catalog-status').textContent=catalog?'Could not refresh. Keeping the last valid catalog.':'The tile library could not load. Please try Refresh Catalog.';if(!catalog)$('#catalog-summary').textContent='Explore the classroom tools in TeacherTiles.'}finally{loading=false;if($('#refresh-catalog'))$('#refresh-catalog').disabled=false}}
+$('#refresh-catalog')?.addEventListener('click',refreshCatalog);refreshCatalog();setInterval(()=>{if(!document.hidden&&Date.now()-lastRefresh>300000)refreshCatalog()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastRefresh>300000)refreshCatalog()});
 
-
-window.addEventListener("resize",()=>{if(innerWidth>=700)canvas.style.height=""});
+// No form service and no background submission: compose an email for the teacher to review.
+let inquiry='';$('#contact-form').addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;const data=new FormData(form);inquiry=`Name: ${data.get('name')}\nEmail: ${data.get('email')}\nSchool / organization: ${data.get('organization')||'Not specified'}\nRole: ${data.get('role')||'Not specified'}\nInterest: ${data.get('interest')}\n\n${data.get('message')}`;const subject=`TeacherTiles inquiry: ${data.get('interest')}`;location.href=`mailto:teachertiles@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(inquiry)}`;$('#form-status').textContent='Your email draft is ready. If your mail app didn’t open, copy your inquiry and email it to teachertiles@gmail.com.';$('#copy-inquiry').hidden=false});$('#copy-inquiry').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(inquiry);$('#form-status').textContent='Copied. Paste your inquiry into an email to teachertiles@gmail.com.'}catch{const file=new Blob([inquiry],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='TeacherTiles-inquiry.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);$('#form-status').textContent='Your inquiry was saved as a text file to copy into your email.'}});
