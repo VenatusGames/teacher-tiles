@@ -97,7 +97,6 @@ function enterStudent(student,card){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const others=reduce?[]:[...main.querySelectorAll('.cc-student-card')].filter(item=>item!==card).map(item=>({node:item.cloneNode(true),rect:item.getBoundingClientRect()}));
   selected=activeId=student.id;section='home';try{sessionStorage.setItem(selectionKey(),selected);}catch{}
-  main.querySelectorAll('.cc-student-card').forEach(item=>item.classList.toggle('is-me',item===card));
   profile.showModal();renderProfile();profile.scrollTop=0;document.body.classList.add('cc-profile-open');
   if(reduce)return;
   const picture=profile.querySelector('.cc-student-avatar'),destination=picture.getBoundingClientRect();
@@ -126,7 +125,7 @@ function render(view) {
   for(const [index,student] of view.students.entries()) {
     const card=button('',()=>openStudent(student,card),'cc-student-card'),picture=avatar(`cc-student-avatar${student.emoji?' has-emoji':''}`,student);
     picture.style.setProperty('--hue',String(student.hue));card.style.animationDelay=`${Math.min(index*15,180)}ms`;
-    card.dataset.studentId=student.id;card.replaceChildren(picture,make('span','cc-student-name',student.name));card.setAttribute('aria-label',`Open ${student.name}`);if(selected===student.id)card.classList.add('is-me');grid.append(card);
+    card.dataset.studentId=student.id;card.replaceChildren(picture,make('span','cc-student-name',student.name));card.setAttribute('aria-label',`Open ${student.name}`);grid.append(card);
   }
   if(!view.students.length)grid.append(make('p','','Your teacher hasn’t added students yet.'));
   main.replaceChildren(grid);if(profile.open)renderProfile();
