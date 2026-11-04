@@ -1,3 +1,4 @@
+import './ui-audio.js?v=20261103-pin-polish';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {firebaseConfig} from '../firebase-config.js';
@@ -75,19 +76,20 @@ function openStudent(student,card){
   if(profile.open||pinDialog.open)return;
   if(!roster.requireStudentPin){studentSession='';return enterStudent(student,card);}
   const ticket=++pinVersion,link=token();let pin=[],pending=false;
-  pinDialog.replaceChildren();const head=make('header','cs-modal-header'),title=make('h2','','Enter Your Emoji PIN');
-  const back=button('',()=>pinDialog.close(),'cs-button cc-icon-button','back');back.setAttribute('aria-label','Back to All Students');head.append(back,title);
+  pinDialog.replaceChildren();pinDialog.classList.remove('has-error');const head=make('header','cs-modal-header'),heading=make('div','cc-pin-heading'),title=make('h2','','Enter Your PIN');heading.append(title,make('p','',student.name));
+  const back=button('',()=>pinDialog.close(),'cs-button cc-icon-button','back');back.setAttribute('aria-label','Back to All Students');const close=button('',()=>pinDialog.close(),'cs-button cc-icon-button','close');close.setAttribute('aria-label','Close PIN Entry');head.append(back,heading,close);
   const body=make('div','cs-form'),slots=make('div','cs-pin-slots'),board=make('div','cs-pin-board'),status=make('p','cc-emoji-status');status.setAttribute('role','status');
-  const erase=button('Start Again',()=>{pin=[];status.textContent='';paint();});
-  function paint(){slots.replaceChildren();for(let i=0;i<3;i++){const slot=make('span','cs-pin-slot',pin[i]===undefined?'—':PIN_EMOJIS[pin[i]]);slots.append(slot);}board.querySelectorAll('button').forEach(b=>b.disabled=pending);erase.disabled=pending||!pin.length;}
+  const erase=button('Start Again',()=>{pin=[];pinDialog.classList.remove('has-error');status.textContent='';paint();});
+  for(let i=0;i<3;i++){const slot=make('span','cs-pin-slot','—');slot.setAttribute('aria-label',`PIN position ${i+1}`);slots.append(slot);}
+  function paint(){[...slots.children].forEach((slot,i)=>{const value=pin[i]===undefined?'—':PIN_EMOJIS[pin[i]];if(slot.textContent!==value){slot.textContent=value;if(pin[i]!==undefined&&!matchMedia('(prefers-reduced-motion: reduce)').matches)slot.animate([{transform:'scale(.75)'},{transform:'scale(1.13)'},{transform:'scale(1)'}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});}slot.classList.toggle('is-filled',pin[i]!==undefined);slot.classList.toggle('is-next',i===pin.length&&!pending);});board.querySelectorAll('button').forEach(b=>b.disabled=pending);erase.disabled=pending||!pin.length;status.classList.toggle('is-checking',pending);}
   async function submit(){pending=true;paint();status.textContent='Checking your PIN…';
     try{const {data}=await unlock({token:link,studentId:student.id,pin});if(ticket!==pinVersion||link!==token())return;
       pinDialog.close();studentSession=data.session;Object.assign(student,data.student);enterStudent(student,card);
-    }catch(error){if(ticket!==pinVersion)return;pin=[];status.textContent=error.message||'Could not check your PIN. Try again.';}
+    }catch(error){if(ticket!==pinVersion)return;pin=[];pinDialog.classList.add('has-error');status.textContent=error.message||'Could not check your PIN. Try again.';if(!matchMedia('(prefers-reduced-motion: reduce)').matches)slots.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:320});}
     finally{pending=false;if(ticket===pinVersion)paint();}
   }
-  for(const [i,emoji]of PIN_EMOJIS.entries()){const choice=button(emoji,()=>{if(pending)return;pin.push(i);paint();if(pin.length===3)submit();},'cs-pin-choice');choice.setAttribute('aria-label',`Choose ${emoji}`);board.append(choice);}
-  body.append(make('strong','',student.name),make('p','cc-profile-hint','Choose your three emojis in order.'),slots,board,status,erase);pinDialog.append(head,body);paint();pinDialog.showModal();
+  for(const [i,emoji]of PIN_EMOJIS.entries()){const choice=button(emoji,()=>{if(pending)return;pinDialog.classList.remove('has-error');status.textContent='';pin.push(i);paint();if(pin.length===3)submit();},'cs-pin-choice');choice.setAttribute('aria-label',`Choose ${emoji}`);choice.style.setProperty('--enter-delay',`${(Math.floor(i/5)+i%5)*18}ms`);board.append(choice);}
+  const footer=make('div','cc-pin-footer');footer.append(status,erase);body.append(make('p','cc-profile-hint','Tap your three emojis in order'),slots,board,footer);pinDialog.append(head,body);paint();pinDialog.showModal();
 }
 function enterStudent(student,card){
   if(profile.open)return;
