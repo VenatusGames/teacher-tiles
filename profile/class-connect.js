@@ -1,7 +1,7 @@
 (() => {
-  let dialog,body,activeClass='',uid='',entry=null,loaded=false,busy=false,error='',confirmation='',generation=0;
+  let dialog,body,activeClass='',uid='',entry=null,loaded=false,busy=false,error='',confirmation='',linkView=false,generation=0;
   const make=(tag,cls='',text='')=>{const node=document.createElement(tag);node.className=cls;node.textContent=text;return node;};
-  const symbols={close:'<path d="m6 6 12 12M18 6 6 18"/>',link:'<path d="m10 13 4-4m-6 1-2 2a4 4 0 0 0 6 6l2-2m2-2 2-2a4 4 0 0 0-6-6l-2 2"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>'};
+  const symbols={back:'<path d="m14 6-6 6 6 6"/>',board:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4m-4 0h8m-9-13 6 3-6 3Z"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',link:'<path d="m10 13 4-4m-6 1-2 2a4 4 0 0 0 6 6l2-2m2-2 2-2a4 4 0 0 0-6-6l-2 2"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>'};
   function button(label,action,cls='',symbol='') {
     const node=make('button',`cs-button ${cls}`);node.type='button';
     if(symbol){const icon=make('span','cs-icon');icon.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${symbols[symbol]}</svg>`;node.append(icon);}
@@ -56,22 +56,20 @@
       try{const result=await service().list();if(ticket===generation){entry=result.links.find(link=>link.classId===activeClass) || null;loaded=true;}}catch{if(ticket===generation){loaded=false;entry=null;}}
     } finally{if(ticket===generation){busy=false;render();}}
   }
-  async function setStudentBoards(enabled) {
-    const ticket=generation;busy=true;error='';
-    try {
-      if(uid!==(window.TeacherTilesAuth?.user?.uid || ''))return dialog.close();
-      const classes=readClassRosters(),roster=classes.find(c=>c.id===activeClass);if(!roster)return dialog.close();
-      roster.studentBoards=enabled;writeClassRosters(classes);render();await queueEncryptedClassSave(classes);
-      if(localStorage.getItem(pbisDirtyStorageKey()))throw new Error('Your change is saved on this device and waiting to sync.');
-    }catch(e){if(ticket===generation)error=safeError(e);}
-    finally{if(ticket===generation){busy=false;render();}}
-  }
   function render() {
     const roster=current();if(!roster)return;
     body.replaceChildren();dialog.setAttribute('aria-busy',String(busy));
     const identity=make('div','cc-identity'),avatar=make('div','cc-class-avatar');
     if(roster.logoImage){const img=make('img');img.src=roster.logoImage;img.alt='';avatar.append(img);}else avatar.textContent=roster.logo || '👥';
     const info=make('div');info.append(make('h3','',roster.name),make('p','cs-muted',`${roster.students.length} student${roster.students.length===1?'':'s'}`));identity.append(avatar,info);body.append(identity);
+    if(!linkView){
+      const tools=make('div','cc-tool-grid');
+      const link=button('',()=>{linkView=true;render();body.querySelector('.cc-link-back')?.focus({preventScroll:true});},'cc-tool-card cc-open-link','link');
+      link.lastElementChild.remove();const linkCopy=make('span','cc-tool-copy');linkCopy.append(make('strong','','Student Link'),make('small','','Set up and manage your classroom link'));link.append(linkCopy);
+      const start=button('',()=>{},'cc-tool-card cc-start-session','board');start.disabled=true;start.title='Coming soon';start.lastElementChild.remove();const startCopy=make('span','cc-tool-copy');startCopy.append(make('strong','','Start Board Session'),make('small','','Coming soon'));start.append(startCopy);
+      tools.append(link,start);body.append(tools);return;
+    }
+    const back=button('ClassConnect',()=>{linkView=false;confirmation='';render();body.querySelector('.cc-open-link')?.focus({preventScroll:true});},'cc-link-back','back');back.setAttribute('aria-label','Back to ClassConnect');body.prepend(back);
     const card=make('section','cc-link-card'),cardHead=make('div','cc-section-heading');cardHead.append(make('h3','','Student Link'));card.append(cardHead,make('p','cs-muted','Keep this link private and only share with trusted members of your classroom community.'));
     if(!loaded){const status=make('p','cc-loading',busy?'Loading ClassConnect…':'ClassConnect is unavailable');status.setAttribute('role','status');card.append(status);if(!busy)card.append(button('Try Again',refresh));}
     else if(entry?.active) {
@@ -90,10 +88,6 @@
       card.append(button('Create Student Link',()=>change('create'),'cs-primary','link'));
     }
     body.append(card);
-    const options=make('section','cc-options'),row=make('label','cs-toggle cc-board-toggle'),copy=make('span');copy.append(make('strong','','Student Boards'));
-    const input=make('input');input.type='checkbox';input.checked=roster.studentBoards===true;input.setAttribute('role','switch');input.setAttribute('aria-label','Student Boards');input.disabled=busy||!loaded;input.onchange=()=>setStudentBoards(input.checked);
-    const track=make('i');track.setAttribute('aria-hidden','true');row.append(copy,input,track);
-    const start=button('Start Board Session',()=>{},'cc-start-session');start.disabled=true;start.title='Coming soon';options.append(row,start);body.append(options);
     if(confirmation){
       const confirm=make('section','cc-confirm');confirm.setAttribute('role','alert');
       confirm.append(make('h3','',confirmation==='reset'?'Replace the student link?':'Disable the student link?'),make('p','',confirmation==='reset'?'The old link will stop working. Share the new link with your students.':'Students will no longer be able to open this link. Your class and students will stay saved.'));
@@ -102,5 +96,5 @@
     if(error){const alert=make('p','cc-error',error);alert.setAttribute('role','alert');body.append(alert);if(loaded)body.append(button('Refresh Link Status',refresh));}
     if(busy){body.querySelectorAll('button').forEach(b=>b.disabled=true);const status=make('p','cc-loading','Please wait…');status.setAttribute('role','status');if(loaded)body.append(status);}
   }
-  window.TeacherTilesClassConnectUI={open(classId){ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';error='';if(!dialog.open)dialog.showModal();refresh();}};
+  window.TeacherTilesClassConnectUI={open(classId){ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';linkView=false;error='';if(!dialog.open)dialog.showModal();refresh();}};
 })();
