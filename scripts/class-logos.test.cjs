@@ -14,10 +14,10 @@ assert.equal(await page.locator('.pres-brand>.profile-tool-beta').textContent(),
 assert.equal(await page.locator('#profile-organizations-title>.profile-tool-beta').textContent(),'BETA');
 await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();
 assert(await page.getByRole('button',{name:'Assessment Coming soon',exact:true}).isDisabled());
-assert(await page.getByRole('button',{name:'ClassConnect Coming soon',exact:true}).isDisabled());
-assert.deepEqual(await page.locator('.cs-class-modules>button').allTextContents(),['AssessmentComing soon','ClassConnectComing soon','PBIS']);
+assert.equal(await page.getByRole('button',{name:'ClassConnect',exact:true}).isDisabled(),false);
+assert.deepEqual(await page.locator('.cs-class-modules>button').allTextContents(),['AssessmentComing soon','ClassConnect','PBIS']);
 const photo=await page.screenshot({clip:{x:0,y:0,width:512,height:512}});
-await page.getByRole('button',{name:'Edit Class',exact:true}).click();
+await page.locator('.cs-class-header').hover();await page.getByRole('button',{name:'Edit Class',exact:true}).click();
 await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Owls');
 await page.locator('input[aria-label="Upload class image"]').setInputFiles({name:'logo.png',mimeType:'image/png',buffer:photo});
 await page.waitForFunction(()=>document.querySelector('.cs-form-preview img')?.naturalWidth===256);
@@ -30,7 +30,7 @@ await page.setViewportSize({width:390,height:844});assert(await page.locator('.c
 await page.getByRole('button',{name:'All Classes',exact:true}).click();assert(await page.getByRole('button',{name:'Open Owls',exact:true}).locator('img').isVisible());
 await page.reload();await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(()=>{document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');document.querySelector('#profile-classes-button').click();});
 assert.equal(await page.evaluate(()=>readClassRosters()[0].logoImage),saved.logoImage);
-await page.getByRole('button',{name:'Open Owls',exact:true}).click();await page.getByRole('button',{name:'Edit Class',exact:true}).click();await page.getByRole('button',{name:'Use 🚀',exact:true}).click();await page.getByRole('button',{name:'Save Changes',exact:true}).click();assert.equal(await page.evaluate(()=>readClassRosters()[0].logoImage),'');assert.equal(await page.locator('.cs-class-info>.cs-avatar').textContent(),'🚀');
+await page.getByRole('button',{name:'Open Owls',exact:true}).click();await page.locator('.cs-class-header').hover();await page.getByRole('button',{name:'Edit Class',exact:true}).click();await page.getByRole('button',{name:'Use 🚀',exact:true}).click();await page.getByRole('button',{name:'Save Changes',exact:true}).click();assert.equal(await page.evaluate(()=>readClassRosters()[0].logoImage),'');assert.equal(await page.locator('.cs-class-info>.cs-avatar').textContent(),'🚀');
 await page.getByRole('button',{name:'All Classes',exact:true}).click();await page.getByRole('button',{name:'New Class',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('New Photo Class');await page.locator('input[aria-label="Upload class image"]').setInputFiles({name:'logo.png',mimeType:'image/png',buffer:photo});await page.waitForFunction(()=>document.querySelector('.cs-form-preview img')?.naturalWidth===256);await page.getByRole('button',{name:'Create Class',exact:true}).click();assert(await page.getByRole('button',{name:'Open New Photo Class',exact:true}).locator('img').isVisible());
 assert.deepEqual(errors,[]);console.log('PASS: class header buttons and editing, class image create/update/emoji replacement, 256px image persistence, PBIS preservation, mobile bounds and shared BETA badges.');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

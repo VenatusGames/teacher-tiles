@@ -1,3 +1,4 @@
+import {createClassConnectClient} from './class-connect/client.js?v=20261103-classconnect';
 // Carry the deployed entry-point version through to this imported module.
 const announcementModuleUrl=new URL('./support/announcements.js',import.meta.url);
 announcementModuleUrl.search=new URL(import.meta.url).search||'?v=20261022-live';
@@ -536,13 +537,16 @@ function dispatchEncryptedClassesLoaded(classes) {
 
 async function saveEncryptedClasses(classes) {
   if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) throw new Error("Encrypted class storage is unavailable");
+  const savingUid = currentUser.uid;
   await requestAutomaticClassKey();
-  const key = await getClassEncryptionKey(currentUser.uid);
+  const key = await getClassEncryptionKey(savingUid);
+  if (currentUser?.uid !== savingUid) throw new Error("Account changed while saving classes");
   if (!key) throw new Error("The class encryption key is not available");
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = new TextEncoder().encode(JSON.stringify(Array.isArray(classes) ? classes : []));
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
   const payload = {
+    classConnectRevision: crypto.randomUUID(),
     version: classSyncMode === "ready" ? 4 : 1,
     algorithm: "AES-GCM-256",
     keyProtection: classSyncMode === "ready" ? "FIRESTORE_PRIVATE_VAULT" : "LEGACY_BROWSER_KEY",
@@ -550,7 +554,12 @@ async function saveEncryptedClasses(classes) {
     ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
     updatedAt: firestoreSdk.serverTimestamp()
   };
-  await firestoreSdk.setDoc(classesDocument(currentUser.uid), payload, { merge: true });
+  if (currentUser?.uid !== savingUid) throw new Error("Account changed while saving classes");
+  await firestoreSdk.setDoc(classesDocument(savingUid), payload, { merge: true });
+  if (currentUser?.uid !== savingUid) return;
+  // Share roster changes only after the private class save succeeds. PBIS stays encrypted.
+  await window.TeacherTilesClassConnect?.sync(classes, savingUid, payload.classConnectRevision).catch(() => {});
+  if (currentUser?.uid !== savingUid) return;
   classSyncDocumentExists = true;
   classSyncHasCiphertext = true;
   markClassCloudLoadedForSession(currentUser.uid);
@@ -559,7 +568,9 @@ async function saveEncryptedClasses(classes) {
 
 async function loadEncryptedClasses() {
   if (!currentUser || !db || !firestoreSdk || !crypto?.subtle) return [];
-  const snapshot = await firestoreSdk.getDoc(classesDocument(currentUser.uid));
+  const loadingUid = currentUser.uid;
+  const snapshot = await firestoreSdk.getDoc(classesDocument(loadingUid));
+  if (currentUser?.uid !== loadingUid) return [];
   classSyncDocumentExists = snapshot.exists();
   const value = snapshot.exists() ? (snapshot.data() || {}) : {};
   classSyncHasCiphertext = Boolean(value.ciphertext && value.iv);
@@ -581,6 +592,11 @@ async function loadEncryptedClasses() {
   const key = await importClassEncryptionKey(raw, ["decrypt"]);
   try {
     const classes = await decryptClassesValue(value, key);
+    if (currentUser?.uid !== loadingUid) return [];
+    // Recover a roster update interrupted by closing the browser after the private save.
+    if (value.classConnectRevision) {
+      Promise.resolve().then(() => window.TeacherTilesClassConnect?.sync(classes, loadingUid, value.classConnectRevision)).catch(() => {});
+    }
     markClassCloudLoadedForSession(currentUser.uid);
     dispatchEncryptedClassesLoaded(classes);
     refreshClassSyncUi();
@@ -4434,6 +4450,8 @@ window.TeacherTilesLessonPlannerCloud = Object.freeze({
   load: loadLessonPlannerCloud,
   save: saveLessonPlannerCloud
 });
+
+window.TeacherTilesClassConnect = createClassConnectClient({call:callShopFunction,getUid:()=>currentUser?.uid || ''});
 
 window.TeacherTilesEncryptedClasses = {
   save: saveEncryptedClasses,
