@@ -62,7 +62,7 @@ function setupClassesStudents(){
       const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));const edit=button('',e=>{if(e.detail>0)editor.addEventListener('close',()=>{if(document.activeElement===edit)edit.blur();},{once:true});editClass(c.id);},'cs-class-info-edit profile-panel__close','edit');edit.setAttribute('aria-label','Edit Class');edit.title='Edit Class';info.append(avatar(c),copy,edit);
       const rewards=button('PBIS',()=>showDetail(null),'cs-button cs-class-pbis','pbis');rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
       const modules=el('div','cs-class-modules');
-      for(const [label,symbol] of [['Assessment','assessment'],['ClassConnect','connect']]){const b=button(label,null,'cs-button cs-class-coming-soon',symbol);b.disabled=true;b.append(el('small','','Coming soon'));modules.append(b);}
+      const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button','connect'));
       modules.append(rewards);
       const configure=button('',showSettings,'cs-button cs-class-settings','settings');configure.setAttribute('aria-label','Class Settings');configure.title='Class Settings';classHeader.append(back,info,modules,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
