@@ -137,8 +137,10 @@ function readClassRosters(){
         students,
         pbisEnabled:typeof item.pbisEnabled==='boolean'?item.pbisEnabled:defaultClassPbisEnabled(normalizeClassGradeLevel(item.gradeLevel)),
         showAddStudent:item.showAddStudent!==false,
+        studentBoards:item.studentBoards===true,
+        allowStudentEmojiEditing:item.allowStudentEmojiEditing===true,
         pbisStats:normalizeClassPbisPreferences(item.pbisStats),
-        studentProfiles:normalizeStudentProfiles(item.studentProfiles,students),
+        studentProfiles:normalizeStudentProfiles(item.studentProfiles,students,String(item.id||`class-${index+1}`)),
         seatingChart:normalizeSeatingChart(item.seatingChart,students),
         starChart:normalizeStarChartProgress(item.starChart,students),
         classMeter:normalizeClassMeterProgress(item.classMeter),
@@ -428,12 +430,13 @@ const STUDENT_PROFILE_IMAGE_MAX_LENGTH=48000;
 function normalizeProfileImage(image){
   return typeof image==='string'&&image.length<=STUDENT_PROFILE_IMAGE_MAX_LENGTH&&/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(image)?image:'';
 }
-function normalizeStudentProfiles(value,students){
+function normalizeStudentProfiles(value,students,classId=''){
   const source=value&&typeof value==='object'?value:{};
   return Object.fromEntries(students.map(name=>{
     const key=starChartStudentKey(name),profile=source[key]||{};
     const image=normalizeProfileImage(profile.image);
-    return [key,{emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image}];
+    const normalized={id:typeof profile.id==='string'&&profile.id.length<=100?profile.id:key,avatarVersion:typeof profile.avatarVersion==='string'&&profile.avatarVersion.length<=64?profile.avatarVersion:'',emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image};
+    return [key,window.TeacherTilesClassConnect?.resolveProfile?.(classId,normalized) || normalized];
   }));
 }
 // Student names remain compatible with board tiles; carry every reward map along when renamed.
