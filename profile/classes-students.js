@@ -52,7 +52,7 @@ function setupClassesStudents(){
   const statsFor=(c,whole=false)=>c.pbisEnabled===false?[]:PBIS_STUDENT_STAT_DEFINITIONS.filter(s=>c.pbisStats?.[s.id]!==false&&(!s.wholeClassOnly||whole)&&(!s.studentOnly||!whole));
   const statValue=(s,c,name)=>{if(!name)return s.wholeClassValue?.(c)||0;const key=starChartStudentKey(name),map={eggPoints:c.eggHatching?.studentPoints,flowerPoints:c.flowerPots?.studentPoints,stars:c.starChart?.studentStars,punchcardPoints:c.punchcards?.studentPoints,raceWins:c.racer?.studentWins};return normalizeStarChartCount(map[s.id]?.[key]);};
   function addCard(label,action){const b=button(label,action,'cs-add-card','plus');b.setAttribute('aria-label',label);return b;}
-  function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});}
+  function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});if(id)window.TeacherTilesClassConnect?.refreshAvatars?.(id).catch(()=>{});}
   title.tabIndex=-1;
   function render(){
     cancelHold();const c=current();profileBack.hidden=Boolean(c);if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
@@ -62,7 +62,7 @@ function setupClassesStudents(){
       const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));const edit=button('',e=>{if(e.detail>0)editor.addEventListener('close',()=>{if(document.activeElement===edit)edit.blur();},{once:true});editClass(c.id);},'cs-class-info-edit profile-panel__close','edit');edit.setAttribute('aria-label','Edit Class');edit.title='Edit Class';info.append(avatar(c),copy,edit);
       const rewards=button('PBIS',()=>showDetail(null),'cs-button cs-class-pbis','pbis');rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
       const modules=el('div','cs-class-modules');
-      const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button','connect'));
+      const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button cs-class-connect','connect'));
       modules.append(rewards);
       const configure=button('',showSettings,'cs-button cs-class-settings','settings');configure.setAttribute('aria-label','Class Settings');configure.title='Class Settings';classHeader.append(back,info,modules,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
@@ -164,7 +164,8 @@ function setupClassesStudents(){
     form.onsubmit=e=>{e.preventDefault();if(save.disabled)return;const clean=name.input.value.trim().replace(/\s+/g,' ');if(!clean){error.textContent='Enter a first name or nickname.';return;}
       const result=updateClass(target=>{if(target.id!==classId)throw new Error('The selected class changed. Reopen this student.');if(target.students.some(n=>n!==oldName&&n.toLocaleLowerCase()===clean.toLocaleLowerCase()))throw new Error('A student with that name already exists in this class.');if(!oldName&&target.students.length>=300)throw new Error('This class already has 300 students.');
         if(oldName){if(!target.students.includes(oldName))throw new Error('This student is no longer in the class.');renameClassStudent(target,oldName,clean);}else target.students.push(clean);
-        target.studentProfiles[starChartStudentKey(clean)]={emoji,image};});
+        const previous=target.studentProfiles[starChartStudentKey(clean)] || {};
+        target.studentProfiles[starChartStudentKey(clean)]={id:previous.id || crypto.randomUUID(),avatarVersion:emoji!==original.emoji||image!==original.image?crypto.randomUUID():(previous.avatarVersion || ''),emoji,image};});
       if(result!==true){error.textContent=result;return;}if(activeStudent?.name===oldName){activeStudent.name=clean;renderDetail();}editor.close();render();notify(oldName?'Student updated':'Student added');};
     editor.showModal();name.input.focus();
   }
@@ -177,6 +178,7 @@ function setupClassesStudents(){
     error.setAttribute('role','alert');statOptions.setAttribute('aria-label','PBIS reward types');disclosure.open=true;disclosure.hidden=!c.pbisEnabled;
     const summary=el('summary','','Reward Types');disclosure.append(summary,statOptions);
     body.append(toggle('Show Add Student',c.showAddStudent!==false,(enabled,input)=>{const result=updateClass(target=>target.showAddStudent=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Show the + outline at the end of the student list.'));
+    body.append(toggle('Allow Student Emoji Editing',c.allowStudentEmojiEditing,(enabled,input)=>{const result=updateClass(target=>target.allowStudentEmojiEditing=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Let students choose their profile emoji in ClassConnect. Students select their own name without identity verification.'));
     pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Logo',()=>{settings.close();editClass(c.id);},'cs-button','edit'));
@@ -277,6 +279,8 @@ function setupClassesStudents(){
   search.addEventListener('input',render);
   opener.addEventListener('click',()=>{document.querySelector('[data-profile-close]')?.click();scope=window.TeacherTilesClassScope||'local';activeClass='';editMode=false;revealedStudent='';search.value='';render();panel.showModal();opener.setAttribute('aria-expanded','true');document.body.classList.add('classes-tool-open');});
   content.addEventListener('scroll',cancelHold,{passive:true});
+  window.addEventListener('focus',()=>{if(panel.open&&activeClass)window.TeacherTilesClassConnect?.refreshAvatars?.(activeClass).catch(()=>{});});
+  window.addEventListener('teachertiles:classconnectsync',event=>{if(event.detail?.status==='avatars')refresh();});
   window.addEventListener('blur',()=>{cancelHold();if(panel.open)endDeletion();});
   panel.addEventListener('click',e=>{if((editMode||revealedStudent)&&!e.target.closest('.cs-student-remove,.cs-roster-edit'))endDeletion();});
   for(const event of ['pointerdown','pointermove','keydown','input','wheel'])panel.addEventListener(event,()=>{if(editMode||revealedStudent)armDeletionIdle();},{passive:true});

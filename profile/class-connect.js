@@ -56,16 +56,26 @@
       try{const result=await service().list();if(ticket===generation){entry=result.links.find(link=>link.classId===activeClass) || null;loaded=true;}}catch{if(ticket===generation){loaded=false;entry=null;}}
     } finally{if(ticket===generation){busy=false;render();}}
   }
+  async function setStudentBoards(enabled) {
+    const ticket=generation;busy=true;error='';
+    try {
+      if(uid!==(window.TeacherTilesAuth?.user?.uid || ''))return dialog.close();
+      const classes=readClassRosters(),roster=classes.find(c=>c.id===activeClass);if(!roster)return dialog.close();
+      roster.studentBoards=enabled;writeClassRosters(classes);render();await queueEncryptedClassSave(classes);
+      if(localStorage.getItem(pbisDirtyStorageKey()))throw new Error('Your change is saved on this device and waiting to sync.');
+    }catch(e){if(ticket===generation)error=safeError(e);}
+    finally{if(ticket===generation){busy=false;render();}}
+  }
   function render() {
     const roster=current();if(!roster)return;
     body.replaceChildren();dialog.setAttribute('aria-busy',String(busy));
     const identity=make('div','cc-identity'),avatar=make('div','cc-class-avatar');
     if(roster.logoImage){const img=make('img');img.src=roster.logoImage;img.alt='';avatar.append(img);}else avatar.textContent=roster.logo || '👥';
     const info=make('div');info.append(make('h3','',roster.name),make('p','cs-muted',`${roster.students.length} student${roster.students.length===1?'':'s'}`));identity.append(avatar,info);body.append(identity);
-    const card=make('section','cc-link-card');card.append(make('h3','','Student Link'),make('p','cs-muted','Anyone with this link can view your class name, student names and profile pictures. PBIS records and editing controls stay private.'));
+    const card=make('section','cc-link-card'),cardHead=make('div','cc-section-heading');cardHead.append(make('h3','','Student Link'));card.append(cardHead,make('p','cs-muted','Keep this link private and only share with trusted members of your classroom community.'));
     if(!loaded){const status=make('p','cc-loading',busy?'Loading ClassConnect…':'ClassConnect is unavailable');status.setAttribute('role','status');card.append(status);if(!busy)card.append(button('Try Again',refresh));}
     else if(entry?.active) {
-      card.append(make('span','cc-active','Link active'));
+      cardHead.append(make('span','cc-active','Link active'));
       const row=make('div','cc-link-row'),input=make('input','cc-link-input');input.readOnly=true;input.value=url();input.setAttribute('aria-label','Student link');input.addEventListener('click',()=>input.select());
       const copy=button('Copy Link',async()=>{
         try{await navigator.clipboard.writeText(input.value);copy.lastElementChild.textContent='Copied!';setTimeout(()=>{if(copy.isConnected)copy.lastElementChild.textContent='Copy Link';},1800);}
@@ -80,6 +90,10 @@
       card.append(button('Create Student Link',()=>change('create'),'cs-primary','link'));
     }
     body.append(card);
+    const options=make('section','cc-options'),row=make('label','cs-toggle cc-board-toggle'),copy=make('span');copy.append(make('strong','','Student Boards'));
+    const input=make('input');input.type='checkbox';input.checked=roster.studentBoards===true;input.setAttribute('role','switch');input.setAttribute('aria-label','Student Boards');input.disabled=busy||!loaded;input.onchange=()=>setStudentBoards(input.checked);
+    const track=make('i');track.setAttribute('aria-hidden','true');row.append(copy,input,track);
+    const start=button('Start Board Session',()=>{},'cc-start-session');start.disabled=true;start.title='Coming soon';options.append(row,start);body.append(options);
     if(confirmation){
       const confirm=make('section','cc-confirm');confirm.setAttribute('role','alert');
       confirm.append(make('h3','',confirmation==='reset'?'Replace the student link?':'Disable the student link?'),make('p','',confirmation==='reset'?'The old link will stop working. Share the new link with your students.':'Students will no longer be able to open this link. Your class and students will stay saved.'));

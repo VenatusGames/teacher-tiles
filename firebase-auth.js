@@ -1,4 +1,4 @@
-import {createClassConnectClient} from './class-connect/client.js?v=20261103-classconnect';
+import {createClassConnectClient} from './class-connect/client.js?v=20261103-student-profiles';
 // Carry the deployed entry-point version through to this imported module.
 const announcementModuleUrl=new URL('./support/announcements.js',import.meta.url);
 announcementModuleUrl.search=new URL(import.meta.url).search||'?v=20261022-live';
