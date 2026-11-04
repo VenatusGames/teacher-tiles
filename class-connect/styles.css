@@ -18,3 +18,23 @@
 @media(prefers-reduced-motion:reduce){.cc-student-avatar,.cc-student-profile .cs-profile-body{transition:none;animation:none}}
 
 .cc-panel .cs-modal-header h2,.cc-student-profile button{font-family:inherit}.cc-student-profile button:disabled{cursor:default}
+
+/* The selected student expands into their own full-screen space. */
+.cc-profile-open{overflow:hidden}.cc-profile-open .cc-student-main{visibility:hidden}
+.cc-student-profile.cs-modal{inset:0;width:100%;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:#f6f5fb;animation:none}
+.cc-student-profile::backdrop{background:transparent;backdrop-filter:none}
+.cc-student-profile>.cs-modal-header{position:fixed;inset:0 0 auto;padding:20px 24px;border:0;background:transparent;pointer-events:none}
+.cc-student-profile>.cs-modal-header button{pointer-events:auto;background:#fff}
+.cc-student-profile>.cs-modal-header h2{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cc-student-profile .cs-profile-layout{display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);min-height:100%;border:0}
+.cc-student-profile .cs-detail-hero{display:flex;align-items:center;justify-content:center;padding:84px 28px;background:transparent;border:0}
+.cc-student-profile .cs-detail-hero .cc-student-avatar{width:min(32vw,430px);height:auto;aspect-ratio:1;border-radius:24%;font-size:clamp(80px,12vw,170px);box-shadow:0 24px 60px #29213e20;z-index:2}
+.cc-student-profile .cs-detail-hero .cc-student-avatar.has-emoji{font-size:clamp(100px,19vw,260px)}
+.cc-student-profile .cs-profile-body{align-self:start;min-width:0;padding:clamp(90px,12vh,140px) clamp(24px,5vw,90px) 48px 24px;animation:none}
+.cc-greeting{margin:0 0 36px;text-align:center;font-size:clamp(28px,3.5vw,50px);line-height:1.15;letter-spacing:-.04em;overflow-wrap:anywhere}
+.cc-student-profile .cs-profile-title[hidden]{display:none}
+.cc-student-profile .cs-profile-sections{gap:16px}.cc-student-profile .cs-profile-section{min-height:140px;background:#fff}
+.cc-student-profile .cs-profile-section>.cs-icon{width:32px;height:32px}.cc-student-profile .cs-section-copy strong{font-size:17px}
+.cc-profile-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px}.cc-profile-actions .cs-button{min-height:44px;padding:12px 20px}.cc-profile-actions .cc-enter-board{margin:0}
+.cc-departing-students{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+@media(max-width:640px){.cc-student-profile .cs-profile-layout{grid-template-columns:1fr}.cc-student-profile .cs-detail-hero{padding:76px 24px 20px}.cc-student-profile .cs-detail-hero .cc-student-avatar{width:180px;font-size:70px}.cc-student-profile .cs-detail-hero .cc-student-avatar.has-emoji{font-size:110px}.cc-student-profile .cs-profile-body{padding:12px 22px 36px}.cc-greeting{font-size:30px;margin-bottom:24px}.cc-student-profile .cs-profile-section{padding:16px;min-height:115px}.cc-student-profile .cs-profile-sections{gap:12px}}
