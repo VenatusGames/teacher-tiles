@@ -1,3 +1,7 @@
+const CLASS_CONNECT_PIN_EMOJIS=['😀','😊','😎','🤓','🥳','🦉','🐸','🦊','🐱','🐶','🐼','🐙','🦋','🌻','🌈','⭐','🚀','⚽','🎨','🎵','📚','🍀','🐢','🦖','🍎'];
+function normalizeClassStudentPin(pin){return Array.isArray(pin)&&pin.length===3&&pin.every(n=>Number.isInteger(n)&&n>=0&&n<25)?[...pin]:null;}
+function randomClassStudentPin(){const result=[];while(result.length<3){const n=crypto.getRandomValues(new Uint32Array(1))[0];if(n<4294967275)result.push(n%25);}return result;}
+function ensureClassStudentPins(c){if(!c.requireStudentPin)return;c.studentProfiles ||= {};for(const name of c.students){const key=starChartStudentKey(name),profile=c.studentProfiles[key] ||= {id:key,avatarVersion:'',emoji:'',image:''};if(!normalizeClassStudentPin(profile.pin))profile.pin=randomClassStudentPin();}}
 const CLASS_GRADE_LEVELS=Object.freeze(['Pre-K','K','1','2','3','4','5','6','7','8','9','10','11','12','Higher-Ed']);
 function normalizeClassGradeLevel(value){return CLASS_GRADE_LEVELS.includes(String(value))?String(value):'';}
 function defaultClassPbisEnabled(gradeLevel){return gradeLevel!=='Higher-Ed'&&!(Number(gradeLevel)>=7);}
@@ -137,6 +141,7 @@ function readClassRosters(){
         students,
         pbisEnabled:typeof item.pbisEnabled==='boolean'?item.pbisEnabled:defaultClassPbisEnabled(normalizeClassGradeLevel(item.gradeLevel)),
         showAddStudent:item.showAddStudent!==false,
+        requireStudentPin:item.requireStudentPin===true,
         studentBoards:item.studentBoards===true,
         allowStudentEmojiEditing:item.allowStudentEmojiEditing===true,
         pbisStats:normalizeClassPbisPreferences(item.pbisStats),
@@ -212,6 +217,7 @@ function schedulePbisCloudSave(){
 }
 
 function writeClassRosters(classes){
+  classes.forEach(ensureClassStudentPins);
   cancelPendingPbisCloudSave();
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -435,7 +441,7 @@ function normalizeStudentProfiles(value,students,classId=''){
   return Object.fromEntries(students.map(name=>{
     const key=starChartStudentKey(name),profile=source[key]||{};
     const image=normalizeProfileImage(profile.image);
-    const normalized={id:typeof profile.id==='string'&&profile.id.length<=100?profile.id:key,avatarVersion:typeof profile.avatarVersion==='string'&&profile.avatarVersion.length<=64?profile.avatarVersion:'',emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image};
+    const normalized={pin:normalizeClassStudentPin(profile.pin),id:typeof profile.id==='string'&&profile.id.length<=100?profile.id:key,avatarVersion:typeof profile.avatarVersion==='string'&&profile.avatarVersion.length<=64?profile.avatarVersion:'',emoji:profile.emoji?normalizeClassLogo(profile.emoji):'',image};
     return [key,window.TeacherTilesClassConnect?.resolveProfile?.(classId,normalized) || normalized];
   }));
 }

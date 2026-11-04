@@ -1,13 +1,14 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {REWARDS,EMOJIS} from './profile-catalog.js?v=20261103-student-profiles';
-const functions=getFunctions(initializeApp(firebaseConfig)),read=httpsCallable(functions,'classConnectView',{timeout:15000}),saveEmoji=httpsCallable(functions,'classConnectStudent',{timeout:15000});
+import {REWARDS,EMOJIS,PIN_EMOJIS} from './profile-catalog.js?v=20261103-student-pins';
+const functions=getFunctions(initializeApp(firebaseConfig)),read=httpsCallable(functions,'classConnectView',{timeout:15000}),saveEmoji=httpsCallable(functions,'classConnectStudent',{timeout:15000}),unlock=httpsCallable(functions,'classConnectUnlock',{timeout:15000});
 const main=document.getElementById('cc-view'),refresh=document.getElementById('cc-refresh');
 const make=(tag,cls='',text='')=>{const node=document.createElement(tag);node.className=cls;node.textContent=text;return node;};
 let busy=false,lastAttempt=0,version=0,roster=null,activeId='',section='home',selected='',saving=false,profileVersion=0;
 const profile=make('dialog','cs-modal cs-detail cc-student-profile');profile.setAttribute('aria-label','Student Profile');document.body.append(profile);
-let entranceAnimations=[],entranceLayer=null;
+let entranceAnimations=[],entranceLayer=null,studentSession='',pinVersion=0;
+const pinDialog=make('dialog','cs-modal cc-pin-dialog');pinDialog.setAttribute('aria-label','Enter Emoji PIN');document.body.append(pinDialog);pinDialog.addEventListener('close',()=>{pinVersion++;});
 function clearEntrance(){entranceAnimations.forEach(animation=>animation.cancel());entranceAnimations=[];entranceLayer?.remove();entranceLayer=null;}
 const token=()=>location.hash.slice(1),selectionKey=()=>`tt:classconnect:selected:${token()}`;
 function readSelection(){try{selected=sessionStorage.getItem(selectionKey()) || '';}catch{selected='';}}
@@ -20,18 +21,19 @@ function renderProfile() {
   const student=roster?.students.find(item=>item.id===activeId);if(!student){profile.close();return;}
   clearEntrance();const ticket=++profileVersion;profile.replaceChildren();
   const head=make('header','cs-modal-header');
-  const back=button('',()=>section==='home'?profile.close():navigate('home'),'cs-button cc-icon-button','back');back.setAttribute('aria-label',section==='home'?'Back to Class':'Back to Student Profile');head.append(back);
+  const back=button('All Students',()=>profile.close(),'cs-button cc-roster-back','back');back.setAttribute('aria-label','Back to Class');head.append(back);
   head.append(make('h2','',section==='pbis'?'PBIS Rewards':section==='emoji'?'Choose an Emoji':'Student Profile'));
   const close=button('',()=>profile.close(),'cs-button cc-icon-button','close');close.setAttribute('aria-label','Close Student Profile');head.append(close);
   const layout=make('div','cs-profile-layout'),hero=make('aside','cs-detail-hero'),picture=avatar(`cc-student-avatar${student.emoji?' has-emoji':''}`,student);picture.style.setProperty('--hue',String(student.hue));
   hero.append(picture);
   const own=selected===student.id;
-  const body=make('section','cs-profile-body is-entering'),greeting=make('h1','cc-greeting',`Hi, ${student.name}!`),title=make('h3','cs-profile-title',section==='pbis'?'Your Rewards':section==='emoji'?'Choose your emoji':'Student Profile');greeting.tabIndex=-1;title.tabIndex=-1;title.hidden=section==='home';body.append(greeting,title);
+  if(own&&roster.allowStudentEmojiEditing)hero.append(button('Change Emoji',()=>navigate('emoji'),'cs-button cc-change-emoji'));
+  const body=make('section','cs-profile-body is-entering'),greeting=make('h1','cc-greeting',`Hi, ${student.name}!`),title=make('h3','cs-profile-title',section==='pbis'?'Your Rewards':section==='emoji'?'Choose your emoji':'Student Profile');greeting.tabIndex=-1;title.tabIndex=-1;title.hidden=section==='home';body.append(greeting,title);if(section!=='home'){const back=button('Back to Profile',()=>navigate('home'),'cs-button cc-section-back','back');back.setAttribute('aria-label','Back to Student Profile');body.insertBefore(back,title);}
   const sectionButton=(label,icon,action,hint)=>{const b=button('',action,'cs-profile-section',icon);b.lastElementChild.remove();const text=make('span','cs-section-copy');text.append(make('strong','',label),make('small','cs-section-status',hint));b.append(text);b.disabled=!action;return b;};
   if(section==='home') {
     const choices=make('div','cs-profile-sections');choices.append(sectionButton('PBIS','pbis',roster.pbisEnabled?()=>navigate('pbis'):null,roster.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras'),'Explore more'));body.append(choices);
     const actions=make('div','cc-profile-actions');
-    if(own&&roster.allowStudentEmojiEditing)actions.append(button('Change Emoji',()=>navigate('emoji'),'cs-button'));
+
     const enter=button('Enter Board',null,'cs-button cc-enter-board');enter.disabled=true;enter.title=roster.studentBoards?'Coming soon':'Student Boards are turned off';actions.append(enter);body.append(actions);
   }else if(section==='pbis') {
     title.textContent='PBIS Rewards';
@@ -51,13 +53,14 @@ function renderProfile() {
       for(const emoji of EMOJIS){const choice=button(emoji,async()=>{
         if(saving)return;saving=true;const link=token();choices.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Saving emoji…';
         try {
-          const {data}=await saveEmoji({token:link,studentId:student.id,emoji});
+          const {data}=await saveEmoji({token:link,studentId:student.id,emoji,session:studentSession});
           if(link!==token())return;
           const target=roster?.students.find(item=>item.id===data.studentId);
           if(target && target.avatarVersion===student.avatarVersion){target.emoji=data.emoji;target.image='';if(ticket===profileVersion)section='home';render(roster);}
         }catch(error){
           if(ticket!==profileVersion)return;
-          if(error.code==='functions/permission-denied'){roster.allowStudentEmojiEditing=false;renderProfile();}
+          if(error.details?.reason==='pin-required'){profile.close();await load();}
+          else if(error.code==='functions/permission-denied'){roster.allowStudentEmojiEditing=false;renderProfile();}
           else if(error.code==='functions/not-found'){profile.close();await load();}
           else status.textContent=error.message || 'Could not save your emoji. Try again.';
         }finally{saving=false;profile.querySelectorAll('.cc-emoji-choice').forEach(b=>b.disabled=false);}
@@ -67,9 +70,29 @@ function renderProfile() {
   }
   layout.append(hero,body);profile.append(head,layout);
 }
-profile.addEventListener('close',()=>{clearEntrance();document.body.classList.remove('cc-profile-open');profileVersion++;activeId='';section='home';});
+profile.addEventListener('close',()=>{studentSession='';if(roster?.requireStudentPin)roster.students.forEach(student=>student.rewards={});clearEntrance();document.body.classList.remove('cc-profile-open');profileVersion++;activeId='';section='home';});
 function openStudent(student,card){
+  if(profile.open||pinDialog.open)return;
+  if(!roster.requireStudentPin){studentSession='';return enterStudent(student,card);}
+  const ticket=++pinVersion,link=token();let pin=[],pending=false;
+  pinDialog.replaceChildren();const head=make('header','cs-modal-header'),title=make('h2','','Enter Your Emoji PIN');
+  const back=button('',()=>pinDialog.close(),'cs-button cc-icon-button','back');back.setAttribute('aria-label','Back to All Students');head.append(back,title);
+  const body=make('div','cs-form'),slots=make('div','cs-pin-slots'),board=make('div','cs-pin-board'),status=make('p','cc-emoji-status');status.setAttribute('role','status');
+  const erase=button('Start Again',()=>{pin=[];status.textContent='';paint();});
+  function paint(){slots.replaceChildren();for(let i=0;i<3;i++){const slot=make('span','cs-pin-slot',pin[i]===undefined?'—':PIN_EMOJIS[pin[i]]);slots.append(slot);}board.querySelectorAll('button').forEach(b=>b.disabled=pending);erase.disabled=pending||!pin.length;}
+  async function submit(){pending=true;paint();status.textContent='Checking your PIN…';
+    try{const {data}=await unlock({token:link,studentId:student.id,pin});if(ticket!==pinVersion||link!==token())return;
+      pinDialog.close();studentSession=data.session;Object.assign(student,data.student);enterStudent(student,card);
+    }catch(error){if(ticket!==pinVersion)return;pin=[];status.textContent=error.message||'Could not check your PIN. Try again.';}
+    finally{pending=false;if(ticket===pinVersion)paint();}
+  }
+  for(const [i,emoji]of PIN_EMOJIS.entries()){const choice=button(emoji,()=>{if(pending)return;pin.push(i);paint();if(pin.length===3)submit();},'cs-pin-choice');choice.setAttribute('aria-label',`Choose ${emoji}`);board.append(choice);}
+  body.append(make('strong','',student.name),make('p','cc-profile-hint','Choose your three emojis in order.'),slots,board,status,erase);pinDialog.append(head,body);paint();pinDialog.showModal();
+}
+function enterStudent(student,card){
   if(profile.open)return;
+  card=[...main.querySelectorAll('.cc-student-card')].find(item=>item.dataset.studentId===student.id)||card;
+  if(!card?.isConnected)return load();
   const origin=card.querySelector('.cc-student-avatar').getBoundingClientRect();
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const others=reduce?[]:[...main.querySelectorAll('.cc-student-card')].filter(item=>item!==card).map(item=>({node:item.cloneNode(true),rect:item.getBoundingClientRect()}));
@@ -103,7 +126,7 @@ function render(view) {
   for(const [index,student] of view.students.entries()) {
     const card=button('',()=>openStudent(student,card),'cc-student-card'),picture=avatar(`cc-student-avatar${student.emoji?' has-emoji':''}`,student);
     picture.style.setProperty('--hue',String(student.hue));card.style.animationDelay=`${Math.min(index*15,180)}ms`;
-    card.replaceChildren(picture,make('span','cc-student-name',student.name));card.setAttribute('aria-label',`Open ${student.name}`);if(selected===student.id)card.classList.add('is-me');grid.append(card);
+    card.dataset.studentId=student.id;card.replaceChildren(picture,make('span','cc-student-name',student.name));card.setAttribute('aria-label',`Open ${student.name}`);if(selected===student.id)card.classList.add('is-me');grid.append(card);
   }
   if(!view.students.length)grid.append(make('p','','Your teacher hasn’t added students yet.'));
   main.replaceChildren(grid);if(profile.open)renderProfile();
@@ -115,7 +138,7 @@ async function load() {
   try {
     const token=location.hash.slice(1);
     if(!/^[A-Za-z0-9_-]{43}$/.test(token))throw Object.assign(new Error(),{code:'functions/not-found'});
-    const {data}=await read({token});if(ticket===version)render(data.view);
+    const {data}=await read({token,studentId:activeId,session:studentSession});if(ticket===version){if(profile.open&&data.view.requireStudentPin&&data.view.unlockedStudentId!==activeId)profile.close();render(data.view);}
   } catch(error) {
     if(ticket!==version)return;
     profile.close();roster=null;
@@ -125,7 +148,7 @@ async function load() {
   } finally{if(ticket===version){busy=false;refresh.disabled=false;main.removeAttribute('aria-busy');}}
 }
 refresh.addEventListener('click',load);
-window.addEventListener('hashchange',()=>{version++;busy=false;profile.close();readSelection();load();});
+window.addEventListener('hashchange',()=>{version++;busy=false;pinDialog.close();profile.close();studentSession='';readSelection();load();});
 // Revalidate when returning to an old tab, without timers or background polling.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden && Date.now()-lastAttempt>60000)load();});
 load();

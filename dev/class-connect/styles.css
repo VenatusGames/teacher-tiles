@@ -38,3 +38,7 @@
 .cc-profile-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px}.cc-profile-actions .cs-button{min-height:44px;padding:12px 20px}.cc-profile-actions .cc-enter-board{margin:0}
 .cc-departing-students{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
 @media(max-width:640px){.cc-student-profile .cs-profile-layout{grid-template-columns:1fr}.cc-student-profile .cs-detail-hero{padding:76px 24px 20px}.cc-student-profile .cs-detail-hero .cc-student-avatar{width:180px;font-size:70px}.cc-student-profile .cs-detail-hero .cc-student-avatar.has-emoji{font-size:110px}.cc-student-profile .cs-profile-body{padding:12px 22px 36px}.cc-greeting{font-size:30px;margin-bottom:24px}.cc-student-profile .cs-profile-section{padding:16px;min-height:115px}.cc-student-profile .cs-profile-sections{gap:12px}}
+
+.cc-student-profile .cs-profile-layout{position:relative;z-index:1}.cc-student-profile>.cs-modal-header{z-index:4}.cc-departing-students{z-index:0}
+.cc-student-profile .cc-change-emoji{margin-top:14px;min-height:42px;padding:10px 18px}.cc-roster-back{gap:8px}.cc-section-back{margin-bottom:18px;justify-self:start}
+.cc-pin-dialog{width:min(440px,calc(100vw - 28px));padding:0}.cc-pin-dialog .cs-pin-slot{display:grid;place-items:center;flex:none}.cc-pin-dialog .cs-modal-header h2{font-size:18px}.cc-pin-dialog .cs-pin-board{gap:7px}.cc-pin-dialog .cs-form{gap:16px}.cc-pin-dialog .cc-emoji-status:empty{display:none}.cc-pin-dialog .cs-pin-choice:disabled{opacity:.55;cursor:wait}

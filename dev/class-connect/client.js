@@ -3,7 +3,7 @@ export function publicClass(roster) {
   const pbisEnabled=typeof roster.pbisEnabled==='boolean'?roster.pbisEnabled:roster.gradeLevel!=='Higher-Ed'&&!(Number(roster.gradeLevel)>=7);
   return {
     name:roster.name, emoji:roster.logo || '👥', image:roster.logoImage || '', gradeLevel:roster.gradeLevel || '',
-    pbisEnabled, studentBoards:roster.studentBoards===true, allowStudentEmojiEditing:roster.allowStudentEmojiEditing===true,
+    requireStudentPin:roster.requireStudentPin===true, pbisEnabled, studentBoards:roster.studentBoards===true, allowStudentEmojiEditing:roster.allowStudentEmojiEditing===true,
     students:roster.students.map(name => {
       const profile=roster.studentProfiles?.[`student:${name.trim().toLocaleLowerCase()}`] || {};
       const parts=name.trim().split(/\s+/);let hue=0;
@@ -15,6 +15,8 @@ export function publicClass(roster) {
     })
   };
 }
+// This private field is sent only to the authenticated teacher callable, never to the viewer.
+function teacherAccess(roster){return {pins:roster.requireStudentPin?Object.fromEntries(roster.students.map(name=>{const key=`student:${name.trim().toLocaleLowerCase()}`,profile=roster.studentProfiles?.[key] || {};return [profile.id || key,profile.pin];})): {}};}
 export function createClassConnectClient({call,getUid,announce=detail=>window.dispatchEvent(new CustomEvent('teachertiles:classconnectsync',{detail}))}) {
   let queue=Promise.resolve(),lastSignature='',lastUid='',failed=null;
   const avatarOverrides=new Map();
@@ -57,12 +59,12 @@ export function createClassConnectClient({call,getUid,announce=detail=>window.di
     list(){const uid=getUid();return enqueue(uid,()=>call('classConnect',{action:'list',ownerUid:uid}));},
     change(action,roster,expectedRevision=0){
       const uid=getUid(),data={action,ownerUid:uid,classId:roster.id,expectedRevision};
-      if(action!=='disable')data.view=publicClass(roster);
+      if(action!=='disable'){data.view=publicClass(roster);data.access=teacherAccess(roster);}
       return enqueue(uid,async()=>{const result=await call('classConnect',data);lastSignature='';return result;});
     },
     retry(){return failed && failed.uid===getUid()?publish(failed.shared,failed.signature,failed.uid,failed.sourceRevision):Promise.resolve();},
     sync(classes,uid=getUid(),sourceRevision) {
-      const shared=classes.map(c=>({classId:c.id,view:publicClass(c)}));
+      const shared=classes.map(c=>({classId:c.id,view:publicClass(c),access:teacherAccess(c)}));
       return publish(shared,JSON.stringify(shared),uid,sourceRevision);
     }
   });

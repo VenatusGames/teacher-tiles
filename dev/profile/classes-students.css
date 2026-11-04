@@ -168,3 +168,5 @@ body.classes-tool-open{overflow:hidden}
 .cs-form-actions:has(.cs-danger){flex-wrap:wrap}.cs-form-actions>.cs-danger{margin-right:auto}
 
 .cs-brand>.cs-tool-logo{display:block;flex:none;width:33px;height:33px;color:#7b2cbf}
+
+.cs-pin-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.cs-pin-choice{display:grid;place-items:center;aspect-ratio:1;min-width:0;border:1px solid var(--border,#e4e1ed);border-radius:12px;background:var(--surface-soft,#f7f6fb);font-size:28px!important;cursor:pointer}.cs-pin-choice:hover{background:#e9e3fa}.cs-pin-slots{display:flex;justify-content:center;gap:12px}.cs-pin-slot{width:64px;height:64px;font-size:30px!important;border:2px solid var(--border,#e4e1ed);border-radius:14px;background:var(--surface-solid,#fff);cursor:pointer}.cs-pin-slot[aria-pressed=true]{border-color:#798fc8;background:#edf2ff}.cs-current-pin{font-size:28px;letter-spacing:4px;white-space:nowrap}

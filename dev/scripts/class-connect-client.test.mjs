@@ -38,3 +38,10 @@ test('Legacy grade-level PBIS defaults match Class View unless explicitly overri
  for(const gradeLevel of ['7','12','Higher-Ed']){const view=publicClass({...roster,gradeLevel});assert.equal(view.pbisEnabled,false);assert.deepEqual(view.students[0].rewards,{});}
  assert.equal(publicClass({...roster,gradeLevel:'6'}).pbisEnabled,true);assert.equal(publicClass({...roster,gradeLevel:'12',pbisEnabled:true}).pbisEnabled,true);
 });
+
+test('PINs are separated from the public projection and changing one triggers a teacher sync',async()=>{
+ const h=setup(),c={...roster,requireStudentPin:true,studentProfiles:{'student:amy lee':{id:'alice',pin:[0,1,2]}}};
+ assert.equal(publicClass(c).students[0].pin,undefined);assert.equal(publicClass(c).access,undefined);
+ await h.api.sync([c],'owner',source);assert.deepEqual(h.calls[0].data.classes[0].access.pins,{alice:[0,1,2]});
+ c.studentProfiles['student:amy lee'].pin=[3,4,5];await h.api.sync([c],'owner',source);assert.equal(h.calls.length,2);
+});
