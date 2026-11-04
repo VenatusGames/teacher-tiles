@@ -14,7 +14,7 @@ function clearEntrance(){entranceAnimations.forEach(animation=>animation.cancel(
 const token=()=>location.hash.slice(1),selectionKey=()=>`tt:classconnect:selected:${token()}`;
 function readSelection(){try{selected=sessionStorage.getItem(selectionKey()) || '';}catch{selected='';}}
 readSelection();
-const shapes={close:'<path d="m6 6 12 12M18 6 6 18"/>',back:'<path d="m14 6-6 6 6 6"/>',pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>'};
+const shapes={board:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4m-4 0h8m-9-13 6 3-6 3Z"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',back:'<path d="m14 6-6 6 6 6"/>',pbis:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',assessment:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',connect:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',extras:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="M14 17.5h7m-3.5-3.5v7"/>'};
 function symbol(name){const span=make('span','cs-icon');span.setAttribute('aria-hidden','true');span.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${shapes[name]}</svg>`;return span;}
 function button(label,action,cls='cs-button',icon='') {const b=make('button',cls);b.type='button';if(icon)b.append(symbol(icon));b.append(make('span','',label));if(action)b.addEventListener('click',action);return b;}
 function navigate(next){section=next;renderProfile();profile.scrollTop=0;profile.querySelector(next==='home'?'.cc-greeting':'.cs-profile-title')?.focus({preventScroll:true});}
@@ -33,9 +33,7 @@ function renderProfile() {
   const sectionButton=(label,icon,action,hint)=>{const b=button('',action,'cs-profile-section',icon);b.lastElementChild.remove();const text=make('span','cs-section-copy');text.append(make('strong','',label),make('small','cs-section-status',hint));b.append(text);b.disabled=!action;return b;};
   if(section==='home') {
     const choices=make('div','cs-profile-sections');choices.append(sectionButton('PBIS','pbis',roster.pbisEnabled?()=>navigate('pbis'):null,roster.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras'),'Explore more'));body.append(choices);
-    const actions=make('div','cc-profile-actions');
-
-    const enter=button('Enter Board',null,'cs-button cc-enter-board');enter.disabled=true;enter.title=roster.studentBoards?'Coming soon':'Student Boards are turned off';actions.append(enter);body.append(actions);
+    const enter=sectionButton('Enter Board','board',null,'Coming soon');enter.classList.add('cc-enter-board');choices.append(enter);
   }else if(section==='pbis') {
     title.textContent='PBIS Rewards';
     const stats=make('div','cs-detail-stats');
