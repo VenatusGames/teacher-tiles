@@ -20,7 +20,7 @@ await page.getByRole('button',{name:"Open Alice's student profile",exact:true}).
 async function adjust(label,action,quantity){
  await page.getByRole('button',{name:`${action} ${label}`,exact:true}).click();
  await page.getByRole('spinbutton',{name:'Amount',exact:true}).fill(String(quantity));
- await page.locator('.cs-form button[type=submit]').click();
+ await page.locator('dialog[open] .cs-form button[type=submit]').click();
 }
 async function exercise(){
  const labels=await page.locator('.cs-stat h4').allTextContents();
@@ -30,7 +30,7 @@ async function exercise(){
   const original=Number(await stat.locator('.cs-stat-value').textContent());
   await adjust(label,'Add',3);assert.equal(Number(await stat.locator('.cs-stat-value').textContent()),original+3);
   await adjust(label,'Redeem',2);assert.equal(Number(await stat.locator('.cs-stat-value').textContent()),original+1);
-  await adjust(label,'Redeem',original+2);assert.match(await page.locator('.cs-form .cs-error').textContent(),/available to redeem/);
+  await adjust(label,'Redeem',original+2);assert.match(await page.locator('dialog[open] .cs-form .cs-error').textContent(),/available to redeem/);
   await page.getByRole('button',{name:'Cancel',exact:true}).click();
   await adjust(label,'Redeem',1);assert.equal(Number(await stat.locator('.cs-stat-value').textContent()),original);
  }
@@ -41,12 +41,12 @@ assert.equal(await page.evaluate(()=>readClassRosters()[0].racer.positions['stud
 // A balance changed by another tile while the dialog is open must not be overwritten.
 await page.getByRole('button',{name:'Add Stars',exact:true}).click();
 await page.evaluate(()=>writeClassStarChart('old-class',{...readClassRosters()[0].starChart,studentStars:{'student:alice':20}}));
-await page.getByRole('spinbutton',{name:'Amount',exact:true}).fill('2');await page.locator('.cs-form button[type=submit]').click();
+await page.getByRole('spinbutton',{name:'Amount',exact:true}).fill('2');await page.locator('dialog[open] .cs-form button[type=submit]').click();
 assert.equal(await page.evaluate(()=>readClassRosters()[0].starChart.studentStars['student:alice']),22);
-await adjust('Stars','Add',9999);assert.match(await page.locator('.cs-form .cs-error').textContent(),/cannot exceed/);await page.getByRole('button',{name:'Cancel',exact:true}).click();
+await adjust('Stars','Add',9999);assert.match(await page.locator('dialog[open] .cs-form .cs-error').textContent(),/cannot exceed/);await page.getByRole('button',{name:'Cancel',exact:true}).click();
 await page.screenshot({path:process.env.TEMP+'/tt-class-rewards-desktop.png'});
 await page.setViewportSize({width:390,height:844});
-assert(await page.locator('.cs-detail').evaluate(e=>e.scrollWidth<=e.clientWidth));
+assert(await page.locator('dialog[open].cs-detail').evaluate(e=>e.scrollWidth<=e.clientWidth));
 assert(await page.locator('.cs-stat-actions').evaluateAll(es=>es.every(e=>e.scrollWidth<=e.clientWidth)));
 await page.screenshot({path:process.env.TEMP+'/tt-class-rewards-mobile.png'});
 await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();

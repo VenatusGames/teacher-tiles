@@ -165,9 +165,19 @@ function setupClassesStudents(){
       const result=updateClass(target=>{if(target.id!==classId)throw new Error('The selected class changed. Reopen this student.');if(target.students.some(n=>n!==oldName&&n.toLocaleLowerCase()===clean.toLocaleLowerCase()))throw new Error('A student with that name already exists in this class.');if(!oldName&&target.students.length>=300)throw new Error('This class already has 300 students.');
         if(oldName){if(!target.students.includes(oldName))throw new Error('This student is no longer in the class.');renameClassStudent(target,oldName,clean);}else target.students.push(clean);
         const previous=target.studentProfiles[starChartStudentKey(clean)] || {};
-        target.studentProfiles[starChartStudentKey(clean)]={id:previous.id || crypto.randomUUID(),avatarVersion:emoji!==original.emoji||image!==original.image?crypto.randomUUID():(previous.avatarVersion || ''),emoji,image};});
+        target.studentProfiles[starChartStudentKey(clean)]={pin:normalizeClassStudentPin(previous.pin),id:previous.id || crypto.randomUUID(),avatarVersion:emoji!==original.emoji||image!==original.image?crypto.randomUUID():(previous.avatarVersion || ''),emoji,image};});
       if(result!==true){error.textContent=result;return;}if(activeStudent?.name===oldName){activeStudent.name=clean;renderDetail();}editor.close();render();notify(oldName?'Student updated':'Student added');};
     editor.showModal();name.input.focus();
+  }
+  function editStudentPin(name){
+    const c=current();if(!c?.requireStudentPin)return;
+    let pin=normalizeClassStudentPin(c.studentProfiles[starChartStudentKey(name)]?.pin)||randomClassStudentPin(),slot=0;
+    modalHeader(editor,'Student Emoji PIN');const body=el('div','cs-form'),slots=el('div','cs-pin-slots'),board=el('div','cs-pin-board'),error=el('p','cs-error');error.setAttribute('role','alert');
+    const save=button('Save PIN',()=>{const result=updateClass(target=>{if(target.id!==c.id||!target.requireStudentPin||!target.students.includes(name))throw new Error('Reopen this student to change their PIN.');target.studentProfiles[starChartStudentKey(name)].pin=[...pin];});if(result!==true){error.textContent=result;return;}editor.close();renderDetail();},'cs-button cs-primary');
+    function paint(){slots.replaceChildren();for(let i=0;i<3;i++){const b=button(pin[i]===undefined?'—':CLASS_CONNECT_PIN_EMOJIS[pin[i]],()=>{slot=i;paint();},'cs-pin-slot');b.setAttribute('aria-label',`PIN position ${i+1}`);b.setAttribute('aria-pressed',String(slot===i));slots.append(b);}save.disabled=!normalizeClassStudentPin(pin);}
+    for(const [i,emoji]of CLASS_CONNECT_PIN_EMOJIS.entries()){const b=button(emoji,()=>{pin[slot]=i;slot=(slot+1)%3;paint();},'cs-pin-choice');b.setAttribute('aria-label',`Select ${emoji}`);board.append(b);}
+    const actions=el('div','cs-form-actions');actions.append(button('Random PIN',()=>{pin=randomClassStudentPin();slot=0;paint();}),button('Cancel',()=>editor.close()),save);
+    body.append(el('strong','',name),el('p','cs-muted','Choose three emojis in order. Click a position to change that part of the PIN.'),slots,board,error,actions);editor.append(body);paint();editor.showModal();
   }
   function toggle(label,checked,action,description=''){
     const row=el('label','cs-toggle'),copy=el('span');copy.append(el('strong','',label));if(description)copy.append(el('small','',description));const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('role','switch');input.setAttribute('aria-label',label);input.onchange=()=>action(input.checked,input);const track=el('i');track.setAttribute('aria-hidden','true');row.append(copy,input,track);return row;
@@ -178,7 +188,8 @@ function setupClassesStudents(){
     error.setAttribute('role','alert');statOptions.setAttribute('aria-label','PBIS reward types');disclosure.open=true;disclosure.hidden=!c.pbisEnabled;
     const summary=el('summary','','Reward Types');disclosure.append(summary,statOptions);
     body.append(toggle('Show Add Student',c.showAddStudent!==false,(enabled,input)=>{const result=updateClass(target=>target.showAddStudent=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Show the + outline at the end of the student list.'));
-    body.append(toggle('Allow Student Emoji Editing',c.allowStudentEmojiEditing,(enabled,input)=>{const result=updateClass(target=>target.allowStudentEmojiEditing=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Let students choose their profile emoji in ClassConnect. Students select their own name without identity verification.'));
+    body.append(toggle('Allow Student Emoji Editing',c.allowStudentEmojiEditing,(enabled,input)=>{const result=updateClass(target=>target.allowStudentEmojiEditing=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Let students choose their profile emoji in ClassConnect. Turn on Student Emoji PINs below to protect student selection.'));
+    body.append(toggle('Student Emoji PINs',c.requireStudentPin,(enabled,input)=>{const result=updateClass(target=>{target.requireStudentPin=enabled;ensureClassStudentPins(target);});if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},'Require three emojis to open a student profile in ClassConnect. Random PINs are assigned automatically; view or change each PIN in the student’s card.'));
     pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Logo',()=>{settings.close();editClass(c.id);},'cs-button','edit'));
@@ -240,6 +251,7 @@ function setupClassesStudents(){
     const layout=el('div','cs-profile-layout'),hero=el('aside','cs-detail-hero');
     hero.append(avatar(c,name,true),el('h3','',name||c.name),el('p','cs-muted',name?c.name:'Whole class'));
     if(name){const edit=button('Edit Student',()=>editStudent(name),'cs-button cs-detail-edit','edit');edit.dataset.detailFocus='edit';hero.append(edit);}
+    if(name&&c.requireStudentPin){const pin=c.studentProfiles[starChartStudentKey(name)]?.pin;hero.append(el('small','cs-muted','Student Emoji PIN'),el('div','cs-current-pin',pin?pin.map(n=>CLASS_CONNECT_PIN_EMOJIS[n]).join(' '):'Not set'),button('Change PIN',()=>editStudentPin(name),'cs-button'));}
     const body=el('section','cs-profile-body'+(animate?' is-entering':''));
     const view=activeStudent.view||'home';
     function navigate(next){activeStudent.view=next;renderDetail(true);detail.querySelector('.cs-profile-title')?.focus({preventScroll:true});}
