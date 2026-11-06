@@ -6,6 +6,8 @@
   const schedule=()=>{if(strips.size&&!frame)frame=requestAnimationFrame(position)};
   const sizes=new ResizeObserver(schedule);
   new MutationObserver(records=>{if(records.some(r=>strips.has(r.target)||r.target===document.getElementById('workspace')))schedule()}).observe(document.getElementById('workspace'),{attributes:true,attributeFilter:['style','class'],subtree:true});
+  // The idle shield can leave :hover active without a pointer boundary event.
+  new MutationObserver(schedule).observe(document.body,{attributes:true,attributeFilter:['class']});
   for(const event of ['pointerover','pointerout','focusin','focusout','fullscreenchange'])document.addEventListener(event,schedule,{passive:true});
   window.addEventListener('resize',schedule);
 
@@ -92,8 +94,10 @@
     for(const [m,strip] of strips){
       if(!m.isConnected){release(m);continue;}
       const tileFullscreen=document.fullscreenElement===m;
+      const idle=document.body.classList.contains('is-board-idle')||m.classList.contains('is-idle-unhovered');
       const stripHot=strip.matches(':hover')||strip.matches(':has(:focus-visible)');
-      strip.classList.toggle('is-expanded',tileFullscreen?stripHot:m.matches(':hover')||stripHot);
+      strip.classList.toggle('is-idle-unhovered',idle);
+      strip.classList.toggle('is-expanded',!idle&&(tileFullscreen?stripHot:m.matches(':hover')||stripHot));
       strip.classList.toggle('is-tile-fullscreen-strip',tileFullscreen);
       const parent=tileFullscreen?m:workspace;
       if(strip.parentElement!==parent)parent.append(strip);
