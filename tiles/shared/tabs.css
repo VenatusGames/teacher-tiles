@@ -20,7 +20,7 @@ body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;out
 .tile-tab-strip .tile-tab-bookmark{box-sizing:border-box;flex:0 0 var(--tab-height,32px);height:var(--tab-height,32px);min-height:0;}
 .tile-tab-strip .tile-tab{padding:2px 4px;line-height:16px;}
 .tile-tab-bookmark{pointer-events:auto;transform:translateX(31px);transition:transform .22s ease;}
-.tile-tab-strip.is-expanded .tile-tab-bookmark,.tile-tab-strip:has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
+.tile-tab-strip.is-expanded .tile-tab-bookmark,.tile-tab-strip:not(.is-idle-unhovered):has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
 @media(prefers-reduced-motion:reduce){.tile-tab-bookmark{transition:none;}}
 
 .tile-tab-bookmark:has(.tile-tab[aria-selected="true"])::after{content:"";position:absolute;inset:0;border:2px solid color-mix(in srgb,var(--tab-color) 60%,black);border-right:0;border-radius:inherit;pointer-events:none;}
@@ -34,7 +34,7 @@ body .module.is-tab-drop-target>.module-tab-add{opacity:1;background:#d8f6e5;out
   box-shadow:2px 2px 5px #26324212;
 }
 .tile-tab-strip.is-tile-fullscreen-strip.is-expanded .tile-tab-bookmark,
-.tile-tab-strip.is-tile-fullscreen-strip:has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
+.tile-tab-strip.is-tile-fullscreen-strip:not(.is-idle-unhovered):has(:focus-visible) .tile-tab-bookmark{transform:translateX(0);}
 .tile-tab-strip.is-tile-fullscreen-strip .tile-tab-bookmark:has(.tile-tab[aria-selected="true"])::after{
   border-left:0;
   border-right:2px solid color-mix(in srgb,var(--tab-color) 60%,black);
