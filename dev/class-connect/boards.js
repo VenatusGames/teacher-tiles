@@ -4,7 +4,7 @@ import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12
 import {firebaseConfig} from '../firebase-config.js';
 import {boardFrame} from './board-host.js?v=20261110-session-student-controls-3';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
-const call=async data=>(await invoke(data)).data;
+export const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(text,action)=>{const b=make('button','cc-session-button',text);b.type='button';b.onclick=action;return b;};
 export const active=s=>s?.active===true&&Number(s.until)>Date.now();
@@ -14,7 +14,7 @@ export function watchRoom(room,change){
  const start=()=>{stop();if(closed||document.hidden)return;off=onSnapshot(doc(db,'_classConnectRooms',room),{includeMetadataChanges:true},snap=>{if(snap.metadata?.fromCache)return;const s=snap.data()||null;change(s);clearTimeout(expiry);if(s?.active)expiry=setTimeout(()=>change({...s,active:false}),Math.max(0,Number(s.until)-Date.now())+50);},()=>change(null));};
  const visible=()=>document.hidden?stop():start();document.addEventListener('visibilitychange',visible);start();return ()=>{closed=true;stop();document.removeEventListener('visibilitychange',visible);};
 }
-function modal(title){const dialog=make('dialog','cc-session-dialog'),head=make('header'),heading=make('h2','',title),close=button('×',()=>dialog.close());close.setAttribute('aria-label','Close '+title);head.append(heading,close);dialog.setAttribute('aria-label',title);dialog.append(head);document.body.append(dialog);dialog.showModal();dialog.addEventListener('close',()=>dialog.remove(),{once:true});return dialog;}
+export function modal(title){const dialog=make('dialog','cc-session-dialog'),head=make('header'),heading=make('h2','',title),close=button('×',()=>dialog.close());close.setAttribute('aria-label','Close '+title);head.append(heading,close);dialog.setAttribute('aria-label',title);dialog.append(head);document.body.append(dialog);dialog.showModal();dialog.addEventListener('close',()=>dialog.remove(),{once:true});return dialog;}
 async function launch({teacher,classId,token,student,roster,session,getProfile,result}){
  const dialog=modal(result.status.mode==='controlled'?'Controlled Session':'Free Session');dialog.classList.add('cc-session-board');dialog.classList.toggle('cc-student-board',!teacher);
  const head=dialog.querySelector('header'),close=head.lastElementChild,status=make('p','cc-session-status','Opening board…'),holder=make('div','cc-session-stage is-loading');dialog.append(status,holder);status.setAttribute('role','status');
@@ -96,12 +96,15 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  }catch(e){holder.classList.remove('is-loading');status.textContent=e.message||'Could not open the board. Close and try again.';}
 }
 export async function enterStudentBoard({token,student,roster,session,getProfile}){
- const result=await call({action:'join',token,studentId:student.id,session});await launch({teacher:false,token,student,roster,session,getProfile,result});
+ const result=await call({action:'join',token,studentId:student.id,session});if(result.status.mode==='presentation'){const viewer=await import('./presentation-session.js?v=20261110-classconnect-presentations');return viewer.enterPresentation({token,student,session,getProfile,result});}await launch({teacher:false,token,student,roster,session,getProfile,result});
 }
 export async function teacherBoard({classId,name,roster}){
  const dialog=modal('Board Session'),body=make('div','cc-session-setup'),status=make('p','cc-session-status','Loading session…');dialog.append(body,status);
  let result;try{result=await call({action:'teacherGet',classId});}catch(e){status.textContent=e.message;return;}if(!dialog.isConnected)return;
  if(active(result.status)){
+  if(result.status.mode==='presentation'){
+   status.textContent='';body.append(make('h3','',name),make('p','','Presentation Session is active'),make('p','cc-session-status','Control slides from the Presentation tile on your board.'),button('End Session',async()=>{try{await call({action:'end',classId,sessionId:result.status.sessionId});dialog.close();}catch(e){status.textContent=e.message;}}));return;
+  }
   body.append(make('h3','',name),make('p','',result.status.mode==='controlled'?'Controlled Session is active':'Free Session is active'));
   body.append(button('Open Session Board',()=>{dialog.close();void launch({teacher:true,classId,roster,result});}),button('End Session',async()=>{try{await call({action:'end',classId,sessionId:result.status.sessionId});dialog.close();}catch(e){status.textContent=e.message;}}));status.textContent='Sessions end after 10 minutes without student input.';return;
  }
@@ -112,4 +115,4 @@ export async function teacherBoard({classId,name,roster}){
  const requestId=crypto.randomUUID(),start=button('Start Session',async()=>{start.disabled=true;status.textContent='Starting session…';try{const started=await call({action:'start',classId,requestId,mode,allowedTypes:mode==='free'?[...selected]:result.types});const ready=await call({action:'teacherGet',classId,sessionId:started.status.sessionId});if(dialog.isConnected){dialog.close();void launch({teacher:true,classId,roster,result:ready});}}catch(e){status.textContent=e.message;start.disabled=false;}});
  body.append(choices,selection,make('p','cc-session-status','Some tiles are excluded for students.'),start);status.textContent='Ends automatically after 10 minutes without student input.';
 }
-window.TeacherTilesBoardSessions={teacher:teacherBoard};
+window.TeacherTilesBoardSessions={teacher:teacherBoard,presentation:async tile=>{const module=await import('./presentation-session.js?v=20261110-classconnect-presentations');return module.openPresentation(tile);}};

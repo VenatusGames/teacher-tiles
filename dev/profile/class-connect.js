@@ -96,5 +96,10 @@
     if(error){const alert=make('p','cc-error',error);alert.setAttribute('role','alert');body.append(alert);if(loaded)body.append(button('Refresh Link Status',refresh));}
     if(busy){body.querySelectorAll('button').forEach(b=>b.disabled=true);const status=make('p','cc-loading','Please wait…');status.setAttribute('role','status');if(loaded)body.append(status);}
   }
-  window.TeacherTilesClassConnectUI={open(classId){ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';linkView=false;error='';if(!dialog.open)dialog.showModal();refresh();}};
+  window.TeacherTilesClassConnectUI={async ensureLink(classId){
+    await service().retry();const result=await service().list(),existing=result.links.find(link=>link.classId===classId);if(existing?.active)return existing;
+    await queueEncryptedClassSave(readClassRosters());if(localStorage.getItem(pbisDirtyStorageKey()))throw Error('Your class is still waiting to save. Check your connection and try again.');
+    const roster=readClassRosters().find(c=>c.id===classId);if(!roster)throw Error('This class no longer exists.');
+    return (await service().change('create',roster,existing?.revision||0)).link;
+  },open(classId){ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';linkView=false;error='';if(!dialog.open)dialog.showModal();refresh();}};
 })();
