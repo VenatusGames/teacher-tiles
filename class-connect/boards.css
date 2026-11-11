@@ -20,3 +20,6 @@
 .cc-session-board>.cc-session-status.is-quiet{opacity:0}
 .cc-session-board:fullscreen{width:100vw;height:100dvh}
 @media(prefers-reduced-motion:reduce){.cc-session-board>.cc-session-status{transition:none}}
+
+.cc-student-board>header .cc-session-back{display:none!important}
+.cc-student-board>header .cc-session-fullscreen{left:auto;right:14px}

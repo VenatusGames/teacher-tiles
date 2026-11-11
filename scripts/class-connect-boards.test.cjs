@@ -46,7 +46,7 @@ if(deployed){
  await teacher.goto(base+'host.html');await teacher.waitForFunction(()=>window.TeacherTilesBoardSessions);await teacher.evaluate(()=>{localStorage.setItem('parent-sentinel','untouched');TeacherTilesBoardSessions.teacher({classId:'c',name:'Owls'})});
  await teacher.screenshot({path:path.join(process.env.TEMP,'classconnect-session-setup.png')});await teacher.getByRole('button',{name:'Start Session',exact:true}).click();
  const frame=teacher.frameLocator('iframe');await frame.locator('#workspace').waitFor();await teacher.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,{},{timeout:60000});
- const teacherFrame=teacher.frames()[1];console.log('Teacher board loaded');
+ const teacherFrame=teacher.frames()[1];await teacher.evaluate(()=>window.tileSkinIsOwned=()=>true);console.log('Teacher board loaded');
  async function checkViewport(page){assert(await page.locator('iframe').evaluate(frame=>{const r=frame.getBoundingClientRect();return Math.abs(r.left)<1&&Math.abs(r.top)<1&&Math.abs(r.width-innerWidth)<1&&Math.abs(r.height-innerHeight)<1&&getComputedStyle(frame).borderTopWidth==='0px';}));}
  await checkViewport(teacher);
  await teacher.getByRole('button',{name:'Enter Fullscreen',exact:true}).click();await teacher.waitForFunction(()=>!!document.fullscreenElement);await checkViewport(teacher);await teacher.getByRole('button',{name:'Exit Fullscreen',exact:true}).click();await teacher.waitForFunction(()=>!document.fullscreenElement);
@@ -70,9 +70,24 @@ if(deployed){
  const published=calls.filter(c=>c.action==='publish').length;await new Promise(r=>setTimeout(r,1800));assert.equal(calls.filter(c=>c.action==='publish').length,published);
  await teacherFrame.evaluate(()=>createModule('dice',500,500));await studentFrame.locator('.module[data-type="dice"]').waitFor({timeout:15000});assert(await studentFrame.locator('.module[data-type="sticky"]').innerText().then(t=>t.includes('Student work')));
  await teacherFrame.evaluate(()=>deleteModules([...document.querySelectorAll('.module[data-type="dice"]')]));await studentFrame.locator('.module[data-type="dice"]').waitFor({state:'detached',timeout:15000});
+ // Teachers can equip skins; students see the skin without customization controls.
+ await teacherFrame.evaluate(()=>{const b=TeacherTilesBoard.capture();createModule('halloweentimer',-b.camera.x/b.camera.scale+700,-b.camera.y/b.camera.scale+220);});
+ await studentFrame.locator('.module[data-type=halloweentimer]').waitFor({timeout:15000});
+ const oldFace=await studentFrame.locator('.module[data-type=halloweentimer] .pumpkin-timer-face').innerHTML();
+ const skin=await teacherFrame.evaluate(()=>{const skin=TILE_SKIN_CATALOG.find(s=>s.tileType==='halloweentimer');applyTileSkinToModule(document.querySelector('.module[data-type=halloweentimer]'),skin.id);return skin.id;});
+ await studentFrame.locator('.module[data-tile-skin="'+skin+'"]').waitFor({timeout:15000});
+ assert.notEqual(await studentFrame.locator('.module[data-type=halloweentimer] .pumpkin-timer-face').innerHTML(),oldFace);
+ assert(await teacherFrame.locator('.module[data-type=halloweentimer] .tile-skins-toggle').evaluate(el=>getComputedStyle(el).display!=='none'));
+ assert(await studentFrame.locator('.module[data-type=halloweentimer] .tile-skins-toggle').evaluate(el=>getComputedStyle(el).display==='none'));
+ assert(await studentFrame.locator('.module[data-type=sticky] .tile-appearance-toggle').evaluate(el=>getComputedStyle(el).display==='none'));
+ assert.equal(await studentFrame.evaluate(()=>{const m=document.querySelector('.module[data-type=halloweentimer]');applyTileSkinToModule(m,'');return m.dataset.tileSkin;}),skin);
+ assert(await studentFrame.locator('.module[data-type=sticky]').evaluate(m=>{const a=m.getBoundingClientRect();return ['.module-fullscreen','.module-pin'].every(s=>{const r=m.querySelector(s).getBoundingClientRect();return r.right<=a.right&&r.left>a.left+a.width/2&&r.top<a.top+55;});}));
+ assert(await studentFrame.locator('#cc-frame-profile').evaluate(el=>el.getBoundingClientRect().left===14));
+ assert(await student.locator('.cc-session-fullscreen').evaluate(el=>innerWidth-el.getBoundingClientRect().right===14));
+ const tileRect=await studentFrame.locator('.module[data-type=sticky]').boundingBox();await student.mouse.move(tileRect.x+tileRect.width-22,tileRect.y+22);await studentFrame.waitForTimeout(200);assert(await studentFrame.locator('.module[data-type=sticky] .module-pin').evaluate(el=>Number(getComputedStyle(el).opacity)>0));
  await student.screenshot({path:path.join(process.env.TEMP,'classconnect-controlled.png')});
  // A student leaving and reentering starts fresh, never restoring their work.
- await student.getByRole('button',{name:'Back to Profile',exact:true}).click();
+ await student.frames()[1].getByRole('button',{name:'Back to Profile',exact:true}).click();
  await student.getByRole('button',{name:'Enter Board',exact:true}).click();
  await student.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,null,{timeout:60000});
  studentFrame=student.frames()[1];assert(!await studentFrame.locator('.module[data-type=sticky]').innerText().then(t=>t.includes('Student work')));
@@ -85,17 +100,29 @@ if(deployed){
  await teacher.evaluate(()=>TeacherTilesBoardSessions.teacher({classId:'c',name:'Owls'}));await teacher.getByRole('button',{name:'Open Session Board',exact:true}).click();
  await teacher.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,null,{timeout:60000});
 
- await teacher.getByRole('button',{name:'End Session',exact:true}).click();await student.locator('.cc-session-stage.is-ended').waitFor();
- await teacher.getByRole('button',{name:'Back to Class',exact:true}).click();await student.getByRole('button',{name:'Back to Profile',exact:true}).click();
+ await teacher.getByRole('button',{name:'End Session',exact:true}).click();await student.locator('iframe').waitFor({state:'detached'});
+ await teacher.getByRole('button',{name:'Back to Class',exact:true}).click();await student.getByRole('button',{name:'Enter Board',exact:true}).waitFor();
  await teacher.evaluate(()=>TeacherTilesBoardSessions.teacher({classId:'c',name:'Owls'}));await teacher.getByRole('button',{name:/Free Session Choose/}).click();await teacher.getByRole('button',{name:'dice',exact:true}).click();await teacher.getByRole('button',{name:'Start Session',exact:true}).click();
  await teacher.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,null,{timeout:60000});await student.getByRole('button',{name:'Enter Board',exact:true}).click();await student.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,null,{timeout:60000});
- const free=student.frames()[1];await free.evaluate(()=>createModule('dice',500,500));assert.equal(await free.locator('.module[data-type="dice"]').count(),1);assert.equal(await free.evaluate(()=>createModule('sticky',500,500)),null);
+ const free=student.frames()[1];
+ await student.mouse.click(300,250,{button:'right'});
+ await free.locator('#context-menu.is-open').waitFor();
+ assert.equal(await free.locator('#context-menu .context-menu__item:visible').count(),1);
+ assert.equal(await free.locator('#context-menu .context-menu__item[data-coming-soon=true]:visible').count(),0);
+ assert.equal(await free.locator('#context-menu .context-menu__section h3:visible,.context-menu__category-drawer:visible').count(),0);
+ await free.locator('#context-menu input[type=search]').fill('nothing matches');
+ assert.equal(await free.locator('#context-menu .context-menu__item:visible').count(),0);
+ await free.locator('#context-menu input[type=search]').fill('dice');
+ assert.equal(await free.locator('#context-menu .context-menu__item:visible').count(),1);
+ await student.screenshot({path:path.join(process.env.TEMP,'classconnect-student-menu.png')});
+ await free.locator('#context-menu .context-menu__close').click();
+ await free.evaluate(()=>createModule('dice',500,500));assert.equal(await free.locator('.module[data-type="dice"]').count(),1);assert.equal(await free.evaluate(()=>createModule('sticky',500,500)),null);
  await free.evaluate(()=>deleteModules([...document.querySelectorAll('.module')]));assert.equal(await free.locator('.module').count(),0);
  assert.equal(await teacher.evaluate(()=>localStorage.getItem('parent-sentinel')),'untouched');
  assert.equal(await free.evaluate(()=>createStickerModule({emoji:'⭐'},200,200)),null);
  await student.setViewportSize({width:390,height:844});await checkViewport(student);await student.screenshot({path:path.join(process.env.TEMP,'classconnect-student-mobile-corners.png')});assert(await student.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- status={...status,until:Date.now()-1};await broadcast();await student.locator('.cc-session-stage.is-ended').waitFor();assert(await free.evaluate(()=>document.body.inert));
- await student.getByRole('button',{name:'Back to Profile',exact:true}).click();assert(!await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));
+ status={...status,until:Date.now()-1};await broadcast();await student.locator('iframe').waitFor({state:'detached'});
+ assert(!await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));
 
  assert.equal(gateRequests,0);if(deployed)assert.equal(portalRequests,0);assert.deepEqual(errors,[]);console.log('Session browser checks passed: teacher editing, controlled restrictions, independent work, incremental updates, end session, free whitelist, isolated storage.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

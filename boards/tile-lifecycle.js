@@ -313,6 +313,8 @@ function layoutTileOptionControls(m){
   const del=m.querySelector(':scope>.module-delete'),pin=m.querySelector(':scope>.module-pin');
   if(!del||!pin)return;
 
+  if(window.ClassConnectPolicy?.student){clearTileOptionObstructionShift(m);return;}
+
   // The universal corner cluster is always authoritative. Other tile controls move around it.
   if(document.fullscreenElement===m){
     m.style.setProperty('--tile-fullscreen-right','48px');

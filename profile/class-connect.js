@@ -61,13 +61,13 @@
     body.replaceChildren();dialog.setAttribute('aria-busy',String(busy));
     const identity=make('div','cc-identity'),avatar=make('div','cc-class-avatar');
     if(roster.logoImage){const img=make('img');img.src=roster.logoImage;img.alt='';avatar.append(img);}else avatar.textContent=roster.logo || '👥';
-    const info=make('div');info.append(make('h3','',roster.name),make('p','cs-muted',`${roster.students.length} student${roster.students.length===1?'':'s'}`));identity.append(avatar,info);body.append(identity);
+    const info=make('div','cc-identity-info'),nameRow=make('div','cc-identity-heading');nameRow.append(make('h3','',roster.name));info.append(nameRow,make('p','cs-muted',`${roster.students.length} student${roster.students.length===1?'':'s'}`));identity.append(avatar,info);body.append(identity);
     if(!linkView){
       const tools=make('div','cc-tool-grid');
-      const link=button('',()=>{linkView=true;render();body.querySelector('.cc-link-back')?.focus({preventScroll:true});},'cc-tool-card cc-open-link','link');
-      link.lastElementChild.remove();const linkCopy=make('span','cc-tool-copy');linkCopy.append(make('strong','','Student Link'),make('small','','Set up and manage your classroom link'));link.append(linkCopy);
+      const link=button('Student Link',()=>{linkView=true;render();body.querySelector('.cc-link-back')?.focus({preventScroll:true});},'cc-open-link','link');
+      nameRow.append(link);
       const start=button('',async()=>{start.disabled=true;try{if(!entry?.active)await change('create');if(entry?.active)await window.TeacherTilesBoardSessions.teacher({classId:activeClass,name:roster.name,roster:{name:roster.name,gradeLevel:roster.gradeLevel,students:roster.students.map(name=>{const visual=roster.studentProfiles?.[starChartStudentKey(name)]||{};return {name,emoji:visual.emoji||'',image:visual.image||''};})}});}catch(e){error=safeError(e);linkView=true;render();}finally{start.disabled=false;}},'cc-tool-card cc-start-session','board');start.lastElementChild.remove();const startCopy=make('span','cc-tool-copy');startCopy.append(make('strong','','Start Board Session'),make('small','','Controlled or Free Session'));start.append(startCopy);
-      tools.append(link,start);body.append(tools);return;
+      tools.append(start);body.append(tools);return;
     }
     const back=button('ClassConnect',()=>{linkView=false;confirmation='';render();body.querySelector('.cc-open-link')?.focus({preventScroll:true});},'cc-link-back','back');back.setAttribute('aria-label','Back to ClassConnect');body.prepend(back);
     const card=make('section','cc-link-card'),cardHead=make('div','cc-section-heading');cardHead.append(make('h3','','Student Link'));card.append(cardHead,make('p','cs-muted','Keep this link private and only share with trusted members of your classroom community.'));
