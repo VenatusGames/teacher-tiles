@@ -34,6 +34,7 @@
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
+    wordcloud:s=>({prompt:text(s.prompt,160),words:[]}),
     presentation:s=>{const v=s.sharedPresentation,shared=v&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.id||'')&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.templateId||'')?{id:v.id,templateId:v.templateId,title:text(v.title,100),slideCount:num(v.slideCount,1,500,1),cover:typeof v.cover==='string'&&v.cover.length<=40000?raster(v.cover):''}:null;return {presentationId:'',slideIndex:0,autoplay:s.autoplay===true,loop:s.loop===true,interval:num(s.interval,2,300,5),...(shared?{sharedPresentation:shared,previewSrc:shared.cover}:{})};},
     visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
     halloweentimer:()=>({}),
