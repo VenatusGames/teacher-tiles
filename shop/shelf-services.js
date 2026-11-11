@@ -91,6 +91,7 @@ function applyTeacherTheme(theme,{persist=true,presentation=false}={}){
 }
 
 function createStickerModule({src='',emoji='',name='Sticker',aspect=1},clientX,clientY,{record=true,animate=true,objectId='',previewSize=0}={}){
+  if(window.ClassConnectPolicy&&!ClassConnectPolicy.hydrating)return null;
   if(!src&&!emoji)return null;
   if(window.TeacherTilesPresentations?.active)return window.TeacherTilesPresentations.addSticker({src,emoji,name,aspect},clientX,clientY);
   const isFlag=/flagcdn\.io\/flags\//i.test(src);

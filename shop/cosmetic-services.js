@@ -83,8 +83,11 @@ function restoreTileEdit(m,snapshot){
   m._activeTileSounds?.clear();
   const sibling=m.nextSibling;m._deactivate?.();m.remove();
   let next;
+  const sessionPolicy=window.ClassConnectPolicy,wasReplacing=sessionPolicy?.replacing;
+  if(sessionPolicy)sessionPolicy.replacing=true;
   try{next=withBoardChangesSuspended(()=>restoreTeacherTilesBoardObject(snapshot));}
   catch(error){console.error('Could not restore tile edit',error);}
+  finally{if(sessionPolicy)sessionPolicy.replacing=wasReplacing;}
   if(!next){if(sibling?.parentNode===workspace)workspace.insertBefore(m,sibling);else workspace.append(m);m._reactivate?.();if(snapshot.timer)m._boardTimerSetState?.(snapshot.timer);return m;}
   if(sibling?.parentNode===workspace)workspace.insertBefore(next,sibling);
   for(const action of [...undoStack,...redoStack]){

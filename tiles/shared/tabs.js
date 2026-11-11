@@ -52,6 +52,7 @@
     if(keyboardFocus)strips.get(next)?.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});
   }
   function add(m){
+    if(window.ClassConnectPolicy?.controlled)return;
     if(m.dataset.type==='sticker')return;
     if(document.fullscreenElement===m)return;
     window.TeacherTilesEditHistory?.flush();
@@ -64,6 +65,7 @@
     replace(m,compose(before,items,items.length-1));
   }
   function merge(target,source){
+    if(window.ClassConnectPolicy?.controlled)return;
     if(target?.dataset.type==='sticker'||source?.dataset.type==='sticker')return false;
     if(!target?.isConnected||!source?.isConnected||target===source||document.fullscreenElement?.classList?.contains('module'))return false;
     window.TeacherTilesEditHistory?.flush();
@@ -79,6 +81,7 @@
     return true;
   }
   function remove(m,index){
+    if(window.ClassConnectPolicy?.controlled)return;
     const before=serializeBoardModule(m),items=pages(before);
     if(items.length<2)return;
     items.splice(index,1);
