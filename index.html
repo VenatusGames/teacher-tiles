@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Pacifico&family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261103-resize-edge-direction" />
+  <link rel="stylesheet" href="styles.css?v=20261110-tenframe-counter-scale" />
   <link rel="stylesheet" href="assets/themes/baked.css?v=20260928-hd" />
   <link rel="stylesheet" href="styles-materials.css?v=20260912-static-previews-1" />
   <link rel="stylesheet" href="tiles/shared/controls.css?v=20260923-heading-toggle-2" />
@@ -134,7 +134,7 @@
 <link rel="stylesheet" href="tiles/shared/collection-controls.css?v=20261029-flat-shelf-controls">
 <link rel="stylesheet" href="presentations/transitions.css?v=20261017-shop-effects-polish">
 <link rel="stylesheet" href="presentations/styles.css?v=20261023-profile-navigation">
-<link rel="stylesheet" href="tiles/presentations/styles.css?v=20261110-library-loading">
+<link rel="stylesheet" href="tiles/presentations/styles.css?v=20261110-classconnect-presentations">
 <link rel="stylesheet" href="tiles/shared/tile-menu-filters.css?v=20261028-menu-sizing">
 <link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-controls-followup">
 <link rel="stylesheet" href="assets/themes/extra-packs.css?v=20261020-pack-preview-fix">
@@ -150,7 +150,7 @@
 <link rel="stylesheet" href="tiles/racer/hill-course.css?v=20261028-fanned-standees">
 <link rel="stylesheet" href="news/runtime/styles.css?v=20261103-news-captions">
 <link rel="stylesheet" href="tiles/lesson-planner/tools.css?v=20261103-display-settings">
-<link rel="stylesheet" href="class-connect/boards.css?v=20261110-session-student-controls-3">
+<link rel="stylesheet" href="class-connect/boards.css?v=20261110-classconnect-presentations">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -4090,7 +4090,7 @@
   <template id="presentation-template">
   <section class="module presentation-module" data-type="presentation" data-bg="white">
     <button class="module-delete" aria-label="Delete Presentations tile">×</button><div class="module-drag-handle"></div>
-    <header class="presentation-tile-heading"><strong>Presentations</strong><small>ClassConnect on this tile is coming soon</small></header>
+    <header class="presentation-tile-heading"><strong>Presentations</strong></header>
     <div class="presentation-tile-viewport">
       <div class="presentation-tile-stage pres-slide" hidden></div>
       <div class="presentation-tile-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v5M8 21l4-3 4 3M8 8h8M8 12h5"/></svg><strong>No presentation selected</strong><button type="button" class="tile-action" data-player="choose">Choose Presentation</button><span class="presentation-tile-message" role="status"></span></div>
@@ -4836,7 +4836,7 @@
 <script src="tiles/spinner/setup.js?v=20261020-effect-sounds"></script>
 <script src="boards/interaction-helpers.js?v=20261110-session-student-controls-3"></script>
 <script src="profile/classroom-services.js?v=20261103-student-pins"></script>
-<script src="profile/class-connect.js?v=20261110-compact-student-link"></script>
+<script src="profile/class-connect.js?v=20261110-classconnect-presentations"></script>
 <script src="profile/classes-students.js?v=20261103-student-pins"></script>
 <script src="account/interface-services.js?v=20261028-star-landing"></script>
 <script src="boards/navigation.js?v=20261110-session-student-controls-3"></script>
@@ -6245,11 +6245,12 @@
 <script src="presentations/objects-contract.js?v=20261020-data-tiles"></script>
 <script src="presentations/objects.js?v=20261020-snapping"></script>
 <script src="presentations/snapping.js?v=20261020"></script>
-<script src="presentations/index.js?v=20261023-profile-navigation"></script>
-<script src="tiles/presentations/index.js?v=20261110-library-loading"></script>
+<script src="presentations/readonly.js?v=20261110-classconnect-presentations"></script>
+<script src="presentations/index.js?v=20261110-classconnect-presentations"></script>
+<script src="tiles/presentations/index.js?v=20261110-classconnect-presentations"></script>
 <script src="support/help-navigation.js?v=20261020-ui-fixes"></script>
 <script src="shop/browse-performance.js?v=20261028-scroll"></script>
 <script src="shop/theme-previews.js?v=20261029-motion"></script>
-<script type="module" src="class-connect/boards.js?v=20261110-session-student-controls-3"></script>
+<script type="module" src="class-connect/boards.js?v=20261110-classconnect-presentations"></script>
 </body>
 </html>

@@ -10192,7 +10192,7 @@ body.dark .wordy-module[data-bg="white"] .wordy-secret-input{
 }
 
 .tenframe-counter{
-  width:min(72%,48px);
+  width:72%;
   aspect-ratio:1;
   border-radius:50%;
   background:#e04747;
