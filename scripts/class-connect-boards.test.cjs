@@ -1,7 +1,18 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
-const root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
-let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0;
+const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0,gateRequests=0,portalRequests=0;
+let builtRoot;
+if(deployed){
+ builtRoot=fs.mkdtempSync(path.join(require('os').tmpdir(),'tt-session-built-'));
+ fs.mkdirSync(path.join(builtRoot,'sandbox'));
+ fs.copyFileSync(path.join(root,'index.html'),path.join(builtRoot,'index.html'));
+ fs.copyFileSync(path.join(root,'sandbox/portal.html'),path.join(builtRoot,'sandbox/portal.html'));
+ require(path.join(root,'sandbox/build.cjs')).buildSandbox(builtRoot);
+ assert(fs.readFileSync(path.join(builtRoot,'index.html'),'utf8').includes('portal-access-screen'));
+ assert(fs.readFileSync(path.join(builtRoot,'board.html'),'utf8').includes('sandbox/board-gate.js'));
+}
+
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const context=await browser.newContext({viewport:{width:1400,height:960}}),pages=[],errors=[];
  const broadcast=async()=>{for(const p of pages)await p.evaluate(s=>{window.__currentRoom=s;window.__pushRoom?.(s)},status).catch(()=>{});};
@@ -18,29 +29,36 @@ let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0;
   throw Error('Unexpected action '+data.action);
  });
  await context.route('**/*',route=>{
-  const url=new URL(route.request().url());
+  const url=new URL(route.request().url()),pathname=url.pathname.replace(/^\/dev(?=\/)/,'');
   if(url.hostname==='www.gstatic.com'){
    const body=url.pathname.endsWith('firebase-app.js')?'const app={name:"[DEFAULT]"};export const initializeApp=()=>app;export const getApps=()=>[app];':url.pathname.endsWith('firebase-firestore.js')?'export const getFirestore=()=>({});export const doc=()=>({});export function onSnapshot(_,options,next){window.__roomListeners??=new Set();window.__roomListeners.add(next);window.__pushRoom=s=>{window.__currentRoom=s;for(const f of window.__roomListeners)f({data:()=>s})};next({data:()=>window.__currentRoom});return()=>window.__roomListeners.delete(next)}':'export const getFunctions=()=>({});export const httpsCallable=(_,name)=>async data=>({data:await window.__boardCall(name,data)});';
    return route.fulfill({contentType:'text/javascript',body});
   }
-  if(url.pathname==='/host.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><link rel="stylesheet" href="/class-connect/boards.css"><script type="module" src="/class-connect/boards.js"></script>'});
+  if(pathname==='/host.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><link rel="stylesheet" href="class-connect/boards.css"><script type="module" src="class-connect/boards.js"></script>'});
   if(url.pathname.endsWith('firebase-auth.js'))return route.fulfill({body:'',contentType:'text/javascript'});
-  if(url.pathname.includes('board-gate'))return route.abort();
+  if(url.pathname.includes('board-gate')||url.pathname.includes('portal-access'))gateRequests++;
   if(url.pathname.endsWith('/shopManagement'))return route.fulfill({json:{revision:0,products:{},bundles:{},sales:{},banners:{hidden:[],removed:[],custom:[]},serverTime:Date.now()}});
   if(url.hostname!=='tiles.test')return route.abort();
-  const file=path.join(root,decodeURIComponent(url.pathname));return fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.fulfill({status:404,body:''});
+  if(deployed&&pathname==='/index.html')portalRequests++;
+  const file=path.join(deployed&&['/index.html','/board.html'].includes(pathname)?builtRoot:root,decodeURIComponent(pathname));return fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.fulfill({status:404,body:''});
  });
  const teacher=await context.newPage();pages.push(teacher);teacher.on('pageerror',e=>errors.push('Teacher: '+e.message));
- await teacher.goto('https://tiles.test/host.html');await teacher.waitForFunction(()=>window.TeacherTilesBoardSessions);await teacher.evaluate(()=>{localStorage.setItem('parent-sentinel','untouched');TeacherTilesBoardSessions.teacher({classId:'c',name:'Owls'})});
+ await teacher.goto(base+'host.html');await teacher.waitForFunction(()=>window.TeacherTilesBoardSessions);await teacher.evaluate(()=>{localStorage.setItem('parent-sentinel','untouched');TeacherTilesBoardSessions.teacher({classId:'c',name:'Owls'})});
  await teacher.screenshot({path:path.join(process.env.TEMP,'classconnect-session-setup.png')});await teacher.getByRole('button',{name:'Start Session',exact:true}).click();
  const frame=teacher.frameLocator('iframe');await frame.locator('#workspace').waitFor();await teacher.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,{},{timeout:60000});
  const teacherFrame=teacher.frames()[1];console.log('Teacher board loaded');
+ async function checkViewport(page){assert(await page.locator('iframe').evaluate(frame=>{const r=frame.getBoundingClientRect();return Math.abs(r.left)<1&&Math.abs(r.top)<1&&Math.abs(r.width-innerWidth)<1&&Math.abs(r.height-innerHeight)<1&&getComputedStyle(frame).borderTopWidth==='0px';}));}
+ await checkViewport(teacher);
+ await teacher.getByRole('button',{name:'Enter Fullscreen',exact:true}).click();await teacher.waitForFunction(()=>!!document.fullscreenElement);await checkViewport(teacher);await teacher.getByRole('button',{name:'Exit Fullscreen',exact:true}).click();await teacher.waitForFunction(()=>!document.fullscreenElement);
+ assert.equal(await teacherFrame.locator('#sandbox-access-gate,#portal-access-screen').count(),0);
+ await teacher.screenshot({path:path.join(process.env.TEMP,'classconnect-teacher-corners.png')});
+
  await teacherFrame.evaluate(()=>{const b=TeacherTilesBoard.blank();const x=-b.camera.x/b.camera.scale+200,y=-b.camera.y/b.camera.scale+180;createModule('sticky',x,y);});
  await teacher.waitForFunction(()=>document.querySelector('.cc-session-status').textContent==='Students have the latest tiles',null,{timeout:15000}).catch(async e=>{console.log('Debug',errors,calls.map(x=>x.action),await teacher.locator('.cc-session-status').allTextContents());throw e});assert.equal(snapshot.objects.length,1);const sticky=snapshot.objects[0];
  const student=await context.newPage();pages.push(student);student.on('pageerror',e=>errors.push('Student: '+e.message));await student.addInitScript(s=>window.__currentRoom=s,status);
- await student.goto('https://tiles.test/class-connect.html#'+token);await student.getByRole('button',{name:'Open Alice',exact:true}).click();assert(await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));await student.getByRole('button',{name:'Enter Board',exact:true}).click();
+ await student.goto(base+'class-connect.html#'+token);await student.getByRole('button',{name:'Open Alice',exact:true}).click();assert(await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));await student.getByRole('button',{name:'Enter Board',exact:true}).click();
  await student.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.ClassConnectPolicy?.ready,null,{timeout:60000});let studentFrame=student.frames()[1];
- assert.equal(await studentFrame.locator('.module[data-type="sticky"]').count(),1);console.log('Student board loaded');
+ assert.equal(await studentFrame.locator('.module[data-type="sticky"]').count(),1);console.log('Student board loaded');await checkViewport(student);assert.equal(await studentFrame.locator('#sandbox-access-gate,#portal-access-screen').count(),0);
  assert.equal(await studentFrame.evaluate(()=>localStorage.getItem('parent-sentinel')),null);
  assert.equal(await studentFrame.evaluate(()=>typeof TeacherTilesEncryptedClasses),'undefined');
  assert.equal(await studentFrame.evaluate(()=>readClassRosters()[0].students[0]),'Alice');
@@ -75,9 +93,9 @@ let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0;
  await free.evaluate(()=>deleteModules([...document.querySelectorAll('.module')]));assert.equal(await free.locator('.module').count(),0);
  assert.equal(await teacher.evaluate(()=>localStorage.getItem('parent-sentinel')),'untouched');
  assert.equal(await free.evaluate(()=>createStickerModule({emoji:'⭐'},200,200)),null);
- await student.setViewportSize({width:390,height:844});assert(await student.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await student.setViewportSize({width:390,height:844});await checkViewport(student);await student.screenshot({path:path.join(process.env.TEMP,'classconnect-student-mobile-corners.png')});assert(await student.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  status={...status,until:Date.now()-1};await broadcast();await student.locator('.cc-session-stage.is-ended').waitFor();assert(await free.evaluate(()=>document.body.inert));
  await student.getByRole('button',{name:'Back to Profile',exact:true}).click();assert(!await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));
 
- assert.deepEqual(errors,[]);console.log('Session browser checks passed: teacher editing, controlled restrictions, independent work, incremental updates, end session, free whitelist, isolated storage.');
+ assert.equal(gateRequests,0);if(deployed)assert.equal(portalRequests,0);assert.deepEqual(errors,[]);console.log('Session browser checks passed: teacher editing, controlled restrictions, independent work, incremental updates, end session, free whitelist, isolated storage.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});
