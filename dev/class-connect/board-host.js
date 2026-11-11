@@ -1,7 +1,18 @@
 const root=new URL('../',import.meta.url);
 let source;
+async function loadBoardSource(){
+ // Deployment moves the board to board.html and replaces index.html with the
+ // portal/homepage. The index fallback is only for an unbuilt local checkout.
+ for(const name of ['board.html','index.html']){
+  const response=await fetch(new URL(name,root),{cache:'no-cache'});
+  if(!response.ok){if(response.status===404)continue;throw Error('Could not load the session board. Please try again.');}
+  const html=await response.text(),candidate=new DOMParser().parseFromString(html,'text/html');
+  if(candidate.getElementById('workspace')&&candidate.getElementById('sticky-template'))return html;
+ }
+ throw Error('The session board files are unavailable. Please refresh and try again.');
+}
 export async function boardFrame(container,{teacher,mode,allowedTypes,student,roster,onChange,onInput,onProfile,signal}){
- source??=fetch(new URL('index.html',root)).then(r=>{if(!r.ok)throw Error('Could not open the board.');return r.text();}).catch(e=>{source=null;throw e;});
+ source??=loadBoardSource().catch(e=>{source=null;throw e;});
  const html=await source;if(signal?.aborted||!container.isConnected)throw Error('Board closed.');
  const doc=new DOMParser().parseFromString(html,'text/html');
  doc.querySelectorAll('script[src]').forEach(s=>{if(/firebase-auth|community\/index|profile\/patches|class-connect\/boards|board-gate|splash|shop\/ui|shop\/ad-rewards|tile-menu-metadata|presentations\/index/.test(s.getAttribute('src')))s.remove();});
@@ -12,8 +23,8 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="script-src 'nonce-"+nonce+"' 'strict-dynamic'; object-src 'none'; base-uri 'self'";
  doc.head.prepend(csp);
  const base=doc.createElement('base');base.href=root.href;doc.head.prepend(base);
- const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261110-sessions',root).href;base.after(boot);
- const style=doc.createElement('style');style.textContent=`#boards-toggle,#settings-toggle,#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#tile-effects-shelf-toggle,#cursors-shelf-toggle,#shop-toggle,#boards-view,#profile-modal,#settings-modal,#shop-modal,#asset-shelf,#teachertiles-intro,.workspace-upcoming-controls,.board-preview,.tile-skins-toggle,.board-account-menu{ display:none!important}body.cc-controlled .module-delete,body.cc-controlled .module-tab-add,body.cc-controlled .tile-tab-close,body.cc-controlled .tile-appearance-toggle,body.cc-controlled .tile-settings-toggle,body.cc-controlled .tile-settings-beside-brush,body.cc-controlled #context-menu{display:none!important}.context-menu__item.cc-unavailable{display:none!important}#cc-frame-profile{position:fixed;right:18px;top:18px;z-index:999999;border:1px solid #dce2ec;background:white;padding:9px 14px;border-radius:14px;font:600 14px system-ui;display:flex;align-items:center;gap:9px}#cc-frame-profile .cc-board-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;font-size:19px}#cc-frame-profile img{width:30px;height:30px;border-radius:9px;object-fit:cover}`;doc.head.append(style);
+ const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261110-session-viewport-2',root).href;base.after(boot);
+ const style=doc.createElement('style');style.textContent=`#fullscreen-toggle,#boards-toggle,#settings-toggle,#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#tile-effects-shelf-toggle,#cursors-shelf-toggle,#shop-toggle,#boards-view,#profile-modal,#settings-modal,#shop-modal,#asset-shelf,#teachertiles-intro,.workspace-upcoming-controls,.board-preview,.tile-skins-toggle,.board-account-menu{ display:none!important}body.cc-controlled .module-delete,body.cc-controlled .module-tab-add,body.cc-controlled .tile-tab-close,body.cc-controlled .tile-appearance-toggle,body.cc-controlled .tile-settings-toggle,body.cc-controlled .tile-settings-beside-brush,body.cc-controlled #context-menu{display:none!important}.context-menu__item.cc-unavailable{display:none!important}#cc-frame-profile{position:fixed;right:18px;top:18px;z-index:999999;border:1px solid #dce2ec;background:white;padding:9px 14px;border-radius:14px;font:600 14px system-ui;display:flex;align-items:center;gap:9px}#cc-frame-profile .cc-board-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;font-size:19px}#cc-frame-profile img{width:30px;height:30px;border-radius:9px;object-fit:cover}`;style.textContent+='@media(max-width:600px){#workspace-empty-hint{top:82px;width:max-content;max-width:calc(100vw - 36px);box-sizing:border-box;text-align:center}}';doc.head.append(style);
  doc.querySelectorAll('script').forEach(script=>script.setAttribute('nonce',nonce));
  const iframe=document.createElement('iframe');iframe.title=teacher?'Teacher session board':'Your class board';iframe.allow='microphone; camera; fullscreen; clipboard-write';iframe.srcdoc='<!doctype html>'+doc.documentElement.outerHTML;container.append(iframe);
  await new Promise((resolve,reject)=>{
@@ -25,6 +36,7 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  if(!iframe.isConnected)throw Error('Board closed.');const win=iframe.contentWindow;if(!win.TeacherTilesBoard)throw Error('The board could not start.');
  const policy=win.ClassConnectPolicy;policy.controlled=!teacher&&mode==='controlled';policy.allowed=Array.isArray(allowedTypes)?allowedTypes:[];win.document.body.classList.toggle('cc-controlled',policy.controlled);
  win.document.querySelectorAll('.context-menu__item[data-module]').forEach(item=>{if(!policy.allowed.includes(item.dataset.module)){item.classList.add('cc-unavailable');item.dataset.tileDisabled='true';item.disabled=true;}});
+ if(policy.controlled){const hint=win.document.getElementById('workspace-empty-hint');if(hint){hint.removeAttribute('data-i18n');hint.textContent='Your teacher will add tiles here.';}}
  win.TeacherTilesTileMenu?.refresh();
  win.TeacherTilesBoard.clear();win.TeacherTilesBoard.setActiveBoardId('');
  policy.seedRoster(roster);

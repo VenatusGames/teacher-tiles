@@ -2,7 +2,7 @@ import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {boardFrame} from './board-host.js?v=20261110-sessions';
+import {boardFrame} from './board-host.js?v=20261110-session-viewport-2';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
 const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
@@ -18,6 +18,13 @@ function modal(title){const dialog=make('dialog','cc-session-dialog'),head=make(
 async function launch({teacher,classId,token,student,roster,session,getProfile,result}){
  const dialog=modal(result.status.mode==='controlled'?'Controlled Session':'Free Session');dialog.classList.add('cc-session-board');
  const head=dialog.querySelector('header'),close=head.lastElementChild,status=make('p','cc-session-status','Opening board…'),holder=make('div','cc-session-stage is-loading');dialog.append(status,holder);status.setAttribute('role','status');
+ close.classList.add('cc-session-back');
+ let sessionFullscreen=false;
+ const fullscreen=button('',async()=>{try{if(document.fullscreenElement){await document.exitFullscreen();sessionFullscreen=false;}else{await document.documentElement.requestFullscreen();sessionFullscreen=true;}}catch{status.textContent='Fullscreen is unavailable in this browser.';}});
+ fullscreen.classList.add('cc-session-fullscreen');fullscreen.setAttribute('aria-label','Enter Fullscreen');fullscreen.title='Fullscreen';
+ fullscreen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg>';head.insertBefore(fullscreen,close);
+ const fullscreenChanged=()=>fullscreen.setAttribute('aria-label',document.fullscreenElement?'Exit Fullscreen':'Enter Fullscreen');document.addEventListener('fullscreenchange',fullscreenChanged);fullscreenChanged();
+ let quietTimer=0;const noticeObserver=new MutationObserver(()=>{status.classList.remove('is-quiet');clearTimeout(quietTimer);quietTimer=setTimeout(()=>{if(!holder.classList.contains('is-loading')&&!ended&&!failed)status.classList.add('is-quiet');},5000);});noticeObserver.observe(status,{childList:true});
  const opening=new AbortController(),ownerUid=window.TeacherTilesAuth?.user?.uid;
  const accountChanged=()=>{if(teacher&&window.TeacherTilesAuth?.user?.uid!==ownerUid)dialog.close();};
  const linkChanged=()=>{if(!teacher)dialog.close();};
@@ -38,13 +45,14 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
    }
   })();try{await saving;}finally{saving=null;}
  };
- const retry=button('Retry',()=>void send());retry.hidden=true;head.insertBefore(retry,close);
+ const retry=button('Retry',()=>void send());retry.classList.add('cc-session-retry');retry.hidden=true;head.insertBefore(retry,close);
  const finish=async()=>{
   if(close.disabled)return;close.disabled=true;
   if(teacher&&!ended){if(frame&&model.mode==='controlled'){const snapshot=frame.snapshot(),signature=JSON.stringify(snapshot);if(signature!==lastQueued){lastQueued=signature;pending=snapshot;}}await send();if(pending||failed){close.disabled=false;status.textContent='Changes are not shared yet. Retry, or end the session to discard them.';return;}}
   dialog.close();
  };
- close.onclick=finish;close.textContent=teacher?'Back to Class':'Back to Profile';close.setAttribute('aria-label',close.textContent);
+ close.onclick=finish;close.textContent='';const backLabel=teacher?'Back to Class':'Back to Profile';close.setAttribute('aria-label',backLabel);close.title=backLabel;
+ close.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>';
  dialog.addEventListener('cancel',e=>{e.preventDefault();void finish();});
  if(teacher){const end=button('End Session',async()=>{end.disabled=true;try{if(saving)await saving;await call({...credentials,action:'end',sessionId:model.sessionId});pending=null;unavailable('Session ended');end.remove();close.disabled=false;}catch(e){status.textContent=e.message;end.disabled=false;}});end.classList.add('cc-session-danger');head.insertBefore(end,close);}
  const scheduleInput=()=>{
@@ -61,7 +69,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  };
  const activity=()=>{lastInput=Date.now();scheduleInput();};
  const beforeLeave=e=>{if(teacher&&(pending||saving)){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',beforeLeave);
- dialog.addEventListener('close',()=>{closed=true;opening.abort();clearTimeout(saveTimer);clearTimeout(inputTimer);off?.();window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',accountChanged);window.removeEventListener('hashchange',linkChanged);frame?.close();getProfile?.();},{once:true});
+ dialog.addEventListener('close',()=>{closed=true;opening.abort();noticeObserver.disconnect();clearTimeout(quietTimer);document.removeEventListener('fullscreenchange',fullscreenChanged);if(sessionFullscreen&&document.fullscreenElement)void document.exitFullscreen().catch(()=>{});clearTimeout(saveTimer);clearTimeout(inputTimer);off?.();window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',accountChanged);window.removeEventListener('hashchange',linkChanged);frame?.close();getProfile?.();},{once:true});
  const refresh=async()=>{
   if(loading||saving||closed||ended||model.mode!=='controlled'||model.revision<=loadedRevision)return;
   if(teacher&&pending){unavailable('This board changed in another teacher window. Reopen the session.');return;}
