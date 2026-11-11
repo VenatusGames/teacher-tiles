@@ -87,3 +87,10 @@
 @keyframes cc-bubble-enter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}@keyframes cc-loading-tile{0%,100%{transform:translateY(0) scale(.96)}50%{transform:translateY(-10px) scale(1.04)}}@keyframes cc-loading-dot{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}@keyframes cc-notice-enter{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 @media(max-width:540px){.cc-student-top{padding:14px 16px}.cc-wordmark{font-size:15px;padding:10px 13px;gap:8px}.cc-student-top #cc-refresh{padding:10px 13px}.cc-student-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 16px}.cc-student-main{padding-top:24px}.cc-student-grid .cc-student-avatar{border-radius:28px}.cc-student-grid .cc-student-name{font-size:17px}.cc-loading-screen{min-height:55dvh}.cc-board-notice{padding:38px 22px 24px}}
 @media(prefers-reduced-motion:reduce){.cc-wordmark,.cc-student-top #cc-refresh,.cc-student-top #cc-refresh svg,.cc-loading-art i,.cc-loading-dots i,.cc-board-notice{animation:none;transition:none}.cc-student-grid .cc-student-avatar{transition:none}.cc-student-top #cc-refresh:not(:disabled):hover,.cc-student-top #cc-refresh:not(:disabled):hover svg{transform:none}}
+
+/* Compact classroom-link action beside the class name. */
+.cc-panel .cc-identity-info{flex:1;min-width:0}
+.cc-panel .cc-identity-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
+.cc-panel .cc-identity-heading h3{min-width:0;margin:0;overflow-wrap:anywhere}
+.cc-panel .cs-button.cc-open-link{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:7px 10px;border-radius:10px;font-size:12px;white-space:nowrap}
+.cc-panel .cc-open-link .cs-icon{width:17px;height:17px;flex:none}

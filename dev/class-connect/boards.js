@@ -2,7 +2,7 @@ import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {boardFrame} from './board-host.js?v=20261110-session-viewport-2';
+import {boardFrame} from './board-host.js?v=20261110-session-student-controls-3';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
 const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
@@ -16,7 +16,7 @@ export function watchRoom(room,change){
 }
 function modal(title){const dialog=make('dialog','cc-session-dialog'),head=make('header'),heading=make('h2','',title),close=button('×',()=>dialog.close());close.setAttribute('aria-label','Close '+title);head.append(heading,close);dialog.setAttribute('aria-label',title);dialog.append(head);document.body.append(dialog);dialog.showModal();dialog.addEventListener('close',()=>dialog.remove(),{once:true});return dialog;}
 async function launch({teacher,classId,token,student,roster,session,getProfile,result}){
- const dialog=modal(result.status.mode==='controlled'?'Controlled Session':'Free Session');dialog.classList.add('cc-session-board');
+ const dialog=modal(result.status.mode==='controlled'?'Controlled Session':'Free Session');dialog.classList.add('cc-session-board');dialog.classList.toggle('cc-student-board',!teacher);
  const head=dialog.querySelector('header'),close=head.lastElementChild,status=make('p','cc-session-status','Opening board…'),holder=make('div','cc-session-stage is-loading');dialog.append(status,holder);status.setAttribute('role','status');
  close.classList.add('cc-session-back');
  let sessionFullscreen=false;
@@ -31,7 +31,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  window.addEventListener('teachertiles:authchange',accountChanged);window.addEventListener('hashchange',linkChanged);
  let model=result.status,frame=null,off=null,closed=false,pending=null,saving=null,saveTimer=0,inputTimer=0,lastInput=0,loading=false,loadedRevision=model.revision,failed=false,ended=false,lastQueued='';
  const credentials=teacher?{classId}:{token,studentId:student.id,session};
- const unavailable=message=>{if(!ended)frame?.stop();ended=true;status.textContent=message;holder.inert=true;holder.classList.add('is-ended');retry.hidden=true;};
+ const unavailable=message=>{if(!ended)frame?.stop();ended=true;if(!teacher){dialog.close();return;}status.textContent=message;holder.inert=true;holder.classList.add('is-ended');retry.hidden=true;};
  const send=async()=>{
   clearTimeout(saveTimer);if(saving)return saving;if(!pending||closed||ended||!active(model))return;
   saving=(async()=>{
@@ -110,6 +110,6 @@ export async function teacherBoard({classId,name,roster}){
  const list=()=>{grid.replaceChildren();for(const item of catalog.filter(x=>x.name.toLowerCase().includes(search.value.toLowerCase()))){const b=button('',()=>{if(selected.has(item.type))selected.delete(item.type);else selected.add(item.type);list();});b.classList.add('cc-session-tile');b.setAttribute('aria-pressed',String(selected.has(item.type)));if(item.icon)b.append(item.icon.cloneNode(true));b.append(make('span','',item.name));grid.append(b);}};search.oninput=list;list();
  for(const [key,title,description]of [['controlled','Controlled Session','You place the tiles. Each student uses their own copy.'],['free','Free Session','Choose which tiles students can add to their own boards.']]){const b=button('',()=>{mode=key;choices.querySelectorAll('button').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));selection.hidden=mode!=='free';});b.setAttribute('aria-pressed',String(key===mode));b.append(make('strong','',title),make('small','',description));choices.append(b);}
  const requestId=crypto.randomUUID(),start=button('Start Session',async()=>{start.disabled=true;status.textContent='Starting session…';try{const started=await call({action:'start',classId,requestId,mode,allowedTypes:mode==='free'?[...selected]:result.types});const ready=await call({action:'teacherGet',classId,sessionId:started.status.sessionId});if(dialog.isConnected){dialog.close();void launch({teacher:true,classId,roster,result:ready});}}catch(e){status.textContent=e.message;start.disabled=false;}});
- body.append(choices,selection,make('p','cc-session-status','Presentation and Lesson Planner library tiles are not available in sessions yet.'),start);status.textContent='Ends automatically after 10 minutes without student input.';
+ body.append(choices,selection,make('p','cc-session-status','Some tiles are excluded for students.'),start);status.textContent='Ends automatically after 10 minutes without student input.';
 }
 window.TeacherTilesBoardSessions={teacher:teacherBoard};

@@ -766,6 +766,16 @@ function menuSearchRank(item,query){
 }
 
 function applyMenuView(){
+  if(window.ClassConnectPolicy?.student){
+    const query=normalizeMenuSearch(menuSearch?.value),grid=document.createElement('div');grid.className='context-menu__tile-grid';
+    menu.classList.toggle('is-searching',Boolean(query));menuSearchClear?.classList.toggle('is-visible',Boolean(query));
+    const matches=menuItems.filter(item=>ClassConnectPolicy.allowed.includes(item.dataset.module)&&item.dataset.comingSoon!=='true'&&!item.disabled&&menuItemPassesGrade(item)&&normalizeMenuSearch(item.textContent).includes(query));
+    matches.sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||''));
+    for(const item of matches){item.hidden=false;grid.append(item);}
+    menuNoResults.hidden=matches.length>0;menuNoResults.querySelector('strong').textContent='No matching tiles';menuNoResults.querySelector('small').textContent='Try another search.';
+    menu.querySelector('.context-menu__list').replaceChildren(grid,menuNoResults);return;
+  }
+
   if(!menuCategoryHasMatches(activeMenuCategory)){setMenuCategory('all');return;}
   const query=normalizeMenuSearch(menuSearch?.value);
   const searching=Boolean(query);
