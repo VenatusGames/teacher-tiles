@@ -116,6 +116,7 @@ function recordTransformHistory(modules,before){
 }
 
 function detachHistoryElements(elements){
+  if(window.ClassConnectPolicy&&!ClassConnectPolicy.canDelete())return;
   const snapGroups=new Set(elements.map(el=>el?.dataset.snapGroup).filter(Boolean));
   for(const el of elements){
     selectedModules.delete(el);
@@ -196,6 +197,7 @@ function redoBoardAction(){
 }
 
 function deleteModules(modules,{record=true}={}){
+  if(window.ClassConnectPolicy&&!ClassConnectPolicy.canDelete())return;
   const unique=[...new Set(modules)].filter(el=>el?.isConnected&&el.classList.contains('module'));
   if(!unique.length)return;
   const entries=unique.map(el=>({el,nextSibling:el.nextSibling}));

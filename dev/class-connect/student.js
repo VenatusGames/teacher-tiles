@@ -1,3 +1,4 @@
+import {watchRoom,active,enterStudentBoard} from './boards.js?v=20261110-sessions';
 import './ui-audio.js?v=20261103-pin-polish';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
@@ -6,7 +7,9 @@ import {REWARDS,EMOJIS,PIN_EMOJIS} from './profile-catalog.js?v=20261103-student
 const functions=getFunctions(initializeApp(firebaseConfig)),read=httpsCallable(functions,'classConnectView',{timeout:15000}),saveEmoji=httpsCallable(functions,'classConnectStudent',{timeout:15000}),unlock=httpsCallable(functions,'classConnectUnlock',{timeout:15000});
 const main=document.getElementById('cc-view'),refresh=document.getElementById('cc-refresh');
 const loadingScreen=main.querySelector('.cc-loading-screen').cloneNode(true);
-let boardNotice=null;
+let boardNotice=null,boardStatus=null,unwatchBoard=null,watchedRoom='';
+function boardButton(){profile.querySelector('.cc-enter-board')?.classList.toggle('is-live',active(boardStatus));}
+function connectBoard(room){if(room===watchedRoom)return;unwatchBoard?.();watchedRoom=room||'';boardStatus=null;if(room)unwatchBoard=watchRoom(room,status=>{boardStatus=status;boardButton();});}
 const make=(tag,cls='',text='')=>{const node=document.createElement(tag);node.className=cls;node.textContent=text;return node;};
 let busy=false,lastAttempt=0,version=0,roster=null,activeId='',section='home',selected='',saving=false,profileVersion=0;
 const profile=make('dialog','cs-modal cs-detail cc-student-profile');profile.setAttribute('aria-label','Student Profile');document.body.append(profile);
@@ -28,6 +31,7 @@ function showBoardNotice(){
     boardNotice.append(close,icon,title,message,okay);document.body.append(boardNotice);
     boardNotice.addEventListener('click',event=>{if(event.target!==boardNotice)return;const r=boardNotice.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)boardNotice.close();});
   }
+  boardNotice.querySelector('p').textContent='Your teacher does not have a board active at this time!';
   if(!boardNotice.open)boardNotice.showModal();
 }
 function navigate(next){section=next;renderProfile();profile.scrollTop=0;profile.querySelector(next==='home'?'.cc-greeting':'.cs-profile-title')?.focus({preventScroll:true});}
@@ -46,7 +50,7 @@ function renderProfile() {
   const sectionButton=(label,icon,action,hint)=>{const b=button('',action,'cs-profile-section',icon);b.lastElementChild.remove();const text=make('span','cs-section-copy');text.append(make('strong','',label),make('small','cs-section-status',hint));b.append(text);b.disabled=!action;return b;};
   if(section==='home') {
     const choices=make('div','cs-profile-sections');choices.append(sectionButton('PBIS','pbis',roster.pbisEnabled?()=>navigate('pbis'):null,roster.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras'),'Explore more'));body.append(choices);
-    const enter=sectionButton('Enter Board','board',showBoardNotice,'');enter.querySelector('.cs-section-status').remove();enter.classList.add('cc-enter-board');body.insertBefore(enter,choices);
+    const enter=sectionButton('Enter Board','board',async()=>{if(!active(boardStatus))return showBoardNotice();const b=profile.querySelector('.cc-enter-board');b.disabled=true;try{await enterStudentBoard({token:token(),student,roster,session:studentSession,getProfile:()=>{section='home';renderProfile();}});}catch(error){showBoardNotice();boardNotice.querySelector('p').textContent=error.message||'Could not open the board. Try again.';}finally{b.disabled=false;}},'');enter.querySelector('.cs-section-status').remove();enter.classList.add('cc-enter-board');body.insertBefore(enter,choices);enter.classList.toggle('is-live',active(boardStatus));
   }else if(section==='pbis') {
     title.textContent='PBIS Rewards';
     const stats=make('div','cs-detail-stats');
@@ -150,17 +154,17 @@ async function load() {
   try {
     const token=location.hash.slice(1);
     if(!/^[A-Za-z0-9_-]{43}$/.test(token))throw Object.assign(new Error(),{code:'functions/not-found'});
-    const {data}=await read({token,studentId:activeId,session:studentSession});if(ticket===version){if(profile.open&&data.view.requireStudentPin&&data.view.unlockedStudentId!==activeId)profile.close();render(data.view);}
+    const {data}=await read({token,studentId:activeId,session:studentSession});if(ticket===version){connectBoard(data.boardRoom);if(profile.open&&data.view.requireStudentPin&&data.view.unlockedStudentId!==activeId)profile.close();render(data.view);}
   } catch(error) {
     if(ticket!==version)return;
-    profile.close();roster=null;
+    profile.close();roster=null;connectBoard('');
     const unavailable=error.code==='functions/not-found',panel=make('section','cc-student-status');
     panel.append(make('h1','',unavailable?'This class link is unavailable':'We couldn’t open your class'),make('p','',unavailable?'Your teacher may have disabled or replaced the link. Ask them for the current student link.':'Check your internet connection and try again.'));
     const retry=make('button','','Try Again');retry.type='button';retry.addEventListener('click',load);panel.append(retry);main.replaceChildren(panel);
   } finally{if(ticket===version){busy=false;refresh.disabled=false;refresh.classList.remove('is-refreshing');main.removeAttribute('aria-busy');}}
 }
 refresh.addEventListener('click',load);
-window.addEventListener('hashchange',()=>{version++;busy=false;pinDialog.close();profile.close();studentSession='';readSelection();load();});
+window.addEventListener('hashchange',()=>{version++;busy=false;connectBoard('');pinDialog.close();profile.close();studentSession='';readSelection();load();});
 // Revalidate when returning to an old tab, without timers or background polling.
 document.addEventListener('visibilitychange',()=>{if(!document.hidden && Date.now()-lastAttempt>60000)load();});
 load();

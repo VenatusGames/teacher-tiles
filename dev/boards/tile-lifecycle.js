@@ -1,4 +1,5 @@
 function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
+  if(window.ClassConnectPolicy&&!ClassConnectPolicy.canCreate(type))return null;
   if(!boardState&&window.TeacherTilesHalloween?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess();return null;}
   if(!boardState&&window.TeacherTilesThanksgiving?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess('Thanksgiving');return null;}
   const t=document.getElementById(`${type}-template`);
