@@ -1,4 +1,5 @@
-import {call,active,watchRoom,modal} from './boards.js?v=20261110-classconnect-presentations';
+import {preparePresentationExit} from './presentation-exit.js?v=20261110-presentation-lifecycle';
+import {call,active,watchRoom,modal} from './boards.js?v=20261110-presentation-lifecycle';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
 const root=new URL('../',import.meta.url),version='20261110-classconnect-presentations';
@@ -6,24 +7,27 @@ const isNormal=tile=>tile?.isConnected&&!window.ClassConnectPolicy&&!tile.datase
 const sourceKey=info=>JSON.stringify(info?.presentation);
 function showStatus(tile,text){let message=tile.querySelector('.presentation-connection-status');if(!message){message=make('p','presentation-connection-status');message.setAttribute('role','status');tile.querySelector('.presentation-tile-viewport').append(message);}message.textContent=text;message.hidden=!text;tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));}
 // A single ordered publisher coalesces rapid navigation and sends only slide indices.
-function controller(tile,classId,name,result){
- let status=result.status,desired=status.slideIndex,sending=false,closed=false,ending=false,timer=0,off=null,problem='',retrying=false;
+function controller(tile,classId,name,result,exit){
+ let status=result.status,desired=status.slideIndex,sending=false,closed=false,ending=false,timer=0,off=null,problem='',retrying=false,endRequested=false;
  const owner=window.TeacherTilesAuth?.user?.uid,source=sourceKey(tile._classConnectPresentation());
  const connect=tile.querySelector('[data-player=classconnect]');
  const notify=()=>tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));
- const dispose=()=>{if(closed)return;closed=true;clearTimeout(timer);off?.();tile.removeEventListener('teachertiles:presentation-slide',changed);window.removeEventListener('teachertiles:authchange',auth);window.removeEventListener('online',retry);window.removeEventListener('teachertiles:accountchange',access);tile.classList.remove('is-classconnect-live');connect?.setAttribute('aria-label','ClassConnect presentation');if(tile._classConnectSession===api)delete tile._classConnectSession;notify();};
+ const dispose=()=>{if(closed)return;closed=true;clearTimeout(timer);off?.();removal.disconnect();exit.dispose();window.removeEventListener('pagehide',leave);window.removeEventListener('beforeunload',beforeLeave);tile.removeEventListener('teachertiles:presentation-slide',changed);window.removeEventListener('teachertiles:authchange',auth);window.removeEventListener('online',retry);window.removeEventListener('teachertiles:accountchange',access);tile.classList.remove('is-classconnect-live');connect?.setAttribute('aria-label','ClassConnect presentation');if(tile._classConnectSession===api)delete tile._classConnectSession;notify();};
  async function send(){
-  clearTimeout(timer);if(sending||closed||ending||desired===status.slideIndex)return;
+  clearTimeout(timer);if(sending||closed||ending||endRequested||desired===status.slideIndex)return;
   sending=true;
-  try{while(!closed&&!ending&&desired!==status.slideIndex){const index=desired,response=await call({action:'slide',classId,sessionId:status.sessionId,expectedRevision:status.revision,slideIndex:index});if(closed)return;status=response.status;problem='';showStatus(tile,'');notify();}}
+  try{while(!closed&&!ending&&!endRequested&&desired!==status.slideIndex){const index=desired,response=await call({action:'slide',classId,sessionId:status.sessionId,expectedRevision:status.revision,slideIndex:index});if(closed)return;status=response.status;problem='';showStatus(tile,'');notify();}}
   catch(error){if(closed)return;problem=error.message||'Could not sync slides. Open ClassConnect to retry.';showStatus(tile,problem);if(['functions/failed-precondition','functions/not-found','functions/permission-denied','functions/aborted'].includes(error.code))dispose();else notify();}
   finally{sending=false;}
  }
  function changed(){const info=tile._classConnectPresentation();if(!info||sourceKey(info)!==source){void end();return;}desired=info.slideIndex;clearTimeout(timer);timer=setTimeout(send,100);}
- async function end(){if(closed||ending)return;ending=true;clearTimeout(timer);try{await call({action:'end',classId,sessionId:status.sessionId});dispose();}catch(error){if(['functions/failed-precondition','functions/not-found','functions/aborted'].includes(error.code)){dispose();return;}problem=error.message||'Could not end session. Try again.';showStatus(tile,problem);notify();}finally{ending=false;}}
- async function retry(){if(closed||retrying)return;retrying=true;try{const latest=await call({action:'teacherGet',classId,sessionId:status.sessionId});if(!active(latest.status)||latest.status.sessionId!==status.sessionId){dispose();return;}status=latest.status;problem='';showStatus(tile,'');await send();notify();}catch(error){problem=error.message;notify();}finally{retrying=false;}}
- function auth(){if(window.TeacherTilesAuth?.user?.uid!==owner)dispose();}
+ async function end(){if(closed||ending)return;endRequested=true;ending=true;clearTimeout(timer);try{await call({action:'end',classId,sessionId:status.sessionId});dispose();}catch(error){if(['functions/failed-precondition','functions/not-found','functions/aborted'].includes(error.code)){dispose();return;}problem=error.message||'Could not end session. Try again.';showStatus(tile,problem);notify();}finally{ending=false;}}
+ async function retry(){if(closed||retrying)return;if(endRequested){await end();return;}retrying=true;try{const latest=await call({action:'teacherGet',classId,sessionId:status.sessionId});if(!active(latest.status)||latest.status.sessionId!==status.sessionId){dispose();return;}status=latest.status;problem='';showStatus(tile,'');await send();notify();}catch(error){problem=error.message;notify();}finally{retrying=false;}}
+ function leave(){if(closed)return;exit.send({classId,sessionId:status.sessionId});dispose();}
+ function beforeLeave(event){if(!event.defaultPrevented&&!event.returnValue)leave();}
+ function auth(){if(window.TeacherTilesAuth?.user?.uid!==owner)leave();}
  function access(){const info=tile._classConnectPresentation();if(info&&!window.TeacherTilesPresentations.checkAccess(info.document,false))void end();}
+ const removal=new MutationObserver(()=>{if(!tile.isConnected)void end();});removal.observe(document.body,{childList:true,subtree:true});exit.start();window.addEventListener('pagehide',leave);window.addEventListener('beforeunload',beforeLeave);
  const api={classId,name,end,retry,get problem(){return problem},get active(){return !closed}};tile._classConnectSession=api;
  tile.classList.add('is-classconnect-live');connect?.setAttribute('aria-label','ClassConnect presentation · Live');
  tile.addEventListener('teachertiles:presentation-slide',changed);window.addEventListener('teachertiles:authchange',auth);window.addEventListener('online',retry);window.addEventListener('teachertiles:accountchange',access);
@@ -37,33 +41,40 @@ function controller(tile,classId,name,result){
 export async function openPresentation(tile){
  if(!isNormal(tile))return;if(tile._classConnectDialog?.open){tile._classConnectDialog.focus();return;}
  const info=tile._classConnectPresentation?.();if(!info)throw Error('Choose a presentation first.');
- const dialog=modal('ClassConnect'),body=make('div','cc-presentation-options'),status=make('p','cc-session-status');dialog.append(body,status);if(document.fullscreenElement)document.fullscreenElement.append(dialog);tile._classConnectDialog=dialog;
+ const dialog=modal('ClassConnect');dialog.classList.add('cc-presentation-dialog');const body=make('div','cc-presentation-options'),status=make('p','cc-session-status');dialog.append(body,status);if(document.fullscreenElement)document.fullscreenElement.append(dialog);tile._classConnectDialog=dialog;
  const refresh=()=>{if(dialog.open)liveView();};
  const account=window.TeacherTilesAuth?.user?.uid;
  const auth=()=>{if(account!==window.TeacherTilesAuth?.user?.uid)dialog.close();};window.addEventListener('teachertiles:authchange',auth);
  tile.addEventListener('teachertiles:presentation-connection',refresh);
  dialog.addEventListener('close',()=>{tile.removeEventListener('teachertiles:presentation-connection',refresh);window.removeEventListener('teachertiles:authchange',auth);delete tile._classConnectDialog;},{once:true});
- function liveView(){body.replaceChildren();const connection=tile._classConnectSession;if(!connection){options();return;}body.append(make('strong','',connection.name),make('p','','Students are following your presentation.'),button('End Session',async()=>{await connection.end();if(!tile._classConnectSession)dialog.close();else liveView();}));if(connection.problem)body.append(button('Retry Sync',()=>connection.retry()));status.textContent=connection.problem||'Change slides on this tile to update the class.';}
- function options(){body.replaceChildren();const join=button('Join Code',()=>{});join.disabled=true;join.append(make('small','','Coming Soon'));const connect=button('ClassConnect',chooseClass);connect.append(make('small','','Present live to a class'));body.append(join,connect);}
+ function liveView(){body.classList.remove('cc-tool-grid');body.replaceChildren();const connection=tile._classConnectSession;if(!connection){options();return;}body.append(make('strong','',connection.name),make('p','','Students are following your presentation.'),button('End Session',async()=>{await connection.end();if(!tile._classConnectSession)dialog.close();else liveView();}));if(connection.problem)body.append(button('Retry Sync',()=>connection.retry()));status.textContent=connection.problem||'Change slides on this tile to update the class.';}
+ function options(){
+  body.replaceChildren();body.classList.add('cc-tool-grid');status.textContent='';
+  const card=(label,description,path,action)=>{const b=button('',action);b.classList.add('cs-button','cc-tool-card');const icon=make('span','cs-icon');icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';const copy=make('span','cc-tool-copy');copy.append(make('strong','',label),make('small','',description));b.append(icon,copy);return b;};
+  const join=card('Join Code','Coming Soon','<path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/>',()=>{});join.disabled=true;
+  const connect=card('ClassConnect','Present live to a class','<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4M8 21h8M10 7.5l6 3-6 3Z"/>',chooseClass);body.append(join,connect);
+ }
  function chooseClass(){
-  body.replaceChildren();status.textContent='Choose a class to follow this presentation.';
+  body.classList.remove('cc-tool-grid');body.replaceChildren();status.textContent='Choose a class to follow this presentation.';
   const classes=window.readClassRosters?.()||[],grid=make('div','cc-presentation-classes');
   for(const roster of classes){const pick=button('',()=>start(roster,pick)),avatar=make('span','cc-presentation-class-avatar');if(roster.logoImage){const img=make('img');img.src=roster.logoImage;img.alt='';avatar.append(img);}else avatar.textContent=roster.logo||'👥';pick.append(avatar,make('strong','',roster.name),make('small','',roster.students.length+' students'));grid.append(pick);}
   body.append(grid);if(!classes.length)body.append(make('p','','Create a class in Class View to start a presentation session.'));
  }
  async function start(roster,pick){
+  let exit;
   body.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Starting presentation session…';
   try{
    await window.TeacherTilesClassConnectUI.ensureLink(roster.id);
    if(!dialog.open||!isNormal(tile)||account!==window.TeacherTilesAuth?.user?.uid)return;
    const latest=tile._classConnectPresentation();if(sourceKey(latest)!==sourceKey(info))throw Error('The tile changed presentations. Reopen ClassConnect.');
+   exit=await preparePresentationExit(window.TeacherTilesAuth?.user);
    const result=await call({action:'start',classId:roster.id,mode:'presentation',presentation:latest.presentation,slideIndex:latest.slideIndex,requestId:pick.dataset.requestId||(pick.dataset.requestId=crypto.randomUUID())});
    if(!dialog.open||!isNormal(tile)||account!==window.TeacherTilesAuth?.user?.uid||sourceKey(tile._classConnectPresentation())!==sourceKey(info)){await call({action:'end',classId:roster.id,sessionId:result.status.sessionId});return;}
-   controller(tile,roster.id,roster.name,result);dialog.close();
+   controller(tile,roster.id,roster.name,result,exit);exit=null;dialog.close();
   }catch(error){
    status.textContent=error.message||'Could not start the presentation session.';body.querySelectorAll('button').forEach(b=>b.disabled=false);
    if(error.code==='functions/already-exists'&&!body.querySelector('.cc-end-existing')){const end=button('End Current Session',async()=>{end.disabled=true;try{const current=await call({action:'teacherGet',classId:roster.id});if(active(current.status))await call({action:'end',classId:roster.id,sessionId:current.status.sessionId});end.remove();status.textContent='Current session ended. Select the class again to start presenting.';}catch(e){status.textContent=e.message;end.disabled=false;}});end.classList.add('cc-end-existing');body.append(end);}
-  }
+  }finally{exit?.dispose();}
  }
  if(tile._classConnectSession)liveView();else options();
 }

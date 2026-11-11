@@ -25,9 +25,9 @@
 .cc-student-board>header .cc-session-fullscreen{left:auto;right:14px}
 
 .cc-presentation-options{display:grid;gap:16px}
-.cc-presentation-options>button{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:20px;font-size:17px}
-.cc-presentation-options small{font-size:12px;font-weight:400;color:#728097}
-.cc-presentation-options>button:disabled{cursor:default;opacity:.5}
+.cc-presentation-options>button:not(.cc-tool-card){display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:20px;font-size:17px}
+.cc-presentation-options:not(.cc-tool-grid) small{font-size:12px;font-weight:400;color:#728097}
+
 .cc-presentation-classes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-height:55dvh;overflow:auto}
 .cc-presentation-classes button{display:grid;grid-template-columns:42px minmax(0,1fr);gap:4px 12px;align-items:center;text-align:left;padding:16px}
 .cc-presentation-classes strong{overflow-wrap:anywhere}
