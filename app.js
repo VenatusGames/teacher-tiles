@@ -1353,6 +1353,7 @@ const LUNCH_COUNT_ICONS=[
 
 
 const EDITABLE_TILE_HEADINGS={
+  wordcloud:'.wordcloud-heading',
   thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -1423,6 +1424,7 @@ const EDITABLE_TILE_HEADINGS={
 };
 
 const TILE_HEADING_VISIBILITY_SELECTORS={
+  wordcloud:'.wordcloud-heading',
   cookafeast:'.progress-bar-title',
   ...EDITABLE_TILE_HEADINGS,
   essentialquestion:'.widget-title',

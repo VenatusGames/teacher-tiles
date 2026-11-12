@@ -150,8 +150,8 @@
 <link rel="stylesheet" href="tiles/racer/hill-course.css?v=20261028-fanned-standees">
 <link rel="stylesheet" href="news/runtime/styles.css?v=20261103-news-captions">
 <link rel="stylesheet" href="tiles/lesson-planner/tools.css?v=20261103-display-settings">
-<link rel="stylesheet" href="class-connect/boards.css?v=20261110-wordcloud">
-<link rel="stylesheet" href="tiles/word-cloud/styles.css?v=20261110-wordcloud">
+<link rel="stylesheet" href="class-connect/boards.css?v=20261110-wordcloud-polish">
+<link rel="stylesheet" href="tiles/word-cloud/styles.css?v=20261110-wordcloud-polish">
 </head>
 <body>
   <div id="teachertiles-intro" class="teachertiles-intro is-pending" aria-hidden="true">
@@ -4088,7 +4088,7 @@
   </template>
 
 
-  <template id="wordcloud-template"><section class="module wordcloud-module" data-type="wordcloud" data-bg="white"><button class="module-delete" aria-label="Delete Word Cloud tile">×</button><div class="module-drag-handle"></div><h3 class="wordcloud-heading">Word Cloud</h3><input class="wordcloud-prompt" aria-label="Word cloud question" maxlength="160" placeholder="Ask your class a question…"><div class="wordcloud-content"><div class="wordcloud-stage"></div><div class="wordcloud-empty"><svg viewBox="0 0 24 24"><path d="M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11zM8 12h8m-6 3h4"/></svg><span>Your class, in a word</span><small>Start ClassConnect to collect words from your students</small></div></div><div class="wordcloud-total"></div><div class="wordcloud-controls"><span class="wordcloud-status" role="status"></span><button type="button" class="wordcloud-connect" aria-label="ClassConnect word cloud" title="ClassConnect"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/></svg></button></div><span class="presentation-connect-badge">ClassConnect</span><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
+  <template id="wordcloud-template"><section class="module wordcloud-module" data-type="wordcloud" data-bg="white" data-font="inter" data-text="dark"><button class="module-delete" aria-label="Delete Word Cloud tile">×</button><div class="module-drag-handle"></div><h3 class="wordcloud-heading">Word Cloud</h3><input class="wordcloud-prompt" aria-label="Word cloud question" maxlength="160" placeholder="Ask your class a question…"><div class="wordcloud-content"><div class="wordcloud-stage"></div><div class="wordcloud-empty"><svg viewBox="0 0 24 24"><path d="M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11zM8 12h8m-6 3h4"/></svg><small>Start ClassConnect to collect words from your students</small></div></div><div class="wordcloud-total"></div><div class="wordcloud-controls"><button type="button" class="tile-bg" aria-label="Change background color"><span class="icon-palette" aria-hidden="true"></span></button><button type="button" class="tile-font" aria-label="Change font"><span class="icon-font" aria-hidden="true">Aa</span></button><button type="button" class="tile-text" aria-label="Change text color"><span class="icon-text-color" aria-hidden="true">A</span></button><span class="wordcloud-status" role="status"></span><button type="button" class="wordcloud-connect" aria-label="ClassConnect word cloud" title="ClassConnect"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/></svg></button></div><span class="presentation-connect-badge">ClassConnect</span><div class="resize-handle resize-handle--tl" data-resize="tl"></div><div class="resize-handle resize-handle--tr" data-resize="tr"></div><div class="resize-handle resize-handle--bl" data-resize="bl"></div><div class="resize-handle resize-handle--br" data-resize="br"></div></section></template>
 <template id="presentation-template">
   <section class="module presentation-module" data-type="presentation" data-bg="white">
     <button class="module-delete" aria-label="Delete Presentations tile">×</button><div class="module-drag-handle"></div>
@@ -4873,7 +4873,7 @@
 <script src="account/site-appearance.js?v=20261002-sidebar-restore"></script>
 <script src="account/collection-preferences.js?v=20261029-theme-favorites"></script>
 <script src="tiles/shared/math-controls.js?v=20261029-shared-hover"></script>
-<script src="app.js?v=20261110-wordcloud"></script>
+<script src="app.js?v=20261110-wordcloud-polish"></script>
 <script type="module" src="tiles/shared/tile-menu-filters.js?v=20261028-menu-sizing"></script>
 <script type="module" src="tiles/shared/tile-menu-metadata.js?v=20261020-availability"></script>
 <script src="tiles/shared/cursor-effects.js?v=20260928-unified"></script>
@@ -4883,7 +4883,7 @@
 <script src="tiles/lesson-planner/tools.js?v=20261103-display-settings"></script>
 <script src="tiles/lesson-planner.js?v=20261103-display-settings"></script>
   <script src="tiles/shared/firestore-read-metrics.js?v=20260926-1"></script>
-<script type="module" src="firebase-auth.js?v=20261103-student-pins"></script>
+<script type="module" src="firebase-auth.js?v=20261112-wordcloud-polish"></script>
 <script type="module" src="profile/patches.js?v=20261020-beloved"></script>
 
 
@@ -6249,11 +6249,11 @@
 <script src="presentations/snapping.js?v=20261020"></script>
 <script src="presentations/readonly.js?v=20261110-classconnect-presentations"></script>
 <script src="presentations/index.js?v=20261110-classconnect-presentations"></script>
-<script src="tiles/word-cloud/index.js?v=20261110-wordcloud"></script>
+<script src="tiles/word-cloud/index.js?v=20261110-wordcloud-polish"></script>
 <script src="tiles/presentations/index.js?v=20261110-presentation-lifecycle"></script>
 <script src="support/help-navigation.js?v=20261020-ui-fixes"></script>
 <script src="shop/browse-performance.js?v=20261028-scroll"></script>
 <script src="shop/theme-previews.js?v=20261029-motion"></script>
-<script type="module" src="class-connect/boards.js?v=20261110-wordcloud"></script>
+<script type="module" src="class-connect/boards.js?v=20261110-wordcloud-polish"></script>
 </body>
 </html>
