@@ -18,7 +18,7 @@ function renderRichContent(content,e){
 }
 
 const textColor=(e,theme)=>e.color==='auto'||!e.color?(theme==='black'?'#f7f8fb':'#263249'):e.color;
-function paint(host,data,theme,{read:resolveAsset,liveTiles=false,scope=""}={}){
+function paint(host,data,theme,{read:resolveAsset,liveTiles=false,scope="",interaction=host._presentationInteraction||null}={}){
  const modules=window.TeacherTilesPresentationModules;
  modules.dispose(host);host.replaceChildren();host.dataset.theme=theme;host.style.backgroundColor=theme==='none'?data.background:window.TeacherTilesPresentationThemes.get(theme).background;const themeArt=window.TeacherTilesPresentationThemes.url(theme,data.themeLayout);host.classList.toggle('has-theme-art',!!themeArt);host.style.backgroundImage=themeArt?`url("${themeArt}")`:'';host.style.backgroundSize='100% 100%';
  for(const e of data.elements){
@@ -30,7 +30,7 @@ function paint(host,data,theme,{read:resolveAsset,liveTiles=false,scope=""}={}){
   el.style.transform='rotate('+(e.rotation||0)+'deg)';
   host.append(el);
   if(e.type==='table')modules.mountTable(el,e,{editable:false});
-  if(e.type==='tile')modules.mountTile(el,e,{live:liveTiles,editable:false,read:resolveAsset,scope});
+  if(e.type==='tile')modules.mountTile(el,e,{live:liveTiles,editable:false,read:resolveAsset,scope,interaction,slideId:data.id});
  }
 }
 async function loadFonts(deck,read){

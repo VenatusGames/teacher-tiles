@@ -111,3 +111,13 @@
 
 #presentations-tool:has(.pres-library[hidden]) .pres-header>.profile-tool-back{display:none}
 @media(max-width:700px){#presentations-tool .pres-header{flex-wrap:wrap;height:auto;min-height:64px}#presentations-tool .pres-header>.pres-brand{gap:6px}}
+
+.pres-menu-section{padding:9px 12px 4px;font-size:11px;font-weight:700;color:#77849a}.pres-menu-section:not(:first-child){border-top:1px solid #e4e9f1;margin-top:4px}.pres-menu{max-height:calc(100dvh - 24px);overflow-y:auto}
+.pres-interactive-wordcloud{box-sizing:border-box;width:100%;height:100%;padding:3.5%;border:1px solid #dce2eb;border-radius:14px;display:flex;flex-direction:column;gap:3%;container-type:inline-size;font-family:var(--module-font,Inter,Arial,sans-serif);overflow:hidden}
+.pres-interactive-wordcloud h3{font-size:clamp(10px,5cqw,30px);line-height:1.25;margin:0;overflow-wrap:anywhere}.pres-interactive-cloud-art{flex:1;min-height:0}.pres-interactive-wordcloud .wordcloud-art{width:100%;height:100%;display:block}.pres-interactive-wordcloud form{display:flex;gap:2%;flex:none}.pres-interactive-wordcloud input{box-sizing:border-box;min-width:0;flex:1;width:0;padding:3%;font:inherit;font-size:clamp(10px,4.5cqw,24px);border:1px solid #c9d5e5;border-radius:8px;background:#fff;color:#293349}.pres-interactive-wordcloud button{font:600 clamp(10px,3.8cqw,20px) Inter,Arial,sans-serif;padding:2% 3%;border:1px solid #c9d5e5;border-radius:8px;background:#f4f7fb;color:#293349;cursor:pointer;white-space:nowrap}.pres-interactive-wordcloud button:disabled{opacity:.55;cursor:default}.pres-interactive-wordcloud input:focus{outline:2px solid #82a6d5;outline-offset:1px}.pres-interactive-feedback{font-size:clamp(9px,3.2cqw,16px);line-height:1.3;margin:0;min-height:1.3em;opacity:.75}
+
+#presentations-tool .pres-play-controls [data-action="classconnect"]{color:#b7354c;background:#fff5f6;border-color:#eccbd1;white-space:nowrap}
+#presentations-tool .pres-play-controls [data-action="classconnect"] svg{width:20px;height:20px;flex:none}
+#presentations-tool.is-classconnect-live .pres-play-controls [data-action="classconnect"]{background:#ffe3e8;border-color:#db8a99}
+.pres-play-controls :is(.pres-session-status,.presentation-connection-status){position:absolute;bottom:100%;left:0;right:0;margin:0 0 8px;padding:10px;border-radius:10px;background:#fff;color:#a12b40;font-size:13px;box-shadow:0 3px 16px #0002}
+@media(max-width:600px){.pres-play-controls{gap:5px;max-width:calc(100vw - 16px)}.pres-play-controls button{padding:7px!important}.pres-play-controls [data-action="classconnect"]{gap:4px}}

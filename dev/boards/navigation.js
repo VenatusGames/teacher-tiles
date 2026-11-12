@@ -467,6 +467,7 @@ function beginBoardPan(e){
 }
 
 function boardKeyboardPanBlocked(space=false){
+  if(document.body.classList.contains('presentations-open'))return true;
   if(space?isSpaceTypingTarget(document.activeElement):isTypingTarget(document.activeElement))return true;
   const shop=document.getElementById('shop-modal');
   if(shop&&!shop.hidden)return true;

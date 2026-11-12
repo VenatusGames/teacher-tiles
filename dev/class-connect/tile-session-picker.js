@@ -1,4 +1,4 @@
-import {call,active,modal} from './boards.js?v=20261110-wordcloud-polish';
+import {call,active,modal} from './boards.js?v=20261112-present-mode-connect';
 import {preparePresentationExit} from './presentation-exit.js?v=20261110-presentation-lifecycle';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};

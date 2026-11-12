@@ -1,13 +1,15 @@
 (()=>{'use strict';
 const contract=window.TeacherTilesPresentationObjects;
-const entries=[['clock','Clock'],['colorpicker','Color Picker'],['grapher','Graphing Tool'],['rainbow','Rainbow'],['sticky','Sticky Note'],['tablemaker','Table Maker'],['tallychart','Tally Chart'],['translation','Translation'],['timer','Visual Timer'],['voicememo','Voice Memos']];
-const nativeSizes={grapher:[820,640],tablemaker:[860,600],tallychart:[680,540],clock:[400,240],colorpicker:[440,500],rainbow:[560,430],sticky:[340,300],translation:[480,430],timer:[340,400],voicememo:[440,400]};
+const entries=[['clock','Clock'],['colorpicker','Color Picker'],['grapher','Graphing Tool'],['rainbow','Rainbow'],['sticky','Sticky Note'],['tablemaker','Table Maker'],['tallychart','Tally Chart'],['translation','Translation'],['timer','Visual Timer'],['voicememo','Voice Memos'],['wordcloud','Word Cloud']];
+const interactiveTypes=['wordcloud'];
+const nativeSizes={wordcloud:[640,440],grapher:[820,640],tablemaker:[860,600],tallychart:[680,540],clock:[400,240],colorpicker:[440,500],rainbow:[560,430],sticky:[340,300],translation:[480,430],timer:[340,400],voicememo:[440,400]};
 const tileSize=type=>({w:nativeSizes[type][0]*.6,h:nativeSizes[type][1]*.6});
 const active=new Set(),pending=new Set(),audioCache=new Map(),liveMemos=new WeakMap();
 function icon(type){const source=document.querySelector('[data-module="'+type+'"]');const art=source?.querySelector('svg,img');return art?art.outerHTML:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>';}
 function dispose(host){for(const entry of [...active])if(host.contains(entry.el)){entry.capture();entry.cleanup();active.delete(entry);}}
 new MutationObserver(()=>{for(const entry of [...active])if(!entry.el.isConnected||entry.el.closest('[hidden]')){entry.capture();entry.cleanup();active.delete(entry);}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
-function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>{},deselect=()=>{},commit=()=>{},remove=()=>{},read,upload,scope='',error=console.warn}={}){
+function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>{},deselect=()=>{},commit=()=>{},remove=()=>{},read,upload,scope='',interaction=null,slideId='',error=console.warn}={}){
+ if(interactiveTypes.includes(e.tileType)&&!editable&&(live||interaction)){const cleanup=window.TeacherTilesPresentationInteractive.mount(el,e,{interaction,slideId});active.add({el,capture(){},cleanup});return;}
  if(!live){const preview=document.createElement('canvas');preview.width=Math.max(1,e.w*2);preview.height=Math.max(1,e.h*2);preview.className='pres-tile-static-preview';const g=preview.getContext('2d');g.scale(2,2);drawTile(g,{...e,x:0,y:0});el.append(preview);return;}
  const template=document.getElementById(e.tileType+'-template');if(!template)return;
  const m=template.content.firstElementChild.cloneNode(true),frame=document.createElement('div');frame.className='pres-embedded-tile';frame.append(m);el.append(frame);
@@ -32,7 +34,7 @@ function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>
  let tick=0;m._presentationChanged=()=>queueMicrotask(capture);active.add(entry);
  // Initialization is deferred until the module has a measurable, connected host.
  queueMicrotask(async()=>{if(disposed||!el.isConnected)return;
-  try{withBoardChangesSuspended(()=>{if(m.classList.contains('classroom-widget'))setupClassroomTileControls(m);({grapher:setupGrapher,tablemaker:setupTableMaker,tallychart:setupTallyChart,clock:setupClock,sticky:setupSticky,translation:setupTranslation,timer:setupTimer,voicememo:setupVoiceMemo,colorpicker:TeacherTilesColorpicker.setup,rainbow:TeacherTilesRainbow.setup}[e.tileType])(m);setupTilePresentationControls(m,e.tileType);restoreBoardFields(m,state.fields,{dispatch:true});if(e.tileType!=='voicememo')m._boardSetState?.(state.special);m._boardTimerSetState?.(state.timer);if(e.tileType==='sticky')m.querySelector('.sticky-editor').innerHTML=state.stickyHtml||'';if(e.tileType==='sticky'&&!state.stickyHtml)m.querySelector('.sticky-editor').textContent=state.sticky;});
+  try{withBoardChangesSuspended(()=>{if(m.classList.contains('classroom-widget'))setupClassroomTileControls(m);({wordcloud:TeacherTilesWordCloud.setup,grapher:setupGrapher,tablemaker:setupTableMaker,tallychart:setupTallyChart,clock:setupClock,sticky:setupSticky,translation:setupTranslation,timer:setupTimer,voicememo:setupVoiceMemo,colorpicker:TeacherTilesColorpicker.setup,rainbow:TeacherTilesRainbow.setup}[e.tileType])(m);setupTilePresentationControls(m,e.tileType);restoreBoardFields(m,state.fields,{dispatch:true});if(e.tileType!=='voicememo')m._boardSetState?.(state.special);m._boardTimerSetState?.(state.timer);if(e.tileType==='sticky')m.querySelector('.sticky-editor').innerHTML=state.stickyHtml||'';if(e.tileType==='sticky'&&!state.stickyHtml)m.querySelector('.sticky-editor').textContent=state.sticky;});
    m.querySelector('.timer-sync-toggle')?.remove();m.dataset.timerSync='false';
    if(e.tileType==='voicememo'){const memos=await Promise.all((liveMemos.get(e)||state.special.memos).map(async memo=>({...memo,dataUrl:memo.dataUrl||(memo.asset?await read(memo.asset):'')})));if(disposed)return;m._boardSetState({...state.special,memos});}
    fit();ready=true;last=JSON.stringify(contract.tile(e).tileState);tick=setInterval(capture,600);
@@ -78,7 +80,8 @@ function drawTable(g,e){const w=e.w/e.cols,h=e.h/e.rows;g.textBaseline='middle';
 
 function drawTile(g,e){
  const s=e.tileState||{},colors={white:'#ffffff',cream:'#fff8e7',blue:'#e3edfc',pink:'#ffe5ef',green:'#e5f5e9',lavender:'#eee7fc',yellow:'#fff2aa',charcoal:'#293345'},fill=colors[s.dataset?.bg]||'#ffffff';g.save();g.translate(e.x,e.y);g.fillStyle=e.tileType==='sticky'?(colors[s.dataset?.color]||'#fff2aa'):fill;g.strokeStyle='#dce1e9';g.lineWidth=1;g.beginPath();g.roundRect(1,1,e.w-2,e.h-2,Math.min(15,e.w/15));g.fill();g.stroke();g.fillStyle='#263249';g.textAlign='center';g.textBaseline='middle';
- if(e.tileType==='clock'){g.font='bold '+Math.min(e.w/4.4,e.h/2.3)+'px Arial';g.fillText(new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit'}).format(new Date()),e.w/2,e.h/2,e.w-20);}
+ if(e.tileType==='wordcloud'){g.font='bold '+Math.min(22,e.w/12)+'px Arial';g.fillText(s.special?.prompt||'Word Cloud',e.w/2,e.h*.35,e.w-24);g.fillStyle='#739ed2';g.font=Math.min(18,e.w/16)+'px Arial';g.fillText('ClassConnect',e.w/2,e.h*.6,e.w-24);}
+ else if(e.tileType==='clock'){g.font='bold '+Math.min(e.w/4.4,e.h/2.3)+'px Arial';g.fillText(new Intl.DateTimeFormat([],{hour:'numeric',minute:'2-digit'}).format(new Date()),e.w/2,e.h/2,e.w-20);}
  else if(e.tileType==='rainbow'){const colors=['#ef5350','#ff9800','#ffdf49','#65bd7d','#4ba9eb','#6554b1','#b27bd3'];for(let i=0;i<7;i++){g.beginPath();g.strokeStyle=colors[i];g.lineWidth=e.w/24;g.arc(e.w/2,e.h*.75,e.w*(.4-i*.042),Math.PI,2*Math.PI);g.stroke();}}
  else if(e.tileType==='timer'){const r=Math.min(e.w,e.h)*.34,t=s.timer||{},progress=t.total?Math.max(0,Math.min(1,t.left/t.total)):1;g.fillStyle='#e3edfc';g.beginPath();g.arc(e.w/2,e.h/2,r,0,Math.PI*2);g.fill();g.fillStyle='#91b6e4';g.beginPath();g.moveTo(e.w/2,e.h/2);g.arc(e.w/2,e.h/2,r,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);g.closePath();g.fill();g.fillStyle='#263249';g.font='bold '+e.w/8+'px Arial';g.fillText(Math.floor((t.left||0)/60)+':'+String(Math.floor((t.left||0)%60)).padStart(2,'0'),e.w/2,e.h/2);}
  else if(e.tileType==='tablemaker'||e.tileType==='tallychart'){const rows=contract.tile(e).tileState.special.rows;const max=Math.max(1,...rows.map(r=>r.value??r.count));const w=(e.w-30)/Math.max(1,rows.length);rows.forEach((r,i)=>{const h=(e.h-50)*(r.value??r.count)/max;g.fillStyle=r.color;g.fillRect(15+i*w,e.h-25-h,w*.72,h);g.fillStyle='#263249';g.font=Math.min(14,w/4)+'px Arial';g.fillText(r.label,15+i*w+w*.36,e.h-12,w*.9);});}
@@ -87,5 +90,5 @@ function drawTile(g,e){
  else {g.textAlign='left';g.font='bold '+Math.min(22,e.w/12)+'px Arial';const name=entries.find(t=>t[0]===e.tileType)?.[1]||'';g.fillText(name,14,24,e.w-28);g.font=Math.min(18,e.w/15)+'px Arial';const body=e.tileType==='sticky'?s.sticky:e.tileType==='translation'?(s.special?.input||'Translate text')+'\n'+(s.special?.output||''):(s.special?.memos||[]).map(m=>'▶ '+m.name).join('\n');String(body||'').split('\n').slice(0,8).forEach((line,i)=>g.fillText(line,14,58+i*24,e.w-28));}
  g.restore();
 }
-window.TeacherTilesPresentationModules={entries,tileSize,icon,mountTile,mountTable,drawTable,drawTile,dispose,async flush(){for(const e of active)e.capture();await Promise.all([...pending]);}};
+window.TeacherTilesPresentationModules={entries,interactiveTypes,tileSize,icon,mountTile,mountTable,drawTable,drawTile,dispose,async flush(){for(const e of active)e.capture();await Promise.all([...pending]);}};
 })();
