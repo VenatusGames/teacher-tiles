@@ -2,9 +2,11 @@
 const ns='http://www.w3.org/2000/svg';
 const clean=rows=>(Array.isArray(rows)?rows:[]).filter(w=>w&&typeof w.text==='string'&&[...w.text].length<=40&&Number.isFinite(w.count)&&w.count>0).slice(0,120).map(w=>({text:w.text,count:Math.min(2000,Math.floor(w.count))}));
 function layout(words,font='Arial'){
- const g=document.createElement('canvas').getContext('2d'),sorted=[...words].sort((a,b)=>b.count-a.count||a.text.localeCompare(b.text)),max=Math.max(1,...sorted.map(w=>w.count));
+ const g=document.createElement('canvas').getContext('2d'),sorted=[...words].sort((a,b)=>b.count-a.count||a.text.localeCompare(b.text)),max=Math.max(1,...sorted.map(w=>w.count)),min=Math.max(1,Math.min(...sorted.map(w=>w.count)));
+ // Relative frequency controls emphasis; bound the contrast so rare words stay readable.
+ const exponent=max>min?Math.min(.9,Math.log(4.5)/Math.log(max/min)):.9;
  for(let scale=1;scale>.025;scale*=.88){const placed=[];let fits=true;
-  for(const word of sorted){const size=(24+64*Math.sqrt(word.count/max))*scale;g.font='700 '+size+'px '+font;const width=g.measureText(word.text).width+20*scale,height=size*1.25+8*scale;let spot;
+  for(const word of sorted){const size=108*Math.pow(word.count/max,exponent)*scale;g.font='700 '+size+'px '+font;const width=g.measureText(word.text).width+20*scale,height=size*1.25+8*scale;let spot;
    for(let i=0;i<5000;i++){const angle=i*.29,r=Math.sqrt(i)*5.5,x=480+Math.cos(angle)*r*1.45,y=290+Math.sin(angle)*r;
     const box={x:x-width/2,y:y-height/2,w:width,h:height};if(box.x<22||box.x+width>938||box.y<20||box.y+height>560)continue;
     if(placed.some(p=>box.x<p.x+p.w&&box.x+box.w>p.x&&box.y<p.y+p.h&&box.y+box.h>p.y))continue;
@@ -30,12 +32,12 @@ function setup(tile){
  tile._wordCloudInfo=()=>({prompt:prompt.value.trim()||'Share a word with your class'});
  tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live;tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label',live?'ClassConnect word cloud · Live':'ClassConnect word cloud');};
  connect.onclick=()=>window.TeacherTilesBoardSessions.wordcloud(tile).catch(e=>status.textContent=e.message);
- prompt.addEventListener('change',()=>window.notifyBoardChanged?.('wordcloud-question'));
+ prompt.addEventListener('change',()=>(tile._presentationChanged||window.notifyBoardChanged)?.('wordcloud-question'));
  tile._boardGetState=()=>({prompt:prompt.value,words:clean(words)});
  tile._boardSetState=value=>{void tile._classConnectSession?.end();prompt.value=String(value?.prompt||'').slice(0,160);words=clean(value?.words);paint();};
  const appearanceObserver=new MutationObserver(paint);appearanceObserver.observe(tile,{attributes:true,attributeFilter:['data-font']});
  const cleanup=tile._cleanup;tile._cleanup=()=>{if(disposed)return;disposed=true;appearanceObserver.disconnect();void tile._classConnectSession?.end();cleanup?.();};
- if(window.ClassConnectPolicy)connect.hidden=true;paint();
+ if(window.ClassConnectPolicy||tile.dataset.presentationEmbedded==='true')connect.hidden=true;paint();
 }
 window.TeacherTilesWordCloud=Object.freeze({setup,render,clean,layout});
 })();

@@ -1,5 +1,5 @@
-import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261110-wordcloud-polish';
-import {openTileSession} from './tile-session-picker.js?v=20261110-wordcloud-polish';
+import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261112-present-mode-connect';
+import {openTileSession} from './tile-session-picker.js?v=20261112-present-mode-connect';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 function connect(tile,classId,name,result,exit){
  let closed=false,ending=false,endRequested=false,off=null,offCloud=null;
@@ -28,7 +28,7 @@ export function enterWordCloud({token,student,session,getProfile,result}){
  function startCooldown(){cooldownUntil=performance.now()+2000;if(!cooldownTimer)cooldownTimer=setInterval(updateSubmit,100);updateSubmit();}const credentials={token,studentId:student.id,session,sessionId:result.status.sessionId};
  form.onsubmit=async e=>{e.preventDefault();if(busy||closed||performance.now()<cooldownUntil)return;const word=input.value.trim();if(!word)return;if(!pending||pending.word!==word)pending={word,requestId:crypto.randomUUID()};busy=true;submit.disabled=true;input.disabled=true;message.textContent='Adding your word…';
   try{const response=await call({action:'submitWord',...credentials,...pending});if(closed)return;pending=null;input.value='';startCooldown();last.textContent=response.word;last.getAnimations().forEach(a=>a.cancel());if(!matchMedia('(prefers-reduced-motion: reduce)').matches)last.animate([{opacity:0,transform:'translateY(10px) scale(.85)'},{opacity:1,transform:'none'}],{duration:400,easing:'cubic-bezier(.2,.8,.2,1)'});message.textContent='Your word joined the cloud!';}
-  catch(error){if(closed)return;if(error.code==='functions/resource-exhausted'&&/Give your word a moment|Please wait a moment/.test(error.message||'')){startCooldown();message.textContent='';return;}message.textContent=error.message||'Could not send your word. Try again.';if(['functions/failed-precondition','functions/not-found','functions/permission-denied','functions/aborted'].includes(error.code))dialog.close();}
+  catch(error){if(closed)return;if(error.code==='functions/resource-exhausted'&&/Give your word a moment|Please wait a moment/.test(error.message||'')){startCooldown();message.textContent='';return;}message.textContent=String(error.message||'Could not send your word. Try again.').replace(/\s*\[400\]\s*$/,'');if(['functions/failed-precondition','functions/not-found','functions/permission-denied','functions/aborted'].includes(error.code))dialog.close();}
   finally{busy=false;if(!closed){updateSubmit();input.disabled=false;input.focus();}}
  };
  const leave=()=>dialog.close();window.addEventListener('hashchange',leave);

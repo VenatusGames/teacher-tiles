@@ -477,6 +477,7 @@ function applyPreviewState(module, state) {
     module.querySelector('.progress-bar-remaining').textContent='00:00';
     module.querySelector('.progress-bar-end-label').textContent='';
   }
+  if(state.type==='wordcloud')module.querySelector('.wordcloud-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
   if(state.type==='pumpkincarving')module.querySelector('.halloween-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
   const headingSelector=EDITABLE_TILE_HEADINGS[state.type];
   const heading=headingSelector?module.querySelector(headingSelector):null;
