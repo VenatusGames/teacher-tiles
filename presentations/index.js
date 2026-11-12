@@ -44,8 +44,9 @@ root._classConnectStatusHost=$('.pres-play-controls',root);
 root._classConnectPresentation=()=>play&&deck?{presentation:{kind:'library',id:deckId,revision},slideIndex,title:deck.title,document:deck}:null;
 root._classConnectRefresh=()=>{if(play&&deck)renderCanvas();};
 const sessionButton=$('[data-action="classconnect"]',root);
-sessionButton.innerHTML=svg('<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>')+'<span>ClassConnect</span>';
-root.addEventListener('teachertiles:presentation-connection',()=>{sessionButton.querySelector('span').textContent=root._classConnectSession?.active?'ClassConnect · Live':'ClassConnect';});
+sessionButton.innerHTML=svg('<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>');
+sessionButton.title='ClassConnect';
+root.addEventListener('teachertiles:presentation-connection',()=>{sessionButton.title=root._classConnectSession?.active?'ClassConnect · Live':'ClassConnect';});
 async function connectPresentation(){
  if(!play||!deck)return;
  const target=deckId,token=generation;sessionButton.disabled=true;
@@ -151,7 +152,16 @@ function updateTools(){const e=current();$('.pres-size-tools',root).hidden=!e||e
 
 function positionObjectTools(){const panel=$('.pres-size-tools',root),e=current(),target=e&&canvas.querySelector('[data-object="'+e.id+'"]');if(!target||e.type==='tile'||play||root.hidden){panel.hidden=true;return;}const r=target.getBoundingClientRect();panel.style.left=Math.max(8,Math.min(innerWidth-panel.offsetWidth-8,r.left+r.width/2-panel.offsetWidth/2))+'px';panel.style.top=Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,r.bottom+18))+'px';}
 const objectToolsResize=new ResizeObserver(positionObjectTools);objectToolsResize.observe(canvas);objectToolsResize.observe($('.pres-size-tools',root));
-function tileMenu(){menu.replaceChildren();menu.setAttribute('aria-label','Choose a tile');for(const group of ['Basic','Interactive']){const heading=document.createElement('div');heading.className='pres-menu-section';heading.textContent=group;menu.append(heading);for(const [type,name]of modules.entries.filter(([type])=>(modules.interactiveTypes.includes(type)?'Interactive':'Basic')===group)){const b=button('',name);b.innerHTML=modules.icon(type)+'<span>'+name+'</span>';b.dataset.tileChoice=type;b.onclick=()=>addObject('tile',{...modules.tileSize(type),tileType:type,tileState:{}});menu.append(b);}}menu.hidden=false;fitMenu();}
+function tileMenu(group=null){
+ menu.replaceChildren();menu.setAttribute('aria-label',group?group+' tiles':'Choose a tile category');
+ const back=button('',group?'Back to tile categories':'Back to add menu');back.setAttribute('role','menuitem');back.innerHTML=svg('<path d="m14 6-6 6 6 6"/>')+'<span>Back</span>';back.onclick=()=>{if(group)tileMenu();else{addMenu();menu.querySelector('[data-action=tile]').focus();}};menu.append(back);
+ if(!group){
+  for(const name of ['Basic','Interactive']){const b=button('',name);b.setAttribute('role','menuitem');b.setAttribute('aria-haspopup','menu');b.dataset.tileCategory=name;b.innerHTML=(name==='Basic'?icons.tile:svg('<circle cx="12" cy="12" r="8"/><path d="m10 8 6 4-6 4Z"/>'))+'<span>'+name+'</span><span class="pres-menu-chevron" aria-hidden="true">›</span>';b.onclick=()=>tileMenu(name);menu.append(b);}
+ }else{
+  for(const [type,name]of modules.entries.filter(([type])=>(modules.interactiveTypes.includes(type)?'Interactive':'Basic')===group)){const b=button('',name);b.setAttribute('role','menuitem');b.innerHTML=modules.icon(type)+'<span>'+name+'</span>';b.dataset.tileChoice=type;b.onclick=()=>addObject('tile',{...modules.tileSize(type),tileType:type,tileState:{}});menu.append(b);}
+ }
+ menu.hidden=false;fitMenu();menu.querySelector('[data-tile-category],[data-tile-choice]')?.focus();
+}
 const tableTools=document.createElement('div');tableTools.className='pres-table-tools';tableTools.hidden=true;tableTools.innerHTML='<label>Rows<input type="number" min="1" max="20" data-table="rows"></label><label>Columns<input type="number" min="1" max="12" data-table="cols"></label><label>Size<input type="number" min="8" max="72" data-table="fontSize"></label><label>Text<input type="color" data-table="color"></label><label>Fill<input type="color" data-table="fill"></label><label>Lines<input type="color" data-table="border"></label><label>Header<input type="checkbox" data-table="header"></label><label>Header Color<input type="color" data-table="headerFill"></label>';toolbar.prepend(tableTools);
 tableTools.addEventListener('change',event=>{const key=event.target.dataset.table;if(!key)return;alter(e=>{e[key]=event.target.type==='checkbox'?event.target.checked:event.target.type==='number'?Number(event.target.value):event.target.value;Object.assign(e,objectContract.table(e));});});
 

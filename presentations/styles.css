@@ -121,3 +121,5 @@
 #presentations-tool.is-classconnect-live .pres-play-controls [data-action="classconnect"]{background:#ffe3e8;border-color:#db8a99}
 .pres-play-controls :is(.pres-session-status,.presentation-connection-status){position:absolute;bottom:100%;left:0;right:0;margin:0 0 8px;padding:10px;border-radius:10px;background:#fff;color:#a12b40;font-size:13px;box-shadow:0 3px 16px #0002}
 @media(max-width:600px){.pres-play-controls{gap:5px;max-width:calc(100vw - 16px)}.pres-play-controls button{padding:7px!important}.pres-play-controls [data-action="classconnect"]{gap:4px}}
+
+#presentations-tool .pres-play-controls [data-action="classconnect"]{width:38px;min-width:38px;height:36px;padding:7px;justify-content:center}
