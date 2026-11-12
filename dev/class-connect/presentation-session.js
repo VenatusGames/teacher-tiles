@@ -1,5 +1,5 @@
-import {openTileSession} from './tile-session-picker.js?v=20261110-wordcloud';
-import {call,active,watchRoom,modal} from './boards.js?v=20261110-wordcloud';
+import {openTileSession} from './tile-session-picker.js?v=20261110-wordcloud-polish';
+import {call,active,watchRoom,modal} from './boards.js?v=20261110-wordcloud-polish';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
 const root=new URL('../',import.meta.url),version='20261110-classconnect-presentations';
