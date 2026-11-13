@@ -1,4 +1,4 @@
-import {watchRoom,active,enterStudentBoard} from './boards.js?v=20261112-present-mode-connect';
+import {watchRoom,active,enterStudentBoard} from './boards.js?v=20261112-controlled-inputs';
 import './ui-audio.js?v=20261103-pin-polish';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';

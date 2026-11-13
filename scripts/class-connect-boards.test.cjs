@@ -1,6 +1,8 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
-const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+const interactions=require('../../teachertiles-functions-dev/functions/firebase-service/class-connect-board-interactions');
+let cloud=null,clock=Date.now();
 let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0,gateRequests=0,portalRequests=0;
 let builtRoot;
 if(deployed){
@@ -15,7 +17,7 @@ if(deployed){
 
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const context=await browser.newContext({viewport:{width:1400,height:960}}),pages=[],errors=[];
- const broadcast=async()=>{for(const p of pages)await p.evaluate(s=>{window.__currentRoom=s;window.__pushRoom?.(s)},status).catch(()=>{});};
+ const broadcast=async()=>{for(const p of pages)await p.evaluate(({status,cloud})=>{window.__currentRoom=status;window.__cloud=cloud;window.__push?.('_classConnectClouds',cloud);window.__push?.('_classConnectRooms',status)},{status,cloud}).catch(()=>{});};
  await context.exposeBinding('__boardCall',async(_,name,data)=>{
   calls.push({name,...data});
   if(name==='classConnectView')return {boardRoom:room,view:{name:'Owls',students:[{id:'alice',name:'Alice',initials:'A',hue:140,rewards:{}}]}};
@@ -23,7 +25,8 @@ if(deployed){
   if(data.action==='teacherGet')return {room,status,snapshot,allowedTypes,types};
   if(data.action==='start'){status={active:true,mode:data.mode,sessionId:'session-'+(++revision),revision:1,lastInput:Date.now(),activityWrittenAt:Date.now(),until:Date.now()+600000};snapshot={schemaVersion:2,theme:'light',objects:[],frames:[]};allowedTypes=data.allowedTypes;await broadcast();return {room,status};}
   if(data.action==='join')return {room,status,snapshot,allowedTypes};
-  if(data.action==='publish'){assert.equal(data.expectedRevision,status.revision);snapshot=structuredClone(data.snapshot);status={...status,revision:status.revision+1};await broadcast();return {status,warnings:[]};}
+  if(data.action==='publish'){assert.equal(data.expectedRevision,status.revision);snapshot=structuredClone(data.snapshot);const entries=interactions.manifest(snapshot);cloud={...(cloud||{sessionId:status.sessionId,total:0,activities:{},receipts:[],lastByStudent:{}}),entries};status={...status,revision:status.revision+1,hasBoardInteractions:!!entries.length};await broadcast();return {status,warnings:[]};}
+  if(data.action==='boardWord'){clock+=2100;cloud=interactions.add(cloud,interactions.manifest(snapshot),data.studentId,interactions.request(data),clock)||cloud;await broadcast();return {accepted:true,word:data.word.toLowerCase()};}
   if(data.action==='end'){status={...status,active:false};await broadcast();return {status};}
   if(data.action==='activity'){status={...status,lastInput:Date.now(),activityWrittenAt:Date.now(),until:Date.now()+600000};await broadcast();return {status};}
   throw Error('Unexpected action '+data.action);
@@ -31,7 +34,7 @@ if(deployed){
  await context.route('**/*',route=>{
   const url=new URL(route.request().url()),pathname=url.pathname.replace(/^\/dev(?=\/)/,'');
   if(url.hostname==='www.gstatic.com'){
-   const body=url.pathname.endsWith('firebase-app.js')?'const app={name:"[DEFAULT]"};export const initializeApp=()=>app;export const getApps=()=>[app];':url.pathname.endsWith('firebase-firestore.js')?'export const getFirestore=()=>({});export const doc=()=>({});export function onSnapshot(_,options,next){window.__roomListeners??=new Set();window.__roomListeners.add(next);window.__pushRoom=s=>{window.__currentRoom=s;for(const f of window.__roomListeners)f({data:()=>s})};next({data:()=>window.__currentRoom});return()=>window.__roomListeners.delete(next)}':'export const getFunctions=()=>({});export const httpsCallable=(_,name)=>async data=>({data:await window.__boardCall(name,data)});';
+   const body=url.pathname.endsWith('firebase-app.js')?'const app={name:"[DEFAULT]"};export const initializeApp=()=>app;export const getApps=()=>[app];':url.pathname.endsWith('firebase-firestore.js')?'export const getFirestore=()=>({});export const doc=(_,collection)=>({collection});export function onSnapshot(ref,options,next){window.__listeners??=new Map();if(!window.__listeners.has(ref.collection))window.__listeners.set(ref.collection,new Set());const set=window.__listeners.get(ref.collection);set.add(next);window.__push=(key,value)=>{for(const f of window.__listeners.get(key)||[])f({data:()=>value})};next({data:()=>ref.collection==="_classConnectRooms"?window.__currentRoom:window.__cloud});return()=>set.delete(next)}':'export const getFunctions=()=>({});export const httpsCallable=(_,name)=>async data=>({data:await window.__boardCall(name,data)});';
    return route.fulfill({contentType:'text/javascript',body});
   }
   if(pathname==='/host.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><link rel="stylesheet" href="class-connect/boards.css"><script type="module" src="class-connect/boards.js"></script>'});
@@ -86,6 +89,16 @@ if(deployed){
  assert(await student.locator('.cc-session-fullscreen').evaluate(el=>innerWidth-el.getBoundingClientRect().right===14));
  const tileRect=await studentFrame.locator('.module[data-type=sticky]').boundingBox();await student.mouse.move(tileRect.x+tileRect.width-22,tileRect.y+22);await studentFrame.waitForTimeout(200);assert(await studentFrame.locator('.module[data-type=sticky] .module-pin').evaluate(el=>Number(getComputedStyle(el).opacity)>0));
  await student.screenshot({path:path.join(process.env.TEMP,'classconnect-controlled.png')});
+ // Controlled interactive tiles become forms automatically; only the teacher listens to responses.
+ await teacherFrame.evaluate(()=>{const b=TeacherTilesBoard.capture(),x=-b.camera.x/b.camera.scale+120,y=-b.camera.y/b.camera.scale+120;for(const [i,prompt]of ['Favorite subject?','How do you feel?'].entries()){const tile=createModule('wordcloud',x+i*660,y);tile.querySelector('.wordcloud-prompt').value=prompt;}notifyBoardChanged('questions');});
+ await studentFrame.locator('.is-wordcloud-input').nth(1).waitFor({timeout:15000});const inputCloud=studentFrame.locator('.is-wordcloud-input').first();assert.equal(await inputCloud.locator('.wordcloud-connect:visible').count(),0);
+ const beforeWords=calls.filter(c=>c.action==='publish').length;await inputCloud.getByRole('textbox',{name:'Your word',exact:true}).fill('Reading');await inputCloud.getByRole('button',{name:'Send Word',exact:true}).click();await inputCloud.getByText('Your word joined the cloud!',{exact:true}).waitFor();
+ await teacher.bringToFront();await teacherFrame.locator('text[data-word=reading][data-count="1"]').waitFor();assert.equal(await teacherFrame.locator('.wordcloud-module').nth(1).locator('text[data-word=reading]').count(),0);
+ assert.equal(await student.evaluate(()=>window.__listeners?.get('_classConnectClouds')?.size||0),0);assert.equal(await teacher.evaluate(()=>window.__listeners.get('_classConnectClouds').size),1);
+ await new Promise(r=>setTimeout(r,1600));assert.equal(calls.filter(c=>c.action==='publish').length,beforeWords,'Responses must not republish the board');assert(snapshot.objects.filter(o=>o.type==='wordcloud').every(o=>o.special.words.length===0));
+ await student.bringToFront();await studentFrame.locator('.is-wordcloud-input').nth(1).getByRole('textbox',{name:'Your word',exact:true}).fill('Happy');await studentFrame.locator('.is-wordcloud-input').nth(1).getByRole('button',{name:'Send Word',exact:true}).click();await teacher.bringToFront();await teacherFrame.locator('text[data-word=happy]').waitFor();
+ await teacher.screenshot({path:path.join(process.env.TEMP,'controlled-wordcloud-teacher.png')});await student.bringToFront();await student.screenshot({path:path.join(process.env.TEMP,'controlled-wordcloud-student.png')});
+ await teacherFrame.evaluate(()=>deleteModules([document.querySelector('.wordcloud-module')]));await studentFrame.waitForFunction(()=>document.querySelectorAll('.is-wordcloud-input').length===1,null,{timeout:15000});
  // A student leaving and reentering starts fresh, never restoring their work.
  await student.frames()[1].getByRole('button',{name:'Back to Profile',exact:true}).click();
  await student.getByRole('button',{name:'Enter Board',exact:true}).click();
@@ -124,5 +137,5 @@ if(deployed){
  status={...status,until:Date.now()-1};await broadcast();await student.locator('iframe').waitFor({state:'detached'});
  assert(!await student.getByRole('button',{name:'Enter Board',exact:true}).evaluate(el=>el.classList.contains('is-live')));
 
- assert.equal(gateRequests,0);if(deployed)assert.equal(portalRequests,0);assert.deepEqual(errors,[]);console.log('Session browser checks passed: teacher editing, controlled restrictions, independent work, incremental updates, end session, free whitelist, isolated storage.');
+ assert.equal(gateRequests,0);if(deployed)assert.equal(portalRequests,0);assert.deepEqual(errors,[]);console.log('Session browser checks passed: teacher editing, controlled restrictions, independent work, incremental updates, end session, free whitelist, isolated storage, automatic Word Cloud input tiles and isolated live responses.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

@@ -26,6 +26,7 @@ function render(host,rows){
 }
 function setup(tile){
  setupClassroomTileControls(tile);
+ if(window.ClassConnectPolicy)tile._wordCloudInteractionId=crypto.randomUUID();
  const stage=tile.querySelector('.wordcloud-stage'),prompt=tile.querySelector('.wordcloud-prompt'),empty=tile.querySelector('.wordcloud-empty'),total=tile.querySelector('.wordcloud-total'),status=tile.querySelector('.wordcloud-status'),connect=tile.querySelector('.wordcloud-connect');let words=[],disposed=false;
  const paint=()=>{render(stage,words);empty.hidden=words.length>0;total.textContent=words.length?words.reduce((sum,w)=>sum+w.count,0)+' words shared':'';};
  tile._wordCloudUpdate=rows=>{words=clean(rows);paint();};
@@ -33,11 +34,26 @@ function setup(tile){
  tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live;tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label',live?'ClassConnect word cloud · Live':'ClassConnect word cloud');};
  connect.onclick=()=>window.TeacherTilesBoardSessions.wordcloud(tile).catch(e=>status.textContent=e.message);
  prompt.addEventListener('change',()=>(tile._presentationChanged||window.notifyBoardChanged)?.('wordcloud-question'));
- tile._boardGetState=()=>({prompt:prompt.value,words:clean(words)});
- tile._boardSetState=value=>{void tile._classConnectSession?.end();prompt.value=String(value?.prompt||'').slice(0,160);words=clean(value?.words);paint();};
+ tile._boardGetState=()=>({...window.ClassConnectPolicy?{interactionId:tile._wordCloudInteractionId}:{},prompt:prompt.value,words:window.ClassConnectPolicy?[]:clean(words)});
+ tile._boardSetState=value=>{void tile._classConnectSession?.end();if(window.ClassConnectPolicy&&value?.interactionId)tile._wordCloudInteractionId=value.interactionId;prompt.value=String(value?.prompt||'').slice(0,160);words=clean(value?.words);paint();};
  const appearanceObserver=new MutationObserver(paint);appearanceObserver.observe(tile,{attributes:true,attributeFilter:['data-font']});
  const cleanup=tile._cleanup;tile._cleanup=()=>{if(disposed)return;disposed=true;appearanceObserver.disconnect();void tile._classConnectSession?.end();cleanup?.();};
  if(window.ClassConnectPolicy||tile.dataset.presentationEmbedded==='true')connect.hidden=true;paint();
+ if(window.ClassConnectPolicy?.controlled&&window.ClassConnectPolicy.student){
+  tile.classList.add('is-wordcloud-input');prompt.disabled=true;prompt.placeholder='Send a word to the Word Cloud';
+  const form=document.createElement('form'),input=document.createElement('input'),send=document.createElement('button'),feedback=document.createElement('p');form.className='wordcloud-input-form';input.type='text';input.maxLength=40;input.required=true;input.autocomplete='off';input.placeholder='Type a word…';input.setAttribute('aria-label','Your word');send.type='submit';send.textContent='Send Word';feedback.className='wordcloud-input-feedback';feedback.setAttribute('role','status');form.append(input,send,feedback);tile.querySelector('.wordcloud-content').replaceChildren(form);total.hidden=true;status.hidden=true;
+  let busy=false,pending=null,until=0,timer=0;
+  const button=()=>{const n=Math.max(0,Math.ceil((until-performance.now())/1000));send.disabled=busy||n>0;send.textContent=n?'Send in '+n+'s':'Send Word';if(!n&&timer){clearInterval(timer);timer=0;}};
+  const cooldown=()=>{until=performance.now()+2000;if(!timer)timer=setInterval(button,100);button();};
+  form.addEventListener('pointerdown',e=>e.stopPropagation());form.addEventListener('keydown',e=>e.stopPropagation());
+  form.onsubmit=async e=>{e.preventDefault();if(busy||disposed||performance.now()<until)return;const word=input.value.trim();if(!word)return;if(pending?.word!==word)pending={word,requestId:crypto.randomUUID()};busy=true;input.disabled=true;button();feedback.textContent='Sending…';
+   try{await window.ClassConnectPolicy.submitWord(tile,pending);if(disposed)return;pending=null;input.value='';feedback.textContent='Your word joined the cloud!';cooldown();}
+   catch(error){if(disposed)return;if(error.code==='functions/resource-exhausted'&&/moment/.test(error.message)){feedback.textContent='';cooldown();}else feedback.textContent=String(error.message||'Could not send. Try again.').replace(/\s*\[\d{3}\]\s*$/,'');}
+   finally{busy=false;if(!disposed){input.disabled=false;button();input.focus({preventScroll:true});}}
+  };
+  const previous=tile._cleanup;tile._cleanup=()=>{clearInterval(timer);pending=null;previous?.();};
+ }
+
 }
 window.TeacherTilesWordCloud=Object.freeze({setup,render,clean,layout});
 })();
