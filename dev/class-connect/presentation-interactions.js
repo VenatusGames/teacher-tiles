@@ -1,4 +1,4 @@
-import {call,watchPresentationWords} from './boards.js?v=20261112-present-mode-connect';
+import {call,watchPresentationWords} from './boards.js?v=20261112-controlled-inputs';
 // One listener per active presentation, shared by all interactive objects on its current slide.
 export function createInteractionChannel({room,sessionId,deck,credentials}){
  let current=-1,data=null,off=null,closed=false,problem='';const listeners=new Set();

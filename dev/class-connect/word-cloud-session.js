@@ -1,5 +1,5 @@
-import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261112-present-mode-connect';
-import {openTileSession} from './tile-session-picker.js?v=20261112-present-mode-connect';
+import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261112-controlled-inputs';
+import {openTileSession} from './tile-session-picker.js?v=20261112-controlled-inputs';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 function connect(tile,classId,name,result,exit){
  let closed=false,ending=false,endRequested=false,off=null,offCloud=null;

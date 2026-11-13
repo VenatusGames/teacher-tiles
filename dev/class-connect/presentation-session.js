@@ -1,9 +1,9 @@
-import {createInteractionChannel} from './presentation-interactions.js?v=20261112-present-mode-connect';
-import {openTileSession} from './tile-session-picker.js?v=20261112-present-mode-connect';
-import {call,active,watchRoom,modal} from './boards.js?v=20261112-present-mode-connect';
+import {createInteractionChannel} from './presentation-interactions.js?v=20261112-controlled-inputs';
+import {openTileSession} from './tile-session-picker.js?v=20261112-controlled-inputs';
+import {call,active,watchRoom,modal} from './boards.js?v=20261112-controlled-inputs';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
-const root=new URL('../',import.meta.url),version='20261112-present-mode-connect';
+const root=new URL('../',import.meta.url),version='20261112-controlled-inputs';
 const sourceKey=info=>JSON.stringify(info?.presentation);
 function showStatus(tile,text){let message=tile.querySelector('.presentation-connection-status');if(!message){message=make('p','presentation-connection-status');message.setAttribute('role','status');(tile._classConnectStatusHost||tile.querySelector('.presentation-tile-viewport')).append(message);}message.textContent=text;message.hidden=!text;tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));}
 // A single ordered publisher coalesces rapid navigation and sends only slide indices.
