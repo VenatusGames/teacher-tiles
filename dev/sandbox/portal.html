@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="tiles/rich-text/styles.css?v=20261103-news">
 <link rel="stylesheet" href="tiles/shared/formatting-toolbar.css?v=20261020-controls-followup">
 <link rel="stylesheet" href="sandbox/news.css?v=20261103-news-captions">
+<link rel="stylesheet" href="sandbox/overview.css?v=20261119-overview">
 </head>
 <body class="developer-portal">
   <main id="portal-access-screen">
@@ -56,7 +57,7 @@
       <header class="portal-topbar"><div class="portal-breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="portal-current-view">Overview</strong></div><div class="portal-topbar-actions"><time id="portal-clock" class="portal-clock"><span class="portal-clock-date"></span><span class="portal-clock-time"></span></time><button id="portal-signout" class="quiet" hidden>Sign Out</button></div></header>
 
       <section id="portal-home" hidden aria-labelledby="portal-heading">
-        <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer Overview</h1><p>A place to test, review, and manage TeacherTiles.</p></div>
+        <div class="portal-welcome"><p class="eyebrow">YOUR WORKSPACE</p><h1 id="portal-heading">Developer Overview</h1></div>
         <a id="enter-board-sandbox" class="board-card board-banner" href="board.html">
           <svg class="board-banner-icon" viewBox="0 0 56 56" aria-hidden="true"><rect x="5" y="7" width="29" height="29" rx="7" fill="#e6efff" stroke="#a6bee5"/><circle cx="19.5" cy="21.5" r="8" fill="#80a6df"/><path d="M19.5 13.5v8h8" fill="#e6efff"/><rect x="30" y="24" width="21" height="25" rx="5" fill="#fff0c9" stroke="#ddc994"/><path d="M35 32h11M35 37h11M35 42h7" stroke="#b9a671" stroke-width="2" stroke-linecap="round"/></svg>
           <div><h2>Board Sandbox</h2><p>Test tiles and try new features.</p></div>
@@ -64,7 +65,6 @@
         </a>
         <div class="account-strip"><span class="verified-icon" aria-hidden="true">✓</span><div><strong id="portal-name"></strong><span id="portal-email"></span></div><span id="portal-role" class="role-chip"></span></div>
         <section id="developer-insights" aria-label="User insights"></section>
-        <p class="portal-footnote">Insights are a saved snapshot. Use Refresh Insights to get the latest counts.</p>
       </section>
       <section id="portal-users" hidden aria-labelledby="users-heading">
         <div class="users-panel-head"><h1 id="users-heading">Users</h1><div class="users-search"><label for="users-search" class="visually-hidden">Find a user</label><input id="users-search" type="search" placeholder="Search email, nickname, name, or user ID" maxlength="180" autocomplete="off"><button id="users-search-submit" class="quiet" type="button">Search</button><button id="users-refresh" class="quiet" type="button" title="Refresh cached users and activity">Refresh</button></div></div>
@@ -74,7 +74,7 @@
       </section>
     </main>
   </div>
-  <script type="module" src="sandbox/portal.js?v=20261103-news-captions"></script>
+  <script type="module" src="sandbox/portal.js?v=20261119-overview"></script>
 </body>
 </html>
 
