@@ -1,28 +1,176 @@
-import {node,count,snapshotSeries,dailySeries,drawChart} from './overview-chart.js?v=20261119-overview';
-const memberships={paid:{key:'paidSubscribers',label:'Paid',detail:'Active personal paid subscriptions',color:'#b57a28'},trials:{key:'trialSubscribers',label:'Trials',detail:'Trials, free overrides, and dev-console previews',color:'#8a6bc1'},org:{key:'orgSubscribers',label:'Org',detail:'Organization seats without a personal plan or preview',color:'#398b8d'}};
-const icon=path=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
-const paths={users:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5"/>',online:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',crown:'<path d="m3 6 5 5 4-7 4 7 5-5-2 13H5Z"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>',arrow:'<path d="m9 5 7 7-7 7"/>'};
-function segments(label,items,key,selected){const box=node('div','overview-segments');box.setAttribute('role','group');box.setAttribute('aria-label',label);for(const [value,text]of items){const b=node('button','',text);b.type='button';b.dataset[key]=value;b.setAttribute('aria-pressed',String(value===String(selected)));box.append(b);}return box;}
-export function createInsights(call){
- const root=document.getElementById('developer-insights');root.classList.add('overview-dashboard');
- root.innerHTML=`<header class="overview-heading"><div><h2>At a glance</h2><p id="insights-status" role="status">Loading snapshot…</p></div><button type="button" class="overview-refresh" id="insights-refresh">${icon(paths.refresh)}<span>Refresh Insights</span></button></header><div class="overview-metrics"></div><div class="overview-charts"><article class="overview-panel overview-activity" aria-label="User activity"></article><article class="overview-panel overview-memberships" aria-label="Subscriptions"></article></div><section class="overview-panel overview-queue" aria-label="Review and support"><header><h2>Review &amp; support</h2><span>Open items</span></header><div class="overview-queue-items"></div></section><p class="overview-data-note">History keeps one snapshot per 15-minute interval when refreshed. Gaps indicate missing observations.</p>`;
- const metrics=root.querySelector('.overview-metrics');
- for(const [key,title,detail,art]of [['total','Total accounts','Enabled accounts','users'],['online','Online now','Active in the last 6 minutes','online'],['active24Hours','Active in 24 hours','Unique signed-in users','clock'],['premium','Premium access','Paid + trials + organization seats','crown']]){const card=node('article','overview-metric');card.dataset.metric=key;card.innerHTML=`<div class="overview-metric-label">${icon(paths[art])}<h3>${title}</h3></div><strong data-stat="${key}">—</strong><p>${detail}</p>`;metrics.append(card);}
- for(const [key,title,view]of [['approvalQueue','Boards awaiting review','templates'],['reportedTickets','New tickets','bugs'],['inProgressTickets','Tickets in progress','bugs']]){const b=node('button','overview-queue-item');b.type='button';b.dataset.queue=view;b.innerHTML=`<strong data-stat="${key}">—</strong><span>${title}</span>${icon(paths.arrow)}`;b.onclick=()=>document.querySelector('.portal-sidebar [data-portal-view="'+view+'"]')?.click();root.querySelector('.overview-queue-items').append(b);}
- const status=root.querySelector('#insights-status'),refresh=root.querySelector('#insights-refresh');let snapshot=null,loaded=false,busy=false,generation=0,mode='snapshots',activityDays=7,memberDays=30,style='line',memberStyle='line',kind='paid';
- function chart(card,{title,description,series,value,valueLabel,controls,chartStyle,color,label,footer}){card.replaceChildren();card.style.setProperty('--overview-series',color);const header=node('header','overview-panel-heading'),copy=node('div');copy.append(node('h2','',title),node('p','',description));header.append(copy);card.append(header);const summary=node('div','overview-chart-summary');summary.append(node('strong','',count(value)),node('span','',valueLabel));card.append(summary);const tools=node('div','overview-chart-controls');tools.append(...controls);card.append(tools);const plot=node('div','overview-plot');card.append(plot);drawChart(plot,{series,style:chartStyle,label,loaded:!!snapshot});card.append(node('p','overview-chart-note',footer||series.note));}
- function renderCharts(){const data=snapshot||{asOf:Date.now(),history:[],dailyOnline:[]},daily=mode==='daily',activity=daily?dailySeries(data,activityDays):snapshotSeries(data,'online',activityDays),latest=activity.slots.filter(p=>p.value!==null).at(-1);
- chart(root.querySelector('.overview-activity'),{title:'User activity',description:daily?'Unique users for each calendar day':'Online users at recorded points in time',series:activity,value:daily?latest?.value:snapshot?.online,valueLabel:daily?(latest?latest.label:'No daily history'):'online at last refresh',color:'#3b927f',label:daily?'Unique users':'Online users',chartStyle:style,controls:[segments('Activity metric',[['snapshots','Online'],['daily','Daily users']],'activityMode',mode),segments('Activity time range',(daily?[['7','7 days'],['30','30 days']]:[['1','24 hours'],['7','7 days'],['30','30 days']]),'activityDays',activityDays),segments('Activity chart style',[['line','Line'],['bar','Bars']],'activityStyle',style)]});
- const view=memberships[kind],series=snapshotSeries(data,view.key,memberDays),total=snapshot?.total,value=snapshot?.[view.key],share=Number.isFinite(value)&&Number.isFinite(total)&&total>0?(value/total*100).toLocaleString(undefined,{maximumFractionDigits:1})+'% of enabled accounts':view.detail;
- chart(root.querySelector('.overview-memberships'),{title:'Subscriptions',description:share,series,value,valueLabel:view.detail,color:view.color,label:view.label+' subscribers',chartStyle:memberStyle,controls:[segments('Subscription type',Object.entries(memberships).map(([key,v])=>[key,v.label]),'membershipKind',kind),segments('Subscription time range',[['1','24 hours'],['7','7 days'],['30','30 days']],'memberDays',memberDays),segments('Subscription chart style',[['line','Line'],['bar','Bars']],'memberStyle',memberStyle)]});
- }
- root.addEventListener('click',event=>{const b=event.target.closest('button');if(!b)return;const d=b.dataset,key=Object.keys(d)[0];if(!['activityMode','activityDays','activityStyle','membershipKind','memberDays','memberStyle'].includes(key))return;if(d.activityMode){mode=d.activityMode;if(mode==='daily'&&activityDays===1)activityDays=7;}if(d.activityDays)activityDays=Number(d.activityDays);if(d.activityStyle)style=d.activityStyle;if(d.membershipKind)kind=d.membershipKind;if(d.memberDays)memberDays=Number(d.memberDays);if(d.memberStyle)memberStyle=d.memberStyle;renderCharts();root.querySelector('[data-'+key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'="'+d[key]+'"]')?.focus({preventScroll:true});});
- function render(){for(const key of ['total','online','active24Hours','approvalQueue','reportedTickets','inProgressTickets'])root.querySelector('[data-stat="'+key+'"]').textContent=count(snapshot?.[key]);const values=Object.values(memberships).map(v=>snapshot?.[v.key]);root.querySelector('[data-stat=premium]').textContent=values.every(Number.isFinite)?count(values.reduce((a,b)=>a+b,0)):'—';renderCharts();}
- async function load(force=false){if(busy||loaded&&!force)return;busy=true;refresh.disabled=true;root.setAttribute('aria-busy','true');status.textContent=snapshot?'Refreshing snapshot…':'Loading snapshot…';const attempt=generation;
-  try{const {data}=await call('getDeveloperInsights',{});if(attempt!==generation)return;snapshot={...data,asOf:Number.isFinite(data.asOf)?data.asOf:Date.now()};loaded=true;render();status.textContent='Updated '+new Date(snapshot.asOf).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' · Manual refresh';}
-  catch(error){if(attempt===generation){status.textContent=(snapshot?'Showing the previous snapshot. ':'')+'Could not refresh. '+(error.message||'Please try again.');if(!snapshot){renderCharts();root.querySelectorAll('.overview-empty strong').forEach(e=>e.textContent='Analytics unavailable');root.querySelectorAll('.overview-empty p').forEach(e=>e.textContent='Use Refresh Insights to try again.');}}}
-  finally{if(attempt===generation){busy=false;refresh.disabled=false;root.setAttribute('aria-busy','false');}}
- }
- refresh.onclick=()=>load(true);render();
- return {load,reset(){generation++;snapshot=null;loaded=busy=false;mode='snapshots';activityDays=7;memberDays=30;style=memberStyle='line';kind='paid';refresh.disabled=false;root.setAttribute('aria-busy','false');render();status.textContent='Sign in to view insights.';}};
+import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-chart.js?v=20261119-insights2';
+
+const artwork = {
+  boards: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h4v8H7zm8 0h2m-2 4h2"/>',
+  ticket: '<path d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4Z"/><path d="M15 8v2m0 4v2"/>',
+  progress: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
+  accounts: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5"/>',
+  online: '<path d="M2 12h5l3-7 4 14 3-7h5"/>',
+  day: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 5 2 2 5-4"/>',
+  paid: '<path d="m3 6 5 5 4-7 4 7 5-5-2 13H5Z"/>',
+  trial: '<path d="M6 3h12M6 21h12M7 3v3c0 3 3 5 5 6-2 1-5 3-5 6v3m10-18v3c0 3-3 5-5 6 2 1 5 3 5 6v3"/>',
+  org: '<path d="M3 21h18M5 21V4h9v17m0-12h5v12M8 8h3m-3 4h3m-3 4h3"/>',
+  refresh: '<path d="M20 4v6h-6M4 20v-6h6M5 9a7.5 7.5 0 0 1 13-4l2 5M4 14l2 5a7.5 7.5 0 0 0 13-4"/>',
+  arrow: '<path d="m9 5 7 7-7 7"/>'
+};
+const icon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${artwork[key]}</svg>`;
+const subscriptions = {
+  paid: ['Paid', 'paidSubscribers', 'Personal paid subscriptions'],
+  trial: ['Trials', 'trialSubscribers', 'Includes trials, free overrides, and developer previews'],
+  org: ['Organization Seats', 'orgSubscribers', 'Members receiving premium through their organization']
+};
+const ranges = [['1','24 Hours'], ['7','7 Days'], ['30','30 Days']];
+const styles = [['line','Line'], ['bar','Bars']];
+const defaults = { mode:'online', activityDays:'7', subscriptionDays:'30', activityStyle:'line', subscriptionStyle:'line', type:'paid' };
+
+function controls(label, options, key, selection) {
+  const group = node('div', 'overview-segments');
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', label);
+  for (const [value, title] of options) {
+    const button = node('button', '', title);
+    button.type = 'button';
+    button.dataset.control = key;
+    button.dataset.value = value;
+    button.setAttribute('aria-pressed', String(selection === value));
+    group.append(button);
+  }
+  return group;
+}
+
+export function createInsights(call) {
+  const root = document.getElementById('developer-insights');
+  root.innerHTML = `
+    <section class="overview-panel overview-queue" aria-labelledby="review-heading">
+      <header class="overview-heading"><div><h2 id="review-heading">Review &amp; Support</h2>
+        <p id="insights-status" role="status"></p></div>
+        <button type="button" class="overview-refresh" id="insights-refresh">${icon('refresh')} Refresh Insights</button></header>
+      <div class="overview-queue-items"></div>
+    </section>
+    <div class="overview-metrics"></div>
+    <div class="overview-charts">
+      <article class="overview-panel overview-activity" aria-label="User Activity"></article>
+      <article class="overview-panel overview-memberships" aria-label="Subscriptions"></article>
+    </div>`;
+  const queue = root.querySelector('.overview-queue-items');
+  for (const [key, title, route, art] of [
+    ['approvalQueue','Boards Awaiting Review','templates','boards'],
+    ['reportedTickets','New Tickets','bugs','ticket'],
+    ['inProgressTickets','Tickets in Progress','bugs','progress']
+  ]) {
+    const button = node('button', 'overview-queue-item');
+    button.type = 'button';
+    button.dataset.accent = art;
+    button.innerHTML = `<i class="overview-symbol">${icon(art)}</i><span>${title}</span><strong data-stat="${key}">—</strong>${icon('arrow')}`;
+    button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${route}"]`)?.click();
+    queue.append(button);
+  }
+  for (const [key, title, detail, art] of [
+    ['total','Total Accounts','Enabled accounts','accounts'],
+    ['online','Online Now','Active in the last 6 minutes','online'],
+    ['active24Hours','Active in 24 Hours','Unique signed-in users','day']
+  ]) {
+    const card = node('article', 'overview-metric');
+    card.dataset.accent = art;
+    card.innerHTML = `<div class="overview-metric-label"><i class="overview-symbol">${icon(art)}</i><h3>${title}</h3></div><strong data-stat="${key}">—</strong><p>${detail}</p>`;
+    root.querySelector('.overview-metrics').append(card);
+  }
+  const status = root.querySelector('#insights-status');
+  const refresh = root.querySelector('#insights-refresh');
+  const activity = root.querySelector('.overview-activity');
+  const members = root.querySelector('.overview-memberships');
+  let snapshot = null, busy = false, generation = 0, failed = false;
+  let state = {...defaults};
+
+  function draw(panel, series, style, label) {
+    const plot = node('div','overview-plot');
+    panel.append(plot);
+    drawChart(plot, {series, style, label, loaded:!!snapshot, failed});
+    panel.append(node('p','overview-chart-note',series.note));
+  }
+  function renderCharts() {
+    const data = snapshot || {asOf:Date.now()};
+    const daily = state.mode === 'daily';
+    activity.replaceChildren(node('h2','','User Activity'));
+    activity.dataset.accent = 'online';
+    activity.append(controls('Activity Metric', [['online','Online Now'],['daily','Daily Users']], 'mode',state.mode));
+    const description = daily ? 'Unique signed-in users each day' : 'Users online at each recorded snapshot';
+    activity.append(node('p','overview-context',description));
+    const activityTools = node('div','overview-chart-controls');
+    activityTools.append(controls('Activity Time Range',daily ? ranges.slice(1) : ranges,'activityDays',state.activityDays),
+      controls('Activity Chart Style',styles,'activityStyle',state.activityStyle));
+    activity.append(activityTools);
+    const days = Number(state.activityDays);
+    draw(activity,daily ? dailySeries(data,days) : snapshotSeries(data,'online',days),state.activityStyle,daily ? 'Daily Users' : 'Online Users');
+
+    members.replaceChildren(node('h2','','Subscriptions'));
+    const types = node('div','overview-types');
+    types.setAttribute('role','group');
+    types.setAttribute('aria-label','Subscription History');
+    for (const [type,[title,key]] of Object.entries(subscriptions)) {
+      const b = node('button','overview-type');
+      b.type = 'button';
+      Object.assign(b.dataset,{control:'type',value:type,accent:type});
+      b.setAttribute('aria-pressed',String(type === state.type));
+      b.innerHTML = `${icon(type)}<span>${title}</span><strong>${count(snapshot?.[key])}</strong>`;
+      types.append(b);
+    }
+    const [title,key,detail] = subscriptions[state.type];
+    members.dataset.accent = state.type;
+    const tools = node('div','overview-chart-controls');
+    tools.append(controls('Subscription Time Range',ranges,'subscriptionDays',state.subscriptionDays),
+      controls('Subscription Chart Style',styles,'subscriptionStyle',state.subscriptionStyle));
+    members.append(types,node('p','overview-context',detail),tools);
+    draw(members,snapshotSeries(data,key,Number(state.subscriptionDays)),state.subscriptionStyle,title);
+  }
+  function render() {
+    for (const stat of root.querySelectorAll('[data-stat]')) stat.textContent = count(snapshot?.[stat.dataset.stat]);
+    renderCharts();
+  }
+  root.addEventListener('click', event => {
+    const button = event.target.closest('button[data-control]');
+    if (!button) return;
+    const {control,value} = button.dataset;
+    state[control] = value;
+    if (state.mode === 'daily' && state.activityDays === '1') state.activityDays = '7';
+    renderCharts();
+    root.querySelector(`[data-control="${control}"][data-value="${value}"]`)?.focus({preventScroll:true});
+  });
+  let plotWidth = 0;
+  new ResizeObserver(() => {
+    const width = activity.clientWidth;
+    if (width && width !== plotWidth) {
+      plotWidth = width;
+      for (const plot of root.querySelectorAll('.overview-plot')) plot.dispatchEvent(new Event('plotresize'));
+    }
+  }).observe(activity);
+  async function load(force=false) {
+    if (busy || (snapshot && !force)) return;
+    busy = true;
+    refresh.disabled = true;
+    root.setAttribute('aria-busy','true');
+    status.textContent = 'Refreshing snapshot…';
+    const attempt = generation;
+    try {
+      const {data} = await call('getDeveloperInsights',{});
+      if (attempt !== generation) return;
+      snapshot = {...data,asOf:Number.isFinite(data.asOf) ? data.asOf : Date.now()};
+      failed = false;
+      render();
+      status.textContent = 'Updated ' + new Date(snapshot.asOf).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    } catch (error) {
+      if (attempt !== generation) return;
+      failed = true;
+      status.textContent = (snapshot ? 'Showing the previous snapshot. ' : '') + 'Could not refresh. ' + (error.message || 'Please try again.');
+      if (!snapshot) renderCharts();
+    } finally {
+      if (attempt === generation) {busy=false; refresh.disabled=false; root.setAttribute('aria-busy','false');}
+    }
+  }
+  refresh.onclick = () => load(true);
+  render();
+  return {load,reset(){
+    generation++; snapshot=null; busy=false; failed=false; state={...defaults}; refresh.disabled=false;
+    root.setAttribute('aria-busy','false'); status.textContent='Sign in to view insights.'; render();
+  }};
 }
