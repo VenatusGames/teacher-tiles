@@ -8,7 +8,7 @@ import {createTileManagementPanel} from './tile-management.js?v=20261020-availab
 import {adminBoardPreview} from './board-preview.js?v=20261026-ruler-skins';
 import {createBugReports} from './bug-reports.js?v=20260930-title-case';
 import {createTemplateLibrary} from '../templates/ui.js?v=20261103-news-captions';
-import {createInsights} from './insights.js?v=20261119-ranked-tiles';
+import {createInsights} from './insights.js?v=20261119-ranking-dialogs';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
 import {createUsersPanel} from './users.js?v=20261119-user-cards';

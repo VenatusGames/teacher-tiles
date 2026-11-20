@@ -1,7 +1,7 @@
 (() => {
   let dialog,body,activeClass='',uid='',entry=null,loaded=false,busy=false,error='',confirmation='',linkView=false,generation=0;
   const make=(tag,cls='',text='')=>{const node=document.createElement(tag);node.className=cls;node.textContent=text;return node;};
-  const symbols={templates:'<rect x="6" y="6" width="15" height="15" rx="2"/><path d="M17 3H5a2 2 0 0 0-2 2v12m3-6h15m-10 0v10"/>',back:'<path d="m14 6-6 6 6 6"/>',board:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4M8 21h8M10 7.5l6 3-6 3Z"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',link:'<path d="m10 13 4-4m-6 1-2 2a4 4 0 0 0 6 6l2-2m2-2 2-2a4 4 0 0 0-6-6l-2 2"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>'};
+  const symbols={history:'<path d="M3 11a9 9 0 1 1 2 7M3 5v6h6m3-4v5l3 2"/>',templates:'<rect x="6" y="6" width="15" height="15" rx="2"/><path d="M17 3H5a2 2 0 0 0-2 2v12m3-6h15m-10 0v10"/>',back:'<path d="m14 6-6 6 6 6"/>',board:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4M8 21h8M10 7.5l6 3-6 3Z"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',link:'<path d="m10 13 4-4m-6 1-2 2a4 4 0 0 0 6 6l2-2m2-2 2-2a4 4 0 0 0-6-6l-2 2"/>',copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>'};
   function button(label,action,cls='',symbol='') {
     const node=make('button',`cs-button ${cls}`);node.type='button';
     if(symbol){const icon=make('span','cs-icon');icon.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${symbols[symbol]}</svg>`;node.append(icon);}
@@ -75,7 +75,8 @@
       nameRow.append(link);
       const start=toolCard('Start Board Session','Controlled or Free Session','board',async()=>{start.disabled=true;try{if(!entry?.active)await change('create');if(entry?.active)await window.TeacherTilesBoardSessions.teacher({classId:activeClass,name:roster.name,roster:{name:roster.name,gradeLevel:roster.gradeLevel,students:roster.students.map(name=>{const visual=roster.studentProfiles?.[starChartStudentKey(name)]||{};return {name,emoji:visual.emoji||'',image:visual.image||''};})}});}catch(e){error=safeError(e);linkView=true;render();}finally{start.disabled=false;}},'cc-start-session');
       const templates=toolCard('Session Templates','Coming Soon','templates',null);
-      tools.append(start,templates);body.append(tools);return;
+      const history=toolCard('Session History','Coming Soon','history',null);
+      tools.append(start,templates,history);body.append(tools);return;
     }
     const back=button('ClassConnect',()=>{linkView=false;confirmation='';render();body.querySelector('.cc-open-link')?.focus({preventScroll:true});},'cc-link-back','back');back.setAttribute('aria-label','Back to ClassConnect');body.prepend(back);
     const card=make('section','cc-link-card'),cardHead=make('div','cc-section-heading');cardHead.append(make('h3','','Student Link'));card.append(cardHead,make('p','cs-muted','Keep this link private and only share with trusted members of your classroom community.'));

@@ -1,6 +1,6 @@
-import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-live-switch';
+import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-attach';
 // One live document per viewer, independent of how many interactive tiles are on the slide.
-export function createInteractionChannel({room,sessionId,deck,credentials,classId,route={},answered=[]}){
+export function createInteractionChannel({room,sessionId,deck,credentials,classId,route={},ownVotes={},answered=[]}){
  let current=-1,data=null,off=null,source='',generation=0,closed=false,problem='';
  const listeners=new Set(),sent=answered instanceof Set?answered:new Set(answered);
  const emit=()=>{for(const fn of listeners)fn();};
@@ -12,7 +12,7 @@ export function createInteractionChannel({room,sessionId,deck,credentials,classI
    if(closed||current===index)return;
    current=index;problem='';
    const tiles=deck.slides[index]?.elements.filter(e=>e.type==='tile')||[];
-   const respond=tiles.some(e=>e.tileType==='respond');
+   const respond=tiles.some(e=>e.tileType==='respond'||TeacherTilesChoice.isChoice(e.tileType));
    const next=classId&&respond?'private':respond||tiles.some(e=>e.tileType==='wordcloud')?'public':'';
    if(next!==source){
     const turn=++generation;off?.();off=null;source=next;data=null;
@@ -34,6 +34,11 @@ export function createInteractionChannel({room,sessionId,deck,credentials,classI
    if(source==='private')return data?.activities?.[teacherEntry(id)?.key]?.answers||[];
    return data?.slideIndex===current?data.answers?.[id]||[]:[];
   },
+  counts(slide,id){
+   if(!onSlide(slide))return [];
+   return source==='private'?data?.activities?.[teacherEntry(id)?.key]?.counts||[]:data?.slideIndex===current?data.answers?.[id]||[]:[];
+  },
+  ownVote:(slide,id)=>ownVotes[slide+':'+id],
   shared(slide,id){
    if(!onSlide(slide))return false;
    if(source==='private')return !!data?.activities?.[teacherEntry(id)?.key]?.shared;
@@ -54,7 +59,8 @@ export function createInteractionChannel({room,sessionId,deck,credentials,classI
  if(credentials)api.submit=async(slideId,elementId,input)=>{
   if(!onSlide(slideId))throw Error('Your teacher has moved to another slide.');
   const response=typeof input.answer==='string';
-  const result=await call({...credentials,sessionId,action:response?'submitResponse':'presentationWord',slideId,elementId,...input});
+  const result=await call({...credentials,sessionId,action:Array.isArray(input.choices)?'submitVote':response?'submitResponse':'presentationWord',slideId,elementId,...input});
+  if(result.choices)ownVotes[slideId+':'+elementId]=result.choices;
   if(response)sent.add(slideId+':'+elementId);
   return result;
  };

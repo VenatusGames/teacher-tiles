@@ -1,6 +1,6 @@
-import {routing,watchPanel} from './tile-group.js?v=20261119-live-switch';
-import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-live-switch';
-import {openTileSession} from './tile-session-picker.js?v=20261119-live-switch';
+import {routing,watchPanel} from './tile-group.js?v=20261119-attach';
+import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-attach';
+import {openTileSession} from './tile-session-picker.js?v=20261119-attach';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 function connect(tile,classId,name,result,exit){
  let closed=false,ending=false,endRequested=false,off=null,offCloud=null;
@@ -9,23 +9,33 @@ function connect(tile,classId,name,result,exit){
  let promptQueue=Promise.resolve();
  const updatePrompt=event=>{
   if(!result.groupId||closed||!event.target.matches('.wordcloud-prompt'))return;
-  const prompt=tile._wordCloudInfo().prompt;
-  promptQueue=promptQueue.then(()=>closed?undefined:call({action:'panelPrompt',classId,sessionId,...routing(result),prompt})).catch(error=>{if(!closed)tile._wordCloudStatus(error.message,true);});
+  const config=tile._wordCloudInfo();
+  promptQueue=promptQueue.then(()=>closed?undefined:call({action:'panelPrompt',classId,sessionId,...routing(result),...config})).catch(error=>{if(!closed)tile._wordCloudStatus(error.message,true);});
  };
  tile.addEventListener('change',updatePrompt);
  const api={classId,name,end,retry,grouped:!!result.groupId,endSession:exit.endSession,get active(){return !closed},problem:''};tile._classConnectSession=api;
- function dispose(){if(closed)return;closed=true;tile.removeEventListener('change',updatePrompt);off?.();offCloud?.();observer.disconnect();exit.dispose();window.removeEventListener('pagehide',leave);window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',auth);window.removeEventListener('online',retry);if(tile._classConnectSession===api)delete tile._classConnectSession;tile._wordCloudStatus(api.problem||'Session ended',false);if(tile.dataset.type==='respond')tile._wordCloudUpdate([]);window.notifyBoardChanged?.('wordcloud-finished');notify();}
+ function dispose(){if(closed)return;closed=true;tile.removeEventListener('change',updatePrompt);off?.();offCloud?.();observer.disconnect();exit.dispose();window.removeEventListener('pagehide',leave);window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',auth);window.removeEventListener('online',retry);if(tile._classConnectSession===api)delete tile._classConnectSession;tile._wordCloudStatus(api.problem||'Session ended',false);if(tile.dataset.type!=='wordcloud')tile._wordCloudUpdate([]);window.notifyBoardChanged?.('wordcloud-finished');notify();}
  function leave(){if(closed)return;exit.send({classId,sessionId});dispose();}
  function beforeLeave(e){if(!e.defaultPrevented&&!e.returnValue)leave();}
  function auth(){if(window.TeacherTilesAuth?.user?.uid!==owner)leave();}
- async function end(){if(closed||ending)return;endRequested=true;ending=true;try{await exit.beforeRemoval?.();await call({action:'end',...routing(result),classId,sessionId});dispose();}catch(e){if(['functions/failed-precondition','functions/not-found','functions/aborted'].includes(e.code)){dispose();return;}api.problem=e.message;tile._wordCloudStatus(api.problem,true);notify();}finally{ending=false;}}
- function retry(){if(closed)return;if(endRequested){void end();return;}offCloud?.();offCloud=watchCloud(result.room,(cloud,error)=>{if(closed)return;if(error){api.problem='Could not update the cloud. Reopen ClassConnect to retry.';tile._wordCloudStatus(api.problem,true);notify();return;}if(cloud?.sessionId===sessionId){api.problem='';tile._wordCloudUpdate(tile.dataset.type==='respond'?cloud.activities?.standalone?.answers:cloud.words);tile._wordCloudStatus('Live · '+name,true);notify();}});}
+ async function end(){if(closed||ending)return;endRequested=true;ending=true;try{await exit.beforeRemoval?.();await call({action:'end',...routing(result),classId,sessionId});exit.removed?.();dispose();}catch(e){if(['functions/failed-precondition','functions/not-found','functions/aborted'].includes(e.code)){dispose();return;}api.problem=e.message;tile._wordCloudStatus(api.problem,true);notify();}finally{ending=false;}}
+ function retry(){if(closed)return;if(endRequested){void end();return;}offCloud?.();offCloud=watchCloud(result.room,(cloud,error)=>{if(closed)return;if(error){api.problem='Could not update the cloud. Reopen ClassConnect to retry.';tile._wordCloudStatus(api.problem,true);notify();return;}if(cloud?.sessionId===sessionId){api.problem='';tile._wordCloudUpdate(TeacherTilesChoice.isChoice(tile.dataset.type)?cloud.activities?.standalone?.counts:tile.dataset.type==='respond'?cloud.activities?.standalone?.answers:cloud.words);tile._wordCloudStatus('Live · '+name,true);notify();}});}
  const observer=new MutationObserver(()=>{if(!tile.isConnected)void end();});observer.observe(document.body,{childList:true,subtree:true});exit.start();window.addEventListener('pagehide',leave);window.addEventListener('beforeunload',beforeLeave);window.addEventListener('teachertiles:authchange',auth);window.addEventListener('online',retry);
  tile._wordCloudUpdate([]);tile._wordCloudStatus('Live · '+name,true);
  off=watchPanel(result,status=>{if(!active(status)||status.sessionId!==sessionId)dispose();});if(closed)off?.();else retry();notify();
 }
-export function openWordCloud(tile){return openTileSession(tile,{getInfo:()=>tile._wordCloudInfo(),key:info=>JSON.stringify(info),startData:info=>({mode:tile.dataset.type==='respond'?'respond':'wordcloud',prompt:info.prompt}),connect});}
+export function responseOptions(tile){return {getInfo:()=>tile._wordCloudInfo(),key:info=>JSON.stringify(info),startData:info=>({mode:tile.dataset.type,...info}),connect};}
+export function openWordCloud(tile){return openTileSession(tile,responseOptions(tile));}
 export function responsePanel({token,student,session,result},onEnded){
+ if(TeacherTilesChoice.isChoice(result.status.mode)){
+  const card=make('section','cc-wordcloud-form-card'),title=make('h1');card.append(title);
+  let previous;
+  const update=data=>{const config=data.ballot;if(previous===JSON.stringify(config))return;previous=JSON.stringify(config);title.textContent=config.prompt;
+   const form=TeacherTilesChoice.form(config,input=>call({...routing(data),token,studentId:student.id,session,sessionId:data.status.sessionId,action:'submitVote',...input}),data.ownVotes?.standalone);
+   card.replaceChildren(title,form);
+  };update(result);
+  return {card,focus:()=>card.querySelector('button:not(:disabled)')?.focus(),prompt:(_,data)=>update(data),dispose(){}};
+ }
  const respond=result.status.mode==='respond';
  const card=make('section','cc-wordcloud-form-card'),icon=make('div','cc-wordcloud-symbol');icon.setAttribute('aria-hidden','true');icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11zM8 12h8m-6 3h4"/></svg>';
  const title=make('h1','',(result.prompt&&result.prompt!=='Share a word with your class')?result.prompt:'Send a word to the Word Cloud'),form=make('form'),label=make('label','','Your word'),input=make('input'),submit=make('button','tt-board-action','Send Word'),message=make('p','cc-wordcloud-feedback'),last=make('span','cc-wordcloud-last');

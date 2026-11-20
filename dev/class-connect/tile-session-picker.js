@@ -1,17 +1,14 @@
-import {attachIfLive,bindTile,routing,currentPresentationGroup,pendingAttachment} from './tile-group.js?v=20261119-live-switch';
-import {call,active,modal} from './boards.js?v=20261119-live-switch';
+import {attachResponse,bindTile,routing,currentPresentationGroup,pendingAttachment,responseGroup} from './tile-group.js?v=20261119-attach';
+import {call,active,modal} from './boards.js?v=20261119-attach';
 import {preparePresentationExit} from './presentation-exit.js?v=20261110-presentation-lifecycle';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
 const isNormal=tile=>tile?.isConnected&&!window.ClassConnectPolicy&&!tile.dataset.presentationEmbedded;
-export async function openTileSession(tile,{getInfo,key,startData,connect,automatic=false}){
+export async function openTileSession(tile,{getInfo,key,startData,connect}){
  if(!isNormal(tile))return;
  if(pendingAttachment(tile))await pendingAttachment(tile).catch(()=>{});
  if(!isNormal(tile))return;
  const presentation=!!tile._classConnectPresentation;
- if(!presentation||automatic){
-  const attaching=attachIfLive(tile,{getInfo,key,startData,connect});if(attaching||automatic)return attaching;
- }
  if(tile._classConnectDialog?.open){tile._classConnectDialog.focus();return;}
  const info=getInfo();if(!info)throw Error('Choose the tile content first.');
  const dialog=modal('ClassConnect',document.fullscreenElement||document.body);dialog.classList.add('cc-presentation-dialog');const body=make('div','cc-presentation-options'),status=make('p','cc-session-status');dialog.append(body,status);tile._classConnectDialog=dialog;
@@ -20,9 +17,18 @@ export async function openTileSession(tile,{getInfo,key,startData,connect,automa
  const auth=()=>{if(account!==window.TeacherTilesAuth?.user?.uid)dialog.close();};window.addEventListener('teachertiles:authchange',auth);
  tile.addEventListener('teachertiles:presentation-connection',refresh);
  dialog.addEventListener('close',()=>{tile.removeEventListener('teachertiles:presentation-connection',refresh);window.removeEventListener('teachertiles:authchange',auth);delete tile._classConnectDialog;},{once:true});
- function liveView(){body.classList.remove('cc-tool-grid');body.replaceChildren();const connection=tile._classConnectSession;if(!connection){options();return;}body.append(make('strong','',connection.name),make('p','','Your class can join from Enter Board.'),button(connection.grouped?'Remove Tile from Session':'End Session',async()=>{await connection.end();if(!tile._classConnectSession)dialog.close();else liveView();}));if(connection.endSession)body.append(button('End Session',async event=>{
+ function liveView(){body.classList.remove('cc-tool-grid');body.replaceChildren();const connection=tile._classConnectSession;if(!connection){
+   const group=!presentation&&responseGroup();
+   if(!group){options();return;}
+   body.append(make('strong','',group.name),button('Add Tile to Session',async event=>{
+    event.currentTarget.disabled=true;
+    try{await attachResponse(tile);liveView();}catch(error){liveView();status.textContent=error.message;}
+   }));
+   addEndButton(group);status.textContent='This class session is live.';return;
+  }body.append(make('strong','',connection.name),make('p','','Your class can join from Enter Board.'),button(connection.grouped?'Remove Tile from Session':'End Session',async()=>{await connection.end();if(!tile._classConnectSession)dialog.close();else liveView();}));if(connection.endSession)addEndButton(connection);if(connection.problem)body.append(button('Retry Sync',()=>connection.retry()));status.textContent=connection.problem||'The session is live for this class.';}
+ function addEndButton(connection){body.append(button('End Session',async event=>{
    event.currentTarget.disabled=true;try{await connection.endSession();dialog.close();}catch(error){liveView();status.textContent=error.message;}
-  }));if(connection.problem)body.append(button('Retry Sync',()=>connection.retry()));status.textContent=connection.problem||'The session is live for this class.';}
+  }));}
  function options(){
   body.replaceChildren();body.classList.add('cc-tool-grid');status.textContent='';
   const card=(label,description,path,action)=>{const b=button('',action);b.classList.add('cs-button','cc-tool-card');const icon=make('span','cs-icon');icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';const copy=make('span','cc-tool-copy');copy.append(make('strong','',label),make('small','',description));b.append(icon,copy);return b;};
@@ -56,6 +62,7 @@ export async function openTileSession(tile,{getInfo,key,startData,connect,automa
    const latest=getInfo();if(key(latest)!==key(info))throw Error('The tile changed. Reopen ClassConnect.');
    exit=await preparePresentationExit(window.TeacherTilesAuth?.user);
    if(!dialog.open||!isNormal(tile)||account!==window.TeacherTilesAuth?.user?.uid||key(getInfo())!==key(info))return;
+   if(!presentation&&responseGroup()){liveView();return;}
    const result=await call({action:'start',grouped:true,...(groupId?{groupId}:{}),...(replacePresentation?{replacePresentation}:{}),classId:roster.id,...startData(latest),requestId:pick.dataset.requestId||(pick.dataset.requestId=crypto.randomUUID())});
    if(!dialog.open||!isNormal(tile)||account!==window.TeacherTilesAuth?.user?.uid||key(getInfo())!==key(info)){await call({action:'end',...routing(result),classId:roster.id,sessionId:result.status.sessionId});return;}
    bindTile(tile,roster.id,roster.name,result,exit,connect);exit=null;dialog.close();
@@ -69,11 +76,12 @@ export async function openTileSession(tile,{getInfo,key,startData,connect,automa
   }finally{close.disabled=false;dialog.removeEventListener('cancel',guard);exit?.dispose();}
  }
  const group=presentation&&currentPresentationGroup();
- if(tile._classConnectSession)liveView();
+ if(tile._classConnectSession||!presentation&&responseGroup())liveView();
  else if(group?.panelId)confirmSwitch(group,group.groupId,group.panelId,group.title);
  else if(group){
   const join=button('Share Presentation',()=>start(group,join,group.groupId));
-  body.append(join);await start(group,join,group.groupId);
+  body.append(make('strong','',group.name),join);addEndButton(responseGroup());
+  status.textContent='Share this presentation with the current session.';
  }
  else options();
 }

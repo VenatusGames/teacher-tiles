@@ -149,18 +149,19 @@
 .overview-tile-card strong { font-size:14px; font-weight:600; overflow-wrap:anywhere }
 .overview-tile-card .tm-icon { width:34px; height:34px; border-radius:9px }
 .overview-tile-card .tm-icon svg { width:24px; height:24px }
-.overview-rank-more, .overview-rank-close { border-radius: 8px; border: 1px solid var(--line); background: var(--soft); font: inherit }
-.overview-rank-more { margin-top: 10px; padding: 6px 12px; font-size: 12px; font-weight: 650 }
-.overview-rank-more:disabled { opacity: .55 }
+.overview-rank-close { border-radius: 8px; border: 1px solid var(--line); background: var(--soft); font: inherit }
+#developer-insights .overview-rank-more { display:inline-flex; align-items:baseline; gap:.35em; margin-top:6px; padding:4px 0; border:0; box-shadow:none; background:transparent; color:var(--muted); font-weight:500; font-size:12px; line-height:1.4 }
+#developer-insights .overview-rank-more:hover:not(:disabled) { color:var(--ink); text-decoration:underline; text-underline-offset:3px }
+#developer-insights .overview-rank-more:disabled { opacity:.55; cursor:default }
+#developer-insights .overview-rank-more[hidden] { display:none }
 .overview-ranking-dialog { width: min(480px,90vw); box-sizing: border-box; max-height: 85vh; overflow: auto; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 20px; box-shadow: 0 12px 60px #17293d33 }
 .overview-ranking-dialog::backdrop { background: #18263866 }
 .overview-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px }
 .overview-ranking-dialog .overview-rank-list { margin-top: 12px }
 .overview-rank-close { width: 32px; height: 32px; font-size: 20px }
 
-.overview-active-expanded { max-height:min(65vh,680px); overflow-y:auto; overscroll-behavior:contain }
-.overview-active-expanded ol { list-style:decimal; padding-inline-start:3ch }
-.overview-active-expanded li::marker { font-variant-numeric:tabular-nums }
+.overview-ranked-users ol { list-style:decimal; padding-inline-start:3ch }
+.overview-ranked-users li::marker { font-variant-numeric:tabular-nums }
 .overview-user-cards { display:grid; gap:8px; padding:0; margin:8px 0 0; list-style:none; font-size:13px; color:var(--muted) }
 .overview-user-cards .user-card { flex-wrap:nowrap; align-items:flex-start; color:var(--ink); cursor:default }
 .overview-user-cards .user-info strong { display:block; overflow-wrap:anywhere }

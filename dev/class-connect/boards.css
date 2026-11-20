@@ -67,7 +67,7 @@
 
 /* Align the action with the input itself, below its label. */
 .cc-wordcloud-form-card{--word-control-height:clamp(52px,7vw,78px)}
-.cc-wordcloud-form-card form:not(.respond-form) input,.cc-wordcloud-form-card form:not(.respond-form) button{
+.cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form) input,.cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form) button{
  box-sizing:border-box;height:var(--word-control-height);min-height:var(--word-control-height);padding:6px 16px
 }
 .cc-session-dialog.cc-session-pages[open]{display:flex;flex-direction:column;padding:68px 16px 14px;align-items:stretch}
@@ -88,7 +88,7 @@
 .cc-session-pages .cc-wordcloud-back{z-index:4}
 @media(max-width:650px){.cc-panel-page:not([data-count="1"]) form{flex-direction:column;align-items:stretch}.cc-panel-page:not([data-count="1"]) .cc-panel-cell{padding:8px}.cc-panel-page{gap:6px}}
 
-.cc-wordcloud-form-card form:not(.respond-form){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
-.cc-wordcloud-form-card form:not(.respond-form) button{width:100%}
-@media(max-width:440px){.cc-wordcloud-form-card form:not(.respond-form){grid-template-columns:minmax(0,1fr)}}
-@media(max-width:650px){.cc-panel-page:not([data-count="1"]) .cc-wordcloud-form-card form:not(.respond-form){grid-template-columns:minmax(0,1fr)}}
+.cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form) button{width:100%}
+@media(max-width:440px){.cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.cc-panel-page:not([data-count="1"]) .cc-wordcloud-form-card form:not(.respond-form):not(.cc-choice-form){grid-template-columns:minmax(0,1fr)}}
