@@ -48,38 +48,83 @@ function setupCounters(tile){
     const rect=area.getBoundingClientRect();
     return {x:(event.clientX-rect.left)*counterMaxX/rect.width,y:(event.clientY-rect.top)*counterMaxY/rect.height};
   }
-  function add(color){
+  function add(color,point){
     if(pieces.length>=200)return;
-    const piece={color,x:64+(pieces.length%8)*48,y:46+Math.floor(pieces.length%40/8)*42};
-    pieces.push(piece);render();return piece;
+    const slot=pieces.length%40;
+    pieces.push({color,...(point||{x:64+(slot%8)*48,y:46+Math.floor(slot/8)*42})});
+    render();return true;
+  }
+  function dropPoint(e,dx=0,dy=0){
+    const at=local(e);
+    return {x:counterClamp(Math.round(at.x-dx),counterMaxX),y:counterClamp(Math.round(at.y-dy),counterMaxY)};
+  }
+  function follow(preview,e){
+    preview.style.left=e.clientX+'px';
+    preview.style.top=e.clientY+'px';
   }
   function down(e){
     const disc=e.target.closest('.counter-disc');
     if(!disc||drag||e.button!==0)return;
     e.stopPropagation();e.preventDefault();
-    const fresh=palette.contains(disc),at=local(e);
-    const piece=fresh?add(disc.dataset.color):pieces[[...area.children].indexOf(disc)];
-    if(!piece)return;
-    const el=area.children[pieces.indexOf(piece)];
-    drag={piece,el,id:e.pointerId,fresh,dx:fresh?0:at.x-piece.x,dy:fresh?0:at.y-piece.y,startX:e.clientX,startY:e.clientY,original:{...piece}};
-    tile.setPointerCapture(e.pointerId);if(!fresh)trash.show();
+    if(palette.contains(disc)){
+      if(pieces.length>=200)return;
+      const preview=document.createElement('span'),size=disc.getBoundingClientRect();
+      preview.className='counter-disc counter-drag-preview';
+      preview.dataset.color=disc.dataset.color;
+      preview.setAttribute('aria-hidden','true');
+      preview.setAttribute('popover','manual');
+      preview.style.width=size.width+'px';preview.style.height=size.height+'px';
+      follow(preview,e);
+      (document.fullscreenElement||document.body).append(preview);
+      preview.showPopover?.();
+      drag={id:e.pointerId,preview,color:disc.dataset.color,startX:e.clientX,startY:e.clientY,moved:false};
+    }else{
+      const piece=pieces[[...area.children].indexOf(disc)];
+      if(!piece)return;
+      const at=local(e);
+      drag={id:e.pointerId,piece,disc,dx:at.x-piece.x,dy:at.y-piece.y,startX:e.clientX,startY:e.clientY,moved:false};
+      trash.show();
+    }
+    tile.setPointerCapture(e.pointerId);
   }
   palette.addEventListener('pointerdown',down);area.addEventListener('pointerdown',down);
   tile.addEventListener('pointermove',e=>{
     if(drag?.id!==e.pointerId)return;
-    if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<3&&!drag.moved)return;
-    const at=local(e);drag.moved=true;
-    drag.piece.x=counterClamp(Math.round(at.x-drag.dx),counterMaxX);drag.piece.y=counterClamp(Math.round(at.y-drag.dy),counterMaxY);
-    positionCounter(drag.el,drag.piece);trash.move(e);
+    if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>=3)drag.moved=true;
+    if(drag.preview){
+      follow(drag.preview,e);
+    }else{
+      positionCounter(drag.disc,dropPoint(e,drag.dx,drag.dy));trash.move(e);
+    }
   });
-  function end(e){
-    if(drag?.id!==e.pointerId)return;
-    const remove=trash.finish(e)&&drag.moved,cancel=e.type==='pointercancel';
-    if(remove||(cancel&&drag.fresh))pieces=pieces.filter(p=>p!==drag.piece);
-    else if(cancel)Object.assign(drag.piece,drag.original);
-    drag=null;render();if(!cancel)notify();
+  function clearDrag(){
+    if(!drag)return;
+    const current=drag;drag=null;
+    current.preview?.remove();
+    trash.close();
+    if(tile.hasPointerCapture(current.id))tile.releasePointerCapture(current.id);
+    if(current.piece)positionCounter(current.disc,current.piece);
   }
-  tile.addEventListener('pointerup',end);tile.addEventListener('pointercancel',end);
+  tile.addEventListener('pointerup',e=>{
+    if(drag?.id!==e.pointerId)return;
+    const current=drag;
+    if(current.preview){
+      const rect=stage.getBoundingClientRect();
+      const inside=e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
+      const tap=!current.moved&&Math.hypot(e.clientX-current.startX,e.clientY-current.startY)<3;
+      clearDrag();
+      if((inside||tap)&&add(current.color,inside?dropPoint(e):null))notify();
+    }else{
+      const remove=trash.finish(e)&&current.moved,point=dropPoint(e,current.dx,current.dy);
+      clearDrag();
+      if(remove){pieces=pieces.filter(p=>p!==current.piece);render();}
+      else{Object.assign(current.piece,point);positionCounter(current.disc,current.piece);}
+      notify();
+    }
+  });
+  for(const type of ['pointercancel','lostpointercapture']){
+    tile.addEventListener(type,e=>{if(drag?.id===e.pointerId)clearDrag();});
+  }
   palette.addEventListener('click',e=>{if(!e.detail&&e.target.matches('.counter-disc')&&add(e.target.dataset.color))notify();});
   area.addEventListener('keydown',e=>{
     const index=[...area.children].indexOf(e.target);if(index<0)return;
@@ -90,8 +135,10 @@ function setupCounters(tile){
   });
   tile._boardGetState=()=>({layoutVersion:2,pieces:pieces.map(p=>({...p}))});
   tile._boardSetState=state=>{
-    pieces=counterLayout(state);
+    clearDrag();pieces=counterLayout(state);
     render();
   };
+  const cleanup=tile._cleanup;
+  tile._cleanup=()=>{clearDrag();cleanup?.();};
   render();
 }
