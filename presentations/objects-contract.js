@@ -19,6 +19,7 @@ function tile(e){if(!types.includes(e.tileType))throw Error('Unsupported present
   special.points=(Array.isArray(v.points)?v.points:[]).filter(p=>Number.isFinite(p?.x)&&Number.isFinite(p?.y)).slice(0,500).map(p=>({x:num(p.x,-1000000,1000000,0),y:num(p.y,-1000000,1000000,0)}));special.equation=text(v.equation??'x',500);
  }
  if(e.tileType==='livepolls'){special.prompt=text(v.prompt,160);special.options=(Array.isArray(v.options)?v.options:['Option A','Option B']).slice(0,8).map(o=>text(o,80));special.multiple=v.multiple===true;}
+ if(e.tileType==='moodcheckin')special.allowResponseChange=v.allowResponseChange!==false;
  if(e.tileType==='respond')special.prompt=text(v.prompt,160);
  if(e.tileType==='wordcloud'){special.prompt=text(v.prompt,160);special.words=[];}
  if(e.tileType==='rainbow')special.selected=Math.round(num(v.selected,0,6,0));

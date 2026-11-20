@@ -17,9 +17,9 @@ const deck={schemaVersion:1,title:'Interactive Lesson',theme:'none',slides:[{id:
   if(testGroup){
    panelCalls.push(data);
    if(['start','addPanel'].includes(data.action)){
-    if(data.action==='start'){assert(!status?.active);status={mode:'tiles',active:true,sessionId:data.requestId,revision:0,until:Date.now()+600000,panels:[]};}
+    if(data.action==='start'&&!data.groupId){assert(!status?.active);status={mode:'tiles',active:true,sessionId:data.requestId,revision:0,until:Date.now()+600000,panels:[]};}
     else{assert.equal(data.groupId,status.sessionId);await new Promise(resolve=>setTimeout(resolve,90));}
-    const panel={id:data.requestId,sessionId:data.requestId,mode:data.mode,revision:1};
+    const panel={id:data.requestId,sessionId:data.requestId,mode:data.mode,revision:1,...(data.mode==='presentation'?{slideIndex:data.slideIndex}: {})};
     status.panels.push(panel);status.revision++;await push();
     return {room:panel.id,parentRoom:room,groupId:status.sessionId,panelId:panel.id,status:panel,groupRevision:status.revision};
    }
@@ -69,7 +69,7 @@ const deck={schemaVersion:1,title:'Interactive Lesson',theme:'none',slides:[{id:
  await teacher.evaluate(()=>{document.getElementById('teachertiles-intro')?.remove();document.getElementById('profile-modal').hidden=true;window.readClassRosters=()=>[{id:'class',name:'Owls',logo:'🦉',students:['Alice']}];TeacherTilesClassConnectUI.ensureLink=async()=>({active:true});TeacherTilesBoard.load(TeacherTilesBoard.blank());Object.assign(boardCamera,{x:0,y:0,scale:1});applyBoardCamera();createModule('presentation',500,150,{record:false})._boardSetState({presentationId:'lesson'});});
  await teacher.evaluate(()=>{createModule('livepolls',540,380,{record:false});createModule('moodcheckin',450,300,{record:false});});
  const livePoll=teacher.locator('#workspace [data-type=livepolls]'),moodTile=teacher.locator('#workspace [data-type=moodcheckin]');
- assert.equal(await moodTile.locator('.cc-choice-row').count(),4);
+ assert.equal(await moodTile.locator('.cc-mood-result').count(),4);
  await livePoll.locator('.cc-edit-poll').evaluate(b=>b.click());
  const editor=teacher.getByRole('dialog',{name:'Edit Live Poll'});
  await editor.getByLabel('Question').fill('Next activity?');await editor.getByLabel('Option 1',{exact:true}).fill('Drawing');await editor.getByRole('button',{name:'Add Option'}).click();await editor.getByLabel('Option 3',{exact:true}).fill('Reading');await editor.getByLabel('Allow Multiple Selections').check();await editor.getByRole('button',{name:'Apply'}).click();
@@ -88,10 +88,10 @@ const deck={schemaVersion:1,title:'Interactive Lesson',theme:'none',slides:[{id:
  await tile.locator('[data-player=next]').evaluate(e=>e.click());await slide.getByText('What did we learn?',{exact:true}).waitFor();await tile.locator('[data-player=next]').evaluate(e=>e.click());await slide.getByText('All done',{exact:true}).waitFor();const poll=slide.locator('[data-object=poll]'),mood=slide.locator('[data-object=mood]');
  await poll.getByRole('button',{name:'Read',exact:true}).click();await poll.getByRole('button',{name:'Draw',exact:true}).click();await poll.getByRole('button',{name:'Submit Vote'}).click();
  await poll.getByText('Your response: Read, Draw').waitFor();
- await mood.getByRole('button',{name:'Sleepy',exact:true}).click();await mood.getByRole('button',{name:'Submit Vote'}).click();
+ await mood.getByRole('button',{name:'Sleepy',exact:true}).click();
  await mood.getByText(/Your response: .*Sleepy/).waitFor();assert.equal(await mood.locator('.cc-choice-results:visible').count(),0);
  await teacher.bringToFront();const teacherMood=tile.locator('[data-object=mood]');await teacherMood.getByRole('button',{name:'Show Results to Students'}).click();await student.bringToFront();
- await mood.locator('.cc-choice-row').nth(1).getByText('1',{exact:true}).waitFor();
+ await mood.locator('.cc-mood-result').nth(1).getByText('1',{exact:true}).waitFor();
  await teacher.evaluate(()=>document.querySelector('.presentation-module')._classConnectSession.end());await viewer.waitFor({state:'detached'});assert.equal(await student.evaluate(()=>window.__streams?.get('_classConnectPresentationWords')?.size||0),0);
  await teacher.bringToFront();await teacher.evaluate(()=>TeacherTilesPresentations.open());await teacher.getByRole('button',{name:'Open Interactive Lesson',exact:true}).click();const canvas=teacher.locator('.pres-canvas');await canvas.waitFor();await canvas.click({button:'right',position:{x:20,y:20}});const menu=teacher.locator('.pres-menu');assert(await menu.getByRole('menuitem',{name:'Tables & Charts Coming Soon',exact:true}).isDisabled());assert.equal(await menu.getByText('Charts',{exact:true}).count(),0);await menu.locator('[data-action=tile]').click();assert.equal(await menu.locator('[data-tile-choice]').count(),0);await menu.getByRole('menuitem',{name:'Basic',exact:true}).click();assert(await menu.locator('[data-tile-choice=clock]').count());assert.equal(await menu.locator('[data-tile-choice=wordcloud]').count(),0);await menu.getByRole('menuitem',{name:'Back to tile categories',exact:true}).click();await menu.getByRole('menuitem',{name:'Interactive',exact:true}).click();assert.equal(await menu.locator('[data-tile-choice]').count(),4);for(const type of ['livepolls','moodcheckin'])assert.equal(await menu.locator('[data-tile-choice='+type+']').count(),1);assert.equal(await menu.locator('[data-tile-choice=respond]').count(),1);await menu.locator('[data-tile-choice=wordcloud]').click();await canvas.locator('.wordcloud-module').last().waitFor();assert.equal(await canvas.locator('.wordcloud-connect:visible').count(),0);assert(await canvas.locator('.wordcloud-module').last().locator('.tile-appearance-toggle').count());await teacher.screenshot({path:path.join(process.env.TEMP,'interactive-presentation-editor.png')});assert.deepEqual(errors,[]);
  // Present directly from the editor, including saved edits and live interactive responses.
@@ -149,9 +149,28 @@ const deck={schemaVersion:1,title:'Interactive Lesson',theme:'none',slides:[{id:
  await teacher.locator('#workspace .presentation-module').last().locator('[data-player=classconnect]').evaluate(b=>b.click());
  await controls.getByRole('button',{name:'Share Presentation',exact:true}).waitFor();
  assert.equal(status.panels.length,3);await controls.getByRole('button',{name:'Close ClassConnect'}).click();
+ const originalGroup=status.sessionId,originalPanel=status.panels.find(p=>p.mode==='respond').id;
+ await second.evaluate(tile=>{deleteModules([tile]);undoBoardAction();});
+ await teacher.waitForFunction(()=>document.querySelector('#workspace [data-type=respond]')?._classConnectSession?.active&&document.querySelectorAll('#workspace .wordcloud-module.is-classconnect-live').length===3);
+ await teacher.waitForFunction(oldId=>window.__data._classConnectRooms.panels.some(p=>p.mode==='respond'&&p.id!==oldId),originalPanel);
+ await controls.waitFor({state:'detached'});
+ await teacher.evaluate(()=>redoBoardAction());
+ await teacher.waitForFunction(()=>!window.__data._classConnectRooms.panels.some(p=>p.mode==='respond'));
+ await teacher.evaluate(()=>undoBoardAction());
+ await teacher.waitForFunction(()=>document.querySelector('#workspace [data-type=respond]')?._classConnectSession?.active&&window.__data._classConnectRooms.panels.some(p=>p.mode==='respond'));
+ assert.equal(status.sessionId,originalGroup);assert.equal(status.panels.length,3);
+ const deckTile=teacher.locator('#workspace .presentation-module').last();
+ await deckTile.locator('[data-player=classconnect]').evaluate(b=>b.click());
+ await controls.getByRole('button',{name:'Share Presentation',exact:true}).click();
+ await controls.waitFor({state:'detached'});
+ const deckPanel=status.panels.find(p=>p.mode==='presentation').id;
+ await deckTile.evaluate(tile=>{deleteModules([tile]);undoBoardAction();});
+ await teacher.waitForFunction(old=>window.__data._classConnectRooms.panels.some(p=>p.mode==='presentation'&&p.id!==old),deckPanel);
+ await teacher.waitForFunction(()=>document.querySelector('#workspace .presentation-module.is-classconnect-live'));
+ assert.equal(status.panels.filter(p=>p.mode==='presentation').length,1);assert.equal(status.sessionId,originalGroup);
  await second.locator('.wordcloud-connect').evaluate(b=>b.click());
  await controls.getByRole('button',{name:'End Session',exact:true}).click();
- await controls.waitFor({state:'detached'});assert.equal(status.active,false);assert.equal(panelCalls.filter(c=>c.action==='start').length,1);
+ await controls.waitFor({state:'detached'});assert.equal(status.active,false);assert.equal(panelCalls.filter(c=>c.action==='start'&&!c.groupId).length,1);
  assert.deepEqual(errors,[]);
  console.log('PASS: PowerPoint import, interactive tile menu, Word Cloud, one-time Respond! form, private teacher results, anonymous sharing, audience fullscreen, slide navigation and session cleanup.');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

@@ -40,7 +40,8 @@ function controller(tile,classId,name,result,exit){
  });
  if(closed)off?.();else{changed();tile._classConnectRefresh?.();}notify();return api;
 }
-export async function openPresentation(tile){return openTileSession(tile,{getInfo:()=>tile._classConnectPresentation?.(),key:sourceKey,startData:info=>({mode:'presentation',presentation:info.presentation,slideIndex:info.slideIndex}),connect:controller});}
+export function presentationOptions(tile){return {getInfo:()=>tile._classConnectPresentation?.(),key:sourceKey,startData:info=>({mode:'presentation',presentation:info.presentation,slideIndex:info.slideIndex}),connect:controller};}
+export async function openPresentation(tile){return openTileSession(tile,presentationOptions(tile));}
 
 let resources;
 async function renderer(){
