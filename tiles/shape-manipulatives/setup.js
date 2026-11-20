@@ -6,6 +6,7 @@ function setupShapeManipulatives(m){
   const rotateButton=m.querySelector('.shape-manipulatives-rotate');
   const deleteButton=m.querySelector('.shape-manipulatives-delete');
   const clearButton=m.querySelector('.shape-manipulatives-clear');
+  const trash=manipulativeTrash(workspaceEl);
   const SIDE=64;
   const TRI_HEIGHT=Math.sqrt(3)*SIDE/2;
   const TAN_WIDTH=2*SIDE*Math.cos(Math.PI/12);
@@ -156,17 +157,17 @@ function setupShapeManipulatives(m){
       let dragging=false,offsetX=0,offsetY=0;
       el.addEventListener('pointerdown',event=>{
         if(event.button!==0||event.target.closest('.shape-manipulative-rotate-handle'))return;
-        event.preventDefault();event.stopPropagation();selectPiece(piece.id);dragging=true;
+        event.preventDefault();event.stopPropagation();selectPiece(piece.id);dragging=true;trash.show();
         const point=workspacePoint(event.clientX,event.clientY);offsetX=point.x-piece.x;offsetY=point.y-piece.y;
         try{el.setPointerCapture(event.pointerId)}catch{}el.classList.add('is-dragging');
       });
       el.addEventListener('pointermove',event=>{
-        if(!dragging)return;
+        if(!dragging)return;trash.move(event);
         const point=workspacePoint(event.clientX,event.clientY);
         piece.x=Math.round((point.x-offsetX)/4)*4;piece.y=Math.round((point.y-offsetY)/4)*4;clampPiece(piece);
         syncPieceElement(piece,el);
       });
-      const stop=event=>{if(!dragging)return;dragging=false;el.classList.remove('is-dragging');try{el.releasePointerCapture(event.pointerId)}catch{}const snapped=snapPiece(piece);syncPieceElement(piece,el);if(snapped)pulseSnap(el);notify('move')};
+      const stop=event=>{if(!dragging)return;dragging=false;el.classList.remove('is-dragging');try{el.releasePointerCapture(event.pointerId)}catch{}if(trash.finish(event)){selectPiece(piece.id);removeSelected();return;}const snapped=snapPiece(piece);syncPieceElement(piece,el);if(snapped)pulseSnap(el);notify('move')};
       el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);
       let rotating=false,startPointerAngle=0,startRotation=0;
       rotateHandle.addEventListener('pointerdown',event=>{

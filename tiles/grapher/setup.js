@@ -33,25 +33,44 @@ function setupGrapher(m){
   };
 
   const compileEquation=raw=>{
-    let expr=(raw||'').trim().toLowerCase().replace(/^y\s*=\s*/,'').replace(/\^/g,'**');
-    if(!expr)throw new Error('Enter an equation.');
-
-    const words=expr.match(/[a-z]+/g)||[];
-    const allowed=new Set(['x','sin','cos','tan','sqrt','abs','log','ln','exp','floor','ceil','round','pi','e']);
-    if(words.some(word=>!allowed.has(word)))throw new Error('Use x, numbers, + − × ÷, powers, and common functions.');
-
-    if(!/^[0-9a-z+\-*/().,\s*]+$/.test(expr))throw new Error('That equation contains unsupported characters.');
-
-    expr=expr
-      .replace(/\bpi\b/g,'Math.PI')
-      .replace(/\be\b/g,'Math.E')
-      .replace(/\bln\b/g,'Math.log')
-      .replace(/\b(sin|cos|tan|sqrt|abs|log|exp|floor|ceil|round)\b/g,'Math.$1');
-
-    const fn=Function('x',`"use strict";return (${expr})`);
-    const test=fn(0);
-    if(typeof test!=='number')throw new Error('Could not graph that equation.');
-    return fn;
+    const source=String(raw||'').trim().toLowerCase().replace(/^y\s*=\s*/,'').replaceAll('×','*').replaceAll('÷','/').replaceAll('−','-');
+    const invalid=()=>{throw Error('Use x, numbers, arithmetic, and functions such as sin(x).')};
+    if(!source || source.length>320)invalid();
+    const tokens=source.match(/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|[a-z]+|\*\*|[^\s]/g)||[];
+    const functions={sin:Math.sin,cos:Math.cos,tan:Math.tan,sqrt:Math.sqrt,abs:Math.abs,log:Math.log,ln:Math.log,exp:Math.exp,floor:Math.floor,ceil:Math.ceil,round:Math.round};
+    let index=0;
+    function atom(){
+      const token=tokens[index++];
+      if(token==='x')return x=>x;
+      if(token==='pi')return ()=>Math.PI;
+      if(token==='e')return ()=>Math.E;
+      if(token && /^[.\d]/.test(token))return ()=>Number(token);
+      const fn=Object.hasOwn(functions,token)?functions[token]:null;
+      if(token!=='(' && (!fn || tokens[index++]!=='('))invalid();
+      const argument=sum();
+      if(tokens[index++]!==')')invalid();
+      return fn?x=>fn(argument(x)):argument;
+    }
+    function unary(){
+      if(tokens[index]==='-'){index++;const value=unary();return x=>-value(x);}
+      if(tokens[index]==='+'){index++;return unary();}
+      const base=atom();
+      if(['^','**'].includes(tokens[index])){index++;const exponent=unary();return x=>base(x)**exponent(x);}
+      return base;
+    }
+    function product(){
+      let lhs=unary();
+      while(['*','/'].includes(tokens[index])){const op=tokens[index++],a=lhs,b=unary();lhs=op==='*'?x=>a(x)*b(x):x=>a(x)/b(x);}
+      return lhs;
+    }
+    function sum(){
+      let lhs=product();
+      while(['+','-'].includes(tokens[index])){const op=tokens[index++],a=lhs,b=product();lhs=op==='+'?x=>a(x)+b(x):x=>a(x)-b(x);}
+      return lhs;
+    }
+    const evaluate=sum();
+    if(index!==tokens.length)invalid();
+    return evaluate;
   };
 
   const makeSvg=(tag,attrs={})=>{

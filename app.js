@@ -1199,6 +1199,7 @@ function setupModuleByType(m,type){
   if(type==='noise')window.TeacherTilesNoiseMeter.setup(m);
   if(type==='classroomjobs')window.TeacherTilesClassroomJobs.setup(m);
   if(type==='countdown')window.TeacherTilesCountdown.setup(m);
+  if(type==='counters')setupCounters(m);
   if(type==='tenssticks')window.TeacherTilesTensSticks.setup(m);
   if(type==='tensblock')window.TeacherTilesTensSticks.setupBlock(m);
   if(type==='lavalamp')window.TeacherTilesLavaLamp.setup(m);

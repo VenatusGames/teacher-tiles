@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
-const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['counters','grapher','wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
 const interactions=require('../../teachertiles-functions-dev/functions/firebase-service/class-connect-board-interactions');
 let cloud=null,clock=Date.now();
 let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0,gateRequests=0,portalRequests=0;
@@ -24,6 +24,7 @@ if(deployed){
   assert.equal(name,'classConnectBoard');
   if(data.action==='teacherGet')return {room,status,snapshot,allowedTypes,types};
   if(data.action==='start'){status={active:true,mode:data.mode,sessionId:'session-'+(++revision),revision:1,lastInput:Date.now(),activityWrittenAt:Date.now(),until:Date.now()+600000};snapshot={schemaVersion:2,theme:'light',objects:[],frames:[]};allowedTypes=data.allowedTypes;await broadcast();return {room,status};}
+  if(data.action==='lock'){status={...status,locked:data.locked};await broadcast();return {status};}
   if(data.action==='join')return {room,status,snapshot,allowedTypes};
   if(data.action==='publish'){assert.equal(data.expectedRevision,status.revision);snapshot=structuredClone(data.snapshot);const entries=interactions.manifest(snapshot);cloud={...(cloud||{sessionId:status.sessionId,total:0,activities:{},receipts:[],lastByStudent:{}}),entries};status={...status,revision:status.revision+1,hasBoardInteractions:!!entries.length};await broadcast();return {status,warnings:[]};}
   if(data.action==='boardWord'){clock+=2100;cloud=interactions.add(cloud,interactions.manifest(snapshot),data.studentId,interactions.request(data),clock)||cloud;await broadcast();return {accepted:true,word:data.word.toLowerCase()};}
@@ -67,7 +68,26 @@ if(deployed){
  assert.equal(await studentFrame.evaluate(()=>readClassRosters()[0].students[0]),'Alice');
  assert.equal(await student.evaluate(()=>localStorage.getItem('teachertiles-class-rosters-v1:local')),null);
 
- assert.equal(await studentFrame.evaluate(()=>createModule('dice',100,100)),null);
+ await studentFrame.evaluate(()=>document.querySelector('.module[data-type=sticky] [contenteditable]').textContent='Local note');
+ await teacher.getByRole('button',{name:'Lock Board',exact:true}).click();
+ await studentFrame.waitForFunction(()=>document.body.inert);
+ assert(!(await studentFrame.locator('.module[data-type=sticky]').innerText()).includes('Local note'));
+ await teacher.getByRole('button',{name:'Unlock Board',exact:true}).click();
+ await studentFrame.waitForFunction(()=>!document.body.inert);
+ assert((await studentFrame.locator('.module[data-type=sticky]').innerText()).includes('Local note'));
+ assert.equal(await studentFrame.locator('.module-tab-add').count(),0);
+ await student.setViewportSize({width:900,height:650});
+ await student.waitForFunction(()=>{const f=document.querySelector('iframe');return f.contentWindow.innerWidth===1400&&f.getBoundingClientRect().width<=901});
+ await student.setViewportSize({width:1400,height:960});
+ await teacherFrame.evaluate(()=>createModule('grapher',700,500));
+ await studentFrame.locator('.grapher-function').waitFor({state:'attached',timeout:15000});
+ assert.equal(await studentFrame.locator('.grapher-error').textContent(),'');
+ await studentFrame.locator('.grapher-module').evaluate(m=>{
+  m.querySelector('.grapher-equation').value='y = sin(x) + x^2 / 3';m.querySelector('.grapher-graph-equation').click();
+ });
+ assert.equal(await studentFrame.locator('.grapher-error').textContent(),'');
+ assert.equal(await studentFrame.locator('.grapher-module :is(.tile-settings-toggle,.tile-appearance-toggle,.customization-bar):visible').count(),0);
+  assert.equal(await studentFrame.evaluate(()=>createModule('dice',100,100)),null);
  await studentFrame.evaluate(()=>deleteModules([...document.querySelectorAll('.module')]));assert.equal(await studentFrame.locator('.module[data-type="sticky"]').count(),1);
  await studentFrame.evaluate(()=>{const m=document.querySelector('.module[data-type="sticky"]');m.querySelector('[contenteditable]').textContent='Student work';m.querySelector('[contenteditable]').dispatchEvent(new Event('input',{bubbles:true}));});
  const published=calls.filter(c=>c.action==='publish').length;await new Promise(r=>setTimeout(r,1800));assert.equal(calls.filter(c=>c.action==='publish').length,published);
@@ -130,6 +150,7 @@ if(deployed){
  await student.screenshot({path:path.join(process.env.TEMP,'classconnect-student-menu.png')});
  await free.locator('#context-menu .context-menu__close').click();
  await free.evaluate(()=>createModule('dice',500,500));assert.equal(await free.locator('.module[data-type="dice"]').count(),1);assert.equal(await free.evaluate(()=>createModule('sticky',500,500)),null);
+ assert.equal(await free.locator('.module-tab-add').count(),0);
  await free.evaluate(()=>deleteModules([...document.querySelectorAll('.module')]));assert.equal(await free.locator('.module').count(),0);
  assert.equal(await teacher.evaluate(()=>localStorage.getItem('parent-sentinel')),'untouched');
  assert.equal(await free.evaluate(()=>createStickerModule({emoji:'⭐'},200,200)),null);

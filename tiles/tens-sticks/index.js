@@ -26,6 +26,7 @@
   function setup(m){
     let pieces=[],nextId=0,selected=0,drag=null;
     const stage=m.querySelector('.tens-stage'),area=m.querySelector('.tens-workspace'),form=m.querySelector('.tens-number-form'),input=form.elements.number;
+    const trash=manipulativeTrash(stage);
     const notify=()=>notifyBoardChanged('tens-sticks');
     stage.addEventListener('pointerdown',e=>e.stopPropagation());
     stage.addEventListener('dblclick',e=>e.stopPropagation());
@@ -52,11 +53,12 @@
     area.addEventListener('pointerdown',e=>{
       const el=e.target.closest('.tens-piece');if(!el||e.button!==0)return;e.preventDefault();e.stopPropagation();
       const p=pieces.find(p=>p.id===Number(el.dataset.piece));selected=p.id;m.querySelector('.tens-remove').disabled=false;area.querySelectorAll('.tens-piece').forEach(n=>n.classList.toggle('is-selected',n===el));
-      const at=point(e);drag={p,el,dx:at.x-p.x,dy:at.y-p.y,moved:false};area.setPointerCapture(e.pointerId);el.focus({preventScroll:true});
+      trash.show();const at=point(e);drag={p,el,dx:at.x-p.x,dy:at.y-p.y,moved:false};area.setPointerCapture(e.pointerId);el.focus({preventScroll:true});
     });
-    area.addEventListener('pointermove',e=>{if(!drag)return;e.stopPropagation();const at=point(e);drag.p.x=at.x-drag.dx;drag.p.y=at.y-drag.dy;drag.moved=true;drag.el.style.left=drag.p.x+'px';drag.el.style.top=drag.p.y+'px'});
+    area.addEventListener('pointermove',e=>{if(!drag)return;trash.move(e);e.stopPropagation();const at=point(e);drag.p.x=at.x-drag.dx;drag.p.y=at.y-drag.dy;drag.moved=true;drag.el.style.left=drag.p.x+'px';drag.el.style.top=drag.p.y+'px'});
     function stop(e){if(!drag)return;const current=drag;drag=null;try{area.releasePointerCapture(e.pointerId)}catch{}
       const r=stage.getBoundingClientRect(),outside=e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom;
+      if(trash.finish(e)&&current.moved){selected=current.p.id;remove();return;}
       if(e.type!=='pointercancel'&&current.moved&&outside){
         const pos=screenToBoard(e.clientX,e.clientY),tile=createModule('tensblock',pos.x,pos.y,{record:false,boardState:{dataset:{blockValue:String(current.p.value)}}});
         if(tile){pieces=pieces.filter(p=>p.id!==current.p.id);recordHistory({type:'add',elements:[tile]});}

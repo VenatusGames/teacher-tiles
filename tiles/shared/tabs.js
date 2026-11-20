@@ -44,7 +44,7 @@
     return next;
   }
   function switchTo(m,index){
-    if(!m.isConnected||document.fullscreenElement===m)return;
+    if(window.ClassConnectPolicy?.student||!m.isConnected||document.fullscreenElement===m)return;
     const before=serializeBoardModule(m),items=pages(before);
     if(index<0||index>=items.length||index===before.tabs?.active)return;
     const keyboardFocus=strips.get(m)?.contains(document.activeElement);
@@ -52,8 +52,7 @@
     if(keyboardFocus)strips.get(next)?.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});
   }
   function add(m){
-    if(window.ClassConnectPolicy?.controlled)return;
-    if(m.dataset.type==='sticker')return;
+    if(window.ClassConnectPolicy?.student||m.dataset.type==='sticker')return;
     if(document.fullscreenElement===m)return;
     window.TeacherTilesEditHistory?.flush();
     const before=serializeBoardModule(m),items=pages(before);
@@ -65,7 +64,7 @@
     replace(m,compose(before,items,items.length-1));
   }
   function merge(target,source){
-    if(window.ClassConnectPolicy?.controlled)return;
+    if(window.ClassConnectPolicy?.student)return;
     if(target?.dataset.type==='sticker'||source?.dataset.type==='sticker')return false;
     if(!target?.isConnected||!source?.isConnected||target===source||document.fullscreenElement?.classList?.contains('module'))return false;
     window.TeacherTilesEditHistory?.flush();
@@ -81,7 +80,7 @@
     return true;
   }
   function remove(m,index){
-    if(window.ClassConnectPolicy?.controlled)return;
+    if(window.ClassConnectPolicy?.student)return;
     const before=serializeBoardModule(m),items=pages(before);
     if(items.length<2)return;
     items.splice(index,1);
@@ -152,7 +151,7 @@
     workspace.append(strip);strips.set(m,strip);sizes.observe(m);schedule();
   }
   function restore(m,state){
-    if(m.dataset.type==='sticker')return;
+    if(window.ClassConnectPolicy?.student||m.dataset.type==='sticker')return;
     if(!state||!Array.isArray(state.items)||state.items.length<2)return;
     // Inactive pages stay as snapshots: they cannot play audio or run timers.
     const style=getComputedStyle(m);
@@ -164,14 +163,14 @@
     m._cleanup=()=>{release(m);cleanup?.();};
   }
   function setup(m){
-    if(m.dataset.type==='sticker')return;
+    if(window.ClassConnectPolicy?.student||m.dataset.type==='sticker')return;
     if(m.querySelector(':scope>.module-tab-add'))return;
     const button=document.createElement('button');button.type='button';button.className='module-tab-add';button.title='Add a tab · Drop another tile here to combine';button.setAttribute('aria-label','Add tile tab');
     button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5V3H3v13h2M7 7h6l2 2h6v12H7Z"/><path d="M14 12v6m-3-3h6"/></svg>';
     button.addEventListener('pointerdown',event=>event.stopPropagation());button.addEventListener('click',event=>{event.stopPropagation();add(m);});m.append(button);
   }
   function dropTarget(source,x,y){
-    if(source.dataset.type==='sticker')return null;
+    if(window.ClassConnectPolicy?.student||source.dataset.type==='sticker')return null;
     let target=null;
     for(const m of workspace.querySelectorAll('.module')){
       if(m===source||isTilePinned(m)||isTileLocked(m))continue;
