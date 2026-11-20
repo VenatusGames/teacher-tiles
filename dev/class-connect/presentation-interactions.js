@@ -1,4 +1,4 @@
-import {call,watchPresentationWords} from './boards.js?v=20261119-session-math';
+import {call,watchPresentationWords} from './boards.js?v=20261119-board-lock2';
 // One listener per active presentation, shared by all interactive objects on its current slide.
 export function createInteractionChannel({room,sessionId,deck,credentials}){
  let current=-1,data=null,off=null,closed=false,problem='';const listeners=new Set();

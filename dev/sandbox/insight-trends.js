@@ -24,7 +24,7 @@ export function createTrendCharts(root) {
   grid.replaceChildren();
   root.querySelector('.trend-footnote').textContent=onlineMode==='daily'?'Daily totals come from site activity, independent of portal visits. Days before tracking began are unavailable; today is still accumulating. Membership charts use saved snapshots.':'Snapshots are recorded on refresh, at most once every 15 minutes. Gaps mean no recorded observation, not zero users.';
   const start=asOf-days*86400000,inRange=points.filter(p=>p.at>=start&&p.at<=asOf);
-  for(const [key,title,description] of [['online','Online Users','Active in the last 6 minutes at each snapshot'],[MEMBERSHIP_VIEWS[membershipKind].key,MEMBERSHIP_VIEWS[membershipKind].title,MEMBERSHIP_VIEWS[membershipKind].detail]]) {
+  for(const [key,title,description] of [['online','Online Users','Users online at each recorded snapshot'],[MEMBERSHIP_VIEWS[membershipKind].key,MEMBERSHIP_VIEWS[membershipKind].title,MEMBERSHIP_VIEWS[membershipKind].detail]]) {
    if(key==='online'&&onlineMode==='daily'){grid.append(createDailyActivityChart({rows:dailyRows,days,style,loaded,tabs:activityTabs()}));continue;}
    const visible=inRange.filter(p=>Number.isFinite(p[key]));
    const card=node('article','trend-card trend-'+key);

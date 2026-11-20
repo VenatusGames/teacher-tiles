@@ -57,6 +57,17 @@ export function createInsights(call) {
         </span>
         <span class="overview-detail">Closed tickets excluded</span>
       </button>
+      <article class="overview-metric" data-accent="accounts">
+        <div class="overview-metric-label"><i class="overview-symbol">${icon('accounts')}</i><h3>Total Accounts</h3></div>
+        <strong data-stat="total">—</strong><p>Enabled accounts</p>
+      </article>
+      <article class="overview-metric" data-accent="online">
+        <div class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i><h3>Active Users</h3></div>
+        <div class="overview-ticket-counts">
+          <span><strong data-stat="online">—</strong>Online Now · Last 15 Minutes</span>
+          <span><strong data-stat="active24Hours">—</strong>Last 24 Hours</span>
+        </div>
+      </article>
     </div>
     <div class="overview-charts">
       <article class="overview-panel overview-activity" aria-label="User Activity"></article>
@@ -64,16 +75,6 @@ export function createInsights(call) {
     </div>`;
   for (const button of root.querySelectorAll('[data-destination]')) {
     button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${button.dataset.destination}"]`)?.click();
-  }
-  for (const [key, title, detail, art] of [
-    ['total','Total Accounts','Enabled accounts','accounts'],
-    ['online','Online Now','Active in the last 6 minutes','online'],
-    ['active24Hours','Active in 24 Hours','Unique signed-in users','day']
-  ]) {
-    const card = node('article', 'overview-metric');
-    card.dataset.accent = art;
-    card.innerHTML = `<div class="overview-metric-label"><i class="overview-symbol">${icon(art)}</i><h3>${title}</h3></div><strong data-stat="${key}">—</strong><p>${detail}</p>`;
-    root.querySelector('.overview-metrics').append(card);
   }
   const status = root.querySelector('#insights-status');
   const refresh = root.querySelector('#insights-refresh');
