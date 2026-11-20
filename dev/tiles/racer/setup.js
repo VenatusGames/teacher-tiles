@@ -5,7 +5,7 @@ function setupRacer(m){
   const status=m.querySelector('.racer-status'),win=m.querySelector('.racer-win'),winName=m.querySelector('.racer-win-name'),winTotal=m.querySelector('.racer-win-total'),winDone=m.querySelector('.racer-win-done');
   movePbisClassHeaderToFooter(m,'.racer-header');
   let activeClassId='',selectedStudent='';
-  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const roster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const progress=()=>{const r=roster();return normalizeRacerProgress(r?.racer,r?.students||[])};
   const keyFor=name=>starChartStudentKey(name);
   const updateStatus=()=>{
@@ -58,7 +58,7 @@ function setupRacer(m){
     const p=progress();r.students.forEach(name=>{const key=keyFor(name);p.positions[key]=0;p.finished[key]=false});writeClassRacer(activeClassId,p);flushPbisCloudSave();win.hidden=true;renderTrack();notifyBoardChanged('racer-reset');
   };
   const setClass=id=>{
-    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;win.hidden=true;
+    const r=readPbisClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;win.hidden=true;
     if(r)selectedStudent=r.students.includes(selectedStudent)?selectedStudent:(r.students[0]||'');else selectedStudent='';render();
   };
   studentSelect.addEventListener('change',()=>{selectedStudent=studentSelect.value;renderSelection();notifyBoardChanged('racer-student')});

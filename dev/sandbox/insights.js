@@ -44,13 +44,13 @@ export function createInsights(call) {
     </div>
     <div class="overview-dashboard">
     <div class="overview-left"><div class="overview-metrics" role="group" aria-label="Overview Metrics">
-      <article class="overview-metric" data-accent="online">
-        <div class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i><h3>Active Users</h3></div>
-        <div class="overview-ticket-counts">
+      <button type="button" class="overview-metric overview-shortcut" data-accent="online" data-destination="users">
+        <span class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i>Active Users</span>
+        <span class="overview-ticket-counts">
           <span><strong data-stat="online">—</strong><span>Online Now<small>Last 15 minutes</small></span></span>
           <span><strong data-stat="active24Hours">—</strong>Last 24 Hours</span>
-        </div>
-      </article>
+        </span>
+      </button>
       <button type="button" class="overview-metric overview-shortcut" data-accent="boards" data-destination="templates">
         <span class="overview-metric-label"><i class="overview-symbol">${icon('boards')}</i>Boards to Review</span>
         <strong data-stat="approvalQueue">—</strong>
@@ -64,10 +64,10 @@ export function createInsights(call) {
         </span>
         <span class="overview-detail">Closed tickets excluded</span>
       </button>
-      <article class="overview-metric" data-accent="accounts">
-        <div class="overview-metric-label"><i class="overview-symbol">${icon('accounts')}</i><h3>Total Accounts</h3></div>
-        <strong data-stat="total">—</strong><p>Enabled accounts</p>
-      </article>
+      <button type="button" class="overview-metric overview-shortcut" data-accent="accounts" data-destination="users">
+        <span class="overview-metric-label"><i class="overview-symbol">${icon('accounts')}</i>Total Accounts</span>
+        <strong data-stat="total">—</strong><span class="overview-detail">Enabled accounts</span>
+      </button>
     </div>
     <section class="overview-panel overview-rankings" aria-label="Usage Rankings"></section></div>
     <div class="overview-charts">

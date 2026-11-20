@@ -139,7 +139,7 @@ function readClassRosters(){
         logoImage:normalizeProfileImage(item.logoImage),
         gradeLevel:normalizeClassGradeLevel(item.gradeLevel),
         students,
-        pbisEnabled:typeof item.pbisEnabled==='boolean'?item.pbisEnabled:defaultClassPbisEnabled(normalizeClassGradeLevel(item.gradeLevel)),
+        pbisEnabled:TeacherTilesClassGrades.allowsPbis(item.gradeLevel)&&(typeof item.pbisEnabled==='boolean'?item.pbisEnabled:defaultClassPbisEnabled(normalizeClassGradeLevel(item.gradeLevel))),
         showAddStudent:item.showAddStudent!==false,
         requireStudentPin:item.requireStudentPin===true,
         studentBoards:item.studentBoards===true,
@@ -217,7 +217,10 @@ function schedulePbisCloudSave(){
 }
 
 function writeClassRosters(classes){
-  classes.forEach(ensureClassStudentPins);
+  for(const roster of classes){
+    if(!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))roster.pbisEnabled=false;
+    ensureClassStudentPins(roster);
+  }
   cancelPendingPbisCloudSave();
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -228,7 +231,7 @@ function writeClassRosters(classes){
 function writeClassStarChart(classId,value){
   const classes=readClassRosters();
   const roster=classes.find(item=>item.id===classId);
-  if(!roster)return null;
+  if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster.starChart=normalizeStarChartProgress(value,roster.students);
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -240,7 +243,7 @@ function writeClassStarChart(classId,value){
 function writeClassMeter(classId,value){
   const classes=readClassRosters();
   const roster=classes.find(item=>item.id===classId);
-  if(!roster)return null;
+  if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster.classMeter=normalizeClassMeterProgress(value);
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -252,7 +255,7 @@ function writeClassMeter(classId,value){
 function writeClassCollection(classId,value){
   const classes=readClassRosters();
   const roster=classes.find(item=>item.id===classId);
-  if(!roster)return null;
+  if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster.collectionJar=normalizeCollectionProgress(value);
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -264,7 +267,7 @@ function writeClassCollection(classId,value){
 function writeClassPunchcards(classId,value){
   const classes=readClassRosters();
   const roster=classes.find(item=>item.id===classId);
-  if(!roster)return null;
+  if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster.punchcards=normalizePunchcardProgress(value,roster.students);
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
@@ -275,7 +278,7 @@ function writeClassPunchcards(classId,value){
 
 function writeClassGrowth(classId,kind,value){
   if(!['eggHatching','flowerPots'].includes(kind))return null;
-  const classes=readClassRosters(),roster=classes.find(item=>item.id===classId);if(!roster)return null;
+  const classes=readClassRosters(),roster=classes.find(item=>item.id===classId);if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster[kind]=normalizePunchcardProgress(value,roster.students);
   markPbisLocalDirty(classes);localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:classeschange',{detail:{classes}}));schedulePbisCloudSave();return roster[kind];
@@ -284,13 +287,17 @@ function writeClassGrowth(classId,kind,value){
 function writeClassRacer(classId,value){
   const classes=readClassRosters();
   const roster=classes.find(item=>item.id===classId);
-  if(!roster)return null;
+  if(!roster||!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))return null;
   roster.racer=normalizeRacerProgress(value,roster.students);
   markPbisLocalDirty(classes);
   localStorage.setItem(classRostersStorageKey(),JSON.stringify(classes));
   window.dispatchEvent(new CustomEvent('teachertiles:racerchange',{detail:{classId,progress:roster.racer}}));
   schedulePbisCloudSave();
   return roster.racer;
+}
+
+function readPbisClassRosters(){
+  return readClassRosters().filter(roster=>TeacherTilesClassGrades.allowsPbis(roster.gradeLevel));
 }
 
 function classRosterId(){
@@ -303,7 +310,9 @@ function attachClassRosterLoader(anchor,onLoad){
   row.className='tile-class-loader class-roster-picker';
   const module=anchor.closest('.module');
   const pbisTypes=['starchart','classmeter','collections','prizeboard','pbisconsole','punchcards','racer','egghatching','flowerpots'];
-  if(module&&pbisTypes.includes(module.dataset.type)){
+  const isPbisTile=pbisTypes.includes(module?.dataset.type);
+  const rosters=isPbisTile?readPbisClassRosters:readClassRosters;
+  if(isPbisTile){
     module.classList.add('pbis-tile');
     if(!module.classList.contains('growth-module'))movePbisClassActionsToFooter(module);
   }
@@ -324,14 +333,14 @@ function attachClassRosterLoader(anchor,onLoad){
   load.textContent='Load Class';
   const refresh=()=>{
     const current=select.value;
-    const classes=readClassRosters();
-    select.replaceChildren(new Option(classes.length?'Choose a class…':'No saved classes',''));
+    const classes=rosters();
+    select.replaceChildren(new Option(classes.length?'Choose a class…':isPbisTile?'No eligible classes':'No saved classes',''));
     classes.forEach(item=>select.add(new Option(`${item.name} (${item.students.length})`,item.id)));
     if(classes.some(item=>item.id===current))select.value=current;
     load.disabled=!select.value;
   };
   load.addEventListener('click',()=>{
-    const roster=readClassRosters().find(item=>item.id===select.value);
+    const roster=rosters().find(item=>item.id===select.value);
     if(roster)onLoad([...roster.students],roster);
   });
   select.addEventListener('change',()=>load.disabled=!select.value);

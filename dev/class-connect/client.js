@@ -1,6 +1,7 @@
+import '../profile/class-grades.js';
 // ClassConnect shares only explicitly enabled reward totals and roster fields.
 export function publicClass(roster) {
-  const pbisEnabled=typeof roster.pbisEnabled==='boolean'?roster.pbisEnabled:roster.gradeLevel!=='Higher-Ed'&&!(Number(roster.gradeLevel)>=7);
+  const pbisEnabled=TeacherTilesClassGrades.allowsPbis(roster.gradeLevel)&&(typeof roster.pbisEnabled==='boolean'?roster.pbisEnabled:!(Number(roster.gradeLevel)>=7));
   return {
     name:roster.name, emoji:roster.logo || '👥', image:roster.logoImage || '', gradeLevel:roster.gradeLevel || '',
     requireStudentPin:roster.requireStudentPin===true, pbisEnabled, studentBoards:roster.studentBoards===true, allowStudentEmojiEditing:roster.allowStudentEmojiEditing===true,

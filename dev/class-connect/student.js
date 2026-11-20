@@ -1,3 +1,4 @@
+import '../profile/class-grades.js';
 import {watchRoom,active,enterStudentBoard} from './boards.js?v=20261119-attach';
 import './ui-audio.js?v=20261103-pin-polish';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
@@ -37,6 +38,7 @@ function showBoardNotice(){
 function navigate(next){section=next;renderProfile();profile.scrollTop=0;profile.querySelector(next==='home'?'.cc-greeting':'.cs-profile-title')?.focus({preventScroll:true});}
 function renderProfile() {
   const student=roster?.students.find(item=>item.id===activeId);if(!student){profile.close();return;}
+  if(section==='pbis'&&!TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))section='home';
   clearEntrance();const ticket=++profileVersion;profile.replaceChildren();
   const head=make('header','cs-modal-header');
   const back=button('All Students',()=>profile.close(),'cs-button cc-roster-back','back');back.setAttribute('aria-label','Back to Class');head.append(back);
@@ -49,7 +51,7 @@ function renderProfile() {
   const body=make('section','cs-profile-body is-entering'),greeting=make('h1','cc-greeting',`Hi, ${student.name}!`),title=make('h3','cs-profile-title',section==='pbis'?'Your Rewards':section==='emoji'?'Choose your emoji':'Student Profile');greeting.tabIndex=-1;title.tabIndex=-1;title.hidden=section==='home';body.append(greeting,title);if(section!=='home'){const back=button('Back to Profile',()=>navigate('home'),'cs-button cc-section-back','back');back.setAttribute('aria-label','Back to Student Profile');body.insertBefore(back,title);}
   const sectionButton=(label,icon,action,hint)=>{const b=button('',action,'cs-profile-section',icon);b.lastElementChild.remove();const text=make('span','cs-section-copy');text.append(make('strong','',label),make('small','cs-section-status',hint));b.append(text);b.disabled=!action;return b;};
   if(section==='home') {
-    const choices=make('div','cs-profile-sections');choices.append(sectionButton('PBIS','pbis',roster.pbisEnabled?()=>navigate('pbis'):null,roster.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras'),'Explore more'));body.append(choices);
+    const choices=make('div','cs-profile-sections');if(TeacherTilesClassGrades.allowsPbis(roster.gradeLevel))choices.append(sectionButton('PBIS','pbis',roster.pbisEnabled?()=>navigate('pbis'):null,roster.pbisEnabled?'View rewards':'Off in Class Settings'));choices.append(sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras'),'Explore more'));body.append(choices);
     const enter=sectionButton('Enter Board','board',async()=>{if(!active(boardStatus))return showBoardNotice();const b=profile.querySelector('.cc-enter-board');b.disabled=true;try{await enterStudentBoard({token:token(),student,roster,session:studentSession,getProfile:()=>{section='home';renderProfile();}});}catch(error){showBoardNotice();boardNotice.querySelector('p').textContent=error.message||'Could not open the board. Try again.';}finally{b.disabled=false;}},'');enter.querySelector('.cs-section-status').remove();enter.classList.add('cc-enter-board');body.insertBefore(enter,choices);enter.classList.toggle('is-live',active(boardStatus));
   }else if(section==='pbis') {
     title.textContent='PBIS Rewards';

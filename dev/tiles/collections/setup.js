@@ -157,7 +157,7 @@ function setupCollections(m){
   function closePicker(){picker.hidden=true;typeBtn.setAttribute('aria-expanded','false')}
   function togglePicker(){picker.hidden=!picker.hidden;typeBtn.setAttribute('aria-expanded',String(!picker.hidden))}
 
-  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const currentRoster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const setSettingsOpen=open=>{const show=Boolean(open);settings.hidden=!show;settingsToggle.setAttribute('aria-expanded',String(show))};
   const renderFilledState=()=>{
     const filled=Boolean(progress.filled);
@@ -209,7 +209,7 @@ function setupCollections(m){
     render();
   };
   const loadClass=(classId,{notify=false}={})=>{
-    const next=readClassRosters().find(item=>item.id===classId);
+    const next=readPbisClassRosters().find(item=>item.id===classId);
     if(!next){activeClassId='';roster=null;progress=normalizeCollectionProgress(null);bodies=[];particles=[];render();return false}
     activeClassId=next.id;pendingClassId='';
     localStorage.setItem(collectionsLastClassStorageKey(),activeClassId);

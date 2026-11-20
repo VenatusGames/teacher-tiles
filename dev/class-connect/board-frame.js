@@ -22,7 +22,7 @@
  window.ClassConnectPolicy.seedRoster=roster=>{
   if(!Array.isArray(roster?.students))return;
   const studentProfiles={};for(const member of roster.students)studentProfiles[window.starChartStudentKey(member.name)]={emoji:member.emoji||'',image:member.image||''};
-  store.set('teachertiles-class-rosters-v1:local',JSON.stringify([{id:'classconnect',name:roster.name||'Our Class',gradeLevel:roster.gradeLevel||'',students:roster.students.map(member=>member.name),studentProfiles,pbisEnabled:true}]));
+  store.set('teachertiles-class-rosters-v1:local',JSON.stringify([{id:'classconnect',name:roster.name||'Our Class',gradeLevel:roster.gradeLevel||'',students:roster.students.map(member=>member.name),studentProfiles,pbisEnabled:roster.pbisEnabled}]));
  };
  window.TeacherTilesAuth={user:null};
  window.setupTeacherTilesShop=()=>{};
