@@ -1,6 +1,7 @@
 import {call,active,watchRoom} from './boards.js?v=20261119-attach';
 let current=null;
 const pending=new WeakMap();
+const historyRemovals=new WeakMap();
 export const routing=result=>result.groupId?{groupId:result.groupId,panelId:result.panelId}:{};
 export function panelStatus(parent,id){
  const panel=parent?.panels?.find(p=>p.id===id);
@@ -57,17 +58,18 @@ export function responseGroup(){
  const group=current;
  return group&&!group.leaving?{name:group.name,endSession:()=>endGroup(group)}:null;
 }
-export function attachResponse(tile){
+export function attachResponse(tile){return attachTile(tile,false);}
+function attachTile(tile,restoreDeck){
  const group=current;
- if(!group||group.leaving||!tile.isConnected||tile._classConnectSession||!tile._wordCloudInfo||window.ClassConnectPolicy||tile.dataset.presentationEmbedded)return;
+ if(!group||group.leaving||!tile.isConnected||tile._classConnectSession||(!restoreDeck&&!tile._wordCloudInfo)||window.ClassConnectPolicy||tile.dataset.presentationEmbedded)return;
  if(pending.has(tile))return pending.get(tile);
  const task=(async()=>{
-  const {responseOptions}=await import('./word-cloud-session.js?v=20261119-attach');
+  const options=restoreDeck?(await import('./presentation-session.js?v=20261119-attach')).presentationOptions(tile):(await import('./word-cloud-session.js?v=20261119-attach')).responseOptions(tile);
   if(current!==group||group.leaving||!tile.isConnected||tile._classConnectSession)return;
-  const options=responseOptions(tile),info=options.getInfo();
+  const info=options.getInfo();if(!info)return;
   // Keep the same panel ID if a callable commits but its response is lost.
   const requestId=group.requestIds.get(tile)||crypto.randomUUID();group.requestIds.set(tile,requestId);
-  const result=await call({action:'addPanel',grouped:true,groupId:group.id,classId:group.classId,requestId,...options.startData(info)});
+  const result=await call({action:restoreDeck?'start':'addPanel',grouped:true,groupId:group.id,classId:group.classId,requestId,...options.startData(info)});
   if(result.groupId!==group.id||result.panelId!==requestId)throw Error('Could not attach this tile to the current session.');
   if(!tile.isConnected||current!==group||group.leaving){
    await call({action:'end',...routing(result),classId:group.classId,sessionId:result.status.sessionId});return;
@@ -76,6 +78,31 @@ export function attachResponse(tile){
   if(options.key(info)!==options.key(options.getInfo()))tile.querySelector('.wordcloud-prompt')?.dispatchEvent(new Event('change',{bubbles:true}));
  })().finally(()=>{pending.delete(tile);group.adds.delete(task);});
  pending.set(tile,task);group.adds.add(task);return task;
+}
+// Board history reuses the same DOM node. Remember only its original live group.
+export function historyDetach(tile){
+ const group=current;
+ if(!group||group.leaving||(!group.tiles.has(tile)&&!pending.has(tile)))return;
+ const previous=historyRemovals.get(tile);
+ const removal=previous?.removal||tile._classConnectSession?.end()||pending.get(tile);
+ historyRemovals.set(tile,{group,removal,deck:!!tile._classConnectPresentation});
+}
+export async function historyRestore(tile){
+ const entry=historyRemovals.get(tile);
+ if(!entry)return;
+ try{
+  await entry.removal;
+  if(historyRemovals.get(tile)!==entry||!tile.isConnected)return;
+  historyRemovals.delete(tile);
+  if(current!==entry.group||current.leaving||tile._classConnectSession)return;
+  entry.group.requestIds.delete(tile);
+  await attachTile(tile,entry.deck);
+ }catch(error){
+  if(tile.isConnected){
+   if(entry.deck){const status=tile.querySelector('.presentation-connection-status');if(status){status.textContent=error.message;status.hidden=false;}}
+   else tile._wordCloudStatus?.(error.message,false);
+  }
+ }
 }
 export function tileReady(tile){
  attachResponse(tile)?.catch(error=>tile._wordCloudStatus?.(error.message,false));

@@ -121,6 +121,7 @@ function detachHistoryElements(elements){
   for(const el of elements){
     selectedModules.delete(el);
     el.classList.remove('is-selected','is-over-trash','is-dragging');
+    window.TeacherTilesBoardSessions?.historyDetach?.(el);
     el._deactivate?.();
     for(const media of el.querySelectorAll('audio,video'))media.pause();
     for(const sound of el._activeTileSounds||[]){sound.pause();releaseBoostedMedia(sound)}
@@ -128,6 +129,11 @@ function detachHistoryElements(elements){
     if(el.isConnected)el.remove();
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
+}
+
+function reactivateHistoryTile(el){
+  el._reactivate?.();
+  window.TeacherTilesBoardSessions?.historyRestore?.(el);
 }
 
 function restoreDeletedEntries(entries){
@@ -138,7 +144,7 @@ function restoreDeletedEntries(entries){
     if(el.isConnected)continue;
     if(nextSibling?.parentNode===workspace)workspace.insertBefore(el,nextSibling);
     else workspace.appendChild(el);
-    el._reactivate?.();
+    reactivateHistoryTile(el);
   }
   for(const id of snapGroups)refreshSnapGroupState(id);
 }
@@ -148,7 +154,7 @@ function applyHistoryAction(action,direction){
   try{
     if(action.type==='add'){
       if(direction==='undo')detachHistoryElements(action.elements);
-      else for(const el of action.elements)if(!el.isConnected){workspace.appendChild(el);el._reactivate?.()}
+      else for(const el of action.elements)if(!el.isConnected){workspace.appendChild(el);reactivateHistoryTile(el)}
     }else if(action.type==='delete'){
       if(direction==='undo')restoreDeletedEntries(action.entries);
       else detachHistoryElements(action.entries.map(entry=>entry.el));

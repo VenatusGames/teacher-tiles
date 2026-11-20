@@ -35,7 +35,7 @@
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const adapters={
     livepolls:s=>({prompt:text(s.prompt,160),options:list(s.options,8).map(o=>text(o,80)),multiple:s.multiple===true}),
-    moodcheckin:()=>({}),
+    moodcheckin:s=>({allowResponseChange:s.allowResponseChange!==false}),
     respond:s=>({prompt:text(s.prompt,160)}),
     wordcloud:s=>({prompt:text(s.prompt,160),words:[]}),
     presentation:s=>{const v=s.sharedPresentation,shared=v&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.id||'')&&/^[a-zA-Z0-9_-]{1,100}$/.test(v.templateId||'')?{id:v.id,templateId:v.templateId,title:text(v.title,100),slideCount:num(v.slideCount,1,500,1),cover:typeof v.cover==='string'&&v.cover.length<=40000?raster(v.cover):''}:null;return {presentationId:'',slideIndex:0,autoplay:s.autoplay===true,loop:s.loop===true,interval:num(s.interval,2,300,5),...(shared?{sharedPresentation:shared,previewSrc:shared.cover}:{})};},

@@ -1,4 +1,4 @@
-import {tileReady} from './tile-group.js?v=20261119-attach';
+import {tileReady,historyDetach,historyRestore} from './tile-group.js?v=20261119-attach';
 import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
@@ -156,4 +156,4 @@ export async function teacherBoard({classId,name,roster}){
  const requestId=crypto.randomUUID(),start=button('Start Session',async()=>{start.disabled=true;status.textContent='Starting session…';try{const started=await call({action:'start',classId,requestId,mode,allowedTypes:mode==='free'?[...selected]:result.types});const ready=await call({action:'teacherGet',classId,sessionId:started.status.sessionId});if(dialog.isConnected){dialog.close();void launch({teacher:true,classId,roster,result:ready});}}catch(e){status.textContent=e.message;start.disabled=false;}});
  body.append(choices,selection,make('p','cc-session-status','Some tiles are excluded for students.'),start);status.textContent='Ends automatically after 10 minutes without student input.';
 }
-window.TeacherTilesBoardSessions={tileReady,teacher:teacherBoard,wordcloud:async tile=>{const module=await import('./word-cloud-session.js?v=20261119-attach');return module.openWordCloud(tile);},presentation:async tile=>{const module=await import('./presentation-session.js?v=20261119-attach');return module.openPresentation(tile);}};
+window.TeacherTilesBoardSessions={tileReady,historyDetach,historyRestore,teacher:teacherBoard,wordcloud:async tile=>{const module=await import('./word-cloud-session.js?v=20261119-attach');return module.openWordCloud(tile);},presentation:async tile=>{const module=await import('./presentation-session.js?v=20261119-attach');return module.openPresentation(tile);}};

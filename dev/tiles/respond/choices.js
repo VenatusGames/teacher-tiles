@@ -3,7 +3,7 @@
  const isChoice=kind=>kind==='livepolls'||kind==='moodcheckin';
  const moods=['😊 Happy','😴 Sleepy','😐 Meh','😢 Sad'];
  function definition(kind,value={}){
-  if(kind==='moodcheckin')return {prompt:'How are you feeling?',options:[...moods],multiple:false};
+  if(kind==='moodcheckin')return {prompt:'How are you feeling?',options:[...moods],multiple:false,allowResponseChange:value?.allowResponseChange!==false};
   const options=(Array.isArray(value?.options)?value.options:[]).slice(0,8).map(s=>String(s??'').trim().slice(0,80));
   return {prompt:String(value?.prompt||'Which option do you choose?').trim().slice(0,160)||'Which option do you choose?',options:options.length>=2?options:['Option A','Option B'],multiple:value?.multiple===true};
  }
@@ -25,24 +25,27 @@
   const form=make('form','cc-choice-form'),options=make('div','cc-choice-options'),status=make('p'),send=button('Submit Vote');
   if(mood)form.classList.add('cc-mood-form');
   options.setAttribute('role','group');options.setAttribute('aria-label',config.prompt);status.setAttribute('role','status');
-  let chosen=new Set(previous||[]),busy=false,done=!!previous;
+  const canChange=mood&&config.allowResponseChange!==false;
+  let confirmed=previous,chosen=new Set(previous||[]),busy=false;
   const choices=config.options.map((label,i)=>{
    const b=button(label);
    if(mood){
     b.className='cc-mood-choice';
     b.replaceChildren(...moodLabel(label));
    }
-   b.onclick=()=>{if(done||busy)return;if(!config.multiple)chosen.clear();if(chosen.has(i))chosen.delete(i);else chosen.add(i);paint();if(mood)form.requestSubmit();};options.append(b);return b;
+   b.onclick=()=>{if(busy||(confirmed&&(!canChange||confirmed.includes(i))))return;if(!config.multiple)chosen.clear();if(chosen.has(i))chosen.delete(i);else chosen.add(i);paint();if(mood)form.requestSubmit();};options.append(b);return b;
   });
-  function paint(){choices.forEach((b,i)=>{b.disabled=busy||done;b.setAttribute('aria-pressed',String(chosen.has(i)));});
-   send.disabled=busy||!chosen.size;send.hidden=done||mood;
-   if(done)status.textContent='Your response: '+[...chosen].map(i=>config.options[i]).join(', ');
+  function paint(){choices.forEach((b,i)=>{b.disabled=busy||!!confirmed&&(!canChange||confirmed.includes(i));b.setAttribute('aria-pressed',String(chosen.has(i)));});
+   send.disabled=busy||!chosen.size;send.hidden=!!confirmed||mood;
+
   }
   if(config.multiple)form.append(make('small','','Select all that apply'));
   send.type='submit';form.append(options,send,status);paint();
-  form.onsubmit=async e=>{e.preventDefault();if(done||busy||!chosen.size)return;busy=true;paint();status.textContent='Sending…';
-   try{const result=await submit({choices:[...chosen],ballot:config});chosen=new Set(result.choices);done=true;}
-   catch(err){status.textContent=err.message||'Could not send your vote. Try again.';}
+  function showReceipt(){status.textContent='Your response: '+confirmed.map(i=>config.options[i]).join(', ');}
+  if(confirmed)showReceipt();
+  form.onsubmit=async e=>{e.preventDefault();if((confirmed&&!canChange)||busy||!chosen.size)return;busy=true;paint();status.textContent='Sending…';
+   try{const result=await submit({choices:[...chosen],ballot:config});confirmed=result.choices;chosen=new Set(confirmed);showReceipt();}
+   catch(err){if(mood)chosen=new Set(confirmed||[]);status.textContent=err.message||'Could not send your vote. Try again.';}
    finally{busy=false;paint();}
   };
   for(const type of ['pointerdown','click','keydown','wheel'])form.addEventListener(type,e=>e.stopPropagation());
@@ -99,9 +102,23 @@
   const kind=tile.dataset.type,policy=window.ClassConnectPolicy,student=policy?.student&&policy.controlled;
   setupClassroomTileControls(tile);
   const prompt=tile.querySelector('.wordcloud-prompt'),stage=tile.querySelector('.wordcloud-stage'),connect=tile.querySelector('.wordcloud-connect'),status=tile.querySelector('.wordcloud-status'),edit=tile.querySelector('.cc-edit-poll');
-  let config=api.definition(kind),counts=[];
+  let config=api.definition(kind),counts=[],changeToggle;
+  if(kind==='moodcheckin'&&!student){
+   window.TeacherTilesSettings.ensure(tile);
+   const panel=tile.querySelector('.tile-settings-panel');
+   const row=make('label','tile-settings-switch-row'),label=make('span','','Allow Response Change');
+   changeToggle=make('button','tile-settings-switch');changeToggle.type='button';
+   changeToggle.setAttribute('role','switch');changeToggle.append(make('i'));
+   changeToggle.onclick=()=>{
+    config={...config,allowResponseChange:!config.allowResponseChange};
+    changeToggle.setAttribute('aria-checked',String(config.allowResponseChange));
+    prompt.dispatchEvent(new Event('change',{bubbles:true}));
+    (tile._presentationChanged||window.notifyBoardChanged)?.('mood-settings');
+   };
+   row.append(label,changeToggle);panel.insertBefore(row,panel.querySelector('.tile-reset-scale'));
+  }
   if(policy)tile._wordCloudInteractionId=crypto.randomUUID();
-  function draw(){prompt.value=config.prompt;
+  function draw(){prompt.value=config.prompt;changeToggle?.setAttribute('aria-checked',String(config.allowResponseChange));
    if(!student){api.results(stage,config,counts,kind);return;}
    const key=tile.dataset.boardObjectId+':'+(tile._wordCloudInteractionId||tile.dataset.boardObjectId);
    stage.replaceChildren(api.form(config,async input=>{const result=await policy.submitWord(tile,input);policy.ownVotes[key]=result.choices;return result;},policy.ownVotes?.[key],kind));
