@@ -48,19 +48,23 @@
   const dlg=make('dialog','cc-session-dialog cc-poll-editor'),form=make('form'),question=make('input'),fields=make('div','cc-poll-options');
   function field(label,input){const row=make('label','cc-poll-field');row.append(make('span','',label),input);return row;}
   question.required=true;question.maxLength=160;question.value=config.prompt;
-  const add=button('Add Option'),multiple=make('input');multiple.type='checkbox';multiple.checked=config.multiple;
+  const add=button('Add Option'),multiple=make('button','tile-settings-switch');
+  multiple.type='button';multiple.setAttribute('role','switch');
+  multiple.setAttribute('aria-checked',String(config.multiple===true));
+  multiple.append(make('i'));
+  multiple.onclick=()=>multiple.setAttribute('aria-checked',String(multiple.getAttribute('aria-checked')!=='true'));
   function refresh(){[...fields.children].forEach((row,i)=>{row.firstChild.setAttribute('aria-label','Option '+(i+1));row.lastChild.disabled=fields.children.length<=2;});add.disabled=fields.children.length>=8;}
   function append(label){const row=make('div','cc-poll-option'),input=make('input'),remove=button('×');input.required=true;input.maxLength=80;input.value=label;remove.setAttribute('aria-label','Remove option');remove.onclick=()=>{row.remove();refresh();};row.append(input,remove);fields.append(row);refresh();return input;}
   config.options.forEach(append);add.onclick=()=>append('').focus();const cancel=button('Cancel'),save=button('Apply');save.type='submit';cancel.onclick=()=>dlg.close();
   const actions=make('div','cc-poll-actions');actions.append(cancel,save);
-  const multi=make('label','cc-poll-multiple');multi.append(multiple,document.createTextNode('Allow Multiple Selections'));
+  const multi=make('label','tile-settings-switch-row cc-poll-multiple');multi.append(make('span','','Allow Multiple Selections'),multiple);
   form.append(make('h2','','Edit Live Poll'),field('Question',question),make('strong','','Poll Options'),fields,add,multi);
   if(host.classList.contains('is-classconnect-live'))form.append(make('small','','Changing the poll starts a new vote.'));
   form.append(actions);dlg.append(form);dlg.setAttribute('aria-label','Edit Live Poll');(document.fullscreenElement||document.body).append(dlg);dlg.showModal();
   dlg.addEventListener('close',()=>dlg.remove(),{once:true});
   for(const type of ['pointerdown','click','keydown'])dlg.addEventListener(type,e=>e.stopPropagation());
   form.onsubmit=e=>{e.preventDefault();const inputs=[question,...fields.querySelectorAll('input')];const invalid=inputs.find(input=>!input.value.trim());if(invalid){invalid.focus();return;}
-   apply({prompt:question.value.trim(),options:inputs.slice(1).map(i=>i.value.trim()),multiple:multiple.checked});dlg.close();
+   apply({prompt:question.value.trim(),options:inputs.slice(1).map(i=>i.value.trim()),multiple:multiple.getAttribute('aria-checked')==='true'});dlg.close();
   };
  };
  api.setup=tile=>{
