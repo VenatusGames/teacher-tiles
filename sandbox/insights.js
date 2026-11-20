@@ -1,4 +1,4 @@
-import {createRankings} from './overview-rankings.js?v=20261119-user-cards';
+import {createRankings} from './overview-rankings.js?v=20261119-ranked-tiles';
 import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-chart.js?v=20261119-insights2';
 
 const artwork = {
@@ -79,7 +79,11 @@ export function createInsights(call) {
   }
   const status = root.querySelector('#insights-status');
   const refresh = document.getElementById('insights-refresh');
-  const rankings = createRankings(root.querySelector('.overview-rankings'));
+  const rankings = createRankings(root.querySelector('.overview-rankings'),async () => {
+    const {data} = await call('getDeveloperInsights',{view:'topActiveUsers'});
+    if (!Array.isArray(data?.active)) throw new Error('Ranking unavailable');
+    return data.active;
+  });
   const activity = root.querySelector('.overview-activity');
   const members = root.querySelector('.overview-memberships');
   let snapshot = null, busy = false, generation = 0, failed = false;

@@ -29,6 +29,7 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   if(window.TeacherTilesThanksgiving?.types.has(type))TeacherTilesHalloween.guard(m,'Thanksgiving');
   delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
+  if(!boardState&&['respond','wordcloud','presentation'].includes(type))window.TeacherTilesBoardSessions?.tileReady?.(m);
   return m;
 }
 
