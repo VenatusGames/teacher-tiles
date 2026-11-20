@@ -3,7 +3,6 @@ import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-
 const artwork = {
   boards: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h4v8H7zm8 0h2m-2 4h2"/>',
   ticket: '<path d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4Z"/><path d="M15 8v2m0 4v2"/>',
-  progress: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
   accounts: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5"/>',
   online: '<path d="M2 12h5l3-7 4 14 3-7h5"/>',
   day: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 5 2 2 5-4"/>',
@@ -11,12 +10,11 @@ const artwork = {
   trial: '<path d="M6 3h12M6 21h12M7 3v3c0 3 3 5 5 6-2 1-5 3-5 6v3m10-18v3c0 3-3 5-5 6 2 1 5 3 5 6v3"/>',
   org: '<path d="M3 21h18M5 21V4h9v17m0-12h5v12M8 8h3m-3 4h3m-3 4h3"/>',
   refresh: '<path d="M20 4v6h-6M4 20v-6h6M5 9a7.5 7.5 0 0 1 13-4l2 5M4 14l2 5a7.5 7.5 0 0 0 13-4"/>',
-  arrow: '<path d="m9 5 7 7-7 7"/>'
 };
 const icon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${artwork[key]}</svg>`;
 const subscriptions = {
   paid: ['Paid', 'paidSubscribers', 'Personal paid subscriptions'],
-  trial: ['Trials', 'trialSubscribers', 'Includes trials, free overrides, and developer previews'],
+  trial: ['Trials', 'trialSubscribers', 'Active personal billing trials'],
   org: ['Organization Seats', 'orgSubscribers', 'Members receiving premium through their organization']
 };
 const ranges = [['1','24 Hours'], ['7','7 Days'], ['30','30 Days']];
@@ -41,29 +39,31 @@ function controls(label, options, key, selection) {
 export function createInsights(call) {
   const root = document.getElementById('developer-insights');
   root.innerHTML = `
-    <section class="overview-panel overview-queue" aria-labelledby="review-heading">
-      <header class="overview-heading"><div><h2 id="review-heading">Review &amp; Support</h2>
-        <p id="insights-status" role="status"></p></div>
-        <button type="button" class="overview-refresh" id="insights-refresh">${icon('refresh')} Refresh Insights</button></header>
-      <div class="overview-queue-items"></div>
-    </section>
-    <div class="overview-metrics"></div>
+    <div class="overview-heading">
+      <p id="insights-status" role="status"></p>
+      <button type="button" class="overview-refresh" id="insights-refresh">${icon('refresh')} Refresh Insights</button>
+    </div>
+    <div class="overview-metrics" role="group" aria-label="Overview Metrics">
+      <button type="button" class="overview-metric overview-shortcut" data-accent="boards" data-destination="templates">
+        <span class="overview-metric-label"><i class="overview-symbol">${icon('boards')}</i>Boards to Review</span>
+        <strong data-stat="approvalQueue">—</strong>
+        <span class="overview-detail">Community templates awaiting manual approval</span>
+      </button>
+      <button type="button" class="overview-metric overview-shortcut" data-accent="ticket" data-destination="bugs">
+        <span class="overview-metric-label"><i class="overview-symbol">${icon('ticket')}</i>Open Tickets</span>
+        <span class="overview-ticket-counts">
+          <span><strong data-stat="reportedTickets">—</strong>Reported</span>
+          <span><strong data-stat="inProgressTickets">—</strong>In Progress</span>
+        </span>
+        <span class="overview-detail">Closed tickets excluded</span>
+      </button>
+    </div>
     <div class="overview-charts">
       <article class="overview-panel overview-activity" aria-label="User Activity"></article>
       <article class="overview-panel overview-memberships" aria-label="Subscriptions"></article>
     </div>`;
-  const queue = root.querySelector('.overview-queue-items');
-  for (const [key, title, route, art] of [
-    ['approvalQueue','Boards Awaiting Review','templates','boards'],
-    ['reportedTickets','New Tickets','bugs','ticket'],
-    ['inProgressTickets','Tickets in Progress','bugs','progress']
-  ]) {
-    const button = node('button', 'overview-queue-item');
-    button.type = 'button';
-    button.dataset.accent = art;
-    button.innerHTML = `<i class="overview-symbol">${icon(art)}</i><span>${title}</span><strong data-stat="${key}">—</strong>${icon('arrow')}`;
-    button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${route}"]`)?.click();
-    queue.append(button);
+  for (const button of root.querySelectorAll('[data-destination]')) {
+    button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${button.dataset.destination}"]`)?.click();
   }
   for (const [key, title, detail, art] of [
     ['total','Total Accounts','Enabled accounts','accounts'],
@@ -104,6 +104,7 @@ export function createInsights(call) {
     draw(activity,daily ? dailySeries(data,days) : snapshotSeries(data,'online',days),state.activityStyle,daily ? 'Daily Users' : 'Online Users');
 
     members.replaceChildren(node('h2','','Subscriptions'));
+    const billing = snapshot?.subscriptionStatsVersion === 2 ? snapshot : null;
     const types = node('div','overview-types');
     types.setAttribute('role','group');
     types.setAttribute('aria-label','Subscription History');
@@ -112,7 +113,7 @@ export function createInsights(call) {
       b.type = 'button';
       Object.assign(b.dataset,{control:'type',value:type,accent:type});
       b.setAttribute('aria-pressed',String(type === state.type));
-      b.innerHTML = `${icon(type)}<span>${title}</span><strong>${count(snapshot?.[key])}</strong>`;
+      b.innerHTML = `${icon(type)}<span>${title}</span><strong>${count(billing?.[key])}</strong>`;
       types.append(b);
     }
     const [title,key,detail] = subscriptions[state.type];
@@ -120,8 +121,8 @@ export function createInsights(call) {
     const tools = node('div','overview-chart-controls');
     tools.append(controls('Subscription Time Range',ranges,'subscriptionDays',state.subscriptionDays),
       controls('Subscription Chart Style',styles,'subscriptionStyle',state.subscriptionStyle));
-    members.append(types,node('p','overview-context',detail),tools);
-    draw(members,snapshotSeries(data,key,Number(state.subscriptionDays)),state.subscriptionStyle,title);
+    members.append(types,node('p','overview-context',snapshot && !billing ? 'Updated subscription statistics are pending.' : detail),tools);
+    draw(members,snapshotSeries(billing || {asOf:data.asOf},key,Number(state.subscriptionDays)),state.subscriptionStyle,title);
   }
   function render() {
     for (const stat of root.querySelectorAll('[data-stat]')) stat.textContent = count(snapshot?.[stat.dataset.stat]);

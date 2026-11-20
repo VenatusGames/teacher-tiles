@@ -34,18 +34,29 @@
 .overview-refresh { border: 1px solid var(--line); background: var(--soft); padding: 8px 12px; border-radius: 9px; font-weight: 600 }
 .overview-refresh svg { width: 16px; height: 16px }
 .overview-refresh:disabled { opacity: .65; cursor: wait }
-.overview-metrics, .overview-queue-items, .overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
-.overview-metrics { margin: 16px 0 }
+.overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
+.overview-metrics {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,174px),1fr));
+  gap: 10px; margin: 10px 0 16px;
+}
+#developer-insights .overview-metrics > .overview-metric { padding: 12px 14px; text-align: left }
+.overview-metric-label { font-size: 14px; font-weight: 650; gap: 7px }
+.overview-metrics .overview-symbol { width: 26px; height: 26px; border-radius: 8px }
+.overview-metrics .overview-symbol svg { width: 16px; height: 16px }
+.overview-metrics .overview-metric strong { margin: 5px 0 1px; font-size: 26px; font-variant-numeric: tabular-nums }
+.overview-shortcut { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start }
+#developer-insights .overview-shortcut:hover { border-color: var(--accent) }
+.overview-detail, .overview-ticket-counts { font-size: 12px; line-height: 1.4; color: var(--muted) }
+.overview-ticket-counts { display: flex; flex-wrap: wrap; gap: 0 12px }
+.overview-ticket-counts > span + span { border-inline-start: 1px solid var(--edge); padding-inline-start: 12px }
+.overview-ticket-counts strong { color: var(--ink) }
+.overview-ticket-counts + .overview-detail { margin-top: 3px }
 #developer-insights .overview-metric { background: linear-gradient(115deg,var(--tint),var(--surface) 90%); border-color: var(--edge) }
 .overview-metric-label h3 { font-size: 14px; margin: 0 }
 .overview-metric strong { display: block; margin: 9px 0 2px; font-size: clamp(24px,3vw,36px); line-height: 1.2 }
 .overview-symbol { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 10px; background: color-mix(in srgb,var(--accent) 18%,var(--surface)); color: color-mix(in srgb,var(--accent) 75%,var(--ink)) }
 .overview-symbol svg { width: 20px; height: 20px }
-.overview-queue-item { display: flex; align-items: center; gap: 10px; padding: 13px; text-align: left; background: var(--tint); border: 1px solid var(--edge); border-radius: 12px }
-.overview-queue-item:hover, .overview-type:hover { border-color: var(--accent) }
-.overview-queue-item span { flex: 1; font-weight: 650; font-size: 13px }
-.overview-queue-item strong { font-size: 22px; font-variant-numeric: tabular-nums }
-.overview-queue-item > svg { width: 12px; height: 12px; flex: none }
+.overview-type:hover { border-color: var(--accent) }
 .overview-charts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 16px }
 .overview-charts > article { display: grid; grid-row: span 6; grid-template-rows: subgrid; align-items: start }
 .overview-types { gap: 6px }
@@ -78,11 +89,9 @@
   .overview-charts > article { grid-row: auto; grid-template-rows: auto; gap: 12px }
 }
 @media(max-width:760px) {
-  .overview-queue-items { grid-template-columns: 1fr; gap: 7px }
-  .overview-queue-item { padding: 8px 10px }
   #developer-insights .overview-panel, #developer-insights .overview-metric { padding: 12px }
   .overview-metrics { gap: 6px }
-  .overview-metric-label { align-items: flex-start; flex-direction: column; gap: 5px }
+  .overview-metric-label { gap: 5px }
   .overview-metric-label h3 { font-size: 12px }
   .overview-type { padding: 8px }
   .overview-type svg { grid-row: 2; align-self: end }
