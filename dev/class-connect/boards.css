@@ -24,6 +24,12 @@
 .cc-student-board>header .cc-session-back{display:none!important}
 .cc-student-board>header .cc-session-fullscreen{left:auto;right:14px}
 
+.cc-session-dialog.cc-switch-dialog{width:min(460px,calc(100vw - 28px))}
+.cc-switch-copy{margin:0;color:#4d5a70;font-size:15px;line-height:1.55;overflow-wrap:anywhere}
+.cc-switch-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.cc-switch-actions .cc-switch-confirm{background:#a93655;border-color:#a93655;color:white}
+.cc-switch-actions .cc-switch-confirm:hover{background:#8a2944}
+.cc-switch-dialog>.cc-session-status:empty{display:none}
 .cc-presentation-options{display:grid;gap:16px}
 .cc-presentation-options>button:not(.cc-tool-card){display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:20px;font-size:17px}
 .cc-presentation-options:not(.cc-tool-grid) small{font-size:12px;font-weight:400;color:#728097}
@@ -58,3 +64,31 @@
 .cc-watch-only .cc-lock-notice{z-index:2}
 .cc-watch-only .cc-session-stage{pointer-events:none}
 .cc-watch-only.cc-student-board>header .cc-session-back{display:grid!important}
+
+/* Align the action with the input itself, below its label. */
+.cc-wordcloud-form-card{--word-control-height:clamp(52px,7vw,78px)}
+.cc-wordcloud-form-card form:not(.respond-form) input,.cc-wordcloud-form-card form:not(.respond-form) button{
+ box-sizing:border-box;height:var(--word-control-height);min-height:var(--word-control-height);padding:6px 16px
+}
+.cc-session-dialog.cc-session-pages[open]{display:flex;flex-direction:column;padding:68px 16px 14px;align-items:stretch}
+.cc-panel-page{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(0,1fr);gap:12px}
+.cc-panel-page:not([data-count="1"]){grid-template-columns:repeat(2,minmax(0,1fr))}
+.cc-panel-cell{min-width:0;min-height:0;overflow:auto;display:grid;align-items:safe center;justify-items:center;position:relative}
+.cc-panel-cell[hidden],.cc-page-nav[hidden],.cc-session-pages button[hidden]{display:none}
+.cc-panel-page:not([data-count="1"]) .cc-panel-cell{border:1px solid #dbe2ed;background:#fff;border-radius:16px;padding:clamp(8px,1.4vw,20px)}
+.cc-panel-page:not([data-count="1"]) .cc-wordcloud-symbol{display:none}
+.cc-panel-page:not([data-count="1"]) .cc-wordcloud-form-card{--word-control-height:48px}
+.cc-panel-page:not([data-count="1"]) h1{font-size:clamp(18px,2.5vw,32px);margin:0 0 6px}
+.cc-panel-page:not([data-count="1"]) form{margin-top:10px}
+.cc-panel-page:not([data-count="1"]) input{font-size:clamp(16px,2vw,22px)}
+.cc-page-nav{display:flex;gap:12px;align-items:center;justify-content:center;padding:8px 10px;font:600 13px Inter,system-ui}
+.cc-session-dialog.cc-session-pages.is-deck-page{padding:0;background:black}
+.cc-session-pages.is-deck-page .cc-page-nav{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);border-radius:12px;background:#ffffffed;color:#222;z-index:6}
+.cc-panel-cell>.cc-presentation-viewer[open]{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0}
+.cc-session-pages .cc-wordcloud-back{z-index:4}
+@media(max-width:650px){.cc-panel-page:not([data-count="1"]) form{flex-direction:column;align-items:stretch}.cc-panel-page:not([data-count="1"]) .cc-panel-cell{padding:8px}.cc-panel-page{gap:6px}}
+
+.cc-wordcloud-form-card form:not(.respond-form){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.cc-wordcloud-form-card form:not(.respond-form) button{width:100%}
+@media(max-width:440px){.cc-wordcloud-form-card form:not(.respond-form){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.cc-panel-page:not([data-count="1"]) .cc-wordcloud-form-card form:not(.respond-form){grid-template-columns:minmax(0,1fr)}}

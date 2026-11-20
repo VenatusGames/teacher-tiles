@@ -1,8 +1,8 @@
-import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-slide-controls';
+import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-live-switch';
 // One live document per viewer, independent of how many interactive tiles are on the slide.
-export function createInteractionChannel({room,sessionId,deck,credentials,classId,answered=[]}){
+export function createInteractionChannel({room,sessionId,deck,credentials,classId,route={},answered=[]}){
  let current=-1,data=null,off=null,source='',generation=0,closed=false,problem='';
- const listeners=new Set(),sent=new Set(answered);
+ const listeners=new Set(),sent=answered instanceof Set?answered:new Set(answered);
  const emit=()=>{for(const fn of listeners)fn();};
  const onSlide=id=>!closed&&deck.slides[current]?.id===id;
  const teacherEntry=id=>data?.entries?.find(e=>e.index===current&&e.elementId===id);
@@ -49,7 +49,7 @@ export function createInteractionChannel({room,sessionId,deck,credentials,classI
  };
  if(classId)api.display=(slideId,elementId,control,enabled)=>{
   if(!onSlide(slideId))throw Error('This slide is no longer active.');
-  return call({action:'displayResults',classId,sessionId,slideId,elementId,control,enabled});
+  return call({action:'displayResults',...route,classId,sessionId,slideId,elementId,control,enabled});
  };
  if(credentials)api.submit=async(slideId,elementId,input)=>{
   if(!onSlide(slideId))throw Error('Your teacher has moved to another slide.');

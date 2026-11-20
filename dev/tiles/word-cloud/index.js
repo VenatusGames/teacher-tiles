@@ -32,7 +32,7 @@ function setup(tile){
  const paint=()=>{if(respond)TeacherTilesRespond.list(stage,words,true);else render(stage,words);empty.hidden=words.length>0;total.textContent=respond?(words.length?words.length+' responses':''):words.length?words.reduce((sum,w)=>sum+w.count,0)+' words shared':'';};
  tile._wordCloudUpdate=rows=>{words=respond?(rows||[]):clean(rows);paint();};
  tile._wordCloudInfo=()=>({prompt:prompt.value.trim()||(respond?'What do you think?':'Share a word with your class')});
- tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live;if(respond)empty.querySelector('small').textContent=live?'Waiting for responses…':'Start a ClassConnect session to begin';tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label','ClassConnect '+(respond?'Respond!':'word cloud')+(live?' · Live':''));};
+ tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live&&!tile._classConnectSession?.grouped;if(respond)empty.querySelector('small').textContent=live?'Waiting for responses…':'Start a ClassConnect session to begin';tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label','ClassConnect '+(respond?'Respond!':'word cloud')+(live?' · Live':''));};
  connect.onclick=()=>window.TeacherTilesBoardSessions.wordcloud(tile).catch(e=>status.textContent=e.message);
  prompt.addEventListener('change',event=>{
   if(respond&&event.isTrusted&&window.ClassConnectPolicy&&!window.ClassConnectPolicy.student)tile._wordCloudInteractionId=crypto.randomUUID();
