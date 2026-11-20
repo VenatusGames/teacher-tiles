@@ -11,7 +11,7 @@ async function loadBoardSource(){
  }
  throw Error('The session board files are unavailable. Please refresh and try again.');
 }
-export async function boardFrame(container,{teacher,mode,allowedTypes,student,roster,onChange,onInput,onProfile,onWord,signal}){
+export async function boardFrame(container,{teacher,mode,allowedTypes,student,roster,answered,onChange,onInput,onProfile,onWord,signal}){
  source??=loadBoardSource().catch(e=>{source=null;throw e;});
  const html=await source;if(signal?.aborted||!container.isConnected)throw Error('Board closed.');
  const doc=new DOMParser().parseFromString(html,'text/html');
@@ -49,9 +49,10 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  win.TeacherTilesTileMenu?.refresh();
  win.TeacherTilesBoard.clear();win.TeacherTilesBoard.setActiveBoardId('');
  policy.seedRoster(roster);
+ policy.answered=new Set(answered||[]);
  policy.submitWord=(tile,input)=>onWord?.({tileId:tile.dataset.boardObjectId,tabId:tile._wordCloudInteractionId||tile.dataset.boardObjectId,...input});
  let responses=null,responseSignatures=new WeakMap();
- const paintResponses=()=>{if(!teacher||mode!=='controlled')return;for(const tile of win.document.querySelectorAll('.wordcloud-module')){const id=tile.dataset.boardObjectId,tabId=tile._wordCloudInteractionId||tile.dataset.boardObjectId,entry=responses?.entries?.find(e=>e.tileId===id&&e.tabId===tabId),words=entry?responses.activities?.[entry.key]?.words||[]:[],signature=JSON.stringify([!!entry,words]);if(responseSignatures.get(tile)===signature)continue;responseSignatures.set(tile,signature);tile._wordCloudUpdate?.(words);tile._wordCloudStatus?.(entry?'Live':'Sharing with students…',!!entry);tile.querySelector('.wordcloud-prompt').disabled=false;}};
+ const paintResponses=()=>{if(!teacher||mode!=='controlled')return;for(const tile of win.document.querySelectorAll('.wordcloud-module')){const id=tile.dataset.boardObjectId,tabId=tile._wordCloudInteractionId||tile.dataset.boardObjectId,entry=responses?.entries?.find(e=>e.tileId===id&&e.tabId===tabId),words=entry?responses.activities?.[entry.key]?.[entry.kind==='respond'?'answers':'words']||[]:[],signature=JSON.stringify([!!entry,words]);if(responseSignatures.get(tile)===signature)continue;responseSignatures.set(tile,signature);tile._wordCloudUpdate?.(words);tile._wordCloudStatus?.(entry?'Live':'Sharing with students…',!!entry);tile.querySelector('.wordcloud-prompt').disabled=false;}};
  const responseObserver=new MutationObserver(paintResponses);if(teacher&&mode==='controlled')responseObserver.observe(win.document.getElementById('workspace'),{childList:true,subtree:true});
  if(student){const b=win.document.createElement('button');b.id='cc-frame-profile';b.setAttribute('aria-label','Back to Profile');b.title='Back to Profile';if(student.image){const img=win.document.createElement('img');img.src=student.image;img.alt='';b.append(img);}else{const emoji=win.document.createElement('span');emoji.textContent=student.emoji||student.initials||student.name.slice(0,1);emoji.className='cc-board-avatar';emoji.style.background=`hsl(${Number(student.hue)||200} 65% 90%)`;b.append(emoji);}b.append(win.document.createTextNode(student.name));b.onclick=onProfile;win.document.body.append(b);}
  let viewport=null;
