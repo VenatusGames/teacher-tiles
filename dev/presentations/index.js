@@ -144,7 +144,42 @@ function paintSlide(host,data,theme,interactive=false,resolveAsset=asset,liveTil
  }
 }
 function renderCanvas(){closeColorPopup();if(!deck)return;finishText();paintSlide(canvas,slide(),deck.theme,!play);$('.pres-current-slide',root).textContent='Slide '+(slideIndex+1)+' of '+deck.slides.length;$('.pres-play-controls span',root).textContent=(slideIndex+1)+' / '+deck.slides.length;updateTools();}
-function renderSlides(){const list=$('.pres-slide-list',root);list.replaceChildren();deck.slides.forEach((s,i)=>{const row=document.createElement('div');row.className='pres-slide-entry';wireSlideDrag(row,i,list);row.classList.toggle('is-active',i===slideIndex);const thumb=button('','Open slide '+(i+1));thumb.className='pres-slide-thumb';thumb.setAttribute('aria-current',String(i===slideIndex));const preview=document.createElement('div');preview.className='pres-slide';paintSlide(preview,s,deck.theme);thumb.append(preview);thumb.onclick=()=>{slideIndex=i;select();renderEditor()};const controls=document.createElement('div');controls.className='pres-slide-actions';const n=document.createElement('span');n.textContent=String(i+1).padStart(2,'0');controls.append(n);for(const [text,label,fn]of [['↑','Move slide up',()=>moveSlide(i,-1)],['↓','Move slide down',()=>moveSlide(i,1)],['⧉','Duplicate slide',()=>duplicateSlide(i)],['×','Delete slide',()=>deleteSlide(i)]]){const b=button(text,label);b.onclick=fn;b.disabled=label==='Move slide up'&&i===0||label==='Move slide down'&&i===deck.slides.length-1||label==='Delete slide'&&deck.slides.length===1;controls.append(b)}row.append(thumb,controls);list.append(row)});const add=button('','Add slide');add.className='pres-add-slide';add.dataset.action='add-slide';add.innerHTML=icons.plus+'<span>New Slide</span>';list.append(add);$('.pres-slide-count',root).textContent=deck.slides.length+' slides';}
+const slideList=$('.pres-slide-list',root);
+function labelSlideRow(row,i){
+ row.dataset.slideIndex=i;
+ row.querySelector('.pres-slide-number').textContent=String(i+1).padStart(2,'0');
+ row.querySelector('.pres-slide-thumb').setAttribute('aria-label','Open slide '+(i+1));
+ row.querySelector('[aria-label="Move slide up"]').disabled=i===0;
+ row.querySelector('[aria-label="Move slide down"]').disabled=i===deck.slides.length-1;
+}
+function renderSlides(){
+ cancelSlideGesture();
+ const fragment=document.createDocumentFragment();
+ deck.slides.forEach((s,i)=>{
+  const row=document.createElement('div'),index=()=>Number(row.dataset.slideIndex);
+  row.className='pres-slide-entry';row.classList.toggle('is-active',i===slideIndex);
+  const thumb=button('');thumb.className='pres-slide-thumb';thumb.setAttribute('aria-current',String(i===slideIndex));
+  const preview=document.createElement('div');preview.className='pres-slide';paintSlide(preview,s,deck.theme);thumb.append(preview);
+  thumb.onclick=()=>{slideIndex=index();select();renderEditor();};
+  const controls=document.createElement('div');controls.className='pres-slide-actions';
+  const grip=document.createElement('span');grip.className='pres-slide-grip';grip.title='Drag to reorder';
+  grip.innerHTML=svg('<path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3"/>');
+  const number=document.createElement('span');number.className='pres-slide-number';controls.append(grip,number);
+  for(const [text,label,fn] of [
+   ['↑','Move slide up',()=>moveSlide(index(),-1)],['↓','Move slide down',()=>moveSlide(index(),1)],
+   ['+','Add slide below',()=>addSlideMenu(s.id)],['⧉','Duplicate slide',()=>duplicateSlide(index())],['×','Delete slide',()=>deleteSlide(index())]
+  ]){
+   const action=button(text,label);action.title=label;action.onclick=fn;
+   if(label==='Add slide below')action.dataset.addBelow='';
+   action.disabled=(label==='Delete slide'&&deck.slides.length===1)||(['Add slide below','Duplicate slide'].includes(label)&&deck.slides.length>=500);
+   controls.append(action);
+  }
+  row.append(thumb,controls);labelSlideRow(row,i);fragment.append(row);
+ });
+ const add=button('','Add slide');add.className='pres-add-slide';add.dataset.action='add-slide';
+ add.innerHTML=icons.plus+'<span>New Slide</span>';fragment.append(add);slideList.replaceChildren(fragment);
+ $('.pres-slide-count',root).textContent=deck.slides.length+' slides';
+}
 function fit(){if(!deck)return;const inset=play?0:48;canvas.style.width=Math.max(120,Math.min(area.clientWidth-inset,(area.clientHeight-inset)*16/9))+'px';applyView();}
 new ResizeObserver(fit).observe(area);
 function renderEditor(){toolbar.querySelectorAll('select').forEach(s=>s._formatControl?.close());transitionDialog.hidden=true;transitions.cancel(canvas);title.value=deck.title;renderCanvas();renderSlides();fit();}
@@ -214,8 +249,93 @@ function workspacePointer(event){
 function applyView(){canvas.style.transform=play?'none':'translate('+pan.x+'px,'+pan.y+'px) scale('+zoom+')';positionObjectTools();}
 function deleteObjects(){if(!selection.size)return;finishText();checkpoint();slide().elements=slide().elements.filter(e=>!selection.has(e.id));select();changed();renderEditor();}
 function duplicateObjects(source=chosen()){if(!source.length)return;finishText();if(slide().elements.length+source.length>100){say('This slide can contain up to 100 objects.',true);return;}checkpoint();const clones=source.map(e=>({...copy(e),id:id(),x:Math.min(960-e.w,e.x+20),y:Math.min(540-e.h,e.y+20)}));slide().elements.push(...clones);select(clones.map(e=>e.id));changed();renderEditor();}
-function reorderSlide(from,to){if(from===to)return;finishText();checkpoint();const active=slide().id,[moved]=deck.slides.splice(from,1);deck.slides.splice(to,0,moved);slideIndex=deck.slides.findIndex(s=>s.id===active);changed();renderEditor();}
-function wireSlideDrag(row,i,list){row.draggable=true;row.dataset.slideIndex=i;row.addEventListener('dragstart',event=>{finishText();slideDrag=i;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('application/x-teachertiles-slide',String(i));row.classList.add('is-dragging');});row.addEventListener('dragend',()=>{slideDrag=-1;list.querySelectorAll('.is-drop-target,.is-dragging').forEach(n=>n.classList.remove('is-drop-target','is-dragging'));});row.addEventListener('dragover',event=>{if(slideDrag<0)return;event.preventDefault();event.dataTransfer.dropEffect='move';list.querySelectorAll('.is-drop-target').forEach(n=>n.classList.remove('is-drop-target'));row.classList.add('is-drop-target');});row.addEventListener('drop',event=>{if(slideDrag<0)return;event.preventDefault();event.stopPropagation();reorderSlide(slideDrag,i);slideDrag=-1;});}
+// Keep thumbnails mounted throughout a reorder, including on drop. Their tile previews can be expensive.
+function reorderSlide(rows,from,slot){
+ const to=slot>from?slot-1:slot;
+ if(to===from)return;
+ const active=slide().id;
+ checkpoint();
+ const [moved]=deck.slides.splice(from,1);deck.slides.splice(to,0,moved);
+ slideList.insertBefore(rows[from],rows[slot]||slideList.querySelector('.pres-add-slide'));
+ Array.from(slideList.querySelectorAll('.pres-slide-entry')).forEach(labelSlideRow);
+ slideIndex=deck.slides.findIndex(s=>s.id===active);changed();
+}
+let cancelSlideGesture=()=>{};
+slideList.addEventListener('dragstart',event=>event.preventDefault());
+slideList.addEventListener('pointerdown',event=>{
+ const row=event.target.closest('.pres-slide-entry'),grip=event.target.closest('.pres-slide-grip');
+ if(!event.isPrimary||event.button!==0||!row||(!grip&&(!event.target.closest('.pres-slide-thumb')||event.pointerType==='touch')))return;
+ cancelSlideGesture();
+ const pointer=event.pointerId,startX=event.clientX,startY=event.clientY;
+ let x=startX,y=startY,frame=0,rows,midpoints,slot=-1,marker,rect,previousTime=0;
+ function position(){
+  const inList=x>=rect.left-8&&x<=rect.right+8&&y>=rect.top-8&&y<=rect.bottom+8;
+  const offset=y-rect.top+slideList.scrollTop;
+  let low=0,high=midpoints.length;
+  while(low<high){const mid=(low+high)>>>1;if(offset<midpoints[mid])high=mid;else low=mid+1;}
+  const next=inList?low:-1;
+  if(next!==slot){
+   if(marker)delete marker.dataset.insert;
+   slot=next;marker=null;
+   if(slot>=0&&slot!==slideDrag&&slot!==slideDrag+1){
+    marker=rows[Math.min(slot,rows.length-1)];marker.dataset.insert=slot===rows.length?'after':'before';
+   }
+  }
+  return inList;
+ }
+ function paint(time){
+  frame=0;
+  const elapsed=Math.min(32,previousTime?time-previousTime:16);previousTime=time;
+  if(!position())return;
+  const speed=Math.max(0,1-(rect.bottom-y)/45)-Math.max(0,1-(y-rect.top)/45);
+  if(speed){
+   const before=slideList.scrollTop;slideList.scrollTop+=speed*elapsed*.65;
+   if(before!==slideList.scrollTop){position();frame=requestAnimationFrame(paint);}
+  }
+ }
+ function schedule(){if(rows&&!frame)frame=requestAnimationFrame(paint);}
+ function move(e){
+  if(e.pointerId!==pointer)return;
+  x=e.clientX;y=e.clientY;
+  if(!rows){
+   if(Math.hypot(x-startX,y-startY)<5)return;
+   finishText();rows=Array.from(slideList.querySelectorAll('.pres-slide-entry'));
+   slideDrag=rows.indexOf(row);rect=slideList.getBoundingClientRect();
+   midpoints=rows.map(r=>{const box=r.getBoundingClientRect();return box.top-rect.top+slideList.scrollTop+box.height/2;});
+   slideList.setPointerCapture(pointer);row.classList.add('is-dragging');slideList.classList.add('is-reordering');
+  }
+  e.preventDefault();schedule();
+ }
+ function cleanup(){
+  window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);
+  window.removeEventListener('pointercancel',cancel);window.removeEventListener('blur',cleanup);
+  window.removeEventListener('keydown',escape,true);slideList.removeEventListener('scroll',schedule);
+  if(frame)cancelAnimationFrame(frame);
+  if(marker)delete marker.dataset.insert;
+  row.classList.remove('is-dragging');slideList.classList.remove('is-reordering');
+  if(slideList.hasPointerCapture(pointer))slideList.releasePointerCapture(pointer);
+  slideDrag=-1;cancelSlideGesture=()=>{};
+ }
+ function end(e){
+  if(e.pointerId!==pointer)return;
+  const from=slideDrag;
+  if(rows){
+   x=e.clientX;y=e.clientY;position();
+   const suppress=click=>{click.preventDefault();click.stopImmediatePropagation();};
+   slideList.addEventListener('click',suppress,true);setTimeout(()=>slideList.removeEventListener('click',suppress,true),0);
+  }
+  cleanup();
+  if(rows&&slot>=0)reorderSlide(rows,from,slot);
+ }
+ function cancel(e){if(e.pointerId===pointer)cleanup();}
+ function escape(e){if(e.key==='Escape'){e.stopImmediatePropagation();cleanup();}}
+ cancelSlideGesture=cleanup;
+ window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);
+ window.addEventListener('pointercancel',cancel);window.addEventListener('blur',cleanup);
+ window.addEventListener('keydown',escape,true);
+ // A native wheel scroll during a drag changes the target even if the pointer stays still.
+ slideList.addEventListener('scroll',schedule);
+});
 
 function alter(fn){if(!current())return;finishText();checkpoint();chosen().forEach(fn);changed();renderEditor();}
 function moveSlide(i,offset){if(i+offset<0||i+offset>=deck.slides.length)return;checkpoint();const [s]=deck.slides.splice(i,1);deck.slides.splice(i+offset,0,s);slideIndex=i+offset;changed();renderEditor();}
@@ -366,7 +486,7 @@ const actions={classconnect:connectPresentation,profile:async()=>{await close();
 function layer(direction){if(!current())return;finishText();checkpoint();const objects=slide().elements;if(direction>0){for(let i=objects.length-2;i>=0;i--)if(selection.has(objects[i].id)&&!selection.has(objects[i+1].id))[objects[i],objects[i+1]]=[objects[i+1],objects[i]];}else{for(let i=1;i<objects.length;i++)if(selection.has(objects[i].id)&&!selection.has(objects[i-1].id))[objects[i],objects[i-1]]=[objects[i-1],objects[i]];}changed();renderEditor();}
 function history(forward){finishText();const from=forward?redo:undo,to=forward?undo:redo;if(!from.length)return;to.push(JSON.stringify(deck));deck=JSON.parse(from.pop());slideIndex=Math.min(slideIndex,deck.slides.length-1);select();changed();renderEditor();}
 root.addEventListener('click',event=>{if(event.target.closest('.cc-session-dialog'))return;if(play&&!event.target.closest('button,input,select,.pres-play-controls,.pres-embedded-tile')){event.stopPropagation();navigate(1);return;}const action=event.target.closest('[data-action]')?.dataset.action;if(action&&actions[action])Promise.resolve().then(actions[action]).catch(error=>{if(status.textContent!=='Not synced')say(error.message,true)});});
-root.addEventListener('pointerdown',event=>{if(!layoutDialog.hidden&&!layoutDialog.contains(event.target)&&!event.target.closest('[data-action=add-slide]'))layoutDialog.hidden=true;if(editing&&!event.target.closest('.pres-object-tools,.pres-rich,.pres-size-tools'))finishText();if(!menu.contains(event.target))menu.hidden=true;event.stopPropagation();});
+root.addEventListener('pointerdown',event=>{if(!layoutDialog.hidden&&!layoutDialog.contains(event.target)&&!event.target.closest('[data-action=add-slide],[data-add-below]'))layoutDialog.hidden=true;if(editing&&!event.target.closest('.pres-object-tools,.pres-rich,.pres-size-tools'))finishText();if(!menu.contains(event.target))menu.hidden=true;event.stopPropagation();});
 root.addEventListener('contextmenu',event=>{event.preventDefault();event.stopPropagation();if(play&&!event.target.closest('button,input,select,.pres-play-controls,.pres-embedded-tile'))navigate(-1);});
 area.addEventListener('pointerdown',workspacePointer);
 area.addEventListener('auxclick',event=>{if(event.button===1)event.preventDefault()});
@@ -557,8 +677,8 @@ function layouts(theme){
   ['Discussion',[head('Let’s discuss'),box(85,165,790,250),t('What do you think?',125,210,700,85,46,true),t('Add a question to start the conversation.',125,325,700,65,26)]]
  ];
 }
-function addSlide(elements=[],themeLayout){if(deck.slides.length>=500){say('This presentation has 500 slides.',true);return;}finishText();checkpoint();deck.slides.splice(slideIndex+1,0,{id:id(),background:'#ffffff',elements,...(themeLayout?{themeLayout}:{})});slideIndex++;select();changed();layoutDialog.hidden=true;renderEditor();}
-function addSlideMenu(){if(deck.theme==='none'){addSlide();return;}layoutDialog.replaceChildren();const head=document.createElement('header'),label=document.createElement('strong'),exit=button('×','Close slide layouts');label.textContent='Choose a slide layout';exit.onclick=()=>layoutDialog.hidden=true;head.append(label,exit);layoutDialog.append(head);const grid=document.createElement('div');grid.className='pres-layout-grid';for(const [name,elements,themeLayout] of [['Blank Slide',[]],...layouts(deck.theme).map(([name,elements],i)=>[name,elements,window.TeacherTilesPresentationThemes.layoutIds[i]])]){const b=button(''),preview=document.createElement('div'),caption=document.createElement('span');b.setAttribute('aria-label','Add '+name);preview.className='pres-slide';paintSlide(preview,{background:'#fff',elements,themeLayout},deck.theme);caption.textContent=name;b.append(preview,caption);b.onclick=()=>addSlide(copy(elements),themeLayout);grid.append(b);}layoutDialog.append(grid);layoutDialog.hidden=false;}
+function addSlide(elements=[],themeLayout,afterId=slide().id){const after=deck.slides.findIndex(s=>s.id===afterId);if(after<0)return;if(deck.slides.length>=500){say('This presentation has 500 slides.',true);return;}finishText();checkpoint();deck.slides.splice(after+1,0,{id:id(),background:'#ffffff',elements,...(themeLayout?{themeLayout}:{})});slideIndex=after+1;select();changed();layoutDialog.hidden=true;renderEditor();slideList.querySelector('.is-active .pres-slide-thumb')?.focus();}
+function addSlideMenu(afterId=slide().id){if(deck.theme==='none'){addSlide([],undefined,afterId);return;}layoutDialog.replaceChildren();const head=document.createElement('header'),label=document.createElement('strong'),exit=button('×','Close slide layouts');label.textContent='Choose a slide layout';exit.onclick=()=>layoutDialog.hidden=true;head.append(label,exit);layoutDialog.append(head);const grid=document.createElement('div');grid.className='pres-layout-grid';for(const [name,elements,themeLayout] of [['Blank Slide',[]],...layouts(deck.theme).map(([name,elements],i)=>[name,elements,window.TeacherTilesPresentationThemes.layoutIds[i]])]){const b=button(''),preview=document.createElement('div'),caption=document.createElement('span');b.setAttribute('aria-label','Add '+name);preview.className='pres-slide';paintSlide(preview,{background:'#fff',elements,themeLayout},deck.theme);caption.textContent=name;b.append(preview,caption);b.onclick=()=>addSlide(copy(elements),themeLayout,afterId);grid.append(b);}layoutDialog.append(grid);layoutDialog.hidden=false;}
 function keyboard(event){
  if(fileOperation){event.preventDefault();return;}
  if(root.hidden||event.target.closest('.cc-session-dialog'))return;const key=event.key.toLowerCase(),mod=event.ctrlKey||event.metaKey,inField=event.target.closest('input,textarea,select,[contenteditable="true"]');

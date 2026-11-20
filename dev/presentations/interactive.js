@@ -6,7 +6,7 @@ const texts={dark:'#17191d',soft:'#5d6470',blue:'#244d78',rose:'#8b4055',white:'
 const fonts={inter:'Inter',lexend:'Lexend',pacifico:'Pacifico',poppins:'Poppins',nunito:'Nunito',quicksand:'Quicksand',oswald:'Oswald',lora:'Lora',merriweather:'Merriweather',playfair:'Playfair Display',caveat:'Caveat',dm:'DM Sans',space:'Space Grotesk',mono:'Roboto Mono',calibri:'Calibri'};
 function mount(host,element,{interaction,slideId}){
  const state=element.tileState||{},data=state.dataset||{},box=make('section','pres-embedded-tile pres-interactive-wordcloud'),title=make('h3','',state.special?.prompt||'Send a word to the Word Cloud'),art=make('div','pres-interactive-cloud-art'),note=make('p','pres-interactive-feedback');
- box.style.background=backgrounds[data.bg]||'#fff';box.style.color=data.bg==='charcoal'?'#f7f8fa':texts[data.text]||'#263249';box.style.setProperty('--module-font','"'+(fonts[data.font]||'Inter')+'", Arial, sans-serif');box.append(title,art,note);host.append(box);
+ box.style.background=backgrounds[data.bg]||'#fff';box.style.color=data.bg==='charcoal'?'#f7f8fa':texts[data.text]||'#263249';box.style.setProperty('--module-font','"'+(fonts[data.font]||'Inter')+'", Arial, sans-serif');box.style.setProperty('--module-bg',box.style.backgroundColor);box.style.setProperty('--module-text',box.style.color);box.append(title,art,note);host.append(box);
  const respond=element.tileType==='respond',teacher=!!interaction?.display;
  let focus=null,focusArt=null,shareButton=null,focusButton=null,respondForm=null;
  if(respond)title.textContent=state.special?.prompt||'What do you think?';
@@ -15,7 +15,10 @@ function mount(host,element,{interaction,slideId}){
  const focused=()=>!!interaction?.focused(slideId,element.id);
  function closeFocus(){if(focus){focus.close();focus.remove();focus=null;focusArt=null;}}
  function control(label,control,enabled){
-  const button=make('button','respond-action',label);button.type='button';
+  const button=make('button','respond-action tt-board-action',label);button.type='button';
+  const paths=control==='share'?'<path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.8"/>':'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>';
+  button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';
+  button.append(make('span','',label));
   button.onclick=async()=>{button.disabled=true;try{await interaction.display(slideId,element.id,control,enabled());}catch(error){note.textContent=error.message;}finally{button.disabled=false;}};
   return button;
  }
@@ -26,7 +29,7 @@ function mount(host,element,{interaction,slideId}){
    const heading=make('h2','',title.textContent);focusArt=make('div','respond-focus-art');
    focus.append(heading,focusArt);
    if(teacher)focus.append(control('Return to Slide','focus',()=>false));
-   else{const back=make('button','respond-action','Back to Profile');back.onclick=()=>box.closest('.cc-presentation-viewer')?.close();focus.append(back);}
+   else{const back=make('button','respond-action tt-board-action','Back to Profile');back.onclick=()=>box.closest('.cc-presentation-viewer')?.close();focus.append(back);}
    focus.addEventListener('cancel',event=>{event.preventDefault();if(teacher)interaction.display(slideId,element.id,'focus',false).catch(error=>note.textContent=error.message);});
    for(const type of ['click','dblclick','contextmenu','pointerdown','keydown','wheel'])focus.addEventListener(type,event=>event.stopPropagation());
    (document.fullscreenElement||document.body).append(focus);focus.showModal();
@@ -45,12 +48,12 @@ function mount(host,element,{interaction,slideId}){
   if(respond){
    const visible=teacher||shared(),rows=visible?answers():[];
    art.hidden=!visible;TeacherTilesRespond.list(art,rows,teacher);
-   if(shareButton){shareButton.textContent=shared()?'Hide Responses':'Show Responses to Students';shareButton.setAttribute('aria-pressed',String(shared()));}
+   if(shareButton){shareButton.lastElementChild.textContent=shared()?'Hide Responses':'Show Responses to Students';shareButton.setAttribute('aria-pressed',String(shared()));}
    note.textContent=interaction?.problem||(!interaction?'Start a ClassConnect session to begin':visible&&!rows.length?'Waiting for responses…':'');
    return;
   }
   const value=interaction?.read(slideId,element.id)||[];TeacherTilesWordCloud.render(art,value);if(interaction?.problem){note.textContent=interaction.problem;return;}if(!busy&&!pending&&!value.length)note.textContent=interaction?'Waiting for words…':'Start a ClassConnect presentation to collect words';else if(!busy&&!pending)note.textContent='';};
- const form=make('form'),input=make('input'),send=make('button','','Send Word');input.type='text';input.maxLength=40;input.required=true;input.autocomplete='off';input.placeholder='Your word…';input.setAttribute('aria-label','Your word');send.type='submit';note.setAttribute('role','status');
+ const form=make('form'),input=make('input'),send=make('button','tt-board-action','Send Word');input.type='text';input.maxLength=40;input.required=true;input.autocomplete='off';input.placeholder='Your word…';input.setAttribute('aria-label','Your word');send.type='submit';note.setAttribute('role','status');
  function button(){const seconds=Math.max(0,Math.ceil((until-performance.now())/1000));send.disabled=busy||seconds>0;send.textContent=seconds?'Send in '+seconds+'s':'Send Word';if(!seconds&&timer){clearInterval(timer);timer=0;}}
  function cooldown(){until=performance.now()+2000;if(!timer)timer=setInterval(button,100);button();}
  if(respond&&interaction?.submit){

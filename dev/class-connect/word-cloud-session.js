@@ -1,5 +1,5 @@
-import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-respond';
-import {openTileSession} from './tile-session-picker.js?v=20261119-respond';
+import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-slide-controls';
+import {openTileSession} from './tile-session-picker.js?v=20261119-slide-controls';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 function connect(tile,classId,name,result,exit){
  let closed=false,ending=false,endRequested=false,off=null,offCloud=null;
@@ -20,9 +20,9 @@ export function openWordCloud(tile){return openTileSession(tile,{getInfo:()=>til
 export function enterWordCloud({token,student,session,getProfile,result}){
  const respond=result.status.mode==='respond';
  const dialog=modal(respond?'Respond!':'Word Cloud');dialog.classList.add('cc-wordcloud-student');dialog.querySelector('header').remove();
- const back=make('button','cc-session-button cc-wordcloud-back','‹ Back to Profile');back.type='button';back.onclick=()=>dialog.close();
+ const back=make('button','tt-board-action cc-wordcloud-back','‹ Back to Profile');back.type='button';back.onclick=()=>dialog.close();
  const card=make('section','cc-wordcloud-form-card'),icon=make('div','cc-wordcloud-symbol');icon.setAttribute('aria-hidden','true');icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11zM8 12h8m-6 3h4"/></svg>';
- const title=make('h1','',(result.prompt&&result.prompt!=='Share a word with your class')?result.prompt:'Send a word to the Word Cloud'),form=make('form'),label=make('label','','Your word'),input=make('input'),submit=make('button','cc-session-button','Send Word'),message=make('p','cc-wordcloud-feedback'),last=make('span','cc-wordcloud-last');
+ const title=make('h1','',(result.prompt&&result.prompt!=='Share a word with your class')?result.prompt:'Send a word to the Word Cloud'),form=make('form'),label=make('label','','Your word'),input=make('input'),submit=make('button','tt-board-action','Send Word'),message=make('p','cc-wordcloud-feedback'),last=make('span','cc-wordcloud-last');
  input.type='text';input.maxLength=40;input.autocomplete='off';input.required=true;input.placeholder='Type a word…';input.setAttribute('aria-label','Your word');label.append(input);submit.type='submit';message.setAttribute('role','status');form.append(label,submit);card.append(icon,title,form,message,last);dialog.append(back,card);
  let off=null,closed=false,busy=false,pending=null,cooldownUntil=0,cooldownTimer=null;
  function updateSubmit(){const remaining=Math.max(0,Math.ceil((cooldownUntil-performance.now())/1000));submit.disabled=busy||remaining>0;submit.textContent=remaining?'Send in '+remaining+'s':'Send Word';if(!remaining&&cooldownTimer){clearInterval(cooldownTimer);cooldownTimer=null;}}

@@ -1,3 +1,4 @@
+import {createUserCard} from './user-card.js';
 import {node} from './overview-chart.js?v=20261119-insights2';
 import {loadTileCatalog} from '../tiles/shared/tile-catalog.js?v=20261020-ui-fixes';
 
@@ -45,6 +46,24 @@ export function createRankings(panel) {
     } else content.textContent = empty;
     group.append(content);
   }
+  function userCards(group,rows,isNewest) {
+    group.querySelector('.overview-user-cards')?.remove();
+    const cards=node(rows?.length?'ol':'p','overview-user-cards');
+    if (!rows?.length) cards.textContent=empty;
+    for (const user of rows || []) {
+      const row=node('li'),card=createUserCard({...user,displayName:user.displayName ?? user.name});
+      const info=card.querySelector('.user-info');
+      const ms=user.activeMs;
+      const minutes=Number.isFinite(ms)?Math.floor(ms/60000):null;
+      const duration=minutes===null?'Awaiting activity':minutes>=60?Math.floor(minutes/60)+' hr '+minutes%60+' min':minutes===0&&ms>0?'<1 min':minutes+' min';
+      const time=node('small','overview-user-stat','Est. Active Time · '+duration);
+      time.title='Estimated from visible-tab check-ins since time tracking began.';
+      const detail=isNewest?'Joined '+shortDate.format(user.createdAt):numbers.format(user.days)+(user.days===1?' active day':' active days');
+      info.append(node('small','overview-user-stat',detail),time);
+      row.append(card);cards.append(row);
+    }
+    group.append(cards);
+  }
   function renderTiles() {
     const rows = current?.tiles || [];
     const label = item => names?.get(item.id) || item.id;
@@ -59,8 +78,8 @@ export function createRankings(panel) {
     empty = data ? 'No activity recorded yet.' : failed || loaded ? 'Rankings unavailable.' : 'Awaiting snapshot…';
     if (!data && dialog.open) dialog.close();
     activeNote.textContent = data?.activePartial ? 'Some leading accounts are no longer enabled. Showing eligible users from the first 12 ranked accounts.' : 'Ranked by distinct days active since tracking began.';
-    list(active,data?.active,item=>item.name,item=>numbers.format(item.days)+(item.days===1?' active day':' active days'));
-    list(newest,data?.newest,item=>item.name,item=>shortDate.format(item.createdAt));
+    userCards(active,data?.active,false);
+    userCards(newest,data?.newest,true);
     renderTiles();
     if (data?.tiles?.length && !names && !fetching) {
       fetching = loadTileCatalog().then(catalog => {

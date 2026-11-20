@@ -156,3 +156,9 @@
 .overview-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px }
 .overview-ranking-dialog .overview-rank-list { margin-top: 12px }
 .overview-rank-close { width: 32px; height: 32px; font-size: 20px }
+
+.overview-user-cards { display:grid; gap:8px; padding:0; margin:8px 0 0; list-style:none; font-size:13px; color:var(--muted) }
+.overview-user-cards .user-card { flex-wrap:nowrap; align-items:flex-start; color:var(--ink); cursor:default }
+.overview-user-cards .user-info strong { display:block; overflow-wrap:anywhere }
+.overview-user-cards .user-crown { vertical-align:middle; margin-inline-start:4px }
+.overview-user-stat { display:block; margin-top:3px; font-size:11px; color:var(--muted) }

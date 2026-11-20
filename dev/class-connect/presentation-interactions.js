@@ -1,4 +1,4 @@
-import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-respond';
+import {call,watchCloud,watchPresentationWords} from './boards.js?v=20261119-slide-controls';
 // One live document per viewer, independent of how many interactive tiles are on the slide.
 export function createInteractionChannel({room,sessionId,deck,credentials,classId,answered=[]}){
  let current=-1,data=null,off=null,source='',generation=0,closed=false,problem='';
