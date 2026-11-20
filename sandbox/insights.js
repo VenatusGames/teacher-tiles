@@ -1,4 +1,4 @@
-import {createRankings} from './overview-rankings.js?v=20261119-ranked-tiles';
+import {createRankings} from './overview-rankings.js?v=20261119-ranking-dialogs';
 import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-chart.js?v=20261119-insights2';
 
 const artwork = {

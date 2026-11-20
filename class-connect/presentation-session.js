@@ -1,10 +1,10 @@
-import {routing,watchPanel} from './tile-group.js?v=20261119-live-switch';
-import {createInteractionChannel} from './presentation-interactions.js?v=20261119-live-switch';
-import {openTileSession} from './tile-session-picker.js?v=20261119-live-switch';
-import {call,active,modal} from './boards.js?v=20261119-live-switch';
+import {routing,watchPanel} from './tile-group.js?v=20261119-attach';
+import {createInteractionChannel} from './presentation-interactions.js?v=20261119-attach';
+import {openTileSession} from './tile-session-picker.js?v=20261119-attach';
+import {call,active,modal} from './boards.js?v=20261119-attach';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
-const root=new URL('../',import.meta.url),version='20261119-split';
+const root=new URL('../',import.meta.url),version='20261119-voting';
 const sourceKey=info=>JSON.stringify(info?.presentation);
 function showStatus(tile,text){let message=tile.querySelector('.presentation-connection-status');if(!message){message=make('p','presentation-connection-status');message.setAttribute('role','status');(tile._classConnectStatusHost||tile.querySelector('.presentation-tile-viewport')).append(message);}message.textContent=text;message.hidden=!text;tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));}
 // A single ordered publisher coalesces rapid navigation and sends only slide indices.
@@ -40,13 +40,13 @@ function controller(tile,classId,name,result,exit){
  });
  if(closed)off?.();else{changed();tile._classConnectRefresh?.();}notify();return api;
 }
-export async function openPresentation(tile,{automatic=false}={}){return openTileSession(tile,{automatic,getInfo:()=>tile._classConnectPresentation?.(),key:sourceKey,startData:info=>({mode:'presentation',presentation:info.presentation,slideIndex:info.slideIndex}),connect:controller});}
+export async function openPresentation(tile){return openTileSession(tile,{getInfo:()=>tile._classConnectPresentation?.(),key:sourceKey,startData:info=>({mode:'presentation',presentation:info.presentation,slideIndex:info.slideIndex}),connect:controller});}
 
 let resources;
 async function renderer(){
  if(!resources)resources=(async()=>{
   for(const file of ['presentations/styles.css','presentations/transitions.css','tiles/word-cloud/styles.css','tiles/respond/styles.css']){if([...document.querySelectorAll('link[rel=stylesheet]')].some(l=>new URL(l.href).pathname.endsWith('/'+file)))continue;const link=make('link');link.rel='stylesheet';link.href=new URL(file+'?v='+version,root).href;await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>{link.remove();reject(Error('Could not load presentation styles. Please try again.'));};document.head.append(link);});}
-  for(const [key,file]of [['TeacherTilesRespond','tiles/respond/ui.js'],['TeacherTilesWordCloud','tiles/word-cloud/index.js'],['TeacherTilesPresentationInteractive','presentations/interactive.js'],['TeacherTilesPresentationCatalog','presentations/catalog.js'],['TeacherTilesPresentationThemes','presentations/themes.js'],['TeacherTilesPresentationTransitions','presentations/transitions.js'],['TeacherTilesPresentationObjects','presentations/objects-contract.js'],['TeacherTilesPresentationModules','presentations/objects.js'],['TeacherTilesPresentationRenderer','presentations/readonly.js']])if(!window[key])await import(new URL(file+'?v='+version,root).href);
+  for(const [key,file]of [['TeacherTilesChoice','tiles/respond/choices.js'],['TeacherTilesRespond','tiles/respond/ui.js'],['TeacherTilesWordCloud','tiles/word-cloud/index.js'],['TeacherTilesPresentationInteractive','presentations/interactive.js'],['TeacherTilesPresentationCatalog','presentations/catalog.js'],['TeacherTilesPresentationThemes','presentations/themes.js'],['TeacherTilesPresentationTransitions','presentations/transitions.js'],['TeacherTilesPresentationObjects','presentations/objects-contract.js'],['TeacherTilesPresentationModules','presentations/objects.js'],['TeacherTilesPresentationRenderer','presentations/readonly.js']])if(!window[key])await import(new URL(file+'?v='+version,root).href);
  })().catch(error=>{resources=null;throw error;});await resources;
 }
 export async function enterPresentation({token,student,session,getProfile,result,host,onBack,media}){
@@ -56,7 +56,7 @@ export async function enterPresentation({token,student,session,getProfile,result
  const viewport=make('div','cc-presentation-viewport'),stage=make('div','pres-slide cc-presentation-slide'),controls=make('div','cc-presentation-corners'),status=make('p','cc-presentation-status','Loading presentation…');status.setAttribute('role','status');viewport.append(stage);dialog.append(viewport,controls,status);
  const back=button('‹ '+student.name,onBack||(()=>dialog.close()));back.setAttribute('aria-label','Back to Profile');
  const fullscreen=button('',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else{await document.documentElement.requestFullscreen();ownsFullscreen=true;}}catch{status.textContent='Fullscreen is unavailable in this browser.';}});fullscreen.setAttribute('aria-label','Enter Fullscreen');fullscreen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg>';controls.append(back,fullscreen);
- let closed=false,off=null,index=-1,revision=0,ownsFullscreen=false,quietTimer=0,ready=false;const deck=result.presentation,credentials={...routing(result),token,studentId:student.id,session,sessionId:result.status.sessionId},cache=media?.cache||new Map(),urls=media?.urls||new Set(),channel=createInteractionChannel({room:result.room,sessionId:result.status.sessionId,deck,credentials,answered:result.answered});
+ let closed=false,off=null,index=-1,revision=0,ownsFullscreen=false,quietTimer=0,ready=false;const deck=result.presentation,credentials={...routing(result),token,studentId:student.id,session,sessionId:result.status.sessionId},cache=media?.cache||new Map(),urls=media?.urls||new Set(),channel=createInteractionChannel({room:result.room,sessionId:result.status.sessionId,deck,credentials,ownVotes:(result.ownVotes??={}),answered:result.answered});
  const fit=()=>{const w=Math.min(viewport.clientWidth,viewport.clientHeight*16/9);stage.style.width=w+'px';stage.style.height=w*9/16+'px';};const resize=new ResizeObserver(fit);resize.observe(viewport);
  const reveal=()=>{dialog.classList.remove('is-quiet');clearTimeout(quietTimer);quietTimer=setTimeout(()=>{if(ready)dialog.classList.add('is-quiet');},2200);};dialog.addEventListener('pointermove',reveal);dialog.addEventListener('focusin',reveal);
  const fullChange=()=>{fullscreen.setAttribute('aria-label',document.fullscreenElement?'Exit Fullscreen':'Enter Fullscreen');fit();};document.addEventListener('fullscreenchange',fullChange);

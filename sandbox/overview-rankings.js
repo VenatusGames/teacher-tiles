@@ -14,63 +14,61 @@ export function createRankings(panel, loadTopActive) {
   }
   const active = group('Most Active Users'), newest = group('Newest Users'), tiles = group('Most Used Tiles');
   const activeNote = node('p','overview-context','Ranked by distinct days active since tracking began.');
-  const activeList = node('div');
-  activeList.id = 'overview-active-users';
-  const toggle = node('button','overview-rank-more','View Top 50');
-  toggle.type = 'button';
-  toggle.setAttribute('aria-controls',activeList.id);
+  const activeList = node('div'), tileList = node('div');
+  active.append(activeNote,activeList);
+  tiles.append(node('p','overview-context','Signed-in Add Tile placements'),tileList);
+
+  function rankingDialog(section,label,title,description,onOpen) {
+    const link = node('button','overview-rank-more',label);
+    link.type = 'button';
+    link.setAttribute('aria-haspopup','dialog');
+    const arrow = node('span','','→');
+    arrow.setAttribute('aria-hidden','true');
+    link.append(arrow);
+    section.append(link);
+
+    const dialog = node('dialog','overview-ranking-dialog');
+    dialog.setAttribute('aria-label',title);
+    const heading = node('div','overview-dialog-heading');
+    const close = node('button','overview-rank-close','×');
+    close.type = 'button';
+    close.setAttribute('aria-label','Close '+title);
+    close.onclick = () => dialog.close();
+    heading.append(node('h2','',title),close);
+    const content = node('div');
+    dialog.append(heading,node('p','overview-context',description),content);
+    panel.append(dialog);
+    link.onclick = () => { dialog.showModal(); onOpen?.(); };
+    return {link,dialog,content};
+  }
+  const users = rankingDialog(active,'View Top 50','Top 50 Most Active Users',activeNote.textContent,loadUsers);
+  const topTiles = rankingDialog(tiles,'View Top 20','Top 20 Most Used Tiles','Placements from the signed-in Add Tile menu since tracking began.');
   const status = node('p','overview-context');
   status.setAttribute('role','status');
-  active.append(activeNote, toggle, status, activeList);
-  tiles.append(node('p','overview-context','Signed-in Add Tile placements'));
-  const more = node('button','overview-rank-more','View Top 20');
-  more.type = 'button';
-  const dialog = node('dialog','overview-ranking-dialog');
-  dialog.setAttribute('aria-label','Top 20 Most Used Tiles');
-  const heading = node('div','overview-dialog-heading');
-  const close = node('button','overview-rank-close','×');
-  close.type = 'button';
-  close.setAttribute('aria-label','Close tile rankings');
-  heading.append(node('h2','','Top 20 Most Used Tiles'),close);
-  const extended = node('div');
-  dialog.append(heading,node('p','overview-context','Placements from the signed-in Add Tile menu since tracking began.'),extended);
-  panel.append(dialog);
-  close.onclick = () => dialog.close();
-  more.onclick = () => dialog.showModal();
-
-  let tilesById, fetching, current, empty;
-  let expanded = false, topUsers = null, pending = null, error = '';
-  function renderActive() {
-    const showingAll = expanded && topUsers !== null;
-    toggle.disabled = !current?.active?.length && !current?.activePartial;
-    toggle.textContent = expanded ? 'Show Top 3' : 'View Top 50';
-    toggle.setAttribute('aria-expanded',String(expanded));
-    activeList.classList.toggle('overview-active-expanded',showingAll);
-    status.textContent = expanded && pending ? 'Loading most active users…' : error;
-    status.hidden = !status.textContent;
-    activeNote.textContent = current?.activePartial && !showingAll
-      ? 'Some leading accounts are no longer enabled. Showing eligible users from the first 12 ranked accounts.'
-      : 'Ranked by distinct days active since tracking began.';
-    userCards(activeList,showingAll ? topUsers : current?.active,false);
-  }
-  toggle.onclick = async () => {
-    expanded = !expanded;
-    error = '';
-    if (!expanded || topUsers || pending) { renderActive(); return; }
+  const retry = node('button','overview-rank-more','Try again');
+  retry.type = 'button';
+  retry.onclick = loadUsers;
+  const userResults = node('div','overview-ranked-users');
+  users.content.append(status,retry,userResults);
+  let tilesById, fetching, current, empty, pending;
+  async function loadUsers() {
+    if (pending || userResults.childElementCount) return;
+    retry.hidden = true;
+    status.textContent = 'Loading most active users…';
     const request = pending = loadTopActive();
-    renderActive();
     try {
       const rows = await request;
-      if (pending === request) topUsers = rows;
+      if (pending !== request) return;
+      status.textContent = '';
+      userCards(userResults,rows,false);
     } catch {
-      if (pending === request && expanded) {
-        expanded = false;
-        error = 'Could not load the ranking. Select View Top 50 to try again.';
-      }
+      if (pending !== request) return;
+      status.textContent = 'Could not load the ranking.';
+      retry.hidden = false;
     } finally {
-      if (pending === request) { pending = null; renderActive(); }
+      if (pending === request) pending = null;
     }
-  };
+  }
   function tileCards(group, rows) {
     group.querySelector('.overview-rank-list')?.remove();
     const list = node(rows.length ? 'ol' : 'p','overview-rank-list');
@@ -107,17 +105,22 @@ export function createRankings(panel, loadTopActive) {
   }
   function renderTiles() {
     const rows = current?.tiles || [];
-    tileCards(tiles,rows.slice(0,5));
-    tileCards(extended,rows.slice(0,20));
-    tiles.append(more);
-    more.disabled = !rows.length;
+    tileCards(tileList,rows.slice(0,5));
+    tileCards(topTiles.content,rows.slice(0,20));
+    topTiles.link.disabled = !rows.length;
   }
   return {render(data,failed,loaded) {
-    if (current !== data) { expanded = false; topUsers = null; pending = null; error = ''; }
+    if (current !== data) {
+      if (users.dialog.open) users.dialog.close();
+      pending = null;
+      userResults.replaceChildren();
+    }
     current = data;
     empty = data ? 'No activity recorded yet.' : failed || loaded ? 'Rankings unavailable.' : 'Awaiting snapshot…';
-    if (!data && dialog.open) dialog.close();
-    renderActive();
+    if (!data && topTiles.dialog.open) topTiles.dialog.close();
+    users.link.disabled = !data?.active?.length && !data?.activePartial;
+    activeNote.textContent = data?.activePartial ? 'Some leading accounts are no longer enabled. Showing eligible users from the first 12 ranked accounts.' : 'Ranked by distinct days active since tracking began.';
+    userCards(activeList,data?.active?.slice(0,3),false);
     userCards(newest,data?.newest,true);
     renderTiles();
     if (data?.tiles?.length && !tilesById && !fetching) {

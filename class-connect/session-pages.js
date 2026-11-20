@@ -1,7 +1,7 @@
-import {active,call,modal,watchRoom} from './boards.js?v=20261119-live-switch';
-import {panelStatus} from './tile-group.js?v=20261119-live-switch';
-import {responsePanel} from './word-cloud-session.js?v=20261119-live-switch';
-import {enterPresentation} from './presentation-session.js?v=20261119-live-switch';
+import {active,call,modal,watchRoom} from './boards.js?v=20261119-attach';
+import {panelStatus} from './tile-group.js?v=20261119-attach';
+import {responsePanel} from './word-cloud-session.js?v=20261119-attach';
+import {enterPresentation} from './presentation-session.js?v=20261119-attach';
 
 function pagesFor(panels){
  const presentation=panels.find(p=>p.mode==='presentation');
@@ -45,11 +45,11 @@ export function enterPages(options){
   }else if(!entry.response){
    entry.response=responsePanel({...options,result:entry.data});
    entry.host.replaceChildren(entry.response.card);
-  }else entry.response.prompt(entry.data.prompt);
+  }else entry.response.prompt(entry.data.prompt,entry.data);
  }
  async function load(entry,p){
   const revision=p.promptRevision||0;
-  if(entry.loading||entry.failed||entry.data&&entry.version===revision){mount(entry);return;}
+  if(entry.loading||entry.failed||entry.data&&entry.version>=revision){mount(entry);return;}
   entry.loading=true;
   try{
    const data=await call({action:'join',token,studentId:student.id,session,groupId,panelId:p.id,sessionId:p.sessionId});
@@ -63,7 +63,7 @@ export function enterPages(options){
     const retry=button('Try Again',()=>{entry.failed=false;render();});entry.host.replaceChildren(message,retry);
    }
   }finally{entry.loading=false;}
-  if(!closed&&entries.get(p.id)===entry){mount(entry);const latest=status.panels.find(v=>v.id===p.id);if(latest&&!entry.failed&&entry.version!==(latest.promptRevision||0))void load(entry,latest);}
+  if(!closed&&entries.get(p.id)===entry){mount(entry);const latest=status.panels.find(v=>v.id===p.id);if(latest&&!entry.failed&&entry.version<(latest.promptRevision||0))void load(entry,latest);}
  }
  function render(){
   const shown=groups[index]||[],ids=new Set(shown.map(p=>p.id)),deck=shown[0]?.mode==='presentation';

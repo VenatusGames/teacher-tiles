@@ -1141,6 +1141,7 @@ const TILE_AUDIO_HOSTS=Object.freeze({
 function setupModuleByType(m,type){
   setupCommon(m);
   if(type==='presentation')window.TeacherTilesPresentationTile.setup(m);
+  if(window.TeacherTilesChoice.isChoice(type))TeacherTilesChoice.setup(m);
   if(type==='wordcloud'||type==='respond')window.TeacherTilesWordCloud.setup(m);
   if(type==='dice')window.TeacherTilesDice.setup(m);
   if(type==='flyswat')window.TeacherTilesFlySwat.setup(m);
@@ -1356,7 +1357,7 @@ const LUNCH_COUNT_ICONS=[
 
 
 const EDITABLE_TILE_HEADINGS={
-  respond:'.wordcloud-heading',wordcloud:'.wordcloud-heading',
+  livepolls:'.wordcloud-heading',moodcheckin:'.wordcloud-heading',respond:'.wordcloud-heading',wordcloud:'.wordcloud-heading',
   thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -1427,7 +1428,7 @@ const EDITABLE_TILE_HEADINGS={
 };
 
 const TILE_HEADING_VISIBILITY_SELECTORS={
-  respond:'.wordcloud-heading',wordcloud:'.wordcloud-heading',
+  livepolls:'.wordcloud-heading',moodcheckin:'.wordcloud-heading',respond:'.wordcloud-heading',wordcloud:'.wordcloud-heading',
   cookafeast:'.progress-bar-title',
   ...EDITABLE_TILE_HEADINGS,
   essentialquestion:'.widget-title',
