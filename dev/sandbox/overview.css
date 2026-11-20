@@ -5,6 +5,7 @@
   --muted: var(--portal-muted, #5a6a80);
   --line: var(--portal-line, #dce3eb);
   color: var(--ink);
+  container-type: inline-size;
   margin: 18px 0 24px;
 }
 #developer-insights [data-accent] {
@@ -35,21 +36,28 @@
 .overview-refresh svg { width: 16px; height: 16px }
 .overview-refresh:disabled { opacity: .65; cursor: wait }
 .overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
+.overview-dashboard { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px }
 .overview-metrics {
   display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
-  gap: 10px; margin: 10px 0 16px;
+  width: min(100%,390px); gap: 10px; justify-self: center; align-self: start;
 }
-#developer-insights .overview-metrics > .overview-metric { padding: 12px 14px; text-align: left }
+#developer-insights .overview-metrics > .overview-metric {
+  box-sizing: border-box; aspect-ratio: 1; min-width: 0; padding: 14px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; text-align: left;
+}
+.overview-metrics .overview-metric-label { margin-bottom: auto }
+.overview-metrics .overview-metric > :last-child { margin-top: auto }
 .overview-metric-label { font-size: 14px; font-weight: 650; gap: 7px }
 .overview-metrics .overview-symbol { width: 26px; height: 26px; border-radius: 8px }
 .overview-metrics .overview-symbol svg { width: 16px; height: 16px }
-.overview-metrics .overview-metric strong { margin: 5px 0 1px; font-size: 26px; font-variant-numeric: tabular-nums }
-.overview-shortcut { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start }
+.overview-metrics .overview-metric strong { margin: 0 0 3px; font-size: clamp(25px,3.4cqi,34px); font-variant-numeric: tabular-nums }
 #developer-insights .overview-shortcut:hover { border-color: var(--accent) }
 .overview-detail, .overview-ticket-counts { font-size: 12px; line-height: 1.4; color: var(--muted) }
-.overview-ticket-counts { display: flex; flex-wrap: wrap; gap: 0 12px }
-.overview-ticket-counts > span + span { border-inline-start: 1px solid var(--edge); padding-inline-start: 12px }
-.overview-ticket-counts strong { color: var(--ink) }
+.overview-ticket-counts { display: grid; gap: 5px }
+.overview-ticket-counts > span { display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 6px }
+.overview-ticket-counts > span + span { padding-top: 5px; border-top: 1px solid var(--edge) }
+.overview-ticket-counts small { display: block; font-size: 11px }
+.overview-metrics .overview-ticket-counts strong { color: var(--ink); font-size: 22px; margin: 0; white-space: nowrap }
 .overview-ticket-counts + .overview-detail { margin-top: 3px }
 #developer-insights .overview-metric { background: linear-gradient(115deg,var(--tint),var(--surface) 90%); border-color: var(--edge) }
 .overview-metric-label h3 { font-size: 14px; margin: 0 }
@@ -121,4 +129,17 @@
 }
 .overview-board-link:hover, .overview-board-link:focus-visible { border-color: var(--portal-blue); background: var(--pt-soft, #f4f7fc) }
 
-@media(max-width:540px){.overview-metrics{grid-template-columns:1fr}}
+/* Place the charts alongside the square summary when the portal content has room. */
+@container (min-width: 740px) {
+  .overview-dashboard { grid-template-columns: 390px minmax(0,1fr); align-items: start }
+  .overview-charts { display: contents }
+  .overview-charts > article { grid-row: auto; grid-template-rows: auto; gap: 12px }
+  .overview-memberships { grid-column: 1/-1 }
+}
+@container (min-width: 1120px) {
+  .overview-dashboard { grid-template-columns: 390px repeat(2,minmax(0,1fr)) }
+  .overview-memberships { grid-column: auto }
+}
+@container (max-width: 305px) {
+  .overview-metrics { max-width: 195px; grid-template-columns: minmax(0,1fr) }
+}

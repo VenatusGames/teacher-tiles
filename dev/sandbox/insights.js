@@ -43,11 +43,12 @@ export function createInsights(call) {
       <p id="insights-status" role="status"></p>
       <button type="button" class="overview-refresh" id="insights-refresh">${icon('refresh')} Refresh Insights</button>
     </div>
+    <div class="overview-dashboard">
     <div class="overview-metrics" role="group" aria-label="Overview Metrics">
       <button type="button" class="overview-metric overview-shortcut" data-accent="boards" data-destination="templates">
         <span class="overview-metric-label"><i class="overview-symbol">${icon('boards')}</i>Boards to Review</span>
         <strong data-stat="approvalQueue">—</strong>
-        <span class="overview-detail">Community templates awaiting manual approval</span>
+        <span class="overview-detail">Templates awaiting approval</span>
       </button>
       <button type="button" class="overview-metric overview-shortcut" data-accent="ticket" data-destination="bugs">
         <span class="overview-metric-label"><i class="overview-symbol">${icon('ticket')}</i>Open Tickets</span>
@@ -64,7 +65,7 @@ export function createInsights(call) {
       <article class="overview-metric" data-accent="online">
         <div class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i><h3>Active Users</h3></div>
         <div class="overview-ticket-counts">
-          <span><strong data-stat="online">—</strong>Online Now · Last 15 Minutes</span>
+          <span><strong data-stat="online">—</strong><span>Online Now<small>Last 15 minutes</small></span></span>
           <span><strong data-stat="active24Hours">—</strong>Last 24 Hours</span>
         </div>
       </article>
@@ -72,7 +73,7 @@ export function createInsights(call) {
     <div class="overview-charts">
       <article class="overview-panel overview-activity" aria-label="User Activity"></article>
       <article class="overview-panel overview-memberships" aria-label="Subscriptions"></article>
-    </div>`;
+    </div></div>`;
   for (const button of root.querySelectorAll('[data-destination]')) {
     button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${button.dataset.destination}"]`)?.click();
   }
