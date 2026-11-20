@@ -36,37 +36,38 @@
 .overview-refresh svg { width: 16px; height: 16px }
 .overview-refresh:disabled { opacity: .65; cursor: wait }
 .overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
-.overview-dashboard { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px }
+.overview-dashboard { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: 24px }
 .overview-metrics {
   display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
-  width: min(100%,390px); gap: 10px; justify-self: center; align-self: start;
+  width: min(100%,456px); container-type: inline-size; gap: 14px; justify-self: center;
 }
 #developer-insights .overview-metrics > .overview-metric {
-  box-sizing: border-box; aspect-ratio: 1; min-width: 0; padding: 14px;
-  display: flex; flex-direction: column; align-items: stretch; gap: 8px; text-align: left;
+  box-sizing: border-box; aspect-ratio: 1; min-width: 0; padding: clamp(9px,calc(11cqi - 30px),15px);
+  container-type: inline-size;
+  display: grid; grid-template-rows: auto 1fr auto; align-items: center; text-align: center;
 }
-.overview-metrics .overview-metric-label { margin-bottom: auto }
-.overview-metrics .overview-metric > :last-child { margin-top: auto }
-.overview-metric-label { font-size: 14px; font-weight: 650; gap: 7px }
+.overview-metric-label { justify-content: center; font-size: 14px; font-weight: 650; gap: 7px }
 .overview-metrics .overview-symbol { width: 26px; height: 26px; border-radius: 8px }
 .overview-metrics .overview-symbol svg { width: 16px; height: 16px }
-.overview-metrics .overview-metric strong { margin: 0 0 3px; font-size: clamp(25px,3.4cqi,34px); font-variant-numeric: tabular-nums }
+.overview-metrics [data-stat] {
+  display: block; color: var(--ink); font-weight: 720; font-variant-numeric: tabular-nums;
+  line-height: 1.05; letter-spacing: -.035em; text-align: center;
+}
+.overview-metric > [data-stat] { font-size: clamp(36px,28cqi,56px) }
 #developer-insights .overview-shortcut:hover { border-color: var(--accent) }
-.overview-detail, .overview-ticket-counts { font-size: 12px; line-height: 1.4; color: var(--muted) }
-.overview-ticket-counts { display: grid; gap: 5px }
-.overview-ticket-counts > span { display: flex; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 6px }
-.overview-ticket-counts > span + span { padding-top: 5px; border-top: 1px solid var(--edge) }
-.overview-ticket-counts small { display: block; font-size: 11px }
-.overview-metrics .overview-ticket-counts strong { color: var(--ink); font-size: 22px; margin: 0; white-space: nowrap }
-.overview-ticket-counts + .overview-detail { margin-top: 3px }
+.overview-detail, .overview-ticket-counts { color: var(--muted); font-size: 12px; line-height: 1.4 }
+.overview-ticket-counts { display: grid; align-content: center; gap: 8px }
+.overview-ticket-counts > span { display: grid; justify-items: center; gap: 2px }
+.overview-ticket-counts strong { font-size: clamp(29px,18cqi,38px) }
+.overview-ticket-counts small { font-size: inherit }
+.overview-ticket-counts small::before { content: " · " }
 #developer-insights .overview-metric { background: linear-gradient(115deg,var(--tint),var(--surface) 90%); border-color: var(--edge) }
 .overview-metric-label h3 { font-size: 14px; margin: 0 }
-.overview-metric strong { display: block; margin: 9px 0 2px; font-size: clamp(24px,3vw,36px); line-height: 1.2 }
 .overview-symbol { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 10px; background: color-mix(in srgb,var(--accent) 18%,var(--surface)); color: color-mix(in srgb,var(--accent) 75%,var(--ink)) }
 .overview-symbol svg { width: 20px; height: 20px }
 .overview-type:hover { border-color: var(--accent) }
-.overview-charts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 16px }
-.overview-charts > article { display: grid; grid-row: span 6; grid-template-rows: subgrid; align-items: start }
+.overview-charts { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; min-width: 0 }
+.overview-charts > article { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: 14px }
 .overview-types { gap: 6px }
 .overview-type { display: grid; grid-template-columns: 1fr auto; align-items: start; text-align: left; padding: 9px; border: 1px solid var(--edge); border-radius: 10px; background: var(--tint); min-width: 0 }
 .overview-type svg { grid-column: 2; grid-row: 1; width: 16px; height: 16px; color: color-mix(in srgb,var(--accent) 70%,var(--ink)) }
@@ -92,10 +93,6 @@
 .overview-chart-note { border-top: 1px solid var(--line); padding-top: 9px }
 .overview-empty { display: grid; align-content: center; text-align: center; height: 196px; font-size: 14px }
 .overview-empty p { font-size: 12px; margin: 5px 0; color: var(--muted) }
-@media(max-width:1150px) {
-  .overview-charts { grid-template-columns: minmax(0,1fr) }
-  .overview-charts > article { grid-row: auto; grid-template-rows: auto; gap: 12px }
-}
 @media(max-width:760px) {
   #developer-insights .overview-panel, #developer-insights .overview-metric { padding: 12px }
   .overview-metrics { gap: 6px }
@@ -129,17 +126,9 @@
 }
 .overview-board-link:hover, .overview-board-link:focus-visible { border-color: var(--portal-blue); background: var(--pt-soft, #f4f7fc) }
 
-/* Place the charts alongside the square summary when the portal content has room. */
-@container (min-width: 740px) {
-  .overview-dashboard { grid-template-columns: 390px minmax(0,1fr); align-items: start }
-  .overview-charts { display: contents }
-  .overview-charts > article { grid-row: auto; grid-template-rows: auto; gap: 12px }
-  .overview-memberships { grid-column: 1/-1 }
+@container (min-width: 780px) {
+  .overview-dashboard { grid-template-columns: clamp(365px,39%,456px) minmax(0,1fr) }
 }
-@container (min-width: 1120px) {
-  .overview-dashboard { grid-template-columns: 390px repeat(2,minmax(0,1fr)) }
-  .overview-memberships { grid-column: auto }
-}
-@container (max-width: 305px) {
+@container (max-width: 350px) {
   .overview-metrics { max-width: 195px; grid-template-columns: minmax(0,1fr) }
 }
