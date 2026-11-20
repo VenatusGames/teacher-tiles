@@ -16,7 +16,7 @@ export function createRankings(panel, loadTopActive) {
   const activeNote = node('p','overview-context','Ranked by distinct days active since tracking began.');
   const activeList = node('div'), tileList = node('div');
   active.append(activeNote,activeList);
-  tiles.append(node('p','overview-context','Signed-in Add Tile placements'),tileList);
+  tiles.append(node('p','overview-context','Ranked by total signed-in Add Tile placements.'),tileList);
 
   function rankingDialog(section,label,title,description,onOpen) {
     const link = node('button','overview-rank-more',label);
@@ -72,11 +72,19 @@ export function createRankings(panel, loadTopActive) {
   function tileCards(group, rows) {
     group.querySelector('.overview-rank-list')?.remove();
     const list = node(rows.length ? 'ol' : 'p','overview-rank-list');
-    for (const {id} of rows) {
+    for (const {id,count,recentCount} of rows) {
       const tile = tilesById?.get(id);
       const name = tile?.name || id.replace(/[-_]+/g,' ').replace(/\b\w/g,letter => letter.toUpperCase());
       const card = node('li','overview-tile-card');
       card.append(tileIcon(tile?.icon,tile?.iconText || name.charAt(0)),node('strong','',name));
+      const usage = node('span','overview-tile-usage');
+      if (Number.isFinite(recentCount)) {
+        usage.textContent = numbers.format(recentCount)+(recentCount===1?' use':' uses')+' in last 7 days';
+      } else {
+        usage.textContent = 'Recent count pending';
+      }
+      usage.title = numbers.format(count)+' total placements since tracking began';
+      card.append(usage);
       list.append(card);
     }
     if (!rows.length) list.textContent = empty;

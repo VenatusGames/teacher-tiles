@@ -1,11 +1,11 @@
 function setupPbisConsole(m){
   const importView=m.querySelector('.pbisconsole-import'),dashboard=m.querySelector('.pbisconsole-dashboard'),loaderAnchor=m.querySelector('.pbisconsole-loader-anchor'),className=m.querySelector('.pbisconsole-class-name'),classLogo=m.querySelector('.pbisconsole-class-logo'),changeClass=m.querySelector('.pbisconsole-change-class'),studentSelect=m.querySelector('.pbisconsole-student'),studentToolbar=m.querySelector('.pbisconsole-student-toolbar'),stats=m.querySelector('.pbisconsole-stats'),tabs=[...m.querySelectorAll('[data-pbisconsole-view]')];
   let activeClassId='',student='',view='students';
-  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const roster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const studentDefinitions=[{id:'studentEggPoints',label:'Egg Hatching Points',icon:'🥚'},{id:'studentFlowerPoints',label:'Flower Pot Points',icon:'🌷'},{id:'studentStars',label:'Student Stars',icon:'★'},{id:'studentPunchcardPoints',label:'Punchcard Points',icon:'●'},{id:'studentRaceWins',label:'Race Wins',icon:'🏁'}];
   const classDefinitions=[{id:'classStars',label:'Whole-class Stars',icon:'★'},{id:'meterWins',label:'Class Meter Wins',icon:'🏆'},{id:'jarsFilled',label:'Jars Filled',icon:'🫙'},{id:'classPunchcardPoints',label:'Whole-class Punchcard Points',icon:'●'},{id:'meterFill',label:'Current Meter Fill',icon:'💧',suffix:'%'},{id:'jarItems',label:'Items in Current Jar',icon:'○'}];
   const setClass=id=>{
-    const r=readClassRosters().find(item=>item.id===id);
+    const r=readPbisClassRosters().find(item=>item.id===id);
     activeClassId=r?.id||'';
     importView.hidden=Boolean(r);dashboard.hidden=!r;
     if(r){

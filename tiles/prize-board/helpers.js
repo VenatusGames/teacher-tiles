@@ -36,7 +36,7 @@ function pbisBalance(roster,statId,studentName=''){
 }
 
 function adjustPbisBalance(classId,statId,amount,{studentName='',mode='delta'}={}){
-  const roster=readClassRosters().find(item=>item.id===classId);if(!roster)return null;
+  const roster=readPbisClassRosters().find(item=>item.id===classId);if(!roster)return null;
   const current=pbisBalance(roster,statId,studentName);
   let next=mode==='set'?Number(amount):current+Number(amount);
   if(statId==='meterFill')next=Math.max(0,Math.min(100,next));else if(statId==='jarItems')next=Math.max(0,Math.min(80,Math.round(next)));else next=normalizeStarChartCount(next);

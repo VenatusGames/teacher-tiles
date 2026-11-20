@@ -10,6 +10,34 @@ await page.goto('https://tiles.test/dev/board.html');await page.waitForFunction(
 await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify([{id:'old-class',name:'Homeroom',logo:'🦉',students:['Alice','Ben'],starChart:{wholeClassStars:8,studentStars:{'student:alice':12}},punchcards:{studentPoints:{'student:alice':3},studentProgress:{'student:alice':4}},racer:{studentWins:{'student:alice':2},positions:{'student:alice':56}},eggHatching:{studentPoints:{'student:alice':7}},flowerPots:{studentPoints:{'student:alice':5}}}]));document.querySelector('#profile-classes-button').click();});
 assert.equal(await page.locator('#profile-student-view-button').count(),0);assert(await page.getByRole('dialog',{name:'Class View',exact:true}).isVisible());
 
+await page.getByRole('button',{name:'New Class',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Senior Seminar');
+await page.getByRole('combobox',{name:'Class grade level'}).selectOption('12');
+await page.getByRole('button',{name:'Create Class',exact:true}).click();
+await page.getByRole('button',{name:'Open Senior Seminar',exact:true}).click();
+assert.equal(await page.locator('.cs-class-pbis').count(),0);
+await page.getByRole('button',{name:'Class Settings',exact:true}).click();
+assert.equal(await page.getByRole('switch',{name:'Enable PBIS',exact:true}).count(),0);
+await page.getByRole('button',{name:'Close Class Settings',exact:true}).click();
+await page.evaluate(()=>{const classes=readClassRosters(),senior=classes.find(c=>c.gradeLevel==='12');senior.students=['Sam'];writeClassRosters(classes);});
+await page.getByRole('button',{name:"Open Sam's student profile",exact:true}).click();
+assert.equal(await page.locator('.cs-detail [data-detail-focus=pbis]').count(),0);
+await page.getByRole('button',{name:'Close Student Profile',exact:true}).click();
+await page.getByRole('button',{name:'All Classes',exact:true}).click();
+const choices=await page.evaluate(()=>{
+ const id=readClassRosters().find(c=>c.gradeLevel==='12').id,results={};
+ for(const type of ['starchart','classmeter','collections','punchcards','racer','prizeboard','pbisconsole','egghatching','flowerpots','attendance']){
+  const tile=createModule(type,400,300,{record:false});
+  const select=tile.querySelector('.class-roster-picker select');
+  results[type]=[...select.options].some(o=>o.value===id);
+  if(type!=='attendance'){
+   tile._boardSetState?.({classId:id,activeClassId:id});
+   if(tile.querySelector('.class-roster-picker').closest('[hidden]'))throw Error(type+' loaded an ineligible class');
+  }
+  tile._cleanup?.();tile.remove();
+ }
+ return results;
+});
+assert.deepEqual(Object.keys(choices).filter(k=>choices[k]),['attendance']);
 await page.getByRole('button',{name:'New Class',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Club');await page.getByRole('button',{name:'Use 🚀',exact:true}).click();await page.getByRole('button',{name:'Create Class',exact:true}).click();assert(await page.getByRole('button',{name:'Open Science Club',exact:true}).isVisible());
 await page.getByRole('button',{name:'Open Science Club',exact:true}).hover();await page.getByRole('button',{name:'Edit Science Club',exact:true}).click();await page.getByRole('textbox',{name:'Class name',exact:true}).fill('Science Explorers');await page.getByRole('button',{name:'Save Changes',exact:true}).click();
 await page.getByRole('button',{name:'Open Homeroom',exact:true}).click();await page.getByRole('button',{name:"Open Alice's student profile",exact:true}).click();

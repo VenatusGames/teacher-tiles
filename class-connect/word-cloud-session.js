@@ -50,7 +50,7 @@ export function responsePanel({token,student,session,result},onEnded){
  };
  if(respond){
   title.textContent=result.prompt||'What do you think?';
-  icon.textContent='?';
+  icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 8a5 5 0 0 1 10 0c0 2.4-1.6 3.6-3.2 4.7-1.3.9-1.8 1.7-1.8 3.1"/><circle cx="12" cy="20.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
   form.replaceWith(TeacherTilesRespond.form(data=>call({...credentials,action:'submitResponse',...data}),result.answered?.includes('standalone')));
   message.remove();last.remove();
  }

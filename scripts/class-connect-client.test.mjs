@@ -34,9 +34,16 @@ test('Teacher avatar cache respects student identity, avatar versions and accoun
  const profile={id:'alice-id',avatarVersion:'v1',emoji:'🦉',image:''};await api.refreshAvatars('class-a');assert.equal(api.resolveProfile('class-a',profile).emoji,'🐸');assert.equal(api.resolveProfile('class-b',profile).emoji,'🦉');assert.equal(api.resolveProfile('class-a',{...profile,avatarVersion:'v2'}).emoji,'🦉');uid='other';assert.equal(api.resolveProfile('class-a',profile).emoji,'🦉');
 });
 
-test('Legacy grade-level PBIS defaults match Class View unless explicitly overridden',()=>{
- for(const gradeLevel of ['7','12','Higher-Ed']){const view=publicClass({...roster,gradeLevel});assert.equal(view.pbisEnabled,false);assert.deepEqual(view.students[0].rewards,{});}
- assert.equal(publicClass({...roster,gradeLevel:'6'}).pbisEnabled,true);assert.equal(publicClass({...roster,gradeLevel:'12',pbisEnabled:true}).pbisEnabled,true);
+test('Grades 7 and 8 may opt in to PBIS, while high school and Higher-Ed never share rewards',()=>{
+ assert.equal(publicClass({...roster,gradeLevel:'6'}).pbisEnabled,true);
+ for(const gradeLevel of ['7','8']){
+  assert.equal(publicClass({...roster,gradeLevel}).pbisEnabled,false);
+  assert.equal(publicClass({...roster,gradeLevel,pbisEnabled:true}).pbisEnabled,true);
+ }
+ for(const gradeLevel of ['9','10','11','12','Higher-Ed']){
+  const view=publicClass({...roster,gradeLevel,pbisEnabled:true});
+  assert.equal(view.pbisEnabled,false);assert.deepEqual(view.students[0].rewards,{});
+ }
 });
 
 test('PINs are separated from the public projection and changing one triggers a teacher sync',async()=>{

@@ -3,7 +3,7 @@ function setupPrizeBoard(m){
   const className=m.querySelector('.prizeboard-class-name'),classLogo=m.querySelector('.prizeboard-class-logo'),changeClass=m.querySelector('.prizeboard-change-class');
   const tabs=[...m.querySelectorAll('[data-prize-scope]')],grid=m.querySelector('.prizeboard-grid'),add=m.querySelector('.prizeboard-add');
   let activeClassId='',scope='student',prizes=[];const modal=makePrizeModal();
-  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const currentRoster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const statDefinition=id=>PRIZE_STAT_OPTIONS.find(item=>item.id===id)||PRIZE_STAT_OPTIONS[0];
   const notify=reason=>notifyBoardChanged(`prizeboard-${reason}`);
   const syncModuleSize=()=>requestAnimationFrame(()=>{
@@ -11,7 +11,7 @@ function setupPrizeBoard(m){
     if(m.offsetHeight<needed)m.style.height=`${Math.min(BOARD_HEIGHT-m.offsetTop,needed)}px`;
   });
   const setClass=id=>{
-    const roster=readClassRosters().find(item=>item.id===id);activeClassId=roster?.id||'';importView.hidden=Boolean(roster);dashboard.hidden=!roster;
+    const roster=readPbisClassRosters().find(item=>item.id===id);activeClassId=roster?.id||'';importView.hidden=Boolean(roster);dashboard.hidden=!roster;
     if(roster){className.textContent=roster.name;classLogo.textContent=normalizeClassLogo(roster.logo)}render();
   };
   const closeEditor=()=>modal.close();

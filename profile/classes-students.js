@@ -63,7 +63,7 @@ function setupClassesStudents(){
       const rewards=button('PBIS',()=>showDetail(null),'cs-button cs-class-pbis','pbis');rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
       const modules=el('div','cs-class-modules');
       const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button cs-class-connect','connect'));
-      modules.append(rewards);
+      if(TeacherTilesClassGrades.allowsPbis(c.gradeLevel))modules.append(rewards);
       const configure=button('',showSettings,'cs-button cs-class-settings','settings');configure.setAttribute('aria-label','Class Settings');configure.title='Class Settings';classHeader.append(back,info,modules,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
       for(const [index,name] of names.entries()){
@@ -100,7 +100,7 @@ function setupClassesStudents(){
   }
   function removeStudent(classId,name){
     const c=current();if(!c||c.id!==classId||!c.students.includes(name))return;
-    if(!confirm(`Remove ${name} from ${c.name}? Their profile and individual PBIS progress will be deleted.`))return;
+    if(!confirm(`Remove ${name} from ${c.name}? ${TeacherTilesClassGrades.allowsPbis(c.gradeLevel)?'Their profile and individual PBIS progress will be deleted.':'Their profile will be deleted.'}`))return;
     const result=updateClass(target=>{
       if(target.id!==classId)throw new Error('The selected class changed. Reopen this student.');
       const key=starChartStudentKey(name);target.students=target.students.filter(n=>n!==name);delete target.studentProfiles[key];
@@ -125,10 +125,10 @@ function setupClassesStudents(){
     const form=el('form','cs-form'),name=field('Class name',c?.name||'',50),preview=el('div','cs-form-preview');let emoji=c?.logo||'👥',image=c?.logoImage||'';
     const gradeField=el('label','cs-field'),grade=el('select');grade.setAttribute('aria-label','Class grade level');gradeField.append(el('span','','Grade Level'),grade);
     const unset=el('option','','Not set');unset.value='';grade.append(unset);for(const value of CLASS_GRADE_LEVELS){const option=el('option','',value);option.value=value;grade.append(option);}grade.value=c?.gradeLevel||'';
-    const gradeHint=el('small','cs-muted');gradeHint.hidden=Boolean(c);const updateGradeHint=()=>{gradeHint.textContent=defaultClassPbisEnabled(grade.value)?'PBIS starts on. You can change it in Class Settings.':'PBIS starts off for grade 7 and above. You can turn it on in Class Settings.';};grade.addEventListener('change',updateGradeHint);updateGradeHint();gradeField.append(gradeHint);
+    const gradeHint=el('small','cs-muted');gradeHint.hidden=Boolean(c);const updateGradeHint=()=>{gradeHint.hidden=Boolean(c)||!TeacherTilesClassGrades.allowsPbis(grade.value);gradeHint.textContent=defaultClassPbisEnabled(grade.value)?'PBIS starts on. You can change it in Class Settings.':'PBIS starts off for grades 7 and 8. You can turn it on in Class Settings.';};grade.addEventListener('change',updateGradeHint);updateGradeHint();gradeField.append(gradeHint);
     const paint=()=>{preview.replaceChildren();if(image){const img=el('img');img.src=image;img.alt='Class image preview';preview.append(img);}else preview.textContent=emoji;};paint();
     const error=el('p','cs-error');error.setAttribute('role','alert');const actions=el('div','cs-form-actions'),save=button(c?'Save Changes':'Create Class',null,'cs-button cs-primary');save.type='submit';actions.append(button('Cancel',()=>editor.close()),save);
-    if(c)actions.prepend(button('Delete Class',()=>{if(!confirm(`Delete ${c.name}, its roster, and all saved PBIS history?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}editor.close();if(detail.open)detail.close();if(settings.open)settings.close();openClass('');notify('Class deleted');},'cs-button cs-danger'));
+    if(c)actions.prepend(button('Delete Class',()=>{if(!confirm(TeacherTilesClassGrades.allowsPbis(c.gradeLevel)?`Delete ${c.name}, its roster, and all saved PBIS history?`:`Delete ${c.name} and its roster?`))return;const result=commit(classes=>{const i=classes.findIndex(t=>t.id===c.id);if(i>=0)classes.splice(i,1);});if(result!==true){error.textContent=result;return;}editor.close();if(detail.open)detail.close();if(settings.open)settings.close();openClass('');notify('Class deleted');},'cs-button cs-danger'));
     const picker=emojiPicker(image?'':emoji,value=>{photoTask++;emoji=value||'👥';image='';file.value='';save.disabled=false;error.textContent='';paint();}),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp,image/gif';file.hidden=true;file.setAttribute('aria-label','Upload class image');
     const photoActions=el('div','cs-photo-actions');photoActions.append(button('Upload Image',()=>file.click()),button('Use Emoji',()=>{photoTask++;image='';file.value='';save.disabled=false;error.textContent='';paint();picker.querySelectorAll('[data-emoji]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.emoji===emoji)));}),file);
     form.append(preview,name.holder,gradeField,picker,photoActions,el('small','cs-muted','Images are cropped to a square and resized automatically.'),error,actions);editor.append(form);
@@ -193,7 +193,7 @@ function setupClassesStudents(){
     pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Logo',()=>{settings.close();editClass(c.id);},'cs-button','edit'));
-    body.append(pbisGroup,error,actions);settings.append(body);settings.showModal();
+    if(TeacherTilesClassGrades.allowsPbis(c.gradeLevel))body.append(pbisGroup);body.append(error,actions);settings.append(body);settings.showModal();
   }
   function rewardIcon(stat){
     const modules={eggPoints:'egghatching',flowerPoints:'flowerpots',stars:'starchart',punchcardPoints:'punchcards',raceWins:'racer',meterWins:'classmeter',jarsFilled:'collections'};
@@ -244,7 +244,7 @@ function setupClassesStudents(){
   function renderDetail(animate=false){
     if(!detail.open||!activeStudent)return;
     const c=current(),name=activeStudent.name;
-    if(!c||(name&&!c.students.includes(name))){detail.close();return;}
+    if(!c||(name&&!c.students.includes(name))||(!name&&!TeacherTilesClassGrades.allowsPbis(c.gradeLevel))){detail.close();return;}
     const focusKey=detail.contains(document.activeElement)?document.activeElement.dataset.detailFocus:null;
     const scroll=detail.scrollTop;
     modalHeader(detail,name?'Student Profile':'Whole-Class Rewards');
@@ -253,6 +253,7 @@ function setupClassesStudents(){
     if(name){const edit=button('Edit Student',()=>editStudent(name),'cs-button cs-detail-edit','edit');edit.dataset.detailFocus='edit';hero.append(edit);}
     if(name&&c.requireStudentPin){const pin=c.studentProfiles[starChartStudentKey(name)]?.pin;hero.append(el('small','cs-muted','Student Emoji PIN'),el('div','cs-current-pin',pin?pin.map(n=>CLASS_CONNECT_PIN_EMOJIS[n]).join(' '):'Not set'),button('Change PIN',()=>editStudentPin(name),'cs-button'));}
     const body=el('section','cs-profile-body'+(animate?' is-entering':''));
+    if(activeStudent.view==='pbis'&&!TeacherTilesClassGrades.allowsPbis(c.gradeLevel))activeStudent.view='home';
     const view=activeStudent.view||'home';
     function navigate(next){activeStudent.view=next;renderDetail(true);detail.querySelector('.cs-profile-title')?.focus({preventScroll:true});}
     const title=el('h3','cs-profile-title',view==='pbis'?'PBIS Rewards':view==='extras'?'Extras':'Student Profile');title.tabIndex=-1;
@@ -265,7 +266,8 @@ function setupClassesStudents(){
     }
     if(view==='home'){
       const sections=el('div','cs-profile-sections');
-      sections.append(sectionButton('PBIS','pbis',c.pbisEnabled?()=>navigate('pbis'):null,c.pbisEnabled?'View rewards':'Off in Class Settings'),sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras')));
+      if(TeacherTilesClassGrades.allowsPbis(c.gradeLevel))sections.append(sectionButton('PBIS','pbis',c.pbisEnabled?()=>navigate('pbis'):null,c.pbisEnabled?'View rewards':'Off in Class Settings'));
+      sections.append(sectionButton('Assessments','assessment',null,'Coming soon'),sectionButton('ClassConnect','connect',null,'Coming soon'),sectionButton('Extras','extras',()=>navigate('extras')));
       body.append(sections);
     }else if(view==='extras'){
       const sections=el('div','cs-profile-sections');sections.append(sectionButton('Student Pets','pet',null,'Coming soon'),sectionButton('Profile Borders','borders',null,'Coming soon'),sectionButton('Podium Effects','podium',null,'Coming soon'));body.append(sections);

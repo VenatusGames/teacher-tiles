@@ -7,7 +7,7 @@ function setupPunchcards(m){
   movePbisClassHeaderToFooter(m,'.punchcard-header');
   let activeClassId='',scope='student',student='',busy=false;
   scopeToggle.hidden=true;
-  const roster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const roster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const targetKey=()=>starChartStudentKey(student);
   const currentProgress=()=>{
     const r=roster();if(!r)return 0;const progress=normalizePunchcardProgress(r.punchcards,r.students);
@@ -73,7 +73,7 @@ function setupPunchcards(m){
     },260);
   };
   const setClass=id=>{
-    const r=readClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;
+    const r=readPbisClassRosters().find(item=>item.id===id);activeClassId=r?.id||'';importView.hidden=Boolean(r);dashboard.hidden=!r;
     if(r){className.textContent=r.name;classLogo.textContent=normalizeClassLogo(r.logo);student=r.students.includes(student)?student:(r.students[0]||'')}
     render();
   };

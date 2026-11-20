@@ -65,7 +65,7 @@
 .wordcloud-module:is(:fullscreen,.is-tile-fullscreen) :is(.cc-mood-result,.cc-mood-choice){font-size:clamp(18px,min(3.2cqi,5vh),48px)}
 .cc-mood-choice:focus-visible{outline:2px solid currentColor;outline-offset:-2px}
 .cc-mood-form .cc-mood-choice:disabled{cursor:default}
-.cc-mood-choice:disabled[aria-pressed=false]{opacity:.5}
+.cc-choice-options:has(>.cc-mood-choice[aria-pressed=true])>.cc-mood-choice[aria-pressed=false]{opacity:.5}
 .cc-mood-choice[aria-pressed=true] span:last-child{text-decoration:underline;text-underline-offset:.22em}
 .cc-mood-form [role=status]{align-self:center;text-align:center}
 .cc-mood-form [role=status]:empty{display:none}

@@ -6,7 +6,7 @@
     const header=m.querySelector('.growth-header'),heading=m.querySelector('.growth-heading'),classLabel=m.querySelector('.growth-class');
     m.insertBefore(header,heading);header.prepend(heading);heading.after(classLabel);
     let activeClassId='',goal=5,showAll=true;const completed=new Set();
-    const roster=()=>readClassRosters().find(r=>r.id===activeClassId);
+    const roster=()=>readPbisClassRosters().find(r=>r.id===activeClassId);
     const goalValue=()=>goal;
     const art=(step,done)=>{
       if(eggs)return `<svg viewBox="0 0 120 130" aria-hidden="true"><ellipse cx="60" cy="116" rx="31" ry="6" fill="#9a765219"/>${done?'<text x="60" y="94" text-anchor="middle" font-size="62">😊</text><path d="M26 97 37 104 46 97 58 106 71 99 82 106 94 98Q88 125 60 121Q32 123 26 97" fill="#f3dfb4" stroke="#c8aa7b" stroke-width="2"/>':`<path d="M60 13C35 13 19 65 23 88C28 126 95 126 98 88C101 63 84 13 60 13Z" fill="#f6e8c9" stroke="#cbb68e" stroke-width="2"/><ellipse cx="46" cy="44" rx="10" ry="18" fill="#fff8e8" transform="rotate(22 46 44)"/><g fill="#c9ac7a" opacity=".42"><circle cx="74" cy="49" r="3"/><circle cx="37" cy="84" r="2.5"/><circle cx="83" cy="85" r="4"/></g>${step?`<path d="M60 18 52 40 66 49 49 62${step>1?' 65 75 48 90':''}${step>2?' 63 104 58 120':''}M49 62 34 57${step>3?'M65 75 86 70':''}" fill="none" stroke="#977b51" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`:''}`}</svg>`;

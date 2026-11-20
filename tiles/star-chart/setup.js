@@ -50,7 +50,7 @@ function setupStarChart(m){
     {weight:1,level:0,label:'1'}
   ];
 
-  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const currentRoster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
 
   const syncShowAllSize=()=>{
     showAllFrame=0;
@@ -350,7 +350,7 @@ function setupStarChart(m){
   };
 
   const loadClass=(classId,{notify=false}={})=>{
-    const next=readClassRosters().find(item=>item.id===classId);
+    const next=readPbisClassRosters().find(item=>item.id===classId);
     if(!next){
       clearAwards();activeClassId='';roster=null;progress=normalizeStarChartProgress(null,[]);render();return false;
     }

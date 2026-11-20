@@ -33,7 +33,7 @@ function setupClassMeter(m){
   let celebrating=false;
   let stopFillSfx=null;
 
-  const currentRoster=()=>readClassRosters().find(item=>item.id===activeClassId)||null;
+  const currentRoster=()=>readPbisClassRosters().find(item=>item.id===activeClassId)||null;
   const renderProgress=()=>{
     const fill=Math.max(0,Math.min(100,Number(progress.fill)||0));
     m.style.setProperty('--classmeter-fill',`${fill}%`);
@@ -141,7 +141,7 @@ function setupClassMeter(m){
   const loadClass=(classId,{notify=false}={})=>{
     stopHolding({persist:false});
     clearTimeout(celebrationTimer);celebrating=false;m.classList.remove('is-meter-filled');popup.hidden=true;
-    const next=readClassRosters().find(item=>item.id===classId);
+    const next=readPbisClassRosters().find(item=>item.id===classId);
     if(!next){activeClassId='';roster=null;progress=normalizeClassMeterProgress(null);render();return false}
     activeClassId=next.id;pendingClassId='';roster=next;progress=normalizeClassMeterProgress(next.classMeter);
     localStorage.setItem(classMeterLastClassStorageKey(),activeClassId);
