@@ -69,7 +69,7 @@ function mount(host,element,{interaction,slideId}){
   box.insertBefore(respondForm,note);
  }
  if(choice&&interaction?.submit){
-  box.insertBefore(TeacherTilesChoice.form(config,input=>interaction.submit(slideId,element.id,input),interaction.ownVote(slideId,element.id)),note);
+  box.insertBefore(TeacherTilesChoice.form(config,input=>interaction.submit(slideId,element.id,input),interaction.ownVote(slideId,element.id),element.tileType),note);
  }
  if(!choice&&!respond&&interaction?.submit){form.append(input,send);box.insertBefore(form,note);form.onsubmit=async event=>{event.preventDefault();if(closed||busy||performance.now()<until)return;const word=input.value.trim();if(!word)return;if(!pending||pending.word!==word)pending={word,requestId:crypto.randomUUID()};busy=true;button();input.disabled=true;note.textContent='Sending…';try{await interaction.submit(slideId,element.id,pending);if(closed)return;pending=null;input.value='';note.textContent='Word added!';cooldown();}catch(error){if(closed)return;if(error.code==='functions/resource-exhausted'&&/moment/.test(error.message)){note.textContent='';cooldown();}else note.textContent=String(error.message||'Could not send. Try again.').replace(/\s*\[\d{3}\]\s*$/,'');}finally{busy=false;if(!closed){input.disabled=false;button();input.focus({preventScroll:true});}}};}
  for(const name of ['click','dblclick','contextmenu','pointerdown','keydown','wheel'])box.addEventListener(name,event=>event.stopPropagation());

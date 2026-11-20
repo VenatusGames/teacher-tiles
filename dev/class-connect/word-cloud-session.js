@@ -31,7 +31,7 @@ export function responsePanel({token,student,session,result},onEnded){
   const card=make('section','cc-wordcloud-form-card'),title=make('h1');card.append(title);
   let previous;
   const update=data=>{const config=data.ballot;if(previous===JSON.stringify(config))return;previous=JSON.stringify(config);title.textContent=config.prompt;
-   const form=TeacherTilesChoice.form(config,input=>call({...routing(data),token,studentId:student.id,session,sessionId:data.status.sessionId,action:'submitVote',...input}),data.ownVotes?.standalone);
+   const form=TeacherTilesChoice.form(config,input=>call({...routing(data),token,studentId:student.id,session,sessionId:data.status.sessionId,action:'submitVote',...input}),data.ownVotes?.standalone,data.status.mode);
    card.replaceChildren(title,form);
   };update(result);
   return {card,focus:()=>card.querySelector('button:not(:disabled)')?.focus(),prompt:(_,data)=>update(data),dispose(){}};
