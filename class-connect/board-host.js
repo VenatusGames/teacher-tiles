@@ -23,7 +23,7 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="script-src 'nonce-"+nonce+"' 'strict-dynamic'; object-src 'none'; base-uri 'self'";
  doc.head.prepend(csp);
  const base=doc.createElement('base');base.href=root.href;doc.head.prepend(base);
- const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261119-session-math',root).href;base.after(boot);
+ const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261119-board-lock2',root).href;base.after(boot);
  const style=doc.createElement('style');style.textContent=`#fullscreen-toggle,#boards-toggle,#settings-toggle,#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#tile-effects-shelf-toggle,#cursors-shelf-toggle,#shop-toggle,#boards-view,#profile-modal,#settings-modal,#shop-modal,#asset-shelf,#teachertiles-intro,.workspace-upcoming-controls,.board-preview,.board-account-menu{ display:none!important}body.cc-controlled .module-delete,body.cc-controlled .module-tab-add,body.cc-controlled .tile-tab-close,body.cc-controlled .tile-appearance-toggle,body.cc-controlled .tile-settings-toggle,body.cc-controlled .tile-settings-beside-brush,body.cc-controlled #context-menu{display:none!important}.context-menu__item.cc-unavailable{display:none!important}#cc-frame-profile{position:fixed;left:14px;top:14px;z-index:999999;border:1px solid #dce2ec;background:white;padding:9px 14px;border-radius:14px;font:600 14px system-ui;display:flex;align-items:center;gap:9px}#cc-frame-profile .cc-board-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;font-size:19px}#cc-frame-profile img{width:30px;height:30px;border-radius:9px;object-fit:cover}`;style.textContent+='@media(max-width:600px){#workspace-empty-hint{top:82px;width:max-content;max-width:calc(100vw - 36px);box-sizing:border-box;text-align:center}}';style.textContent+=`
  body.cc-controlled #workspace :is(.tile-settings-toggle,.tile-skins-toggle,.tile-appearance-toggle,.tile-appearance-original,.customization-bar,.tile-settings-panel,.tile-settings-floating,.tile-settings-wrap,.highfrequency-settings-button,.tile-reset-scale,.tile-settings-beside-brush,.tile-appearance-flyout,.tile-skins-drawer),body.cc-student :is(.module-tab-add,.tile-tab-strip){display:none!important}
  body.cc-student .tile-skins-toggle,body.cc-student .tile-appearance-toggle,body.cc-student .tile-skins-drawer,body.cc-student .tile-appearance-flyout{display:none!important}
@@ -78,19 +78,28 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  };
  win.addEventListener('teachertiles:boardchange',()=>{if(teacher&&mode==='controlled'&&policy.ready&&!policy.hydrating)onChange?.(snapshot());});
  for(const type of ['pointerdown','keydown','input','wheel'])win.document.addEventListener(type,e=>{if(e.isTrusted&&policy.ready)onInput?.();},{capture:true,passive:true});
- return {update,snapshot,setLocked(locked){
-  if(!policy.controlled||Boolean(paused)===locked)return;
+ function setInputBlocked(blocked){
+  if(!policy.controlled)return;
+  policy.locked=blocked;
+  iframe.inert=blocked;
+  win.document.body.inert=blocked;
+  if(!blocked)return;
+  iframe.blur();
+  win.document.activeElement?.blur?.();
+  if(win.document.fullscreenElement)void win.document.exitFullscreen().catch(()=>{});
+ }
+ return {update,snapshot,setInputBlocked,setLocked(locked){
+  if(!policy.controlled)return;
+  if(Boolean(paused)===locked)return;
   // Keep independent student work in frame memory while displaying the teacher's copy.
   const teacherView=latest;
   if(locked){
    paused={studentView:snapshot(),teacherObjects:previous};
    initial=true;update(teacherView);
   }else{
-   const {studentView,teacherObjects}=paused;paused=null;
+   const {studentView,teacherObjects}=paused;
    initial=true;update(studentView);previous=teacherObjects;update(teacherView);
+   paused=null;
   }
-  iframe.inert=locked;
-  win.document.body.inert=locked;
-  if(locked){iframe.blur();win.document.activeElement?.blur?.();if(win.document.fullscreenElement)void win.document.exitFullscreen().catch(()=>{});}
  },setResponses(value){responses=value;paintResponses();},stop(){responseObserver.disconnect();win.document.exitFullscreen?.().catch(()=>{});win.document.body.inert=true;for(const m of win.document.querySelectorAll('.module'))m._deactivate?.();for(const media of win.document.querySelectorAll('audio,video'))media.pause();},close(){resize.disconnect();responseObserver.disconnect();for(const m of win.document.getElementById('workspace').querySelectorAll('.module'))m._cleanup?.();iframe.remove();}};
 }

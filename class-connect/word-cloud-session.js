@@ -1,4 +1,4 @@
-import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-session-math';
+import {call,active,watchRoom,watchCloud,modal} from './boards.js?v=20261119-board-lock2';
 import {openTileSession} from './tile-session-picker.js?v=20261112-controlled-inputs';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 function connect(tile,classId,name,result,exit){

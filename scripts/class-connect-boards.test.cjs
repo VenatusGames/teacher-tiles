@@ -71,7 +71,15 @@ if(deployed){
  await studentFrame.evaluate(()=>document.querySelector('.module[data-type=sticky] [contenteditable]').textContent='Local note');
  await teacher.getByRole('button',{name:'Lock Board',exact:true}).click();
  await studentFrame.waitForFunction(()=>document.body.inert);
- assert(!(await studentFrame.locator('.module[data-type=sticky]').innerText()).includes('Local note'));
+ const lockedNote=studentFrame.locator('.module[data-type=sticky] [contenteditable]');
+ const beforeLockInput=await lockedNote.innerText(),box=await lockedNote.boundingBox();
+ const point={x:box.x+box.width/2,y:box.y+box.height/2};
+ assert(await student.evaluate(({x,y})=>document.elementFromPoint(x,y)?.matches('.cc-board-input-shield'),point));
+ await student.mouse.move(point.x,point.y);await student.mouse.down();await student.mouse.move(point.x+80,point.y+35);await student.mouse.up();
+ await student.mouse.click(point.x,point.y);await student.keyboard.type('blocked input');
+ assert.equal(await lockedNote.innerText(),beforeLockInput);
+ assert.deepEqual(await lockedNote.boundingBox(),box);
+ assert(!beforeLockInput.includes('Local note'));
  await teacher.getByRole('button',{name:'Unlock Board',exact:true}).click();
  await studentFrame.waitForFunction(()=>!document.body.inert);
  assert((await studentFrame.locator('.module[data-type=sticky]').innerText()).includes('Local note'));

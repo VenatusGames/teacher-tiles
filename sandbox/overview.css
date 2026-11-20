@@ -36,7 +36,7 @@
 .overview-refresh:disabled { opacity: .65; cursor: wait }
 .overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
 .overview-metrics {
-  display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,174px),1fr));
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
   gap: 10px; margin: 10px 0 16px;
 }
 #developer-insights .overview-metrics > .overview-metric { padding: 12px 14px; text-align: left }
@@ -120,3 +120,5 @@
   font-size: 13px; font-weight: 600;
 }
 .overview-board-link:hover, .overview-board-link:focus-visible { border-color: var(--portal-blue); background: var(--pt-soft, #f4f7fc) }
+
+@media(max-width:540px){.overview-metrics{grid-template-columns:1fr}}

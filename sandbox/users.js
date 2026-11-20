@@ -27,7 +27,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
     item.querySelector('strong').textContent=user.displayName||user.email||'Unnamed account';
     item.querySelector('.user-email').textContent=(user.email||'No email address')+(user.nickname?' · '+user.nickname:'');
     if(user.subscriber||user.subscriptionPreview||user.subscriptionOverride){const crown=document.createElementNS('http://www.w3.org/2000/svg','svg');crown.setAttribute('viewBox','0 0 48 48');crown.setAttribute('class','user-crown');crown.setAttribute('role','img');crown.setAttribute('aria-label',user.subscriber?'Subscriber':user.subscriptionOverride?'Subscriber · free permanent access':'Subscriber · dev console preview');const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=user.subscriber?'Subscriber':user.subscriptionOverride?'Subscriber · free permanent access':'Subscriber · dev console preview';crown.innerHTML='<use href="assets/ui/subscriber-crown.svg#crown"/>';crown.append(title);item.querySelector('strong').append(crown);}
-    const presence=item.querySelector('.user-presence'),online=!!user.lastSeen&&Date.now()-user.lastSeen<360000;
+    const presence=item.querySelector('.user-presence'),online=!!user.lastSeen&&Date.now()-user.lastSeen<=15*60*1000;
     presence.textContent=online?'Online · active recently':user.lastSeen?'Offline · last active '+new Date(user.lastSeen).toLocaleString():'No recent activity';presence.classList.toggle('is-online',online);
     const input=item.querySelector('.user-beta-access');input.checked=user.betaAccess;input.setAttribute('aria-label','Has Beta access: '+(user.email||user.uid));
     if(user.developer){input.disabled=true;input.closest('label').title='Developer accounts already have sandbox access.';item.querySelector('.beta-toggle span').textContent='Developer Access';input.checked=true;}
@@ -43,7 +43,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
     try{const response=await call('listDeveloperUsers',{query,sort:sort.value,onlineOnly:online.checked,subscribersOnly:subscribers.checked,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
-      for(const user of response.data.users){if(online.checked&&(!user.lastSeen||Date.now()-user.lastSeen>=360000))continue;list.append(row(user));}
+      for(const user of response.data.users){if(online.checked&&(!user.lastSeen||Date.now()-user.lastSeen>15*60*1000))continue;list.append(row(user));}
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
     }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
     finally{if(attempt===generation){busy=false;refresh.disabled=more.disabled=false;}}

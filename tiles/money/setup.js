@@ -40,6 +40,8 @@ function setupMoney(m){
     const cents=pieces.reduce((sum,piece)=>sum+(denom(piece.denom)?.cents||0),0);
     totalEl.textContent=`$${(cents/100).toFixed(2)}`;
     totalEl.classList.toggle('is-hidden',!totalVisible);
+    clearButton.disabled=pieces.length===0;
+    toggleTotal.setAttribute('aria-pressed',String(totalVisible));
     toggleTotal.textContent=totalVisible?'Hide Total':'Show Total';
     countEl.textContent=`${pieces.length} ${pieces.length===1?'piece':'pieces'}`;
     empty.hidden=pieces.length>0;

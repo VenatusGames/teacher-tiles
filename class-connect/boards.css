@@ -54,5 +54,7 @@
 .cc-session-board .cc-session-lock[aria-pressed=true]{background:#ffe6ea;border-color:#c57582}
 .cc-lock-notice{display:none}
 .cc-watch-only .cc-lock-notice{display:block;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:#293349;color:white;padding:8px 14px;border-radius:10px;font:600 13px system-ui;pointer-events:none}
+.cc-board-input-shield:not([hidden]){position:absolute;inset:0;z-index:1;touch-action:none;outline:none}
+.cc-watch-only .cc-lock-notice{z-index:2}
 .cc-watch-only .cc-session-stage{pointer-events:none}
 .cc-watch-only.cc-student-board>header .cc-session-back{display:grid!important}

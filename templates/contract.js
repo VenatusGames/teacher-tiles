@@ -44,7 +44,7 @@
     pumpkincarving:s=>({cuts:list(s.cuts,100).filter(p=>typeof p==='string'&&p.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(p))}),
     pumpkinpatch:s=>({layoutVersion:3,plants:list(s.plants,24).filter(p=>p&&typeof p==='object').map(p=>({sprite:num(p.sprite,1,4,1),color:['orange','green','yellow'].includes(p.color)?p.color:'orange',x:num(p.x,5,95,50),y:num(p.y,48,94,75),size:num(p.size,7,27,15),growth:num(p.growth,0,1,0)})),progress:0,mode:'ambient',threshold:num(s.threshold,15,85,55)}),
     trickortreat:s=>({variant:Math.round(num(s.variant,0,7,0)),lastKnock:-1,reward:null}),
-    counters:s=>({pieces:list(s.pieces,200).filter(p=>p&&['red','blue','yellow','green'].includes(p.color)).map(p=>({color:p.color,x:num(p.x,-20000,20000,0),y:num(p.y,-20000,20000,0)}))}),
+    counters:s=>({...(s.layoutVersion===2?{layoutVersion:2}:{}),pieces:list(s.pieces,200).filter(p=>p&&['red','blue','yellow','green'].includes(p.color)).map(p=>({color:p.color,x:num(p.x,-20000,20000,0),y:num(p.y,-20000,20000,0)}))}),
     tenssticks:s=>({pieces:list(s.pieces,120).filter(p=>p&&typeof p==='object').map((p,i)=>({id:'piece-'+i,value:[1,10,100].includes(p.value)?p.value:1,scale:p.scale===.7?.7:1,x:num(p.x,0,640,0),y:num(p.y,0,340,0)}))}),
     tensblock:s=>({value:[1,10,100].includes(s.value)?s.value:1}),
     lavalamp:s=>({color:token(s.color)}),

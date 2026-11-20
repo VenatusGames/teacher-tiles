@@ -2,17 +2,17 @@ import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {boardFrame} from './board-host.js?v=20261119-session-math';
+import {boardFrame} from './board-host.js?v=20261119-board-lock2';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
 export const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(text,action)=>{const b=make('button','cc-session-button',text);b.type='button';b.onclick=action;return b;};
 export const active=s=>s?.active===true&&Number(s.until)>Date.now();
-export function watchRoom(room,change){
+export function watchRoom(room,change,awaitingServer){
  let off=null,expiry=0,closed=false;
  const stop=()=>{off?.();off=null;clearTimeout(expiry);};
- const start=()=>{stop();if(closed||document.hidden)return;off=onSnapshot(doc(db,'_classConnectRooms',room),{includeMetadataChanges:true},snap=>{if(snap.metadata?.fromCache)return;const s=snap.data()||null;change(s);clearTimeout(expiry);if(s?.active)expiry=setTimeout(()=>change({...s,active:false}),Math.max(0,Number(s.until)-Date.now())+50);},()=>change(null));};
- const visible=()=>document.hidden?stop():start();document.addEventListener('visibilitychange',visible);start();return ()=>{closed=true;stop();document.removeEventListener('visibilitychange',visible);};
+ const start=()=>{stop();if(closed||document.hidden)return;off=onSnapshot(doc(db,'_classConnectRooms',room),{includeMetadataChanges:true},snap=>{if(snap.metadata?.fromCache){awaitingServer?.();return;}const s=snap.data()||null;change(s);clearTimeout(expiry);if(s?.active)expiry=setTimeout(()=>change({...s,active:false}),Math.max(0,Number(s.until)-Date.now())+50);},()=>change(null));};
+ const visible=()=>{awaitingServer?.();if(document.hidden)stop();else start();};document.addEventListener('visibilitychange',visible);start();return ()=>{closed=true;stop();document.removeEventListener('visibilitychange',visible);};
 }
 // Exact teacher-owned aggregate; student pages never subscribe to cloud contents.
 export function watchCloud(room,change){let off=null;const stop=()=>{off?.();off=null;};const start=()=>{stop();if(!document.hidden)off=onSnapshot(doc(db,'_classConnectClouds',room),{includeMetadataChanges:true},snap=>{if(!snap.metadata?.fromCache)change(snap.data()||null);},error=>change(null,error));};const visible=()=>document.hidden?stop():start();document.addEventListener('visibilitychange',visible);start();return()=>{stop();document.removeEventListener('visibilitychange',visible);};}
@@ -33,10 +33,23 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  const linkChanged=()=>{if(!teacher)dialog.close();};
  window.addEventListener('teachertiles:authchange',accountChanged);window.addEventListener('hashchange',linkChanged);
  let model=result.status,frame=null,off=null,offResponses=null,closed=false,pending=null,saving=null,saveTimer=0,inputTimer=0,lastInput=0,loading=false,loadedRevision=model.revision,failed=false,ended=false,lastQueued='';
- let lockButton=null;
+ let lockButton=null,shield=null,lockNotice=null;
+ const gateInput=(locked,waiting=false)=>{
+  const watching=!teacher && model.mode==='controlled' && (locked||waiting);
+  dialog.classList.toggle('cc-watch-only',watching);
+  if(shield){
+   const newlyLocked=watching && shield.hidden;
+   shield.hidden=!watching;
+   holder.inert=watching;
+   frame?.setInputBlocked(watching);
+   if(newlyLocked)shield.focus({preventScroll:true});
+   lockNotice.textContent=waiting?'Checking board access…':'Your teacher has locked the board. Watch for now.';
+  }
+ };
  const syncLock=locked=>{
-  dialog.classList.toggle('cc-watch-only',!teacher && !!locked);
+  if(locked)gateInput(true);
   frame?.setLocked(!!locked);
+  if(!locked)gateInput(false);
   if(lockButton){lockButton.textContent=locked?'Unlock Board':'Lock Board';lockButton.setAttribute('aria-pressed',String(!!locked));}
  };
  if(model.mode==='controlled'&&teacher){
@@ -49,7 +62,11 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
   lockButton.classList.add('cc-session-lock');head.insertBefore(lockButton,close);
  }
  if(model.mode==='controlled'&&!teacher){
-  const notice=make('div','cc-lock-notice','Your teacher has locked the board. Watch for now.');notice.setAttribute('role','status');dialog.append(notice);
+  shield=make('div','cc-board-input-shield');
+  shield.hidden=true;shield.tabIndex=-1;shield.setAttribute('aria-label','Board locked by teacher');
+  dialog.append(shield);
+  lockNotice=make('div','cc-lock-notice');lockNotice.setAttribute('role','status');dialog.append(lockNotice);
+  gateInput(false,true);
  }
  const credentials=teacher?{classId}:{token,studentId:student.id,session};
  const watchResponses=()=>{if(!frame||closed||ended)return;if(teacher&&model.mode==='controlled'&&model.hasBoardInteractions){if(!offResponses)offResponses=watchCloud(result.room,(value,error)=>{if(closed||ended)return;if(error){status.textContent='Could not load live responses. Reconnecting…';return;}frame.setResponses(value?.sessionId===model.sessionId?value:null);});}else{offResponses?.();offResponses=null;frame.setResponses(null);}};
@@ -78,10 +95,10 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  dialog.addEventListener('cancel',e=>{e.preventDefault();void finish();});
  if(teacher){const end=button('End Session',async()=>{end.disabled=true;try{if(saving)await saving;await call({...credentials,action:'end',sessionId:model.sessionId});pending=null;unavailable('Session ended');end.remove();close.disabled=false;}catch(e){status.textContent=e.message;end.disabled=false;}});end.classList.add('cc-session-danger');head.insertBefore(end,close);}
  const scheduleInput=()=>{
-  if(inputTimer||closed||teacher||ended||!active(model)||lastInput<=model.lastInput)return;
+  if(inputTimer||closed||teacher||ended||model.locked||!active(model)||lastInput<=model.lastInput)return;
   const previousWrite=model.activityWrittenAt;
   inputTimer=setTimeout(async()=>{
-   inputTimer=0;if(closed||document.hidden||ended||!active(model)||lastInput<=model.lastInput)return;
+   inputTimer=0;if(closed||document.hidden||ended||model.locked||!active(model)||lastInput<=model.lastInput)return;
    // Another student already renewed the room. Wait for its next reporting window.
    if(model.activityWrittenAt!==previousWrite){scheduleInput();return;}
    try{const response=await call({...credentials,action:'activity',sessionId:model.sessionId,inputAgeMs:Math.max(0,Date.now()-lastInput)});if(!closed&&response.status.sessionId===model.sessionId)model={...model,lastInput:response.status.lastInput,activityWrittenAt:response.status.activityWrittenAt,until:response.status.until};}
@@ -102,11 +119,12 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
   }}catch(e){unavailable(e.message);}finally{loading=false;}
  };
  try{
-  frame=await boardFrame(holder,{teacher,roster,signal:opening.signal,mode:model.mode,allowedTypes:teacher&&model.mode==='controlled'?result.types:result.allowedTypes,student:teacher?null:student,onWord:async input=>{if(closed||ended||!active(model))throw Error('This board session has ended.');const response=await call({...credentials,action:'boardWord',sessionId:model.sessionId,...input});activity();return response;},onProfile:()=>void finish(),onInput:activity,onChange:snapshot=>{
+  frame=await boardFrame(holder,{teacher,roster,signal:opening.signal,mode:model.mode,allowedTypes:teacher&&model.mode==='controlled'?result.types:result.allowedTypes,student:teacher?null:student,onWord:async input=>{if(closed||ended||!active(model))throw Error('This board session has ended.');if(model.locked||holder.inert)throw Error('Your teacher has locked the board.');const response=await call({...credentials,action:'boardWord',sessionId:model.sessionId,...input});activity();return response;},onProfile:()=>void finish(),onInput:activity,onChange:snapshot=>{
    if(teacher&&model.mode==='controlled'&&!ended){const signature=JSON.stringify(snapshot);if(signature===lastQueued)return;lastQueued=signature;pending=snapshot;status.textContent='Changes waiting to share…';clearTimeout(saveTimer);saveTimer=setTimeout(send,1200);}
   }});
   if(closed){frame.close();return;}
-  frame.update(result.snapshot);syncLock(model.locked);
+  frame.update(result.snapshot);
+  if(shield)gateInput(!!model.locked,true);else syncLock(model.locked);
   if(teacher)lastQueued=JSON.stringify(frame.snapshot());
   holder.classList.remove('is-loading');
   status.textContent=teacher?(model.mode==='controlled'?'Changes you make here appear on student boards.':'Students create their own boards using the tiles you selected.'):'Your work is temporary and is cleared when you leave this board.';
@@ -114,7 +132,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
   off=watchRoom(result.room,next=>{
    if(closed)return;if(!active(next)||next.sessionId!==model.sessionId){unavailable('This board session has ended.');return;}
    model=next;syncLock(next.locked);watchResponses();scheduleInput();void refresh();
-  });
+  },()=>gateInput(!!model.locked,true));
  }catch(e){holder.classList.remove('is-loading');status.textContent=e.message||'Could not open the board. Close and try again.';}
 }
 export async function enterStudentBoard({token,student,roster,session,getProfile}){
