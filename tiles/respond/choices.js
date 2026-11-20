@@ -14,6 +14,12 @@
  const api=window.TeacherTilesChoice;
  const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
  function button(text){const b=make('button','tt-board-action',text);b.type='button';return b;}
+ function moodLabel(label){
+  const [emoji,name]=label.split(' ');
+  const icon=make('span','cc-mood-emoji',emoji);
+  icon.setAttribute('aria-hidden','true');
+  return [icon,make('span','',name)];
+ }
  api.form=(config,submit,previous,kind)=>{
   const mood=kind==='moodcheckin';
   const form=make('form','cc-choice-form'),options=make('div','cc-choice-options'),status=make('p'),send=button('Submit Vote');
@@ -24,7 +30,7 @@
    const b=button(label);
    if(mood){
     b.className='cc-mood-choice';
-    const [emoji,name]=label.split(' '),icon=make('span','cc-mood-emoji',emoji);icon.setAttribute('aria-hidden','true');b.replaceChildren(icon,make('span','',name));
+    b.replaceChildren(...moodLabel(label));
    }
    b.onclick=()=>{if(done||busy)return;if(!config.multiple)chosen.clear();if(chosen.has(i))chosen.delete(i);else chosen.add(i);paint();if(mood)form.requestSubmit();};options.append(b);return b;
   });
@@ -42,7 +48,26 @@
   for(const type of ['pointerdown','click','keydown','wheel'])form.addEventListener(type,e=>e.stopPropagation());
   return form;
  };
- api.results=(host,config,counts=[])=>{
+ api.results=(host,config,counts=[],kind)=>{
+  if(kind==='moodcheckin'){
+   host.classList.add('cc-choice-results','cc-mood-results');
+   host.setAttribute('aria-label','Mood check-in results');
+   let grid=host.querySelector('.cc-mood-totals');
+   if(!grid){
+    grid=make('div','cc-mood-totals');
+    for(const label of config.options){
+     const item=make('div','cc-mood-result');
+     item.append(...moodLabel(label),make('strong','cc-mood-count','0'));
+     grid.append(item);
+    }
+    host.replaceChildren(grid);
+   }
+   Array.from(grid.children).forEach((item,i)=>{
+    const count=String(counts[i]||0);
+    if(item.lastChild.textContent!==count)item.lastChild.textContent=count;
+   });
+   return;
+  }
   const max=Math.max(1,...counts);host.classList.add('cc-choice-results');host.setAttribute('aria-label','Vote counts');
   host.replaceChildren(...config.options.map((label,i)=>{const n=counts[i]||0,row=make('div','cc-choice-row'),caption=make('span','',label),count=make('strong','',String(n)),track=make('span','cc-choice-track'),bar=make('i');
    bar.style.width=(100*n/max)+'%';track.append(bar);row.append(caption,count,track);return row;}));
@@ -77,7 +102,7 @@
   let config=api.definition(kind),counts=[];
   if(policy)tile._wordCloudInteractionId=crypto.randomUUID();
   function draw(){prompt.value=config.prompt;
-   if(!student){api.results(stage,config,counts);return;}
+   if(!student){api.results(stage,config,counts,kind);return;}
    const key=tile.dataset.boardObjectId+':'+(tile._wordCloudInteractionId||tile.dataset.boardObjectId);
    stage.replaceChildren(api.form(config,async input=>{const result=await policy.submitWord(tile,input);policy.ownVotes[key]=result.choices;return result;},policy.ownVotes?.[key],kind));
   }
