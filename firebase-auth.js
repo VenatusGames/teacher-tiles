@@ -12,7 +12,7 @@ import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261119-respond';
 import {createTemplateLibrary} from './templates/ui.js?v=20261021-thanksgiving-polish';
 import {syncAwardedPatches} from './profile/awards.js?v=20261020-product-polish';
-import {startSiteActivity} from './account/site-activity.js';
+import {startSiteActivity} from './account/site-activity.js?v=20261119-rankings';
 import { firebaseConfig } from './firebase-config.js';
 
 

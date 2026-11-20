@@ -37,32 +37,34 @@
 .overview-refresh:disabled { opacity: .65; cursor: wait }
 .overview-types { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px }
 .overview-dashboard { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: 24px }
-.overview-metrics {
-  display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
-  width: min(100%,456px); container-type: inline-size; gap: 14px; justify-self: center;
-}
+.overview-left, .overview-metrics { display: grid; gap: 12px; min-width: 0 }
+.overview-left { gap: 20px }
 #developer-insights .overview-metrics > .overview-metric {
-  box-sizing: border-box; aspect-ratio: 1; min-width: 0; padding: clamp(9px,calc(11cqi - 30px),15px);
-  container-type: inline-size;
-  display: grid; grid-template-rows: auto 1fr auto; align-items: center; text-align: center;
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr);
+  grid-template-rows: auto auto; align-content: center; align-items: center; gap: 3px 12px;
+  min-height: 100px; width: 100%; box-sizing: border-box; padding: 15px 16px;
+  text-align: left; background: var(--surface);
 }
-.overview-metric-label { justify-content: center; font-size: 14px; font-weight: 650; gap: 7px }
-.overview-metrics .overview-symbol { width: 26px; height: 26px; border-radius: 8px }
-.overview-metrics .overview-symbol svg { width: 16px; height: 16px }
+.overview-metric-label { grid-column: 1; grid-row: 1; align-self: end; font-size: 14px; font-weight: 650; gap: 8px }
+.overview-metric-label h3 { margin: 0; font-size: inherit }
+.overview-metrics .overview-symbol { width: 30px; height: 30px; border-radius: 9px }
+.overview-metrics .overview-symbol svg { width: 18px; height: 18px }
+.overview-metric .overview-detail, .overview-metric > p { grid-column: 1; grid-row: 2; color: var(--muted); font-size: 12px; line-height: 1.35 }
+.overview-metric > [data-stat], .overview-ticket-counts { grid-column: 2; grid-row: 1 / 3 }
 .overview-metrics [data-stat] {
   display: block; color: var(--ink); font-weight: 720; font-variant-numeric: tabular-nums;
-  line-height: 1.05; letter-spacing: -.035em; text-align: center;
+  line-height: 1.1; letter-spacing: -.035em; text-align: center;
 }
-.overview-metric > [data-stat] { font-size: clamp(36px,28cqi,56px) }
+.overview-metric > [data-stat] { font-size: clamp(28px,4cqi,44px) }
+.overview-metric:has(.overview-ticket-counts):not(:has(.overview-detail)) .overview-metric-label { grid-row: 1 / 3; align-self: center }
+.overview-ticket-counts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: stretch; text-align: center; color: var(--muted); font-size: 12px; line-height: 1.35 }
+.overview-ticket-counts > span { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px; padding: 0 4px }
+.overview-ticket-counts > span + span { border-inline-start: 1px solid var(--line) }
+.overview-ticket-counts strong { font-size: clamp(22px,2.9cqi,34px) }
+.overview-ticket-counts small { display: block; font-size: 10px }
+.overview-ticket-counts [data-stat=reportedTickets] { color: #c33541 }
+[data-portal-theme=dark] .overview-ticket-counts [data-stat=reportedTickets] { color: #ff9197 }
 #developer-insights .overview-shortcut:hover { border-color: var(--accent) }
-.overview-detail, .overview-ticket-counts { color: var(--muted); font-size: 12px; line-height: 1.4 }
-.overview-ticket-counts { display: grid; align-content: center; gap: 8px }
-.overview-ticket-counts > span { display: grid; justify-items: center; gap: 2px }
-.overview-ticket-counts strong { font-size: clamp(29px,18cqi,38px) }
-.overview-ticket-counts small { font-size: inherit }
-.overview-ticket-counts small::before { content: " · " }
-#developer-insights .overview-metric { background: linear-gradient(115deg,var(--tint),var(--surface) 90%); border-color: var(--edge) }
-.overview-metric-label h3 { font-size: 14px; margin: 0 }
 .overview-symbol { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 10px; background: color-mix(in srgb,var(--accent) 18%,var(--surface)); color: color-mix(in srgb,var(--accent) 75%,var(--ink)) }
 .overview-symbol svg { width: 20px; height: 20px }
 .overview-type:hover { border-color: var(--accent) }
@@ -129,6 +131,28 @@
 @container (min-width: 780px) {
   .overview-dashboard { grid-template-columns: clamp(365px,39%,456px) minmax(0,1fr) }
 }
-@container (max-width: 350px) {
-  .overview-metrics { max-width: 195px; grid-template-columns: minmax(0,1fr) }
+@container (max-width: 380px) {
+  #developer-insights .overview-metrics > .overview-metric { gap: 3px 6px; padding: 12px; grid-template-columns: minmax(0,1fr) minmax(0,1.35fr) }
 }
+.overview-masthead .overview-board-link { justify-content: center; padding: 0 22px; min-height: 46px; font-size: 14px; gap: 10px }
+.overview-masthead .overview-refresh {
+  min-height: 42px; font-family: inherit; cursor: pointer; color: var(--portal-ink);
+  border-color: var(--portal-line); background: var(--pt-surface,white);
+}
+.overview-masthead .overview-refresh:hover { border-color: var(--portal-blue) }
+.overview-rank-group { padding-top: 14px }
+.overview-rank-group + .overview-rank-group { margin-top: 14px; border-top: 1px solid var(--line) }
+.overview-rank-group h3 { font-size: 14px; margin: 0 0 6px }
+.overview-rank-list { list-style: none; padding: 0; margin: 0; color: var(--muted); font-size: 13px }
+.overview-rank-list li { display: grid; grid-template-columns: 2ch minmax(0,1fr) auto; gap: 8px; align-items: baseline; padding: 5px 0 }
+.overview-rank-index { color: var(--muted); font-size: 11px; text-align: center }
+.overview-rank-name { color: var(--ink); overflow-wrap: anywhere }
+.overview-rank-list strong { font-size: 12px; font-variant-numeric: tabular-nums }
+.overview-rank-more, .overview-rank-close { border-radius: 8px; border: 1px solid var(--line); background: var(--soft); font: inherit }
+.overview-rank-more { margin-top: 10px; padding: 6px 12px; font-size: 12px; font-weight: 650 }
+.overview-rank-more:disabled { opacity: .55 }
+.overview-ranking-dialog { width: min(480px,90vw); box-sizing: border-box; max-height: 85vh; overflow: auto; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 20px; box-shadow: 0 12px 60px #17293d33 }
+.overview-ranking-dialog::backdrop { background: #18263866 }
+.overview-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px }
+.overview-ranking-dialog .overview-rank-list { margin-top: 12px }
+.overview-rank-close { width: 32px; height: 32px; font-size: 20px }

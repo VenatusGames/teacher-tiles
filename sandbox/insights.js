@@ -1,3 +1,4 @@
+import {createRankings} from './overview-rankings.js';
 import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-chart.js?v=20261119-insights2';
 
 const artwork = {
@@ -9,7 +10,6 @@ const artwork = {
   paid: '<path d="m3 6 5 5 4-7 4 7 5-5-2 13H5Z"/>',
   trial: '<path d="M6 3h12M6 21h12M7 3v3c0 3 3 5 5 6-2 1-5 3-5 6v3m10-18v3c0 3-3 5-5 6 2 1 5 3 5 6v3"/>',
   org: '<path d="M3 21h18M5 21V4h9v17m0-12h5v12M8 8h3m-3 4h3m-3 4h3"/>',
-  refresh: '<path d="M20 4v6h-6M4 20v-6h6M5 9a7.5 7.5 0 0 1 13-4l2 5M4 14l2 5a7.5 7.5 0 0 0 13-4"/>',
 };
 const icon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${artwork[key]}</svg>`;
 const subscriptions = {
@@ -41,10 +41,9 @@ export function createInsights(call) {
   root.innerHTML = `
     <div class="overview-heading">
       <p id="insights-status" role="status"></p>
-      <button type="button" class="overview-refresh" id="insights-refresh">${icon('refresh')} Refresh Insights</button>
     </div>
     <div class="overview-dashboard">
-    <div class="overview-metrics" role="group" aria-label="Overview Metrics">
+    <div class="overview-left"><div class="overview-metrics" role="group" aria-label="Overview Metrics">
       <button type="button" class="overview-metric overview-shortcut" data-accent="boards" data-destination="templates">
         <span class="overview-metric-label"><i class="overview-symbol">${icon('boards')}</i>Boards to Review</span>
         <strong data-stat="approvalQueue">—</strong>
@@ -70,6 +69,7 @@ export function createInsights(call) {
         </div>
       </article>
     </div>
+    <section class="overview-panel overview-rankings" aria-label="Usage Rankings"></section></div>
     <div class="overview-charts">
       <article class="overview-panel overview-activity" aria-label="User Activity"></article>
       <article class="overview-panel overview-memberships" aria-label="Subscriptions"></article>
@@ -78,7 +78,8 @@ export function createInsights(call) {
     button.onclick = () => document.querySelector(`.portal-sidebar [data-portal-view="${button.dataset.destination}"]`)?.click();
   }
   const status = root.querySelector('#insights-status');
-  const refresh = root.querySelector('#insights-refresh');
+  const refresh = document.getElementById('insights-refresh');
+  const rankings = createRankings(root.querySelector('.overview-rankings'));
   const activity = root.querySelector('.overview-activity');
   const members = root.querySelector('.overview-memberships');
   let snapshot = null, busy = false, generation = 0, failed = false;
@@ -128,6 +129,7 @@ export function createInsights(call) {
   }
   function render() {
     for (const stat of root.querySelectorAll('[data-stat]')) stat.textContent = count(snapshot?.[stat.dataset.stat]);
+    rankings.render(snapshot?.rankings,failed,snapshot !== null);
     renderCharts();
   }
   root.addEventListener('click', event => {
@@ -165,7 +167,7 @@ export function createInsights(call) {
       if (attempt !== generation) return;
       failed = true;
       status.textContent = (snapshot ? 'Showing the previous snapshot. ' : '') + 'Could not refresh. ' + (error.message || 'Please try again.');
-      if (!snapshot) renderCharts();
+      if (!snapshot) render();
     } finally {
       if (attempt === generation) {busy=false; refresh.disabled=false; root.setAttribute('aria-busy','false');}
     }

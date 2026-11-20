@@ -902,7 +902,9 @@ window.addEventListener('resize',()=>{if(menu.classList.contains('has-category-d
 window.addEventListener('teachertiles:languagechange',()=>requestAnimationFrame(applyMenuView));
 
 
-menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b||b.disabled||b.dataset.comingSoon==='true')return;createModule(b.dataset.module,spawn.x,spawn.y);closeMenu()});
+menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!b||b.disabled||b.dataset.comingSoon==='true')return;const tile=createModule(b.dataset.module,spawn.x,spawn.y);
+  if(tile && !window.ClassConnectPolicy) window.dispatchEvent(new CustomEvent('teachertiles:placed-from-menu',{detail:b.dataset.module}));
+  closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
   Object.freeze({"id":"ruler-clear","productId":"tile-skin-ruler-clear","tileType":"ruler","tileLabel":"Ruler","name":"No Background","description":"The classic ruler floats directly on your board without a tile background.","tags":"ruler measurement No Background","released":85,"preview":"tiles/ruler/assets/clear-preview.svg"}),

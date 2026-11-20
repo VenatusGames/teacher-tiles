@@ -1,0 +1,72 @@
+import {node} from './overview-chart.js?v=20261119-insights2';
+import {loadTileCatalog} from '../tiles/shared/tile-catalog.js?v=20261020-ui-fixes';
+
+const shortDate = new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'});
+const numbers = new Intl.NumberFormat();
+export function createRankings(panel) {
+  panel.append(node('h2','','Usage Rankings'));
+  function group(title) {
+    const section = node('section','overview-rank-group');
+    section.append(node('h3','',title));
+    panel.append(section);
+    return section;
+  }
+  const active = group('Most Active Users'), newest = group('Newest Users'), tiles = group('Most Used Tiles');
+  const activeNote = node('p','overview-context','Ranked by distinct days active since tracking began.');
+  active.append(activeNote);
+  tiles.append(node('p','overview-context','Signed-in Add Tile placements'));
+  const more = node('button','overview-rank-more','View Top 20');
+  more.type = 'button';
+  const dialog = node('dialog','overview-ranking-dialog');
+  dialog.setAttribute('aria-label','Top 20 Most Used Tiles');
+  const heading = node('div','overview-dialog-heading');
+  const close = node('button','overview-rank-close','×');
+  close.type = 'button';
+  close.setAttribute('aria-label','Close tile rankings');
+  heading.append(node('h2','','Top 20 Most Used Tiles'),close);
+  const extended = node('div');
+  dialog.append(heading,node('p','overview-context','Placements from the signed-in Add Tile menu since tracking began.'),extended);
+  panel.append(dialog);
+  close.onclick = () => dialog.close();
+  more.onclick = () => dialog.showModal();
+
+  let names, fetching, current, empty;
+  function list(group, rows, label, value) {
+    group.querySelector('.overview-rank-list')?.remove();
+    const content = node(rows?.length ? 'ol' : 'p','overview-rank-list');
+    if (rows?.length) {
+      rows.forEach((item,i) => {
+        const row = node('li');
+        const ordinal = node('span','overview-rank-index',String(i+1));
+        ordinal.setAttribute('aria-hidden','true');
+        row.append(ordinal,node('span','overview-rank-name',label(item)),node('strong','',value(item)));
+        content.append(row);
+      });
+    } else content.textContent = empty;
+    group.append(content);
+  }
+  function renderTiles() {
+    const rows = current?.tiles || [];
+    const label = item => names?.get(item.id) || item.id;
+    const placements = item => numbers.format(item.count);
+    list(tiles,rows.slice(0,5),label,placements);
+    list(extended,rows,label,placements);
+    tiles.append(more);
+    more.disabled = !rows.length;
+  }
+  return {render(data,failed,loaded) {
+    current = data;
+    empty = data ? 'No activity recorded yet.' : failed || loaded ? 'Rankings unavailable.' : 'Awaiting snapshot…';
+    if (!data && dialog.open) dialog.close();
+    activeNote.textContent = data?.activePartial ? 'Some leading accounts are no longer enabled. Showing eligible users from the first 12 ranked accounts.' : 'Ranked by distinct days active since tracking began.';
+    list(active,data?.active,item=>item.name,item=>numbers.format(item.days)+(item.days===1?' active day':' active days'));
+    list(newest,data?.newest,item=>item.name,item=>shortDate.format(item.createdAt));
+    renderTiles();
+    if (data?.tiles?.length && !names && !fetching) {
+      fetching = loadTileCatalog().then(catalog => {
+        names = new Map(catalog.tiles.map(tile=>[tile.id,tile.name]));
+        renderTiles();
+      }).catch(()=>{}).finally(()=>{ fetching = null; });
+    }
+  }};
+}
