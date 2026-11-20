@@ -2,7 +2,7 @@ import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {boardFrame} from './board-host.js?v=20261119-board-lock2';
+import {boardFrame} from './board-host.js?v=20261119-respond';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
 export const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
@@ -43,7 +43,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
    holder.inert=watching;
    frame?.setInputBlocked(watching);
    if(newlyLocked)shield.focus({preventScroll:true});
-   lockNotice.textContent=waiting?'Checking board access…':'Your teacher has locked the board. Watch for now.';
+   lockNotice.textContent=waiting?'Checking board access…':'Your teacher has locked the board.';
   }
  };
  const syncLock=locked=>{
@@ -119,7 +119,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
   }}catch(e){unavailable(e.message);}finally{loading=false;}
  };
  try{
-  frame=await boardFrame(holder,{teacher,roster,signal:opening.signal,mode:model.mode,allowedTypes:teacher&&model.mode==='controlled'?result.types:result.allowedTypes,student:teacher?null:student,onWord:async input=>{if(closed||ended||!active(model))throw Error('This board session has ended.');if(model.locked||holder.inert)throw Error('Your teacher has locked the board.');const response=await call({...credentials,action:'boardWord',sessionId:model.sessionId,...input});activity();return response;},onProfile:()=>void finish(),onInput:activity,onChange:snapshot=>{
+  frame=await boardFrame(holder,{teacher,roster,answered:result.answered,signal:opening.signal,mode:model.mode,allowedTypes:teacher&&model.mode==='controlled'?result.types:result.allowedTypes,student:teacher?null:student,onWord:async input=>{if(closed||ended||!active(model))throw Error('This board session has ended.');if(model.locked||holder.inert)throw Error('Your teacher has locked the board.');const response=await call({...credentials,action:typeof input.answer==='string'?'submitResponse':'boardWord',sessionId:model.sessionId,...input});activity();return response;},onProfile:()=>void finish(),onInput:activity,onChange:snapshot=>{
    if(teacher&&model.mode==='controlled'&&!ended){const signature=JSON.stringify(snapshot);if(signature===lastQueued)return;lastQueued=signature;pending=snapshot;status.textContent='Changes waiting to share…';clearTimeout(saveTimer);saveTimer=setTimeout(send,1200);}
   }});
   if(closed){frame.close();return;}
@@ -136,23 +136,23 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  }catch(e){holder.classList.remove('is-loading');status.textContent=e.message||'Could not open the board. Close and try again.';}
 }
 export async function enterStudentBoard({token,student,roster,session,getProfile}){
- const result=await call({action:'join',token,studentId:student.id,session});if(result.status.mode==='wordcloud'){const cloud=await import('./word-cloud-session.js?v=20261112-controlled-inputs');return cloud.enterWordCloud({token,student,session,getProfile,result});}if(result.status.mode==='presentation'){const viewer=await import('./presentation-session.js?v=20261112-controlled-inputs');return viewer.enterPresentation({token,student,session,getProfile,result});}await launch({teacher:false,token,student,roster,session,getProfile,result});
+ const result=await call({action:'join',token,studentId:student.id,session});if(['wordcloud','respond'].includes(result.status.mode)){const cloud=await import('./word-cloud-session.js?v=20261119-respond');return cloud.enterWordCloud({token,student,session,getProfile,result});}if(result.status.mode==='presentation'){const viewer=await import('./presentation-session.js?v=20261119-respond');return viewer.enterPresentation({token,student,session,getProfile,result});}await launch({teacher:false,token,student,roster,session,getProfile,result});
 }
 export async function teacherBoard({classId,name,roster}){
  const dialog=modal('Board Session'),body=make('div','cc-session-setup'),status=make('p','cc-session-status','Loading session…');dialog.append(body,status);
  let result;try{result=await call({action:'teacherGet',classId});}catch(e){status.textContent=e.message;return;}if(!dialog.isConnected)return;
  if(active(result.status)){
-  if(['presentation','wordcloud'].includes(result.status.mode)){
-   status.textContent='';body.append(make('h3','',name),make('p','',result.status.mode==='wordcloud'?'Word Cloud is active':'Presentation Session is active'),make('p','cc-session-status',result.status.mode==='wordcloud'?'View responses on the Word Cloud tile on your board.':'Control slides from the Presentation tile on your board.'),button('End Session',async()=>{try{await call({action:'end',classId,sessionId:result.status.sessionId});dialog.close();}catch(e){status.textContent=e.message;}}));return;
+  if(['presentation','wordcloud','respond'].includes(result.status.mode)){
+   status.textContent='';body.append(make('h3','',name),make('p','',result.status.mode==='respond'?'Respond! is active':result.status.mode==='wordcloud'?'Word Cloud is active':'Presentation Session is active'),make('p','cc-session-status',result.status.mode==='respond'?'View responses on the Respond! tile on your board.':result.status.mode==='wordcloud'?'View responses on the Word Cloud tile on your board.':'Control slides from the Presentation tile on your board.'),button('End Session',async()=>{try{await call({action:'end',classId,sessionId:result.status.sessionId});dialog.close();}catch(e){status.textContent=e.message;}}));return;
   }
   body.append(make('h3','',name),make('p','',result.status.mode==='controlled'?'Controlled Session is active':'Free Session is active'));
   body.append(button('Open Session Board',()=>{dialog.close();void launch({teacher:true,classId,roster,result});}),button('End Session',async()=>{try{await call({action:'end',classId,sessionId:result.status.sessionId});dialog.close();}catch(e){status.textContent=e.message;}}));status.textContent='Sessions end after 10 minutes without student input.';return;
  }
  let mode='controlled';const choices=make('div','cc-session-modes'),selection=make('section','cc-session-selection'),search=make('input'),grid=make('div','cc-session-tiles');selection.hidden=true;search.type='search';search.placeholder='Search available tiles…';search.setAttribute('aria-label','Search available tiles');selection.append(search,grid);
  const selected=new Set(),catalog=result.types.map(type=>{const item=document.querySelector(`.context-menu__item[data-module="${CSS.escape(type)}"]`);return {type,name:item?.querySelector('strong')?.textContent||type,icon:item?.querySelector('.context-menu__icon')?.cloneNode(true)};}).sort((a,b)=>a.name.localeCompare(b.name));
- const list=()=>{grid.replaceChildren();for(const item of catalog.filter(x=>x.type!=='wordcloud'&&x.name.toLowerCase().includes(search.value.toLowerCase()))){const b=button('',()=>{if(selected.has(item.type))selected.delete(item.type);else selected.add(item.type);list();});b.classList.add('cc-session-tile');b.setAttribute('aria-pressed',String(selected.has(item.type)));if(item.icon)b.append(item.icon.cloneNode(true));b.append(make('span','',item.name));grid.append(b);}};search.oninput=list;list();
+ const list=()=>{grid.replaceChildren();for(const item of catalog.filter(x=>!['wordcloud','respond'].includes(x.type)&&x.name.toLowerCase().includes(search.value.toLowerCase()))){const b=button('',()=>{if(selected.has(item.type))selected.delete(item.type);else selected.add(item.type);list();});b.classList.add('cc-session-tile');b.setAttribute('aria-pressed',String(selected.has(item.type)));if(item.icon)b.append(item.icon.cloneNode(true));b.append(make('span','',item.name));grid.append(b);}};search.oninput=list;list();
  for(const [key,title,description]of [['controlled','Controlled Session','You place the tiles. Each student uses their own copy.'],['free','Free Session','Choose which tiles students can add to their own boards.']]){const b=button('',()=>{mode=key;choices.querySelectorAll('button').forEach(n=>n.setAttribute('aria-pressed',String(n===b)));selection.hidden=mode!=='free';});b.setAttribute('aria-pressed',String(key===mode));b.append(make('strong','',title),make('small','',description));choices.append(b);}
  const requestId=crypto.randomUUID(),start=button('Start Session',async()=>{start.disabled=true;status.textContent='Starting session…';try{const started=await call({action:'start',classId,requestId,mode,allowedTypes:mode==='free'?[...selected]:result.types});const ready=await call({action:'teacherGet',classId,sessionId:started.status.sessionId});if(dialog.isConnected){dialog.close();void launch({teacher:true,classId,roster,result:ready});}}catch(e){status.textContent=e.message;start.disabled=false;}});
  body.append(choices,selection,make('p','cc-session-status','Some tiles are excluded for students.'),start);status.textContent='Ends automatically after 10 minutes without student input.';
 }
-window.TeacherTilesBoardSessions={teacher:teacherBoard,wordcloud:async tile=>{const module=await import('./word-cloud-session.js?v=20261112-controlled-inputs');return module.openWordCloud(tile);},presentation:async tile=>{const module=await import('./presentation-session.js?v=20261112-controlled-inputs');return module.openPresentation(tile);}};
+window.TeacherTilesBoardSessions={teacher:teacherBoard,wordcloud:async tile=>{const module=await import('./word-cloud-session.js?v=20261119-respond');return module.openWordCloud(tile);},presentation:async tile=>{const module=await import('./presentation-session.js?v=20261119-respond');return module.openPresentation(tile);}};

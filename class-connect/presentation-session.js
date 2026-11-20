@@ -1,9 +1,9 @@
-import {createInteractionChannel} from './presentation-interactions.js?v=20261112-controlled-inputs';
-import {openTileSession} from './tile-session-picker.js?v=20261112-controlled-inputs';
-import {call,active,watchRoom,modal} from './boards.js?v=20261119-board-lock2';
+import {createInteractionChannel} from './presentation-interactions.js?v=20261119-respond';
+import {openTileSession} from './tile-session-picker.js?v=20261119-respond';
+import {call,active,watchRoom,modal} from './boards.js?v=20261119-respond';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
-const root=new URL('../',import.meta.url),version='20261112-controlled-inputs';
+const root=new URL('../',import.meta.url),version='20261119-respond';
 const sourceKey=info=>JSON.stringify(info?.presentation);
 function showStatus(tile,text){let message=tile.querySelector('.presentation-connection-status');if(!message){message=make('p','presentation-connection-status');message.setAttribute('role','status');(tile._classConnectStatusHost||tile.querySelector('.presentation-tile-viewport')).append(message);}message.textContent=text;message.hidden=!text;tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));}
 // A single ordered publisher coalesces rapid navigation and sends only slide indices.
@@ -11,7 +11,7 @@ function controller(tile,classId,name,result,exit){
  let status=result.status,desired=status.slideIndex,sending=false,closed=false,ending=false,timer=0,off=null,problem='',retrying=false,endRequested=false;
  const owner=window.TeacherTilesAuth?.user?.uid,source=sourceKey(tile._classConnectPresentation());
  const connect=tile.querySelector('[data-player=classconnect]');
- const stage=tile._classConnectStage||tile.querySelector('.presentation-tile-stage'),channel=createInteractionChannel({room:result.room,sessionId:status.sessionId,deck:tile._classConnectPresentation().document});stage._presentationInteraction=channel;channel.setSlide(status.slideIndex);
+ const stage=tile._classConnectStage||tile.querySelector('.presentation-tile-stage'),channel=createInteractionChannel({room:result.room,sessionId:status.sessionId,classId,deck:tile._classConnectPresentation().document});stage._presentationInteraction=channel;channel.setSlide(status.slideIndex);
  const notify=()=>tile.dispatchEvent(new CustomEvent('teachertiles:presentation-connection'));
  const dispose=()=>{if(closed)return;closed=true;clearTimeout(timer);off?.();channel.dispose();delete stage._presentationInteraction;removal.disconnect();exit.dispose();window.removeEventListener('pagehide',leave);window.removeEventListener('beforeunload',beforeLeave);tile.removeEventListener('teachertiles:presentation-slide',changed);window.removeEventListener('teachertiles:authchange',auth);window.removeEventListener('online',retry);window.removeEventListener('teachertiles:accountchange',access);tile.classList.remove('is-classconnect-live');connect?.setAttribute('aria-label','ClassConnect presentation');if(tile._classConnectSession===api)delete tile._classConnectSession;if(tile.isConnected)tile._classConnectRefresh?.();notify();};
  async function send(){
@@ -44,8 +44,8 @@ export async function openPresentation(tile){return openTileSession(tile,{getInf
 let resources;
 async function renderer(){
  if(!resources)resources=(async()=>{
-  for(const file of ['presentations/styles.css','presentations/transitions.css','tiles/word-cloud/styles.css']){if([...document.querySelectorAll('link[rel=stylesheet]')].some(l=>new URL(l.href).pathname.endsWith('/'+file)))continue;const link=make('link');link.rel='stylesheet';link.href=new URL(file+'?v='+version,root).href;await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>{link.remove();reject(Error('Could not load presentation styles. Please try again.'));};document.head.append(link);});}
-  for(const [key,file]of [['TeacherTilesWordCloud','tiles/word-cloud/index.js'],['TeacherTilesPresentationInteractive','presentations/interactive.js'],['TeacherTilesPresentationCatalog','presentations/catalog.js'],['TeacherTilesPresentationThemes','presentations/themes.js'],['TeacherTilesPresentationTransitions','presentations/transitions.js'],['TeacherTilesPresentationObjects','presentations/objects-contract.js'],['TeacherTilesPresentationModules','presentations/objects.js'],['TeacherTilesPresentationRenderer','presentations/readonly.js']])if(!window[key])await import(new URL(file+'?v='+version,root).href);
+  for(const file of ['presentations/styles.css','presentations/transitions.css','tiles/word-cloud/styles.css','tiles/respond/styles.css']){if([...document.querySelectorAll('link[rel=stylesheet]')].some(l=>new URL(l.href).pathname.endsWith('/'+file)))continue;const link=make('link');link.rel='stylesheet';link.href=new URL(file+'?v='+version,root).href;await new Promise((resolve,reject)=>{link.onload=resolve;link.onerror=()=>{link.remove();reject(Error('Could not load presentation styles. Please try again.'));};document.head.append(link);});}
+  for(const [key,file]of [['TeacherTilesRespond','tiles/respond/ui.js'],['TeacherTilesWordCloud','tiles/word-cloud/index.js'],['TeacherTilesPresentationInteractive','presentations/interactive.js'],['TeacherTilesPresentationCatalog','presentations/catalog.js'],['TeacherTilesPresentationThemes','presentations/themes.js'],['TeacherTilesPresentationTransitions','presentations/transitions.js'],['TeacherTilesPresentationObjects','presentations/objects-contract.js'],['TeacherTilesPresentationModules','presentations/objects.js'],['TeacherTilesPresentationRenderer','presentations/readonly.js']])if(!window[key])await import(new URL(file+'?v='+version,root).href);
  })().catch(error=>{resources=null;throw error;});await resources;
 }
 export async function enterPresentation({token,student,session,getProfile,result}){
@@ -53,7 +53,7 @@ export async function enterPresentation({token,student,session,getProfile,result
  const viewport=make('div','cc-presentation-viewport'),stage=make('div','pres-slide cc-presentation-slide'),controls=make('div','cc-presentation-corners'),status=make('p','cc-presentation-status','Loading presentation…');status.setAttribute('role','status');viewport.append(stage);dialog.append(viewport,controls,status);
  const back=button('‹ '+student.name,()=>dialog.close());back.setAttribute('aria-label','Back to Profile');
  const fullscreen=button('',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else{await document.documentElement.requestFullscreen();ownsFullscreen=true;}}catch{status.textContent='Fullscreen is unavailable in this browser.';}});fullscreen.setAttribute('aria-label','Enter Fullscreen');fullscreen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4H4v5M15 4h5v5M20 15v5h-5M4 15v5h5"/></svg>';controls.append(back,fullscreen);
- let closed=false,off=null,index=-1,revision=0,ownsFullscreen=false,quietTimer=0,ready=false;const deck=result.presentation,credentials={token,studentId:student.id,session,sessionId:result.status.sessionId},cache=new Map(),urls=new Set(),channel=createInteractionChannel({room:result.room,sessionId:result.status.sessionId,deck,credentials});
+ let closed=false,off=null,index=-1,revision=0,ownsFullscreen=false,quietTimer=0,ready=false;const deck=result.presentation,credentials={token,studentId:student.id,session,sessionId:result.status.sessionId},cache=new Map(),urls=new Set(),channel=createInteractionChannel({room:result.room,sessionId:result.status.sessionId,deck,credentials,answered:result.answered});
  const fit=()=>{const w=Math.min(viewport.clientWidth,viewport.clientHeight*16/9);stage.style.width=w+'px';stage.style.height=w*9/16+'px';};const resize=new ResizeObserver(fit);resize.observe(viewport);
  const reveal=()=>{dialog.classList.remove('is-quiet');clearTimeout(quietTimer);quietTimer=setTimeout(()=>{if(ready)dialog.classList.add('is-quiet');},2200);};dialog.addEventListener('pointermove',reveal);dialog.addEventListener('focusin',reveal);
  const fullChange=()=>{fullscreen.setAttribute('aria-label',document.fullscreenElement?'Exit Fullscreen':'Enter Fullscreen');fit();};document.addEventListener('fullscreenchange',fullChange);

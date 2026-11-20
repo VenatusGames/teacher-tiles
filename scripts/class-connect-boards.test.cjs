@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
-const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['counters','grapher','wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['respond','counters','grapher','wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
 const interactions=require('../../teachertiles-functions-dev/functions/firebase-service/class-connect-board-interactions');
 let cloud=null,clock=Date.now();
 let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0,gateRequests=0,portalRequests=0;
@@ -27,6 +27,8 @@ if(deployed){
   if(data.action==='lock'){status={...status,locked:data.locked};await broadcast();return {status};}
   if(data.action==='join')return {room,status,snapshot,allowedTypes};
   if(data.action==='publish'){assert.equal(data.expectedRevision,status.revision);snapshot=structuredClone(data.snapshot);const entries=interactions.manifest(snapshot);cloud={...(cloud||{sessionId:status.sessionId,total:0,activities:{},receipts:[],lastByStudent:{}}),entries};status={...status,revision:status.revision+1,hasBoardInteractions:!!entries.length};await broadcast();return {status,warnings:[]};}
+  if(data.action==='submitResponse'){const entry=cloud.entries.find(e=>e.tileId===data.tileId&&e.tabId===data.tabId&&e.kind==='respond');assert(entry);
+   cloud.activities[entry.key]={answers:[{name:'Alice',text:data.answer}]};await broadcast();return {accepted:true};}
   if(data.action==='boardWord'){clock+=2100;cloud=interactions.add(cloud,interactions.manifest(snapshot),data.studentId,interactions.request(data),clock)||cloud;await broadcast();return {accepted:true,word:data.word.toLowerCase()};}
   if(data.action==='end'){status={...status,active:false};await broadcast();return {status};}
   if(data.action==='activity'){status={...status,lastInput:Date.now(),activityWrittenAt:Date.now(),until:Date.now()+600000};await broadcast();return {status};}
@@ -127,6 +129,14 @@ if(deployed){
  await student.bringToFront();await studentFrame.locator('.is-wordcloud-input').nth(1).getByRole('textbox',{name:'Your word',exact:true}).fill('Happy');await studentFrame.locator('.is-wordcloud-input').nth(1).getByRole('button',{name:'Send Word',exact:true}).click();await teacher.bringToFront();await teacherFrame.locator('text[data-word=happy]').waitFor();
  await teacher.screenshot({path:path.join(process.env.TEMP,'controlled-wordcloud-teacher.png')});await student.bringToFront();await student.screenshot({path:path.join(process.env.TEMP,'controlled-wordcloud-student.png')});
  await teacherFrame.evaluate(()=>deleteModules([document.querySelector('.wordcloud-module')]));await studentFrame.waitForFunction(()=>document.querySelectorAll('.is-wordcloud-input').length===1,null,{timeout:15000});
+ await teacherFrame.evaluate(()=>{const b=TeacherTilesBoard.capture();createModule('respond',(innerWidth/2-b.camera.x)/b.camera.scale,(innerHeight/3-b.camera.y)/b.camera.scale);});
+ const question=studentFrame.locator('.respond-module');
+ await question.getByRole('textbox',{name:'Your response'}).fill('I see two groups.');
+ await question.getByRole('button',{name:'Send Response'}).click();await question.getByText('Response submitted').waitFor();
+ await teacher.bringToFront();await teacherFrame.locator('.respond-module .respond-answer').getByText('Alice').waitFor();
+ assert.equal(await question.locator('.respond-answer').count(),0);
+ assert(!JSON.stringify(snapshot).includes('I see two groups.'));
+ await student.bringToFront();
  // A student leaving and reentering starts fresh, never restoring their work.
  await student.frames()[1].getByRole('button',{name:'Back to Profile',exact:true}).click();
  await student.getByRole('button',{name:'Enter Board',exact:true}).click();

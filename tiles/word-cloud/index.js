@@ -25,22 +25,33 @@ function render(host,rows){
  }for(const node of old.values())node.remove();
 }
 function setup(tile){
+ const respond=tile.dataset.type==='respond';
  setupClassroomTileControls(tile);
  if(window.ClassConnectPolicy)tile._wordCloudInteractionId=crypto.randomUUID();
  const stage=tile.querySelector('.wordcloud-stage'),prompt=tile.querySelector('.wordcloud-prompt'),empty=tile.querySelector('.wordcloud-empty'),total=tile.querySelector('.wordcloud-total'),status=tile.querySelector('.wordcloud-status'),connect=tile.querySelector('.wordcloud-connect');let words=[],disposed=false;
- const paint=()=>{render(stage,words);empty.hidden=words.length>0;total.textContent=words.length?words.reduce((sum,w)=>sum+w.count,0)+' words shared':'';};
- tile._wordCloudUpdate=rows=>{words=clean(rows);paint();};
- tile._wordCloudInfo=()=>({prompt:prompt.value.trim()||'Share a word with your class'});
- tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live;tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label',live?'ClassConnect word cloud · Live':'ClassConnect word cloud');};
+ const paint=()=>{if(respond)TeacherTilesRespond.list(stage,words,true);else render(stage,words);empty.hidden=words.length>0;total.textContent=respond?(words.length?words.length+' responses':''):words.length?words.reduce((sum,w)=>sum+w.count,0)+' words shared':'';};
+ tile._wordCloudUpdate=rows=>{words=respond?(rows||[]):clean(rows);paint();};
+ tile._wordCloudInfo=()=>({prompt:prompt.value.trim()||(respond?'What do you think?':'Share a word with your class')});
+ tile._wordCloudStatus=(text,live)=>{status.textContent=text;prompt.disabled=live;if(respond)empty.querySelector('small').textContent=live?'Waiting for responses…':'Start a ClassConnect session to begin';tile.classList.toggle('is-classconnect-live',live);connect.setAttribute('aria-label','ClassConnect '+(respond?'Respond!':'word cloud')+(live?' · Live':''));};
  connect.onclick=()=>window.TeacherTilesBoardSessions.wordcloud(tile).catch(e=>status.textContent=e.message);
- prompt.addEventListener('change',()=>(tile._presentationChanged||window.notifyBoardChanged)?.('wordcloud-question'));
- tile._boardGetState=()=>({...window.ClassConnectPolicy?{interactionId:tile._wordCloudInteractionId}:{},prompt:prompt.value,words:window.ClassConnectPolicy?[]:clean(words)});
- tile._boardSetState=value=>{void tile._classConnectSession?.end();if(window.ClassConnectPolicy&&value?.interactionId)tile._wordCloudInteractionId=value.interactionId;prompt.value=String(value?.prompt||'').slice(0,160);words=clean(value?.words);paint();};
+ prompt.addEventListener('change',event=>{
+  if(respond&&event.isTrusted&&window.ClassConnectPolicy&&!window.ClassConnectPolicy.student)tile._wordCloudInteractionId=crypto.randomUUID();
+  (tile._presentationChanged||window.notifyBoardChanged)?.('wordcloud-question');
+ });
+ tile._boardGetState=()=>({...window.ClassConnectPolicy?{interactionId:tile._wordCloudInteractionId}:{},prompt:prompt.value,...(respond?{}:{words:window.ClassConnectPolicy?[]:clean(words)})});
+ tile._boardSetState=value=>{void tile._classConnectSession?.end();if(window.ClassConnectPolicy&&value?.interactionId)tile._wordCloudInteractionId=value.interactionId;prompt.value=String(value?.prompt||'').slice(0,160);words=respond?[]:clean(value?.words);paint();};
  const appearanceObserver=new MutationObserver(paint);appearanceObserver.observe(tile,{attributes:true,attributeFilter:['data-font']});
  const cleanup=tile._cleanup;tile._cleanup=()=>{if(disposed)return;disposed=true;appearanceObserver.disconnect();void tile._classConnectSession?.end();cleanup?.();};
  if(window.ClassConnectPolicy||tile.dataset.presentationEmbedded==='true')connect.hidden=true;paint();
  if(window.ClassConnectPolicy?.controlled&&window.ClassConnectPolicy.student){
   tile.classList.add('is-wordcloud-input');prompt.disabled=true;prompt.placeholder='Send a word to the Word Cloud';
+  if(respond){
+   prompt.placeholder='What do you think?';
+   const policy=window.ClassConnectPolicy,content=tile.querySelector('.wordcloud-content');
+   const mount=()=>{const key=()=>tile.dataset.boardObjectId+':'+(tile._wordCloudInteractionId||tile.dataset.boardObjectId);
+    content.replaceChildren(TeacherTilesRespond.form(async data=>{await policy.submitWord(tile,data);policy.answered.add(key());},policy.answered?.has(key())));};
+   const restore=tile._boardSetState;tile._boardSetState=value=>{restore(value);mount();};mount();total.hidden=true;status.hidden=true;return;
+  }
   const form=document.createElement('form'),input=document.createElement('input'),send=document.createElement('button'),feedback=document.createElement('p');form.className='wordcloud-input-form';input.type='text';input.maxLength=40;input.required=true;input.autocomplete='off';input.placeholder='Type a word…';input.setAttribute('aria-label','Your word');send.type='submit';send.textContent='Send Word';feedback.className='wordcloud-input-feedback';feedback.setAttribute('role','status');form.append(input,send,feedback);tile.querySelector('.wordcloud-content').replaceChildren(form);total.hidden=true;status.hidden=true;
   let busy=false,pending=null,until=0,timer=0;
   const button=()=>{const n=Math.max(0,Math.ceil((until-performance.now())/1000));send.disabled=busy||n>0;send.textContent=n?'Send in '+n+'s':'Send Word';if(!n&&timer){clearInterval(timer);timer=0;}};

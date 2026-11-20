@@ -15,7 +15,7 @@ import '../tiles/interactive-timers/garden-rocket.js';
 import {renderTimerPreview} from './timer-preview.js?v=20261021-thanksgiving';
 import '../tiles/visual-directions/index.js?v=20261016-directions-fit';
 const EDITABLE_TILE_HEADINGS={
-  wordcloud:'.wordcloud-heading',
+  respond:'.wordcloud-heading',wordcloud:'.wordcloud-heading',
   thankfulturkey:'.thanksgiving-heading',
   wordoftheday:'.widget-title',
   quoteoftheday:'.widget-title',
@@ -478,7 +478,7 @@ function applyPreviewState(module, state) {
     module.querySelector('.progress-bar-remaining').textContent='00:00';
     module.querySelector('.progress-bar-end-label').textContent='';
   }
-  if(state.type==='wordcloud')module.querySelector('.wordcloud-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
+  if(['wordcloud','respond'].includes(state.type))module.querySelector('.wordcloud-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
   if(state.type==='pumpkincarving')module.querySelector('.halloween-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');
   const headingSelector=EDITABLE_TILE_HEADINGS[state.type];
   const heading=headingSelector?module.querySelector(headingSelector):null;
@@ -642,6 +642,7 @@ function applyPreviewState(module, state) {
     }
   }
 
+  if(state.type==='respond'&&special)module.querySelector('.wordcloud-prompt').value=String(special.prompt||'');
   if(state.type==='wordcloud'&&special){const stage=module.querySelector('.wordcloud-stage');if(stage&&window.TeacherTilesWordCloud){window.TeacherTilesWordCloud.render(stage,special.words);module.querySelector('.wordcloud-empty').hidden=!!special.words?.length;module.querySelector('.wordcloud-prompt').value=String(special.prompt||'');}}
   if (state.type === "presentation" && special?.previewSrc && /^data:image\/(webp|png|jpeg);base64,/.test(special.previewSrc) && special.previewSrc.length<=40000) {
     const stage=module.querySelector('.presentation-tile-stage'),empty=module.querySelector('.presentation-tile-empty');

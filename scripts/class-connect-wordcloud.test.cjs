@@ -6,8 +6,9 @@ const root=process.cwd(),token='t'.repeat(43),room='a'.repeat(64),base='https://
  const context=await browser.newContext({viewport:{width:1400,height:900}}),pages=[],errors=[],calls=[];let status=null,cloud=null,prompt='',clock=Date.now(),loseReply=false,cooldownReply=false;
  const push=async()=>{for(const p of pages)await p.evaluate(({status,cloud})=>{window.__data={'_classConnectRooms':status,'_classConnectClouds':cloud};window.__pushData?.('_classConnectRooms',status);window.__pushData?.('_classConnectClouds',cloud);},{status,cloud}).catch(()=>{});};
  const api=async(name,data)=>{calls.push({name,...data});if(name==='classConnectView')return {boardRoom:room,view:{name:'Owls',students:[{id:'alice',name:'Alice',initials:'A',hue:140,rewards:{}},{id:'bob',name:'Bob',initials:'B',hue:220,rewards:{}}]}};assert.equal(name,'classConnectBoard');
- if(data.action==='start'){assert.equal(data.mode,'wordcloud');prompt=data.prompt;status={active:true,mode:'wordcloud',sessionId:'cloud-session',revision:1,until:Date.now()+600000};cloud={owner:'owner',sessionId:status.sessionId,words:[],total:0,receipts:[],lastByStudent:{}};await push();return {room,status};}
- if(data.action==='join')return {room,status,prompt};
+ if(data.action==='start'){assert(['wordcloud','respond'].includes(data.mode));prompt=data.prompt;status={active:true,mode:data.mode,sessionId:'cloud-session',revision:1,until:Date.now()+600000};cloud={owner:'owner',sessionId:status.sessionId,words:[],total:0,receipts:[],lastByStudent:{}};await push();return {room,status};}
+ if(data.action==='join')return {room,status,prompt,answered:cloud?.activities?.standalone?['standalone']:[]};
+ if(data.action==='submitResponse'){cloud.activities={standalone:{answers:[{name:'Alice',text:data.answer}]}};await push();return {accepted:true};}
  if(data.action==='submitWord'){if(cooldownReply){cooldownReply=false;return {__cooldown:true};}clock+=3000;const input=cloudLogic.request(data),next=cloudLogic.add(cloud,data.studentId,input,clock);if(next){cloud=next;await push();}if(loseReply){loseReply=false;throw Error('Connection interrupted. Try again.');}return {accepted:true,word:input.word};}
  if(data.action==='end'){status={...status,active:false};cloud=null;await push();return {status};}if(data.action==='teacherGet')return {room,status};throw Error('Unexpected '+data.action);
  };await context.exposeBinding('__api',(_,name,data)=>api(name,data));
@@ -42,5 +43,16 @@ const root=process.cwd(),token='t'.repeat(43),room='a'.repeat(64),base='https://
  const saved=await tile.evaluate(m=>m._boardGetState());assert(!JSON.stringify(saved).includes('cloud-session'));assert.equal(saved.words.length,2);
  await tile.locator('.module-delete').evaluate(b=>b.click());for(const p of [alice,bob]){await p.locator('.cc-wordcloud-student').waitFor({state:'detached'});await p.getByRole('button',{name:'Enter Board',exact:true}).waitFor();}assert.equal(status.active,false);assert.equal(cloud,null);assert.deepEqual(errors,[]);
  await teacher.evaluate(()=>{const m=createModule('wordcloud',500,150,{record:false});m.dataset.bg='cream';m.dataset.font='lora';m.dataset.text='blue';m.querySelector('.wordcloud-heading').textContent='Our ideas';m._wordCloudUpdate([{text:'kindness',count:3}]);TeacherTilesBoard.load(TeacherTilesBoard.capture());});assert.equal(await teacher.locator('.wordcloud-module').getAttribute('data-bg'),'cream');assert.equal(await teacher.locator('.wordcloud-module').getAttribute('data-font'),'lora');assert.equal(await teacher.locator('.wordcloud-heading').textContent(),'Our ideas');assert.equal(await teacher.locator('text[data-word=kindness]').getAttribute('data-count'),'3');assert.deepEqual(errors,[]);
- console.log('PASS Word Cloud: catalog, teacher picker, two students, repeated-word sizing, retry dedupe, private listener, mobile, 120-word collision-free layout, tile deletion.');
+ await teacher.bringToFront();
+ await teacher.evaluate(()=>{const m=createModule('respond',500,150,{record:false});m.querySelector('.wordcloud-prompt').value='What did you notice?';});
+ const responseTile=teacher.locator('.respond-module');await responseTile.hover();await responseTile.locator('.wordcloud-connect').click();
+ await teacher.getByRole('button',{name:/ClassConnect Start a class session/}).click();await teacher.getByRole('button',{name:/Owls.*2 students/}).click();
+ await alice.bringToFront();await alice.getByRole('button',{name:'Enter Board',exact:true}).click();
+ await alice.getByRole('heading',{name:'What did you notice?'}).waitFor();await alice.getByRole('textbox',{name:'Your response'}).fill('Three patterns');
+ await alice.getByRole('button',{name:'Send Response'}).click();await alice.getByText('Response submitted').waitFor();
+ await teacher.bringToFront();await responseTile.locator('.respond-answer').getByText('Alice').waitFor();
+ assert(!JSON.stringify(await responseTile.evaluate(m=>m._boardGetState())).includes('Three patterns'));
+ await alice.bringToFront();await alice.getByRole('button',{name:/Back to Profile/}).click();await alice.getByRole('button',{name:'Enter Board',exact:true}).click();await alice.getByText('Response submitted').waitFor();
+ await teacher.bringToFront();await responseTile.evaluate(m=>m._classConnectSession.end());await alice.locator('.cc-wordcloud-student').waitFor({state:'detached'});assert.deepEqual(errors,[]);
+ console.log('PASS Respond! standalone and Word Cloud: catalog, teacher picker, two students, repeated-word sizing, retry dedupe, private listener, mobile, 120-word collision-free layout, tile deletion.');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});
