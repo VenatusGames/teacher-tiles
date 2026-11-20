@@ -151,6 +151,7 @@
 .overview-tile-card .tm-icon svg { width:24px; height:24px }
 .overview-rank-close { border-radius: 8px; border: 1px solid var(--line); background: var(--soft); font: inherit }
 #developer-insights .overview-rank-more { display:inline-flex; align-items:baseline; gap:.35em; margin-top:6px; padding:4px 0; border:0; box-shadow:none; background:transparent; color:var(--muted); font-weight:500; font-size:12px; line-height:1.4 }
+#developer-insights .overview-rank-group > .overview-rank-more { display:flex; width:fit-content; margin-inline-start:auto }
 #developer-insights .overview-rank-more:hover:not(:disabled) { color:var(--ink); text-decoration:underline; text-underline-offset:3px }
 #developer-insights .overview-rank-more:disabled { opacity:.55; cursor:default }
 #developer-insights .overview-rank-more[hidden] { display:none }
