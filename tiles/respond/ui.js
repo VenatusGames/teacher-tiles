@@ -3,7 +3,13 @@
 function form(submit,already=false){
  const form=document.createElement('form'),input=document.createElement('textarea'),send=document.createElement('button'),feedback=document.createElement('p');
  form.className='respond-form';input.maxLength=500;input.required=true;input.placeholder='Type your response…';input.setAttribute('aria-label','Your response');
- send.type='submit';send.textContent='Send Response';feedback.setAttribute('role','status');form.append(input,send,feedback);
+ input.rows=2;
+ // Older browsers lack content-sized form fields. The CSS maximum still bounds the fallback.
+ if(!CSS.supports('field-sizing','content')){
+  const fit=()=>{input.style.height='auto';input.style.height=(input.scrollHeight+parseFloat(getComputedStyle(input).borderTopWidth)+parseFloat(getComputedStyle(input).borderBottomWidth))+'px';};
+  input.addEventListener('input',fit);input.addEventListener('focus',fit);
+ }
+ send.className='tt-board-action';send.type='submit';send.textContent='Send Response';feedback.setAttribute('role','status');form.append(input,send,feedback);
  function finish(){input.hidden=true;send.hidden=true;feedback.textContent='Response submitted';}
  if(already)finish();
  form.onsubmit=async event=>{

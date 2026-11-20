@@ -1,4 +1,4 @@
-import {createRankings} from './overview-rankings.js';
+import {createRankings} from './overview-rankings.js?v=20261119-user-cards';
 import { node, count, snapshotSeries, dailySeries, drawChart } from './overview-chart.js?v=20261119-insights2';
 
 const artwork = {
@@ -44,6 +44,13 @@ export function createInsights(call) {
     </div>
     <div class="overview-dashboard">
     <div class="overview-left"><div class="overview-metrics" role="group" aria-label="Overview Metrics">
+      <article class="overview-metric" data-accent="online">
+        <div class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i><h3>Active Users</h3></div>
+        <div class="overview-ticket-counts">
+          <span><strong data-stat="online">—</strong><span>Online Now<small>Last 15 minutes</small></span></span>
+          <span><strong data-stat="active24Hours">—</strong>Last 24 Hours</span>
+        </div>
+      </article>
       <button type="button" class="overview-metric overview-shortcut" data-accent="boards" data-destination="templates">
         <span class="overview-metric-label"><i class="overview-symbol">${icon('boards')}</i>Boards to Review</span>
         <strong data-stat="approvalQueue">—</strong>
@@ -60,13 +67,6 @@ export function createInsights(call) {
       <article class="overview-metric" data-accent="accounts">
         <div class="overview-metric-label"><i class="overview-symbol">${icon('accounts')}</i><h3>Total Accounts</h3></div>
         <strong data-stat="total">—</strong><p>Enabled accounts</p>
-      </article>
-      <article class="overview-metric" data-accent="online">
-        <div class="overview-metric-label"><i class="overview-symbol">${icon('online')}</i><h3>Active Users</h3></div>
-        <div class="overview-ticket-counts">
-          <span><strong data-stat="online">—</strong><span>Online Now<small>Last 15 minutes</small></span></span>
-          <span><strong data-stat="active24Hours">—</strong>Last 24 Hours</span>
-        </div>
       </article>
     </div>
     <section class="overview-panel overview-rankings" aria-label="Usage Rankings"></section></div>

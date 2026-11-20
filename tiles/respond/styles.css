@@ -2,17 +2,24 @@
 .respond-answer{padding:.55em .7em;border-bottom:1px solid #8898ac44;white-space:pre-wrap;line-height:1.45}
 .respond-answer strong{display:block;font-size:.8em;opacity:.75}
 .respond-form{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:.55em;min-height:0}
-.respond-form textarea{box-sizing:border-box;width:100%;min-height:3em;resize:none;padding:.65em .8em;border:1px solid #bdcad8;border-radius:9px;background:#fff;color:#263249;font:inherit}
-.respond-form button,.respond-action{align-self:start;padding:.5em .85em;border:1px solid #c9d5e5;border-radius:8px;background:#f4f7fb;color:#293349;font:600 .9em/1.2 system-ui;cursor:pointer}
+.respond-form textarea{box-sizing:border-box;width:100%;field-sizing:content;min-height:3.8em;max-height:min(11em,38dvh);overflow-y:auto;line-height:1.4;resize:none;padding:.65em .8em;border:1px solid #bdcad8;border-radius:9px;background:#fff;color:#263249;font:inherit}
+.respond-form button,.respond-action{align-self:start}
 .respond-form p{min-height:1em;margin:0;font-size:.85em}.respond-form [hidden]{display:none!important}
 .respond-module .respond-results{position:absolute;inset:0}.respond-module .respond-form{height:100%;padding:0 12px}
-.cc-wordcloud-form-card .respond-form{display:flex;font-size:clamp(18px,2vw,26px)}
+.cc-wordcloud-form-card .respond-form{display:flex;align-items:stretch;font-size:clamp(18px,2vw,26px)}
 .pres-interactive-wordcloud .respond-results{flex:1}
 .pres-interactive-wordcloud [hidden]{display:none!important}
 .pres-interactive-wordcloud .respond-form{display:flex;flex-direction:column;align-items:stretch;font-size:clamp(12px,4cqw,22px)}
-.pres-interactive-wordcloud .respond-form textarea{flex:1;min-height:2.7em}
+.pres-interactive-wordcloud .respond-form textarea{flex:none;min-height:3.2em;max-height:min(8em,32dvh)}
 .pres-interactive-wordcloud:has(.respond-form) .respond-results:not([hidden]){min-height:2em}
 .pres-interactive-wordcloud:has(.respond-form){overflow:auto}
 .pres-interactive-wordcloud .respond-actions{display:flex;gap:4px;flex-wrap:wrap}
 .respond-focus{box-sizing:border-box;position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;padding:clamp(18px,4vw,60px);background:white;color:#263249;font:clamp(18px,2vw,34px)/1.4 Inter,system-ui}
 .respond-focus[open]{display:flex;flex-direction:column;gap:.6em}.respond-focus h2{margin:0}.respond-focus .respond-focus-art{flex:1;min-height:0}.respond-focus .wordcloud-art{width:100%;height:100%}
+
+.cc-wordcloud-student{--action-height:44px;--action-font-size:15px}
+.cc-wordcloud-form-card .respond-form button{align-self:flex-end}
+.respond-focus{--action-height:42px;--action-font-size:16px}
+.respond-module .respond-form{box-sizing:border-box;overflow:auto;justify-content:safe center}
+.pres-interactive-wordcloud{--action-height:1.85em;--action-font-size:clamp(10px,3.8cqw,18px)}
+.pres-interactive-wordcloud .tt-board-action{max-width:100%;white-space:normal}

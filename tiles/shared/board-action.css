@@ -1,0 +1,17 @@
+/* The Group Maker tile and live classroom activities share the same button surface. */
+:is(.groupmaker-module .groupmaker-size-button,button.tt-board-action) {
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;
+ min-height:var(--action-height,32px);padding:6px 10px;
+ border:1px solid color-mix(in srgb,var(--module-text,#17191d) 13%,transparent);border-radius:10px;
+ background:var(--module-bg,#fff);color:var(--module-text,#17191d);
+ font:600 var(--action-font-size,12px)/1.3 Inter,system-ui,sans-serif;
+ box-shadow:0 2px 5px #1720330d;cursor:pointer;
+ transition:background .15s,border-color .15s,transform .15s;
+}
+:is(.groupmaker-module .groupmaker-size-button,button.tt-board-action):is(:hover:not(:disabled),[aria-expanded=true],[aria-pressed=true]) {
+ background:color-mix(in srgb,var(--module-bg,#fff) 90%,#79abe6);border-color:#a6c5e8;
+}
+:is(.groupmaker-module .groupmaker-size-button,button.tt-board-action):active:not(:disabled){transform:translateY(1px)}
+button.tt-board-action:focus-visible{outline:2px solid #608fc9;outline-offset:2px}
+button.tt-board-action:disabled{opacity:.55;cursor:default}
+button.tt-board-action svg{width:1.15em;height:1.15em;flex:none}
