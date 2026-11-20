@@ -14,19 +14,22 @@
  const api=window.TeacherTilesChoice;
  const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
  function button(text){const b=make('button','tt-board-action',text);b.type='button';return b;}
- api.form=(config,submit,previous)=>{
+ api.form=(config,submit,previous,kind)=>{
+  const mood=kind==='moodcheckin';
   const form=make('form','cc-choice-form'),options=make('div','cc-choice-options'),status=make('p'),send=button('Submit Vote');
+  if(mood)form.classList.add('cc-mood-form');
   options.setAttribute('role','group');options.setAttribute('aria-label',config.prompt);status.setAttribute('role','status');
   let chosen=new Set(previous||[]),busy=false,done=!!previous;
   const choices=config.options.map((label,i)=>{
    const b=button(label);
-   if(config.options.every((v,j)=>v===api.definition('moodcheckin').options[j])&&config.options.length===4){
+   if(mood){
+    b.className='cc-mood-choice';
     const [emoji,name]=label.split(' '),icon=make('span','cc-mood-emoji',emoji);icon.setAttribute('aria-hidden','true');b.replaceChildren(icon,make('span','',name));
    }
-   b.onclick=()=>{if(done||busy)return;if(!config.multiple)chosen.clear();if(chosen.has(i))chosen.delete(i);else chosen.add(i);paint();};options.append(b);return b;
+   b.onclick=()=>{if(done||busy)return;if(!config.multiple)chosen.clear();if(chosen.has(i))chosen.delete(i);else chosen.add(i);paint();if(mood)form.requestSubmit();};options.append(b);return b;
   });
   function paint(){choices.forEach((b,i)=>{b.disabled=busy||done;b.setAttribute('aria-pressed',String(chosen.has(i)));});
-   send.disabled=busy||!chosen.size;send.hidden=done;
+   send.disabled=busy||!chosen.size;send.hidden=done||mood;
    if(done)status.textContent='Your response: '+[...chosen].map(i=>config.options[i]).join(', ');
   }
   if(config.multiple)form.append(make('small','','Select all that apply'));
@@ -76,7 +79,7 @@
   function draw(){prompt.value=config.prompt;
    if(!student){api.results(stage,config,counts);return;}
    const key=tile.dataset.boardObjectId+':'+(tile._wordCloudInteractionId||tile.dataset.boardObjectId);
-   stage.replaceChildren(api.form(config,async input=>{const result=await policy.submitWord(tile,input);policy.ownVotes[key]=result.choices;return result;},policy.ownVotes?.[key]));
+   stage.replaceChildren(api.form(config,async input=>{const result=await policy.submitWord(tile,input);policy.ownVotes[key]=result.choices;return result;},policy.ownVotes?.[key],kind));
   }
   if(edit){edit.hidden=!!student;edit.onclick=()=>api.edit(config,next=>{
    if(JSON.stringify(next)===JSON.stringify(config))return;
