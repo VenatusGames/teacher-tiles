@@ -6,6 +6,9 @@
 
  // Seed only the names/avatars already visible through the shared class link.
  // This writes to the private Map above, not browser storage or any save helper.
+ window.ClassConnectPolicy.followCamera=camera=>{
+  if(camera){Object.assign(boardCamera,camera);applyBoardCamera();}
+ };
  window.ClassConnectPolicy.seedRoster=roster=>{
   if(!Array.isArray(roster?.students))return;
   const studentProfiles={};for(const member of roster.students)studentProfiles[window.starChartStudentKey(member.name)]={emoji:member.emoji||'',image:member.image||''};

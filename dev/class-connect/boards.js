@@ -2,7 +2,7 @@ import {getApps,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js';
 import {getFirestore,doc,onSnapshot} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 import {firebaseConfig} from '../firebase-config.js';
-import {boardFrame} from './board-host.js?v=20261112-controlled-inputs';
+import {boardFrame} from './board-host.js?v=20261119-session-math';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(firebaseConfig),db=getFirestore(app),invoke=httpsCallable(getFunctions(app),'classConnectBoard',{timeout:20000});
 export const call=async data=>(await invoke(data)).data;
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
@@ -33,6 +33,24 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  const linkChanged=()=>{if(!teacher)dialog.close();};
  window.addEventListener('teachertiles:authchange',accountChanged);window.addEventListener('hashchange',linkChanged);
  let model=result.status,frame=null,off=null,offResponses=null,closed=false,pending=null,saving=null,saveTimer=0,inputTimer=0,lastInput=0,loading=false,loadedRevision=model.revision,failed=false,ended=false,lastQueued='';
+ let lockButton=null;
+ const syncLock=locked=>{
+  dialog.classList.toggle('cc-watch-only',!teacher && !!locked);
+  frame?.setLocked(!!locked);
+  if(lockButton){lockButton.textContent=locked?'Unlock Board':'Lock Board';lockButton.setAttribute('aria-pressed',String(!!locked));}
+ };
+ if(model.mode==='controlled'&&teacher){
+  lockButton=button('Lock Board',async()=>{
+   lockButton.disabled=true;
+   try{const result=await call({classId,action:'lock',sessionId:model.sessionId,locked:!model.locked});model={...model,locked:result.status.locked};syncLock(model.locked);}
+   catch(error){status.textContent=error.message||'Could not change the board lock.';}
+   finally{lockButton.disabled=ended;}
+  });
+  lockButton.classList.add('cc-session-lock');head.insertBefore(lockButton,close);
+ }
+ if(model.mode==='controlled'&&!teacher){
+  const notice=make('div','cc-lock-notice','Your teacher has locked the board. Watch for now.');notice.setAttribute('role','status');dialog.append(notice);
+ }
  const credentials=teacher?{classId}:{token,studentId:student.id,session};
  const watchResponses=()=>{if(!frame||closed||ended)return;if(teacher&&model.mode==='controlled'&&model.hasBoardInteractions){if(!offResponses)offResponses=watchCloud(result.room,(value,error)=>{if(closed||ended)return;if(error){status.textContent='Could not load live responses. Reconnecting…';return;}frame.setResponses(value?.sessionId===model.sessionId?value:null);});}else{offResponses?.();offResponses=null;frame.setResponses(null);}};
  const unavailable=message=>{offResponses?.();offResponses=null;if(!ended)frame?.stop();ended=true;if(!teacher){dialog.close();return;}status.textContent=message;holder.inert=true;holder.classList.add('is-ended');retry.hidden=true;};
@@ -42,7 +60,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
    while(pending&&!closed&&!ended){
     const snapshot=pending;pending=null;failed=false;status.textContent='Updating student boards…';
     try{const data=await call({...credentials,action:'publish',sessionId:model.sessionId,expectedRevision:loadedRevision,snapshot});if(closed)return;
-     model=data.status;loadedRevision=model.revision;status.textContent='Students have the latest tiles';retry.hidden=true;
+     model={...model,revision:data.status.revision,hasBoardInteractions:data.status.hasBoardInteractions};loadedRevision=model.revision;status.textContent='Students have the latest tiles';retry.hidden=true;
     }catch(e){failed=true;pending=pending||snapshot;retry.hidden=false;status.textContent=e.message||'Could not share changes. Choose Retry.';
      if(e.code==='functions/aborted'||e.code==='functions/failed-precondition')unavailable(e.message);break;
     }
@@ -66,7 +84,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
    inputTimer=0;if(closed||document.hidden||ended||!active(model)||lastInput<=model.lastInput)return;
    // Another student already renewed the room. Wait for its next reporting window.
    if(model.activityWrittenAt!==previousWrite){scheduleInput();return;}
-   try{const response=await call({...credentials,action:'activity',sessionId:model.sessionId,inputAgeMs:Math.max(0,Date.now()-lastInput)});if(!closed&&response.status.sessionId===model.sessionId)model=response.status;}
+   try{const response=await call({...credentials,action:'activity',sessionId:model.sessionId,inputAgeMs:Math.max(0,Date.now()-lastInput)});if(!closed&&response.status.sessionId===model.sessionId)model={...model,lastInput:response.status.lastInput,activityWrittenAt:response.status.activityWrittenAt,until:response.status.until};}
    catch(e){if(['functions/permission-denied','functions/failed-precondition','functions/not-found','functions/aborted'].includes(e.code))unavailable(e.message);}
    scheduleInput();
   },Math.max(1500,Number(model.activityWrittenAt)+30000-Date.now())+Math.random()*5000);
@@ -88,14 +106,14 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
    if(teacher&&model.mode==='controlled'&&!ended){const signature=JSON.stringify(snapshot);if(signature===lastQueued)return;lastQueued=signature;pending=snapshot;status.textContent='Changes waiting to share…';clearTimeout(saveTimer);saveTimer=setTimeout(send,1200);}
   }});
   if(closed){frame.close();return;}
-  frame.update(result.snapshot);
+  frame.update(result.snapshot);syncLock(model.locked);
   if(teacher)lastQueued=JSON.stringify(frame.snapshot());
   holder.classList.remove('is-loading');
   status.textContent=teacher?(model.mode==='controlled'?'Changes you make here appear on student boards.':'Students create their own boards using the tiles you selected.'):'Your work is temporary and is cleared when you leave this board.';
   if(!teacher)activity();
   off=watchRoom(result.room,next=>{
    if(closed)return;if(!active(next)||next.sessionId!==model.sessionId){unavailable('This board session has ended.');return;}
-   model=next;watchResponses();scheduleInput();void refresh();
+   model=next;syncLock(next.locked);watchResponses();scheduleInput();void refresh();
   });
  }catch(e){holder.classList.remove('is-loading');status.textContent=e.message||'Could not open the board. Close and try again.';}
 }

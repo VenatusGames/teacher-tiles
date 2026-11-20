@@ -1,6 +1,6 @@
 import {createInteractionChannel} from './presentation-interactions.js?v=20261112-controlled-inputs';
 import {openTileSession} from './tile-session-picker.js?v=20261112-controlled-inputs';
-import {call,active,watchRoom,modal} from './boards.js?v=20261112-controlled-inputs';
+import {call,active,watchRoom,modal} from './boards.js?v=20261119-session-math';
 const make=(tag,cls='',text='')=>{const el=document.createElement(tag);el.className=cls;el.textContent=text;return el;};
 const button=(label,action)=>{const el=make('button','cc-session-button',label);el.type='button';el.onclick=action;return el;};
 const root=new URL('../',import.meta.url),version='20261112-controlled-inputs';

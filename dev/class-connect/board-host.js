@@ -23,8 +23,9 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="script-src 'nonce-"+nonce+"' 'strict-dynamic'; object-src 'none'; base-uri 'self'";
  doc.head.prepend(csp);
  const base=doc.createElement('base');base.href=root.href;doc.head.prepend(base);
- const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261112-controlled-inputs',root).href;base.after(boot);
+ const boot=doc.createElement('script');boot.src=new URL('class-connect/board-frame.js?v=20261119-session-math',root).href;base.after(boot);
  const style=doc.createElement('style');style.textContent=`#fullscreen-toggle,#boards-toggle,#settings-toggle,#profile-toggle,#theme-shelf-toggle,#sticker-shelf-toggle,#tile-effects-shelf-toggle,#cursors-shelf-toggle,#shop-toggle,#boards-view,#profile-modal,#settings-modal,#shop-modal,#asset-shelf,#teachertiles-intro,.workspace-upcoming-controls,.board-preview,.board-account-menu{ display:none!important}body.cc-controlled .module-delete,body.cc-controlled .module-tab-add,body.cc-controlled .tile-tab-close,body.cc-controlled .tile-appearance-toggle,body.cc-controlled .tile-settings-toggle,body.cc-controlled .tile-settings-beside-brush,body.cc-controlled #context-menu{display:none!important}.context-menu__item.cc-unavailable{display:none!important}#cc-frame-profile{position:fixed;left:14px;top:14px;z-index:999999;border:1px solid #dce2ec;background:white;padding:9px 14px;border-radius:14px;font:600 14px system-ui;display:flex;align-items:center;gap:9px}#cc-frame-profile .cc-board-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;font-size:19px}#cc-frame-profile img{width:30px;height:30px;border-radius:9px;object-fit:cover}`;style.textContent+='@media(max-width:600px){#workspace-empty-hint{top:82px;width:max-content;max-width:calc(100vw - 36px);box-sizing:border-box;text-align:center}}';style.textContent+=`
+ body.cc-controlled #workspace :is(.tile-settings-toggle,.tile-skins-toggle,.tile-appearance-toggle,.tile-appearance-original,.customization-bar,.tile-settings-panel,.tile-settings-floating,.tile-settings-wrap,.highfrequency-settings-button,.tile-reset-scale,.tile-settings-beside-brush,.tile-appearance-flyout,.tile-skins-drawer),body.cc-student :is(.module-tab-add,.tile-tab-strip){display:none!important}
  body.cc-student .tile-skins-toggle,body.cc-student .tile-appearance-toggle,body.cc-student .tile-skins-drawer,body.cc-student .tile-appearance-flyout{display:none!important}
  body.cc-student #context-menu{grid-template-columns:minmax(0,1fr)}
  body.cc-student #context-menu .context-menu__list{grid-column:1/-1}
@@ -53,17 +54,43 @@ export async function boardFrame(container,{teacher,mode,allowedTypes,student,ro
  const paintResponses=()=>{if(!teacher||mode!=='controlled')return;for(const tile of win.document.querySelectorAll('.wordcloud-module')){const id=tile.dataset.boardObjectId,tabId=tile._wordCloudInteractionId||tile.dataset.boardObjectId,entry=responses?.entries?.find(e=>e.tileId===id&&e.tabId===tabId),words=entry?responses.activities?.[entry.key]?.words||[]:[],signature=JSON.stringify([!!entry,words]);if(responseSignatures.get(tile)===signature)continue;responseSignatures.set(tile,signature);tile._wordCloudUpdate?.(words);tile._wordCloudStatus?.(entry?'Live':'Sharing with students…',!!entry);tile.querySelector('.wordcloud-prompt').disabled=false;}};
  const responseObserver=new MutationObserver(paintResponses);if(teacher&&mode==='controlled')responseObserver.observe(win.document.getElementById('workspace'),{childList:true,subtree:true});
  if(student){const b=win.document.createElement('button');b.id='cc-frame-profile';b.setAttribute('aria-label','Back to Profile');b.title='Back to Profile';if(student.image){const img=win.document.createElement('img');img.src=student.image;img.alt='';b.append(img);}else{const emoji=win.document.createElement('span');emoji.textContent=student.emoji||student.initials||student.name.slice(0,1);emoji.className='cc-board-avatar';emoji.style.background=`hsl(${Number(student.hue)||200} 65% 90%)`;b.append(emoji);}b.append(win.document.createTextNode(student.name));b.onclick=onProfile;win.document.body.append(b);}
- let previous=new Map(),initial=true;
- const snapshot=()=>{const s=win.TeacherTilesBoard.capture();return {schemaVersion:s.schemaVersion,theme:'light',camera:s.camera,objects:s.objects,frames:s.frames};};
+ let viewport=null;
+ const fit=()=>{
+  if(!policy.controlled||!viewport)return;
+  const scale=Math.min(container.clientWidth/viewport.width,container.clientHeight/viewport.height);
+  if(!scale)return;
+  Object.assign(iframe.style,{position:'absolute',left:'50%',top:'50%',width:viewport.width+'px',height:viewport.height+'px',transform:'translate(-50%, -50%) scale('+scale+')',transformOrigin:'center'});
+ };
+ const resize=new ResizeObserver(()=>{
+  if(teacher&&mode==='controlled'&&policy.ready)onChange?.(snapshot());else fit();
+ });
+ resize.observe(container);
+ let previous=new Map(),initial=true,latest=null,paused=null;
+ const snapshot=()=>{const s=win.TeacherTilesBoard.capture();return {schemaVersion:s.schemaVersion,theme:'light',camera:s.camera,viewport:{width:win.innerWidth,height:win.innerHeight},objects:s.objects,frames:s.frames};};
  const update=data=>{
   data=data||win.TeacherTilesBoard.blank();
+  latest=data;viewport=data.viewport;fit();
   policy.hydrating=true;
   try{if(initial){win.TeacherTilesBoard.load({...win.TeacherTilesBoard.blank(),...data});initial=false;}else{
    const next=new Map((data.objects||[]).map(o=>[o.id,JSON.stringify(o)]));
    win.withBoardChangesSuspended(()=>{for(const el of [...win.document.getElementById('workspace').querySelectorAll('.module')]){const id=el.dataset.boardObjectId;if(!next.has(id)||next.get(id)!==previous.get(id)){el._cleanup?.();el.remove();}}for(const obj of data.objects||[]){if(next.get(obj.id)!==previous.get(obj.id))win.restoreTeacherTilesBoardObject(obj);}win.clearSelection();win.updateWorkspaceEmptyState();});
-  }previous=new Map((data?.objects||[]).map(o=>[o.id,JSON.stringify(o)]));}finally{policy.hydrating=false;policy.ready=true;responseSignatures=new WeakMap();paintResponses();}
+  }if(policy.controlled)policy.followCamera(data.camera);previous=new Map((data?.objects||[]).map(o=>[o.id,JSON.stringify(o)]));}finally{policy.hydrating=false;policy.ready=true;responseSignatures=new WeakMap();paintResponses();}
  };
  win.addEventListener('teachertiles:boardchange',()=>{if(teacher&&mode==='controlled'&&policy.ready&&!policy.hydrating)onChange?.(snapshot());});
  for(const type of ['pointerdown','keydown','input','wheel'])win.document.addEventListener(type,e=>{if(e.isTrusted&&policy.ready)onInput?.();},{capture:true,passive:true});
- return {update,snapshot,setResponses(value){responses=value;paintResponses();},stop(){responseObserver.disconnect();win.document.exitFullscreen?.().catch(()=>{});win.document.body.inert=true;for(const m of win.document.querySelectorAll('.module'))m._deactivate?.();for(const media of win.document.querySelectorAll('audio,video'))media.pause();},close(){responseObserver.disconnect();for(const m of win.document.getElementById('workspace').querySelectorAll('.module'))m._cleanup?.();iframe.remove();}};
+ return {update,snapshot,setLocked(locked){
+  if(!policy.controlled||Boolean(paused)===locked)return;
+  // Keep independent student work in frame memory while displaying the teacher's copy.
+  const teacherView=latest;
+  if(locked){
+   paused={studentView:snapshot(),teacherObjects:previous};
+   initial=true;update(teacherView);
+  }else{
+   const {studentView,teacherObjects}=paused;paused=null;
+   initial=true;update(studentView);previous=teacherObjects;update(teacherView);
+  }
+  iframe.inert=locked;
+  win.document.body.inert=locked;
+  if(locked){iframe.blur();win.document.activeElement?.blur?.();if(win.document.fullscreenElement)void win.document.exitFullscreen().catch(()=>{});}
+ },setResponses(value){responses=value;paintResponses();},stop(){responseObserver.disconnect();win.document.exitFullscreen?.().catch(()=>{});win.document.body.inert=true;for(const m of win.document.querySelectorAll('.module'))m._deactivate?.();for(const media of win.document.querySelectorAll('audio,video'))media.pause();},close(){resize.disconnect();responseObserver.disconnect();for(const m of win.document.getElementById('workspace').querySelectorAll('.module'))m._cleanup?.();iframe.remove();}};
 }

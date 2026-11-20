@@ -7,6 +7,13 @@ function setupTenFrames(m){
   const addButtons=[...m.querySelectorAll('[data-tenframes-add]')];
   const clearButton=m.querySelector('.tenframes-clear');
 
+  const trash=manipulativeTrash(m);
+  trash.zone.addEventListener('dragover',e=>{if(draggedIndex>=0){e.preventDefault();trash.move(e);}});
+  trash.zone.addEventListener('dragleave',()=>trash.zone.classList.remove('is-armed'));
+  trash.zone.addEventListener('drop',e=>{
+    if(draggedIndex<0)return;
+    e.preventDefault();placements[draggedIndex]=false;draggedIndex=-1;trash.close();render();notifyBoardChanged('tenframe-remove');
+  });
   let frameCount=1;
   let placements=Array(10).fill(false);
   let draggedIndex=-1;
@@ -78,14 +85,14 @@ function setupTenFrames(m){
           counter.dataset.counter=String(absolute);
 
           counter.addEventListener('dragstart',event=>{
-            draggedIndex=absolute;
+            draggedIndex=absolute;trash.show();
             counter.classList.add('is-dragging');
             event.dataTransfer?.setData('text/plain',String(absolute));
             if(event.dataTransfer)event.dataTransfer.effectAllowed='move';
           });
 
           counter.addEventListener('dragend',()=>{
-            draggedIndex=-1;
+            draggedIndex=-1;trash.close();
             counter.classList.remove('is-dragging');
             board.querySelectorAll('.is-drop-target').forEach(node=>node.classList.remove('is-drop-target'));
           });

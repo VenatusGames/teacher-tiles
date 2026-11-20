@@ -3,6 +3,7 @@ export const tileLabels={
   "thanksgivingtimer":"Thanksgiving Timers",
   "cookafeast":"Cook-A-Feast",
   "presentation": "Presentations",
+  "counters": "Counters",
   "tenssticks": "Tens Sticks",
   "tensblock": "Base-Ten Block",
   "lavalamp": "Lava Lamp",
