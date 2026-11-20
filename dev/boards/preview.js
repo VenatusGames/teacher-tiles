@@ -642,7 +642,7 @@ function applyPreviewState(module, state) {
     }
   }
 
-  if(window.TeacherTilesChoice?.isChoice(state.type)){const config=TeacherTilesChoice.definition(state.type,special);module.querySelector('.wordcloud-prompt').value=config.prompt;TeacherTilesChoice.results(module.querySelector('.wordcloud-stage'),config);}
+  if(window.TeacherTilesChoice?.isChoice(state.type)){const config=TeacherTilesChoice.definition(state.type,special);module.querySelector('.wordcloud-prompt').value=config.prompt;TeacherTilesChoice.results(module.querySelector('.wordcloud-stage'),config,[],state.type);}
   if(state.type==='respond'&&special)module.querySelector('.wordcloud-prompt').value=String(special.prompt||'');
   if(state.type==='wordcloud'&&special){const stage=module.querySelector('.wordcloud-stage');if(stage&&window.TeacherTilesWordCloud){window.TeacherTilesWordCloud.render(stage,special.words);module.querySelector('.wordcloud-empty').hidden=!!special.words?.length;module.querySelector('.wordcloud-prompt').value=String(special.prompt||'');}}
   if (state.type === "presentation" && special?.previewSrc && /^data:image\/(webp|png|jpeg);base64,/.test(special.previewSrc) && special.previewSrc.length<=40000) {

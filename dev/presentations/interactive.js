@@ -35,7 +35,7 @@ function mount(host,element,{interaction,slideId}){
    for(const type of ['click','dblclick','contextmenu','pointerdown','keydown','wheel'])focus.addEventListener(type,event=>event.stopPropagation());
    (document.fullscreenElement||document.body).append(focus);focus.showModal();
   }
-  if(choice)TeacherTilesChoice.results(focusArt,config,interaction.counts(slideId,element.id));
+  if(choice)TeacherTilesChoice.results(focusArt,config,interaction.counts(slideId,element.id),element.tileType);
   else if(respond){TeacherTilesRespond.list(focusArt,answers());if(!answers().length)focusArt.textContent='Waiting for responses…';}
   else TeacherTilesWordCloud.render(focusArt,interaction.read(slideId,element.id));
  }
@@ -49,7 +49,7 @@ function mount(host,element,{interaction,slideId}){
   paintFocus();
   if(choice){
    const visible=teacher||shared()||!interaction;art.hidden=!visible;
-   if(visible)TeacherTilesChoice.results(art,config,interaction?.counts(slideId,element.id)||[]);
+   if(visible)TeacherTilesChoice.results(art,config,interaction?.counts(slideId,element.id)||[],element.tileType);
    if(shareButton){shareButton.lastElementChild.textContent=shared()?'Hide Results':'Show Results to Students';shareButton.setAttribute('aria-pressed',String(shared()));}
    note.textContent=interaction?.problem||'';return;
   }
