@@ -1,8 +1,8 @@
 import {createUserCard} from './user-card.js';
 import {createUserSort} from './user-sort.js?v=20261028-sort-position';
-import {createBulkPatches} from './bulk-patches.js?v=20261020-product-polish';
-import {createUsersClient} from './users-cache.js?v=20261014-subscription-override';
-import {createUserDetails} from './user-details.js?v=20261020-product-polish';
+import {createBulkPatches} from './bulk-patches.js?v=20261106-patch-names';
+import {createUsersClient} from './users-cache.js?v=20261106-patch-names';
+import {createUserDetails} from './user-details.js?v=20261106-patch-names';
 export function createUsersPanel(rawCall,getUid=()=>'') {
   const client=createUsersClient(rawCall,getUid),call=client.request;
   const element=document.getElementById('portal-users'),list=document.getElementById('users-list');
@@ -19,7 +19,7 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
   const searchButton=document.getElementById('users-search-submit');
   let query='';
   let nextPageToken=null,loaded=false,busy=false,generation=0;
-  function clear(){details.close();generation++;loaded=false;busy=false;nextPageToken=null;list.replaceChildren();status.textContent='';more.hidden=true;refresh.disabled=false;}
+  function clear(){details.close();generation++;loaded=false;busy=false;nextPageToken=null;list.replaceChildren();status.textContent='';more.hidden=true;refresh.disabled=false;bulk.setCatalog({});}
   function row(user){
     const item=createUserCard(user);
     item.insertAdjacentHTML('beforeend','<div class="user-access-toggles"><label class="beta-toggle"><span>Has Beta Access</span><input class="user-beta-access" type="checkbox" role="switch"><i aria-hidden="true"></i></label><label class="beta-toggle subscription-override-toggle" title="Free Permanent Subscription"><svg class="subscription-override-crown" viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg><input class="user-subscription-override" type="checkbox" role="switch"><i aria-hidden="true"></i></label></div>');
@@ -37,9 +37,10 @@ export function createUsersPanel(rawCall,getUid=()=>'') {
     if(busy||(!append&&loaded))return;
     const attempt=generation;busy=true;refresh.disabled=more.disabled=true;status.textContent='Loading users…';
     try{const response=await call('listDeveloperUsers',{query,sort:sort.value,onlineOnly:online.checked,subscribersOnly:subscribers.checked,...(append&&nextPageToken?{pageToken:nextPageToken}:{})});if(attempt!==generation)return;
+      bulk.setCatalog(response.data.patchCatalog);
       for(const user of response.data.users){if(online.checked&&(!user.lastSeen||Date.now()-user.lastSeen>15*60*1000))continue;list.append(row(user));}
       loaded=true;nextPageToken=response.data.nextPageToken;more.hidden=!nextPageToken;status.textContent=list.children.length+' users loaded'+(nextPageToken?' · more available':'');
-    }catch(error){if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
+    }catch(error){if(attempt===generation)bulk.setCatalog({});if(attempt===generation)status.textContent='Could not load users. '+(error.message||'Please try again.');}
     finally{if(attempt===generation){busy=false;refresh.disabled=more.disabled=false;}}
   }
   const submitSearch=()=>{query=search.value.trim().toLowerCase();clear();void load();};

@@ -1,6 +1,6 @@
-import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261020-beloved-registry';
+import {getManualPatchOptions} from '../profile/patch-catalog.js?v=20261106-patch-names';
 export function createBulkPatches(root,call,selected,onComplete,startSelection=()=>{}){
- root.innerHTML=`<div><h3>Bulk Patches</h3></div><div class="bulk-patch-controls"><select class="bulk-patch-action" aria-label="Patch action"><option value="add">Add Patches</option><option value="remove">Remove Patches</option></select><select aria-label="Bulk patch"><option value="">Choose a patch…</option>${manualPatchOptions.map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select><select aria-label="Patch audience"><option value="selected">Selected Users</option><option value="all">All Users</option></select><button class="primary" disabled>Review Award</button></div><div class="bulk-selection"><span>0 selected</span><button class="quiet" data-page type="button">Select Loaded Users</button><button class="quiet" data-clear type="button">Clear Selection</button></div>`;
+ root.innerHTML=`<div><h3>Bulk Patches</h3></div><div class="bulk-patch-controls"><select class="bulk-patch-action" aria-label="Patch action"><option value="add">Add Patches</option><option value="remove">Remove Patches</option></select><select aria-label="Bulk patch"><option value="">Choose a patch…</option></select><select aria-label="Patch audience"><option value="selected">Selected Users</option><option value="all">All Users</option></select><button class="primary" disabled>Review Award</button></div><div class="bulk-selection"><span>0 selected</span><button class="quiet" data-page type="button">Select Loaded Users</button><button class="quiet" data-clear type="button">Clear Selection</button></div>`;
  const menu=document.createElement('div');menu.id='bulk-patch-menu';menu.className='bulk-patch-menu';menu.setAttribute('popover','auto');menu.setAttribute('role','dialog');menu.setAttribute('aria-label','Bulk patch controls');
  menu.append(...root.childNodes);
  const toggle=document.createElement('button');toggle.type='button';toggle.className='quiet';toggle.textContent='Bulk Patches';toggle.setAttribute('aria-label','Bulk Patches');toggle.setAttribute('popovertarget',menu.id);toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-haspopup','dialog');
@@ -11,6 +11,24 @@ export function createBulkPatches(root,call,selected,onComplete,startSelection=(
  const [action,patch,audience]=root.querySelectorAll('select'),review=root.querySelector('.primary'),count=root.querySelector('.bulk-selection span');
  const dialog=document.createElement('dialog');dialog.className='user-details bulk-confirm';dialog.setAttribute('aria-labelledby','bulk-confirm-title');dialog.innerHTML='<h2 id="bulk-confirm-title">Give Patch in Bulk?</h2><p class="bulk-summary"></p><p class="bulk-explanation"></p><p class="bulk-progress" role="status" aria-live="polite"></p><div class="bulk-confirm-actions"><button class="quiet" data-cancel>Cancel</button><button class="primary" data-confirm>Give Patch</button></div>';document.body.append(dialog);
  let running=false,stop=false;const cancel=dialog.querySelector('[data-cancel]'),confirm=dialog.querySelector('[data-confirm]'),progress=dialog.querySelector('.bulk-progress');
+ function setCatalog(catalog) {
+   const previousId = patch.value;
+   const options = getManualPatchOptions(catalog);
+   const placeholder = document.createElement('option');
+   placeholder.value = '';
+   placeholder.textContent = options.length ? 'Choose a patch...' : 'Patch names unavailable. Refresh users.';
+   patch.replaceChildren(placeholder);
+   for (const [id, name] of options) {
+     const option = document.createElement('option');
+     option.value = id;
+     option.textContent = name;
+     patch.append(option);
+   }
+   patch.value = options.some(([id]) => id === previousId) ? previousId : '';
+   patch.disabled = !options.length;
+   update();
+ }
+ setCatalog({});
  function update(){toggle.textContent='Bulk Patches'+(selected.size?' ('+selected.size+')':'');count.textContent=selected.size+' selected';review.textContent=action.value==='remove'?'Review Removal':'Review Award';review.disabled=running||!patch.value||audience.value==='selected'&&!selected.size;}
  action.onchange=patch.onchange=audience.onchange=update;
  root.querySelector('[data-page]').onclick=()=>{startSelection();document.querySelectorAll('.user-select:not(:disabled)').forEach(input=>{input.checked=true;input.dispatchEvent(new Event('change'));});};
@@ -30,5 +48,5 @@ export function createBulkPatches(root,call,selected,onComplete,startSelection=(
   }catch(error){progress.textContent=`Confirmed ${changed} ${verb}. The last batch may have partially completed. ${error.message||'Please try again.'} Retrying will skip accounts already updated.`;}
   finally{running=false;confirm.hidden=true;cancel.disabled=false;cancel.textContent='Close';update();onComplete();}
  };
- return {update,reset(){closeMenu();stop=true;dialog.close();selected.clear();update();}};
+ return {update,setCatalog,reset(){setCatalog({});closeMenu();stop=true;dialog.close();selected.clear();update();}};
 }

@@ -1,4 +1,4 @@
-import {newPatches} from './patch-catalog.js?v=20261020-beloved-registry';
+import {newPatches, manualPatchIds, getPatchName} from './patch-catalog.js?v=20261105-patch-names';
 const grid = document.querySelector('.profile-badge-grid');
 const tabs = document.querySelector('.profile-patch-tabs');
 
@@ -7,33 +7,33 @@ const plannedPatches = [
   {
     id: 'template-creator',
     comingSoon: true,
-    name: 'Template Creator',
     requirement: 'Upload your first template!',
     icon: '<svg viewBox="0 0 48 48"><path d="M12 7h17l7 7v27H12V7Z"/><path d="M29 7v8h7M24 33V20M18.5 25.5 24 20l5.5 5.5"/></svg>'
   },
   {
     id: 'template-artist',
     comingSoon: true,
-    name: 'Template Artist',
     requirement: 'Create and Upload 10 Templates!',
     icon: '<svg viewBox="0 0 48 48"><path d="M24 7C14.6 7 7 13.9 7 22.3 7 31.5 14.6 39 24 39h3.6c2.7 0 3.8-3.3 1.7-4.9-1.8-1.4-.8-4.2 1.5-4.2h3.1c4.4 0 7.1-3.4 7.1-7.7C41 13.8 33.4 7 24 7Z"/><path d="M16 19h.1M22 14h.1M29 16h.1M14 26h.1"/></svg>'
   }
 ];
 
-export function ensurePlannedPatches() {
+export function ensurePlannedPatches(catalog = {}) {
   if (!grid) return;
   for (const patch of plannedPatches) {
     if (grid.querySelector(`.profile-badge--${patch.id}`)) continue;
+    const name = getPatchName(catalog, patch.id);
     const button = document.createElement('button');
     const requirementId = `${patch.id}-patch-requirement`;
     button.type = 'button';
     button.className = `profile-badge profile-badge--locked${patch.comingSoon?' profile-badge--coming-soon':''} profile-badge--${patch.id}`;
     button.setAttribute('aria-describedby', requirementId);
-    button.setAttribute('aria-label', `${patch.name} patch. Locked.${patch.comingSoon?' Coming Soon.':''} ${patch.requirement}`);
+    button.setAttribute('aria-label', `${name} patch. Locked.${patch.comingSoon?' Coming Soon.':''} ${patch.requirement}`);
     button.innerHTML = `<span class="profile-badge__medallion" aria-hidden="true"><span class="profile-badge__shine"></span>${patch.icon}</span>
-      <span class="profile-badge__copy"><strong>${patch.name}</strong></span>
+      <span class="profile-badge__copy"><strong></strong></span>
       <span id="${requirementId}" class="profile-badge__requirement" role="tooltip">Unlock: ${patch.requirement}</span>
       <span class="profile-badge__check" aria-hidden="true" hidden>✓</span>`;
+    button.querySelector('strong').textContent = name;
     grid.append(button);
   }
 }
@@ -139,6 +139,7 @@ if (grid && tabs && grid.dataset.patchInspectorInitialized !== 'true') {
     copy.className = patch.className;
     copy.append(medallion.cloneNode(true));
     art.replaceChildren(copy);
+    dialog.dataset.patchId = manualPatchIds.find(id => patch.classList.contains(`profile-badge--${id}`)) || '';
     dialog.querySelector('h2').textContent = patch.querySelector('strong').textContent;
     const flavor = patch.querySelector('.profile-badge__requirement:not([hidden]), .profile-badge__date:not([hidden])')?.textContent || '';
     dialog.querySelector('.patch-inspector__flavor').textContent = patch.classList.contains('profile-badge--coming-soon') ? `Coming Soon · ${flavor}` : flavor;

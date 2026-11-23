@@ -11,9 +11,9 @@ import {createTemplateLibrary} from '../templates/ui.js?v=20261103-news-captions
 import {createInsights} from './insights.js?v=20261119-ranking-dialogs';
 import {firebaseConfig} from '../firebase-config.js';
 import {verifyAccess,accessError} from './access-client.js';
-import {createUsersPanel} from './users.js?v=20261119-user-cards';
+import {createUsersPanel} from './users.js?v=20261122-patch-names';
 import {startSiteActivity} from '../account/site-activity.js?v=20261119-rankings';
-import {createCodesPanel} from './codes.js?v=20261020-product-polish';
+import {createCodesPanel} from './codes.js?v=20261106-patch-names';
 const login=document.getElementById('portal-login'),home=document.getElementById('portal-home'),status=document.getElementById('portal-status');
 const signIn=document.getElementById('portal-signin'),retry=document.getElementById('portal-retry'),signOut=document.getElementById('portal-signout');
 const shell=document.querySelector('.portal-shell'),accessScreen=document.getElementById('portal-access-screen');
