@@ -1,34 +1,39 @@
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'C:/Users/Jack/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const backend = process.env.TT_FUNCTIONS_DIR || 'C:/Users/Jack/Desktop/Teacher Tiles/teachertiles-functions-dev/functions';
-const codes = require(path.join(backend,'firebase-service/redemption-codes'));
+const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const backend = process.env.TT_FUNCTIONS_DIR || path.resolve(__dirname, '../../../teacher-tiles-functions/functions');
+const frontend = process.env.TT_FRONTEND_DIR || path.resolve(__dirname, '../..');
+const {getRedemptionCatalog} = require(path.join(backend,'firebase-service/redemption-codes/helpers/code-rewards/code-rewards'));
+const {normalizeCreateInput} = require(path.join(backend,'firebase-service/redemption-codes/helpers/code-inputs/code-inputs'));
 
 // Shop parity prevents backend omissions from silently hiding valid rewards.
 const vm = require('node:vm');
-const app = fs.readFileSync(path.resolve(__dirname,'../../app.js'),'utf8');
-const shop = fs.readFileSync(path.resolve(__dirname,'../../index.html'),'utf8');
+const app = fs.readFileSync(path.join(frontend,'app.js'),'utf8');
+const shop = fs.readFileSync(path.join(frontend,'index.html'),'utf8');
 const skins = vm.runInNewContext(app.slice(app.indexOf('const TILE_SKIN_CATALOG='),app.indexOf('const CURSOR_COLOR_PACK_PRODUCT_ID='))+';TILE_SKIN_CATALOG');
-const stickers = vm.runInNewContext(app.slice(app.indexOf('const stickerCatalogItems='),app.indexOf('const COLLECTION_PACK_PRODUCTS='))+';ADDITIONAL_STICKER_PACKS');
+const stickerContext = { window: {} };
+vm.runInNewContext(fs.readFileSync(path.join(frontend, 'shop/sticker-catalog.js'), 'utf8'), stickerContext);
+const stickers = stickerContext.window.TeacherTilesStickerPacks;
 const products = new Map();
 for(const match of shop.matchAll(/<article\b([^>]*)>/g)) {
   const id=match[1].match(/data-shop-product="([^"]+)"/)?.[1],price=match[1].match(/data-shop-price="(\d+)"/)?.[1];
   if(id && price)products.set(id,Number(price));
 }
 for(const pack of stickers)products.set(pack.productId,pack.price);
-const rewards = new Map(codes.getRedemptionCatalog().cosmetics.map(item=>[item.rewardId,item]));
+const rewards = new Map(getRedemptionCatalog().cosmetics.map(item=>[item.rewardId,item]));
 for(const skin of skins)assert.ok(products.has(skin.productId),'Skin not present in shop: '+skin.productId);
 for(const [id,price] of products) {
   assert.ok(rewards.has(id),'Shop cosmetic missing from rewards: '+id);
   assert.equal(rewards.get(id).coinPrice,price,'Shop price mismatch: '+id);
-  codes.normalizeCreateInput({requestId:'catalog-check',rewardType:'cosmetic',rewardId:id,maxRedemptions:1});
+  normalizeCreateInput({requestId:'catalog-check',rewardType:'cosmetic',rewardId:id,maxRedemptions:1});
 }
 
 const calls = [], errors = [];
 const id = 'a'.repeat(64);
 const item = {id,code:'TT-ABCD-EFAB',codeHint:'TT-••••-AB',rewardName:'500 TeacherTiles Coins',active:true,status:'active',completedUses:2,maxRedemptions:5,pendingReservations:1,expiresAt:{_seconds:2000000000},label:'Test'};
 let failCreate = true;
+let catalogMode = 'normal';
 (async () => {
   const browser = await chromium.launch({channel:'msedge',headless:true});
   try {
@@ -36,13 +41,19 @@ let failCreate = true;
     page.on('pageerror',e=>errors.push(e.message));
     await page.exposeFunction('backendCall',async (name,data)=>{
       calls.push(data); assert.equal(name,'developerCodes');
-      if(data.action==='catalog')return {data:codes.getRedemptionCatalog()};
+      if(data.action==='catalog') {
+        if(catalogMode==='failed')throw new Error('Temporary catalog failure');
+        const catalog=getRedemptionCatalog();
+        if(catalogMode==='missing')delete catalog.patches;
+        if(catalogMode==='renamed')catalog.patches=catalog.patches.map(patch=>({...patch,name:patch.rewardId==='tiktok'?'<b>Remote patch</b>':patch.name}));
+        return {data:catalog};
+      }
       if(data.action==='list') {
         assert.notEqual(data.rewardType,'all'); assert.notEqual(data.status,'all');
         return {data:{items:[{...item,id:data.cursor?'b'.repeat(64):id}],cursor:data.cursor?null:id}};
       }
       if(data.action==='create') {
-        codes.normalizeCreateInput(data);
+        normalizeCreateInput(data);
         if(failCreate){failCreate=false;throw new Error('Temporary connection error');}
         return {data:{code:'TT-ABCD-EFGH',codeId:id,rewardType:data.rewardType,rewardId:data.rewardId}};
       }
@@ -52,8 +63,8 @@ let failCreate = true;
     });
     await page.addInitScript(()=>{});
     await page.setContent('<body class="developer-portal"><main></main></body>');
-    await page.addStyleTag({content:fs.readFileSync(path.resolve(__dirname,'../portal.css'),'utf8')});
-    await page.addStyleTag({content:fs.readFileSync(path.resolve(__dirname,'../portal-appearance.css'),'utf8')});
+    await page.addStyleTag({content:fs.readFileSync(path.join(frontend,'sandbox/portal.css'),'utf8')});
+    await page.addStyleTag({content:fs.readFileSync(path.join(frontend,'sandbox/portal-appearance.css'),'utf8')});
     await page.addScriptTag({content:fs.readFileSync(path.resolve(__dirname,'../codes.js'),'utf8').replace('export function','function')});
     await page.evaluate(async()=>{
       window.panel=createCodesPanel(window.backendCall);
@@ -92,7 +103,7 @@ let failCreate = true;
     await page.locator('#codes-create-type').selectOption('cosmetic');
     await page.waitForFunction(()=>document.querySelectorAll('#codes-reward-options button').length>4);
     // Every backend cosmetic is selectable, with parity against the actual shop.
-    for(const item of codes.getRedemptionCatalog().cosmetics) assert.equal(await page.locator(`[data-reward-id="${item.rewardId}"]`).count(),1,item.rewardId);
+    for(const item of getRedemptionCatalog().cosmetics) assert.equal(await page.locator(`[data-reward-id="${item.rewardId}"]`).count(),1,item.rewardId);
     const search=page.getByRole('searchbox',{name:'Search Rewards'});
     for(const [query,id] of [['Neon Timer','tile-skin-timer-neon'],['Liquid Fill','tile-skin-timer-liquid']]){await search.fill(query);assert.equal(await page.locator('#codes-reward-options button').count(),1);await page.locator('[data-reward-id="'+id+'"]').click();assert.equal(await page.locator('#codes-create-reward').inputValue(),id);}
     await search.fill('neon lava');
@@ -124,6 +135,45 @@ let failCreate = true;
     assert.equal(trial.rewardId,'membership_trial');assert.equal(trial.trialDays,7);
     assert.notEqual(trial.requestId,creates[0].requestId);
     await page.locator('[data-codes-result-close]').click();
+    catalogMode='renamed';
+    await page.getByRole('button',{name:'Generate Code',exact:true}).click();
+    await page.waitForFunction(()=>!document.querySelector('#codes-create-type').disabled);
+    await page.locator('#codes-create-type').selectOption('patch');
+    const patchOption=page.locator('[data-reward-id="tiktok"]');
+    assert.equal(await patchOption.locator('strong').textContent(),'<b>Remote patch</b>');
+    assert.equal(await patchOption.locator('b').count(),0);
+    await patchOption.click();
+    await page.getByRole('button',{name:'Generate',exact:true}).click();
+    await page.locator('#codes-result').waitFor({state:'visible'});
+    const patchCreate=calls.filter(c=>c.action==='create').at(-1);
+    assert.equal(patchCreate.rewardType,'patch');assert.equal(patchCreate.rewardId,'tiktok');
+    await page.locator('[data-codes-result-close]').click();
+
+    catalogMode='missing';
+    await page.getByRole('button',{name:'Generate Code',exact:true}).click();
+    await page.waitForFunction(()=>!document.querySelector('#codes-create-type').disabled);
+    await page.locator('#codes-create-type').selectOption('patch');
+    assert.equal(await page.locator('#codes-reward-options button').count(),0);
+    assert.equal(await page.getByRole('button',{name:'Generate',exact:true}).isDisabled(),true);
+    await page.locator('[data-codes-create-close]').click();
+    catalogMode='failed';
+    await page.getByRole('button',{name:'Generate Code',exact:true}).click();
+    await page.getByText('Temporary catalog failure',{exact:true}).waitFor();
+    const catalogCalls=calls.filter(c=>c.action==='catalog').length;
+    catalogMode='renamed';
+    await page.evaluate(()=>{document.querySelector('#codes-catalog-retry').click();document.querySelector('#codes-catalog-retry').click();});
+    await page.waitForFunction(()=>!document.querySelector('#codes-create-type').disabled);
+    assert.equal(calls.filter(c=>c.action==='catalog').length,catalogCalls+1,'Concurrent retries share one catalog request');
+    await page.locator('#codes-create-type').selectOption('patch');
+    assert.equal(await patchOption.locator('strong').textContent(),'<b>Remote patch</b>');
+    await page.locator('[data-codes-create-close]').click();
+
+    item.rewardType='patch';item.rewardId='tiktok';item.rewardName='Remote code patch';
+    await page.locator('#codes-refresh').click();
+    await page.getByText('Remote code patch',{exact:true}).waitFor();
+    await page.locator('[data-code-detail]').first().click();
+    assert.equal(await page.locator('#codes-detail-body dd').first().textContent(),'Remote code patch');
+    await page.locator('[data-codes-detail-close]').click();
     await page.locator('[data-code-toggle]').first().click();
     await page.waitForFunction(()=>document.querySelector('#codes-status-text').textContent==='1 code');
     assert.ok(calls.some(c=>c.action==='set-active'&&c.codeId===id&&c.active===false));

@@ -46,6 +46,10 @@ export function createCodesPanel(call) {
     ? new Intl.DateTimeFormat(undefined, {dateStyle:'medium', timeStyle:'short'}).format(millis(value)) : '—';
   const err = error => error?.message?.replace(/^Firebase:\s*/, '') || 'Something went wrong. Please try again.';
   const title = value => value ? value[0].toUpperCase() + value.slice(1) : 'Unknown';
+  function rewardDisplayName(item) {
+    const name = item.rewardName;
+    return typeof name === 'string' && name.trim() ? name : 'Reward name unavailable';
+  }
   function availability(item) {
     if (item.status === 'deleted') return 'deleted';
     if (!item.active) return 'disabled';
@@ -66,7 +70,10 @@ export function createCodesPanel(call) {
     const trial = type.value === 'membership_trial';
     q('codes-create-days-wrap').hidden = !trial;
     q('codes-create-reward-wrap').hidden = trial;
-    const options = catalog?.[type.value === 'coins' ? 'coins' : type.value === 'patch' ? 'patches' : 'cosmetics'] || [];
+    const receivedOptions = catalog?.[type.value === 'coins' ? 'coins' : type.value === 'patch' ? 'patches' : 'cosmetics'];
+    const options = Array.isArray(receivedOptions)
+      ? receivedOptions.filter(item => item && typeof item.name === 'string' && item.name.trim())
+      : [];
     const selected = options.find(item => item.rewardId === reward.value);
     if (!selected) reward.value = '';
     const terms = searchable(rewardSearch.value).split(' ').filter(Boolean);
@@ -111,7 +118,7 @@ export function createCodesPanel(call) {
   function render() {
     list.innerHTML = items.map(item => {
       const state = availability(item);
-      return `<tr data-code-id="${escape(item.id)}"><td><button class="codes-link" type="button" data-code-detail>${escape(item.code || item.codeHint)}</button>${item.label ? `<small>${escape(item.label)}</small>` : ''}</td><td>${escape(item.rewardName)}</td><td><span class="codes-chip is-${state}">${title(state)}</span></td><td>${Number(item.completedUses || 0).toLocaleString()} / ${item.maxRedemptions == null ? '∞' : Number(item.maxRedemptions).toLocaleString()}${item.pendingReservations ? `<small>${Number(item.pendingReservations)} reserved</small>` : ''}</td><td>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</td><td>${item.status === 'deleted' ? '' : `<button class="quiet codes-row-action" type="button" data-code-toggle>${item.active ? 'Disable' : 'Enable'}</button><button class="danger codes-row-action" type="button" data-code-delete>Delete</button>`}</td></tr>`;
+      return `<tr data-code-id="${escape(item.id)}"><td><button class="codes-link" type="button" data-code-detail>${escape(item.code || item.codeHint)}</button>${item.label ? `<small>${escape(item.label)}</small>` : ''}</td><td>${escape(rewardDisplayName(item))}</td><td><span class="codes-chip is-${state}">${title(state)}</span></td><td>${Number(item.completedUses || 0).toLocaleString()} / ${item.maxRedemptions == null ? '∞' : Number(item.maxRedemptions).toLocaleString()}${item.pendingReservations ? `<small>${Number(item.pendingReservations)} reserved</small>` : ''}</td><td>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</td><td>${item.status === 'deleted' ? '' : `<button class="quiet codes-row-action" type="button" data-code-toggle>${item.active ? 'Disable' : 'Enable'}</button><button class="danger codes-row-action" type="button" data-code-delete>Delete</button>`}</td></tr>`;
     }).join('') || '<tr><td colspan="6" class="codes-empty">No matching TT Codes.</td></tr>';
   }
   async function load(force = false, append = false) {
@@ -147,7 +154,7 @@ export function createCodesPanel(call) {
       const item = await request({action:'detail', codeId:id});
       const uses = [...(item.redemptions || []), ...(item.reservations || []).filter(r => r.status !== 'completed')]
         .sort((a,b) => millis(b.createdAt) - millis(a.createdAt));
-      body.innerHTML = `<p class="eyebrow">TT CODE DETAILS</p><h2>${escape(item.code || item.codeHint)}</h2>${item.code ? '<button class="primary" type="button" data-code-copy>Copy Code</button>' : '<p class="codes-status">This older code was stored only as a hash. Generate a replacement if you no longer have the original.</p>'}<dl class="codes-facts"><dt>Reward</dt><dd>${escape(item.rewardName)}</dd><dt>Status</dt><dd>${title(availability(item))}</dd><dt>Uses</dt><dd>${Number(item.completedUses || 0)} / ${item.maxRedemptions ?? 'unlimited'}</dd><dt>Expires</dt><dd>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</dd><dt>Label</dt><dd>${escape(item.label || '—')}</dd></dl><h3>Redemption History</h3><div class="codes-history">${uses.length ? uses.map(use => `<div><strong>${escape(use.uid || use.id)}</strong><span>${escape(title(use.status))}</span><small>${escape(date(use.completedAt || use.createdAt))}</small>${use.releaseReason ? `<em>${escape(use.releaseReason)}</em>` : ''}</div>`).join('') : '<p>No redemptions yet.</p>'}</div><small>Shows up to 50 recent redemptions and 50 reservations.</small>`;
+      body.innerHTML = `<p class="eyebrow">TT CODE DETAILS</p><h2>${escape(item.code || item.codeHint)}</h2>${item.code ? '<button class="primary" type="button" data-code-copy>Copy Code</button>' : '<p class="codes-status">This older code was stored only as a hash. Generate a replacement if you no longer have the original.</p>'}<dl class="codes-facts"><dt>Reward</dt><dd>${escape(rewardDisplayName(item))}</dd><dt>Status</dt><dd>${title(availability(item))}</dd><dt>Uses</dt><dd>${Number(item.completedUses || 0)} / ${item.maxRedemptions ?? 'unlimited'}</dd><dt>Expires</dt><dd>${item.expiresAt ? escape(date(item.expiresAt)) : 'Never'}</dd><dt>Label</dt><dd>${escape(item.label || '—')}</dd></dl><h3>Redemption History</h3><div class="codes-history">${uses.length ? uses.map(use => `<div><strong>${escape(use.uid || use.id)}</strong><span>${escape(title(use.status))}</span><small>${escape(date(use.completedAt || use.createdAt))}</small>${use.releaseReason ? `<em>${escape(use.releaseReason)}</em>` : ''}</div>`).join('') : '<p>No redemptions yet.</p>'}</div><small>Shows up to 50 recent redemptions and 50 reservations.</small>`;
       const copy=body.querySelector('[data-code-copy]');
       if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.code);copy.textContent='Copied!';}catch{copy.textContent='Select the code above to copy';}};
     } catch (error) { body.innerHTML = `<p class="codes-status">${escape(err(error))}</p>`; }

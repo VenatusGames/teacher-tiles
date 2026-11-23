@@ -11,7 +11,7 @@ import {setupNickname} from './profile/nickname.js?v=20260926-edit';
 import {setupBugReports} from './support/tickets.js?v=20260926-preview-titles';
 import {previewThemeClass,layoutBoardPreviewObjects,createMiniObject,createBoardPreview} from './boards/preview.js?v=20261119-respond';
 import {createTemplateLibrary} from './templates/ui.js?v=20261021-thanksgiving-polish';
-import {syncAwardedPatches} from './profile/awards.js?v=20261020-product-polish';
+import {syncAwardedPatches} from './profile/awards.js?v=20261105-patch-names';
 import {startSiteActivity} from './account/site-activity.js?v=20261119-rankings';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -209,6 +209,8 @@ const shopAccountState = {
   ready: false,
   loading: false,
   signedIn: false,
+  patchAwards: {},
+  patchCatalog: {},
   coinBalance: 0,
   ownedProductIds: [],
   subscriptionActive: false,
@@ -753,8 +755,11 @@ function publishShopAccount(patch = {}) {
     profileCoinCard.classList.toggle("is-extra-wide-balance", formattedCoinBalance.length > 13);
     profileCoinCard.setAttribute("aria-label", `Open the coin shop. Balance: ${formattedCoinBalance} coins.`);
   }
-  if(!shopAccountState.signedIn)shopAccountState.patchAwards={};
-  syncAwardedPatches(currentUser,shopAccountState.patchAwards);
+  if (!shopAccountState.signedIn) {
+    shopAccountState.patchAwards = {};
+    shopAccountState.patchCatalog = {};
+  }
+  syncAwardedPatches(currentUser, shopAccountState.patchAwards, shopAccountState.patchCatalog);
   syncSubscriberMarks(shopAccountState);
   window.dispatchEvent(new CustomEvent("teachertiles:accountchange", {
     detail: {
@@ -764,6 +769,7 @@ function publishShopAccount(patch = {}) {
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
+      patchCatalog: { ...shopAccountState.patchCatalog },
       subscriptionActive: Boolean(shopAccountState.subscriptionActive),
       subscriptionOverride: Boolean(shopAccountState.subscriptionOverride),
       districtPremium: Boolean(shopAccountState.districtPremium)
@@ -799,6 +805,7 @@ async function refreshShopAccount() {
         coinBalance: account.coinBalance,
         ownedProductIds: account.ownedProductIds,
         patchAwards: account.patchAwards || {},
+        patchCatalog: account.patchCatalog || {},
         subscriptionActive: Boolean(account.subscriptionActive),
         subscriptionOverride: Boolean(account.subscriptionOverride),
         districtPremium: Boolean(account.districtPremium)
@@ -807,7 +814,7 @@ async function refreshShopAccount() {
     }
     return account;
   } catch (error) {
-    if (currentUser?.uid === uid) publishShopAccount({ ready: true, loading: false, signedIn: true });
+    if (currentUser?.uid === uid) publishShopAccount({ ready: true, loading: false, signedIn: true, patchCatalog: {} });
     throw error;
   }
 }
@@ -3860,7 +3867,7 @@ async function initializeBoardsForUser(user) {
 async function renderUser(user) {
   const isInitialAuthResolution = !authReady;
   const previousUser = currentUser;
-  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,ownedProductIds:[],subscriptionActive:false,subscriptionOverride:false,districtPremium:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
+  if(currentUser?.uid!==user?.uid){lockedCosmeticBoard=null;shopAccessCheckedAt=0;shopAccessRequest=null;Object.assign(shopAccountState,{ready:false,patchAwards:{},patchCatalog:{},ownedProductIds:[],subscriptionActive:false,subscriptionOverride:false,districtPremium:false});document.getElementById('workspace').inert=false;document.querySelectorAll('.board-access-dialog').forEach(d=>d.close());}
   window.TeacherTilesCollectionPreferences?.setUser(user?.uid||'',firestoreSdk,db);
   subscriberCoinNotice.reset(user?.uid||"");
   currentUser = user || null;window.TeacherTilesProfileFrames?.setUser(user?.uid||'',firestoreSdk,db);if(!user)window.TeacherTilesTheme?.hideBoard();
@@ -3910,7 +3917,7 @@ async function renderUser(user) {
     const name = user.displayName?.trim() || "Teacher";
     const photo = user.photoURL || fallbackAvatarData(name);
     shopAccountState.patchAwards={};
-    syncAwardedPatches(user,{});
+    syncAwardedPatches(user, {}, shopAccountState.patchCatalog);
     syncProfileBadgeCount();
     profileDisplayName.textContent = name;
     profileEmail.textContent = user.email || "Google account";
@@ -4471,6 +4478,7 @@ window.TeacherTilesAccount = {
       signedIn: shopAccountState.signedIn,
       coinBalance: shopAccountState.coinBalance,
       ownedProductIds: [...shopAccountState.ownedProductIds],
+      patchCatalog: { ...shopAccountState.patchCatalog },
       subscriptionActive: Boolean(shopAccountState.subscriptionActive),
       subscriptionOverride: Boolean(shopAccountState.subscriptionOverride),
       districtPremium: Boolean(shopAccountState.districtPremium)
