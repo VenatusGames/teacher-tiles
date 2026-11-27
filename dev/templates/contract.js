@@ -35,6 +35,9 @@
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const ADVENT_EMOJIS=['🎁','⭐','❄️','🎄','🍪','🎨','📚','🎉'];
   const adapters={
+    christmastree:s=>({mode:s.mode==='noise'?'noise':'timer',duration:num(s.duration,10,7200,300),threshold:num(s.threshold,10,95,45),sensitivity:num(s.sensitivity,50,200,100),seed:Math.floor(num(s.seed,1,2147483647,1)),elapsed:0}),
+    // Shared templates must not publish the teacher's class or student names.
+    santaslist:s=>({title:text(s.title||"Santa's List",80),classId:'',className:'',students:[],listed:[]}),
     christmascarols:s=>({
       track:Math.round(num(s.track,0,11,0)),
       volume:Math.round(num(s.volume,0,100,55)),

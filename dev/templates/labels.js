@@ -1,4 +1,6 @@
 export const tileLabels={
+  "christmastree":"Christmas Tree",
+  "santaslist":"Santa’s List",
   "christmascarols":"Christmas Carols",
   "dreidel":"Dreidel",
   "menorah":"Menorah",
