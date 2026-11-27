@@ -338,9 +338,14 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:64%;top:63%;width:11%;height:29%;transform:rotate(-8deg)}
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(6){left:77%;top:63%;width:11%;height:29%;transform:rotate(8deg)}
 
-/* Keep the complete holiday composition inside every banner viewport. */
-.shop-modal .shop-banner__slide[data-winter-banner]{background:#173347}
-.shop-modal .shop-banner__slide[data-winter-banner] img{object-fit:contain;max-width:100%;max-height:100%}
-
-.shop-modal .shop-banner__slide[data-winter-banner] img{box-sizing:border-box;padding-bottom:28px}
-@media(max-width:700px){.shop-modal .shop-promotions .shop-banner:has(.is-active[data-winter-banner]){aspect-ratio:2/1}.shop-modal .shop-banner__slide[data-winter-banner] img{padding-bottom:24px}}
+/* Holiday art follows the same percentage layout and container typography as
+   Halloween and Thanksgiving, with no slide-specific height or letterboxing. */
+.shop-winter-art{position:absolute;inset:0;overflow:hidden;border-radius:inherit;container-type:inline-size;background:radial-gradient(ellipse at 16% 60%,#b18d4538,transparent 55%),linear-gradient(115deg,#10293d,#1c4054 65%,#335b68);color:#fff8e9}
+.shop-winter-art::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,#e6f7ff55 0 1px,transparent 1.5px),radial-gradient(circle,#e6f7ff33 0 1px,transparent 1.5px);background-size:7cqw 7cqw,11cqw 11cqw;background-position:2cqw 1cqw,4cqw 5cqw}
+.shop-winter-title{position:absolute;left:5%;top:10%;width:30%}.shop-winter-title small{display:block;margin-bottom:1cqw;color:#eed49a;font:700 1.3cqw/1.2 Inter,sans-serif;letter-spacing:.1cqw;white-space:nowrap}.shop-winter-title strong{display:block;font:700 5cqw/1.05 Georgia,serif;letter-spacing:-.02em}
+.shop-winter-cards{position:absolute;left:38%;top:10%;width:57%;height:48%;display:flex;gap:4%}.shop-winter-card{position:relative;flex:1;min-width:0;border:.23cqw solid #dfc78e;border-radius:1.2cqw;background:center/cover;box-shadow:0 1cqw 1.8cqw #0005;overflow:hidden;transition:transform .3s ease}.shop-winter-card--menorah{background-image:url('../assets/themes/previews/menorah-window.webp')}.shop-winter-card--tree{background-image:url('../assets/themes/previews/outdoor-christmas-tree.webp?v=20261127-crystal')}.shop-winter-card span{position:absolute;bottom:0;left:0;right:0;padding:.9cqw .3cqw;background:#112c3ce8;color:#f9e4af;text-align:center;font:800 1.35cqw/1.2 Inter,sans-serif;white-space:nowrap}
+.shop-winter-extras{position:absolute;inset:0;pointer-events:none}.shop-winter-art .shop-winter-extras img{position:absolute;bottom:7%;height:29%;object-fit:contain;filter:drop-shadow(0 .3cqw .4cqw #0005)}
+.shop-winter-extras img:nth-child(1){left:5%;width:11%}.shop-winter-extras img:nth-child(2){left:17%;width:11%}.shop-winter-extras img:nth-child(3){left:30%;width:10%}.shop-winter-extras img:nth-child(4){left:43%;width:6%}.shop-winter-extras img:nth-child(5){left:50%;width:6%}.shop-winter-extras img:nth-child(6){left:59%;width:10%}.shop-winter-extras img:nth-child(7){left:73%;width:10%;transform:rotate(-7deg)}.shop-winter-extras img:nth-child(8){left:86%;width:10%;transform:rotate(7deg)}
+.shop-winter-cta{position:absolute;left:5%;top:51%;display:inline-flex;align-items:center;gap:.6cqw;padding:.7cqw 1.2cqw;border-radius:1cqw;background:#fff5db;color:#244654;font:800 1.3cqw/1.2 Inter,sans-serif}.shop-winter-cta>span{font-size:1.8cqw;transition:translate .25s}
+.shop-banner:has(.shop-banner-link:hover) .shop-winter-card{transform:translateY(-4%)}.shop-banner:has(.shop-banner-link:hover) .shop-winter-cta>span{translate:3px 0}
+@media(prefers-reduced-motion:reduce){.shop-winter-art *{transition:none!important}}

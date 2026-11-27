@@ -65,7 +65,7 @@ const root=path.resolve(__dirname,'../..');
   const openWidth=(await santa.locator('.sl-paper').boundingBox()).width;
   await santa.locator('.sl-drawer-close').click();await page.waitForTimeout(300);
   assert.equal(await santa.locator('.sl-students-toggle').getAttribute('aria-expanded'),'false');
-  assert(Math.abs((await santa.locator('.sl-paper').boundingBox()).width-openWidth)<1,'Overlay drawer never resizes the list');
+  assert(Math.abs((await santa.locator('.sl-paper').boundingBox()).width-openWidth)<1,'Side drawer preserves the scroll width');
   assert.equal(await santa.locator('.sl-paper-empty svg').count(),0);
   await santa.locator('.sl-title').fill('Our Holiday Helpers');
   await santa.hover();await santa.locator('.sl-students-toggle').click();

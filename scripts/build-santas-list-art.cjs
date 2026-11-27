@@ -5,7 +5,7 @@ const fs=require('node:fs'),sharp=require('C:/Users/Jack/.cache/codex-runtimes/c
  for(let i=0;i<data.length;i+=4){const spread=Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2]);if(spread<10)data[i+3]=Math.round(data[i+3]*Math.max(0,(spread-2)/8));}
  await sharp(data,{raw:info}).webp({lossless:true}).toFile('tiles/santas-list/assets/scroll-base.webp');
  let flakes='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" preserveAspectRatio="none">';
- for(const [x,y,r]of [[102,122,21],[296,175,24],[105,280,18],[292,355,26],[120,435,20],[277,459,16]]){
+ for(const [x,y,r]of [[70,122,21],[330,175,24],[72,280,18],[326,355,26],[85,435,20],[310,459,16]]){
   flakes+=`<g transform="translate(${x} ${y}) rotate(${x%39})" stroke="#faffff" stroke-width="2" stroke-linecap="round" opacity=".67">`;
   for(let j=0;j<6;j++)flakes+=`<path transform="rotate(${j*60})" d="M0 0V${-r} M0 ${-r*.5}l${r*.2} ${-r*.18} M0 ${-r*.5}l${-r*.2} ${-r*.18} M0 ${-r*.78}l${r*.14} ${-r*.12} M0 ${-r*.78}l${-r*.14} ${-r*.12}"/>`;
   flakes+='</g>';

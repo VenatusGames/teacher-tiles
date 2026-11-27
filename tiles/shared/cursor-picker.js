@@ -26,7 +26,7 @@ function create({panel,catalog,packs,owned,active,apply,unlock}){
     const heading=document.createElement('button');heading.type='button';heading.className='cursor-picker-pack-heading';heading.setAttribute('aria-expanded','false');heading.setAttribute('aria-controls',fan.id);
     heading.innerHTML='<span class="cursor-pack-preview" aria-hidden="true"></span><span class="cursor-pack-label"><strong></strong><small></small></span><span class="cursor-picker-lock" aria-hidden="true"><span>'+lock+'Unlock</span></span>';
     heading.querySelector('strong').textContent=pack.name;
-    if(pack.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title=pack.holiday==='thanksgiving'?'Thanksgiving':'Halloween';heading.querySelector('.cursor-pack-label').append(holiday)}
+    if(pack.holiday){const holiday=document.createElement('span');holiday.className='holiday-badge';holiday.textContent='Holiday';holiday.title=({thanksgiving:'Thanksgiving',christmas:'Christmas',hanukkah:'Hanukkah',halloween:'Halloween'})[pack.holiday]||'Holiday';heading.querySelector('.cursor-pack-label').append(holiday)}
     const members=catalog.filter(c=>c.productId===pack.productId),preview=heading.querySelector('.cursor-pack-preview');
     // Reuse the shop's actual cursor artwork, without cloning shop controls or animation layers.
     const source=pack.productId?document.querySelector(`[data-shop-product="${CSS.escape(pack.productId)}"] .shop-product__preview`):null;

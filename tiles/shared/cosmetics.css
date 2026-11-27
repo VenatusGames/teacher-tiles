@@ -17,3 +17,7 @@
 .halloween-cursor-preview img{width:100%;height:76px;max-height:100%;object-fit:contain;transform:rotate(-5deg)}
 .halloween-cursor-preview img:nth-child(even){transform:rotate(5deg)}
 .shop-product:hover .halloween-cursor-preview img{transform:translateY(-4px)}
+
+/* Three holiday styles share the existing cursor pack surface and hover motion. */
+.christmas-cursor-preview img{width:27%;flex-basis:27%}
+.cursor-shop-preview.christmas-cursor-preview img{width:27%!important;max-width:none!important;flex-basis:27%}

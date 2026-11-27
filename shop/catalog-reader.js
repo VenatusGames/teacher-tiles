@@ -8,7 +8,7 @@ export async function readShopCatalog(){
   await Promise.all([import('./tile-effects-catalog.js?v=20261126-winter'),import('../profile/frames-catalog.js'),import('../tiles/lesson-planner/skins.js?v=20261126-winter'),import('./sticker-catalog.js?v=20261126-winter'),import('../presentations/themes.js'),import('../presentations/catalog.js?v=20261126-winter').then(()=>import('../presentations/transitions.js'))]);
   for(const p of [...(window.TeacherTilesTileEffectCatalog?.catalog||[]),...(window.TeacherTilesProfileFrames?.catalog||[]),...(window.TeacherTilesPlannerSkins?.catalog||[]),...(window.TeacherTilesStickerPacks||[]),...(window.TeacherTilesPresentationThemes?.catalog||[]),...(window.TeacherTilesPresentationTransitions?.catalog||[])])defaults.set(p.productId,{name:p.name,description:p.description,tags:`${p.tags||''} ${p.holiday||''}`});
   const banners=[...doc.querySelectorAll('[data-shop-banner]')].map((b,i)=>{
-   const art=(b.querySelector('.shop-halloween-art,.shop-thanksgiving-art')||b.querySelector('img'))?.cloneNode(true);
+   const art=(b.querySelector('.shop-halloween-art,.shop-thanksgiving-art,.shop-winter-art')||b.querySelector('img'))?.cloneNode(true);
    // Resolve image URLs relative to the app, even when the portal is nested.
    for(const img of art?[...(art.matches('img')?[art]:[]),...art.querySelectorAll('img')]:[]){img.src=new URL(img.getAttribute('src'),response.url||new URL(`../${name}`,import.meta.url)).href;}
    return {id:`default-${b.querySelector('[data-shop-banner-target]')?.dataset.shopBannerTarget||i}`,title:b.querySelector('button')?.getAttribute('aria-label')||`Banner ${i+1}`,art,target:b.querySelector('button')?.dataset.shopBannerTarget};
