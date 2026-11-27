@@ -95,15 +95,16 @@
   function setupDreidel(m) {
     const button = m.querySelector('.dreidel-spin');
     const popup = m.querySelector('.dreidel-result-popup');
-    let result = 0, spin = null, color = 'blue';
+    let result = 0, spin = null, zoom = null, color = 'blue';
     renderDreidel(m);
     const body = button.querySelector('.dreidel-object');
     const syncDrawer = setupColorDrawer(m, key => {color = colorKey(key);applyColor(m,color);syncDrawer(color);});
     syncDrawer(color);
     function dismissResult() {
-      if (popup.matches(':popover-open')) popup.hidePopover();
+      zoom?.cancel();zoom = null;
       popup.hidden = true;
-      m.querySelector('.dreidel-stage').prepend(button);
+      m.classList.remove('is-dreidel-result');
+      body.style.transform = 'rotateX(-12deg) rotateY('+(18-result*90)+'deg)';
     }
     function settle(showResult = false) {
       spin?.cancel();
@@ -111,9 +112,15 @@
       m.classList.remove('is-dreidel-spinning');
       renderDreidel(m, {result, color});
       if (showResult) {
-        popup.insertBefore(button,popup.querySelector('.dreidel-result'));
+        zoom?.cancel();
+        const from = body.style.transform;
+        const to = 'translateY(-35%) rotateX(-2deg) rotateY('+(2-result*90)+'deg) scale(1.25)';
+        body.style.transform = to;
+        m.classList.add('is-dreidel-result');
         popup.hidden = false;
-        popup.showPopover();
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          zoom = body.animate([{transform:from},{transform:to}],{duration:420,easing:'cubic-bezier(.2,.8,.2,1)'});
+        }
       } else dismissResult();
     }
     function startSpin() {

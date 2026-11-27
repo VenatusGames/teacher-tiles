@@ -79,7 +79,7 @@ const root = path.resolve(__dirname, '../..');
       assert.equal(await page.locator('.dreidel-result-popup:visible').count(),1);
       assert.equal(await page.locator('.dreidel-result').textContent(),['Nun','Gimel','Hei','Shin'][result]);
     }
-    if(process.env.HANUKKAH_RESULT_SCREENSHOT){await page.locator('.dreidel-result-popup').evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));await page.screenshot({path:process.env.HANUKKAH_RESULT_SCREENSHOT});}
+    if(process.env.HANUKKAH_RESULT_SCREENSHOT){await page.locator('.dreidel-stage').evaluate(el=>Promise.all(el.getAnimations({subtree:true}).map(a=>a.finished)));await page.screenshot({path:process.env.HANUKKAH_RESULT_SCREENSHOT});}
     await page.mouse.move(5,5);await page.mouse.move(10,10);
     await page.locator('.dreidel-result-close').click();
     assert.equal(await page.locator('.dreidel-result-popup:visible').count(),0);
