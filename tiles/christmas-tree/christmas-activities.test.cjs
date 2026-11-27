@@ -65,7 +65,7 @@ const root=path.resolve(__dirname,'../..');
   const openWidth=(await santa.locator('.sl-paper').boundingBox()).width;
   await santa.locator('.sl-drawer-close').click();await page.waitForTimeout(300);
   assert.equal(await santa.locator('.sl-students-toggle').getAttribute('aria-expanded'),'false');
-  assert((await santa.locator('.sl-paper').boundingBox()).width>openWidth+80,'Closing names drawer expands the list');
+  assert(Math.abs((await santa.locator('.sl-paper').boundingBox()).width-openWidth)<1,'Overlay drawer never resizes the list');
   assert.equal(await santa.locator('.sl-paper-empty svg').count(),0);
   await santa.locator('.sl-title').fill('Our Holiday Helpers');
   await santa.hover();await santa.locator('.sl-students-toggle').click();
@@ -77,7 +77,7 @@ const root=path.resolve(__dirname,'../..');
   if(process.env.HOLIDAY_SCREENSHOT)await santa.screenshot({path:process.env.HOLIDAY_SCREENSHOT+'-list.png'});
   await page.evaluate(()=>{const saved=serializeBoardModule(santa);santa._cleanup();santa.remove();santa=createModule('santaslist',0,0,{record:false,boardState:saved})});
   assert.equal(await santa.locator('.sl-title').inputValue(),'Our Holiday Helpers');assert.equal(await santa.locator('.sl-entry').count(),2);
-  await santa.locator('.sl-entry').first().hover();await santa.locator('.sl-remove').first().click();assert.equal(await santa.locator('.sl-entry').count(),1);
+  if(await santa.locator('.sl-students-toggle').getAttribute('aria-expanded')==='true')await santa.locator('.sl-drawer-close').click();await santa.locator('.sl-entry').first().hover();await santa.locator('.sl-remove').first().click();assert.equal(await santa.locator('.sl-entry').count(),1);
   await page.evaluate(()=>santa.requestFullscreen());await santa.locator('.sl-load-class').click();assert(await santa.locator('.class-roster-intro').isVisible());await santa.locator('.sl-back').click();assert.equal(await santa.locator('.sl-entry').count(),1);await page.evaluate(()=>document.exitFullscreen());
   await santa.hover();await santa.locator('.sl-reset').click();assert.equal(await santa.locator('.sl-entry').count(),0);
   for(const [target,width,height] of [[tree,310,390],[santa,440,370]]){

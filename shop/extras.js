@@ -15,6 +15,7 @@ function setupShopExtras(modal) {
     if(kind==='presentation-transition'||kind==='profile-frame'&&item.tier==='animated'){
       const badge=document.createElement('span');badge.className='shop-animated-badge';badge.textContent='ANIMATED';art.append(badge);
     }
+    if(item.credit){const credit=document.createElement('small');credit.className='shop-effect-credit';const source=document.createElement('a'),license=document.createElement('a');source.href=item.credit.url;source.textContent='Sound: '+item.credit.name;license.href=item.credit.licenseUrl;license.textContent=item.credit.license;for(const a of [source,license]){a.target='_blank';a.rel='noopener noreferrer'}credit.append(source,' · ',license);credit.title=item.credit.changes;card.querySelector('.shop-product__body>div').append(credit)}
     return card;
   }
   const effectsPage=page('tile-effects','Tile Effects','Change the ending effects for certain tiles!');

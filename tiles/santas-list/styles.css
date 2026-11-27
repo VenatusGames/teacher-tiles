@@ -1,4 +1,4 @@
-.module.santas-list-module{width:650px;height:540px;min-width:440px;min-height:370px;display:flex;flex-direction:column;padding:30px 17px 42px;container-type:size;background:var(--module-bg,#fff);color:var(--module-text,#263d34);font-family:var(--module-font,Inter,system-ui,sans-serif)}
+.module.santas-list-module{width:430px;height:620px;min-width:310px;min-height:400px;display:flex;flex-direction:column;padding:30px 17px 42px;container-type:size;background:var(--module-bg,#fff);color:var(--module-text,#263d34);font-family:var(--module-font,Inter,system-ui,sans-serif)}
 .sl-layout{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,0fr) minmax(0,1.8fr);gap:0;transition:grid-template-columns .24s ease,gap .24s ease}.sl-students{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0;overflow:hidden;padding:12px 0;opacity:0;visibility:hidden;transition:opacity .18s,visibility .24s}.sl-class-name{font-size:clamp(12px,2.6cqw,18px);overflow-wrap:anywhere}.sl-roster{overflow:auto;min-height:0;flex:1;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;overscroll-behavior:contain}.sl-student{border:1px solid color-mix(in srgb,currentColor 12%,transparent);background:color-mix(in srgb,var(--module-bg,#fff) 92%,#d4e5db);border-radius:10px;padding:10px 12px;font-size:clamp(12px,2.7cqw,20px);font-weight:650;cursor:grab;touch-action:none;overflow-wrap:anywhere;transition:background .15s,transform .15s}.sl-student:hover{background:#dfeee4;transform:translateY(-1px)}.sl-student:focus-visible{outline:2px solid #60a5fa;outline-offset:-2px}
 .sl-add-form{display:flex;gap:5px;flex:none}.sl-add-name{min-width:0;flex:1;width:100%;border:1px solid var(--border);border-radius:8px;background:var(--surface-solid);color:var(--text);height:32px;padding:5px 7px;font:inherit;font-size:12px}.sl-add-form button{width:30px;padding:0;font-size:19px}
 .sl-paper{position:relative;display:flex;flex-direction:column;min-height:0;margin:17px 8px 18px;padding:23px 23px 18px;background:linear-gradient(90deg,#e5c78e,#fff4d7 7%,#fff7e1 48%,#f8e8c3 93%,#d7b87d);border:1px solid #d9bb83;border-radius:4px;box-shadow:0 9px 17px #46351d14;color:var(--module-text,#3d4536);transition:box-shadow .18s}
@@ -17,3 +17,15 @@
 .sl-drawer-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;flex:none;font-size:13px}.sl-drawer-close{height:28px;width:28px;padding:0;font-size:20px}.sl-import-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}
 .sl-students-toggle[aria-expanded="true"]{background:var(--surface-soft);border-color:#8fafa0}
 @media(prefers-reduced-motion:reduce){.sl-layout,.sl-students{transition:none}}
+
+/* The roster overlays the paper without changing its size. */
+.santas-list-module .sl-layout{position:relative;display:flex;gap:0}
+.santas-list-module .sl-paper{flex:1;min-width:0}
+.santas-list-module .sl-students{position:absolute;z-index:5;inset:5px auto 5px 0;width:min(76%,280px);padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-solid,#fff);box-shadow:6px 8px 24px #17324d2b;transform:translateX(-12px);transition:transform .24s ease,opacity .2s,visibility .24s}
+.santas-list-module.sl-drawer-open .sl-students{transform:none}
+.santas-list-module.sl-dragging .sl-students{opacity:.3;pointer-events:none}
+.santas-list-module[data-tile-skin="santaslist-frosted"] .sl-paper{background:#e4f4ff url('assets/snowflakes.svg') center/240px;color:#255579;border-color:#9fc8df;box-shadow:inset 0 0 35px #fff,0 9px 17px #234d6920}
+.santas-list-module[data-tile-skin="santaslist-frosted"] .sl-paper:before,.santas-list-module[data-tile-skin="santaslist-frosted"] .sl-paper:after{border-color:#9fc8df;background:linear-gradient(#fff,#dceff9 45%,#94bed8 85%,#e6f6ff)}
+.santas-list-module[data-tile-skin="santaslist-frosted"] .sl-title{font-family:Georgia,serif!important;font-style:italic;font-size:clamp(24px,6cqw,38px);letter-spacing:.02em;border-color:#81b0cd70}
+.santas-list-module[data-tile-skin="santaslist-frosted"] .sl-entry{border-color:#9dc3da55}
+@media(prefers-reduced-motion:reduce){.santas-list-module .sl-students{transition:none}}

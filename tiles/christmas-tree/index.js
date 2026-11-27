@@ -17,15 +17,15 @@
       for(let col=0;col<branch.count;col++)items.push({kind:'ornament',x:branch.left+col*(branch.right-branch.left)/Math.max(1,branch.count-1)+(rng()-.5)*12,y:branch.y+(rng()-.5)*8,color:Math.floor(rng()*colors.length),size:76+rng()*10});
     }
     const strings=[
-      {kind:'lights',y:285,width:55,sag:20},
-      {kind:'tinsel',y:415,width:90,sag:24},
-      {kind:'lights',y:480,width:145,sag:20},
-      {kind:'tinsel',y:615,width:165,sag:26},
-      {kind:'lights',y:680,width:185,sag:22},
-      {kind:'tinsel',y:810,width:285,sag:20}
+      {kind:'lights',y:285,left:458,right:600,sag:20},
+      {kind:'tinsel',y:415,left:414,right:635,sag:24},
+      {kind:'lights',y:480,left:335,right:692,sag:20},
+      {kind:'tinsel',y:615,left:320,right:707,sag:26},
+      {kind:'lights',y:680,left:342,right:752,sag:22},
+      {kind:'tinsel',y:810,left:161,right:850,sag:20}
     ];
     for(const string of strings){
-      items.push({...string,x:525-string.width,color:Math.floor(rng()*colors.length),...(string.kind==='lights'?{colors:Array.from({length:string.width<100?5:9},()=>Math.floor(rng()*colors.length))}:{})});
+      items.push({...string,x:string.left,width:(string.right-string.left)/2,color:Math.floor(rng()*colors.length),...(string.kind==='lights'?{colors:Array.from({length:string.right-string.left<200?5:9},()=>Math.floor(rng()*colors.length))}:{})});
     }
     // Each round is varied, but the topper is always the final reveal.
     for(let i=items.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
@@ -47,11 +47,11 @@
       if(item.kind==='ornament'){
         g.innerHTML=`<svg x="${item.x-item.size/2}" y="${item.y-item.size/2}" width="${item.size}" height="${item.size}" viewBox="0 0 100 100"><image href="${assets}ornament.png" width="100" height="100"/><g clip-path="url(#${id}-ball)" filter="url(#${id}-${item.color})"><image href="${assets}ornament.png" width="100" height="100"/></g></svg>`;
       }else if(item.kind==='tinsel'){
-        const d=`M${item.x} ${item.y}Q525 ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
+        const d=`M${item.x} ${item.y}Q${item.x+item.width} ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
         const maskId=`${id}-tinsel-${index}`;
         g.innerHTML=`<defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1100"><path class="ct-tinsel-reveal" d="${d}" pathLength="1" fill="none" stroke="white" stroke-width="24" stroke-linecap="round" stroke-dasharray="1"/></mask></defs><g mask="url(#${maskId})"><path d="${d}" fill="none" stroke="#fff0c5" stroke-width="14" stroke-linecap="round" stroke-dasharray="1 8"/><path d="${d}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff6dd" stroke-opacity=".6" stroke-width="3" stroke-dasharray="1 11"/></g>`;
       }else if(item.kind==='lights'){
-        const d=`M${item.x} ${item.y}Q525 ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
+        const d=`M${item.x} ${item.y}Q${item.x+item.width} ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
         g.innerHTML=`<path class="ct-light-wire" d="${d}" pathLength="1" fill="none" stroke="#c4d4b2" stroke-opacity=".42" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1"/>`;
         for(let i=0;i<item.colors.length;i++){
           const t=i/(item.colors.length-1),x=item.x+item.width*2*t,y=item.y+4*item.sag*t*(1-t),color=colors[item.colors[i]];
