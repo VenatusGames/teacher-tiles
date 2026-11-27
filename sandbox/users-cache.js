@@ -1,7 +1,12 @@
+import {manualPatchIds, getManualPatchOptions} from '../profile/patch-catalog.js?v=20261106-patch-names';
+
 // Display data only. Every mutation and access verification still goes to the server.
 export function createUsersClient(call,getUid,storage=globalThis.sessionStorage) {
-  const ttl=300000,prefix='tt-dev-users-v3:',pending=new Map();
+  const ttl=300000,prefix='tt-dev-users-v4:',pending=new Map();
   let owner='',cache=new Map(),epoch=0;
+  function hasCompleteCatalog(response) {
+    return getManualPatchOptions(response?.data?.patchCatalog).length === manualPatchIds.length;
+  }
   function save(){try{storage.setItem(prefix+owner,JSON.stringify([...cache]));}catch{}}
   function scope(){const uid=getUid()||'';if(owner===uid)return;owner=uid;epoch++;cache=new Map();pending.clear();try{cache=new Map(JSON.parse(storage.getItem(prefix+owner)||'[]'));}catch{};}
   function invalidate(){scope();epoch++;cache.clear();pending.clear();try{storage.removeItem(prefix+owner);}catch{}}
@@ -12,18 +17,18 @@ export function createUsersClient(call,getUid,storage=globalThis.sessionStorage)
     scope();const uid=owner,version=epoch;
     const readable=['listDeveloperUsers','getDeveloperUser'].includes(name);
     const key=keyFor(name,data),entry=cache.get(key);
-    if(readable&&entry&&Date.now()-entry.time<ttl)return entry.response;
+    if(readable&&entry&&hasCompleteCatalog(entry.response)&&Date.now()-entry.time<ttl)return entry.response;
     if(readable&&pending.has(key))return pending.get(key);
     const promise=(async()=>{
       const response=await call(name,data);
       if(owner!==uid||epoch!==version)return response;
-      if(readable){
+      if(readable && hasCompleteCatalog(response)){
         put(key,response);
         if(name==='listDeveloperUsers')for(const user of response.data.users){
-          // Older deployed list functions do not yet include detail fields.
-          if('patchAwards' in user)put(keyFor('getDeveloperUser',{uid:user.uid}),{data:user});
+          // Prime details only when both award data and complete name metadata are available.
+          if('patchAwards' in user)put(keyFor('getDeveloperUser',{uid:user.uid}),{data:{...user,patchCatalog:response.data.patchCatalog}});
         }
-      }else invalidate();
+      }else if(!readable) invalidate();
       return response;
     })();
     if(readable)pending.set(key,promise);

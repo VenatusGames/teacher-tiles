@@ -1,4 +1,4 @@
-import {manualPatchOptions} from '../profile/patch-catalog.js?v=20261020-beloved-registry';
+import {getManualPatchOptions} from '../profile/patch-catalog.js?v=20261106-patch-names';
 import {createAccountTools} from './user-account-tools.js?v=20261011-account-tools';
 export function createUserDetails(call,onDeleted) {
   const dialog=document.createElement('dialog');dialog.className='user-details';dialog.setAttribute('aria-labelledby','user-detail-title');
@@ -21,10 +21,14 @@ export function createUserDetails(call,onDeleted) {
     choices.innerHTML='<label for="award-patch-select">Patch</label><div class="patch-award-row"><select id="award-patch-select" aria-label="Choose a patch"><option value="">Choose a patch…</option></select><button class="primary" type="button" disabled>Give Patch</button></div>';
     const select=choices.querySelector('select'),give=choices.querySelector('button');
     const isAwarded=id=>!user.patchAwards?.[id]?.revoked&&(!!user.patchAwards?.[id]||id==='beta'&&user.legacyBeta);
-    for(const [id,name] of manualPatchOptions){
+    const patchOptions = getManualPatchOptions(user.patchCatalog);
+    for(const [id,name] of patchOptions){
       const option=document.createElement('option'),awarded=isAwarded(id);option.value=id;option.textContent=name+(awarded?' · Awarded':'');select.append(option);
     }
-    select.disabled=user.disabled;select.onchange=()=>{give.disabled=!select.value||user.disabled;give.textContent=isAwarded(select.value)?'Remove Patch':'Give Patch';give.className=isAwarded(select.value)?'danger':'primary';};
+    if (!patchOptions.length) {
+      select.options[0].textContent = 'Patch names unavailable. Reload user details.';
+    }
+    select.disabled=user.disabled || !patchOptions.length;select.onchange=()=>{give.disabled=!select.value||user.disabled;give.textContent=isAwarded(select.value)?'Remove Patch':'Give Patch';give.className=isAwarded(select.value)?'danger':'primary';};
     give.onclick=async()=>{const attempt=generation,patchId=select.value,name=select.selectedOptions[0].textContent.replace(' · Awarded',''),enabled=!isAwarded(patchId);if(!patchId)return;give.disabled=select.disabled=true;status.textContent=enabled?'Awarding patch…':'Removing patch…';try{const response=await call('giveUserPatch',{uid:user.uid,patchId,enabled});if(attempt!==generation)return;user.patchAwards=response.data.patchAwards;render();status.textContent=name+(enabled?' awarded.':' removed.')+' The collection updates when the user reloads TeacherTiles.';}catch(error){if(attempt===generation){give.disabled=select.disabled=false;status.textContent=error.message||'Could not update patch.';}}};
     remove.disabled=user.developer||user.subscriber;remove.title=user.developer?'Developer accounts cannot be deleted here.':user.subscriber?'End the subscription before deleting this account.':'';
   }
