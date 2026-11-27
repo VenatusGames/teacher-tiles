@@ -55,7 +55,7 @@ const deck={schemaVersion:1,title:'Interactive Lesson',theme:'none',slides:[{id:
   if(u.hostname!=='tiles.test')return route.abort();const file=path.join(root,decodeURIComponent(u.pathname));if(!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});
   if(u.pathname==='/index.html')return route.fulfill({contentType:'text/html',body:fs.readFileSync(file,'utf8').replace(/<script[^>]+src="(?:firebase-auth|sandbox\/board-gate)[^"]*"[^>]*><\/script>/g,'')});return route.fulfill({path:file});
  });
- const teacher=await context.newPage();pages.push(teacher);teacher.on('pageerror',e=>errors.push(e.message));await teacher.addInitScript(()=>{window.TeacherTilesAuth={user:{uid:'owner',getIdToken:async()=>'test-token'},call:async(name,data)=>({data:await window.__api(name,data)})};});await teacher.goto(base+'index.html');await teacher.waitForFunction(()=>window.TeacherTilesPresentations&&window.TeacherTilesBoardSessions);
+ const teacher=await context.newPage();pages.push(teacher);teacher.on('pageerror',e=>errors.push(e.message));await teacher.addInitScript(()=>{window.TeacherTilesAccount={state:{subscriptionActive:true}};window.TeacherTilesAuth={user:{uid:'owner',getIdToken:async()=>'test-token'},call:async(name,data)=>({data:await window.__api(name,data)})};});await teacher.goto(base+'index.html');await teacher.waitForFunction(()=>window.TeacherTilesPresentations&&window.TeacherTilesBoardSessions);
  await teacher.addScriptTag({url:base+'presentations/files.js'});
  await teacher.addScriptTag({url:base+'presentations/vendor/jszip-3.10.1.min.js'});
  await teacher.addScriptTag({url:base+'presentations/vendor/pptxgen-4.0.1.min.js'});

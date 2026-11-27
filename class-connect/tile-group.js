@@ -60,6 +60,7 @@ export function responseGroup(){
 }
 export function attachResponse(tile){return attachTile(tile,false);}
 function attachTile(tile,restoreDeck){
+ if(window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.allowed())return;
  const group=current;
  if(!group||group.leaving||!tile.isConnected||tile._classConnectSession||(!restoreDeck&&!tile._wordCloudInfo)||window.ClassConnectPolicy||tile.dataset.presentationEmbedded)return;
  if(pending.has(tile))return pending.get(tile);

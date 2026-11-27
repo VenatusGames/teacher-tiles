@@ -2,6 +2,8 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   if(window.ClassConnectPolicy&&!ClassConnectPolicy.canCreate(type))return null;
   if(!boardState&&window.TeacherTilesHalloween?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess();return null;}
   if(!boardState&&window.TeacherTilesThanksgiving?.types.has(type)&&!TeacherTilesHalloween.hasAccess()){TeacherTilesHalloween.requestAccess('Thanksgiving');return null;}
+  const connectTile=TeacherTilesConnectAccess.types.has(type);
+  if(connectTile&&!boardState&&!TeacherTilesConnectAccess.requireAccess())return null;
   const t=document.getElementById(`${type}-template`);
   if(!t)return null;
   const m=t.content.firstElementChild.cloneNode(true);
@@ -27,6 +29,7 @@ function createModule(type,x,y,{record=true,boardState=null,tileSkin=''}={}){
   if(boardState)applyBoardPostSetupState(m,boardState);
   if(window.TeacherTilesHalloween?.types.has(type))TeacherTilesHalloween.guard(m);
   if(window.TeacherTilesThanksgiving?.types.has(type))TeacherTilesHalloween.guard(m,'Thanksgiving');
+  if(connectTile&&!window.ClassConnectPolicy)TeacherTilesHalloween.guard(m,'ClassConnect',TeacherTilesConnectAccess.allowed,TeacherTilesConnectAccess.request);
   delete m._isBoardRestore;
   if(record)recordHistory({type:'add',elements:[m]});
   if(!boardState&&['respond','wordcloud','livepolls','moodcheckin'].includes(type))window.TeacherTilesBoardSessions?.tileReady?.(m);

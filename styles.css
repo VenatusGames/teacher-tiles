@@ -16697,6 +16697,22 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__item small{font-size:9px;margin-top:3px}
 #context-menu .context-menu__item--coming-soon{padding-top:23px;cursor:not-allowed;opacity:1}
 #context-menu .context-menu__item--coming-soon:hover,#context-menu .context-menu__item--coming-soon:active{transform:none;background:var(--surface);border-color:var(--border);box-shadow:none}
+[data-connect-perk]::after,
+.cs-toggle[data-connect-perk] strong::after,
+[data-connect-tile] .context-menu__connect-badge::before,
+[data-category-drawer-filter="classconnect"]::after {
+  content: "";
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  vertical-align: middle;
+  background: url("assets/ui/subscriber-crown.svg") center / contain no-repeat;
+}
+.cs-toggle[data-connect-perk]::after { display: none }
+.cs-toggle[data-connect-perk] strong::after { margin-left: 5px }
+:is(.presentation-classconnect-button,[data-action="classconnect"])[data-connect-perk] { position:relative }
+:is(.presentation-classconnect-button,[data-action="classconnect"])[data-connect-perk]::after { position:absolute; right:-3px; top:-4px; width:13px; height:13px; pointer-events:none }
 #context-menu .context-menu__connect-badge{position:absolute;top:5px;right:5px;display:flex;align-items:center;height:14px;padding:0 5px;border:1px solid #ef44444d;border-radius:999px;background:linear-gradient(110deg,#fee2e2,#f87171 48%,#fecaca);color:#7f1d1d;font-size:7px;font-weight:900;line-height:1;letter-spacing:.02em;box-shadow:0 2px 6px #b91c1c1a}
 @media(max-width:390px){#context-menu{grid-template-columns:105px minmax(0,1fr)}#context-menu .context-menu__tile-grid{grid-template-columns:1fr}}
 

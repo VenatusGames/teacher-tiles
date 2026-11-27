@@ -28,13 +28,21 @@ await context.route('**/*',route=>{
 });
 const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
 async function ready(){await page.waitForFunction(()=>window.TeacherTilesPresentations);await page.evaluate(async()=>{
- document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');window.TeacherTilesAuth={user:{uid:'teacher'}};window.TeacherTilesSandbox={subscriptionEnabled:true};
+ document.querySelector('#teachertiles-intro')?.remove();document.documentElement.classList.remove('sandbox-access-locked');window.TeacherTilesAuth={user:{uid:'teacher'}};window.TeacherTilesAccount={state:{subscriptionActive:true}};
  const {createClassConnectClient}=await import('/dev/class-connect/client.js');window.TeacherTilesClassConnect=createClassConnectClient({getUid:()=>window.TeacherTilesAuth.user?.uid||'',call:window.__ccCall});
  window.TeacherTilesEncryptedClasses={save:classes=>window.TeacherTilesClassConnect.sync(classes,'teacher','11111111-1111-4111-8111-111111111111')};
 });}
 await page.goto('https://tiles.test/dev/board.html');await ready();
 await page.evaluate(()=>{localStorage.setItem(classRostersStorageKey(),JSON.stringify([{id:'owls',name:'The Owl Classroom',logo:'🦉',gradeLevel:'3',students:['Amy Lee','Ben','Chloe','Daniel','Emma','Finn','Grace','Harper','Isla','James','Kai','Luna'],studentProfiles:{'student:ben':{emoji:'🐸'},'student:chloe':{emoji:'🌻'}},pbisStats:{eggPoints:false},starChart:{wholeClassStars:999,studentStars:{'student:amy lee':7,'student:ben':3}}}]));document.querySelector('#profile-classes-button').click();});
-await page.getByRole('button',{name:'Open The Owl Classroom',exact:true}).click();await page.getByRole('button',{name:'ClassConnect',exact:true}).click();
+await page.getByRole('button',{name:'Open The Owl Classroom',exact:true}).click();
+await page.evaluate(()=>window.TeacherTilesAccount.state.subscriptionActive=false);
+const connectButton=page.getByRole('button',{name:'ClassConnect',exact:true});
+await connectButton.click();
+const paywall=page.getByRole('dialog',{name:'ClassConnect Tiles Subscription'});
+await paywall.getByText('ClassConnect is for subscribers only at this time. This is subject to change in the future!',{exact:true}).waitFor();
+await paywall.getByRole('button',{name:'Back'}).click();
+await page.evaluate(()=>window.TeacherTilesAccount.state.subscriptionActive=true);
+await connectButton.click();
 const panel=page.getByRole('dialog',{name:'ClassConnect',exact:true});assert.equal(await panel.getByRole('button',{name:'Create Student Link',exact:true}).count(),0);assert.equal(await panel.getByRole('switch',{name:'Student Boards',exact:true}).count(),0);assert(await panel.getByRole('button',{name:'Start Board Session Controlled or Free Session',exact:true}).isEnabled());await panel.screenshot({animations:'disabled',path:path.join(outputs,'class-connect-tools-desktop.png')});await panel.getByRole('button',{name:'Student Link',exact:true}).click();await panel.getByRole('button',{name:'Create Student Link',exact:true}).click();
 const linkInput=panel.getByRole('textbox',{name:'Student link'});await linkInput.waitFor();const initial=await linkInput.inputValue();assert.match(initial,/^https:\/\/tiles.test\/dev\/class-connect.html#[a-z]{43}$/);
 await panel.getByRole('button',{name:'Copy Link',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),initial);
@@ -52,6 +60,16 @@ await profile.getByRole('button',{name:'PBIS View rewards',exact:true}).click();
 await student.setViewportSize({width:1200,height:900});await profile.screenshot({animations:'disabled',path:path.join(outputs,'class-connect-student-pbis.png')});await student.setViewportSize({width:390,height:844});await profile.screenshot({animations:'disabled',path:path.join(outputs,'class-connect-student-pbis-mobile.png')});assert(await profile.evaluate(el=>el.scrollWidth<=el.clientWidth));
 await profile.getByRole('button',{name:'Close Student Profile',exact:true}).click();await student.getByRole('button',{name:'Open Ben',exact:true}).click();assert(await profile.getByRole('button',{name:'Enter Board',exact:true}).isEnabled());assert(await profile.getByRole('heading',{name:'Hi, Ben!',exact:true}).isVisible());await student.keyboard.press('Escape');await student.getByRole('button',{name:'Open Ben',exact:true}).waitFor();assert.equal(await student.locator('.cc-departing-students').count(),0);await student.emulateMedia({reducedMotion:'reduce'});await student.getByRole('button',{name:'Open Ben',exact:true}).click();assert.equal(await student.locator('.cc-departing-students').count(),0);await profile.getByRole('button',{name:'Back to Class',exact:true}).click();await student.emulateMedia({reducedMotion:'no-preference'});
 await panel.getByRole('button',{name:'Close ClassConnect',exact:true}).click();await page.getByRole('button',{name:'Class Settings',exact:true}).click();const settings=page.getByRole('dialog',{name:'Class Settings',exact:true});
+await page.evaluate(()=>window.TeacherTilesAccount.state.subscriptionActive=false);
+await page.bringToFront();
+for(const name of ['Allow Student Emoji Editing','Student Emoji PINs']){
+ const toggle=settings.getByRole('switch',{name,exact:true});
+ await toggle.focus();await toggle.press('Space');
+ await paywall.waitFor();
+ await paywall.getByRole('button',{name:'Back'}).click();
+ assert.equal(await toggle.isChecked(),false);
+}
+await page.evaluate(()=>window.TeacherTilesAccount.state.subscriptionActive=true);
 await settings.getByRole('switch',{name:'Allow Student Emoji Editing',exact:true}).check();await page.evaluate(()=>queueEncryptedClassSave(readClassRosters()));await settings.getByRole('button',{name:'Close Class Settings',exact:true}).click();
 await student.getByRole('button',{name:'Refresh',exact:true}).click();await student.getByRole('button',{name:'Open Amy Lee',exact:true}).click();await profile.getByRole('button',{name:'Change Emoji',exact:true}).click();await profile.getByRole('button',{name:'Use 🦊',exact:true}).click();await profile.getByRole('button',{name:'Change Emoji',exact:true}).waitFor();assert.equal(await profile.locator('.cs-detail-hero .cc-student-avatar').textContent(),'🦊');
 await profile.screenshot({animations:'disabled',path:path.join(outputs,'class-connect-student-profile-mobile.png')});await student.setViewportSize({width:1400,height:960});await profile.screenshot({animations:'disabled',path:path.join(outputs,'class-connect-student-profile-desktop.png')});await student.setViewportSize({width:390,height:844});

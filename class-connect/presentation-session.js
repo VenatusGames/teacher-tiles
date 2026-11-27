@@ -28,7 +28,7 @@ function controller(tile,classId,name,result,exit){
  function leave(){if(closed)return;exit.send({classId,sessionId:status.sessionId});dispose();}
  function beforeLeave(event){if(!event.defaultPrevented&&!event.returnValue)leave();}
  function auth(){if(window.TeacherTilesAuth?.user?.uid!==owner)leave();}
- function access(){const info=tile._classConnectPresentation();if(info&&!window.TeacherTilesPresentations.checkAccess(info.document,false))void end();}
+ function access(){const info=tile._classConnectPresentation();if((window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.allowed())||(info&&!window.TeacherTilesPresentations.checkAccess(info.document,false)))void end();}
  const removal=new MutationObserver(()=>{if(!tile.isConnected)void end();});removal.observe(document.body,{childList:true,subtree:true});exit.start();window.addEventListener('pagehide',leave);window.addEventListener('beforeunload',beforeLeave);
  const api={classId,name,panelId:result.panelId,releasePresentation:dispose,end,retry,grouped:!!result.groupId,endSession:exit.endSession,get problem(){return problem},get active(){return !closed}};tile._classConnectSession=api;
  tile.classList.add('is-classconnect-live');connect?.setAttribute('aria-label','ClassConnect presentation · Live');
