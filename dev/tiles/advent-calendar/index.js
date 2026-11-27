@@ -8,7 +8,7 @@
   function dayCount(value){return Number.isFinite(Number(value))?Math.max(1,Math.min(24,Math.round(Number(value)))):24;}
   function normalize(raw={}) {
     if(!raw||typeof raw!=='object')raw={};
-    return {version:1,title:safeText(raw.title||'December Surprises',60),days:dayCount(raw.days),theme:Object.hasOwn(themes,raw.theme)?raw.theme:'cranberry',style:['panels','ribbons','stars'].includes(raw.style)?raw.style:'panels',font:['classic','elegant','playful'].includes(raw.font)?raw.font:'elegant',seed:Math.max(0,Math.min(99999,Math.floor(Number(raw.seed)||0))),cards:Array.from({length:24},(_,i)=>{
+    return {version:1,title:safeText(raw.title||'Advent Calendar',60),days:dayCount(raw.days),theme:Object.hasOwn(themes,raw.theme)?raw.theme:'cranberry',style:['panels','ribbons','stars'].includes(raw.style)?raw.style:'panels',font:['classic','elegant','playful'].includes(raw.font)?raw.font:'elegant',seed:Math.max(0,Math.min(99999,Math.floor(Number(raw.seed)||0))),cards:Array.from({length:24},(_,i)=>{
       const c=raw.cards?.[i]||{},image=String(c.image||'');
       return {title:safeText(c.title,80),text:safeText(c.text,500),image:image.length<=18000&&imagePattern.test(image)?image:'',emoji:icons.includes(c.emoji)?c.emoji:'🎁',color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'',layout:['portrait','postcard','spotlight'].includes(c.layout)?c.layout:'portrait',fit:c.fit==='cover'?'cover':'contain',opened:c.opened===true};
     })};
@@ -53,20 +53,38 @@
     try{for(const size of [480,360,240,160]){const scale=Math.min(1,size/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);for(const quality of [.85,.65,.45]){const data=canvas.toDataURL('image/webp',quality);if(data.length<=18000)return data;}}throw Error('This image is too detailed; try cropping it first');}finally{bitmap.close();}
   }
   function setup(m) {
-    let state=normalize(),timeout=0,disposed=false,revision=0,selected=0,draft=null,opener=null,resetPending=false;
+    let state=normalize(),timeout=0,disposed=false,revision=0,selected=0,draft=null,opener=null,openIndex=null,resetPending=false;
     const reveal=m.querySelector('.advent-reveal'),result=m.querySelector('.advent-prize'),close=m.querySelector('.advent-reveal-close'),editor=m.querySelector('.advent-editor'),form=editor.querySelector('form'),error=editor.querySelector('.advent-error');
     const field=name=>form.elements.namedItem(name);
     function changed(){(m._presentationChanged||notifyBoardChanged)('advent-calendar');}
-    function closeReveal(){clearTimeout(timeout);timeout=0;reveal.hidden=true;m.classList.remove('advent-revealing');m.querySelector('.is-opening')?.classList.remove('is-opening');}
+    function closeReveal(){clearTimeout(timeout);timeout=0;reveal.hidden=true;openIndex=null;m.classList.remove('advent-revealing');m.querySelector('.is-opening')?.classList.remove('is-opening');}
     function render(){paint(m,state,openDay);}
     function openDay(index,door){
       if(timeout||!TeacherTilesHalloween.hasAccess())return;
       const card=state.cards[index];if(!card.title&&!card.text&&!card.image){if(!window.ClassConnectPolicy?.student)edit(index);return;}
-      closeReveal();opener=door;door.classList.add('is-opening');
+      closeReveal();opener=door;openIndex=index;
       const already=card.opened;
-      timeout=setTimeout(()=>{timeout=0;if(disposed||!m.isConnected)return;card.opened=true;door.classList.add('is-opened');door.classList.remove('is-opening');door.setAttribute('aria-label',`December ${index+1}, Opened`);door.querySelector('.advent-door-inside').textContent='✓';prizeCard(result,card,index+1);reveal.hidden=false;m.classList.add('advent-revealing');close.focus({preventScroll:true});if(!already){launchConfetti(m);playUiSfx('tile-effect',1,m);playUiSfx('confetti-celebration',1,m);changed();}},matchMedia('(prefers-reduced-motion: reduce)').matches?0:420);
+      if(!already)door.classList.add('is-opening');
+      // Start the prize at the selected drawer, then smoothly expand into the cabinet.
+      const drawerRect=door.getBoundingClientRect(),cabinet=m.querySelector('.advent-cabinet').getBoundingClientRect();
+      reveal.style.setProperty('--prize-x',`${(drawerRect.left+drawerRect.width/2-cabinet.left-cabinet.width/2)/cabinet.width*100}%`);
+      reveal.style.setProperty('--prize-y',`${(drawerRect.top+drawerRect.height/2-cabinet.top-cabinet.height/2)/cabinet.height*100}%`);
+      reveal.style.setProperty('--prize-scale',Math.max(.15,Math.min(.5,drawerRect.width/cabinet.width)));
+
+      timeout=setTimeout(()=>{timeout=0;if(disposed||!m.isConnected)return;card.opened=true;door.classList.add('is-opened');door.classList.remove('is-opening');door.setAttribute('aria-label',`December ${index+1}, Opened`);door.querySelector('.advent-door-inside').textContent='✓';prizeCard(result,card,index+1);reveal.hidden=false;m.classList.add('advent-revealing');close.focus({preventScroll:true});if(!already){launchConfetti(m);playUiSfx('tile-effect',1,m);playUiSfx('confetti-celebration',1,m);changed();}},matchMedia('(prefers-reduced-motion: reduce)').matches||already?0:320);
     }
     close.onclick=()=>{closeReveal();opener?.focus({preventScroll:true});};
+    function resetDrawers(index){
+      if(window.ClassConnectPolicy?.student)return;
+      closeReveal();
+      if(Number.isInteger(index))state.cards[index].opened=false;
+      else state.cards.forEach(card=>card.opened=false);
+      render();changed();
+      if(Number.isInteger(index))m.querySelector(`.advent-cabinet [data-day="${index}"]`)?.focus({preventScroll:true});
+    }
+    m.querySelector('.advent-reset-all').onclick=()=>resetDrawers();
+    m.querySelector('.advent-reset-day').onclick=()=>resetDrawers(openIndex);
+
     m.addEventListener('keydown',event=>{if(event.key==='Escape'&&!reveal.hidden){event.stopPropagation();close.click();}});
     function stash(){if(!draft)return;const c=draft.cards[selected];c.title=field('prizeTitle').value;c.text=field('prizeText').value;c.layout=field('prizeLayout').value;c.fit=field('imageFit').value;}
     function designPreview(){draft.title=field('calendarTitle').value;draft.theme=field('calendarTheme').value;draft.style=field('drawerStyle').value;draft.font=field('titleFont').value;paint(editor.querySelector('.advent-design-preview'),draft);}
@@ -94,7 +112,7 @@
     m._boardGetState=()=>normalize(state);
     m._boardSetState=value=>{closeReveal();closeEditor();state=normalize(value);settingsDays.value=state.days;render();};
     const deactivate=m._deactivate,cleanup=m._cleanup;m._deactivate=()=>{closeReveal();closeEditor();deactivate?.();};m._cleanup=()=>{disposed=true;closeReveal();closeEditor();cleanup?.();};
-    if(window.ClassConnectPolicy?.student)m.querySelector('.advent-edit').hidden=true;
+    if(window.ClassConnectPolicy?.student)m.querySelectorAll('.advent-edit,.advent-reset-all,.advent-reset-day').forEach(button=>button.hidden=true);
     render();
   }
   function preview(m,state){paint(m,normalize(state));}

@@ -23,6 +23,6 @@
 
 .shop-product__preview--christmas-timer>img{display:block;width:84%;height:84%;object-fit:contain;margin:auto}
 
-.christmastimer-module[data-christmas-art="snowman"] .ornament-timer-art{top:-30%;height:130%;bottom:auto}
-.christmastimer-module[data-christmas-art="snowman"] .timer-visual{margin-top:calc(var(--timer-visual-size,240px)*.30)}
+.christmastimer-module[data-christmas-art="snowman"] .ornament-timer-art{inset:0;height:100%}
+.module.christmastimer-module[data-christmas-art="snowman"] .timer-visual{margin-top:0;height:calc(var(--timer-visual-size,240px)*1.30)}
 .ornament-mini--snowman{height:57.2px}

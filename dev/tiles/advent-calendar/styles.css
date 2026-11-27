@@ -6,14 +6,14 @@
 [data-advent-font=elegant] .advent-heading{font-family:Georgia,serif}[data-advent-font=classic] .advent-heading{font-family:Inter,system-ui,sans-serif;font-weight:700}[data-advent-font=playful] .advent-heading{font-family:'Trebuchet MS',sans-serif;font-weight:800;letter-spacing:.025em}
 .advent-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(12,minmax(0,1fr));gap:clamp(4px,1.1cqw,8px);min-height:0;flex:1;perspective:900px;transition:opacity .3s,filter .3s}
 .advent-door{position:relative;min-height:0;min-width:0;padding:0;border:0;background:#20151a80;border-radius:5px;box-shadow:inset 0 2px 6px #0006;cursor:pointer;perspective:500px;isolation:isolate}
-.advent-door-front{position:absolute;inset:0;display:grid;place-items:center;border-radius:5px;background:linear-gradient(140deg,#ffffff0b,#00000012),var(--door-color,var(--advent-main));border:1px solid color-mix(in srgb,var(--advent-gold) 50%,transparent);box-shadow:inset 0 0 0 3px #00000013,inset 0 0 0 4px #ffffff19,0 3px 5px #0003;transform-origin:0 50%;transition:transform .42s cubic-bezier(.18,.8,.28,1),filter .2s;backface-visibility:hidden}
+.advent-door-front{position:absolute;inset:0;display:grid;place-items:center;border-radius:5px;background:linear-gradient(140deg,#ffffff0b,#00000012),var(--door-color,var(--advent-main));border:1px solid color-mix(in srgb,var(--advent-gold) 50%,transparent);box-shadow:inset 0 0 0 3px #00000013,inset 0 0 0 4px #ffffff19,0 3px 5px #0003;transform-origin:0 50%;transition:transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .32s,filter .2s;backface-visibility:hidden}
 .advent-door-front:before{content:'';position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--advent-gold) 35%,transparent);border-radius:2px;pointer-events:none}
 .advent-day{position:relative;font:500 clamp(17px,5cqw,40px)/1 Georgia,serif;color:#ffe7b6;text-shadow:0 1px 2px #0003;z-index:1}
 .advent-handle{position:absolute;right:8%;top:48%;width:4px;height:7px;border-radius:3px;background:linear-gradient(90deg,#ac813d,#fff0b0,#b58a42);box-shadow:0 1px 2px #0006}
 .advent-door-inside{display:grid;place-items:center;position:absolute;inset:0;color:var(--advent-gold);font-size:clamp(20px,5cqw,40px)}
 .advent-door:hover .advent-door-front{filter:brightness(1.13);transform:translateY(-2px)}
 .advent-door:focus-visible{outline:3px solid #fff0b5;outline-offset:2px}
-.advent-door.is-opening{z-index:3}.advent-door.is-opening .advent-door-front{transform:rotateY(-110deg)}
+.advent-door.is-opening{z-index:3}.advent-door.is-opening .advent-door-front{transform:translateY(6px) translateZ(24px) scale(1.035);box-shadow:0 12px 16px #0005,inset 0 0 0 4px #ffffff19}
 .advent-door.is-opened .advent-door-front{opacity:.4;box-shadow:none}.advent-door.is-opened .advent-day{transform:translateY(-25%);font-size:clamp(14px,3.4cqw,28px)}.advent-door.is-opened .advent-door-inside{align-items:end;padding-bottom:9%}
 [data-advent-style=ribbons] .advent-door-front:before{inset:0 42%;border:0;border-radius:0;background:color-mix(in srgb,var(--advent-gold) 28%,transparent)}
 [data-advent-style=ribbons] .advent-door-front:after{content:'';position:absolute;left:0;right:0;top:42%;height:16%;background:color-mix(in srgb,var(--advent-gold) 20%,transparent)}
@@ -23,7 +23,7 @@
 .advent-actions button,.advent-settings-edit{border:1px solid var(--border,#dbe1e9);border-radius:9px;background:var(--surface-soft,#f5f7fa);color:var(--text,#253148);padding:7px 10px;font:600 12px/1.2 Inter,system-ui,sans-serif;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center}
 .advent-actions svg{width:16px;height:16px}
 @media(hover:hover){.advent-module:not(:hover):not(:has(:focus-visible)) .advent-actions{max-height:0;opacity:0;pointer-events:none}}
-.advent-reveal{position:absolute;inset:8%;z-index:8;display:grid;place-items:center;animation:adventPrizeIn .48s cubic-bezier(.16,.85,.25,1.1)}
+.advent-reveal{position:absolute;inset:8%;z-index:8;display:grid;place-items:center;animation:adventPrizeIn .36s cubic-bezier(.2,.8,.2,1)}
 .advent-reveal[hidden]{display:none}.advent-revealing .advent-grid{opacity:.22;filter:blur(2px);pointer-events:none}
 .advent-prize,.advent-card-preview{width:100%;height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;background:#fffaf0;border:2px solid color-mix(in srgb,var(--prize-color,#ac384d) 45%,#fff);border-radius:18px;box-shadow:0 10px 35px #23121d33}
 .advent-prize-art{min-height:0;flex:1;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#fffaf0,color-mix(in srgb,var(--prize-color,#ac384d) 13%,#fffaf0));padding:12px;overflow:hidden}
@@ -38,7 +38,7 @@
 .advent-editor button:not(.advent-editor-close){border:1px solid #d9e1ed;border-radius:9px;background:#f5f7fa;color:#253148;padding:8px 11px;font:600 12px/1.3 Inter,sans-serif;cursor:pointer}.advent-editor button:hover{background:#ebf3ff}.advent-editor button[aria-pressed=true]{border-color:#75a9e5;background:#e9f3ff;color:#235a96}.advent-editor button:focus-visible{outline:2px solid #4385c9;outline-offset:2px}.advent-editor button:disabled{opacity:.5;cursor:wait}
 .advent-design-controls>button{width:100%;margin-bottom:8px}.advent-edit-days{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:17px}.advent-edit-days button{padding:7px 0!important}.advent-prize-fields{display:grid;grid-template-columns:1fr 200px;gap:18px}.advent-emoji-options{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}.advent-emoji-options button{font-size:21px!important;padding:4px 7px!important}.advent-editor .advent-card-preview{height:250px;box-shadow:0 5px 14px #24304415;container-type:size;margin-bottom:13px}.advent-card-preview .advent-prize-emoji{font-size:70px}.advent-card-preview .advent-prize-copy h3{font-size:20px}.advent-card-preview .advent-prize-copy p{font-size:12px}.advent-card-preview .advent-prize-copy small{font-size:8px}
 .advent-editor footer{position:sticky;bottom:0;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:14px 22px;background:#fff;border-top:1px solid #e4e9f0}.advent-error{flex:1;margin:0;font-size:12px;color:#8b3d48}.advent-editor button[type=submit]{background:#e9f3ff;border-color:#9dbfea;color:#265c99}.advent-days-setting{display:flex;align-items:center;gap:10px;font-weight:600}.advent-days-setting input{width:65px;padding:7px;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text)}
-@keyframes adventPrizeIn{from{opacity:0;transform:translateY(30px) scale(.45) rotate(-4deg)}to{opacity:1;transform:none}}
+@keyframes adventPrizeIn{from{opacity:0;transform:translate(var(--prize-x,0),var(--prize-y,12%)) scale(var(--prize-scale,.3))}to{opacity:1;transform:none}}
 @media(max-width:720px){.advent-editor-body{grid-template-columns:1fr}.advent-design-controls{border-right:0;border-bottom:1px solid #e4e9f0;padding:0 0 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.advent-design-controls h3{grid-column:1/-1}.advent-prize-fields{grid-template-columns:1fr 160px}}
 @media(max-width:480px){.advent-prize-fields{grid-template-columns:1fr}.advent-card-preview{max-width:250px}.advent-edit-days{grid-template-columns:repeat(6,1fr)}}
 @media(prefers-reduced-motion:reduce){.advent-door-front,.advent-grid,.advent-actions{transition:none}.advent-reveal{animation:none}}
@@ -48,3 +48,15 @@
 .advent-editor select{appearance:none;padding-right:28px;background:#f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m6 8 4 4 4-4' fill='none' stroke='%23647389' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 7px center/18px no-repeat}
 
 body.is-board-idle .advent-module .advent-actions{max-height:0;opacity:0;pointer-events:none}
+
+/* Use the same flat control surface as the timer and other board tiles. */
+.advent-actions{gap:7px;overflow:visible}
+.advent-actions button,.advent-settings-edit,.advent-reset-day{min-height:32px;padding:0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-solid,var(--surface));color:var(--text);box-shadow:0 1px 3px #0f172a0a;font:700 12px/1.2 Inter,system-ui,sans-serif;transition:background .15s,border-color .15s,transform .15s;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.advent-actions button:hover,.advent-settings-edit:hover,.advent-reset-day:hover{background:var(--surface-soft);transform:translateY(-1px)}
+.advent-actions button:focus-visible,.advent-reset-day:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.advent-reset-all{width:32px;padding:0!important}.advent-reset-day svg{width:16px;height:16px}
+.advent-reset-day{position:absolute;bottom:10px;right:10px;z-index:2}
+.advent-reveal .advent-prize-copy{padding-bottom:50px}
+.advent-actions [hidden],.advent-reset-day[hidden]{display:none!important}
+.advent-door.is-opened .advent-door-front{opacity:.6;transform:translateY(2px);filter:brightness(.82)}
+.advent-door.is-opened:hover .advent-door-front{filter:brightness(1);transform:translateY(0)}

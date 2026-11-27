@@ -45,7 +45,7 @@
     thanksgivingtimer:()=>({}),
     adventcalendar:s=>({
       version:1,
-      title:text(s.title||'December Surprises',60),
+      title:text(s.title||'Advent Calendar',60),
       days:Math.round(num(s.days,1,24,24)),
       theme:['cranberry','evergreen','midnight','frost','sugarplum'].includes(s.theme)?s.theme:'cranberry',
       style:['panels','ribbons','stars'].includes(s.style)?s.style:'panels',
