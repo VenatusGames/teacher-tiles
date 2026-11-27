@@ -37,3 +37,10 @@ Edit only the lighting/time of day of this exact image into a LIGHT daytime vers
 
 Extract only the original decorated tree and star onto a transparent 1672 × 941 canvas, preserving their positions and details. Runtime files: outdoor-forest.webp, outdoor-tree-layer.webp, menorah-window-day.webp. The tree is animated using progressive strip displacement; the forest remains fixed. Santa’s List artwork is entirely native SVG/CSS.
 
+
+
+## Outdoor Christmas Tree — Light
+
+Asset: `outdoor-forest-day.webp` (1672 × 941). Built-in image generation, lighting/weather edit of `outdoor-forest.webp`.
+
+Prompt: Create the LIGHT DAYTIME version of this exact scene. Preserve composition, forest positions, empty foreground snow clearing, camera angle and wide 16:9 aspect. Change time of day to pale blue winter daylight, bright white snow and natural green evergreen branches under snow. Remove the moon. No decorated foreground tree (composited separately), people or text. Keep detailed painterly realism.
