@@ -16698,9 +16698,7 @@ body.is-board-idle .module.is-idle-unhovered iframe{pointer-events:none!importan
 #context-menu .context-menu__item--coming-soon{padding-top:23px;cursor:not-allowed;opacity:1}
 #context-menu .context-menu__item--coming-soon:hover,#context-menu .context-menu__item--coming-soon:active{transform:none;background:var(--surface);border-color:var(--border);box-shadow:none}
 [data-connect-perk]::after,
-.cs-toggle[data-connect-perk] strong::after,
-[data-connect-tile] .context-menu__connect-badge::before,
-[data-category-drawer-filter="classconnect"]::after {
+.cs-toggle[data-connect-perk] strong::after {
   content: "";
   display: inline-block;
   width: 15px;

@@ -713,7 +713,7 @@ function renderMenuCategoryPins(){
     let button=menuDrawerFilters.find(item=>item.dataset.categoryDrawerFilter===id);
     if(!button&&id.startsWith('holiday:')){button=document.createElement('button');button.type='button';button.className='context-menu__filter';button.textContent=menuCategoryLabel(id).toUpperCase();button.classList.toggle('is-active',activeMenuCategory===id);button.addEventListener('click',event=>{event.stopPropagation();menuSearch.value='';setMenuCategory(id)})}
     if(!button)continue;
-    if(id==='holidays'&&!button.querySelector('.context-menu__holiday-crown')){const crown=document.createElementNS('http://www.w3.org/2000/svg','svg');crown.classList.add('context-menu__holiday-crown');crown.setAttribute('viewBox','0 0 48 48');crown.setAttribute('aria-label','Subscription required');crown.innerHTML='<use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/>';button.append(crown);}
+    if(['holidays','classconnect'].includes(id)&&!button.querySelector('.context-menu__holiday-crown')){const crown=document.createElementNS('http://www.w3.org/2000/svg','svg');crown.classList.add('context-menu__holiday-crown');crown.setAttribute('viewBox','0 0 48 48');crown.setAttribute('aria-label','Subscription required');crown.innerHTML='<use href="assets/ui/subscriber-crown.svg?v=20260926#crown"/>';button.append(crown);}
     const row=document.createElement('div');row.className='context-menu__category-row';row.appendChild(button);
     const nested=!['all','favorites','holidays'].includes(id)&&!menuPinnedCategories.has(id);
     if(nested){row.classList.add('context-menu__category-row--nested');row.hidden=!menuAllExpanded}
