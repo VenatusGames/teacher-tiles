@@ -94,23 +94,27 @@
   }
   function setupDreidel(m) {
     const button = m.querySelector('.dreidel-spin');
+    const popup = m.querySelector('.dreidel-result-popup');
     let result = 0, spin = null, color = 'blue';
     renderDreidel(m);
     const body = button.querySelector('.dreidel-object');
     const syncDrawer = setupColorDrawer(m, key => {color = colorKey(key);applyColor(m,color);syncDrawer(color);});
     syncDrawer(color);
-    function settle() {
+    function dismissResult() {popup.hidden = true;}
+    function settle(showResult = false) {
       spin?.cancel();
       spin = null;
       m.classList.remove('is-dreidel-spinning');
       renderDreidel(m, {result, color});
+      popup.hidden = !showResult;
     }
     function startSpin() {
       if (spin) return;
+      dismissResult();
       const previous = result;
       result = crypto.getRandomValues(new Uint32Array(1))[0] % 4;
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        settle();
+        settle(true);
       } else {
         button.setAttribute('aria-busy', 'true');
         m.classList.add('is-dreidel-spinning');
@@ -123,16 +127,23 @@
           {transform:'rotateX(-16deg) rotateY('+(from+(to-from)*.96)+'deg) rotateZ(3deg)', offset:.8},
           {transform:'rotateX(-12deg) rotateY('+to+'deg) rotateZ(0deg)'}
         ], {duration:2400, easing:'cubic-bezier(.18,.65,.28,1)'});
-        spin.onfinish = settle;
+        spin.onfinish = () => settle(true);
       }
       notifyBoardChanged('dreidel-spin');
     }
-    button.addEventListener('click', startSpin);
+    button.addEventListener('click', event => {event.stopPropagation();startSpin();});
+    popup.querySelector('.dreidel-spin-again').addEventListener('click', event => {event.stopPropagation();startSpin();});
+    popup.querySelector('.dreidel-result-close').addEventListener('click', event => {event.stopPropagation();dismissResult();button.focus({preventScroll:true});});
+    const outside = event => {if (!m.contains(event.target)) dismissResult();};
+    const escape = event => {if (event.key === 'Escape'&&!popup.hidden) {event.stopPropagation();dismissResult();button.focus({preventScroll:true});}};
+    m.addEventListener('click', event => {if (!popup.contains(event.target)) dismissResult();});
+    m.addEventListener('keydown',escape);
+    document.addEventListener('pointerdown',outside);
     m._boardGetState = () => ({result, color});
     m._boardSetState = state => {result = sideIndex(state?.result);color = colorKey(state?.color);syncDrawer(color);settle();};
     const deactivate = m._deactivate, cleanup = m._cleanup;
     m._deactivate = () => {settle(); deactivate?.();};
-    m._cleanup = () => {settle(); cleanup?.();};
+    m._cleanup = () => {settle();document.removeEventListener('pointerdown',outside);cleanup?.();};
   }
   function menorahArt() {
     const id = 'hanukkah-art-' + (++artId);

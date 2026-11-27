@@ -1,0 +1,20 @@
+.module.christmastimer-module{min-width:320px;min-height:470px}
+.christmastimer-module .timer-shape-toggle{display:none!important}
+.christmastimer-module .timer-shape-svg{visibility:hidden}
+.christmastimer-module .timer-stage{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px}
+.christmastimer-module .timer-stage>.timer-readout{position:relative!important;inset:auto!important;transform:none!important;margin:0!important;flex:none;min-width:0;padding:6px 18px;width:max-content;max-width:95%;border-radius:999px;z-index:2}
+.christmastimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,10.3cqw,54px)!important;line-height:1.05}
+.christmastimer-module .timer-visual{flex:none;margin-top:calc(var(--timer-visual-size,240px)*.18)}
+.ornament-timer-art,.ornament-base,.ornament-filled{position:absolute;inset:0;pointer-events:none}
+.ornament-timer-art{filter:drop-shadow(0 7px 5px #1b2c4520)}
+.ornament-base{filter:saturate(.5);opacity:.27}
+.ornament-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*360deg),transparent 0)}
+.ornament-timer-art svg,.ornament-mini svg{display:block;width:100%;height:100%;overflow:visible}
+.ornament-cap{position:absolute;left:0;right:0;top:-18%;height:24%}
+.ornament-mini{display:block;position:relative;width:46px;height:46px;margin:8px auto 0;flex:none}
+.ornament-mini-cap{position:absolute;left:0;right:0;top:-18%;height:24%}
+.christmastimer-module .timer-shape-color{display:grid;place-items:center;padding:5px!important}
+.christmastimer-module .timer-shape-color .ornament-mini{width:25px;height:25px;margin-top:4px}
+.ornament-color-shelf button{min-height:86px}
+
+.ornament-color-shelf .ornament-mini svg,.christmastimer-module .ornament-mini svg{width:100%;height:100%;stroke:none;stroke-width:0;fill:none}

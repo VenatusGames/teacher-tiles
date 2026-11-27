@@ -1,3 +1,4 @@
+import '../tiles/christmas-timer/index.js?v=20261127';
 import '../tiles/hanukkah/index.js?v=20261126';
 import '../tiles/racer/visuals.js?v=20261028-fanned-standees';
 import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';
@@ -468,10 +469,11 @@ function applyPreviewState(module, state) {
   if(state.type==='tensblock')module.querySelector('.tens-block-art').innerHTML=window.TeacherTilesTensSticks.art(Number(state.dataset?.blockValue)||1);
   if(state.type==='lavalamp'){window.TeacherTilesLavaLamp.render(module,state.special||{});module.querySelector('.lava-heading').classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
+  if(state.type==='christmastimer')TeacherTilesChristmasTimer.preview(module);
   if(window.TeacherTilesHanukkah?.types.has(state.type))window.TeacherTilesHanukkah.preview(module,state);
   if(window.TeacherTilesThanksgiving?.types.has(state.type))window.TeacherTilesThanksgiving.preview(module,state,new URL('../',import.meta.url));
   if(window.TeacherTilesHalloween?.types.has(state.type))window.TeacherTilesHalloween.preview(module,state,new URL('../',import.meta.url));
-  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer' || state.type === 'thanksgivingtimer') {
+  if (state.type === 'timer' || state.type === 'interactive' || state.type === 'halloweentimer' || state.type === 'thanksgivingtimer' || state.type === 'christmastimer') {
     module.querySelectorAll('input[type="number"],input[type="time"]').forEach(n=>n.value='');
     renderTimerPreview(module,state);
   }

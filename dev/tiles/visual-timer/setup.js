@@ -29,6 +29,8 @@ function setupTimerSync(m){
 function setupTimer(m){
   const pumpkin=m.dataset.type==='halloweentimer';
   const pie=m.dataset.type==='thanksgivingtimer';
+  const ornament=m.dataset.type==='christmastimer';
+  if(ornament)TeacherTilesChristmasTimer.render(m);
   if(pie)TeacherTilesThanksgiving.timerArt(m);
   const ghost=pumpkin&&m.dataset.tileSkin==='halloweentimer-ghost';
   const stage=m.querySelector('.timer-stage'),visual=m.querySelector('.timer-visual'),readout=m.querySelector('.timer-readout'),controls=m.querySelector('.timer-controls'),clip=m.querySelector('.shape-clip'),clipPath=m.querySelector('.shape-clip path'),outline=m.querySelector('.shape-outline'),highlight=m.querySelector('.shape-highlight'),foreign=m.querySelector('.shape-foreign'),fill=m.querySelector('.shape-fill'),status=m.querySelector('.timer-status'),shapeSelect=m.querySelector('.timer-shape-select');
@@ -41,12 +43,13 @@ function setupTimer(m){
   foreign.setAttribute('clip-path',`url(#${clipId})`);
 
   const setShape=(shape,animate=false)=>{
+    if(ornament)shape='circle';
     const d=pumpkin?TeacherTilesHalloween.timerPath(m):shapePaths[shape]||shapePaths.circle;
     m.dataset.timerShape=shape;
     clipPath.setAttribute('d',d);
     outline.setAttribute('d',d);
     highlight?.setAttribute('d',d);
-    if(readout){if(pumpkin||pie)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
+    if(readout){if(pumpkin||pie||ornament)stage.prepend(readout);else if(readout.parentElement!==visual)visual.appendChild(readout);}
     requestAnimationFrame(sizeVisual);
     if(animate&&visual?.animate)visual.animate([
       {transform:'scale(1) rotate(0deg)'},
@@ -60,15 +63,16 @@ function setupTimer(m){
   const shapeButton=document.createElement('button');shapeButton.type='button';shapeButton.className='custom-icon timer-shape-toggle';shapeButton.setAttribute('aria-label','Choose timer shape');shapeButton.setAttribute('aria-expanded','false');shapeButton.title='Choose timer shape';
   m.querySelector('.timer-shape-color').after(shapeButton);
   shapeSelect.closest('.timer-shape-setting').hidden=true;
-  const shapeShelf=document.createElement('div');shapeShelf.className='timer-shape-shelf';shapeShelf.hidden=true;shapeShelf.setAttribute('role','group');shapeShelf.setAttribute('aria-label','Timer shape');document.body.appendChild(shapeShelf);
+  const shapeShelf=document.createElement('div');shapeShelf.className='timer-shape-shelf';shapeShelf.hidden=true;shapeShelf.setAttribute('role','group');shapeShelf.setAttribute('aria-label','Timer shape');if(ornament){shapeShelf.setAttribute('popover','manual');shapeShelf.style.margin='0';shapeShelf.style.inset='auto';m.append(shapeShelf);}else document.body.appendChild(shapeShelf);
   const shapeIcon=shape=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePaths[shape]||shapePaths.circle}"/></svg>`;
   const refreshShape=()=>{shapeButton.innerHTML=shapeIcon(shapeSelect.value);shapeShelf.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.shape===shapeSelect.value)))};
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
   if(pumpkin){colorButton.title=ghost?'Choose Ghost Face':'Choose Pumpkin Face';colorButton.setAttribute('aria-label',ghost?'Choose Ghost Face':'Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace,ghost);}
   if(pie){colorButton.title='Choose Pie';colorButton.setAttribute('aria-label','Choose Pie');colorButton.innerHTML=TeacherTilesThanksgiving.pieArt(m.dataset.pieFlavor);}
+  if(ornament){colorButton.title='Choose Ornament Color';colorButton.setAttribute('aria-label','Choose Ornament Color');colorButton.innerHTML=TeacherTilesChristmasTimer.icon(m.dataset.shapeColor);}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
-  const closeShapes=()=>{shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
+  const closeShapes=()=>{if(ornament&&shapeShelf.matches(':popover-open'))shapeShelf.hidePopover();shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
   const positionShapes=()=>{
     if(!m.isConnected){closeShapes();return}
     const r=shelfAnchor.getBoundingClientRect(),w=shapeShelf.offsetWidth,h=shapeShelf.offsetHeight;
@@ -95,6 +99,17 @@ function setupTimer(m){
   colorButton.addEventListener('click',()=>{
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
+    if(ornament){
+      shapeShelf.classList.add('ornament-color-shelf');shapeShelf.setAttribute('aria-label','Ornament Colors');
+      for(const [id,option] of Object.entries(TeacherTilesChristmasTimer.colors)){
+        const button=document.createElement('button');button.type='button';button.dataset.ornamentColor=id;
+        button.setAttribute('aria-label',option.name);button.setAttribute('aria-pressed',String(m.dataset.shapeColor===id));
+        button.innerHTML=TeacherTilesChristmasTimer.icon(id)+'<span>'+option.name+'</span>';
+        button.addEventListener('click',()=>{m.dataset.shapeColor=id;TeacherTilesChristmasTimer.render(m);colorButton.innerHTML=TeacherTilesChristmasTimer.icon(id);closeShapes();(m._presentationChanged||notifyBoardChanged)('ornament-color');});
+        shapeShelf.append(button);
+      }
+      shapeShelf.hidden=false;shapeShelf.showPopover();colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
+    }
     if(pie){
       shapeShelf.classList.add('pie-style-shelf');shapeShelf.setAttribute('aria-label','Pie Styles');
       for(const [id,option] of Object.entries(TeacherTilesThanksgiving.pies)){
@@ -126,8 +141,11 @@ function setupTimer(m){
     if(!stage)return;
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
-    const shortest=Math.min(stageWidth,Math.max(0,(pumpkin||pie)?(stageHeight-(readout?.offsetHeight||70)-(pie?18:10))/(pie?1:ghost?.93:.94):stageHeight));
-    const breathingRoom=(pumpkin||pie)?0:Math.max(10,Math.min(28,shortest*.055));
+    const holiday=pumpkin||pie||ornament;
+    const artHeight=ornament?1.18:pie?1:ghost?.93:.94;
+    const gap=ornament?20:pie?18:10;
+    const shortest=Math.min(stageWidth,Math.max(0,holiday?(stageHeight-(readout?.offsetHeight||70)-gap)/artHeight:stageHeight));
+    const breathingRoom=holiday?0:Math.max(10,Math.min(28,shortest*.055));
     const size=Math.max(0,shortest-(breathingRoom*2));
     visual.style.setProperty('--timer-visual-size',`${size}px`);
     if(pumpkin||pie){
@@ -166,7 +184,7 @@ function setupTimer(m){
   controls?.addEventListener('pointerenter',keepSettingsOpen);
   controls?.addEventListener('pointerleave',releaseSettings);
 
-  const initialShape=!pie&&shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
+  const initialShape=!pie&&!ornament&&shapePaths[m.dataset.timerShape]?m.dataset.timerShape:'circle';
   shapeSelect.value=initialShape;refreshShape();
   setShape(initialShape);
   let visualFrame=0;
@@ -177,7 +195,7 @@ function setupTimer(m){
   };
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{
     cancelAnimationFrame(visualFrame);paintProgress(progress);
-    if(running&&(pumpkin||pie||['timer-solid','timer-liquid'].includes(m.dataset.tileSkin))){
+    if(running&&(pumpkin||pie||ornament||['timer-solid','timer-liquid'].includes(m.dataset.tileSkin))){
       const started=performance.now();
       const animate=now=>{
         if(!m.isConnected)return;
@@ -193,6 +211,8 @@ function setupTimer(m){
     if(status)status.textContent=complete?'DONE':running?'RUNNING':paused?'PAUSED':'READY';
   },{onFinish:()=>celebrateTimerFinish(m)});
 
+  const previousDeactivate=m._deactivate;
+  m._deactivate=()=>{closeShapes();previousDeactivate?.();};
   const previousCleanup=m._cleanup;
   m._cleanup=()=>{
     clearTimeout(settingsHideTimer);
