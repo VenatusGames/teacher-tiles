@@ -203,3 +203,9 @@ body.dark .boombox-module{background:#202124;color:#f4f4f6}.dark .boombox-view--
   color:var(--module-text,#17191d)!important;
 }
 .soundscapes-customization{position:absolute;left:8px;bottom:8px;z-index:30}
+
+/* A generous invisible hit area preserves the slim visual track. */
+.soundscapes-module .boombox-progress{position:relative;overflow:visible;cursor:pointer;touch-action:none}
+.soundscapes-module .boombox-progress::after{content:'';position:absolute;inset:-8px 0}
+.soundscapes-module .boombox-progress:focus-visible{outline:2px solid #60a5fa;outline-offset:5px}
+.soundscapes-module .boombox-progress span{pointer-events:none;max-width:100%;border-radius:inherit}

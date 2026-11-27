@@ -28,6 +28,7 @@
     const volumes=[...m.querySelectorAll('.boombox-volume')];
     const volumeValues=[...m.querySelectorAll('.boombox-volume-value')];
     const progresses=[...m.querySelectorAll('.boombox-progress span')];
+    const seekBars=[...m.querySelectorAll('.boombox-progress')];
     const currents=[...m.querySelectorAll('.boombox-current')];
     const durations=[...m.querySelectorAll('.boombox-duration')];
     const style=SKIN_STYLE[m.dataset.tileSkin]||'compact';
@@ -79,10 +80,14 @@
       m.style.setProperty('--vinyl-label-text',track.text);
     };
     const syncProgress=()=>{
-      const pct=audio.duration?clamp(audio.currentTime/audio.duration*100,0,100):0;
+      const length=Number.isFinite(audio.duration)?audio.duration:tracks[index].duration;
+      const position=pendingSeek||audio.currentTime||0;
+      const pct=length?clamp(position/length*100,0,100):0;
       each(progresses,progress=>progress.style.width=`${pct}%`);
-      each(currents,current=>current.textContent=fmt(audio.currentTime));
+      each(currents,current=>current.textContent=fmt(position));
       each(durations,duration=>duration.textContent=fmt(Number.isFinite(audio.duration)?audio.duration:tracks[index].duration));
+      const duration=Number.isFinite(audio.duration)?audio.duration:tracks[index].duration||0;
+      each(seekBars,bar=>{bar.setAttribute('aria-valuemax',String(Math.round(duration)));bar.setAttribute('aria-valuenow',String(Math.round(pendingSeek||audio.currentTime||0)));bar.setAttribute('aria-valuetext',`${fmt(pendingSeek||audio.currentTime)} of ${fmt(duration)}`)});
     };
     const load=(nextIndex,autoplay=false)=>{
       index=(nextIndex+tracks.length)%tracks.length;
@@ -95,10 +100,31 @@
       each(progresses,progress=>progress.style.width='0%');
       each(currents,current=>current.textContent='0:00');
       each(durations,duration=>duration.textContent=fmt(tracks[index].duration));
+      syncProgress();
       onTrackChange?.(tracks[index],index);
       if(autoplay)audio.play().catch(()=>{});
       renderPlay();
     };
+    function seek(seconds){
+      const duration=Number.isFinite(audio.duration)?audio.duration:tracks[index].duration;
+      if(!duration)return;
+      const time=clamp(seconds,0,duration);
+      if(audio.readyState>=1){pendingSeek=0;audio.currentTime=time;}
+      else{pendingSeek=time;if(!audio.getAttribute('src')){audio.src=tracks[index].src;audio.load();}}
+      syncProgress();
+      each(progresses,progress=>progress.style.width=`${time/duration*100}%`);
+      each(currents,current=>current.textContent=fmt(time));
+    }
+    const seekCleanups=seekBars.map(bar=>{
+      bar.tabIndex=0;bar.setAttribute('role','slider');bar.setAttribute('aria-label','Playback Position');bar.setAttribute('aria-valuemin','0');
+      let pointer=null;
+      function move(event){if(pointer!==event.pointerId)return;event.stopPropagation();const rect=bar.getBoundingClientRect();const duration=Number.isFinite(audio.duration)?audio.duration:tracks[index].duration;seek((event.clientX-rect.left)/Math.max(1,rect.width)*(duration||0));}
+      function finish(event){if(pointer!==event.pointerId)return;event.stopPropagation();try{bar.releasePointerCapture(pointer)}catch{}pointer=null;(m._presentationChanged||window.notifyBoardChanged)?.('audio-seek');}
+      bar.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();event.stopPropagation();pointer=event.pointerId;bar.setPointerCapture(pointer);move(event)});
+      bar.addEventListener('pointermove',move);bar.addEventListener('pointerup',finish);bar.addEventListener('pointercancel',finish);
+      bar.addEventListener('keydown',event=>{const duration=Number.isFinite(audio.duration)?audio.duration:tracks[index].duration||0;let time=pendingSeek||audio.currentTime||0;if(event.key==='Home')time=0;else if(event.key==='End')time=duration;else if(['ArrowLeft','ArrowDown'].includes(event.key))time-=5;else if(['ArrowRight','ArrowUp'].includes(event.key))time+=5;else return;event.preventDefault();event.stopPropagation();seek(time);(m._presentationChanged||window.notifyBoardChanged)?.('audio-seek')});
+      return()=>{if(pointer!==null){try{bar.releasePointerCapture(pointer)}catch{}pointer=null;}};
+    });
     const applyVolume=()=>{audio.volume=clamp((userVolume/100)*masterAudioLevel(),0,1)};
     const setVolume=value=>{
       userVolume=clamp(Number(value),0,100);
@@ -150,12 +176,14 @@
       setVolume(Number.isFinite(Number(state.volume))?Number(state.volume):55);
       load(track,false);
       pendingSeek=Math.max(0,Number(state.currentTime)||0);
+      syncProgress();
     };
 
     const priorDeactivate=m._deactivate;
-    m._deactivate=()=>{audio.pause();priorDeactivate?.()};
+    m._deactivate=()=>{seekCleanups.forEach(clean=>clean());audio.pause();priorDeactivate?.()};
     const priorCleanup=m._cleanup;
     m._cleanup=()=>{
+      seekCleanups.forEach(clean=>clean());
       resizeObserver.disconnect();
       window.removeEventListener('teachertiles:audiopreferenceschange',onAudioPreferences);
       audio.pause();
