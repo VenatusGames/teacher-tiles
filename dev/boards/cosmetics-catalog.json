@@ -16,6 +16,7 @@
     "pumpkinpatch"
   ],
   "skins": {
+    "santaslist-frosted": "tile-skin-santaslist-frosted",
     "christmastimer-snowman": "tile-skin-christmastimer-snowman",
     "christmastimer-cookies": "tile-skin-christmastimer-cookies",
     "ruler-clear": "tile-skin-ruler-clear",
@@ -87,6 +88,9 @@
     "soundscapes-ipod": "tile-skin-soundscapes-ipod"
   },
   "themes": {
+    "menorah-window": "theme-menorah-window",
+    "outdoor-christmas-tree": "theme-outdoor-christmas-tree",
+    "falling-snow": "theme-falling-snow",
     "drifting-dots": "theme-drifting-dots",
     "screensaver": "theme-screensaver",
     "matrix": "theme-matrix",
@@ -125,6 +129,24 @@
     "leaves": "theme-leaves"
   },
   "stickers": {
+    "assets/stickers/snowmen-faces/classic.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/snowmen-faces/winking.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/snowmen-faces/laughing.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/snowmen-faces/sleepy.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/snowmen-faces/surprised.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/snowmen-faces/top-hat.webp": ["sticker-snowmen-faces"],
+    "assets/stickers/christmas-lights/red.webp": ["sticker-christmas-lights"],
+    "assets/stickers/christmas-lights/gold.webp": ["sticker-christmas-lights"],
+    "assets/stickers/christmas-lights/green.webp": ["sticker-christmas-lights"],
+    "assets/stickers/christmas-lights/blue.webp": ["sticker-christmas-lights"],
+    "assets/stickers/christmas-lights/purple.webp": ["sticker-christmas-lights"],
+    "assets/stickers/christmas-lights/pink.webp": ["sticker-christmas-lights"],
+    "assets/stickers/presents/red-square.webp": ["sticker-presents"],
+    "assets/stickers/presents/blue-tall.webp": ["sticker-presents"],
+    "assets/stickers/presents/green-wide.webp": ["sticker-presents"],
+    "assets/stickers/presents/lavender-small.webp": ["sticker-presents"],
+    "assets/stickers/presents/cream-tall.webp": ["sticker-presents"],
+    "assets/stickers/presents/pink-wide.webp": ["sticker-presents"],
     "1": [
       "sticker-numbers-1-25"
     ],

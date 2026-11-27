@@ -10,7 +10,7 @@
     function setDrawer(open){
       cancelDrag();state.drawerOpen=open;tile.classList.toggle('sl-drawer-open',open);drawer.inert=!open;drawer.setAttribute('aria-hidden',String(!open));toggle.setAttribute('aria-expanded',String(open));
     }
-    function cancelDrag(){if(!drag)return;drag.ghost?.remove();try{drag.chip.releasePointerCapture(drag.id)}catch{}drag=null;paper.classList.remove('sl-drop-target');}
+    function cancelDrag(){if(!drag)return;drag.ghost?.remove();try{drag.chip.releasePointerCapture(drag.id)}catch{}drag=null;tile.classList.remove('sl-dragging');paper.classList.remove('sl-drop-target');}
     function add(name){if(state.listed.includes(name))return;state.listed.push(name);render(name);changed();playUiSfx?.('pop');}
     function remove(name){state.listed=state.listed.filter(value=>value!==name);render();changed();}
     function chipFor(name){
@@ -20,7 +20,7 @@
       chip.addEventListener('pointermove',event=>{
         if(!drag||drag.id!==event.pointerId)return;event.stopPropagation();
         if(!drag.ghost&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<5)return;
-        if(!drag.ghost){drag.ghost=document.createElement('div');drag.ghost.className='student-drag-ghost sl-drag-ghost';drag.ghost.textContent=name;(document.fullscreenElement===tile?tile:document.body).append(drag.ghost);}
+        if(!drag.ghost){tile.classList.add('sl-dragging');drag.ghost=document.createElement('div');drag.ghost.className='student-drag-ghost sl-drag-ghost';drag.ghost.textContent=name;(document.fullscreenElement===tile?tile:document.body).append(drag.ghost);}
         drag.ghost.style.left=event.clientX+'px';drag.ghost.style.top=event.clientY+'px';
         const rect=paper.getBoundingClientRect();paper.classList.toggle('sl-drop-target',event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom);
       });

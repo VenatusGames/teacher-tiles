@@ -31,3 +31,5 @@
 .tile-effect-choice.is-cosmetic-locked .tile-effect-art{filter:saturate(.55)}
 .tile-effect-lock>span{display:flex;align-items:center;gap:7px;background:var(--surface-solid,#fff);color:var(--text,#263249);border:1px solid var(--border,#dce3ed);border-radius:20px;padding:8px 12px;font:700 11px Inter,system-ui,sans-serif;box-shadow:0 2px 7px #17243c12}
 .tile-effect-lock img{width:17px;height:17px;object-fit:contain}
+
+.shop-effect-credit{display:block;font-size:10px;line-height:1.4;margin-top:7px;opacity:.7}.shop-effect-credit a{color:inherit;text-underline-offset:2px}

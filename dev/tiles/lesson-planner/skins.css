@@ -144,3 +144,21 @@
 [data-planner-skin="thanksgiving"] .planner-book-binding>span{border-color:#61432c;border-top-color:#bd976d;border-bottom-color:#48311e;background:linear-gradient(#c7aa84 0 22%,#725137 23% 40%,transparent 41%)}
 [data-planner-skin="thanksgiving"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:color-mix(in srgb,var(--planner-book-color) 65%,#51351f)}
 .planner-skin-holiday-badge{font-size:9px;justify-self:center;margin:2px 0}
+
+[data-planner-skin="snowflake"] .planner-book-cover{background:#578bb4 url('assets/snowflakes.svg') center/125px;color:#224c70;border-color:#75a8cc}
+[data-planner-skin="snowflake"] .planner-book-cover-label{inset:35% 13% 35% 16%;background:#f5fbfff0;border:1px solid #fff;border-radius:7px;padding:8px;color:#325d7e;justify-content:center}
+[data-planner-skin="snowflake"] .planner-book-cover-label b{font-family:Georgia,serif;font-size:clamp(10px,10cqi,20px)!important;text-shadow:none}
+[data-planner-skin="snowflake"] :is(.planner-book-loop,.planner-book-elastic){display:none}
+[data-planner-skin="giftwrapped"] .planner-book-cover{background:linear-gradient(90deg,transparent 43%,#d9b460 43% 55%,transparent 55%),linear-gradient(transparent 24%,#dfbd70 24% 34%,transparent 34%),repeating-linear-gradient(45deg,#8f263b 0 18px,#9f3348 18px 36px);border-color:#78283b}
+[data-planner-skin="giftwrapped"] .planner-book-cover-label{inset:48% 9% 22% 26%;padding:9px 6px 7px;background:#fff3dc;border:1px solid #d3ae71;border-radius:16px 3px 3px 3px;transform:rotate(-9deg);color:#734031;justify-content:center;box-shadow:1px 3px 4px #40251d30}
+[data-planner-skin="giftwrapped"] .planner-book-cover-label::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:#876b42;left:7px;top:7px}
+[data-planner-skin="giftwrapped"] .planner-book-cover-label b{font-family:Caveat,Georgia,cursive;font-size:clamp(11px,11cqi,22px)!important;line-height:1.1;text-shadow:none}
+[data-planner-skin="giftwrapped"] .planner-book-cover::before{content:'';position:absolute;inset:14% 21% auto 23%;height:16%;border:7px solid #f4d992;border-radius:55% 55% 45% 45%;transform:rotate(-8deg);background:linear-gradient(90deg,#b48b40,#edce85,#a78237);box-shadow:0 3px 4px #42162144}
+[data-planner-skin="giftwrapped"] .planner-book-cover::after{content:'';position:absolute;left:45%;top:17%;width:10%;height:13%;background:#f6da99;border-radius:3px}
+[data-planner-skin="giftwrapped"] :is(.planner-book-loop,.planner-book-elastic,.planner-book-cover-label small){display:none}
+[data-planner-skin="giftwrapped"] .planner-book-binding>span{border-color:#b99858}
+[data-planner-skin="snowflake"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover{background-color:var(--planner-book-color)}
+[data-planner-skin="giftwrapped"][data-planner-color]:not([data-planner-color="default"]) .planner-book-cover-label{color:var(--planner-book-color)}
+
+[data-planner-skin="giftwrapped"] .planner-book-cover::before{inset:12% 12% auto 14%;height:28%;border:0;border-radius:0;transform:none;background:url('assets/gift-bow.svg') center/contain no-repeat;box-shadow:none}
+[data-planner-skin="giftwrapped"] .planner-book-cover::after{display:none}

@@ -23,6 +23,14 @@
     {
       "path": "banners/thanksgiving-shop.svg",
       "name": "thanksgiving shop"
+    },
+    {
+      "path": "banners/winter-holidays-shop.png",
+      "name": "winter holidays shop"
+    },
+    {
+      "path": "banners/winter-holidays-shop.svg",
+      "name": "winter holidays shop"
     }
   ]
 }

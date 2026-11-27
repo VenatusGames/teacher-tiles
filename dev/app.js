@@ -197,6 +197,8 @@ explosionSfxPrototype.preload='none';
 const slimeSfxPrototype=new Audio('assets/ui/tile-effect-slime.mp3');slimeSfxPrototype.preload='none';
 const moneyConfettiSfxPrototype=new Audio('assets/ui/tile-effect-money-confetti.mp3');moneyConfettiSfxPrototype.preload='none';
 const leavesSfxPrototype=new Audio('assets/ui/tile-effect-windy-leaves.wav');leavesSfxPrototype.preload='none';
+const christmasLightsSfxPrototype=new Audio('assets/ui/tile-effect-christmas-lights.wav');christmasLightsSfxPrototype.preload='none';
+const frostSfxPrototype=new Audio('assets/ui/tile-effect-frost.wav');frostSfxPrototype.preload='none';
 const rainSfxPrototype=new Audio('assets/ui/tile-effect-rain.mp3');rainSfxPrototype.preload='none';
 const smokeSfxPrototype=new Audio('assets/ui/tile-effect-smoke.mp3');smokeSfxPrototype.preload='none';
 const lightningSfxPrototype=new Audio('assets/ui/tile-effect-lightning.mp3');
@@ -907,6 +909,7 @@ menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!
   closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
+  Object.freeze({id:'santaslist-frosted',productId:'tile-skin-santaslist-frosted',tileType:'santaslist',tileLabel:"Santa's List",name:'Frosted List',description:'An icy blue scroll with snowflakes and elegant winter lettering.',tags:'christmas holiday santa list frosted snowflakes',released:90,preview:'tiles/santas-list/assets/frosted-preview.svg'}),
   Object.freeze({"id": "christmastimer-snowman", "productId": "tile-skin-christmastimer-snowman", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Snowman", "description": "Six cheerful snowman faces with cozy hats and frosty details.", "tags": "christmas holiday timer snowman", "released": 88, "preview": "tiles/christmas-timer/assets/snowman-preview.svg?v=4"}),
   Object.freeze({"id": "christmastimer-cookies", "productId": "tile-skin-christmastimer-cookies", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Christmas Cookies", "description": "Six iced Christmas cookies, including a gingerbread friend.", "tags": "christmas holiday timer christmas cookies", "released": 89, "preview": "tiles/christmas-timer/assets/cookies-preview.svg?v=4"}),
   Object.freeze({"id":"ruler-clear","productId":"tile-skin-ruler-clear","tileType":"ruler","tileLabel":"Ruler","name":"No Background","description":"The classic ruler floats directly on your board without a tile background.","tags":"ruler measurement No Background","released":85,"preview":"tiles/ruler/assets/clear-preview.svg"}),
