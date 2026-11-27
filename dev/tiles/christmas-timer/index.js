@@ -20,12 +20,16 @@
   }
   function cap() {
     const id = 'ornament-cap-'+(++serial);
-    return '<svg viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="'+id+'"><stop stop-color="#d0a74e"/><stop offset=".4" stop-color="#f1d793"/><stop offset="1" stop-color="#c9a04a"/></linearGradient></defs>' +
-      '<path d="M45 12V7a5 5 0 0 1 10 0v5" fill="none" stroke="#b28b43" stroke-width="2.6"/><rect x="39" y="11" width="22" height="13" rx="2" fill="url(#'+id+')" stroke="#b28b43" stroke-width=".7"/>' +
-      '<path d="M44 14v7m6-7v7m6-7v7" stroke="#aa823c" stroke-opacity=".4" stroke-width=".8" stroke-linecap="round"/></svg>';
+    return '<svg viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="'+id+'"><stop stop-color="#b78c3c"/><stop offset=".32" stop-color="#edd18c"/><stop offset=".62" stop-color="#dfbd6d"/><stop offset="1" stop-color="#aa7f31"/></linearGradient></defs>' +
+      '<path d="M46 12V6a4 4 0 0 1 8 0v6" fill="none" stroke="#a7833b" stroke-width="2"/>' +
+      '<path d="M40 12Q50 9 60 12L63 21Q50 25 37 21Z" fill="url(#'+id+')" stroke="#9e7836" stroke-width=".65"/>' +
+      '<path d="M43 13l-1 8m5-9-.3 10m6-10 .3 10m4-9 1 8" fill="none" stroke="#9c7535" stroke-opacity=".4" stroke-width=".8"/>' +
+      '<path d="M37 21Q50 25 63 21" fill="none" stroke="#8e682e" stroke-opacity=".55" stroke-width=".9"/></svg>';
   }
   function icon(color) {
-    return '<span class="ornament-mini">'+ball(color)+'<span class="ornament-mini-cap">'+cap()+'</span></span>';
+    // One viewBox includes the loop, cap and ball so the entire ornament is centered.
+    const contents = svg => svg.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+    return '<span class="ornament-mini"><svg viewBox="0 -14 100 114" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+contents(ball(color))+'<g transform="translate(0 -14)">'+contents(cap())+'</g></svg></span>';
   }
   function render(m) {
     const key = colorKey(m.dataset.shapeColor);
@@ -41,7 +45,7 @@
       art.setAttribute('aria-hidden','true');
       visual.append(art);
     }
-    art.innerHTML = '<div class="ornament-base">'+ball(key)+'</div><div class="ornament-filled">'+ball(key)+'</div><div class="ornament-cap">'+cap()+'</div>';
+    art.innerHTML = '<div class="ornament-base">'+ball(key)+'</div><div class="ornament-filled">'+ball(key)+'</div><div class="ornament-outline"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="none" stroke="'+colors[key].dark+'" stroke-width="1.2"/></svg></div><div class="ornament-cap">'+cap()+'</div>';
   }
   function preview(m) {
     render(m);
