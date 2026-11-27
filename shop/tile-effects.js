@@ -35,9 +35,9 @@
   }
   const canvas=document.createElement('canvas');canvas.className='tile-effect-stage';canvas.setAttribute('aria-hidden','true');
   const w=layer.clientWidth||400,h=layer.clientHeight||300,scale=Math.min(preview?1:1.5,devicePixelRatio||1);canvas.width=Math.ceil(w*scale);canvas.height=Math.ceil(h*scale);layer.replaceChildren(canvas);if(item.kind==='slime')canvas.style.borderRadius=getComputedStyle(layer.closest('.module')||layer).borderRadius;
-  const ctx=canvas.getContext('2d'),duration=item.kind==='frost'?10000:item.kind==='christmas-lights'?4400:item.kind==='leaves'?4000:item.kind==='slime'?5200:['confetti','money-confetti'].includes(item.kind)?1700:2800;let frame=0,finish=0,start=performance.now();
+  const ctx=canvas.getContext('2d'),duration=item.kind==='frost'?5400:item.kind==='christmas-lights'?4400:item.kind==='leaves'?4000:item.kind==='slime'?5200:['confetti','money-confetti'].includes(item.kind)?1700:2800;let frame=0,finish=0,start=performance.now();
   const stop=()=>{cancelAnimationFrame(frame);clearTimeout(finish);canvas.remove();if(running.get(layer)===stop)running.delete(layer);};running.set(layer,stop);
-  const rnd=(a,b)=>a+Math.random()*(b-a),colors=item.colors,particles=[];
+  const rnd=(a,b)=>a+Math.random()*(b-a),colors=item.colors,particles=[],frostSeed=Math.random()*100000;
   const burstPoints=[[114,110,350],[285,90,850],[210,176,1350]];
   if(['confetti','money-confetti'].includes(item.kind))for(let i=0;i<(item.kind==='money-confetti'?(preview?22:40):(preview?32:60));i++){const a=rnd(0,Math.PI*2),v=rnd(75,190);particles.push({x:200,y:140,vx:Math.cos(a)*v,vy:Math.sin(a)*v-70,color:colors[i%colors.length],r:rnd(2,5),angle:rnd(0,6),spin:rnd(-8,8)});}
   if(item.kind==='fireworks')for(const [x,y,delay]of burstPoints)for(let i=0;i<(preview?42:68);i++){const a=rnd(0,Math.PI*2),speed=rnd(35,120);particles.push({x,y,delay,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,color:colors[i%colors.length],size:rnd(1.4,2.4),life:rnd(950,1450)});}
@@ -71,8 +71,8 @@
    if(['confetti','money-confetti'].includes(item.kind))for(const p of particles){const f=Math.min(1,t/1.4),d=1-Math.pow(1-f,3);ctx.globalAlpha=Math.min(1,t*12)*(1-f*f);ctx.save();ctx.translate(p.x+p.vx*d,p.y+p.vy*d+65*t*t);ctx.rotate(p.angle+p.spin*t);ctx.scale(1,Math.cos(t*9+p.angle)*.5+.7);ctx.fillStyle=p.color;if(item.kind==='money-confetti'){const size=19+p.r*2;ctx.drawImage(moneyBill,-size/2,-size/4,size,size/2);}else ctx.fillRect(-p.r,-p.r*1.5,p.r*2,p.r*3);ctx.restore();}
    if(item.kind==='frost'){
     ctx.save();ctx.setTransform(scale,0,0,scale,0,0);
-    ctx.globalAlpha=Math.max(0,Math.min(1,(duration-ms)/2200));
-    window.TeacherTilesWinterScenes.frost(ctx,width,height,'#f4fcff',Math.min(1,ms/5800));ctx.restore();
+    ctx.globalAlpha=Math.max(0,Math.min(1,(duration-ms)/1700));
+    window.TeacherTilesWinterScenes.frost(ctx,width,height,'#f4fcff',Math.min(1,ms/2400),frostSeed);ctx.restore();
    }
    if(item.kind==='christmas-lights'){
     ctx.save();ctx.setTransform(scale,0,0,scale,0,0);const size=Math.max(8,Math.min(width,height)*.045),fade=Math.max(0,Math.min(1,(duration-ms)/800));
@@ -144,7 +144,7 @@
   else if(item.kind==='lightning')art=`<path d="M77 34l-19-9 9 22-29 8M131 70l23 4-11 15 30 8" fill="none" stroke="${colors[2]}" stroke-width="5" stroke-linejoin="round"/><path d="m105 12-38 55h30l-9 44 48-63h-33l16-36Z" fill="${colors[0]}" stroke="${colors[1]}" stroke-width="5" stroke-linejoin="round"/>`;
   else if(item.kind==='explosion')art='<path d="m100 10 13 32 34-17-9 34 43 10-36 18 12 30-40-14-20 24-13-34-39 16 12-31-37-19 45-8-6-32 27 17Z" fill="#ff9e38"/><circle cx="103" cy="70" r="23" fill="#ffdd74"/>';
   else for(const [cx,cy,r]of [[69,57,36],[135,76,29]])for(let i=0;i<16;i++){const a=i*Math.PI/8;art+=`<path d="M${cx+Math.cos(a)*12} ${cy+Math.sin(a)*12}l${Math.cos(a)*(r-12)} ${Math.sin(a)*(r-12)}" stroke="${colors[i%colors.length]}" stroke-width="2.4" stroke-linecap="round"/>`;}
-  const image=document.createElement('img');image.className='tile-effect-art';image.alt='';image.draggable=false;image.decoding='async';image.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">'+art+'</svg>');const demo=document.createElement('div');demo.className='tile-effect-demo';box.append(image,demo);if(['frost','christmas-lights','leaves','lightning','rain','smoke','slime','money-confetti'].includes(item.kind)){if(!stillPreviews.has(item.id)){const stop=launch(demo,item.id,true,item.kind==='lightning'?140:item.kind==='rain'?1100:item.kind==='frost'?5800:650);stillPreviews.set(item.id,demo.querySelector('canvas').toDataURL());stop();}image.src=stillPreviews.get(item.id);}box.play=()=>launch(box.lastElementChild,item.id);return box;
+  const image=document.createElement('img');image.className='tile-effect-art';image.alt='';image.draggable=false;image.decoding='async';image.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140">'+art+'</svg>');const demo=document.createElement('div');demo.className='tile-effect-demo';box.append(image,demo);if(['frost','christmas-lights','leaves','lightning','rain','smoke','slime','money-confetti'].includes(item.kind)){if(!stillPreviews.has(item.id)){const stop=launch(demo,item.id,true,item.kind==='lightning'?140:item.kind==='rain'?1100:item.kind==='frost'?2800:650);stillPreviews.set(item.id,demo.querySelector('canvas').toDataURL());stop();}image.src=stillPreviews.get(item.id);}box.play=()=>launch(box.lastElementChild,item.id);return box;
  }
  let hoverRun=null;
  function stopPreview(){if(!hoverRun)return;clearTimeout(hoverRun.timer);hoverRun.stop?.();hoverRun=null;}

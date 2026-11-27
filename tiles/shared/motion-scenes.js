@@ -1,7 +1,7 @@
 /* Shared deterministic scenes for live boards and hover-only shop previews. */
 (()=>{'use strict';
  const packs=[
-  {id:'menorah-window',name:'Menorah',holiday:'hanukkah',price:450,description:'Nine glowing candles flicker in a winter window while snow falls outside.',dark:true,variants:[['','Menorah','#172a3a','#e7bd72']]},
+  {id:'menorah-window',name:'Menorah',holiday:'hanukkah',price:450,description:'Nine glowing candles in a winter window, with Light and Dark versions.',dark:true,variants:[['','Dark','#172a3a','#e7bd72'],['day','Light','#dde9ef','#c9aa75']]},
   {id:'outdoor-christmas-tree',name:'Outdoor Christmas Tree',holiday:'christmas',price:450,description:'A decorated evergreen sparkles in a quiet, snow-covered forest.',dark:true,variants:[['','Outdoor Christmas Tree','#102c42','#b9d8e5']]},
   {id:'falling-snow',name:'Falling Snow',holiday:'christmas',price:450,description:'Gentle falling snow on simple Blue, Midnight, Lavender, and Evergreen backgrounds.',variants:[['blue','Blue','#789bb7','#d7eaf8'],['midnight','Midnight','#26394f','#cad9eb'],['lavender','Lavender','#a298bb','#efe6fc'],['evergreen','Evergreen','#517b74','#e1f4ed']]},
   {id:'frosted',name:'Frosted',holiday:'christmas',animated:false,price:250,description:'Feathery ice crystals frame rich frosted glass in Ice, Rose, and Lilac.',variants:[['ice','Ice','#a9c5d5','#f2fbff'],['rose','Rose','#c6b1c0','#fff2f8'],['lilac','Lilac','#b5b4d3','#f6f2ff']]},
@@ -13,7 +13,7 @@
   {id:'clouds',name:'Clouds',price:450,description:'Soft, sunlit clouds drift gently across an open blue sky.',variants:[['','Clouds','#82bae2','#ffffff']]},
   {id:'stripes',name:'Stripes',price:250,animated:false,description:'Alternating light and dark vertical stripes in Blue, Sage, Rose, Lilac, Gold, and Peach.',variants:[['blue','Blue','#e9f1f9','#bdd2e8'],['sage','Sage','#e4efe6','#b8d0be'],['rose','Rose','#f8e4ec','#e1b6c6'],['lilac','Lilac','#efe8f8','#c8bcdf'],['gold','Gold','#fcf3d5','#e6d29a'],['peach','Peach','#f9e8d9','#e4b795']]}
  ].map(p=>Object.freeze({...p,productId:'theme-'+p.id,animated:p.animated!==false}));
- const choices=packs.flatMap(p=>p.variants.map(([suffix,label,bg,accent,secondary])=>Object.freeze({id:p.id+(suffix?'-'+suffix:''),name:label,kind:p.id,bg,accent,secondary,dark:!!p.dark,animated:p.animated,productId:p.productId})));
+ const choices=packs.flatMap(p=>p.variants.map(([suffix,label,bg,accent,secondary])=>Object.freeze({id:p.id+(suffix?'-'+suffix:''),name:label,kind:p.id,bg,accent,secondary,dark:p.id==='menorah-window'?suffix!=='day':!!p.dark,animated:p.animated,productId:p.productId})));
  const byId=new Map(choices.map(v=>[v.id,v])),random=i=>{const n=Math.sin(i*127.1+311.7)*43758.5453;return n-Math.floor(n)},TAU=Math.PI*2;
  const alpha=(hex,a)=>hex+Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0');
  const clouds=new Map(),logoColors=new Map();let logo,logoReady;

@@ -18,5 +18,22 @@ Generate an original high detail 16:9 landscape frost-on-glass texture for a des
 
 A single blank antique parchment scroll, vertical portrait 3:4, isolated on a truly transparent background. Soft refined watercolor storybook illustration with realistic cream paper texture, gently aged warm golden edges. Uneven curving side edges, broad flat writable center, subtly curling top edge sweeping across with a visible rolled hollow curl at upper right. Bottom edge flares slightly outward with gentle wave and little worn paper creases, no wooden rods. Paper fills almost entire image with narrow transparent padding. Clean large light ivory writing area, no text, no lines, NO Santa hat, no decorations, no ribbon, no background, no hard rectangular outline. Usable as an app's list paper background; restrained texture that will not interfere with text.
 
-Runtime assets: assets/themes/winter/*.webp and tiles/santas-list/assets/parchment.webp. Color variations and animation overlays are rendered by the app.
+Runtime scene assets: assets/themes/winter/*.webp. Color variations and animation overlays are rendered by the app. Santa’s List now uses native SVG/CSS artwork in tiles/santas-list/assets/classic-paper.svg and frosted-paper.svg; the generated parchment is no longer used.
+
+
+## November 27 animation layers
+
+Built-in image generation edits to the existing scene artwork:
+
+### forest
+
+Edit this exact scene into a clean background plate for animation. Remove ONLY the central decorated Christmas tree including its star, ornaments, fairy lights, and warm glow on the snow. Fill its former area with the natural distant blue snowy forest and snow ground matching the surroundings. Preserve the existing surrounding trees, moon, sky, lighting, image dimensions, camera, and composition exactly. No central foreground tree should remain. No text. This is the forest background over which the original Christmas tree will be animated.
+
+### menorah-day
+
+Edit only the lighting/time of day of this exact image into a LIGHT daytime version of the same winter window scene. Pale cool winter daylight outside, snow-covered forest clearly light behind softly blurred glass, warm natural mid-brown wood illuminated by daylight. Keep the exact camera and all object positions unchanged. Keep the brass menorah centered with exactly nine candles, eight equal-height and the raised central candle, all tiny flames still burning and aligned exactly where they are now. Keep all window mullions at identical positions. Elegant bright inviting natural daylight, no night darkness, no extra objects, no lettering. Maintain original landscape dimensions.
+
+### Tree foreground
+
+Extract only the original decorated tree and star onto a transparent 1672 × 941 canvas, preserving their positions and details. Runtime files: outdoor-forest.webp, outdoor-tree-layer.webp, menorah-window-day.webp. The tree is animated using progressive strip displacement; the forest remains fixed. Santa’s List artwork is entirely native SVG/CSS.
 
