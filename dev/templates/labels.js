@@ -2,7 +2,7 @@ export const tileLabels={
   "dreidel":"Dreidel",
   "menorah":"Menorah",
   "thankfulturkey":"Thankful Turkey",
-  "christmastimer":"Christmas Timers",
+  "adventcalendar":"Advent Calendar","christmastimer":"Christmas Timers",
   "thanksgivingtimer":"Thanksgiving Timers",
   "cookafeast":"Cook-A-Feast",
   "presentation": "Presentations",

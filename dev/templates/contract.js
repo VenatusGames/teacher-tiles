@@ -33,6 +33,7 @@
   const templateImage=value=>raster(value)||remoteImage(value);
   const token=v=>/^[a-zA-Z0-9# ._-]{1,80}$/.test(String(v||''))?String(v):'';
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
+  const ADVENT_EMOJIS=['🎁','⭐','❄️','🎄','🍪','🎨','📚','🎉'];
   const adapters={
     livepolls:s=>({prompt:text(s.prompt,160),options:list(s.options,8).map(o=>text(o,80)),multiple:s.multiple===true}),
     moodcheckin:s=>({allowResponseChange:s.allowResponseChange!==false}),
@@ -42,6 +43,29 @@
     visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
     halloweentimer:()=>({}),
     thanksgivingtimer:()=>({}),
+    adventcalendar:s=>({
+      version:1,
+      title:text(s.title||'December Surprises',60),
+      days:Math.round(num(s.days,1,24,24)),
+      theme:['cranberry','evergreen','midnight','frost','sugarplum'].includes(s.theme)?s.theme:'cranberry',
+      style:['panels','ribbons','stars'].includes(s.style)?s.style:'panels',
+      font:['classic','elegant','playful'].includes(s.font)?s.font:'elegant',
+      seed:Math.floor(num(s.seed,0,99999,0)),
+      cards:Array.from({length:24},(_,index)=>{
+        const card=s.cards?.[index]||{};
+        return {
+          title:text(card.title,80),
+          text:text(card.text,500),
+          image:String(card.image||'').length<=18000?raster(card.image):'',
+          emoji:ADVENT_EMOJIS.includes(card.emoji)?card.emoji:ADVENT_EMOJIS[0],
+          color:/^#[0-9a-f]{6}$/i.test(card.color||'')?card.color:'',
+          layout:['portrait','postcard','spotlight'].includes(card.layout)?card.layout:'portrait',
+          fit:card.fit==='cover'?'cover':'contain',
+          // Shared templates start unopened while preserving the teacher's prizes.
+          opened:false
+        };
+      })
+    }),
     christmastimer:()=>({}),
     dreidel:s=>({result:Number.isInteger(s.result)&&s.result>=0&&s.result<4?s.result:0,color:['blue','red','orange','yellow','green','purple','pink','charcoal'].includes(s.color)?s.color:'blue'}),
     menorah:s=>({candles:Array.from({length:9},(_,i)=>s.candles?.[i]===true)}),
