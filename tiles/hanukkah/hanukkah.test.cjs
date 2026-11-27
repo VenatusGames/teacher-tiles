@@ -25,6 +25,21 @@ const root = path.resolve(__dirname, '../..');
       p = screenToBoard(950,180);
       window.menorah = createModule('menorah',p.x,p.y);
     });
+    assert.equal(await page.locator('.hanukkah-heading:visible').count(),0);
+    await page.locator('.dreidel-module').hover();
+    await page.locator('.dreidel-colors-toggle').click();
+    assert.equal(await page.locator('.dreidel-color-drawer:visible button').count(),8);
+    await page.locator('.dreidel-color-drawer [data-color="green"]').click();
+    assert.equal(await page.evaluate(() => dreidel._boardGetState().color),'green');
+    await page.locator('.dreidel-colors-toggle').click();
+    await page.mouse.click(1400,800);
+    assert.equal(await page.locator('.dreidel-color-drawer:visible').count(),0);
+    await page.evaluate(() => {
+      const state=serializeBoardModule(dreidel);
+      dreidel._cleanup?.();dreidel.remove();
+      dreidel=createModule('dreidel',0,0,{record:false,boardState:state});
+    });
+    assert.equal(await page.evaluate(() => dreidel._boardGetState().color),'green');
     assert.equal(await page.locator('.dreidel-face').count(),4);
     assert.deepEqual(await page.locator('.dreidel-face b').allTextContents(),['נ','ג','ה','ש']);
     assert.equal(await page.locator('.menorah-candle').count(),9);
@@ -77,7 +92,7 @@ const root = path.resolve(__dirname, '../..');
     await page.waitForTimeout(150);
     assert(await page.locator('.menorah-art').evaluate(svg => svg.getBoundingClientRect().width>600));
     await page.evaluate(() => document.exitFullscreen());
-    await page.evaluate(() => {menorah.style.width='620px';menorah.style.height='420px';});
+    await page.evaluate(() => {menorah.style.width='470px';menorah.style.height='540px';});
     // Round-trip through the real saved-board serializer and restore lifecycle.
     await page.evaluate(() => {
       const saved = serializeBoardModule(menorah);
@@ -92,13 +107,15 @@ const root = path.resolve(__dirname, '../..');
     await page.evaluate(async () => {
       const {createBoardPreview} = await import('/boards/preview.js');
       window.hanukkahPreview = createBoardPreview({inlineObjects:[
-        {type:'dreidel',transform:{left:0,top:0,width:320,height:380},special:{result:3}},
+        {type:'dreidel',transform:{left:0,top:0,width:320,height:380},special:{result:3,color:'purple'}},
         {type:'menorah',transform:{left:350,top:0,width:620,height:420},special:{candles:[true,false,false,false,true,false,false,false,true]}}
       ]});
       document.body.append(hanukkahPreview);
     });
     assert.equal(await page.locator('.hanukkah-static-preview .menorah-candle.is-lit').count(),3);
     assert.equal(await page.locator('.hanukkah-static-preview .dreidel-result').textContent(),'ש · Shin');
+    assert.equal(await page.locator('.hanukkah-static-preview .dreidel-object').evaluate(el=>el.style.getPropertyValue('--dreidel-hue')),'273');
+    assert.equal(await page.locator('.hanukkah-static-preview .hanukkah-heading:visible').count(),0);
     await page.evaluate(() => hanukkahPreview.remove());
     assert.equal(await page.locator('#context-menu [data-module="dreidel"][data-coming-soon]').count(),0);
     assert(!fs.readFileSync(path.join(root,'index.html'),'utf8').includes('Hannukah Timers'));
