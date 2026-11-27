@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  if(window.TeacherTilesChristmasTimer)return;
   const colors = Object.freeze({
     red:{name:'Red',light:'#ffb0a0',color:'#d72d41',dark:'#750d27'},
     green:{name:'Green',light:'#b0e4bb',color:'#278d5d',dark:'#0d4437'},
@@ -26,31 +27,55 @@
       '<path d="M43 13l-1 8m5-9-.3 10m6-10 .3 10m4-9 1 8" fill="none" stroke="#9c7535" stroke-opacity=".4" stroke-width=".8"/>' +
       '<path d="M37 21Q50 25 63 21" fill="none" stroke="#8e682e" stroke-opacity=".55" stroke-width=".9"/></svg>';
   }
-  function icon(color) {
-    // One viewBox includes the loop, cap and ball so the entire ornament is centered.
-    const contents = svg => svg.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
-    return '<span class="ornament-mini"><svg viewBox="0 -14 100 114" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+contents(ball(color))+'<g transform="translate(0 -14)">'+contents(cap())+'</g></svg></span>';
+  function kind(m) {
+    if(m.dataset.tileSkin==='christmastimer-snowman')return 'snowman';
+    if(m.dataset.tileSkin==='christmastimer-cookies')return 'cookies';
+    return 'ornament';
+  }
+  function choices(m) {
+    const type=kind(m);
+    return type==='snowman'?TeacherTilesChristmasArt.snowmen:type==='cookies'?TeacherTilesChristmasArt.cookies:colors;
+  }
+  function contents(svg) {return svg.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');}
+  function sweep(progress) {
+    const p=Math.max(0,Math.min(1,Number(progress)||0));
+    if(p>=1)return 'M-40-40H140V140H-40Z';
+    if(p<=0)return 'M50 50Z';
+    const a=-Math.PI+p*Math.PI*2;
+    return 'M50 50L-30 50A80 80 0 '+(p>.5?1:0)+' 1 '+(50+80*Math.cos(a))+' '+(50+80*Math.sin(a))+'Z';
+  }
+  function artwork(type,key,progress=1) {
+    const art=TeacherTilesChristmasArt,id='christmas-art-'+(++serial);
+    const options=type==='snowman'?art.snowmen:type==='cookies'?art.cookies:colors;
+    key=Object.hasOwn(options,key)?key:Object.keys(options)[0];
+    const body=type==='snowman'?art.snowman(key,id):type==='cookies'?art.cookie(key,id):contents(ball(key));
+    const base=type==='snowman'?art.snowman(key,id+'-base'):type==='cookies'?art.cookie(key,id+'-base'):contents(ball(key));
+    const path=type==='cookies'?art.paths[key]:art.circle;
+    const edge=type==='ornament'?colors[key].dark:type==='snowman'?'#7d9bb3':'#94602f';
+    const top=type==='ornament'?'<g class="ornament-cap" transform="translate(0 -14) translate(50 18) scale(1.16) translate(-50 -18)">'+contents(cap())+'</g>':'';
+    return '<svg class="christmas-art-svg" viewBox="'+(type==='ornament'?'0 -20 100 120':'0 0 100 100')+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="'+id+'-sweep"><path class="christmas-sweep" d="'+sweep(progress)+'"/></clipPath></defs><g class="christmas-base" opacity=".27">'+base+'</g><g clip-path="url(#'+id+'-sweep)">'+body+'</g><path class="christmas-outline" d="'+path+'" fill="none" stroke="'+edge+'" stroke-width="1.2"/>'+top+'</svg>';
+  }
+  function icon(key,type='ornament') {
+    return '<span class="ornament-mini'+(type==='ornament'?'':' ornament-mini--round')+'">'+artwork(type,key)+'</span>';
+  }
+  function label(m) {return kind(m)==='snowman'?'Snowman Face':kind(m)==='cookies'?'Christmas Cookie':'Ornament Color';}
+  function updateProgress(m,progress) {
+    m.querySelector('.ornament-timer-art .christmas-sweep')?.setAttribute('d',sweep(progress));
   }
   function render(m) {
-    const key = colorKey(m.dataset.shapeColor);
-    m.dataset.shapeColor = key;
-    // Keep the timer aura matched to the selected ornament color.
-    m.style.setProperty('--timer',colors[key].color);
-    m.style.setProperty('--timer-soft','color-mix(in srgb, '+colors[key].color+' 18%, var(--module-bg, #fff))');
-    const visual = m.querySelector('.timer-visual');
-    let art = visual.querySelector('.ornament-timer-art');
-    if (!art) {
-      art = document.createElement('div');
-      art.className = 'ornament-timer-art';
-      art.setAttribute('aria-hidden','true');
-      visual.append(art);
-    }
-    art.innerHTML = '<div class="ornament-base">'+ball(key)+'</div><div class="ornament-filled">'+ball(key)+'</div><div class="ornament-outline"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="none" stroke="'+colors[key].dark+'" stroke-width="1.2"/></svg></div><div class="ornament-cap">'+cap()+'</div>';
+    const type=kind(m),options=choices(m);
+    const key=Object.hasOwn(options,m.dataset.shapeColor)?m.dataset.shapeColor:Object.keys(options)[0];
+    m.dataset.shapeColor=key;m.dataset.christmasArt=type;
+    m.style.setProperty('--timer',options[key].color||options[key].accent);
+    const visual=m.querySelector('.timer-visual');
+    let art=visual.querySelector('.ornament-timer-art');
+    if(!art){art=document.createElement('div');art.className='ornament-timer-art';art.setAttribute('aria-hidden','true');visual.append(art);}
+    art.innerHTML=artwork(type,key,m.style.getPropertyValue('--timer-progress-ratio'));
   }
   function preview(m) {
     render(m);
     const readout = m.querySelector('.timer-readout');
     if (readout) m.querySelector('.timer-stage').prepend(readout);
   }
-  window.TeacherTilesChristmasTimer = Object.freeze({colors,render,preview,icon});
+  window.TeacherTilesChristmasTimer = Object.freeze({colors,render,preview,icon,kind,choices,label,artwork,updateProgress});
 })();
