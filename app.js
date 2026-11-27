@@ -1230,6 +1230,7 @@ function setupModuleByType(m,type){
   if(type==='ambiencevideo')setupAmbienceVideo(m);
   if(type==='windowshare')setupWindowShare(m);
   if(type==='boombox')window.TeacherTilesSoundscapes.setup(m);
+  if(type==='christmascarols')window.TeacherTilesChristmasCarols.setup(m);
   if(type==='spinner')setupSpinner(m);
   if(type==='hangman')setupHangman(m);
   if(type==='wordypuzzle')setupWordyPuzzle(m);

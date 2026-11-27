@@ -473,6 +473,7 @@ function applyPreviewState(module, state) {
   if(state.type==='countdown'){window.TeacherTilesCountdown.render(module,state.special||{});module.querySelector('.countdown-heading')?.classList.toggle('tile-heading-hidden',state.dataset?.tileHeadingHidden!=='false');}
   if(state.type==='adventcalendar')TeacherTilesAdvent.preview(module,state.special);
   if(state.type==='christmastimer')TeacherTilesChristmasTimer.preview(module);
+  if(state.type==='christmascarols')window.TeacherTilesChristmasCarols?.preview(module,state.special);
   if(window.TeacherTilesHanukkah?.types.has(state.type))window.TeacherTilesHanukkah.preview(module,state);
   if(window.TeacherTilesThanksgiving?.types.has(state.type))window.TeacherTilesThanksgiving.preview(module,state,new URL('../',import.meta.url));
   if(window.TeacherTilesHalloween?.types.has(state.type))window.TeacherTilesHalloween.preview(module,state,new URL('../',import.meta.url));
