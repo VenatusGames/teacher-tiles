@@ -39,11 +39,15 @@
 @media(hover:none){.dreidel-module .dreidel-colors-toggle{opacity:1;visibility:visible}}
 @media(prefers-reduced-motion:reduce){.dreidel-module .dreidel-colors-toggle{transition:none}}
 
-.dreidel-result-popup{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,240px);padding:28px 16px 18px;display:grid;justify-items:center;gap:14px;border:1px solid var(--border,#dbe3ed);border-radius:20px;background:var(--surface-solid,#fff);box-shadow:0 12px 36px #253d5833;animation:dreidel-result-in .25s cubic-bezier(.2,.8,.2,1)}
+.dreidel-result-popup{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 32px));height:min(460px,calc(100dvh - 32px));padding:24px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;border:1px solid var(--border,#dbe3ed);border-radius:20px;background:var(--surface-solid,#fff);color:var(--text,#253d58);box-shadow:0 12px 36px #253d5833;animation:dreidel-result-in .3s cubic-bezier(.2,.8,.2,1)}
+.dreidel-result-popup::backdrop{background:#17203335}
 .dreidel-result-popup[hidden]{display:none}
-.dreidel-result-popup .dreidel-result{font-size:clamp(22px,9cqw,44px);line-height:1.2;margin:0;text-align:center}
+.dreidel-result-popup .dreidel-spin{align-self:stretch;width:100%}
+.dreidel-result-popup .dreidel-object{--d:min(50cqw,43cqh)}
+.dreidel-result-popup .dreidel-result{flex:none;font-size:clamp(24px,4vw,32px);line-height:1.2;margin:0;text-align:center}
+.dreidel-result-popup .dreidel-spin-again{flex:none}
 .dreidel-result-close{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:27px;height:27px;padding:0;border:1px solid var(--border,#dbe3ed);border-radius:8px;background:var(--surface-soft,#f4f7fb);color:var(--text,#253d58);font:20px/1 sans-serif;cursor:pointer}
 .dreidel-spin-again{border:1px solid #bad4f5;border-radius:10px;background:#e8f2ff;color:#2b609d;padding:8px 15px;font:600 14px/1.2 var(--module-font,Inter,sans-serif);cursor:pointer}
 .hanukkah-static-preview .dreidel-result-popup{display:none!important}
-@keyframes dreidel-result-in{from{opacity:0;transform:translate(-50%,-40%) scale(.92)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes dreidel-result-in{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.dreidel-result-popup{animation:none}}

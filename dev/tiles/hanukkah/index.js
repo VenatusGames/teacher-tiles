@@ -90,7 +90,7 @@
     button.querySelector('.dreidel-object').style.transform = 'rotateX(-12deg) rotateY('+(18-result*90)+'deg)';
     button.setAttribute('aria-label', side.name + '. Spin dreidel');
     button.removeAttribute('aria-busy');
-    m.querySelector('.dreidel-result').textContent = side.letter + ' · ' + side.name;
+    m.querySelector('.dreidel-result').textContent = side.name;
   }
   function setupDreidel(m) {
     const button = m.querySelector('.dreidel-spin');
@@ -100,13 +100,21 @@
     const body = button.querySelector('.dreidel-object');
     const syncDrawer = setupColorDrawer(m, key => {color = colorKey(key);applyColor(m,color);syncDrawer(color);});
     syncDrawer(color);
-    function dismissResult() {popup.hidden = true;}
+    function dismissResult() {
+      if (popup.matches(':popover-open')) popup.hidePopover();
+      popup.hidden = true;
+      m.querySelector('.dreidel-stage').prepend(button);
+    }
     function settle(showResult = false) {
       spin?.cancel();
       spin = null;
       m.classList.remove('is-dreidel-spinning');
       renderDreidel(m, {result, color});
-      popup.hidden = !showResult;
+      if (showResult) {
+        popup.insertBefore(button,popup.querySelector('.dreidel-result'));
+        popup.hidden = false;
+        popup.showPopover();
+      } else dismissResult();
     }
     function startSpin() {
       if (spin) return;
@@ -134,7 +142,7 @@
     button.addEventListener('click', event => {event.stopPropagation();startSpin();});
     popup.querySelector('.dreidel-spin-again').addEventListener('click', event => {event.stopPropagation();startSpin();});
     popup.querySelector('.dreidel-result-close').addEventListener('click', event => {event.stopPropagation();dismissResult();button.focus({preventScroll:true});});
-    const outside = event => {if (!m.contains(event.target)) dismissResult();};
+    const outside = event => {if (!popup.contains(event.target)&&!button.contains(event.target)) dismissResult();};
     const escape = event => {if (event.key === 'Escape'&&!popup.hidden) {event.stopPropagation();dismissResult();button.focus({preventScroll:true});}};
     m.addEventListener('click', event => {if (!popup.contains(event.target)) dismissResult();});
     m.addEventListener('keydown',escape);
