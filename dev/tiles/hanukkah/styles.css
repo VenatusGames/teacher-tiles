@@ -1,0 +1,36 @@
+
+.hanukkah-module{display:flex;flex-direction:column;gap:8px;padding:24px 22px 38px;overflow:hidden}
+.dreidel-module{width:320px;height:380px;min-width:220px;min-height:270px}
+.menorah-module{width:620px;height:420px;min-width:340px;min-height:260px}
+.hanukkah-heading{display:flex;align-items:center;gap:9px;margin:0;font-size:20px;font-weight:650;flex:none}
+.hanukkah-heading>svg{width:25px;height:25px;flex:none}
+.dreidel-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:stretch}
+.dreidel-spin{flex:1;min-height:0;position:relative;display:grid;place-items:center;container-type:size;perspective:900px;background:none;border:0;padding:0;border-radius:18px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.dreidel-spin:focus-visible{outline:3px solid #629ad8;outline-offset:-3px}
+.dreidel-object{--d:min(38cqw,39cqh);position:relative;display:block;width:var(--d);height:calc(var(--d)*1.15);transform-style:preserve-3d;transform:rotateX(-12deg) rotateY(18deg);pointer-events:none}
+.dreidel-face,.dreidel-tip,.dreidel-stem,.dreidel-top,.dreidel-stem-top{position:absolute;display:block;box-sizing:border-box;backface-visibility:hidden}
+.dreidel-face{inset:0;background:linear-gradient(120deg,#5599d9,#2768ac 60%,#1c4f8d);border:1px solid #1e5793;transform:rotateY(calc(var(--face)*90deg)) translateZ(calc(var(--d)*.5));display:grid;place-items:center;box-shadow:inset 0 0 0 calc(var(--d)*.055) #b7daff22}
+.dreidel-face:nth-of-type(3n+1){background:linear-gradient(125deg,#65a5df,#367bbc 60%,#23568f)}
+.dreidel-face b{font-family:Arial,"Noto Sans Hebrew",sans-serif;font-size:calc(var(--d)*.75);font-weight:700;line-height:1;color:#fff2bc;text-shadow:0 2px 0 #173d7066}
+.dreidel-tip{top:100%;left:0;width:var(--d);height:calc(var(--d)*.70711);clip-path:polygon(0 0,100% 0,50% 100%);background:linear-gradient(150deg,#3276b6,#16487d);transform-origin:50% 0;transform:rotateY(calc(var(--face)*90deg)) translateZ(calc(var(--d)*.5)) rotateX(-45deg)}
+.dreidel-top{top:calc(var(--d)*-.5);left:0;width:var(--d);height:var(--d);background:#6ea9dc;transform:rotateX(90deg)}
+.dreidel-stem{width:calc(var(--d)*.18);height:calc(var(--d)*.42);left:41%;top:calc(var(--d)*-.42);background:linear-gradient(90deg,#efd28a,#fff0b8 35%,#c89339);transform:rotateY(calc(var(--face)*90deg)) translateZ(calc(var(--d)*.09))}
+.dreidel-stem-top{width:calc(var(--d)*.18);height:calc(var(--d)*.18);left:41%;top:calc(var(--d)*-.51);background:#ffe8a0;transform:rotateX(90deg)}
+.dreidel-shadow{position:absolute;left:28%;right:28%;top:85%;height:5%;background:radial-gradient(ellipse,#304c7640,transparent 70%);pointer-events:none}
+.dreidel-result{flex:none;text-align:center;font-size:clamp(17px,3cqw,28px);font-weight:650;margin:4px 0 0;min-height:1.4em}
+.menorah-stage{flex:1;min-height:0;display:grid;place-items:center}
+.menorah-art{display:block;width:100%;height:100%;min-height:0;overflow:visible}
+.menorah-candle{cursor:pointer;outline:none;touch-action:manipulation}
+.menorah-hit{fill:transparent;stroke:transparent;stroke-width:2;transition:fill .18s,stroke .18s}
+.menorah-candle:hover .menorah-hit{fill:#74b3ed14}
+.menorah-candle:focus-visible .menorah-hit{fill:#74b3ed14;stroke:#5293d1}
+.menorah-flame{opacity:0;transition:opacity .22s;pointer-events:none}
+.menorah-candle.is-lit .menorah-flame{opacity:1}
+.menorah-flame-dance{transform-box:fill-box;transform-origin:50% 100%;animation:menorah-flicker 1.65s ease-in-out infinite alternate;animation-delay:var(--flicker-delay);animation-play-state:paused}
+.menorah-candle.is-lit .menorah-flame-dance{animation-play-state:running}
+@keyframes menorah-flicker{0%,100%{transform:scale(.95,1.04) rotate(-3deg)}35%{transform:scale(1.03,.96) rotate(2deg)}70%{transform:scale(.97,1.02) rotate(-1deg)}}
+.hanukkah-static-preview .menorah-flame-dance{animation:none}
+.hanukkah-static-preview .dreidel-object{animation:none}
+@media(prefers-reduced-motion:reduce){.menorah-flame-dance{animation:none}.menorah-flame{transition:none}}
+.dreidel-module .hanukkah-heading::before{content:"";display:inline-block;width:25px;height:25px;flex:none;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M10%207V2h4v5M5%207h14v10l-7%205-7-5Z%22/%3E%3Cpath%20d%3D%22M10%2010h4v6h-3%22/%3E%3C/svg%3E") center/contain no-repeat}
+.menorah-module .hanukkah-heading::before{content:"";display:inline-block;width:25px;height:25px;flex:none;background:currentColor;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203v18M2%208v4a10%207%200%200%200%2020%200V8M4.5%208v4a7.5%205%200%200%200%2015%200V8M7%208v4a5%203%200%200%200%2010%200V8M9.5%208v4a2.5%201%200%200%200%205%200V8M8%2022h8%22/%3E%3Cpath%20d%3D%22M2%205v1m2.5-1v1M7%205v1m2.5-1v1m5-1v1M17%205v1m2.5-1v1M22%205v1%22/%3E%3C/svg%3E") center/contain no-repeat}

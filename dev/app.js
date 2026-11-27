@@ -786,7 +786,7 @@ menu.addEventListener('click',event=>{
   (next||menuDrawerFilters.find(button=>button.dataset.categoryDrawerFilter==='favorites'))?.focus({preventScroll:true});
 });
 
-const menuHolidays=['Christmas','Hannukah','Halloween',"Valentine’s Day","St. Patrick’s Day",'Thanksgiving'];
+const menuHolidays=['Christmas','Hanukkah','Halloween',"Valentine’s Day","St. Patrick’s Day",'Thanksgiving'];
 let menuAllExpanded=true,menuHolidaysExpanded=true;
 
 
@@ -1206,6 +1206,7 @@ function setupModuleByType(m,type){
   if(type==='tenssticks')window.TeacherTilesTensSticks.setup(m);
   if(type==='tensblock')window.TeacherTilesTensSticks.setupBlock(m);
   if(type==='lavalamp')window.TeacherTilesLavaLamp.setup(m);
+  if(window.TeacherTilesHanukkah.types.has(type))TeacherTilesHanukkah.setup(m);
   if(type==='coinflip')window.TeacherTilesCoinFlip.setup(m);
   if(type==='squishy')window.TeacherTilesSquishy.setup(m);
   if(type==='starchart')setupStarChart(m);
@@ -1370,6 +1371,7 @@ const EDITABLE_TILE_HEADINGS={
   tenssticks:'.tens-heading',
   lavalamp:'.lava-heading',
   pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',trickortreat:'.halloween-heading',
+  dreidel:'.hanukkah-heading',menorah:'.hanukkah-heading',
   coinflip:'.coinflip-heading',
   spreadsheet:'.sheet-heading',
   sentenceexpansion:'.sentence-heading',
