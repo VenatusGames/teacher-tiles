@@ -52,7 +52,7 @@ function setupClassesStudents(){
   const statsFor=(c,whole=false)=>c.pbisEnabled===false?[]:PBIS_STUDENT_STAT_DEFINITIONS.filter(s=>c.pbisStats?.[s.id]!==false&&(!s.wholeClassOnly||whole)&&(!s.studentOnly||!whole));
   const statValue=(s,c,name)=>{if(!name)return s.wholeClassValue?.(c)||0;const key=starChartStudentKey(name),map={eggPoints:c.eggHatching?.studentPoints,flowerPoints:c.flowerPots?.studentPoints,stars:c.starChart?.studentStars,punchcardPoints:c.punchcards?.studentPoints,raceWins:c.racer?.studentWins};return normalizeStarChartCount(map[s.id]?.[key]);};
   function addCard(label,action){const b=button(label,action,'cs-add-card','plus');b.setAttribute('aria-label',label);return b;}
-  function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});if(id)window.TeacherTilesClassConnect?.refreshAvatars?.(id).catch(()=>{});}
+  function openClass(id){endDeletion();activeClass=id;search.value='';render();content.scrollTop=0;title.focus({preventScroll:true});if(id&&TeacherTilesConnectAccess.allowed())window.TeacherTilesClassConnect?.refreshAvatars?.(id).catch(()=>{});}
   title.tabIndex=-1;
   function render(){
     cancelHold();const c=current();profileBack.hidden=Boolean(c);if(activeClass&&!c)activeClass='';editRoster.hidden=!c;editRoster.setAttribute('aria-pressed',String(editMode||Boolean(revealedStudent)));editRoster.lastElementChild.textContent=editMode||revealedStudent?'Done':'Edit';classHeader.replaceChildren();classHeader.hidden=!c;grid.replaceChildren();
@@ -62,7 +62,7 @@ function setupClassesStudents(){
       const info=el('div','cs-class-info'),copy=el('div');copy.append(el('h2','',c.name),el('p','',`${c.students.length} ${c.students.length===1?'student':'students'}`));const edit=button('',e=>{if(e.detail>0)editor.addEventListener('close',()=>{if(document.activeElement===edit)edit.blur();},{once:true});editClass(c.id);},'cs-class-info-edit profile-panel__close','edit');edit.setAttribute('aria-label','Edit Class');edit.title='Edit Class';info.append(avatar(c),copy,edit);
       const rewards=button('PBIS',()=>showDetail(null),'cs-button cs-class-pbis','pbis');rewards.setAttribute('aria-label','View whole-class PBIS rewards');rewards.hidden=c.pbisEnabled===false;
       const modules=el('div','cs-class-modules');
-      const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button cs-class-connect','connect'));
+      const assessment=button('Assessment',null,'cs-button cs-class-coming-soon','assessment');assessment.disabled=true;assessment.append(el('small','','Coming soon'));modules.append(assessment,button('ClassConnect',()=>window.TeacherTilesClassConnectUI.open(c.id),'cs-button cs-class-connect','connect'));modules.lastElementChild.dataset.connectPerk='';
       if(TeacherTilesClassGrades.allowsPbis(c.gradeLevel))modules.append(rewards);
       const configure=button('',showSettings,'cs-button cs-class-settings','settings');configure.setAttribute('aria-label','Class Settings');configure.title='Class Settings';classHeader.append(back,info,modules,configure);
       const names=c.students.filter(n=>n.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase()));
@@ -170,17 +170,18 @@ function setupClassesStudents(){
     editor.showModal();name.input.focus();
   }
   function editStudentPin(name){
+    if(!TeacherTilesConnectAccess.requireAccess())return;
     const c=current();if(!c?.requireStudentPin)return;
     let pin=normalizeClassStudentPin(c.studentProfiles[starChartStudentKey(name)]?.pin)||randomClassStudentPin(),slot=0;
     modalHeader(editor,'Student Emoji PIN');const body=el('div','cs-form'),slots=el('div','cs-pin-slots'),board=el('div','cs-pin-board'),error=el('p','cs-error');error.setAttribute('role','alert');
-    const save=button('Save PIN',()=>{const result=updateClass(target=>{if(target.id!==c.id||!target.requireStudentPin||!target.students.includes(name))throw new Error('Reopen this student to change their PIN.');target.studentProfiles[starChartStudentKey(name)].pin=[...pin];});if(result!==true){error.textContent=result;return;}editor.close();renderDetail();},'cs-button cs-primary');
+    const save=button('Save PIN',()=>{if(!TeacherTilesConnectAccess.requireAccess())return;const result=updateClass(target=>{if(target.id!==c.id||!target.requireStudentPin||!target.students.includes(name))throw new Error('Reopen this student to change their PIN.');target.studentProfiles[starChartStudentKey(name)].pin=[...pin];});if(result!==true){error.textContent=result;return;}editor.close();renderDetail();},'cs-button cs-primary');
     function paint(){slots.replaceChildren();for(let i=0;i<3;i++){const b=button(pin[i]===undefined?'—':CLASS_CONNECT_PIN_EMOJIS[pin[i]],()=>{slot=i;paint();},'cs-pin-slot');b.setAttribute('aria-label',`PIN position ${i+1}`);b.setAttribute('aria-pressed',String(slot===i));slots.append(b);}save.disabled=!normalizeClassStudentPin(pin);}
     for(const [i,emoji]of CLASS_CONNECT_PIN_EMOJIS.entries()){const b=button(emoji,()=>{pin[slot]=i;slot=(slot+1)%3;paint();},'cs-pin-choice');b.setAttribute('aria-label',`Select ${emoji}`);board.append(b);}
     const actions=el('div','cs-form-actions');actions.append(button('Random PIN',()=>{pin=randomClassStudentPin();slot=0;paint();}),button('Cancel',()=>editor.close()),save);
     body.append(el('strong','',name),el('p','cs-muted','Choose three emojis in order. Click a position to change that part of the PIN.'),slots,board,error,actions);editor.append(body);paint();editor.showModal();
   }
-  function toggle(label,checked,action,description=''){
-    const row=el('label','cs-toggle'),copy=el('span');copy.append(el('strong','',label));if(description)copy.append(el('small','',description));const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('role','switch');input.setAttribute('aria-label',label);input.onchange=()=>action(input.checked,input);const track=el('i');track.setAttribute('aria-hidden','true');row.append(copy,input,track);return row;
+  function toggle(label,checked,action,description='',connectPerk=false){
+    const row=el('label','cs-toggle'),copy=el('span');copy.append(el('strong','',label));if(description)copy.append(el('small','',description));const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('role','switch');input.setAttribute('aria-label',label);input.onchange=()=>action(input.checked,input);const track=el('i');track.setAttribute('aria-hidden','true');if(connectPerk)row.dataset.connectPerk='';row.append(copy,input,track);return row;
   }
   function showSettings(){
     const c=current();if(!c)return;modalHeader(settings,'Class Settings');
@@ -188,8 +189,8 @@ function setupClassesStudents(){
     error.setAttribute('role','alert');statOptions.setAttribute('aria-label','PBIS reward types');disclosure.open=true;disclosure.hidden=!c.pbisEnabled;
     const summary=el('summary','','Reward Types');disclosure.append(summary,statOptions);
     body.append(toggle('Show Add Student',c.showAddStudent!==false,(enabled,input)=>{const result=updateClass(target=>target.showAddStudent=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Show the + outline at the end of the student list.'));
-    body.append(toggle('Allow Student Emoji Editing',c.allowStudentEmojiEditing,(enabled,input)=>{const result=updateClass(target=>target.allowStudentEmojiEditing=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Let students choose their profile emoji in ClassConnect. Turn on Student Emoji PINs below to protect student selection.'));
-    body.append(toggle('Student Emoji PINs',c.requireStudentPin,(enabled,input)=>{const result=updateClass(target=>{target.requireStudentPin=enabled;ensureClassStudentPins(target);});if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},'Require three emojis to open a student profile in ClassConnect. Random PINs are assigned automatically; view or change each PIN in the student’s card.'));
+    body.append(toggle('Allow Student Emoji Editing',c.allowStudentEmojiEditing,(enabled,input)=>{const result=updateClass(target=>target.allowStudentEmojiEditing=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}},'Let students choose their profile emoji in ClassConnect. Turn on Student Emoji PINs below to protect student selection.',true));
+    body.append(toggle('Student Emoji PINs',c.requireStudentPin,(enabled,input)=>{const result=updateClass(target=>{target.requireStudentPin=enabled;ensureClassStudentPins(target);});if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},'Require three emojis to open a student profile in ClassConnect. Random PINs are assigned automatically; view or change each PIN in the student’s card.',true));
     pbisGroup.append(toggle('Enable PBIS',c.pbisEnabled,(enabled,input)=>{const result=updateClass(target=>target.pbisEnabled=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;return;}disclosure.hidden=!enabled;renderDetail();},'Show class and student reward totals. Turning this off keeps their saved progress.'),disclosure);
     for(const stat of PBIS_STUDENT_STAT_DEFINITIONS)statOptions.append(toggle(stat.label,c.pbisStats[stat.id]!==false,(enabled,input)=>{const result=updateClass(target=>target.pbisStats[stat.id]=enabled);if(result!==true){input.checked=!enabled;error.textContent=result;}renderDetail();},stat.wholeClassOnly?(stat.wholeClassDescription||stat.description):stat.description));
     const actions=el('div','cs-settings-actions');actions.append(button('Edit Class Name & Logo',()=>{settings.close();editClass(c.id);},'cs-button','edit'));
@@ -251,7 +252,7 @@ function setupClassesStudents(){
     const layout=el('div','cs-profile-layout'),hero=el('aside','cs-detail-hero');
     hero.append(avatar(c,name,true),el('h3','',name||c.name),el('p','cs-muted',name?c.name:'Whole class'));
     if(name){const edit=button('Edit Student',()=>editStudent(name),'cs-button cs-detail-edit','edit');edit.dataset.detailFocus='edit';hero.append(edit);}
-    if(name&&c.requireStudentPin){const pin=c.studentProfiles[starChartStudentKey(name)]?.pin;hero.append(el('small','cs-muted','Student Emoji PIN'),el('div','cs-current-pin',pin?pin.map(n=>CLASS_CONNECT_PIN_EMOJIS[n]).join(' '):'Not set'),button('Change PIN',()=>editStudentPin(name),'cs-button'));}
+    if(name&&c.requireStudentPin&&TeacherTilesConnectAccess.allowed()){const pin=c.studentProfiles[starChartStudentKey(name)]?.pin;hero.append(el('small','cs-muted','Student Emoji PIN'),el('div','cs-current-pin',pin?pin.map(n=>CLASS_CONNECT_PIN_EMOJIS[n]).join(' '):'Not set'),button('Change PIN',()=>editStudentPin(name),'cs-button'));}
     const body=el('section','cs-profile-body'+(animate?' is-entering':''));
     if(activeStudent.view==='pbis'&&!TeacherTilesClassGrades.allowsPbis(c.gradeLevel))activeStudent.view='home';
     const view=activeStudent.view||'home';
@@ -293,7 +294,7 @@ function setupClassesStudents(){
   search.addEventListener('input',render);
   opener.addEventListener('click',()=>{document.querySelector('[data-profile-close]')?.click();scope=window.TeacherTilesClassScope||'local';activeClass='';editMode=false;revealedStudent='';search.value='';render();panel.showModal();opener.setAttribute('aria-expanded','true');document.body.classList.add('classes-tool-open');});
   content.addEventListener('scroll',cancelHold,{passive:true});
-  window.addEventListener('focus',()=>{if(panel.open&&activeClass)window.TeacherTilesClassConnect?.refreshAvatars?.(activeClass).catch(()=>{});});
+  window.addEventListener('focus',()=>{if(panel.open&&activeClass&&TeacherTilesConnectAccess.allowed())window.TeacherTilesClassConnect?.refreshAvatars?.(activeClass).catch(()=>{});});
   window.addEventListener('teachertiles:classconnectsync',event=>{if(event.detail?.status==='avatars')refresh();});
   window.addEventListener('blur',()=>{cancelHold();if(panel.open)endDeletion();});
   panel.addEventListener('click',e=>{if((editMode||revealedStudent)&&!e.target.closest('.cs-student-remove,.cs-roster-edit'))endDeletion();});

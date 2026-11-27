@@ -31,8 +31,9 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  let quietTimer=0;const noticeObserver=new MutationObserver(()=>{status.classList.remove('is-quiet');clearTimeout(quietTimer);quietTimer=setTimeout(()=>{if(!holder.classList.contains('is-loading')&&!ended&&!failed)status.classList.add('is-quiet');},5000);});noticeObserver.observe(status,{childList:true});
  const opening=new AbortController(),ownerUid=window.TeacherTilesAuth?.user?.uid;
  const accountChanged=()=>{if(teacher&&window.TeacherTilesAuth?.user?.uid!==ownerUid)dialog.close();};
+ const accessChanged=()=>{if(teacher&&window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.allowed()){void call({action:'end',classId,sessionId:result.status.sessionId}).catch(()=>{});dialog.close();}};
  const linkChanged=()=>{if(!teacher)dialog.close();};
- window.addEventListener('teachertiles:authchange',accountChanged);window.addEventListener('hashchange',linkChanged);
+ window.addEventListener('teachertiles:authchange',accountChanged);window.addEventListener('teachertiles:accountchange',accessChanged);window.addEventListener('hashchange',linkChanged);
  let model=result.status,frame=null,off=null,offResponses=null,closed=false,pending=null,saving=null,saveTimer=0,inputTimer=0,lastInput=0,loading=false,loadedRevision=model.revision,failed=false,ended=false,lastQueued='';
  let lockButton=null,shield=null,lockNotice=null;
  const gateInput=(locked,waiting=false)=>{
@@ -109,7 +110,7 @@ async function launch({teacher,classId,token,student,roster,session,getProfile,r
  };
  const activity=()=>{lastInput=Date.now();scheduleInput();};
  const beforeLeave=e=>{if(teacher&&(pending||saving)){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',beforeLeave);
- dialog.addEventListener('close',()=>{closed=true;opening.abort();noticeObserver.disconnect();clearTimeout(quietTimer);document.removeEventListener('fullscreenchange',fullscreenChanged);if(sessionFullscreen&&document.fullscreenElement)void document.exitFullscreen().catch(()=>{});clearTimeout(saveTimer);clearTimeout(inputTimer);off?.();offResponses?.();window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',accountChanged);window.removeEventListener('hashchange',linkChanged);frame?.close();getProfile?.();},{once:true});
+ dialog.addEventListener('close',()=>{closed=true;opening.abort();noticeObserver.disconnect();clearTimeout(quietTimer);document.removeEventListener('fullscreenchange',fullscreenChanged);if(sessionFullscreen&&document.fullscreenElement)void document.exitFullscreen().catch(()=>{});clearTimeout(saveTimer);clearTimeout(inputTimer);off?.();offResponses?.();window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('teachertiles:authchange',accountChanged);window.removeEventListener('teachertiles:accountchange',accessChanged);window.removeEventListener('hashchange',linkChanged);frame?.close();getProfile?.();},{once:true});
  const refresh=async()=>{
   if(loading||saving||closed||ended||model.mode!=='controlled'||model.revision<=loadedRevision)return;
   if(teacher&&pending){unavailable('This board changed in another teacher window. Reopen the session.');return;}
@@ -140,6 +141,7 @@ export async function enterStudentBoard({token,student,roster,session,getProfile
  const result=await call({action:'join',token,studentId:student.id,session});if(result.status.mode==='tiles'){const pager=await import('./session-pages.js?v=20261119-attach');return pager.enterPages({token,student,session,getProfile,result});}if(['wordcloud','respond','livepolls','moodcheckin'].includes(result.status.mode)){const cloud=await import('./word-cloud-session.js?v=20261119-attach');return cloud.enterWordCloud({token,student,session,getProfile,result});}if(result.status.mode==='presentation'){const viewer=await import('./presentation-session.js?v=20261119-attach');return viewer.enterPresentation({token,student,session,getProfile,result});}await launch({teacher:false,token,student,roster,session,getProfile,result});
 }
 export async function teacherBoard({classId,name,roster}){
+ if(window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.requireAccess())return;
  const dialog=modal('Board Session'),body=make('div','cc-session-setup'),status=make('p','cc-session-status','Loading session…');dialog.append(body,status);
  let result;try{result=await call({action:'teacherGet',classId});}catch(e){status.textContent=e.message;return;}if(!dialog.isConnected)return;
  if(active(result.status)){

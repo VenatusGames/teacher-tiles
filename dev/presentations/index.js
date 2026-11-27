@@ -45,10 +45,10 @@ root._classConnectPresentation=()=>play&&deck?{presentation:{kind:'library',id:d
 root._classConnectRefresh=()=>{if(play&&deck)renderCanvas();};
 const sessionButton=$('[data-action="classconnect"]',root);
 sessionButton.innerHTML=svg('<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>');
-sessionButton.title='ClassConnect';
+sessionButton.dataset.connectPerk='';sessionButton.title='ClassConnect · Subscriber feature';
 root.addEventListener('teachertiles:presentation-connection',()=>{sessionButton.title=root._classConnectSession?.active?'ClassConnect · Live':'ClassConnect';});
 async function connectPresentation(){
- if(!play||!deck)return;
+ if(!play||!deck||!TeacherTilesConnectAccess.requireAccess())return;
  const target=deckId,token=generation;sessionButton.disabled=true;
  const message=$('.pres-session-status',root);message.hidden=true;
  try{await save();if(!play||!deck||deckId!==target||generation!==token||dirty)return;await window.TeacherTilesBoardSessions.presentation(root);}
@@ -84,7 +84,7 @@ document.addEventListener('pointerdown',event=>{if(!transitionDialog.hidden&&!tr
 transitionDialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();transitionDialog.hidden=true;$('[data-action=transitions]',root).focus();}});
 new MutationObserver(()=>{if($('#shop-modal').hidden&&!root.hidden&&!transitionDialog.hidden)transitionPicker();}).observe($('#shop-modal'),{attributes:true,attributeFilter:['hidden']});
 function lockCurrent(products){if(!deck||!products&&checkAccess(deck,false))return;const missing=products||missingCosmetics(deck);finishText();void writeDraft();clearTimeout(saveTimer);clearTimeout(localTimer);stopPlay();transitionDialog.hidden=true;$('.pres-theme-dialog',root).hidden=true;menu.hidden=true;hideDeckExport();deck=null;deckId='';dirty=false;generation++;editor.hidden=true;library.hidden=false;title.hidden=true;$('[data-action=save]',root).hidden=true;status.textContent='';renderLibrary();showAccess(missing);}
-window.addEventListener('teachertiles:accountchange',()=>{if(!root.hidden){lockCurrent();renderLibrary();}});
+window.addEventListener('teachertiles:accountchange',()=>{if(!root.hidden){lockCurrent();renderLibrary();if(deck)renderCanvas();}});
 
 const api=async data=>{const expected=owner;if(!expected||uid()!==expected)throw Error('Sign in to use Presentations.');let response;try{response=await window.TeacherTilesAuth.call('presentations',data);}catch(error){if(error.details?.presentationLocked){if(deck)lockCurrent(error.details.requirements||error.details.products);else showAccess(error.details.requirements||error.details.products);}throw error;}if(uid()!==expected||owner!==expected)throw Error('Your account changed. Reopen Presentations.');return response.data;};
 const db=new Promise((resolve,reject)=>{const req=indexedDB.open('teachertiles-presentations',1);req.onupgradeneeded=()=>req.result.createObjectStore('drafts');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
@@ -191,9 +191,9 @@ function tileMenu(group=null){
  menu.replaceChildren();menu.setAttribute('aria-label',group?group+' tiles':'Choose a tile category');
  const back=button('',group?'Back to tile categories':'Back to add menu');back.setAttribute('role','menuitem');back.innerHTML=svg('<path d="m14 6-6 6 6 6"/>')+'<span>Back</span>';back.onclick=()=>{if(group)tileMenu();else{addMenu();menu.querySelector('[data-action=tile]').focus();}};menu.append(back);
  if(!group){
-  for(const name of ['Basic','Interactive']){const b=button('',name);b.setAttribute('role','menuitem');b.setAttribute('aria-haspopup','menu');b.dataset.tileCategory=name;b.innerHTML=(name==='Basic'?icons.tile:svg('<circle cx="12" cy="12" r="8"/><path d="m10 8 6 4-6 4Z"/>'))+'<span>'+name+'</span><span class="pres-menu-chevron" aria-hidden="true">›</span>';b.onclick=()=>tileMenu(name);menu.append(b);}
+  for(const name of ['Basic','Interactive']){const b=button('',name);b.setAttribute('role','menuitem');b.setAttribute('aria-haspopup','menu');b.dataset.tileCategory=name;if(name==='Interactive')b.dataset.connectPerk='';b.innerHTML=(name==='Basic'?icons.tile:svg('<circle cx="12" cy="12" r="8"/><path d="m10 8 6 4-6 4Z"/>'))+'<span>'+name+'</span><span class="pres-menu-chevron" aria-hidden="true">›</span>';b.onclick=()=>tileMenu(name);menu.append(b);}
  }else{
-  for(const [type,name]of modules.entries.filter(([type])=>(modules.interactiveTypes.includes(type)?'Interactive':'Basic')===group)){const b=button('',name);b.setAttribute('role','menuitem');b.innerHTML=modules.icon(type)+'<span>'+name+'</span>';b.dataset.tileChoice=type;b.onclick=()=>addObject('tile',{...modules.tileSize(type),tileType:type,tileState:{}});menu.append(b);}
+  for(const [type,name]of modules.entries.filter(([type])=>(modules.interactiveTypes.includes(type)?'Interactive':'Basic')===group)){const b=button('',name);b.setAttribute('role','menuitem');b.innerHTML=modules.icon(type)+'<span>'+name+'</span>';b.dataset.tileChoice=type;if(modules.interactiveTypes.includes(type))b.dataset.connectPerk='';b.onclick=()=>addObject('tile',{...modules.tileSize(type),tileType:type,tileState:{}});menu.append(b);}
  }
  menu.hidden=false;fitMenu();menu.querySelector('[data-tile-category],[data-tile-choice]')?.focus();
 }

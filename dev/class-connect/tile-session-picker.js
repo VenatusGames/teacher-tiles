@@ -6,6 +6,7 @@ const button=(label,action)=>{const el=make('button','cc-session-button',label);
 const isNormal=tile=>tile?.isConnected&&!window.ClassConnectPolicy&&!tile.dataset.presentationEmbedded;
 export async function openTileSession(tile,{getInfo,key,startData,connect}){
  if(!isNormal(tile))return;
+ if(window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.requireAccess())return;
  if(pendingAttachment(tile))await pendingAttachment(tile).catch(()=>{});
  if(!isNormal(tile))return;
  const presentation=!!tile._classConnectPresentation;

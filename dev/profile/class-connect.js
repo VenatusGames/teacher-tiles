@@ -29,6 +29,7 @@
     dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();});
     document.getElementById('profile-classes-panel')?.addEventListener('close',()=>dialog.close());
     window.addEventListener('teachertiles:authchange',()=>{if(dialog.open && uid!==(window.TeacherTilesAuth?.user?.uid || ''))dialog.close();});
+    window.addEventListener('teachertiles:accountchange',()=>{if(dialog.open&&!TeacherTilesConnectAccess.allowed())dialog.close();});
     window.addEventListener('teachertiles:classeschange',()=>{if(dialog.open){if(!current())dialog.close();else if(!busy)render();}});
     window.addEventListener('teachertiles:classconnectsync',event=>{
       if(!dialog.open || uid!==event.detail?.userId)return;
@@ -110,5 +111,5 @@
     await queueEncryptedClassSave(readClassRosters());if(localStorage.getItem(pbisDirtyStorageKey()))throw Error('Your class is still waiting to save. Check your connection and try again.');
     const roster=readClassRosters().find(c=>c.id===classId);if(!roster)throw Error('This class no longer exists.');
     return (await service().change('create',roster,existing?.revision||0)).link;
-  },open(classId){ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';linkView=false;error='';if(!dialog.open)dialog.showModal();refresh();}};
+  },open(classId){if(!TeacherTilesConnectAccess.requireAccess())return;ensureDialog();generation++;activeClass=classId;uid=window.TeacherTilesAuth?.user?.uid || '';entry=null;loaded=false;confirmation='';linkView=false;error='';if(!dialog.open)dialog.showModal();refresh();}};
 })();

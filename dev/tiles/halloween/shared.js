@@ -29,20 +29,28 @@
     art.innerHTML='<div class="pumpkin-face-faint">'+svg(face,m.dataset.tileSkin==='halloweentimer-ghost')+'</div><div class="pumpkin-face-filled">'+svg(face,m.dataset.tileSkin==='halloweentimer-ghost')+'</div>';
   }
   const hasAccess=()=>hasCosmeticSubscription()||(window.TeacherTilesAdminAccess?.developer===true&&window.TeacherTilesSandbox?.subscriptionEnabled===true);
-  function requestAccess(holiday='Halloween'){
+  function requestAccess(holiday='Halloween',message){
     let dialog=document.querySelector('.halloween-subscription-dialog');
-    if(dialog){dialog.showModal();return}
+    if(dialog?.open)return;
+    dialog?.remove();
     dialog=document.createElement('dialog');dialog.className='halloween-subscription-dialog';
     dialog.innerHTML='<svg class="halloween-crown" viewBox="0 0 48 48" aria-hidden="true"><use href="assets/ui/subscriber-crown.svg#crown"/></svg><h2>Subscription Required</h2><p>You need a TeacherTiles subscription to use Halloween tiles.</p><div><button type="button" data-back>Back</button><button type="button" class="primary" data-subscribe>Subscribe</button></div>';
-    dialog.querySelector('p').textContent=`You need a TeacherTiles subscription to use ${holiday} tiles.`;dialog.setAttribute('aria-label',holiday+' Tiles Subscription');document.body.append(dialog);
+    dialog.querySelector('p').textContent=message||`You need a TeacherTiles subscription to use ${holiday} tiles.`;dialog.setAttribute('aria-label',holiday+' Tiles Subscription');document.body.append(dialog);
     dialog.querySelector('[data-back]').onclick=()=>dialog.close();
-    dialog.querySelector('[data-subscribe]').onclick=()=>{dialog.close();window.TeacherTilesShop?.openMembership()};
+    dialog.querySelector('[data-subscribe]').onclick=async()=>{
+      dialog.close();
+      if(holiday==='ClassConnect'){
+        for(const modal of document.querySelectorAll('dialog.cs-modal[open],#profile-classes-panel[open]'))modal.close();
+        if(document.fullscreenElement)await document.exitFullscreen().catch(()=>{});
+      }
+      window.TeacherTilesShop?.openMembership();
+    };
     dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
   }
-  function guard(m,holiday='Halloween'){
+  function guard(m,holiday='Halloween',access=hasAccess,prompt=()=>requestAccess(holiday)){
     let locked=false;
-    const overlay=document.createElement('button');overlay.type='button';overlay.className='halloween-locked';overlay.innerHTML='<span>Subscription Required</span><small>Subscribe to use this Halloween tile</small>';overlay.querySelector('small').textContent=`Subscribe to use this ${holiday} tile`;overlay.onclick=()=>requestAccess(holiday);m.append(overlay);
-    function refresh(){const next=!hasAccess();overlay.hidden=!next;if(next&&!locked)m._deactivate?.();if(!next&&locked)m._reactivate?.();locked=next;for(const child of m.children)if(child!==overlay&&!child.matches('.module-delete,.module-drag-handle'))child.inert=next;}
+    const overlay=document.createElement('button');overlay.type='button';overlay.className='halloween-locked';overlay.innerHTML='<span>Subscription Required</span><small>Subscribe to use this Halloween tile</small>';overlay.querySelector('small').textContent=`Subscribe to use this ${holiday} tile`;overlay.onclick=prompt;m.append(overlay);
+    function refresh(){const next=!access();overlay.hidden=!next;if(next&&!locked)m._deactivate?.();if(!next&&locked)m._reactivate?.();locked=next;for(const child of m.children)if(child!==overlay&&!child.matches('.module-delete,.module-drag-handle'))child.inert=next;}
     window.addEventListener('teachertiles:accountchange',refresh);window.addEventListener('teachertiles:shopownershipchange',refresh);refresh();
     const cleanup=m._cleanup;m._cleanup=()=>{window.removeEventListener('teachertiles:accountchange',refresh);window.removeEventListener('teachertiles:shopownershipchange',refresh);cleanup?.()};
   }

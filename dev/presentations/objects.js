@@ -9,6 +9,9 @@ function icon(type){const source=document.querySelector('[data-module="'+type+'"
 function dispose(host){for(const entry of [...active])if(host.contains(entry.el)){entry.capture();entry.cleanup();active.delete(entry);}}
 new MutationObserver(()=>{for(const entry of [...active])if(!entry.el.isConnected||entry.el.closest('[hidden]')){entry.capture();entry.cleanup();active.delete(entry);}}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
 function mountTile(el,e,{live=false,editable=false,change=()=>{},checkpoint=()=>{},deselect=()=>{},commit=()=>{},remove=()=>{},read,upload,scope='',interaction=null,slideId='',error=console.warn}={}){
+ if(interactiveTypes.includes(e.tileType)&&live&&window.TeacherTilesConnectAccess&&!TeacherTilesConnectAccess.allowed()){
+  const lock=document.createElement('button');lock.type='button';lock.className='halloween-locked';lock.dataset.connectPerk='';lock.textContent='ClassConnect · Subscription Required';el.append(lock);return;
+ }
  if(interactiveTypes.includes(e.tileType)&&!editable&&(live||interaction)){const cleanup=window.TeacherTilesPresentationInteractive.mount(el,e,{interaction,slideId});active.add({el,capture(){},cleanup});return;}
  if(!live){const preview=document.createElement('canvas');preview.width=Math.max(1,e.w*2);preview.height=Math.max(1,e.h*2);preview.className='pres-tile-static-preview';const g=preview.getContext('2d');g.scale(2,2);drawTile(g,{...e,x:0,y:0});el.append(preview);return;}
  const template=document.getElementById(e.tileType+'-template');if(!template)return;
