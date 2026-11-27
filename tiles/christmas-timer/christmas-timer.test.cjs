@@ -77,6 +77,13 @@ const root=path.resolve(__dirname,'../..');
   for(const [skin,selected] of [['snowman','wink'],['cookies','gingerbread']]){
    await page.evaluate(skin=>{ornament=applyTileSkinToModule(ornament,'christmastimer-'+skin);},skin);
    assert.equal(await tile.getAttribute('data-tile-skin'),'christmastimer-'+skin);
+   if(skin==='snowman'){
+    for(const choice of ['classic','cheerful']){
+     await tile.evaluate((el,key)=>{el.dataset.shapeColor=key;TeacherTilesChristmasTimer.render(el)},choice);await page.clock.runFor(700);
+     assert(await tile.evaluate(el=>{const hat=el.querySelector('.snowman-hat').getBoundingClientRect(),head=el.querySelector('.christmas-outline').getBoundingClientRect(),clock=el.querySelector('.timer-readout').getBoundingClientRect();return hat.width/head.width>.85&&hat.bottom>head.top&&hat.top>clock.bottom}), 'Hats cover the head shoulder and stay below the clock');
+    }
+   }
+
    await wake();await tile.hover();await tile.locator('.timer-shape-color').click();
    assert.equal(await page.locator('.ornament-color-shelf:visible button').count(),6);
    await page.locator('[data-ornament-color="'+selected+'"]').click();

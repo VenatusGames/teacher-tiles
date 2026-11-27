@@ -50,3 +50,8 @@
 .hanukkah-static-preview .dreidel-result-popup{display:none!important}
 @keyframes dreidel-result-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.dreidel-result-popup{animation:none}}
+
+.dreidel-module .dreidel-colors-toggle{border-radius:10px;background:var(--surface-solid,var(--surface));box-shadow:0 1px 3px #0f172a0a;transition:opacity .15s,visibility .15s,background .15s,transform .15s}
+.dreidel-module .dreidel-colors-toggle:hover{background:var(--surface-soft);transform:translateY(-1px)}
+.dreidel-module .dreidel-colors-toggle:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.dreidel-module .dreidel-colors-toggle[aria-expanded=true]{background:#e5f1ff;border-color:#7fb0df;color:#185f9f}
