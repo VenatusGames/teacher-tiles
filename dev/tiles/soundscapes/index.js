@@ -17,7 +17,7 @@
     'soundscapes-vinyl':'vinyl'
   });
 
-  function setup(m){
+  function setup(m,{tracks=TRACKS,lazy=false,onTrackChange}={}){
     const audio=m.querySelector('.boombox-audio');
     if(!audio)return;
     const titles=[...m.querySelectorAll('.boombox-title')];
@@ -31,7 +31,7 @@
     const currents=[...m.querySelectorAll('.boombox-current')];
     const durations=[...m.querySelectorAll('.boombox-duration')];
     const style=SKIN_STYLE[m.dataset.tileSkin]||'compact';
-    let index=0,userVolume=55;
+    let index=0,userVolume=55,pendingSeek=0;
 
     m.querySelectorAll('.boombox-view').forEach(view=>view.hidden=!view.classList.contains(`boombox-view--${style}`));
 
@@ -63,7 +63,7 @@
       }
     };
     const syncTrack=()=>{
-      const track=TRACKS[index];
+      const track=tracks[index];
       each(titles,title=>{
         if(title.closest('.vinyl-label')){
           title.replaceChildren(...track.title.split(/\s+/).map(word=>{
@@ -82,15 +82,20 @@
       const pct=audio.duration?clamp(audio.currentTime/audio.duration*100,0,100):0;
       each(progresses,progress=>progress.style.width=`${pct}%`);
       each(currents,current=>current.textContent=fmt(audio.currentTime));
-      each(durations,duration=>duration.textContent=fmt(audio.duration));
+      each(durations,duration=>duration.textContent=fmt(Number.isFinite(audio.duration)?audio.duration:tracks[index].duration));
     };
     const load=(nextIndex,autoplay=false)=>{
-      index=(nextIndex+TRACKS.length)%TRACKS.length;
+      index=(nextIndex+tracks.length)%tracks.length;
+      pendingSeek=0;
       syncTrack();
-      audio.src=TRACKS[index].src;
+      if(lazy&&!autoplay){
+        audio.pause();audio.removeAttribute('src');
+      }else audio.src=tracks[index].src;
       audio.load();
       each(progresses,progress=>progress.style.width='0%');
       each(currents,current=>current.textContent='0:00');
+      each(durations,duration=>duration.textContent=fmt(tracks[index].duration));
+      onTrackChange?.(tracks[index],index);
       if(autoplay)audio.play().catch(()=>{});
       renderPlay();
     };
@@ -103,7 +108,12 @@
     };
     const onAudioPreferences=()=>applyVolume();
 
-    each(plays,button=>button.addEventListener('click',()=>{if(audio.paused)audio.play().catch(()=>{});else audio.pause()}));
+    each(plays,button=>button.addEventListener('click',()=>{
+      if(audio.paused){
+        if(!audio.getAttribute('src')){audio.src=tracks[index].src;audio.load();}
+        audio.play().catch(()=>{});
+      }else audio.pause();
+    }));
     each(prevs,button=>button.addEventListener('click',()=>load(index-1,!audio.paused)));
     each(nexts,button=>button.addEventListener('click',()=>load(index+1,!audio.paused)));
     each(skips,button=>button.addEventListener('click',()=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+15)}));
@@ -111,7 +121,13 @@
     window.addEventListener('teachertiles:audiopreferenceschange',onAudioPreferences);
     audio.addEventListener('play',renderPlay);
     audio.addEventListener('pause',renderPlay);
-    audio.addEventListener('loadedmetadata',syncProgress);
+    audio.addEventListener('loadedmetadata',()=>{
+      if(pendingSeek){
+        try{audio.currentTime=Math.min(pendingSeek,audio.duration||pendingSeek)}catch{}
+        pendingSeek=0;
+      }
+      syncProgress();
+    });
     audio.addEventListener('timeupdate',syncProgress);
 
     const resizeObserver=new ResizeObserver(()=>{
@@ -126,19 +142,14 @@
     m._boardGetState=()=>({
       track:index,
       volume:Math.round(userVolume),
-      currentTime:Number.isFinite(audio.currentTime)?audio.currentTime:0
+      currentTime:pendingSeek||(Number.isFinite(audio.currentTime)?audio.currentTime:0)
     });
     m._boardSetState=state=>{
       if(!state)return;
-      const track=Math.max(0,Math.min(TRACKS.length-1,Math.round(Number(state.track)||0)));
+      const track=Math.max(0,Math.min(tracks.length-1,Math.round(Number(state.track)||0)));
       setVolume(Number.isFinite(Number(state.volume))?Number(state.volume):55);
       load(track,false);
-      const restoreTime=Math.max(0,Number(state.currentTime)||0);
-      if(restoreTime){
-        audio.addEventListener('loadedmetadata',()=>{
-          try{audio.currentTime=Math.min(restoreTime,audio.duration||restoreTime)}catch{}
-        },{once:true});
-      }
+      pendingSeek=Math.max(0,Number(state.currentTime)||0);
     };
 
     const priorDeactivate=m._deactivate;
@@ -152,6 +163,12 @@
       audio.load();
       priorCleanup?.();
     };
+    return Object.freeze({
+      selectTrack(nextIndex){
+        if(Number.isInteger(nextIndex)&&nextIndex>=0&&nextIndex<tracks.length)load(nextIndex,!audio.paused);
+      },
+      getTrackIndex:()=>index
+    });
   }
 
   window.TeacherTilesSoundscapes=Object.freeze({setup});

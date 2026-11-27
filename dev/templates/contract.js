@@ -35,6 +35,11 @@
   const list=(v,max=100)=>Array.isArray(v)?v.slice(0,max):[];
   const ADVENT_EMOJIS=['🎁','⭐','❄️','🎄','🍪','🎨','📚','🎉'];
   const adapters={
+    christmascarols:s=>({
+      track:Math.round(num(s.track,0,11,0)),
+      volume:Math.round(num(s.volume,0,100,55)),
+      currentTime:0
+    }),
     livepolls:s=>({prompt:text(s.prompt,160),options:list(s.options,8).map(o=>text(o,80)),multiple:s.multiple===true}),
     moodcheckin:s=>({allowResponseChange:s.allowResponseChange!==false}),
     respond:s=>({prompt:text(s.prompt,160)}),

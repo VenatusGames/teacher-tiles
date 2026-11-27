@@ -1,0 +1,36 @@
+/* Compact Soundscapes player with a restrained holiday accent. */
+.module.christmas-carols-module{width:450px;height:210px;min-width:360px;min-height:195px;padding:28px 18px 37px;display:flex;align-items:center;justify-content:center}
+.christmas-carols-module:before{content:'';position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#2c7052 0 43%,#d7b96e 43% 47%,#ac3c4b 47% 100%);pointer-events:none}
+.christmas-carols-module .boombox-view--compact{grid-template-rows:minmax(66px,1fr) 4px 20px;column-gap:12px;row-gap:9px}
+.christmas-carols-module .boombox-view--compact .boombox-title{white-space:normal;text-overflow:clip;font-size:clamp(18px,5cqw,28px);line-height:1.14;letter-spacing:-.025em;padding-top:5px}
+.carol-kicker-row{display:flex;gap:7px;align-items:center}.carol-kicker-row .compact-kicker{margin:0}.carol-holly{width:25px;height:22px;flex:none}
+.carol-info{display:grid;place-items:center;flex:none;width:20px;height:20px;border:1px solid var(--border);border-radius:50%;padding:0;background:var(--surface-solid);color:var(--module-text);cursor:pointer;font:700 12px/1 Georgia,serif}
+.carol-info:hover{background:var(--surface-soft)}.carol-info:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.christmas-carols-module .compact-boombox-controls .boombox-play{background:#a83848!important;color:#fff!important}.christmas-carols-module .compact-boombox-controls .boombox-play:hover{background:#8b2b39!important}
+.christmas-carols-module .boombox-progress span{background:#a83848}.christmas-carols-module .boombox-volume{accent-color:#2c7052}
+.christmas-carols-module .boombox-volume-row{grid-template-columns:auto 58px auto}.christmas-carols-module .boombox-volume{width:58px}
+.carol-error{position:absolute;left:130px;right:12px;bottom:8px;margin:0;font-size:11px;color:#a42f42}.carol-error[hidden]{display:none}
+.carol-credits{width:min(390px,calc(100vw - 30px));max-height:85dvh;margin:auto;border:1px solid var(--border);border-radius:18px;padding:24px;background:var(--surface-solid);color:var(--text);box-shadow:0 18px 60px #17203335;font:14px/1.55 Inter,system-ui,sans-serif;overflow:auto;user-select:text}
+.carol-credits:not([open]){display:none}.carol-credits::backdrop{background:#15223655;backdrop-filter:blur(3px)}
+.carol-credits h2{font-size:20px;margin:0 30px 16px 0}.carol-credits p{margin:10px 0}.carol-credits a{color:#226c9d;text-decoration:underline}.carol-credits small{display:block;color:var(--muted);margin-top:16px}
+.carol-credits-close{position:absolute;right:12px;top:12px;width:30px;height:30px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);font:22px/1 sans-serif;display:grid;place-items:center;padding:0}
+.christmas-carols-module:fullscreen .boombox-view--compact{width:min(900px,90cqw);height:min(300px,75cqh)}
+.christmas-carols-module:fullscreen .boombox-title{font-size:clamp(24px,4cqw,46px)}
+.christmas-carols-module:fullscreen .compact-boombox-controls .boombox-play{width:62px;height:62px;font-size:22px}
+.christmas-carols-module:fullscreen .carol-info{width:26px;height:26px;font-size:15px}
+
+.christmas-carols-module .boombox-prev svg{width:17px;height:17px}
+
+.christmas-carols-module .carol-choose{display:flex;align-items:center;gap:8px;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:8px;font:inherit}
+.carol-choose .boombox-title{flex:1;min-width:0;text-align:left}.carol-choose>svg{flex:none;opacity:.55}
+.carol-choose:hover{background:color-mix(in srgb,currentColor 5%,transparent)!important}.carol-choose:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
+.carol-library{width:min(430px,calc(100vw - 30px));padding:20px;max-height:min(600px,85dvh)}
+.carol-song-list{display:grid;gap:5px}.carol-song{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:11px 12px;border:1px solid transparent;border-radius:10px;text-align:left;background:transparent;color:var(--text);font:inherit;cursor:pointer}
+.carol-song>span:first-child{min-width:0}.carol-song strong{display:block;font-size:14px;line-height:1.3}.carol-song small{margin:3px 0 0;font-size:11px;line-height:1.4}
+.carol-song:hover{background:var(--surface-soft)}.carol-song[aria-pressed="true"]{border-color:#bdd5c7;background:#edf6f0;color:#245d45}.carol-song-check{visibility:hidden;flex:none;color:#2c7052}.carol-song[aria-pressed="true"] .carol-song-check{visibility:visible}
+.carol-song:focus-visible{outline:2px solid #60a5fa;outline-offset:1px}
+.christmas-carols-module .boombox-time .boombox-skip{position:static;transform:none;width:28px;height:22px;padding:0;border:0;border-radius:7px;background:transparent;color:inherit;font:700 9px/1 Inter,system-ui,sans-serif}
+.christmas-carols-module .boombox-time .boombox-skip:hover{background:var(--surface-soft)}
+
+.carol-library[open]{display:flex;flex-direction:column;overflow:hidden}
+.carol-library h2{flex:none}.carol-library .carol-song-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px}
