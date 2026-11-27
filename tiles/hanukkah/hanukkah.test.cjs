@@ -26,6 +26,7 @@ const root = path.resolve(__dirname, '../..');
       window.menorah = createModule('menorah',p.x,p.y);
     });
     assert.equal(await page.locator('.hanukkah-heading:visible').count(),0);
+    assert.equal(await page.locator('.dreidel-result-popup:visible').count(),0);
     await page.locator('.dreidel-module').hover();
     await page.locator('.dreidel-colors-toggle').click();
     assert.equal(await page.locator('.dreidel-color-drawer:visible button').count(),8);
@@ -72,13 +73,23 @@ const root = path.resolve(__dirname, '../..');
         crypto.getRandomValues = random;
       },result);
       assert.equal(await page.locator('.dreidel-spin').getAttribute('aria-busy'),'true');
+      assert.equal(await page.locator('.dreidel-result-popup:visible').count(),0);
       await page.waitForFunction(() => !dreidel.querySelector('.dreidel-spin').hasAttribute('aria-busy'));
       assert.equal(await page.evaluate(() => dreidel._boardGetState().result),result);
+      assert.equal(await page.locator('.dreidel-result-popup:visible').count(),1);
       assert.equal(await page.locator('.dreidel-result').textContent(),['נ · Nun','ג · Gimel','ה · Hei','ש · Shin'][result]);
     }
+    if(process.env.HANUKKAH_RESULT_SCREENSHOT){await page.locator('.dreidel-result-popup').evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));await page.screenshot({path:process.env.HANUKKAH_RESULT_SCREENSHOT});}
+    await page.mouse.move(5,5);await page.mouse.move(10,10);
+    await page.locator('.dreidel-result-close').click();
+    assert.equal(await page.locator('.dreidel-result-popup:visible').count(),0);
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.locator('.dreidel-spin').click();
     assert.equal(await page.locator('.dreidel-spin').getAttribute('aria-busy'),null);
+    await page.locator('.dreidel-spin-again').click();
+    assert.equal(await page.locator('.dreidel-result-popup:visible').count(),1);
+    await page.mouse.click(1450,900);
+    assert.equal(await page.locator('.dreidel-result-popup:visible').count(),0);
     await page.emulateMedia({reducedMotion:'no-preference'});
     // Tile size changes and true fullscreen keep all candle hit areas on the tile.
     for (const size of [[340,260],[850,600]]) {
