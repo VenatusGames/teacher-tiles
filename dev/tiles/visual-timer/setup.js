@@ -69,7 +69,7 @@ function setupTimer(m){
   const colorButton=m.querySelector('.timer-shape-color');colorButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-label','Choose timer color');colorButton.title='Choose timer color';
   if(pumpkin){colorButton.title=ghost?'Choose Ghost Face':'Choose Pumpkin Face';colorButton.setAttribute('aria-label',ghost?'Choose Ghost Face':'Choose Pumpkin Face');colorButton.innerHTML=TeacherTilesHalloween.faceIcon(m.dataset.pumpkinFace,ghost);}
   if(pie){colorButton.title='Choose Pie';colorButton.setAttribute('aria-label','Choose Pie');colorButton.innerHTML=TeacherTilesThanksgiving.pieArt(m.dataset.pieFlavor);}
-  if(ornament){colorButton.title='Choose Ornament Color';colorButton.setAttribute('aria-label','Choose Ornament Color');colorButton.innerHTML=TeacherTilesChristmasTimer.icon(m.dataset.shapeColor);}
+  if(ornament){colorButton.title='Choose '+TeacherTilesChristmasTimer.label(m);colorButton.setAttribute('aria-label',colorButton.title);colorButton.innerHTML=TeacherTilesChristmasTimer.icon(m.dataset.shapeColor,TeacherTilesChristmasTimer.kind(m));}
   let shelfAnchor=shapeButton;
   let shapeFrame=0;
   const closeShapes=()=>{if(ornament&&shapeShelf.matches(':popover-open'))shapeShelf.hidePopover();shapeShelf.hidden=true;shapeButton.setAttribute('aria-expanded','false');colorButton.setAttribute('aria-expanded','false');cancelAnimationFrame(shapeFrame);m.classList.remove('has-shape-shelf-open')};
@@ -100,12 +100,12 @@ function setupTimer(m){
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
     if(ornament){
-      shapeShelf.classList.add('ornament-color-shelf');shapeShelf.setAttribute('aria-label','Ornament Colors');
-      for(const [id,option] of Object.entries(TeacherTilesChristmasTimer.colors)){
+      shapeShelf.classList.add('ornament-color-shelf');shapeShelf.setAttribute('aria-label',TeacherTilesChristmasTimer.label(m));
+      for(const [id,option] of Object.entries(TeacherTilesChristmasTimer.choices(m))){
         const button=document.createElement('button');button.type='button';button.dataset.ornamentColor=id;
         button.setAttribute('aria-label',option.name);button.setAttribute('aria-pressed',String(m.dataset.shapeColor===id));
-        button.innerHTML=TeacherTilesChristmasTimer.icon(id)+'<span>'+option.name+'</span>';
-        button.addEventListener('click',()=>{m.dataset.shapeColor=id;TeacherTilesChristmasTimer.render(m);colorButton.innerHTML=TeacherTilesChristmasTimer.icon(id);closeShapes();(m._presentationChanged||notifyBoardChanged)('ornament-color');});
+        button.innerHTML=TeacherTilesChristmasTimer.icon(id,TeacherTilesChristmasTimer.kind(m))+'<span>'+option.name+'</span>';
+        button.addEventListener('click',()=>{m.dataset.shapeColor=id;TeacherTilesChristmasTimer.render(m);colorButton.innerHTML=TeacherTilesChristmasTimer.icon(id,TeacherTilesChristmasTimer.kind(m));closeShapes();(m._presentationChanged||notifyBoardChanged)('ornament-color');});
         shapeShelf.append(button);
       }
       shapeShelf.hidden=false;shapeShelf.showPopover();colorButton.setAttribute('aria-expanded','true');m.classList.add('has-shape-shelf-open');positionShapes();return;
@@ -142,7 +142,7 @@ function setupTimer(m){
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
     const holiday=pumpkin||pie||ornament;
-    const artHeight=ornament?1.18:pie?1:ghost?.93:.94;
+    const artHeight=ornament?(TeacherTilesChristmasTimer.kind(m)==='ornament'?1.20:1):pie?1:ghost?.93:.94;
     const gap=ornament?20:pie?18:10;
     const shortest=Math.min(stageWidth,Math.max(0,holiday?(stageHeight-(readout?.offsetHeight||70)-gap)/artHeight:stageHeight));
     const breathingRoom=holiday?0:Math.max(10,Math.min(28,shortest*.055));
@@ -191,6 +191,7 @@ function setupTimer(m){
   const paintProgress=progress=>{
     fill.style.setProperty('--progress',`${progress*360}deg`);
     m.style.setProperty('--timer-progress-ratio',progress.toFixed(6));
+    if(ornament)TeacherTilesChristmasTimer.updateProgress(m,progress);
     liquid.style.height=(progress*100)+'%';liquid.style.opacity=progress>0?'1':'0';
   };
   const stopTimer=bindTimerControls(m,({progress,running,left,total})=>{

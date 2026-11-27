@@ -4,14 +4,13 @@
 .christmastimer-module .timer-stage{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px}
 .christmastimer-module .timer-stage>.timer-readout{position:relative!important;inset:auto!important;transform:none!important;margin:0!important;flex:none;min-width:0;padding:6px 18px;width:max-content;max-width:95%;border-radius:999px;z-index:2}
 .christmastimer-module .timer-stage>.timer-readout .timer-remaining{font-size:clamp(26px,10.3cqw,54px)!important;line-height:1.05}
-.christmastimer-module .timer-visual{flex:none;margin-top:calc(var(--timer-visual-size,240px)*.18)}
-.ornament-timer-art,.ornament-base,.ornament-filled,.ornament-outline{position:absolute;inset:0;pointer-events:none}
-.ornament-timer-art{filter:drop-shadow(0 7px 5px #1b2c4520)}
-.ornament-base{filter:saturate(.5);opacity:.27}
-.ornament-filled{mask-image:conic-gradient(from -90deg,#000 calc(var(--timer-progress-ratio,0)*360deg),transparent 0)}
+.christmastimer-module .timer-visual{flex:none;margin-top:calc(var(--timer-visual-size,240px)*.20);transition:width .2s cubic-bezier(.2,.8,.2,1),height .2s cubic-bezier(.2,.8,.2,1),margin-top .2s cubic-bezier(.2,.8,.2,1)}
+.ornament-timer-art{position:absolute;inset:0;pointer-events:none;filter:drop-shadow(0 7px 5px #1b2c4520)}
+.christmastimer-module[data-christmas-art="ornament"] .ornament-timer-art{top:-20%;height:120%;bottom:auto}
 .ornament-timer-art svg,.ornament-mini svg{display:block;width:100%;height:100%;overflow:visible}
-.ornament-cap{position:absolute;left:0;right:0;top:-14%;height:24%}
-.ornament-mini{display:block;width:46px;height:52.44px;margin:0 auto;flex:none}
+.ornament-mini{display:block;width:44px;height:52.8px;margin:0 auto;flex:none}
+.ornament-mini--round{height:44px}
+.christmastimer-module:not([data-christmas-art="ornament"]) .timer-visual{margin-top:0}
 .christmastimer-module .timer-shape-color{display:grid;place-items:center;padding:5px!important}
 .christmastimer-module .timer-shape-color .ornament-mini{width:21px;height:24px;margin:0}
 .ornament-color-shelf button{min-height:86px;justify-content:center}
@@ -21,3 +20,5 @@
 .christmastimer-module.is-running .timer-shape-svg{animation:none}
 .christmastimer-module.is-running .timer-visual{animation:timerVisualBreath 2.8s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){.christmastimer-module.is-running .timer-visual{animation:none}}
+
+.shop-product__preview--christmas-timer>img{display:block;width:84%;height:84%;object-fit:contain;margin:auto}

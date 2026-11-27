@@ -1,4 +1,5 @@
-import '../tiles/christmas-timer/index.js?v=20261127';
+import '../tiles/christmas-timer/art.js?v=christmas-skins-1';
+import '../tiles/christmas-timer/index.js?v=christmas-skins-1';
 import '../tiles/hanukkah/index.js?v=20261126';
 import '../tiles/racer/visuals.js?v=20261028-fanned-standees';
 import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';

@@ -12,6 +12,8 @@
     "pumpkinpatch"
   ],
   "skins": {
+    "christmastimer-snowman": "tile-skin-christmastimer-snowman",
+    "christmastimer-cookies": "tile-skin-christmastimer-cookies",
     "ruler-clear": "tile-skin-ruler-clear",
     "ruler-metal": "tile-skin-ruler-metal",
     "ruler-rainbow": "tile-skin-ruler-rainbow",
