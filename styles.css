@@ -19426,7 +19426,7 @@ body{position:fixed;inset:0;overflow:clip}
 .tenframes-module .manipulative-trash{pointer-events:auto}
 .module.counters-module{box-sizing:border-box;width:520px;height:350px;min-width:280px;min-height:235px;padding:26px 14px 16px;display:flex;flex-direction:column;gap:10px}
 .counter-title{margin:0;text-align:center;font:700 20px/1.2 var(--module-font,Inter,sans-serif)}
-.counter-stage{position:relative;flex:1;min-height:0;overflow:hidden;border:1px solid #8799ac45;border-radius:12px;background:radial-gradient(#8799ac40 .85px,transparent 1px) 0 0 / 16px 16px}
+.counter-stage{position:relative;flex:1;min-height:0;overflow:hidden;border:1px dashed color-mix(in srgb,var(--module-text,#17191d) 18%,transparent);border-radius:17px;background:color-mix(in srgb,var(--module-text,#17191d) 2%,transparent)}
 .counter-palette{display:flex;justify-content:center;gap:10px}
 .counter-pieces{position:absolute;inset:20px;pointer-events:none}
 .counters-module .counter-disc,.counter-disc.counter-drag-preview{box-sizing:border-box;width:38px;height:38px;border-radius:50%;padding:0;border:2px solid color-mix(in srgb,var(--counter) 78%,black);background:var(--counter);box-shadow:inset 0 -4px 0 #0002,0 3px 5px #0002;cursor:grab;touch-action:none;pointer-events:auto}
