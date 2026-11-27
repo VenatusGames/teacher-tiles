@@ -42,6 +42,8 @@
     visualdirections:s=>({cards:list(s.cards,20).filter(c=>c&&typeof c==='object').map(c=>({title:text(c.title,80),image:image(c.image),color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#4285d4'})),mode:['numbers','ordinals','sequence'].includes(s.mode)?s.mode:'numbers',layout:['vertical','horizontal','grid'].includes(s.layout)?s.layout:'grid'}),
     halloweentimer:()=>({}),
     thanksgivingtimer:()=>({}),
+    dreidel:s=>({result:Number.isInteger(s.result)&&s.result>=0&&s.result<4?s.result:0}),
+    menorah:s=>({candles:Array.from({length:9},(_,i)=>s.candles?.[i]===true)}),
     thankfulturkey:s=>({title:text(s.title||'Thankful Turkey',200),feathers:list(s.feathers,30).filter(v=>typeof v==='string').map(v=>text(v,60).trim()).filter(Boolean)}),
     cookafeast:s=>({title:text(s.title,200),orientation:'horizontal',barStyle:token(s.barStyle),running:false,completed:false,dish:''}),
     pumpkincarving:s=>({cuts:list(s.cuts,100).filter(p=>typeof p==='string'&&p.length<=24000&&/^[MLAZamlz0-9eE.,\s+-]+$/.test(p))}),
