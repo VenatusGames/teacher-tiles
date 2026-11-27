@@ -13,8 +13,44 @@ function setupCalculator(m){
 
   const evaluate=()=>{
     if(!expression)return 0;
-    if(!/^[0-9+\-*/().\s]+$/.test(expression))throw new Error('Invalid expression');
-    const result=Function(`"use strict";return (${expression})`)();
+    const tokens=expression.match(/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|[^\s]/gi)||[];
+    let position=0;
+
+    function factor(){
+      const token=tokens[position++];
+      if(token==='-')return -factor();
+      if(token==='+')return factor();
+      if(token==='('){
+        const value=sum();
+        if(tokens[position++]!==')')throw new Error('Missing closing parenthesis');
+        return value;
+      }
+      if(!token||!/^([0-9]|\.)/.test(token))throw new Error('Expected a number');
+      return Number(token);
+    }
+
+    function product(){
+      let value=factor();
+      while(tokens[position]==='*'||tokens[position]==='/'){
+        const operator=tokens[position++];
+        const right=factor();
+        value=operator==='*'?value*right:value/right;
+      }
+      return value;
+    }
+
+    function sum(){
+      let value=product();
+      while(tokens[position]==='+'||tokens[position]==='-'){
+        const operator=tokens[position++];
+        const right=product();
+        value=operator==='+'?value+right:value-right;
+      }
+      return value;
+    }
+
+    const result=sum();
+    if(position!==tokens.length)throw new Error('Unexpected input');
     if(typeof result!=='number'||!Number.isFinite(result))throw new Error('Invalid result');
     return Math.round((result+Number.EPSILON)*1e12)/1e12;
   };
