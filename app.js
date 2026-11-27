@@ -907,8 +907,8 @@ menu.addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(!
   closeMenu()});
 
 const TILE_SKIN_CATALOG=Object.freeze([
-  Object.freeze({"id": "christmastimer-snowman", "productId": "tile-skin-christmastimer-snowman", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Snowman", "description": "Six cheerful snowman faces with cozy hats and frosty details.", "tags": "christmas holiday timer snowman", "released": 88, "preview": "tiles/christmas-timer/assets/snowman-preview.svg?v=3"}),
-  Object.freeze({"id": "christmastimer-cookies", "productId": "tile-skin-christmastimer-cookies", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Christmas Cookies", "description": "Six iced Christmas cookies, including a gingerbread friend.", "tags": "christmas holiday timer christmas cookies", "released": 89, "preview": "tiles/christmas-timer/assets/cookies-preview.svg?v=3"}),
+  Object.freeze({"id": "christmastimer-snowman", "productId": "tile-skin-christmastimer-snowman", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Snowman", "description": "Six cheerful snowman faces with cozy hats and frosty details.", "tags": "christmas holiday timer snowman", "released": 88, "preview": "tiles/christmas-timer/assets/snowman-preview.svg?v=4"}),
+  Object.freeze({"id": "christmastimer-cookies", "productId": "tile-skin-christmastimer-cookies", "tileType": "christmastimer", "tileLabel": "Christmas Timer", "name": "Christmas Cookies", "description": "Six iced Christmas cookies, including a gingerbread friend.", "tags": "christmas holiday timer christmas cookies", "released": 89, "preview": "tiles/christmas-timer/assets/cookies-preview.svg?v=4"}),
   Object.freeze({"id":"ruler-clear","productId":"tile-skin-ruler-clear","tileType":"ruler","tileLabel":"Ruler","name":"No Background","description":"The classic ruler floats directly on your board without a tile background.","tags":"ruler measurement No Background","released":85,"preview":"tiles/ruler/assets/clear-preview.svg"}),
   Object.freeze({"id":"ruler-metal","productId":"tile-skin-ruler-metal","tileType":"ruler","tileLabel":"Ruler","name":"Brushed Metal","description":"A silver ruler with brushed metal texture and crisp dark measurement marks.","tags":"ruler measurement Brushed Metal","released":86,"preview":"tiles/ruler/assets/metal-preview.svg"}),
   Object.freeze({"id":"ruler-rainbow","productId":"tile-skin-ruler-rainbow","tileType":"ruler","tileLabel":"Ruler","name":"Rainbow Acrylic","description":"A pastel rainbow ruler with a glossy acrylic finish and clear measurement marks.","tags":"ruler measurement Rainbow Acrylic","released":87,"preview":"tiles/ruler/assets/rainbow-preview.svg"}),
@@ -1371,7 +1371,7 @@ const EDITABLE_TILE_HEADINGS={
   noise:'.nm-heading',
   squishy:'.squishy-heading',
   countdown:'.countdown-heading',
-  tenssticks:'.tens-heading',
+  tenssticks:'.tens-heading',counters:'.counter-title',
   lavalamp:'.lava-heading',
   pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',trickortreat:'.halloween-heading',
   adventcalendar:'.advent-heading',dreidel:'.hanukkah-heading',menorah:'.hanukkah-heading',

@@ -102,6 +102,7 @@ const root=path.resolve(__dirname,'../..');
    await page.evaluate(()=>ornament.requestFullscreen());await page.clock.runFor(300);
    await wake();await tile.hover();await tile.locator('.timer-shape-color').click();
    assert.equal(await page.locator('.ornament-color-shelf:popover-open button').count(),6);
+   if(skin==='cookies')assert(await page.locator('.ornament-color-shelf button').evaluateAll(buttons=>buttons.every(button=>{const r=button.getBoundingClientRect(),label=button.lastElementChild.getBoundingClientRect();return Math.abs(r.width-r.height)<2&&label.left>=r.left&&label.right<=r.right&&label.bottom<=r.bottom})), 'Cookie options are square and contain their labels');
    if(process.env.CHRISTMAS_SKINS_SCREENSHOT)await page.locator('.ornament-color-shelf').screenshot({path:process.env.CHRISTMAS_SKINS_SCREENSHOT.replace('.png','-'+skin+'-drawer.png')});
    await page.locator('[data-ornament-color="'+selected+'"]').click();
    await page.evaluate(()=>document.exitFullscreen());await page.clock.runFor(300);

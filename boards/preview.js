@@ -1,6 +1,6 @@
 import '../tiles/advent-calendar/index.js?v=2';
-import '../tiles/christmas-timer/art.js?v=christmas-skins-3';
-import '../tiles/christmas-timer/index.js?v=christmas-skins-3';
+import '../tiles/christmas-timer/art.js?v=christmas-skins-4';
+import '../tiles/christmas-timer/index.js?v=christmas-skins-4';
 import '../tiles/hanukkah/index.js?v=20261126';
 import '../tiles/racer/visuals.js?v=20261028-fanned-standees';
 import '../tiles/ruler/visuals.js?v=20261026-ruler-skins';
@@ -34,7 +34,7 @@ const EDITABLE_TILE_HEADINGS={
   sentenceexpansion:'.sentence-heading',
   reminders:'.reminders-heading',
   glitterjar:'.glitter-jar-heading',
-  tenssticks:'.tens-heading',
+  tenssticks:'.tens-heading',counters:'.counter-title',
   lavalamp:'.lava-heading',
   pumpkincarving:'.halloween-heading',pumpkinpatch:'.halloween-heading',
   piano:'.widget-title',

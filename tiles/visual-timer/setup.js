@@ -100,7 +100,7 @@ function setupTimer(m){
     if(!shapeShelf.hidden&&shelfAnchor===colorButton){closeShapes();return}
     closeShapes();shelfAnchor=colorButton;shapeShelf.replaceChildren();shapeShelf.setAttribute('aria-label','Timer color');
     if(ornament){
-      shapeShelf.classList.add('ornament-color-shelf');shapeShelf.setAttribute('aria-label',TeacherTilesChristmasTimer.label(m));
+      shapeShelf.classList.add('ornament-color-shelf');shapeShelf.dataset.christmasArt=TeacherTilesChristmasTimer.kind(m);shapeShelf.setAttribute('aria-label',TeacherTilesChristmasTimer.label(m));
       for(const [id,option] of Object.entries(TeacherTilesChristmasTimer.choices(m))){
         const button=document.createElement('button');button.type='button';button.dataset.ornamentColor=id;
         button.setAttribute('aria-label',option.name);button.setAttribute('aria-pressed',String(m.dataset.shapeColor===id));
