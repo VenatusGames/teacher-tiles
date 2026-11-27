@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
-const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['respond','counters','grapher','wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
+const deployed=process.env.TT_TEST_DEPLOYED==='1',base='https://tiles.test/'+(deployed?'dev/':''),root=process.cwd(),room='a'.repeat(64),token='t'.repeat(43),types=['respond','counters','calculator','grapher','wordcloud','sticky','timer','dice','timestables','highfrequency','progressbar','halloweentimer'];
 const interactions=require('../../teachertiles-functions-dev/functions/firebase-service/class-connect-board-interactions');
 let cloud=null,clock=Date.now();
 let status=null,snapshot=null,allowedTypes=[],calls=[],revision=0,gateRequests=0,portalRequests=0;
@@ -89,6 +89,23 @@ if(deployed){
  await student.setViewportSize({width:900,height:650});
  await student.waitForFunction(()=>{const f=document.querySelector('iframe');return f.contentWindow.innerWidth===1400&&f.getBoundingClientRect().width<=901});
  await student.setViewportSize({width:1400,height:960});
+ // Both roles run calculator input inside the session frame's script policy.
+ await teacherFrame.evaluate(()=>{
+  const camera=TeacherTilesBoard.capture().camera;
+  createModule('calculator',(innerWidth/2-camera.x)/camera.scale,(innerHeight/2-camera.y)/camera.scale);
+ });
+ const teacherCalc=teacherFrame.locator('.module[data-type="calculator"]');
+ const studentCalc=studentFrame.locator('.module[data-type="calculator"]');
+ await studentCalc.waitFor();
+ for(const calc of [teacherCalc,studentCalc]){
+  await calc.locator('[data-calc-action=clear]').click();
+  for(const key of ['2','+','3','*','4']) await calc.locator('[data-calc-value="'+key+'"]').click();
+  assert.equal(await calc.locator('.calculator-value').innerText(),'14');
+  await calc.locator('[data-calc-action=equals]').click();
+  assert.equal(await calc.locator('.calculator-value').innerText(),'14');
+ }
+ await teacherFrame.evaluate(()=>deleteModules([document.querySelector('.module[data-type="calculator"]')]));
+ await studentCalc.waitFor({state:'detached'});
  await teacherFrame.evaluate(()=>createModule('grapher',700,500));
  await studentFrame.locator('.grapher-function').waitFor({state:'attached',timeout:15000});
  assert.equal(await studentFrame.locator('.grapher-error').textContent(),'');
