@@ -1,5 +1,5 @@
-.module.christmas-tree-module{width:460px;height:590px;min-width:310px;min-height:390px;display:flex;flex-direction:column;padding:25px 18px 42px;container-type:size;background:var(--module-bg,#fff);color:var(--module-text,#243730);font-family:var(--module-font,Inter,system-ui,sans-serif)}
-.ct-scene{flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}.ct-art{height:100%;width:100%;transform:scale(var(--tree-growth,.88));transform-origin:50% 95%;transition:transform 1s linear;overflow:visible;pointer-events:none}
+.module.christmas-tree-module{width:460px;height:590px;min-width:310px;min-height:390px;display:flex;flex-direction:column;padding:12px 10px 42px;container-type:size;background:var(--module-bg,#fff);color:var(--module-text,#243730);font-family:var(--module-font,Inter,system-ui,sans-serif)}
+.ct-scene{position:relative;flex:1;min-height:0;display:block;overflow:hidden}.christmas-tree-module .ct-art{position:absolute;inset:0;height:100%;max-height:100%;width:100%;transform:scale(var(--tree-growth,.97));transform-origin:50% 95%;transition:transform 1s linear;overflow:visible;pointer-events:none}
 .ct-decoration{opacity:0;transform-box:fill-box;transform-origin:center;pointer-events:none}.ct-decoration.is-visible{opacity:1}.ct-pop.is-visible{animation:ct-pop .6s cubic-bezier(.22,1.4,.4,1) both}.ct-spark{opacity:0}.ct-pop .ct-spark{animation:ct-spark .7s ease-out both}
 @keyframes ct-pop{0%{opacity:0;transform:scale(.3)}65%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}@keyframes ct-spark{20%{opacity:1}100%{opacity:0}}
 .ct-readout{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(11px,2.8cqw,18px);padding:4px}.ct-status{opacity:.7}.ct-time{font-variant-numeric:tabular-nums;font-weight:800}.ct-progress{height:4px;background:#6686731a;border-radius:10px;overflow:hidden}.ct-progress span{display:block;height:100%;background:#c5a24f;transition:width .2s linear}
@@ -9,5 +9,13 @@
 body.is-board-idle .module .holiday-tile-actions{max-height:0;opacity:0;padding-top:0;pointer-events:none}
 .holiday-tile-actions button,.sl-action{height:32px;border:1px solid var(--border);border-radius:9px;background:var(--surface-solid,#fff);color:var(--text);padding:0 12px;box-shadow:0 1px 3px #0f172a0a;font:700 12px/1.2 Inter,system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}.holiday-tile-actions button:hover,.sl-action:hover{background:var(--surface-soft)}.holiday-tile-actions button svg,.sl-action svg{width:17px;height:17px}.ct-reset{width:32px;padding:0!important}.ct-start{min-width:90px}
 .ct-settings{display:grid;gap:13px;margin-top:12px}.ct-settings label{display:grid;gap:6px;font:600 12px/1.4 Inter,system-ui,sans-serif}.ct-settings input[type=number],.ct-settings select{width:100%;min-height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface-solid);color:var(--text);padding:6px 9px;font:inherit}.ct-settings input[type=range]{accent-color:#3b8664;width:100%}.ct-settings label[hidden]{display:none}.ct-settings output{font-size:11px;opacity:.7}
-.christmas-tree-module:fullscreen{padding:25px 8vw 44px}.christmas-tree-module:fullscreen .ct-scene{max-height:85vh}.christmas-tree-module:fullscreen .ct-readout{font-size:20px}
+.christmas-tree-module:fullscreen{padding:25px 8vw 44px}.christmas-tree-module:fullscreen .ct-scene{max-height:none}.christmas-tree-module:fullscreen .ct-readout{font-size:20px}
 @media(prefers-reduced-motion:reduce){.ct-pop.is-visible,.ct-pop .ct-spark{animation:none}.ct-art,.holiday-tile-actions{transition:none}}
+
+/* Strings draw along their curves; only ornaments and the topper use the pop. */
+.ct-flow.is-visible .ct-tinsel-reveal{animation:ct-string-flow 1.15s cubic-bezier(.25,.55,.35,1) both}
+.ct-light-sequence.is-visible .ct-light-wire{animation:ct-string-flow .62s linear both}
+.ct-light-sequence.is-visible .ct-bulb{transform-box:fill-box;transform-origin:center;animation:ct-light-on .24s ease-out var(--light-delay,0ms) both}
+@keyframes ct-string-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes ct-light-on{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.ct-flow.is-visible .ct-tinsel-reveal,.ct-light-sequence.is-visible .ct-light-wire,.ct-light-sequence.is-visible .ct-bulb{animation:none}}

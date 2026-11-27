@@ -9,11 +9,10 @@
     const creditContent=credits.querySelector('.carol-credit-content');
     const library=tile.querySelector('.carol-library');
     const choose=tile.querySelector('.carol-choose');
-    const songList=library.querySelector('.carol-song-list');
     const error=tile.querySelector('.carol-error');
-    const choices=[];
+    let selector;
     const closeCredits=bindDialog(credits,info);
-    const closeLibrary=bindDialog(library,choose);
+    const closeLibrary=()=>selector?.close();
 
     function changed(){
       (tile._presentationChanged||window.notifyBoardChanged)?.('carol-track');
@@ -33,25 +32,11 @@
       note.textContent='Recording used without edits'+(track.id.startsWith('USUAN')?' · ISRC: '+track.id:'');
       creditContent.replaceChildren(title,author,license,source,note);
       choose.setAttribute('aria-label','Choose a Carol: '+track.title);
-      choices.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
+      selector?.sync(index);
     }
 
     const player=TeacherTilesSoundscapes.setup(tile,{tracks,lazy:true,onTrackChange:syncTrack});
-    // Display alphabetically while retaining stable storage indices for existing boards.
-    tracks.map((track,index)=>({track,index})).sort((a,b)=>a.track.title.localeCompare(b.track.title)).forEach(({track,index})=>{
-      const button=document.createElement('button');button.type='button';button.className='carol-song';
-      const text=document.createElement('span');
-      const title=document.createElement('strong');title.textContent=track.title;
-      const artist=document.createElement('small');artist.textContent=track.artist;
-      text.append(title,artist);
-      const check=document.createElement('span');check.className='carol-song-check';check.textContent='✓';check.setAttribute('aria-hidden','true');
-      button.append(text,check);button.setAttribute('aria-pressed',String(index===player.getTrackIndex()));
-      button.addEventListener('click',()=>{
-        if(index!==player.getTrackIndex()){player.selectTrack(index);changed();}
-        closeLibrary();
-      });
-      choices[index]=button;songList.append(button);
-    });
+    selector=TeacherTilesSoundscapes.attachSelector({tile,tracks,triggers:[choose],dialog:library,selectTrack:player.selectTrack,getTrackIndex:player.getTrackIndex});
     tile.querySelectorAll('.boombox-prev,.boombox-next').forEach(button=>button.addEventListener('click',changed));
     audio.addEventListener('error',()=>{error.hidden=false;});
     audio.addEventListener('playing',()=>{error.hidden=true;});

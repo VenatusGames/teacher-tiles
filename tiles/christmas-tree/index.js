@@ -11,14 +11,21 @@
   function random(seed){let n=seed;return()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};}
   function decorations(seed){
     const rng=random(seed),items=[];
-    const branches=[{y:330,left:450,right:610,count:3},{y:485,left:380,right:660,count:4},{y:640,left:350,right:700,count:5},{y:790,left:225,right:785,count:6},{y:885,left:370,right:740,count:4}];
+    // Reserve distinct bands for ornaments, lights, and tinsel instead of stacking them.
+    const branches=[{y:235,left:525,right:525,count:1},{y:355,left:455,right:610,count:3},{y:550,left:440,right:620,count:3},{y:750,left:315,right:735,count:5},{y:890,left:370,right:735,count:4}];
     for(const branch of branches){
-      for(let col=0;col<branch.count;col++)items.push({kind:'ornament',x:branch.left+col*(branch.right-branch.left)/(branch.count-1)+(rng()-.5)*14,y:branch.y+(rng()-.5)*14,color:Math.floor(rng()*colors.length),size:95+rng()*14});
+      for(let col=0;col<branch.count;col++)items.push({kind:'ornament',x:branch.left+col*(branch.right-branch.left)/Math.max(1,branch.count-1)+(rng()-.5)*12,y:branch.y+(rng()-.5)*8,color:Math.floor(rng()*colors.length),size:76+rng()*10});
     }
-    const garlands=[{y:310,width:80},{y:465,width:135},{y:615,width:170},{y:765,width:260}];
-    for(const {y,width} of garlands){
-      items.push({kind:'tinsel',x:525-width,y,width,color:Math.floor(rng()*colors.length)});
-      for(let i=0;i<7;i++)items.push({kind:'light',x:525-width+2*width*i/6,y:y+Math.sin(i/6*Math.PI)*44,color:Math.floor(rng()*colors.length)});
+    const strings=[
+      {kind:'lights',y:285,width:55,sag:20},
+      {kind:'tinsel',y:415,width:90,sag:24},
+      {kind:'lights',y:480,width:145,sag:20},
+      {kind:'tinsel',y:615,width:165,sag:26},
+      {kind:'lights',y:680,width:185,sag:22},
+      {kind:'tinsel',y:810,width:285,sag:20}
+    ];
+    for(const string of strings){
+      items.push({...string,x:525-string.width,color:Math.floor(rng()*colors.length),...(string.kind==='lights'?{colors:Array.from({length:string.width<100?5:9},()=>Math.floor(rng()*colors.length))}:{})});
     }
     // Each round is varied, but the topper is always the final reveal.
     for(let i=items.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
@@ -26,22 +33,37 @@
   }
   function paint(tile,state){
     const id='tree-'+(++instance),items=decorations(state.seed),svg=tile.querySelector('.ct-art');
+    svg.setAttribute('viewBox','112 25 776 1000');
     const filters=colors.map((hex,i)=>{const rgb=[1,3,5].map(offset=>parseInt(hex.slice(offset,offset+2),16)/255);return `<filter id="${id}-${i}" color-interpolation-filters="sRGB"><feColorMatrix values="${rgb[0]} 0 0 0 0 0 ${rgb[1]} 0 0 0 0 0 ${rgb[2]} 0 0 0 0 0 1 0"/></filter>`}).join('');
     svg.innerHTML=`<defs>${filters}<clipPath id="${id}-ball"><rect x="0" y="34" width="100" height="66"/></clipPath></defs><image href="${assets}tree.png" x="50" y="70" width="900" height="1000"/>`;
-    for(const item of items){
-      const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.classList.add('ct-decoration');
+    // Reveal order is independent of paint order: strings always stay behind ornaments.
+    const rear=document.createElementNS('http://www.w3.org/2000/svg','g');rear.classList.add('ct-strings-layer');
+    const front=document.createElementNS('http://www.w3.org/2000/svg','g');front.classList.add('ct-ornaments-layer');
+    svg.append(rear,front);
+    const nodes=[];
+    for(const [index,item] of items.entries()){
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.classList.add('ct-decoration');g.dataset.kind=item.kind;
       const color=colors[item.color];
       if(item.kind==='ornament'){
         g.innerHTML=`<svg x="${item.x-item.size/2}" y="${item.y-item.size/2}" width="${item.size}" height="${item.size}" viewBox="0 0 100 100"><image href="${assets}ornament.png" width="100" height="100"/><g clip-path="url(#${id}-ball)" filter="url(#${id}-${item.color})"><image href="${assets}ornament.png" width="100" height="100"/></g></svg>`;
       }else if(item.kind==='tinsel'){
-        const d=`M${item.x} ${item.y}Q525 ${item.y+88} ${item.x+item.width*2} ${item.y}`;
-        g.innerHTML=`<path d="${d}" fill="none" stroke="#fff0c5" stroke-width="14" stroke-linecap="round" stroke-dasharray="1 8"/><path d="${d}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>`;
-      }else if(item.kind==='light')g.innerHTML=`<circle cx="${item.x}" cy="${item.y}" r="16" fill="${color}" opacity=".18"/><ellipse cx="${item.x}" cy="${item.y}" rx="7" ry="10" fill="${color}"/><circle cx="${item.x-2}" cy="${item.y-3}" r="3" fill="#fff8db"/>`;
+        const d=`M${item.x} ${item.y}Q525 ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
+        const maskId=`${id}-tinsel-${index}`;
+        g.innerHTML=`<defs><mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1100"><path class="ct-tinsel-reveal" d="${d}" pathLength="1" fill="none" stroke="white" stroke-width="24" stroke-linecap="round" stroke-dasharray="1"/></mask></defs><g mask="url(#${maskId})"><path d="${d}" fill="none" stroke="#fff0c5" stroke-width="14" stroke-linecap="round" stroke-dasharray="1 8"/><path d="${d}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff6dd" stroke-opacity=".6" stroke-width="3" stroke-dasharray="1 11"/></g>`;
+      }else if(item.kind==='lights'){
+        const d=`M${item.x} ${item.y}Q525 ${item.y+item.sag*2} ${item.x+item.width*2} ${item.y}`;
+        g.innerHTML=`<path class="ct-light-wire" d="${d}" pathLength="1" fill="none" stroke="#c4d4b2" stroke-opacity=".42" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1"/>`;
+        for(let i=0;i<item.colors.length;i++){
+          const t=i/(item.colors.length-1),x=item.x+item.width*2*t,y=item.y+4*item.sag*t*(1-t),color=colors[item.colors[i]];
+          g.innerHTML+=`<g class="ct-bulb" style="--light-delay:${i*75}ms"><path d="M${x} ${y}v6" stroke="#b4c6a7" stroke-opacity=".6" stroke-width="2"/><circle cx="${x}" cy="${y+11}" r="15" fill="${color}" opacity=".2"/><ellipse cx="${x}" cy="${y+11}" rx="6" ry="9" fill="${color}"/><ellipse cx="${x-1.5}" cy="${y+8}" rx="2" ry="3" fill="#fff8db"/></g>`;
+        }
+      }
       else g.innerHTML=`<image href="${assets}star.png" x="435" y="24" width="180" height="180"/>`;
-      if(item.kind!=='tinsel')g.innerHTML+=`<path class="ct-spark" d="M${item.x-28} ${item.y-24}v-16m-8 8h16M${item.x+31} ${item.y+10}v-12m-6 6h12" fill="none" stroke="#ffe8a3" stroke-width="4" stroke-linecap="round"/>`;
-      svg.append(g);
+      if(item.kind==='ornament'||item.kind==='star')g.innerHTML+=`<path class="ct-spark" d="M${item.x-28} ${item.y-24}v-16m-8 8h16M${item.x+31} ${item.y+10}v-12m-6 6h12" fill="none" stroke="#ffe8a3" stroke-width="4" stroke-linecap="round"/>`;
+      (item.kind==='tinsel'||item.kind==='lights'?rear:front).append(g);
+      nodes.push(g);
     }
-    return [...svg.querySelectorAll('.ct-decoration')];
+    return nodes;
   }
   function setup(tile){
     let state=normalize({seed:1+Math.floor(Math.random()*2147483646)}),nodes=paint(tile,state),running=false,frame=0,last=0,lastRender=0,level=0,stream=null,context=null,analyser=null,pending=false,generation=0,disposed=false;
@@ -54,8 +76,15 @@
     function changed(){(tile._presentationChanged||window.notifyBoardChanged)?.('christmas-tree');}
     function update(animate=false){
       const progress=Math.min(1,state.elapsed/state.duration),count=Math.floor(progress*nodes.length);
-      nodes.forEach((node,i)=>{const visible=i<count;if(animate&&visible&&!node.classList.contains('is-visible'))node.classList.add('ct-pop');node.classList.toggle('is-visible',visible)});
-      tile.querySelector('.ct-art').style.setProperty('--tree-growth',String(.88+progress*.12));
+      nodes.forEach((node,i)=>{
+        const visible=i<count;
+        if(animate&&visible&&!node.classList.contains('is-visible')){
+          const animation=node.dataset.kind==='tinsel'?'ct-flow':node.dataset.kind==='lights'?'ct-light-sequence':'ct-pop';
+          node.classList.add(animation);
+        }
+        node.classList.toggle('is-visible',visible);
+      });
+      tile.querySelector('.ct-art').style.setProperty('--tree-growth',String(.97+progress*.03));
       const seconds=Math.ceil(Math.max(0,state.duration-state.elapsed));readout.textContent=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
       tile.querySelector('.ct-progress span').style.width=progress*100+'%';
       start.textContent=pending?'Connecting…':running?'Pause':progress>=1?'Decorated!':'Start';start.disabled=pending||progress>=1;

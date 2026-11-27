@@ -17,6 +17,46 @@
     'soundscapes-vinyl':'vinyl'
   });
 
+  // Shared with Christmas Carols so both selectors keep the same behavior and UI.
+  function attachSelector({tile,tracks,triggers,dialog,selectTrack,getTrackIndex}){
+    const list=dialog.querySelector('.carol-song-list'),choices=[];
+    function close(){dialog.close();triggers.forEach(button=>button.setAttribute('aria-expanded','false'));}
+    function sync(index){
+      choices.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
+      triggers.forEach(button=>button.setAttribute('aria-label',`Choose ${tile.dataset.type==='christmascarols'?'a Carol':'a Soundscape'}: ${tracks[index].title}`));
+    }
+    for(const trigger of triggers){
+      trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');
+      trigger.addEventListener('click',()=>{
+        if(dialog.open){close();return;}
+        dialog.showModal();trigger.setAttribute('aria-expanded','true');
+        dialog.querySelector('[aria-pressed="true"]')?.scrollIntoView({block:'nearest'});
+      });
+    }
+    tracks.map((track,index)=>({track,index})).sort((a,b)=>a.track.title.localeCompare(b.track.title)).forEach(({track,index})=>{
+      const button=document.createElement('button');button.type='button';button.className='carol-song';
+      const text=document.createElement('span'),title=document.createElement('strong');title.textContent=track.title;text.append(title);
+      if(track.artist){const artist=document.createElement('small');artist.textContent=track.artist;text.append(artist);}
+      const check=document.createElement('span');check.className='carol-song-check';check.textContent='✓';check.setAttribute('aria-hidden','true');
+      button.append(text,check);choices[index]=button;list.append(button);
+      button.addEventListener('click',()=>{
+        if(index!==getTrackIndex()){selectTrack(index);(tile._presentationChanged||window.notifyBoardChanged)?.('audio-track');}
+        close();
+      });
+    });
+    dialog.querySelector('.carol-credits-close').addEventListener('click',close);
+    dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
+    dialog.addEventListener('click',event=>{
+      if(event.target!==dialog)return;
+      const rect=dialog.getBoundingClientRect();
+      if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();
+    });
+    dialog.addEventListener('pointerdown',event=>event.stopPropagation());
+    dialog.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
+    sync(getTrackIndex());
+    return {sync,close};
+  }
+
   function setup(m,{tracks=TRACKS,lazy=false,onTrackChange}={}){
     const audio=m.querySelector('.boombox-audio');
     if(!audio)return;
@@ -32,7 +72,7 @@
     const currents=[...m.querySelectorAll('.boombox-current')];
     const durations=[...m.querySelectorAll('.boombox-duration')];
     const style=SKIN_STYLE[m.dataset.tileSkin]||'compact';
-    let index=0,userVolume=55,pendingSeek=0;
+    let index=0,userVolume=55,pendingSeek=0,selector=null;
 
     m.querySelectorAll('.boombox-view').forEach(view=>view.hidden=!view.classList.contains(`boombox-view--${style}`));
 
@@ -76,6 +116,7 @@
           requestAnimationFrame(()=>fitVinylTitle(title));
         }else title.textContent=track.title;
       });
+      selector?.sync(index);
       m.style.setProperty('--vinyl-label',track.label);
       m.style.setProperty('--vinyl-label-text',track.text);
     };
@@ -161,6 +202,23 @@
     });
     resizeObserver.observe(m);
 
+    if(m.dataset.type==='boombox'){
+      const dialog=document.createElement('dialog');dialog.className='carol-credits carol-library soundscapes-library';dialog.setAttribute('aria-label','Choose a Soundscape');
+      dialog.innerHTML='<button class="carol-credits-close" type="button" aria-label="Close Soundscapes">×</button><h2>Soundscapes</h2><div class="carol-song-list"></div>';
+      m.append(dialog);
+      const triggers=titles.map(title=>{
+        const button=document.createElement('button');button.type='button';button.className='soundscapes-choose';
+        if(title.closest('.vinyl-label')){
+          const caption=document.createElement('strong');caption.className='boombox-title';caption.textContent=title.textContent;
+          button.append(caption);titles.push(caption);m.querySelector('.vinyl-footer').prepend(button);
+        }else{title.before(button);button.append(title);}
+        button.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>');
+        return button;
+      });
+      selector=attachSelector({tile:m,tracks,triggers,dialog,selectTrack:next=>load(next,!audio.paused),getTrackIndex:()=>index});
+      each([...prevs,...nexts],button=>button.addEventListener('click',()=>window.notifyBoardChanged?.('audio-track')));
+    }
+
     setVolume(55);
     load(0,false);
     if(style==='vinyl')requestAnimationFrame(()=>m.querySelectorAll('.vinyl-label .boombox-title').forEach(fitVinylTitle));
@@ -180,9 +238,10 @@
     };
 
     const priorDeactivate=m._deactivate;
-    m._deactivate=()=>{seekCleanups.forEach(clean=>clean());audio.pause();priorDeactivate?.()};
+    m._deactivate=()=>{selector?.close();seekCleanups.forEach(clean=>clean());audio.pause();priorDeactivate?.()};
     const priorCleanup=m._cleanup;
     m._cleanup=()=>{
+      selector?.close();
       seekCleanups.forEach(clean=>clean());
       resizeObserver.disconnect();
       window.removeEventListener('teachertiles:audiopreferenceschange',onAudioPreferences);
@@ -199,5 +258,5 @@
     });
   }
 
-  window.TeacherTilesSoundscapes=Object.freeze({setup});
+  window.TeacherTilesSoundscapes=Object.freeze({setup,attachSelector});
 })();
