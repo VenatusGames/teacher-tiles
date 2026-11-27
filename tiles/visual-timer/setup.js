@@ -142,7 +142,7 @@ function setupTimer(m){
     const stageWidth=stage.clientWidth,stageHeight=stage.clientHeight;
     if(stageWidth<20||stageHeight<20)return;
     const holiday=pumpkin||pie||ornament;
-    const artHeight=ornament?(TeacherTilesChristmasTimer.kind(m)==='ornament'?1.20:1):pie?1:ghost?.93:.94;
+    const artHeight=ornament?(TeacherTilesChristmasTimer.kind(m)==='ornament'?1.20:TeacherTilesChristmasTimer.kind(m)==='snowman'?1.30:1):pie?1:ghost?.93:.94;
     const gap=ornament?20:pie?18:10;
     const shortest=Math.min(stageWidth,Math.max(0,holiday?(stageHeight-(readout?.offsetHeight||70)-gap)/artHeight:stageHeight));
     const breathingRoom=holiday?0:Math.max(10,Math.min(28,shortest*.055));

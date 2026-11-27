@@ -22,3 +22,7 @@
 @media(prefers-reduced-motion:reduce){.christmastimer-module.is-running .timer-visual{animation:none}}
 
 .shop-product__preview--christmas-timer>img{display:block;width:84%;height:84%;object-fit:contain;margin:auto}
+
+.christmastimer-module[data-christmas-art="snowman"] .ornament-timer-art{top:-30%;height:130%;bottom:auto}
+.christmastimer-module[data-christmas-art="snowman"] .timer-visual{margin-top:calc(var(--timer-visual-size,240px)*.30)}
+.ornament-mini--snowman{height:57.2px}

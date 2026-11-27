@@ -52,11 +52,11 @@
     const base=type==='snowman'?art.snowman(key,id+'-base'):type==='cookies'?art.cookie(key,id+'-base'):contents(ball(key));
     const path=type==='cookies'?art.paths[key]:art.circle;
     const edge=type==='ornament'?colors[key].dark:type==='snowman'?'#7d9bb3':'#94602f';
-    const top=type==='ornament'?'<g class="ornament-cap" transform="translate(0 -14) translate(50 18) scale(1.16) translate(-50 -18)">'+contents(cap())+'</g>':'';
-    return '<svg class="christmas-art-svg" viewBox="'+(type==='ornament'?'0 -20 100 120':'0 0 100 100')+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="'+id+'-sweep"><path class="christmas-sweep" d="'+sweep(progress)+'"/></clipPath></defs><g class="christmas-base" opacity=".27">'+base+'</g><g clip-path="url(#'+id+'-sweep)">'+body+'</g><path class="christmas-outline" d="'+path+'" fill="none" stroke="'+edge+'" stroke-width="1.2"/>'+top+'</svg>';
+    const top=type==='ornament'?'<g class="ornament-cap" transform="translate(0 -14) translate(50 18) scale(1.16) translate(-50 -18)">'+contents(cap())+'</g>':type==='snowman'?'<g class="snowman-hat">'+art.snowHat(key)+'</g>':'';
+    return '<svg class="christmas-art-svg" viewBox="'+(type==='ornament'?'0 -20 100 120':type==='snowman'?'0 -30 100 130':'0 0 100 100')+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="'+id+'-sweep"><path class="christmas-sweep" d="'+sweep(progress)+'"/></clipPath></defs><g class="christmas-base" opacity=".27">'+base+'</g><g clip-path="url(#'+id+'-sweep)">'+body+'</g><path class="christmas-outline" d="'+path+'" fill="none" stroke="'+edge+'" stroke-width="1.2"/>'+top+'</svg>';
   }
   function icon(key,type='ornament') {
-    return '<span class="ornament-mini'+(type==='ornament'?'':' ornament-mini--round')+'">'+artwork(type,key)+'</span>';
+    return '<span class="ornament-mini'+(type==='ornament'?'':type==='snowman'?' ornament-mini--snowman':' ornament-mini--round')+'">'+artwork(type,key)+'</span>';
   }
   function label(m) {return kind(m)==='snowman'?'Snowman Face':kind(m)==='cookies'?'Christmas Cookie':'Ornament Color';}
   function updateProgress(m,progress) {
