@@ -77,7 +77,7 @@ const root = path.resolve(__dirname, '../..');
       await page.waitForFunction(() => !dreidel.querySelector('.dreidel-spin').hasAttribute('aria-busy'));
       assert.equal(await page.evaluate(() => dreidel._boardGetState().result),result);
       assert.equal(await page.locator('.dreidel-result-popup:visible').count(),1);
-      assert.equal(await page.locator('.dreidel-result').textContent(),['נ · Nun','ג · Gimel','ה · Hei','ש · Shin'][result]);
+      assert.equal(await page.locator('.dreidel-result').textContent(),['Nun','Gimel','Hei','Shin'][result]);
     }
     if(process.env.HANUKKAH_RESULT_SCREENSHOT){await page.locator('.dreidel-result-popup').evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));await page.screenshot({path:process.env.HANUKKAH_RESULT_SCREENSHOT});}
     await page.mouse.move(5,5);await page.mouse.move(10,10);
@@ -124,7 +124,7 @@ const root = path.resolve(__dirname, '../..');
       document.body.append(hanukkahPreview);
     });
     assert.equal(await page.locator('.hanukkah-static-preview .menorah-candle.is-lit').count(),3);
-    assert.equal(await page.locator('.hanukkah-static-preview .dreidel-result').textContent(),'ש · Shin');
+    assert.equal(await page.locator('.hanukkah-static-preview .dreidel-result').textContent(),'Shin');
     assert.equal(await page.locator('.hanukkah-static-preview .dreidel-object').evaluate(el=>el.style.getPropertyValue('--dreidel-hue')),'273');
     assert.equal(await page.locator('.hanukkah-static-preview .hanukkah-heading:visible').count(),0);
     await page.evaluate(() => hanukkahPreview.remove());
