@@ -337,3 +337,10 @@ body.dark .shop-modal .shop-coins-button__plus{color:#e7c06a;border-color:#d2ac5
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(4){left:53%;top:63%;width:9%;height:29%;transform:rotate(4deg)}
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(5){left:64%;top:63%;width:11%;height:29%;transform:rotate(-8deg)}
 .shop-thanksgiving-art .shop-thanksgiving-extras img:nth-child(6){left:77%;top:63%;width:11%;height:29%;transform:rotate(8deg)}
+
+/* Keep the complete holiday composition inside every banner viewport. */
+.shop-modal .shop-banner__slide[data-winter-banner]{background:#173347}
+.shop-modal .shop-banner__slide[data-winter-banner] img{object-fit:contain;max-width:100%;max-height:100%}
+
+.shop-modal .shop-banner__slide[data-winter-banner] img{box-sizing:border-box;padding-bottom:28px}
+@media(max-width:700px){.shop-modal .shop-promotions .shop-banner:has(.is-active[data-winter-banner]){aspect-ratio:2/1}.shop-modal .shop-banner__slide[data-winter-banner] img{padding-bottom:24px}}
