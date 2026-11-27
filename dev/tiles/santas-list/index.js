@@ -1,12 +1,15 @@
 (() => {
   'use strict';
   function names(value){return [...new Set((Array.isArray(value)?value:[]).filter(name=>typeof name==='string').map(name=>name.trim().slice(0,80)).filter(Boolean))].slice(0,80);}
-  function normalize(raw={}){if(!raw||typeof raw!=='object')raw={};const students=names(raw.students);return {title:String(raw.title||"Santa's List").slice(0,80),classId:String(raw.classId||'').slice(0,120),className:String(raw.className||'').slice(0,100),students,listed:names(raw.listed).filter(name=>students.includes(name))};}
+  function normalize(raw={}){if(!raw||typeof raw!=='object')raw={};const students=names(raw.students);return {title:String(raw.title||"Santa's List").slice(0,80),classId:String(raw.classId||'').slice(0,120),className:String(raw.className||'').slice(0,100),students,drawerOpen:raw.drawerOpen===true,listed:names(raw.listed).filter(name=>students.includes(name))};}
   function setup(tile){
-    let state=normalize(),drag=null;
-    const roster=tile.querySelector('.sl-roster'),paper=tile.querySelector('.sl-paper'),list=tile.querySelector('.sl-names'),title=tile.querySelector('.sl-title'),dialog=tile.querySelector('.sl-class-dialog'),status=tile.querySelector('.sl-status'),input=tile.querySelector('.sl-add-name');
+    let state=normalize(),drag=null,pickingClass=true;
+    const roster=tile.querySelector('.sl-roster'),paper=tile.querySelector('.sl-paper'),list=tile.querySelector('.sl-names'),title=tile.querySelector('.sl-title'),intro=tile.querySelector('.sl-class-import'),dashboard=tile.querySelector('.sl-dashboard'),drawer=tile.querySelector('.sl-students'),toggle=tile.querySelector('.sl-students-toggle'),status=tile.querySelector('.sl-status'),input=tile.querySelector('.sl-add-name');
     function changed(){(tile._presentationChanged||window.notifyBoardChanged)?.('santas-list');}
-    function close(){dialog.close();}
+    function close(){pickingClass=false;render();}
+    function setDrawer(open){
+      cancelDrag();state.drawerOpen=open;tile.classList.toggle('sl-drawer-open',open);drawer.inert=!open;drawer.setAttribute('aria-hidden',String(!open));toggle.setAttribute('aria-expanded',String(open));
+    }
     function cancelDrag(){if(!drag)return;drag.ghost?.remove();try{drag.chip.releasePointerCapture(drag.id)}catch{}drag=null;paper.classList.remove('sl-drop-target');}
     function add(name){if(state.listed.includes(name))return;state.listed.push(name);render(name);changed();playUiSfx?.('pop');}
     function remove(name){state.listed=state.listed.filter(value=>value!==name);render();changed();}
@@ -25,6 +28,8 @@
       chip.addEventListener('pointercancel',cancelDrag);return chip;
     }
     function render(animatedName=''){
+      intro.hidden=!pickingClass;dashboard.hidden=pickingClass;tile.querySelector('.sl-back').hidden=!state.classId&&!state.students.length;
+      setDrawer(!pickingClass&&state.drawerOpen);
       title.value=state.title;tile.querySelector('.sl-class-name').textContent=state.className;
       roster.replaceChildren();
       for(const name of state.students.filter(name=>!state.listed.includes(name)))roster.append(chipFor(name));
@@ -42,12 +47,16 @@
       status.textContent=state.listed.length?`${state.listed.length} on the list`:'';
     }
     const detach=attachClassRosterLoader(tile.querySelector('.sl-loader-anchor'),(_,value)=>{
-      cancelDrag();state.classId=String(value.id);state.className=String(value.name);state.students=names(value.students);state.listed=[];close();render();changed();
+      cancelDrag();state.classId=String(value.id);state.className=String(value.name);state.students=names(value.students);state.listed=[];state.drawerOpen=true;close();changed();
     });
-    tile.querySelector('.sl-load-class').addEventListener('click',()=>dialog.showModal());
-    dialog.querySelector('.sl-dialog-close').addEventListener('click',close);
-    dialog.addEventListener('pointerdown',event=>event.stopPropagation());dialog.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
-    dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)close()});
+    tile.querySelector('.sl-load-class').addEventListener('click',()=>{cancelDrag();pickingClass=true;render();});
+    tile.querySelector('.sl-back').addEventListener('click',close);
+    tile.querySelector('.sl-manual').addEventListener('click',()=>{state.drawerOpen=true;close();input.focus();});
+    toggle.addEventListener('click',()=>{setDrawer(!state.drawerOpen);changed();});
+    tile.querySelector('.sl-drawer-close').addEventListener('click',()=>{setDrawer(false);toggle.focus({preventScroll:true});changed();});
+    const outside=event=>{if(state.drawerOpen&&!drag&&!event.composedPath().includes(drawer)&&!event.composedPath().includes(toggle)&&!event.composedPath().includes(intro)&&!event.target.closest('.sl-load-class')){setDrawer(false);changed();}};
+    const escape=event=>{if(event.key==='Escape'&&state.drawerOpen){event.preventDefault();event.stopPropagation();setDrawer(false);toggle.focus({preventScroll:true});changed();}};
+    document.addEventListener('click',outside);tile.addEventListener('keydown',escape);
     title.addEventListener('input',()=>{state.title=title.value.slice(0,80);changed()});title.addEventListener('blur',()=>{if(!title.value.trim()){state.title="Santa's List";title.value=state.title;changed()}});
     tile.querySelector('.sl-add-form').addEventListener('submit',event=>{event.preventDefault();const name=input.value.trim().slice(0,80);if(!name)return;if(state.students.length>=80){status.textContent='This list supports up to 80 names';return;}if(!state.students.includes(name))state.students.push(name);input.value='';render();changed();});
     tile.querySelector('.sl-reset').addEventListener('click',()=>{cancelDrag();state.listed=[];render();changed()});
@@ -55,11 +64,11 @@
     window.addEventListener('teachertiles:classeschange',syncClass);
     for(const element of [roster,list])element.addEventListener('wheel',event=>event.stopPropagation(),{passive:true});
     tile._boardGetState=()=>normalize(state);
-    tile._boardSetState=value=>{cancelDrag();close();state=normalize(value);render();};
+    tile._boardSetState=value=>{cancelDrag();state=normalize(value);pickingClass=!state.classId&&!state.students.length;render();};
     const deactivate=tile._deactivate,cleanup=tile._cleanup;
-    tile._deactivate=()=>{cancelDrag();close();deactivate?.()};tile._cleanup=()=>{cancelDrag();close();detach();window.removeEventListener('teachertiles:classeschange',syncClass);cleanup?.()};
+    tile._deactivate=()=>{cancelDrag();setDrawer(false);deactivate?.()};tile._cleanup=()=>{cancelDrag();document.removeEventListener('click',outside);tile.removeEventListener('keydown',escape);detach();window.removeEventListener('teachertiles:classeschange',syncClass);cleanup?.()};
     render();
   }
-  function preview(tile,raw){const state=normalize(raw);tile.querySelector('.sl-title').value=state.title;const list=tile.querySelector('.sl-names');list.replaceChildren();state.listed.forEach(name=>{const row=document.createElement('li');row.className='sl-entry';row.textContent=name;list.append(row)});tile.querySelector('.sl-paper-empty').hidden=Boolean(state.listed.length);}
+  function preview(tile,raw){const state=normalize(raw);tile.querySelector('.sl-class-import').hidden=true;tile.querySelector('.sl-dashboard').hidden=false;tile.querySelector('.sl-title').value=state.title;const list=tile.querySelector('.sl-names');list.replaceChildren();state.listed.forEach(name=>{const row=document.createElement('li');row.className='sl-entry';row.textContent=name;list.append(row)});tile.querySelector('.sl-paper-empty').hidden=Boolean(state.listed.length);}
   window.TeacherTilesSantasList=Object.freeze({setup,preview,normalize});
 })();

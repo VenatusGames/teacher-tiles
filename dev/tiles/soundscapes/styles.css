@@ -209,3 +209,22 @@ body.dark .boombox-module{background:#202124;color:#f4f4f6}.dark .boombox-view--
 .soundscapes-module .boombox-progress::after{content:'';position:absolute;inset:-8px 0}
 .soundscapes-module .boombox-progress:focus-visible{outline:2px solid #60a5fa;outline-offset:5px}
 .soundscapes-module .boombox-progress span{pointer-events:none;max-width:100%;border-radius:inherit}
+
+/* Shared Soundscapes / Christmas Carols selector and credits surfaces. */
+.carol-credits{width:min(390px,calc(100vw - 30px));max-height:85dvh;margin:auto;border:1px solid var(--border);border-radius:18px;padding:24px;background:var(--surface-solid);color:var(--text);box-shadow:0 18px 60px #17203335;font:14px/1.55 Inter,system-ui,sans-serif;overflow:auto;user-select:text}
+.carol-credits:not([open]){display:none}.carol-credits::backdrop{background:#15223655;backdrop-filter:blur(3px)}
+.carol-credits h2{font-size:20px;margin:0 30px 16px 0}.carol-credits p{margin:10px 0}.carol-credits a{color:#226c9d;text-decoration:underline}.carol-credits small{display:block;color:var(--muted);margin-top:16px}
+.carol-credits-close{position:absolute;right:12px;top:12px;width:30px;height:30px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);font:22px/1 sans-serif;display:grid;place-items:center;padding:0}
+.carol-library{width:min(430px,calc(100vw - 30px));padding:20px;max-height:min(600px,85dvh)}
+.carol-song-list{display:grid;gap:5px}.carol-song{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:11px 12px;border:1px solid transparent;border-radius:10px;text-align:left;background:transparent;color:var(--text);font:inherit;cursor:pointer}
+.carol-song>span:first-child{min-width:0}.carol-song strong{display:block;font-size:14px;line-height:1.3}.carol-song small{margin:3px 0 0;font-size:11px;line-height:1.4}
+.carol-song:hover{background:var(--surface-soft)}.carol-song[aria-pressed="true"]{border-color:#bdd5c7;background:#edf6f0;color:#245d45}.carol-song-check{visibility:hidden;flex:none;color:#2c7052}.carol-song[aria-pressed="true"] .carol-song-check{visibility:visible}
+.carol-song:focus-visible{outline:2px solid #60a5fa;outline-offset:1px}
+.carol-library[open]{display:flex;flex-direction:column;overflow:hidden}
+.carol-library h2{flex:none}.carol-library .carol-song-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:2px}
+.soundscapes-module .soundscapes-choose{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0;min-height:0;padding:0;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.soundscapes-choose>.boombox-title{flex:1;min-width:0}.soundscapes-choose>svg{flex:none;opacity:.55}
+.soundscapes-choose:hover{background:color-mix(in srgb,currentColor 5%,transparent)}.soundscapes-choose:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
+.boombox-view--compact .soundscapes-choose .boombox-title{white-space:normal;text-align:left;font-size:clamp(18px,5cqw,28px)}
+.boombox-view--ipod .soundscapes-choose{flex:1}
+.vinyl-footer .soundscapes-choose{min-height:24px;flex:none}.vinyl-footer .soundscapes-choose>.boombox-title{flex:none;font-size:14px;line-height:1.2;padding:0}
